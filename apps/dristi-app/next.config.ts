@@ -12,7 +12,17 @@ const nextConfig: NextConfig = {
    * Both loopback names, so the documented URL works and the trap is closed.
    */
   allowedDevOrigins: ["127.0.0.1", "localhost"],
-  output: process.env.STATIC_EXPORT === "true" ? "export" : undefined,
+  /**
+   * `NEXT_OUTPUT=standalone` is set only by docker/Dockerfile: it emits a self-contained
+   * server (`server.js` plus the traced node_modules) so the runtime image does not need
+   * the full install. Netlify and local builds leave it unset and keep the default output.
+   */
+  output:
+    process.env.STATIC_EXPORT === "true"
+      ? "export"
+      : process.env.NEXT_OUTPUT === "standalone"
+        ? "standalone"
+        : undefined,
 };
 
 export default nextConfig;

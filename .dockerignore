@@ -16,10 +16,12 @@ apps/dristi-app/.tmp
 apps/dristi-app/public/vendor
 *.tsbuildinfo
 
-# Environment / secrets
-.env
-.env.*
-*.pem
+# Environment / secrets, at any depth: patterns here match from the context root only,
+# and Next copies a loaded .env file (e.g. apps/dristi-app/.env.production) into the
+# standalone output that ships in the image.
+**/.env
+**/.env.*
+**/*.pem
 
 # Agent tooling and docs (not needed to build the app)
 .agents

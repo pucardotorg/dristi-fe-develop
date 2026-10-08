@@ -48,6 +48,16 @@ npm run sync:ui -- button      # copy a primitive from vendor DS
 npm run check:ui-sync          # primitives must match that DS
 npm run check:spacing          # spacing stays on the ladder
 ```
+## Docker/Podman
+
+```
+# Building the docker image
+podman build -t dristi-fe-develop:latest -f docker/Dockerfile .
+
+# Run the docker image
+podman run -p 3000:3000 dristi-fe-develop:latest
+
+```
 
 ## Docs
 

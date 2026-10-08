@@ -33,6 +33,8 @@ Orientation for this repo. Docs describe the product and how we design; they are
 | `ds.lock.json` | Pinned DS commit; upgrades use a dedicated branch and PR into `main` |
 | `scripts/` | Rails generation, consistency checks, regression tests, and verification profiles |
 | `.github/workflows/agent-rails.yml` | Dependency-free agent configuration checks on PRs and long-lived branch pushes |
+| `docker/` | Production Dockerfile for the Dristi App (standalone Next.js server); no compose file |
+| `.github/workflows/docker-publish.yml` | Builds `docker/Dockerfile` and pushes it to GHCR on pushes to `main` |
 
 ## Intentionally not here
 

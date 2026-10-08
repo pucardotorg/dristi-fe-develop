@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { CourtCasesScreen } from "@/components/employee/court-cases-screen";
@@ -15,7 +16,14 @@ export const metadata: Metadata = { title: COURT_CASES_PAGE.label };
  * The screen is a client component throughout: the dates it prints are read from the
  * reader's clock, and the filters and paging are all interaction. There is no backend
  * behind it — `lib/employee/cases.ts` says exactly what the data is and is not.
+ *
+ * The Suspense boundary is required: the screen reads `?priority=` with
+ * `useSearchParams()`, and without a boundary `next build` refuses to prerender the page.
  */
 export default function CourtCasesPage() {
-  return <CourtCasesScreen />;
+  return (
+    <Suspense>
+      <CourtCasesScreen />
+    </Suspense>
+  );
 }

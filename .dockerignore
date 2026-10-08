@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Dependencies (installed inside the image by npm ci)
+node_modules
+**/node_modules
+
+# Design system clone (fetched inside the image by the postinstall step)
+vendor/pucar-design-system
+
+# Next.js build output and generated assets
+apps/dristi-app/.next
+apps/dristi-app/out
+apps/dristi-app/.tmp
+apps/dristi-app/public/vendor
+*.tsbuildinfo
+
+# Environment / secrets, at any depth: patterns here match from the context root only,
+# and Next copies a loaded .env file (e.g. apps/dristi-app/.env.production) into the
+# standalone output that ships in the image.
+**/.env
+**/.env.*
+**/*.pem
+
+# Agent tooling and docs (not needed to build the app)
+.agents
+.claude
+.codex
+.cursor
+docs
+
+# IDEs
+.idea
+.vscode
+
+# OS files
+.DS_Store
+
+# Logs
+npm-debug.log*

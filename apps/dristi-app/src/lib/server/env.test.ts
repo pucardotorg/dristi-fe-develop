@@ -1,38 +1,43 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { readApiOrigin } from "./env";
+import { readApiBaseUrl } from "./env";
 
-describe("readApiOrigin", () => {
-  it("accepts an http or https origin and normalises it", () => {
-    assert.deepEqual(readApiOrigin("http://localhost:8000"), {
+describe("readApiBaseUrl", () => {
+  it("accepts an http or https URL and drops the trailing slash", () => {
+    assert.deepEqual(readApiBaseUrl("http://localhost:8000/api/v1"), {
       ok: true,
-      origin: "http://localhost:8000",
+      baseUrl: "http://localhost:8000/api/v1",
     });
-    assert.deepEqual(readApiOrigin("  https://be.dristi-dev.in/  "), {
+    assert.deepEqual(readApiBaseUrl("  https://be.dristi-dev.in/api/v1/  "), {
       ok: true,
-      origin: "https://be.dristi-dev.in",
+      baseUrl: "https://be.dristi-dev.in/api/v1",
+    });
+    // A bare origin is legal: the API then lives at the root.
+    assert.deepEqual(readApiBaseUrl("https://api.example.org/"), {
+      ok: true,
+      baseUrl: "https://api.example.org",
     });
   });
 
   it("explains a missing value", () => {
     for (const raw of [undefined, "", "   "]) {
-      const result = readApiOrigin(raw);
+      const result = readApiBaseUrl(raw);
       assert.equal(result.ok, false);
-      assert.match(!result.ok ? result.reason : "", /API_ORIGIN is not set/);
+      assert.match(!result.ok ? result.reason : "", /API_BASE_URL is not set/);
     }
   });
 
-  it("rejects values that are not an origin", () => {
+  it("rejects values that are not a plain http(s) URL", () => {
     for (const raw of [
-      "localhost:8000/x", // parses as scheme "localhost:" — not http(s)
+      "localhost:8000/api/v1", // parses as scheme "localhost:" — not http(s)
       "not a url",
-      "ftp://example.com",
-      "http://localhost:8000/api/v1",
-      "http://localhost:8000/?a=1",
-      "http://localhost:8000/#x",
+      "ftp://example.com/api",
+      "http://localhost:8000/api/v1?a=1",
+      "http://localhost:8000/api/v1#x",
+      "http://user:pass@localhost:8000/api/v1",
     ]) {
-      assert.equal(readApiOrigin(raw).ok, false, raw);
+      assert.equal(readApiBaseUrl(raw).ok, false, raw);
     }
   });
 });

@@ -8,7 +8,7 @@ screen → store → repository (lib/<feature>/data/http.ts)
                     │
                     ▼
          lib/api  (this folder, browser)          app/api/v1/[...path]/route.ts
-         api.get("locations") ───────────────────▶ lib/server/api-proxy.ts ──▶ ${API_ORIGIN}/api/v1/locations/
+         api.get("locations") ───────────────────▶ lib/server/api-proxy.ts ──▶ ${API_BASE_URL}/locations/
            same-origin /api/v1/locations             (server, same origin)          Django
 ```
 
@@ -18,7 +18,7 @@ screen → store → repository (lib/<feature>/data/http.ts)
 | `errors.ts` | `ApiError` (`kind`, `status`, `fieldErrors`, `retryAfterSeconds`, `code`) and the DRF error parser |
 | `envelope.ts` | The backend's `meta` envelope; `Page<T>` for paginated lists |
 | `csrf.ts` | Reading Django's `csrftoken` cookie |
-| `../server/env.ts` | `API_ORIGIN`, validated, read per request (server only) |
+| `../server/env.ts` | `API_BASE_URL`, validated, read per request (server only) |
 | `../server/api-proxy.ts` | Forwarding: trailing slash, headers, cookies, path safety, 502/503/504 |
 
 ## Using it
@@ -58,9 +58,9 @@ try {
 
 ## Configuration
 
-`API_ORIGIN` — see `apps/dristi-app/.env.example`. Defaults to `http://localhost:8000`
-under `npm run dev` (`.env.development`). The backend must trust this app's origin in
-`CSRF_TRUSTED_ORIGINS`.
+`API_BASE_URL` — see `apps/dristi-app/.env.example`. Defaults to
+`http://localhost:8000/api/v1` under `npm run dev` (`.env.development`). The backend must
+trust this app's origin in `CSRF_TRUSTED_ORIGINS`.
 
 Why the proxy is a route handler rather than `next.config` rewrites or `proxy.ts` is
 recorded at the top of `lib/server/api-proxy.ts`.

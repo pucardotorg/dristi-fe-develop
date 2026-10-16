@@ -2,10 +2,10 @@
  * Same-origin proxy from this app to the DRISTI backend.
  *
  * The browser calls `/api/v1/...` on the app's own origin; this forwards the call to
- * `${API_ORIGIN}/api/v1/.../` and streams the answer back. Being same-origin is the
- * point: the backend authenticates with a session cookie and checks a CSRF token, and
- * both just work when the browser believes it is talking to one site. There is no CORS
- * to configure and no cookie domain to share.
+ * `${API_BASE_URL}/.../` (e.g. `https://be.dristi-dev.in/api/v1/.../`) and streams the
+ * answer back. Being same-origin is the point: the backend authenticates with a session
+ * cookie and checks a CSRF token, and both just work when the browser believes it is
+ * talking to one site. There is no CORS to configure and no cookie domain to share.
  *
  * Why a route handler and not the alternatives:
  *   - `next.config` rewrites are fixed at build time, so one Docker image could not
@@ -20,14 +20,14 @@
  *   2. **Origin is forwarded untouched.** The backend's CSRF check compares the browser's
  *      `Origin` with its `CSRF_TRUSTED_ORIGINS`; the fix for a mismatch is to trust this
  *      app's origin there, never to rewrite the header here.
- *   3. **The path cannot escape `/api/v1`.** Every segment is decoded, checked and
+ *   3. **The path cannot escape `API_BASE_URL`.** Every segment is decoded, checked and
  *      re-encoded, so `..` (in any encoding) is refused instead of reaching, say,
  *      `/admin/`.
  */
 
-import type { ApiOriginResult } from "./env";
+import type { ApiBaseUrlResult } from "./env";
 
-/** The backend's versioned API prefix — the same prefix this app serves the proxy on. */
+/** Where this app serves the proxy. The browser client calls paths under it. */
 export const API_PREFIX = "/api/v1";
 
 /** Upper bound for one upstream call. Generous: uploads of scanned documents are slow. */
@@ -62,7 +62,7 @@ const RESPONSE_DROP = new Set([...HOP_BY_HOP, "content-encoding", "content-lengt
 const INTERNAL_PREFIX = "x-middleware-";
 
 export type ProxyOptions = {
-  origin: ApiOriginResult;
+  api: ApiBaseUrlResult;
   /** Injected in tests; defaults to the global fetch. */
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
@@ -80,10 +80,11 @@ function proxyError(status: number, code: string, detail: string): Response {
  * The upstream URL for an incoming `/api/v1/...` pathname, or `null` if the path is not
  * one this proxy will forward.
  *
- * Exported for tests. `pathname` is the raw request pathname (percent-encoded as the
- * client sent it); `search` is passed through verbatim, including the leading `?`.
+ * Exported for tests. `baseUrl` is the validated `API_BASE_URL` (no trailing slash);
+ * `pathname` is the raw request pathname (percent-encoded as the client sent it);
+ * `search` is passed through verbatim, including the leading `?`.
  */
-export function buildUpstreamUrl(origin: string, pathname: string, search: string): URL | null {
+export function buildUpstreamUrl(baseUrl: string, pathname: string, search: string): URL | null {
   if (pathname !== API_PREFIX && !pathname.startsWith(`${API_PREFIX}/`)) return null;
 
   const rest = pathname.slice(API_PREFIX.length).replace(/^\/+|\/+$/g, "");
@@ -100,11 +101,12 @@ export function buildUpstreamUrl(origin: string, pathname: string, search: strin
   }
 
   const path = segments.length ? `${segments.join("/")}/` : "";
-  const url = new URL(`${API_PREFIX}/${path}`, origin);
+  const url = new URL(`${baseUrl}/${path}`);
   url.search = search;
 
-  // Belt and braces: whatever the parser did, the result must still be under the prefix.
-  return url.pathname.startsWith(`${API_PREFIX}/`) ? url : null;
+  // Belt and braces: whatever the parser did, the result must still be under the base.
+  const basePath = new URL(`${baseUrl}/`).pathname;
+  return url.pathname.startsWith(basePath) ? url : null;
 }
 
 function upstreamRequestHeaders(request: Request): Headers {
@@ -138,14 +140,14 @@ function downstreamResponseHeaders(upstream: Response): Headers {
 
 /** Forward one request to the backend and return the backend's response. */
 export async function proxyToApi(request: Request, options: ProxyOptions): Promise<Response> {
-  const { origin, fetchImpl = fetch, timeoutMs = UPSTREAM_TIMEOUT_MS } = options;
+  const { api, fetchImpl = fetch, timeoutMs = UPSTREAM_TIMEOUT_MS } = options;
 
-  if (!origin.ok) {
-    return proxyError(503, "api_origin_not_configured", origin.reason);
+  if (!api.ok) {
+    return proxyError(503, "api_not_configured", api.reason);
   }
 
   const incoming = new URL(request.url);
-  const target = buildUpstreamUrl(origin.origin, incoming.pathname, incoming.search);
+  const target = buildUpstreamUrl(api.baseUrl, incoming.pathname, incoming.search);
   if (!target) {
     return proxyError(400, "invalid_path", "This API path is not allowed.");
   }

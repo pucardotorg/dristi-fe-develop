@@ -3,8 +3,8 @@ import { describe, it } from "node:test";
 
 import { buildUpstreamUrl, proxyToApi } from "./api-proxy";
 
-const ORIGIN = "http://backend:8000";
-const ok = { ok: true as const, origin: ORIGIN };
+const BASE = "http://backend:8000/api/v1";
+const ok = { ok: true as const, baseUrl: BASE };
 
 type Captured = { url: string; init: RequestInit };
 
@@ -21,19 +21,30 @@ function fakeFetch(response: () => Response | Promise<Response>) {
 describe("buildUpstreamUrl", () => {
   it("adds Django's trailing slash and keeps the query", () => {
     assert.equal(
-      buildUpstreamUrl(ORIGIN, "/api/v1/locations/abc/children", "?page=2")?.href,
+      buildUpstreamUrl(BASE, "/api/v1/locations/abc/children", "?page=2")?.href,
       "http://backend:8000/api/v1/locations/abc/children/?page=2",
     );
     assert.equal(
-      buildUpstreamUrl(ORIGIN, "/api/v1/sessions/", "")?.href,
+      buildUpstreamUrl(BASE, "/api/v1/sessions/", "")?.href,
       "http://backend:8000/api/v1/sessions/",
     );
-    assert.equal(buildUpstreamUrl(ORIGIN, "/api/v1", "")?.href, "http://backend:8000/api/v1/");
+    assert.equal(buildUpstreamUrl(BASE, "/api/v1", "")?.href, "http://backend:8000/api/v1/");
+  });
+
+  it("follows the configured base path, whatever it is", () => {
+    assert.equal(
+      buildUpstreamUrl("https://gw.example.org/dristi/api/v2", "/api/v1/users", "")?.href,
+      "https://gw.example.org/dristi/api/v2/users/",
+    );
+    assert.equal(
+      buildUpstreamUrl("https://api.example.org", "/api/v1/users", "")?.href,
+      "https://api.example.org/users/",
+    );
   });
 
   it("re-encodes segments safely", () => {
     assert.equal(
-      buildUpstreamUrl(ORIGIN, "/api/v1/locations/code/KL%2001", "")?.pathname,
+      buildUpstreamUrl(BASE, "/api/v1/locations/code/KL%2001", "")?.pathname,
       "/api/v1/locations/code/KL%2001/",
     );
   });
@@ -49,27 +60,27 @@ describe("buildUpstreamUrl", () => {
       "/api/v10/users",
       "/admin/",
     ]) {
-      assert.equal(buildUpstreamUrl(ORIGIN, path, ""), null, path);
+      assert.equal(buildUpstreamUrl(BASE, path, ""), null, path);
     }
   });
 });
 
 describe("proxyToApi", () => {
-  it("returns 503 with the reason when API_ORIGIN is not usable", async () => {
+  it("returns 503 with the reason when API_BASE_URL is not usable", async () => {
     const res = await proxyToApi(new Request("http://app/api/v1/health"), {
-      origin: { ok: false, reason: "API_ORIGIN is not set." },
+      api: { ok: false, reason: "API_BASE_URL is not set." },
     });
     assert.equal(res.status, 503);
     assert.deepEqual(await res.json(), {
-      detail: "API_ORIGIN is not set.",
-      code: "api_origin_not_configured",
+      detail: "API_BASE_URL is not set.",
+      code: "api_not_configured",
     });
   });
 
   it("returns 400 for a path it will not forward", async () => {
     const { impl, calls } = fakeFetch(() => new Response("{}"));
     const res = await proxyToApi(new Request("http://app/api/v1/%2e%2e/admin"), {
-      origin: ok,
+      api: ok,
       fetchImpl: impl,
     });
     assert.equal(res.status, 400);
@@ -92,7 +103,7 @@ describe("proxyToApi", () => {
         },
         body: JSON.stringify({ mobile_number: "+919999999999" }),
       }),
-      { origin: ok, fetchImpl: impl },
+      { api: ok, fetchImpl: impl },
     );
 
     assert.equal(res.status, 201);
@@ -119,7 +130,7 @@ describe("proxyToApi", () => {
 
   it("sends no body for GET", async () => {
     const { impl, calls } = fakeFetch(() => Response.json({}));
-    await proxyToApi(new Request("http://app/api/v1/locations"), { origin: ok, fetchImpl: impl });
+    await proxyToApi(new Request("http://app/api/v1/locations"), { api: ok, fetchImpl: impl });
     assert.equal(calls[0].init.body, undefined);
   });
 
@@ -136,7 +147,7 @@ describe("proxyToApi", () => {
     });
 
     const res = await proxyToApi(new Request("http://app/api/v1/users", { method: "POST" }), {
-      origin: ok,
+      api: ok,
       fetchImpl: impl,
     });
 
@@ -154,7 +165,7 @@ describe("proxyToApi", () => {
       Response.json({ detail: "Too many requests." }, { status: 429, headers: { "retry-after": "30" } }),
     );
     const res = await proxyToApi(new Request("http://app/api/v1/auth/otp/request", { method: "POST" }), {
-      origin: ok,
+      api: ok,
       fetchImpl: impl,
     });
     assert.equal(res.status, 429);
@@ -164,7 +175,7 @@ describe("proxyToApi", () => {
   it("handles null-body statuses", async () => {
     const { impl } = fakeFetch(() => new Response(null, { status: 204 }));
     const res = await proxyToApi(new Request("http://app/api/v1/sessions", { method: "DELETE" }), {
-      origin: ok,
+      api: ok,
       fetchImpl: impl,
     });
     assert.equal(res.status, 204);
@@ -176,7 +187,7 @@ describe("proxyToApi", () => {
     const impl = (async () => {
       throw new TypeError("fetch failed");
     }) as typeof fetch;
-    const res = await proxyToApi(new Request("http://app/api/v1/health"), { origin: ok, fetchImpl: impl });
+    const res = await proxyToApi(new Request("http://app/api/v1/health"), { api: ok, fetchImpl: impl });
     assert.equal(res.status, 502);
     assert.equal((await res.json()).code, "upstream_unreachable");
   });
@@ -188,7 +199,7 @@ describe("proxyToApi", () => {
         init?.signal?.addEventListener("abort", () => reject(init.signal?.reason));
       })) as typeof fetch;
     const res = await proxyToApi(new Request("http://app/api/v1/health"), {
-      origin: ok,
+      api: ok,
       fetchImpl: impl,
       timeoutMs: 10,
     });

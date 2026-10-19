@@ -58,12 +58,15 @@ function JoinFlow() {
   // (deferred ID, incomplete profile) ride only the portal route for the same reason:
   // the reminders they arm live there today.
   const goHome = React.useCallback(
-    (options?: {
+    (options: {
       idSkipped?: boolean;
       profileIncomplete?: boolean;
-      role?: "litigant" | "advocate";
+      role: "litigant" | "advocate";
+      /** Null when the backend did not say — sign-in does not return a name yet. */
+      name: string | null;
+      mobile: string;
     }) => {
-      const advocate = options?.role === "advocate";
+      const advocate = options.role === "advocate";
       // Session-lite: remember the role + whether an advocate profile exists, so the
       // shell opens as this account. A base litigant has no advocate profile until they
       // elevate (Settings); an advocate account has one.
@@ -76,10 +79,11 @@ function JoinFlow() {
         advocate ? "true" : "false",
       );
       // The account's name is fixed here; switching profile later changes the role,
-      // not the person. (Two demo accounts: advocate = Anjali, litigant = Rajan.)
+      // not the person. A backend sign-in does not return the name yet, so the number
+      // stands in for it rather than another person's demo name.
       window.localStorage.setItem(
         ACCOUNT_NAME_KEY,
-        advocate ? "Anjali Nair" : "Rajan K. Nair",
+        options.name || `+91 ${options.mobile}`,
       );
 
       if (!token) {
@@ -92,8 +96,8 @@ function JoinFlow() {
       const query = new URLSearchParams();
       query.set("token", token);
       if (searchParams.get("nocase") === "1") query.set("nocase", "1");
-      if (!advocate && options?.idSkipped) query.set("noid", "1");
-      if (!advocate && options?.profileIncomplete)
+      if (!advocate && options.idSkipped) query.set("noid", "1");
+      if (!advocate && options.profileIncomplete)
         query.set("profile", "missing");
       if (locale !== "en") query.set("lang", locale);
       const qs = query.toString();
@@ -128,8 +132,10 @@ function JoinFlow() {
         locale={locale}
         onLocaleChange={setLocale}
         onSeekHelp={() => setOpen(true)}
-        onSignedIn={(role) => goHome({ role })}
-        onRegistered={(result) => goHome(result)}
+        onSignedIn={(account) => goHome(account)}
+        // Registration reaches this only for roles that need no court approval
+        // (litigant, power of attorney); both open the litigant portal.
+        onRegistered={(result) => goHome({ ...result, role: "litigant" })}
         // The token is the only thing that tells us this person was served. It changes
         // the explainer's headline, never its availability: the modal is one tap away
         // for everyone, and it runs on fallbacks when there is no case to show.

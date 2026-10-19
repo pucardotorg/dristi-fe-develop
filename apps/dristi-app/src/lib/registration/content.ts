@@ -9,6 +9,17 @@ export const registrationUi = {
   back: t("Back", "പുറകോട്ട്"),
   continue: t("Continue", "തുടരുക"),
   stepOf: t("Step {current} of {total}", "ഘട്ടം {current} / {total}"),
+  /* Backend failures any step can meet (integration, Oct 15). The Malayalam is a draft
+     composed from phrasing already in this file — have a translator confirm it. */
+  unavailable: t(
+    "Couldn't reach the server. Check your connection and try again.",
+    "സെർവറുമായി ബന്ധപ്പെടാനായില്ല. ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",
+  ),
+  /** The verified number's session ended before the last step was sent. */
+  sessionExpired: t(
+    "Your verification has expired. Verify your mobile number again.",
+    "പരിശോധനയുടെ സമയം കഴിഞ്ഞു. മൊബൈൽ നമ്പർ വീണ്ടും പരിശോധിക്കുക.",
+  ),
 } as const;
 
 export const journeySteps = {
@@ -77,6 +88,16 @@ export const contactStep = {
   verified: t("Mobile number verified", "മൊബൈൽ നമ്പർ പരിശോധിച്ചു"),
   changeNumber: t("Change number", "നമ്പർ മാറ്റുക"),
   verifyFirst: t("Verify your mobile number to continue.", "തുടരാൻ നിങ്ങളുടെ മൊബൈൽ നമ്പർ പരിശോധിക്കുക."),
+  /* From the backend (integration, Oct 15); Malayalam drafts — confirm with a translator. */
+  mobileInvalid: t("Enter a valid Indian mobile number.", "ശരിയായ ഇന്ത്യൻ മൊബൈൽ നമ്പർ നൽകുക."),
+  otpWrong: t(
+    "That code didn't work. Check the digits, or send a new code.",
+    "ഈ കോഡ് ശരിയല്ല. അക്കങ്ങൾ പരിശോധിക്കുക, അല്ലെങ്കിൽ പുതിയ കോഡ് അയയ്ക്കുക.",
+  ),
+  alreadyRegistered: t(
+    "This number already has an account. Go back to sign in.",
+    "ഈ നമ്പറിൽ ഇതിനകം ഒരു അക്കൗണ്ട് ഉണ്ട്. സൈൻ ഇൻ പേജിലേക്ക് മടങ്ങുക.",
+  ),
 } as const;
 
 /**
@@ -90,13 +111,12 @@ export const contactStep = {
  */
 export const passwordStep = {
   title: t("Create a password", "ഒരു പാസ്‌വേഡ് ഉണ്ടാക്കുക"),
-  /* Optional (owner, Oct 8). Sign-in already offers a one-time code, so a skipped
-     password costs nothing; Profile → Password sets one later. */
+  /* Required again (owner, Oct 15): the backend needs a password to finish registration.
+     It was optional from Oct 8. Malayalam drafted from the earlier sentence — confirm it. */
   body: t(
-    "Optional. Without a password, you sign in with a one-time code sent to your mobile. You can set one later from your profile.",
-    "ഇത് നിർബന്ധമല്ല. പാസ്‌വേഡ് ഇല്ലെങ്കിൽ, നിങ്ങളുടെ മൊബൈലിലേക്ക് അയയ്ക്കുന്ന ഒറ്റത്തവണ കോഡ് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യാം. പിന്നീട് പ്രൊഫൈലിൽ നിന്ന് പാസ്‌വേഡ് സജ്ജമാക്കാം.",
+    "You will sign in with this password, or with a one-time code sent to your mobile.",
+    "ഈ പാസ്‌വേഡോ നിങ്ങളുടെ മൊബൈലിലേക്ക് അയയ്ക്കുന്ന ഒറ്റത്തവണ കോഡോ ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യാം.",
   ),
-  skip: t("Skip for now", "ഇപ്പോൾ ഒഴിവാക്കുക"),
   password: t("Password", "പാസ്‌വേഡ്"),
   passwordPlaceholder: t("Enter a password", "ഒരു പാസ്‌വേഡ് നൽകുക"),
   confirm: t("Confirm password", "പാസ്‌വേഡ് ആവർത്തിക്കുക"),

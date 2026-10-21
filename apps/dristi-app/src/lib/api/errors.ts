@@ -5,11 +5,19 @@
  * an `ApiError` and branch on `kind` (and `status` for HTTP failures). That keeps the
  * backend's error format in one file: if it changes, this file changes, screens do not.
  *
- * DRF reports errors in two shapes, and both arrive here:
- *   { "detail": "Registration is not complete." }               — one message
- *   { "mobile_number": ["Enter a valid number."], "otp": [...] } — per-field messages
- * Nested serializers nest the second shape; it is flattened to dotted keys
- * ("address.pincode", "witnesses.1.name") so a form can look a field up directly.
+ * Two backend error formats arrive here, and both become the same `ApiError`:
+ *
+ * 1. The standard shape (dristi-be spec 0000 §9, on the backend's `main` from Oct 2026):
+ *      { "errors": [ { "code": "E01001", "message": "Invalid or expired code." },
+ *                    { "code": "E00002", "message": "This field is required.",
+ *                      "field": "profile.bar_registration_id" } ] }
+ *    `code` is a registered, never-reused identifier — the thing to branch on.
+ * 2. DRF's default, which older deployments still send:
+ *      { "detail": "Registration is not complete." }
+ *      { "mobile_number": ["Enter a valid number."], "profile": { "x": ["…"] } }
+ *
+ * Field errors from either are flattened to dotted keys ("profile.bar_registration_id",
+ * "witnesses.1.name") so a form looks a field up the same way whichever format came.
  */
 
 /**
@@ -32,6 +40,7 @@ type ApiErrorInit = {
   status?: number;
   message: string;
   code?: string | null;
+  codes?: readonly string[];
   fieldErrors?: FieldErrors;
   retryAfterSeconds?: number | null;
   body?: unknown;
@@ -45,6 +54,9 @@ export class ApiError extends Error {
   readonly status: number;
   /** Machine-readable code when the server sent one (our proxy always does). */
   readonly code: string | null;
+  /** Every registered error code in the response (standard shape only), e.g.
+   *  `["E01013"]`. Branch on these rather than on messages, which may change. */
+  readonly codes: readonly string[];
   readonly fieldErrors: FieldErrors;
   /** From `Retry-After` (e.g. the OTP resend cooldown, HTTP 429). */
   readonly retryAfterSeconds: number | null;
@@ -56,9 +68,15 @@ export class ApiError extends Error {
     this.kind = init.kind;
     this.status = init.status ?? 0;
     this.code = init.code ?? null;
+    this.codes = init.codes ?? (init.code ? [init.code] : []);
     this.fieldErrors = init.fieldErrors ?? {};
     this.retryAfterSeconds = init.retryAfterSeconds ?? null;
     this.body = init.body;
+  }
+
+  /** True when the response carried this registered error code. */
+  hasCode(code: string): boolean {
+    return this.codes.includes(code);
   }
 
   /** The first message for a field, or undefined. */
@@ -104,14 +122,44 @@ function collectFieldErrors(value: unknown, path: string, out: FieldErrors): voi
  * skipped. The message prefers `detail`, then the first non-field error, then a generic
  * sentence — never a raw status line.
  */
-export function parseErrorBody(body: unknown): {
+type ParsedErrorBody = {
   message: string;
   code: string | null;
+  codes: string[];
   fieldErrors: FieldErrors;
-} {
-  if (!isRecord(body)) {
-    return { message: GENERIC_HTTP_MESSAGE, code: null, fieldErrors: {} };
+};
+
+/** `documents[0].file` → `documents.0.file`, matching the flattened DRF shape. */
+function dottedField(field: string): string {
+  return field.replace(/\[(\d+)\]/g, ".$1");
+}
+
+/** The standard shape: `{ errors: [{ code, message, field? }] }`. */
+function parseStandardErrors(items: unknown[]): ParsedErrorBody {
+  const codes: string[] = [];
+  const fieldErrors: FieldErrors = {};
+  let general: string | undefined;
+  for (const item of items) {
+    if (!isRecord(item)) continue;
+    const message = typeof item.message === "string" ? item.message : "";
+    if (typeof item.code === "string") codes.push(item.code);
+    if (typeof item.field === "string" && item.field) {
+      if (message) (fieldErrors[dottedField(item.field)] ??= []).push(message);
+    } else if (message && general === undefined) {
+      general = message;
+    }
   }
+  // A request-level message reads best; failing that, the first field's.
+  const message =
+    general ?? Object.values(fieldErrors)[0]?.[0] ?? GENERIC_HTTP_MESSAGE;
+  return { message, code: codes[0] ?? null, codes, fieldErrors };
+}
+
+export function parseErrorBody(body: unknown): ParsedErrorBody {
+  if (!isRecord(body)) {
+    return { message: GENERIC_HTTP_MESSAGE, code: null, codes: [], fieldErrors: {} };
+  }
+  if (Array.isArray(body.errors)) return parseStandardErrors(body.errors);
 
   const { detail, code } = body;
   const fieldErrors: FieldErrors = {};
@@ -126,7 +174,8 @@ export function parseErrorBody(body: unknown): {
     fieldErrors[NON_FIELD_ERRORS]?.[0] ||
     GENERIC_HTTP_MESSAGE;
 
-  return { message, code: typeof code === "string" ? code : null, fieldErrors };
+  const single = typeof code === "string" ? code : null;
+  return { message, code: single, codes: single ? [single] : [], fieldErrors };
 }
 
 /** `Retry-After` as seconds: either delta-seconds or an HTTP date. */

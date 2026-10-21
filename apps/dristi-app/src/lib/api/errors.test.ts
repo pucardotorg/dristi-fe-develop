@@ -12,6 +12,7 @@ describe("parseErrorBody", () => {
     assert.deepEqual(parseErrorBody({ detail: "Registration is not complete.", meta: META }), {
       message: "Registration is not complete.",
       code: null,
+      codes: [],
       fieldErrors: {},
     });
   });
@@ -44,6 +45,46 @@ describe("parseErrorBody", () => {
   });
 });
 
+describe("parseErrorBody — the standard errors[] shape", () => {
+  it("prefers the request-level message and keeps every code", () => {
+    const parsed = parseErrorBody({
+      errors: [
+        { code: "E01003", message: "Invalid credentials." },
+        { code: "E00002", message: "This field is required.", field: "mobile_number" },
+      ],
+      meta: META,
+    });
+    assert.equal(parsed.message, "Invalid credentials.");
+    assert.equal(parsed.code, "E01003");
+    assert.deepEqual(parsed.codes, ["E01003", "E00002"]);
+    assert.deepEqual(parsed.fieldErrors, { mobile_number: ["This field is required."] });
+  });
+
+  it("maps dotted and indexed field paths to the flattened keys", () => {
+    const parsed = parseErrorBody({
+      errors: [
+        { code: "E00002", message: "This field is required.", field: "profile.bar_registration_id" },
+        { code: "E00001", message: "Unsupported type.", field: "documents[0].file" },
+        { code: "E01011", message: "Too short.", field: "password" },
+        { code: "E01011", message: "Too common.", field: "password" },
+      ],
+    });
+    assert.deepEqual(parsed.fieldErrors, {
+      "profile.bar_registration_id": ["This field is required."],
+      "documents.0.file": ["Unsupported type."],
+      password: ["Too short.", "Too common."],
+    });
+    // No request-level message: the first field's message stands in.
+    assert.equal(parsed.message, "This field is required.");
+  });
+
+  it("survives malformed items", () => {
+    const parsed = parseErrorBody({ errors: [null, "x", { message: 3 }] });
+    assert.equal(parsed.message, "Something went wrong. Please try again.");
+    assert.deepEqual(parsed.codes, []);
+  });
+});
+
 describe("ApiError", () => {
   it("exposes the first message for a field", () => {
     const error = new ApiError({
@@ -54,6 +95,11 @@ describe("ApiError", () => {
     });
     assert.equal(error.fieldError("otp"), "Invalid OTP.");
     assert.equal(error.fieldError("missing"), undefined);
+    assert.equal(error.hasCode("E01013"), false);
+    assert.equal(
+      new ApiError({ kind: "http", status: 403, message: "x", codes: ["E01013"] }).hasCode("E01013"),
+      true,
+    );
     assert.equal(error.name, "ApiError");
     assert.ok(error instanceof Error);
   });

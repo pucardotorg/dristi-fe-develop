@@ -23,10 +23,17 @@ export { isIndianMobile } from "./mobile";
 export type { AuthService } from "./service";
 export type {
   AccountState,
+  ApprovalStatus,
+  ApprovedRole,
   BackendRole,
+  CurrentAccount,
   Credentials,
   OtpPurpose,
   RegistrationDetails,
+  RegistrationOutcome,
   RegistrationRole,
   RegistrationStatus,
+  RejectedField,
+  RejectedRegistration,
+  ResubmissionDetails,
 } from "./types";

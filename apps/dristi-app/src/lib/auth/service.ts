@@ -9,10 +9,14 @@
 
 import type {
   AccountState,
+  CurrentAccount,
   Credentials,
   OtpPurpose,
   RegistrationDetails,
+  RegistrationOutcome,
   RegistrationRole,
+  RejectedRegistration,
+  ResubmissionDetails,
 } from "./types";
 
 export interface AuthService {
@@ -28,11 +32,29 @@ export interface AuthService {
   /** Sign in with a one-time code or a password. */
   signIn(credentials: Credentials): Promise<AccountState>;
 
-  /** Finish registration for the verified number in the current session. */
+  /**
+   * The signed-in account's role and name. Resolves `null` — never rejects — when it
+   * cannot say (the endpoint is not deployed yet, the server is unreachable), so a
+   * caller can always fall back to what sign-in returned.
+   */
+  getCurrentAccount(): Promise<CurrentAccount | null>;
+
+  /**
+   * Finish registration for the verified number in the current session. Advocates and
+   * clerks come back `awaitingApproval`, already signed out.
+   */
   completeRegistration(
     role: RegistrationRole,
     details: RegistrationDetails,
-  ): Promise<AccountState>;
+  ): Promise<RegistrationOutcome>;
+
+  /** The signed-in account's rejected registration, to pre-fill the correction. */
+  getRejectedRegistration(): Promise<RejectedRegistration>;
+
+  /** Send the corrected registration back for approval. Ends the session. */
+  resubmitRegistration(
+    details: ResubmissionDetails,
+  ): Promise<{ applicationNumber: string | null }>;
 
   /** End the session. Safe to call when already signed out. */
   signOut(): Promise<void>;

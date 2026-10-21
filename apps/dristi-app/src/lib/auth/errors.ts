@@ -19,10 +19,19 @@ export type AuthErrorCode =
   /** Sign-in failed. Deliberately vague: the backend will not say whether the number
    *  exists, so nobody can probe which numbers are registered. */
   | "invalid-credentials"
+  /** An advocate or clerk whose registration the court has not yet approved. The
+   *  backend gives such an account no session. */
+  | "approval-pending"
+  /** There is no rejected registration to load or resubmit (it was approved, or is
+   *  pending again). */
+  | "nothing-to-resubmit"
   /** A code went out moments ago; `retryAfterSeconds` says when another may. */
   | "resend-too-soon"
   /** The verified session is gone (expired, or signed out in another tab). */
   | "session-expired"
+  /** The upload was too large for the server (or the web server in front of it) to
+   *  accept — even when it is within the app's own 10 MB limit. */
+  | "document-too-large"
   /** The backend refused some submitted fields; see `fieldErrors`. */
   | "invalid-details"
   /** This build cannot complete that request yet (e.g. a role not integrated). */

@@ -15,23 +15,38 @@ numbers at registration — so the screens behave identically in either mode.
 ## Flows (dristi-be spec 0005)
 
 ```
-Registration (litigant)
+Registration — every role
   role, name ............................ kept in the browser, no call
   contact: Send code ..................... POST /auth/otp/request {purpose: "register"}
   contact: Verify ........................ POST /users       → creates/resumes the account, session cookie
-  password, terms ........................ kept in the browser
-  terms: Create account .................. POST /litigants   {name, email?, password, terms_accepted}
+  password, (verification), terms ........ kept in the browser
+  terms: Create account
+    litigant ............................. POST /litigants   JSON {name, email?, password, terms_accepted}
+    advocate ............................. POST /advocates   multipart: + profile.bar_registration_id, bar_id_document
+    clerk ................................ POST /clerks      JSON {…, profile: {clerk_registration_number}},
+                                                             or multipart with bar_id_document
+  advocate / clerk ....................... backend ends the session → awaiting approval
 
 Sign-in
   number ................................. format check only (the backend never reveals
                                            whether a number has an account)
-  credential: password ................... POST /sessions {mobile_number, password}
-  credential: OTP ........................ POST /auth/otp/request {purpose: "login"},
-                                           then POST /sessions {mobile_number, otp}
+  credential ............................. POST /sessions {mobile_number, password | otp}
+                                           (OTP: POST /auth/otp/request {purpose: "login"} first)
+  403 / E01013 ........................... awaiting approval (no session)
   next = "profile" ....................... registration resumes with the number verified
+  next = "resubmit" ...................... GET /registrations/current → correction round →
+                                           POST /registrations/current/resubmit → session ends →
+                                           awaiting approval
+  next = "terms" ......................... (backend PR #135) re-accept screen, to be built;
+                                           until then signs in as normal
+  next = null ............................ GET /users/me → role and name → that role's home
+                                           (falls back to the sign-in answer until PR #135)
 ```
 
 Codes are purpose-bound: a registration code cannot sign in, and the other way round.
+
+Application numbers are shown only when the backend sends a readable `application_number`
+(owner, Oct 19). The UUID `application_id` it sends today is never displayed.
 
 ## Errors
 
@@ -45,8 +60,11 @@ is reported as `unavailable` with a console hint, not as an expired session.
 
 | Gap | Today | Needs |
 | --- | --- | --- |
-| Power of attorney, advocate, clerk registration | `not-supported` in `api` mode; sandbox completes them | Backend: a POA role on `/litigants` (or its own endpoint); bar-ID document upload + approval flow for advocates/clerks |
-| Role and name after sign-in | `POST /sessions` returns neither, so every backend sign-in opens the litigant home and the shell shows the number | Backend: `role` and `name` in the sessions response, or `GET` of the current account |
-| Restoring a session after reload | The shell trusts what sign-in stored in `localStorage` | Same `GET` of the current account; then route guards |
+| Power of attorney registration | `not-supported` in `api` mode; sandbox completes it | Backend: a way to record the POA role (`/litigants` stores LITIGANT) |
+| Role and name after sign-in | Read from `GET /users/me/` — not deployed yet, so an approved advocate still opens the litigant home | Backend PR #135 deployed |
+| Re-accepting updated terms (`next: "terms"`) | Signs in as normal | Backend PR #135; then a re-accept screen (`POST /users/me/terms/`) |
+| Forgot password | The link does nothing | Backend PR #135 (`auth/password-reset/…`) |
+| Readable application number | Not shown | Backend: `application_number` in `/advocates`, `/clerks`, `/registrations/current` and resubmit responses |
+| Restoring a session after reload | The shell trusts what sign-in stored in `localStorage` | A `GET` of the current account; then route guards |
 | Sign-out | `signOut()` exists; no screen offers it yet | A sign-out control in the shell |
-| Rejected advocate registration | Demo numbers in the sandbox only (`lib/registration/rejection.ts`) | Backend `registrations/current` (on a feature branch) |
+| Court-staff approval | Not integrated (owner, Oct 19: later) | Court-staff sign-in; `/dristi-requests/approvals/` |

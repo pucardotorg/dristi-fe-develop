@@ -1,15 +1,24 @@
 /**
  * The auth seam against the DRISTI backend (dristi-be spec 0005).
  *
- *   requestOtp            POST /auth/otp/request   { mobile_number, purpose }
- *   verifyRegistrationOtp POST /users              { mobile_number, otp }      → session
- *   signIn                POST /sessions           { mobile_number, otp | password } → session
- *   completeRegistration  POST /litigants          { name, email?, password, terms_accepted }
- *   signOut               DELETE /sessions
+ *   requestOtp              POST /auth/otp/request   { mobile_number, purpose }
+ *   verifyRegistrationOtp   POST /users              { mobile_number, otp }          → session
+ *   signIn                  POST /sessions           { mobile_number, otp | password } → session
+ *   getCurrentAccount       GET  /users/me           role, name, terms (backend PR #135)
+ *   completeRegistration    POST /litigants          JSON
+ *                           POST /advocates          multipart (bar ID document required)
+ *                           POST /clerks             JSON, or multipart with a document
+ *   getRejectedRegistration GET  /registrations/current
+ *   resubmitRegistration    POST /registrations/current/resubmit  JSON, or multipart
+ *   signOut                 DELETE /sessions
  *
  * The session is a cookie the browser keeps; the API client sends it, and the CSRF token
  * the backend sets at sign-in, on every later call. This file's other job is translating
- * the backend's statuses into `AuthError` codes, so no screen ever reads a status code.
+ * the backend's answers into `AuthError` codes, so no screen ever reads a status code.
+ *
+ * Advocates and clerks wait for court approval. The backend ends their session when they
+ * finish registering or resubmit, refuses them a session while pending (403, E01013),
+ * and gives a rejected one a session with `next: "resubmit"` so they can correct it.
  */
 
 import { api, isApiError, type ApiClient } from "@/lib/api";
@@ -19,32 +28,74 @@ import { toBackendMobile } from "./mobile";
 import type { AuthService } from "./service";
 import type {
   AccountState,
+  ApprovalStatus,
+  CurrentAccount,
+  ApprovedRole,
   BackendRole,
   Credentials,
   OtpPurpose,
   RegistrationDetails,
+  RegistrationOutcome,
   RegistrationRole,
   RegistrationStatus,
+  RejectedRegistration,
+  ResubmissionDetails,
 } from "./types";
 
+/** Registered backend error codes this file branches on (dristi-be `apps/users/errors.py`). */
+const E_APPROVAL_PENDING = "E01013";
+const E_NOTHING_TO_RESUBMIT = "E01012";
+
 /**
- * Which endpoint completes each role. Only the litigant flow is integrated: power of
- * attorney has no endpoint of its own on the backend yet (posting it to `litigants`
- * would record the wrong role), and advocate / clerk registration needs the bar-ID
- * document upload and court approval, which come later.
+ * Uploads of scanned ID documents can take a while on a slow connection — longer than
+ * the client's 30-second default. The proxy allows 60 s per hop.
+ */
+const UPLOAD_TIMEOUT_MS = 60_000;
+
+/**
+ * Which endpoint completes each role. Power of attorney is not wired yet: the flow
+ * diagram sends it to `litigants`, but that endpoint records every account as LITIGANT,
+ * so the role would be lost — waiting on the backend to confirm how to tell them apart.
  */
 const COMPLETION_PATH: Partial<Record<RegistrationRole, string>> = {
   litigant: "litigants",
+  advocate: "advocates",
+  advocateClerk: "clerks",
 };
+
+/** The profile field that carries each approved role's registration number. */
+const NUMBER_FIELD: Record<ApprovedRole, string> = {
+  advocate: "bar_registration_id",
+  advocateClerk: "clerk_registration_number",
+};
+
+const BACKEND_ROLES: readonly BackendRole[] = ["LITIGANT", "POWER_OF_ATTORNEY", "ADVOCATE", "CLERK"];
+const APPROVAL_STATUSES: readonly ApprovalStatus[] = ["PENDING", "ACCEPTED", "REJECTED"];
 
 type AccountStateBody = {
   user_id?: unknown;
   registration_status?: unknown;
+  approval_status?: unknown;
   next?: unknown;
   role?: unknown;
+  application_number?: unknown;
 };
 
-const BACKEND_ROLES: readonly BackendRole[] = ["LITIGANT", "POWER_OF_ATTORNEY", "ADVOCATE", "CLERK"];
+type RejectedRegistrationBody = {
+  role?: unknown;
+  officer_message?: unknown;
+  rejected_at?: unknown;
+  name?: unknown;
+  email?: unknown;
+  mobile_number?: unknown;
+  registration_number?: unknown;
+  document?: { file_name?: unknown } | null;
+  application_number?: unknown;
+};
+
+const text = (value: unknown): string => (typeof value === "string" ? value : "");
+const textOrNull = (value: unknown): string | null =>
+  typeof value === "string" && value ? value : null;
 
 function toAccountState(body: AccountStateBody, name: string | null = null): AccountState {
   if (typeof body?.user_id !== "string" || typeof body.registration_status !== "string") {
@@ -54,9 +105,17 @@ function toAccountState(body: AccountStateBody, name: string | null = null): Acc
     userId: body.user_id,
     registrationStatus: body.registration_status as RegistrationStatus,
     next: typeof body.next === "string" ? body.next : null,
+    approvalStatus: APPROVAL_STATUSES.includes(body.approval_status as ApprovalStatus)
+      ? (body.approval_status as ApprovalStatus)
+      : null,
     role: BACKEND_ROLES.includes(body.role as BackendRole) ? (body.role as BackendRole) : null,
     name,
   };
+}
+
+/** `"+919876543210"` → `"9876543210"`: the screens hold national digits. */
+function toNational(mobile: string): string {
+  return mobile.replace(/^\+91/, "");
 }
 
 /**
@@ -73,6 +132,13 @@ function translate(
     return new AuthError("unavailable", { cause: error });
   }
 
+  // Registered codes first: they are exact where a status is only a category.
+  if (error.hasCode(E_APPROVAL_PENDING)) {
+    return new AuthError("approval-pending", { cause: error });
+  }
+  if (error.hasCode(E_NOTHING_TO_RESUBMIT)) {
+    return new AuthError("nothing-to-resubmit", { cause: error });
+  }
   if (error.status === 400 && error.fieldErrors.mobile_number) {
     return new AuthError("invalid-mobile", { cause: error });
   }
@@ -92,6 +158,11 @@ function translate(
     );
     return new AuthError("unavailable", { message: error.message, cause: error });
   }
+  if (error.status === 413) {
+    // Too large for the server — or the web server in front of it, whose own HTML page
+    // carries no usable message, so the screen words this itself.
+    return new AuthError("document-too-large", { cause: error });
+  }
 
   const code = byStatus[error.status];
   if (!code) return new AuthError("unavailable", { cause: error });
@@ -99,6 +170,16 @@ function translate(
     fieldErrors: code === "invalid-details" ? error.fieldErrors : undefined,
     cause: error,
   });
+}
+
+/** A multipart body. Booleans go as "true"/"false", which DRF's form parser reads. */
+function formBody(fields: Record<string, string | undefined>, document?: File): FormData {
+  const form = new FormData();
+  for (const [key, value] of Object.entries(fields)) {
+    if (value !== undefined) form.append(key, value);
+  }
+  if (document) form.append("bar_id_document", document, document.name);
+  return form;
 }
 
 export class HttpAuthService implements AuthService {
@@ -136,14 +217,38 @@ export class HttpAuthService implements AuthService {
       });
       return toAccountState(body);
     } catch (error) {
-      throw translate(error, { 400: "invalid-credentials", 401: "invalid-credentials" });
+      // 403 here is an advocate or clerk still awaiting approval: older deployments
+      // send it without the E01013 code, so the status covers them too.
+      throw translate(error, {
+        400: "invalid-credentials",
+        401: "invalid-credentials",
+        403: "approval-pending",
+      });
+    }
+  }
+
+  async getCurrentAccount(): Promise<CurrentAccount | null> {
+    try {
+      const body = await this.client.get<{
+        role?: unknown;
+        name?: unknown;
+        has_current_terms?: unknown;
+      }>("users/me");
+      return {
+        role: BACKEND_ROLES.includes(body?.role as BackendRole) ? (body.role as BackendRole) : null,
+        name: textOrNull(body?.name),
+        hasCurrentTerms: body?.has_current_terms !== false,
+      };
+    } catch {
+      // Until PR #135 is deployed this is a 404; any failure means "cannot say".
+      return null;
     }
   }
 
   async completeRegistration(
     role: RegistrationRole,
     details: RegistrationDetails,
-  ): Promise<AccountState> {
+  ): Promise<RegistrationOutcome> {
     const path = COMPLETION_PATH[role];
     if (!path) {
       throw new AuthError("not-supported", {
@@ -151,21 +256,106 @@ export class HttpAuthService implements AuthService {
       });
     }
 
-    const email = details.email?.trim();
-    try {
-      const body = await this.client.post<AccountStateBody>(path, {
-        name: details.name.trim(),
+    const name = details.name.trim();
+    const email = details.email?.trim() || undefined;
+    const approved = role === "advocate" || role === "advocateClerk";
+    const number = details.registrationNumber?.trim() ?? "";
+
+    let body: unknown;
+    if (!approved) {
+      body = { name, ...(email ? { email } : {}), password: details.password, terms_accepted: true };
+    } else if (role === "advocate" || details.document) {
+      // Advocates are multipart only (the document is required); a clerk goes multipart
+      // when a document is attached. Nested profile fields become `profile.<field>` keys.
+      body = formBody(
+        {
+          name,
+          email,
+          password: details.password,
+          terms_accepted: "true",
+          [`profile.${NUMBER_FIELD[role]}`]: number,
+        },
+        details.document,
+      );
+    } else {
+      body = {
+        name,
         ...(email ? { email } : {}),
         password: details.password,
         terms_accepted: true,
+        profile: { [NUMBER_FIELD[role]]: number },
+      };
+    }
+
+    try {
+      const response = await this.client.post<AccountStateBody>(path, body, {
+        timeoutMs: body instanceof FormData ? UPLOAD_TIMEOUT_MS : undefined,
       });
-      return toAccountState(body, details.name.trim());
+      return {
+        ...toAccountState(response, name),
+        awaitingApproval: approved,
+        applicationNumber: textOrNull(response.application_number),
+      };
     } catch (error) {
       throw translate(error, {
         400: "invalid-details",
         401: "session-expired",
         403: "session-expired",
         409: "already-registered",
+      });
+    }
+  }
+
+  async getRejectedRegistration(): Promise<RejectedRegistration> {
+    let body: RejectedRegistrationBody;
+    try {
+      body = await this.client.get<RejectedRegistrationBody>("registrations/current");
+    } catch (error) {
+      throw translate(error, { 401: "session-expired", 403: "session-expired", 409: "nothing-to-resubmit" });
+    }
+
+    const role: ApprovedRole | null =
+      body?.role === "ADVOCATE" ? "advocate" : body?.role === "CLERK" ? "advocateClerk" : null;
+    if (!role) {
+      throw new AuthError("unavailable", { message: "Unexpected registration response." });
+    }
+    return {
+      role,
+      mobile: toNational(text(body.mobile_number)),
+      name: text(body.name),
+      email: text(body.email),
+      registrationNumber: text(body.registration_number),
+      documentName: textOrNull(body.document?.file_name),
+      officerMessage: text(body.officer_message),
+      rejectedAt: textOrNull(body.rejected_at),
+      applicationNumber: textOrNull(body.application_number),
+      flagged: [],
+    };
+  }
+
+  async resubmitRegistration(
+    details: ResubmissionDetails,
+  ): Promise<{ applicationNumber: string | null }> {
+    const name = details.name.trim();
+    const email = details.email?.trim() || undefined;
+    const registrationNumber = details.registrationNumber.trim();
+    const body = details.document
+      ? formBody({ name, email, registration_number: registrationNumber }, details.document)
+      : { name, ...(email ? { email } : {}), registration_number: registrationNumber };
+
+    try {
+      const response = await this.client.post<{ application_number?: unknown }>(
+        "registrations/current/resubmit",
+        body,
+        { timeoutMs: body instanceof FormData ? UPLOAD_TIMEOUT_MS : undefined },
+      );
+      return { applicationNumber: textOrNull(response?.application_number) };
+    } catch (error) {
+      throw translate(error, {
+        400: "invalid-details",
+        401: "session-expired",
+        403: "session-expired",
+        409: "nothing-to-resubmit",
       });
     }
   }

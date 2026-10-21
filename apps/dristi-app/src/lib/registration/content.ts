@@ -176,6 +176,17 @@ export const verificationUi = {
   chooseFile: t("Choose file", "ഫയൽ തിരഞ്ഞെടുക്കുക"),
   changeFile: t("Change file", "ഫയൽ മാറ്റുക"),
   removeFile: t("Remove", "നീക്കം ചെയ്യുക"),
+  /* Integration, Oct 19 — Malayalam drafts, confirm with a translator. A picked file
+     the backend would refuse, said before anything is sent. */
+  fileRejected: t(
+    "Choose a JPG, JPEG, PNG or PDF file of up to 10 MB.",
+    "പരമാവധി 10 MB വലുപ്പമുള്ള JPG, JPEG, PNG അല്ലെങ്കിൽ PDF ഫയൽ തിരഞ്ഞെടുക്കുക.",
+  ),
+  /** The server refused the upload as too large (413). */
+  fileTooLargeForServer: t(
+    "This file is too large to send. Choose a smaller scan or photo of the ID.",
+    "ഈ ഫയൽ അയയ്ക്കാൻ വളരെ വലുതാണ്. ID-യുടെ ചെറിയ സ്കാനോ ഫോട്ടോയോ തിരഞ്ഞെടുക്കുക.",
+  ),
 } as const;
 
 /**
@@ -218,6 +229,24 @@ export const rejectionUi = {
     "Your corrected registration (ID: {id}) is in progress. You will get an SMS when it is done.",
     "തിരുത്തിയ രജിസ്ട്രേഷൻ (ID: {id}) നടന്നുകൊണ്ടിരിക്കുന്നു. പൂർത്തിയാകുമ്പോൾ SMS ലഭിക്കും.",
   ),
+  /* Integration, Oct 19 — Malayalam drafts, confirm with a translator.
+     The application number is shown only when the backend sends a readable one
+     (owner, Oct 19); until then these versions stand in for the {id} ones. */
+  resubmittedBodyNoNumber: t(
+    "Your corrected registration is in progress. You will get an SMS when it is done.",
+    "തിരുത്തിയ രജിസ്ട്രേഷൻ നടന്നുകൊണ്ടിരിക്കുന്നു. പൂർത്തിയാകുമ്പോൾ SMS ലഭിക്കും.",
+  ),
+  messageMetaNoNumber: t(
+    "Message from the verifying officer",
+    "പരിശോധിക്കുന്ന ഉദ്യോഗസ്ഥന്റെ സന്ദേശം",
+  ),
+  /** Under the upload on the correction step: what was sent before. `{file}` is its name. */
+  lastUploaded: t("You sent {file} last time.", "കഴിഞ്ഞ തവണ {file} അയച്ചു."),
+  /** The correction can no longer be sent: the session ended, or it is not rejected now. */
+  signInAgain: t(
+    "This correction can't be sent right now. Go back and sign in again to see where your registration stands.",
+    "ഈ തിരുത്തൽ ഇപ്പോൾ അയയ്ക്കാനാവില്ല. നിങ്ങളുടെ രജിസ്ട്രേഷന്റെ നില അറിയാൻ സൈൻ ഇൻ പേജിലേക്ക് മടങ്ങി വീണ്ടും പ്രവേശിക്കുക.",
+  ),
 } as const;
 
 export const termsStep = {
@@ -248,10 +277,18 @@ export const approvalStep = {
   /** `{id}` is the application number, shown so it can be quoted at the court. */
   body: t("Your registration (ID: {id}) is in progress. You will get an SMS when it is done.", "നിങ്ങളുടെ രജിസ്ട്രേഷൻ (ID: {id}) നടന്നുകൊണ്ടിരിക്കുന്നു. പൂർത്തിയാകുമ്പോൾ SMS ലഭിക്കും."),
   action: t("View my application", "എന്റെ അപേക്ഷ കാണുക"),
+  /* Integration, Oct 19 — Malayalam draft. Used until the backend sends a readable
+     application number (owner, Oct 19); also what a pending account sees at sign-in. */
+  bodyNoNumber: t(
+    "Your registration is in progress. You will get an SMS when it is done.",
+    "നിങ്ങളുടെ രജിസ്ട്രേഷൻ നടന്നുകൊണ്ടിരിക്കുന്നു. പൂർത്തിയാകുമ്പോൾ SMS ലഭിക്കും.",
+  ),
 } as const;
 
 export const applicationView = {
   title: t("Application number {id}", "അപേക്ഷാ നമ്പർ {id}"),
+  /** Until the backend sends a readable number (integration, Oct 19). Malayalam draft. */
+  titleNoNumber: t("Your application", "നിങ്ങളുടെ അപേക്ഷ"),
   name: t("Name", "പേര്"),
   mobile: t("Mobile number", "മൊബൈൽ നമ്പർ"),
   email: t("Email address", "ഇമെയിൽ വിലാസം"),

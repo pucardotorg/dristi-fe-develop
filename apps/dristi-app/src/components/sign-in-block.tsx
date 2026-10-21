@@ -37,15 +37,16 @@ import {
 } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import { AwaitingApproval } from "@/components/registration/awaiting-approval";
 import {
   getAuthService,
   isAuthError,
   isIndianMobile,
   type BackendRole,
+  type RejectedRegistration,
 } from "@/lib/auth";
-import { AUTH_SOURCE } from "@/lib/config";
 import { LOCALES, pick, ui, type Locale } from "@/lib/onboarding/content";
-import { registrationUi } from "@/lib/registration/content";
+import { approvalStep, registrationUi } from "@/lib/registration/content";
 import { cn } from "@/lib/utils";
 import {
   brand,
@@ -59,10 +60,6 @@ import {
   type Method,
   type Role,
 } from "@/lib/sign-in/content";
-import {
-  rejectedRegistrationFor,
-  type RejectedRegistration,
-} from "@/lib/registration/rejection";
 
 /**
  * The page under the onboarding modal.
@@ -218,6 +215,11 @@ export function SignInBlock({
      again, and this is where signing in lands them. */
   const [resubmission, setResubmission] =
     React.useState<RejectedRegistration | null>(null);
+  /* An advocate or clerk the court has not approved yet: the backend refuses them a
+     session, and they see the same awaiting-approval screen registration ended on. */
+  const [awaitingApproval, setAwaitingApproval] = React.useState(false);
+  /** Any screen that replaces the sign-in form — they share the "Back to sign in" header. */
+  const awayFromSignIn = registrationOpen || resubmission !== null || awaitingApproval;
   /* number → credential. The number is settled before a credential is asked for. On
      the OTP path the code is asked for on the credential step itself, in a panel that
      opens under the method toggle once the code is sent — the same shape as the
@@ -337,32 +339,51 @@ export function SignInBlock({
     if (method === "password" && !password) return;
     if (method === "otp" && code.length !== OTP_LENGTH) return;
 
-    /* A rejected advocate registration lands in its correction round once the person
-       has proved the number. Demo data only: the backend's rejection flow is not
-       integrated yet, so it runs in the sandbox alone. */
-    const rejected = AUTH_SOURCE === "sandbox" ? rejectedRegistrationFor(mobile) : null;
-    if (rejected) {
-      setResubmission(rejected);
-      return;
-    }
-
     setPending(true);
     setServerError(null);
     try {
       const account = await auth.signIn(
         method === "password" ? { mobile, password } : { mobile, otp: code },
       );
-      if (account.next !== null) {
+      /* A rejected advocate or clerk registration: the SMS told them to sign in again,
+         and this is where that lands them — the correction round, pre-filled. If it
+         is no longer rejected by now, they simply carry on signed in. */
+      if (account.next === "resubmit") {
+        try {
+          setResubmission(await auth.getRejectedRegistration());
+          return;
+        } catch (error) {
+          if (!isAuthError(error) || error.code !== "nothing-to-resubmit") throw error;
+        }
+      } else if (account.next === "profile") {
+        // The account was created but never finished: registration resumes.
         setResumeMobile(mobile);
         setRegistrationOpen(true);
         return;
+      } else if (account.next !== null) {
+        /* "terms" (re-accept updated terms, backend PR #135) gets its own screen when
+           that PR is deployed (owner, Oct 19). Until then this and any value not known
+           here carry on as a normal sign-in — never into the registration wizard,
+           which would refuse an account that is already complete. */
+        console.warn(`[auth] Sign-in returned next: "${account.next}", which has no screen yet.`);
       }
       if (onSignedIn) {
-        onSignedIn({ role: portalRole(account.role), name: account.name, mobile });
+        /* Sign-in does not say who the account is; /users/me does (backend PR #135).
+           Until that is deployed it answers nothing, and the sign-in's own answer stands. */
+        const current = await auth.getCurrentAccount();
+        onSignedIn({
+          role: portalRole(current?.role ?? account.role),
+          name: current?.name ?? account.name,
+          mobile,
+        });
         return;
       }
       setAccepted(true);
     } catch (error) {
+      if (isAuthError(error) && error.code === "approval-pending") {
+        setAwaitingApproval(true);
+        return;
+      }
       setServerError(
         isAuthError(error) && error.code === "invalid-credentials" ? "noMatch" : "unavailable",
       );
@@ -421,7 +442,7 @@ export function SignInBlock({
             sacrificing the 40px touch-target floor. The court subline already drops
             below `sm`, leaving the full lockup in the desktop canvas. */}
         <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between gap-4 border-b border-hairline bg-background px-6 py-5 lg:absolute lg:inset-x-0 lg:top-0 lg:border-b-0 lg:px-12 lg:pt-10 lg:pb-0">
-          {registrationOpen || resubmission ? (
+          {awayFromSignIn ? (
             <Button
               type="button"
               variant="ghost"
@@ -431,6 +452,7 @@ export function SignInBlock({
                 setRegistrationOpen(false);
                 setResumeMobile(null);
                 setResubmission(null);
+                setAwaitingApproval(false);
               }}
             >
               <ArrowLeftIcon data-icon="inline-start" aria-hidden />
@@ -472,12 +494,17 @@ export function SignInBlock({
         <main
           className={cn(
             "flex flex-1 items-start justify-center overflow-y-auto px-6 pb-10 lg:min-h-0 lg:px-12",
-            registrationOpen || resubmission
+            awayFromSignIn
               ? "pt-4 md:pt-8 lg:pt-32 lg:pb-12"
               : "pt-8 lg:items-center lg:py-12",
           )}
         >
-          {resubmission ? (
+          {awaitingApproval ? (
+            <AwaitingApproval
+              title={pick(approvalStep.title, locale)}
+              body={pick(approvalStep.bodyNoNumber, locale)}
+            />
+          ) : resubmission ? (
             <ResubmissionFlow locale={locale} rejection={resubmission} />
           ) : registrationOpen ? (
             <RegistrationFlow

@@ -3,23 +3,25 @@
 /**
  * The rejected registration's correction round (PM, Sept 3).
  *
- * A rejected registrant is told by SMS to sign in again; the sign-in screen
- * recognises the number and lands them here — the registration steps minus
- * the role question (that answer stands), everything pre-filled with what
- * they submitted, and the officer's ONE general message pinned on every
- * step. The message is the whole feedback: fields carry no marks of their
- * own (owner, Sept 18), only the stepper tints the steps to correct.
- * Resubmitting sends the same application (same ID) back for approval,
- * ending on the same awaiting-approval screen the first submission used.
+ * A rejected registrant is told by SMS to sign in again; sign-in sees `next: "resubmit"`,
+ * loads the registration (`GET /registrations/current`) and lands them here — the
+ * registration steps minus the role question (that answer stands), everything pre-filled
+ * with what they submitted, and the officer's ONE general message pinned on every step.
+ * The message is the whole feedback: fields carry no marks of their own (owner, Sept 18);
+ * the stepper tints the steps to correct when marks exist (the backend sends none yet —
+ * only the sandbox demo has them). Resubmitting (`POST /registrations/current/resubmit`)
+ * sends the same application back for approval and ends the session, so the flow ends on
+ * the same awaiting-approval screen the first submission used.
  *
- * The mobile number is not editable: it was proven by OTP the first time
- * and it is the number they just signed in with — a registration cannot
- * move to a number nobody has verified.
+ * The mobile number is not editable: it was proven by OTP the first time and it is the
+ * number they just signed in with — a registration cannot move to a number nobody has
+ * verified. Role, password and terms stand too.
  */
 
 import * as React from "react";
-import { ArrowLeftIcon, ClockIcon } from "lucide-react";
+import { ArrowLeftIcon, CircleAlertIcon } from "lucide-react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   DescriptionDetails,
@@ -41,8 +43,10 @@ import {
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
+import { Spinner } from "@/components/ui/spinner";
 import { Stepper, StepperItem } from "@/components/ui/stepper";
 import { UploadedDocField } from "@/components/cases/uploaded-doc-field";
+import { getAuthService, isAuthError, type RejectedRegistration } from "@/lib/auth";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import {
   applicationView,
@@ -55,13 +59,19 @@ import {
   verificationSteps,
   verificationUi,
 } from "@/lib/registration/content";
-import type { RejectedRegistration } from "@/lib/registration/rejection";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 
+import { AwaitingApproval } from "./awaiting-approval";
+
 type Step = "name" | "contact" | "verification" | "success" | "application";
 type StepKey = (typeof STEP_KEYS)[number];
+/** The backend's own per-field messages from the last refused resubmission. */
+type ServerFieldErrors = Partial<Record<"name" | "email" | "regNumber" | "idFile", string>>;
+
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Longest registration number the backend stores (bar ID / clerk number). */
+const REGISTRATION_NUMBER_MAX = 64;
 
 const STEP_KEYS = ["name", "contact", "verification"] as const;
 
@@ -87,11 +97,11 @@ const CLAMP_THRESHOLD = 260;
  */
 function OfficerMessage({
   locale,
-  applicationId,
+  applicationNumber,
   message,
 }: {
   locale: Locale;
-  applicationId: string;
+  applicationNumber: string | null;
   message: string;
 }) {
   const [expanded, setExpanded] = React.useState(false);
@@ -99,7 +109,9 @@ function OfficerMessage({
   return (
     <div className="flex flex-col items-start gap-1.5 rounded-lg bg-surface-sunken p-4">
       <p className="text-caption font-semibold text-warning-ink">
-        {pick(rejectionUi.messageMeta, locale).replace("{id}", applicationId)}
+        {applicationNumber
+          ? pick(rejectionUi.messageMeta, locale).replace("{id}", applicationNumber)
+          : pick(rejectionUi.messageMetaNoNumber, locale)}
       </p>
       <p
         className={cn(
@@ -132,51 +144,110 @@ export function ResubmissionFlow({
   rejection: RejectedRegistration;
 }) {
   const [step, setStep] = React.useState<Step>("name");
-  const [fullName, setFullName] = React.useState(rejection.fullName);
+  const [fullName, setFullName] = React.useState(rejection.name);
   const [email, setEmail] = React.useState(rejection.email);
-  const [regNumber, setRegNumber] = React.useState(rejection.regNumber);
+  const [regNumber, setRegNumber] = React.useState(rejection.registrationNumber);
   const [idFile, setIdFile] = React.useState<File | null>(null);
   const [touched, setTouched] = React.useState(false);
+
+  // The resubmission round trip. Errors are copy keys or the backend's field messages.
+  const [pending, setPending] = React.useState(false);
+  const [serverErrors, setServerErrors] = React.useState<ServerFieldErrors>({});
+  /* What is wrong with the document, as a copy key (a language switch re-renders it):
+     a picked file the field refused, or one the server refused as too large. */
+  const [fileProblem, setFileProblem] = React.useState<"rejected" | "tooLarge" | null>(null);
+  const [submitError, setSubmitError] = React.useState<"unavailable" | "signInAgain" | null>(
+    null
+  );
+  /* The number to quote, once resubmitted — only a readable one the backend sends
+     (owner, Oct 19). */
+  const [applicationNumber, setApplicationNumber] = React.useState(
+    rejection.applicationNumber
+  );
 
   /** The steps the officer's marks land on — they wear the stepper tint. */
   const flaggedSteps = new Set(
     rejection.flagged.map((field) => FIELD_STEP[field])
   );
-  const verification = verificationSteps.advocate;
+  const verification = verificationSteps[rejection.role];
   const stepIndex = Math.max(0, STEP_KEYS.indexOf(step as StepKey));
 
   /** The officer's ONE message, on every step — it is the universal
       feedback (owner, Sept 18), still a quiet well rather than a destructive
-      banner (owner, Sept 3: too alarming). */
-  const officerMessage = (
+      banner (owner, Sept 3: too alarming). An empty message shows nothing. */
+  const officerMessage = rejection.officerMessage.trim() ? (
     <OfficerMessage
       locale={locale}
-      applicationId={rejection.applicationId}
+      applicationNumber={applicationNumber}
       message={rejection.officerMessage}
     />
-  );
+  ) : null;
+
+  async function resubmit() {
+    if (pending) return;
+    setPending(true);
+    setSubmitError(null);
+    try {
+      const result = await getAuthService().resubmitRegistration({
+        name: fullName,
+        email,
+        registrationNumber: regNumber,
+        document: idFile ?? undefined,
+      });
+      if (result.applicationNumber) setApplicationNumber(result.applicationNumber);
+      setStep("success");
+    } catch (error) {
+      if (!isAuthError(error)) {
+        setSubmitError("unavailable");
+        return;
+      }
+      switch (error.code) {
+        case "invalid-details": {
+          const first = (key: string) => error.fieldErrors[key]?.[0];
+          setServerErrors({
+            name: first("name"),
+            email: first("email"),
+            regNumber: first("registration_number"),
+            idFile: first("bar_id_document"),
+          });
+          if (first("name")) setStep("name");
+          else if (first("email")) setStep("contact");
+          else if (!first("registration_number") && !first("bar_id_document")) {
+            setSubmitError("unavailable");
+          }
+          return;
+        }
+        case "document-too-large":
+          setFileProblem("tooLarge");
+          return;
+        // The session ended, or the registration is no longer the rejected one (it
+        // was resubmitted elsewhere, or decided): only signing in again can say.
+        case "session-expired":
+        case "nothing-to-resubmit":
+          setSubmitError("signInAgain");
+          return;
+        default:
+          setSubmitError("unavailable");
+      }
+    } finally {
+      setPending(false);
+    }
+  }
 
   if (step === "success") {
     return (
-      <div className="mx-auto flex min-h-[60vh] w-full max-w-lg flex-col items-center justify-center gap-6 text-center">
-        <span className="flex size-14 items-center justify-center rounded-full bg-warning-muted text-warning-muted-foreground">
-          <ClockIcon className="size-7" aria-hidden />
-        </span>
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-title text-balance font-semibold">
-            {pick(rejectionUi.resubmittedTitle, locale)}
-          </h1>
-          <p className="text-body text-pretty text-muted-foreground">
-            {pick(rejectionUi.resubmittedBody, locale).replace(
-              "{id}",
-              rejection.applicationId
-            )}
-          </p>
-        </div>
-        <Button size="lg" onClick={() => setStep("application")}>
-          {pick(approvalStep.action, locale)}
-        </Button>
-      </div>
+      <AwaitingApproval
+        title={pick(rejectionUi.resubmittedTitle, locale)}
+        body={
+          applicationNumber
+            ? pick(rejectionUi.resubmittedBody, locale).replace("{id}", applicationNumber)
+            : pick(rejectionUi.resubmittedBodyNoNumber, locale)
+        }
+        action={{
+          label: pick(approvalStep.action, locale),
+          onClick: () => setStep("application"),
+        }}
+      />
     );
   }
 
@@ -184,10 +255,9 @@ export function ResubmissionFlow({
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
         <h1 className="text-title text-balance text-center font-semibold">
-          {pick(applicationView.title, locale).replace(
-            "{id}",
-            rejection.applicationId
-          )}
+          {applicationNumber
+            ? pick(applicationView.title, locale).replace("{id}", applicationNumber)
+            : pick(applicationView.titleNoNumber, locale)}
         </h1>
         <DescriptionList className="rounded-lg bg-muted px-4">
           <DescriptionRow>
@@ -309,7 +379,7 @@ export function ResubmissionFlow({
               </p>
             </div>
             {officerMessage}
-            <Field data-invalid={touched && !fullName.trim()}>
+            <Field data-invalid={(touched && !fullName.trim()) || Boolean(serverErrors.name)}>
               <FieldLabel>
                 {pick(nameStep.fullName, locale)}{" "}
                 <span className="text-destructive">*</span>
@@ -321,6 +391,7 @@ export function ResubmissionFlow({
                 onChange={(event) => {
                   setFullName(event.target.value);
                   setTouched(false);
+                  setServerErrors((e) => ({ ...e, name: undefined }));
                 }}
               />
               <FieldDescription>
@@ -329,7 +400,7 @@ export function ResubmissionFlow({
               <FieldError>
                 {touched && !fullName.trim()
                   ? pick(nameStep.error, locale)
-                  : null}
+                  : serverErrors.name ?? null}
               </FieldError>
             </Field>
             <div className="flex justify-end">
@@ -378,7 +449,11 @@ export function ResubmissionFlow({
                 {pick(rejectionUi.mobileVerified, locale)}
               </FieldDescription>
             </Field>
-            <Field data-invalid={touched && Boolean(email) && !EMAIL.test(email)}>
+            <Field
+              data-invalid={
+                (touched && Boolean(email) && !EMAIL.test(email)) || Boolean(serverErrors.email)
+              }
+            >
               <FieldLabel>{pick(contactStep.email, locale)}</FieldLabel>
               <Input
                 type="email"
@@ -387,12 +462,13 @@ export function ResubmissionFlow({
                 onChange={(event) => {
                   setEmail(event.target.value);
                   setTouched(false);
+                  setServerErrors((e) => ({ ...e, email: undefined }));
                 }}
               />
               <FieldError>
                 {touched && email && !EMAIL.test(email)
                   ? pick(contactStep.emailError, locale)
-                  : null}
+                  : serverErrors.email ?? null}
               </FieldError>
             </Field>
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -418,12 +494,14 @@ export function ResubmissionFlow({
           <form
             className="flex flex-col gap-6"
             noValidate
+            aria-busy={pending}
             onSubmit={(event) => {
               event.preventDefault();
+              if (pending) return;
               setTouched(true);
               if (!regNumber.trim() || !idFile) return;
               setTouched(false);
-              setStep("success");
+              void resubmit();
             }}
           >
             <div className="flex flex-col items-center gap-2 text-center">
@@ -435,26 +513,32 @@ export function ResubmissionFlow({
               </p>
             </div>
             {officerMessage}
-            <Field data-invalid={touched && !regNumber.trim()}>
+            <Field
+              data-invalid={(touched && !regNumber.trim()) || Boolean(serverErrors.regNumber)}
+            >
               <FieldLabel>
                 {pick(verification.numberLabel, locale)}{" "}
                 <span className="text-destructive">*</span>
               </FieldLabel>
               <Input
                 value={regNumber}
+                maxLength={REGISTRATION_NUMBER_MAX}
                 placeholder={pick(verification.numberPlaceholder, locale)}
                 onChange={(event) => {
                   setRegNumber(event.target.value);
                   setTouched(false);
+                  setServerErrors((e) => ({ ...e, regNumber: undefined }));
                 }}
               />
               <FieldError>
                 {touched && !regNumber.trim()
                   ? pick(verification.numberError, locale)
-                  : null}
+                  : serverErrors.regNumber ?? null}
               </FieldError>
             </Field>
-            <Field data-invalid={touched && !idFile}>
+            <Field
+              data-invalid={(touched && !idFile) || fileProblem !== null || Boolean(serverErrors.idFile)}
+            >
               <FieldLabel>
                 {pick(verification.uploadLabel, locale)}{" "}
                 <span className="text-destructive">*</span>
@@ -466,7 +550,10 @@ export function ResubmissionFlow({
                 onFileChange={(file) => {
                   setIdFile(file);
                   setTouched(false);
+                  setFileProblem(null);
+                  setServerErrors((e) => ({ ...e, idFile: undefined }));
                 }}
+                onRejectFile={() => setFileProblem("rejected")}
                 copy={{
                   changeFile: pick(verificationUi.changeFile, locale),
                   remove: pick(verificationUi.removeFile, locale),
@@ -475,26 +562,62 @@ export function ResubmissionFlow({
                 }}
               />
               <FieldDescription>
+                {/* What went last time — they must send a fresh scan now. */}
+                {rejection.documentName
+                  ? `${pick(rejectionUi.lastUploaded, locale).replace("{file}", rejection.documentName)} `
+                  : null}
                 {pick(verification.uploadHint, locale)}{" "}
                 {pick(verificationUi.fileHelp, locale)}
               </FieldDescription>
               <FieldError>
-                {touched && !idFile ? pick(verification.uploadError, locale) : null}
+                {serverErrors.idFile ??
+                  (fileProblem
+                    ? pick(
+                        fileProblem === "tooLarge"
+                          ? verificationUi.fileTooLargeForServer
+                          : verificationUi.fileRejected,
+                        locale
+                      )
+                    : touched && !idFile
+                      ? pick(verification.uploadError, locale)
+                      : null)}
               </FieldError>
             </Field>
+            {submitError ? (
+              <Alert variant="destructive">
+                <CircleAlertIcon aria-hidden />
+                <AlertDescription>
+                  {pick(
+                    submitError === "signInAgain"
+                      ? rejectionUi.signInAgain
+                      : registrationUi.unavailable,
+                    locale
+                  )}
+                </AlertDescription>
+              </Alert>
+            ) : null}
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
               <Button
                 type="button"
                 variant="outline"
+                disabled={pending}
                 onClick={() => {
                   setTouched(false);
+                  setSubmitError(null);
                   setStep("contact");
                 }}
               >
                 <ArrowLeftIcon data-icon="inline-start" aria-hidden />
                 {pick(registrationUi.back, locale)}
               </Button>
-              <Button type="submit" className="sm:min-w-40">
+              {/* aria-disabled keeps focus here while the answer is awaited; the
+                  submit handler ignores repeat presses. */}
+              <Button
+                type="submit"
+                className="sm:min-w-40"
+                aria-disabled={pending || undefined}
+              >
+                {pending ? <Spinner data-icon="inline-start" aria-hidden /> : null}
                 {pick(rejectionUi.resubmit, locale)}
               </Button>
             </div>

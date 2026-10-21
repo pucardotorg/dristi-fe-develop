@@ -6,7 +6,6 @@ import {
   CheckCircle2Icon,
   CheckIcon,
   CircleAlertIcon,
-  ClockIcon,
   EyeIcon,
   EyeOffIcon,
 } from "lucide-react";
@@ -46,13 +45,14 @@ import { cn } from "@/lib/utils";
 
 import { MaskedOtp, OTP_LENGTH } from "./masked-otp";
 import { Identifier } from "@/components/chrome/identifier";
+import { AwaitingApproval } from "./awaiting-approval";
 
 type Step = "role" | "name" | "contact" | "password" | "verification" | "terms" | "success" | "application";
 type AccountRole = "litigant" | "advocate" | "advocateClerk" | "poa" | "";
 /** Which backend call is in flight, so only its button shows progress. */
 type Pending = "send" | "verify" | "submit" | null;
 /** The backend's own per-field messages from the last refused submission. */
-type ServerFieldErrors = Partial<Record<"name" | "email" | "password", string>>;
+type ServerFieldErrors = Partial<Record<"name" | "email" | "password" | "regNumber" | "idFile", string>>;
 
 /** What the finished registration hands to the caller. */
 export type RegistrationResult = {
@@ -70,10 +70,8 @@ const RESEND_SECONDS = 30;
 /** Which roles the court must approve before the account works. */
 const NEEDS_VERIFICATION = new Set<AccountRole>(["advocate", "advocateClerk"]);
 
-function applicationId(role: AccountRole) {
-  const serial = String(Math.floor(Math.random() * 900000) + 100000);
-  return `KL-${role === "advocateClerk" ? "CLERK" : "ADV"}-${serial}-${new Date().getFullYear()}`;
-}
+/** Longest registration number the backend stores (bar ID / clerk number). */
+const REGISTRATION_NUMBER_MAX = 64;
 
 function Heading({ title, body }: { title: string; body: string }) {
   return (
@@ -150,7 +148,13 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
   // Advocate / clerk verification.
   const [regNumber, setRegNumber] = React.useState("");
   const [idFile, setIdFile] = React.useState<File | null>(null);
-  const [appId, setAppId] = React.useState("");
+  /* What is wrong with the document, as a copy key so a language switch re-renders it:
+     a picked file the field refused (wrong type, over 10 MB), or one the server refused
+     as too large to accept. */
+  const [fileProblem, setFileProblem] = React.useState<"rejected" | "tooLarge" | null>(null);
+  /* A number the person can quote at the court. Only a readable one the backend sends;
+     never invented here (owner, Oct 19). Null until the backend provides it. */
+  const [applicationNumber, setApplicationNumber] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (resendIn <= 0) return;
@@ -236,7 +240,14 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
     setPending("submit");
     setSubmitError(null);
     try {
-      await auth.completeRegistration(role, { name: fullName, email, password });
+      const outcome = await auth.completeRegistration(role, {
+        name: fullName,
+        email,
+        password,
+        ...(needsVerification ? { registrationNumber: regNumber, document: idFile ?? undefined } : {}),
+      });
+      // Advocates and clerks are now signed out by the backend, awaiting approval.
+      setApplicationNumber(outcome.applicationNumber);
       finishLocally();
     } catch (error) {
       handleSubmitError(error);
@@ -246,7 +257,6 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
   }
 
   function finishLocally() {
-    if (NEEDS_VERIFICATION.has(role)) setAppId(applicationId(role));
     setStep("success");
   }
 
@@ -256,13 +266,26 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
       case "invalid-details": {
         const fields = authError.fieldErrors;
         const first = (key: string) => fields[key]?.[0];
-        setServerErrors({ name: first("name"), email: first("email"), password: first("password") });
+        const regNumberError =
+          first("profile.bar_registration_id") ?? first("profile.clerk_registration_number");
+        setServerErrors({
+          name: first("name"),
+          email: first("email"),
+          password: first("password"),
+          regNumber: regNumberError,
+          idFile: first("bar_id_document"),
+        });
         if (first("name")) setStep("name");
         else if (first("email")) setStep("contact");
         else if (first("password")) setStep("password");
+        else if (regNumberError || first("bar_id_document")) setStep("verification");
         else setSubmitError("unavailable");
         return;
       }
+      case "document-too-large":
+        setFileProblem("tooLarge");
+        setStep("verification");
+        return;
       case "session-expired":
         resetOtp();
         setContactError(registrationUi.sessionExpired);
@@ -283,13 +306,15 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
   if (step === "success") {
     if (needsVerification) {
       return (
-        <div className="mx-auto flex min-h-[60vh] w-full max-w-lg flex-col items-center justify-center gap-6 text-center">
-          <span className="flex size-14 items-center justify-center rounded-full bg-warning-muted text-warning-muted-foreground">
-            <ClockIcon className="size-7" aria-hidden />
-          </span>
-          <Heading title={pick(approvalStep.title, locale)} body={pick(approvalStep.body, locale).replace("{id}", appId)} />
-          <Button size="lg" onClick={() => setStep("application")}>{pick(approvalStep.action, locale)}</Button>
-        </div>
+        <AwaitingApproval
+          title={pick(approvalStep.title, locale)}
+          body={
+            applicationNumber
+              ? pick(approvalStep.body, locale).replace("{id}", applicationNumber)
+              : pick(approvalStep.bodyNoNumber, locale)
+          }
+          action={{ label: pick(approvalStep.action, locale), onClick: () => setStep("application") }}
+        />
       );
     }
     return (
@@ -309,7 +334,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
   if (step === "application") {
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
-        <h1 className="text-title text-balance text-center font-semibold">{pick(applicationView.title, locale).replace("{id}", appId)}</h1>
+        <h1 className="text-title text-balance text-center font-semibold">{applicationNumber ? pick(applicationView.title, locale).replace("{id}", applicationNumber) : pick(applicationView.titleNoNumber, locale)}</h1>
         <DescriptionList className="rounded-lg bg-muted px-4">
           <DescriptionRow><DescriptionTerm>{pick(applicationView.name, locale)}</DescriptionTerm><DescriptionDetails>{fullName}</DescriptionDetails></DescriptionRow>
           <DescriptionRow><DescriptionTerm>{pick(applicationView.mobile, locale)}</DescriptionTerm><DescriptionDetails>+91 {mobile}</DescriptionDetails></DescriptionRow>
@@ -532,12 +557,12 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
         {step === "verification" ? (
           <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!regNumber.trim() || !idFile) return; setTouched(false); setStep("terms"); }}>
             <Heading title={pick(verification.title, locale)} body={pick(verification.body, locale)} />
-            <Field data-invalid={touched && !regNumber.trim()}>
+            <Field data-invalid={(touched && !regNumber.trim()) || Boolean(serverErrors.regNumber)}>
               <FieldLabel>{pick(verification.numberLabel, locale)} <span className="text-destructive">*</span></FieldLabel>
-              <Input value={regNumber} placeholder={pick(verification.numberPlaceholder, locale)} onChange={(event) => { setRegNumber(event.target.value); setTouched(false); }} />
-              <FieldError>{touched && !regNumber.trim() ? pick(verification.numberError, locale) : null}</FieldError>
+              <Input value={regNumber} maxLength={REGISTRATION_NUMBER_MAX} placeholder={pick(verification.numberPlaceholder, locale)} onChange={(event) => { setRegNumber(event.target.value); setTouched(false); setServerErrors((e) => ({ ...e, regNumber: undefined })); }} />
+              <FieldError>{touched && !regNumber.trim() ? pick(verification.numberError, locale) : serverErrors.regNumber ?? null}</FieldError>
             </Field>
-            <Field data-invalid={touched && !idFile}>
+            <Field data-invalid={(touched && !idFile) || fileProblem !== null || Boolean(serverErrors.idFile)}>
               <FieldLabel>{pick(verification.uploadLabel, locale)} <span className="text-destructive">*</span></FieldLabel>
               {/* The app's one upload row (Sept 3): the filled state is the
                   Attachment row with Change file / Remove on its right edge —
@@ -546,7 +571,8 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
                 label={pick(verification.uploadLabel, locale)}
                 required
                 file={idFile}
-                onFileChange={(file) => { setIdFile(file); setTouched(false); }}
+                onFileChange={(file) => { setIdFile(file); setTouched(false); setFileProblem(null); setServerErrors((e) => ({ ...e, idFile: undefined })); }}
+                onRejectFile={() => setFileProblem("rejected")}
                 copy={{
                   changeFile: pick(verificationUi.changeFile, locale),
                   remove: pick(verificationUi.removeFile, locale),
@@ -555,7 +581,9 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
                 }}
               />
               <FieldDescription>{pick(verification.uploadHint, locale)} {pick(verificationUi.fileHelp, locale)}</FieldDescription>
-              <FieldError>{touched && !idFile ? pick(verification.uploadError, locale) : null}</FieldError>
+              {/* The server's own reason wins (it reads the file's contents); then a
+                  refused pick; then the missing-file prompt. */}
+              <FieldError>{serverErrors.idFile ?? (fileProblem ? pick(fileProblem === "tooLarge" ? verificationUi.fileTooLargeForServer : verificationUi.fileRejected, locale) : touched && !idFile ? pick(verification.uploadError, locale) : null)}</FieldError>
             </Field>
             <Actions locale={locale} onBack={() => { setTouched(false); setStep("password"); }} />
           </form>

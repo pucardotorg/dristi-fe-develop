@@ -33,11 +33,10 @@ export interface AuthService {
   signIn(credentials: Credentials): Promise<AccountState>;
 
   /**
-   * The signed-in account's role and name. Resolves `null` — never rejects — when it
-   * cannot say (the endpoint is not deployed yet, the server is unreachable), so a
-   * caller can always fall back to what sign-in returned.
+   * The signed-in account's role and name. Sign-in itself does not say who the account
+   * is, so this is what decides which home opens; it rejects rather than guess.
    */
-  getCurrentAccount(): Promise<CurrentAccount | null>;
+  getCurrentAccount(): Promise<CurrentAccount>;
 
   /**
    * Finish registration for the verified number in the current session. Advocates and

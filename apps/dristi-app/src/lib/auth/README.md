@@ -37,10 +37,11 @@ Sign-in
   next = "resubmit" ...................... GET /registrations/current → correction round →
                                            POST /registrations/current/resubmit → session ends →
                                            awaiting approval
-  next = "terms" ......................... (backend PR #135) re-accept screen, to be built;
-                                           until then signs in as normal
+  next = "terms" ......................... re-accept screen, to be built; until then signs
+                                           in as normal
   next = null ............................ GET /users/me → role and name → that role's home
-                                           (falls back to the sign-in answer until PR #135)
+                                           (if it fails, sign-in shows "try again" — never a
+                                           guessed home)
 ```
 
 Codes are purpose-bound: a registration code cannot sign in, and the other way round.
@@ -61,10 +62,9 @@ is reported as `unavailable` with a console hint, not as an expired session.
 | Gap | Today | Needs |
 | --- | --- | --- |
 | Power of attorney registration | `not-supported` in `api` mode; sandbox completes it | Backend: a way to record the POA role (`/litigants` stores LITIGANT) |
-| Role and name after sign-in | Read from `GET /users/me/` — not deployed yet, so an approved advocate still opens the litigant home | Backend PR #135 deployed |
-| Re-accepting updated terms (`next: "terms"`) | Signs in as normal | Backend PR #135; then a re-accept screen (`POST /users/me/terms/`) |
-| Forgot password | The link does nothing | Backend PR #135 (`auth/password-reset/…`) |
+| Re-accepting updated terms (`next: "terms"`) | Signs in as normal | A re-accept screen (`POST /users/me/terms/` is on backend `main`) |
+| Forgot password | The link does nothing | Screens for `auth/password-reset/verify/` and `auth/password-reset/` (on backend `main`) |
 | Readable application number | Not shown | Backend: `application_number` in `/advocates`, `/clerks`, `/registrations/current` and resubmit responses |
-| Restoring a session after reload | The shell trusts what sign-in stored in `localStorage` | A `GET` of the current account; then route guards |
+| Restoring a session after reload | The shell trusts what sign-in stored in `localStorage` | Call `getCurrentAccount()` (`GET /users/me`) on load; then route guards |
 | Sign-out | `signOut()` exists; no screen offers it yet | A sign-out control in the shell |
 | Court-staff approval | Not integrated (owner, Oct 19: later) | Court-staff sign-in; `/dristi-requests/approvals/` |

@@ -491,13 +491,15 @@ describe("HttpAuthService.getCurrentAccount", () => {
     assert.equal(calls[0].method, "GET");
   });
 
-  it("resolves null — never throws — when it cannot say", async () => {
-    const notDeployed = setup(() => new Response("<h1>Not Found</h1>", { status: 404 }));
-    assert.equal(await notDeployed.auth.getCurrentAccount(), null);
+  it("rejects rather than guess who is signed in", async () => {
+    const signedOut = setup(() =>
+      Response.json({ errors: [{ code: "E00401", message: "Not signed in." }] }, { status: 403 }),
+    );
+    assert.equal((await authError(signedOut.auth.getCurrentAccount())).code, "session-expired");
     const offline = setup(() => {
       throw new TypeError("Failed to fetch");
     });
-    assert.equal(await offline.auth.getCurrentAccount(), null);
+    assert.equal((await authError(offline.auth.getCurrentAccount())).code, "unavailable");
   });
 });
 

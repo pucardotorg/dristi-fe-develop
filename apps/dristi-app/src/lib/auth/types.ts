@@ -30,14 +30,14 @@ export type AccountState = {
    * Where the person goes next, decided by the backend:
    *   `"profile"`  — finish registration;
    *   `"resubmit"` — a rejected advocate/clerk registration to correct;
-   *   `"terms"`    — re-accept updated terms (backend PR #135, not yet deployed);
+   *   `"terms"`    — re-accept updated terms (no screen yet);
    *   `null`       — the account is ready.
    * Kept as a string because the backend may add values.
    */
   next: string | null;
   /** `null` for litigants, and wherever the response does not carry it. */
   approvalStatus: ApprovalStatus | null;
-  /** Not every response carries it — `POST /sessions` does not (yet). */
+  /** Not every response carries it — `POST /sessions` does not; `GET /users/me` does. */
   role: BackendRole | null;
   /** Known only when this visit told us (registration) or the sandbox knows it. */
   name: string | null;

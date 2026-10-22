@@ -361,19 +361,20 @@ export function SignInBlock({
         setRegistrationOpen(true);
         return;
       } else if (account.next !== null) {
-        /* "terms" (re-accept updated terms, backend PR #135) gets its own screen when
-           that PR is deployed (owner, Oct 19). Until then this and any value not known
-           here carry on as a normal sign-in — never into the registration wizard,
-           which would refuse an account that is already complete. */
+        /* "terms" (re-accept updated terms) gets its own screen later (owner, Oct 19).
+           Until then this and any value not known here carry on as a normal sign-in —
+           never into the registration wizard, which would refuse an account that is
+           already complete. */
         console.warn(`[auth] Sign-in returned next: "${account.next}", which has no screen yet.`);
       }
       if (onSignedIn) {
-        /* Sign-in does not say who the account is; /users/me does (backend PR #135).
-           Until that is deployed it answers nothing, and the sign-in's own answer stands. */
+        /* Sign-in does not say who the account is; /users/me does. If it cannot answer,
+           the catch below says so rather than guess a home (an advocate must never
+           land on the litigant one). */
         const current = await auth.getCurrentAccount();
         onSignedIn({
-          role: portalRole(current?.role ?? account.role),
-          name: current?.name ?? account.name,
+          role: portalRole(current.role),
+          name: current.name ?? account.name,
           mobile,
         });
         return;

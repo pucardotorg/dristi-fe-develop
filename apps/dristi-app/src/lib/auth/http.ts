@@ -4,7 +4,7 @@
  *   requestOtp              POST /auth/otp/request   { mobile_number, purpose }
  *   verifyRegistrationOtp   POST /users              { mobile_number, otp }          → session
  *   signIn                  POST /sessions           { mobile_number, otp | password } → session
- *   getCurrentAccount       GET  /users/me           role, name, terms (backend PR #135)
+ *   getCurrentAccount       GET  /users/me           role, name, terms
  *   completeRegistration    POST /litigants          JSON
  *                           POST /advocates          multipart (bar ID document required)
  *                           POST /clerks             JSON, or multipart with a document
@@ -227,22 +227,18 @@ export class HttpAuthService implements AuthService {
     }
   }
 
-  async getCurrentAccount(): Promise<CurrentAccount | null> {
+  async getCurrentAccount(): Promise<CurrentAccount> {
+    let body: { role?: unknown; name?: unknown; has_current_terms?: unknown };
     try {
-      const body = await this.client.get<{
-        role?: unknown;
-        name?: unknown;
-        has_current_terms?: unknown;
-      }>("users/me");
-      return {
-        role: BACKEND_ROLES.includes(body?.role as BackendRole) ? (body.role as BackendRole) : null,
-        name: textOrNull(body?.name),
-        hasCurrentTerms: body?.has_current_terms !== false,
-      };
-    } catch {
-      // Until PR #135 is deployed this is a 404; any failure means "cannot say".
-      return null;
+      body = await this.client.get("users/me");
+    } catch (error) {
+      throw translate(error, { 401: "session-expired", 403: "session-expired" });
     }
+    return {
+      role: BACKEND_ROLES.includes(body?.role as BackendRole) ? (body.role as BackendRole) : null,
+      name: textOrNull(body?.name),
+      hasCurrentTerms: body?.has_current_terms !== false,
+    };
   }
 
   async completeRegistration(

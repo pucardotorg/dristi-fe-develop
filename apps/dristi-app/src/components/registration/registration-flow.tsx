@@ -40,7 +40,7 @@ import {
   verificationSteps,
   verificationUi,
 } from "@/lib/registration/content";
-import { passwordProblem } from "@/lib/registration/password-policy";
+import { loadCommonPasswords, passwordProblem } from "@/lib/registration/password-policy";
 import { cn } from "@/lib/utils";
 
 import { MaskedOtp, OTP_LENGTH } from "./masked-otp";
@@ -164,9 +164,31 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
 
   const needsVerification = NEEDS_VERIFICATION.has(role);
   const verification = role === "advocateClerk" ? verificationSteps.advocateClerk : verificationSteps.advocate;
+  /* The backend's common-password list, loaded when the password step opens (it is too
+     large for the sign-in page). Until it arrives only that one rule is skipped. */
+  const [commonPasswords, setCommonPasswords] = React.useState<ReadonlySet<string> | undefined>();
+  React.useEffect(() => {
+    if (step !== "password" || commonPasswords) return;
+    let live = true;
+    loadCommonPasswords()
+      .then((list) => { if (live) setCommonPasswords(list); })
+      .catch(() => { /* The backend still checks; its message shows if it refuses. */ });
+    return () => { live = false; };
+  }, [step, commonPasswords]);
+
   // The first policy rule the password fails, against what this person has told us so
   // far — name from step two, number and email from step three.
-  const problem = passwordProblem(password, { mobile, name: fullName, email });
+  const problem = passwordProblem(password, { mobile, name: fullName, email }, commonPasswords);
+
+  /** Continue from the password step once it passes every rule, the list included. */
+  async function submitPassword() {
+    setTouched(true);
+    const list = commonPasswords ?? (await loadCommonPasswords().catch(() => undefined));
+    if (list && !commonPasswords) setCommonPasswords(list);
+    if (passwordProblem(password, { mobile, name: fullName, email }, list) || password !== confirmPassword) return;
+    setTouched(false);
+    setStep(needsVerification ? "verification" : "terms");
+  }
 
   const journeyKeys: readonly (keyof typeof journeySteps)[] = needsVerification
     ? ["role", "name", "contact", "password", "verification", "terms"]
@@ -471,7 +493,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
         ) : null}
 
         {step === "password" ? (
-          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); setTouched(true); if (problem || password !== confirmPassword) return; setTouched(false); setStep(needsVerification ? "verification" : "terms"); }}>
+          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); void submitPassword(); }}>
             <Heading title={pick(passwordStep.title, locale)} body={pick(passwordStep.body, locale)} />
 
             <Field data-invalid={(touched && Boolean(problem)) || Boolean(serverErrors.password)}>
@@ -494,8 +516,8 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
                 {touched && problem ? (
                   <FieldError>{pick(passwordStep.problem[problem], locale)}</FieldError>
                 ) : serverErrors.password ? (
-                  // The server's rules run deeper than the local check (similarity, an
-                  // all-digit password), so its own sentence is shown as sent.
+                  // The local check mirrors the server's rules, but if they ever drift
+                  // (or the common list failed to load) its own sentence is shown as sent.
                   <FieldError>{serverErrors.password}</FieldError>
                 ) : (
                   <FieldDescription

@@ -1,122 +1,138 @@
 /**
- * The password policy — REG-40 to REG-44.
+ * The password policy — the backend's, checked here first so the password step refuses
+ * what the backend would refuse, instead of the person learning it at the last step.
  *
- *   REG-40  at least 8 characters
- *   REG-41  not the person's exact mobile number
- *   REG-42  not the person's exact name
- *   REG-43  not the person's exact email address
- *   REG-44  not on a blacklist of common passwords
+ * The backend (dristi-be `AUTH_PASSWORD_VALIDATORS`, Django 5.0) runs, on the password
+ * after DRF trims surrounding whitespace:
+ *
+ *   length    at least 8 characters                  MinimumLengthValidator
+ *   tooLong   at most 128 characters                 the serializer's max_length
+ *   mobile    not too similar to the mobile number   UserAttributeSimilarityValidator
+ *   name      not too similar to the name              (attributes name, email,
+ *   email     not too similar to the email              mobile_number; 0.7)
+ *   numeric   not entirely digits                    NumericPasswordValidator
+ *   common    not on the common-password list        CommonPasswordValidator
  *
  * Nothing else: no mandatory uppercase, digit or symbol. Each rule is its own test so
  * the sentence the screen shows and the check the form runs cannot drift apart, and
  * `passwordProblem` reports the *first* failing rule in this order — one message at a
- * time is the whole point of the live hint under the field.
+ * time is the whole point of the live hint under the field. (These replace the earlier
+ * REG-40 to REG-44 rules, which only refused an exact match of name, mobile or email
+ * and had a short local blacklist, so the backend refused passwords this file passed.)
  *
- * The blacklist here is the short local one; the real check belongs on the server
- * against a maintained list. Everything in it is 8+ characters, since shorter entries
- * would already fail REG-40 and never be reached.
+ * The common-password list is ~90 KB, so it is loaded on demand: pass the loaded set to
+ * `passwordProblem`; without it the `common` rule is skipped (the backend still checks).
  */
 
-export type PasswordRule = "length" | "mobile" | "name" | "email" | "common";
+export type PasswordRule =
+  | "length"
+  | "tooLong"
+  | "mobile"
+  | "name"
+  | "email"
+  | "numeric"
+  | "common";
 
 export type PasswordContext = {
+  /** The 10 national digits; compared as the backend stores it, `+91…`. */
   mobile?: string;
   name?: string;
   email?: string;
 };
 
 export const MIN_PASSWORD_LENGTH = 8;
+/** The registration serializer's `max_length` for the password. */
+export const MAX_PASSWORD_LENGTH = 128;
+/** Django's default `max_similarity` for `UserAttributeSimilarityValidator`. */
+const MAX_SIMILARITY = 0.7;
 
-const COMMON_PASSWORDS = new Set<string>([
-  "password",
-  "password1",
-  "password123",
-  "passw0rd",
-  "12345678",
-  "123456789",
-  "1234567890",
-  "123123123",
-  "987654321",
-  "11111111",
-  "00000000",
-  "88888888",
-  "qwerty123",
-  "qwertyuiop",
-  "1q2w3e4r",
-  "1qaz2wsx",
-  "abcd1234",
-  "abc12345",
-  "abcdefgh",
-  "asdfghjk",
-  "iloveyou",
-  "letmein1",
-  "welcome1",
-  "welcome123",
-  "sunshine",
-  "princess",
-  "football",
-  "baseball",
-  "superman",
-  "trustno1",
-  "whatever",
-  "dragon123",
-  "monkey123",
-  "shadow123",
-  "master123",
-  "michael1",
-  "jennifer",
-  "computer",
-  "internet",
-  "starwars",
-  "india123",
-  "india@123",
-  "kerala123",
-  "admin123",
-  "admin@123",
-  "user1234",
-  "test1234",
-  "changeme",
-  "pass1234",
-  "p@ssw0rd",
-  "secret123",
-  "login123",
-  "hello123",
-  "google123",
-  "samsung1",
-  "jio12345",
-  "mobile123",
-  "krishna1",
-  "krishna123",
-  "ganesh123",
-  "lakshmi1",
-  "sairam123",
-]);
+/** Python's `len`: code points, not UTF-16 units. */
+const chars = (value: string) => Array.from(value);
 
-const squash = (value: string) => value.trim().replace(/\s+/g, " ").toLowerCase();
-const digits = (value: string) => value.replace(/\D/g, "");
+/**
+ * Python's `difflib.SequenceMatcher(a, b).quick_ratio()`: 2 × (characters the two share,
+ * counted with multiplicity, ignoring order) ÷ (total length). Django 5.0 compares with
+ * this alone.
+ */
+function quickRatio(a: string[], b: string[]): number {
+  const total = a.length + b.length;
+  if (total === 0) return 1;
+  const available = new Map<string, number>();
+  for (const c of b) available.set(c, (available.get(c) ?? 0) + 1);
+  let matches = 0;
+  for (const c of a) {
+    const left = available.get(c) ?? 0;
+    if (left > 0) {
+      available.set(c, left - 1);
+      matches += 1;
+    }
+  }
+  return (2 * matches) / total;
+}
 
-function isMobile(value: string, mobile: string) {
-  const number = digits(mobile);
-  if (number.length !== 10) return false;
-  const typed = value.trim();
-  // The number as typed, with the country code, or with the code and a plus — all
-  // three are "the exact mobile number" to the person who typed it.
-  return typed === number || typed === `91${number}` || typed === `+91${number}`;
+/** Django's `exceeds_maximum_length_ratio`: a part far shorter than the password is skipped. */
+function exceedsLengthRatio(passwordLength: number, part: string[]): boolean {
+  return (
+    passwordLength >= 10 * part.length &&
+    part.length < (MAX_SIMILARITY / 2) * passwordLength
+  );
+}
+
+/**
+ * Django's `UserAttributeSimilarityValidator` for one attribute: the password against the
+ * whole value and each of its parts split on non-word characters (`re.split(r"\W+")`).
+ */
+function tooSimilar(password: string, value: string | undefined): boolean {
+  if (!value) return false;
+  const pwd = chars(password.toLowerCase());
+  const whole = value.toLowerCase();
+  const parts = [...whole.split(/[^\p{L}\p{N}_]+/u), whole];
+  return parts.some((part) => {
+    const partChars = chars(part);
+    if (exceedsLengthRatio(pwd.length, partChars)) return false;
+    return quickRatio(pwd, partChars) >= MAX_SIMILARITY;
+  });
+}
+
+/** `9876543210` → `+919876543210`, the form the backend stores and compares. */
+function backendMobile(mobile: string | undefined): string | undefined {
+  const digits = mobile?.replace(/\D/g, "") ?? "";
+  return digits.length === 10 ? `+91${digits}` : undefined;
 }
 
 export function passwordProblem(
   value: string,
   context: PasswordContext = {},
+  commonPasswords?: ReadonlySet<string>,
 ): PasswordRule | null {
-  if (value.length < MIN_PASSWORD_LENGTH) return "length";
-  if (context.mobile && isMobile(value, context.mobile)) return "mobile";
-  const name = context.name ? squash(context.name) : "";
-  if (name && squash(value) === name) return "name";
-  const email = context.email ? squash(context.email) : "";
-  if (email && squash(value) === email) return "email";
-  if (COMMON_PASSWORDS.has(value.toLowerCase())) return "common";
+  // DRF trims the password before any validator sees it (and before storing it).
+  const password = value.trim();
+  const length = chars(password).length;
+  if (length < MIN_PASSWORD_LENGTH) return "length";
+  if (length > MAX_PASSWORD_LENGTH) return "tooLong";
+  if (tooSimilar(password, backendMobile(context.mobile))) return "mobile";
+  if (tooSimilar(password, context.name?.trim())) return "name";
+  if (tooSimilar(password, context.email?.trim())) return "email";
+  if (/^\p{Nd}+$/u.test(password)) return "numeric";
+  if (commonPasswords?.has(password.toLowerCase())) return "common";
   return null;
 }
 
-export const passwordOk = (value: string, context?: PasswordContext) =>
-  passwordProblem(value, context) === null;
+export const passwordOk = (
+  value: string,
+  context?: PasswordContext,
+  commonPasswords?: ReadonlySet<string>,
+) => passwordProblem(value, context, commonPasswords) === null;
+
+let commonPasswordsLoad: Promise<ReadonlySet<string>> | null = null;
+
+/** The backend's common-password list, fetched once and shared. Retries after a failure. */
+export function loadCommonPasswords(): Promise<ReadonlySet<string>> {
+  commonPasswordsLoad ??= import("./common-passwords")
+    .then(({ COMMON_PASSWORDS_TEXT }) => new Set(COMMON_PASSWORDS_TEXT.split("\n")))
+    .catch((error: unknown) => {
+      commonPasswordsLoad = null;
+      throw error;
+    });
+  return commonPasswordsLoad;
+}

@@ -104,8 +104,8 @@ export const contactStep = {
  * Creating the password the account signs in with.
  *
  * Sign-in offers a password as well as a one-time code, so registration has to produce
- * one — the flow used to reach the end without ever asking. The policy (REG-40 to 44,
- * `lib/registration/password-policy.ts`) is stated once under the field at rest; while
+ * one — the flow used to reach the end without ever asking. The policy (the backend's,
+ * mirrored in `lib/registration/password-policy.ts`) is stated once under the field at rest; while
  * the person types, that line becomes the one rule they are currently failing, or the
  * confirmation that the password works. One sentence at a time, never a checklist.
  */
@@ -123,17 +123,22 @@ export const passwordStep = {
   confirmPlaceholder: t("Enter it again", "വീണ്ടും നൽകുക"),
   show: t("Show password", "പാസ്‌വേഡ് കാണിക്കുക"),
   hide: t("Hide password", "പാസ്‌വേഡ് മറയ്ക്കുക"),
+  /* Integration, Oct 23: the rules now match the backend's (password-policy.ts), so a
+     password the backend would refuse is refused here. Updated and new Malayalam lines
+     are drafts — confirm with a translator. */
   /** At rest, before anything is typed. The whole policy in two short sentences. */
   rules: t(
-    "At least 8 characters. Not your name, mobile number or email, and nothing too common.",
-    "കുറഞ്ഞത് 8 പ്രതീകങ്ങൾ. നിങ്ങളുടെ പേരോ മൊബൈൽ നമ്പറോ ഇമെയിലോ ആകരുത്; സാധാരണമായവയും പാടില്ല.",
+    "At least 8 characters, not only numbers. Not like your name, mobile number or email, and nothing too common.",
+    "കുറഞ്ഞത് 8 പ്രതീകങ്ങൾ, അക്കങ്ങൾ മാത്രമാകരുത്. നിങ്ങളുടെ പേരോ മൊബൈൽ നമ്പറോ ഇമെയിലോ പോലെ ആകരുത്; സാധാരണമായവയും പാടില്ല.",
   ),
   /** Live, while typing — the first rule the password is failing. */
   problem: {
     length: t("Use at least 8 characters.", "കുറഞ്ഞത് 8 പ്രതീകങ്ങൾ ഉപയോഗിക്കുക."),
-    mobile: t("Your mobile number cannot be the password.", "നിങ്ങളുടെ മൊബൈൽ നമ്പർ പാസ്‌വേഡാക്കാൻ കഴിയില്ല."),
-    name: t("Your name cannot be the password.", "നിങ്ങളുടെ പേര് പാസ്‌വേഡാക്കാൻ കഴിയില്ല."),
-    email: t("Your email cannot be the password.", "നിങ്ങളുടെ ഇമെയിൽ പാസ്‌വേഡാക്കാൻ കഴിയില്ല."),
+    tooLong: t("Use 128 characters or fewer.", "128 പ്രതീകങ്ങളോ അതിൽ കുറവോ ഉപയോഗിക്കുക."),
+    mobile: t("Too similar to your mobile number.", "നിങ്ങളുടെ മൊബൈൽ നമ്പറുമായി വളരെ സാമ്യമുണ്ട്."),
+    name: t("Too similar to your name.", "നിങ്ങളുടെ പേരുമായി വളരെ സാമ്യമുണ്ട്."),
+    email: t("Too similar to your email.", "നിങ്ങളുടെ ഇമെയിലുമായി വളരെ സാമ്യമുണ്ട്."),
+    numeric: t("Add a letter or symbol. Numbers alone are not allowed.", "ഒരു അക്ഷരമോ ചിഹ്നമോ ചേർക്കുക. അക്കങ്ങൾ മാത്രം പാടില്ല."),
     common: t("Too easy to guess. Pick something less common.", "ഊഹിക്കാൻ എളുപ്പമാണ്. അത്ര സാധാരണമല്ലാത്തത് തിരഞ്ഞെടുക്കുക."),
   },
   /** Live, once every rule passes. */

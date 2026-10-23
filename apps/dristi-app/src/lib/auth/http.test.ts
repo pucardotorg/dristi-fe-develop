@@ -164,6 +164,27 @@ describe("HttpAuthService.completeRegistration", () => {
       { status: 201 },
     );
 
+  it("reports every password policy failure (E01011) on the password field", async () => {
+    const { auth } = setup(() =>
+      Response.json(
+        {
+          errors: [
+            { code: "E01011", message: "This password is too common.", field: "password" },
+            { code: "E01011", message: "This password is entirely numeric.", field: "password" },
+          ],
+          meta: META,
+        },
+        { status: 400 },
+      ),
+    );
+    const error = await authError(auth.completeRegistration("litigant", { name: "Asha", password: "12345678" }));
+    assert.equal(error.code, "invalid-details");
+    assert.deepEqual(error.fieldErrors.password, [
+      "This password is too common.",
+      "This password is entirely numeric.",
+    ]);
+  });
+
   it("registers a litigant with the CSRF header and accepted terms", async () => {
     const { auth, calls } = setup(created);
     const state = await auth.completeRegistration("litigant", {
@@ -552,6 +573,10 @@ describe("SandboxAuthService", () => {
 
     const fresh = new SandboxAuthService();
     await fresh.verifyRegistrationOtp("9876543210", "123456");
+    assert.deepEqual(
+      (await authError(fresh.completeRegistration("litigant", { name: "Asha", password: "" }))).fieldErrors.password,
+      ["This field is required."],
+    );
     const done = await fresh.completeRegistration("litigant", { name: " Asha ", password: "a long secret" });
     assert.deepEqual([done.registrationStatus, done.role, done.name], ["COMPLETE", "LITIGANT", "Asha"]);
 

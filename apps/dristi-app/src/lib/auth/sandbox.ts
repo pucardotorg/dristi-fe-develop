@@ -120,6 +120,12 @@ export class SandboxAuthService implements AuthService {
   ): Promise<RegistrationOutcome> {
     if (!this.sessionMobile) throw new AuthError("session-expired");
     const awaitingApproval = role === "advocate" || role === "advocateClerk";
+    // Like the backend: every role must set a password to finish registering.
+    if (!details.password) {
+      throw new AuthError("invalid-details", {
+        fieldErrors: { password: ["This field is required."] },
+      });
+    }
     // Like the backend: advocates and clerks must send the bar ID document.
     if (awaitingApproval && !details.document) {
       throw new AuthError("invalid-details", {

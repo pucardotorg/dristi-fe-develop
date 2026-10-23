@@ -23,8 +23,7 @@ Registration — every role
   terms: Create account
     litigant ............................. POST /litigants   JSON {name, email?, password, terms_accepted}
     advocate ............................. POST /advocates   multipart: + profile.bar_registration_id, bar_id_document
-    clerk ................................ POST /clerks      JSON {…, profile: {clerk_registration_number}},
-                                                             or multipart with bar_id_document
+    clerk ................................ POST /clerks      multipart: + profile.clerk_registration_number, bar_id_document
   advocate / clerk ....................... backend ends the session → awaiting approval
 
 Sign-in

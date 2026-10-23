@@ -62,7 +62,8 @@ export type RegistrationDetails = {
   password: string;
   /** Advocate: the bar registration ID. Clerk: the clerk registration number. */
   registrationNumber?: string;
-  /** The Bar Council / clerk ID scan: PDF, JPEG or PNG, at most 10 MB. */
+  /** The Bar Council / clerk ID scan: PDF, JPEG or PNG, at most 10 MB. Required for
+   *  advocates and clerks; the backend refuses either without it. */
   document?: File;
 };
 
@@ -110,7 +111,8 @@ export type ResubmissionDetails = {
   name: string;
   email?: string;
   registrationNumber: string;
-  document?: File;
+  /** A fresh ID scan. Required: the backend keeps nothing from the rejected one. */
+  document: File;
 };
 
 /** A national (10-digit) mobile number plus exactly one credential. */

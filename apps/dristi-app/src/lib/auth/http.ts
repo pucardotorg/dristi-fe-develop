@@ -7,9 +7,9 @@
  *   getCurrentAccount       GET  /users/me           role, name, terms
  *   completeRegistration    POST /litigants          JSON
  *                           POST /advocates          multipart (bar ID document required)
- *                           POST /clerks             JSON, or multipart with a document
+ *                           POST /clerks             multipart (bar ID document required)
  *   getRejectedRegistration GET  /registrations/current
- *   resubmitRegistration    POST /registrations/current/resubmit  JSON, or multipart
+ *   resubmitRegistration    POST /registrations/current/resubmit  multipart (document required)
  *   signOut                 DELETE /sessions
  *
  * The session is a cookie the browser keeps; the API client sends it, and the CSRF token
@@ -257,31 +257,20 @@ export class HttpAuthService implements AuthService {
     const approved = role === "advocate" || role === "advocateClerk";
     const number = details.registrationNumber?.trim() ?? "";
 
-    let body: unknown;
-    if (!approved) {
-      body = { name, ...(email ? { email } : {}), password: details.password, terms_accepted: true };
-    } else if (role === "advocate" || details.document) {
-      // Advocates are multipart only (the document is required); a clerk goes multipart
-      // when a document is attached. Nested profile fields become `profile.<field>` keys.
-      body = formBody(
-        {
-          name,
-          email,
-          password: details.password,
-          terms_accepted: "true",
-          [`profile.${NUMBER_FIELD[role]}`]: number,
-        },
-        details.document,
-      );
-    } else {
-      body = {
-        name,
-        ...(email ? { email } : {}),
-        password: details.password,
-        terms_accepted: true,
-        profile: { [NUMBER_FIELD[role]]: number },
-      };
-    }
+    // Advocates and clerks are multipart only: the bar ID document is required for both,
+    // and JSON cannot carry it. Nested profile fields become `profile.<field>` keys.
+    const body = approved
+      ? formBody(
+          {
+            name,
+            email,
+            password: details.password,
+            terms_accepted: "true",
+            [`profile.${NUMBER_FIELD[role]}`]: number,
+          },
+          details.document,
+        )
+      : { name, ...(email ? { email } : {}), password: details.password, terms_accepted: true };
 
     try {
       const response = await this.client.post<AccountStateBody>(path, body, {
@@ -335,15 +324,14 @@ export class HttpAuthService implements AuthService {
     const name = details.name.trim();
     const email = details.email?.trim() || undefined;
     const registrationNumber = details.registrationNumber.trim();
-    const body = details.document
-      ? formBody({ name, email, registration_number: registrationNumber }, details.document)
-      : { name, ...(email ? { email } : {}), registration_number: registrationNumber };
+    // Multipart: a fresh bar ID document is required with every resubmission.
+    const body = formBody({ name, email, registration_number: registrationNumber }, details.document);
 
     try {
       const response = await this.client.post<{ application_number?: unknown }>(
         "registrations/current/resubmit",
         body,
-        { timeoutMs: body instanceof FormData ? UPLOAD_TIMEOUT_MS : undefined },
+        { timeoutMs: UPLOAD_TIMEOUT_MS },
       );
       return { applicationNumber: textOrNull(response?.application_number) };
     } catch (error) {

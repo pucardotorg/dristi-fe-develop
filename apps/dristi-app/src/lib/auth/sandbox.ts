@@ -120,6 +120,12 @@ export class SandboxAuthService implements AuthService {
   ): Promise<RegistrationOutcome> {
     if (!this.sessionMobile) throw new AuthError("session-expired");
     const awaitingApproval = role === "advocate" || role === "advocateClerk";
+    // Like the backend: advocates and clerks must send the bar ID document.
+    if (awaitingApproval && !details.document) {
+      throw new AuthError("invalid-details", {
+        fieldErrors: { bar_id_document: ["No file was submitted."] },
+      });
+    }
     const outcome: RegistrationOutcome = {
       userId: `sandbox-${this.sessionMobile}`,
       registrationStatus: "COMPLETE",

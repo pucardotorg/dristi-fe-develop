@@ -283,30 +283,37 @@ describe("HttpAuthService: advocates and clerks", () => {
     assert.equal(outcome.applicationNumber, null);
   });
 
-  it("posts a clerk as JSON without a document and as multipart with one", async () => {
+  it("posts a clerk as multipart with the document", async () => {
     const { auth, calls } = setup(pending("CLERK"));
-    await auth.completeRegistration("advocateClerk", {
-      name: "Ravi",
-      password: "a long secret",
-      registrationNumber: "CL-77",
-    });
-    assert.deepEqual(calls[0].body, {
-      name: "Ravi",
-      password: "a long secret",
-      terms_accepted: true,
-      profile: { clerk_registration_number: "CL-77" },
-    });
-
-    await auth.completeRegistration("advocateClerk", {
+    const outcome = await auth.completeRegistration("advocateClerk", {
       name: "Ravi",
       password: "a long secret",
       registrationNumber: "CL-77",
       document: pdf(),
     });
-    const form = calls[1].raw as FormData;
-    assert.equal(calls[1].url, "/api/v1/clerks");
+    const form = calls[0].raw as FormData;
+    assert.equal(calls[0].url, "/api/v1/clerks");
     assert.equal(form.get("profile.clerk_registration_number"), "CL-77");
+    assert.equal(form.get("terms_accepted"), "true");
     assert.ok(form.get("bar_id_document") instanceof File);
+    assert.equal(calls[0].headers.has("content-type"), false);
+    assert.equal(outcome.awaitingApproval, true);
+  });
+
+  it("never sends a clerk as JSON, even without a document", async () => {
+    // POST /clerks parses multipart only; the backend names the missing file.
+    const { auth, calls } = setup(() =>
+      Response.json(
+        { errors: [{ code: "E00002", message: "No file was submitted.", field: "bar_id_document" }] },
+        { status: 400 },
+      ),
+    );
+    const error = await authError(
+      auth.completeRegistration("advocateClerk", { name: "Ravi", password: "a long secret", registrationNumber: "CL-77" }),
+    );
+    assert.ok(calls[0].raw instanceof FormData);
+    assert.equal(error.code, "invalid-details");
+    assert.deepEqual(error.fieldErrors.bar_id_document, ["No file was submitted."]);
   });
 
   it("reads a readable application number when the backend sends one", async () => {
@@ -438,21 +445,22 @@ describe("HttpAuthService: correcting a rejected registration", () => {
     assert.equal((await authError(auth.getRejectedRegistration())).code, "nothing-to-resubmit");
   });
 
-  it("resubmits as JSON, or multipart with a new document", async () => {
+  it("resubmits as multipart with the new document", async () => {
     const { auth, calls } = setup(() => Response.json({ application_id: "3f2a-uuid", approval_status: "PENDING", meta: META }));
-    const result = await auth.resubmitRegistration({ name: " Ravi ", email: "", registrationNumber: "CL-78" });
-    assert.equal(calls[0].url, "/api/v1/registrations/current/resubmit");
-    assert.deepEqual(calls[0].body, { name: "Ravi", registration_number: "CL-78" });
-    assert.equal(result.applicationNumber, null);
-
-    await auth.resubmitRegistration({
-      name: "Ravi",
-      registrationNumber: "CL-78",
+    const result = await auth.resubmitRegistration({
+      name: " Ravi ",
+      email: "",
+      registrationNumber: " CL-78 ",
       document: new File(["\x89PNG"], "clerk-id.png", { type: "image/png" }),
     });
-    const form = calls[1].raw as FormData;
+    assert.equal(calls[0].url, "/api/v1/registrations/current/resubmit");
+    const form = calls[0].raw as FormData;
+    assert.equal(form.get("name"), "Ravi");
+    assert.equal(form.has("email"), false, "a blank email is left out");
     assert.equal(form.get("registration_number"), "CL-78");
     assert.equal((form.get("bar_id_document") as File).name, "clerk-id.png");
+    assert.equal(calls[0].headers.has("content-type"), false);
+    assert.equal(result.applicationNumber, null);
   });
 
   it("maps a taken registration number to its field", async () => {
@@ -462,7 +470,9 @@ describe("HttpAuthService: correcting a rejected registration", () => {
         { status: 400 },
       ),
     );
-    const error = await authError(auth.resubmitRegistration({ name: "Ravi", registrationNumber: "CL-1" }));
+    const error = await authError(
+      auth.resubmitRegistration({ name: "Ravi", registrationNumber: "CL-1", document: new File(["%PDF"], "id.pdf") }),
+    );
     assert.equal(error.code, "invalid-details");
     assert.deepEqual(error.fieldErrors.registration_number, ["This registration number is already registered."]);
   });
@@ -537,12 +547,20 @@ describe("SandboxAuthService", () => {
     const rejectedDemo = new SandboxAuthService();
     assert.equal((await rejectedDemo.signIn({ mobile: "9999999999", otp: "123456" })).next, "resubmit");
     assert.equal((await rejectedDemo.getRejectedRegistration()).role, "advocate");
-    await rejectedDemo.resubmitRegistration({ name: "A", registrationNumber: "K/1" });
+    await rejectedDemo.resubmitRegistration({ name: "A", registrationNumber: "K/1", document: new File(["%PDF"], "id.pdf") });
     assert.equal((await authError(rejectedDemo.getRejectedRegistration())).code, "session-expired");
 
     const fresh = new SandboxAuthService();
     await fresh.verifyRegistrationOtp("9876543210", "123456");
     const done = await fresh.completeRegistration("litigant", { name: " Asha ", password: "a long secret" });
     assert.deepEqual([done.registrationStatus, done.role, done.name], ["COMPLETE", "LITIGANT", "Asha"]);
+
+    const clerk = new SandboxAuthService();
+    await clerk.verifyRegistrationOtp("9876543211", "123456");
+    assert.deepEqual(
+      (await authError(clerk.completeRegistration("advocateClerk", { name: "R", password: "a long secret", registrationNumber: "CL-1" })))
+        .fieldErrors.bar_id_document,
+      ["No file was submitted."],
+    );
   });
 });

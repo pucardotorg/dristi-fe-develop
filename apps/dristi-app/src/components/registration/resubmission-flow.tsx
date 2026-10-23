@@ -184,7 +184,8 @@ export function ResubmissionFlow({
   ) : null;
 
   async function resubmit() {
-    if (pending) return;
+    // The form refuses to submit without a file; the backend requires a fresh one.
+    if (pending || !idFile) return;
     setPending(true);
     setSubmitError(null);
     try {
@@ -192,7 +193,7 @@ export function ResubmissionFlow({
         name: fullName,
         email,
         registrationNumber: regNumber,
-        document: idFile ?? undefined,
+        document: idFile,
       });
       if (result.applicationNumber) setApplicationNumber(result.applicationNumber);
       setStep("success");

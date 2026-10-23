@@ -174,9 +174,18 @@ export type SignedInAccount = {
 };
 
 /**
- * The portal a backend role opens. Advocates and their clerks share one; everyone else
- * — and a sign-in whose response carries no role, which is every backend sign-in today —
- * opens the litigant home.
+ * The portal a backend role opens (the role comes from `GET /users/me`).
+ *
+ * A clerk opens the advocate portal for now — temporary. The design (dristi-fe-design
+ * `main`) gives the clerk a profile of its own: lands on `/cases`, shows the clerk's own
+ * name, drafts and pays but never signs (Application Lifecycle PRD v20; vakalatnama
+ * `SGN-03`). This repo has no clerk profile yet (`ProfileRole` is litigant | advocate),
+ * so until it is synced from the design a clerk sees, and can do, what the advocate can.
+ * Then map CLERK to it here. How a real clerk account gets office access to its
+ * advocate's cases is still to be decided (the design's clerk is a demo profile).
+ *
+ * Everyone else (litigant, power of attorney) opens the litigant home, as does an
+ * account whose role the backend did not name.
  */
 function portalRole(role: BackendRole | null): Role {
   return role === "ADVOCATE" || role === "CLERK" ? "advocate" : "litigant";

@@ -218,11 +218,21 @@ describe("HttpAuthService.completeRegistration", () => {
     assert.equal("email" in (calls[0].body as object), false);
   });
 
-  it("does not post power of attorney yet", async () => {
-    const { auth, calls } = setup(created);
-    const error = await authError(auth.completeRegistration("poa", { name: "A", password: "a long secret" }));
-    assert.equal(error.code, "not-supported");
-    assert.equal(calls.length, 0);
+  it("registers a power of attorney holder as JSON on its own endpoint", async () => {
+    const { auth, calls } = setup(() =>
+      Response.json(
+        { user_id: "u3", role: "POWER_OF_ATTORNEY", registration_status: "COMPLETE", next: null, meta: META },
+        { status: 201 },
+      ),
+    );
+    const outcome = await auth.completeRegistration("poa", { name: " Meera ", email: "", password: "a long secret" });
+    assert.equal(calls[0].url, "/api/v1/power-of-attorneys");
+    assert.equal(calls[0].method, "POST");
+    assert.deepEqual(calls[0].body, { name: "Meera", password: "a long secret", terms_accepted: true });
+    assert.equal(outcome.role, "POWER_OF_ATTORNEY");
+    // No court approval: the session is kept and the account is ready.
+    assert.equal(outcome.awaitingApproval, false);
+    assert.equal(outcome.approvalStatus, null);
   });
 
   it("passes the backend's field messages through", async () => {

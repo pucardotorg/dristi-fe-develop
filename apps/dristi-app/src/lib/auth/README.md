@@ -22,6 +22,7 @@ Registration — every role
   password, (verification), terms ........ kept in the browser
   terms: Create account
     litigant ............................. POST /litigants   JSON {name, email?, password, terms_accepted}
+    power of attorney .................... POST /power-of-attorneys   same JSON as litigant
     advocate ............................. POST /advocates   multipart: + profile.bar_registration_id, bar_id_document
     clerk ................................ POST /clerks      multipart: + profile.clerk_registration_number, bar_id_document
   advocate / clerk ....................... backend ends the session → awaiting approval
@@ -60,7 +61,6 @@ is reported as `unavailable` with a console hint, not as an expired session.
 
 | Gap | Today | Needs |
 | --- | --- | --- |
-| Power of attorney registration | `not-supported` in `api` mode; sandbox completes it | Backend: a way to record the POA role (`/litigants` stores LITIGANT) |
 | Re-accepting updated terms (`next: "terms"`) | Signs in as normal | A re-accept screen (`POST /users/me/terms/` is on backend `main`) |
 | Forgot password | The link does nothing | Screens for `auth/password-reset/verify/` and `auth/password-reset/` (on backend `main`) |
 | Readable application number | Not shown | Backend: `application_number` in `/advocates`, `/clerks`, `/registrations/current` and resubmit responses |

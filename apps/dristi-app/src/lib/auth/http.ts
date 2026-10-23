@@ -6,6 +6,7 @@
  *   signIn                  POST /sessions           { mobile_number, otp | password } → session
  *   getCurrentAccount       GET  /users/me           role, name, terms
  *   completeRegistration    POST /litigants          JSON
+ *                           POST /power-of-attorneys JSON, same body as litigants
  *                           POST /advocates          multipart (bar ID document required)
  *                           POST /clerks             multipart (bar ID document required)
  *   getRejectedRegistration GET  /registrations/current
@@ -53,12 +54,13 @@ const E_NOTHING_TO_RESUBMIT = "E01012";
 const UPLOAD_TIMEOUT_MS = 60_000;
 
 /**
- * Which endpoint completes each role. Power of attorney is not wired yet: the flow
- * diagram sends it to `litigants`, but that endpoint records every account as LITIGANT,
- * so the role would be lost — waiting on the backend to confirm how to tell them apart.
+ * Which endpoint completes each role. Power of attorney has its own endpoint, which
+ * takes the litigant's JSON body and records the POWER_OF_ATTORNEY role. A role left
+ * out of this map is refused as `not-supported` before anything is sent.
  */
 const COMPLETION_PATH: Partial<Record<RegistrationRole, string>> = {
   litigant: "litigants",
+  poa: "power-of-attorneys",
   advocate: "advocates",
   advocateClerk: "clerks",
 };

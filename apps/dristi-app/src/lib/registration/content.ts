@@ -9,6 +9,17 @@ export const registrationUi = {
   back: t("Back", "പുറകോട്ട്"),
   continue: t("Continue", "തുടരുക"),
   stepOf: t("Step {current} of {total}", "ഘട്ടം {current} / {total}"),
+  /* Backend failures any step can meet (integration, Oct 15). The Malayalam is a draft
+     composed from phrasing already in this file — have a translator confirm it. */
+  unavailable: t(
+    "Couldn't reach the server. Check your connection and try again.",
+    "സെർവറുമായി ബന്ധപ്പെടാനായില്ല. ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",
+  ),
+  /** The verified number's session ended before the last step was sent. */
+  sessionExpired: t(
+    "Your verification has expired. Verify your mobile number again.",
+    "പരിശോധനയുടെ സമയം കഴിഞ്ഞു. മൊബൈൽ നമ്പർ വീണ്ടും പരിശോധിക്കുക.",
+  ),
 } as const;
 
 export const journeySteps = {
@@ -77,43 +88,57 @@ export const contactStep = {
   verified: t("Mobile number verified", "മൊബൈൽ നമ്പർ പരിശോധിച്ചു"),
   changeNumber: t("Change number", "നമ്പർ മാറ്റുക"),
   verifyFirst: t("Verify your mobile number to continue.", "തുടരാൻ നിങ്ങളുടെ മൊബൈൽ നമ്പർ പരിശോധിക്കുക."),
+  /* From the backend (integration, Oct 15); Malayalam drafts — confirm with a translator. */
+  mobileInvalid: t("Enter a valid Indian mobile number.", "ശരിയായ ഇന്ത്യൻ മൊബൈൽ നമ്പർ നൽകുക."),
+  otpWrong: t(
+    "That code didn't work. Check the digits, or send a new code.",
+    "ഈ കോഡ് ശരിയല്ല. അക്കങ്ങൾ പരിശോധിക്കുക, അല്ലെങ്കിൽ പുതിയ കോഡ് അയയ്ക്കുക.",
+  ),
+  alreadyRegistered: t(
+    "This number already has an account. Go back to sign in.",
+    "ഈ നമ്പറിൽ ഇതിനകം ഒരു അക്കൗണ്ട് ഉണ്ട്. സൈൻ ഇൻ പേജിലേക്ക് മടങ്ങുക.",
+  ),
 } as const;
 
 /**
  * Creating the password the account signs in with.
  *
  * Sign-in offers a password as well as a one-time code, so registration has to produce
- * one — the flow used to reach the end without ever asking. The policy (REG-40 to 44,
- * `lib/registration/password-policy.ts`) is stated once under the field at rest; while
+ * one — the flow used to reach the end without ever asking. The policy (the backend's,
+ * mirrored in `lib/registration/password-policy.ts`) is stated once under the field at rest; while
  * the person types, that line becomes the one rule they are currently failing, or the
  * confirmation that the password works. One sentence at a time, never a checklist.
  */
 export const passwordStep = {
   title: t("Create a password", "ഒരു പാസ്‌വേഡ് ഉണ്ടാക്കുക"),
-  /* Optional (owner, Oct 8). Sign-in already offers a one-time code, so a skipped
-     password costs nothing; Profile → Password sets one later. */
+  /* Required again (owner, Oct 15): the backend needs a password to finish registration.
+     It was optional from Oct 8. Malayalam drafted from the earlier sentence — confirm it. */
   body: t(
-    "Optional. Without a password, you sign in with a one-time code sent to your mobile. You can set one later from your profile.",
-    "ഇത് നിർബന്ധമല്ല. പാസ്‌വേഡ് ഇല്ലെങ്കിൽ, നിങ്ങളുടെ മൊബൈലിലേക്ക് അയയ്ക്കുന്ന ഒറ്റത്തവണ കോഡ് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യാം. പിന്നീട് പ്രൊഫൈലിൽ നിന്ന് പാസ്‌വേഡ് സജ്ജമാക്കാം.",
+    "You will sign in with this password, or with a one-time code sent to your mobile.",
+    "ഈ പാസ്‌വേഡോ നിങ്ങളുടെ മൊബൈലിലേക്ക് അയയ്ക്കുന്ന ഒറ്റത്തവണ കോഡോ ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യാം.",
   ),
-  skip: t("Skip for now", "ഇപ്പോൾ ഒഴിവാക്കുക"),
   password: t("Password", "പാസ്‌വേഡ്"),
   passwordPlaceholder: t("Enter a password", "ഒരു പാസ്‌വേഡ് നൽകുക"),
   confirm: t("Confirm password", "പാസ്‌വേഡ് ആവർത്തിക്കുക"),
   confirmPlaceholder: t("Enter it again", "വീണ്ടും നൽകുക"),
   show: t("Show password", "പാസ്‌വേഡ് കാണിക്കുക"),
   hide: t("Hide password", "പാസ്‌വേഡ് മറയ്ക്കുക"),
+  /* Integration, Oct 23: the rules now match the backend's (password-policy.ts), so a
+     password the backend would refuse is refused here. Updated and new Malayalam lines
+     are drafts — confirm with a translator. */
   /** At rest, before anything is typed. The whole policy in two short sentences. */
   rules: t(
-    "At least 8 characters. Not your name, mobile number or email, and nothing too common.",
-    "കുറഞ്ഞത് 8 പ്രതീകങ്ങൾ. നിങ്ങളുടെ പേരോ മൊബൈൽ നമ്പറോ ഇമെയിലോ ആകരുത്; സാധാരണമായവയും പാടില്ല.",
+    "At least 8 characters, not only numbers. Not like your name, mobile number or email, and nothing too common.",
+    "കുറഞ്ഞത് 8 പ്രതീകങ്ങൾ, അക്കങ്ങൾ മാത്രമാകരുത്. നിങ്ങളുടെ പേരോ മൊബൈൽ നമ്പറോ ഇമെയിലോ പോലെ ആകരുത്; സാധാരണമായവയും പാടില്ല.",
   ),
   /** Live, while typing — the first rule the password is failing. */
   problem: {
     length: t("Use at least 8 characters.", "കുറഞ്ഞത് 8 പ്രതീകങ്ങൾ ഉപയോഗിക്കുക."),
-    mobile: t("Your mobile number cannot be the password.", "നിങ്ങളുടെ മൊബൈൽ നമ്പർ പാസ്‌വേഡാക്കാൻ കഴിയില്ല."),
-    name: t("Your name cannot be the password.", "നിങ്ങളുടെ പേര് പാസ്‌വേഡാക്കാൻ കഴിയില്ല."),
-    email: t("Your email cannot be the password.", "നിങ്ങളുടെ ഇമെയിൽ പാസ്‌വേഡാക്കാൻ കഴിയില്ല."),
+    tooLong: t("Use 128 characters or fewer.", "128 പ്രതീകങ്ങളോ അതിൽ കുറവോ ഉപയോഗിക്കുക."),
+    mobile: t("Too similar to your mobile number.", "നിങ്ങളുടെ മൊബൈൽ നമ്പറുമായി വളരെ സാമ്യമുണ്ട്."),
+    name: t("Too similar to your name.", "നിങ്ങളുടെ പേരുമായി വളരെ സാമ്യമുണ്ട്."),
+    email: t("Too similar to your email.", "നിങ്ങളുടെ ഇമെയിലുമായി വളരെ സാമ്യമുണ്ട്."),
+    numeric: t("Add a letter or symbol. Numbers alone are not allowed.", "ഒരു അക്ഷരമോ ചിഹ്നമോ ചേർക്കുക. അക്കങ്ങൾ മാത്രം പാടില്ല."),
     common: t("Too easy to guess. Pick something less common.", "ഊഹിക്കാൻ എളുപ്പമാണ്. അത്ര സാധാരണമല്ലാത്തത് തിരഞ്ഞെടുക്കുക."),
   },
   /** Live, once every rule passes. */
@@ -156,6 +181,17 @@ export const verificationUi = {
   chooseFile: t("Choose file", "ഫയൽ തിരഞ്ഞെടുക്കുക"),
   changeFile: t("Change file", "ഫയൽ മാറ്റുക"),
   removeFile: t("Remove", "നീക്കം ചെയ്യുക"),
+  /* Integration, Oct 19 — Malayalam drafts, confirm with a translator. A picked file
+     the backend would refuse, said before anything is sent. */
+  fileRejected: t(
+    "Choose a JPG, JPEG, PNG or PDF file of up to 10 MB.",
+    "പരമാവധി 10 MB വലുപ്പമുള്ള JPG, JPEG, PNG അല്ലെങ്കിൽ PDF ഫയൽ തിരഞ്ഞെടുക്കുക.",
+  ),
+  /** The server refused the upload as too large (413). */
+  fileTooLargeForServer: t(
+    "This file is too large to send. Choose a smaller scan or photo of the ID.",
+    "ഈ ഫയൽ അയയ്ക്കാൻ വളരെ വലുതാണ്. ID-യുടെ ചെറിയ സ്കാനോ ഫോട്ടോയോ തിരഞ്ഞെടുക്കുക.",
+  ),
 } as const;
 
 /**
@@ -198,6 +234,24 @@ export const rejectionUi = {
     "Your corrected registration (ID: {id}) is in progress. You will get an SMS when it is done.",
     "തിരുത്തിയ രജിസ്ട്രേഷൻ (ID: {id}) നടന്നുകൊണ്ടിരിക്കുന്നു. പൂർത്തിയാകുമ്പോൾ SMS ലഭിക്കും.",
   ),
+  /* Integration, Oct 19 — Malayalam drafts, confirm with a translator.
+     The application number is shown only when the backend sends a readable one
+     (owner, Oct 19); until then these versions stand in for the {id} ones. */
+  resubmittedBodyNoNumber: t(
+    "Your corrected registration is in progress. You will get an SMS when it is done.",
+    "തിരുത്തിയ രജിസ്ട്രേഷൻ നടന്നുകൊണ്ടിരിക്കുന്നു. പൂർത്തിയാകുമ്പോൾ SMS ലഭിക്കും.",
+  ),
+  messageMetaNoNumber: t(
+    "Message from the verifying officer",
+    "പരിശോധിക്കുന്ന ഉദ്യോഗസ്ഥന്റെ സന്ദേശം",
+  ),
+  /** Under the upload on the correction step: what was sent before. `{file}` is its name. */
+  lastUploaded: t("You sent {file} last time.", "കഴിഞ്ഞ തവണ {file} അയച്ചു."),
+  /** The correction can no longer be sent: the session ended, or it is not rejected now. */
+  signInAgain: t(
+    "This correction can't be sent right now. Go back and sign in again to see where your registration stands.",
+    "ഈ തിരുത്തൽ ഇപ്പോൾ അയയ്ക്കാനാവില്ല. നിങ്ങളുടെ രജിസ്ട്രേഷന്റെ നില അറിയാൻ സൈൻ ഇൻ പേജിലേക്ക് മടങ്ങി വീണ്ടും പ്രവേശിക്കുക.",
+  ),
 } as const;
 
 export const termsStep = {
@@ -228,10 +282,18 @@ export const approvalStep = {
   /** `{id}` is the application number, shown so it can be quoted at the court. */
   body: t("Your registration (ID: {id}) is in progress. You will get an SMS when it is done.", "നിങ്ങളുടെ രജിസ്ട്രേഷൻ (ID: {id}) നടന്നുകൊണ്ടിരിക്കുന്നു. പൂർത്തിയാകുമ്പോൾ SMS ലഭിക്കും."),
   action: t("View my application", "എന്റെ അപേക്ഷ കാണുക"),
+  /* Integration, Oct 19 — Malayalam draft. Used until the backend sends a readable
+     application number (owner, Oct 19); also what a pending account sees at sign-in. */
+  bodyNoNumber: t(
+    "Your registration is in progress. You will get an SMS when it is done.",
+    "നിങ്ങളുടെ രജിസ്ട്രേഷൻ നടന്നുകൊണ്ടിരിക്കുന്നു. പൂർത്തിയാകുമ്പോൾ SMS ലഭിക്കും.",
+  ),
 } as const;
 
 export const applicationView = {
   title: t("Application number {id}", "അപേക്ഷാ നമ്പർ {id}"),
+  /** Until the backend sends a readable number (integration, Oct 19). Malayalam draft. */
+  titleNoNumber: t("Your application", "നിങ്ങളുടെ അപേക്ഷ"),
   name: t("Name", "പേര്"),
   mobile: t("Mobile number", "മൊബൈൽ നമ്പർ"),
   email: t("Email address", "ഇമെയിൽ വിലാസം"),

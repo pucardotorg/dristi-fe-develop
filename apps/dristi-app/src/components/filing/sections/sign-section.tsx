@@ -102,6 +102,7 @@ import { CourtDocument } from "@/components/filing/sections/preview/court-docume
 import { useFilePicker } from "@/components/filing/use-file-picker";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Identifier } from "@/components/chrome/identifier";
+import { appUrl } from "@/lib/config";
 
 type ModalKey =
   | "esign"
@@ -731,9 +732,7 @@ export function SignSection() {
   const copyLink = () => {
     if (typeof window !== "undefined") {
       try {
-        void navigator.clipboard?.writeText(
-          `${window.location.origin}${hrefFor("preview")}`
-        );
+        void navigator.clipboard?.writeText(appUrl(hrefFor("preview")));
       } catch {
         /* clipboard blocked — the case number is on screen either way */
       }

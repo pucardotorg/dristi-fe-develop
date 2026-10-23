@@ -4,13 +4,17 @@ import * as React from "react";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  CircleAlertIcon,
   EyeIcon,
   EyeOffIcon,
 } from "lucide-react";
 
 import { BrandLockup } from "@/components/brand-lockup";
 import { MaskedOtp, OTP_LENGTH } from "@/components/registration/masked-otp";
-import { RegistrationFlow } from "@/components/registration/registration-flow";
+import {
+  RegistrationFlow,
+  type RegistrationResult,
+} from "@/components/registration/registration-flow";
 import { ResubmissionFlow } from "@/components/registration/resubmission-flow";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -32,8 +36,17 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
+import { Spinner } from "@/components/ui/spinner";
+import { AwaitingApproval } from "@/components/registration/awaiting-approval";
+import {
+  getAuthService,
+  isAuthError,
+  isIndianMobile,
+  type BackendRole,
+  type RejectedRegistration,
+} from "@/lib/auth";
 import { LOCALES, pick, ui, type Locale } from "@/lib/onboarding/content";
-import { registrationUi } from "@/lib/registration/content";
+import { approvalStep, registrationUi } from "@/lib/registration/content";
 import { cn } from "@/lib/utils";
 import {
   brand,
@@ -47,24 +60,18 @@ import {
   type Method,
   type Role,
 } from "@/lib/sign-in/content";
-import { registeredRole } from "@/lib/sign-in/demo-accounts";
-import {
-  rejectedRegistrationFor,
-  type RejectedRegistration,
-} from "@/lib/registration/rejection";
 
 /**
  * The page under the onboarding modal.
  *
  * Four structural decisions, all load-bearing:
  *
- * 1. **The number goes first, alone.** One field and Continue. The number is checked
- *    before anything else is asked, so nobody types a password for an account that does
- *    not exist and nobody is told "wrong password" when the truth is "no account". An
- *    unknown number is stated as a fact under the field — no redirect, no offer; the
- *    standing "Create an account" link is one line down for the person who meant it.
- *    A known number slides the second step in from the right (the Google pattern the
- *    owner attached), with the number shown locked at the top and a way back beside it.
+ * 1. **The number goes first, alone.** One field and Continue. The step checks the
+ *    number's *format* only: the backend will not say whether a number has an account
+ *    (that would let anyone probe who is registered), so an unknown number fails at the
+ *    credential step with a message that names neither part (owner, Oct 15 — until then
+ *    this step looked the number up). The second step slides in from the right (the
+ *    Google pattern the owner attached), with a way back beside it.
  *
  * 2. **Method is chosen on the second step, next to the credential it governs.** A
  *    small labelled toggle, not a full-width strip — the number field above it is the
@@ -157,6 +164,33 @@ function HelpEntry({
   );
 }
 
+/** Who signed in, as the caller needs it to route and to label the shell. */
+export type SignedInAccount = {
+  role: Role;
+  /** Null when the backend did not say (sign-in does not return the name yet). */
+  name: string | null;
+  /** The 10 national digits signed in with. */
+  mobile: string;
+};
+
+/**
+ * The portal a backend role opens (the role comes from `GET /users/me`).
+ *
+ * A clerk opens the advocate portal for now — temporary. The design (dristi-fe-design
+ * `main`) gives the clerk a profile of its own: lands on `/cases`, shows the clerk's own
+ * name, drafts and pays but never signs (Application Lifecycle PRD v20; vakalatnama
+ * `SGN-03`). This repo has no clerk profile yet (`ProfileRole` is litigant | advocate),
+ * so until it is synced from the design a clerk sees, and can do, what the advocate can.
+ * Then map CLERK to it here. How a real clerk account gets office access to its
+ * advocate's cases is still to be decided (the design's clerk is a demo profile).
+ *
+ * Everyone else (litigant, power of attorney) opens the litigant home, as does an
+ * account whose role the backend did not name.
+ */
+function portalRole(role: BackendRole | null): Role {
+  return role === "ADVOCATE" || role === "CLERK" ? "advocate" : "litigant";
+}
+
 export function SignInBlock({
   locale,
   onLocaleChange,
@@ -170,26 +204,31 @@ export function SignInBlock({
   onLocaleChange: (locale: Locale) => void;
   onSeekHelp: () => void;
   onRegister?: () => void;
-  /** Called when credentials are accepted, with the role the number is registered
-   *  under — the caller routes litigants and advocates to different portals. Without
-   *  it, the prototype notice shows. */
-  onSignedIn?: (role: Role) => void;
-  /** Called from the registration success action, carrying whether the ID upload was
-   *  deferred. Without it, registration shows its own prototype notice. */
-  onRegistered?: (result: {
-    idSkipped: boolean;
-    profileIncomplete: boolean;
-  }) => void;
+  /** Called when credentials are accepted — the caller routes litigants and advocates
+   *  to different portals. Without it, the prototype notice shows. */
+  onSignedIn?: (account: SignedInAccount) => void;
+  /** Called from the registration success action. Without it, registration shows its
+   *  own prototype notice. */
+  onRegistered?: (result: RegistrationResult) => void;
   /** True when a summons token brought them here, so the explainer can name the summons
    *  outright. Everyone else gets the neutral headline — same destination either way. */
   summoned?: boolean;
 }) {
   const [registrationOpen, setRegistrationOpen] = React.useState(false);
+  /* Set when a sign-in succeeds for an account that never finished registering: the
+     backend answers `next: "profile"`, and registration resumes with this number
+     already proven. */
+  const [resumeMobile, setResumeMobile] = React.useState<string | null>(null);
   /* A rejected registration on the signed-in number routes into its
      correction round instead of the portal — the SMS told them to sign in
      again, and this is where signing in lands them. */
   const [resubmission, setResubmission] =
     React.useState<RejectedRegistration | null>(null);
+  /* An advocate or clerk the court has not approved yet: the backend refuses them a
+     session, and they see the same awaiting-approval screen registration ended on. */
+  const [awaitingApproval, setAwaitingApproval] = React.useState(false);
+  /** Any screen that replaces the sign-in form — they share the "Back to sign in" header. */
+  const awayFromSignIn = registrationOpen || resubmission !== null || awaitingApproval;
   /* number → credential. The number is settled before a credential is asked for. On
      the OTP path the code is asked for on the credential step itself, in a panel that
      opens under the method toggle once the code is sent — the same shape as the
@@ -212,12 +251,20 @@ export function SignInBlock({
   // would freeze it in whichever language was selected when the person pressed submit,
   // and this screen is switched between languages mid-form all the time.
   const [touched, setTouched] = React.useState(false);
-  // The number was checked and no account holds it. Cleared the moment a digit changes.
-  const [notFound, setNotFound] = React.useState(false);
+  // A backend round trip is in flight; the submit button shows it and holds still.
+  const [pending, setPending] = React.useState(false);
+  /* What the backend said, as a copy key: `noMatch` sits on the credential field,
+     `unavailable` above the button. Cleared by any change to what is being submitted. */
+  const [serverError, setServerError] = React.useState<"noMatch" | "unavailable" | null>(
+    null,
+  );
 
-  const badMobile = touched && mobile.length !== 10;
-  const badPassword = touched && method === "password" && !password;
-  const badCode = touched && method === "otp" && codeSent && code.length !== OTP_LENGTH;
+  const auth = getAuthService();
+  const badMobile = touched && !isIndianMobile(mobile);
+  const noMatch = serverError === "noMatch";
+  const badPassword = (touched && method === "password" && !password) || noMatch;
+  const badCode =
+    (touched && method === "otp" && codeSent && code.length !== OTP_LENGTH) || noMatch;
 
   // Any change to what is being submitted invalidates the last answer. A stale "no
   // account for this number" sitting above a number someone has already started
@@ -225,7 +272,7 @@ export function SignInBlock({
   const invalidate = React.useCallback(() => {
     setTouched(false);
     setAccepted(false);
-    setNotFound(false);
+    setServerError(null);
   }, []);
 
   React.useEffect(() => {
@@ -251,18 +298,37 @@ export function SignInBlock({
   function submitNumber(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setTouched(true);
-    if (mobile.length !== 10) return;
-
-    /* A rejected registration counts as a known number: the account does not exist
-       yet, but the person was told to sign in to fix it, and the credential step is
-       where that correction round begins. */
-    const known = rejectedRegistrationFor(mobile) || registeredRole(mobile);
-    if (!known) {
-      setNotFound(true);
-      return;
-    }
-    setNotFound(false);
+    if (!isIndianMobile(mobile)) return;
     goTo("credential", "forward");
+  }
+
+  /**
+   * Send (or resend) a sign-in code and open the code panel. A cooldown opens it too —
+   * a code is already on its way — with the countdown the backend gave.
+   */
+  async function sendCode() {
+    if (pending) return;
+    setPending(true);
+    setServerError(null);
+    try {
+      await auth.requestOtp(mobile, "login");
+      openCodePanel(RESEND_SECONDS);
+    } catch (error) {
+      if (isAuthError(error) && error.code === "resend-too-soon") {
+        openCodePanel(error.retryAfterSeconds ?? RESEND_SECONDS);
+      } else {
+        setServerError("unavailable");
+      }
+    } finally {
+      setPending(false);
+    }
+  }
+
+  function openCodePanel(wait: number) {
+    setTouched(false);
+    setCode("");
+    setCodeSent(true);
+    setResendIn(wait);
   }
 
   /**
@@ -270,33 +336,70 @@ export function SignInBlock({
    * password → sign in; OTP before a code is out → send it and open the code panel;
    * OTP with a code out → verify it and sign in.
    */
-  function submitCredential(event: React.FormEvent<HTMLFormElement>) {
+  async function submitCredential(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending) return;
     setTouched(true);
 
     if (method === "otp" && !codeSent) {
-      setTouched(false);
-      setCodeSent(true);
-      setResendIn(RESEND_SECONDS);
+      await sendCode();
       return;
     }
     if (method === "password" && !password) return;
     if (method === "otp" && code.length !== OTP_LENGTH) return;
 
-    /* A rejected registration lands in its correction round once the person has
-       proved the number — by either method. */
-    const rejected = rejectedRegistrationFor(mobile);
-    if (rejected) {
-      setResubmission(rejected);
-      return;
+    setPending(true);
+    setServerError(null);
+    try {
+      const account = await auth.signIn(
+        method === "password" ? { mobile, password } : { mobile, otp: code },
+      );
+      /* A rejected advocate or clerk registration: the SMS told them to sign in again,
+         and this is where that lands them — the correction round, pre-filled. If it
+         is no longer rejected by now, they simply carry on signed in. */
+      if (account.next === "resubmit") {
+        try {
+          setResubmission(await auth.getRejectedRegistration());
+          return;
+        } catch (error) {
+          if (!isAuthError(error) || error.code !== "nothing-to-resubmit") throw error;
+        }
+      } else if (account.next === "profile") {
+        // The account was created but never finished: registration resumes.
+        setResumeMobile(mobile);
+        setRegistrationOpen(true);
+        return;
+      } else if (account.next !== null) {
+        /* "terms" (re-accept updated terms) gets its own screen later (owner, Oct 19).
+           Until then this and any value not known here carry on as a normal sign-in —
+           never into the registration wizard, which would refuse an account that is
+           already complete. */
+        console.warn(`[auth] Sign-in returned next: "${account.next}", which has no screen yet.`);
+      }
+      if (onSignedIn) {
+        /* Sign-in does not say who the account is; /users/me does. If it cannot answer,
+           the catch below says so rather than guess a home (an advocate must never
+           land on the litigant one). */
+        const current = await auth.getCurrentAccount();
+        onSignedIn({
+          role: portalRole(current.role),
+          name: current.name ?? account.name,
+          mobile,
+        });
+        return;
+      }
+      setAccepted(true);
+    } catch (error) {
+      if (isAuthError(error) && error.code === "approval-pending") {
+        setAwaitingApproval(true);
+        return;
+      }
+      setServerError(
+        isAuthError(error) && error.code === "invalid-credentials" ? "noMatch" : "unavailable",
+      );
+    } finally {
+      setPending(false);
     }
-
-    // The number step already established this number is registered.
-    if (onSignedIn) {
-      onSignedIn(registeredRole(mobile) ?? "litigant");
-      return;
-    }
-    setAccepted(true);
   }
 
   /** Back to the number. Clears what the credential step collected. */
@@ -349,7 +452,7 @@ export function SignInBlock({
             sacrificing the 40px touch-target floor. The court subline already drops
             below `sm`, leaving the full lockup in the desktop canvas. */}
         <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between gap-4 border-b border-hairline bg-background px-6 py-5 lg:absolute lg:inset-x-0 lg:top-0 lg:border-b-0 lg:px-12 lg:pt-10 lg:pb-0">
-          {registrationOpen || resubmission ? (
+          {awayFromSignIn ? (
             <Button
               type="button"
               variant="ghost"
@@ -357,7 +460,9 @@ export function SignInBlock({
               aria-label={pick(registrationUi.backToSignIn, locale)}
               onClick={() => {
                 setRegistrationOpen(false);
+                setResumeMobile(null);
                 setResubmission(null);
+                setAwaitingApproval(false);
               }}
             >
               <ArrowLeftIcon data-icon="inline-start" aria-hidden />
@@ -399,18 +504,24 @@ export function SignInBlock({
         <main
           className={cn(
             "flex flex-1 items-start justify-center overflow-y-auto px-6 pb-10 lg:min-h-0 lg:px-12",
-            registrationOpen || resubmission
+            awayFromSignIn
               ? "pt-4 md:pt-8 lg:pt-32 lg:pb-12"
               : "pt-8 lg:items-center lg:py-12",
           )}
         >
-          {resubmission ? (
+          {awaitingApproval ? (
+            <AwaitingApproval
+              title={pick(approvalStep.title, locale)}
+              body={pick(approvalStep.bodyNoNumber, locale)}
+            />
+          ) : resubmission ? (
             <ResubmissionFlow locale={locale} rejection={resubmission} />
           ) : registrationOpen ? (
             <RegistrationFlow
               locale={locale}
               summoned={summoned}
               initialMobile={mobile}
+              verifiedMobile={resumeMobile ?? undefined}
               onFinish={onRegistered}
             />
           ) : (
@@ -448,7 +559,7 @@ export function SignInBlock({
                     aria-label={pick(form.title, locale)}
                     className="flex flex-col gap-4"
                   >
-                    <Field data-invalid={badMobile || notFound}>
+                    <Field data-invalid={badMobile}>
                       <FieldLabel>{pick(form.mobileLabel, locale)}</FieldLabel>
                       <InputGroup>
                         <InputGroupAddon variant="field">
@@ -471,10 +582,11 @@ export function SignInBlock({
                       </InputGroup>
                       <FieldError>
                         {badMobile
-                          ? pick(form.mobileError, locale)
-                          : notFound
-                            ? pick(form.notFound, locale)
-                            : null}
+                          ? pick(
+                              mobile.length !== 10 ? form.mobileError : form.mobileInvalid,
+                              locale,
+                            )
+                          : null}
                       </FieldError>
                     </Field>
 
@@ -530,6 +642,7 @@ export function SignInBlock({
                   onSubmit={submitCredential}
                   noValidate
                   aria-label={pick(form.title, locale)}
+                  aria-busy={pending}
                   className="flex flex-col gap-4"
                 >
                     {/* The way back, then the method — one plane under the heading.
@@ -623,7 +736,11 @@ export function SignInBlock({
                           </InputGroupAddon>
                         </InputGroup>
                         <FieldError>
-                          {badPassword ? pick(form.passwordError, locale) : null}
+                          {noMatch
+                            ? pick(form.noMatch, locale)
+                            : badPassword
+                              ? pick(form.passwordError, locale)
+                              : null}
                         </FieldError>
                       </Field>
                     ) : null}
@@ -654,10 +771,15 @@ export function SignInBlock({
                             setCode(value);
                             setTouched(false);
                             setAccepted(false);
+                            setServerError(null);
                           }}
                         />
                         <FieldError>
-                          {badCode ? pick(otp.error, locale) : null}
+                          {noMatch
+                            ? pick(form.noMatch, locale)
+                            : badCode
+                              ? pick(otp.error, locale)
+                              : null}
                         </FieldError>
                         <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-4 gap-y-1">
                       <Button
@@ -688,9 +810,9 @@ export function SignInBlock({
                           variant="link"
                           size="sm"
                           className="h-auto p-0"
+                          disabled={pending}
                           onClick={() => {
-                            setResendIn(RESEND_SECONDS);
-                            setCode("");
+                            void sendCode();
                           }}
                         >
                           {pick(otp.resend, locale)}
@@ -704,13 +826,29 @@ export function SignInBlock({
                         in the form's own rhythm it sat equidistant between the two and
                         read as a caption on the wrong element. Once the code is out the
                         hint is gone and the button verifies. */}
+                    {serverError === "unavailable" ? (
+                      <Alert variant="destructive">
+                        <CircleAlertIcon aria-hidden />
+                        <AlertDescription>{pick(form.unavailable, locale)}</AlertDescription>
+                      </Alert>
+                    ) : null}
+
                     <div className="flex flex-col gap-2">
                       {method === "otp" && !codeSent ? (
                         <FieldDescription>
                           {pick(form.otpHint, locale)}
                         </FieldDescription>
                       ) : null}
-                      <Button type="submit" size="lg" className="w-full">
+                      {/* aria-disabled, not disabled: a disabled button drops keyboard
+                          focus, and the person would land back at the top of the page
+                          when the answer came. The handler ignores repeat presses. */}
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="w-full"
+                        aria-disabled={pending || undefined}
+                      >
+                        {pending ? <Spinner data-icon="inline-start" aria-hidden /> : null}
                         {pick(
                           method === "password"
                             ? form.submitPassword
@@ -763,8 +901,8 @@ export function SignInBlock({
 
 /**
  * Scaffolding, not product copy — deliberately English-only and labelled, so it cannot
- * be mistaken for a real screen. Delete with `demo-accounts.ts` when the credentials
- * endpoint lands. It exists because the payload is the whole point of the role tabs.
+ * be mistaken for a real screen. Shown only when a caller wires no `onSignedIn`; every
+ * route wires one today, so it can go once nothing renders the block bare.
  */
 function PrototypeNotice({
   show,

@@ -121,16 +121,14 @@ export const form = {
     "Enter the 10 digits of your mobile number.",
     "മൊബൈൽ നമ്പറിന്റെ 10 അക്കങ്ങൾ നൽകുക.",
   ),
-  /** The number step's one action — it checks the number before asking for anything
-   *  else, so nobody types a password for an account that does not exist. */
+  /** The number step's one action. It checks the number's format only — the backend
+   *  does not reveal which numbers have accounts (owner, Oct 15). */
   continue: t("Continue", "തുടരുക"),
-  /* Said as a fact under the field, the way Google says it. No offer to register here:
-     the standing "Create an account" link is one line down, and a person who mistyped a
-     digit wants to fix the digit, not be sent to a form. */
-  notFound: t(
-    "Couldn't find an account for this number.",
-    "ഈ നമ്പറിൽ ഒരു അക്കൗണ്ടും കണ്ടെത്താനായില്ല.",
-  ),
+  /* "Couldn't find an account for this number" lived here until Oct 15: the backend will
+     not say whether a number is registered (so nobody can probe which ones are), and the
+     owner chose a format-only number step. A wrong number now fails at the credential
+     step with `noMatch`, which names neither part. */
+  mobileInvalid: t("Enter a valid Indian mobile number.", "ശരിയായ ഇന്ത്യൻ മൊബൈൽ നമ്പർ നൽകുക."),
 
   /* The second step keeps the same headline as the first. A "Welcome back" to someone
      with a case on them reads as odd, not warm (owner, Sept 9). */
@@ -148,6 +146,16 @@ export const form = {
   otpHint: t(
     "We will send a one-time code to this number.",
     "ഈ നമ്പറിലേക്ക് ഒറ്റത്തവണ കോഡ് അയക്കും.",
+  ),
+
+  /* Backend answers (integration, Oct 15). Malayalam drafts — confirm with a translator. */
+  noMatch: t(
+    "Those details didn't match. Check the number and try again.",
+    "നൽകിയ വിവരങ്ങൾ ശരിയല്ല. നമ്പർ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",
+  ),
+  unavailable: t(
+    "Couldn't reach the server. Check your connection and try again.",
+    "സെർവറുമായി ബന്ധപ്പെടാനായില്ല. ഇന്റർനെറ്റ് കണക്ഷൻ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",
   ),
 
   submitPassword: t("Sign in", "പ്രവേശിക്കുക"),

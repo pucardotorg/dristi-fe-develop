@@ -40,7 +40,9 @@ export function readApiBaseUrl(
   try {
     url = new URL(value);
   } catch {
-    return { ok: false, reason: `API_BASE_URL is not a valid URL: "${value}".` };
+    // The reason reaches the browser (the proxy's 503), so the raw value is not echoed:
+    // a malformed one can still carry an internal host or credentials.
+    return { ok: false, reason: "API_BASE_URL is not a valid URL." };
   }
 
   if (url.protocol !== "http:" && url.protocol !== "https:") {

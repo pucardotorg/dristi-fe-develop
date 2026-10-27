@@ -28,6 +28,11 @@ describe("readApiBaseUrl", () => {
     }
   });
 
+  it("does not echo an unparseable value, which the proxy shows the browser", () => {
+    const result = readApiBaseUrl("https://user:secret@internal-host:8000 /api");
+    assert.deepEqual(result, { ok: false, reason: "API_BASE_URL is not a valid URL." });
+  });
+
   it("rejects values that are not a plain http(s) URL", () => {
     for (const raw of [
       "localhost:8000/api/v1", // parses as scheme "localhost:" — not http(s)

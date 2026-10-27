@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 
-import { DesignModeLoader } from "@/components/design-mode-loader";
 import { FeedbackProvider } from "@/components/feedback-provider";
 import { LocaleProvider } from "@/components/shell/locale";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import "./globals.css";
-/* App-owned rules on chrome we do not author; globals.css is synced from the DS. */
+/* App rules for chrome, kept apart from the base tokens in globals.css. */
 import "./chrome.css";
 
 export const metadata: Metadata = {
@@ -39,7 +38,6 @@ export default function RootLayout({
         >
           <LocaleProvider>
             <FeedbackProvider>{children}</FeedbackProvider>
-            <DesignModeLoader />
           </LocaleProvider>
         </ThemeProvider>
       </body>

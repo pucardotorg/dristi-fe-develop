@@ -11,7 +11,7 @@ Set up the project locally first. Follow the [README](README.md) quick start.
 
 **Prerequisites:**
 - Node.js 22 or later, and npm
-- Git, with access to GitHub (the install step clones the Pucar Design System)
+- Git
 - Basic familiarity with React, Next.js (App Router), TypeScript and Tailwind CSS
 
 ---
@@ -59,7 +59,7 @@ Before you start:
 
 ### 3. Set Up Your Development Environment
 
-1. Install dependencies. This also fetches the pinned design system into `vendor/`:
+1. Install dependencies:
    ```bash
    npm install
    ```
@@ -107,25 +107,14 @@ git checkout -b chore/docker-build-push origin/main
 git checkout -b docs/readme-setup origin/main
 ```
 
-**Design-system upgrades get their own branch.** Change the pin in
-[ds.lock.json](ds.lock.json) only with `npm run ds:bump`, on a dedicated branch with its
-own PR. Never fold it into a feature.
-
 ### 5. Make and Test Changes
 
-1. **Follow the design system.** The pinned Pucar Design System sets the rules for all UI:
-   - Compose screens from the DS primitives in `apps/dristi-app/src/components/ui/`.
-     These are synced copies. **Never edit them by hand.** To add or update one, run:
-     ```bash
-     npm run sync:ui -- <component>
-     ```
-     Then review the diff. If the DS can't do what you need, raise a DS request
-     ([docs/design/ds-requests.md](docs/design/ds-requests.md)). Don't patch the primitive locally.
-   - Use semantic tokens and named text roles (`text-body`, `text-title-*`). Don't use
-     raw colours, ad-hoc font sizes, or off-ladder spacing.
+1. **Reuse the shared UI:**
+   - Compose screens from the primitives in `apps/dristi-app/src/components/ui/`.
+   - Use the colour and text tokens defined in `apps/dristi-app/src/app/globals.css`
+     rather than raw values.
    - Build tables from `apps/dristi-app/src/components/chrome/table-plate.ts`.
-   - Meet the DS accessibility guidelines (`ACCESSIBILITY.md` in the design system),
-     and check layouts at phone, tablet and desktop widths.
+   - Check layouts at phone, tablet and desktop widths, and keep controls accessible.
 
 2. **Follow the code conventions:**
    - TypeScript throughout, matching the style of the surrounding code
@@ -133,42 +122,29 @@ own PR. Never fold it into a feature.
      `apps/dristi-app/src/components/<feature>/`
    - Use clear names, and explain *why* in comments where the reason isn't obvious
 
-3. **Check the design system is on the pinned version:**
-   ```bash
-   npm run check:ds-fresh
-   ```
-
-4. **Lint.** This runs ESLint plus the DS checks for tokens, typography, UI sync,
-   spacing and table rows:
+3. **Lint:**
    ```bash
    npm run lint
    ```
 
-5. **Run the tests:**
+4. **Run the tests:**
    ```bash
    npm run test:app
    ```
 
-6. **Add tests** for bug fixes and new logic:
+5. **Add tests** for bug fixes and new logic:
    - Put them next to the code as `*.test.ts` under `apps/dristi-app/src/lib/`
    - If you add a new folder, add its pattern to the `test` script in
      [apps/dristi-app/package.json](apps/dristi-app/package.json)
-
-7. **If you changed the agent layer** (`.agents/`), regenerate and check the adapters:
-   ```bash
-   npm run sync:rails
-   npm run verify:agents
-   ```
-   Edit the sources in `.agents/`. Never edit the generated copies in `.claude/`,
-   `.cursor/` or `.codex/`.
 
 ### 6. Verify Application Functionality
 
 Before opening a pull request:
 
-1. **Run the full UI check:**
+1. **Run lint and tests:**
    ```bash
-   npm run verify:ui
+   npm run lint
+   npm run test:app
    ```
 
 2. **Test your changes in the running app** (`npm run dev`):
@@ -237,15 +213,12 @@ git commit -m "Update README with setup and demo accounts"
 
 ## PR Review Process
 
-1. **Automated checks** run on every PR:
-   - Agent rails (`npm run verify:agents`)
-
-   CI doesn't yet run lint or unit tests. Reviewers expect `npm run verify:ui` and
-   `npm run test:app` to pass locally.
+1. **Automated checks:** CI doesn't yet run lint or unit tests on PRs. Reviewers expect
+   `npm run lint` and `npm run test:app` to pass locally.
 
 2. **Code review:**
-   - A maintainer reviews the change. For UI, the review covers DS consistency,
-     accessibility and responsive behaviour as well as correctness.
+   - A maintainer reviews the change. For UI, the review covers consistency with the
+     shared UI, accessibility and responsive behaviour as well as correctness.
    - Address the requested changes
    - Keep the discussion focused and professional
 

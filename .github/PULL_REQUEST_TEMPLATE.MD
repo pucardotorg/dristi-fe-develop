@@ -14,10 +14,8 @@ For UI changes, add before/after screenshots or a short recording, including a p
 
 Before submitting a pull request, please make sure you've completed these tasks.
 
-- [ ] Ran `npm run dev` in the repository root and tested the change at http://localhost:3000 for each role it affects.
-- [ ] `npm run lint` passes.
-- [ ] `npm run test:app` passes, and I've added tests for any bug fix or new logic.
-- [ ] Checked the layout at phone, tablet and desktop widths, plus keyboard navigation.
+- [ ] Tested the change in the running app (`npm run dev`).
+- [ ] `npm run lint` and `npm run test:app` pass.
 
 ## Notes
 

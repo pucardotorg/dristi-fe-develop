@@ -33,6 +33,15 @@ export const API_PREFIX = "/api/v1";
 /** Upper bound for one upstream call. Generous: uploads of scanned documents are slow. */
 export const UPSTREAM_TIMEOUT_MS = 60_000;
 
+/**
+ * The largest request body forwarded. The body is held in memory before it is sent on
+ * (see `proxyToApi`), so it is capped here rather than trusted. 20 MB is what the
+ * backend's own nginx accepts (dristi-be `docker/nginx.conf`, `client_max_body_size
+ * 20M`), above the 10 MB per-document limit plus multipart overhead; anything larger
+ * would be refused upstream anyway, after being buffered here.
+ */
+export const MAX_REQUEST_BODY_BYTES = 20 * 1024 * 1024;
+
 /** RFC 9110 §7.6.1 connection-specific headers: meaningful for one hop only. */
 const HOP_BY_HOP = [
   "connection",
@@ -66,6 +75,8 @@ export type ProxyOptions = {
   /** Injected in tests; defaults to the global fetch. */
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
+  /** Injected in tests; defaults to `MAX_REQUEST_BODY_BYTES`. */
+  maxBodyBytes?: number;
 };
 
 /** A proxy-made error, shaped like a DRF error so the browser client parses one format. */
@@ -138,9 +149,50 @@ function downstreamResponseHeaders(upstream: Response): Headers {
   return headers;
 }
 
+/**
+ * The request body, or `null` once it is larger than `limit` (the caller answers 413).
+ * A declared `Content-Length` over the limit is refused without reading anything; a body
+ * without one (chunked) is counted as it is read and abandoned as soon as it passes the
+ * limit, so neither can make this server hold more than `limit` bytes.
+ */
+async function readBodyWithin(
+  request: Request,
+  limit: number,
+): Promise<Uint8Array<ArrayBuffer> | null> {
+  const declared = Number(request.headers.get("content-length"));
+  if (declared > limit) return null;
+  if (!request.body) return new Uint8Array(0);
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limit) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return body;
+}
+
 /** Forward one request to the backend and return the backend's response. */
 export async function proxyToApi(request: Request, options: ProxyOptions): Promise<Response> {
-  const { api, fetchImpl = fetch, timeoutMs = UPSTREAM_TIMEOUT_MS } = options;
+  const {
+    api,
+    fetchImpl = fetch,
+    timeoutMs = UPSTREAM_TIMEOUT_MS,
+    maxBodyBytes = MAX_REQUEST_BODY_BYTES,
+  } = options;
 
   if (!api.ok) {
     return proxyError(503, "api_not_configured", api.reason);
@@ -155,8 +207,12 @@ export async function proxyToApi(request: Request, options: ProxyOptions): Promi
   const method = request.method.toUpperCase();
   // Buffered rather than streamed: a streamed body goes out chunked, without a
   // Content-Length, and WSGI servers (Django's included) read such a body as empty.
+  // Buffering is why the size is capped.
   const body =
-    method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
+    method === "GET" || method === "HEAD" ? undefined : await readBodyWithin(request, maxBodyBytes);
+  if (body === null) {
+    return proxyError(413, "request_too_large", "This upload is too large to send.");
+  }
 
   let upstream: Response;
   try {

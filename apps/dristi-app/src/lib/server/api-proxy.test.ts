@@ -128,6 +128,65 @@ describe("proxyToApi", () => {
     assert.equal(sent.has("x-middleware-subrequest"), false);
   });
 
+  describe("request body limit", () => {
+    /** A POST whose body arrives in `chunks`, with no Content-Length (chunked). */
+    const streamed = (chunks: Uint8Array[]) =>
+      new Request("http://app/api/v1/advocates", {
+        method: "POST",
+        body: new ReadableStream<Uint8Array>({
+          start(controller) {
+            for (const chunk of chunks) controller.enqueue(chunk);
+            controller.close();
+          },
+        }),
+        duplex: "half",
+      } as RequestInit);
+
+    it("refuses a declared Content-Length over the limit with 413, sending nothing", async () => {
+      const { impl, calls } = fakeFetch(() => Response.json({}));
+      const res = await proxyToApi(
+        new Request("http://app/api/v1/advocates", {
+          method: "POST",
+          headers: { "content-length": "11" },
+          body: "small",
+        }),
+        { api: ok, fetchImpl: impl, maxBodyBytes: 10 },
+      );
+      assert.equal(res.status, 413);
+      assert.deepEqual(await res.json(), {
+        detail: "This upload is too large to send.",
+        code: "request_too_large",
+      });
+      assert.equal(calls.length, 0);
+    });
+
+    it("refuses a chunked body as soon as it passes the limit", async () => {
+      const { impl, calls } = fakeFetch(() => Response.json({}));
+      const res = await proxyToApi(streamed([new Uint8Array(6), new Uint8Array(6)]), {
+        api: ok,
+        fetchImpl: impl,
+        maxBodyBytes: 10,
+      });
+      assert.equal(res.status, 413);
+      assert.equal(calls.length, 0);
+    });
+
+    it("forwards a body exactly at the limit, whole and in order", async () => {
+      const { impl, calls } = fakeFetch(() => Response.json({}, { status: 201 }));
+      const res = await proxyToApi(
+        streamed([new Uint8Array([1, 2, 3, 4]), new Uint8Array([5, 6, 7, 8, 9, 10])]),
+        { api: ok, fetchImpl: impl, maxBodyBytes: 10 },
+      );
+      assert.equal(res.status, 201);
+      assert.deepEqual([...(calls[0].init.body as Uint8Array)], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    });
+
+    it("defaults to the backend nginx's 20 MB", async () => {
+      const { MAX_REQUEST_BODY_BYTES } = await import("./api-proxy");
+      assert.equal(MAX_REQUEST_BODY_BYTES, 20 * 1024 * 1024);
+    });
+  });
+
   it("sends no body for GET", async () => {
     const { impl, calls } = fakeFetch(() => Response.json({}));
     await proxyToApi(new Request("http://app/api/v1/locations"), { api: ok, fetchImpl: impl });

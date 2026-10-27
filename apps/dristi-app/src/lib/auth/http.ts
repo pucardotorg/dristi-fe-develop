@@ -236,10 +236,15 @@ export class HttpAuthService implements AuthService {
     } catch (error) {
       throw translate(error, { 401: "session-expired", 403: "session-expired" });
     }
+    // The role decides which home opens, so a missing or unknown one is refused rather
+    // than defaulted (a null role would open the litigant home for anyone).
+    if (!BACKEND_ROLES.includes(body?.role as BackendRole)) {
+      throw new AuthError("unavailable", { message: "Unexpected account response." });
+    }
     return {
-      role: BACKEND_ROLES.includes(body?.role as BackendRole) ? (body.role as BackendRole) : null,
-      name: textOrNull(body?.name),
-      hasCurrentTerms: body?.has_current_terms !== false,
+      role: body.role as BackendRole,
+      name: textOrNull(body.name),
+      hasCurrentTerms: body.has_current_terms !== false,
     };
   }
 

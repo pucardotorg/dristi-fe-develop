@@ -532,6 +532,13 @@ describe("HttpAuthService.getCurrentAccount", () => {
     assert.equal(calls[0].method, "GET");
   });
 
+  it("refuses a missing or unknown role instead of defaulting a home", async () => {
+    for (const role of [undefined, null, "", "BENCH_CLERK", "advocate"]) {
+      const { auth } = setup(() => Response.json({ id: "u2", name: "Anjali Nair", role, meta: META }));
+      assert.equal((await authError(auth.getCurrentAccount())).code, "unavailable", String(role));
+    }
+  });
+
   it("rejects rather than guess who is signed in", async () => {
     const signedOut = setup(() =>
       Response.json({ errors: [{ code: "E00401", message: "Not signed in." }] }, { status: 403 }),

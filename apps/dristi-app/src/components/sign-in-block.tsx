@@ -184,10 +184,10 @@ export type SignedInAccount = {
  * Then map CLERK to it here. How a real clerk account gets office access to its
  * advocate's cases is still to be decided (the design's clerk is a demo profile).
  *
- * Everyone else (litigant, power of attorney) opens the litigant home, as does an
- * account whose role the backend did not name.
+ * Everyone else (litigant, power of attorney) opens the litigant home. A response
+ * without a known role never gets here: `getCurrentAccount` refuses it.
  */
-function portalRole(role: BackendRole | null): Role {
+function portalRole(role: BackendRole): Role {
   return role === "ADVOCATE" || role === "CLERK" ? "advocate" : "litigant";
 }
 

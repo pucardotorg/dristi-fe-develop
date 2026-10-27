@@ -45,7 +45,8 @@ export type AccountState = {
 
 /** Who is signed in, from `GET /users/me/` — the source of role and name after sign-in. */
 export type CurrentAccount = {
-  role: BackendRole | null;
+  /** Always one of the four: a response without a known role is refused, not defaulted. */
+  role: BackendRole;
   name: string | null;
   /** False when updated terms are waiting to be accepted. */
   hasCurrentTerms: boolean;

@@ -29,19 +29,9 @@ import {
   DocumentThumbnailButton,
   useObjectUrl,
 } from "@/components/document-preview";
-
-export const MAX_FILE_SIZE = 10 * 1024 * 1024;
+import { isAcceptedDocument, MAX_FILE_SIZE } from "@/lib/uploads/accepted-document";
 
 export const UPLOAD_HELP = "Upload a JPG, JPEG, PNG or PDF up to 10 MB.";
-
-const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "application/pdf"]);
-const ACCEPTED_EXTENSIONS = /\.(jpe?g|png|pdf)$/i;
-
-/** A file this field accepts: JPG, PNG or PDF, at most `MAX_FILE_SIZE`. */
-export function isAcceptedDocument(file: File): boolean {
-  const typeOk = ACCEPTED_TYPES.has(file.type) || (!file.type && ACCEPTED_EXTENSIONS.test(file.name));
-  return typeOk && ACCEPTED_EXTENSIONS.test(file.name) && file.size <= MAX_FILE_SIZE;
-}
 
 function fileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;

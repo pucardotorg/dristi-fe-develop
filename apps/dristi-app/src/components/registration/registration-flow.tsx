@@ -305,6 +305,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
         return;
       }
       case "document-too-large":
+        setIdFile(null);
         setFileProblem("tooLarge");
         setStep("verification");
         return;
@@ -577,7 +578,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
         ) : null}
 
         {step === "verification" ? (
-          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!regNumber.trim() || !idFile) return; setTouched(false); setStep("terms"); }}>
+          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!regNumber.trim() || !idFile || fileProblem) return; setTouched(false); setStep("terms"); }}>
             <Heading title={pick(verification.title, locale)} body={pick(verification.body, locale)} />
             <Field data-invalid={(touched && !regNumber.trim()) || Boolean(serverErrors.regNumber)}>
               <FieldLabel>{pick(verification.numberLabel, locale)} <span className="text-destructive">*</span></FieldLabel>
@@ -594,7 +595,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
                 required
                 file={idFile}
                 onFileChange={(file) => { setIdFile(file); setTouched(false); setFileProblem(null); setServerErrors((e) => ({ ...e, idFile: undefined })); }}
-                onRejectFile={() => setFileProblem("rejected")}
+                onRejectFile={() => { setIdFile(null); setFileProblem("rejected"); }}
                 copy={{
                   changeFile: pick(verificationUi.changeFile, locale),
                   remove: pick(verificationUi.removeFile, locale),

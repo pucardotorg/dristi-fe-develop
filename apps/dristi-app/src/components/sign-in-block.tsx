@@ -255,7 +255,7 @@ export function SignInBlock({
   const [pending, setPending] = React.useState(false);
   /* What the backend said, as a copy key: `noMatch` sits on the credential field,
      `unavailable` above the button. Cleared by any change to what is being submitted. */
-  const [serverError, setServerError] = React.useState<"noMatch" | "unavailable" | null>(
+  const [serverError, setServerError] = React.useState<"noMatch" | "unavailable" | "codeUsed" | null>(
     null,
   );
 
@@ -350,10 +350,12 @@ export function SignInBlock({
 
     setPending(true);
     setServerError(null);
+    let codeAccepted = false;
     try {
       const account = await auth.signIn(
         method === "password" ? { mobile, password } : { mobile, otp: code },
       );
+      codeAccepted = true;
       /* A rejected advocate or clerk registration: the SMS told them to sign in again,
          and this is where that lands them — the correction round, pre-filled. If it
          is no longer rejected by now, they simply carry on signed in. */
@@ -392,6 +394,14 @@ export function SignInBlock({
     } catch (error) {
       if (isAuthError(error) && error.code === "approval-pending") {
         setAwaitingApproval(true);
+        return;
+      }
+      /* The backend spends a code the moment it accepts it. If anything after that fails,
+         resending the same one gets a 401 that reads as a wrong code — so drop it and
+         ask for a new one. */
+      if (codeAccepted && method === "otp") {
+        resetCode();
+        setServerError("codeUsed");
         return;
       }
       setServerError(
@@ -826,6 +836,12 @@ export function SignInBlock({
                         in the form's own rhythm it sat equidistant between the two and
                         read as a caption on the wrong element. Once the code is out the
                         hint is gone and the button verifies. */}
+                    {serverError === "codeUsed" ? (
+                      <Alert variant="destructive">
+                        <CircleAlertIcon aria-hidden />
+                        <AlertDescription>{pick(form.codeUsed, locale)}</AlertDescription>
+                      </Alert>
+                    ) : null}
                     {serverError === "unavailable" ? (
                       <Alert variant="destructive">
                         <CircleAlertIcon aria-hidden />

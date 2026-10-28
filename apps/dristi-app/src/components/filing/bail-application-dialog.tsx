@@ -87,6 +87,7 @@ import {
 } from "@/lib/filing/content";
 import { ADVOCATE_PROFILE_NAME } from "@/lib/advocate/content";
 import { cn } from "@/lib/utils";
+import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
 import { Identifier } from "@/components/chrome/identifier";
 
 /**
@@ -107,8 +108,6 @@ export type BailApplicationResult = {
   submissionId: string;
   paid: boolean;
 };
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 function fileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -154,7 +153,7 @@ export function UploadedDocField({
         accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
         onChange={(event) => {
           const next = event.target.files?.[0];
-          if (next && next.size <= MAX_FILE_SIZE) onFileChange(next);
+          if (next && isAcceptedDocument(next)) onFileChange(next);
           // The same file can be picked again after a remove.
           event.target.value = "";
         }}

@@ -1,8 +1,7 @@
 # Dristi App
 
-Main product app for Dristi. UI look and feel comes from
-[pucar-design-system](https://github.com/pucardotorg/dristi-design-system) —
-fetched into `vendor/pucar-design-system` when you install this monorepo.
+Main product app for Dristi. Shared UI primitives live in `src/components/ui/` and
+the theme tokens in `src/app/globals.css`.
 
 ## Run
 

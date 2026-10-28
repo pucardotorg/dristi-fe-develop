@@ -128,6 +128,9 @@ export const form = {
   noMatch: t("Those details didn't match. Check the number and try again."),
   unavailable: t("Couldn't reach the server. Check your connection and try again."),
 
+  /* After a code was accepted but sign-in still failed: the code is spent. */
+  codeUsed: t("Sign-in didn't finish, and that code can't be used again. Request a new code."),
+
   submitPassword: t("Sign in"),
   submitOtp: t("Send one-time code"),
 

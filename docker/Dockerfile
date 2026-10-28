@@ -2,22 +2,13 @@
 
 ARG NODE_VERSION=22
 
-# ---- deps: install workspaces and fetch the pinned design system ----
+# ---- deps: install workspaces ----
 FROM node:${NODE_VERSION}-slim AS deps
-
-# git is needed by the postinstall step (scripts/ensure-ds.mjs), which clones
-# pucardotorg/dristi-design-system into vendor/ and checks out the ds.lock.json pin.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY package.json package-lock.json ds.lock.json ./
+COPY package.json package-lock.json ./
 COPY apps/dristi-app/package.json apps/dristi-app/package.json
-COPY scripts/ensure-ds.mjs scripts/ensure-ds.mjs
-COPY apps/dristi-app/scripts/resolve-ds.mjs apps/dristi-app/scripts/resolve-ds.mjs
 RUN npm ci
 
 # ---- builder: build the Next.js app as a standalone server ----

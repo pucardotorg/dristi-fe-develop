@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a Question
+    url: https://github.com/pucardotorg/dristi-fe-develop/issues
+    about: Search existing issues, or open a blank issue to ask a question

@@ -99,7 +99,7 @@ export const form = {
 
   mobileLabel: t("Mobile number"),
   mobilePlaceholder: t("10-digit mobile number"),
-  mobileError: t("Enter the 10 digits of your mobile number."),
+  mobileError: t("Enter the 10 digits of your mobile number"),
   /** The number step's one action. It checks the number's format only — the backend
    *  does not reveal which numbers have accounts (owner, Oct 15). */
   continue: t("Continue"),
@@ -107,7 +107,7 @@ export const form = {
      not say whether a number is registered (so nobody can probe which ones are), and the
      owner chose a format-only number step. A wrong number now fails at the credential
      step with `noMatch`, which names neither part. */
-  mobileInvalid: t("Enter a valid Indian mobile number."),
+  mobileInvalid: t("Enter a valid Indian mobile number"),
 
   /* The second step keeps the same headline as the first. A "Welcome back" to someone
      with a case on them reads as odd, not warm (owner, Sept 9). */
@@ -117,7 +117,7 @@ export const form = {
 
   passwordLabel: t("Password"),
   passwordPlaceholder: t("Enter your password"),
-  passwordError: t("Enter your password."),
+  passwordError: t("Enter your password"),
   passwordShow: t("Show password"),
   passwordHide: t("Hide password"),
   forgot: t("Forgot password?"),
@@ -125,11 +125,11 @@ export const form = {
   otpHint: t("We will send a one-time code to this number."),
 
   /* Backend answers (integration, Oct 15). */
-  noMatch: t("Those details didn't match. Check the number and try again."),
-  unavailable: t("Couldn't reach the server. Check your connection and try again."),
+  noMatch: t("Those details didn't match. Check the number and try again"),
+  unavailable: t("Couldn't reach the server. Check your connection and try again"),
 
   /* After a code was accepted but sign-in still failed: the code is spent. */
-  codeUsed: t("Sign-in didn't finish, and that code can't be used again. Request a new code."),
+  codeUsed: t("Sign-in didn't finish, and that code can't be used again. Request a new code"),
 
   submitPassword: t("Sign in"),
   submitOtp: t("Send one-time code"),
@@ -182,7 +182,7 @@ export const otp = {
   /** `{number}` is replaced with the number the code went to — shown, never assumed. */
   subtitle: t("We sent a 6-digit code to +91 {number}."),
   label: t("6-digit code"),
-  error: t("Enter all 6 digits."),
+  error: t("Enter all 6 digits"),
   show: t("Show the code"),
   hide: t("Hide the code"),
   verify: t("Verify and sign in"),

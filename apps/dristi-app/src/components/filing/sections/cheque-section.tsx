@@ -3,25 +3,18 @@
 /**
  * Cheque & return memo — the dishonoured cheque(s) and the bank's memo for each.
  *
- * Most values arrive machine-read from the uploaded cheque and memo: they keep the amber
- * prefilled fill until the person edits them, and clicking one opens that upload beside the
- * form with the read region highlighted. Correcting a value from that panel (or typing over
- * it) clears the marker. The IFSC is looked up against the public registry — a code that
- * isn't found, or a registry that can't be reached, leaves the bank fields to be typed.
+ * The uploaded cheque and memo can be opened beside the form. The IFSC is looked up
+ * against the public registry — a code that isn't found, or a registry that can't be
+ * reached, leaves the bank fields to be typed.
  */
 
 import * as React from "react";
 import { CreditCardIcon } from "lucide-react";
 
 import { blankCheque } from "@/lib/filing/blank";
-import { fromDisplayDate, toDisplayDate } from "@/lib/filing/format";
 import type { IfscResult } from "@/lib/filing/lookups";
 import { RETURN_REASONS, S138_SAFE_REASONS } from "@/lib/filing/options";
-import {
-  chequeComplete,
-  chequeSourceSlot,
-  firstReadField,
-} from "@/lib/filing/selectors";
+import { chequeComplete, chequeSourceSlot } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { ChequeField } from "@/lib/filing/types";
@@ -45,77 +38,18 @@ import {
 import { IfscField } from "@/components/filing/ifsc-field";
 import { OptionSelect, PrefixInput, TextField } from "@/components/filing/inputs";
 import { InfoWell, SectionNotice } from "@/components/filing/notices";
-import { PrefillNotice } from "@/components/filing/prefill-notice";
 import { SectionTabs } from "@/components/filing/section-tabs";
 import { YesNoSegmented } from "@/components/filing/segmented";
 import {
   SourcePanel,
   ViewSourceButton,
-  regionFromBox,
   useSourceOpenState,
 } from "@/components/filing/source-panel";
-
-/** Panel heading for each machine-read field. */
-const FIELD_LABELS: Record<ChequeField, string> = {
-  dateOnCheque: "Date on cheque",
-  amount: "Amount",
-  chequeNumber: "Cheque number",
-  ifsc: "IFSC code",
-  bankName: "Bank name",
-  bankBranch: "Bank branch",
-  presentDate: "Date of presentation",
-  returnDate: "Date of return",
-  returnReason: "Return reason",
-};
-
-const ALL_FIELDS = Object.keys(FIELD_LABELS) as ChequeField[];
-
-/** Fields read off the cheque leaf; the rest come from the return memo. */
-const CHEQUE_FIELDS: ChequeField[] = [
-  "dateOnCheque",
-  "amount",
-  "chequeNumber",
-  "ifsc",
-  "bankName",
-  "bankBranch",
-];
-
-const DATE_FIELDS: ChequeField[] = [
-  "dateOnCheque",
-  "presentDate",
-  "returnDate",
-];
-
-/** Fields read off the return memo, in the order the panel prefers to land on them. */
-const MEMO_FIELDS: ChequeField[] = [
-  "returnDate",
-  "returnReason",
-  "presentDate",
-];
-
-/** Where a chip lands when reading found nothing on that document at all. */
-const CHEQUE_FALLBACK: ChequeField = "dateOnCheque";
-const MEMO_FALLBACK: ChequeField = "returnDate";
 
 /** Tab ids are cheque ids; `null` when a stale id arrives after a removal. */
 function indexOfId(cheques: { id: string }[], id: string): number | null {
   const i = cheques.findIndex((c) => c.id === id);
   return i >= 0 ? i : null;
-}
-
-/**
- * The return reason is stored as an option value; the source panel is citizen-facing, so
- * it shows and accepts the reason as written on the memo, never the stored code.
- */
-function reasonLabel(value: string): string {
-  return RETURN_REASONS.find((o) => o.value === value)?.label ?? value;
-}
-
-function reasonValue(label: string): string {
-  const hit = RETURN_REASONS.find(
-    (o) => o.label.toLowerCase() === label.trim().toLowerCase()
-  );
-  return hit ? hit.value : "";
 }
 
 export function ChequeSection() {
@@ -129,32 +63,11 @@ export function ChequeSection() {
   const [removeOpen, setRemoveOpen] = React.useState(false);
   /**
    * The source rail is a column beside the form from `xl` up, so it starts expanded
-   * there as in the demo; collapsed, it stays in the layout as a strip. Below that it
-   * is a sheet over the form — opened on request (a prefilled field, or "View source
-   * document") rather than covering the screen on arrival.
+   * there; below that it is a sheet over the form, opened by "View source document".
    */
   const [sourceOpen, setSourceOpen] = useSourceOpenState();
-  /**
-   * `null` until the person picks a field, so the panel follows what reading actually
-   * found rather than opening on a fixed field that may be empty. Their choice wins from
-   * the moment they make one.
-   */
-  const [chosenField, setChosenField] = React.useState<ChequeField | null>(null);
-  /**
-   * Whether the rail is answering "where did *this field* come from?" or simply showing
-   * a document. A field entry point is a question about that field; a document chip is a
-   * question about the document, and the header follows whichever was asked.
-   */
-  const [explaining, setExplaining] = React.useState(false);
-  /**
-   * What the panel's value box shows while it is being retyped — a half-typed date reads
-   * back as "" from the draft, so keep the keystrokes here. Tagged with the field it
-   * belongs to so switching cheque or field falls back to the stored value.
-   */
-  const [sourceEdit, setSourceEdit] = React.useState<{
-    key: string;
-    text: string;
-  } | null>(null);
+  /** Which of this cheque's two documents the rail shows. */
+  const [sourceDoc, setSourceDoc] = React.useState<"front" | "memo">("front");
 
   const index = Math.min(active, cheques.length - 1);
   const cheque = cheques[index];
@@ -164,47 +77,24 @@ export function ChequeSection() {
 
   const frontSlot = chequeSourceSlot(draft, index, "cheque-front");
   const memoSlot = chequeSourceSlot(draft, index, "return-memo");
-  /** The field each document opens on: the first one reading found there. */
-  const chequeEntry = firstReadField(frontSlot, CHEQUE_FIELDS, CHEQUE_FALLBACK);
-  const memoEntry = firstReadField(memoSlot, MEMO_FIELDS, MEMO_FALLBACK);
-  const sourceField = chosenField ?? chequeEntry;
-
   /* Nothing uploaded for this cheque means there is no source document to show at all. */
   const sourceDocs = [
-    { slot: frontSlot, entry: chequeEntry, fallbackLabel: "Cheque (front side)" },
-    { slot: memoSlot, entry: memoEntry, fallbackLabel: "Cheque return memo" },
+    { key: "front" as const, slot: frontSlot, fallbackLabel: "Cheque (front side)" },
+    { key: "memo" as const, slot: memoSlot, fallbackLabel: "Cheque return memo" },
   ].filter((d) => d.slot?.file);
+  const sourceSlot = sourceDoc === "front" ? frontSlot : memoSlot;
 
-  const sourceKey = `${cheque.id}:${sourceField}`;
-  const sourceText = sourceEdit?.key === sourceKey ? sourceEdit.text : null;
-
-  /** Machine-read, still unverified — the amber fill and the "click to see source" affordance. */
-  const isPrefilled = (key: ChequeField) =>
-    !!cheque.prefilled[key] && !cheque.edited[key] && !!cheque[key];
-
-  /** Something on this cheque is still waiting to be checked. */
-  const anyPrefilled = ALL_FIELDS.some(isPrefilled);
-
-  /** A person supplied this value: keep it and clear the machine-read marker. */
   const editField = (key: ChequeField, value: string) =>
     update((d) => {
       d.cheques[index][key] = value;
-      d.cheques[index].edited[key] = true;
     });
 
   /** Retyping the code invalidates whatever the last lookup filled from it. */
   const editIfsc = (value: string) =>
     update((d) => {
       d.cheques[index].ifsc = value;
-      d.cheques[index].edited.ifsc = true;
       d.cheques[index].ifscFetched = false;
     });
-
-  const openSource = (field: ChequeField) => {
-    setChosenField(field);
-    setExplaining(true);
-    setSourceOpen(true);
-  };
 
   /** The registry answered — written by cheque id, since tabs can change mid-lookup. */
   const fillFromIfsc = (id: string) => (hit: IfscResult) =>
@@ -214,8 +104,6 @@ export function ChequeSection() {
       c.ifsc = hit.ifsc;
       c.bankName = hit.bank;
       c.bankBranch = hit.branch;
-      c.edited.bankName = true;
-      c.edited.bankBranch = true;
       c.ifscFetched = true;
     });
 
@@ -254,29 +142,6 @@ export function ChequeSection() {
   const reasonNeedsCheck =
     !!cheque.returnReason && !S138_SAFE_REASONS.has(cheque.returnReason);
 
-  // Source panel — which upload, which region, and the value we read there. The two
-  // documents behind this cheque come from intake; either may not be uploaded yet.
-  const fromCheque = CHEQUE_FIELDS.includes(sourceField);
-  const sourceSlot = (explaining ? [frontSlot, memoSlot].find((slot) => slot?.extract?.fields[sourceField]?.value === cheque[sourceField]) : undefined) ?? (fromCheque ? frontSlot : memoSlot);
-  /** The document in the rail — the rail's subject until a field is asked about. */
-  const sourceDocLabel =
-    sourceSlot?.label ?? (fromCheque ? "Cheque (front side)" : "Cheque return memo");
-  const isDateSource = DATE_FIELDS.includes(sourceField);
-  const storedValue = isDateSource
-    ? toDisplayDate(cheque[sourceField])
-    : sourceField === "returnReason"
-      ? reasonLabel(cheque.returnReason)
-      : cheque[sourceField];
-  const sourceValue = sourceText ?? storedValue;
-  const setSourceValue = (v: string) => {
-    setSourceEdit({ key: sourceKey, text: v });
-    if (isDateSource) editField(sourceField, fromDisplayDate(v));
-    else if (sourceField === "returnReason") editField(sourceField, reasonValue(v));
-    // A corrected code retires the last lookup, exactly as retyping the field would.
-    else if (sourceField === "ifsc") editIfsc(v.toUpperCase());
-    else editField(sourceField, v);
-  };
-
   return (
     <>
       <FilingMain sourceOpen={sourceOpen}>
@@ -300,12 +165,10 @@ export function ChequeSection() {
           onAdd={addCheque}
           trailing={
             !sourceOpen ? (
-              <ViewSourceButton onClick={() => { setExplaining(false); setSourceOpen(true); }} />
+              <ViewSourceButton onClick={() => setSourceOpen(true)} />
             ) : null
           }
         />
-
-        <PrefillNotice show={anyPrefilled} />
 
         <CorrectionInstance value={index}>
         {/* Cheque leaf */}
@@ -318,8 +181,6 @@ export function ChequeSection() {
               <DateField
                 value={cheque.dateOnCheque}
                 onChange={(v) => editField("dateOnCheque", v)}
-                prefilled={isPrefilled("dateOnCheque")}
-                onViewSource={() => openSource("dateOnCheque")}
                 ariaLabel="Date on cheque"
               />
             </FormField>
@@ -328,8 +189,6 @@ export function ChequeSection() {
                 prefix="₹"
                 value={cheque.amount}
                 onChange={(v) => editField("amount", v)}
-                prefilled={isPrefilled("amount")}
-                onViewSource={() => openSource("amount")}
                 placeholder="Enter amount"
                 inputMode="numeric"
               />
@@ -347,8 +206,6 @@ export function ChequeSection() {
               <TextField
                 value={cheque.chequeNumber}
                 onChange={(v) => editField("chequeNumber", v)}
-                prefilled={isPrefilled("chequeNumber")}
-                onViewSource={() => openSource("chequeNumber")}
                 placeholder="6-digit number"
                 inputMode="numeric"
               />
@@ -384,8 +241,6 @@ export function ChequeSection() {
                 fetched={cheque.ifscFetched}
                 tip="The 11-character code on the cheque. Fetch to auto-fill the bank name and branch."
                 placeholder="e.g. SBIN0001234"
-                prefilled={isPrefilled("ifsc")}
-                onViewSource={() => openSource("ifsc")}
               />
               <FormRow>
                 <FormField
@@ -397,8 +252,6 @@ export function ChequeSection() {
                   <TextField
                     value={cheque.bankName}
                     onChange={(v) => editField("bankName", v)}
-                    prefilled={isPrefilled("bankName")}
-                    onViewSource={() => openSource("bankName")}
                     placeholder="Drawer's bank"
                   />
                 </FormField>
@@ -411,8 +264,6 @@ export function ChequeSection() {
                   <TextField
                     value={cheque.bankBranch}
                     onChange={(v) => editField("bankBranch", v)}
-                    prefilled={isPrefilled("bankBranch")}
-                    onViewSource={() => openSource("bankBranch")}
                     placeholder="Branch name"
                   />
                 </FormField>
@@ -448,8 +299,6 @@ export function ChequeSection() {
               <DateField
                 value={cheque.presentDate}
                 onChange={(v) => editField("presentDate", v)}
-                prefilled={isPrefilled("presentDate")}
-                onViewSource={() => openSource("presentDate")}
                 ariaLabel="Date of presentation or deposit"
               />
             </FormField>
@@ -463,8 +312,6 @@ export function ChequeSection() {
               <DateField
                 value={cheque.returnDate}
                 onChange={(v) => editField("returnDate", v)}
-                prefilled={isPrefilled("returnDate")}
-                onViewSource={() => openSource("returnDate")}
                 ariaLabel="Date of return"
               />
             </FormField>
@@ -482,8 +329,6 @@ export function ChequeSection() {
                 onValueChange={(v) => editField("returnReason", v)}
                 options={RETURN_REASONS}
                 placeholder="Select reason"
-                prefilled={isPrefilled("returnReason")}
-                onViewSource={() => openSource("returnReason")}
                 ariaLabel="Return reason"
               />
             </FormField>
@@ -519,25 +364,17 @@ export function ChequeSection() {
       <SourcePanel
         open={sourceOpen}
         onOpenChange={setSourceOpen}
-        title={sourceDocLabel}
-        field={explaining ? FIELD_LABELS[sourceField] : undefined}
-        value={sourceValue}
-        onValueChange={setSourceValue}
+        title={
+          sourceSlot?.label ?? (sourceDoc === "front" ? "Cheque (front side)" : "Cheque return memo")
+        }
         chips={sourceDocs.map((d) => ({
           label: d.slot?.file?.name ?? d.slot?.label ?? d.fallbackLabel,
-          active: d.slot === sourceSlot,
-          onClick: () => {
-            setChosenField(d.entry);
-            setExplaining(false);
-          },
+          active: d.key === sourceDoc,
+          onClick: () => setSourceDoc(d.key),
         }))}
         file={sourceSlot?.file ?? null}
         uploadHref={hrefFor("upload")}
-        imageAlt={fromCheque ? "Uploaded cheque" : "Uploaded cheque return memo"}
-        region={regionFromBox(
-          sourceSlot?.extract?.fields[sourceField]?.box,
-          sourceSlot?.extract?.page
-        )}
+        imageAlt={sourceDoc === "front" ? "Uploaded cheque" : "Uploaded cheque return memo"}
         note="Shown from your uploaded document."
       />
     </>

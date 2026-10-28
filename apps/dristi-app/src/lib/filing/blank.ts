@@ -104,9 +104,6 @@ export function blankComplainant(): Complainant {
     entAddr: blankAddress(),
     rep: blankRepresentative(),
     affidavit: AFFIDAVIT_PIP_TEMPLATE,
-    prefilled: {},
-    edited: {},
-    toReview: false,
   };
 }
 
@@ -140,8 +137,6 @@ export const blankCheque = (): ChequeDetails => ({
   presentDate: "",
   returnDate: "",
   returnReason: "",
-  prefilled: {},
-  edited: {},
   ifscFetched: false,
 });
 
@@ -159,8 +154,6 @@ export const blankNotice = (): DemandNotice => ({
   nonDeliveryReason: "",
   paymentStatus: "",
   partAmount: "",
-  prefilled: {},
-  edited: {},
 });
 
 export const blankJurisdiction = (): Jurisdiction => ({
@@ -319,13 +312,7 @@ function docRow(spec: DocSpec, existing: CaseDocument | undefined, slot?: Intake
     required: spec.required,
     // Rows that mirror an intake slot always show that slot's file; others keep their own.
     file: mirrored ? mirrored.file : existing?.file ?? null,
-    quality: mirrored
-      ? mirrored.file
-        ? mirrored.poor
-          ? "bad"
-          : "good"
-        : null
-      : existing?.quality ?? null,
+    quality: mirrored ? (mirrored.file ? "good" : null) : existing?.quality ?? null,
     digital: existing?.digital ?? false,
     intakeKey: spec.intakeKey,
     custom: false,

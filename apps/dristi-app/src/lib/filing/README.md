@@ -1,31 +1,30 @@
 # E-filing — how the front end works, and where the backend plugs in
 
-The S-138 e-filing flow (`/filings/**`) is a working front end with **no server**: every
-draft, upload and the person's profile live in the browser (IndexedDB), document reading
-runs in the browser (Tesseract.js + pdf.js), and reference lookups hit public endpoints.
-It behaves like the product will — the seams below are where engineering swaps the local
-implementation for DRISTI's services. Screens do not change when that happens.
+The S-138 e-filing flow (`/filings/**`) is moving onto the DRISTI backend section by
+section. A filing starts on the backend and its documents are saved there; the rest of the
+draft is still kept in the browser (IndexedDB) as the form's working copy, and reference
+lookups hit public endpoints. Values are typed by the filer — nothing is read off the
+uploaded documents.
 
 ## Model
 
-`types.ts` is the contract. One `FilingDraft` per filing (`id`, `status: draft | filed`,
-`lastStep`, `intake`, parties, cheques, notices, …, `sign`, timestamps). Uploads are
-`StoredFileRef`s (`{ id, name, size, type, ext }`) — the bytes live in the file store.
-Machine-read values are ordinary fields plus a `prefilled[key]` mark; `edited[key]`
-means the person overrode it. `blank.ts` builds an empty draft; `buildDocumentGroups`
-derives the "List of documents" step from the case (the store recomputes it on every
-commit, so it can never disagree with the intake).
+`types.ts` is the contract. One `FilingDraft` per filing (`id`, `caseId`, `status: draft |
+filed`, `lastStep`, `intake`, parties, cheques, notices, …, `sign`, timestamps). Uploads
+are `StoredFileRef`s (`{ id, name, size, type, ext }`) — the bytes live in the file store.
+`blank.ts` builds an empty draft; `buildDocumentGroups` derives the "List of documents"
+step from the case (the store recomputes it on every commit, so it can never disagree
+with the intake).
 
-## Seams (swap these; keep the signatures)
+## Seams
 
-| Seam | Today | Replace with |
+| Seam | Today | Next |
 | --- | --- | --- |
-| `data/repository.ts` → `data/indexeddb.ts` | IndexedDB (`dristi-efiling`: `drafts`, `files`, `profile`) | HTTP repository against the case service; `getRepository()` in `data/index.ts` is the single choice point |
-| `profile.tsx` — `useProfile()` | Local profile edited from the header avatar | The product session (name, mobile, email, bar number) |
-| `ocr/index.ts` — `extractDocument(blob, ref, docType)` → `{ extract, poor }` | Tesseract.js in the browser; parsers in `ocr/parse-*.ts`; field keys in `ocr/fields.ts` | Server-side IDP returning the same `DocExtract` (fields + boxes). `ocr/apply.ts` (fields → draft with review markers) stays |
-| `lookups.ts` — `lookupIfsc`, `lookupPin` | `ifsc.razorpay.com`, `api.postalpincode.in` | Court/registry services |
+| `data/cases-api.ts` — case filing API | "Start filing" opens a backend draft (`POST /cases`) and the local draft takes its id (`draft.caseId`); every intake file is also uploaded as a case document (`use-case-documents.ts`), and removed from the case when cleared or replaced. Identity proof and loan papers have no backend type yet and stay local | Parties, evidence and details sections; then reading drafts back from `GET /cases` |
+| `data/repository.ts` → `data/indexeddb.ts` | IndexedDB (`dristi-efiling`: `drafts`, `files`) — the working copy of the draft and the file bytes for previews | Removed once the backend holds every section and serves file downloads |
+| `profile.tsx` — `useProfile()` | The signed-in account from `GET /users/me` (name, mobile, email, Bar number) | — |
+| `lookups.ts` — `lookupIfsc`, `lookupPin` | `ifsc.razorpay.com`, `api.postalpincode.in` | The backend's `GET /pincodes/{pincode}`; an IFSC service |
+| `registry.ts` | A fixed stand-in bar register and returning-litigant record | The backend's advocate search (not built yet) |
 | Sign & pay (`components/filing/sections/sign-section.tsx`) | Sandbox: any OTP, simulated payment, generated `KL-nnnnnn-yyyy` case-file number, `status = filed` | eSign provider, payment gateway, registry-issued case number |
-| Bar registry | none — advocate name is typed | Bar Council lookup by enrolment number |
 
 ## Store
 
@@ -36,9 +35,8 @@ commit, so it can never disagree with the intake).
 
 ## Runtime assets
 
-`scripts/copy-runtime-assets.mjs` (predev/prebuild) copies the pdf.js worker and
-Tesseract worker/cores/English data into `public/vendor/` (git-ignored) so nothing is
-fetched from a CDN at runtime.
+`scripts/copy-runtime-assets.mjs` (predev/prebuild) copies the pdf.js worker into
+`public/vendor/` (git-ignored) so nothing is fetched from a CDN at runtime.
 
 ## Known gaps the form does not collect yet
 

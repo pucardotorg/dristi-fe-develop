@@ -510,7 +510,7 @@ describe("HttpAuthService: correcting a rejected registration", () => {
 });
 
 describe("HttpAuthService.getCurrentAccount", () => {
-  it("reads role, name and terms from /users/me", async () => {
+  it("reads role, name, contact, Bar number and terms from /users/me", async () => {
     const { auth, calls } = setup(() =>
       Response.json({
         id: "u2",
@@ -526,6 +526,9 @@ describe("HttpAuthService.getCurrentAccount", () => {
     assert.deepEqual(await auth.getCurrentAccount(), {
       role: "ADVOCATE",
       name: "Anjali Nair",
+      mobile: "9876543210",
+      email: null,
+      barNumber: "K/1234/2020",
       hasCurrentTerms: true,
     });
     assert.equal(calls[0].url, "/api/v1/users/me");

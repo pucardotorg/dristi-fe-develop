@@ -29,9 +29,7 @@
  * **One fact on this screen has no field behind it yet.** *Date of receipt of information
  * about return* — the day the payee learnt the cheque had bounced — is what the thirty
  * days in §138(b) run from, and `DemandNotice` / `ChequeDetails` in `lib/filing/types.ts`
- * do not carry it. Our own memo reader already hunts for it (`lib/filing/ocr/parse-memo.ts`
- * looks for *intimation date*, *date of receipt*, *informed on*) and drops it on the floor
- * for want of somewhere to put it. Until that field lands, this module derives the date
+ * do not carry it. Until that field lands, this module derives the date
  * with the rest of the chain and the notice check is computed from the derived value.
  * The owner parked the filing-form change on 2026-09-14; this comment is the marker for
  * when it is picked up.

@@ -27,7 +27,7 @@ import {
   BOND_TASK_DUE_ON,
   BOND_THIRD_SURETY,
   bondCopy,
-} from "@/lib/filing/content";
+} from "@/lib/bail/content";
 import { dueStatusView } from "@/lib/cases/peek";
 import { pick } from "@/lib/onboarding/content";
 import { Identifier } from "@/components/chrome/identifier";

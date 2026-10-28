@@ -5,10 +5,8 @@
  *
  * One card per cheque and per party, supporting documents at the end, each holding DS
  * `DocumentSlot` rows. A file arrives by drop or by the picker; it is stored (IndexedDB)
- * and, for the document types we can read, run through document reading in the browser —
- * progress is the real read, and whatever it finds lands on the draft as machine-read
- * values the later steps show for review. Everything is written to `draft.intake`, so
- * add, remove and delete all persist.
+ * and saved to the backend case (`useCaseDocuments`). Everything is written to
+ * `draft.intake`, so add, remove and delete all persist.
  *
  * The screen keeps one progress statement (the block under the title). The footer only
  * says whether the step is ready, never the same count in a second voice.
@@ -32,16 +30,15 @@ import {
   intakePartyGroup,
 } from "@/lib/filing/blank";
 import { getRepository, storeUpload } from "@/lib/filing/data";
-import { forgetFile, getFileBlob, useFilePreview } from "@/lib/filing/files";
-import {
-  applyExtraction,
-  clearExtraction,
-  extractDocument,
-  extractable,
-} from "@/lib/filing/ocr";
+import { forgetFile, useFilePreview } from "@/lib/filing/files";
 import { findIntakeSlot } from "@/lib/filing/selectors";
 import { FILINGS_HOME } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import {
+  clearCaseDocument,
+  removeFromCase,
+  useCaseDocuments,
+} from "@/lib/filing/use-case-documents";
 import { cn } from "@/lib/utils";
 import type { Intake, IntakeSlot } from "@/lib/filing/types";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +60,6 @@ import { PANEL_CLASS } from "@/components/filing/form-card";
 import { SectionNotice } from "@/components/filing/notices";
 import { useInCorrection } from "@/components/filing/posture";
 import { DocumentCard } from "@/components/filing/upload/document-card";
-import { readOutcomeFor } from "@/components/filing/upload/read-status";
 import { IntakeSlotRow } from "@/components/filing/upload/slot-row";
 import {
   dragCarriesFiles,
@@ -155,24 +151,17 @@ export function UploadSection() {
   const [previewKey, setPreviewKey] = React.useState<string | null>(null);
   const [pickError, setPickError] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState<Pending | null>(null);
-  /** Read outcomes and additions, for screen readers. */
+  /** Additions and removals, for screen readers. */
   const [announcement, setAnnouncement] = React.useState("");
 
   const announce = React.useCallback((message: string) => setAnnouncement(message), []);
 
-  /** Reads in flight, by slot key — a delete or re-upload cancels the older one. */
+  /** Stores in flight, by slot key — a delete or re-upload cancels the older one. */
   const runs = React.useRef<Record<string, number>>({});
 
-  const patchSlot = React.useCallback(
-    (key: string, patch: (slot: IntakeSlot) => void) =>
-      update((d) => {
-        const slot = findIntakeSlot(d.intake, key);
-        if (slot) patch(slot);
-      }),
-    [update]
-  );
+  const { saveToCase, unsaved, retryUnsaved } = useCaseDocuments();
 
-  /** Store the chosen file on a slot, then read it (when the type is readable). */
+  /** Store the chosen file on a slot, and save it to the case. */
   const receiveFile = React.useCallback(
     async (key: string, file: File) => {
       const slot = findIntakeSlot(intake, key);
@@ -190,67 +179,20 @@ export function UploadSection() {
       }
       if (runs.current[key] !== runId) return;
 
-      const readable = extractable(slot.docType);
       update((d) => {
         const s = findIntakeSlot(d.intake, key);
         if (!s) return;
-        clearExtraction(d, key);
         s.file = ref;
-        s.extract = undefined;
-        s.error = undefined;
-        s.poor = false;
-        s.processing = readable;
-        s.progress = 0;
+        clearCaseDocument(s);
       });
       if (previous) {
         forgetFile(previous.id);
         void getRepository().deleteFile(previous.id);
       }
-      if (!readable) return;
-
-      try {
-        const blob = (await getFileBlob(ref.id)) ?? file;
-        const result = await extractDocument(blob, ref, slot.docType, (p) => {
-          if (runs.current[key] !== runId) return;
-          patchSlot(key, (s) => {
-            s.progress = p.progress;
-          });
-        });
-        if (runs.current[key] !== runId) return;
-        update((d) => {
-          const s = findIntakeSlot(d.intake, key);
-          if (!s || s.file?.id !== ref.id) return;
-          s.processing = false;
-          s.progress = 100;
-          s.extract = result.extract;
-          s.poor = result.poor;
-          applyExtraction(d, key);
-        });
-        /* Announced from the same mapping the row shows, so a read that filled seven
-           fields is never announced as a failure just because confidence was low. */
-        announce(
-          `${slot.label}: ${
-            readOutcomeFor({
-              fields: Object.keys(result.extract.fields).length,
-              poor: result.poor,
-              readable: true,
-            }).speech
-          }`
-        );
-      } catch {
-        if (runs.current[key] !== runId) return;
-        const failure = "Couldn't read this file. You can still continue and type the details.";
-        patchSlot(key, (s) => {
-          s.processing = false;
-          s.progress = 100;
-          s.error = failure;
-        });
-        announce(
-          `${slot.label}: ${readOutcomeFor({ error: failure, fields: 0, readable: true }).speech}`
-        );
-      }
+      removeFromCase([slot]);
+      void saveToCase(key, ref, file);
     },
-    [intake, update, patchSlot, announce]
+    [intake, update, saveToCase]
   );
 
   /** Choose (or re-upload) a file for a slot. */
@@ -293,32 +235,27 @@ export function UploadSection() {
     [receiveFile, announce]
   );
 
-  /** Forget the blobs behind slots we just cleared. */
-  function dropFiles(files: Array<IntakeSlot["file"]>) {
-    for (const f of files) {
-      if (!f) continue;
-      forgetFile(f.id);
-      void getRepository().deleteFile(f.id);
+  /** Forget the files behind slots we just cleared, here and on the backend case. */
+  function dropFiles(slots: IntakeSlot[]) {
+    for (const { file } of slots) {
+      if (!file) continue;
+      forgetFile(file.id);
+      void getRepository().deleteFile(file.id);
     }
+    removeFromCase(slots);
   }
 
   const deleteFile = (key: string) => {
     runs.current[key] = (runs.current[key] ?? 0) + 1;
     if (previewKey === key) setPreviewKey(null);
     const slot = findIntakeSlot(intake, key);
-    const ref = slot?.file ?? null;
     update((d) => {
       const s = findIntakeSlot(d.intake, key);
       if (!s) return;
-      clearExtraction(d, key);
       s.file = null;
-      s.extract = undefined;
-      s.error = undefined;
-      s.processing = false;
-      s.progress = 0;
-      s.poor = false;
+      clearCaseDocument(s);
     });
-    dropFiles([ref]);
+    if (slot) dropFiles([slot]);
     announce(`Removed the file for ${slot?.label ?? "that document"}.`);
   };
 
@@ -334,13 +271,12 @@ export function UploadSection() {
     if (!group) return;
     for (const slot of group.slots) runs.current[slot.key] = (runs.current[slot.key] ?? 0) + 1;
     update((d) => {
-      for (const slot of d.intake.cheques[index]?.slots ?? []) clearExtraction(d, slot.key);
       d.intake.cheques.splice(index, 1);
       d.intake.cheques.forEach((c, i) => {
         c.n = i + 1;
       });
     });
-    dropFiles(group.slots.map((s) => s.file));
+    dropFiles(group.slots);
     announce(`Cheque ${group.n} removed.`);
   };
 
@@ -356,13 +292,12 @@ export function UploadSection() {
     if (!group) return;
     for (const slot of group.slots) runs.current[slot.key] = (runs.current[slot.key] ?? 0) + 1;
     update((d) => {
-      for (const slot of d.intake.parties[index]?.slots ?? []) clearExtraction(d, slot.key);
       d.intake.parties.splice(index, 1);
       d.intake.parties.forEach((p, i) => {
         p.n = i + 1;
       });
     });
-    dropFiles(group.slots.map((s) => s.file));
+    dropFiles(group.slots);
     announce(`Party ${group.n} removed.`);
   };
 
@@ -379,7 +314,7 @@ export function UploadSection() {
 
   /* Supporting documents are a panel of their own, so they get their own drop target. */
   const supportingKeys = intake.supporting
-    .filter((s) => !s.file && !s.processing)
+    .filter((s) => !s.file)
     .map((s) => s.key);
   const supporting = useDropTarget({
     onFiles: (dropped) => dropIntoKeys(supportingKeys, dropped),
@@ -400,7 +335,7 @@ export function UploadSection() {
       return {
         title: `Remove ${slot?.label ?? "this document"}?`,
         description:
-          "The file is deleted from this browser, and anything it filled in your form is cleared. You can add it again later.",
+          "The file is removed from this filing. You can add it again later.",
       };
     }
     const group =
@@ -411,7 +346,7 @@ export function UploadSection() {
       title: `Remove ${name}?`,
       description:
         files > 0
-          ? `This deletes the ${files} document${files === 1 ? "" : "s"} added for it, and clears anything they filled in your form.`
+          ? `This removes the ${files} document${files === 1 ? "" : "s"} added for it from this filing.`
           : "This removes it, and its document slots, from this filing.",
     };
   }, [pending, intake]);
@@ -453,7 +388,7 @@ export function UploadSection() {
           description={
             inCorrection
               ? "The documents filed with the complaint, as scrutiny received them."
-              : "Add the papers you already have: the cheque, the bank's memo, the notice you sent. We read them and fill in the form for you, so it is worth doing now. You can also continue without them and add them later."
+              : "Add the papers you already have: the cheque, the bank's memo, the notice you sent. You can also continue without them and add them later."
           }
         />
 
@@ -481,6 +416,28 @@ export function UploadSection() {
             onDismiss={() => setPickError(null)}
           >
             {pickError}
+          </SectionNotice>
+        ) : null}
+
+        {unsaved.length > 0 ? (
+          <SectionNotice
+            variant="destructive"
+            announce="assertive"
+            title={
+              unsaved.length === 1
+                ? `${unsaved[0].label} wasn’t saved to your case`
+                : `${unsaved.length} documents weren’t saved to your case`
+            }
+          >
+            <span className="flex flex-col items-start gap-2">
+              <span>
+                {unsaved[0].syncError} The file{unsaved.length === 1 ? " is" : "s are"} still
+                in this browser.
+              </span>
+              <Button type="button" variant="outline" size="sm" onClick={() => void retryUnsaved()}>
+                Try again
+              </Button>
+            </span>
           </SectionNotice>
         ) : null}
 

@@ -230,7 +230,14 @@ export class HttpAuthService implements AuthService {
   }
 
   async getCurrentAccount(): Promise<CurrentAccount> {
-    let body: { role?: unknown; name?: unknown; has_current_terms?: unknown };
+    let body: {
+      role?: unknown;
+      name?: unknown;
+      mobile_number?: unknown;
+      email?: unknown;
+      has_current_terms?: unknown;
+      profile?: { bar_registration_id?: unknown } | null;
+    };
     try {
       body = await this.client.get("users/me");
     } catch (error) {
@@ -244,6 +251,9 @@ export class HttpAuthService implements AuthService {
     return {
       role: body.role as BackendRole,
       name: textOrNull(body.name),
+      mobile: toNational(text(body.mobile_number)),
+      email: textOrNull(body.email),
+      barNumber: textOrNull(body.profile?.bar_registration_id),
       hasCurrentTerms: body.has_current_terms !== false,
     };
   }

@@ -20,7 +20,6 @@
  */
 
 import type { DefectTarget } from "@/lib/tasks/types";
-import { rupees, toDisplayDate } from "./format";
 import type { FilingDraft, StepId } from "./types";
 
 type Row = Record<string, unknown> & {
@@ -136,18 +135,6 @@ const DATE_FIELDS = new Set([
 ]);
 
 /**
- * Fields whose value is a unique identifier — a cheque number, an IFSC, the tracking
- * number of a posted notice. These are transcribed character by character, where the
- * amount and the dates beside them are read as quantities.
- */
-const ID_FIELDS = new Set(["chequeNumber", "ifsc", "tracking"]);
-
-/** Is the value at this target an identifier rather than a quantity, a date or prose? */
-export function isIdentifierTarget(target: DefectTarget): boolean {
-  return target.kind === "field" && ID_FIELDS.has(target.field);
-}
-
-/**
  * Which control the inset's "Your corrected value" should be (brief §15.2, tier 3): the
  * same kind the flagged field uses, so a corrected date is picked and a corrected amount
  * is typed in rupees rather than both being loose text.
@@ -159,15 +146,6 @@ export function targetControlKind(target: DefectTarget): TargetControlKind {
   if (AMOUNT_FIELDS.has(target.field)) return "amount";
   if (DATE_FIELDS.has(target.field)) return "date";
   return "text";
-}
-
-/** A stored value in the notation the form uses for that field. Never a lossy rewrite. */
-export function displayTargetValue(target: DefectTarget, value: string | undefined): string {
-  const raw = (value ?? "").trim();
-  if (!raw || target.kind !== "field") return raw;
-  if (AMOUNT_FIELDS.has(target.field)) return rupees(raw) || raw;
-  if (DATE_FIELDS.has(target.field)) return toDisplayDate(raw) || raw;
-  return raw;
 }
 
 /**

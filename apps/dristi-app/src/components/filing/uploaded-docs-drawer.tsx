@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Lightbox } from "@/components/filing/lightbox";
-import { readOutcome, readToneClass } from "@/components/filing/upload/read-status";
 
 function DrawerRow({
   slot,
@@ -37,9 +36,6 @@ function DrawerRow({
   onOpen: (src: string, alt: string) => void;
 }) {
   const preview = useFilePreview(slot.file);
-  /* Same mapping as the upload row — the drawer takes its compact form. A low-confidence
-     scan that still filled fields reads as a read here too, never as "poor scan". */
-  const outcome = readOutcome(slot);
   const img = preview.status === "ready" ? preview.imageUrl : null;
   const body = (
     <>
@@ -61,11 +57,6 @@ function DrawerRow({
       <ItemContent className="min-w-0">
         <ItemTitle className="w-full">{slot.label}</ItemTitle>
         <ItemDescription className="truncate">{slot.file?.name}</ItemDescription>
-        {outcome ? (
-          <ItemDescription className={readToneClass(outcome.tone)}>
-            {outcome.short}
-          </ItemDescription>
-        ) : null}
       </ItemContent>
     </>
   );

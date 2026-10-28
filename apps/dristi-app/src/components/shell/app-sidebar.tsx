@@ -25,7 +25,6 @@ import { summaryOf } from "@/lib/tasks/selectors";
 import { useTasks } from "@/lib/tasks/store";
 import { BrandGlyph } from "@/components/brand-lockup";
 import { ConfirmDialog } from "@/components/shell/confirm-dialog";
-import { YourDetailsItem } from "@/components/filing/your-details-item";
 import { useAppSearch } from "@/components/shell/app-search";
 import { useChrome } from "@/components/shell/chrome";
 import { useProfile } from "@/components/shell/profile";
@@ -540,9 +539,6 @@ function ProfileFooter() {
                     ) : null}
                   </Button>
                 ) : null}
-
-                {/* Only in an area that has a filing profile to edit. */}
-                <YourDetailsItem />
 
                 {/* The sandbox's own controls, kept with the identity they act on rather
                     than behind a second account avatar in the top bar. They are scaffolding

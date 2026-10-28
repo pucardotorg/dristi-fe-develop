@@ -46,7 +46,7 @@ export type AddressBlock = {
   police: string;
 };
 
-/* ─────────────────────────────── Files & extraction ─────────────────────────────── */
+/* ────────────────────────────────────── Files ───────────────────────────────────── */
 
 /** A file the person uploaded; the bytes live in the file store under `id`. */
 export type StoredFileRef = {
@@ -58,26 +58,6 @@ export type StoredFileRef = {
   type: string;
   /** Upper-case extension for chips ("JPG", "PDF"). */
   ext: string;
-};
-
-/** Pixel box on the source page (page 1 for PDFs), origin top-left. */
-export type ExtractBox = { x0: number; y0: number; x1: number; y1: number };
-
-export type ExtractedField = {
-  value: string;
-  /** 0–100. */
-  confidence: number;
-  box?: ExtractBox;
-};
-
-/** What document reading produced for one upload — the parsed fields, not the raw text. */
-export type DocExtract = {
-  engine: "pdf-text" | "tesseract";
-  /** Mean word confidence, 0–100 (100 for a PDF text layer). */
-  confidence: number;
-  page: { width: number; height: number };
-  fields: Record<string, ExtractedField>;
-  extractedAt: string;
 };
 
 /* ───────────────────────── Intake (Case documents upload) ───────────────────────── */
@@ -104,15 +84,12 @@ export type IntakeSlot = {
   /** Required for filing; optional slots render the "Optional" chip. */
   required: boolean;
   file: StoredFileRef | null;
-  /** Reading in progress (upload landed, extraction running). */
-  processing?: boolean;
-  /** 0–100 while processing. */
-  progress?: number;
-  /** Extraction confidence too low, or the image too small, to trust the read. */
-  poor?: boolean;
-  extract?: DocExtract;
-  /** Reading failed (unsupported file, engine error) — the upload itself is kept. */
-  error?: string;
+  /** The file's id on the backend case, once it is saved there. */
+  caseDocumentId?: string;
+  /** Being saved to the backend case. */
+  syncing?: boolean;
+  /** Saving to the backend case failed; the file is still in this browser. */
+  syncError?: string;
 };
 
 export type IntakeGroup = { n: number; slots: IntakeSlot[] };
@@ -153,9 +130,6 @@ export type Representative = {
   /** Optional. */
   differentlyAbled: DifferentlyAbled;
 };
-
-/** Field keys that document reading can machine-fill on a complainant. */
-export type ComplainantPrefillKey = "name" | "email" | "res" | "entName" | "age";
 
 /** A video of an advocate reciting the oath, uploaded or recorded in place. */
 export type OathVideoUpload = {
@@ -204,9 +178,6 @@ export type Complainant = {
   rep: Representative;
   /** Party-in-person affidavit body (HTML from the rich text editor). */
   affidavit: string;
-  prefilled: Partial<Record<ComplainantPrefillKey, boolean>>;
-  edited: Partial<Record<ComplainantPrefillKey, boolean>>;
-  toReview: boolean;
 };
 
 /* ─────────────────────────────────── Advocate ───────────────────────────────────── */
@@ -270,8 +241,6 @@ export type ChequeDetails = {
   presentDate: ISODate;
   returnDate: ISODate;
   returnReason: string;
-  prefilled: Partial<Record<ChequeField, boolean>>;
-  edited: Partial<Record<ChequeField, boolean>>;
   ifscFetched: boolean;
 };
 
@@ -299,8 +268,6 @@ export type DemandNotice = {
   nonDeliveryReason: string;
   paymentStatus: "" | "none" | "part";
   partAmount: string;
-  prefilled: Partial<Record<NoticeField, boolean>>;
-  edited: Partial<Record<NoticeField, boolean>>;
 };
 
 /* ─────────────────────────── Jurisdiction & limitation ──────────────────────────── */
@@ -537,6 +504,12 @@ export type DismissedNotices = {
 export type FilingDraft = {
   version: 7;
   id: string;
+  /**
+   * The backend case this draft saves to — the same value as `id`, since the backend
+   * keeps the draft session's id for the case. Absent on drafts that live only in this
+   * browser: sample and batch drafts, and drafts made before the backend was wired.
+   */
+  caseId?: string;
   /** `pss25` has no filing flow yet — such a draft opens the placeholder page. */
   caseType: "s138" | "pss25";
   status: "draft" | "filed";

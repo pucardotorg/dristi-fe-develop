@@ -15,7 +15,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FileTextIcon, InboxIcon } from "lucide-react";
 
-import { ensureScrutinyDraft } from "@/lib/filing/scrutiny-demo";
 import { FilingProvider } from "@/lib/filing/store";
 import { canView } from "@/lib/tasks/permissions";
 import { useTasks } from "@/lib/tasks/store";
@@ -106,19 +105,6 @@ export function ScrutinyReturnPage() {
   const kase = task ? (cases.find((c) => c.id === task.caseId) ?? null) : null;
   const draftId = task?.draftId;
 
-  /* The demonstrated return's filing is seeded into this browser on first arrival. */
-  const [seeded, setSeeded] = React.useState(false);
-  React.useEffect(() => {
-    if (!draftId) return;
-    let live = true;
-    void ensureScrutinyDraft(draftId).then(() => {
-      if (live) setSeeded(true);
-    });
-    return () => {
-      live = false;
-    };
-  }, [draftId]);
-
   if (state !== "ready") return <Loading root={origin} />;
 
   if (!task || !kase) {
@@ -183,8 +169,6 @@ export function ScrutinyReturnPage() {
       </Frame>
     );
   }
-
-  if (!seeded) return <Loading root={origin} />;
 
   return (
     <FilingProvider

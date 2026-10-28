@@ -219,6 +219,7 @@ export function ResubmissionFlow({
           return;
         }
         case "document-too-large":
+          setIdFile(null);
           setFileProblem("tooLarge");
           return;
         // The session ended, or the registration is no longer the rejected one (it
@@ -500,7 +501,7 @@ export function ResubmissionFlow({
               event.preventDefault();
               if (pending) return;
               setTouched(true);
-              if (!regNumber.trim() || !idFile) return;
+              if (!regNumber.trim() || !idFile || fileProblem) return;
               setTouched(false);
               void resubmit();
             }}
@@ -554,7 +555,11 @@ export function ResubmissionFlow({
                   setFileProblem(null);
                   setServerErrors((e) => ({ ...e, idFile: undefined }));
                 }}
-                onRejectFile={() => setFileProblem("rejected")}
+                onRejectFile={() => {
+                  // A refused pick must not leave the old file to be sent.
+                  setIdFile(null);
+                  setFileProblem("rejected");
+                }}
                 copy={{
                   changeFile: pick(verificationUi.changeFile, locale),
                   remove: pick(verificationUi.removeFile, locale),

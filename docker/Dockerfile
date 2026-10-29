@@ -33,6 +33,14 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 
+# API_BASE_URL (the backend API root the /api/v1 proxy forwards to) is read at request
+# time, so it is deliberately not baked in: one image serves every environment. Supply
+# it at run:
+#   docker run -e API_BASE_URL=https://be.dristi-dev.in/api/v1 -p 3000:3000 <image>
+# Unset, /api/v1 answers 503 with a hint and the rest of the app works as before.
+# NEXT_PUBLIC_* settings (sign-in source, app address) are the exception: they are
+# fixed at build time; see apps/dristi-app/.env.example.
+
 WORKDIR /app
 
 # Standalone output keeps the monorepo layout: server.js lives under apps/dristi-app.

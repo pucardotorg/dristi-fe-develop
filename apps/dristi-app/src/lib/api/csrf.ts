@@ -5,8 +5,6 @@
  * DELETE) must also prove it came from this app: Django compares the `X-CSRFToken`
  * header with the `csrftoken` cookie it set at sign-in. The cookie is deliberately not
  * HttpOnly (Django's default) so this code can read it.
- *
- * Further reading: https://docs.djangoproject.com/en/5.0/howto/csrf/
  */
 
 /** Django's default `CSRF_COOKIE_NAME`. Change both sides together if it ever moves. */

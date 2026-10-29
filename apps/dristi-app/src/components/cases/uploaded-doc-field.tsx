@@ -29,7 +29,7 @@ import {
   DocumentThumbnailButton,
   useObjectUrl,
 } from "@/components/document-preview";
-import { isAcceptedDocument, MAX_FILE_SIZE } from "@/lib/uploads/accepted-document";
+import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
 
 export const UPLOAD_HELP = "Upload a JPG, JPEG, PNG or PDF up to 10 MB.";
 
@@ -89,7 +89,7 @@ export function UploadedDocField({
   file: File | null;
   onFileChange: (file: File | null) => void;
   /** Called with a picked file this field will not take (wrong type, over 10 MB), so
-      the host can say why. Without it the pick is ignored, as it always was. */
+      the host can say why. Without it the pick is ignored. */
   onRejectFile?: (file: File) => void;
   /** Bilingual hosts (registration) pass their own strings; the case flows'
       English defaults stand otherwise. */
@@ -115,10 +115,9 @@ export function UploadedDocField({
         accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
         onChange={(event) => {
           const next = event.target.files?.[0];
-          // Hosts that handle refusals get the full check (type and size); the
-          // others keep the size-only rule they were built against.
-          const accepted = next && (onRejectFile ? isAcceptedDocument(next) : next.size <= MAX_FILE_SIZE);
-          if (next && accepted) onFileChange(next);
+          // The picker's `accept` is only a hint, so every host gets the full check
+          // (type, extension and size); `onRejectFile` just lets it say why.
+          if (next && isAcceptedDocument(next)) onFileChange(next);
           else if (next) onRejectFile?.(next);
           // The same file can be picked again after a remove.
           event.target.value = "";

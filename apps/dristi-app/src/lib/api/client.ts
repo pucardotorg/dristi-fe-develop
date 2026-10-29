@@ -22,9 +22,9 @@
 import { CSRF_HEADER_NAME, readCsrfToken } from "./csrf";
 import { unwrapEnvelope, type ResponseMeta } from "./envelope";
 import { ApiError, parseErrorBody, parseRetryAfter } from "./errors";
+import { API_BASE_PATH } from "./paths";
 
-/** Where the API proxy is mounted on this app's origin. */
-export const API_BASE_PATH = "/api/v1";
+export { API_BASE_PATH };
 
 /** Default client-side timeout. Pass `timeoutMs` per call for slow uploads. */
 export const DEFAULT_TIMEOUT_MS = 30_000;

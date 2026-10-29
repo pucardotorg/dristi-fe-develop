@@ -19,9 +19,8 @@
  */
 
 import * as React from "react";
-import { ArrowLeftIcon, CircleAlertIcon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   DescriptionDetails,
@@ -59,19 +58,21 @@ import {
   verificationSteps,
   verificationUi,
 } from "@/lib/registration/content";
+import {
+  EMAIL,
+  idFileError,
+  REGISTRATION_NUMBER_MAX,
+  type FileProblem,
+  type ServerFieldErrors,
+} from "@/lib/registration/validation";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 
 import { AwaitingApproval } from "./awaiting-approval";
+import { SubmitErrorAlert } from "./submit-error-alert";
 
 type Step = "name" | "contact" | "verification" | "success" | "application";
 type StepKey = (typeof STEP_KEYS)[number];
-/** The backend's own per-field messages from the last refused resubmission. */
-type ServerFieldErrors = Partial<Record<"name" | "email" | "regNumber" | "idFile", string>>;
-
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-/** Longest registration number the backend stores (bar ID / clerk number). */
-const REGISTRATION_NUMBER_MAX = 64;
 
 const STEP_KEYS = ["name", "contact", "verification"] as const;
 
@@ -155,7 +156,7 @@ export function ResubmissionFlow({
   const [serverErrors, setServerErrors] = React.useState<ServerFieldErrors>({});
   /* What is wrong with the document, as a copy key (a language switch re-renders it):
      a picked file the field refused, or one the server refused as too large. */
-  const [fileProblem, setFileProblem] = React.useState<"rejected" | "tooLarge" | null>(null);
+  const [fileProblem, setFileProblem] = React.useState<FileProblem | null>(null);
   const [submitError, setSubmitError] = React.useState<"unavailable" | "signInAgain" | null>(
     null
   );
@@ -219,6 +220,7 @@ export function ResubmissionFlow({
           return;
         }
         case "document-too-large":
+          setIdFile(null);
           setFileProblem("tooLarge");
           return;
         // The session ended, or the registration is no longer the rejected one (it
@@ -500,7 +502,7 @@ export function ResubmissionFlow({
               event.preventDefault();
               if (pending) return;
               setTouched(true);
-              if (!regNumber.trim() || !idFile) return;
+              if (!regNumber.trim() || !idFile || fileProblem) return;
               setTouched(false);
               void resubmit();
             }}
@@ -554,7 +556,11 @@ export function ResubmissionFlow({
                   setFileProblem(null);
                   setServerErrors((e) => ({ ...e, idFile: undefined }));
                 }}
-                onRejectFile={() => setFileProblem("rejected")}
+                onRejectFile={() => {
+                  // A refused pick must not leave the old file to be sent.
+                  setIdFile(null);
+                  setFileProblem("rejected");
+                }}
                 copy={{
                   changeFile: pick(verificationUi.changeFile, locale),
                   remove: pick(verificationUi.removeFile, locale),
@@ -571,31 +577,23 @@ export function ResubmissionFlow({
                 {pick(verificationUi.fileHelp, locale)}
               </FieldDescription>
               <FieldError>
-                {serverErrors.idFile ??
-                  (fileProblem
-                    ? pick(
-                        fileProblem === "tooLarge"
-                          ? verificationUi.fileTooLargeForServer
-                          : verificationUi.fileRejected,
-                        locale
-                      )
-                    : touched && !idFile
-                      ? pick(verification.uploadError, locale)
-                      : null)}
+                {idFileError({
+                  serverError: serverErrors.idFile,
+                  fileProblem,
+                  missingMessage: touched && !idFile ? pick(verification.uploadError, locale) : null,
+                  locale,
+                })}
               </FieldError>
             </Field>
             {submitError ? (
-              <Alert variant="destructive">
-                <CircleAlertIcon aria-hidden />
-                <AlertDescription>
-                  {pick(
-                    submitError === "signInAgain"
-                      ? rejectionUi.signInAgain
-                      : registrationUi.unavailable,
-                    locale
-                  )}
-                </AlertDescription>
-              </Alert>
+              <SubmitErrorAlert
+                message={pick(
+                  submitError === "signInAgain"
+                    ? rejectionUi.signInAgain
+                    : registrationUi.unavailable,
+                  locale
+                )}
+              />
             ) : null}
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
               <Button

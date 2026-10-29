@@ -41,18 +41,25 @@ import {
   verificationUi,
 } from "@/lib/registration/content";
 import { loadCommonPasswords, passwordProblem } from "@/lib/registration/password-policy";
+import {
+  EMAIL,
+  idFileError,
+  REGISTRATION_NUMBER_MAX,
+  type FileProblem,
+  type ServerFieldErrors,
+} from "@/lib/registration/validation";
 import { cn } from "@/lib/utils";
 
 import { MaskedOtp, OTP_LENGTH } from "./masked-otp";
 import { Identifier } from "@/components/chrome/identifier";
 import { AwaitingApproval } from "./awaiting-approval";
+import { SubmitErrorAlert } from "./submit-error-alert";
 
 type Step = "role" | "name" | "contact" | "password" | "verification" | "terms" | "success" | "application";
 type AccountRole = "litigant" | "advocate" | "advocateClerk" | "poa" | "";
 /** Which backend call is in flight, so only its button shows progress. */
 type Pending = "send" | "verify" | "submit" | null;
 /** The backend's own per-field messages from the last refused submission. */
-type ServerFieldErrors = Partial<Record<"name" | "email" | "password" | "regNumber" | "idFile", string>>;
 
 /** What the finished registration hands to the caller. */
 export type RegistrationResult = {
@@ -64,14 +71,10 @@ export type RegistrationResult = {
   mobile: string;
 };
 const DIGITS = /\D/g;
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RESEND_SECONDS = 30;
 
 /** Which roles the court must approve before the account works. */
 const NEEDS_VERIFICATION = new Set<AccountRole>(["advocate", "advocateClerk"]);
-
-/** Longest registration number the backend stores (bar ID / clerk number). */
-const REGISTRATION_NUMBER_MAX = 64;
 
 function Heading({ title, body }: { title: string; body: string }) {
   return (
@@ -151,7 +154,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
   /* What is wrong with the document, as a copy key so a language switch re-renders it:
      a picked file the field refused (wrong type, over 10 MB), or one the server refused
      as too large to accept. */
-  const [fileProblem, setFileProblem] = React.useState<"rejected" | "tooLarge" | null>(null);
+  const [fileProblem, setFileProblem] = React.useState<FileProblem | null>(null);
   /* A number the person can quote at the court. Only a readable one the backend sends;
      never invented here (owner, Oct 19). Null until the backend provides it. */
   const [applicationNumber, setApplicationNumber] = React.useState<string | null>(null);
@@ -305,6 +308,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
         return;
       }
       case "document-too-large":
+        setIdFile(null);
         setFileProblem("tooLarge");
         setStep("verification");
         return;
@@ -577,7 +581,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
         ) : null}
 
         {step === "verification" ? (
-          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!regNumber.trim() || !idFile) return; setTouched(false); setStep("terms"); }}>
+          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!regNumber.trim() || !idFile || fileProblem) return; setTouched(false); setStep("terms"); }}>
             <Heading title={pick(verification.title, locale)} body={pick(verification.body, locale)} />
             <Field data-invalid={(touched && !regNumber.trim()) || Boolean(serverErrors.regNumber)}>
               <FieldLabel>{pick(verification.numberLabel, locale)} <span className="text-destructive">*</span></FieldLabel>
@@ -594,7 +598,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
                 required
                 file={idFile}
                 onFileChange={(file) => { setIdFile(file); setTouched(false); setFileProblem(null); setServerErrors((e) => ({ ...e, idFile: undefined })); }}
-                onRejectFile={() => setFileProblem("rejected")}
+                onRejectFile={() => { setIdFile(null); setFileProblem("rejected"); }}
                 copy={{
                   changeFile: pick(verificationUi.changeFile, locale),
                   remove: pick(verificationUi.removeFile, locale),
@@ -605,7 +609,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
               <FieldDescription>{pick(verification.uploadHint, locale)} {pick(verificationUi.fileHelp, locale)}</FieldDescription>
               {/* The server's own reason wins (it reads the file's contents); then a
                   refused pick; then the missing-file prompt. */}
-              <FieldError>{serverErrors.idFile ?? (fileProblem ? pick(fileProblem === "tooLarge" ? verificationUi.fileTooLargeForServer : verificationUi.fileRejected, locale) : touched && !idFile ? pick(verification.uploadError, locale) : null)}</FieldError>
+              <FieldError>{idFileError({ serverError: serverErrors.idFile, fileProblem, missingMessage: touched && !idFile ? pick(verification.uploadError, locale) : null, locale })}</FieldError>
             </Field>
             <Actions locale={locale} onBack={() => { setTouched(false); setStep("password"); }} />
           </form>
@@ -616,12 +620,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
             <Heading title={pick(termsStep.title, locale)} body={pick(termsStep.body, locale)} />
             <div className="divide-y divide-border border-y border-border">{termsStep.clauses.map((clause, index) => <div key={index} className="flex gap-3 py-4"><span className="text-body-compact font-semibold text-muted-foreground">{index + 1}.</span><p className="text-body-compact text-muted-foreground">{pick(clause, locale)}</p></div>)}</div>
             <Field data-invalid={touched && !termsAccepted}><div className="flex items-start gap-3 rounded-lg bg-surface-sunken p-4"><Checkbox id="registration-terms" checked={termsAccepted} onCheckedChange={(checked) => { setTermsAccepted(checked === true); setTouched(false); }} /><Label htmlFor="registration-terms" className="cursor-pointer text-body-compact leading-5">{pick(termsStep.accept, locale)}</Label></div><FieldError>{touched && !termsAccepted ? pick(termsStep.error, locale) : null}</FieldError></Field>
-            {submitError === "unavailable" ? (
-              <Alert variant="destructive">
-                <CircleAlertIcon aria-hidden />
-                <AlertDescription>{pick(registrationUi.unavailable, locale)}</AlertDescription>
-              </Alert>
-            ) : null}
+            {submitError === "unavailable" ? <SubmitErrorAlert message={pick(registrationUi.unavailable, locale)} /> : null}
             {/* Scaffolding, English-only like the other prototype notices: only the
                 litigant registration is connected to the backend so far. */}
             {submitError === "notSupported" ? (

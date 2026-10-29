@@ -52,10 +52,9 @@ import { DocumentSlot } from "@/components/ui/document-slot";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { RequiredMark } from "@/components/filing/form-field";
 import { cn } from "@/lib/utils";
+import { isAcceptedType, MAX_FILE_SIZE } from "@/lib/uploads/accepted-document";
 import { Identifier } from "@/components/chrome/identifier";
 
-export const MAX_FILING_FILE_SIZE = 10 * 1024 * 1024;
-const ACCEPTED_FILE_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
 const PREVIEWABLE_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png"];
 const ACCEPTED_FILE_TYPES =
   ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
@@ -79,15 +78,12 @@ function fileKey(file: File): string {
 }
 
 export function validateSelectedFiles(files: File[]): string | null {
-  const unsupported = files.find((file) => {
-    const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-    return !ACCEPTED_FILE_EXTENSIONS.includes(extension);
-  });
+  const unsupported = files.find((file) => !isAcceptedType(file));
   if (unsupported) {
     return `${unsupported.name} is not a supported file. Choose PDF, JPG, JPEG or PNG.`;
   }
 
-  const tooLarge = files.find((file) => file.size > MAX_FILING_FILE_SIZE);
+  const tooLarge = files.find((file) => file.size > MAX_FILE_SIZE);
   if (tooLarge) {
     return `${tooLarge.name} is larger than 10 MB.`;
   }

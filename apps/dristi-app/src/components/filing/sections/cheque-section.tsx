@@ -9,6 +9,7 @@
  */
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { CreditCardIcon } from "lucide-react";
 
 import { blankCheque } from "@/lib/filing/blank";
@@ -17,6 +18,7 @@ import { RETURN_REASONS, S138_SAFE_REASONS } from "@/lib/filing/options";
 import { chequeComplete, chequeSourceSlot } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { removeChequeEvidence, useChequeEvidence } from "@/lib/filing/use-cheque-evidence";
 import type { ChequeField } from "@/lib/filing/types";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { DateField } from "@/components/filing/date-field";
@@ -55,6 +57,8 @@ function indexOfId(cheques: { id: string }[], id: string): number | null {
 export function ChequeSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("cheque");
+  const router = useRouter();
+  const { save, saving, error } = useChequeEvidence();
   const cheques = draft.cheques;
 
   const [active, setActive] = React.useState(0);
@@ -125,9 +129,12 @@ export function ChequeSection() {
     const i = removeIndex;
     setRemoveOpen(false);
     if (cheques.length <= 1) return;
+    const removed = cheques[i];
     update((d) => {
       d.cheques.splice(i, 1);
     });
+    // Take its cheque and return-memo evidence off the backend case, if it reached one.
+    removeChequeEvidence(removed);
     const remaining = cheques.length - 1;
     let a = index;
     if (i < a) a -= 1;
@@ -141,6 +148,14 @@ export function ChequeSection() {
   const inheritedBank = previous?.bankName || "previous cheque";
   const reasonNeedsCheck =
     !!cheque.returnReason && !S138_SAFE_REASONS.has(cheque.returnReason);
+
+  /* Save every complete cheque and return memo to the case, then move on. A save failure
+     keeps the filer here with the reason, so the data loss is visible. */
+  const continueHref = next ? hrefFor(next) : undefined;
+  const handleContinue = async () => {
+    const result = await save();
+    if (result.ok && continueHref) router.push(continueHref);
+  };
 
   return (
     <>
@@ -345,11 +360,19 @@ export function ChequeSection() {
 
         </FormCard>
         </CorrectionInstance>
+
+        {error ? (
+          <SectionNotice variant="destructive" title="Couldn't save to the court's server">
+            {error}
+          </SectionNotice>
+        ) : null}
       </FilingMain>
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        continueHref={next ? hrefFor(next) : undefined}
+        onContinue={continueHref ? handleContinue : undefined}
+        continueDisabled={saving}
+        continueLabel={saving ? "Saving…" : "Continue"}
       />
 
       <ConfirmDialog

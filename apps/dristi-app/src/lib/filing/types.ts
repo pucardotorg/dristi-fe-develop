@@ -242,6 +242,10 @@ export type ChequeDetails = {
   returnDate: ISODate;
   returnReason: string;
   ifscFetched: boolean;
+  /** This cheque's CHEQUE evidence row on the backend case, once it has been saved there. */
+  chequeEvidenceId?: string;
+  /** The matching RETURN_MEMO evidence row on the backend case, once it has been saved there. */
+  returnMemoEvidenceId?: string;
 };
 
 /* ───────────────────────────── Demand notice & debt ─────────────────────────────── */

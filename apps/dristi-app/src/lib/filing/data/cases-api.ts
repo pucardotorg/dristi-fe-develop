@@ -4,17 +4,22 @@
  *   startDraft        POST   /cases                       { case_type }  → draft_session_id
  *   uploadDocument    POST   /cases/{id}/documents        multipart: file, document_type
  *   deleteDocument    DELETE /case-documents/{case_document_id}
+ *   addEvidence       POST   /cases/{id}/evidence         { evidence_type, evidence_info, case_document_id? }
+ *   updateEvidence    PATCH  /case-evidence/{case_evidence_id}
+ *   deleteEvidence    DELETE /case-evidence/{case_evidence_id}
  *
  * The backend creates the case lazily, on the first save, and gives it the draft
  * session's id — so the id `startDraft` returns is the case id for the life of the
  * filing, and the local draft is stored under it.
  *
- * Only the documents step talks to the backend so far; everything else on the draft is
- * still kept in this browser (see ../README.md).
+ * The documents and evidence steps talk to the backend; the other sections of the draft
+ * are still kept in this browser (see ../README.md). The body shapes for evidence are
+ * built from the draft in `../evidence.ts`.
  */
 
 import { api, isApiError, type ApiClient } from "@/lib/api";
 
+import type { EvidenceType } from "../evidence";
 import type { IntakeDocType } from "../types";
 
 /** Registered case-filing error codes this file branches on (spec §7). */
@@ -65,11 +70,31 @@ export type UploadedCaseDocument = {
   documentType: string;
 };
 
+/** An `evidence_info` body; its keys and value types are the backend's per-type schema. */
+export type EvidenceInfo = Record<string, string | number | boolean>;
+
+export type SavedEvidence = {
+  caseEvidenceId: string;
+  evidenceType: string;
+  /** The row's place within its evidence type, 1-based (cheque #1, return memo #1, …). */
+  ordinal: number;
+};
+
 type DraftSessionBody = { draft_session_id?: unknown };
 type CaseDocumentBody = { case_id?: unknown; case_document_id?: unknown; document_type?: unknown };
+type CaseEvidenceBody = { case_evidence_id?: unknown; evidence_type?: unknown; ordinal?: unknown };
 
 function unexpected(what: string): Error {
   return new Error(`Unexpected ${what} response from the case service.`);
+}
+
+function toSavedEvidence(body: CaseEvidenceBody | null): SavedEvidence {
+  if (!body || typeof body.case_evidence_id !== "string") throw unexpected("evidence");
+  return {
+    caseEvidenceId: body.case_evidence_id,
+    evidenceType: typeof body.evidence_type === "string" ? body.evidence_type : "",
+    ordinal: typeof body.ordinal === "number" ? body.ordinal : 0,
+  };
 }
 
 /**
@@ -136,6 +161,52 @@ export function createCaseFilingApi(client: ApiClient = api) {
     /** Remove a document from the case. The stored file itself is kept by the backend. */
     async deleteDocument(caseDocumentId: string): Promise<void> {
       await client.delete(`case-documents/${encodeURIComponent(caseDocumentId)}`);
+    },
+
+    /**
+     * Add a cheque, return memo or demand notice to the case (creating the case on the
+     * first save). The ordinal is assigned by the backend, one per evidence type.
+     */
+    async addEvidence(
+      caseId: string,
+      input: { evidenceType: EvidenceType; evidenceInfo: EvidenceInfo; caseDocumentId?: string | null },
+      signal?: AbortSignal
+    ): Promise<SavedEvidence> {
+      const body: Record<string, unknown> = {
+        evidence_type: input.evidenceType,
+        evidence_info: input.evidenceInfo,
+      };
+      // Left out when there is no linked document yet; a scan can be attached later.
+      if (input.caseDocumentId != null) body.case_document_id = input.caseDocumentId;
+      return toSavedEvidence(
+        await client.post<CaseEvidenceBody>(`cases/${encodeURIComponent(caseId)}/evidence`, body, { signal })
+      );
+    },
+
+    /**
+     * Change an evidence row's fields, its linked document, or both. Pass `caseDocumentId:
+     * null` to unlink a document; leave it out to keep the current link.
+     */
+    async updateEvidence(
+      caseEvidenceId: string,
+      patch: { evidenceInfo?: EvidenceInfo; caseDocumentId?: string | null },
+      signal?: AbortSignal
+    ): Promise<SavedEvidence> {
+      const body: Record<string, unknown> = {};
+      if (patch.evidenceInfo !== undefined) body.evidence_info = patch.evidenceInfo;
+      if (patch.caseDocumentId !== undefined) body.case_document_id = patch.caseDocumentId;
+      return toSavedEvidence(
+        await client.patch<CaseEvidenceBody>(
+          `case-evidence/${encodeURIComponent(caseEvidenceId)}`,
+          body,
+          { signal }
+        )
+      );
+    },
+
+    /** Remove an evidence row from the case. */
+    async deleteEvidence(caseEvidenceId: string): Promise<void> {
+      await client.delete(`case-evidence/${encodeURIComponent(caseEvidenceId)}`);
     },
   };
 }

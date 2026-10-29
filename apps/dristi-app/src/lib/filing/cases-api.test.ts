@@ -117,6 +117,82 @@ describe("deleteDocument", () => {
   });
 });
 
+describe("addEvidence", () => {
+  it("posts the evidence type, info and linked document to the case", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        { case_evidence_id: "ev-1", evidence_type: "CHEQUE", ordinal: 1, meta: META },
+        { status: 201 }
+      )
+    );
+    const saved = await cases.addEvidence("c0ffee", {
+      evidenceType: "CHEQUE",
+      evidenceInfo: { amount: 50000, cheque_number: "456789" },
+      caseDocumentId: "doc-1",
+    });
+    assert.deepEqual(saved, { caseEvidenceId: "ev-1", evidenceType: "CHEQUE", ordinal: 1 });
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/evidence");
+    assert.equal(calls[0].method, "POST");
+    assert.deepEqual(calls[0].body, {
+      evidence_type: "CHEQUE",
+      evidence_info: { amount: 50000, cheque_number: "456789" },
+      case_document_id: "doc-1",
+    });
+  });
+
+  it("leaves case_document_id out when there is no linked document", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_evidence_id: "ev-2", evidence_type: "RETURN_MEMO", ordinal: 1, meta: META }, { status: 201 })
+    );
+    await cases.addEvidence("c0ffee", { evidenceType: "RETURN_MEMO", evidenceInfo: { return_reason: "x" } });
+    assert.ok(!("case_document_id" in (calls[0].body as object)));
+  });
+
+  it("refuses a response without an evidence id", async () => {
+    const { cases } = setup(() => Response.json({ meta: META }, { status: 201 }));
+    await assert.rejects(
+      cases.addEvidence("c0ffee", { evidenceType: "CHEQUE", evidenceInfo: {} })
+    );
+  });
+});
+
+describe("updateEvidence", () => {
+  it("patches the evidence row by its own id", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_evidence_id: "ev-1", evidence_type: "CHEQUE", ordinal: 1, meta: META }, { status: 200 })
+    );
+    await cases.updateEvidence("ev-1", { evidenceInfo: { amount: 60000 }, caseDocumentId: "doc-9" });
+    assert.equal(calls[0].url, "/api/v1/case-evidence/ev-1");
+    assert.equal(calls[0].method, "PATCH");
+    assert.deepEqual(calls[0].body, { evidence_info: { amount: 60000 }, case_document_id: "doc-9" });
+  });
+
+  it("omits case_document_id to keep the current link", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_evidence_id: "ev-1", evidence_type: "CHEQUE", ordinal: 1, meta: META }, { status: 200 })
+    );
+    await cases.updateEvidence("ev-1", { evidenceInfo: { amount: 60000 } });
+    assert.ok(!("case_document_id" in (calls[0].body as object)));
+  });
+
+  it("sends case_document_id: null to unlink a document", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_evidence_id: "ev-1", evidence_type: "CHEQUE", ordinal: 1, meta: META }, { status: 200 })
+    );
+    await cases.updateEvidence("ev-1", { caseDocumentId: null });
+    assert.deepEqual(calls[0].body, { case_document_id: null });
+  });
+});
+
+describe("deleteEvidence", () => {
+  it("deletes the evidence row by its own id", async () => {
+    const { cases, calls } = setup(() => new Response(null, { status: 204 }));
+    await cases.deleteEvidence("ev-1");
+    assert.equal(calls[0].url, "/api/v1/case-evidence/ev-1");
+    assert.equal(calls[0].method, "DELETE");
+  });
+});
+
 describe("caseFilingErrorMessage", () => {
   it("names a submitted case before anything else", () => {
     assert.match(caseFilingErrorMessage(httpError(409, ["E07001"])), /submitted/);

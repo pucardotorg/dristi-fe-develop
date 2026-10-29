@@ -99,7 +99,7 @@ export type HearingStatus = "now" | "upcoming" | "concluded";
 
 export type HomeHearing = {
   kase: Case;
-  /** Cause-list position for the day in this court — derived from time order. */
+  /** Cause-list position for the day in this court, on the whole docket — derived from time order. */
   item: number;
   /** The listed time (`Case.nextHearingAt`). */
   at: string;
@@ -137,6 +137,24 @@ function blockersOf(world: World, kase: Case, now: number): Task[] {
     .sort((a, b) => compareUrgency(a, b, new Date(now)));
 }
 
+/**
+ * The one matter being heard in `court` right now, if any.
+ *
+ * A court calls one matter at a time (owner, 2026-10-14): of every matter on its
+ * docket whose listed window covers the clock, the one listed first is the one before
+ * the bench, and the ones after it are still waiting to be called. Read off the whole
+ * docket, so the board (her matters) and the cause list (everyone's) agree on which.
+ */
+function liveCaseIn(world: World, court: string, dayKey: string, now: number): string | null {
+  let live: Case | null = null;
+  for (const c of world.cases) {
+    if (c.court !== court || !c.nextHearingAt || dayKeyOf(c.nextHearingAt) !== dayKey) continue;
+    if (statusOf(c.nextHearingAt, now) !== "now") continue;
+    if (!live || new Date(c.nextHearingAt).getTime() < new Date(live.nextHearingAt!).getTime()) live = c;
+  }
+  return live?.id ?? null;
+}
+
 /** Map a set of the day's cases in one court into numbered hearings, in time order. */
 function hearingsFrom(
   world: World,
@@ -145,15 +163,20 @@ function hearingsFrom(
   dayKey: string,
   now: number
 ): HomeHearing[] {
+  const liveId = liveCaseIn(world, court, dayKey, now);
+  const listedHere = (c: Case) =>
+    c.court === court && Boolean(c.nextHearingAt) && dayKeyOf(c.nextHearingAt!) === dayKey;
+  const byListing = (a: Case, b: Case) =>
+    new Date(a.nextHearingAt!).getTime() - new Date(b.nextHearingAt!).getTime() ||
+    a.stNumber.localeCompare(b.stNumber);
+  /* The item is the matter's place in its court's published cause list — the whole
+     docket — so the board and the cause list give a matter the same number. */
+  const itemOf = new Map(
+    world.cases.filter(listedHere).sort(byListing).map((c, index) => [c.id, index + 1])
+  );
   return cases
-    .filter(
-      (c) => c.court === court && c.nextHearingAt && dayKeyOf(c.nextHearingAt) === dayKey
-    )
-    .sort(
-      (a, b) =>
-        new Date(a.nextHearingAt!).getTime() - new Date(b.nextHearingAt!).getTime() ||
-        a.stNumber.localeCompare(b.stNumber)
-    )
+    .filter(listedHere)
+    .sort(byListing)
     .map((kase, index) => {
       const at = kase.nextHearingAt!;
       const blockers = blockersOf(world, kase, now);
@@ -161,14 +184,16 @@ function hearingsFrom(
       // time is behind it, yet it is still to be called, so it stays upcoming (in
       // item order, which is time order) rather than falling into concluded. On a
       // day already gone there is nothing left to call, so it rests as concluded.
-      const clock = statusOf(at, now);
+      // Inside its window but not the one before the bench: still to be called.
+      const timed = statusOf(at, now);
+      const clock: HearingStatus = timed === "now" && kase.id !== liveId ? "upcoming" : timed;
       const status: HearingStatus =
         kase.passedOver === true && clock === "concluded" && dayKey === dayKeyOf(new Date(now).toISOString())
           ? "upcoming"
           : clock;
       return {
         kase,
-        item: index + 1,
+        item: itemOf.get(kase.id) ?? index + 1,
         at,
         status,
         approxTime: status === "upcoming" && !kase.timeFixed,
@@ -202,6 +227,19 @@ function docketHearingsOn(
   now: number
 ): HomeHearing[] {
   return hearingsFrom(world, world.cases, court, dayKey, now);
+}
+
+/**
+ * The world as a one-court deployment holds it: every case in `court`.
+ *
+ * ENGINEERING SEAM — the sandbox's cases are spread across a court complex so the
+ * multi-court board has something to show. A deployment that runs one courtroom
+ * (`CourtProfile.singleCourt`) only ever holds that court's cases, so the home moves
+ * them all into it here; a real backend returns them that way and this becomes a no-op.
+ */
+export function inOneCourt(world: World, court: string): World {
+  if (world.cases.every((c) => c.court === court)) return world;
+  return { ...world, cases: world.cases.map((c) => (c.court === court ? c : { ...c, court })) };
 }
 
 /** Every court with a matter listed that day — the whole docket, flagship ON first. */
@@ -970,7 +1008,8 @@ export function causeListOn(
         courtLabel: courtIdentity(labels.shortOf(court)).name,
         courtNumber: courtNumberFor(court, h.kase.courtNumber),
         advocates: h.kase.advocates.map(nameOf).join(", "),
-        caseNumber: h.kase.cnr || h.kase.stNumber || "—",
+        /* The case number advocates use — the eCC in Gujarat — before the CNR. */
+        caseNumber: h.kase.stNumber || h.kase.cnr || "—",
         hearingType: h.kase.stage,
         status: h.status,
         approxTime: h.approxTime,
@@ -986,6 +1025,30 @@ export function causeListOn(
     (a, b) => a.courtLabel.localeCompare(b.courtLabel) || a.item - b.item
   );
   return rows;
+}
+
+/** Where a scheduled matter stands in its court's queue today. */
+export type HearingQueue = {
+  /** Matters still waiting before it in the same court (not the one being heard). */
+  ahead: number;
+};
+
+/**
+ * How many matters are still to be called before this one in its court's
+ * cause list. Only matters waiting count; the one being heard now does not, so
+ * "0 ahead" reads as "next". Counted on the whole docket, not just the viewer's.
+ */
+export function queueOf(
+  world: World,
+  court: string,
+  dayKey: string,
+  item: number,
+  now: number = Date.now()
+): HearingQueue {
+  const docket = docketHearingsOn(world, court, dayKey, now);
+  return {
+    ahead: docket.filter((h) => h.status === "upcoming" && h.item < item).length,
+  };
 }
 
 /** Total listed matters on a day across every court — the greeting's number. */

@@ -118,7 +118,14 @@ export type IntakeSlot = {
 export type IntakeGroup = { n: number; slots: IntakeSlot[] };
 
 export type Intake = {
+  /** One group per cheque: the cheque and its return memo (`DCM-1`, `DCM-2`). */
   cheques: IntakeGroup[];
+  /**
+   * One group per demand notice: the notice, its dispatch and delivery proofs and any
+   * reply (`DCM-3`…`DCM-6`). Counted apart from the cheques — one notice often covers
+   * several cheques.
+   */
+  notices: IntakeGroup[];
   parties: IntakeGroup[];
   supporting: IntakeSlot[];
 };
@@ -157,8 +164,8 @@ export type Representative = {
 /** Field keys that document reading can machine-fill on a complainant. */
 export type ComplainantPrefillKey = "name" | "email" | "res" | "entName" | "age";
 
-/** A video of an advocate reciting the oath, uploaded or recorded in place. */
-export type OathVideoUpload = {
+/** A complainant's oath, recorded through the camera in the signing step (`OTH-1`). */
+export type OathVideo = {
   file: StoredFileRef;
   /** Seconds, read from the file's own metadata; null when it could not be read. */
   durationSeconds: number | null;
@@ -279,7 +286,6 @@ export type ChequeDetails = {
 
 export type NoticeField =
   | "natureDebt"
-  | "whyIssued"
   | "dispatchDate"
   | "tracking"
   | "modeService"
@@ -288,7 +294,6 @@ export type NoticeField =
 export type DemandNotice = {
   id: string;
   natureDebt: string;
-  whyIssued: string;
   dispatchDate: ISODate;
   modeService: string;
   tracking: string;
@@ -327,6 +332,8 @@ export type Jurisdiction = {
 export type AdrPrayer = {
   adr: "yes" | "no" | "maybe";
   otherDetails: string;
+  /** The additional-details format the text was started from (`details-formats.ts`). */
+  detailsFormat?: string;
   interimRelief: string;
   finalRelief: string;
 };
@@ -372,8 +379,9 @@ export type Signatory = {
   signedWith?: SignInstrument;
   you?: boolean;
   /**
-   * Advocates only: whether the oath is in. Advocates sign *and* take the oath; a
-   * complainant only signs, so this is absent on their rows.
+   * Whether the oath is in. Only a complainant's slot carries one (`OTH-3`) — taken by
+   * the complainant, their PoA holder or an Institution's representative; absent on an
+   * advocate's slot, and everywhere while the oath is switched off.
    */
   oathTaken?: boolean;
 };
@@ -430,14 +438,17 @@ export type AccusedProcessChoice = {
 /**
  * What one signature was made with. Aadhaar OTP and a DSC are both *digital* — the
  * difference is the instrument in the signer's own hands, which is theirs to pick and
- * need not match anyone else's. `paper` is a signature on the uploaded copy.
+ * need not match anyone else's. `paper` is a signature on the uploaded copy. `otp` is a
+ * mobile OTP signature, offered only for bulk filing (`lib/bulk`); whether it is coming
+ * to the product is Bulk Filing PRD §8 Q9, still open.
  */
-export type SignInstrument = "aadhaar" | "dsc" | "paper";
+export type SignInstrument = "aadhaar" | "dsc" | "paper" | "otp";
 
 /** What stopped e-signing, as the person turning to paper says it (`PAPER_FALLBACK_REASONS`). */
 export type PaperFallbackReason =
   | "otp-not-received"
-  | "party-did-not-respond"
+  | "dsc-not-working"
+  | "party-cannot-esign"
   | "server-not-responding"
   | "other";
 
@@ -504,11 +515,12 @@ export type SignState = {
    */
   process: Record<string, AccusedProcessChoice>;
   /**
-   * Advocate signatory id → their oath. Taken during signing, after the e-signature,
-   * by whichever advocate signs for that slot. It affirms the contents of this exact
-   * complaint, so it goes wherever the signatures go when the complaint is edited.
+   * Complainant signatory id (`sig-c-…`) → their oath (`OTH-3`). Recorded during
+   * signing: after the e-signature, or with the phone confirmation in upload mode. An
+   * edit before filing takes it with the signatures; a correction round after a
+   * send-back keeps it unless scrutiny flagged it (`OTH-5`, `carryOverOaths`).
    */
-  oaths: Record<string, AdvocateOath>;
+  oaths: Record<string, OathRecord>;
   paid: boolean;
   paidAt: string | null;
   /** Rupees actually taken — the court fees plus every prepaid process round. */
@@ -518,12 +530,14 @@ export type SignState = {
 };
 
 /**
- * One advocate's oath. `video` is null only for the sandbox shortcut that marks the
+ * One complainant's oath. `video` is null only for the sandbox shortcut that marks the
  * other parties as done — there is no recording behind it, and the rail says so.
+ * `by` is the person who recorded it, by name, as it stood when they did.
  */
-export type AdvocateOath = {
+export type OathRecord = {
   at: string;
-  video: OathVideoUpload | null;
+  video: OathVideo | null;
+  by?: string;
 };
 
 /* ─────────────────────────────────── Draft ──────────────────────────────────────── */
@@ -542,6 +556,16 @@ export type FilingDraft = {
   status: "draft" | "filed";
   /** Where the person last was — "Continue draft" resumes here. */
   lastStep: StepId;
+  /**
+   * Every section the person has opened. A section counts towards progress, and earns
+   * its tick in the rail, only once it has been opened: some sections are complete before
+   * anyone touches them (the prayer is pre-written, witnesses are optional), and a blank
+   * draft must not read as part-done.
+   *
+   * Absent on drafts written before this was recorded — the samples and older saves —
+   * which are read as every section up to `lastStep` opened.
+   */
+  visited?: StepId[];
   intake: Intake;
   complainants: Complainant[];
   advocates: Advocate[];
@@ -566,8 +590,10 @@ export type FilingDraft = {
    * Set on a filing scrutiny returned. Once the corrections are made, the complaint goes
    * back through the same Sign step as at e-filing (handover `SIG-07`) and is sent back
    * to scrutiny from there instead of paying again. `resubmittedAt` is when it went.
+   * `signingFrom` is when this round's signing opened: an oath recorded before it
+   * carried over from an earlier round (`OTH-5`, `SCR-14`).
    */
-  scrutinyReturn?: { resubmittedAt: string | null };
+  scrutinyReturn?: { resubmittedAt: string | null; signingFrom?: string };
 };
 
 /* ─────────────────────────────────── Profile ────────────────────────────────────── */

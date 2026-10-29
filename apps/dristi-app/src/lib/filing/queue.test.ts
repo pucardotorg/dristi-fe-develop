@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { after, before, describe, it } from "node:test";
 
 import { createBlankDraft } from "./blank";
+import { setSigningRules } from "./config";
 import { addDays } from "./format";
 import {
   applyQueueFilters,
@@ -182,6 +183,9 @@ describe("each tab has its own order, and the default is the useful one", () => 
 });
 
 describe("pendingSignatureRows and pendingPaymentRows — where a draft goes once drafting is done", () => {
+  // Checked under Gujarat's rules, where everyone signs and swears (`config.ts`).
+  before(() => setSigningRules({ oath: true, everyAdvocate: true }));
+  after(() => setSigningRules({ oath: false, everyAdvocate: false }));
   function sentForSignature(id: string): FilingDraft {
     const draft = createBlankDraft(id);
     draft.sign.requestedAt = "2026-08-20T10:00:00.000Z";
@@ -221,8 +225,9 @@ describe("pendingSignatureRows and pendingPaymentRows — where a draft goes onc
     assert.equal(before.youPending, true);
     assert.match(before.info.sub ?? "", /waiting on you/i);
 
-    // Sign for "you" — whoever is left, if anyone, is someone else's signature to give.
+    // Sign and swear for "you" — whoever is left, if anyone, is someone else's to give.
     draft.sign.signed[you!.id] = { at: "2026-08-20T10:05:00.000Z", with: "aadhaar" };
+    draft.sign.oaths[you!.id] = { at: "2026-08-20T10:06:00.000Z", video: null };
     const after = pendingSignatureRows([draft], null)[0];
     if (after) {
       assert.equal(after.youPending, false);
@@ -230,11 +235,45 @@ describe("pendingSignatureRows and pendingPaymentRows — where a draft goes onc
     }
   });
 
+  it("a complainant's row asks for sign and oath together, then the oath alone — never a bulk sign", () => {
+    const draft = sentForSignature("d1");
+    draft.complainants[0].name = "Zeenath Beevi";
+    // A party in person brings no advocate, so with no profile the complainant is "you".
+    draft.complainants[0].pip = "yes";
+    const { complainants, advocates } = signatories(draft, null);
+    const complainant = complainants[0];
+    assert.equal(advocates.length, 0);
+    assert.ok(complainant?.you, "with no profile and no advocate, the complainant is 'you'");
+
+    const [before] = pendingSignatureRows([draft], null);
+    assert.equal(before.action.label, "Sign and take oath");
+    assert.equal(before.youPending, true);
+
+    draft.sign.signed[complainant.id] = { at: "2026-08-20T10:05:00.000Z", with: "aadhaar" };
+    const [after] = pendingSignatureRows([draft], null);
+    assert.equal(after.action.label, "Take oath");
+    assert.equal(after.youPending, false, "an oath is not something a bulk sign can give");
+    assert.match(after.info.sub ?? "", /waiting on you/i);
+    assert.equal(after.info.tone, "warning");
+  });
+
+  it("an advocate's row asks for the signature alone — advocates take no oath", () => {
+    const draft = sentForSignature("d1");
+    draft.complainants[0].name = "Zeenath Beevi";
+    draft.advocates[0].name = "Anjali Nair";
+    draft.advocates[0].barNumber = "K/123/2010";
+    const advocate = signatories(draft, null).advocates[0];
+    assert.ok(advocate?.you, "with no profile, the advocate slot is 'you'");
+    const [row] = pendingSignatureRows([draft], null);
+    assert.equal(row.action.label, "Sign");
+  });
+
   it("moves to Pending payment once everyone has signed, and drops off it once paid", () => {
     const draft = sentForSignature("d1");
     const everyone = [...signatories(draft, null).complainants, ...signatories(draft, null).advocates];
     for (const s of everyone) {
       draft.sign.signed[s.id] = { at: "2026-08-20T10:05:00.000Z", with: "aadhaar" };
+      draft.sign.oaths[s.id] = { at: "2026-08-20T10:06:00.000Z", video: null };
     }
     assert.equal(pendingSignatureRows([draft], null).length, 0);
     const [row] = pendingPaymentRows([draft], null);

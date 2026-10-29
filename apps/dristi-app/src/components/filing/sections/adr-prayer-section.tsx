@@ -7,6 +7,9 @@
  * Source: demo "ADR, Other details & Prayer" screen. The two prayer editors open on the
  * S-138 templates from `options.ts`; they are a starting draft the filer edits, not
  * fixed text, so both are plain rich text bound straight to the draft.
+ *
+ * Other details can be generated from a format with the form's details filled in, then
+ * edited as plain text — see `other-details-field.tsx`.
  */
 
 import * as React from "react";
@@ -19,6 +22,7 @@ import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
+import { OtherDetailsField } from "@/components/filing/other-details-field";
 import { RichTextEditor } from "@/components/filing/rich-text-editor";
 import { Segmented, type SegmentedOption } from "@/components/filing/segmented";
 
@@ -29,12 +33,12 @@ const ADR_OPTIONS: SegmentedOption<AdrPrayer["adr"]>[] = [
 ];
 
 const ADR_QUESTION =
-  "Would you like to settle the case outside the court through alternative methods of dispute resolution if the other party(s) agrees?";
+  "Is the complainant willing to settle the case outside the court through alternative methods of dispute resolution if the other party(s) agrees?";
 
 const OTHER_DETAILS_QUESTION =
   "Would you like to add any additional details to the complaint?";
 
-const RELIEF_HELP = "Please edit this where required as per the details of your case.";
+const RELIEF_HELP = "Please edit this where required as per the details of the case.";
 
 export function AdrPrayerSection() {
   const { draft, update, hrefFor } = useFiling();
@@ -51,7 +55,7 @@ export function AdrPrayerSection() {
       <FilingMain>
         <FilingPageHeader
           title="ADR, other details & prayer"
-          description="Willingness to settle, any additional details for the court, and the relief you are asking for."
+          description="Willingness to settle, any additional details for the court, and the relief the complainant is asking for."
         />
 
         {/* Alternative dispute resolution */}
@@ -73,12 +77,18 @@ export function AdrPrayerSection() {
             label={OTHER_DETAILS_QUESTION}
             tip="Anything the court should know that the form has not already asked for."
             helpPlacement="above"
-            help="No need to repeat anything already entered above."
+            help="No need to repeat anything already entered above. Choose a format to generate the text with the details from the form; then edit it as you like."
           >
-            <RichTextEditor
+            <OtherDetailsField
               value={adr.otherDetails}
+              formatId={adr.detailsFormat}
               onChange={(html) => set("otherDetails", html)}
-              placeholder="Write here"
+              onGenerate={(formatId, html) =>
+                update((d) => {
+                  d.adr.detailsFormat = formatId;
+                  d.adr.otherDetails = html;
+                })
+              }
               ariaLabel={OTHER_DETAILS_QUESTION}
             />
           </FormField>
@@ -87,7 +97,7 @@ export function AdrPrayerSection() {
         {/* Prayer */}
         <FormCard
           title="Prayer / relief sought"
-          description="The standard S-138 prayer. Edit to fit your case."
+          description="The standard S-138 prayer. Edit to fit the case."
         >
           <FormField asGroup label="Interim relief" optional helpPlacement="above" help={RELIEF_HELP}>
             <RichTextEditor

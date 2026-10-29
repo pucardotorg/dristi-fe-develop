@@ -2,17 +2,13 @@ import {
   CalendarClockIcon,
   CalendarDaysIcon,
   CalendarIcon,
-  CalendarXIcon,
   CopyIcon,
-  EllipsisIcon,
   FileCheckIcon,
+  FileClockIcon,
   FilePenIcon,
   FilePlusIcon,
-  FileSearchIcon,
   FolderIcon,
-  HourglassIcon,
   LayoutDashboardIcon,
-  GavelIcon,
   InboxIcon,
   ListChecksIcon,
   MessageSquareIcon,
@@ -24,11 +20,13 @@ import {
   SettingsIcon,
   SignatureIcon,
   StampIcon,
+  TableIcon,
   UserCheckIcon,
   UserPenIcon,
   type LucideIcon,
 } from "lucide-react";
 
+import { seatHolds, seatsIn } from "./seat-roles";
 import { APPROVE_COPY_QUEUE_COUNT } from "./approve-copy-application";
 import {
   COGNIZANCE_QUEUE_COUNT,
@@ -36,24 +34,32 @@ import {
   cognizanceTabCount,
 } from "./cognizance";
 import { type CognizanceLayout, readCognizanceLayout } from "./cognizance-layout";
-import { DELAY_CONDONATION_QUEUE_COUNT } from "./delay-condonation";
 import { hearingById, TODAYS_HEARING_COUNT } from "./hearings";
 import type { CourtNavLayout } from "./nav-layout";
-import { OTHER_APPLICATIONS_QUEUE_COUNT } from "./other-applications";
+import { findCaseRecord } from "../cases/party-cases";
+import type { CourtId } from "../court/profiles";
+import { scrutinyRegistersIn } from "./court-role";
 import {
   APPROVE_REGISTRATIONS_TITLE,
   REGISTRATIONS_QUEUE_COUNT,
 } from "./approve-registrations";
 import { registerCaseById, REGISTER_QUEUE_COUNT } from "./register-cases";
+import { readPendingOrders } from "./pending-orders";
+import { registerById, registerCrumb, REGISTERS_PAGE } from "./registers";
 import { findFiling, SCRUTINY_QUEUE_COUNT } from "./scrutiny/queue";
-import { RESCHEDULING_QUEUE_COUNT } from "./rescheduling-request";
 import { SCHEDULING_QUEUE_COUNT } from "./schedule";
 import { A_DIARY_PENDING_COUNT } from "./sign-a-diary";
 import { SIGN_BAIL_BOND_QUEUE_COUNT } from "./sign-bail-bonds";
 import { SIGN_EVIDENCE_QUEUE_COUNT } from "./sign-evidence";
 import { SIGN_FORM_QUEUE_COUNT } from "./sign-forms";
 import { SIGN_ORDER_PENDING_COUNT } from "./sign-orders";
-import { PROCESS_QUEUE_COUNT } from "./sign-process";
+import {
+  PROCESS_LINE,
+  PROCESS_QUEUE_COUNT,
+  processQueueCount,
+  processScopeFor,
+  scopeLine,
+} from "./sign-process";
 import { WITNESS_DEPOSITION_QUEUE_COUNT } from "./sign-witness-deposition";
 import type { CourtRole } from "./content";
 
@@ -66,9 +72,8 @@ import type { CourtRole } from "./content";
  * its position is a change to this file rather than to a component.
  *
  * **Most of it is not wired yet.** The three Hearings rows, all five Actions rows —
- * Scrutinise submitted cases, Register cases, Take cognizance, Approve copy application
- * and Register advocates — all three Review applications rows —
- * Rescheduling request, Delay condonation and Others — and all seven of the Sign rows —
+ * Scrutinise submitted cases, Register cases, Take cognizance, Review Applications,
+ * Approve copy application and Register advocates — and all seven of the Sign rows —
  * Sign forms, Sign orders, Sign process, Sign bail bonds, Sign witness deposition, Sign
  * evidence and Sign A-Diary — have an `href`, and they point at the court-side routes
  * that exist. Every other row is a real, focusable control that says plainly it goes
@@ -83,8 +88,6 @@ import type { CourtRole } from "./content";
  * `lib/employee/register-cases.ts`, `lib/employee/cognizance.ts`,
  * `lib/employee/approve-copy-application.ts`,
  * `lib/employee/approve-registrations.ts`,
- * `lib/employee/rescheduling-request.ts`,
- * `lib/employee/delay-condonation.ts`, `lib/employee/other-applications.ts`,
  * `lib/employee/sign-forms.ts`, `lib/employee/sign-orders.ts`,
  * `lib/employee/sign-process.ts`, `lib/employee/sign-bail-bonds.ts`,
  * `lib/employee/sign-witness-deposition.ts`, `lib/employee/sign-evidence.ts`,
@@ -224,6 +227,15 @@ export const COURT_NAV_LINKS: CourtNavItem[] = [
     href: COURT_CASES_PAGE.href,
     icon: FolderIcon,
   },
+  /* The court's registers (note, section B). A noun, beside the other two places to look
+     at this court — kept apart from "Register cases", the Actions queue that registers a
+     complaint, by its wording, its mark and its place in the rail. */
+  {
+    id: "registers",
+    label: REGISTERS_PAGE.label,
+    href: REGISTERS_PAGE.href,
+    icon: TableIcon,
+  },
 ];
 
 /**
@@ -241,6 +253,21 @@ export const COURT_NAV_LINKS: CourtNavItem[] = [
  * must not be able to lose it by choosing a different middle.
  */
 export const COURT_NAV_TRAILING: CourtNavItem[] = [
+  /* Scheduling and bulk rescheduling, at the foot of the rail above Configurations
+     (owner, 2026-10-14): the bench reaches for them less often than the day's work. */
+  {
+    id: "schedule-hearing",
+    label: "Schedule hearing",
+    icon: CalendarIcon,
+    href: "/employee/hearings/schedule",
+    count: SCHEDULING_QUEUE_COUNT,
+  },
+  {
+    id: "bulk-reschedule",
+    label: "Bulk reschedule hearings",
+    icon: RefreshCwIcon,
+    href: "/employee/hearings/bulk-reschedule",
+  },
   {
     id: "configurations",
     label: "Configurations",
@@ -268,18 +295,17 @@ export const COURT_NAV_GROUPS: CourtNavGroup[] = [
         href: "/employee/hearings",
         count: TODAYS_HEARING_COUNT,
       },
+      /* Every order not yet through — being typed, waiting for a signature, or signed
+         with its workflows still to trigger — for the magistrate and the steno alike, so
+         each sees where the other's step stands (owner, 2026-10-14). It replaces the
+         Orders toggle on Today's hearings and the steno's workflow queue. No count: the
+         orders live in this browser, so the rail cannot know the number before the
+         screen loads. */
       {
-        id: "schedule-hearing",
-        label: "Schedule hearing",
-        icon: CalendarIcon,
-        href: "/employee/hearings/schedule",
-        count: SCHEDULING_QUEUE_COUNT,
-      },
-      {
-        id: "bulk-reschedule",
-        label: "Bulk reschedule hearings",
-        icon: RefreshCwIcon,
-        href: "/employee/hearings/bulk-reschedule",
+        id: "pending-orders",
+        label: "Pending orders",
+        icon: FileClockIcon,
+        href: "/employee/pending-orders",
       },
     ],
   },
@@ -330,6 +356,16 @@ export const COURT_NAV_GROUPS: CourtNavGroup[] = [
         href: "/employee/cognizance",
         count: COGNIZANCE_QUEUE_COUNT,
       },
+      /* The one application queue (owner, 2026-10-22: under Actions, called Review
+         Applications). Without a count: the lifecycle's own queue — onboarding and the
+         order on each — read from the applications store in the browser, so the rail
+         cannot know the number before the screen loads. */
+      {
+        id: "applications",
+        label: "Review Applications",
+        icon: InboxIcon,
+        href: "/employee/applications",
+      },
       {
         id: "approve-copy",
         label: "Approve copy application",
@@ -348,49 +384,6 @@ export const COURT_NAV_GROUPS: CourtNavGroup[] = [
         icon: UserCheckIcon,
         href: "/employee/approve-registrations",
         count: REGISTRATIONS_QUEUE_COUNT,
-      },
-    ],
-  },
-  {
-    id: "review-applications",
-    label: "Review applications",
-    icon: FileSearchIcon,
-    items: [
-      /* First, and without counts: the lifecycle's own two queues, read from the
-         applications store in the browser, so the rail cannot know the numbers before
-         the screen loads. The three fixture queues below predate them. */
-      {
-        id: "onboard-applications",
-        label: "Onboard applications",
-        icon: InboxIcon,
-        href: "/employee/onboard-applications",
-      },
-      {
-        id: "decide-applications",
-        label: "Decide on applications",
-        icon: GavelIcon,
-        href: "/employee/decide-applications",
-      },
-      {
-        id: "rescheduling-request",
-        label: "Rescheduling request",
-        icon: CalendarXIcon,
-        href: "/employee/rescheduling-request",
-        count: RESCHEDULING_QUEUE_COUNT,
-      },
-      {
-        id: "delay-condonation",
-        label: "Delay condonation",
-        icon: HourglassIcon,
-        href: "/employee/delay-condonation",
-        count: DELAY_CONDONATION_QUEUE_COUNT,
-      },
-      {
-        id: "other-applications",
-        label: "Others",
-        icon: EllipsisIcon,
-        href: "/employee/other-applications",
-        count: OTHER_APPLICATIONS_QUEUE_COUNT,
       },
     ],
   },
@@ -453,9 +446,9 @@ export const COURT_NAV_GROUPS: CourtNavGroup[] = [
         label: "Sign A-Diary",
         icon: NotebookPenIcon,
         href: "/employee/sign-a-diary",
-        /* The whole unsigned register, every day of it, not just the day the screen
-           opens on: a bench a day behind should be able to see that from the rail. The
-           page's own count line is the one that agrees with this number. */
+        /* Days waiting to be signed, not entries: a day is what gets signed, and only
+           once it is over (`a-diary.md` `ADY-12`, `ADY-12b`). The page's own count line
+           agrees with this number. */
         count: A_DIARY_PENDING_COUNT,
       },
     ],
@@ -490,7 +483,71 @@ function cognizanceChildren(): CourtNavItem[] {
  */
 const SEAT_ROWS: Partial<Record<CourtRole, ReadonlySet<string>>> = {
   "scrutiny-officer": new Set(["dashboard", "scrutiny", "approve-registrations", "configurations"]),
+  /* Owner, 2026-10-25: the Post officer sees Sign process and nothing else. */
+  "post-officer": new Set(["sign-process"]),
 };
+
+/**
+ * Rows hidden from a seat that otherwise sees everything (owner, 2026-10-13: the
+ * magistrate and the bench clerk — Punjab & Haryana's Reader — do not see Scrutinise
+ * submitted cases, Approve copy application or Approve registrations).
+ *
+ * Hidden, not removed: the queues and their screens are untouched and still open by URL,
+ * and the scrutiny officer's rail still carries the two that are theirs. Unlike
+ * `SEAT_ROWS` this does not narrow the rail, so the saved layout still applies.
+ */
+const HIDDEN_FROM_BENCH: ReadonlySet<string> = new Set([
+  "scrutiny",
+  "approve-copy",
+  "approve-registrations",
+]);
+/**
+ * What the steno does not see (owner, 2026-10-14): the registry’s queues and
+ * every Sign row — signing is the bench’s act, not the steno’s.
+ */
+const HIDDEN_FROM_STENO: ReadonlySet<string> = new Set([
+  "scrutiny",
+  "cognizance",
+  "approve-copy",
+  "approve-registrations",
+  "sign-forms",
+  "sign-orders",
+  "sign-process",
+  "sign-bail-bonds",
+  "sign-deposition",
+  "sign-evidence",
+  "sign-a-diary",
+]);
+const SEAT_HIDDEN_ROWS: Partial<Record<CourtRole, ReadonlySet<string>>> = {
+  magistrate: HIDDEN_FROM_BENCH,
+  "bench-clerk": HIDDEN_FROM_BENCH,
+  typist: HIDDEN_FROM_STENO,
+  /* Punjab & Haryana's own Steno and Ahlmad (court-roles §3.3) hold no signing role. */
+  steno: HIDDEN_FROM_STENO,
+  ahlmad: HIDDEN_FROM_STENO,
+};
+
+/** Whether this seat is offered this row — the one test every seat filter below shares. */
+export function seatHasNavRow(
+  role: CourtRole,
+  id: string,
+  court: CourtId = "kerala",
+): boolean {
+  /* Approve registrations goes to whoever holds Account approver in this state
+     (court-roles §3: the Scrutiny officer in Gujarat, the Ahlmad in Punjab & Haryana).
+     Where the table names nobody yet (Kerala), the seat rules below still decide. */
+  if (id === "approve-registrations") {
+    const approvers = seatsIn(court).filter((seat) =>
+      seatHolds(seat, court, "account-approver"),
+    );
+    if (approvers.length > 0) return approvers.includes(role);
+  }
+  /* Pending orders is where the magistrate signs (owner, 2026-10-14). */
+  if (role === "magistrate" && id === "sign-orders") return false;
+  const keep = SEAT_ROWS[role];
+  if (keep && !keep.has(id)) return false;
+  return !SEAT_HIDDEN_ROWS[role]?.has(id);
+}
 
 /** Whether this seat's rail is cut down to a named set of rows. */
 export function seatHasNarrowRail(role: CourtRole): boolean {
@@ -498,16 +555,56 @@ export function seatHasNarrowRail(role: CourtRole): boolean {
 }
 
 /** A list of rows, less the ones this seat does not see. */
-export function courtNavItemsForSeat(items: CourtNavItem[], role: CourtRole): CourtNavItem[] {
-  const keep = SEAT_ROWS[role];
-  return keep ? items.filter((item) => keep.has(item.id)) : items;
+export function courtNavItemsForSeat(
+  items: CourtNavItem[],
+  role: CourtRole,
+  court: CourtId = "kerala",
+): CourtNavItem[] {
+  return items
+    .filter((item) => seatHasNavRow(role, item.id, court))
+    .map((item) => (item.id === "sign-process" ? withSeatProcessCount(item, role) : item));
+}
+
+/** Sign process counts what the seat's own scope of the line holds — e-Post alone for the Post officer. */
+function withSeatProcessCount(item: CourtNavItem, role: CourtRole): CourtNavItem {
+  const scope = processScopeFor(role);
+  if (!scope.channels) return item;
+  return { ...item, count: processQueueCount(scopeLine(PROCESS_LINE, scope)) };
 }
 
 /** Groups, less the rows this seat does not see — and less any group left empty. */
-export function courtNavGroupsForSeat(groups: CourtNavGroup[], role: CourtRole): CourtNavGroup[] {
-  if (!SEAT_ROWS[role]) return groups;
+export function courtNavGroupsForSeat(
+  groups: CourtNavGroup[],
+  role: CourtRole,
+  court: CourtId = "kerala",
+): CourtNavGroup[] {
   return groups
-    .map((group) => ({ ...group, items: courtNavItemsForSeat(group.items, role) }))
+    .map((group) => ({ ...group, items: courtNavItemsForSeat(group.items, role, court) }))
+    .filter((group) => group.items.length > 0);
+}
+
+/**
+ * Whether a deployment has this row at all. Where the Scrutiny officer also holds Case
+ * registerer (`scrutinyRegistersIn`), they register the case and it goes straight to Take
+ * cognizance, so nothing is forwarded and there is no Register cases queue (`SCR-11`).
+ *
+ * Unlike the seat rule above, this is not a view of something that exists: the queue is
+ * not there in that state, so every list of rows drops it — the rail, the combined
+ * screens, the dashboard and search.
+ */
+export function courtHasNavRow(court: CourtId, id: string): boolean {
+  return !(id === "register-cases" && scrutinyRegistersIn(court));
+}
+
+/** A list of rows, less the ones this deployment does not have. */
+export function courtNavItemsForCourt(items: CourtNavItem[], court: CourtId): CourtNavItem[] {
+  return items.filter((item) => courtHasNavRow(court, item.id));
+}
+
+/** Groups, less the rows this deployment does not have — and less any group left empty. */
+export function courtNavGroupsForCourt(groups: CourtNavGroup[], court: CourtId): CourtNavGroup[] {
+  return groups
+    .map((group) => ({ ...group, items: courtNavItemsForCourt(group.items, court) }))
     .filter((group) => group.items.length > 0);
 }
 
@@ -521,8 +618,9 @@ export function courtNavGroupsForSeat(groups: CourtNavGroup[], role: CourtRole):
 export function courtNavGroupsFor(
   cognizanceLayout: CognizanceLayout,
 ): CourtNavGroup[] {
-  if (cognizanceLayout !== "split") return COURT_NAV_GROUPS;
-  return COURT_NAV_GROUPS.map((group) =>
+  const groups = COURT_NAV_GROUPS;
+  if (cognizanceLayout !== "split") return groups;
+  return groups.map((group) =>
     group.id !== "actions"
       ? group
       : {
@@ -551,20 +649,35 @@ const COURT_NAV_KEPT_APART: Record<
   { leading: string[]; trailing: string[] }
 > = {
   actions: {
-    leading: ["todays-hearings"],
-    trailing: ["bulk-reschedule", "sign-process"],
+    leading: ["todays-hearings", "pending-orders"],
+    trailing: ["sign-process"],
   },
-  schedule: { leading: [], trailing: ["bulk-reschedule", "sign-process"] },
+  /* Today's hearings fold into the combined row here, so Pending orders follows it. */
+  schedule: { leading: [], trailing: ["pending-orders", "sign-process"] },
 };
 
-/** Every group's rows, in the rail's own order — the one pass every function below shares. */
-function courtNavAllItems(): CourtNavItem[] {
-  return COURT_NAV_GROUPS.flatMap((group) => group.items);
+/**
+ * Every group's rows the deployment has, in the rail's own order — the one pass every
+ * function below shares. Given a seat, less the rows that seat is not offered.
+ */
+function courtNavAllItems(
+  court: CourtId,
+  role?: CourtRole,
+): CourtNavItem[] {
+  const items = courtNavItemsForCourt(
+    COURT_NAV_GROUPS.flatMap((group) => group.items),
+    court,
+  );
+  return role ? courtNavItemsForSeat(items, role) : items;
 }
 
 /** The rows named by a list of ids, in the order the ids were given — not the source's. */
-function courtNavItemsByIds(ids: string[]): CourtNavItem[] {
-  const all = courtNavAllItems();
+function courtNavItemsByIds(
+  ids: string[],
+  court: CourtId,
+  role?: CourtRole,
+): CourtNavItem[] {
+  const all = courtNavAllItems(court, role);
   return ids
     .map((id) => all.find((item) => item.id === id))
     .filter((item): item is CourtNavItem => item !== undefined);
@@ -575,23 +688,37 @@ function courtNavItemsByIds(ids: string[]): CourtNavItem[] {
  * `"actions"`: Today's hearings, then Bulk reschedule hearings, then Sign process.
  * `"schedule"`: Bulk reschedule hearings, then Sign process.
  */
-export function courtNavKeptApart(layout: CombinedCourtNavLayout): CourtNavItem[] {
+export function courtNavKeptApart(
+  layout: CombinedCourtNavLayout,
+  court: CourtId,
+  role?: CourtRole,
+): CourtNavItem[] {
   const spec = COURT_NAV_KEPT_APART[layout];
-  return courtNavItemsByIds([...spec.leading, ...spec.trailing]);
+  return courtNavItemsByIds([...spec.leading, ...spec.trailing], court, role);
 }
 
 /**
  * Everything a layout folds into its one row — every `COURT_NAV_GROUPS` item except
  * what that layout keeps apart, still in the source's own order.
  */
-export function courtNavClubbed(layout: CombinedCourtNavLayout): CourtNavItem[] {
-  const apart = new Set(courtNavKeptApart(layout).map((item) => item.id));
-  return courtNavAllItems().filter((item) => !apart.has(item.id));
+export function courtNavClubbed(
+  layout: CombinedCourtNavLayout,
+  court: CourtId,
+  role?: CourtRole,
+): CourtNavItem[] {
+  const apart = new Set(
+    courtNavKeptApart(layout, court, undefined).map((item) => item.id),
+  );
+  return courtNavAllItems(court, role).filter((item) => !apart.has(item.id));
 }
 
 /** The combined row's own count — every clubbed item's, summed, never restated by hand. */
-export function courtNavClubbedTotal(layout: CombinedCourtNavLayout): number {
-  return courtNavClubbed(layout).reduce(
+export function courtNavClubbedTotal(
+  layout: CombinedCourtNavLayout,
+  court: CourtId,
+  role?: CourtRole,
+): number {
+  return courtNavClubbed(layout, court, role).reduce(
     (total, item) => total + (item.count ?? 0),
     0,
   );
@@ -622,6 +749,8 @@ const COURT_NAV_COMBINED_ROW: Record<CombinedCourtNavLayout, CourtNavItem> = {
  */
 export function courtNavRowsFor(
   layout: CombinedCourtNavLayout,
+  court: CourtId,
+  role?: CourtRole,
 ): CourtNavItem[] {
   const spec = COURT_NAV_KEPT_APART[layout];
   /* A promoted row keeps the mark it already carries in its group. It used to be given a
@@ -631,12 +760,12 @@ export function courtNavRowsFor(
   const combined: CourtNavItem = {
     ...COURT_NAV_COMBINED_ROW[layout],
     icon: CalendarDaysIcon,
-    count: courtNavClubbedTotal(layout),
+    count: courtNavClubbedTotal(layout, court, role),
   };
   return [
-    ...courtNavItemsByIds(spec.leading),
+    ...courtNavItemsByIds(spec.leading, court, role),
     combined,
-    ...courtNavItemsByIds(spec.trailing),
+    ...courtNavItemsByIds(spec.trailing, court, role),
   ];
 }
 
@@ -718,15 +847,44 @@ function scrutinyFilingNumber(segment: string): string | undefined {
  * route earns one*; the route stopped earning it, so it goes rather than sitting here
  * with nobody to answer for it.
  */
+/**
+ * Names a nested record the server cannot see — the applications queue reads a store that
+ * lives in this browser (`lib/applications/store.ts`), so its number is known only after
+ * the store has been read on the client. `EmployeeTopBar` passes one once it is ready;
+ * until then, and for a record that is not found, the trail stops at the queue.
+ */
+export type CourtRecordResolver = (
+  queue: string,
+  segment: string,
+) => string | undefined;
+
 const NESTED_ROUTES: {
   queue: string;
   pattern: RegExp;
   identify: (segment: string) => string | undefined;
+  /**
+   * The record is read on the client, so the route is nested — and its row active —
+   * whether or not `identify` or a resolver can name it yet.
+   */
+  clientRecord?: boolean;
+  /**
+   * The record has an order drawn up under it at `<record>/order`, and the record's own
+   * route is a page: the order's trail goes one step past the record, `… › ST/241/2026 ›
+   * Order`, and the record becomes the way back to it. The pattern's second group is the
+   * `/order` segment.
+   */
+  order?: boolean;
+  /**
+   * The queue is worked as one of several lists (`?view=`), so the way back carries the
+   * list the page was opened from.
+   */
+  keepsView?: boolean;
 }[] = [
   {
     queue: "/employee/hearings",
-    pattern: /^\/employee\/hearings\/([^/]+)(?:\/order)?\/?$/,
+    pattern: /^\/employee\/hearings\/([^/]+)(\/order)?\/?$/,
     identify: (id) => hearingById(id)?.caseNumber,
+    order: true,
   },
   {
     queue: "/employee/scrutiny",
@@ -738,19 +896,96 @@ const NESTED_ROUTES: {
     pattern: /^\/employee\/register-cases\/([^/]+)\/?$/,
     identify: (id) => registerCaseById(id)?.filingNumber,
   },
+  /* One pending order — named by its case, as the list recorded it (any order, not only
+     a hearing's). */
+  {
+    queue: "/employee/pending-orders",
+    pattern: /^\/employee\/pending-orders\/([^/]+)\/?$/,
+    identify: (segment) => {
+      let key: string;
+      try {
+        key = decodeURIComponent(segment);
+      } catch {
+        return undefined;
+      }
+      return readPendingOrders()[key]?.caseNumber ?? hearingById(key)?.caseNumber;
+    },
+  },
+  /* One register under the Registers index, named by its number ("Register 3"). */
+  {
+    queue: REGISTERS_PAGE.href,
+    pattern: /^\/employee\/registers\/([^/]+)\/?$/,
+    identify: (id) => {
+      const register = registerById(id);
+      return register ? registerCrumb(register) : undefined;
+    },
+  },
   {
     queue: "/employee/cognizance",
-    pattern: /^\/employee\/cognizance\/([^/]+)\/?$/,
+    /* The complaint, and the order one of its acts draws up — traced alike, as a
+       hearing's order is (owner, 2026-10-13). */
+    pattern: /^\/employee\/cognizance\/([^/]+)(\/order)?\/?$/,
     identify: (id) => cognizanceCaseById(id)?.caseNumber,
+    order: true,
+  },
+  /* One case, in the case view the court shares with the advocate
+     (`components/cases/case-detail.tsx`). A cognizance complaint first, as that route
+     resolves it. */
+  {
+    queue: COURT_CASES_PAGE.href,
+    pattern: /^\/employee\/cases\/([^/]+)\/?$/,
+    identify: (id) =>
+      cognizanceCaseById(id)?.caseNumber ?? findCaseRecord(id)?.caseNumber,
+  },
+  {
+    queue: "/employee/applications",
+    /* The application, and the order drawn up on it — traced alike. */
+    pattern: /^\/employee\/applications\/([^/]+)(\/order)?\/?$/,
+    identify: () => undefined,
+    clientRecord: true,
+    order: true,
+    keepsView: true,
   },
 ];
 
-/** What this path is a nested view *of*, when it is one. */
-function nestedRecordOf(pathname: string, queue: string): string | undefined {
+/**
+ * What this path is a nested view *of*, when it is one: `undefined` when it is not
+ * nested, `{ record }` when it is — `record` itself absent while a client-side record is
+ * still unnamed. `segment` is the record's path segment as written, `order` whether this
+ * is the order drawn up under it, `keepsView` whether the queue keeps its list.
+ */
+function nestedRecordOf(
+  pathname: string,
+  queue: string,
+  resolve?: CourtRecordResolver,
+):
+  | { record: string | undefined; segment: string; order: boolean; keepsView: boolean }
+  | undefined {
   const nested = NESTED_ROUTES.find((entry) => entry.queue === queue);
   if (!nested) return undefined;
-  const segment = nested.pattern.exec(pathname);
-  return segment ? nested.identify(segment[1]) : undefined;
+  const match = nested.pattern.exec(pathname);
+  if (!match) return undefined;
+  let segment = match[1];
+  try {
+    segment = decodeURIComponent(segment);
+  } catch {
+    /* A malformed escape stays as typed. */
+  }
+  const record = nested.identify(match[1]) ?? resolve?.(queue, segment);
+  if (record === undefined && !nested.clientRecord) return undefined;
+  return {
+    record,
+    segment: match[1],
+    order: Boolean(nested.order && match[2]),
+    keepsView: Boolean(nested.keepsView),
+  };
+}
+
+/** The list a page was opened from, off its query (`view=onboard`), when it names one. */
+function viewOf(query: string | undefined): string | undefined {
+  if (!query) return undefined;
+  const view = new URLSearchParams(query).get("view");
+  return view && /^[a-z-]+$/.test(view) ? view : undefined;
 }
 
 export function isCourtNavActive(pathname: string, href: string): boolean {
@@ -767,8 +1002,9 @@ export function isCourtNavActive(pathname: string, href: string): boolean {
 export function isCourtNavCombinedActive(
   pathname: string,
   layout: CombinedCourtNavLayout,
+  court: CourtId,
 ): boolean {
-  return courtNavClubbed(layout).some(
+  return courtNavClubbed(layout, court, undefined).some(
     (item) => item.href !== undefined && isCourtNavActive(pathname, item.href),
   );
 }
@@ -828,16 +1064,25 @@ export type CourtCrumb = {
  *   page this file cannot identify would be an invented label.
  * - `/employee/sign-orders` — `Sign`, then **`Sign orders`** as the current page. The
  *   section is still text: it has no page of its own.
- * - `/employee/hearings/<id>`, `/employee/hearings/<id>/order`,
- *   `/employee/scrutiny/<filing no.>`, `/employee/register-cases/<id>` — the section, the
+ * - `/employee/hearings/<id>`, `/employee/scrutiny/<filing no.>`,
+ *   `/employee/register-cases/<id>` — the section, the
  *   queue, then the record: `ST/241/2026`, `F/AHM/2026/00341`, `CMP/1840/2025`. Both of
  *   the middle steps link back to the queue, which is where the record came from and, on
  *   a complaint's file, the whole of the way back — which is why that screen carries no
  *   back control of its own.
+ * - An order drawn up under a record — `/employee/hearings/<id>/order`, a cognizance
+ *   act's, an application's — goes one step further: `… › ST/241/2026 › Order`, the
+ *   record now a link back to it (owner, 2026-10-15). On Applications both the queue and
+ *   the record carry the list it was opened from (`?view=`).
  *
  * The standalone Dashboard row is absent from every trail because nothing nests under it.
  */
-export function courtTrail(pathname: string): CourtCrumb[] {
+export function courtTrail(
+  pathname: string,
+  resolve?: CourtRecordResolver,
+  /** The page's query, without `?` — read only for a queue that keeps its list. */
+  query?: string,
+): CourtCrumb[] {
   const groups = courtNavGroupsFor(readCognizanceLayout());
   for (const group of groups) {
     for (const item of group.items) {
@@ -858,15 +1103,48 @@ export function courtTrail(pathname: string): CourtCrumb[] {
       if (!item.href || !isCourtNavActive(pathname, item.href)) continue;
       // Nested exactly when the path is not the row's own href — which is also when the
       // row is above this page rather than being it, and so becomes a link.
-      const record = nestedRecordOf(pathname, item.href);
-      if (record === undefined) {
+      const nested = nestedRecordOf(pathname, item.href, resolve);
+      if (nested === undefined) {
         return [{ label: group.label }, { label: item.label }];
       }
+      const record = nested.record;
+      /* The way back to a queue worked as several lists lands on the same list. */
+      const view = nested.keepsView ? viewOf(query) : undefined;
+      const suffix = view ? `?view=${view}` : "";
+      const queueHref = `${item.href}${suffix}`;
+      if (record === undefined) {
+        /* A record only the browser can name, not named yet (first paint) or not found:
+           the trail stops at the queue, both steps still the way back. */
+        return [
+          { label: group.label, href: queueHref },
+          { label: item.label, href: queueHref },
+        ];
+      }
+      if (nested.order) {
+        /* The order drawn up under a record: one step past it, the record the way back. */
+        return [
+          { label: group.label, href: queueHref },
+          { label: item.label, href: queueHref },
+          { label: record, mono: true, href: `${item.href}/${nested.segment}${suffix}` },
+          { label: "Order" },
+        ];
+      }
       return [
-        { label: group.label, href: item.href },
-        { label: item.label, href: item.href },
+        { label: group.label, href: queueHref },
+        { label: item.label, href: queueHref },
         { label: record, mono: true },
       ];
+    }
+  }
+
+  /* A standalone row has no section, so its own page carries no trail — but a record
+     nested under one does: today only a register under Registers. The row is the way
+     back; the register is named by its number, not an identifier, so it is not mono. */
+  for (const item of COURT_NAV_LINKS) {
+    if (!item.href) continue;
+    const record = nestedRecordOf(pathname, item.href)?.record;
+    if (record !== undefined) {
+      return [{ label: item.label, href: item.href }, { label: record }];
     }
   }
 
@@ -906,8 +1184,10 @@ export type CourtWaitingGroup = {
  * a row at zero is waiting on nobody, and a group with nothing left in it is dropped
  * whole rather than printed as an empty heading.
  */
-export function courtWaitingGroups(): CourtWaitingGroup[] {
-  return COURT_NAV_GROUPS.map((group) => {
+export function courtWaitingGroups(
+  court: CourtId,
+): CourtWaitingGroup[] {
+  return courtNavGroupsForCourt(COURT_NAV_GROUPS, court).map((group) => {
     const items = group.items
       .filter(
         (item): item is CourtNavItem & { href: string; count: number } =>

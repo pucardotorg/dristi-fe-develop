@@ -30,6 +30,8 @@ import {
   SCRUTINY_DRAFT_ID_LAKSHMI,
   SCRUTINY_DRAFT_ID_RAFI,
   SCRUTINY_FILES,
+  EXTRA_RETURNS,
+  type ExtraReturn,
 } from "@/lib/tasks/scrutiny-return";
 
 /** Page geometry of the drawn uploads. */
@@ -175,7 +177,6 @@ function buildDraft(): FilingDraft {
 
   const n = d.notices[0];
   n.natureDebt = "loan";
-  n.whyIssued = "repayment";
   n.dispatchDate = "2026-06-18";
   n.modeService = "registered-post-ad";
   n.tracking = ""; // Defect 7 — not stated.
@@ -204,7 +205,7 @@ function buildDraft(): FilingDraft {
   d.intake.cheques.push(intakeChequeGroup(2));
   const c1 = d.intake.cheques[0];
   fill(c1.slots[0], SCRUTINY_FILES.cheque1);
-  fill(c1.slots[4], SCRUTINY_FILES.adCard); // Defect 8 — the AD card, scanned at an angle.
+  fill(d.intake.notices[0].slots[2], SCRUTINY_FILES.adCard); // Defect 8 — the AD card, scanned at an angle.
   const c2 = d.intake.cheques[1];
   fill(c2.slots[0], SCRUTINY_FILES.cheque2);
   fill(c2.slots[1], SCRUTINY_FILES.memo2);
@@ -256,7 +257,6 @@ function buildLakshmiDraft(): FilingDraft {
 
   const n = d.notices[0];
   n.natureDebt = "loan";
-  n.whyIssued = "repayment";
   n.dispatchDate = "2026-06-15";
   n.modeService = "registered-post-ad";
   n.tracking = ""; // Defect 3 — not stated.
@@ -322,7 +322,6 @@ function buildRafiDraft(): FilingDraft {
 
   const n = d.notices[0];
   n.natureDebt = "loan";
-  n.whyIssued = "repayment";
   n.dispatchDate = "2026-06-05";
   n.modeService = "registered-post-ad";
   n.tracking = "RK556021447IN";
@@ -342,7 +341,7 @@ function buildRafiDraft(): FilingDraft {
   d.jurisdiction.filingDate = "2026-07-15";
 
   // Defect 2 — the AD card, cut off at the fold.
-  fill(d.intake.cheques[0].slots[4], SCRUTINY_FILES.adCard);
+  fill(d.intake.notices[0].slots[2], SCRUTINY_FILES.adCard);
 
   d.documents = buildDocumentGroups(d);
   d.scrutinyReturn = { resubmittedAt: null };
@@ -350,10 +349,28 @@ function buildRafiDraft(): FilingDraft {
 }
 
 /** Every seeded return, by draft id. */
+const BASE_BUILDERS = {
+  sainaba: buildDraft,
+  lakshmi: buildLakshmiDraft,
+  rafi: buildRafiDraft,
+} as const;
+
+/** One of the seeded filings under another return's id and parties (`EXTRA_RETURNS`). */
+function buildExtra(extra: ExtraReturn): () => FilingDraft {
+  return () => {
+    const d = BASE_BUILDERS[extra.base]();
+    d.id = extra.draftId;
+    d.complainants[0].name = extra.complainant;
+    d.accused[0].name = extra.accused;
+    return d;
+  };
+}
+
 const BUILDERS: Record<string, () => FilingDraft> = {
   [SCRUTINY_DRAFT_ID]: buildDraft,
   [SCRUTINY_DRAFT_ID_LAKSHMI]: buildLakshmiDraft,
   [SCRUTINY_DRAFT_ID_RAFI]: buildRafiDraft,
+  ...Object.fromEntries(EXTRA_RETURNS.map((extra) => [extra.draftId, buildExtra(extra)])),
 };
 
 const seeding = new Map<string, Promise<FilingDraft | null>>();
@@ -385,6 +402,35 @@ export function ensureScrutinyDraft(draftId: string): Promise<FilingDraft | null
     seeding.set(draftId, pending);
   }
   return pending;
+}
+
+/** Is this one of the sandbox's returned filings (Sainaba, Lakshmi, Rafi)? */
+export function isScrutinyDemoDraft(draftId: string): boolean {
+  return draftId in BUILDERS;
+}
+
+/**
+ * Put a sandbox return back the way scrutiny sent it, overwriting any corrections. The
+ * fix page calls this on every opening, so a demo can be run again and again without
+ * resetting the sandbox (owner, 2026-10-12). Mock data only: never for a real draft.
+ */
+export async function reseedScrutinyDraft(draftId: string): Promise<FilingDraft | null> {
+  const build = BUILDERS[draftId];
+  if (!build) return getRepository().getDraft(draftId);
+  try {
+    await Promise.all(Object.values(SCRUTINY_FILES).map(ensureFile));
+    const draft = build();
+    await getRepository().putDraft(draft);
+    seeding.set(draftId, Promise.resolve(draft));
+    try {
+      window.localStorage.removeItem(`dristi:scrutiny-originals:${draftId}`);
+    } catch {
+      /* storage refused: nothing kept to clear */
+    }
+    return draft;
+  } catch {
+    return null;
+  }
 }
 
 /**

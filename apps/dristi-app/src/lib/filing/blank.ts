@@ -31,6 +31,7 @@ import type {
   IntakeSlot,
   Jurisdiction,
   SignInstrument,
+  StoredFileRef,
   UserProfile,
   Representative,
   Witness,
@@ -148,7 +149,6 @@ export const blankCheque = (): ChequeDetails => ({
 export const blankNotice = (): DemandNotice => ({
   id: uid("dn"),
   natureDebt: "",
-  whyIssued: "",
   dispatchDate: "",
   modeService: "",
   tracking: "",
@@ -190,7 +190,7 @@ export const blankWitness = (): Witness => ({
 
 /* ───────────────────────────── Intake groups ───────────────────────── */
 
-/** The six documents every cheque needs (five required + the optional reply). */
+/** The two documents every cheque needs (`DCM-1`, `DCM-2`). */
 export function intakeChequeGroup(n: number): IntakeGroup {
   return {
     n,
@@ -207,12 +207,21 @@ export function intakeChequeGroup(n: number): IntakeGroup {
         key: `c${n}m`,
         docType: "return-memo",
         label: "Cheque return memo",
-        desc: "The memo your bank issued when this cheque bounced.",
+        desc: "The memo the bank issued when this cheque bounced.",
         required: true,
         file: null,
       },
+    ],
+  };
+}
+
+/** The documents every demand notice needs, plus the optional reply (`DCM-3`…`DCM-6`). */
+export function intakeNoticeGroup(n: number): IntakeGroup {
+  return {
+    n,
+    slots: [
       {
-        key: `c${n}dn`,
+        key: `n${n}dn`,
         docType: "demand-notice",
         label: "Demand notice",
         desc: "The statutory demand notice sent to the accused.",
@@ -220,7 +229,7 @@ export function intakeChequeGroup(n: number): IntakeGroup {
         file: null,
       },
       {
-        key: `c${n}dp`,
+        key: `n${n}dp`,
         docType: "dispatch-proof",
         label: "Proof of dispatch of demand notice (postal receipt)",
         desc: "Speed post / RPAD receipt showing dispatch.",
@@ -228,7 +237,7 @@ export function intakeChequeGroup(n: number): IntakeGroup {
         file: null,
       },
       {
-        key: `c${n}ad`,
+        key: `n${n}ad`,
         docType: "delivery-proof",
         label: "Proof of delivery of demand notice (AD card)",
         desc: "Acknowledgement-due card or tracking proof of delivery.",
@@ -236,7 +245,7 @@ export function intakeChequeGroup(n: number): IntakeGroup {
         file: null,
       },
       {
-        key: `c${n}rp`,
+        key: `n${n}rp`,
         docType: "notice-reply",
         label: "Reply to the demand notice",
         desc: "The accused's reply to the notice, if any.",
@@ -245,6 +254,71 @@ export function intakeChequeGroup(n: number): IntakeGroup {
       },
     ],
   };
+}
+
+/**
+ * Keep the cheques and notices the form holds and the upload groups that hold their
+ * documents the same in number. Either side can add one — the Cheque step's "Add cheque",
+ * the upload step's "Add another cheque" — and the list of documents is built from the
+ * upload groups, so a cheque added on the form would otherwise never be asked for.
+ * Grows the shorter side only; removal is done by whoever removes, on both sides.
+ * A side with no upload groups at all (a bulk setup) is left alone.
+ */
+export function syncIntakeCounts(draft: FilingDraft): void {
+  const taken = new Set(
+    [...draft.intake.cheques, ...draft.intake.notices, ...draft.intake.parties]
+      .flatMap((g) => g.slots)
+      .map((s) => s.key)
+  );
+  const grow = (groups: IntakeGroup[], records: unknown[], make: (n: number) => IntakeGroup, blank: () => unknown) => {
+    if (groups.length === 0) return;
+    while (groups.length < records.length) {
+      const group = make(groups.length + 1);
+      group.slots = uniqueSlotKeys(group.slots, taken);
+      groups.push(group);
+    }
+    while (records.length < groups.length) records.push(blank());
+  };
+  grow(draft.intake.cheques, draft.cheques, intakeChequeGroup, blankCheque);
+  grow(draft.intake.notices, draft.notices, intakeNoticeGroup, blankNotice);
+}
+
+/**
+ * Remove cheque or notice `index` (0-based) from the form and its upload group with it,
+ * renumbering the groups after it. Returns the files that group held, for the caller to
+ * delete from storage.
+ */
+export function removeCaseRecord(
+  draft: FilingDraft,
+  kind: "cheque" | "notice",
+  index: number
+): StoredFileRef[] {
+  const records: unknown[] = kind === "cheque" ? draft.cheques : draft.notices;
+  const groups = kind === "cheque" ? draft.intake.cheques : draft.intake.notices;
+  if (records.length > 1 && index < records.length) records.splice(index, 1);
+  if (groups.length <= 1 || index >= groups.length) return [];
+  const [gone] = groups.splice(index, 1);
+  groups.forEach((g, i) => {
+    g.n = i + 1;
+  });
+  return gone.slots.flatMap((s) => (s.file ? [s.file] : []));
+}
+
+/**
+ * Keep slot keys unique. The factories derive keys from the group number, so adding a
+ * group after a removal can otherwise reuse a key that is still on the draft.
+ */
+export function uniqueSlotKeys(slots: IntakeSlot[], taken: Set<string>): IntakeSlot[] {
+  return slots.map((slot) => {
+    let key = slot.key;
+    let suffix = 2;
+    while (taken.has(key)) {
+      key = `${slot.key}-${suffix}`;
+      suffix += 1;
+    }
+    taken.add(key);
+    return key === slot.key ? slot : { ...slot, key };
+  });
 }
 
 export function intakePartyGroup(n: number): IntakeGroup {
@@ -271,7 +345,7 @@ export function intakePartyGroup(n: number): IntakeGroup {
         key: `p${n}vak`,
         docType: "vakalatnama",
         label: "Vakalatnama",
-        desc: "Signed authorisation appointing your advocate(s).",
+        desc: "Signed authorisation appointing the complainant's advocate(s).",
         required: true,
         file: null,
       },
@@ -296,7 +370,7 @@ export function intakeSupporting(): IntakeSlot[] {
       key: "sl",
       docType: "supporting",
       label: "Loan agreement / invoice / ledger",
-      desc: "Anything that records the debt, if you have it.",
+      desc: "Anything that records the debt, if available.",
       required: false,
       file: null,
     },
@@ -340,6 +414,7 @@ function docRow(spec: DocSpec, existing: CaseDocument | undefined, slot?: Intake
 export function buildDocumentGroups(draft: FilingDraft): DocumentGroup[] {
   const slotByKey = new Map<string, IntakeSlot>();
   for (const g of draft.intake.cheques) g.slots.forEach((s) => slotByKey.set(s.key, s));
+  for (const g of draft.intake.notices) g.slots.forEach((s) => slotByKey.set(s.key, s));
   for (const g of draft.intake.parties) g.slots.forEach((s) => slotByKey.set(s.key, s));
   draft.intake.supporting.forEach((s) => slotByKey.set(s.key, s));
 
@@ -356,19 +431,27 @@ export function buildDocumentGroups(draft: FilingDraft): DocumentGroup[] {
 
   const groups: DocumentGroup[] = [];
 
-  // Case details — per cheque.
-  const many = draft.intake.cheques.length > 1;
-  const caseSpecs: DocSpec[] = draft.intake.cheques.flatMap((g) => {
-    const sfx = many ? ` ${g.n}` : "";
-    return [
-      { name: `Cheque${sfx}`, required: true, intakeKey: `c${g.n}f` },
-      { name: `Cheque return memo${sfx}`, required: true, intakeKey: `c${g.n}m` },
-      { name: `Demand notice${sfx}`, required: true, intakeKey: `c${g.n}dn` },
-      { name: `Proof of dispatch of demand notice (postal receipt)${sfx}`, required: true, intakeKey: `c${g.n}dp` },
-      { name: `Proof of delivery of demand notice (AD card)${sfx}`, required: true, intakeKey: `c${g.n}ad` },
-      { name: `Reply to the demand notice${sfx}`, required: false, intakeKey: `c${g.n}rp` },
-    ];
-  });
+  // Case details — per cheque, then per demand notice (`DCM-1`…`DCM-6`).
+  const manyCheques = draft.intake.cheques.length > 1;
+  const manyNotices = draft.intake.notices.length > 1;
+  const caseSpecs: DocSpec[] = [
+    ...draft.intake.cheques.flatMap((g) => {
+      const sfx = manyCheques ? ` ${g.n}` : "";
+      return [
+        { name: `Cheque${sfx}`, required: true, intakeKey: `c${g.n}f` },
+        { name: `Cheque return memo${sfx}`, required: true, intakeKey: `c${g.n}m` },
+      ];
+    }),
+    ...draft.intake.notices.flatMap((g) => {
+      const sfx = manyNotices ? ` ${g.n}` : "";
+      return [
+        { name: `Demand notice${sfx}`, required: true, intakeKey: `n${g.n}dn` },
+        { name: `Proof of dispatch of demand notice (postal receipt)${sfx}`, required: true, intakeKey: `n${g.n}dp` },
+        { name: `Proof of delivery of demand notice (AD card)${sfx}`, required: true, intakeKey: `n${g.n}ad` },
+        { name: `Reply to the demand notice${sfx}`, required: false, intakeKey: `n${g.n}rp` },
+      ];
+    }),
+  ];
   // Intake keys can carry a "-2" suffix after a remove/add; resolve by prefix.
   const resolveSlot = (key?: string) => {
     if (!key) return undefined;
@@ -424,8 +507,10 @@ export function createBlankDraft(id: string, profile?: UserProfile | null): Fili
     caseType: "s138",
     status: "draft",
     lastStep: "upload",
+    visited: [],
     intake: {
       cheques: [intakeChequeGroup(1)],
+      notices: [intakeNoticeGroup(1)],
       parties: [intakePartyGroup(1)],
       supporting: intakeSupporting(),
     },
@@ -532,9 +617,11 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
 
   draft.intake ??= {
     cheques: [intakeChequeGroup(1)],
+    notices: [intakeNoticeGroup(1)],
     parties: [intakePartyGroup(1)],
     supporting: intakeSupporting(),
   };
+  migrateNoticeIntake(draft);
   draft.complainants ??= [blankComplainant()];
   draft.advocates ??= [blankAdvocate()];
   draft.accused ??= [blankAccused()];
@@ -543,6 +630,12 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
   draft.jurisdiction ??= blankJurisdiction();
   draft.witnesses ??= [blankWitness()];
   draft.documents ??= [];
+  // Cheques and notices added on the form steps never reached the upload groups before
+  // they were kept in step; give such a draft the groups its form already has.
+  const groupsBefore = draft.intake.cheques.length + draft.intake.notices.length;
+  syncIntakeCounts(draft);
+  if (draft.intake.cheques.length + draft.intake.notices.length !== groupsBefore)
+    draft.documents = buildDocumentGroups(draft);
   draft.sign ??= {
     mode: "digital",
     requestedAt: null,
@@ -583,16 +676,27 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
     c.differentlyAbled ??= "";
     c.rep.gender ??= "";
     c.rep.differentlyAbled ??= "";
-    // The complainant's oath was retired with the Oath step — advocates take it now.
+    // The oath was a form field once; it is recorded during signing now (`OTH-3`).
     delete (c as Complainant & { oathVideo?: unknown }).oathVideo;
     c.entCinPan ??= "";
     c.entCinPanSkippedAt ??= null;
+  }
+  // "Why was the cheque issued?" was a prototype-only question that the nature of the
+  // debt already answers (LDN-1); it was retired, with any prefill marker it carried.
+  for (const n of draft.notices) {
+    delete (n as DemandNotice & { whyIssued?: unknown }).whyIssued;
+    delete (n.prefilled as Record<string, unknown> | undefined)?.whyIssued;
   }
   // The upfront choice used to be one set of rounds for the whole case; it is now made
   // per accused (§19.3). Nothing is carried across: an old draft's single choice cannot
   // say which accused it was for, and the defaults it falls back to are the court's.
   draft.sign.process ??= {};
   draft.sign.oaths ??= {};
+  // Advocates took an oath in an earlier build; only a complainant's slot carries one
+  // now (`OTH-3`), so an advocate's leftover recording is dropped.
+  for (const id of Object.keys(draft.sign.oaths)) {
+    if (id.startsWith("sig-a-")) delete draft.sign.oaths[id];
+  }
   draft.sign.paidAmount ??= null;
   draft.affidavit ??= "";
   // Phone confirmation on the upload path is newer than these drafts.
@@ -601,8 +705,40 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
   // none, and none is invented for it: the window asks before the upload reopens.
   draft.sign.paperFallback ??= null;
   migrateSignMode(draft);
+  migrateAdvocateSignatures(draft);
   draft.version = 7;
   return draft;
+}
+
+/**
+ * Give the demand notices their own intake groups.
+ *
+ * Each cheque's group used to carry a demand notice and its proofs, which asked a filer
+ * with three cheques and one notice for three notices. The documents table counts them
+ * apart (`DCM-1`/`DCM-2` per cheque, `DCM-3`…`DCM-6` per notice), so an older draft's
+ * notice slots move to notice group n, keeping their files and reads, and their keys go
+ * from `c<n>…` to `n<n>…` — on the list of documents too, which points at them by key.
+ */
+const OLD_NOTICE_KEY = /^c(\d+)(dn|dp|ad|rp)(-\d+)?$/;
+
+function migrateNoticeIntake(draft: FilingDraft) {
+  if (draft.intake.notices) return;
+  const rekey = (key: string) => key.replace(OLD_NOTICE_KEY, "n$1$2$3");
+  draft.intake.notices = draft.intake.cheques.map((g) => {
+    const moved = g.slots.filter((s) => OLD_NOTICE_KEY.test(s.key));
+    g.slots = g.slots.filter((s) => !OLD_NOTICE_KEY.test(s.key));
+    return {
+      n: g.n,
+      slots: moved.length
+        ? moved.map((s) => ({ ...s, key: rekey(s.key) }))
+        : intakeNoticeGroup(g.n).slots,
+    };
+  });
+  // A setup draft holds no cheques, and so no notices; a filing always has one.
+  if (draft.intake.notices.length === 0 && draft.intake.cheques.length > 0)
+    draft.intake.notices = [intakeNoticeGroup(1)];
+  for (const group of draft.documents ?? [])
+    for (const doc of group.docs) if (doc.intakeKey) doc.intakeKey = rekey(doc.intakeKey);
 }
 
 /**
@@ -677,4 +813,26 @@ function migrateAdr(draft: FilingDraft) {
 
   /* The step it was last on may be an id this branch's router does not have. */
   if ((draft.lastStep as string) === "settlement") draft.lastStep = "adr-prayer";
+}
+
+/**
+ * Outside Gujarat an advocate signs in one slot per complainant (`sig-a-<complainant
+ * id>`); in Gujarat every advocate signs as themselves (`sig-a-<advocate id>`, owner
+ * 2026-10-09). What a slot recorded is copied to each advocate who was on record for
+ * that complainant, and the slot keeps it too, so a draft reads right under either rule.
+ */
+function migrateAdvocateSignatures(draft: FilingDraft) {
+  const maps = [draft.sign.signed, draft.sign.oaths, draft.sign.notified] as Record<
+    string,
+    unknown
+  >[];
+  draft.complainants.forEach((c, i) => {
+    const old = `sig-a-${c.id}`;
+    const acting = draft.advocates.filter((a) => a.forComplainants.includes(i));
+    for (const map of maps) {
+      if (!map || !(old in map)) continue;
+      // Kept as well: outside Gujarat advocates still sign in the per-complainant slot.
+      for (const a of acting) map[`sig-a-${a.id}`] ??= map[old];
+    }
+  });
 }

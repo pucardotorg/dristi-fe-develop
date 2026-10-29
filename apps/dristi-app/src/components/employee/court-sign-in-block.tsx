@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { EyeIcon, EyeOffIcon, LandmarkIcon } from "lucide-react";
 
 import { BrandLockup } from "@/components/brand-lockup";
+import { useCourt } from "@/components/court/court-provider";
 import { CHARCOAL_PLATE } from "@/components/chrome/rail-plate";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,10 +28,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { CourtRole } from "@/lib/employee/content";
 import { setCourtSession } from "@/lib/employee/session";
 import {
   accountFor,
-  COURT_ACCOUNTS,
+  courtAccounts,
   COURT_SIGN_IN_ROLES,
   courtroomsFor,
 } from "@/lib/employee/sign-in";
@@ -78,6 +80,11 @@ import {
 /** Where the court's day starts — and so where signing in lands. */
 const AFTER_SIGN_IN = "/employee/hearings";
 
+/** A seat whose rail is one row lands on that row, not on a screen it is not offered. */
+const AFTER_SIGN_IN_FOR: Partial<Record<CourtRole, string>> = {
+  "post-officer": "/employee/sign-process",
+};
+
 export function CourtSignInBlock() {
   const router = useRouter();
 
@@ -92,7 +99,8 @@ export function CourtSignInBlock() {
   const badUsername = touched && !typed;
   /* The account the typed username names, resolved live — it is what the court-room
      field reads from, so it cannot wait for a submit. */
-  const account = accountFor(username);
+  const { court: state } = useCourt();
+  const account = accountFor(username, state);
   /* Said as a fact under the field, the way the citizen screen says it of an unknown
      number. There is no offer to register: nobody registers themselves here. */
   const unknownUsername = touched && Boolean(typed) && !account;
@@ -125,7 +133,7 @@ export function CourtSignInBlock() {
       district: courtroom.district,
       court: courtroom.name,
     });
-    router.push(AFTER_SIGN_IN);
+    router.push(AFTER_SIGN_IN_FOR[account.role] ?? AFTER_SIGN_IN);
   }
 
   return (
@@ -345,23 +353,31 @@ export function CourtSignInBlock() {
  * chooser that was just taken out, one screen lower down.
  */
 function PrototypeAccounts({ onPick }: { onPick: (username: string) => void }) {
+  const { court } = useCourt();
+  const accounts = courtAccounts(court);
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-4">
       <p className="text-caption text-muted-foreground">
         Prototype — any password works. Demo accounts:
       </p>
       <div className="flex flex-wrap gap-2">
-        {COURT_SIGN_IN_ROLES.map((role) => (
-          <Button
-            key={role}
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onPick(COURT_ACCOUNTS[role].username)}
-          >
-            {COURT_ACCOUNTS[role].username}
-          </Button>
-        ))}
+        {COURT_SIGN_IN_ROLES.flatMap((role) => {
+          /* Only the seats this state has (court-roles §3). */
+          const account = accounts[role];
+          return account
+            ? [
+                <Button
+                  key={role}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPick(account.username)}
+                >
+                  {account.username}
+                </Button>,
+              ]
+            : [];
+        })}
       </div>
     </div>
   );

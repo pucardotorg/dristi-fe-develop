@@ -9,9 +9,12 @@
  * the way the rest of the flow had taught you.
  *
  * Committing to a mode is its own step, not a click on the rail: the rail carries one
- * "Continue to sign" button, which opens a dialog naming both paths and what each one
- * does to the *other* signatories — before either is clickable, not after. Nothing here
- * is a private action; every party on the complaint signs the one way that was chosen.
+ * "Continue to signing" button ("Sign and take your oath" when you sign for a complainant
+ * in a state that asks for an oath, since the oath follows the signature in the same
+ * window — advocates never take one, `OTH-3`), which opens a dialog naming
+ * both paths and what each one does to the *other* signatories — before either is
+ * clickable, not after. Nothing here is a private action; every party on the complaint
+ * signs the one way that was chosen.
  *
  * The paying half of the flow lives here too: fees → process and address → payment →
  * the case file number. The document itself is the shared court sheet Preview renders.
@@ -23,7 +26,6 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { format } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -31,13 +33,13 @@ import {
   BellIcon,
   CheckIcon,
   CopyIcon,
+  FlaskConicalIcon,
   PrinterIcon,
   SignatureIcon,
   UploadIcon,
-  VideoIcon,
 } from "lucide-react";
 
-import { ADVOCATE_OATH } from "@/lib/filing/config";
+import { signingRules } from "@/lib/filing/config";
 import { getRepository, newCaseFileNumber, newPaymentRef } from "@/lib/filing/data";
 import { forgetFile } from "@/lib/filing/files";
 import { money, toLongDate } from "@/lib/filing/format";
@@ -50,8 +52,12 @@ import {
 } from "@/lib/filing/options";
 import { useProfile } from "@/lib/filing/profile";
 import {
+  confirmationComplete,
+  confirmerSlot,
   feeBill,
   isOutstanding,
+  isYourConfirmation,
+  phoneConfirmers,
   processPlan,
   signatories,
   type AccusedPlan,
@@ -61,12 +67,27 @@ import { FILINGS_HOME, neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { useTasks } from "@/lib/tasks/store";
 import { refile } from "@/lib/tasks/transitions";
-import type { AdvocateOath, SignInstrument, Signatory } from "@/lib/filing/types";
+import type { Signatory } from "@/lib/filing/types";
 import { cn } from "@/lib/utils";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogDescription,
@@ -102,7 +123,8 @@ import { CourtDocument } from "@/components/filing/sections/preview/court-docume
 import { useFilePicker } from "@/components/filing/use-file-picker";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Identifier } from "@/components/chrome/identifier";
-import { appUrl } from "@/lib/config";
+==== BASE ====
+==== BASE ====
 
 type ModalKey =
   | "esign"
@@ -116,20 +138,6 @@ type ModalKey =
 
 /* ───────────────────────────── Signature rail ──────────────────────── */
 
-/** What a signature was made with, as a row says it — the whole line, not a fragment. */
-const INSTRUMENT: Record<SignInstrument, string> = {
-  aadhaar: "Signed with Aadhaar OTP",
-  dsc: "Signed with a DSC",
-  paper: "Signed on paper",
-};
-
-/** "2:04 pm" — the product's clock, as `lib/tasks/format` writes it. */
-function timeOf(iso: string | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return format(d, "h:mm a").replace("AM", "am").replace("PM", "pm");
-}
 
 /**
  * Who must sign, and where each of them has got to.
@@ -139,95 +147,75 @@ function timeOf(iso: string | undefined): string {
  * waiting on signatures the system was never told to collect is the screen describing a
  * state it never entered (owner's colleague, 2026-09-23).
  */
-function SignatureList({
+/** One row's status, as its one chip: done, oath still due, or waiting on them. */
+function rowChip(s: Signatory, requested: boolean) {
+  if (s.status === "signed" && s.oathTaken === false) {
+    return <Badge variant="secondary">Oath due</Badge>;
+  }
+  if (s.status === "signed") {
+    return (
+      <Badge variant="success">
+        <CheckIcon aria-hidden />
+        Done
+      </Badge>
+    );
+  }
+  return requested ? <Badge variant="secondary">Waiting</Badge> : null;
+}
+
+/**
+ * One group of signatories — the complainants, or the advocates — as a section that
+ * folds. The fold is the group, not the person: a closed group still says how far it has
+ * got ("1 of 3 done"), and every row inside is one line of who and one chip of where,
+ * with nothing to open. With every advocate signing, the list can run long; folding a
+ * finished group keeps the rest in view without a scroll box (owner, 2026-10-09).
+ */
+function SignatureGroup({
+  value,
   title,
   rows,
   requested,
-  notified,
-  oaths,
 }: {
+  value: string;
   title: string;
   rows: Signatory[];
-  /** Whether the signature requests have gone out at all. */
   requested: boolean;
-  /** Signatory id → when their link was last sent. */
-  notified: Record<string, string>;
-  /** Advocate signatory id → their oath. */
-  oaths: Record<string, AdvocateOath>;
 }) {
   if (!rows.length) return null;
+  const done = rows.filter((s) => !isOutstanding(s)).length;
   return (
-    <div className="flex flex-col gap-1">
-      <p className="text-body-compact font-medium text-muted-foreground">{title}</p>
-      <ul className="flex flex-col">
-        {rows.map((s, i) => {
-          const sent = timeOf(notified[s.id]);
-          return (
+    <AccordionItem value={value} className="border-hairline">
+      <AccordionTrigger className="items-center gap-3 py-3 text-body-compact hover:no-underline">
+        <span className="flex-1 font-medium text-foreground">{title}</span>
+        <span className="font-normal text-muted-foreground tabular-nums">
+          {done} of {rows.length} done
+        </span>
+      </AccordionTrigger>
+      <AccordionContent className="pb-0">
+        <ul className="flex flex-col">
+          {rows.map((s) => (
             <li
               key={s.id}
-              className="flex items-start gap-3 border-b border-hairline py-3 last:border-b-0"
+              className="flex items-center gap-3 border-t border-hairline py-3"
             >
-              <span
-                aria-hidden
-                className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-caption font-medium text-secondary-foreground tabular-nums"
-              >
-                {i + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-body-compact font-semibold text-foreground">
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate text-body-compact font-semibold text-foreground">
                     {s.name}
                   </span>
-                  {/* One chip per row — the status. "You" is a caption, not a badge. */}
+                  {/* "You" is a caption, not a second chip. */}
                   {s.you ? (
-                    <span className="text-body-compact font-medium text-muted-foreground">
-                      You
-                    </span>
+                    <span className="shrink-0 text-body-compact text-muted-foreground">You</span>
                   ) : null}
-                </div>
-                <p className="text-body-compact text-muted-foreground">{s.role}</p>
-                {s.status === "signed" ? (
-                  <p className="text-body-compact text-muted-foreground">
-                    {INSTRUMENT[s.signedWith ?? "aadhaar"]}
-                  </p>
-                ) : null}
-                {/* An advocate signs and then takes the oath — the row says which. */}
-                {s.status === "signed" && s.oathTaken !== undefined ? (
-                  <p className="text-body-compact text-muted-foreground">
-                    {s.oathTaken
-                      ? oaths[s.id]?.video
-                        ? "Oath recorded"
-                        : "Oath marked done (sandbox)"
-                      : s.you
-                        ? "Your oath is still to be taken"
-                        : `Oath link sent${sent ? ` ${sent}` : ""}`}
-                  </p>
-                ) : null}
-                {s.status !== "signed" && requested && !s.you ? (
-                  <p className="text-body-compact text-muted-foreground tabular-nums">
-                    Link sent{sent ? ` ${sent}` : ""}
-                  </p>
-                ) : null}
-              </div>
-              <span className="mt-px shrink-0">
-                {/* Short on purpose: the rail is narrow, and the line under the name
-                    already says where the oath is. */}
-                {s.status === "signed" && s.oathTaken === false ? (
-                  <Badge variant="secondary">Oath due</Badge>
-                ) : s.status === "signed" ? (
-                  <Badge variant="success">
-                    <CheckIcon aria-hidden />
-                    Signed
-                  </Badge>
-                ) : requested ? (
-                  <Badge variant="secondary">Waiting</Badge>
-                ) : null}
+                </span>
+                <span className="truncate text-body-compact text-muted-foreground">{s.role}</span>
               </span>
+              <span className="shrink-0">{rowChip(s, requested)}</span>
             </li>
-          );
-        })}
-      </ul>
-    </div>
+          ))}
+        </ul>
+      </AccordionContent>
+    </AccordionItem>
   );
 }
 
@@ -249,7 +237,7 @@ function stateChip(
   if (all.length > 0 && !all.some(isOutstanding)) {
     return { variant: "success", label: `${signed} of ${all.length} signed` };
   }
-  // Every signature is in and an advocate's oath is not — not done, and not "signing".
+  // Every signature is in and an oath is not — not done, and not "signing".
   if (all.length > 0 && signed === all.length) return { variant: "info", label: "Oath pending" };
   if (onPaper) return { variant: "secondary", label: "Physical document" };
   if (!requested) return { variant: "secondary", label: "Not sent" };
@@ -263,15 +251,14 @@ function SignatureSummary({
   advocates,
   requested,
   onPaper,
-  notified,
-  oaths,
+  action,
 }: {
   complainants: Signatory[];
   advocates: Signatory[];
   requested: boolean;
   onPaper: boolean;
-  notified: Record<string, string>;
-  oaths: Record<string, AdvocateOath>;
+  /** A control beside the state chip — the sandbox's links menu. */
+  action?: React.ReactNode;
 }) {
   const all = [...complainants, ...advocates];
   const chip = stateChip(all, requested, onPaper);
@@ -285,9 +272,12 @@ function SignatureSummary({
           <h2 id={SIGNATURES_HEADING} className="text-body font-semibold text-foreground">
             Signatures
           </h2>
-          <Badge variant={chip.variant} className="tabular-nums">
-            {chip.label}
-          </Badge>
+          <span className="flex items-center gap-1">
+            <Badge variant={chip.variant} className="tabular-nums">
+              {chip.label}
+            </Badge>
+            {action}
+          </span>
         </div>
         {/* Which way this complaint is being signed, once that has been settled. The
             count alone never said it, and the owner could not tell from the rail that a
@@ -300,20 +290,26 @@ function SignatureSummary({
           </p>
         ) : null}
       </div>
-      <SignatureList
-        title="Complainant signature"
-        rows={complainants}
-        requested={requested}
-        notified={notified}
-        oaths={oaths}
-      />
-      <SignatureList
-        title={ADVOCATE_OATH ? "Advocate signature and oath" : "Advocate signature"}
-        rows={advocates}
-        requested={requested}
-        notified={notified}
-        oaths={oaths}
-      />
+      <Accordion
+        type="multiple"
+        defaultValue={["complainants", "advocates"]}
+        // Ruled above and below, so the record ends on a line of its own and the acts
+        // start under it — no separate divider and no gap between the two.
+        className="border-y border-hairline"
+      >
+        <SignatureGroup
+          value="complainants"
+          title="Complainants"
+          rows={complainants}
+          requested={requested}
+        />
+        <SignatureGroup
+          value="advocates"
+          title="Advocates"
+          rows={advocates}
+          requested={requested}
+        />
+      </Accordion>
     </div>
   );
 }
@@ -388,6 +384,7 @@ function FeeGroup({
 }
 
 export function SignSection() {
+  const courtText = useCourtText();
   const { draft, update, hrefFor, flush } = useFiling();
   const { profile } = useProfile();
   const { prev } = neighbours("sign");
@@ -445,7 +442,9 @@ export function SignSection() {
   const onPaper = sign.mode === "upload";
 
   /** The bill, derived from this draft — see `feeBill` for what makes it specific. */
-  const bill = React.useMemo(() => feeBill(draft), [draft]);
+  // The selected state's schedule (`CourtSwitch`); Kerala's is the default.
+  const courtFees = useCourt().profile.fees;
+  const bill = React.useMemo(() => feeBill(draft, courtFees), [draft, courtFees]);
   /** What each accused is having served — defaults applied, floors held (`PAY-10/11/15`). */
   const plans = React.useMemo(() => processPlan(draft), [draft]);
 
@@ -463,15 +462,32 @@ export function SignSection() {
   const yous = everyone.filter((s) => s.you);
   const youSigned = yous.length > 0 && yous.every((s) => s.status === "signed");
   const allSigned = everyone.length > 0 && everyone.every((s) => s.status === "signed");
-  /** Signatures *and* advocates' oaths — what the court fee actually waits on. */
+  /** Signatures *and* oaths — what the court fee actually waits on. */
   const complete = everyone.length > 0 && !everyone.some(isOutstanding);
   const anySigned = everyone.some((s) => s.status === "signed");
   const pending = everyone.filter((s) => s.status === "pending").length;
-  /** Advocates who have signed and not yet sworn. */
-  const oathsOwed = advocates.filter((s) => s.status === "signed" && s.oathTaken === false);
+  /** Complainants who have signed and not yet sworn — advocates carry no oath (`OTH-3`). */
+  const oathsOwed = everyone.filter((s) => s.status === "signed" && s.oathTaken === false);
   const yourOathOwed = oathsOwed.some((s) => s.you);
-  /** Other people with something still to do, by link. */
-  const othersOutstanding = everyone.filter((s) => !s.you && isOutstanding(s));
+  /** Your oath follows your signature — one act, one CTA. */
+  const yourOathAhead = yous.some((s) => s.oathTaken === false);
+  /**
+   * Other people with something still to do, by link. On paper that is the complainants
+   * still to confirm on their own device (with their oath), not the signature rows: the
+   * copy carries the signatures (`SIG-05`).
+   */
+  const paperOthers = React.useMemo(
+    () =>
+      onPaper && !allSigned
+        ? phoneConfirmers(draft).filter(
+            (p) => !isYourConfirmation(p, profile) && !confirmationComplete(draft, p)
+          )
+        : [],
+    [onPaper, allSigned, draft, profile]
+  );
+  const othersOutstanding: Signatory[] = onPaper && !allSigned
+    ? complainants.filter((s) => paperOthers.some((p) => confirmerSlot(p.id) === s.id))
+    : everyone.filter((s) => !s.you && isOutstanding(s));
   /** Everyone the requests go out to — the signatories who are not at this keyboard. */
   const otherSigners = Math.max(0, everyone.length - yous.length);
   const others =
@@ -482,12 +498,12 @@ export function SignSection() {
   const opens = returned ? "Sending back opens" : "The court fee opens";
   /** Why the court fee is not open yet — said on the button that is shut, not beside it. */
   const payGate = allSigned
-    ? `${opens} once ${oathsOwed.length === 1 ? "the advocate's oath is" : "every advocate's oath is"} in.`
+    ? `${opens} once ${oathsOwed.length === 1 ? "the last oath is" : "every oath is"} in.`
     : onPaper
       ? `${opens} once the signed copy is in.`
       : requested
-        ? `${opens} once ${pending === 1 ? "the last signature is" : `all ${everyone.length} signatures are`} in${ADVOCATE_OATH && advocates.length > 0 ? ", with the advocate's oath" : ""}.`
-        : `${opens} once every signature${ADVOCATE_OATH && advocates.length > 0 ? " and the advocate's oath is" : " is"} in.`;
+        ? `${opens} once ${pending === 1 ? "the last signature is" : `all ${everyone.length} signatures are`} in${signingRules().oath ? ", with every oath" : ""}.`
+        : `${opens} once every signature${signingRules().oath ? " and oath is" : " is"} in.`;
 
   /**
    * Every signature on this screen belongs to *this* version of the complaint. Going back
@@ -515,10 +531,14 @@ export function SignSection() {
    */
   const discardSignatures = () => {
     const copy = sign.signedCopy;
-    // An oath affirms *this* complaint, so it goes where the signatures go.
-    const oathFiles = Object.values(sign.oaths).flatMap((o) => (o.video ? [o.video.file.id] : []));
+    // Before filing, an oath affirms *this* draft, so it goes where the signatures go. In
+    // a correction round it carries over unless scrutiny flagged it (`OTH-5`).
+    const keepOaths = !!draft.scrutinyReturn;
+    const oathFiles = keepOaths
+      ? []
+      : Object.values(sign.oaths).flatMap((o) => (o.video ? [o.video.file.id] : []));
     update((d) => {
-      d.sign.oaths = {};
+      if (!keepOaths) d.sign.oaths = {};
       d.sign.signed = {};
       d.sign.requestedAt = null;
       d.sign.notified = {};
@@ -602,9 +622,7 @@ export function SignSection() {
   const remindAll = () => {
     const now = new Date().toISOString();
     update((d) => {
-      for (const s of everyone) {
-        if (isOutstanding(s) && !s.you) d.sign.notified[s.id] = now;
-      }
+      for (const s of othersOutstanding) d.sign.notified[s.id] = now;
     });
     setReminded(true);
     if (remindTimer.current) window.clearTimeout(remindTimer.current);
@@ -640,6 +658,15 @@ export function SignSection() {
   const sandboxSignOthers = () => {
     const at = new Date().toISOString();
     update((d) => {
+      if (onPaper) {
+        // On paper the others confirm, and swear, on their own devices.
+        for (const p of paperOthers) {
+          d.sign.confirmed[p.id] = { mobileTail: p.mobile.replace(/\D/g, "").slice(-4), at };
+          const slot = confirmerSlot(p.id);
+          if (signingRules().oath && !d.sign.oaths[slot]) d.sign.oaths[slot] = { at, video: null };
+        }
+        return;
+      }
       for (const s of everyone) {
         if (s.you) continue;
         if (!d.sign.signed[s.id]) d.sign.signed[s.id] = { at, with: "aadhaar" };
@@ -829,30 +856,44 @@ export function SignSection() {
    */
   const sandboxLinks =
     othersOutstanding.length > 0 ? (
-      <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-3">
-        <p className="text-body-compact text-muted-foreground">
-          Sandbox — no link is actually sent. Open one to see what they see.
-        </p>
-        <ul className="flex flex-col gap-1">
-          {othersOutstanding.map((s) => (
-            <li key={s.id}>
-              <Button asChild variant="link" className="h-auto p-0 text-body-compact">
-                <a href={linkFor(s)} target="_blank" rel="noreferrer">
-                  Open {s.name}&rsquo;s link
-                </a>
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Sandbox: open the signing links"
+                // 32px to sit quietly beside the chip; the inset widens the hit area to 40.
+                className="relative text-muted-foreground after:absolute after:-inset-1"
+              >
+                <FlaskConicalIcon aria-hidden />
               </Button>
-            </li>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Sandbox: open the signing links</TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuLabel>No link is sent — open one to see it</DropdownMenuLabel>
+          {othersOutstanding.map((s) => (
+            <DropdownMenuItem key={s.id} asChild>
+              <a href={linkFor(s)} target="_blank" rel="noreferrer">
+                {s.name}
+              </a>
+            </DropdownMenuItem>
           ))}
-        </ul>
-        <Button type="button" variant="outline" size="sm" onClick={sandboxSignOthers}>
-          Mark the others as done
-        </Button>
-      </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={sandboxSignOthers}>Mark the others as done</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     ) : null;
 
   /** Where things stand, in one sentence, while something is still owed. */
   const waitingLine = !youSigned && yous.length > 0
-    ? "Your signature is still needed."
+    ? yourOathAhead
+      ? "Your signature and oath are still needed."
+      : "Your signature is still needed."
     : yourOathOwed
       ? "Your signature is in. Take your oath to finish."
       : yous.length === 0 && pending > 0
@@ -864,7 +905,7 @@ export function SignSection() {
           `${others} ${have} the link; nobody here is a signatory.`
         : pending > 0
           ? `Waiting on ${pending === 1 ? "one more party" : `${pending} more parties`}.`
-          : `Waiting on ${oathsOwed.length === 1 ? "one advocate's oath" : `${oathsOwed.length} advocates' oaths`}.`;
+          : `Waiting on ${oathsOwed.length === 1 ? "one oath" : `${oathsOwed.length} oaths`}.`;
 
   const signActions = noSignatories ? (
     <p className="text-body-compact text-muted-foreground">
@@ -875,8 +916,7 @@ export function SignSection() {
     <div className="flex flex-col gap-3">
       <SectionNotice variant="success" announce="polite">
         {onPaper ? "The uploaded copy carries every signature" : "Every party has signed"}
-        {/* No advocate on the complaint means no oath — so say nothing about one. */}
-        {ADVOCATE_OATH && advocates.length > 0 ? ", and every advocate has taken the oath." : "."}{" "}
+        {signingRules().oath ? ", and everyone has taken the oath." : "."}{" "}
         {returned ? "You can send the corrections to scrutiny now." : "You can pay the court fee now."}
       </SectionNotice>
       {onPaper ? (
@@ -903,7 +943,6 @@ export function SignSection() {
         className="w-full"
         onClick={() => openFlow("paper")}
       >
-        <UploadIcon data-icon="inline-start" aria-hidden />
         Upload signed copy
       </Button>
       {/* Either mode can be chosen from the other: a filer who picked paper and then
@@ -930,11 +969,10 @@ export function SignSection() {
       className="w-full"
       onClick={() => openFlow("choose")}
     >
-      <SignatureIcon data-icon="inline-start" aria-hidden />
-      Continue to signing
+      {yourOathAhead ? "Sign and take your oath" : "Continue to signing"}
     </Button>
   ) : (
-    /* ── Asked, and waiting — on a signature, or on an advocate's oath ── */
+    /* ── Asked, and waiting — on a signature, or on an oath ── */
     <div className="flex flex-col gap-3">
       <p className="text-body-compact text-muted-foreground">{waitingLine}</p>
 
@@ -945,8 +983,7 @@ export function SignSection() {
           className="w-full"
           onClick={() => openFlow("sign")}
         >
-          <SignatureIcon data-icon="inline-start" aria-hidden />
-          Add your e-signature
+          {yourOathAhead ? "E-sign and take your oath" : "Add your e-signature"}
         </Button>
       ) : yourOathOwed ? (
         <Button
@@ -955,7 +992,6 @@ export function SignSection() {
           className="w-full"
           onClick={() => openFlow("oath")}
         >
-          <VideoIcon data-icon="inline-start" aria-hidden />
           Take your oath
         </Button>
       ) : null}
@@ -987,8 +1023,6 @@ export function SignSection() {
           </Button>
         ) : null}
       </div>
-
-      {sandboxLinks}
     </div>
   );
 
@@ -1006,10 +1040,8 @@ export function SignSection() {
         advocates={advocates}
         requested={requested}
         onPaper={onPaper}
-        notified={sign.notified}
-        oaths={sign.oaths}
+        action={sandboxLinks}
       />
-      <div role="separator" className="h-px w-full bg-hairline" />
       {signActions}
     </section>
   );
@@ -1053,12 +1085,12 @@ export function SignSection() {
           }
           description={
             filed
-              ? `Filed in the ${COURT.name} under S-138, Negotiable Instruments Act.`
+              ? `Filed in the ${courtText(COURT.name)} under S-138, Negotiable Instruments Act.`
               : resubmitted
                 ? "The corrections have been sent back to scrutiny."
                 : returned
                   ? "Scrutiny returned this complaint. Everyone signs the corrected version again, the same way as when it was filed, before it goes back."
-                  : `You are filing a criminal complaint under S-138, Negotiable Instruments Act in the ${COURT.name}.`
+                  : `A criminal complaint under S-138, Negotiable Instruments Act in the ${courtText(COURT.name)}.`
           }
         />
 
@@ -1403,7 +1435,7 @@ export function SignSection() {
           <DialogHeader>
             <DialogTitle>Pay court fees</DialogTitle>
             <DialogDescription>
-              Payable to the {COURT.name} for this complaint.
+              Payable to the {courtText(COURT.name)} for this complaint.
             </DialogDescription>
           </DialogHeader>
 

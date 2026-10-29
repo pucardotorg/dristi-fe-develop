@@ -1,17 +1,19 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { blankCheque } from "./blank";
+import { blankCheque, blankNotice } from "./blank";
 import {
   chequeAmount,
   chequeBank,
   chequeEvidenceInfo,
   chequeReady,
+  demandNoticeEvidenceInfo,
+  demandNoticeReady,
   returnMemoEvidenceInfo,
   returnMemoReady,
   returnReasonText,
 } from "./evidence";
-import type { ChequeDetails } from "./types";
+import type { ChequeDetails, DemandNotice } from "./types";
 
 /** A complete cheque, so tests can vary one field at a time. */
 function filledCheque(over: Partial<ChequeDetails> = {}): ChequeDetails {
@@ -150,5 +152,77 @@ describe("returnMemoReady", () => {
     assert.equal(returnMemoReady(filledCheque()), true);
     assert.equal(returnMemoReady(filledCheque({ returnReason: "" })), false);
     assert.equal(returnMemoReady(filledCheque({ presentDate: "" })), false);
+  });
+});
+
+/** A complete, delivered demand notice, so tests can vary one field at a time. */
+function filledNotice(over: Partial<DemandNotice> = {}): DemandNotice {
+  return {
+    ...blankNotice(),
+    natureDebt: "loan",
+    whyIssued: "loan-repay",
+    dispatchDate: "2024-02-01",
+    modeService: "rpad",
+    tracking: "RR123456789IN",
+    delivered: "yes",
+    deliveryDate: "2024-02-05",
+    replied: "no",
+    paymentStatus: "none",
+    ...over,
+  };
+}
+
+describe("demandNoticeEvidenceInfo", () => {
+  it("builds the LEGAL_DEMAND_NOTICE body with codes mapped to their labels", () => {
+    assert.deepEqual(demandNoticeEvidenceInfo(filledNotice()), {
+      nature_of_debt: "Loan / advance repayment",
+      cheque_issue_reason: "Towards repayment of a loan",
+      dispatch_date: "2024-02-01",
+      mode_of_service: "Registered post (RPAD)",
+      tracking_number: "RR123456789IN",
+      is_delivered: true,
+      delivery_date: "2024-02-05",
+      accused_replied: false,
+      payment_status: "No payment made",
+    });
+  });
+
+  it("omits tracking_number and delivery_date when they are empty", () => {
+    const info = demandNoticeEvidenceInfo(
+      filledNotice({ tracking: "", delivered: "no", deliveryDate: "" })
+    );
+    assert.ok(!("tracking_number" in info));
+    assert.ok(!("delivery_date" in info));
+    assert.equal(info.is_delivered, false);
+  });
+
+  it("does not send the not-delivered fields or the part-payment amount", () => {
+    const info = demandNoticeEvidenceInfo(
+      filledNotice({ delivered: "no", returnDate: "2024-02-10", nonDeliveryReason: "x", paymentStatus: "part", partAmount: "500" })
+    );
+    assert.ok(!("return_date" in info));
+    assert.ok(!("non_delivery_reason" in info));
+    assert.ok(!("part_amount" in info));
+    assert.equal(info.payment_status, "Part payment made");
+  });
+});
+
+describe("demandNoticeReady", () => {
+  it("is true for a complete notice", () => {
+    assert.equal(demandNoticeReady(filledNotice()), true);
+    assert.equal(demandNoticeReady(filledNotice({ delivered: "no", deliveryDate: "" })), true);
+  });
+
+  it("is false when a required field is missing", () => {
+    assert.equal(demandNoticeReady(filledNotice({ natureDebt: "" })), false);
+    assert.equal(demandNoticeReady(filledNotice({ whyIssued: "" })), false);
+    assert.equal(demandNoticeReady(filledNotice({ dispatchDate: "" })), false);
+    assert.equal(demandNoticeReady(filledNotice({ modeService: "" })), false);
+    assert.equal(demandNoticeReady(filledNotice({ paymentStatus: "" })), false);
+  });
+
+  it("requires a delivery date only when the notice was delivered", () => {
+    assert.equal(demandNoticeReady(filledNotice({ delivered: "yes", deliveryDate: "" })), false);
+    assert.equal(demandNoticeReady(filledNotice({ delivered: "no", deliveryDate: "" })), true);
   });
 });

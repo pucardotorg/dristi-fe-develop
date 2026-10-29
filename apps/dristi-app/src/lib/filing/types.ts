@@ -272,6 +272,8 @@ export type DemandNotice = {
   nonDeliveryReason: string;
   paymentStatus: "" | "none" | "part";
   partAmount: string;
+  /** This notice's LEGAL_DEMAND_NOTICE evidence row on the backend case, once saved there. */
+  noticeEvidenceId?: string;
 };
 
 /* ─────────────────────────── Jurisdiction & limitation ──────────────────────────── */

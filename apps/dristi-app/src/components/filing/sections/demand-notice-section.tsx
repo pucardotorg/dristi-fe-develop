@@ -8,6 +8,7 @@
  */
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 
 import { blankNotice } from "@/lib/filing/blank";
 import {
@@ -20,6 +21,10 @@ import {
 import { chequeSourceSlot, noticeComplete } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import {
+  removeNoticeEvidence,
+  useDemandNoticeEvidence,
+} from "@/lib/filing/use-demand-notice-evidence";
 import type { DemandNotice, NoticeField } from "@/lib/filing/types";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { DateField } from "@/components/filing/date-field";
@@ -58,6 +63,8 @@ function indexOfId(notices: { id: string }[], id: string): number | null {
 export function DemandNoticeSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("demand-notice");
+  const router = useRouter();
+  const { save, saving, error } = useDemandNoticeEvidence();
   const notices = draft.notices;
 
   const [active, setActive] = React.useState(0);
@@ -119,14 +126,25 @@ export function DemandNoticeSection() {
     const i = removeIndex;
     setRemoveOpen(false);
     if (notices.length <= 1) return;
+    const removed = notices[i];
     update((d) => {
       d.notices.splice(i, 1);
     });
+    // Take its demand-notice evidence off the backend case, if it reached one.
+    removeNoticeEvidence(removed);
     const remaining = notices.length - 1;
     let a = index;
     if (i < a) a -= 1;
     if (a >= remaining) a = remaining - 1;
     setActive(Math.max(0, a));
+  };
+
+  /* Save every complete demand notice to the case, then move on. A save failure keeps the
+     filer here with the reason, so the data loss is visible. */
+  const continueHref = next ? hrefFor(next) : undefined;
+  const handleContinue = async () => {
+    const result = await save();
+    if (result.ok && continueHref) router.push(continueHref);
   };
 
   return (
@@ -343,11 +361,19 @@ export function DemandNoticeSection() {
           ) : null}
         </FormCard>
         </CorrectionInstance>
+
+        {error ? (
+          <SectionNotice variant="destructive" title="Couldn't save to the court's server">
+            {error}
+          </SectionNotice>
+        ) : null}
       </FilingMain>
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        continueHref={next ? hrefFor(next) : undefined}
+        onContinue={continueHref ? handleContinue : undefined}
+        continueDisabled={saving}
+        continueLabel={saving ? "Saving…" : "Continue"}
       />
 
       <ConfirmDialog

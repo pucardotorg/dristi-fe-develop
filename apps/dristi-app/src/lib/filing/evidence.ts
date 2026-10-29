@@ -13,11 +13,30 @@
  */
 
 import { IFSC_PATTERN } from "./lookups";
-import { RETURN_REASONS } from "./options";
-import type { ChequeDetails } from "./types";
+import {
+  MODE_OF_SERVICE,
+  NATURE_OF_DEBT,
+  PAYMENT_STATUS,
+  RETURN_REASONS,
+  WHY_ISSUED,
+  type Option,
+} from "./options";
+import type { ChequeDetails, DemandNotice } from "./types";
 
 /** Evidence types this module builds (spec 0021 §5.2). */
 export type EvidenceType = "CHEQUE" | "RETURN_MEMO" | "LEGAL_DEMAND_NOTICE";
+
+/** An `evidence_info` body, as the backend's per-type schema expects it. */
+export type EvidenceInfoBody = Record<string, string | number | boolean>;
+
+/**
+ * The label a dropdown value stands for. The draft stores option codes; the backend takes
+ * the human text, since these fields are free text there until their option lists are
+ * agreed (spec 0021 §5.2, "not yet enforced").
+ */
+function optionLabel(options: readonly Option[], value: string): string {
+  return options.find((o) => o.value === value)?.label ?? value;
+}
 
 /** A `CHEQUE` evidence_info body, as the backend's schema expects it. */
 export type ChequeEvidenceInfo = {
@@ -62,13 +81,9 @@ export function chequeAmount(amount: string): number | null {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
-/**
- * The return reason as written on the memo. The draft stores an option code
- * (`funds-insufficient`); the backend takes the human label, since the reason is free text
- * there until its option list is agreed (spec 0021 §5.2, "not yet enforced").
- */
+/** The return reason as written on the memo (the label its stored code stands for). */
 export function returnReasonText(code: string): string {
-  return RETURN_REASONS.find((o) => o.value === code)?.label ?? code;
+  return optionLabel(RETURN_REASONS, code);
 }
 
 /** Build the `CHEQUE` evidence_info for the cheque at `index`, resolving its bank. */
@@ -114,4 +129,42 @@ export function chequeReady(cheques: ChequeDetails[], index: number): boolean {
 /** Whether a cheque's return memo has every `RETURN_MEMO` field the backend requires. */
 export function returnMemoReady(cheque: ChequeDetails): boolean {
   return !!cheque.presentDate && !!cheque.returnDate && !!cheque.returnReason;
+}
+
+/**
+ * Build the `LEGAL_DEMAND_NOTICE` evidence_info for a demand notice.
+ *
+ * `tracking_number` and `delivery_date` are left out when empty (the schema rejects an
+ * empty string for either). The draft's "not delivered" fields (return date, reason) and
+ * the part-payment amount have no home in the schema yet, so they are not sent (see the
+ * demand-notice integration tracker).
+ */
+export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody {
+  const info: EvidenceInfoBody = {
+    nature_of_debt: optionLabel(NATURE_OF_DEBT, notice.natureDebt),
+    cheque_issue_reason: optionLabel(WHY_ISSUED, notice.whyIssued),
+    dispatch_date: notice.dispatchDate,
+    mode_of_service: optionLabel(MODE_OF_SERVICE, notice.modeService),
+    is_delivered: notice.delivered === "yes",
+    accused_replied: notice.replied === "yes",
+    payment_status: optionLabel(PAYMENT_STATUS, notice.paymentStatus),
+  };
+  const tracking = notice.tracking.trim();
+  if (tracking) info.tracking_number = tracking;
+  // The 15-day payment window runs from the delivery date, which only applies when delivered.
+  if (notice.delivered === "yes" && notice.deliveryDate) info.delivery_date = notice.deliveryDate;
+  return info;
+}
+
+/** Whether a demand notice has every `LEGAL_DEMAND_NOTICE` field the backend requires. */
+export function demandNoticeReady(notice: DemandNotice): boolean {
+  const base =
+    !!notice.natureDebt &&
+    !!notice.whyIssued &&
+    !!notice.dispatchDate &&
+    !!notice.modeService &&
+    !!notice.paymentStatus;
+  if (!base) return false;
+  // A delivered notice needs its delivery date (the backend requires it then).
+  return notice.delivered === "yes" ? !!notice.deliveryDate : true;
 }

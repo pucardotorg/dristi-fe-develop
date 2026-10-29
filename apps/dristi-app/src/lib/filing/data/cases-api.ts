@@ -7,14 +7,15 @@
  *   addEvidence       POST   /cases/{id}/evidence         { evidence_type, evidence_info, case_document_id? }
  *   updateEvidence    PATCH  /case-evidence/{case_evidence_id}
  *   deleteEvidence    DELETE /case-evidence/{case_evidence_id}
+ *   saveDetails       PUT    /cases/{id}/details/{section} (whole section, replaces)
  *
  * The backend creates the case lazily, on the first save, and gives it the draft
  * session's id — so the id `startDraft` returns is the case id for the life of the
  * filing, and the local draft is stored under it.
  *
- * The documents and evidence steps talk to the backend; the other sections of the draft
- * are still kept in this browser (see ../README.md). The body shapes for evidence are
- * built from the draft in `../evidence.ts`.
+ * The documents, evidence and case-details steps talk to the backend; the remaining
+ * sections of the draft are still kept in this browser (see ../README.md). The body shapes
+ * are built from the draft in `../evidence.ts` (evidence) and `../details.ts` (sections).
  */
 
 import { api, isApiError, type ApiClient } from "@/lib/api";
@@ -207,6 +208,24 @@ export function createCaseFilingApi(client: ApiClient = api) {
     /** Remove an evidence row from the case. */
     async deleteEvidence(caseEvidenceId: string): Promise<void> {
       await client.delete(`case-evidence/${encodeURIComponent(caseEvidenceId)}`);
+    },
+
+    /**
+     * Replace a case-details section (jurisdiction_limitation, adr_other_prayer), creating
+     * the case on the first save. The whole section object is sent; it replaces what was
+     * stored, so re-saving is idempotent.
+     */
+    async saveDetails(
+      caseId: string,
+      section: string,
+      data: Record<string, unknown>,
+      signal?: AbortSignal
+    ): Promise<void> {
+      await client.put(
+        `cases/${encodeURIComponent(caseId)}/details/${encodeURIComponent(section)}`,
+        data,
+        { signal }
+      );
     },
   };
 }

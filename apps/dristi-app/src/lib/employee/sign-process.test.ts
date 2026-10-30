@@ -8,7 +8,9 @@ import {
   COURT_PROCESS_TYPES,
   defaultProcessFilters,
   filterProcesses,
+  goesByHand,
   goesByPost,
+  recordedByCourt,
   groupSelectionByCase,
   orderForView,
   pilePool,
@@ -26,6 +28,7 @@ import {
   processTab,
   rebaseFilters,
   recordProcessReturns,
+  executeOnDownload,
   runProcessAct,
   singleCaseMatch,
   spansStatuses,
@@ -35,6 +38,8 @@ import {
   moveLine,
   refusedLine,
   processAct,
+  processScopeFor,
+  scopeLine,
   sortProcesses,
   type CourtProcess,
   type ProcessOutcome,
@@ -80,9 +85,10 @@ describe("PROCESS_LINE", () => {
   });
 
   it("holds only paper where only paper can be", () => {
-    /* A cover is collected, and later posted, only for registered post. */
+    /* A cover is collected, and later posted, only for registered post — RPAD, or
+       Police (RPAD) to the station. */
     for (const process of processesAt(PROCESS_LINE, "awaiting-cover")) {
-      assert.equal(process.channel, "rpad", process.id);
+      assert.ok(goesByPost(process), process.id);
     }
     for (const process of processesAt(PROCESS_LINE, "to-post")) {
       assert.ok(goesByPost(process), process.id);
@@ -140,6 +146,8 @@ describe("PROCESS_TABS", () => {
     assert.deepEqual(processTab("issuance").statuses, [
       "to-sign",
       "to-post",
+      "to-hand",
+      "to-send",
       "send-failed",
     ]);
     assert.deepEqual(processTab("service").statuses, [
@@ -243,7 +251,7 @@ describe("processStatusLine", () => {
       assert.equal(line.warn, wrong, process.id);
       if (wrong) {
         assert.ok(line.reason, `${process.id} fails without saying why`);
-        assert.match(line.word, /^(Send failed|Not )/, process.id);
+        assert.match(line.word, /^(Error|Not )/, process.id);
       } else {
         assert.ok(line.day, `${process.id} has no day for its status`);
       }
@@ -384,7 +392,7 @@ describe("actsForSelection", () => {
     );
   });
 
-  it("offers to record only the registered-post covers in a Service selection", () => {
+  it("offers to record only the paper — registered post and By hand — in a Service selection", () => {
     const tab = processTab("service");
     const out = processesAt(PROCESS_LINE, "in-progress");
     const groups = actsForSelection(tab, out);
@@ -392,7 +400,7 @@ describe("actsForSelection", () => {
     assert.equal(groups[0].act.id, "record");
     assert.deepEqual(
       groups[0].rows.map((process) => process.id),
-      out.filter(goesByPost).map((process) => process.id),
+      out.filter(recordedByCourt).map((process) => process.id),
     );
     /* Completed and Failed are records: nothing to do to them here. */
     assert.deepEqual(
@@ -406,9 +414,10 @@ describe("the pile", () => {
   it("is paper only where only paper comes back", () => {
     const pool = pilePool(PROCESS_LINE, "in-progress");
     assert.ok(pool.length > 0);
-    assert.ok(pool.every(goesByPost));
+    assert.ok(pool.every(recordedByCourt));
+    assert.ok(pool.some(goesByHand), "a warrant By hand comes back as paper too");
     assert.ok(
-      processesAt(PROCESS_LINE, "in-progress").some((p) => !goesByPost(p)),
+      processesAt(PROCESS_LINE, "in-progress").some((p) => !recordedByCourt(p)),
       "the fixture needs an electronic row out, for this to mean anything",
     );
   });
@@ -472,7 +481,7 @@ describe("finding a process that has moved on", () => {
 
   it("does not carry a tab's own channel onto a tab that is not defined by one", () => {
     const police = PROCESS_LINE.find(
-      (process) => process.status === "to-sign" && process.channel === "police",
+      (process) => process.status === "to-sign" && process.channel === "police-icops",
     );
     assert.ok(police);
     const filters = { ...defaultProcessFilters(collection), query: police.caseNumber };
@@ -488,11 +497,10 @@ describe("finding a process that has moved on", () => {
   it("keeps a channel the bench chose for itself", () => {
     const from = processTab("issuance");
     const to = processTab("service");
-    const chosen = { ...defaultProcessFilters(from), channel: "police" as const };
-    assert.equal(rebaseFilters(chosen, from, to).channel, "police");
-    const pinned = defaultProcessFilters(collection);
-    assert.equal(pinned.channel, "rpad");
-    assert.equal(rebaseFilters(pinned, collection, to).channel, "all");
+    const chosen = { ...defaultProcessFilters(from), channel: "police-icops" as const };
+    assert.equal(rebaseFilters(chosen, from, to).channel, "police-icops");
+    /* RPAD collection holds RPAD and Police (RPAD), so it pins no channel. */
+    assert.equal(defaultProcessFilters(collection).channel, "all");
   });
 
   it("does not find a row by the cause title the Case name column prints", () => {
@@ -518,13 +526,20 @@ describe("COURT_PROCESS_TYPES", () => {
 });
 
 describe("buildProcessDocument", () => {
-  it("writes a template for every instrument, and addresses it", () => {
+  it("writes a template for every instrument, and addresses all but a proclamation", () => {
     const seen = new Set<string>();
     for (const process of PROCESS_LINE) {
       const document = buildProcessDocument(process);
       seen.add(process.type);
       assert.equal(document.paragraphs.length, 2, process.id);
-      assert.ok(document.addressee.startsWith("To "), process.id);
+      if (process.type === "proclamation") {
+        assert.equal(document.addressee, undefined, process.id);
+        /* The line under the title is blank: no "To" line in the downloaded text. */
+        const lines = processDocumentText(document).split("\n");
+        assert.equal(lines[lines.indexOf(document.title) + 1], "", process.id);
+      } else {
+        assert.ok(document.addressee?.startsWith("To "), process.id);
+      }
       assert.ok(document.title.length > 0, process.id);
     }
     assert.equal(seen.size, COURT_PROCESS_TYPES.length);
@@ -534,8 +549,8 @@ describe("buildProcessDocument", () => {
     const warrant = PROCESS_LINE.find((process) => process.type === "warrant");
     assert.ok(warrant);
     const document = buildProcessDocument(warrant);
-    assert.match(document.addressee, /officer in charge/);
-    assert.ok(!document.addressee.includes(warrant.parties.accused));
+    assert.match(document.addressee ?? "", /officer in charge/);
+    assert.ok(!document.addressee?.includes(warrant.parties.accused));
   });
 
   it("says plainly whether the signature is on it", () => {
@@ -795,7 +810,7 @@ describe("the confirmation's success", () => {
       ids.has(p.id),
     );
     assert.equal(landedLine(after), "It is now in To post in Issuance.");
-    assert.equal(refusedLine(after), "1 could not be sent and is in Send failed in Issuance.");
+    assert.equal(refusedLine(after), "1 could not be sent and is in Errored in Issuance.");
     assert.equal(processAct("sign").done("2 processes"), "2 processes signed");
   });
 });
@@ -805,7 +820,7 @@ describe("attachment (carried over from #43)", () => {
 
   it("is on the line, executed by the police", () => {
     assert.ok(attachment);
-    assert.equal(attachment.channel, "police");
+    assert.equal(attachment.channel, "police-icops");
     assert.equal(
       COURT_PROCESS_TYPES.find((type) => type.id === "attachment")?.executed,
       true,
@@ -817,5 +832,100 @@ describe("attachment (carried over from #43)", () => {
     const text = JSON.stringify(document);
     assert.match(text, /officer in charge of the police station/);
     assert.match(text, /attach the movable property/);
+  });
+});
+
+describe("By hand", () => {
+  const DAY = "2026-10-15";
+
+  it("waits under To hand over once signed, and leaves when the CMO marks it sent", () => {
+    const proclamation = PROCESS_LINE.find((process) => process.id === "pr-1328")!;
+    assert.equal(proclamation.channel, "by-hand");
+    const signed = runProcessAct(PROCESS_LINE, "sign", new Set([proclamation.id]), DAY);
+    const afterSign = signed.find((process) => process.id === proclamation.id)!;
+    assert.equal(afterSign.status, "to-hand");
+    assert.equal(afterSign.signedOn, DAY);
+    assert.equal(afterSign.sentOn, undefined);
+    const sent = runProcessAct(signed, "hand", new Set([proclamation.id]), DAY);
+    const afterSend = sent.find((process) => process.id === proclamation.id)!;
+    assert.equal(afterSend.status, "in-progress");
+    assert.equal(afterSend.sentOn, DAY);
+  });
+
+  it("executes a proclamation By hand when its signed copy is downloaded", () => {
+    const waiting = PROCESS_LINE.find(
+      (process) => process.type === "proclamation" && process.status === "to-hand",
+    )!;
+    const next = executeOnDownload(PROCESS_LINE, new Set([waiting.id]), DAY);
+    const done = next.find((process) => process.id === waiting.id)!;
+    assert.equal(done.status, "completed");
+    assert.equal(done.sentOn, DAY);
+    assert.equal(done.returnedOn, DAY);
+    assert.deepEqual(done.outcome, { served: true });
+  });
+
+  it("leaves everything else alone on download, a warrant By hand included", () => {
+    const others = PROCESS_LINE.filter(
+      (process) => !(process.type === "proclamation" && process.status === "to-hand"),
+    );
+    const next = executeOnDownload(
+      PROCESS_LINE,
+      new Set(others.map((process) => process.id)),
+      DAY,
+    );
+    assert.deepEqual(
+      next.filter((process) => others.includes(process)),
+      others,
+    );
+  });
+
+  it("is used only by warrants and proclamations, and every proclamation uses it", () => {
+    for (const process of PROCESS_LINE) {
+      if (process.channel === "by-hand") {
+        assert.ok(["warrant", "proclamation"].includes(process.type), process.id);
+      }
+      if (process.type === "proclamation") {
+        assert.equal(process.channel, "by-hand", process.id);
+      }
+    }
+  });
+});
+
+
+describe("e-Post and the Post officer", () => {
+  it("signs e-Post into To send, and marks it sent from there", () => {
+    const row = only(
+      PROCESS_LINE.filter((p) => p.channel === "e-post" && p.status === "to-sign"),
+      "an e-Post row to sign",
+    );
+    const signed = runProcessAct(PROCESS_LINE, "sign", new Set([row.id]), ON);
+    const moved = only(signed.filter((p) => p.id === row.id), "the signed row");
+    assert.equal(moved.status, "to-send");
+    const sent = runProcessAct(signed, "send", new Set([row.id]), ON);
+    const out = only(sent.filter((p) => p.id === row.id), "the sent row");
+    assert.equal(out.status, "in-progress");
+    assert.equal(out.sentOn, ON);
+    assert.equal(recordedByCourt(out), true);
+  });
+
+  it("shows the Post officer signed e-Post rows only, and no RPAD collection", () => {
+    const scope = processScopeFor("post-officer");
+    const rows = scopeLine(PROCESS_LINE, scope);
+    assert.ok(rows.length > 0);
+    assert.ok(rows.every((p) => p.channel === "e-post"));
+    assert.deepEqual(
+      scope.tabs.map((tab) => tab.id),
+      ["issuance", "service"],
+    );
+    assert.ok(scope.tabs.every((tab) => tab.onlyChannel === "e-post"));
+    assert.deepEqual(scope.tabs[0].statuses, ["to-send"]);
+    assert.equal(scope.tabs[0].defaultView, "to-send");
+    assert.ok(rows.every((p) => p.status !== "to-sign"));
+  });
+
+  it("leaves every other seat the whole line", () => {
+    const scope = processScopeFor("bench-clerk");
+    assert.equal(scopeLine(PROCESS_LINE, scope), PROCESS_LINE);
+    assert.equal(scope.tabs, PROCESS_TABS);
   });
 });

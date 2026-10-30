@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Banner } from "@/components/ui/banner";
+import { OFFICE_NO_ESIGN } from "@/components/cases/case-office-access";
 import { Button } from "@/components/ui/button";
 import {
   DescriptionList,
@@ -89,6 +90,9 @@ import { ADVOCATE_PROFILE_NAME } from "@/lib/advocate/content";
 import { cn } from "@/lib/utils";
 import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
 import { Identifier } from "@/components/chrome/identifier";
+import { useCourtText } from "@/components/court/court-provider";
+import { UploadedDocField as SharedUploadedDocField } from "@/components/cases/uploaded-doc-field";
+
 
 /**
  * Raise an application → bail. Staged dialog, same shell as the join flows:
@@ -215,6 +219,16 @@ type SuretyDraft = {
   other: File | null;
 };
 
+/** One supporting document (PRD Bail): its type, its title and its file. */
+type BailDocument = { id: number; type: string; title: string; file: File | null };
+type BailDocumentErrors = { type?: string; title?: string; file?: string };
+
+let nextDocumentId = 0;
+function blankDocument(): BailDocument {
+  nextDocumentId += 1;
+  return { id: nextDocumentId, type: "", title: "", file: null };
+}
+
 let suretySeq = 0;
 function blankSurety(): SuretyDraft {
   suretySeq += 1;
@@ -259,6 +273,8 @@ function suretyComplete(surety: SuretyDraft) {
 function ApplicationDraft({
   accessCase,
   grounds,
+  prayer,
+  documents,
   locale,
   expanded = false,
   onExpand,
@@ -266,10 +282,13 @@ function ApplicationDraft({
   accessCase: AccessCase;
   /** Rich text, so the generated draft keeps the filer's emphasis and lists. */
   grounds: RichTextValue;
+  prayer: string;
+  documents: BailDocument[];
   locale: Locale;
   expanded?: boolean;
   onExpand?: () => void;
 }) {
+  const courtText = useCourtText();
   return (
     <div
       className={cn(
@@ -300,7 +319,7 @@ function ApplicationDraft({
           {pick(bailDialog.draftPageLabel, locale)}
         </p>
         <p className="text-center text-body-compact font-semibold text-balance">
-          {pick(bailDialog.draftCourtLine, locale)}
+          {courtText(pick(bailDialog.draftCourtLine, locale))}
         </p>
         <p className="text-center text-body-compact font-medium tabular-nums">
           {fillCopy(bailDialog.draftCaseLine, locale, {
@@ -314,6 +333,30 @@ function ApplicationDraft({
           value={grounds}
           className="text-body-compact text-pretty text-muted-foreground"
         />
+        {documents.length > 0 ? (
+          <div className="flex flex-col gap-1">
+            <p className="text-body-compact font-medium">
+              {pick(bailDialog.documentsHeading, locale)}
+            </p>
+            <ol className="list-decimal pl-6 text-body-compact text-pretty text-muted-foreground">
+              {documents.map((doc) => (
+                <li key={doc.id}>
+                  {[doc.title.trim(), doc.type.trim()].filter(Boolean).join(" · ")}
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
+        {prayer.trim() ? (
+          <div className="flex flex-col gap-1">
+            <p className="text-body-compact font-medium">
+              {pick(bailDialog.prayerLabel, locale)}
+            </p>
+            <p className="text-body-compact text-pretty text-muted-foreground">
+              {prayer.trim()}
+            </p>
+          </div>
+        ) : null}
       </article>
     </div>
   );
@@ -345,7 +388,29 @@ export function BailApplicationDialog({
   const [groundsRich, setGroundsRich] = React.useState<RichTextValue>(EMPTY_RICH_TEXT);
   const grounds = groundsRich.text;
   const [comments, setComments] = React.useState("");
+  /* The PRD's prayer, offered in the court's usual words and marked as
+     filled in for the advocate to check; and its documents list. */
+  const [typedPrayer, setTypedPrayer] = React.useState("");
+  const [prayerPrefilled, setPrayerPrefilled] = React.useState(true);
+  /* Until the advocate types, the offered wording follows the language. */
+  const prayer = prayerPrefilled ? pick(bailDialog.prayerDefault, locale) : typedPrayer;
+  const [documents, setDocuments] = React.useState<BailDocument[]>([]);
+  const [documentErrors, setDocumentErrors] = React.useState<
+    Record<number, BailDocumentErrors>
+  >({});
   const [detailsTouched, setDetailsTouched] = React.useState(false);
+  const addDocumentButton = (
+    <Button
+      type="button"
+      variant="outline"
+      className={documents.length ? "self-end" : undefined}
+      data-icon="inline-start"
+      onClick={() => setDocuments((rows) => [...rows, blankDocument()])}
+    >
+      <PlusIcon aria-hidden />
+      {pick(documents.length ? bailDialog.documentsAddAnother : bailDialog.documentsAdd, locale)}
+    </Button>
+  );
 
   // The magistrate usually asks for two sureties, so the yes-branch starts
   // with two forms; both can be removed down to one, or more added.
@@ -387,6 +452,10 @@ export function BailApplicationDialog({
     setFatherPrefilled(false);
     setGroundsRich(EMPTY_RICH_TEXT);
     setComments("");
+    setTypedPrayer("");
+    setPrayerPrefilled(true);
+    setDocuments([]);
+    setDocumentErrors({});
     setDetailsTouched(false);
     setSuretyChoice("yes");
     setSureties([blankSurety(), blankSurety()]);
@@ -416,6 +485,8 @@ export function BailApplicationDialog({
       petitionerId !== "" ||
       grounds.trim() !== "" ||
       comments.trim() !== "" ||
+      !prayerPrefilled ||
+      documents.length > 0 ||
       (father.trim() !== "" && !fatherPrefilled));
 
   function closeNow() {
@@ -429,6 +500,8 @@ export function BailApplicationDialog({
       onOpenChange(true);
       return;
     }
+    // The gateway is confirming; the window holds until it answers.
+    if (stage === "processing") return;
     if (entered) setDiscardOpen(true);
     else closeNow();
   }
@@ -445,6 +518,7 @@ export function BailApplicationDialog({
     else if (stage === "review") setStage("sureties");
     else if (stage === "sign") setStage("review");
     else if (stage === "payment") setStage("sign");
+    else if (stage === "paid") finish(true);
     else handleOpenChange(false);
   });
 
@@ -462,7 +536,25 @@ export function BailApplicationDialog({
   function submitDetails(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setDetailsTouched(true);
-    if (!petitionerId || !father.trim() || !grounds.trim()) return;
+    /* A document row, once added, needs all three parts. */
+    const rowErrors: typeof documentErrors = {};
+    for (const row of documents) {
+      const errors = {
+        type: row.type.trim() ? undefined : pick(bailDialog.documentTypeError, locale),
+        title: row.title.trim() ? undefined : pick(bailDialog.documentTitleError, locale),
+        file: row.file ? undefined : pick(bailDialog.documentFileError, locale),
+      };
+      if (errors.type || errors.title || errors.file) rowErrors[row.id] = errors;
+    }
+    setDocumentErrors(rowErrors);
+    if (
+      !petitionerId ||
+      !father.trim() ||
+      !grounds.trim() ||
+      !prayer.trim() ||
+      Object.keys(rowErrors).length > 0
+    )
+      return;
     setDetailsTouched(false);
     setStage("sureties");
   }
@@ -494,6 +586,23 @@ export function BailApplicationDialog({
     if (!signed) return;
     setSignTouched(false);
     setStage("payment");
+  }
+
+  /* Paying goes through the gateway and comes back with a receipt, as joining a case
+     and e-filing do (owner, 2026-10-12); the application is filed after it. */
+  const [paymentRef, setPaymentRef] = React.useState("");
+  const payTimerRef = React.useRef<number | null>(null);
+  React.useEffect(() => () => {
+    if (payTimerRef.current !== null) window.clearTimeout(payTimerRef.current);
+  }, []);
+
+  function pay() {
+    setStage("processing");
+    payTimerRef.current = window.setTimeout(() => {
+      payTimerRef.current = null;
+      setPaymentRef(newPaymentRef());
+      setStage("paid");
+    }, GATEWAY_MS);
   }
 
   function finish(didPay: boolean) {
@@ -555,6 +664,12 @@ export function BailApplicationDialog({
               {headerCopy.title}
             </DialogTitle>
             <DialogDescription className="text-pretty">{headerCopy.body}</DialogDescription>
+            {/* Where the terms already are, while they are being entered. */}
+            {stage === "details" || stage === "sureties" ? (
+              <p className="text-body-compact text-pretty text-muted-foreground">
+                {pick(bailDialog.fromSummons, locale)}
+              </p>
+            ) : null}
             {/* The case this filing belongs to is constant across stages. */}
             <p className="text-caption text-muted-foreground">
               <Identifier value={accessCase.caseNumber} label="case number" />
@@ -633,6 +748,133 @@ export function BailApplicationDialog({
                         : null}
                     </FieldError>
                   </Field>
+
+                  <Field data-invalid={detailsTouched && !prayer.trim()}>
+                    <FieldLabel htmlFor="bail-prayer">
+                      {pick(bailDialog.prayerLabel, locale)}
+                    </FieldLabel>
+                    <Textarea
+                      id="bail-prayer"
+                      value={prayer}
+                      rows={2}
+                      prefilled={prayerPrefilled}
+                      aria-invalid={detailsTouched && !prayer.trim()}
+                      onChange={(event) => {
+                        setTypedPrayer(event.target.value);
+                        setPrayerPrefilled(false);
+                        setDetailsTouched(false);
+                      }}
+                    />
+                    <FieldDescription>{pick(bailDialog.prayerHint, locale)}</FieldDescription>
+                    <FieldError>
+                      {detailsTouched && !prayer.trim()
+                        ? pick(bailDialog.prayerError, locale)
+                        : null}
+                    </FieldError>
+                  </Field>
+
+                  {/* The PRD's supporting documents list, in this dialog's own
+                      grammar: a sunken well per document as per surety, and
+                      the dialog's upload slot (thumbnail preview, change,
+                      remove). One file to a document. */}
+                  <section
+                    aria-labelledby="bail-documents-heading"
+                    className="flex flex-col gap-4"
+                  >
+                    {/* Empty, the add button rides the heading's row; once a
+                        document is added it follows the list, still at the
+                        right edge (owner, Oct 8). */}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h3 id="bail-documents-heading" className="text-body-compact font-medium">
+                        {pick(bailDialog.documentsHeading, locale)}{" "}
+                        <span className="font-normal text-muted-foreground">
+                          ({pick(bailDialog.optional, locale)})
+                        </span>
+                      </h3>
+                      {documents.length ? null : addDocumentButton}
+                    </div>
+                    {documents.map((doc, index) => {
+                      const n = String(index + 1);
+                      const errors = documentErrors[doc.id] ?? {};
+                      const update = (patch: Partial<Omit<BailDocument, "id">>) => {
+                        setDocuments((rows) =>
+                          rows.map((row) => (row.id === doc.id ? { ...row, ...patch } : row)),
+                        );
+                        setDocumentErrors((all) => {
+                          if (!all[doc.id]) return all;
+                          const next = { ...all[doc.id] };
+                          for (const key of Object.keys(patch) as (keyof BailDocumentErrors)[]) {
+                            next[key] = undefined;
+                          }
+                          return { ...all, [doc.id]: next };
+                        });
+                      };
+                      return (
+                        <fieldset
+                          key={doc.id}
+                          className="flex min-w-0 flex-col gap-4 rounded-lg bg-surface-sunken p-4"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <legend className="float-left text-body font-semibold">
+                              {fillCopy(bailDialog.documentTitleN, locale, { n })}
+                            </legend>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive-ink hover:text-destructive-ink"
+                              aria-label={fillCopy(bailDialog.removeDocument, locale, { n })}
+                              onClick={() =>
+                                setDocuments((rows) => rows.filter((row) => row.id !== doc.id))
+                              }
+                            >
+                              <Trash2Icon aria-hidden />
+                            </Button>
+                          </div>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <Field data-invalid={Boolean(errors.type)}>
+                              <FieldLabel htmlFor={`bail-doc-${doc.id}-type`}>
+                                {pick(bailDialog.documentType, locale)}
+                              </FieldLabel>
+                              <Input
+                                id={`bail-doc-${doc.id}-type`}
+                                value={doc.type}
+                                onChange={(event) => update({ type: event.target.value })}
+                              />
+                              <FieldError>{errors.type}</FieldError>
+                            </Field>
+                            <Field data-invalid={Boolean(errors.title)}>
+                              <FieldLabel htmlFor={`bail-doc-${doc.id}-title`}>
+                                {pick(bailDialog.documentTitle, locale)}
+                              </FieldLabel>
+                              <Input
+                                id={`bail-doc-${doc.id}-title`}
+                                value={doc.title}
+                                onChange={(event) => update({ title: event.target.value })}
+                              />
+                              <FieldError>{errors.title}</FieldError>
+                            </Field>
+                          </div>
+                          <Field data-invalid={Boolean(errors.file)}>
+                            <div className="flex flex-col gap-2">
+                              <UploadedDocField
+                                label={pick(bailDialog.documentFile, locale)}
+                                required
+                                file={doc.file}
+                                onFileChange={(file) => update({ file })}
+                                locale={locale}
+                              />
+                              {!doc.file ? (
+                                <FieldDescription>{pick(bailDialog.docHelp, locale)}</FieldDescription>
+                              ) : null}
+                            </div>
+                            <FieldError>{errors.file}</FieldError>
+                          </Field>
+                        </fieldset>
+                      );
+                    })}
+                    {documents.length ? addDocumentButton : null}
+                  </section>
 
                   <Field>
                     <FieldLabel htmlFor="bail-comments">
@@ -945,7 +1187,7 @@ export function BailApplicationDialog({
                   <Button
                     type="button"
                     variant="outline"
-                    className="self-start"
+                    className="self-end"
                     data-icon="inline-start"
                     onClick={() => setSureties((current) => [...current, blankSurety()])}
                   >
@@ -1000,6 +1242,8 @@ export function BailApplicationDialog({
                 <ApplicationDraft
                   accessCase={accessCase}
                   grounds={groundsRich}
+                  prayer={prayer}
+                  documents={documents}
                   locale={locale}
                   onExpand={() => setReviewFullscreen(true)}
                 />
@@ -1021,6 +1265,8 @@ export function BailApplicationDialog({
                     <ApplicationDraft
                       accessCase={accessCase}
                       grounds={groundsRich}
+                      prayer={prayer}
+                      documents={documents}
                       locale={locale}
                       expanded
                     />
@@ -1053,7 +1299,9 @@ export function BailApplicationDialog({
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="esign" className="flex flex-col gap-4 pt-3">
-                    {esigned ? (
+                    {officeAccess ? (
+                      <Banner variant="info">{OFFICE_NO_ESIGN}</Banner>
+                    ) : esigned ? (
                       <Banner variant="success">
                         {fillCopy(bailDialog.signedNote, locale, { name: ADVOCATE_PROFILE_NAME })}
                       </Banner>
@@ -1141,9 +1389,26 @@ export function BailApplicationDialog({
             </div>
           ) : null}
 
+          {/* ---------------------------------------------- the gateway round trip */}
+          {stage === "processing" ? <PaymentProcessing /> : null}
+
+          {/* ------------------------------------------------------- receipt */}
+          {stage === "paid" ? (
+            <PaymentReceipt
+              amount={BAIL_FEE}
+              rows={[
+                { label: pick(advDialog.payFeeHead, locale), value: pick(bailDialog.feeLine, locale) },
+                {
+                  label: pick(advDialog.paidRef, locale),
+                  value: <Identifier value={paymentRef} label="payment reference" />,
+                },
+              ]}
+            />
+          ) : null}
+
           {/* ------------------------------------------------------ submitted */}
           {stage === "done" ? (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               <DescriptionList>
                 <DescriptionRow className="border-hairline">
                   <DescriptionTerm>{pick(bailDialog.submittedOn, locale)}</DescriptionTerm>
@@ -1192,7 +1457,12 @@ export function BailApplicationDialog({
         </div>
 
         {/* ------------------------------------------------------------ footer */}
-        <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <footer
+          className={cn(
+            "flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:items-center sm:justify-between",
+            stage === "processing" && "hidden",
+          )}
+        >
           {stage === "details" ? (
             <>
               <span aria-hidden className="hidden sm:block" />
@@ -1265,6 +1535,7 @@ export function BailApplicationDialog({
               {signTab === "esign" && !esigned ? (
                 <Button
                   type="button"
+                  disabled={officeAccess}
                   data-icon="inline-start"
                   onClick={() => {
                     // Prototype: the Aadhaar e-sign round trip succeeds.
@@ -1304,11 +1575,23 @@ export function BailApplicationDialog({
                 <Button type="button" variant="outline" onClick={() => finish(false)}>
                   {pick(bailDialog.payLater, locale)}
                 </Button>
-                <Button type="button" onClick={() => finish(true)}>
+                <Button type="button" onClick={pay}>
                   {fillCopy(bailDialog.payNow, locale, { fee: BAIL_FEE })}
                 </Button>
               </div>
             </>
+          ) : null}
+
+          {stage === "paid" ? (
+            <Button
+              type="button"
+              className="sm:ml-auto"
+              onClick={() => finish(true)}
+              data-icon="inline-end"
+            >
+              {pick(joinDialog.continue, locale)}
+              <ArrowRightIcon aria-hidden />
+            </Button>
           ) : null}
 
           {stage === "done" ? (

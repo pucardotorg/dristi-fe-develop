@@ -9,15 +9,22 @@
 
 import * as React from "react";
 
-import { blankNotice } from "@/lib/filing/blank";
+import { blankNotice, removeCaseRecord } from "@/lib/filing/blank";
+import { getRepository } from "@/lib/filing/data";
+import { forgetFile } from "@/lib/filing/files";
 import {
   MODE_OF_SERVICE,
   NATURE_OF_DEBT,
   NON_DELIVERY_REASONS,
   PAYMENT_STATUS,
-  WHY_ISSUED,
 } from "@/lib/filing/options";
-import { chequeSourceSlot, noticeComplete } from "@/lib/filing/selectors";
+import {
+  noticeSourceSlot,
+  noticeComplete,
+  noticeDispatchIssue,
+  noticeDispatchLate,
+  noticeServiceIssue,
+} from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { DemandNotice, NoticeField } from "@/lib/filing/types";
@@ -80,9 +87,9 @@ export function DemandNoticeSection() {
 
   // The three uploads behind this notice; any of them may not be uploaded yet.
   const slots = {
-    "demand-notice": chequeSourceSlot(draft, index, "demand-notice"),
-    "dispatch-proof": chequeSourceSlot(draft, index, "dispatch-proof"),
-    "delivery-proof": chequeSourceSlot(draft, index, "delivery-proof"),
+    "demand-notice": noticeSourceSlot(draft, index, "demand-notice"),
+    "dispatch-proof": noticeSourceSlot(draft, index, "dispatch-proof"),
+    "delivery-proof": noticeSourceSlot(draft, index, "delivery-proof"),
   };
 
   const set = <K extends keyof DemandNotice>(key: K, value: DemandNotice[K]) =>
@@ -119,9 +126,15 @@ export function DemandNoticeSection() {
     const i = removeIndex;
     setRemoveOpen(false);
     if (notices.length <= 1) return;
+    // Its upload group goes with it, so the list of documents stops asking for it.
+    let files: ReturnType<typeof removeCaseRecord> = [];
     update((d) => {
-      d.notices.splice(i, 1);
+      files = removeCaseRecord(d, "notice", i);
     });
+    for (const f of files) {
+      forgetFile(f.id);
+      void getRepository().deleteFile(f.id);
+    }
     const remaining = notices.length - 1;
     let a = index;
     if (i < a) a -= 1;
@@ -134,7 +147,7 @@ export function DemandNoticeSection() {
       <FilingMain sourceOpen={sourceOpen}>
         <FilingPageHeader
           title="Demand notice & debt"
-          description="Details of the statutory demand notice you sent, and the debt the cheque was meant to discharge."
+          description="Details of the statutory demand notice sent to the accused, and the debt the cheque was meant to discharge."
         />
 
         <SectionTabs
@@ -182,18 +195,6 @@ export function DemandNoticeSection() {
                 ariaLabel="Nature of debt or other liability"
               />
             </FormField>
-            <FormField
-              label="Why was the cheque issued?"
-              required
-              tip="The purpose for which the accused handed over the cheque."
-            >
-              <OptionSelect
-                value={notice.whyIssued}
-                onValueChange={(v) => editField("whyIssued", v)}
-                options={WHY_ISSUED}
-                ariaLabel="Why was the cheque issued?"
-              />
-            </FormField>
           </FormRow>
         </FormCard>
 
@@ -207,7 +208,8 @@ export function DemandNoticeSection() {
               label="Date of dispatch of demand notice"
               name="dispatchDate"
               required
-              tip="The notice must be sent within 30 days of receiving information about the cheque's return."
+              error={noticeDispatchIssue(draft, index)}
+              tip="The notice must be sent within 30 days of the cheque's return."
             >
               <DateField
                 value={notice.dispatchDate}
@@ -224,6 +226,12 @@ export function DemandNoticeSection() {
               />
             </FormField>
           </FormRow>
+
+          {noticeDispatchLate(draft, index) ? (
+            <SectionNotice variant="warning">
+              Demand notice not issued within 30 days of the return of the cheque as unpaid.
+            </SectionNotice>
+          ) : null}
 
           <HalfWidth>
             <FormField
@@ -243,7 +251,7 @@ export function DemandNoticeSection() {
 
           <FormDivider />
 
-          <FormField asGroup label="Whether delivered?" required>
+          <FormField asGroup label="Whether delivered?" name="delivered" required>
             <YesNoSegmented
               value={notice.delivered}
               onValueChange={(v) => set("delivered", v)}
@@ -254,9 +262,10 @@ export function DemandNoticeSection() {
           {notice.delivered === "yes" ? (
             <>
               <FormRow>
-                <FormField
+                <FormField name="deliveryDate"
                   label="Date of delivery"
                   required
+                  error={noticeServiceIssue(notice)}
                   help="The 15-day payment window runs from this date."
                 >
                   <DateField
@@ -266,7 +275,7 @@ export function DemandNoticeSection() {
                   />
                 </FormField>
               </FormRow>
-              <FormField asGroup label="Has the accused replied to the demand notice?">
+              <FormField asGroup name="replied" label="Has the accused replied to the demand notice?">
                 <YesNoSegmented
                   value={notice.replied}
                   onValueChange={(v) => set("replied", v)}
@@ -277,14 +286,18 @@ export function DemandNoticeSection() {
           ) : (
             <>
               <FormRow>
-                <FormField label="Date of return as not delivered" required>
+                <FormField name="returnDate"
+                  label="Date of return as not delivered"
+                  required
+                  error={noticeServiceIssue(notice)}
+                >
                   <DateField
                     value={notice.returnDate}
                     onChange={(v) => set("returnDate", v)}
                     ariaLabel="Date of return as not delivered"
                   />
                 </FormField>
-                <FormField label="Reason for non-delivery" required>
+                <FormField label="Reason for non-delivery" name="nonDeliveryReason" required>
                   <OptionSelect
                     value={notice.nonDeliveryReason}
                     onValueChange={(v) => set("nonDeliveryReason", v)}
@@ -308,7 +321,7 @@ export function DemandNoticeSection() {
           description="Whether the accused has paid any part of the cheque amount."
         >
           <HalfWidth>
-            <FormField
+            <FormField name="paymentStatus"
               label="Has the drawer (accused) made full or part payment due under the cheque?"
               required
               tip="If any amount has already been paid, the balance due is what is claimed in the complaint."
@@ -326,7 +339,7 @@ export function DemandNoticeSection() {
 
           {notice.paymentStatus === "part" ? (
             <HalfWidth>
-              <FormField
+              <FormField name="partAmount"
                 label="How much payment has already been made?"
                 required
                 help="Deducted from the cheque amount to arrive at the balance claimed."
@@ -354,7 +367,7 @@ export function DemandNoticeSection() {
         open={removeOpen}
         onOpenChange={setRemoveOpen}
         title={`Remove demand notice ${removeIndex + 1}`}
-        description="Are you sure you want to delete the details of this demand notice? This cannot be undone."
+        description="Are you sure you want to delete the details of this demand notice and any documents added for it? This cannot be undone."
         confirmLabel="Yes, remove"
         onConfirm={confirmRemove}
       />

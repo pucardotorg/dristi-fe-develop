@@ -142,6 +142,12 @@ export const filingsMenu = {
 /* ------------------------------------------------------------------ the dialog */
 
 export const bailDialog = {
+  /* Under the heading (owner, 2026-10-14): the summons already sets the terms out.
+     Malayalam drafted — needs review. */
+  fromSummons: t(
+    "The bail conditions are printed on the summons, under “Contest the case”. You can copy them from there.",
+    "ജാമ്യ വ്യവസ്ഥകൾ സമൻസിൽ “കേസ് എതിർക്കുക” എന്നതിന് കീഴിൽ അച്ചടിച്ചിട്ടുണ്ട്. അവിടെ നിന്ന് പകർത്താം.",
+  ),
   /* closing midway: the same question every filing dialog asks */
   discardTitle: t("Discard this application?", "ഈ അപേക്ഷ ഉപേക്ഷിക്കണോ?"),
   discardBody: t(
@@ -177,6 +183,30 @@ export const bailDialog = {
   groundsError: t("Set out the grounds for bail.", "ജാമ്യത്തിനുള്ള കാരണങ്ങൾ നൽകുക."),
   commentsLabel: t("Comments", "അഭിപ്രായങ്ങൾ"),
   optional: t("Optional", "നിർബന്ധമല്ല"),
+  /* prayer and supporting documents (Application Lifecycle PRD, Bail) */
+  prayerLabel: t("Prayer", "പ്രാർത്ഥന"),
+  prayerDefault: t(
+    "That the petitioner be released on bail on such terms as this court considers fit.",
+    "ഈ കോടതിക്ക് ഉചിതമെന്ന് തോന്നുന്ന വ്യവസ്ഥകളിൽ ഹർജിക്കാരനെ ജാമ്യത്തിൽ വിട്ടയക്കണമെന്ന്.",
+  ),
+  prayerHint: t(
+    "What you ask the court to order. Change it if you need to.",
+    "കോടതി ഉത്തരവിടണമെന്ന് നിങ്ങൾ ആവശ്യപ്പെടുന്നത്. ആവശ്യമെങ്കിൽ മാറ്റുക.",
+  ),
+  prayerError: t("Enter the prayer.", "പ്രാർത്ഥന നൽകുക."),
+  documentsHeading: t("Supporting documents", "അനുബന്ധ രേഖകൾ"),
+  documentsAdd: t("Add a document", "രേഖ ചേർക്കുക"),
+  documentsAddAnother: t("Add another document", "മറ്റൊരു രേഖ ചേർക്കുക"),
+  documentTitleN: t("Document {n}", "രേഖ {n}"),
+  removeDocument: t("Remove document {n}", "രേഖ {n} നീക്കം ചെയ്യുക"),
+  documentType: t("Document type", "രേഖയുടെ തരം"),
+  documentTitle: t("Document title", "രേഖയുടെ പേര്"),
+  documentFile: t("File", "ഫയൽ"),
+  documentTypeError: t("Enter the document type.", "രേഖയുടെ തരം നൽകുക."),
+  documentTitleError: t("Enter the document title.", "രേഖയുടെ പേര് നൽകുക."),
+  documentFileError: t("Upload the document.", "രേഖ അപ്‌ലോഡ് ചെയ്യുക."),
+  changeFile: t("Change file", "ഫയൽ മാറ്റുക"),
+  removeFile: t("Remove", "നീക്കം ചെയ്യുക"),
 
   /* sureties */
   suretiesTitle: t("Surety details", "ജാമ്യക്കാരുടെ വിവരങ്ങൾ"),
@@ -291,6 +321,11 @@ export const bailDialog = {
   ),
   payNow: t("Pay {fee} now", "{fee} ഇപ്പോൾ അടയ്ക്കുക"),
   payLater: t("Pay later", "പിന്നീട് അടയ്ക്കാം"),
+  /* Malayalam drafted — needs review. */
+  paidBody: t(
+    "The application fee is paid. Continue to file the application.",
+    "അപേക്ഷാ ഫീസ് അടച്ചു. അപേക്ഷ ഫയൽ ചെയ്യാൻ തുടരുക.",
+  ),
 
   /* submitted */
   doneTitle: t("Bail application submitted", "ജാമ്യാപേക്ഷ സമർപ്പിച്ചു"),
@@ -304,9 +339,9 @@ export const bailDialog = {
   copiedId: t("Copied", "പകർത്തി"),
   paymentLabel: t("Court fee", "കോടതി ഫീസ്"),
   paymentPaid: t("{fee} paid", "{fee} അടച്ചു"),
-  paymentDeferred: t("In your pending tasks", "നിങ്ങളുടെ ബാക്കിയുള്ള ജോലികളിൽ"),
+  paymentDeferred: t("Under Take action", "നിങ്ങളുടെ ബാക്കിയുള്ള ജോലികളിൽ"),
   feeTaskNote: t(
-    "The {fee} court fee has been added to your pending tasks. The application is already with the court.",
+    "The {fee} court fee has been added to Take action. The application is already with the court.",
     "{fee} കോടതി ഫീസ് നിങ്ങളുടെ ബാക്കിയുള്ള ജോലികളിൽ ചേർത്തു. അപേക്ഷ ഇതിനകം കോടതിയിലാണ്.",
   ),
   suretySentNote: t(
@@ -346,7 +381,7 @@ export const bailDialog = {
 
 export const bondCopy = {
   /* pending task on the case file */
-  pendingTitle: t("Pending tasks", "ബാക്കിയുള്ള ജോലികൾ"),
+  pendingTitle: t("Take action", "ബാക്കിയുള്ള ജോലികൾ"),
   taskRaiseBond: t("Raise bail bond", "ജാമ്യ ബോണ്ട് സമർപ്പിക്കുക"),
   taskDue: t("Due {date}", "{date}-നകം"),
   taskNote: t(
@@ -368,7 +403,7 @@ export const bondCopy = {
     "മജിസ്‌ട്രേറ്റ് ജാമ്യ വ്യവസ്ഥകൾ നിശ്ചയിച്ചു. ബോണ്ട് തയ്യാറാക്കാൻ ജാമ്യക്കാരുടെ വിവരങ്ങൾ പൂർത്തിയാക്കുക.",
   ),
   directBody: t(
-    "Generate a bail bond directly. If the magistrate has already set terms on a bail application, raise the bond from that pending task instead.",
+    "Generate a bail bond directly. If the magistrate has already set terms on a bail application, raise the bond from that task under Take action instead.",
     "ജാമ്യ ബോണ്ട് നേരിട്ട് തയ്യാറാക്കുക. മജിസ്‌ട്രേറ്റ് ജാമ്യാപേക്ഷയിൽ വ്യവസ്ഥകൾ നിശ്ചയിച്ചിട്ടുണ്ടെങ്കിൽ ആ ബാക്കിയുള്ള ജോലിയിൽ നിന്ന് ബോണ്ട് സമർപ്പിക്കുക.",
   ),
   editBody: t(

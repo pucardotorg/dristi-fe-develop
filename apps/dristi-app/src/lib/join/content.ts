@@ -27,6 +27,8 @@ export type CaseParty = {
    *  the only thing that blocks a further PoA join. The party having joined in person
    *  does not: the party and their PoA holder both legitimately hold access. */
   poaHolderJoined?: boolean;
+  /** The number on record for a party who has joined — shown masked, never in full. */
+  phoneOnRecord?: string;
 };
 
 export type JoinCase = {
@@ -60,11 +62,15 @@ export type JoinCase = {
 export const DEMO_JOIN_CASE: JoinCase = {
   title: "South Indian Bank Ltd. vs Rajan Krishnan Nair and 1 other",
   caseNumber: "CC 847/2026",
-  cnr: "KL-0423-CC-0847-2026",
-  filingNumber: "KL-002405-2026",
+  /* Real formats (owner feedback, 12 Oct): a 16-character CNR and a registration
+     number, each re-voiced per state by the court switch — in Gujarat GJAH010008472026
+     and eCC/2405/2026. */
+  cnr: "KLKM520008472026",
+  filingNumber: "CMP/2405/2026",
   caseType: "NIA S138",
   filingDate: "31-07-2026",
-  court: "Court of the Judicial First Class Magistrate I",
+  /* The product's own court, which the court switch names per state ("SARAS Court"). */
+  court: "24×7 ON Court",
   courtroom: "Court No. 3",
   hearingDate: "Friday, 18 September 2026, 10:30 AM",
   chequeAmount: "₹1,85,000",
@@ -74,10 +80,12 @@ export const DEMO_JOIN_CASE: JoinCase = {
   accusedAdvocate: "Not available",
   accused: [
     { id: "acc-1", name: "Rajan Krishnan Nair" },
-    { id: "acc-2", name: "Suresh Babu P", hasJoined: true },
+    { id: "acc-2", name: "Suresh Babu P", hasJoined: true, phoneOnRecord: "9846012734" },
   ],
   // Linked at e-filing (JOIN-01), so already on the case with a number on record.
-  complainants: [{ id: "comp-1", name: "South Indian Bank Ltd.", hasJoined: true }],
+  complainants: [
+    { id: "comp-1", name: "South Indian Bank Ltd.", hasJoined: true, phoneOnRecord: "9447055188" },
+  ],
 };
 
 /** The demo account's registered profile name — deliberately not an exact match for
@@ -159,6 +167,14 @@ export const summonsModal = {
 /* -------------------------------------------------------------------- join dialog */
 
 export const joinDialog = {
+  /* Closing partway through asks first (owner, 2026-10-13). Malayalam drafted. */
+  leaveTitle: t("Leave without joining?", "ചേരാതെ പുറത്തുകടക്കണോ?"),
+  leaveBody: t(
+    "What you have entered so far will not be kept.",
+    "ഇതുവരെ നൽകിയ വിവരങ്ങൾ സൂക്ഷിക്കില്ല.",
+  ),
+  leaveStay: t("Keep going", "തുടരുക"),
+  leaveGo: t("Leave", "പുറത്തുകടക്കുക"),
   title: t("Join your case", "നിങ്ങളുടെ കേസിൽ ചേരുക"),
 
   /* lookup — manual entry only */
@@ -185,6 +201,27 @@ export const joinDialog = {
   ),
   codeLabel: t("Access code", "ആക്‌സസ് കോഡ്"),
   codeCaseLead: t("You are joining", "നിങ്ങൾ ചേരുന്ന കേസ്"),
+  /* Arriving from the summons QR or link (owner, 2026-10-14): the case is known, the
+     code is still asked. Malayalam drafted — needs review. */
+  codeSummonsBody: t(
+    "Enter the six-digit access code printed on your summons.",
+    "നിങ്ങളുടെ സമൻസിൽ അച്ചടിച്ചിട്ടുള്ള ആറക്ക ആക്‌സസ് കോഡ് നൽകുക.",
+  ),
+  codeSummonsNote: t(
+    "The code is printed on your summons, next to the QR code.",
+    "കോഡ് നിങ്ങളുടെ സമൻസിൽ, QR കോഡിന് അടുത്തായി അച്ചടിച്ചിട്ടുണ്ട്.",
+  ),
+  /* The advocate holds a client's summons, not their own. */
+  codeSummonsBodyAdvocate: t(
+    "Enter the six-digit access code printed on the summons.",
+    "സമൻസിൽ അച്ചടിച്ചിട്ടുള്ള ആറക്ക ആക്‌സസ് കോഡ് നൽകുക.",
+  ),
+  codeSummonsNoteAdvocate: t(
+    "The code is printed on the summons, next to the QR code.",
+    "കോഡ് സമൻസിൽ, QR കോഡിന് അടുത്തായി അച്ചടിച്ചിട്ടുണ്ട്.",
+  ),
+  notMyCase: t("Not my case?", "എന്റെ കേസ് അല്ലേ?"),
+  backToSummonsCase: t("Back to the summons case", "സമൻസിലെ കേസിലേക്ക് മടങ്ങുക"),
   codeNote: t(
     "The code is printed on the summons. Parties who have already joined the case can also share it with you.",
     "കോഡ് സമൻസിൽ അച്ചടിച്ചിട്ടുണ്ട്. കേസിൽ ഇതിനകം ചേർന്ന കക്ഷികൾക്കും ഇത് നിങ്ങളുമായി പങ്കിടാം.",
@@ -268,15 +305,29 @@ export const joinDialog = {
     "How will you appear in court?",
     "കോടതിയിൽ എങ്ങനെ ഹാജരാകും?",
   ),
-  appearHire: t("I want to hire an advocate", "എനിക്ക് ഒരു അഭിഭാഷകനെ നിയമിക്കണം"),
+  /* "Find a lawyer", pointing to free legal aid at the District Legal Services
+     Authority (owner, 2026-10-14). Malayalam drafted — needs review. */
+  appearHire: t("Find a lawyer", "അഭിഭാഷകനെ കണ്ടെത്തുക"),
   appearHireHint: t(
     "You can join now and add an advocate later.",
     "ഇപ്പോൾ ചേരുകയും പിന്നീട് അഭിഭാഷകനെ ചേർക്കുകയും ചെയ്യാം.",
   ),
-  findAdvocate: t("Find a lawyer", "അഭിഭാഷകനെ കണ്ടെത്തുക"),
-  findAdvocateHelp: t("Your summons lists the Bar Council of Kerala as a place to find a lawyer.", "അഭിഭാഷകനെ കണ്ടെത്താനുള്ള സ്ഥലമായി നിങ്ങളുടെ സമൻസിൽ കേരള ബാർ കൗൺസിലിനെ നൽകിയിട്ടുണ്ട്."),
-  openBarCouncil: t("Open Bar Council of Kerala", "കേരള ബാർ കൗൺസിൽ തുറക്കുക"),
-  findAdvocateHref: "https://barcouncilkerala.org/",
+  findAdvocate: t("About free legal aid", "സൗജന്യ നിയമസഹായത്തെക്കുറിച്ച്"),
+  findAdvocateHelp: t(
+    "The District Legal Services Authority gives free legal aid and can assign you a lawyer.",
+    "ജില്ലാ നിയമ സേവന അതോറിറ്റി സൗജന്യ നിയമസഹായം നൽകുകയും നിങ്ങൾക്ക് ഒരു അഭിഭാഷകനെ നിയോഗിക്കുകയും ചെയ്യും.",
+  ),
+  openBarCouncil: t("Open the legal aid portal", "നിയമസഹായ പോർട്ടൽ തുറക്കുക"),
+  findAdvocateHref: "https://nalsa.gov.in/",
+  /* Next step on the joined screen (owner, 2026-10-14). Malayalam drafted. */
+  nextShareCode: t(
+    "Next, give your advocate your access code ({code}) or your summons. They need it to join the case for you.",
+    "അടുത്തതായി, നിങ്ങളുടെ ആക്‌സസ് കോഡ് ({code}) അല്ലെങ്കിൽ സമൻസ് അഭിഭാഷകന് നൽകുക. നിങ്ങൾക്കായി കേസിൽ ചേരാൻ അവർക്ക് അത് ആവശ്യമാണ്.",
+  ),
+  nextFindLawyer: t(
+    "Next, once you have a lawyer, give them your access code ({code}) or your summons. They need it to join the case for you.",
+    "അടുത്തതായി, അഭിഭാഷകനെ ലഭിച്ചാൽ നിങ്ങളുടെ ആക്‌സസ് കോഡ് ({code}) അല്ലെങ്കിൽ സമൻസ് അവർക്ക് നൽകുക. നിങ്ങൾക്കായി കേസിൽ ചേരാൻ അവർക്ക് അത് ആവശ്യമാണ്.",
+  ),
   appearAdvocate: t("I already have an advocate", "എനിക്ക് ഇതിനകം ഒരു അഭിഭാഷകനുണ്ട്"),
   appearAdvocateHint: t(
     "Your advocate can join the case separately. You get access now.",
@@ -308,6 +359,18 @@ export const joinDialog = {
     "കോടതിയിൽ എങ്ങനെ ഹാജരാകുമെന്ന് തിരഞ്ഞെടുക്കുക.",
   ),
   poaDocLabel: t("Authorization document", "അധികാര രേഖ"),
+  /* Each party's fields carry its name, in place of a heading over them that read past
+     (owner, 2026-10-14). Malayalam drafted — needs review. */
+  poaDocLabelFor: t("Authorization document for {name}", "{name}-ന്റെ അധികാര രേഖ"),
+  /* Name first, so with several parties the field is found by its person
+     (owner, 2026-10-14). */
+  poaPhoneLabelFor: t("{name}'s mobile number", "{name}-ന്റെ മൊബൈൽ നമ്പർ"),
+  poaDocSlot: t("Signed copy", "ഒപ്പിട്ട പകർപ്പ്"),
+  poaJoinedChip: t("Joined", "ചേർന്നു"),
+  poaPhoneJoinedNote: t(
+    "Already on the case. This is the number on their account.",
+    "ഇതിനകം കേസിലുണ്ട്. ഇത് അവരുടെ അക്കൗണ്ടിലെ നമ്പറാണ്.",
+  ),
   poaPartyHeading: t(
     "For {name}",
     "{name}-ന് വേണ്ടി",
@@ -369,12 +432,7 @@ export const joinDialog = {
     "{numbers} എന്ന നമ്പറുകളിലേക്ക് SMS അയച്ചു. ഓരോരുത്തരും സൈൻ ഇൻ ചെയ്ത് സ്ഥിരീകരിച്ചാൽ കേസ് അവരുടെ അക്കൗണ്ടുമായി ബന്ധിപ്പിക്കും.",
   ),
   viewCase: t("View case", "കേസ് കാണുക"),
-  viewCasePrototype: t("The case file will open here.", "കേസ് ഫയൽ ഇവിടെ തുറക്കും."),
   fileBail: t("File bail application", "ജാമ്യാപേക്ഷ നൽകുക"),
-  fileBailPrototype: t(
-    "The bail application flow will open here.",
-    "ജാമ്യാപേക്ഷ ഫ്ലോ ഇവിടെ തുറക്കും.",
-  ),
   addAdvocate: t("Add advocate", "അഭിഭാഷകനെ ചേർക്കുക"),
   addAdvocatePrototype: t(
     "The add-advocate flow will open here.",
@@ -509,7 +567,8 @@ export const caseDetails = {
   hearing: t("Next hearing", "അടുത്ത ഹിയറിംഗ്"),
   caseNumber: t("Case number", "കേസ് നമ്പർ"),
   cnr: t("CNR number", "CNR നമ്പർ"),
-  filingNumber: t("Filing number", "ഫയലിംഗ് നമ്പർ"),
+  /* The number the case was registered under, not the e-filing number (owner, 12 Oct). */
+  filingNumber: t("Registration number", "രജിസ്ട്രേഷൻ നമ്പർ"),
   filingDate: t("Filing date", "ഫയലിംഗ് തീയതി"),
   chequeAmount: t("Amount claimed", "ആവശ്യപ്പെടുന്ന തുക"),
   complainant: t("Complainant", "പരാതിക്കാരൻ"),

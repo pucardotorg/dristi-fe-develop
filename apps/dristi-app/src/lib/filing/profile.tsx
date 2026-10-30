@@ -3,14 +3,15 @@
 /**
  * The signed-in person, as the filing flow needs to know them: a name to greet, a mobile
  * to mark "you" among the signatories, and, by role, the first complainant (a litigant)
- * or advocate card (an advocate) to prefill. Read once from the account (`GET /users/me`) when the filing area mounts.
- * `useProfile()` is the single read point.
+ * or advocate card (an advocate) to prefill. Read once from the account (`GET /users/me`)
+ * when the filing area mounts; `useProfile()` is the single read point.
  */
 
 import * as React from "react";
 
 import { getAuthService } from "@/lib/auth";
 
+import { SIGNED_IN_MOBILE_KEY } from "./linked-complaints";
 import type { UserProfile } from "./types";
 
 export const EMPTY_PROFILE: UserProfile = {
@@ -20,6 +21,23 @@ export const EMPTY_PROFILE: UserProfile = {
   email: "",
   barNumber: "",
 };
+
+/**
+ * Sandbox session-lite: while a litigant is signed in (`SIGNED_IN_MOBILE_KEY`, set only
+ * for a litigant sign-in), this flow knows them by that mobile and holds no bar number,
+ * so "you" is their complainant seat rather than the advocate's. Not written back.
+ */
+export function asSignedIn(profile: UserProfile, signedInMobile: string | null): UserProfile {
+  return signedInMobile ? { ...profile, mobile: signedInMobile, barNumber: "" } : profile;
+}
+
+function readSignedInMobile(): string | null {
+  try {
+    return window.localStorage.getItem(SIGNED_IN_MOBILE_KEY);
+  } catch {
+    return null;
+  }
+}
 
 type ProfileContextValue = {
   /** `null` until the account has been read. */
@@ -51,7 +69,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       .catch(() => {
         // Signed out or unreachable: the flow still renders, with nothing prefilled.
         if (cancelled) return;
-        setProfile(EMPTY_PROFILE);
+        setProfile(asSignedIn(EMPTY_PROFILE, readSignedInMobile()));
         setReady(true);
       });
     return () => {

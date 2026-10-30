@@ -14,6 +14,7 @@
  * what put already-heard dates at the top of a column headed "Next hearing".
  */
 
+import type { FeeSchedule } from "@/lib/court/fees";
 import { CASES } from "@/lib/cases/fixtures";
 import type { CaseRecord } from "@/lib/cases/types";
 import type { Case as TaskCase, Task } from "@/lib/tasks/types";
@@ -32,13 +33,15 @@ import {
 import { CASE_TYPE, PSS_CASE_TYPE } from "./options";
 import { NEW_PSS_FILING, stepHref } from "./steps";
 import type { FilingDraft, Signatory, UserProfile } from "./types";
+import { caseSearchKey } from "@/lib/court/localize";
 
+/** Tab names say what the filing is waiting on, in the advocate's words (owner, 2026-10-09). */
 export const QUEUE_TABS = [
   { id: "drafts", label: "Drafts" },
   { id: "pendingSignature", label: "Pending signature" },
   { id: "pendingPayment", label: "Pending payment" },
-  { id: "scrutiny", label: "Pending scrutiny" },
-  { id: "returned", label: "Returned post scrutiny" },
+  { id: "scrutiny", label: "Pending with scrutiny" },
+  { id: "returned", label: "Returned from scrutiny" },
   { id: "registered", label: "Registered" },
 ] as const;
 
@@ -69,9 +72,9 @@ export type QueueRow = {
   /** When the draft was last touched. Drafts only. */
   progress?: { savedOn: string };
   /**
-   * Whether the signed-in profile is one of the people still asked to sign. Pending-
-   * signature rows only — this is what a bulk sign can actually act on: you cannot sign
-   * for a party who is not you, however pressing their row looks.
+   * Whether the signed-in profile still has a signature to add. Pending-signature rows
+   * only — this is what a bulk sign can actually act on: you cannot sign for a party who
+   * is not you, and an oath still owed is not a signature, however pressing the row looks.
    */
   youPending?: boolean;
   /** The court fee still owed, in rupees. Pending-payment rows only — for the bulk total. */
@@ -136,13 +139,13 @@ export const TAB_LAYOUT: Record<
     columns: ["ref", "parties", "caseType", "court", "info", "action"],
     ref: "E-filing no.",
     info: "Filed",
-    label: "Filings waiting on the registry's check",
+    label: "Filings with the scrutiny officer",
   },
   returned: {
     columns: ["ref", "parties", "caseType", "court", "info", "action"],
     ref: "E-filing no.",
     info: "Defects",
-    label: "Filings scrutiny returned with defects",
+    label: "Filings to correct after scrutiny",
   },
   registered: {
     columns: ["ref", "parties", "caseType", "court", "info", "action"],
@@ -276,7 +279,7 @@ function caseTypeLabel(draft: FilingDraft): string {
 
 export function draftRows(drafts: FilingDraft[]): QueueRow[] {
   return drafts
-    // A returned filing is corrected from Returned post scrutiny, never continued here.
+    // A returned filing is corrected from Returned from scrutiny, never continued here.
     .filter((draft) => !enteredSigning(draft) && !draft.scrutinyReturn)
     .map((draft) => {
       const parties = draftTitle(draft);
@@ -307,21 +310,36 @@ export function draftRows(drafts: FilingDraft[]): QueueRow[] {
 /** Who is still asked to sign, read from the filer's own point of view. */
 function pendingSummary(everyone: Signatory[]): {
   count: number;
+  youOwe: boolean;
   youPending: boolean;
   sub: string;
+  action: string;
 } {
-  // An advocate who has signed but not yet taken the oath is still owed.
+  // Anyone who has signed but not yet taken the oath is still owed.
   const pending = everyone.filter(isOutstanding);
-  const youPending = pending.some((s) => s.you);
+  const yours = pending.filter((s) => s.you);
+  const youOwe = yours.length > 0;
+  // Only a signature can be batched — an oath is a recording of its own.
+  const youPending = yours.some((s) => s.status === "pending");
+  // `oathTaken` stays false until the signatory swears; absent while the oath is off.
+  const yourOath = yours.some((s) => s.oathTaken === false);
   const others = pending.filter((s) => !s.you).length;
-  const sub = youPending
+  // The row says what is left for you: sign and oath are one act.
+  const action = youPending
+    ? yourOath
+      ? "Sign and take oath"
+      : "Sign"
+    : yourOath
+      ? "Take oath"
+      : "Continue signing";
+  const sub = youOwe
     ? others
       ? `Waiting on you and ${others} other ${others === 1 ? "party" : "parties"}`
       : "Waiting on you"
     : others === 1
       ? "Waiting on the other party"
       : `Waiting on ${others} other parties`;
-  return { count: pending.length, youPending, sub };
+  return { count: pending.length, youOwe, youPending, sub, action };
 }
 
 /**
@@ -339,7 +357,7 @@ export function pendingSignatureRows(
     const everyone = [...complainants, ...advocates];
     if (signingComplete(draft, profile)) return [];
     const parties = draftTitle(draft);
-    const { count, youPending, sub } = pendingSummary(everyone);
+    const { count, youOwe, youPending, sub, action } = pendingSummary(everyone);
     // The moment it left the drafting phase — the paper path never sets `requestedAt`,
     // so its own last edit is the closest honest stand-in for "waiting since".
     const since = (draft.sign.requestedAt ?? draft.updatedAt).slice(0, 10);
@@ -347,9 +365,9 @@ export function pendingSignatureRows(
       id: draft.id,
       parties,
       court: "",
-      info: { lead: String(count), sub, tone: youPending ? "warning" : "default" },
+      info: { lead: String(count), sub, tone: youOwe ? "warning" : "default" },
       count,
-      action: { label: "Continue signing", href: stepHref(draft.id, "sign") },
+      action: { label: action, href: stepHref(draft.id, "sign") },
       urgencyAt: since,
       recencyAt: draft.updatedAt.slice(0, 10),
       youPending,
@@ -367,7 +385,8 @@ export function pendingSignatureRows(
  */
 export function pendingPaymentRows(
   drafts: FilingDraft[],
-  profile: UserProfile | null
+  profile: UserProfile | null,
+  schedule?: FeeSchedule
 ): QueueRow[] {
   return drafts.flatMap((draft) => {
     if (draft.sign.paid) return [];
@@ -375,7 +394,7 @@ export function pendingPaymentRows(
     if (draft.scrutinyReturn) return [];
     if (!signingComplete(draft, profile)) return [];
     const parties = draftTitle(draft);
-    const amount = feeBill(draft).total;
+    const amount = feeBill(draft, schedule).total;
     const since = (draft.sign.requestedAt ?? draft.updatedAt).slice(0, 10);
     const row: QueueRow = {
       id: draft.id,
@@ -518,7 +537,7 @@ export function courtsOf(rows: QueueRow[]): string[] {
 }
 
 export function applyQueueFilters(rows: QueueRow[], filters: QueueFilters): QueueRow[] {
-  const q = filters.q.trim().toLowerCase();
+  const q = caseSearchKey(filters.q);
   const { key, dir } = filters.sort;
   return rows
     .filter(

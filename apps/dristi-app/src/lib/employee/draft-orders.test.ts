@@ -9,21 +9,18 @@ import {
 import {
   hearingsForDay,
   withHearingSession,
+  type HearingMarks,
   type CourtHearing,
 } from "./hearings";
 import { EMPTY_ORDER_DRAFT } from "./order-draft";
-import type { OrderDrafts } from "./order-drafts";
+import { editorDraftKey, type OrderDrafts } from "./order-drafts";
 
 const TODAY = "2026-09-16";
 
-type Session = {
-  ongoingId: string | null;
-  endedIds: ReadonlySet<string>;
-  passedOverIds: ReadonlySet<string>;
-};
+type Session = HearingMarks;
 
 const NO_SESSION: Session = {
-  ongoingId: null,
+  ongoingIds: new Set<string>(),
   endedIds: new Set<string>(),
   passedOverIds: new Set<string>(),
 };
@@ -53,7 +50,7 @@ describe("draftOrdersForSitting", () => {
   });
 
   it("takes a listing with an order started on it", () => {
-    const drafts: OrderDrafts = { "h-1": EMPTY_ORDER_DRAFT };
+    const drafts: OrderDrafts = { [editorDraftKey("h-1")]: EMPTY_ORDER_DRAFT };
     const rows = draftOrdersForSitting([hearing()], drafts);
     assert.deepEqual(
       rows.map((row) => row.id),
@@ -92,7 +89,7 @@ describe("draftOrdersForSitting", () => {
   it("leaves out a matter the bench is still hearing with nothing written on it", () => {
     const board = withHearingSession([hearing()], {
       ...NO_SESSION,
-      ongoingId: "h-1",
+      ongoingIds: new Set(["h-1"]),
     });
     assert.deepEqual(draftOrdersForSitting(board, {}), []);
   });
@@ -102,7 +99,7 @@ describe("draftOrdersForSitting", () => {
       ...NO_SESSION,
       passedOverIds: new Set(["h-1"]),
     });
-    const drafts: OrderDrafts = { "h-1": EMPTY_ORDER_DRAFT };
+    const drafts: OrderDrafts = { [editorDraftKey("h-1")]: EMPTY_ORDER_DRAFT };
     assert.deepEqual(
       draftOrdersForSitting(board, drafts).map((row) => row.status),
       ["passed-over"],
@@ -121,20 +118,20 @@ describe("draftOrdersForSitting", () => {
        under test rather than a status the board already carried. */
     const board = todaysBoard({
       ...NO_SESSION,
-      ongoingId: "h-249",
+      ongoingIds: new Set(["h-249"]),
       endedIds: new Set(["h-244"]),
       passedOverIds: new Set(["h-246"]),
     });
     const drafts: OrderDrafts = {
       /* Started on a matter still to be called, on the one being heard, and on one that
          was deferred — every leg of the cause list's own `drafted` test. */
-      "h-251": EMPTY_ORDER_DRAFT,
-      "h-249": EMPTY_ORDER_DRAFT,
-      "h-246": EMPTY_ORDER_DRAFT,
+      [editorDraftKey("h-251")]: EMPTY_ORDER_DRAFT,
+      [editorDraftKey("h-249")]: EMPTY_ORDER_DRAFT,
+      [editorDraftKey("h-246")]: EMPTY_ORDER_DRAFT,
     };
     const expected = board
       .filter((entry) => {
-        const drafted = Boolean(drafts[entry.id]);
+        const drafted = Boolean(drafts[editorDraftKey(entry.id)]);
         const recorded = entry.status === "completed";
         return drafted || recorded;
       })
@@ -171,7 +168,7 @@ describe("hasOrderDrawnUp", () => {
     assert.equal(hasOrderDrawnUp(hearing(), {}), false);
     assert.equal(hasOrderDrawnUp(hearing({ status: "completed" }), {}), true);
     assert.equal(
-      hasOrderDrawnUp(hearing(), { "h-1": EMPTY_ORDER_DRAFT }),
+      hasOrderDrawnUp(hearing(), { [editorDraftKey("h-1")]: EMPTY_ORDER_DRAFT }),
       true,
     );
   });

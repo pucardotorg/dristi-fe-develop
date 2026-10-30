@@ -9,8 +9,13 @@
 export type RegisteredAdvocate = {
   barNumber: string;
   name: string;
-  /** Where they are enrolled — shown to tell two similar numbers apart. */
-  bar: string;
+  /**
+   * Which Bar Council enrolled them, where a register says so. The advocate search does
+   * not know it (owner, 2026-10-12: "we won't actually know"), so it is absent there and
+   * the search shows the name and the bar number only; the bar number's prefix already
+   * says the state (`K`, `G`, `P`).
+   */
+  bar?: string;
 };
 
 /* ───────────────────────────── ON Court register ───────────────────── */

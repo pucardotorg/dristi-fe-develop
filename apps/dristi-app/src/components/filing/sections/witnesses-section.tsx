@@ -24,6 +24,7 @@ import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
+import { CorrectionInstance } from "@/components/filing/posture";
 import { TextField } from "@/components/filing/inputs";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { AddressBlockList, ContactList } from "@/components/filing/repeat-lists";
@@ -83,7 +84,7 @@ export function WitnessesSection() {
       <FilingMain>
         <FilingPageHeader
           title="Witnesses"
-          description="List the witnesses you intend to rely on, and how the court can reach them."
+          description="List the witnesses the complainant intends to rely on, and how the court can reach them."
         />
 
         {unsaved.length > 0 ? (
@@ -111,6 +112,8 @@ export function WitnessesSection() {
           onAdd={addWitness}
         />
 
+        {/* Which witness the fields below belong to, so a check can point at its field. */}
+        <CorrectionInstance value={index}>
         {/* Identity */}
         <FormCard
           title={`Witness ${index + 1}`}
@@ -131,7 +134,7 @@ export function WitnessesSection() {
             helpPlacement="above"
           >
             <div className="flex flex-col gap-4">
-              <FormField label="Full name">
+              <FormField label="Full name" name="fullName">
                 <TextField
                   value={w.fullName}
                   onChange={(v) => setField("fullName", v)}
@@ -142,7 +145,7 @@ export function WitnessesSection() {
 
               <FieldSeparator>OR</FieldSeparator>
 
-              <FormField label="Designation">
+              <FormField label="Designation" name="designation">
                 <TextField
                   value={w.designation}
                   onChange={(v) => setField("designation", v)}
@@ -199,6 +202,7 @@ export function WitnessesSection() {
             addLabel="Add address"
           />
         </FormCard>
+        </CorrectionInstance>
       </FilingMain>
 
       <FilingFooter

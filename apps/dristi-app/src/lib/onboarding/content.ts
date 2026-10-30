@@ -20,7 +20,7 @@
 
 import { LANGUAGE_NAME, SECOND_LANGUAGE } from "@/lib/locale-config";
 
-export type Locale = "en" | "ml" | "hi";
+export type Locale = "en" | "ml" | "hi" | "gu" | "pa";
 
 /** English, and the deployment's second language (`lib/locale-config.ts`). */
 export const LOCALES: { value: Locale; label: string }[] = [

@@ -12,23 +12,28 @@ import {
   FolderClosedIcon,
   HouseIcon,
   ListChecksIcon,
+  LogOutIcon,
   RotateCcwIcon,
   ScrollTextIcon,
   SearchIcon,
   SettingsIcon,
+  UserPlusIcon,
   UsersIcon,
   type LucideIcon,
 } from "lucide-react";
 
 import { TASKS_HOME } from "@/lib/tasks/routes";
 import { summaryOf } from "@/lib/tasks/selectors";
+import { resetBulk } from "@/components/bulk/api";
+import { resetSampleDrafts } from "@/lib/filing/sample-drafts";
 import { useTasks } from "@/lib/tasks/store";
 import { BrandGlyph } from "@/components/brand-lockup";
 import { ConfirmDialog } from "@/components/shell/confirm-dialog";
 import { YourDetailsItem } from "@/components/filing/your-details-item";
 import { useAppSearch } from "@/components/shell/app-search";
 import { useChrome } from "@/components/shell/chrome";
-import { useProfile } from "@/components/shell/profile";
+import { useProfile, type ProfileRole } from "@/components/shell/profile";
+import { VIEWER_CLERK_NAME } from "@/lib/cases/viewer";
 import { RAIL_THEMES, useRailTheme } from "@/components/shell/rail-theme";
 import { Button } from "@/components/ui/button";
 import {
@@ -123,7 +128,7 @@ const GO: NavItem[] = [
   { id: "cases", label: "Cases", icon: FolderClosedIcon, href: "/cases" },
   {
     id: "tasks",
-    label: "Pending tasks",
+    label: "Take action",
     icon: ListChecksIcon,
     href: TASKS_HOME,
   },
@@ -131,9 +136,6 @@ const GO: NavItem[] = [
 ];
 
 const START: NavItem[] = [
-  // Join a case is not a destination: its whole journey (lookup → role questions →
-  // vakalatnama) runs in a dialog, so it is the one strong action on the Cases page
-  // rather than a rail item that led to a page holding a single button.
   {
     id: "file-case",
     label: "File a case",
@@ -153,6 +155,14 @@ const START: NavItem[] = [
     label: "Vakalatnama",
     icon: ScrollTextIcon,
     href: "/vakalatnama",
+  },
+  // Join a case's journey (lookup → access code → role → vakalatnama) runs in a
+  // dialog on the Cases page; the rail opens that same dialog there.
+  {
+    id: "join-case",
+    label: "Join a case",
+    icon: UserPlusIcon,
+    href: "/cases?join=1",
   },
 ];
 
@@ -425,6 +435,18 @@ function RailThemePicker() {
   );
 }
 
+const PROFILE_LABEL: Record<ProfileRole, string> = {
+  advocate: "Advocate",
+  litigant: "Litigant",
+  clerk: "Clerk",
+};
+
+const PROFILE_HOME: Record<ProfileRole, string> = {
+  advocate: "/advocate",
+  litigant: "/home",
+  clerk: "/cases",
+};
+
 /**
  * The person, at the foot of the rail.
  *
@@ -435,24 +457,37 @@ function RailThemePicker() {
  */
 function ProfileFooter() {
   const { state, people, user, setUser, resetSandbox } = useTasks();
-  const { profileRole, advocateProfileAvailable, accountName, switchProfile } =
-    useProfile();
+  const {
+    profileRole,
+    advocateProfileAvailable,
+    displayName,
+    setProfileRole,
+    signOut,
+  } = useProfile();
   const router = useRouter();
-  const roleLabel = profileRole === "advocate" ? "Advocate" : "Litigant";
+  const roleLabel = PROFILE_LABEL[profileRole];
 
   // The name is the account's, fixed — switching profile changes the role label, not the
-  // person. So Anjali stays Anjali whether she is acting as advocate or litigant.
-  const displayName = accountName;
+  // person. So Anjali stays Anjali whether she is acting as advocate or litigant. The
+  // demo clerk profile is the exception: a clerk is someone else in her office, so it
+  // shows the clerk's own name (`displayName`, see `profile.tsx`).
   const nameParts = displayName.replace(/^Adv\.\s*/, "").trim().split(/\s+/);
   const displayInitials = (
     (nameParts[0]?.[0] ?? "") + (nameParts[nameParts.length - 1]?.[0] ?? "")
   ).toUpperCase();
 
   // Switching profile re-frames the whole product, so it lands on that profile's home.
-  function switchTo(role: "litigant" | "advocate") {
+  // The clerk lands on Cases: the advocate's home is her own day, not her office's.
+  function switchTo(role: ProfileRole) {
     if (role === profileRole) return;
-    switchProfile();
-    router.push(role === "advocate" ? "/advocate" : "/home");
+    setProfileRole(role);
+    router.push(PROFILE_HOME[role]);
+  }
+
+  // Back to the citizen sign-in, the door this account came in by.
+  function onSignOut() {
+    signOut();
+    router.push("/citizen");
   }
   const [confirmReset, setConfirmReset] = React.useState(false);
   const onResetSandbox = React.useCallback(() => setConfirmReset(true), []);
@@ -467,7 +502,7 @@ function ProfileFooter() {
                 <SidebarMenuButton
                   className={`${ROW} h-12 group-data-[collapsible=icon]:size-10!`}
                   tooltip={`${displayName} · ${roleLabel}`}
-                  aria-label={`${displayName} · ${roleLabel} · Switch profile`}
+                  aria-label={`${displayName} · ${roleLabel} · Account menu`}
                 >
                   <span className="relative shrink-0">
                     <span
@@ -500,45 +535,57 @@ function ProfileFooter() {
               <PopoverContent
                 side="top"
                 align="start"
-                collisionPadding={16}
-                className="w-64 p-2"
+                collisionPadding={12}
+                // Taller than a laptop screen once every sandbox person and the
+                // rail plates are listed: held to the room Radix says is left,
+                // and scrolled, so the top of the list is always reachable.
+                // 14.5rem is the 16rem rail less the footer's 12px either side,
+                // so the menu lines up with the name it opens from and stays inside
+                // the rail instead of hanging past its edge. (The portal sits
+                // outside the rail, so `--sidebar-width` cannot be read here.)
+                className="max-h-(--radix-popover-content-available-height) w-[14.5rem] overflow-y-auto overscroll-contain p-2"
               >
-                <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">
-                  Switch profile
-                </p>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={() => switchTo("litigant")}
-                >
-                  <span
-                    aria-hidden
-                    className="flex size-6 items-center justify-center rounded-full bg-surface-sunken text-caption font-semibold"
-                  >
-                    L
-                  </span>
-                  <span className="flex-1 text-left">Litigant</span>
-                  {profileRole === "litigant" ? (
-                    <CheckIcon aria-hidden />
-                  ) : null}
-                </Button>
+                {/* A switch needs two profiles. A litigant has one until an advocate
+                    profile is approved (Settings → request), so until then the
+                    section does not appear at all. */}
                 {advocateProfileAvailable ? (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => switchTo("advocate")}
-                  >
-                    <span
-                      aria-hidden
-                      className="flex size-6 items-center justify-center rounded-full bg-surface-sunken text-caption font-semibold"
+                  <>
+                    <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">
+                      Switch profile
+                    </p>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => switchTo("litigant")}
                     >
-                      A
-                    </span>
-                    <span className="flex-1 text-left">Advocate</span>
-                    {profileRole === "advocate" ? (
-                      <CheckIcon aria-hidden />
-                    ) : null}
-                  </Button>
+                      <span
+                        aria-hidden
+                        className="flex size-6 items-center justify-center rounded-full bg-surface-sunken text-caption font-semibold"
+                      >
+                        L
+                      </span>
+                      <span className="flex-1 text-left">Litigant</span>
+                      {profileRole === "litigant" ? (
+                        <CheckIcon aria-hidden />
+                      ) : null}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => switchTo("advocate")}
+                    >
+                      <span
+                        aria-hidden
+                        className="flex size-6 items-center justify-center rounded-full bg-surface-sunken text-caption font-semibold"
+                      >
+                        A
+                      </span>
+                      <span className="flex-1 text-left">Advocate</span>
+                      {profileRole === "advocate" ? (
+                        <CheckIcon aria-hidden />
+                      ) : null}
+                    </Button>
+                  </>
                 ) : null}
 
                 {/* Only in an area that has a filing profile to edit. */}
@@ -552,19 +599,50 @@ function ProfileFooter() {
                   <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">
                     Viewing as
                   </p>
-                  {people.map((p) => (
-                    <Button
-                      key={p.id}
-                      variant="ghost"
-                      className="w-full justify-start font-normal"
-                      disabled={state !== "ready"}
-                      onClick={() => void setUser(p.id)}
-                    >
-                      <span className="flex-1 truncate text-left">
-                        {p.name}
-                      </span>
-                      {p.id === user.id ? <CheckIcon aria-hidden /> : null}
-                    </Button>
+                  {people.map((p, index) => (
+                    <React.Fragment key={p.id}>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start font-normal"
+                        disabled={state !== "ready"}
+                        onClick={() => {
+                          // Everyone in the sandbox is an advocate; picking one
+                          // leaves the clerk's seat.
+                          if (profileRole === "clerk") setProfileRole("advocate");
+                          void setUser(p.id);
+                        }}
+                      >
+                        <span className="flex-1 truncate text-left">
+                          {p.name}
+                        </span>
+                        {profileRole !== "clerk" && p.id === user.id ? (
+                          <CheckIcon aria-hidden />
+                        ) : null}
+                      </Button>
+                      {/* The signed-in advocate's clerk, right under the
+                          advocate: a different person, so here among the
+                          people to view as, not among the account's own
+                          profiles (owner, Sept 24). Acting as him shows the
+                          clerk's side of Applications: drafts and pays,
+                          never signs. */}
+                      {index === 0 ? (
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start font-normal"
+                          onClick={() => setProfileRole("clerk")}
+                        >
+                          <span className="flex-1 truncate text-left">
+                            {VIEWER_CLERK_NAME}
+                          </span>
+                          <span className="text-caption text-muted-foreground">
+                            Clerk
+                          </span>
+                          {profileRole === "clerk" ? (
+                            <CheckIcon aria-hidden />
+                          ) : null}
+                        </Button>
+                      ) : null}
+                    </React.Fragment>
                   ))}
                   <Button
                     variant="ghost"
@@ -587,6 +665,24 @@ function ProfileFooter() {
                 </div>
 
                 <RailThemePicker />
+
+                {/* Always the last line, pinned to the menu's foot in a band of its own:
+                    the list above scrolls on a short screen, and Sign out must not
+                    scroll away with it or sit lost in the middle of the sandbox's
+                    people. The band cancels the menu's padding so its rule runs edge to
+                    edge, and pads evenly above and below the row. Alone in the menu (a
+                    litigant with one profile) there is nothing to rule off, so the line
+                    goes and the band cancels the top padding too. */}
+                <div className="sticky -bottom-2 -mx-2 -mb-2 bg-popover p-2 not-first:border-t not-first:border-hairline first:-mt-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={onSignOut}
+                  >
+                    <LogOutIcon aria-hidden />
+                    <span className="flex-1 text-left">Sign out</span>
+                  </Button>
+                </div>
               </PopoverContent>
             </Popover>
           </div>
@@ -617,11 +713,15 @@ function ProfileFooter() {
         open={confirmReset}
         onOpenChange={setConfirmReset}
         title="Reset the sandbox?"
-        description="Every task, upload and decision made in this browser is discarded and the seed data is loaded again. Other open tabs reload too."
+        description="Every task, upload, decision, sample filing and bulk batch is reset and the seed data is loaded again. Other open tabs reload too."
         confirmLabel="Reset sandbox"
         onConfirm={() => {
           setConfirmReset(false);
-          void resetSandbox();
+          // Sample filings too, so a signature or oath can be walked again from the start;
+          // and every bulk batch, so the bulk flow opens empty.
+          void Promise.all([resetSandbox(), resetSampleDrafts(), resetBulk()]).then(() =>
+            window.location.reload(),
+          );
         }}
       />
     </SidebarFooter>
@@ -652,12 +752,20 @@ export function AppSidebar() {
   const { theme } = useRailTheme();
   const { profileRole } = useProfile();
   const { open: openSearch } = useAppSearch();
+  const { state, isMobile, setOpen } = useSidebar();
+
+  // Folded, the whole strip is the way back: a click anywhere on it — the empty plate or
+  // any of its icons — unfolds the rail. Capture phase, and nothing is stopped, so an
+  // icon still does its own job (a link still goes, search still opens) as the rail opens.
+  const unfoldOnClick = React.useCallback(() => {
+    if (state === "collapsed" && !isMobile) setOpen(true);
+  }, [state, isMobile, setOpen]);
 
   // Home is role-aware: the advocate's home and the litigant's home are different
   // screens on the same shell. The rest of the nav is shared.
   const mainItems = GO.map((item) =>
     item.id === "home"
-      ? { ...item, href: profileRole === "advocate" ? "/advocate" : "/home" }
+      ? { ...item, href: profileRole === "litigant" ? "/home" : "/advocate" }
       : item,
   );
 
@@ -676,8 +784,9 @@ export function AppSidebar() {
       // element above where these vars land — so the colour computes against the DS
       // default, not the theme. Re-declaring it here, beside the vars, is what makes
       // the foreground actually the theme's.
-      className="text-(--sidebar-foreground)"
+      className="text-(--sidebar-foreground) group-data-[collapsible=icon]:cursor-pointer"
       style={theme.vars as React.CSSProperties}
+      onClickCapture={unfoldOnClick}
     >
       {/*
        * Logo left, collapse control right — the mark sits at the page origin, where a
@@ -688,10 +797,17 @@ export function AppSidebar() {
        */}
       <RailPlate vars={theme.vars as React.CSSProperties}>
       <SidebarHeader className="h-14 flex-row items-center justify-between border-b border-(--rail-seam) px-3 py-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-        {/* The glyph alone, in both states. The full lockup stacks its wordmark under
-            the mark, and at the size a 56px bar can spare, "24×7 ON COURTS" cannot be
-            read. `onDark` follows the plate, not the app's mode. */}
-        <BrandGlyph className="h-6" onDark={theme.darkPlate} />
+        {/* The ON Courts glyph alone, in both states. The full lockup stacks its
+            wordmark under the mark, and at the size a 56px bar can spare, "24×7 ON
+            COURTS" cannot be read. Gujarat's SARAS 2.0 is one line of text, so it is named
+            beside its mark until the rail folds. `onDark` follows the plate, not the
+            app's mode. */}
+        <BrandGlyph
+          className="h-6"
+          onDark={theme.darkPlate}
+          named
+          wordmarkClassName="group-data-[collapsible=icon]:hidden"
+        />
         <SidebarTrigger
           aria-label="Collapse main navigation"
           className={`size-8 shrink-0 group-data-[collapsible=icon]:hidden [&_svg]:size-5 ${MUTED} hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}

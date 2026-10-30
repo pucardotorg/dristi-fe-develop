@@ -35,6 +35,7 @@ import {
 } from "@/lib/employee/sign-process";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useCourtText } from "@/components/court/court-provider";
 
 /** Seven columns on every tab — the checkbox and the reference's six. */
 const COLUMNS = 7;
@@ -136,7 +137,9 @@ export function SignProcessTable({
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
   const someSelected = selectedOnPage > 0 && !allSelected;
   const bands = banded ? bandByStatus(rows, tab) : null;
-  const statusColumn = tab.statuses.length > 1;
+  /* The fee day only where the tab says so (RPAD collection); a seat's one-status
+     Issuance still says which status a row is. */
+  const statusColumn = tab.dateColumn === "Status";
 
   const row = (process: CourtProcess) => (
     <ProcessRow
@@ -258,6 +261,7 @@ function ProcessRow({
   onToggle: (process: CourtProcess) => void;
   onOpen: (process: CourtProcess) => void;
 }) {
+  const courtText = useCourtText();
   const type = courtProcessTypeLabel(process.type);
   const inline = courtProcessTypeInline(process.type);
   return (
@@ -269,7 +273,7 @@ function ProcessRow({
         <Checkbox
           checked={selected}
           onCheckedChange={() => onToggle(process)}
-          aria-label={`Select the ${inline} in ${process.caseNumber}`}
+          aria-label={`Select the ${inline} in ${courtText(process.caseNumber)}`}
         />
       </TableCell>
       {/* The row's opener. Quiet `text-foreground` rather than a teal underline: the teal

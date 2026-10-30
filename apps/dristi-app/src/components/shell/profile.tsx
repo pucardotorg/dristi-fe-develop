@@ -2,7 +2,10 @@
 
 import * as React from "react";
 
+import { VIEWER_CLERK_NAME } from "@/lib/cases/viewer";
+
 import {
+  removeLocalStorageValue,
   useLocalStorageValue,
   writeLocalStorageValue,
 } from "@/hooks/use-local-storage-value";
@@ -22,8 +25,16 @@ import {
  * area: switching profile re-frames the whole product, not just the task list. Nothing
  * persists it yet — there is no session to persist it into — so a reload returns to the
  * advocate profile, which is the one the built screens serve.
+ *
+ * **Clerk is a demo profile.** A clerk is a different person from the advocate, so on a
+ * real account this is not a profile the same human switches to. It sits here because
+ * the Application Lifecycle PRD gives the clerk (or junior advocate) its own rights on
+ * applications (drafts and pays, never signs), and the owner asked to be able to act as
+ * one (Sept 24). The clerk acts in the signed-in advocate's office, as
+ * `VIEWER_CLERK_NAME`, and is picked from the rail's "Viewing as" people, not from the
+ * account's own profiles: he is someone else, not another profile of Anjali.
  */
-export type ProfileRole = "litigant" | "advocate";
+export type ProfileRole = "litigant" | "advocate" | "clerk";
 
 export type ProfileValue = {
   profileRole: ProfileRole;
@@ -33,9 +44,17 @@ export type ProfileValue = {
   /** The person signed in. FIXED per account — switching profile changes the role, not
    *  the name (the same human is advocate on one profile and litigant on the other). */
   accountName: string;
+  /** Who the screen greets and names: the account, or the demo clerk while acting
+   *  as him (he is someone else, so not `accountName`). */
+  displayName: string;
+  /** Toggle between the two profiles a real account holds (advocate and litigant). */
   switchProfile: () => void;
+  /** Act as this profile. The only way into the demo clerk profile. */
+  setProfileRole: (role: ProfileRole) => void;
   /** Grant the advocate profile — the elevation-approved path (from Settings). */
   enableAdvocateProfile: () => void;
+  /** Forget what sign-in stashed, so the next sign-in starts from nobody. */
+  signOut: () => void;
 };
 
 const ProfileContext = React.createContext<ProfileValue | null>(null);
@@ -60,7 +79,9 @@ export function ProfileProvider({
   // setState pass. A base litigant has no advocate profile until elevated.
   const storedRole = useLocalStorageValue(PROFILE_ROLE_KEY);
   const profileRole: ProfileRole =
-    storedRole === "litigant" || storedRole === "advocate"
+    storedRole === "litigant" ||
+    storedRole === "advocate" ||
+    storedRole === "clerk"
       ? storedRole
       : initialRole;
 
@@ -75,12 +96,21 @@ export function ProfileProvider({
   const switchProfile = React.useCallback(() => {
     writeLocalStorageValue(
       PROFILE_ROLE_KEY,
-      profileRole === "advocate" ? "litigant" : "advocate",
+      profileRole === "litigant" ? "advocate" : "litigant",
     );
   }, [profileRole]);
 
+  const setProfileRole = React.useCallback((role: ProfileRole) => {
+    writeLocalStorageValue(PROFILE_ROLE_KEY, role);
+  }, []);
+
   const enableAdvocateProfile = React.useCallback(() => {
     writeLocalStorageValue(ADVOCATE_AVAILABLE_KEY, "true");
+  }, []);
+  const signOut = React.useCallback(() => {
+    removeLocalStorageValue(PROFILE_ROLE_KEY);
+    removeLocalStorageValue(ADVOCATE_AVAILABLE_KEY);
+    removeLocalStorageValue(ACCOUNT_NAME_KEY);
   }, []);
 
   const value = React.useMemo<ProfileValue>(
@@ -88,10 +118,21 @@ export function ProfileProvider({
       profileRole,
       advocateProfileAvailable: advocateAvailable,
       accountName,
+      displayName: profileRole === "clerk" ? VIEWER_CLERK_NAME : accountName,
       switchProfile,
+      setProfileRole,
       enableAdvocateProfile,
+      signOut,
     }),
-    [profileRole, advocateAvailable, accountName, switchProfile, enableAdvocateProfile],
+    [
+      profileRole,
+      advocateAvailable,
+      accountName,
+      switchProfile,
+      setProfileRole,
+      enableAdvocateProfile,
+      signOut,
+    ],
   );
 
   return (

@@ -3,10 +3,13 @@ import type { Metadata } from "next";
 import { FeedbackProvider } from "@/components/feedback-provider";
 import { LocaleProvider } from "@/components/shell/locale";
 import { ThemeProvider } from "@/components/theme-provider";
+import { serverBrandHue, serverCourt, serverCourtText } from "@/lib/court/server";
 
 import "./globals.css";
 /* App rules for chrome, kept apart from the base tokens in globals.css. */
 import "./chrome.css";
+/* A state's own brand colour (Gujarat's navy), keyed off `data-brand-hue` below. */
+import "./court-palette.css";
 
 export const metadata: Metadata = {
   title: {

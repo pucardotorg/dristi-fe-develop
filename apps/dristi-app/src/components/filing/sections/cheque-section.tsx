@@ -13,12 +13,17 @@
 import * as React from "react";
 import { CreditCardIcon } from "lucide-react";
 
-import { blankCheque } from "@/lib/filing/blank";
+import { blankCheque, removeCaseRecord } from "@/lib/filing/blank";
+import { getRepository } from "@/lib/filing/data";
+import { forgetFile } from "@/lib/filing/files";
 import { fromDisplayDate, toDisplayDate } from "@/lib/filing/format";
 import type { IfscResult } from "@/lib/filing/lookups";
 import { RETURN_REASONS, S138_SAFE_REASONS } from "@/lib/filing/options";
 import {
   chequeComplete,
+  chequePresentIssue,
+  chequePresentedLate,
+  chequeReturnIssue,
   chequeSourceSlot,
   firstReadField,
 } from "@/lib/filing/selectors";
@@ -237,9 +242,15 @@ export function ChequeSection() {
     const i = removeIndex;
     setRemoveOpen(false);
     if (cheques.length <= 1) return;
+    // Its upload group goes with it, so the list of documents stops asking for it.
+    let files: ReturnType<typeof removeCaseRecord> = [];
     update((d) => {
-      d.cheques.splice(i, 1);
+      files = removeCaseRecord(d, "cheque", i);
     });
+    for (const f of files) {
+      forgetFile(f.id);
+      void getRepository().deleteFile(f.id);
+    }
     const remaining = cheques.length - 1;
     let a = index;
     if (i < a) a -= 1;
@@ -251,6 +262,7 @@ export function ChequeSection() {
   const showInheritNote = index > 0 && cheque.sameAsPrev === "yes";
   const previous = index > 0 ? cheques[index - 1] : null;
   const inheritedBank = previous?.bankName || "previous cheque";
+  const presentedLate = chequePresentedLate(cheque);
   const reasonNeedsCheck =
     !!cheque.returnReason && !S138_SAFE_REASONS.has(cheque.returnReason);
 
@@ -443,7 +455,7 @@ export function ChequeSection() {
               name="presentDate"
               required
               tip="Date on which the cheque was presented in the bank for clearance."
-              error={cheque.presentDate && cheque.dateOnCheque && cheque.presentDate < cheque.dateOnCheque ? "Cannot be before the date on the cheque." : undefined}
+              error={chequePresentIssue(cheque)}
             >
               <DateField
                 value={cheque.presentDate}
@@ -458,7 +470,7 @@ export function ChequeSection() {
               name="returnDate"
               required
               tip="Date on which the cheque was dishonoured / returned, as written on the return memo."
-              error={cheque.returnDate && cheque.presentDate && cheque.returnDate < cheque.presentDate ? "Cannot be before the date of presentation." : undefined}
+              error={chequeReturnIssue(cheque)}
             >
               <DateField
                 value={cheque.returnDate}
@@ -469,6 +481,10 @@ export function ChequeSection() {
               />
             </FormField>
           </FormRow>
+
+          {presentedLate ? (
+            <SectionNotice variant="warning">{presentedLate}</SectionNotice>
+          ) : null}
 
           <HalfWidth>
             <FormField
@@ -511,7 +527,7 @@ export function ChequeSection() {
         open={removeOpen}
         onOpenChange={setRemoveOpen}
         title={`Remove cheque ${removeIndex + 1}`}
-        description="Are you sure you want to delete the details of this cheque? This also removes its return memo details."
+        description="Are you sure you want to delete the details of this cheque? This also removes its return memo details and any documents added for it."
         confirmLabel="Yes, remove"
         onConfirm={confirmRemove}
       />

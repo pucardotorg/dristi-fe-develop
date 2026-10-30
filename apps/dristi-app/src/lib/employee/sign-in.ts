@@ -20,7 +20,10 @@
  * a rule. The field is real, required and masked; what it is not is checked.
  */
 
+import type { CourtId } from "@/lib/court/profiles";
+
 import { COURT_DISTRICT, CURRENT_STAFF, type CourtRole } from "./content";
+import { seatsIn } from "./seat-roles";
 
 /**
  * The four seats a username can land in, in the order the bench is read: the magistrate
@@ -36,6 +39,9 @@ export const COURT_SIGN_IN_ROLES: CourtRole[] = [
   "bench-clerk",
   "scrutiny-officer",
   "typist",
+  "steno",
+  "ahlmad",
+  "post-officer",
 ];
 
 /**
@@ -120,7 +126,58 @@ export const COURT_ACCOUNTS: Record<CourtRole, CourtAccount> = {
     role: "typist",
     courtrooms: [jmfcCourt(1)],
   },
+  /* Punjab & Haryana only (court-roles §3.3); `courtAccounts` leaves them out elsewhere. */
+  steno: {
+    username: "steno",
+    name: "Harpreet K",
+    role: "steno",
+    courtrooms: [jmfcCourt(1)],
+  },
+  ahlmad: {
+    username: "ahlmad",
+    name: "Gurdeep S",
+    role: "ahlmad",
+    courtrooms: [jmfcCourt(1)],
+  },
+  /* Post office staff who send and report e-Post (court-roles §3), every state. */
+  "post-officer": {
+    username: "rameshPostOfficer",
+    name: "Ramesh N",
+    role: "post-officer",
+    courtrooms: [jmfcCourt(1)],
+  },
 };
+
+/**
+ * Punjab & Haryana's usernames: the seat's own name and nothing else — the magistrate,
+ * the Reader, the Ahlmad and the Steno (owner, 2026-10-13/14). Same people, same rooms;
+ * only the username a person types changes.
+ */
+const PUNJAB_HARYANA_USERNAMES: Partial<Record<CourtRole, string>> = {
+  magistrate: "magistrate",
+  "bench-clerk": "reader",
+  "scrutiny-officer": "scrutiny",
+  typist: "typist",
+  steno: "steno",
+  ahlmad: "ahlmad",
+  "post-officer": "postofficer",
+};
+
+/**
+ * The demo directory as the selected state's court holds it: only the seats that state
+ * has (`seat-roles.ts`, court-roles §3).
+ */
+export function courtAccounts(court: CourtId): Partial<Record<CourtRole, CourtAccount>> {
+  const accounts: Partial<Record<CourtRole, CourtAccount>> = {};
+  for (const seat of seatsIn(court)) {
+    const username =
+      court === "punjab-haryana" ? PUNJAB_HARYANA_USERNAMES[seat] : undefined;
+    accounts[seat] = username
+      ? { ...COURT_ACCOUNTS[seat], username }
+      : COURT_ACCOUNTS[seat];
+  }
+  return accounts;
+}
 
 /**
  * The account a username names, or `undefined` if the directory does not hold it.
@@ -128,10 +185,13 @@ export const COURT_ACCOUNTS: Record<CourtRole, CourtAccount> = {
  * Case-insensitive: a username is an identifier the court issued, not a password, and a
  * staff member typing `MichaelGeorgeJudge` has not made a mistake worth a dead end.
  */
-export function accountFor(username: string): CourtAccount | undefined {
+export function accountFor(
+  username: string,
+  court: CourtId = "kerala",
+): CourtAccount | undefined {
   const typed = username.trim().toLowerCase();
   if (!typed) return undefined;
-  return Object.values(COURT_ACCOUNTS).find(
+  return Object.values(courtAccounts(court)).find(
     (account) => account.username.toLowerCase() === typed,
   );
 }

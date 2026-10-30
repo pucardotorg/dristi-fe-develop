@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import {
+  ExternalLinkIcon,
   EyeIcon,
   FileQuestionIcon,
   InfoIcon,
@@ -12,8 +13,13 @@ import {
 import { ARRIVAL } from "@/components/chrome/motion";
 import { COGNIZANCE_PATH } from "@/components/employee/cognizance-table";
 import { DocumentScroller } from "@/components/employee/document-scroller";
+import { LabelTip } from "@/components/filing/form-field";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { markArrival, useArrival } from "@/components/employee/use-arrival";
 import { useCourtToday } from "@/components/employee/use-court-today";
+import { useCourt } from "@/components/court/court-provider";
+import { courtProfile } from "@/lib/court/profiles";
+import { rememberCognizanceTab } from "@/components/employee/cognizance-return";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -35,10 +41,11 @@ import {
   chainFor,
   cnrFor,
   COGNIZANCE_ACTS,
-  COGNIZANCE_DOCUMENTS,
+  cognizanceDocumentsFor,
   cognizanceCaseById,
   findingsFor,
-  primaryActFor,
+  actsFor,
+  tabFor,
   summaryChunksFor,
   type CognizanceAct,
   type CognizanceCase,
@@ -236,8 +243,20 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
     [matter, chain],
   );
   const findings = React.useMemo(() => findingsFor(matter), [matter]);
+  /* A cheque and a memo per cheque, then the notice (cheat sheet §5). */
+  const { court: documentsCourt } = useCourt();
+  const documents = React.useMemo(
+    () => cognizanceDocumentsFor(matter, documentsCourt),
+    [matter, documentsCourt],
+  );
 
-  const primary = primaryActFor(matter);
+  /* The recommended act first, then the rest the deployment offers: two under the delay
+     split, all three under Gujarat's case-type split (`actsFor`). */
+  const { court } = useCourt();
+  const [recommended, ...alternatives] = actsFor(matter, court);
+  const caseTypeSplit = courtProfile(court).cognizanceSplit === "case-type";
+  /* Back to the queue by any way — the trail included — lands on this complaint's tab. */
+  React.useEffect(() => rememberCognizanceTab(tabFor(matter, court)), [matter, court]);
 
   /* Which field is lit, and the document and region it opened. `fieldId` is what lights
      the row — keyed on the field, not its document, so two fields that share a document
@@ -251,7 +270,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
 
   const openField = (field: CognizanceField) => {
     const doc = field.source
-      ? COGNIZANCE_DOCUMENTS.find((entry) => entry.key === field.source)
+      ? documents.find((entry) => entry.key === field.source)
       : undefined;
     if (!doc) return;
     /* A second click on the field that is already lit puts it out again — the mark is a
@@ -310,7 +329,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
     <div className="flex shrink-0 items-baseline justify-between gap-3 border-b border-hairline px-8 py-4">
       <h2 className="text-body font-semibold">Documents</h2>
       <span className="text-body-compact tabular-nums text-muted-foreground">
-        {COGNIZANCE_DOCUMENTS.length} filed
+        {documents.length} filed
       </span>
     </div>
   );
@@ -332,7 +351,14 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
             The frame keeps this bar pinned while the reading and the documents scroll
             inside. */}
         <div className="shrink-0 border-b border-hairline bg-muted px-6 md:px-8 dark:bg-background">
-          <div className="flex h-14 items-center justify-between gap-4">
+          {/* Gujarat: 16px above and below the 40px buttons — at h-14 they had 8, and the
+              bar read cramped against the title (owner, 2026-10-13). Others keep h-14. */}
+          <div
+            className={cn(
+              "flex items-center justify-between gap-4",
+              caseTypeSplit ? "py-4" : "h-14",
+            )}
+          >
             <h1 className="min-w-0 truncate font-semibold text-title-s">
               {causeTitle(matter)}
             </h1>
@@ -342,14 +368,40 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
                 items in words; a list of item names is a worse version of the order
                 itself, which is one click away and editable. */}
             <div className="flex shrink-0 items-center gap-3">
-              <Button asChild variant="outline">
-                <Link href={orderHref(matter, "dismiss")} onClick={openOrder}>
-                  {COGNIZANCE_ACTS.dismiss.label}
-                </Link>
-              </Button>
+              {/* View case sits on the case summary in Gujarat (owner, 2026-10-13). */}
+              {/* PRD §6: View case opens the full case file and changes nothing on the
+                  case. Quiet and apart from the two acts, and in a tab of its own so this
+                  screen stays exactly where the magistrate left it (owner, 2026-10-13).
+                  The case view is the advocate's, read as the court
+                  (`components/cases/case-detail.tsx`). */}
+              {caseTypeSplit ? null : (
+                <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
+                  <a href={`/employee/cases/${matter.id}`} target="_blank" rel="noopener">
+                    View case
+                    <span className="sr-only"> (opens in a new tab)</span>
+                    <ExternalLinkIcon data-icon="inline-end" aria-hidden />
+                  </a>
+                </Button>
+              )}
+              {/* The alternatives quiet, Dismiss outermost; the recommendation is the
+                  one filled button, last, where the eye ends (owner, 2026-10-13). */}
+              {[...alternatives].reverse().map((act) => (
+                <Button
+                  key={act}
+                  asChild
+                  /* Dismissing is the rare act, so in Gujarat it is tertiary — a ghost
+                     button, not a second outline beside the alternative (owner,
+                     2026-10-13). */
+                  variant={act === "dismiss" && caseTypeSplit ? "ghost" : "outline"}
+                >
+                  <Link href={orderHref(matter, act)} onClick={openOrder}>
+                    {COGNIZANCE_ACTS[act].label}
+                  </Link>
+                </Button>
+              ))}
               <Button asChild>
-                <Link href={orderHref(matter, primary)} onClick={openOrder}>
-                  {COGNIZANCE_ACTS[primary].label}
+                <Link href={orderHref(matter, recommended)} onClick={openOrder}>
+                  {COGNIZANCE_ACTS[recommended].label}
                 </Link>
               </Button>
             </div>
@@ -373,7 +425,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
               rather than overflow and scroll (owner, 2026-09-16). Held at their own height,
               they overflow and the column scrolls. */}
           <div className="flex min-w-0 flex-col gap-6 px-6 pt-6 pb-8 md:px-8 md:pt-8 xl:pointer-fine:min-h-0 xl:pointer-fine:flex-1 xl:pointer-fine:overflow-y-auto [&>*]:shrink-0">
-            <CaseSummaryPanel matter={matter} />
+            <CaseSummaryPanel matter={matter} viewCase={caseTypeSplit} />
             <CaseFactsPanel
               chunks={chunks}
               findings={findings}
@@ -388,7 +440,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
               className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-hairline bg-card shadow-raised xl:pointer-fine:hidden"
             >
               {documentsHeader}
-              <DocumentScroller docs={COGNIZANCE_DOCUMENTS} active={documentActive} />
+              <DocumentScroller docs={documents} active={documentActive} />
             </section>
           </div>
 
@@ -410,7 +462,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
               />
             ) : null}
             {documentsHeader}
-            <DocumentScroller docs={COGNIZANCE_DOCUMENTS} active={documentActive} />
+            <DocumentScroller docs={documents} active={documentActive} />
           </aside>
         </div>
       </div>
@@ -429,7 +481,14 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
  * assigned. The post-cognizance `ST/…` number is not shown — it does not exist until this
  * very act is taken.
  */
-function CaseSummaryPanel({ matter }: { matter: CognizanceCase }) {
+function CaseSummaryPanel({
+  matter,
+  viewCase = false,
+}: {
+  matter: CognizanceCase;
+  /** Carry View case on the summary's own heading, off the decision bar. */
+  viewCase?: boolean;
+}) {
   /* All three are registry identifiers, so all three take the identifier treatment. */
   const cells = [
     { label: "Case number", value: matter.caseNumber, idLabel: "case number" },
@@ -438,9 +497,29 @@ function CaseSummaryPanel({ matter }: { matter: CognizanceCase }) {
   ];
   return (
     <section aria-labelledby="case-summary" className="flex min-w-0 flex-col gap-3">
-      <h2 id="case-summary" className={EYEBROW}>
-        Case summary
-      </h2>
+      <div className="flex min-h-6 items-center justify-between gap-3">
+        {/* With View case beside it the heading has to outrank a button, so it takes the
+            Documents panel's heading — body, semibold, full ink — not the eyebrow
+            (owner, 2026-10-13). */}
+        <h2
+          id="case-summary"
+          className={viewCase ? "text-body font-semibold text-foreground" : EYEBROW}
+        >
+          Case summary
+        </h2>
+        {/* The case's identity is what View case opens in full, so it rides here rather
+            than among the acts on the bar — a plain tertiary button, still opening the
+            case in a tab of its own (owner, 2026-10-13). */}
+        {viewCase ? (
+          <Button asChild variant="ghost" className="-my-2.5">
+            <a href={`/employee/cases/${matter.id}`} target="_blank" rel="noopener">
+              View case
+              <span className="sr-only"> (opens in a new tab)</span>
+              <ExternalLinkIcon data-icon="inline-end" aria-hidden />
+            </a>
+          </Button>
+        ) : null}
+      </div>
       <Card className={cn(SHEET, "@container")}>
         <dl className="grid gap-px bg-hairline @md:grid-cols-3">
           {cells.map((cell) => (
@@ -507,6 +586,9 @@ function CaseFactsPanel({
             index > 0 && "border-t border-hairline",
           )}
         >
+          {chunk.caption ? (
+            <p className={cn(EYEBROW, "px-2 @md:col-span-2")}>{chunk.caption}</p>
+          ) : null}
           {chunk.fields.map((field) => {
             const finding = findings.find((entry) => entry.term === field.term);
             return (
@@ -565,7 +647,18 @@ function FieldRow({
         )}
         onClick={open}
       >
-        <DescriptionTerm className="text-body-compact">{field.term}</DescriptionTerm>
+        <DescriptionTerm className="text-body-compact">
+          {field.term}
+          {/* The PRD's tooltip, where it gives one (cheat sheet §4). Its own click must not
+              also open the field's document. */}
+          {field.tooltip ? (
+            <span className="ml-1" onClick={(event) => event.stopPropagation()}>
+              <TooltipProvider>
+                <LabelTip>{field.tooltip}</LabelTip>
+              </TooltipProvider>
+            </span>
+          ) : null}
+        </DescriptionTerm>
         <DescriptionDetails className="min-w-0 text-body-compact text-pretty">
           <span className="font-medium">{field.value}</span>
           {field.note ? (

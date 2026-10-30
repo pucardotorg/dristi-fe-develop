@@ -22,8 +22,11 @@ import type { CaseDocumentKind } from "@/lib/employee/case-review";
  *   filing's bundle is drawn this way, because a legible page for a case we are only
  *   standing in for would be fabricating a court record — the one thing a demo must not
  *   do (`document-scroller.tsx`).
+ * - `video` is an oath recording (`SCR-14`), played in place. It is not a page of the
+ *   complaint PDF — a video cannot be printed (e-filing handover §18.2) — so it sits after
+ *   the pages, and only where the state asks for an oath.
  */
-export type BundleDocKind = "generated" | "scan" | "image" | "facsimile";
+export type BundleDocKind = "generated" | "scan" | "image" | "facsimile" | "video";
 
 export interface BundleDoc {
   id: string;
@@ -34,6 +37,10 @@ export interface BundleDoc {
   src?: string;
   /** Only for `kind: "facsimile"` — which illegible page shape to draw. */
   sheet?: CaseDocumentKind;
+  /** Only for `kind: "video"` — the stored recording, when this browser holds it. */
+  fileId?: string;
+  /** Only for `kind: "video"` — seconds, as recorded. */
+  durationSeconds?: number | null;
   /** 1-based position in the complaint-PDF reading order. */
   no: number;
   /** Uploaded scans that are illegible enough to worry about. */
@@ -66,6 +73,10 @@ export interface Field {
   thumb?: string;
   /** This row IS a document in the Evidence › Documents group. */
   docrow?: string;
+  /** This row is a recording (an oath): selecting it plays this bundle doc (`SCR-14`). */
+  video?: string;
+  /** A standing fact about the row, said under its value — not a machine reading. */
+  note?: string;
 
   /** AI read a different value here than the one filed. */
   docread?: string;
@@ -76,6 +87,11 @@ export interface Field {
   failnote?: string;
   /** No document exists to verify this against — said plainly, not hidden. */
   nodoc?: string;
+  /**
+   * AI searched the bundle and found no document carrying this value — "Not in any
+   * document". Unlike `nodoc`, saying so takes reading the documents, so it needs AI on.
+   */
+  unfound?: string;
   /** Standing caution about the upload behind this row. */
   scannote?: string;
   /** Where in the document the value sits, when that is not obvious. */
@@ -111,7 +127,9 @@ export type GroupIcon =
   | "memo"
   | "mail"
   | "pin"
-  | "doc";
+  | "doc"
+  | "pen"
+  | "wallet";
 
 /* ── what the officer raises ─────────────────────────────────────────────── */
 
@@ -195,6 +213,11 @@ export interface HistoryEvent {
   status: "past" | "current" | "future";
   title: string;
   meta: string;
+  /**
+   * The part of the line that only AI could have produced — "Filer skipped an AI
+   * warning". Shown after `meta` with AI on; without AI the event never had it.
+   */
+  aiNote?: string;
   items?: HistoryItem[];
 }
 

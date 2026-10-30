@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  actsFor,
   casesOnTab,
   chainFor,
+  cognizanceTabsFor,
   COGNIZANCE_ACTS,
-  COGNIZANCE_DOCUMENTS,
+  cognizanceDocumentsFor,
   COGNIZANCE_QUEUE,
   COGNIZANCE_QUEUE_COUNT,
   COGNIZANCE_TABS,
@@ -33,6 +35,7 @@ import {
   type CognizanceCase,
 } from "./cognizance";
 import { parseIsoDay } from "./hearings";
+import { gujaratCaseTypeOf } from "@/lib/court/localize";
 
 const TODAY = "2026-09-14";
 
@@ -138,11 +141,13 @@ describe("chainFor", () => {
   it("keeps the §138 chain in order on every row", () => {
     for (const matter of COGNIZANCE_QUEUE) {
       const chain = chainFor(matter, TODAY);
+      for (const cheque of chain.cheques) {
+        assert.ok(cheque.chequeDatedOn < cheque.presentedOn, matter.id);
+        assert.ok(cheque.presentedOn < cheque.returnedOn, matter.id);
+        assert.ok(cheque.returnedOn < chain.noticeDispatchedOn, matter.id);
+      }
       const order = [
-        chain.chequeDatedOn,
-        chain.presentedOn,
-        chain.returnedOn,
-        chain.informedOn,
+        chain.cheques[0].returnedOn,
         chain.noticeDispatchedOn,
         chain.deemedServedOn,
         chain.causeOfActionOn,
@@ -171,8 +176,9 @@ describe("chainFor", () => {
         matter.filedAfterCauseDays,
         matter.id,
       );
+      /* The notice window runs from the date on the return memo (cheat sheet v4). */
       assert.equal(
-        daysBetween(chain.informedOn, chain.noticeDispatchedOn),
+        daysBetween(chain.cheques[0].returnedOn, chain.noticeDispatchedOn),
         matter.noticeAfterDays,
         matter.id,
       );
@@ -300,11 +306,57 @@ describe("summaryChunksFor", () => {
     assert.match(duration.value, /20 days/);
   });
 
-  it("omits the Complaint chunk on a complaint in time, opening on the cheque", () => {
+  it("shows the filing date on a complaint in time too, without the delay rows", () => {
+    /* Field 1 is on both tabs; fields 11–12 are the With Delay tab's (cheat sheet §4). */
+    const complaint = chunksOf("c-2030")[0];
+    assert.equal(complaint.id, "complaint");
+    assert.deepEqual(
+      complaint.fields.map((f) => f.id),
+      ["filed"],
+    );
+  });
+
+  it("repeats the cheque and dishonour facts per cheque, numbered when there are several", () => {
     const chunks = chunksOf("c-2038");
     assert.deepEqual(
-      chunks.map((chunk) => chunk.id),
-      ["cheque", "dishonour", "notice", "jurisdiction"],
+      chunks.map((chunk) => chunk.label),
+      [
+        "Complaint",
+        "Cheque 1",
+        "Dishonour 1",
+        "Cheque 2",
+        "Dishonour 2",
+        "Demand notice",
+        "Jurisdiction",
+      ],
+    );
+    const reasons = fieldsOf("c-2038").filter((f) => f.term === "Reason for return of cheque");
+    assert.deepEqual(
+      reasons.map((f) => [f.value, f.source]),
+      [
+        ["Funds insufficient", "return-memo"],
+        ["Exceeds arrangement", "return-memo-2"],
+      ],
+    );
+    assert.equal(new Set(fieldsOf("c-2038").map((f) => f.id)).size, fieldsOf("c-2038").length);
+  });
+
+  it("no longer shows the date of receipt of information, dropped in PRD v3", () => {
+    for (const matter of COGNIZANCE_QUEUE) {
+      assert.ok(
+        !summaryChunksFor(matter, chainFor(matter, TODAY))
+          .flatMap((chunk) => chunk.fields)
+          .some((f) => /receipt of information/i.test(f.term)),
+        matter.id,
+      );
+    }
+  });
+
+  it("carries the PRD's tooltip on the return date of the demand notice", () => {
+    const returned = fieldsOf("c-2009").find((f) => f.id === "returned-notice")!;
+    assert.equal(
+      returned.tooltip,
+      "Date on which the demand notice was returned to the post office as undelivered.",
     );
   });
 
@@ -317,8 +369,8 @@ describe("summaryChunksFor", () => {
   });
 
   it("names every field's source among the three documents, or leaves it unsourced", () => {
-    const keys = new Set(COGNIZANCE_DOCUMENTS.map((d) => d.key));
     for (const matter of COGNIZANCE_QUEUE) {
+      const keys = new Set(cognizanceDocumentsFor(matter).map((d) => d.key));
       for (const field of summaryChunksFor(matter, chainFor(matter, TODAY)).flatMap(
         (chunk) => chunk.fields,
       )) {
@@ -362,8 +414,21 @@ describe("summaryChunksFor", () => {
 
   it("reaches the three documents the cheat sheet makes available, and no more", () => {
     assert.deepEqual(
-      COGNIZANCE_DOCUMENTS.map((document) => document.title),
+      cognizanceDocumentsFor(find("c-2041")).map((document) => document.title),
       ["Cheque", "Return memo", "Demand notice"],
+    );
+  });
+
+  it("files a cheque and a return memo per cheque, then the one notice", () => {
+    assert.deepEqual(
+      cognizanceDocumentsFor(find("c-2038")).map((d) => [d.no, d.title]),
+      [
+        [1, "Cheque 1"],
+        [2, "Return memo 1"],
+        [3, "Cheque 2"],
+        [4, "Return memo 2"],
+        [5, "Demand notice"],
+      ],
     );
   });
 });
@@ -544,5 +609,63 @@ describe("COGNIZANCE_ACTS", () => {
       COGNIZANCE_ACTS.dismiss.badge,
     ];
     assert.equal(new Set(pairs).size, 3);
+  });
+});
+
+describe("Gujarat's case-type split (owner, 2026-10-13)", () => {
+  it("splits by registered type into three tabs, and every complaint lands on one", () => {
+    assert.deepEqual(
+      cognizanceTabsFor("gujarat").map((tab) => tab.label),
+      ["Criminal case", "Criminal inquiry", "Criminal miscellaneous applications"],
+    );
+    const counted = cognizanceTabsFor("gujarat").reduce(
+      (sum, tab) => sum + cognizanceTabCount(tab.id, "gujarat"),
+      0,
+    );
+    assert.equal(counted, COGNIZANCE_QUEUE_COUNT);
+    for (const tab of cognizanceTabsFor("gujarat")) {
+      assert.ok(cognizanceTabCount(tab.id, "gujarat") > 0, tab.id);
+    }
+  });
+
+  it("files by the facts: jurisdiction → inquiry, delay → misc, neither → case", () => {
+    for (const matter of COGNIZANCE_QUEUE) {
+      const outside = findingsFor(matter).some((finding) => finding.id === "jurisdiction");
+      const expected = outside
+        ? "criminal-inquiry"
+        : hasDelay(matter)
+          ? "criminal-misc"
+          : "criminal-case";
+      assert.equal(tabFor(matter, "gujarat"), expected, matter.id);
+    }
+  });
+
+  it("shows each complaint's number with the type of the tab it sits on", () => {
+    const prefix = { "criminal-case": "eCC", "criminal-inquiry": "eCR EN", "criminal-misc": "eCR MA" };
+    for (const matter of COGNIZANCE_QUEUE) {
+      const tab = tabFor(matter, "gujarat") as keyof typeof prefix;
+      assert.equal(gujaratCaseTypeOf(matter.caseNumber), prefix[tab], matter.id);
+    }
+  });
+
+  it("recommends cognizance on a criminal case and a notice on the other two", () => {
+    assert.equal(positiveActForTab("criminal-case"), "cognizance");
+    assert.equal(positiveActForTab("criminal-inquiry"), "notice");
+    assert.equal(positiveActForTab("criminal-misc"), "notice");
+  });
+
+  it("offers all three acts on every complaint, the recommended one first", () => {
+    for (const matter of COGNIZANCE_QUEUE) {
+      const acts = actsFor(matter, "gujarat");
+      assert.equal(acts[0], primaryActFor(matter, "gujarat"), matter.id);
+      assert.deepEqual([...acts].sort(), ["cognizance", "dismiss", "notice"], matter.id);
+    }
+  });
+
+  it("leaves Kerala's delay split and its two acts as they were", () => {
+    assert.deepEqual(cognizanceTabsFor("kerala"), COGNIZANCE_TABS);
+    for (const matter of COGNIZANCE_QUEUE) {
+      assert.deepEqual(actsFor(matter, "kerala"), [primaryActFor(matter), "dismiss"]);
+    }
   });
 });

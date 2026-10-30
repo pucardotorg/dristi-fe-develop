@@ -58,19 +58,19 @@ import {
   COURT_PROCESS_TYPES,
   defaultProcessFilters,
   downloadProcessBundle,
-  DEFAULT_PROCESS_TAB,
+  executeOnDownload,
   filterProcesses,
   formatProcessDate,
   groupSelectionByCase,
   hasPills,
-  NON_SERVICE_REASONS,
+  nonServiceReasonsFor,
   OUTCOME_FILTERS,
   orderForView,
   pileFor,
   pilePool,
   PROCESS_CHANNELS,
   PROCESS_LINE,
-  PROCESS_TABS,
+  processScopeFor,
   allCounted,
   DEFAULT_PROCESS_SORT,
   moveLine,
@@ -88,6 +88,7 @@ import {
   spansStatuses,
   recordProcessReturns,
   runProcessAct,
+  scopeLine,
   singleCaseMatch,
   tabCount,
   todayIsoDay,
@@ -97,6 +98,7 @@ import {
   type ProcessFilters,
   type ProcessOutcome,
   type ProcessPile,
+  type ProcessScope,
   type ProcessSort,
   type ProcessStatus,
   type ProcessTab,
@@ -105,6 +107,8 @@ import {
   type SelectedCase,
 } from "@/lib/employee/sign-process";
 import { Identifier } from "@/components/chrome/identifier";
+import { useCourt, useCourtText } from "@/components/court/court-provider";
+import { useCourtRole } from "@/components/employee/use-court-role";
 
 function plural(count: number, one: string, many: string): string {
   return count === 1 ? one : many;
@@ -138,11 +142,22 @@ function plural(count: number, one: string, many: string): string {
  * **Nothing is signed, sent, posted or recorded.** Every act moves a row in the demo line.
  */
 export function SignProcessScreen() {
+  /* Keyed on the seat: switching seat is a different person at the screen, so the tab,
+     pill, filters and selection all start again from that seat's own line. */
+  const seat = useCourtRole();
+  return <SignProcessLine key={seat} scope={processScopeFor(seat)} />;
+}
+
+function SignProcessLine({ scope }: { scope: ProcessScope }) {
   /* One list, so the tabs, the pills, the rail count and the bar can never disagree
-     about where a row is. */
-  const [line, setLine] = React.useState<CourtProcess[]>(PROCESS_LINE);
-  const [tabId, setTabId] = React.useState<ProcessTabId>(DEFAULT_PROCESS_TAB);
-  const tab = processTab(tabId);
+     about where a row is. The seat sees its scope of it (`processScopeFor`); every act
+     runs over the whole list, so nothing outside the scope is lost. */
+  const [allRows, setLine] = React.useState<CourtProcess[]>(PROCESS_LINE);
+  const line = scopeLine(allRows, scope);
+  const scopedTab = (id: ProcessTabId) =>
+    scope.tabs.find((entry) => entry.id === id) ?? processTab(id);
+  const [tabId, setTabId] = React.useState<ProcessTabId>(scope.tabs[0].id);
+  const tab = scopedTab(tabId);
   const [view, setView] = React.useState<ProcessView>(tab.defaultView);
 
   const [filters, setFilters] = React.useState<ProcessFilters>(() =>
@@ -229,7 +244,7 @@ export function SignProcessScreen() {
     nextView?: ProcessView,
     carry?: ProcessFilters,
   ) {
-    const nextTab = processTab(next);
+    const nextTab = scopedTab(next);
     setTabId(next);
     setView(nextView ?? nextTab.defaultView);
     setFilters(
@@ -353,8 +368,8 @@ export function SignProcessScreen() {
     actId: Exclude<ProcessActId, "record">,
     ids: ReadonlySet<string>,
   ) {
-    const next = runProcessAct(line, actId, ids, todayIsoDay());
-    const moved = line.filter(
+    const next = runProcessAct(allRows, actId, ids, todayIsoDay());
+    const moved = allRows.filter(
       (process, index) => ids.has(process.id) && next[index] !== process,
     );
     if (moved.length === 0) return;
@@ -368,6 +383,23 @@ export function SignProcessScreen() {
     setLine((current) => recordProcessReturns(current, outcomes, on));
     forget(outcomes.keys());
     setNotice(processAct("record").notice(outcomes.size));
+  }
+
+  /**
+   * Download the documents, then record what a download means for a proclamation going
+   * By hand: it is printed and affixed, so it is Sent and Executed on the day (`DSP-10`).
+   */
+  function download(rows: CourtProcess[]) {
+    downloadProcessBundle(rows);
+    const ids = new Set(rows.map((process) => process.id));
+    const next = executeOnDownload(allRows, ids, todayIsoDay());
+    const executed = next.filter((process, index) => process !== allRows[index]).length;
+    if (executed === 0) return;
+    setLine(next);
+    forget(ids);
+    setNotice(
+      `${executed} ${plural(executed, "proclamation is", "proclamations are")} marked executed on this screen. Nothing was affixed.`,
+    );
   }
 
   function returnFocus() {
@@ -405,7 +437,7 @@ export function SignProcessScreen() {
             aria-label="Process line"
             className="h-10 w-max min-w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-10"
           >
-            {PROCESS_TABS.map((entry) => {
+            {scope.tabs.map((entry) => {
               const count = tabCount(line, entry);
               return (
                 <TabsTrigger
@@ -424,7 +456,7 @@ export function SignProcessScreen() {
           </TabsList>
         </div>
 
-        {PROCESS_TABS.map((entry) => (
+        {scope.tabs.map((entry) => (
           <TabsContent
             key={entry.id}
             value={entry.id}
@@ -533,7 +565,7 @@ export function SignProcessScreen() {
           count={selected.length}
           groups={groups}
           notice={notice}
-          onDownload={() => downloadProcessBundle(selected)}
+          onDownload={() => download(selected)}
           onRequestAct={(actId, button) => {
             actRef.current = button;
             if (actId !== "record") setShown(actId);
@@ -562,7 +594,7 @@ export function SignProcessScreen() {
         /* Only off signing: a signed paper is worth having in hand the moment it is
            done (owner, 2026-09-07), and the rows have left the view. */
         onDownload={
-          shown === "sign" ? () => downloadProcessBundle(actedRows) : undefined
+          shown === "sign" ? () => download(actedRows) : undefined
         }
         onReturnFocus={returnFocus}
       />
@@ -586,6 +618,10 @@ export function SignProcessScreen() {
         onRecord={(process, outcome, on) =>
           record(new Map([[process.id, outcome]]), on)
         }
+        onDownloaded={(process) => {
+          const next = executeOnDownload(allRows, new Set([process.id]), todayIsoDay());
+          if (next.some((row, index) => row !== allRows[index])) setLine(next);
+        }}
         onReturnFocus={returnFocus}
       />
 
@@ -747,6 +783,7 @@ function ProcessFiltersForm({
   /** Enter in the box. Where the view is paper in hand it is the pile's fast path. */
   onSubmit: () => void;
 }) {
+  const { court } = useCourt();
   const fields: CourtFilterField[] = [
     {
       id: "sign-process-type",
@@ -803,7 +840,7 @@ function ProcessFiltersForm({
         value: filters.reason,
         all: "all",
         allLabel: "All reasons",
-        options: NON_SERVICE_REASONS.map((reason) => ({
+        options: nonServiceReasonsFor(court).map((reason) => ({
           value: reason,
           label: reason,
         })),
@@ -869,6 +906,7 @@ function ProcessSelectionTray({
   onRemoveCase: (caseNumber: string) => void;
   onClearSelection: () => void;
 }) {
+  const courtText = useCourtText();
   return (
     /* The chips and the one control that puts them all down, on one line: no count
        sentence above them (owner, 2026-10-06) — the chips are the count, and the bar
@@ -896,7 +934,7 @@ function ProcessSelectionTray({
                 variant="ghost"
                 size="icon-xs"
                 className="max-md:size-10"
-                aria-label={`Take ${entry.caseNumber} out of the selection`}
+                aria-label={`Take ${courtText(entry.caseNumber)} out of the selection`}
                 onClick={() => onRemoveCase(entry.caseNumber)}
               >
                 <XIcon aria-hidden />
@@ -1130,10 +1168,11 @@ function ProcessItemList({
   onToggle: (process: CourtProcess) => void;
   onOpen: (process: CourtProcess) => void;
 }) {
+  const courtText = useCourtText();
   const bands: { status: ProcessStatus | null; rows: CourtProcess[] }[] = banded
     ? bandByStatus(rows, tab)
     : [{ status: null, rows }];
-  const statusLine = tab.statuses.length > 1;
+  const statusLine = tab.dateColumn === "Status";
 
   return (
     <div className="flex flex-col gap-4">
@@ -1160,7 +1199,7 @@ function ProcessItemList({
                     <Checkbox
                       checked={selectedIds.has(process.id)}
                       onCheckedChange={() => onToggle(process)}
-                      aria-label={`Select the ${inline} in ${process.caseNumber}`}
+                      aria-label={`Select the ${inline} in ${courtText(process.caseNumber)}`}
                     />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-2">

@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 
-import { canComplete } from "@/lib/tasks/permissions";
+import { ACTIONABLE, canComplete } from "@/lib/tasks/permissions";
 import { useTasks } from "@/lib/tasks/store";
 import type { Case, Task, TaskId } from "@/lib/tasks/types";
 import {
@@ -27,7 +27,14 @@ import { type ActContext } from "@/components/tasks/act/shared";
 import { type ActMode } from "@/components/tasks/use-task-actions";
 import { FileBody } from "@/components/tasks/act/file-page";
 import { PayBody } from "@/components/tasks/act/pay-page";
+import {
+  isApplicationTask,
+  TaskApplicationFlow,
+  TaskDocumentsDialog,
+  TaskPaymentDialog,
+} from "@/components/tasks/act/task-flows";
 import { Identifier } from "@/components/chrome/identifier";
+import { useCourtText } from "@/components/court/court-provider";
 
 /** The one quiet line per flow that says what is not real here. */
 const SANDBOX: Record<ActMode, string> = {
@@ -66,6 +73,7 @@ export function TaskActModal({
   /** Called with the task to flash once a step lands — the created re-filing task, or this one. */
   onFinished?: (taskId: TaskId) => void;
 }) {
+  const courtText = useCourtText();
   const { user, people, online } = useTasks();
 
   const finish = React.useCallback(
@@ -89,6 +97,26 @@ export function TaskActModal({
     finish,
   };
 
+  /* A signatory acts in the product's own window for the act (`task-flows.tsx`): the
+     payment window, View case's Raise application, or its Submit documents. Preparing
+     for a signatory, and confirming a payment the gateway is still settling, stay here. */
+  const actionable = ctx.signatory && ACTIONABLE.has(task.status);
+  if (actionable && mode === "pay") {
+    return <TaskPaymentDialog key={task.id} ctx={ctx} open={open} onOpenChange={onOpenChange} />;
+  }
+  if (
+    actionable &&
+    mode === "file" &&
+    (task.kind === "file" || (task.kind === "draft" && isApplicationTask(task)))
+  ) {
+    if (isApplicationTask(task)) {
+      return open ? (
+        <TaskApplicationFlow ctx={ctx} onClose={() => onOpenChange(false)} />
+      ) : null;
+    }
+    return <TaskDocumentsDialog key={task.id} ctx={ctx} open={open} onOpenChange={onOpenChange} />;
+  }
+
   const caseLine = (
     <>
       {kase.parties}
@@ -104,7 +132,7 @@ export function TaskActModal({
         " · Not yet numbered"
       )}
       {" · "}
-      {kase.court}
+      {courtText(kase.court)}
     </>
   );
 

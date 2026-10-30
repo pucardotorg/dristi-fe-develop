@@ -10,6 +10,7 @@ import {
 
 import { useRoomInRem } from "@/hooks/use-min-width";
 import { nextFilingAfter } from "@/lib/employee/scrutiny/queue";
+import type { AiMode } from "@/lib/court/profiles";
 import type { Rect, ScrutinyCase } from "@/lib/employee/scrutiny/types";
 import { useScrutinyState } from "@/lib/employee/scrutiny/use-scrutiny-state";
 import { ScrutinyCaseProvider } from "@/components/employee/scrutiny/scrutiny-case-context";
@@ -51,6 +52,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCourt, useCourtText } from "@/components/court/court-provider";
+import { useCourtRole } from "@/components/employee/use-court-role";
+import { registersAtScrutiny } from "@/lib/employee/court-role";
 
 /**
  * The case review: filed fields on the left, the bundle in the centre, the document
@@ -74,12 +78,13 @@ import {
  */
 export function CaseWorkbench({
   caseData,
-  aiOn = true,
+  ai = "on",
 }: {
   caseData: ScrutinyCase;
-  /** With AI off the workbench still works; it just stops asserting readings. */
-  aiOn?: boolean;
+  /** Without AI the workbench still works; it just stops asserting readings (`AiMode`). */
+  ai?: AiMode;
 }) {
+  const aiOn = ai === "on";
   const arrival = useArrival();
 
   /*
@@ -124,10 +129,15 @@ export function CaseWorkbench({
 
   // The case title is the officer's to correct (a mis-spelt party name is exactly the
   // kind of thing scrutiny exists to catch). Local until a case service owns it.
-  const [title, setTitle] = React.useState({
-    complainant: party.complainant,
-    accused: party.accused,
-  });
+  // The editable title starts as the heading shows it (Settings' court switch).
+  const courtText = useCourtText();
+  /* Register here only for someone holding both roles in this court room (`SCR-11`). */
+  const { court } = useCourt();
+  const canRegister = registersAtScrutiny(useCourtRole(), court);
+  // One line of text, not two names: the officer may correct anything in it.
+  const [title, setTitle] = React.useState(
+    () => `${courtText(party.complainant)} v. ${courtText(party.accused)}`,
+  );
   const [editingTitle, setEditingTitle] = React.useState(false);
 
   const goToDoc = React.useCallback(
@@ -140,6 +150,11 @@ export function CaseWorkbench({
     const field = controller.selectedId
       ? fieldById[controller.selectedId]
       : null;
+    // An oath row plays its recording in the centre panel (`SCR-14`).
+    if (field?.video) {
+      bundle.current?.play(field.video);
+      return;
+    }
     const target = field?.doc ?? field?.thumb ?? field?.docrow;
     if (target) goToDoc(target);
   }, [controller.selectedId, goToDoc, fieldById]);
@@ -148,7 +163,7 @@ export function CaseWorkbench({
     ? fieldById[controller.selectedId]
     : null;
   const relatedDocId = selected
-    ? (selected.doc ?? selected.thumb ?? selected.docrow ?? null)
+    ? (selected.doc ?? selected.thumb ?? selected.docrow ?? selected.video ?? null)
     : null;
   const spot: { doc: string; rect: Rect } | null =
     selected?.region && relatedDocId
@@ -252,11 +267,7 @@ export function CaseWorkbench({
             /* `items-start` and a `shrink-0` button: on a long cause the title wraps to
                two lines and a centred pencil floated in the middle of them. */
             <div className="flex items-start gap-1">
-              <h1 className="text-title font-semibold">
-                {title.complainant}{" "}
-                <span className="font-normal text-muted-foreground">v.</span>{" "}
-                {title.accused}
-              </h1>
+              <h1 className="text-title font-semibold">{title}</h1>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -322,7 +333,7 @@ export function CaseWorkbench({
       </div>
 
       {/* A standing condition, not feedback on an action → Banner. */}
-      {aiOn ? null : (
+      {ai === "unavailable" ? (
         <Banner variant="warning">
           <TriangleAlertIcon />
           <div className="min-w-0 flex-1 leading-snug">
@@ -330,7 +341,7 @@ export function CaseWorkbench({
             on this file.
           </div>
         </Banner>
-      )}
+      ) : null}
 
       {threePane ? (
         /* The floors are in `rem`, not percentages: a percentage floor is a floor on
@@ -365,6 +376,7 @@ export function CaseWorkbench({
           <ResizablePanel defaultSize="14%" minSize="10rem" maxSize="20rem">
             <IndexRail
               relatedDocId={aiOn ? relatedDocId : null}
+              aiOn={aiOn}
               onGoToDoc={goToDoc}
             />
           </ResizablePanel>
@@ -413,12 +425,23 @@ export function CaseWorkbench({
             Send back to advocate
           </Button>
         ) : null}
-        <Button onClick={() => setDecision("register")}>Register case</Button>
+        {/* Someone holding both the Scrutiny officer and Case registerer roles here
+            registers the case; forwarding would only send it to themselves. Anyone
+            holding Scrutiny officer alone forwards it to Registration (`SCR-06`,
+            `SCR-11`). */}
+        {canRegister ? (
+          <Button onClick={() => setDecision("register")}>Register case</Button>
+        ) : (
+          <Button onClick={() => setDecision("forward")}>
+            Forward for registration
+          </Button>
+        )}
       </div>
 
       <HistorySheet
         open={historyOpen}
         onOpenChange={setHistoryOpen}
+        aiOn={aiOn}
         onGoToItem={goToItem}
       />
       {/* The index, as a detour, only where there is no room for it as a column. */}
@@ -427,6 +450,7 @@ export function CaseWorkbench({
           open={indexOpen}
           onOpenChange={setIndexOpen}
           relatedDocId={aiOn ? relatedDocId : null}
+          aiOn={aiOn}
           onGoToDoc={(docId) => {
             setIndexOpen(false);
             showDoc(docId);
@@ -449,30 +473,29 @@ export function CaseWorkbench({
 }
 
 /**
- * Inline edit of the two party names. Enter saves, Escape cancels, and the fields are
- * plain DS inputs — no dialog for a two-word change.
+ * Inline edit of the case title, as one line of text. Enter saves, Escape cancels, and
+ * the field is a plain DS input — no dialog for a one-line change.
  */
 function TitleEditor({
   value,
   onSave,
   onCancel,
 }: {
-  value: { complainant: string; accused: string };
-  onSave: (next: { complainant: string; accused: string }) => void;
+  value: string;
+  onSave: (next: string) => void;
   onCancel: () => void;
 }) {
   const [draft, setDraft] = React.useState(value);
-  const complainantRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
-    complainantRef.current?.focus();
-    complainantRef.current?.select();
+    inputRef.current?.focus();
+    inputRef.current?.select();
   }, []);
 
   function commit() {
-    const complainant = draft.complainant.trim();
-    const accused = draft.accused.trim();
-    if (!complainant || !accused) return onCancel();
-    onSave({ complainant, accused });
+    const next = draft.trim();
+    if (!next) return onCancel();
+    onSave(next);
   }
 
   function onKeyDown(event: React.KeyboardEvent) {
@@ -486,25 +509,13 @@ function TitleEditor({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex w-full flex-wrap items-center gap-2">
       <Input
-        ref={complainantRef}
-        aria-label="Complainant"
-        className="w-56"
-        value={draft.complainant}
-        onChange={(event) =>
-          setDraft((d) => ({ ...d, complainant: event.target.value }))
-        }
-        onKeyDown={onKeyDown}
-      />
-      <span className="text-body-compact text-muted-foreground">v.</span>
-      <Input
-        aria-label="Accused"
-        className="w-56"
-        value={draft.accused}
-        onChange={(event) =>
-          setDraft((d) => ({ ...d, accused: event.target.value }))
-        }
+        ref={inputRef}
+        aria-label="Case title"
+        className="min-w-0 flex-1 basis-80"
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
         onKeyDown={onKeyDown}
       />
       <Button onClick={commit}>Save title</Button>

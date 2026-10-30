@@ -32,21 +32,23 @@ describe("jurisdictionReady", () => {
     assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE), true);
   });
 
-  it("needs the payee bank block when the payee deposited the cheque", () => {
+  it("needs the payee bank block and police station when the payee deposited", () => {
     assert.equal(jurisdictionReady(filledJurisdiction({ ifsc: "" }), CAUSE), false);
     assert.equal(jurisdictionReady(filledJurisdiction({ ifsc: "BADCODE" }), CAUSE), false);
     assert.equal(jurisdictionReady(filledJurisdiction({ payeeBankName: "" }), CAUSE), false);
     assert.equal(jurisdictionReady(filledJurisdiction({ payeePolice: "" }), CAUSE), false);
   });
 
-  it("does not need the payee bank block when the payee did not deposit", () => {
-    assert.equal(
-      jurisdictionReady(
-        filledJurisdiction({ deposited: "no", ifsc: "", payeeBankName: "", payeeBankBranch: "", payeePolice: "" }),
-        CAUSE
-      ),
-      true
-    );
+  it("needs only the drawer's police station when the payee did not deposit", () => {
+    const notDeposited = {
+      deposited: "no" as const,
+      ifsc: "",
+      payeeBankName: "",
+      payeeBankBranch: "",
+      payeePolice: "",
+    };
+    assert.equal(jurisdictionReady(filledJurisdiction({ ...notDeposited, drawerPolice: "Fort" }), CAUSE), true);
+    assert.equal(jurisdictionReady(filledJurisdiction({ ...notDeposited, drawerPolice: "" }), CAUSE), false);
   });
 });
 
@@ -63,15 +65,23 @@ describe("jurisdictionSectionBody", () => {
     });
   });
 
-  it("omits the payee bank block when the payee did not deposit", () => {
+  it("sends the drawer's police station as bank_police_station when not deposited", () => {
     const body = jurisdictionSectionBody(
-      filledJurisdiction({ deposited: "no", ifsc: "", payeeBankName: "", payeeBankBranch: "", payeePolice: "" }),
+      filledJurisdiction({
+        deposited: "no",
+        ifsc: "",
+        payeeBankName: "",
+        payeeBankBranch: "",
+        payeePolice: "",
+        drawerPolice: "Fort",
+      }),
       CAUSE
     );
     assert.deepEqual(body, {
       cheque_deposited_by_payee: false,
       other_complaints_pending: false,
       cause_of_action_date: CAUSE,
+      bank_police_station: "Fort",
     });
   });
 
@@ -121,12 +131,19 @@ describe("adrPrayerSectionBody", () => {
     });
   });
 
+  it("omits adr_preference for the 'maybe' choice (backend accepts only YES/NO)", () => {
+    const body = adrPrayerSectionBody(adrPrayer({ adr: "maybe" }));
+    assert.ok(body);
+    assert.ok(!("adr_preference" in body));
+    assert.equal(body.final_relief, "<p>Take cognizance under S-138.</p>");
+  });
+
   it("omits empty optional rich-text fields", () => {
-    const body = adrPrayerSectionBody(adrPrayer({ otherDetails: "", interimRelief: "<p></p>" }));
+    const body = adrPrayerSectionBody(adrPrayer({ adr: "yes", otherDetails: "", interimRelief: "<p></p>" }));
     assert.ok(body);
     assert.ok(!("other_details" in body));
     assert.ok(!("interim_relief" in body));
-    assert.equal(body.adr_preference, "MAYBE");
+    assert.equal(body.adr_preference, "YES");
   });
 
   it("returns null when the final relief is empty", () => {

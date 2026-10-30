@@ -16,7 +16,7 @@ import { IFSC_PATTERN } from "./lookups";
 import {
   MODE_OF_SERVICE,
   NATURE_OF_DEBT,
-  PAYMENT_STATUS,
+  NON_DELIVERY_REASONS,
   RETURN_REASONS,
   WHY_ISSUED,
   type Option,
@@ -131,28 +131,45 @@ export function returnMemoReady(cheque: ChequeDetails): boolean {
   return !!cheque.presentDate && !!cheque.returnDate && !!cheque.returnReason;
 }
 
+/** Local payment-status code → the backend's `PaymentStatus` enum value. */
+const PAYMENT_STATUS_VALUE: Record<"none" | "part", string> = {
+  none: "NO_PAYMENT_MADE",
+  part: "PART_PAYMENT",
+};
+
 /**
  * Build the `LEGAL_DEMAND_NOTICE` evidence_info for a demand notice.
  *
- * `tracking_number` and `delivery_date` are left out when empty (the schema rejects an
- * empty string for either). The draft's "not delivered" fields (return date, reason) and
- * the part-payment amount have no home in the schema yet, so they are not sent (see the
- * demand-notice integration tracker).
+ * `payment_status` is sent as the backend's enum value. A delivered notice carries its
+ * delivery date; an undelivered one carries when it came back and why (both required then);
+ * a part payment carries its amount. `tracking_number` is left out when empty.
  */
 export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody {
+  const delivered = notice.delivered === "yes";
   const info: EvidenceInfoBody = {
     nature_of_debt: optionLabel(NATURE_OF_DEBT, notice.natureDebt),
     cheque_issue_reason: optionLabel(WHY_ISSUED, notice.whyIssued),
     dispatch_date: notice.dispatchDate,
     mode_of_service: optionLabel(MODE_OF_SERVICE, notice.modeService),
-    is_delivered: notice.delivered === "yes",
+    is_delivered: delivered,
     accused_replied: notice.replied === "yes",
-    payment_status: optionLabel(PAYMENT_STATUS, notice.paymentStatus),
   };
+  if (notice.paymentStatus) info.payment_status = PAYMENT_STATUS_VALUE[notice.paymentStatus];
   const tracking = notice.tracking.trim();
   if (tracking) info.tracking_number = tracking;
-  // The 15-day payment window runs from the delivery date, which only applies when delivered.
-  if (notice.delivered === "yes" && notice.deliveryDate) info.delivery_date = notice.deliveryDate;
+  if (delivered) {
+    // The 15-day payment window runs from the delivery date.
+    if (notice.deliveryDate) info.delivery_date = notice.deliveryDate;
+  } else {
+    if (notice.returnDate) info.return_date = notice.returnDate;
+    if (notice.nonDeliveryReason) {
+      info.non_delivery_reason = optionLabel(NON_DELIVERY_REASONS, notice.nonDeliveryReason);
+    }
+  }
+  if (notice.paymentStatus === "part") {
+    const amount = chequeAmount(notice.partAmount);
+    if (amount !== null) info.part_payment_amount = amount;
+  }
   return info;
 }
 
@@ -165,6 +182,14 @@ export function demandNoticeReady(notice: DemandNotice): boolean {
     !!notice.modeService &&
     !!notice.paymentStatus;
   if (!base) return false;
-  // A delivered notice needs its delivery date (the backend requires it then).
-  return notice.delivered === "yes" ? !!notice.deliveryDate : true;
+  if (notice.delivered === "yes") {
+    // A delivered notice needs its delivery date.
+    if (!notice.deliveryDate) return false;
+  } else {
+    // An undelivered one needs its return date and the reason it was not delivered.
+    if (!notice.returnDate || !notice.nonDeliveryReason) return false;
+  }
+  // A part payment needs a valid amount.
+  if (notice.paymentStatus === "part" && chequeAmount(notice.partAmount) === null) return false;
+  return true;
 }

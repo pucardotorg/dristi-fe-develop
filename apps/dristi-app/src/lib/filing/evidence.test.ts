@@ -172,45 +172,52 @@ function filledNotice(over: Partial<DemandNotice> = {}): DemandNotice {
   };
 }
 
+/** An undelivered notice's extra fields, so tests can spread them in. */
+const UNDELIVERED = {
+  delivered: "no" as const,
+  deliveryDate: "",
+  returnDate: "2024-02-12",
+  nonDeliveryReason: "unclaimed",
+};
+
 describe("demandNoticeEvidenceInfo", () => {
-  it("builds the LEGAL_DEMAND_NOTICE body with codes mapped to their labels", () => {
+  it("builds the body for a delivered notice, payment status as the enum value", () => {
     assert.deepEqual(demandNoticeEvidenceInfo(filledNotice()), {
       nature_of_debt: "Loan / advance repayment",
       cheque_issue_reason: "Towards repayment of a loan",
       dispatch_date: "2024-02-01",
       mode_of_service: "Registered post (RPAD)",
-      tracking_number: "RR123456789IN",
       is_delivered: true,
-      delivery_date: "2024-02-05",
       accused_replied: false,
-      payment_status: "No payment made",
+      payment_status: "NO_PAYMENT_MADE",
+      tracking_number: "RR123456789IN",
+      delivery_date: "2024-02-05",
     });
   });
 
-  it("omits tracking_number and delivery_date when they are empty", () => {
-    const info = demandNoticeEvidenceInfo(
-      filledNotice({ tracking: "", delivered: "no", deliveryDate: "" })
-    );
-    assert.ok(!("tracking_number" in info));
-    assert.ok(!("delivery_date" in info));
+  it("sends the return date and reason (not a delivery date) for an undelivered notice", () => {
+    const info = demandNoticeEvidenceInfo(filledNotice(UNDELIVERED));
     assert.equal(info.is_delivered, false);
+    assert.equal(info.return_date, "2024-02-12");
+    assert.equal(info.non_delivery_reason, "Unclaimed");
+    assert.ok(!("delivery_date" in info));
   });
 
-  it("does not send the not-delivered fields or the part-payment amount", () => {
-    const info = demandNoticeEvidenceInfo(
-      filledNotice({ delivered: "no", returnDate: "2024-02-10", nonDeliveryReason: "x", paymentStatus: "part", partAmount: "500" })
-    );
-    assert.ok(!("return_date" in info));
-    assert.ok(!("non_delivery_reason" in info));
-    assert.ok(!("part_amount" in info));
-    assert.equal(info.payment_status, "Part payment made");
+  it("sends part_payment_amount as a number for a part payment", () => {
+    const info = demandNoticeEvidenceInfo(filledNotice({ paymentStatus: "part", partAmount: "2,500" }));
+    assert.equal(info.payment_status, "PART_PAYMENT");
+    assert.equal(info.part_payment_amount, 2500);
+  });
+
+  it("omits tracking_number when empty", () => {
+    assert.ok(!("tracking_number" in demandNoticeEvidenceInfo(filledNotice({ tracking: "" }))));
   });
 });
 
 describe("demandNoticeReady", () => {
-  it("is true for a complete notice", () => {
+  it("is true for a complete delivered or undelivered notice", () => {
     assert.equal(demandNoticeReady(filledNotice()), true);
-    assert.equal(demandNoticeReady(filledNotice({ delivered: "no", deliveryDate: "" })), true);
+    assert.equal(demandNoticeReady(filledNotice(UNDELIVERED)), true);
   });
 
   it("is false when a required field is missing", () => {
@@ -221,8 +228,17 @@ describe("demandNoticeReady", () => {
     assert.equal(demandNoticeReady(filledNotice({ paymentStatus: "" })), false);
   });
 
-  it("requires a delivery date only when the notice was delivered", () => {
+  it("requires a delivery date when delivered", () => {
     assert.equal(demandNoticeReady(filledNotice({ delivered: "yes", deliveryDate: "" })), false);
-    assert.equal(demandNoticeReady(filledNotice({ delivered: "no", deliveryDate: "" })), true);
+  });
+
+  it("requires a return date and reason when undelivered", () => {
+    assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, returnDate: "" })), false);
+    assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "" })), false);
+  });
+
+  it("requires a valid amount for a part payment", () => {
+    assert.equal(demandNoticeReady(filledNotice({ paymentStatus: "part", partAmount: "" })), false);
+    assert.equal(demandNoticeReady(filledNotice({ paymentStatus: "part", partAmount: "500" })), true);
   });
 });

@@ -16,10 +16,12 @@
  */
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { RotateCcwIcon } from "lucide-react";
 
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { useAffidavit } from "@/lib/filing/use-affidavit";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { FilingFooter } from "@/components/filing/filing-footer";
@@ -33,10 +35,20 @@ import { affidavitBody } from "@/components/filing/sections/preview/derive";
 export function AffidavitSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("affidavit");
+  const router = useRouter();
+  const { save, saving, error } = useAffidavit();
   const [resetOpen, setResetOpen] = React.useState(false);
 
   const edited = draft.affidavit.trim().length > 0;
   const body = affidavitBody(draft);
+
+  /* Save the effective affidavit (the filer's edit, or the standard text) to the case, then
+     move on. A save failure keeps the filer here with the reason. */
+  const continueHref = next ? hrefFor(next) : undefined;
+  const handleContinue = async () => {
+    const result = await save(body);
+    if (result.ok && continueHref) router.push(continueHref);
+  };
 
   return (
     <>
@@ -84,11 +96,19 @@ export function AffidavitSection() {
             minHeightClassName="min-h-96"
           />
         </FormCard>
+
+        {error ? (
+          <SectionNotice variant="destructive" title="Couldn't save to the court's server">
+            {error}
+          </SectionNotice>
+        ) : null}
       </FilingMain>
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        continueHref={next ? hrefFor(next) : undefined}
+        onContinue={continueHref ? handleContinue : undefined}
+        continueDisabled={saving}
+        continueLabel={saving ? "Saving…" : "Continue"}
       />
 
       <ConfirmDialog

@@ -8,6 +8,7 @@
  *   updateEvidence    PATCH  /case-evidence/{case_evidence_id}
  *   deleteEvidence    DELETE /case-evidence/{case_evidence_id}
  *   saveDetails       PUT    /cases/{id}/details/{section} (whole section, replaces)
+ *   saveAffidavit     PUT    /cases/{id}/affidavit        { affidavit } (replaces)
  *
  * The backend creates the case lazily, on the first save, and gives it the draft
  * session's id — so the id `startDraft` returns is the case id for the life of the
@@ -226,6 +227,14 @@ export function createCaseFilingApi(client: ApiClient = api) {
         data,
         { signal }
       );
+    },
+
+    /**
+     * Replace the case's sworn affidavit (its own endpoint, spec 0021 §5.4), creating the
+     * case on the first save. A blank affidavit is refused by the backend.
+     */
+    async saveAffidavit(caseId: string, affidavit: string, signal?: AbortSignal): Promise<void> {
+      await client.put(`cases/${encodeURIComponent(caseId)}/affidavit`, { affidavit }, { signal });
     },
   };
 }

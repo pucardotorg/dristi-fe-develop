@@ -18,7 +18,7 @@ import type { AdrPrayer, FilingDraft, Jurisdiction } from "./types";
 export type DetailsSectionBody = Record<string, string | number | boolean>;
 
 /** Whether rich-text (HTML) editor output has any real content, not just empty markup. */
-function richTextHasContent(html: string): boolean {
+export function richTextHasContent(html: string): boolean {
   return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/gi, " ").trim().length > 0;
 }
 

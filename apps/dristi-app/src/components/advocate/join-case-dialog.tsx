@@ -88,6 +88,7 @@ import {
 import { rupees } from "@/lib/tasks/format";
 import { Identifier } from "@/components/chrome/identifier";
 import { cn } from "@/lib/utils";
+import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
 
 /**
  * Advocate join-a-case dialog.
@@ -139,7 +140,6 @@ export type AdvocateJoinResult = {
 };
 
 const CODE_LENGTH = 6;
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 function fileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -184,7 +184,7 @@ function UploadedDocField({
         accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
         onChange={(event) => {
           const next = event.target.files?.[0];
-          if (next && next.size <= MAX_FILE_SIZE) onFileChange(next);
+          if (next && isAcceptedDocument(next)) onFileChange(next);
           // The same file can be picked again after a remove.
           event.target.value = "";
         }}

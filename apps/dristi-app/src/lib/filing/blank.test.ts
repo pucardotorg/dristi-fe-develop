@@ -142,6 +142,52 @@ describe("migrateDraft — the two-level signing model", () => {
   });
 });
 
+describe("createBlankDraft — who is filing", () => {
+  const account = {
+    name: "Asha Menon",
+    mobile: "9876543210",
+    email: "asha@example.com",
+    barNumber: "",
+  };
+
+  it("starts a litigant's filing with them as the first complainant", () => {
+    const draft = createBlankDraft("d-litigant", { ...account, role: "LITIGANT" });
+    const [c] = draft.complainants;
+    assert.equal(c.name, "Asha Menon");
+    assert.equal(c.mobile, "9876543210");
+    assert.equal(c.email, "asha@example.com");
+    assert.equal(draft.advocates[0].name, "");
+  });
+
+  it("leaves the complainant blank for an advocate, and fills in the advocate card", () => {
+    const draft = createBlankDraft("d-advocate", {
+      ...account,
+      role: "ADVOCATE",
+      barNumber: "K/0421/2004",
+    });
+    assert.equal(draft.complainants[0].name, "");
+    assert.equal(draft.complainants[0].mobile, "");
+    assert.equal(draft.advocates[0].name, "Asha Menon");
+    assert.equal(draft.advocates[0].barNumber, "K/0421/2004");
+  });
+
+  it("prefills nothing when the account could not be read", () => {
+    const draft = createBlankDraft("d-unknown", { ...account, role: null });
+    assert.equal(draft.complainants[0].name, "");
+    assert.equal(draft.advocates[0].name, "");
+  });
+});
+
+describe("sectionComplete — advocate", () => {
+  it("counts an advocate only once the search has found them", () => {
+    const draft = createBlankDraft("d-adv");
+    draft.advocates[0] = { ...draft.advocates[0], name: "Anitha R", barNumber: "K/0421/2004" };
+    assert.equal(sectionComplete(draft, "advocate"), false);
+    draft.advocates[0].advocateId = "adv-1";
+    assert.equal(sectionComplete(draft, "advocate"), true);
+  });
+});
+
 describe("draftProgress — only what the person has done", () => {
   it("starts a blank draft at 0%, though the prayer and witnesses are complete by default", () => {
     const draft = createBlankDraft("draft-blank-progress");

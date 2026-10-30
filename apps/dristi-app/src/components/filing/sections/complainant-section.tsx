@@ -3,14 +3,13 @@
 /**
  * Complainant details — one tab per complainant, individual or institution.
  *
- * Reading the uploaded identity proof machine-fills the name, age and residential address;
- * those fields carry the amber prefilled marker until they are checked, and clicking one
- * opens that upload beside the form with the read region highlighted.
+ * The complainant's uploaded identity proof, PoA and vakalatnama can be opened beside the
+ * form.
  */
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { CheckIcon, TriangleAlertIcon } from "lucide-react";
+import { TriangleAlertIcon } from "lucide-react";
 
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 
@@ -18,6 +17,7 @@ import { blankComplainant } from "@/lib/filing/blank";
 import { ENTITY_TYPES, GENDER_OPTIONS } from "@/lib/filing/options";
 import { fetchOnCourtRecord } from "@/lib/filing/registry";
 import {
+  complainantComplete,
   complainantLabel,
   complainantsMissingCinPan,
   isCinOrPan,
@@ -26,10 +26,11 @@ import {
 } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { withoutComplainant } from "@/lib/filing/advocates";
+import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
 import type {
   Address,
   Complainant,
-  ComplainantPrefillKey,
   ComplainantType,
   PoaHolder,
   Representative,
@@ -64,9 +65,8 @@ import {
   useCorrectionInstanceRequest,
   useInCorrection,
 } from "@/components/filing/posture";
-import { OptionSelect, PrefixInput, TextField } from "@/components/filing/inputs";
-import { InfoWell, SectionNotice } from "@/components/filing/notices";
-import { PrefillNotice } from "@/components/filing/prefill-notice";
+import { MobileInput, OptionSelect, TextField } from "@/components/filing/inputs";
+import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { RichTextEditor } from "@/components/filing/rich-text-editor";
 import { SectionTabs } from "@/components/filing/section-tabs";
 import { Segmented, YesNoSegmented } from "@/components/filing/segmented";
@@ -74,36 +74,8 @@ import { YesNoChoice } from "@/components/filing/yes-no-choice";
 import {
   SourcePanel,
   ViewSourceButton,
-  regionFromBox,
   useSourceOpenState,
 } from "@/components/filing/source-panel";
-
-/** Panel title per machine-filled field. */
-const SOURCE_TITLES: Record<ComplainantPrefillKey, string> = {
-  name: "Full name",
-  age: "Age",
-  email: "Email address",
-  res: "Residential address",
-  entName: "Entity name",
-};
-
-/**
- * Which box on the identity proof each field was read from. An age is written as a date of
- * birth on most IDs, and an address line comes from the address block (or, failing that,
- * the pincode) — so each falls back to what the parser actually found.
- */
-const PREFILL_ORDER: ComplainantPrefillKey[] = ["name", "age", "res", "email", "entName"];
-
-const ADDRESS_SOURCE_KEYS: Record<keyof Address, string> = { line1: "address", pin: "pin", city: "city", district: "district", state: "state" };
-const ADDRESS_LABELS: Record<keyof Address, string> = { line1: "Address line", pin: "Pincode", city: "City / town", district: "District", state: "State / UT" };
-
-const SOURCE_BOX_KEYS: Record<ComplainantPrefillKey, string[]> = {
-  name: ["name"],
-  age: ["age", "dob"],
-  res: ["address", "pin"],
-  email: [],
-  entName: [],
-};
 
 /** The documents uploaded for a complainant, in the order the panel offers them. */
 const PARTY_DOCS = ["id-proof", "poa", "vakalatnama"] as const;
@@ -124,6 +96,7 @@ const COMPLAINANT_TYPES: { value: ComplainantType; label: string }[] = [
 export function ComplainantSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("complainant");
+  const { unsaved, retryUnsaved } = useCaseParties("complainant");
 
   const complainants = draft.complainants;
   const [activeIndex, setActiveIndex] = React.useState(0);
@@ -135,18 +108,10 @@ export function ComplainantSection() {
 
   /**
    * The source rail is a column beside the form from `xl` up, so it starts expanded
-   * there as in the demo; collapsed, it stays in the layout as a strip. Below that it
-   * is a sheet over the form — opened on request (a prefilled field, or "View source
-   * document") rather than covering the screen on arrival.
+   * there; below that it is a sheet over the form, opened by "View source document".
    */
   const [sourceOpen, setSourceOpen] = useSourceOpenState();
-  /**
-   * `null` until the person picks a field, so the panel lands on something the identity
-   * proof actually gave up rather than on a fixed field that may be empty.
-   */
-  const [chosenField, setChosenField] = React.useState<ComplainantPrefillKey | null>(null);
   /** Which of the complainant's uploads the panel shows; the chips switch between them. */
-  const [addressField, setAddressField] = React.useState<keyof Address>("line1");
   const [sourceDoc, setSourceDoc] = React.useState<PartyDoc>("id-proof");
   const [pendingRemove, setPendingRemove] = React.useState<number | null>(null);
   /** The sandbox stand-in for mobile verification — see the dialog at the foot of the file. */
@@ -238,24 +203,9 @@ export function ComplainantSection() {
       target.mobile = value;
     });
 
-  /** Editing a machine-filled field clears its amber marker. */
-  const setRead = (key: ComplainantPrefillKey, value: string) =>
-    update((d) => {
-      const target = d.complainants[active];
-      if (key === "res") target.res[addressField] = value;
-      else if (key === "name") target.name = value;
-      else if (key === "age") target.age = value;
-      else if (key === "email") target.email = value;
-      else target.entName = value;
-      target.edited[key] = true;
-    });
-
   const setRes = (value: Address) =>
     update((d) => {
-      const target = d.complainants[active];
-      // Only the address line was read from the record, so only it clears the marker.
-      if (value.line1 !== target.res.line1) target.edited.res = true;
-      target.res = value;
+      d.complainants[active].res = value;
     });
 
   const setPoa = <K extends keyof PoaHolder>(key: K, value: PoaHolder[K]) =>
@@ -277,22 +227,16 @@ export function ComplainantSection() {
 
   const removeComplainant = (index: number) => {
     if (complainants.length <= 1) return;
+    removePartyFromCase(complainants[index]);
     update((d) => {
       d.complainants.splice(index, 1);
+      withoutComplainant(d.advocates, index);
     });
     setActiveIndex(Math.min(active, complainants.length - 2));
   };
 
   /* ── source panel ────────────────────────────────────────────────────────── */
 
-  const openSource = (field: ComplainantPrefillKey) => {
-    setChosenField(field);
-    setSourceDoc("id-proof");
-    setSourceOpen(true);
-  };
-
-  // Everything machine-read on a complainant comes off their identity proof; the PoA and
-  // Vakalatnama are here to be looked at while the rest of the form is filled in.
   const partySlots = PARTY_DOCS.map((doc) => ({
     doc,
     slot: partySourceSlot(draft, active, doc),
@@ -303,54 +247,11 @@ export function ComplainantSection() {
     ? sourceDoc
     : uploadedDocs[0]?.doc;
   const sourceSlot = partySlots.find((s) => s.doc === shownDoc)?.slot;
-  const idProof = shownDoc === "id-proof" ? sourceSlot : undefined;
-  /* Only the identity proof is read, so it alone decides where the panel lands. */
-  const idProofSlot = partySlots.find((s) => s.doc === "id-proof")?.slot;
-  /* A field's value can come from more than one box (age from `age` or `dob`), so the
-     landing field is the first whose boxes the parser actually filled. */
-  const sourceField =
-    chosenField ??
-    PREFILL_ORDER.find((key) =>
-      SOURCE_BOX_KEYS[key].some((box) => idProofSlot?.extract?.fields[box]?.value)
-    ) ??
-    "name";
-  const sourceValue =
-    sourceField === "res"
-      ? c.res[addressField]
-      : sourceField === "entName"
-        ? c.entName
-        : sourceField === "email"
-          ? c.email
-          : sourceField === "age"
-            ? c.age
-            : c.name;
   /** The document in the rail, named as a person would name it, not by its file name. */
   const sourceDocLabel =
     sourceSlot?.label ?? PARTY_DOC_LABELS[shownDoc ?? "id-proof"];
-  const sourceBox = (sourceField === "res" ? [ADDRESS_SOURCE_KEYS[addressField]] : SOURCE_BOX_KEYS[sourceField])
-    .map((key) => idProof?.extract?.fields[key]?.box)
-    .find(Boolean);
-  const sourceRegion = regionFromBox(sourceBox, idProof?.extract?.page);
-
-  /** Amber shows only while the value is still the machine-read one. */
-  const isPrefilled = (key: ComplainantPrefillKey, value: string) =>
-    !!c.prefilled[key] && !c.edited[key] && !!value;
-
-  const namePrefilled = isPrefilled("name", c.name);
-  const agePrefilled = isPrefilled("age", c.age);
-  const emailPrefilled = isPrefilled("email", c.email);
-  const entNamePrefilled = isPrefilled("entName", c.entName);
-  const resPrefilled = !!c.prefilled.res && !c.edited.res;
-  /** Something on this complainant is still waiting to be checked. */
-  const anyPrefilled =
-    namePrefilled || agePrefilled || emailPrefilled || entNamePrefilled || resPrefilled;
-
-  const mobile10 = c.mobile.replace(/\D/g, "");
   /** Appearing in person settles the PoA question — see the note on the control. */
   const inPerson = c.pip === "yes";
-
-  /** Nothing to verify until there is a whole number to verify. */
-  const canVerify = mobile10.length === 10;
 
   /**
    * One step, not two: the OTP is what authorises reading a saved record back onto the
@@ -390,11 +291,20 @@ export function ComplainantSection() {
           description="Who is bringing this complaint, and where the court can reach them."
         />
 
+        {unsaved.length > 0 ? (
+          <UnsavedNotice
+            labels={unsaved.map((x) => complainantLabel(x, complainants.indexOf(x)))}
+            error={unsaved[0].syncError ?? unsaved[0].poaSyncError ?? ""}
+            noun="details"
+            onRetry={() => void retryUnsaved()}
+          />
+        ) : null}
+
         <SectionTabs
           tabs={complainants.map((cp, i) => ({
             id: cp.id,
             label: complainantLabel(cp, i),
-            status: cp.toReview ? "attention" : "complete",
+            status: complainantComplete(cp) ? "complete" : "attention",
             removable: complainants.length > 1,
           }))}
           activeId={c.id}
@@ -410,12 +320,10 @@ export function ComplainantSection() {
           onAdd={addComplainant}
           trailing={
             !sourceOpen ? (
-              <ViewSourceButton onClick={() => { setChosenField(null); setSourceOpen(true); }} />
+              <ViewSourceButton onClick={() => setSourceOpen(true)} />
             ) : null
           }
         />
-
-        <PrefillNotice show={anyPrefilled} />
 
         <CorrectionInstance value={active}>
         {/* Representation & type */}
@@ -458,24 +366,15 @@ export function ComplainantSection() {
                   beside. Both are how this person is reached; they are asked together. */}
               <FormRow>
                 <FormField label="Mobile number" name="mobile" required>
-                  <PrefixInput
-                    prefix="+91"
-                    value={c.mobile}
-                    onChange={setMobile}
-                    placeholder="10-digit number"
-                    inputMode="numeric"
-                    autoComplete="tel-national"
-                  />
+                  <MobileInput value={c.mobile} onChange={setMobile} />
                 </FormField>
                 <FormField label="Email address" name="email" optional>
                   <TextField
                     type="email"
                     value={c.email}
-                    onChange={(v) => setRead("email", v)}
+                    onChange={(v) => set("email", v)}
                     placeholder="optional@example.com"
                     autoComplete="email"
-                    prefilled={emailPrefilled}
-                    onViewSource={() => openSource("email")}
                   />
                 </FormField>
               </FormRow>
@@ -491,21 +390,17 @@ export function ComplainantSection() {
                 <FormField label="Full name" name="name" required>
                   <TextField
                     value={c.name}
-                    onChange={(v) => setRead("name", v)}
+                    onChange={(v) => set("name", v)}
                     placeholder="As printed on the cheque"
                     autoComplete="name"
-                    prefilled={namePrefilled}
-                    onViewSource={() => openSource("name")}
                   />
                 </FormField>
                 <FormField label="Age" name="age" required>
                   <TextField
                     value={c.age}
-                    onChange={(v) => setRead("age", v)}
+                    onChange={(v) => set("age", v)}
                     placeholder="e.g. 47"
                     inputMode="numeric"
-                    prefilled={agePrefilled}
-                    onViewSource={() => openSource("age")}
                   />
                 </FormField>
               </FormRow>
@@ -542,9 +437,6 @@ export function ComplainantSection() {
                 name="res"
                 value={c.res}
                 onChange={setRes}
-                prefilled={resPrefilled}
-                prefilledFields={Object.fromEntries((Object.keys(ADDRESS_SOURCE_KEYS) as (keyof Address)[]).map((key) => [key, !!idProof?.extract?.fields[ADDRESS_SOURCE_KEYS[key]]?.value && idProof.extract.fields[ADDRESS_SOURCE_KEYS[key]].value === c.res[key]]))}
-                onViewSource={(key) => { setAddressField(key); openSource("res"); }}
               />
               <FormField
                 asGroup
@@ -589,12 +481,9 @@ export function ComplainantSection() {
                   <FormSubhead>PoA holder details</FormSubhead>
                   <HalfWidth>
                     <FormField label="PoA holder mobile number" required>
-                      <PrefixInput
-                        prefix="+91"
+                      <MobileInput
                         value={c.poaHolder.mobile}
                         onChange={(v) => setPoa("mobile", v)}
-                        placeholder="10-digit number"
-                        inputMode="numeric"
                       />
                     </FormField>
                   </HalfWidth>
@@ -661,22 +550,14 @@ export function ComplainantSection() {
                 <FormField label="Entity name" name="entName" required>
                   <TextField
                     value={c.entName}
-                    onChange={(v) => setRead("entName", v)}
+                    onChange={(v) => set("entName", v)}
                     placeholder="Registered name"
-                    prefilled={entNamePrefilled}
-                    onViewSource={() => openSource("entName")}
                   />
                 </FormField>
               </FormRow>
               <FormRow>
                 <FormField label="Contact number" optional>
-                  <PrefixInput
-                    prefix="+91"
-                    value={c.entPhone}
-                    onChange={(v) => set("entPhone", v)}
-                    placeholder="10-digit number"
-                    inputMode="numeric"
-                  />
+                  <MobileInput value={c.entPhone} onChange={(v) => set("entPhone", v)} />
                 </FormField>
                 <FormField label="Email address" optional>
                   <TextField
@@ -749,13 +630,7 @@ export function ComplainantSection() {
             >
               <HalfWidth>
                 <FormField label="Mobile number" name="rep.mobile" required>
-                  <PrefixInput
-                    prefix="+91"
-                    value={c.rep.mobile}
-                    onChange={(v) => setRep("mobile", v)}
-                    placeholder="10-digit number"
-                    inputMode="numeric"
-                  />
+                  <MobileInput value={c.rep.mobile} onChange={(v) => setRep("mobile", v)} />
                 </FormField>
               </HalfWidth>
               <FormRow>
@@ -843,23 +718,14 @@ export function ComplainantSection() {
         open={sourceOpen}
         onOpenChange={setSourceOpen}
         title={sourceDocLabel}
-        // Named only when the person asked about that field from the form; switching
-        // documents in the rail is a question about the document, so it clears it.
-        field={chosenField ? (chosenField === "res" ? ADDRESS_LABELS[addressField] : SOURCE_TITLES[chosenField]) : undefined}
-        value={sourceValue}
-        onValueChange={(v) => setRead(sourceField, v)}
         chips={uploadedDocs.map(({ doc, slot }) => ({
           label: slot?.file?.name ?? slot?.label ?? PARTY_DOC_LABELS[doc],
           active: doc === shownDoc,
-          onClick: () => {
-            setChosenField(null);
-            setSourceDoc(doc);
-          },
+          onClick: () => setSourceDoc(doc),
         }))}
         file={sourceSlot?.file ?? null}
         uploadHref={hrefFor("upload")}
         imageAlt={`Uploaded ${sourceSlot?.label ?? "document"}`}
-        region={sourceRegion}
         note="Shown from your uploaded document."
       />
 

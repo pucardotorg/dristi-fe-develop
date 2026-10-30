@@ -13,7 +13,7 @@ import {
   bailDialog,
   bondCopy,
   fillCopy,
-} from "@/lib/filing/content";
+} from "@/lib/bail/content";
 import { cn } from "@/lib/utils";
 import { useCourtText } from "@/components/court/court-provider";
 

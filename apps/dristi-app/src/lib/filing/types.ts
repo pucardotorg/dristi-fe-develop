@@ -10,6 +10,8 @@
  * `./data/` persists it locally today; a backend replaces that layer, not this shape.
  */
 
+import type { BackendRole } from "@/lib/auth/types";
+
 export type YesNo = "yes" | "no";
 export type ISODate = string; // "yyyy-mm-dd" | ""
 
@@ -46,7 +48,7 @@ export type AddressBlock = {
   police: string;
 };
 
-/* ─────────────────────────────── Files & extraction ─────────────────────────────── */
+/* ────────────────────────────────────── Files ───────────────────────────────────── */
 
 /** A file the person uploaded; the bytes live in the file store under `id`. */
 export type StoredFileRef = {
@@ -70,7 +72,10 @@ export type ExtractedField = {
   box?: ExtractBox;
 };
 
-/** What document reading produced for one upload — the parsed fields, not the raw text. */
+/**
+ * What reading a document produced — the parsed fields, not the raw text. Only bulk
+ * filing reads documents now (on the server); scrutiny shows what it found.
+ */
 export type DocExtract = {
   engine: "pdf-text" | "tesseract";
   /** Mean word confidence, 0–100 (100 for a PDF text layer). */
@@ -104,15 +109,15 @@ export type IntakeSlot = {
   /** Required for filing; optional slots render the "Optional" chip. */
   required: boolean;
   file: StoredFileRef | null;
-  /** Reading in progress (upload landed, extraction running). */
-  processing?: boolean;
-  /** 0–100 while processing. */
-  progress?: number;
-  /** Extraction confidence too low, or the image too small, to trust the read. */
-  poor?: boolean;
+  /** The file's id on the backend case, once it is saved there. */
+  caseDocumentId?: string;
+  /** Being saved to the backend case. */
+  syncing?: boolean;
+  /** Saving to the backend case failed; the file is still in this browser. */
+  syncError?: string;
+  /** Bulk filing: what reading the document found, and whether it was too poor to trust. */
   extract?: DocExtract;
-  /** Reading failed (unsupported file, engine error) — the upload itself is kept. */
-  error?: string;
+  poor?: boolean;
 };
 
 export type IntakeGroup = { n: number; slots: IntakeSlot[] };
@@ -133,6 +138,30 @@ export type Intake = {
 /* ───────────────────────────────── Complainant ──────────────────────────────────── */
 
 export type ComplainantType = "individual" | "institution";
+
+/**
+ * Where a complainant, an accused or a witness is saved on the backend case. An
+ * institution accused is saved once per person summoned for it (S-141), so a party can
+ * hold several.
+ */
+export type SavedParty = {
+  /** The backend participants, in the order of the bodies they were saved from. */
+  caseParticipantIds?: string[];
+  /** Each saved body as JSON — unchanged parties are not sent again. */
+  savedBodies?: string[];
+  /** Saving to the backend case failed; the details are still in this browser. */
+  syncError?: string;
+};
+
+/** Where a complainant's PoA holder is saved on the backend case. */
+export type SavedPoaHolder = {
+  participantId: string;
+  mandateIds: string[];
+  /** The complainant participant the mandate was granted for. */
+  forParticipantId: string;
+  /** The saved body as JSON — an unchanged holder is not sent again. */
+  body: string;
+};
 
 export type PoaHolder = {
   mobile: string;
@@ -161,9 +190,6 @@ export type Representative = {
   differentlyAbled: DifferentlyAbled;
 };
 
-/** Field keys that document reading can machine-fill on a complainant. */
-export type ComplainantPrefillKey = "name" | "email" | "res" | "entName" | "age";
-
 /** A complainant's oath, recorded through the camera in the signing step (`OTH-1`). */
 export type OathVideo = {
   file: StoredFileRef;
@@ -171,7 +197,7 @@ export type OathVideo = {
   durationSeconds: number | null;
 };
 
-export type Complainant = {
+export type Complainant = SavedParty & {
   id: string;
   pip: YesNo;
   type: ComplainantType;
@@ -192,6 +218,9 @@ export type Complainant = {
   perm: Address;
   poa: YesNo;
   poaHolder: PoaHolder;
+  savedPoaHolder?: SavedPoaHolder;
+  /** Saving the PoA holder to the backend case failed, or is waiting on a field. */
+  poaSyncError?: string;
   entType: string;
   entName: string;
   /**
@@ -211,19 +240,28 @@ export type Complainant = {
   rep: Representative;
   /** Party-in-person affidavit body (HTML from the rich text editor). */
   affidavit: string;
-  prefilled: Partial<Record<ComplainantPrefillKey, boolean>>;
-  edited: Partial<Record<ComplainantPrefillKey, boolean>>;
-  toReview: boolean;
 };
 
 /* ─────────────────────────────────── Advocate ───────────────────────────────────── */
 
-export type Advocate = {
+/** Where an advocate is saved on the backend case: one representation per client. */
+export type SavedAdvocate = {
+  /** The advocate the representations below are for. */
+  savedAdvocateId?: string;
+  /** Representation ids, by the complainant participant each one acts for. */
+  representations?: Record<string, string>;
+  /** Saving to the backend case failed; the details are still in this browser. */
+  syncError?: string;
+};
+
+export type Advocate = SavedAdvocate & {
   id: string;
   /** Indices into `draft.complainants` this advocate appears for. */
   forComplainants: number[];
   barNumber: string;
   name: string;
+  /** Their id on the backend, from the advocate search; without it they cannot be saved. */
+  advocateId?: string;
 };
 
 /* ─────────────────────────────────── Accused ────────────────────────────────────── */
@@ -235,7 +273,7 @@ export type Advocate = {
  */
 export type AccusedType = "individual" | "institution";
 
-export type Accused = {
+export type Accused = SavedParty & {
   id: string;
   type: AccusedType;
   name: string;
@@ -277,8 +315,6 @@ export type ChequeDetails = {
   presentDate: ISODate;
   returnDate: ISODate;
   returnReason: string;
-  prefilled: Partial<Record<ChequeField, boolean>>;
-  edited: Partial<Record<ChequeField, boolean>>;
   ifscFetched: boolean;
 };
 
@@ -304,8 +340,6 @@ export type DemandNotice = {
   nonDeliveryReason: string;
   paymentStatus: "" | "none" | "part";
   partAmount: string;
-  prefilled: Partial<Record<NoticeField, boolean>>;
-  edited: Partial<Record<NoticeField, boolean>>;
 };
 
 /* ─────────────────────────── Jurisdiction & limitation ──────────────────────────── */
@@ -340,7 +374,7 @@ export type AdrPrayer = {
 
 /* ─────────────────────────────────── Witnesses ──────────────────────────────────── */
 
-export type Witness = {
+export type Witness = SavedParty & {
   id: string;
   fullName: string;
   designation: string;
@@ -551,6 +585,12 @@ export type DismissedNotices = {
 export type FilingDraft = {
   version: 7;
   id: string;
+  /**
+   * The backend case this draft saves to — the same value as `id`, since the backend
+   * keeps the draft session's id for the case. Absent on drafts that live only in this
+   * browser: batch drafts, and drafts made before the backend was wired.
+   */
+  caseId?: string;
   /** `pss25` has no filing flow yet — such a draft opens the placeholder page. */
   caseType: "s138" | "pss25";
   status: "draft" | "filed";
@@ -604,6 +644,8 @@ export type FilingDraft = {
  * prefill read from it.
  */
 export type UserProfile = {
+  /** `null` when the account could not be read. */
+  role: BackendRole | null;
   name: string;
   mobile: string;
   email: string;

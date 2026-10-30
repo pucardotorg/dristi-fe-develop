@@ -1,3 +1,5 @@
+import { toNationalMobile } from "@/lib/auth/mobile";
+
 export const PURPOSE_MAX_LENGTH = 1_000;
 export const DOCUMENT_MAX_LENGTH = 250;
 
@@ -88,14 +90,6 @@ export function createEmptyWitnessAddress(
     cityOrTown: "",
     address: "",
   };
-}
-
-export function normalizeMobileNumber(value: string): string {
-  const digits = value.replace(/\D/g, "");
-  if (digits.length === 12 && digits.startsWith("91")) {
-    return digits.slice(2);
-  }
-  return digits.slice(0, 10);
 }
 
 export function mobileDisplayValue(value: string): string {
@@ -204,7 +198,7 @@ export function validateWitnessContact(
   emailInput: string
 ): WitnessContactErrors {
   const errors: WitnessContactErrors = { addresses: {} };
-  const mobile = normalizeMobileNumber(mobileInput);
+  const mobile = toNationalMobile(mobileInput);
   const email = normalizeEmail(emailInput);
 
   if (mobileInput.trim()) {

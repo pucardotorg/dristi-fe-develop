@@ -25,6 +25,7 @@ import {
 import { nameList } from "@/lib/filing/format";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
 import type { Accused, AccusedType } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -44,7 +45,7 @@ import { FormCard, FormRow, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
 import { CorrectionInstance } from "@/components/filing/posture";
 import { OptionSelect, TextField } from "@/components/filing/inputs";
-import { SectionNotice } from "@/components/filing/notices";
+import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import {
   AddressBlockList,
   ContactList,
@@ -57,6 +58,7 @@ export function AccusedSection() {
   const { draft, update, hrefFor } = useFiling();
   const router = useRouter();
   const { prev, next } = neighbours("accused");
+  const { unsaved, retryUnsaved } = useCaseParties("accused");
 
   // Tracked by id, so removing an accused cannot leave the tabs pointing at a stale index.
   const [activeId, setActiveId] = React.useState(() => draft.accused[0]?.id ?? "");
@@ -100,6 +102,7 @@ export function AccusedSection() {
     const i = draft.accused.findIndex((x) => x.id === id);
     if (i < 0) return;
     const fallback = draft.accused[i + 1] ?? draft.accused[i - 1];
+    removePartyFromCase(draft.accused[i]);
     update((d) => {
       d.accused.splice(i, 1);
     });
@@ -152,6 +155,15 @@ export function AccusedSection() {
           title="Accused details"
           description="Add the person or entity this complaint is filed against."
         />
+
+        {unsaved.length > 0 ? (
+          <UnsavedNotice
+            labels={unsaved.map((x) => accusedLabel(x, draft.accused.indexOf(x)))}
+            error={unsaved[0].syncError ?? ""}
+            noun="details"
+            onRetry={() => void retryUnsaved()}
+          />
+        ) : null}
 
         <SectionTabs
           tabs={draft.accused.map((acc, i) => ({

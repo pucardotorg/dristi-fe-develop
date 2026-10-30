@@ -199,8 +199,6 @@ async function buildDraft(
         presentDate: trim(q.presentedOn),
         returnDate: trim(q.returnedOn),
         returnReason: trim(q.returnReason),
-        prefilled: {},
-        edited: {},
         ifscFetched: !!bank,
       };
     })
@@ -228,8 +226,6 @@ async function buildDraft(
       nonDeliveryReason: delivered === "no" ? trim(n.nonDeliveryReason) : "",
       paymentStatus: n.payment.status,
       partAmount: n.payment.status === "part" ? rupees(n.payment.amount) : "",
-      prefilled: {},
-      edited: {},
     };
   });
 

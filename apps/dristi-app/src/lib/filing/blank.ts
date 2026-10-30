@@ -105,18 +105,29 @@ export function blankComplainant(): Complainant {
     entAddr: blankAddress(),
     rep: blankRepresentative(),
     affidavit: AFFIDAVIT_PIP_TEMPLATE,
-    prefilled: {},
-    edited: {},
-    toReview: false,
   };
 }
 
-export const blankAdvocate = (profile?: UserProfile | null): Advocate => ({
-  id: uid("adv"),
-  forComplainants: [0],
-  barNumber: profile?.barNumber ?? "",
-  name: profile?.name ?? "",
-});
+/** A litigant filing is the first complainant, so it starts with their account's name and contact. */
+function firstComplainant(profile?: UserProfile | null): Complainant {
+  const c = blankComplainant();
+  if (profile?.role !== "LITIGANT") return c;
+  c.name = profile.name;
+  c.mobile = profile.mobile;
+  c.email = profile.email;
+  return c;
+}
+
+export const blankAdvocate =(profile?: UserProfile | null): Advocate => {
+  // Only an advocate filing their own case is the advocate; anyone else's name would be wrong here.
+  const self = profile?.role === "ADVOCATE" ? profile : null;
+  return {
+    id: uid("adv"),
+    forComplainants: [0],
+    barNumber: self?.barNumber ?? "",
+    name: self?.name ?? "",
+  };
+};
 
 export const blankAccused = (): Accused => ({
   id: uid("acc"),
@@ -141,8 +152,6 @@ export const blankCheque = (): ChequeDetails => ({
   presentDate: "",
   returnDate: "",
   returnReason: "",
-  prefilled: {},
-  edited: {},
   ifscFetched: false,
 });
 
@@ -159,8 +168,6 @@ export const blankNotice = (): DemandNotice => ({
   nonDeliveryReason: "",
   paymentStatus: "",
   partAmount: "",
-  prefilled: {},
-  edited: {},
 });
 
 export const blankJurisdiction = (): Jurisdiction => ({
@@ -393,13 +400,7 @@ function docRow(spec: DocSpec, existing: CaseDocument | undefined, slot?: Intake
     required: spec.required,
     // Rows that mirror an intake slot always show that slot's file; others keep their own.
     file: mirrored ? mirrored.file : existing?.file ?? null,
-    quality: mirrored
-      ? mirrored.file
-        ? mirrored.poor
-          ? "bad"
-          : "good"
-        : null
-      : existing?.quality ?? null,
+    quality: mirrored ? (mirrored.file ? "good" : null) : existing?.quality ?? null,
     digital: existing?.digital ?? false,
     intakeKey: spec.intakeKey,
     custom: false,
@@ -514,7 +515,7 @@ export function createBlankDraft(id: string, profile?: UserProfile | null): Fili
       parties: [intakePartyGroup(1)],
       supporting: intakeSupporting(),
     },
-    complainants: [blankComplainant()],
+    complainants: [firstComplainant(profile)],
     advocates: [blankAdvocate(profile)],
     accused: [blankAccused()],
     cheques: [blankCheque()],
@@ -682,10 +683,9 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
     c.entCinPanSkippedAt ??= null;
   }
   // "Why was the cheque issued?" was a prototype-only question that the nature of the
-  // debt already answers (LDN-1); it was retired, with any prefill marker it carried.
+  // debt already answers (LDN-1); it was retired.
   for (const n of draft.notices) {
     delete (n as DemandNotice & { whyIssued?: unknown }).whyIssued;
-    delete (n.prefilled as Record<string, unknown> | undefined)?.whyIssued;
   }
   // The upfront choice used to be one set of rounds for the whole case; it is now made
   // per accused (§19.3). Nothing is carried across: an old draft's single choice cannot

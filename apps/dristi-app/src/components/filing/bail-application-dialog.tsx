@@ -85,7 +85,7 @@ import {
   BAIL_SUBMISSION_ID,
   bailDialog,
   fillCopy,
-} from "@/lib/filing/content";
+} from "@/lib/bail/content";
 import { ADVOCATE_PROFILE_NAME } from "@/lib/advocate/content";
 import { cn } from "@/lib/utils";
 import { isAcceptedDocument } from "@/lib/uploads/accepted-document";

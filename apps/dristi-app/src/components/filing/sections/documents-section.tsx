@@ -30,6 +30,11 @@ import { forgetFile, formatBytes, useFilePreview } from "@/lib/filing/files";
 import { documentsProgress, intakeSlots } from "@/lib/filing/selectors";
 import { readability } from "@/lib/filing/readability";
 import { useFiling } from "@/lib/filing/store";
+import {
+  clearCaseDocument,
+  removeFromCase,
+  useCaseDocuments,
+} from "@/lib/filing/use-case-documents";
 import { useFieldPolicy } from "@/components/filing/field-policy";
 import type {
   CaseDocument,
@@ -138,6 +143,7 @@ export function DocumentsSection() {
   const groups = showGroup ? draft.documents.filter((g) => showGroup(g.id)) : draft.documents;
   const { remaining } = documentsProgress(groups);
   const { pick, input } = useFilePicker();
+  const { saveToCase } = useCaseDocuments();
 
   const [previewId, setPreviewId] = React.useState<string | null>(null);
   // Kept apart from `deleteOpen` so the dialog keeps its wording while it fades out.
@@ -178,6 +184,7 @@ export function DocumentsSection() {
     const doc = findDoc(groups, docId);
     if (!doc) return;
     const previous = doc.file;
+    const mirrored = doc.intakeKey ? resolveSlot(draft.intake, doc.intakeKey) : undefined;
 
     let ref: StoredFileRef;
     try {
@@ -194,10 +201,7 @@ export function DocumentsSection() {
         const slot = resolveSlot(d.intake, key);
         if (!slot) return;
         slot.file = ref;
-        slot.extract = undefined;
-        slot.poor = false;
-        slot.processing = false;
-        slot.error = undefined;
+        clearCaseDocument(slot);
         return;
       }
       const target = findDoc(d.documents, docId);
@@ -206,6 +210,10 @@ export function DocumentsSection() {
       target.quality = quality;
     });
     dropFile(previous);
+    if (mirrored) {
+      removeFromCase([mirrored]);
+      void saveToCase(mirrored.key, ref, file);
+    }
   };
 
   const uploadDoc = (docId: string) =>
@@ -219,7 +227,10 @@ export function DocumentsSection() {
 
   const removeDoc = (docId: string) => {
     if (previewId === docId) setPreviewId(null);
-    const previous = findDoc(groups, docId)?.file ?? null;
+    const target = findDoc(groups, docId);
+    const previous = target?.file ?? null;
+    const mirrored = target?.intakeKey ? resolveSlot(draft.intake, target.intakeKey) : undefined;
+    if (mirrored) removeFromCase([mirrored]);
     update((d) => {
       for (const group of d.documents) {
         const index = group.docs.findIndex((doc) => doc.id === docId);
@@ -230,10 +241,7 @@ export function DocumentsSection() {
           const slot = resolveSlot(d.intake, doc.intakeKey);
           if (slot) {
             slot.file = null;
-            slot.extract = undefined;
-            slot.poor = false;
-            slot.processing = false;
-            slot.error = undefined;
+            clearCaseDocument(slot);
           }
         } else if (doc.custom) {
           group.docs.splice(index, 1);

@@ -25,7 +25,7 @@ import {
 import { BondDocument, BondSignerList, type BondSigner } from "@/components/filing/bond-document";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import type { AccessCase } from "@/lib/access/content";
-import { bondCopy, fillCopy, BOND_ID } from "@/lib/filing/content";
+import { bondCopy, fillCopy, BOND_ID } from "@/lib/bail/content";
 import { Identifier } from "@/components/chrome/identifier";
 
 /**

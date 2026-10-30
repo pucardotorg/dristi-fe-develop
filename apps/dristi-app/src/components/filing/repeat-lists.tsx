@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { AddressFields } from "@/components/filing/address-fields";
 import { FormRow, FormSubhead, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
-import { ComboField, PrefixInput, TextField } from "@/components/filing/inputs";
+import { ComboField, MobileInput, TextField } from "@/components/filing/inputs";
 
 /** Icon-only remove control at the 40px floor. */
 export function RemoveButton({
@@ -68,18 +68,10 @@ export function ContactList({
         <div key={i} className="flex items-end gap-3">
           <FormRow className="flex-1">
             <FormField label="Mobile number" optional={optional}>
-              <PrefixInput
-                prefix="+91"
+              <MobileInput
                 value={c.mobile}
-                // A +91 mobile is ten digits; keep only digits and cap the length
-                // so the field can never overflow (owner, Sept 2).
-                onChange={(v) =>
-                  setAt(i, { mobile: v.replace(/\D/g, "").slice(0, 10) })
-                }
+                onChange={(v) => setAt(i, { mobile: v })}
                 placeholder={mobilePlaceholder}
-                inputMode="numeric"
-                maxLength={10}
-                autoComplete="tel-national"
               />
             </FormField>
             <FormField label={emailLabel} optional={optional}>
@@ -235,13 +227,7 @@ export function RepresentativeList({
           </FormRow>
           <FormRow>
             <FormField label="Mobile number" optional>
-              <PrefixInput
-                prefix="+91"
-                value={r.mobile}
-                onChange={(v) => setAt(i, { mobile: v })}
-                placeholder="10-digit number"
-                inputMode="numeric"
-              />
+              <MobileInput value={r.mobile} onChange={(v) => setAt(i, { mobile: v })} />
             </FormField>
             <FormField label="Email address" optional>
               <TextField

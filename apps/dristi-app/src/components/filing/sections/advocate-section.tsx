@@ -4,12 +4,14 @@
  * Advocate details — the advocates on the Vakalatnama, and which complainant each acts for.
  *
  * An advocate is found once, not described twice: one search box takes either a name or
- * a bar number and looks both up in the register (`lib/filing/registry.ts` — a stand-in
- * for the real one). What it finds is then shown as a result — name, number and bar
- * council — so the spelling that reaches the Vakalatnama is the register's rather than a
- * re-keying of it. An advocate the register does not list is entered by hand instead, one
- * click away. An advocate filing for themselves can fill their own row from their profile
- * in one click, and the panel beside the form reads the uploaded Vakalatnama.
+ * a bar number and looks both up among the advocates approved on the court portal
+ * (`GET /advocates?search=`). What it finds is then shown as a result — name and number —
+ * so the spelling that reaches the Vakalatnama is the register's rather than a re-keying
+ * of it, and the advocate's backend id is kept to put them on the case. An advocate filing
+ * for themselves can fill their own row from their profile in one click, and the panel
+ * beside the form shows the uploaded Vakalatnama.
+ *
+ * The advocates are saved to the case as the step closes (`useCaseAdvocates`).
  */
 
 import * as React from "react";
@@ -17,12 +19,12 @@ import Link from "next/link";
 import { CheckIcon, ChevronDownIcon, PlusIcon, UserRoundIcon } from "lucide-react";
 
 import { blankAdvocate } from "@/lib/filing/blank";
-import { useProfile } from "@/lib/filing/profile";
 import {
-  findAdvocate,
-  searchAdvocates,
-  type RegisteredAdvocate,
-} from "@/lib/filing/registry";
+  ADVOCATE_SEARCH_MIN_LENGTH,
+  caseFilingApi,
+  type FoundAdvocate,
+} from "@/lib/filing/data/cases-api";
+import { useProfile } from "@/lib/filing/profile";
 import {
   complainantChoices,
   isPartyInPerson,
@@ -31,6 +33,7 @@ import {
 } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { removeAdvocateFromCase, useCaseAdvocates } from "@/lib/filing/use-case-advocates";
 import { Identifier } from "@/components/chrome/identifier";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +48,7 @@ import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
 import { ComboField } from "@/components/filing/inputs";
-import { SectionNotice } from "@/components/filing/notices";
+import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { RemoveButton } from "@/components/filing/repeat-lists";
 import {
   SourcePanel,
@@ -60,6 +63,7 @@ export function AdvocateSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("advocate");
   const { profile } = useProfile();
+  const { unsaved, retryUnsaved } = useCaseAdvocates();
 
   const advocates = draft.advocates;
   const choices = complainantChoices(draft.complainants);
@@ -86,25 +90,30 @@ export function AdvocateSection() {
   const [sourceOpen, setSourceOpen] = useSourceOpenState();
 
   /**
-   * The rows the register field offers, live-searched as the person types — in either
-   * the bar number box or the name box, since either one is a real way to search for an
-   * advocate and the register is keyed on neither exclusively. `searchAdvocates` already
-   * matches on both; what changed is that the screen now asks it again on every
-   * keystroke instead of filtering one list fetched at mount, which used to leave rows
-   * past the first page unreachable no matter what was typed.
+   * The advocates the search box offers, searched again on every keystroke — by name or
+   * bar number alike, since either is a real way to find an advocate. The backend needs
+   * `ADVOCATE_SEARCH_MIN_LENGTH` characters before it searches; only the latest search's answer is shown.
    */
-  const [register, setRegister] = React.useState<RegisteredAdvocate[]>([]);
-  React.useEffect(() => {
-    let live = true;
-    void searchAdvocates("").then((rows) => {
-      if (live) setRegister(rows);
-    });
-    return () => {
-      live = false;
-    };
-  }, []);
-  const searchRegister = React.useCallback((query: string) => {
-    void searchAdvocates(query).then(setRegister);
+  const [register, setRegister] = React.useState<FoundAdvocate[]>([]);
+  const [searchFailed, setSearchFailed] = React.useState(false);
+  const latestSearch = React.useRef<AbortController | null>(null);
+  const searchRegister = React.useCallback(async (query: string) => {
+    latestSearch.current?.abort();
+    const controller = new AbortController();
+    latestSearch.current = controller;
+    try {
+      const rows = await caseFilingApi.searchAdvocates(query, controller.signal);
+      if (controller.signal.aborted) return [];
+      setRegister(rows);
+      setSearchFailed(false);
+      return rows;
+    } catch {
+      if (!controller.signal.aborted) {
+        setRegister([]);
+        setSearchFailed(true);
+      }
+      return [];
+    }
   }, []);
 
   /**
@@ -125,14 +134,56 @@ export function AdvocateSection() {
   );
   const vakalatnama = partySourceSlot(draft, vakalatnamaParty, "vakalatnama");
 
-  /** The signed-in person filling in their own row — name and bar number in one action. */
-  const canUseProfile = !!(profile?.name.trim() || profile?.barNumber.trim());
-  const fillFromProfile = (index: number) =>
-    update((d) => {
-      if (!profile) return;
-      d.advocates[index].name = profile.name;
-      d.advocates[index].barNumber = profile.barNumber;
-    });
+  /** By row id, not index: a search can come back after a row above it was removed. */
+  const choose = React.useCallback(
+    (rowId: string, adv: FoundAdvocate) =>
+      update((d) => {
+        const row = d.advocates.find((a) => a.id === rowId);
+        if (!row) return;
+        row.advocateId = adv.id;
+        row.barNumber = adv.barNumber;
+        row.name = adv.name;
+      }),
+    [update]
+  );
+
+  /**
+   * Put the search's exact bar-number match in a row, since only the search gives the id
+   * that puts an advocate on the case; without one, the results are left open to pick from.
+   */
+  const takeBarNumberMatch = React.useCallback(
+    (rowId: string, barNumber: string, rows: FoundAdvocate[]) => {
+      const match = rows.find((r) => r.barNumber.toUpperCase() === barNumber.toUpperCase());
+      setQuery(rowId, match ? "" : barNumber);
+      if (match) choose(rowId, match);
+    },
+    [choose]
+  );
+
+  /** The signed-in advocate filling in their own row. */
+  const canUseProfile = !!profile?.barNumber.trim();
+  const fillFromProfile = async (rowId: string) => {
+    const barNumber = profile?.barNumber.trim() ?? "";
+    takeBarNumberMatch(rowId, barNumber, await searchRegister(barNumber));
+  };
+
+  /*
+   * A row named but never found through the search — the signed-in advocate's own card,
+   * prefilled when the filing started, or a draft from before the search — is looked up
+   * once as the step opens, so it can go on the case.
+   */
+  const lookedUp = React.useRef(false);
+  React.useEffect(() => {
+    if (lookedUp.current) return;
+    lookedUp.current = true;
+    const row = draft.advocates.find((a) => !a.advocateId && a.barNumber.trim());
+    if (!row) return;
+    const barNumber = row.barNumber.trim();
+    caseFilingApi
+      .searchAdvocates(barNumber)
+      .then((rows) => takeBarNumberMatch(row.id, barNumber, rows))
+      .catch(() => setQuery(row.id, barNumber));
+  }, [draft.advocates, takeBarNumberMatch]);
 
   const toggleComplainant = (index: number, choice: number) =>
     update((d) => {
@@ -155,11 +206,13 @@ export function AdvocateSection() {
       d.advocates.push(blankAdvocate());
     });
 
-  const removeAdvocate = (index: number) =>
+  const removeAdvocate = (index: number) => {
+    if (advocates.length <= 1) return;
+    removeAdvocateFromCase(advocates[index]);
     update((d) => {
-      if (d.advocates.length <= 1) return;
       d.advocates.splice(index, 1);
     });
+  };
 
   return (
     <>
@@ -173,6 +226,15 @@ export function AdvocateSection() {
             ) : null
           }
         />
+
+        {unsaved.length > 0 ? (
+          <UnsavedNotice
+            labels={unsaved.map((x) => x.name || `Advocate ${advocates.indexOf(x) + 1}`)}
+            error={unsaved[0].syncError ?? ""}
+            noun="details"
+            onRetry={() => void retryUnsaved()}
+          />
+        ) : null}
 
         {/* Stated, not enforced: appearing in person is the complainant's own answer on
             the previous screen, so this reports the consequence rather than blocking. */}
@@ -199,8 +261,7 @@ export function AdvocateSection() {
           </SectionNotice>
         ) : null}
 
-        {/* The register is a stand-in and incomplete, so the notice states the
-            requirement without implying this screen enforces it. */}
+        {/* Only approved advocates are found by the search below; the notice says why. */}
         {allInPerson || draft.dismissed.advocateInfo ? null : (
           <SectionNotice
             variant="neutral"
@@ -219,8 +280,8 @@ export function AdvocateSection() {
           // Indices are kept even if a complainant is removed or turns party-in-person;
           // only the ones an advocate may still act for count as selected.
           const selected = a.forComplainants.filter((k) => represented.includes(k));
-          // A row filled from the register — the source of truth for "already found".
-          const onRegister = findAdvocate(a.barNumber);
+          // Found through the search: the backend id is what "already found" means.
+          const found = a.advocateId;
           const allSelected =
             represented.length > 0 && selected.length === represented.length;
           // "All complainants" is only true when none were held back for appearing in
@@ -310,7 +371,7 @@ export function AdvocateSection() {
                 two boxes. Only advocates on the register can appear on a filing, so the
                 register is the whole path — there is nothing to type by hand.
               */}
-              {onRegister ? (
+              {found ? (
                 <FormField asGroup label="Advocate" required>
                   <div className="flex items-start gap-3 rounded-lg bg-surface-sunken p-4">
                     <span
@@ -321,14 +382,10 @@ export function AdvocateSection() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-body font-semibold text-foreground">
-                        {onRegister.name}
+                        {a.name}
                       </p>
                       <p className="truncate text-caption text-muted-foreground">
-                        <Identifier
-                          value={onRegister.barNumber}
-                          label="bar registration"
-                        />{" "}
-                        · {onRegister.bar}
+                        <Identifier value={a.barNumber} label="bar registration" />
                       </p>
                     </div>
                     <Button
@@ -339,6 +396,7 @@ export function AdvocateSection() {
                       onClick={() => {
                         setQuery(a.id, "");
                         update((d) => {
+                          d.advocates[i].advocateId = undefined;
                           d.advocates[i].barNumber = "";
                           d.advocates[i].name = "";
                         });
@@ -354,22 +412,18 @@ export function AdvocateSection() {
                     value={queries[a.id] ?? ""}
                     onChange={(v: string) => {
                       setQuery(a.id, v);
-                      searchRegister(v);
+                      void searchRegister(v);
                     }}
                     items={register}
                     filter={null}
                     onSelect={(item) => {
-                      const adv = item as RegisteredAdvocate;
                       setQuery(a.id, "");
-                      update((d) => {
-                        d.advocates[i].barNumber = adv.barNumber;
-                        d.advocates[i].name = adv.name;
-                      });
+                      choose(a.id, item as FoundAdvocate);
                     }}
-                    itemKey={(item) => (item as RegisteredAdvocate).barNumber}
-                    itemLabel={(item) => (item as RegisteredAdvocate).name}
+                    itemKey={(item) => (item as FoundAdvocate).id}
+                    itemLabel={(item) => (item as FoundAdvocate).name}
                     renderItem={(item) => {
-                      const adv = item as RegisteredAdvocate;
+                      const adv = item as FoundAdvocate;
                       return (
                         <span className="flex min-w-0 flex-col">
                           <span className="truncate font-medium">{adv.name}</span>
@@ -379,14 +433,19 @@ export function AdvocateSection() {
                               value={adv.barNumber}
                               label="bar registration"
                               copyable={false}
-                            />{" "}
-                            · {adv.bar}
+                            />
                           </span>
                         </span>
                       );
                     }}
                     placeholder="Name or bar number"
-                    emptyLabel="No one on the register by that name or number."
+                    emptyLabel={
+                      searchFailed
+                        ? "We couldn't search right now. Try again."
+                        : (queries[a.id] ?? "").trim().length < ADVOCATE_SEARCH_MIN_LENGTH
+                          ? "Start typing an advocate's name or Bar number"
+                          : "No approved advocate by that name or number."
+                    }
                     ariaLabel="Advocate"
                   />
                 </FormField>
@@ -401,7 +460,7 @@ export function AdvocateSection() {
                   // Six identical "Use my details" in a row otherwise; the visible label
                   // stays inside the accessible name, so voice control still works.
                   aria-label={`Use my details for advocate ${i + 1}`}
-                  onClick={() => fillFromProfile(i)}
+                  onClick={() => void fillFromProfile(a.id)}
                 >
                   <UserRoundIcon data-icon="inline-start" aria-hidden />
                   Use my details

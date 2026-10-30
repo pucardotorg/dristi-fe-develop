@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { CheckIcon, TriangleAlertIcon } from "lucide-react";
+import { TriangleAlertIcon } from "lucide-react";
 
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 
@@ -26,6 +26,8 @@ import {
 } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { withoutComplainant } from "@/lib/filing/advocates";
+import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
 import type {
   Address,
   Complainant,
@@ -63,8 +65,8 @@ import {
   useCorrectionInstanceRequest,
   useInCorrection,
 } from "@/components/filing/posture";
-import { OptionSelect, PrefixInput, TextField } from "@/components/filing/inputs";
-import { InfoWell, SectionNotice } from "@/components/filing/notices";
+import { MobileInput, OptionSelect, TextField } from "@/components/filing/inputs";
+import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { RichTextEditor } from "@/components/filing/rich-text-editor";
 import { SectionTabs } from "@/components/filing/section-tabs";
 import { Segmented, YesNoSegmented } from "@/components/filing/segmented";
@@ -94,6 +96,7 @@ const COMPLAINANT_TYPES: { value: ComplainantType; label: string }[] = [
 export function ComplainantSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("complainant");
+  const { unsaved, retryUnsaved } = useCaseParties("complainant");
 
   const complainants = draft.complainants;
   const [activeIndex, setActiveIndex] = React.useState(0);
@@ -224,8 +227,10 @@ export function ComplainantSection() {
 
   const removeComplainant = (index: number) => {
     if (complainants.length <= 1) return;
+    removePartyFromCase(complainants[index]);
     update((d) => {
       d.complainants.splice(index, 1);
+      withoutComplainant(d.advocates, index);
     });
     setActiveIndex(Math.min(active, complainants.length - 2));
   };
@@ -245,12 +250,8 @@ export function ComplainantSection() {
   /** The document in the rail, named as a person would name it, not by its file name. */
   const sourceDocLabel =
     sourceSlot?.label ?? PARTY_DOC_LABELS[shownDoc ?? "id-proof"];
-  const mobile10 = c.mobile.replace(/\D/g, "");
   /** Appearing in person settles the PoA question — see the note on the control. */
   const inPerson = c.pip === "yes";
-
-  /** Nothing to verify until there is a whole number to verify. */
-  const canVerify = mobile10.length === 10;
 
   /**
    * One step, not two: the OTP is what authorises reading a saved record back onto the
@@ -289,6 +290,15 @@ export function ComplainantSection() {
           title="Complainant details"
           description="Who is bringing this complaint, and where the court can reach them."
         />
+
+        {unsaved.length > 0 ? (
+          <UnsavedNotice
+            labels={unsaved.map((x) => complainantLabel(x, complainants.indexOf(x)))}
+            error={unsaved[0].syncError ?? unsaved[0].poaSyncError ?? ""}
+            noun="details"
+            onRetry={() => void retryUnsaved()}
+          />
+        ) : null}
 
         <SectionTabs
           tabs={complainants.map((cp, i) => ({
@@ -356,14 +366,7 @@ export function ComplainantSection() {
                   beside. Both are how this person is reached; they are asked together. */}
               <FormRow>
                 <FormField label="Mobile number" required>
-                  <PrefixInput
-                    prefix="+91"
-                    value={c.mobile}
-                    onChange={setMobile}
-                    placeholder="10-digit number"
-                    inputMode="numeric"
-                    autoComplete="tel-national"
-                  />
+                  <MobileInput value={c.mobile} onChange={setMobile} />
                 </FormField>
                 <FormField label="Email address" name="email" optional>
                   <TextField
@@ -477,12 +480,9 @@ export function ComplainantSection() {
                   <FormSubhead>PoA holder details</FormSubhead>
                   <HalfWidth>
                     <FormField label="PoA holder mobile number" required>
-                      <PrefixInput
-                        prefix="+91"
+                      <MobileInput
                         value={c.poaHolder.mobile}
                         onChange={(v) => setPoa("mobile", v)}
-                        placeholder="10-digit number"
-                        inputMode="numeric"
                       />
                     </FormField>
                   </HalfWidth>
@@ -554,13 +554,7 @@ export function ComplainantSection() {
               </FormRow>
               <FormRow>
                 <FormField label="Contact number" optional>
-                  <PrefixInput
-                    prefix="+91"
-                    value={c.entPhone}
-                    onChange={(v) => set("entPhone", v)}
-                    placeholder="10-digit number"
-                    inputMode="numeric"
-                  />
+                  <MobileInput value={c.entPhone} onChange={(v) => set("entPhone", v)} />
                 </FormField>
                 <FormField label="Email address" optional>
                   <TextField
@@ -633,13 +627,7 @@ export function ComplainantSection() {
             >
               <HalfWidth>
                 <FormField label="Mobile number" required>
-                  <PrefixInput
-                    prefix="+91"
-                    value={c.rep.mobile}
-                    onChange={(v) => setRep("mobile", v)}
-                    placeholder="10-digit number"
-                    inputMode="numeric"
-                  />
+                  <MobileInput value={c.rep.mobile} onChange={(v) => setRep("mobile", v)} />
                 </FormField>
               </HalfWidth>
               <FormRow>

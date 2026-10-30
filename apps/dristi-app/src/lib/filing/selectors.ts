@@ -381,7 +381,8 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
     case "advocate":
       return (
         draft.complainants.every((c) => c.pip === "yes") ||
-        draft.advocates.some((a) => a.barNumber.trim() && a.name.trim())
+        // Found through the search: only that gives the id that puts them on the case.
+        draft.advocates.some((a) => a.advocateId && a.barNumber.trim() && a.name.trim())
       );
     case "accused":
       return draft.accused.length > 0 && draft.accused.every(accusedComplete);

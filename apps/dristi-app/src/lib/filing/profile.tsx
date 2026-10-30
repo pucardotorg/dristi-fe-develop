@@ -2,8 +2,8 @@
 
 /**
  * The signed-in person, as the filing flow needs to know them: a name to greet, a mobile
- * to mark "you" among the signatories, and a name and Bar number to prefill the advocate
- * card. Read once from the account (`GET /users/me`) when the filing area mounts.
+ * to mark "you" among the signatories, and, by role, the first complainant (a litigant)
+ * or advocate card (an advocate) to prefill. Read once from the account (`GET /users/me`) when the filing area mounts.
  * `useProfile()` is the single read point.
  */
 
@@ -13,7 +13,13 @@ import { getAuthService } from "@/lib/auth";
 
 import type { UserProfile } from "./types";
 
-export const EMPTY_PROFILE: UserProfile = { name: "", mobile: "", email: "", barNumber: "" };
+export const EMPTY_PROFILE: UserProfile = {
+  role: null,
+  name: "",
+  mobile: "",
+  email: "",
+  barNumber: "",
+};
 
 type ProfileContextValue = {
   /** `null` until the account has been read. */
@@ -34,6 +40,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       .then((account) => {
         if (cancelled) return;
         setProfile({
+          role: account.role,
           name: account.name ?? "",
           mobile: account.mobile,
           email: account.email ?? "",

@@ -22,10 +22,7 @@
 import type { DefectTarget } from "@/lib/tasks/types";
 import type { FilingDraft, StepId } from "./types";
 
-type Row = Record<string, unknown> & {
-  prefilled?: Record<string, boolean>;
-  edited?: Record<string, boolean>;
-};
+type Row = Record<string, unknown>;
 
 /**
  * Every field a scrutiny defect can point at today: the step, and the keys whose
@@ -148,17 +145,12 @@ export function targetControlKind(target: DefectTarget): TargetControlKind {
   return "text";
 }
 
-/**
- * Write a corrected value at this target. Also clears the machine-read marker the way an
- * ordinary edit does — a value a person has just corrected is no longer "read, unverified"
- * (`foundations/colors`: `prefilled`).
- */
+/** Write a corrected value at this target. */
 export function writeTarget(draft: FilingDraft, target: DefectTarget, value: string): void {
   if (target.kind !== "field") return;
   const row = rowFor(draft, target);
   if (!row) return;
   row[target.field] = value;
-  if (row.edited) row.edited[target.field] = true;
   // A corrected IFSC retires whatever the last registry lookup filled from it.
   if (target.step === "cheque" && target.field === "ifsc") row.ifscFetched = false;
 }

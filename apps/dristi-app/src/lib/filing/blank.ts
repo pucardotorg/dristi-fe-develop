@@ -107,12 +107,26 @@ export function blankComplainant(): Complainant {
   };
 }
 
-export const blankAdvocate = (profile?: UserProfile | null): Advocate => ({
-  id: uid("adv"),
-  forComplainants: [0],
-  barNumber: profile?.barNumber ?? "",
-  name: profile?.name ?? "",
-});
+/** A litigant filing is the first complainant, so it starts with their account's name and contact. */
+function firstComplainant(profile?: UserProfile | null): Complainant {
+  const c = blankComplainant();
+  if (profile?.role !== "LITIGANT") return c;
+  c.name = profile.name;
+  c.mobile = profile.mobile;
+  c.email = profile.email;
+  return c;
+}
+
+export const blankAdvocate =(profile?: UserProfile | null): Advocate => {
+  // Only an advocate filing their own case is the advocate; anyone else's name would be wrong here.
+  const self = profile?.role === "ADVOCATE" ? profile : null;
+  return {
+    id: uid("adv"),
+    forComplainants: [0],
+    barNumber: self?.barNumber ?? "",
+    name: self?.name ?? "",
+  };
+};
 
 export const blankAccused = (): Accused => ({
   id: uid("acc"),
@@ -416,7 +430,7 @@ export function createBlankDraft(id: string, profile?: UserProfile | null): Fili
       parties: [intakePartyGroup(1)],
       supporting: intakeSupporting(),
     },
-    complainants: [blankComplainant()],
+    complainants: [firstComplainant(profile)],
     advocates: [blankAdvocate(profile)],
     accused: [blankAccused()],
     cheques: [blankCheque()],

@@ -10,7 +10,7 @@ import { CheckCircle2Icon } from "lucide-react";
 
 import { FormCard, FormRow } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
-import { TextField, PrefixInput, ComboField } from "@/components/filing/inputs";
+import { TextField, MobileInput, ComboField } from "@/components/filing/inputs";
 import { Segmented } from "@/components/filing/segmented";
 import { AddressFields } from "@/components/filing/address-fields";
 import { IdUpload } from "@/components/vakalatnama/id-upload";
@@ -139,13 +139,10 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
               </FormRow>
 
               <FormField label="Mobile number" required>
-                <PrefixInput
-                  prefix="+91"
+                <MobileInput
                   value={a.mobile}
-                  onChange={(v) => set({ mobile: v.replace(/\D/g, "").slice(0, 10) })}
+                  onChange={(v) => set({ mobile: v })}
                   placeholder="10-digit mobile"
-                  inputMode="numeric"
-                  autoComplete="tel-national"
                   className="max-w-xs"
                 />
               </FormField>

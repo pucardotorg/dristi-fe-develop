@@ -23,8 +23,14 @@ export type SaveState = "saving" | "saved" | "error";
 type FilingContextValue = {
   draft: FilingDraft;
   saveState: SaveState;
-  /** Mutate a clone of the draft; the store commits and persists it. */
+  /**
+   * Mutate a clone of the draft; the store commits and persists it. Still works once the
+   * filing has closed, for a backend save that finishes after the person left: the change
+   * is then written straight to the repository.
+   */
   update: (recipe: (draft: FilingDraft) => void) => void;
+  /** The newest draft, including changes not rendered yet and after the filing closed. */
+  latest: () => FilingDraft;
   /** Route to a step of this draft. */
   hrefFor: (step: StepId) => string;
   /** Persist immediately (used before navigating away from a critical action). */
@@ -160,8 +166,30 @@ export function FilingProvider({
     };
   }, [flush]);
 
+  const mountedRef = React.useRef(false);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const commit = React.useCallback(
     (recipe: (d: FilingDraft) => void) => {
+      if (!mountedRef.current) {
+        // Closed: nothing renders it any more, but the next visit reads it back.
+        const d = draftRef.current;
+        if (!d) return;
+        const next = structuredClone(d);
+        recipe(next);
+        next.documents = buildDocumentGroups(next);
+        next.updatedAt = new Date().toISOString();
+        draftRef.current = next;
+        getRepository()
+          .putDraft(next)
+          .catch((error) => console.warn("[filing] couldn't save the draft after closing", error));
+        return;
+      }
       setState((prev: LoadState) => {
         if (prev.status !== "ready") return prev;
         const next = structuredClone(prev.draft);
@@ -201,9 +229,15 @@ export function FilingProvider({
   }, [draftId]);
 
   const draft = state.status === "ready" ? state.draft : null;
+  const latest = React.useCallback(() => {
+    // Set before `draft` is ready to render, so it is never read empty.
+    const d = draftRef.current;
+    if (!d) throw new Error("The filing draft has not loaded.");
+    return d;
+  }, []);
   const value = React.useMemo<FilingContextValue | null>(
-    () => (draft ? { draft, saveState, update: commit, hrefFor, flush, discard } : null),
-    [draft, saveState, commit, hrefFor, flush, discard]
+    () => (draft ? { draft, saveState, update: commit, latest, hrefFor, flush, discard } : null),
+    [draft, saveState, commit, latest, hrefFor, flush, discard]
   );
 
   if (state.status === "loading") return <>{fallback}</>;

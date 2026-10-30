@@ -117,6 +117,131 @@ describe("deleteDocument", () => {
   });
 });
 
+describe("parties", () => {
+  const party = {
+    person: { name: "Asha" },
+    address: { line1: "12 MG Road" },
+    is_party_in_person: false,
+    additional_details: {},
+  };
+
+  it("adds a complainant or an accused on the role's own path", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_participant_id: "p1", role: "ACCUSED", meta: META }, { status: 201 })
+    );
+    assert.equal(await cases.addParty("c0ffee", "accused", party), "p1");
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/accused");
+    assert.equal(calls[0].method, "POST");
+    assert.deepEqual(calls[0].body, party);
+  });
+
+  it("refuses a response without a participant id", async () => {
+    const { cases } = setup(() => Response.json({ meta: META }, { status: 201 }));
+    await assert.rejects(cases.addParty("c0ffee", "complainants", party));
+  });
+
+  it("patches and removes a participant by its own id", async () => {
+    const { cases, calls } = setup((call) =>
+      call.method === "DELETE"
+        ? new Response(null, { status: 204 })
+        : Response.json({ case_participant_id: "p1", meta: META })
+    );
+    await cases.updateParticipant("p1", {
+      name_at_filing: "Asha",
+      phone_number_at_filing: null,
+      gender_at_filing: null,
+      age_at_filing: null,
+      address: {},
+      is_party_in_person: false,
+      additional_details: {},
+    });
+    await cases.removeParticipant("p1");
+    assert.equal(calls[0].url, "/api/v1/case-participants/p1");
+    assert.equal(calls[0].method, "PATCH");
+    assert.equal(calls[1].url, "/api/v1/case-participants/p1");
+    assert.equal(calls[1].method, "DELETE");
+  });
+});
+
+describe("advocates", () => {
+  it("searches approved advocates and reads the page of results", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({
+        count: 1,
+        next: null,
+        previous: null,
+        results: [{ id: "adv-1", name: "Anitha R", bar_registration_id: "K/0421/2004" }],
+        meta: META,
+      })
+    );
+    assert.deepEqual(await cases.searchAdvocates(" K/04 "), [
+      { id: "adv-1", name: "Anitha R", barNumber: "K/0421/2004" },
+    ]);
+    assert.equal(calls[0].url, "/api/v1/advocates?search=K%2F04");
+  });
+
+  it("does not search on fewer than two characters", async () => {
+    const { cases, calls } = setup(() => Response.json({ results: [], meta: META }));
+    assert.deepEqual(await cases.searchAdvocates(" o "), []);
+    assert.equal(calls.length, 0);
+  });
+
+  it("searches on two characters, for a short name", async () => {
+    const { cases, calls } = setup(() => Response.json({ results: [], meta: META }));
+    await cases.searchAdvocates("om");
+    assert.equal(calls[0].url, "/api/v1/advocates?search=om");
+  });
+
+  it("adds one advocate for several clients and returns the representations", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        { representation_ids: ["r1", "r2"], advocate_id: "adv-1", meta: META },
+        { status: 201 }
+      )
+    );
+    assert.deepEqual(await cases.addAdvocate("c0ffee", "adv-1", ["p1", "p2"]), ["r1", "r2"]);
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/advocates");
+    assert.deepEqual(calls[0].body, { advocate_id: "adv-1", client_participant_ids: ["p1", "p2"] });
+  });
+
+  it("ends a representation by its own id", async () => {
+    const { cases, calls } = setup(() => new Response(null, { status: 204 }));
+    await cases.endRepresentation("r1");
+    assert.equal(calls[0].url, "/api/v1/representations/r1");
+    assert.equal(calls[0].method, "DELETE");
+  });
+});
+
+describe("PoA holders", () => {
+  it("adds a holder for the parties they act for and returns the mandates", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        { case_participant_id: "h1", poa_mandate_ids: ["m1"], role: "POA_HOLDER", meta: META },
+        { status: 201 }
+      )
+    );
+    const holder = {
+      person: { name: "Suresh Patel" },
+      address: { line1: "12 MG Road" },
+      represented_participant_ids: ["p1"],
+      additional_details: {},
+    };
+    assert.deepEqual(await cases.addPoaHolder("c0ffee", holder), {
+      participantId: "h1",
+      mandateIds: ["m1"],
+    });
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/poa-holders");
+    assert.deepEqual(calls[0].body, holder);
+  });
+
+  it("revokes a mandate by its own id", async () => {
+    const { cases, calls } = setup(() => new Response(null, { status: 204 }));
+    await cases.revokePoaMandate("m1");
+    assert.equal(calls[0].url, "/api/v1/poa-mandates/m1");
+    assert.equal(calls[0].method, "DELETE");
+  });
+});
+
 describe("caseFilingErrorMessage", () => {
   it("names a submitted case before anything else", () => {
     assert.match(caseFilingErrorMessage(httpError(409, ["E07001"])), /submitted/);

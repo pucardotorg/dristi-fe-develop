@@ -57,7 +57,7 @@ import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { PANEL_CLASS } from "@/components/filing/form-card";
-import { SectionNotice } from "@/components/filing/notices";
+import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { useInCorrection } from "@/components/filing/posture";
 import { DocumentCard } from "@/components/filing/upload/document-card";
 import { IntakeSlotRow } from "@/components/filing/upload/slot-row";
@@ -420,25 +420,12 @@ export function UploadSection() {
         ) : null}
 
         {unsaved.length > 0 ? (
-          <SectionNotice
-            variant="destructive"
-            announce="assertive"
-            title={
-              unsaved.length === 1
-                ? `${unsaved[0].label} wasn’t saved to your case`
-                : `${unsaved.length} documents weren’t saved to your case`
-            }
-          >
-            <span className="flex flex-col items-start gap-2">
-              <span>
-                {unsaved[0].syncError} The file{unsaved.length === 1 ? " is" : "s are"} still
-                in this browser.
-              </span>
-              <Button type="button" variant="outline" size="sm" onClick={() => void retryUnsaved()}>
-                Try again
-              </Button>
-            </span>
-          </SectionNotice>
+          <UnsavedNotice
+            labels={unsaved.map((s) => s.label)}
+            error={unsaved[0].syncError ?? ""}
+            noun="file"
+            onRetry={() => void retryUnsaved()}
+          />
         ) : null}
 
         <div className="flex flex-col gap-8">
@@ -602,7 +589,7 @@ export function UploadSection() {
         </ChromeDialogContent>
       </Dialog>
 
-      {/* Removals delete stored files and their machine-read values — always ask first. */}
+      {/* Removals delete stored files and take them off the case — always ask first. */}
       <ConfirmDialog
         open={!!confirmCopy}
         onOpenChange={(open) => {

@@ -5,7 +5,7 @@
  * case as a case document; clearing or replacing a slot takes the old one off. The copy
  * in this browser stays — reading and previews use it, and there is no download endpoint.
  *
- * A draft without a `caseId` (sample and batch drafts, older drafts) is never sent anywhere.
+ * A draft without a `caseId` (batch drafts, older drafts) is never sent anywhere.
  */
 
 import * as React from "react";

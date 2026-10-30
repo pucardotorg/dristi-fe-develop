@@ -75,8 +75,8 @@ function DrawerRow({
 }
 
 /**
- * Right-hand drawer listing everything uploaded at intake, with the machine-read status
- * per file. Opened from the sidebar's "View uploaded documents".
+ * Right-hand drawer listing everything uploaded at intake. Opened from the sidebar's
+ * "View uploaded documents".
  */
 export function UploadedDocsDrawer({
   open,

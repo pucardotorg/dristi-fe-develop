@@ -10,6 +10,8 @@
  * `./data/` persists it locally today; a backend replaces that layer, not this shape.
  */
 
+import type { BackendRole } from "@/lib/auth/types";
+
 export type YesNo = "yes" | "no";
 export type ISODate = string; // "yyyy-mm-dd" | ""
 
@@ -104,6 +106,30 @@ export type Intake = {
 
 export type ComplainantType = "individual" | "institution";
 
+/**
+ * Where a complainant, an accused or a witness is saved on the backend case. An
+ * institution accused is saved once per person summoned for it (S-141), so a party can
+ * hold several.
+ */
+export type SavedParty = {
+  /** The backend participants, in the order of the bodies they were saved from. */
+  caseParticipantIds?: string[];
+  /** Each saved body as JSON — unchanged parties are not sent again. */
+  savedBodies?: string[];
+  /** Saving to the backend case failed; the details are still in this browser. */
+  syncError?: string;
+};
+
+/** Where a complainant's PoA holder is saved on the backend case. */
+export type SavedPoaHolder = {
+  participantId: string;
+  mandateIds: string[];
+  /** The complainant participant the mandate was granted for. */
+  forParticipantId: string;
+  /** The saved body as JSON — an unchanged holder is not sent again. */
+  body: string;
+};
+
 export type PoaHolder = {
   mobile: string;
   name: string;
@@ -138,7 +164,7 @@ export type OathVideoUpload = {
   durationSeconds: number | null;
 };
 
-export type Complainant = {
+export type Complainant = SavedParty & {
   id: string;
   pip: YesNo;
   type: ComplainantType;
@@ -159,6 +185,9 @@ export type Complainant = {
   perm: Address;
   poa: YesNo;
   poaHolder: PoaHolder;
+  savedPoaHolder?: SavedPoaHolder;
+  /** Saving the PoA holder to the backend case failed, or is waiting on a field. */
+  poaSyncError?: string;
   entType: string;
   entName: string;
   /**
@@ -182,12 +211,24 @@ export type Complainant = {
 
 /* ─────────────────────────────────── Advocate ───────────────────────────────────── */
 
-export type Advocate = {
+/** Where an advocate is saved on the backend case: one representation per client. */
+export type SavedAdvocate = {
+  /** The advocate the representations below are for. */
+  savedAdvocateId?: string;
+  /** Representation ids, by the complainant participant each one acts for. */
+  representations?: Record<string, string>;
+  /** Saving to the backend case failed; the details are still in this browser. */
+  syncError?: string;
+};
+
+export type Advocate = SavedAdvocate & {
   id: string;
   /** Indices into `draft.complainants` this advocate appears for. */
   forComplainants: number[];
   barNumber: string;
   name: string;
+  /** Their id on the backend, from the advocate search; without it they cannot be saved. */
+  advocateId?: string;
 };
 
 /* ─────────────────────────────────── Accused ────────────────────────────────────── */
@@ -199,7 +240,7 @@ export type Advocate = {
  */
 export type AccusedType = "individual" | "institution";
 
-export type Accused = {
+export type Accused = SavedParty & {
   id: string;
   type: AccusedType;
   name: string;
@@ -300,7 +341,7 @@ export type AdrPrayer = {
 
 /* ─────────────────────────────────── Witnesses ──────────────────────────────────── */
 
-export type Witness = {
+export type Witness = SavedParty & {
   id: string;
   fullName: string;
   designation: string;
@@ -507,7 +548,7 @@ export type FilingDraft = {
   /**
    * The backend case this draft saves to — the same value as `id`, since the backend
    * keeps the draft session's id for the case. Absent on drafts that live only in this
-   * browser: sample and batch drafts, and drafts made before the backend was wired.
+   * browser: batch drafts, and drafts made before the backend was wired.
    */
   caseId?: string;
   /** `pss25` has no filing flow yet — such a draft opens the placeholder page. */
@@ -551,6 +592,8 @@ export type FilingDraft = {
  * prefill read from it.
  */
 export type UserProfile = {
+  /** `null` when the account could not be read. */
+  role: BackendRole | null;
   name: string;
   mobile: string;
   email: string;

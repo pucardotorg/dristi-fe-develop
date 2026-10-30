@@ -128,6 +128,51 @@ export function SectionNotice({
   );
 }
 
+/**
+ * Something on this step failed to save to the backend case. The copy in this browser is
+ * kept, and "Try again" sends it again.
+ */
+export function UnsavedNotice({
+  labels,
+  error,
+  noun,
+  onRetry,
+}: {
+  /** What failed to save, as the step names it ("Cheque return memo", "Accused 2"). */
+  labels: string[];
+  /** Why the first one failed. */
+  error: string;
+  /** What is kept in this browser: "file" for documents, "details" for parties. */
+  noun: "file" | "details";
+  onRetry: () => void;
+}) {
+  const one = labels.length === 1;
+  const kept =
+    noun === "file"
+      ? `The file${one ? " is" : "s are"} still in this browser.`
+      : "The details are still in this browser.";
+  return (
+    <SectionNotice
+      variant="destructive"
+      announce="assertive"
+      title={
+        one
+          ? `${labels[0]} wasn’t saved to your case`
+          : `${labels.length} ${noun === "file" ? "documents" : "parties"} weren’t saved to your case`
+      }
+    >
+      <span className="flex flex-col items-start gap-2">
+        <span>
+          {error} {kept}
+        </span>
+        <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+          Try again
+        </Button>
+      </span>
+    </SectionNotice>
+  );
+}
+
 /** Sunken well used to echo a value the form carried over, beside the fields it fills. */
 export function InfoWell({
   children,

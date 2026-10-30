@@ -2,8 +2,13 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { blankJurisdiction } from "./blank";
-import { jurisdictionReady, jurisdictionSectionBody } from "./details";
-import type { Jurisdiction } from "./types";
+import {
+  adrPrayerReady,
+  adrPrayerSectionBody,
+  jurisdictionReady,
+  jurisdictionSectionBody,
+} from "./details";
+import type { AdrPrayer, Jurisdiction } from "./types";
 
 /** A complete "payee deposited" jurisdiction, so tests can vary one field at a time. */
 function filledJurisdiction(over: Partial<Jurisdiction> = {}): Jurisdiction {
@@ -84,5 +89,47 @@ describe("jurisdictionSectionBody", () => {
   it("returns null when the section is not complete", () => {
     assert.equal(jurisdictionSectionBody(filledJurisdiction(), ""), null);
     assert.equal(jurisdictionSectionBody(filledJurisdiction({ payeePolice: "" }), CAUSE), null);
+  });
+});
+
+function adrPrayer(over: Partial<AdrPrayer> = {}): AdrPrayer {
+  return {
+    adr: "maybe",
+    otherDetails: "",
+    interimRelief: "<p>Pay interim compensation.</p>",
+    finalRelief: "<p>Take cognizance under S-138.</p>",
+    ...over,
+  };
+}
+
+describe("adrPrayerReady", () => {
+  it("needs a final relief with real content", () => {
+    assert.equal(adrPrayerReady(adrPrayer()), true);
+    assert.equal(adrPrayerReady(adrPrayer({ finalRelief: "" })), false);
+    assert.equal(adrPrayerReady(adrPrayer({ finalRelief: "<p></p>" })), false);
+    assert.equal(adrPrayerReady(adrPrayer({ finalRelief: "<p>&nbsp;</p>" })), false);
+  });
+});
+
+describe("adrPrayerSectionBody", () => {
+  it("uppercases the ADR choice and sends the relief fields that have content", () => {
+    assert.deepEqual(adrPrayerSectionBody(adrPrayer({ adr: "no", otherDetails: "<p>Note.</p>" })), {
+      adr_preference: "NO",
+      final_relief: "<p>Take cognizance under S-138.</p>",
+      other_details: "<p>Note.</p>",
+      interim_relief: "<p>Pay interim compensation.</p>",
+    });
+  });
+
+  it("omits empty optional rich-text fields", () => {
+    const body = adrPrayerSectionBody(adrPrayer({ otherDetails: "", interimRelief: "<p></p>" }));
+    assert.ok(body);
+    assert.ok(!("other_details" in body));
+    assert.ok(!("interim_relief" in body));
+    assert.equal(body.adr_preference, "MAYBE");
+  });
+
+  it("returns null when the final relief is empty", () => {
+    assert.equal(adrPrayerSectionBody(adrPrayer({ finalRelief: "<p></p>" })), null);
   });
 });

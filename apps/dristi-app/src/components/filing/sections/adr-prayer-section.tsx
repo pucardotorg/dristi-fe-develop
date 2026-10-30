@@ -10,15 +10,19 @@
  */
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 
+import { adrPrayerDetails } from "@/lib/filing/details";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { useDetailsSection } from "@/lib/filing/use-details-section";
 import type { AdrPrayer } from "@/lib/filing/types";
 import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
+import { SectionNotice } from "@/components/filing/notices";
 import { RichTextEditor } from "@/components/filing/rich-text-editor";
 import { Segmented, type SegmentedOption } from "@/components/filing/segmented";
 
@@ -40,11 +44,21 @@ export function AdrPrayerSection() {
   const { draft, update, hrefFor } = useFiling();
   const adr = draft.adr;
   const { prev, next } = neighbours("adr-prayer");
+  const router = useRouter();
+  const { save, saving, error } = useDetailsSection("adr_other_prayer", adrPrayerDetails);
 
   const set = <K extends keyof AdrPrayer>(key: K, value: AdrPrayer[K]) =>
     update((d) => {
       d.adr[key] = value;
     });
+
+  /* Save the section to the case, then move on. A save failure keeps the filer here with
+     the reason, so the data loss is visible. */
+  const continueHref = next ? hrefFor(next) : undefined;
+  const handleContinue = async () => {
+    const result = await save();
+    if (result.ok && continueHref) router.push(continueHref);
+  };
 
   return (
     <>
@@ -104,11 +118,19 @@ export function AdrPrayerSection() {
             />
           </FormField>
         </FormCard>
+
+        {error ? (
+          <SectionNotice variant="destructive" title="Couldn't save to the court's server">
+            {error}
+          </SectionNotice>
+        ) : null}
       </FilingMain>
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        continueHref={next ? hrefFor(next) : undefined}
+        onContinue={continueHref ? handleContinue : undefined}
+        continueDisabled={saving}
+        continueLabel={saving ? "Saving…" : "Continue"}
       />
     </>
   );

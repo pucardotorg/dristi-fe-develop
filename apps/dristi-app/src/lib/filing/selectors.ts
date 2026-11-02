@@ -13,6 +13,7 @@ import { WALK_ORDER } from "./steps";
 import type {
   Accused,
   Advocate,
+  CaseDocument,
   ChequeDetails,
   Complainant,
   DemandNotice,
@@ -20,6 +21,7 @@ import type {
   DocumentGroup,
   FilingDraft,
   Intake,
+  IntakeGroup,
   IntakeSlot,
   PhoneConfirmer,
   SignInstrument,
@@ -42,6 +44,45 @@ export function intakeSlots(intake: Intake): IntakeSlot[] {
 
 export function findIntakeSlot(intake: Intake, key: string): IntakeSlot | undefined {
   return intakeSlots(intake).find((s) => s.key === key);
+}
+
+/** The slot a list-of-documents row mirrors. Keys gain a "-2" suffix after a remove/add. */
+export function resolveIntakeSlot(intake: Intake, key: string): IntakeSlot | undefined {
+  const slots = intakeSlots(intake);
+  return slots.find((s) => s.key === key) ?? slots.find((s) => s.key.startsWith(`${key}-`));
+}
+
+export function findDocumentRow(groups: DocumentGroup[], id: string): CaseDocument | undefined {
+  for (const group of groups) {
+    const row = group.docs.find((d) => d.id === id);
+    if (row) return row;
+  }
+  return undefined;
+}
+
+/**
+ * The list-of-documents row that mirrors an intake slot, if the list shows that slot.
+ * Exact: rows carry their slot's own key, and a prefix would read `c2f`'s row for `c2f-2`.
+ */
+export function rowForSlot(groups: DocumentGroup[], slotKey: string): CaseDocument | undefined {
+  for (const group of groups) {
+    const row = group.docs.find((d) => d.intakeKey === slotKey);
+    if (row) return row;
+  }
+  return undefined;
+}
+
+/**
+ * The list-of-documents group that holds a party's rows, found by the party's slot keys.
+ * Those stay with the party when one before it is removed; the group's id is its
+ * position (`complainant-2`), which does not.
+ */
+export function documentGroupForParty(
+  groups: DocumentGroup[],
+  party: IntakeGroup
+): DocumentGroup | undefined {
+  const keys = new Set(party.slots.map((s) => s.key));
+  return groups.find((g) => g.docs.some((d) => !!d.intakeKey && keys.has(d.intakeKey)));
 }
 
 /** Required-document progress for the intake step (supporting docs are optional). */
@@ -150,9 +191,12 @@ export function accusedHasContact(a: Accused): boolean {
 }
 
 export function complainantComplete(c: Complainant): boolean {
-  const named = c.type === "institution" ? !!c.entName.trim() : !!c.name.trim();
-  const addr = c.type === "institution" ? c.entAddr : c.res;
-  return named && !!c.mobile.trim() && !!addr.line1.trim() && cinPanAnswered(c);
+  const institution = c.type === "institution";
+  const named = institution ? !!c.entName.trim() : !!c.name.trim();
+  // An institution is reached through its representative; the form asks for no `mobile`.
+  const mobile = institution ? c.rep.mobile : c.mobile;
+  const addr = institution ? c.entAddr : c.res;
+  return named && !!mobile.trim() && !!addr.line1.trim() && cinPanAnswered(c);
 }
 
 /* ───────────────────────────── Case details ────────────────────────── */

@@ -6,6 +6,7 @@
  * values arrive from what the person uploads (document reading) or types.
  */
 
+import { withoutComplainant } from "./advocates";
 import { newId } from "./data";
 import {
   AFFIDAVIT_PIP_TEMPLATE,
@@ -13,6 +14,7 @@ import {
   FINAL_RELIEF_TEMPLATE,
   INTERIM_RELIEF_TEMPLATE,
 } from "./options";
+import { documentGroupForParty, intakeSlots, resolveIntakeSlot } from "./selectors";
 import { WALK_ORDER } from "./steps";
 import type {
   Accused,
@@ -27,11 +29,11 @@ import type {
   DemandNotice,
   DocumentGroup,
   FilingDraft,
+  IntakeDocType,
   IntakeGroup,
   IntakeSlot,
   Jurisdiction,
   SignInstrument,
-  StoredFileRef,
   UserProfile,
   Representative,
   Witness,
@@ -264,12 +266,13 @@ export function intakeNoticeGroup(n: number): IntakeGroup {
 }
 
 /**
- * Keep the cheques and notices the form holds and the upload groups that hold their
- * documents the same in number. Either side can add one — the Cheque step's "Add cheque",
- * the upload step's "Add another cheque" — and the list of documents is built from the
- * upload groups, so a cheque added on the form would otherwise never be asked for.
- * Grows the shorter side only; removal is done by whoever removes, on both sides.
- * A side with no upload groups at all (a bulk setup) is left alone.
+ * Keep the cheques, notices and complainants the form holds and the upload groups that
+ * hold their documents the same in number — every upload-step party is a complainant.
+ * Either side can add one — the Cheque step's "Add cheque", the upload step's "Add
+ * another cheque" — and the list of documents is built from the upload groups, so a
+ * cheque added on the form would otherwise never be asked for. Group `i` is record `i`.
+ * Grows the shorter side only; removal is done by whoever removes, on both sides
+ * (`removeCaseRecord`). A side with no upload groups at all (a bulk setup) is left alone.
  */
 export function syncIntakeCounts(draft: FilingDraft): void {
   const taken = new Set(
@@ -288,27 +291,74 @@ export function syncIntakeCounts(draft: FilingDraft): void {
   };
   grow(draft.intake.cheques, draft.cheques, intakeChequeGroup, blankCheque);
   grow(draft.intake.notices, draft.notices, intakeNoticeGroup, blankNotice);
+  grow(draft.intake.parties, draft.complainants, intakePartyGroup, blankComplainant);
+}
+
+/** A form record with an upload group of its own: group `i` holds record `i`'s documents. */
+export type CaseRecordKind = "cheque" | "notice" | "party";
+
+function groupsOf(draft: Pick<FilingDraft, "intake">, kind: CaseRecordKind): IntakeGroup[] {
+  if (kind === "cheque") return draft.intake.cheques;
+  return kind === "notice" ? draft.intake.notices : draft.intake.parties;
+}
+
+/** The form's records of a kind: its cheques, notices or complainants. */
+export function caseRecords(
+  draft: Pick<FilingDraft, "cheques" | "notices" | "complainants">,
+  kind: CaseRecordKind
+): unknown[] {
+  if (kind === "cheque") return draft.cheques;
+  return kind === "notice" ? draft.notices : draft.complainants;
 }
 
 /**
- * Remove cheque or notice `index` (0-based) from the form and its upload group with it,
- * renumbering the groups after it. Returns the files that group held, for the caller to
- * delete from storage.
+ * The upload group `removeCaseRecord` would take with record `index` — the last one
+ * always stays — so the caller can discard its files first.
  */
-export function removeCaseRecord(
-  draft: FilingDraft,
-  kind: "cheque" | "notice",
+export function caseRecordGroup(
+  draft: Pick<FilingDraft, "intake">,
+  kind: CaseRecordKind,
   index: number
-): StoredFileRef[] {
-  const records: unknown[] = kind === "cheque" ? draft.cheques : draft.notices;
-  const groups = kind === "cheque" ? draft.intake.cheques : draft.intake.notices;
-  if (records.length > 1 && index < records.length) records.splice(index, 1);
-  if (groups.length <= 1 || index >= groups.length) return [];
-  const [gone] = groups.splice(index, 1);
+): IntakeGroup | undefined {
+  const groups = groupsOf(draft, kind);
+  return groups.length > 1 ? groups[index] : undefined;
+}
+
+/**
+ * Remove cheque, notice or complainant `index` (0-based) from the form and its upload
+ * group with it, renumbering the groups after it. Discard the group's files first
+ * (`caseRecordGroup`); a complainant is taken off the case by the caller.
+ */
+export function removeCaseRecord(draft: FilingDraft, kind: CaseRecordKind, index: number): void {
+  const records = caseRecords(draft, kind);
+  const groups = groupsOf(draft, kind);
+  if (records.length > 1 && index < records.length) {
+    records.splice(index, 1);
+    // Advocates name their clients by complainant index.
+    if (kind === "party") withoutComplainant(draft.advocates, index);
+  }
+  if (!caseRecordGroup(draft, kind, index)) return;
+  groups.splice(index, 1);
   groups.forEach((g, i) => {
     g.n = i + 1;
   });
-  return gone.slots.flatMap((s) => (s.file ? [s.file] : []));
+}
+
+/** Why a file whose upload a reload cut short is listed as not saved. */
+export const UPLOAD_INTERRUPTED = "Saving this file was interrupted. Try again.";
+
+/**
+ * An upload in flight when the page closed never finishes, but `syncing` was saved with
+ * the draft — left set, the file would never be retried or listed as unsaved. A loaded
+ * draft has nothing in flight, so each such file becomes one to try again.
+ */
+export function settleInterruptedUploads(draft: Pick<FilingDraft, "intake" | "documents">): void {
+  const custom = draft.documents.flatMap((g) => g.docs.filter((d) => d.custom));
+  for (const record of [...intakeSlots(draft.intake), ...custom]) {
+    if (!record.syncing) continue;
+    record.syncing = false;
+    if (!record.caseDocumentId) record.syncError ??= UPLOAD_INTERRUPTED;
+  }
 }
 
 /**
@@ -413,22 +463,23 @@ function docRow(spec: DocSpec, existing: CaseDocument | undefined, slot?: Intake
  * digital flag and any file uploaded on that step; custom rows the person added are kept.
  */
 export function buildDocumentGroups(draft: FilingDraft): DocumentGroup[] {
-  const slotByKey = new Map<string, IntakeSlot>();
-  for (const g of draft.intake.cheques) g.slots.forEach((s) => slotByKey.set(s.key, s));
-  for (const g of draft.intake.notices) g.slots.forEach((s) => slotByKey.set(s.key, s));
-  for (const g of draft.intake.parties) g.slots.forEach((s) => slotByKey.set(s.key, s));
-  draft.intake.supporting.forEach((s) => slotByKey.set(s.key, s));
-
+  const resolveSlot = (key?: string) => (key ? resolveIntakeSlot(draft.intake, key) : undefined);
   const prevGroups = new Map(draft.documents.map((g) => [g.id, g]));
-  const findExisting = (groupId: string, spec: DocSpec) => {
-    const g = prevGroups.get(groupId);
+  const findExisting = (g: DocumentGroup | undefined, spec: DocSpec) => {
     if (!g) return undefined;
     return (
       (spec.intakeKey && g.docs.find((d) => d.intakeKey === spec.intakeKey)) ||
       g.docs.find((d) => !d.custom && d.name === spec.name)
     );
   };
-  const customOf = (groupId: string) => prevGroups.get(groupId)?.docs.filter((d) => d.custom) ?? [];
+  const customOf = (g: DocumentGroup | undefined) => g?.docs.filter((d) => d.custom) ?? [];
+  /*
+   * The group's own slot for a document. Keys are not rebuilt from the group number: a
+   * removal renumbers the groups after it but keeps their keys, so "Cheque 1" after
+   * removing the first cheque holds `c2f`.
+   */
+  const keyIn = (group: IntakeGroup | undefined, docType: IntakeDocType) =>
+    group?.slots.find((s) => s.docType === docType)?.key;
 
   const groups: DocumentGroup[] = [];
 
@@ -439,51 +490,52 @@ export function buildDocumentGroups(draft: FilingDraft): DocumentGroup[] {
     ...draft.intake.cheques.flatMap((g) => {
       const sfx = manyCheques ? ` ${g.n}` : "";
       return [
-        { name: `Cheque${sfx}`, required: true, intakeKey: `c${g.n}f` },
-        { name: `Cheque return memo${sfx}`, required: true, intakeKey: `c${g.n}m` },
+        { name: `Cheque${sfx}`, required: true, intakeKey: keyIn(g, "cheque-front") },
+        { name: `Cheque return memo${sfx}`, required: true, intakeKey: keyIn(g, "return-memo") },
       ];
     }),
     ...draft.intake.notices.flatMap((g) => {
       const sfx = manyNotices ? ` ${g.n}` : "";
       return [
-        { name: `Demand notice${sfx}`, required: true, intakeKey: `n${g.n}dn` },
-        { name: `Proof of dispatch of demand notice (postal receipt)${sfx}`, required: true, intakeKey: `n${g.n}dp` },
-        { name: `Proof of delivery of demand notice (AD card)${sfx}`, required: true, intakeKey: `n${g.n}ad` },
-        { name: `Reply to the demand notice${sfx}`, required: false, intakeKey: `n${g.n}rp` },
+        { name: `Demand notice${sfx}`, required: true, intakeKey: keyIn(g, "demand-notice") },
+        { name: `Proof of dispatch of demand notice (postal receipt)${sfx}`, required: true, intakeKey: keyIn(g, "dispatch-proof") },
+        { name: `Proof of delivery of demand notice (AD card)${sfx}`, required: true, intakeKey: keyIn(g, "delivery-proof") },
+        { name: `Reply to the demand notice${sfx}`, required: false, intakeKey: keyIn(g, "notice-reply") },
       ];
     }),
   ];
-  // Intake keys can carry a "-2" suffix after a remove/add; resolve by prefix.
-  const resolveSlot = (key?: string) => {
-    if (!key) return undefined;
-    if (slotByKey.has(key)) return slotByKey.get(key);
-    for (const [k, s] of slotByKey) if (k.startsWith(`${key}-`)) return s;
-    return undefined;
-  };
+  const prevCase = prevGroups.get("case");
   groups.push({
     id: "case",
     title: "Case details",
     docs: [
-      ...caseSpecs.map((s) => docRow(s, findExisting("case", s), resolveSlot(s.intakeKey))),
-      ...customOf("case"),
+      ...caseSpecs.map((s) => docRow(s, findExisting(prevCase, s), resolveSlot(s.intakeKey))),
+      ...customOf(prevCase),
     ],
   });
 
-  // One group per complainant.
+  // One group per complainant, with the documents of the upload group in its place.
   draft.complainants.forEach((c, i) => {
     const n = i + 1;
     const id = `complainant-${n}`;
+    const party = draft.intake.parties[i];
+    /*
+     * Rows, ticks and custom rows follow the complainant, not the position: after
+     * complainant 1 is removed, complainant 2's group is found by their slot keys. Only a
+     * draft without upload groups (a bulk setup) falls back to the id.
+     */
+    const prev = party ? documentGroupForParty(draft.documents, party) : prevGroups.get(id);
     const specs: DocSpec[] = [
-      { name: "Identity proof: complainant", required: true, intakeKey: `p${n}id` },
-      { name: "Power of attorney", required: c.poa === "yes", intakeKey: `p${n}poa` },
-      { name: "Vakalatnama", required: c.pip !== "yes", intakeKey: `p${n}vak` },
+      { name: "Identity proof: complainant", required: true, intakeKey: keyIn(party, "id-proof") },
+      { name: "Power of attorney", required: c.poa === "yes", intakeKey: keyIn(party, "poa") },
+      { name: "Vakalatnama", required: c.pip !== "yes", intakeKey: keyIn(party, "vakalatnama") },
     ];
     groups.push({
       id,
       title: `Complainant ${n}: documents`,
       docs: [
-        ...specs.map((s) => docRow(s, findExisting(id, s), resolveSlot(s.intakeKey))),
-        ...customOf(id),
+        ...specs.map((s) => docRow(s, findExisting(prev, s), resolveSlot(s.intakeKey))),
+        ...customOf(prev),
       ],
     });
   });
@@ -631,11 +683,15 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
   draft.jurisdiction ??= blankJurisdiction();
   draft.witnesses ??= [blankWitness()];
   draft.documents ??= [];
-  // Cheques and notices added on the form steps never reached the upload groups before
-  // they were kept in step; give such a draft the groups its form already has.
-  const groupsBefore = draft.intake.cheques.length + draft.intake.notices.length;
+  settleInterruptedUploads(draft);
+  // Cheques, notices and complainants added on one side never reached the other before
+  // they were kept in step; give such a draft the groups (and records) it is missing.
+  const groupCount = () =>
+    draft.intake.cheques.length + draft.intake.notices.length + draft.intake.parties.length;
+  const groupsBefore = groupCount();
+  const complainantsBefore = draft.complainants.length;
   syncIntakeCounts(draft);
-  if (draft.intake.cheques.length + draft.intake.notices.length !== groupsBefore)
+  if (groupCount() !== groupsBefore || draft.complainants.length !== complainantsBefore)
     draft.documents = buildDocumentGroups(draft);
   draft.sign ??= {
     mode: "digital",

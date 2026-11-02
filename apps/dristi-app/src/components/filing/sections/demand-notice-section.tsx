@@ -9,9 +9,7 @@
 
 import * as React from "react";
 
-import { blankNotice, removeCaseRecord } from "@/lib/filing/blank";
-import { getRepository } from "@/lib/filing/data";
-import { forgetFile } from "@/lib/filing/files";
+import { blankNotice } from "@/lib/filing/blank";
 import {
   MODE_OF_SERVICE,
   NATURE_OF_DEBT,
@@ -27,6 +25,7 @@ import {
 } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { useRemoveCaseRecord } from "@/lib/filing/use-remove-case-record";
 import type { DemandNotice, NoticeField } from "@/lib/filing/types";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { DateField } from "@/components/filing/date-field";
@@ -64,6 +63,7 @@ function indexOfId(notices: { id: string }[], id: string): number | null {
 
 export function DemandNoticeSection() {
   const { draft, update, hrefFor } = useFiling();
+  const removeRecord = useRemoveCaseRecord();
   const { prev, next } = neighbours("demand-notice");
   const notices = draft.notices;
 
@@ -125,16 +125,9 @@ export function DemandNoticeSection() {
   const confirmRemove = () => {
     const i = removeIndex;
     setRemoveOpen(false);
-    if (notices.length <= 1) return;
-    // Its upload group goes with it, so the list of documents stops asking for it.
-    let files: ReturnType<typeof removeCaseRecord> = [];
-    update((d) => {
-      files = removeCaseRecord(d, "notice", i);
-    });
-    for (const f of files) {
-      forgetFile(f.id);
-      void getRepository().deleteFile(f.id);
-    }
+    // Its upload group goes with it, so the list of documents stops asking for it — and
+    // its files leave this browser and the case.
+    if (!removeRecord("notice", i)) return;
     const remaining = notices.length - 1;
     let a = index;
     if (i < a) a -= 1;

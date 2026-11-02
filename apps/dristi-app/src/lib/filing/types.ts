@@ -101,13 +101,8 @@ export type IntakeDocType =
   | "other"
   | "supporting";
 
-export type IntakeSlot = {
-  key: string;
-  docType: IntakeDocType;
-  label: string;
-  desc?: string;
-  /** Required for filing; optional slots render the "Optional" chip. */
-  required: boolean;
+/** A file kept in this browser and also saved to the backend case as a case document. */
+export type SyncedFile = {
   file: StoredFileRef | null;
   /** The file's id on the backend case, once it is saved there. */
   caseDocumentId?: string;
@@ -115,6 +110,17 @@ export type IntakeSlot = {
   syncing?: boolean;
   /** Saving to the backend case failed; the file is still in this browser. */
   syncError?: string;
+  /** The participant the saved document is linked to on the case, once it is. */
+  linkedParticipantId?: string;
+};
+
+export type IntakeSlot = SyncedFile & {
+  key: string;
+  docType: IntakeDocType;
+  label: string;
+  desc?: string;
+  /** Required for filing; optional slots render the "Optional" chip. */
+  required: boolean;
   /** Bulk filing: what reading the document found, and whether it was too poor to trust. */
   extract?: DocExtract;
   poor?: boolean;
@@ -386,11 +392,14 @@ export type Witness = SavedParty & {
 
 /* ────────────────────────────── List of documents ───────────────────────────────── */
 
-export type CaseDocument = {
+/**
+ * A row on the list of documents. A row that mirrors an intake slot shows that slot's
+ * file and the slot is what is saved to the case; only a custom row saves its own.
+ */
+export type CaseDocument = SyncedFile & {
   id: string;
   name: string;
   required: boolean;
-  file: StoredFileRef | null;
   /** Readability check on the upload (image resolution / PDF text layer). */
   quality: "good" | "bad" | null;
   digital: boolean;

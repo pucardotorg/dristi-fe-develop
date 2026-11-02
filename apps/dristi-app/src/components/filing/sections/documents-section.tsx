@@ -22,42 +22,20 @@ import {
   XIcon,
 } from "lucide-react";
 
-import { ChromeDialogContent } from "@/components/chrome/app-chrome";
-
 import { uid } from "@/lib/filing/blank";
-import { getRepository, storeUpload } from "@/lib/filing/data";
-import { forgetFile, formatBytes, useFilePreview } from "@/lib/filing/files";
-import { documentsProgress, intakeSlots } from "@/lib/filing/selectors";
-import { readability } from "@/lib/filing/readability";
+import { targetForRow, unsavedRows } from "@/lib/filing/case-documents";
+import { formatBytes } from "@/lib/filing/files";
+import { documentsProgress, findDocumentRow } from "@/lib/filing/selectors";
 import { useFiling } from "@/lib/filing/store";
-import {
-  clearCaseDocument,
-  removeFromCase,
-  useCaseDocuments,
-} from "@/lib/filing/use-case-documents";
+import { useCaseDocuments } from "@/lib/filing/use-case-documents";
 import { useFieldPolicy } from "@/components/filing/field-policy";
-import type {
-  CaseDocument,
-  DocumentGroup,
-  Intake,
-  IntakeSlot,
-  StoredFileRef,
-} from "@/lib/filing/types";
+import type { CaseDocument, DocumentGroup } from "@/lib/filing/types";
 import { REGISTER_CARDS_ONLY, REGISTER_TABLE_ONLY } from "@/components/cases/register-layout";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -72,69 +50,9 @@ import { PANEL_CLASS } from "@/components/filing/form-card";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { LabelTip, RequiredMark } from "@/components/filing/form-field";
-import { SectionNotice } from "@/components/filing/notices";
+import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
+import { FilePreviewDialog } from "@/components/filing/upload/file-preview-dialog";
 import { pickErrorMessage, useFilePicker } from "@/components/filing/use-file-picker";
-
-function findDoc(
-  groups: DocumentGroup[],
-  docId: string
-): CaseDocument | undefined {
-  for (const group of groups) {
-    const doc = group.docs.find((d) => d.id === docId);
-    if (doc) return doc;
-  }
-  return undefined;
-}
-
-/** The intake slot a mirrored row shows. Keys gain a "-2" suffix after a remove/add. */
-function resolveSlot(intake: Intake, key: string): IntakeSlot | undefined {
-  const slots = intakeSlots(intake);
-  return slots.find((s) => s.key === key) ?? slots.find((s) => s.key.startsWith(`${key}-`));
-}
-
-/** Forget a stored file's bytes and its cached preview. */
-function dropFile(ref: StoredFileRef | null | undefined) {
-  if (!ref) return;
-  forgetFile(ref.id);
-  void getRepository().deleteFile(ref.id);
-}
-
-/**
- * The attached file as it actually looks — the image, or page 1 of the PDF. A file type
- * with nothing to show says so rather than pretending to be a preview.
- */
-function FilePreviewWell({ file }: { file: StoredFileRef | null }) {
-  const preview = useFilePreview(file);
-  const imageUrl = preview.status === "ready" ? preview.imageUrl : null;
-
-  if (!file) return null;
-  if (preview.status === "loading") {
-    return <Skeleton className="h-64 w-full rounded-lg" />;
-  }
-  if (imageUrl) {
-    return (
-      <div className="flex h-64 items-center justify-center overflow-hidden rounded-lg bg-surface-sunken">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imageUrl}
-          alt={`Page 1 of ${file.name}`}
-          className="max-h-full max-w-full object-contain"
-        />
-      </div>
-    );
-  }
-  return (
-    <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-lg bg-surface-sunken text-muted-foreground">
-      <FileTextIcon className="size-8" aria-hidden />
-      <p className="text-body-compact break-all">{file.name}</p>
-      <p className="text-caption">
-        {preview.status === "missing"
-          ? "This file is no longer stored in this browser"
-          : "No preview for this file type"}
-      </p>
-    </div>
-  );
-}
 
 export function DocumentsSection() {
   const { draft, update, hrefFor } = useFiling();
@@ -143,7 +61,10 @@ export function DocumentsSection() {
   const groups = showGroup ? draft.documents.filter((g) => showGroup(g.id)) : draft.documents;
   const { remaining } = documentsProgress(groups);
   const { pick, input } = useFilePicker();
-  const { saveToCase } = useCaseDocuments();
+  const { attachFile, clearFile, discard, updateDetails, retry } = useCaseDocuments();
+  const unsaved = unsavedRows(draft, groups);
+  /** A custom row's name as it was when its field took focus, to save only a change. */
+  const nameOnFocus = React.useRef("");
 
   const [previewId, setPreviewId] = React.useState<string | null>(null);
   // Kept apart from `deleteOpen` so the dialog keeps its wording while it fades out.
@@ -172,48 +93,34 @@ export function DocumentsSection() {
 
   const patchDoc = (docId: string, patch: (doc: CaseDocument) => void) =>
     update((d) => {
-      const doc = findDoc(d.documents, docId);
+      const doc = findDocumentRow(d.documents, docId);
       if (doc) patch(doc);
     });
+
+  /** Where a row's file is kept and saved from: the intake slot it mirrors, or itself. */
+  const targetOf = (docId: string) => {
+    const doc = findDocumentRow(groups, docId);
+    return doc ? targetForRow(draft.intake, doc) : null;
+  };
 
   /**
    * Attach a chosen file to a row. A row that mirrors an intake slot writes to that slot —
    * the store mirrors it back here — so a document is never stored twice.
    */
   const receiveFile = async (docId: string, file: File) => {
-    const doc = findDoc(groups, docId);
-    if (!doc) return;
-    const previous = doc.file;
-    const mirrored = doc.intakeKey ? resolveSlot(draft.intake, doc.intakeKey) : undefined;
+    const target = targetOf(docId);
+    if (!target) return;
+    const error = await attachFile(target, file);
+    if (error) say(error);
+  };
 
-    let ref: StoredFileRef;
-    try {
-      ref = await storeUpload(file);
-    } catch {
-      say("We couldn't store that file in this browser. Please try again.");
-      return;
-    }
-    const quality = doc.intakeKey ? null : await readability(file);
-
-    update((d) => {
-      const key = findDoc(d.documents, docId)?.intakeKey;
-      if (key) {
-        const slot = resolveSlot(d.intake, key);
-        if (!slot) return;
-        slot.file = ref;
-        clearCaseDocument(slot);
-        return;
-      }
-      const target = findDoc(d.documents, docId);
-      if (!target) return;
-      target.file = ref;
-      target.quality = quality;
+  /** The tick is kept with the saved document, so a change is sent to the case too. */
+  const setDigital = (doc: CaseDocument, digital: boolean) => {
+    patchDoc(doc.id, (d) => {
+      d.digital = digital;
     });
-    dropFile(previous);
-    if (mirrored) {
-      removeFromCase([mirrored]);
-      void saveToCase(mirrored.key, ref, file);
-    }
+    const target = targetOf(doc.id);
+    if (doc.file && target) void updateDetails(target, { isDigital: digital });
   };
 
   const uploadDoc = (docId: string) =>
@@ -225,34 +132,26 @@ export function DocumentsSection() {
       if (file) void receiveFile(docId, file);
     });
 
+  /**
+   * A custom row goes, with its file; any other row keeps its place and loses its file —
+   * on the intake slot it mirrors, which clears this row too.
+   */
   const removeDoc = (docId: string) => {
     if (previewId === docId) setPreviewId(null);
-    const target = findDoc(groups, docId);
-    const previous = target?.file ?? null;
-    const mirrored = target?.intakeKey ? resolveSlot(draft.intake, target.intakeKey) : undefined;
-    if (mirrored) removeFromCase([mirrored]);
+    const doc = findDocumentRow(groups, docId);
+    const target = targetOf(docId);
+    if (!doc || !target) return;
+    if (!doc.custom) {
+      clearFile(target);
+      return;
+    }
+    discard([target]);
     update((d) => {
       for (const group of d.documents) {
-        const index = group.docs.findIndex((doc) => doc.id === docId);
-        if (index === -1) continue;
-        const doc = group.docs[index];
-        if (doc.intakeKey) {
-          // The file lives on the intake slot; clearing it there clears this row too.
-          const slot = resolveSlot(d.intake, doc.intakeKey);
-          if (slot) {
-            slot.file = null;
-            clearCaseDocument(slot);
-          }
-        } else if (doc.custom) {
-          group.docs.splice(index, 1);
-        } else {
-          doc.file = null;
-          doc.quality = null;
-        }
-        return;
+        const index = group.docs.findIndex((row) => row.id === docId);
+        if (index !== -1) group.docs.splice(index, 1);
       }
     });
-    dropFile(previous);
   };
 
   /**
@@ -260,7 +159,7 @@ export function DocumentsSection() {
    * being an empty custom row, where there is nothing to lose by dropping it.
    */
   const askRemoveDoc = (docId: string) => {
-    const doc = findDoc(groups, docId);
+    const doc = findDocumentRow(groups, docId);
     if (!doc) return;
     if (!doc.file && !doc.name.trim()) {
       removeDoc(docId);
@@ -313,6 +212,15 @@ export function DocumentsSection() {
               d.name = e.target.value;
             })
           }
+          // The name is kept with the saved document, so a change is sent to the case too.
+          onFocus={() => {
+            nameOnFocus.current = doc.name;
+          }}
+          onBlur={() => {
+            if (doc.file && doc.name.trim() !== nameOnFocus.current.trim()) {
+              void updateDetails({ kind: "row", id: doc.id }, { displayName: doc.name });
+            }
+          }}
           placeholder="Document name"
           aria-label={`Document name, row ${index + 1} of ${group.title}`}
         />
@@ -377,11 +285,7 @@ export function DocumentsSection() {
       <span className="inline-flex h-10 items-center">
         <Checkbox
           checked={doc.digital}
-          onCheckedChange={(checked) =>
-            patchDoc(doc.id, (d) => {
-              d.digital = checked === true;
-            })
-          }
+          onCheckedChange={(checked) => setDigital(doc, checked === true)}
           aria-label={`Natively digital: ${
             doc.name || `row ${index + 1}`
           }`}
@@ -432,7 +336,7 @@ export function DocumentsSection() {
     ),
   });
 
-  const previewDoc = previewId ? findDoc(groups, previewId) : undefined;
+  const previewDoc = previewId ? findDocumentRow(groups, previewId) : undefined;
   const previewFile = previewDoc?.file ?? null;
 
   return (
@@ -448,6 +352,15 @@ export function DocumentsSection() {
           Tick <strong className="font-semibold">Natively digital</strong> for an
           original digital file, such as an e-signed PDF, not a scan of a paper copy.
         </SectionNotice>
+
+        {unsaved.length > 0 ? (
+          <UnsavedNotice
+            labels={unsaved.map((u) => u.label)}
+            error={unsaved[0].error}
+            noun="file"
+            onRetry={() => retry(unsaved)}
+          />
+        ) : null}
 
         {groups.map((group) => (
           <section key={group.id} className="flex flex-col gap-3">
@@ -619,71 +532,33 @@ export function DocumentsSection() {
         ) : null}
       </div>
 
-      {/* Document preview */}
-      <Dialog
-        open={!!previewDoc}
-        onOpenChange={(open) => {
-          if (!open) setPreviewId(null);
+      <FilePreviewDialog
+        file={previewFile}
+        label={previewDoc?.name || "this document"}
+        onClose={() => setPreviewId(null)}
+        onReplace={() => {
+          if (previewId) uploadDoc(previewId);
+        }}
+        onDelete={() => {
+          if (previewId) askRemoveDoc(previewId);
         }}
       >
-        <ChromeDialogContent mobileSheet className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex flex-wrap items-center gap-2 pr-8">
-              {previewFile ? <Badge variant="secondary">{previewFile.ext}</Badge> : null}
-              <span className="min-w-0 break-all">
-                {previewFile?.name ?? previewDoc?.name ?? ""}
-              </span>
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Preview of the file attached to {previewDoc?.name || "this document"}.
-            </DialogDescription>
-          </DialogHeader>
-
-          <FilePreviewWell file={previewFile} />
-
-          {previewDoc?.quality === "bad" ? (
-            <Alert variant="warning">
-              <TriangleAlertIcon aria-hidden />
-              <AlertDescription>
-                This scan looks blurry or cropped. Please re-upload a clearer copy so the
-                court can read it.
-              </AlertDescription>
-            </Alert>
-          ) : null}
-          {previewDoc?.quality === "good" ? (
-            <Alert variant="success">
-              <CheckIcon aria-hidden />
-              <AlertDescription>This document is clear and readable.</AlertDescription>
-            </Alert>
-          ) : null}
-
-          <DialogFooter className="sm:justify-between">
-            <Button
-              type="button"
-              variant="destructive-ghost"
-              onClick={() => {
-                if (previewId) askRemoveDoc(previewId);
-              }}
-            >
-              Delete
-            </Button>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  if (previewId) uploadDoc(previewId);
-                }}
-              >
-                Replace file
-              </Button>
-              <Button type="button" onClick={() => setPreviewId(null)}>
-                Done
-              </Button>
-            </div>
-          </DialogFooter>
-        </ChromeDialogContent>
-      </Dialog>
+        {previewDoc?.quality === "bad" ? (
+          <Alert variant="warning">
+            <TriangleAlertIcon aria-hidden />
+            <AlertDescription>
+              This scan looks blurry or cropped. Please re-upload a clearer copy so the
+              court can read it.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+        {previewDoc?.quality === "good" ? (
+          <Alert variant="success">
+            <CheckIcon aria-hidden />
+            <AlertDescription>This document is clear and readable.</AlertDescription>
+          </Alert>
+        ) : null}
+      </FilePreviewDialog>
 
       <ConfirmDialog
         open={deleteOpen}

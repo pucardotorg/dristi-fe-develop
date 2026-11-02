@@ -193,6 +193,48 @@ describe("deleteEvidence", () => {
   });
 });
 
+describe("validateCase", () => {
+  it("posts to validate and returns the completeness result", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        {
+          is_valid: false,
+          errors: [
+            { field: "evidence.cheque", message: "At least one cheque is required" },
+            { field: "affidavit", message: "The affidavit is required" },
+          ],
+          meta: META,
+        },
+        { status: 200 }
+      )
+    );
+    const result = await cases.validateCase("c0ffee");
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/validate");
+    assert.equal(calls[0].method, "POST");
+    assert.equal(result.isValid, false);
+    assert.deepEqual(result.errors, [
+      { field: "evidence.cheque", message: "At least one cheque is required" },
+      { field: "affidavit", message: "The affidavit is required" },
+    ]);
+  });
+
+  it("reports a valid filing with no errors", async () => {
+    const { cases } = setup(() => Response.json({ is_valid: true, errors: [], meta: META }, { status: 200 }));
+    assert.deepEqual(await cases.validateCase("c0ffee"), { isValid: true, errors: [] });
+  });
+
+  it("ignores malformed error entries", async () => {
+    const { cases } = setup(() =>
+      Response.json(
+        { is_valid: false, errors: [{ field: "evidence.cheque", message: "x" }, { field: 1 }, null], meta: META },
+        { status: 200 }
+      )
+    );
+    const result = await cases.validateCase("c0ffee");
+    assert.deepEqual(result.errors, [{ field: "evidence.cheque", message: "x" }]);
+  });
+});
+
 describe("caseFilingErrorMessage", () => {
   it("names a submitted case before anything else", () => {
     assert.match(caseFilingErrorMessage(httpError(409, ["E07001"])), /submitted/);

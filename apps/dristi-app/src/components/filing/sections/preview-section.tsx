@@ -17,12 +17,14 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 
+import { caseFilingApi, caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
 import { joinDot } from "@/lib/filing/format";
 import { CASE_TYPE, COURT } from "@/lib/filing/options";
 import { sectionComplete } from "@/lib/filing/selectors";
-import { neighbours, type StepId } from "@/lib/filing/steps";
+import { getStep, neighbours, type StepId } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { FilingDraft } from "@/lib/filing/types";
+import { stepForValidationField, type ValidationError } from "@/lib/filing/validation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +48,7 @@ import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard } from "@/components/filing/form-card";
+import { SectionNotice } from "@/components/filing/notices";
 import { CourtDocument } from "@/components/filing/sections/preview/court-document";
 import {
   INTERIM_RELIEF_SUMMARY,
@@ -338,6 +341,12 @@ export function PreviewSection() {
   const [editKey, setEditKey] = React.useState<PanelKey | null>(null);
   /** Ticked in the question itself — remembered for this browser, not this draft. */
   const [dontAsk, setDontAsk] = React.useState(false);
+  /** The backend completeness check runs on "Continue to sign". */
+  const [validating, setValidating] = React.useState(false);
+  /** The missing items the backend reported; `null` while the dialog is closed. */
+  const [problems, setProblems] = React.useState<ValidationError[] | null>(null);
+  /** The check itself could not run (offline, session ended, draft expired). */
+  const [validateError, setValidateError] = React.useState<string | null>(null);
 
   const complainant = complainantSummary(draft.complainants[0]);
   const advocates = advocateSummaries(draft);
@@ -384,6 +393,36 @@ export function PreviewSection() {
   const done = (key: PanelKey) => sectionComplete(draft, panels[key].step);
   const readyToSign = sectionComplete(draft, "preview");
   const outstanding = (Object.keys(panels) as PanelKey[]).filter((k) => !done(k)).length;
+
+  const continueHref = next ? hrefFor(next) : undefined;
+
+  /**
+   * "Continue to sign" asks the court's server whether the filing is complete. If it is, the
+   * filer goes on to sign; if not, the missing items are listed and they stay here to fix
+   * them — the backend is the authority on completeness (not the per-section hints above).
+   */
+  const continueToSign = async () => {
+    const caseId = draft.caseId;
+    // A draft that never reached the server (sample/batch drafts) cannot be validated there.
+    if (!caseId) {
+      if (continueHref) router.push(continueHref);
+      return;
+    }
+    setValidating(true);
+    setValidateError(null);
+    try {
+      const { isValid, errors } = await caseFilingApi.validateCase(caseId);
+      if (isValid) {
+        if (continueHref) router.push(continueHref);
+        return;
+      }
+      setProblems(errors);
+    } catch (err) {
+      setValidateError(caseFilingErrorMessage(err));
+    } finally {
+      setValidating(false);
+    }
+  };
 
   /** The browser's print dialog — which is also how a PDF is saved. */
   const printFile = () => {
@@ -673,6 +712,12 @@ export function PreviewSection() {
             <CourtDocument draft={draft} />
           </TabsContent>
         </Tabs>
+
+        {validateError ? (
+          <SectionNotice variant="destructive" title="Couldn't check the filing with the court's server">
+            {validateError}
+          </SectionNotice>
+        ) : null}
       </FilingMain>
 
       {/* ── Review takes you to the section ── */}
@@ -713,10 +758,58 @@ export function PreviewSection() {
         </ChromeDialogContent>
       </Dialog>
 
+      {/* ── Continue to sign was blocked: what the court still needs ── */}
+      <Dialog open={!!problems} onOpenChange={(open) => { if (!open) setProblems(null); }}>
+        <ChromeDialogContent mobileSheet className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Some details are still needed</DialogTitle>
+            <DialogDescription>
+              The court needs these before you can sign and submit. Fix each one, then try
+              Continue to sign again.
+            </DialogDescription>
+          </DialogHeader>
+
+          <ul className="flex flex-col divide-y divide-hairline">
+            {problems?.map((p, i) => {
+              const step = stepForValidationField(p.field);
+              return (
+                <li key={`${p.field}-${i}`} className="flex items-start justify-between gap-3 py-3">
+                  <span className="flex min-w-0 items-start gap-2 text-body-compact">
+                    <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-warning-ink" aria-hidden />
+                    {p.message}
+                  </span>
+                  {step ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      onClick={() => {
+                        setProblems(null);
+                        router.push(hrefFor(step));
+                      }}
+                    >
+                      Go to {getStep(step).title}
+                    </Button>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setProblems(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </ChromeDialogContent>
+      </Dialog>
+
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        continueHref={next ? hrefFor(next) : undefined}
-        continueLabel="Continue to sign"
+        onContinue={continueToSign}
+        continueDisabled={validating}
+        continueLabel={validating ? "Checking…" : "Continue to sign"}
         showSaveState={false}
         status={
           readyToSign ? (

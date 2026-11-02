@@ -9,6 +9,7 @@
  *   deleteEvidence    DELETE /case-evidence/{case_evidence_id}
  *   saveDetails       PUT    /cases/{id}/details/{section} (whole section, replaces)
  *   saveAffidavit     PUT    /cases/{id}/affidavit        { affidavit } (replaces)
+ *   validateCase      POST   /cases/{id}/validate         → { is_valid, errors }
  *
  * The backend creates the case lazily, on the first save, and gives it the draft
  * session's id — so the id `startDraft` returns is the case id for the life of the
@@ -23,6 +24,7 @@ import { api, isApiError, type ApiClient } from "@/lib/api";
 
 import type { EvidenceType } from "../evidence";
 import type { IntakeDocType } from "../types";
+import type { ValidationError, ValidationResult } from "../validation";
 
 /** Registered case-filing error codes this file branches on (spec §7). */
 const E_CASE_SUBMITTED = "E07001";
@@ -235,6 +237,28 @@ export function createCaseFilingApi(client: ApiClient = api) {
      */
     async saveAffidavit(caseId: string, affidavit: string, signal?: AbortSignal): Promise<void> {
       await client.put(`cases/${encodeURIComponent(caseId)}/affidavit`, { affidavit }, { signal });
+    },
+
+    /**
+     * Run the completeness check (spec 0021 §6.3). Returns whether the filing is ready to
+     * sign and, when it is not, every missing piece with the field it is reported against.
+     */
+    async validateCase(caseId: string, signal?: AbortSignal): Promise<ValidationResult> {
+      const body = await client.post<{ is_valid?: unknown; errors?: unknown }>(
+        `cases/${encodeURIComponent(caseId)}/validate`,
+        undefined,
+        { signal }
+      );
+      const errors: ValidationError[] = Array.isArray(body?.errors)
+        ? body.errors.flatMap((e) =>
+            e && typeof e === "object" &&
+            typeof (e as ValidationError).field === "string" &&
+            typeof (e as ValidationError).message === "string"
+              ? [{ field: (e as ValidationError).field, message: (e as ValidationError).message }]
+              : []
+          )
+        : [];
+      return { isValid: body?.is_valid === true, errors };
     },
   };
 }

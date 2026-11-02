@@ -133,6 +133,11 @@ export type InstitutionInput = {
   entity_name: string;
   pan?: string;
   cin?: string;
+  /**
+   * The filer declared they will not give a PAN or CIN. A complainant institution needs a
+   * PAN, a CIN or this, or the backend refuses it (400).
+   */
+  pan_cin_skip_declared?: true;
   contact_number?: string;
   email_address?: string;
 };

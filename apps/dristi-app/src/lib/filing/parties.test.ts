@@ -118,6 +118,42 @@ describe("complainantBodies", () => {
     assert.equal(body.person?.name, "Meera Nair");
     assert.equal(body.designation, "Director");
   });
+
+  /** An institution complainant with everything the backend needs except its CIN/PAN. */
+  function institution(cinPan: string, skippedAt: string | null = null) {
+    const c = blankComplainant();
+    c.type = "institution";
+    c.entType = "private-limited";
+    c.entName = "Kollam Traders Pvt Ltd";
+    c.entCinPan = cinPan;
+    c.entCinPanSkippedAt = skippedAt;
+    c.entAddr = { ...addr };
+    return complainantBodies(c)[0];
+  }
+
+  it("sends the declaration, not a number, when the filer skipped the CIN/PAN", () => {
+    // A number left over from before the skip is not sent with it.
+    const body = institution("ABCDE1234F", "2026-11-02T10:00:00.000Z");
+    assert.equal(body.institution?.pan_cin_skip_declared, true);
+    assert.equal(body.institution?.pan, undefined);
+    assert.deepEqual(missingFields(body, "complainants"), []);
+  });
+
+  it("holds back an institution with no whole CIN or PAN and no declaration", () => {
+    for (const typed of ["", "ABCDE12"]) {
+      const body = institution(typed);
+      assert.equal(body.institution?.pan, undefined, typed);
+      assert.equal(body.institution?.cin, undefined, typed);
+      assert.equal(body.institution?.pan_cin_skip_declared, undefined, typed);
+      assert.deepEqual(missingFields(body, "complainants"), ["CIN or PAN"], typed);
+    }
+  });
+
+  it("sends a 21-character CIN as a CIN", () => {
+    const body = institution("U12345KL2020PTC123456");
+    assert.equal(body.institution?.cin, "U12345KL2020PTC123456");
+    assert.deepEqual(missingFields(body, "complainants"), []);
+  });
 });
 
 describe("accusedBodies", () => {
@@ -290,6 +326,13 @@ describe("missingFields", () => {
       "type of entity",
       "designation",
     ]);
+  });
+
+  it("never asks an institution accused for a CIN or PAN", () => {
+    const a = accused();
+    a.type = "institution";
+    a.entType = "llp";
+    assert.equal(missingFields(accusedBodies(a)[0], "accused").includes("CIN or PAN"), false);
   });
 
   it("asks a witness with an address for its police station", () => {

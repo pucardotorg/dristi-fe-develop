@@ -21,9 +21,7 @@
 
 import { api, isApiError, type ApiClient, type Page } from "@/lib/api";
 
-import type { EvidenceType } from "../evidence";
 import type { IntakeDocType } from "../types";
-import type { ValidationError, ValidationResult } from "../validation";
 
 /** Registered case-filing error codes this file branches on (spec §7). */
 const E_CASE_SUBMITTED = "E07001";
@@ -198,17 +196,6 @@ type AdvocateSearchRow = {
 
 function unexpected(what: string): Error {
   return new Error(`Unexpected ${what} response from the case service.`);
-}
-
-function toSavedEvidence(body: CaseEvidenceBody | null): SavedEvidence {
-  if (!body || typeof body.case_evidence_id !== "string")
-    throw unexpected("evidence");
-  return {
-    caseEvidenceId: body.case_evidence_id,
-    evidenceType:
-      typeof body.evidence_type === "string" ? body.evidence_type : "",
-    ordinal: typeof body.ordinal === "number" ? body.ordinal : 0,
-  };
 }
 
 /**

@@ -35,12 +35,16 @@ function extensionOf(name: string): string {
   return dot === -1 ? "" : base.slice(dot).toLowerCase();
 }
 
+/** A JPG, PNG or PDF type with an extension that matches it, whatever the size. */
+export function isAcceptedType(file: File): boolean {
+  const extensions = ACCEPTED_FORMATS[file.type.toLowerCase()];
+  return extensions !== undefined && extensions.includes(extensionOf(file.name));
+}
+
 /**
  * A file the upload field accepts: a JPG, PNG or PDF type, an extension that matches
  * that type, and at most `MAX_FILE_SIZE`.
  */
 export function isAcceptedDocument(file: File): boolean {
-  const extensions = ACCEPTED_FORMATS[file.type.toLowerCase()];
-  if (!extensions) return false;
-  return extensions.includes(extensionOf(file.name)) && file.size <= MAX_FILE_SIZE;
+  return isAcceptedType(file) && file.size <= MAX_FILE_SIZE;
 }

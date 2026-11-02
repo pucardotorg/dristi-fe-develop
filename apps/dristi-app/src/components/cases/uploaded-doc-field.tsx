@@ -24,12 +24,13 @@ import {
 } from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
 import { DocumentSlot } from "@/components/ui/document-slot";
+import type { Locale } from "@/lib/onboarding/content";
 import {
   DocumentPreviewDialog,
   DocumentThumbnailButton,
   useObjectUrl,
 } from "@/components/document-preview";
-import { isAcceptedDocument, MAX_FILE_SIZE } from "@/lib/uploads/accepted-document";
+import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
 
 export const UPLOAD_HELP = "Upload a JPG, JPEG, PNG or PDF up to 10 MB.";
 
@@ -83,13 +84,14 @@ export function UploadedDocField({
   onFileChange,
   onRejectFile,
   copy,
+  locale = "en",
 }: {
   label: string;
   required?: boolean;
   file: File | null;
   onFileChange: (file: File | null) => void;
   /** Called with a picked file this field will not take (wrong type, over 10 MB), so
-      the host can say why. Without it the pick is ignored, as it always was. */
+      the host can say why. Without it the pick is ignored. */
   onRejectFile?: (file: File) => void;
   /** Bilingual hosts (registration) pass their own strings; the case flows'
       English defaults stand otherwise. */
@@ -98,7 +100,12 @@ export function UploadedDocField({
     remove?: string;
     noFile?: string;
     chooseFile?: string;
+    optional?: string;
+    previewDescription?: string;
+    previewAlt?: string;
   };
+  /** The preview's language, for a host that speaks the viewer's. */
+  locale?: Locale;
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
@@ -115,10 +122,9 @@ export function UploadedDocField({
         accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
         onChange={(event) => {
           const next = event.target.files?.[0];
-          // Hosts that handle refusals get the full check (type and size); the
-          // others keep the size-only rule they were built against.
-          const accepted = next && (onRejectFile ? isAcceptedDocument(next) : next.size <= MAX_FILE_SIZE);
-          if (next && accepted) onFileChange(next);
+          // The picker's `accept` is only a hint, so every host gets the full check
+          // (type, extension and size); `onRejectFile` just lets it say why.
+          if (next && isAcceptedDocument(next)) onFileChange(next);
           else if (next) onRejectFile?.(next);
           // The same file can be picked again after a remove.
           event.target.value = "";
@@ -130,7 +136,7 @@ export function UploadedDocField({
             <DocumentThumbnailButton
               file={file}
               url={url}
-              locale="en"
+              locale={locale}
               onOpen={() => setPreviewOpen(true)}
               className="size-full rounded-md"
             />
@@ -171,8 +177,12 @@ export function UploadedDocField({
           required={required}
           onChooseFile={() => inputRef.current?.click()}
           copy={
-            copy?.noFile || copy?.chooseFile
-              ? { noFile: copy.noFile, chooseFile: copy.chooseFile }
+            copy?.noFile || copy?.chooseFile || copy?.optional
+              ? {
+                  noFile: copy.noFile,
+                  chooseFile: copy.chooseFile,
+                  optional: copy.optional,
+                }
               : undefined
           }
         />
@@ -182,13 +192,57 @@ export function UploadedDocField({
         onOpenChange={setPreviewOpen}
         file={file}
         url={url}
-        locale="en"
+        locale={locale}
         copy={{
           title: label,
-          description: "Check the document is readable before continuing.",
-          alt: label,
+          description:
+            copy?.previewDescription ??
+            "Check the document is readable before continuing.",
+          alt: copy?.previewAlt ?? label,
         }}
       />
     </>
   );
 }
+
+/**
+ * Choose a new file for something already filed but not yet signed (a memo,
+ * an affidavit). The upload row's own picker and limits, as a button.
+ */
+export function ReplaceFileButton({
+  onFile,
+  label = "Replace file",
+  className,
+}: {
+  onFile: (file: File) => void;
+  label?: string;
+  className?: string;
+}) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        className="hidden"
+        tabIndex={-1}
+        aria-hidden="true"
+        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+        onChange={(event) => {
+          const next = event.target.files?.[0];
+          if (next && next.size <= MAX_FILE_SIZE) onFile(next);
+          event.target.value = "";
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        className={className}
+        onClick={() => inputRef.current?.click()}
+      >
+        {label}
+      </Button>
+    </>
+  );
+}
+

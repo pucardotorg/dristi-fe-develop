@@ -25,6 +25,7 @@ import {
 import { nameList } from "@/lib/filing/format";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
 import type { Accused, AccusedType } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -42,8 +43,9 @@ import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard, FormRow, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
+import { CorrectionInstance } from "@/components/filing/posture";
 import { OptionSelect, TextField } from "@/components/filing/inputs";
-import { SectionNotice } from "@/components/filing/notices";
+import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import {
   AddressBlockList,
   ContactList,
@@ -56,6 +58,7 @@ export function AccusedSection() {
   const { draft, update, hrefFor } = useFiling();
   const router = useRouter();
   const { prev, next } = neighbours("accused");
+  const { unsaved, retryUnsaved } = useCaseParties("accused");
 
   // Tracked by id, so removing an accused cannot leave the tabs pointing at a stale index.
   const [activeId, setActiveId] = React.useState(() => draft.accused[0]?.id ?? "");
@@ -99,6 +102,7 @@ export function AccusedSection() {
     const i = draft.accused.findIndex((x) => x.id === id);
     if (i < 0) return;
     const fallback = draft.accused[i + 1] ?? draft.accused[i - 1];
+    removePartyFromCase(draft.accused[i]);
     update((d) => {
       d.accused.splice(i, 1);
     });
@@ -149,8 +153,17 @@ export function AccusedSection() {
       <FilingMain>
         <FilingPageHeader
           title="Accused details"
-          description="Add the person or entity you are filing this complaint against."
+          description="Add the person or entity this complaint is filed against."
         />
+
+        {unsaved.length > 0 ? (
+          <UnsavedNotice
+            labels={unsaved.map((x) => accusedLabel(x, draft.accused.indexOf(x)))}
+            error={unsaved[0].syncError ?? ""}
+            noun="details"
+            onRetry={() => void retryUnsaved()}
+          />
+        ) : null}
 
         <SectionTabs
           tabs={draft.accused.map((acc, i) => ({
@@ -167,6 +180,8 @@ export function AccusedSection() {
           onAdd={addAccused}
         />
 
+        {/* Which accused the fields below belong to, so a check can point at its field. */}
+        <CorrectionInstance value={index}>
         {/*
           Identity. "Is the accused a person or an institution?" and "what kind of
           institution?" are two questions: the old single list made you answer the second
@@ -186,7 +201,7 @@ export function AccusedSection() {
               />
             </FormField>
             {isIndividual ? null : (
-              <FormField label="Type of entity" required>
+              <FormField label="Type of entity" name="entType" required>
                 <OptionSelect
                   value={a.entType}
                   onValueChange={(v) => setField("entType", v)}
@@ -197,7 +212,7 @@ export function AccusedSection() {
             )}
           </FormRow>
           <HalfWidth>
-            <FormField label={isIndividual ? "Full name" : "Entity name"} required>
+            <FormField label={isIndividual ? "Full name" : "Entity name"} name="name" required>
               <TextField
                 value={a.name}
                 onChange={(v) => setField("name", v)}
@@ -270,6 +285,7 @@ export function AccusedSection() {
             />
           </FormField>
         </FormCard>
+        </CorrectionInstance>
       </FilingMain>
 
       <FilingFooter

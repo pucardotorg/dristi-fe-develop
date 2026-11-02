@@ -165,10 +165,9 @@ Two levers if that constraint is too tight: set
   last published June 2026. Fine for internal design review; not a dependency to build on.
 - **Exact GitHub permission scope** requested at authorisation time is not documented —
   read the consent screen before accepting, and record what it asked for.
-- **Design system**: the widget draws its own UI, which does not come from
-  pucar-design-system. It is review tooling layered over the app rather than product UI,
-  so it sits outside the DS gate — but it will be visible in screenshots, and it should
-  not be enabled on anything shown as a finished design.
+- **Own UI**: the widget draws its own UI, not the app's shared components. It is review
+  tooling layered over the app rather than product UI — but it will be visible in
+  screenshots, and it should not be enabled on anything shown as a finished design.
 - **Data retention** on the FasterFixes side has not been checked.
 
 ---

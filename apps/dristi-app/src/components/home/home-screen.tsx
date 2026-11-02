@@ -28,6 +28,10 @@ import { useProfile } from "@/components/shell/profile";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import { DEMO_JOIN_CASE, fill, home, shell, type JoinCase } from "@/lib/join/content";
 import { Identifier } from "@/components/chrome/identifier";
+import {
+  LinkedComplaintCard,
+  useLinkedComplaints,
+} from "@/components/home/linked-complaint-cards";
 
 type HomeCase = { joinCase: JoinCase; status: "joined" };
 type VisibleHomeCase = HomeCase | { joinCase: JoinCase; status: "summons" };
@@ -64,13 +68,14 @@ export function HomeScreen({
   initialLocale?: Locale;
 }) {
   const { locale } = useLocale();
-  const { accountName } = useProfile();
+  const { displayName } = useProfile();
   const [dialogOpen, setDialogOpen] = React.useState(openManualJoin || Boolean(joinHandoff));
   const [dialogMode, setDialogMode] = React.useState<JoinMode>(
     joinHandoff ? "handoff" : "manual",
   );
   const [autoOpened, setAutoOpened] = React.useState(openManualJoin || Boolean(joinHandoff));
   const [cases, setCases] = React.useState<HomeCase[]>([]);
+  const linkedComplaints = useLinkedComplaints();
   const [notice, setNotice] = React.useState<"file" | "case" | "nav" | null>(null);
   const [linkOpen, setLinkOpen] = React.useState(pendingLink);
   const [linkDeclined, setLinkDeclined] = React.useState(false);
@@ -111,13 +116,20 @@ export function HomeScreen({
     <>
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
         <h1 className="text-title text-balance font-semibold sm:text-title-l">
-          {fill(home.welcome, locale, { name: accountName })}
+          {fill(home.welcome, locale, { name: displayName })}
         </h1>
 
         <section className="flex flex-col gap-5" aria-label={pick(home.casesHeading, locale)}>
           <h2 className="text-title-s font-semibold">{pick(home.casesHeading, locale)}</h2>
-          {visibleCases.length ? (
+          {visibleCases.length || linkedComplaints.length ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Complaints this person was asked to sign come first: one may need them. */}
+              {linkedComplaints.map((item) => (
+                <LinkedComplaintCard
+                  key={`${item.link.draftId}:${item.link.signatoryId}`}
+                  item={item}
+                />
+              ))}
               {visibleCases.map((entry) => (
                 <Card key={entry.joinCase.cnr} size="sm" className="h-full max-w-sm">
                   <CardContent className="flex h-full flex-col gap-5">

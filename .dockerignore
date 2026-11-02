@@ -6,9 +6,6 @@
 node_modules
 **/node_modules
 
-# Design system clone (fetched inside the image by the postinstall step)
-vendor/pucar-design-system
-
 # Next.js build output and generated assets
 apps/dristi-app/.next
 apps/dristi-app/out
@@ -23,11 +20,8 @@ apps/dristi-app/public/vendor
 **/.env.*
 **/*.pem
 
-# Agent tooling and docs (not needed to build the app)
-.agents
+# Editor tooling and docs (not needed to build the app)
 .claude
-.codex
-.cursor
 docs
 
 # IDEs

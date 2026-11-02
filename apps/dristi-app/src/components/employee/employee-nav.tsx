@@ -2,24 +2,33 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ChevronDownIcon, SearchIcon, SettingsIcon } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  ChevronDownIcon,
+  LogOutIcon,
+  SearchIcon,
+  SettingsIcon,
+} from "lucide-react";
+import { toast } from "sonner";
 
 import {
   useCourtRole,
   useCourtSession,
 } from "@/components/employee/use-court-role";
 import {
-  COURT_ROLE_LABEL,
-  COURT_SEATS,
+  courtRoleLabel,
   type CourtRole,
 } from "@/lib/employee/content";
 import { setCourtRole } from "@/lib/employee/court-role";
+import { clearCourtSession } from "@/lib/employee/session";
+import { COURT_ACCOUNTS, courtAccounts } from "@/lib/employee/sign-in";
+import { seatsIn } from "@/lib/employee/seat-roles";
 import {
   COURT_NAV_LINKS,
   COURT_NAV_TRAILING,
   courtNavRowsFor,
   courtNavGroupsFor,
+  courtNavGroupsForCourt,
   courtNavGroupsForSeat,
   courtNavItemsForSeat,
   seatHasNarrowRail,
@@ -32,6 +41,26 @@ import {
 import { useCognizanceLayout } from "@/components/employee/use-cognizance-layout";
 import type { CognizanceLayout } from "@/lib/employee/cognizance-layout";
 import { useCourtNavLayout } from "@/components/employee/use-court-nav-layout";
+import { useCourtNavShown } from "@/components/employee/use-court-nav-shown";
+import { courtNavRowShown, OPTIONAL_COURT_NAV_ROWS } from "@/lib/employee/nav-shown";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useNextHearingEntry } from "@/components/employee/use-next-hearing-entry";
+import { useOrderSigning } from "@/components/employee/use-order-signing";
+import { usePendingOrders } from "@/components/employee/use-pending-orders";
+import { pendingOrderCountFor } from "@/lib/employee/pending-orders";
+import { resetBulk } from "@/components/bulk/api";
+import { loadDemoSeed, resetSandboxData } from "@/lib/employee/sandbox-reset";
+import { DEMO_SEED_OPTIONS, type DemoSeed } from "@/lib/employee/demo-seed";
+import { useDemoSeed } from "@/components/employee/use-demo-seed";
+import {
+  NEXT_HEARING_ENTRY_OPTIONS,
+  type NextHearingEntry,
+} from "@/lib/employee/next-hearing-entry";
 import type { CourtNavLayout } from "@/lib/employee/nav-layout";
 import { BrandGlyph } from "@/components/brand-lockup";
 import { useCourtSearch } from "@/components/employee/court-search";
@@ -50,16 +79,37 @@ import {
   useRailCollapsed,
 } from "@/components/chrome/app-chrome";
 import { CHARCOAL_PLATE } from "@/components/chrome/rail-plate";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Collapsible,
   CollapsibleContent,
@@ -83,6 +133,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCourt, useCourtText } from "@/components/court/court-provider";
+import { COURT_IDS, courtProfile, isCourtId } from "@/lib/court/profiles";
 
 /**
  * The court-side navigation rail — the magistrate's own, not the advocate's.
@@ -177,29 +229,19 @@ function RowContents({ item }: { item: CourtNavItem }) {
       </span>
       {note ? <span className="sr-only">, {note}</span> : null}
       {item.count !== undefined && item.count > 0 ? (
-        /* How much is waiting: a quiet numeral, and nothing else.
-           **The red spark is gone** (owner, 2026-09-23: the rail "adds a lot of visual
-           noise now"). It was adopted from the advocate rail's `TasksCount`, which had
-           already been pulled back from a full red pill because that "read as an alarm
-           bolted to the nav" — and the comment that stood here admitted the rest: that
-           `--rail-badge` resolves to `--destructive-solid`, which the DS reserves for
-           irreversible or dangerous actions, and that a signing queue is workload, not
-           danger. The 6px dot was the concession that kept the red anyway.
+        /* How much is waiting: the advocate rail's mark — a red spark and a numeral
+           (`TasksCount`), so both sides of the product say "work waiting" the same way.
+           **The spark is back** (owner, 2026-10-14: "bring this red dot to the employee
+           side as well"). It was taken out on 2026-09-23 for adding "a lot of visual
+           noise" with every queue open at once; the owner has since asked for it back.
 
-           It does not survive the open layout. That concession was priced against a rail
-           where one family disclosed at a time, so about seven sparks were on screen; with
-           every queue visible there are seventeen, and a mark that appears on every row
-           with work discriminates between nothing. This rail already makes that exact
-           argument against four red dots on the folded strip (`CourtNavGroupMark`) — it
-           was simply never applied to the expanded state. The numeral was always the
-           thing carrying the count.
-
-           The ink has to change with the row's ground. Idle, the numeral sits on the
-           charcoal plate at `--rail-muted` (6.28:1). Selected, the row inverts to the
-           white card and the same ink would fall to 2.08:1 — so it switches to the
-           plate's `--rail-card-muted` (5.70:1), which `CARD` names for exactly this.
-           `text-caption` carries the DS's 500 weight floor, so the numeral also stays
-           at one weight while the selected row's label goes to 600.
+           The dot keeps the advocate's size and ink (6px, `--rail-badge`). The numeral's
+           ink has to change with the row's ground. Idle, it sits on the charcoal plate at
+           `--rail-muted` (6.28:1). Selected, the row inverts to the white card and the
+           same ink would fall to 2.08:1 — so it switches to the plate's
+           `--rail-card-muted` (5.70:1), which `CARD` names for exactly this.
+           `text-caption` carries the DS's 500 weight floor, so the numeral also stays at
+           one weight while the selected row's label goes to 600.
 
            There is no folded register for it, because no folded row carries one: the only
            rows the strip renders are the two standalone links, and neither has a count.
@@ -209,13 +251,14 @@ function RowContents({ item }: { item: CourtNavItem }) {
         <span
           aria-hidden
           className={[
-            "shrink-0",
+            "flex shrink-0 items-center gap-1.5",
             "group-data-[collapsible=icon]:hidden",
             "text-caption tabular-nums",
             RAIL_MUTED,
             "group-data-[active=true]/menu-button:text-(--rail-card-muted)",
           ].join(" ")}
         >
+          <span className="size-1.5 rounded-full bg-(--rail-badge)" />
           {item.count}
         </span>
       ) : null}
@@ -235,9 +278,7 @@ function deadRowNote(item: CourtNavItem, collapsed: boolean): string {
       ? `${item.label} — opens outside DRISTI, not available yet`
       : "Opens outside DRISTI — not available yet";
   }
-  return collapsed
-    ? `${item.label} — not available yet`
-    : "Not available yet";
+  return collapsed ? `${item.label} — not available yet` : "Not available yet";
 }
 
 /**
@@ -297,10 +338,14 @@ function CourtNavRow({
                     <Link
                       href={child.href}
                       aria-current={
-                        isCourtNavActive(pathname, child.href) ? "page" : undefined
+                        isCourtNavActive(pathname, child.href)
+                          ? "page"
+                          : undefined
                       }
                     >
-                      <span className="min-w-0 flex-1 truncate">{child.label}</span>
+                      <span className="min-w-0 flex-1 truncate">
+                        {child.label}
+                      </span>
                       {child.count !== undefined && child.count > 0 ? (
                         <span className="shrink-0 text-caption text-muted-foreground tabular-nums">
                           {child.count}
@@ -342,7 +387,8 @@ function isCourtNavGroupActive(
     (item) =>
       (item.href !== undefined && isCourtNavActive(pathname, item.href)) ||
       (item.children?.some(
-        (child) => child.href !== undefined && isCourtNavActive(pathname, child.href),
+        (child) =>
+          child.href !== undefined && isCourtNavActive(pathname, child.href),
       ) ??
         false),
   );
@@ -825,6 +871,7 @@ function CourtNavGroupSection({
  * every other label in this rail makes when the strip takes over.
  */
 function CourtRailHeader() {
+  const courtText = useCourtText();
   const { isMobile } = useSidebar();
   const { court } = useCourtSession();
   const handoff = useFoldFocusHandoff(
@@ -835,10 +882,10 @@ function CourtRailHeader() {
     <div className={RAIL_BRAND_ROW}>
       <BrandGlyph className="h-6 shrink-0" onDark={CHARCOAL_PLATE.darkPlate} />
       <span
-        title={court}
+        title={courtText(court)}
         className="min-w-0 flex-1 truncate text-body-compact font-medium group-data-[collapsible=icon]:sr-only"
       >
-        {court}
+        {courtText(court)}
       </span>
       {isMobile ? null : (
         <SidebarTrigger
@@ -852,22 +899,6 @@ function CourtRailHeader() {
       )}
     </div>
   );
-}
-
-/**
- * The monogram.
- *
- * One initial for a single name, two for a compound one. The advocate rail's
- * first-and-last rule reads "Uddipan" as "UU", which is not a pair of initials, it is a
- * stutter — and the court side runs as one staff member whose name is one word, so the
- * case that rail never meets is the only case this one has.
- */
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "";
-  const first = parts[0].charAt(0);
-  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : "";
-  return (first + last).toUpperCase();
 }
 
 /**
@@ -905,7 +936,12 @@ function initialsOf(name: string): string {
  * one row, not the shape of the whole rail — and the two must stay choosable
  * independently of each other.
  *
- * All three sections are radio groups rather than plain items: each is one mutually
+ * **Court** — which state's court the whole app runs as (`lib/court/profiles.ts`). The
+ * same choice as the court icon on the advocate's Settings page (`CourtSwitch`), through
+ * the same provider: the court side has no settings page to hold it, and a demo moves
+ * between the two halves without signing out.
+ *
+ * All four sections are radio groups rather than plain items: each is one mutually
  * exclusive answer, and the menu has to show which one is live without being opened
  * twice. `w-auto min-w-48` because the primitive otherwise inherits the trigger's
  * width, and a 40px trigger would pinch "Bench clerk" to a column of letters.
@@ -916,159 +952,443 @@ function initialsOf(name: string): string {
  * It leaves with the labels when the rail folds. A strip has room for one mark at its
  * foot, and that mark is the person.
  */
+/** One small setting in the pop-up's "More settings": a label and a select. */
+type MoreSetting = {
+  id: string;
+  label: string;
+  value: string;
+  options: readonly { id: string; label: string }[];
+  onChange: (value: string) => void;
+};
+
 function CourtSettingsControl() {
   const seat = useCourtRole();
+  const { court, setCourt } = useCourt();
   const [layout, setLayout] = useCourtNavLayout();
   const [cognizanceLayout, setCognizanceLayout] = useCognizanceLayout();
+  const [nextHearingEntry, setNextHearingEntry] = useNextHearingEntry();
+  const demoSeed = useDemoSeed();
+  const [shown, setShown] = useCourtNavShown();
+  const [open, setOpen] = React.useState(false);
+  const [confirmReset, setConfirmReset] = React.useState(false);
+
+  /* Everything but the seat and the court (owner, 2026-10-15: a pop-up "so we can keep
+     adding items", with those two prominent and the rest small and folded away). A new
+     setting is one more entry here. Internal demo controls; kept plain on purpose. */
+  const more: MoreSetting[] = [
+    /* Which demo day the hearings and orders open on (owner, 2026-10-15). Switching
+       reloads them in this browser. */
+    {
+      id: "demo-seed",
+      label: "Demo data",
+      value: demoSeed,
+      options: DEMO_SEED_OPTIONS,
+      onChange: (next) => {
+        if (next === demoSeed) return;
+        loadDemoSeed(next as DemoSeed);
+        toast(
+          next === "empty"
+            ? "Empty day loaded: no hearing heard, no order drafted."
+            : "Orders in every state loaded.",
+        );
+      },
+    },
+    {
+      id: "rail-layout",
+      label: "Rail layout",
+      value: layout,
+      options: [
+        { id: "open", label: "All queues" },
+        { id: "grouped", label: "Grouped by type" },
+        { id: "actions", label: "Today’s actions" },
+        { id: "schedule", label: "Today’s schedule" },
+      ],
+      onChange: (next) => setLayout(next as CourtNavLayout),
+    },
+    /* Only the delay split has two rows to split into; Gujarat's three case-type tabs
+       stay on the one screen (owner, 2026-10-13). */
+    ...(courtProfile(court).cognizanceSplit === "delay"
+      ? [
+          {
+            id: "take-cognizance",
+            label: "Take cognizance",
+            value: cognizanceLayout,
+            options: [
+              { id: "tabs", label: "Combined, with tabs" },
+              { id: "split", label: "Split into two rows" },
+            ],
+            onChange: (next: string) =>
+              setCognizanceLayout(next as CognizanceLayout),
+          },
+        ]
+      : []),
+    /* Owner, 2026-10-15. */
+    {
+      id: "next-hearing-entry",
+      label: "Next hearing entered by",
+      value: nextHearingEntry,
+      options: NEXT_HEARING_ENTRY_OPTIONS,
+      onChange: (next) => setNextHearingEntry(next as NextHearingEntry),
+    },
+  ];
+
   return (
-    <DropdownMenu>
+    <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Court settings"
-              className={`${RAIL_ICON_BUTTON} group-data-[collapsible=icon]:hidden`}
-            >
-              <SettingsIcon aria-hidden />
-            </Button>
-          </DropdownMenuTrigger>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Court settings"
+            onClick={() => setOpen(true)}
+            className={`${RAIL_ICON_BUTTON} group-data-[collapsible=icon]:hidden`}
+          >
+            <SettingsIcon aria-hidden />
+          </Button>
         </TooltipTrigger>
         <TooltipContent side="top">Court settings</TooltipContent>
       </Tooltip>
-      {/* Opens upward off the rail's foot, and aligned to the trigger's own edge — there
-          is no room below it and the menu would otherwise be pinned against the bottom
-          of the window. */}
-      <DropdownMenuContent side="top" align="end" className="w-auto min-w-48">
-        {/* No dress on it: the DS label is already the muted eyebrow this wants, and a
-            named role over the primitive's own size would be two sizes on one element. */}
-        <DropdownMenuLabel>Working as</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={seat}
-          onValueChange={(next) => setCourtRole(next as CourtRole)}
-        >
-          {COURT_SEATS.map((role) => (
-            <DropdownMenuRadioItem key={role} value={role}>
-              {COURT_ROLE_LABEL[role]}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel>Rail layout</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={layout}
-          onValueChange={(next) => setLayout(next as CourtNavLayout)}
-        >
-          <DropdownMenuRadioItem value="open">All queues</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="grouped">
-            Grouped by type
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="actions">
-            Today’s actions
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="schedule">
-            Today’s schedule
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel>Take cognizance</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={cognizanceLayout}
-          onValueChange={(next) => setCognizanceLayout(next as CognizanceLayout)}
-        >
-          <DropdownMenuRadioItem value="tabs">
-            Combined, with tabs
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="split">
-            Split into two rows
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-title-s font-semibold">
+              Court settings
+            </DialogTitle>
+            <DialogDescription className="text-body-compact">
+              Changes apply at once, in this browser.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="settings-seat">Working as</Label>
+              <Select
+                value={seat}
+                onValueChange={(next) => setCourtRole(next as CourtRole)}
+              >
+                <SelectTrigger id="settings-seat" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {seatsIn(court).map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {courtRoleLabel(role, court)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2" data-court-raw="">
+              <Label htmlFor="settings-court">Court</Label>
+              <Select
+                value={court}
+                onValueChange={(next) => {
+                  if (isCourtId(next)) setCourt(next);
+                }}
+              >
+                <SelectTrigger id="settings-court" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {COURT_IDS.map((id) => (
+                    <SelectItem key={id} value={id}>
+                      {courtProfile(id).name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <Collapsible defaultOpen className="flex flex-col gap-3 border-t border-hairline pt-3">
+            <CollapsibleTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="group/more w-fit gap-1 px-2 text-muted-foreground"
+              >
+                More settings
+                <ChevronDownIcon
+                  aria-hidden
+                  className="transition-transform group-data-[state=open]/more:rotate-180"
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="flex flex-col gap-3">
+              {more.map((setting) => (
+                <div
+                  key={setting.id}
+                  className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-3"
+                >
+                  <Label
+                    htmlFor={`settings-${setting.id}`}
+                    className="text-caption font-normal text-muted-foreground"
+                  >
+                    {setting.label}
+                  </Label>
+                  <Select value={setting.value} onValueChange={setting.onChange}>
+                    <SelectTrigger
+                      id={`settings-${setting.id}`}
+                      size="sm"
+                      className="w-full"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {setting.options.map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+              {/* Which optional rail tabs show (owner, 2026-10-21): every Sign row and
+                  the three at the rail's foot. Many can be on at once, so a checkbox
+                  menu rather than a select. */}
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-3">
+                <Label
+                  htmlFor="settings-tabs-shown"
+                  className="text-caption font-normal text-muted-foreground"
+                >
+                  Tabs to show
+                </Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      id="settings-tabs-shown"
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-between font-normal"
+                    >
+                      {shown.length} of {OPTIONAL_COURT_NAV_ROWS.length} shown
+                      <ChevronDownIcon aria-hidden className="text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-56">
+                    {OPTIONAL_COURT_NAV_ROWS.map((row) => (
+                      <DropdownMenuCheckboxItem
+                        key={row.id}
+                        checked={shown.includes(row.id)}
+                        onSelect={(event) => event.preventDefault()}
+                        onCheckedChange={(checked) =>
+                          setShown(
+                            checked
+                              ? [...shown, row.id]
+                              : shown.filter((id) => id !== row.id),
+                          )
+                        }
+                      >
+                        {row.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              {/* A demo control, last and apart: everything filed and drafted in this
+                  browser goes, so it asks first (owner, 2026-10-14). */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="w-fit px-2 text-destructive"
+                onClick={() => setConfirmReset(true)}
+              >
+                Reset sandbox data
+              </Button>
+            </CollapsibleContent>
+          </Collapsible>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset sandbox data?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The sample applications come back, and the hearings and orders go
+              back to the chosen demo data. Applications filed, orders typed and bulk
+              batches made in this browser are removed. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                resetSandboxData();
+                void resetBulk();
+                toast("Sandbox data reset. The sample applications are back.");
+              }}
+            >
+              Reset
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
 /**
  * The rail's foot: who is sitting, and on which bench.
  *
- * A block, not a menu. The advocate's footer is a popover because an advocate's account
- * has things to switch between — a litigant profile, a sandbox user, a rail plate. None
- * of those exist here: the court side runs as whoever came through `/employee/login`,
- * and the plate is charcoal by decision rather than by preference (`rail-plate.ts`). The one
- * thing there *is* to switch — the seat — belongs to the settings control beside this
- * block, where a court would look for a setting; folding it into the person's name would
- * hide it behind an identity that is not itself a menu.
+ * The name opens a small menu whose one item is Sign out. It used to be a block that
+ * reported and did not act, because the court side had nothing to switch; but every
+ * profile needs a way out (PM, 2026-10-28), and people look for it under their own name,
+ * the same place the advocate's rail keeps it. The seat stays in the settings control
+ * beside it, where a court would look for a setting.
  *
- * So the block reports and does not act. The role line is the live seat rather than the
- * fixture's, because the two must not disagree about the same visit: the switch is one
- * control away, and a footer still reading Bench clerk after the menu says Typist would
- * be the screen contradicting itself.
+ * It shows one thing, the username (owner, 2026-10-14), taken from the live seat rather
+ * than the sign-in, because the two must not disagree about the same visit: the switch is
+ * one control away, and a footer still reading the bench clerk's username after the menu
+ * says Typist would be the screen contradicting itself. In Punjab & Haryana the username
+ * is the seat's own name.
  *
- * Three lines rather than the advocate's two. Which bench the staff member is sitting on
- * is part of who they are on this screen — every order and form the sign queues produce
- * is headed with that court — and the chrome says it nowhere else, because the mark at
- * the head of the rail is the product's and not the court's.
- *
- * The name is the signed-in account's demo given name (`session.ts`), falling back to
- * `CURRENT_STAFF` when nobody has signed in; no honorific and no designation are added
- * to it here.
- *
- * Folded, the text goes `sr-only` rather than `hidden`. The disc keeps the initial, and
- * the identity stays in the accessibility tree in both states — which is what a static
- * block can offer in place of the tooltip a control would get, and it beats hanging a
- * person's name off a hover the keyboard cannot reach.
+ * Folded, the disc stays and is still the menu's trigger; the name moves to its tooltip
+ * and its accessible name.
  */
 function CourtIdentityFooter() {
-  const { name } = useCourtSession();
   const role = useCourtRole();
+  const { court: state } = useCourt();
+  const router = useRouter();
+  /* The username alone (owner, 2026-10-14) — the live seat's, so switching the seat
+     in settings changes it too. In P&H it is the seat's own name ("reader"). */
+  const username = (courtAccounts(state)[role] ?? COURT_ACCOUNTS[role]).username;
   /* The settings control leaves the layout with the labels, so folding while it holds
      focus drops the keyboard the same way a section's rows do. Its fallback is the fold
      control — the one thing that caused the change and is on screen either side of it,
-     though not the same element either side: see `focusChromeFoldTrigger`. The identity
-     block itself is static and takes no focus to lose. */
+     though not the same element either side: see `focusChromeFoldTrigger`. The name's
+     trigger stays on screen folded, so it has no focus to lose. */
   const handoff = useFoldFocusHandoff(
     useRailCollapsed(),
     focusChromeFoldTrigger,
   );
+
+  // Back to the court sign-in, with nobody seated.
+  function onSignOut() {
+    clearCourtSession();
+    router.push("/employee/login");
+  }
+
   return (
     <div
       {...handoff}
-      className={`flex items-center gap-3 border-t ${RAIL_SEAM} p-3 group-data-[collapsible=icon]:justify-center`}
+      className={`flex items-center gap-1 border-t ${RAIL_SEAM} p-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0`}
     >
-      <span
-        aria-hidden
-        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-(--rail-avatar) text-caption font-semibold text-(--rail-avatar-ink)"
-      >
-        {initialsOf(name)}
-      </span>
-      {/* Two lines, and it cannot grow a third: the court moved to the brand row (see
-          `CourtRailHeader`), so what is left is one person and one seat, both short by
-          nature. Neither truncates — the lines still wrap and the footer still grows, per
-          `ACCESSIBILITY.md` §10 and §13, and `wrap-break-word` still catches the long
-          unspaced compounds an Indic script produces that a space-based wrap would push
-          past the rail's edge. A wrapped name costs a line here; it does not cost the
-          court, which is the thing that had nowhere to be clipped to. */}
-      <div className="flex min-w-0 flex-1 flex-col leading-tight group-data-[collapsible=icon]:sr-only">
-        <span className="wrap-break-word text-body-compact font-medium">
-          {name}
-        </span>
-        {/* One weight down, so a long seat title never starts competing with the
-            person's name; the step between them is size and ink. */}
-        <span className={`wrap-break-word text-caption font-medium ${RAIL_MUTED}`}>
-          {COURT_ROLE_LABEL[role]}
-        </span>
-      </div>
+      <Popover>
+        <PopoverTrigger asChild>
+          <SidebarMenuButton
+            className={`${RAIL_ROW} h-auto min-h-12 flex-1 py-2 group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:flex-none`}
+            tooltip={username}
+            aria-label={`${username} · Account menu`}
+          >
+            <span
+              aria-hidden
+              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-(--rail-avatar) text-caption font-semibold text-(--rail-avatar-ink)"
+            >
+              {username.charAt(0).toUpperCase()}
+            </span>
+            {/* One line: the account's username. It still wraps rather than truncates
+                (`ACCESSIBILITY.md` §10, §13), and `wrap-break-word` catches a long
+                unspaced username a space-based wrap would push past the rail's edge. */}
+            <span className="min-w-0 flex-1 text-left leading-tight font-medium whitespace-normal wrap-break-word group-data-[collapsible=icon]:hidden">
+              {username}
+            </span>
+          </SidebarMenuButton>
+        </PopoverTrigger>
+        <PopoverContent
+          side="top"
+          align="start"
+          collisionPadding={16}
+          className="w-56 p-2"
+        >
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={onSignOut}
+          >
+            <LogOutIcon aria-hidden />
+            <span className="flex-1 text-left">Sign out</span>
+          </Button>
+        </PopoverContent>
+      </Popover>
       <CourtSettingsControl />
     </div>
   );
 }
 
+/**
+ * Pending orders' live count, set on its row: the orders live in this browser, so the
+ * rail's data cannot carry the number (`pendingOrderCountFor`).
+ */
+function withPendingCount(
+  groups: CourtNavGroup[],
+  count: number | undefined,
+): CourtNavGroup[] {
+  return groups.map((group) =>
+    group.items.some((item) => item.id === "pending-orders")
+      ? {
+          ...group,
+          items: group.items.map((item) =>
+            item.id === "pending-orders" ? { ...item, count } : item,
+          ),
+        }
+      : group,
+  );
+}
+
+/**
+ * Groups, less the optional rows Court settings has hidden (`nav-shown.ts`) — and less
+ * any group left empty.
+ */
+function withShownRows(
+  groups: CourtNavGroup[],
+  shown: readonly string[],
+): CourtNavGroup[] {
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => courtNavRowShown(item.id, shown)),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
 export function EmployeeNav() {
   const [cognizanceLayout] = useCognizanceLayout();
   const seat = useCourtRole();
-  const groups = courtNavGroupsForSeat(courtNavGroupsFor(cognizanceLayout), seat);
+  const { court } = useCourt();
+  /* The split rows are the delay split's; a case-type deployment keeps its tabs. */
+  const pendingCount = pendingOrderCountFor(
+    seat,
+    usePendingOrders(),
+    useOrderSigning(),
+    court,
+  );
+  const [shown] = useCourtNavShown();
+  const groups = withShownRows(withPendingCount(
+    courtNavGroupsForSeat(
+      courtNavGroupsForCourt(
+        courtNavGroupsFor(
+          courtProfile(court).cognizanceSplit === "delay"
+            ? cognizanceLayout
+            : "tabs",
+        ),
+        court,
+      ),
+      seat,
+      court,
+    ),
+    pendingCount,
+  ), shown);
+  const trailing = courtNavItemsForSeat(COURT_NAV_TRAILING, seat).filter((item) =>
+    courtNavRowShown(item.id, shown),
+  );
   const { openId, setOpenId, currentId } = useCourtNavDisclosure(groups);
   const [savedLayout] = useCourtNavLayout();
   /* A seat cut down to a few rows has nothing to fold into a combined row, so it shows
@@ -1120,29 +1440,44 @@ export function EmployeeNav() {
                into (`courtNavRowsFor`), flat — the same list primitive the standalone
                links above already use. */
             <SidebarMenu className={RAIL_MENU}>
-              {courtNavRowsFor(layout).map((item) => (
-                <CourtNavRow
-                  key={item.id}
-                  item={item}
-                  active={
-                    isCourtNavCombinedRow(item)
-                      ? isCourtNavCombinedActive(pathname, layout)
-                      : undefined
-                  }
-                />
-              ))}
+              {courtNavRowsFor(layout, court, seat)
+                .filter((item) => courtNavRowShown(item.id, shown))
+                .map((item) =>
+                  item.id === "pending-orders"
+                    ? { ...item, count: pendingCount }
+                    : item,
+                )
+                .map((item) => (
+                  <CourtNavRow
+                    key={item.id}
+                    item={item}
+                    active={
+                      isCourtNavCombinedRow(item)
+                        ? isCourtNavCombinedActive(
+                            pathname,
+                            layout,
+                            court,
+                          )
+                        : undefined
+                    }
+                  />
+                ))}
             </SidebarMenu>
           )}
           {/* Configurations, last under every layout — it is the one row here that is
               not somewhere the bench works, so it closes the rail rather than heading
               it (owner, 2026-09-23). The seam is what says it is a different species
               from the queues above it; without one it reads as a fifth kind of work. */}
-          <CourtNavBreak />
-          <SidebarMenu className={RAIL_MENU}>
-            {courtNavItemsForSeat(COURT_NAV_TRAILING, seat).map((item) => (
-              <CourtNavRow key={item.id} item={item} />
-            ))}
-          </SidebarMenu>
+          {trailing.length > 0 ? (
+            <>
+              <CourtNavBreak />
+              <SidebarMenu className={RAIL_MENU}>
+                {trailing.map((item) => (
+                  <CourtNavRow key={item.id} item={item} />
+                ))}
+              </SidebarMenu>
+            </>
+          ) : null}
         </SidebarGroup>
       </ChromeRail>
     </TooltipProvider>

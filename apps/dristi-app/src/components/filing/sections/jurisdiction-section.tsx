@@ -15,7 +15,8 @@ import { PlusIcon } from "lucide-react";
 
 import { jurisdictionDetails } from "@/lib/filing/details";
 import { toLongDate } from "@/lib/filing/format";
-import { POLICE_STATIONS } from "@/lib/filing/options";
+import { useCourt } from "@/components/court/court-provider";
+import { policeStationsFor } from "@/lib/filing/options";
 import { limitationView, noticeServiceDate } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
@@ -35,6 +36,7 @@ import { RemoveButton } from "@/components/filing/repeat-lists";
 import { YesNoSegmented } from "@/components/filing/segmented";
 
 export function JurisdictionSection() {
+  const stations = policeStationsFor(useCourt().court);
   const { draft, update, hrefFor } = useFiling();
   const j = draft.jurisdiction;
   const { prev, next } = neighbours("jurisdiction");
@@ -54,6 +56,16 @@ export function JurisdictionSection() {
     });
 
   const limitation = limitationView(draft);
+  /** Clears a typed cause date, so it follows the demand notice again. */
+  const noticeDateButton = (
+    <button
+      type="button"
+      onClick={() => set("causeDate", "")}
+      className="font-medium text-foreground underline underline-offset-2"
+    >
+      Use that date
+    </button>
+  );
   const { elapsed: delay, withinLimit, overBy } = limitation;
   // Shown in the derivation line, so the date it counts from is checkable.
   const serviceDate = draft.notices
@@ -140,7 +152,7 @@ export function JurisdictionSection() {
                   <ComboField
                     value={j.payeePolice}
                     onChange={(v: string) => set("payeePolice", v)}
-                    items={POLICE_STATIONS}
+                    items={stations}
                     placeholder="Search stations"
                     emptyLabel="No station by that name."
                     ariaLabel="Police station of bank branch"
@@ -154,7 +166,7 @@ export function JurisdictionSection() {
                 <ComboField
                   value={j.drawerPolice}
                   onChange={(v: string) => set("drawerPolice", v)}
-                  items={POLICE_STATIONS}
+                  items={stations}
                   placeholder="Search stations"
                   emptyLabel="No station by that name."
                   ariaLabel="Police station of drawer (accused) bank branch"
@@ -257,10 +269,26 @@ export function JurisdictionSection() {
               label="Date of cause of action"
               name="causeDate"
               required
+              error={
+                limitation.causeIssue ? (
+                  <>
+                    {limitation.causeIssue} {noticeDateButton}
+                  </>
+                ) : undefined
+              }
               help={
-                limitation.causeDerived
-                  ? `15 days after the demand notice was served on ${toLongDate(serviceDate)}.`
-                  : undefined
+                limitation.causeDerived ? (
+                  `15 days after the demand notice was served on ${toLongDate(serviceDate)}.`
+                ) : limitation.derivedCause &&
+                  limitation.derivedCause !== limitation.causeDate &&
+                  !limitation.causeIssue ? (
+                  // A typed date stops following the notice; say what the notice gives,
+                  // and let the filer go back to it in one step.
+                  <>
+                    The demand notice gives {toLongDate(limitation.derivedCause)}.{" "}
+                    {noticeDateButton}
+                  </>
+                ) : undefined
               }
             >
               <DateField
@@ -271,6 +299,7 @@ export function JurisdictionSection() {
             <FormField
               label="Date of complaint filing"
               name="filingDate"
+              error={limitation.filingIssue}
               help={j.filingDate ? undefined : "Today."}
             >
               <DateField

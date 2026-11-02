@@ -14,6 +14,7 @@ import { blankWitness } from "@/lib/filing/blank";
 import { witnessComplete } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
 import type { Witness } from "@/lib/filing/types";
 import { FieldSeparator } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,14 +24,16 @@ import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
+import { CorrectionInstance } from "@/components/filing/posture";
 import { TextField } from "@/components/filing/inputs";
-import { SectionNotice } from "@/components/filing/notices";
+import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { AddressBlockList, ContactList } from "@/components/filing/repeat-lists";
 import { SectionTabs } from "@/components/filing/section-tabs";
 
 export function WitnessesSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("witnesses");
+  const { unsaved, retryUnsaved } = useCaseParties("witness");
 
   const [activeId, setActiveId] = React.useState(() => draft.witnesses[0]?.id ?? "");
   const [removeId, setRemoveId] = React.useState<string | null>(null);
@@ -68,6 +71,7 @@ export function WitnessesSection() {
       return;
     }
     const fallback = draft.witnesses[i + 1] ?? draft.witnesses[i - 1];
+    removePartyFromCase(draft.witnesses[i]);
     update((d) => {
       d.witnesses.splice(i, 1);
     });
@@ -80,8 +84,19 @@ export function WitnessesSection() {
       <FilingMain>
         <FilingPageHeader
           title="Witnesses"
-          description="List the witnesses you intend to rely on, and how the court can reach them."
+          description="List the witnesses the complainant intends to rely on, and how the court can reach them."
         />
+
+        {unsaved.length > 0 ? (
+          <UnsavedNotice
+            labels={unsaved.map(
+              (x) => x.fullName.trim() || `Witness ${draft.witnesses.indexOf(x) + 1}`
+            )}
+            error={unsaved[0].syncError ?? ""}
+            noun="details"
+            onRetry={() => void retryUnsaved()}
+          />
+        ) : null}
 
         <SectionTabs
           tabs={draft.witnesses.map((wit, i) => ({
@@ -97,6 +112,8 @@ export function WitnessesSection() {
           onAdd={addWitness}
         />
 
+        {/* Which witness the fields below belong to, so a check can point at its field. */}
+        <CorrectionInstance value={index}>
         {/* Identity */}
         <FormCard
           title={`Witness ${index + 1}`}
@@ -117,7 +134,7 @@ export function WitnessesSection() {
             helpPlacement="above"
           >
             <div className="flex flex-col gap-4">
-              <FormField label="Full name">
+              <FormField label="Full name" name="fullName">
                 <TextField
                   value={w.fullName}
                   onChange={(v) => setField("fullName", v)}
@@ -128,7 +145,7 @@ export function WitnessesSection() {
 
               <FieldSeparator>OR</FieldSeparator>
 
-              <FormField label="Designation">
+              <FormField label="Designation" name="designation">
                 <TextField
                   value={w.designation}
                   onChange={(v) => setField("designation", v)}
@@ -185,6 +202,7 @@ export function WitnessesSection() {
             addLabel="Add address"
           />
         </FormCard>
+        </CorrectionInstance>
       </FilingMain>
 
       <FilingFooter

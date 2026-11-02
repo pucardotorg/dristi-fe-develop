@@ -1,10 +1,35 @@
 "use client";
 
+import { useCourt } from "@/components/court/court-provider";
 import * as React from "react";
-import { CalendarX2Icon, SearchXIcon, VideoIcon } from "lucide-react";
+import {
+  CalendarX2Icon,
+  ListChecksIcon,
+  SearchXIcon,
+  VideoIcon,
+} from "lucide-react";
 
+import {
+  PILL_COUNT,
+  PILL_ITEM,
+  PILL_ROW,
+} from "@/components/chrome/pill-plate";
 import { CounselCell } from "@/components/employee/counsel-cell";
+import {
+  CauseListBulkBar,
+  hasBulkActs,
+  type BulkRoles,
+} from "@/components/employee/cause-list-bulk";
+import { usePendingOrders } from "@/components/employee/use-pending-orders";
+import { useOrderDrafts } from "@/components/employee/use-order-draft";
+import { hasDraftFor } from "@/lib/employee/order-drafts";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useOrderSigning } from "@/components/employee/use-order-signing";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { HearingOverviewDialog } from "@/components/employee/hearing-overview-dialog";
+import { CauseListDate } from "@/components/employee/cause-list-date";
+import { CauseListWeek } from "@/components/employee/cause-list-week";
+import { causeListForDay } from "@/lib/employee/cause-list-days";
 import {
   HearingCaseButton,
   HearingRowActions,
@@ -33,11 +58,21 @@ import {
 } from "@/components/ui/tooltip";
 import type { CourtRole } from "@/lib/employee/content";
 import {
+  seatDraftsOrders,
+  seatHasBenchControls,
+  seatPostsNextHearing,
+} from "@/lib/employee/court-role";
+import { CauseListColumnsMenu } from "@/components/employee/cause-list-columns-menu";
+import { useCauseListColumns } from "@/components/employee/use-cause-list-columns";
+import { useReaderPostsNextHearing } from "@/components/employee/use-next-hearing-entry";
+import { shownColumns } from "@/lib/employee/cause-list-columns";
+import {
   markHearingEnded,
   markHearingOngoing,
   markHearingPassedOver,
 } from "@/lib/employee/hearing-session";
 import {
+  advocatesOnList,
   causeTitle,
   counselFor,
   courtHearingPurposeLabel,
@@ -45,17 +80,20 @@ import {
   courtHearingStatusVariant,
   filterHearings,
   formatCourtDay,
-  hearingsForDay,
-  isoDay,
-  parseIsoDay,
+  groupByStatus,
+  COURT_CASE_STAGES,
   COURT_HEARING_PURPOSES,
-  TODAYS_CAUSE_STATUSES,
   EMPTY_FILTERS,
+  CAUSE_LIST_STATUS_ORDER,
+  LISTING_ORDER_MARKS,
+  NEXT_HEARING_MARKS,
   PAGE_SIZE,
-  withHearingSession,
+  courtHearingStatusLabel as statusWord,
+  type ListingFacts,
   type CourtHearing,
   type HearingFilters,
   type HearingsPageSize,
+  type TodaysCauseStatus,
 } from "@/lib/employee/hearings";
 import { Identifier } from "@/components/chrome/identifier";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
@@ -80,7 +118,16 @@ const HEARING_SORTS: CourtSortSpec<CourtHearing, HearingSort>[] = [
 ];
 
 /**
- * Today's hearings — the court's cause list for the day it is sitting.
+ * The status pills: All, then each status in the board's own grouping order (`CLS-07`,
+ * `CLS-02`), each in the status's own word.
+ */
+const HEARING_PILLS: { id: TodaysCauseStatus; label: string }[] =
+  CAUSE_LIST_STATUS_ORDER.map((id) => ({ id, label: statusWord(id) }));
+
+/**
+ * Today's hearings — the court's cause list for the day it is sitting, its pills
+ * narrowing by status — the sign process and pending-tasks row. The orders that come out
+ * of it have a row of their own, Pending orders (owner, 2026-10-14).
  *
  * Composed the way the advocate's cases list is composed (`CasesListScreen`), because it
  * is the same kind of screen and the bench should not have to learn a second layout: the
@@ -90,6 +137,7 @@ const HEARING_SORTS: CourtSortSpec<CourtHearing, HearingSort>[] = [
  * below them would be the box-in-box the layering model rules out (ui-craft §4).
  */
 export function HearingsScreen() {
+  const { court } = useCourt();
   const today = useCourtToday();
   /* Which seat the court side is being worked from. It decides what the rows offer, not
      what they say: the same board, with the acts that move the sitting on it or not
@@ -122,10 +170,83 @@ export function HearingsScreen() {
      show the overlay a listing that is still scheduled. */
   const [openHearingId, setOpenHearingId] = React.useState<string | null>(null);
 
-  const listed = withHearingSession(hearingsForDay(activeDay, today), session);
+  /* Today's board is live; a past day this browser worked is shown closed, with what
+     was left unheard Abandoned (`HRG-05`, `boardForDay`); any other day is read from the
+     demo court (`cause-list-days.ts`). */
+  const listed = causeListForDay(activeDay, today, session);
+  /* Only today's list is sat on. Another day — ahead or behind — is for reading: nothing
+     on it can be started, ended, passed over, posted or drafted. */
+  const otherDay = activeDay !== today;
   const [sort, setSort] = React.useState<HearingSort>("item");
 
-  const rows = sortRows(filterHearings(listed, filters), HEARING_SORTS, sort);
+  /* What the Orders and Next hearing filters read: the same facts the Orders glyph and
+     the Next hearing fields show (`hearings-table.tsx`). */
+  const drafts = useOrderDrafts();
+  const facts: ListingFacts = {
+    orderMark: (hearing) =>
+      hasDraftFor(drafts, hearing.id)
+        ? "draft"
+        : hearing.status === "completed"
+          ? "recorded"
+          : "none",
+    nextHearingSet: (hearing) => {
+      const posting = session.postings[hearing.id];
+      return !!posting && (posting.next === "none" || posting.nextDate !== null);
+    },
+  };
+  /* Who enters the next hearing is a court setting (owner, 2026-10-15): the reader, on
+     this board, or the steno, on the order screen. */
+  const postsNextHearing = useReaderPostsNextHearing();
+  /* The Next hearing filter goes with its column: where the column is not offered, a
+     choice made in another seat narrows nothing. */
+  const nextHearingColumn =
+    postsNextHearing && seatPostsNextHearing(seat, court) && !otherDay;
+  /* Grouped by status, and within each group in the chosen order — the cause list's
+     own sequence by default (`CLS-02`). Array sort is stable, so grouping the sorted
+     rows keeps that order inside each group. */
+  const rows = groupByStatus(
+    sortRows(
+      filterHearings(
+        listed,
+        nextHearingColumn ? filters : { ...filters, nextHearing: [] },
+        facts,
+      ),
+      HEARING_SORTS,
+      sort,
+    ),
+    () => 0,
+  );
+  /* Which columns show, and in what order — this seat's own choice, opening on its
+     default (`cause-list-columns.ts`). */
+  const columnState = useCauseListColumns(seat, postsNextHearing, court);
+  /* Another day is for reading: nothing on it can be started, ended, posted or drafted. */
+  const tableColumns = shownColumns(columnState.columns).filter(
+    (column) =>
+      !otherDay ||
+      (column.id !== "action" &&
+        column.id !== "orders" &&
+        column.id !== "nextHearing"),
+  );
+  /* Bulk mode follows the roles this seat stands for (`CLS-06`, `CLS-09`): a hearing
+     controller ends or passes over many listings; a next hearing setter, where the
+     next hearing is entered here, posts them in the same pop-up; an order drafter adds
+     one piece of text to many orders. A seat with none of them has no bulk mode, and a
+     day other than today has none for anyone. */
+  const bulkRoles: BulkRoles = {
+    hearing: seatHasBenchControls(seat, court),
+    next: postsNextHearing && seatPostsNextHearing(seat, court),
+    text: seatDraftsOrders(seat, court),
+  };
+  const bulkOffered = hasBulkActs(bulkRoles) && !otherDay;
+  const [bulkOn, setBulkOn] = React.useState(false);
+  const bulk = bulkOffered && bulkOn;
+  const [bulkIds, setBulkIds] = React.useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const [bulkNotice, setBulkNotice] = React.useState("");
+  const pendingOrders = usePendingOrders();
+  const signing = useOrderSigning();
+  const searchRef = React.useRef<HTMLInputElement>(null);
 
   /**
    * Reading a matter without calling it — the cause title on the row, and the row
@@ -203,13 +324,49 @@ export function HearingsScreen() {
     setLiveMessage(`Hearing passed over for ${causeTitle(hearing)}`);
   }
 
+  /* What a bulk act takes: the ticked listings still in the filtered list. A tick hidden
+     by a narrower filter is not acted on — nothing happens to a row the reader cannot
+     see. */
+  const bulkSelected = rows.filter((hearing) => bulkIds.has(hearing.id));
+  const bulkAll: boolean | "indeterminate" =
+    rows.length > 0 && bulkSelected.length === rows.length
+      ? true
+      : bulkSelected.length > 0
+        ? "indeterminate"
+        : false;
+
+  function toggleBulk(id: string) {
+    setBulkNotice("");
+    setBulkIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleBulkAll(select: boolean) {
+    setBulkNotice("");
+    setBulkIds(select ? new Set(rows.map((hearing) => hearing.id)) : new Set());
+  }
+
+  function setBulkMode(on: boolean) {
+    setBulkOn(on);
+    setBulkIds(new Set());
+    setBulkNotice("");
+  }
+
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
   const currentPage = Math.min(page, pageCount);
   const start = (currentPage - 1) * pageSize;
   const pageRows = rows.slice(start, start + pageSize);
   const isFiltered =
-    filters.status !== "all" ||
-    filters.purpose !== "all" ||
+    filters.statuses.length > 0 ||
+    filters.orders.length > 0 ||
+    (nextHearingColumn && filters.nextHearing.length > 0) ||
+    filters.purposes.length > 0 ||
+    filters.advocates.length > 0 ||
+    filters.stages.length > 0 ||
     filters.query !== "";
 
   /* Read from `listed`, not from `rows`: a filter set to Scheduled drops the matter
@@ -228,23 +385,81 @@ export function HearingsScreen() {
     setPage(1);
   }
 
+  /* The day is not a filter any more: it has its own control in the header, so clearing
+     the filters leaves the reader on the day they chose. */
   function clearFilters() {
     changeFilters(EMPTY_FILTERS);
-    setDay(null);
   }
+
+  function chooseDay(next: string) {
+    setDay(next === today ? null : next);
+    setPage(1);
+  }
+
+  /* T brings the board back to today — Google Calendar's key for it. Not while the
+     reader is typing, nor while a pop-up has the keyboard. */
+  React.useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "t" && event.key !== "T") return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.closest(
+          "input, textarea, select, [contenteditable=true], [role=dialog], [role=menu], [role=listbox]",
+        )
+      ) {
+        return;
+      }
+      setDay(null);
+      setPage(1);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 flex-col gap-2">
-          <h1 className="text-title text-balance font-semibold">
-            Today&rsquo;s hearings
-          </h1>
-          <p className="text-body text-muted-foreground">
-            {formatCourtDay(activeDay)}
-          </p>
+      {/* The board's day, chosen in the page header rather than inside Filters: it
+          decides which list the panel holds, so it sits above the panel (owner,
+          2026-10-22 — the advocate home's day control, for the court). As there: the
+          big date leads the header on a desktop, parted from the title by a hairline,
+          and a week strip under the title takes its place on a phone or tablet. */}
+      <header className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center">
+            <CauseListDate
+              className="hidden lg:grid"
+              day={activeDay}
+              today={today}
+              onSelectDay={chooseDay}
+            />
+            <span aria-hidden className="mx-8 hidden h-18 w-px bg-hairline lg:block" />
+            <div className="flex min-w-0 flex-col gap-2">
+              <h1 className="text-title text-balance font-semibold">
+                {otherDay ? "Hearings" : <>Today&rsquo;s hearings</>}
+              </h1>
+              {/* On a desktop the big date already says the day, month and year; the
+                  line repeats it only where the week strip stands in for it. */}
+              <p className="text-body text-muted-foreground lg:hidden">
+                {formatCourtDay(activeDay)}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <JoinVideoCourt />
+          </div>
         </div>
-        <JoinVideoCourt />
+        <CauseListWeek
+          className="lg:hidden"
+          day={activeDay}
+          today={today}
+          countFor={(cell) =>
+            cell === activeDay
+              ? listed.length
+              : causeListForDay(cell, today, session).length
+          }
+          onSelectDay={chooseDay}
+        />
       </header>
 
       {/* One panel: filters, list and footer are one unit of work, so they share one
@@ -252,29 +467,72 @@ export function HearingsScreen() {
           uses. Nothing inside draws a second frame. */}
       <div className="flex min-w-0 flex-col gap-6 rounded-xl border border-hairline bg-card p-6 shadow-raised">
         <HearingsFilters
+          searchRef={searchRef}
+          leading={
+            <StatusPills
+                label="Hearing status"
+                /* The pills are the quick form of the Status filter: one status, or All.
+                   Several statuses picked in the Filters panel light no pill. */
+                value={
+                  filters.statuses.length === 0
+                    ? "all"
+                    : filters.statuses.length === 1
+                      ? filters.statuses[0]
+                      : ""
+                }
+                onChange={(status) =>
+                  changeFilters({
+                    statuses:
+                      status === "all" ? [] : [status as TodaysCauseStatus],
+                  })
+                }
+                total={listed.length}
+                options={HEARING_PILLS.map((pill) => ({
+                  value: pill.id,
+                  label: pill.label,
+                  count: listed.filter((hearing) => hearing.status === pill.id)
+                    .length,
+                }))}
+              />
+          }
           filters={filters}
-          onChange={changeFilters}
-          day={activeDay}
-          today={today}
-          onDayChange={(next) => {
-            setDay(next);
-            setPage(1);
-          }}
-          onClearDay={() => {
-            setDay(null);
-            setPage(1);
+          advocates={advocatesOnList(listed)}
+          nextHearingColumn={nextHearingColumn}
+          onChange={(patch) => {
+            setBulkNotice("");
+            changeFilters(patch);
           }}
           onClear={clearFilters}
           trailing={
-            <CourtSortSelect
-              id="hearings-sort"
-              value={sort}
-              options={sortOptions(HEARING_SORTS)}
-              onChange={(next) => {
-                setSort(next);
-                setPage(1);
-              }}
-            />
+            <>
+              {bulkOffered ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-pressed={bulk}
+                  onClick={() => setBulkMode(!bulk)}
+                  className={
+                    bulk
+                      ? "border-primary bg-brand-muted text-brand-muted-foreground hover:bg-brand-muted"
+                      : undefined
+                  }
+                >
+                  <ListChecksIcon data-icon="inline-start" aria-hidden />
+                  {bulk ? "Exit bulk" : "Bulk"}
+                </Button>
+              ) : null}
+              {/* The board's columns, as the advocate Cases list offers them. */}
+              <CauseListColumnsMenu state={columnState} />
+              <CourtSortSelect
+                id="hearings-sort"
+                value={sort}
+                options={sortOptions(HEARING_SORTS)}
+                onChange={(next) => {
+                  setSort(next);
+                  setPage(1);
+                }}
+              />
+            </>
           }
         />
 
@@ -303,10 +561,23 @@ export function HearingsScreen() {
                 <HearingsTable
                   rows={pageRows}
                   seat={seat}
+                  columns={tableColumns}
+                  onMoveColumn={columnState.move}
+                  onShiftColumn={columnState.shift}
                   onOpenCase={openCase}
                   onStartHearing={startHearing}
                   onEndHearing={endHearing}
                   onPassOver={passOverHearing}
+                  selection={
+                    bulk
+                      ? {
+                          selected: bulkIds,
+                          onToggle: toggleBulk,
+                          all: bulkAll,
+                          onToggleAll: toggleBulkAll,
+                        }
+                      : undefined
+                  }
                 />
               </div>
               <div className="md:hidden">
@@ -317,6 +588,11 @@ export function HearingsScreen() {
                   onStartHearing={startHearing}
                   onEndHearing={endHearing}
                   onPassOver={passOverHearing}
+                  postsNextHearing={postsNextHearing}
+                  readOnly={otherDay}
+                  selection={
+                    bulk ? { selected: bulkIds, onToggle: toggleBulk } : undefined
+                  }
                 />
               </div>
             </div>
@@ -345,6 +621,18 @@ export function HearingsScreen() {
         )}
       </div>
 
+      {bulk ? (
+        <CauseListBulkBar
+          roles={bulkRoles}
+          selected={bulkSelected}
+          notice={bulkNotice}
+          onNotice={setBulkNotice}
+          onDone={() => setBulkIds(new Set())}
+          pending={pendingOrders}
+          signing={signing}
+        />
+      ) : null}
+
       {/* Focus goes back to the cause title that opened it — the only thing that opens
           it now. Radix restores that; nothing here has to. */}
       <HearingOverviewDialog
@@ -359,6 +647,9 @@ export function HearingsScreen() {
            row it does not open. */
         onStartHearing={startHearing}
         onEndHearing={endHearing}
+        onPassOver={passOverHearing}
+        postsNextHearing={postsNextHearing && !otherDay}
+        sitting={!otherDay}
         onOpenChange={(open) => {
           if (!open) setOpenHearingId(null);
         }}
@@ -370,83 +661,130 @@ export function HearingsScreen() {
 /**
  * The filter row: search inline, everything else behind a Filters button (owner,
  * 2026-09-15 — the advocate Cases pattern). The free text filters live where it is typed;
- * Status, Purpose and the hearing date fold into a right-hand sheet, and what is applied is
+ * the column filters fold into a right-hand sheet (status moved to the pills heading the
+ * row, 2026-10-12; the hearing date to the page header, 2026-10-22), and what is applied is
  * spelled out in removable chips on the row, so the folded controls never hide a narrowed
  * list. The court-level action (`JoinVideoCourt`) stays in the page header, not here.
  */
 function HearingsFilters({
+  leading,
+  searchRef,
   filters,
+  advocates,
   onChange,
-  day,
-  today,
-  onDayChange,
-  onClearDay,
   onClear,
   trailing,
+  nextHearingColumn,
 }: {
+  /** Whether Next hearing is a column for this person — its filter goes with it. */
+  nextHearingColumn: boolean;
+  /** The view's status pills, on a row above the filters. */
+  leading: React.ReactNode;
+  searchRef: React.RefObject<HTMLInputElement | null>;
   filters: HearingFilters;
+  /** Every advocate on the day's list, for the Advocate filter. */
+  advocates: string[];
   /** Merge a change into the filters — a patch, not a whole set. */
   onChange: (patch: Partial<HearingFilters>) => void;
-  /** The day in view, already resolved to today when none is picked. */
-  day: string;
-  today: string;
-  onDayChange: (day: string) => void;
-  onClearDay: () => void;
   onClear: () => void;
   /** The list's sort control (`CourtSortSelect`), at the end of the row. */
   trailing?: React.ReactNode;
 }) {
+  /* The pills take a row of their own above the filters: sharing one, the last pill
+     was clipped off the end at desktop width once there were five of them. */
   return (
-    <CourtFilters
-      search={{
-        label: "Search cases",
-        value: filters.query,
-        onChange: (query) => onChange({ query }),
-        placeholder: "Case name or number",
-      }}
-      fields={[
-        {
-          id: "hearings-status",
-          label: "Status",
-          value: filters.status,
-          all: "all",
-          allLabel: "All statuses",
-          options: TODAYS_CAUSE_STATUSES.map((status) => ({
-            value: status.id,
-            label: status.label,
-          })),
-          onApply: (value) =>
-            onChange({ status: value as HearingFilters["status"] }),
-        },
-        {
-          id: "hearings-purpose",
-          label: "Purpose",
-          value: filters.purpose,
-          all: "all",
-          allLabel: "All purposes",
-          options: COURT_HEARING_PURPOSES.map((purpose) => ({
-            value: purpose.id,
-            label: purpose.label,
-          })),
-          onApply: (value) =>
-            onChange({ purpose: value as HearingFilters["purpose"] }),
-        },
-      ]}
-      date={{
-        label: "Hearing date",
-        value: parseIsoDay(day),
-        active: day !== today,
-        chipLabel: formatCourtDay(day),
-        draftActive: (value) => !!value && isoDay(value) !== today,
-        cleared: parseIsoDay(today),
-        onApply: (value) => {
-          if (value && isoDay(value) !== today) onDayChange(isoDay(value));
-          else onClearDay();
-        },
-      }}
-      trailing={trailing}
-      onClearAll={onClear}
-    />
+    <div className="flex min-w-0 flex-col gap-4">
+      {leading}
+      <CourtFilters
+        searchRef={searchRef}
+        search={{
+          label: "Search cases",
+          value: filters.query,
+          onChange: (query) => onChange({ query }),
+          placeholder: "Case name or number",
+        }}
+        fields={[]}
+        /* Every one takes several values, as a multi-select dropdown (owner, 2026-10-15). */
+        multi={[
+          {
+            id: "hearings-status",
+            label: "Status",
+            values: filters.statuses,
+            placeholder: "All statuses",
+            options: CAUSE_LIST_STATUS_ORDER.map((status) => ({
+              value: status,
+              label: statusWord(status),
+            })),
+            onApply: (values) =>
+              onChange({ statuses: values as HearingFilters["statuses"] }),
+          },
+          {
+            id: "hearings-advocate",
+            label: "Advocate",
+            values: filters.advocates,
+            options: advocates.map((name) => ({ value: name, label: name })),
+            placeholder: "All advocates",
+            onApply: (values) => onChange({ advocates: values }),
+          },
+          {
+            id: "hearings-stage",
+            label: "Case stage",
+            values: filters.stages,
+            placeholder: "All stages",
+            options: COURT_CASE_STAGES.map((stage) => ({
+              value: stage.id,
+              label: stage.label,
+            })),
+            onApply: (values) =>
+              onChange({ stages: values as HearingFilters["stages"] }),
+          },
+          {
+            id: "hearings-purpose",
+            label: "Purpose",
+            values: filters.purposes,
+            placeholder: "All purposes",
+            options: COURT_HEARING_PURPOSES.map((purpose) => ({
+              value: purpose.id,
+              label: purpose.label,
+            })),
+            onApply: (values) =>
+              onChange({ purposes: values as HearingFilters["purposes"] }),
+          },
+          {
+            id: "hearings-orders",
+            label: "Orders",
+            values: filters.orders,
+            placeholder: "All orders",
+            options: LISTING_ORDER_MARKS.map((mark) => ({
+              value: mark.id,
+              label: mark.label,
+            })),
+            onApply: (values) =>
+              onChange({ orders: values as HearingFilters["orders"] }),
+          },
+          ...(nextHearingColumn
+            ? [
+                {
+                  id: "hearings-next-hearing",
+                  label: "Next hearing",
+                  values: filters.nextHearing,
+                  placeholder: "Set or not",
+                  options: NEXT_HEARING_MARKS.map((mark) => ({
+                    value: mark.id,
+                    label: mark.label,
+                  })),
+                  onApply: (values: string[]) =>
+                    onChange({
+                      nextHearing: values as HearingFilters["nextHearing"],
+                    }),
+                },
+              ]
+            : []),
+        ]}
+        trailing={trailing}
+        onClearAll={onClear}
+      />
+    </div>
   );
 }
 
@@ -510,7 +848,7 @@ function HearingsEmpty({
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No matter on this day's list matches the status, purpose or search you asked for."
+            ? "No matter on this day's list matches the filters or search you chose."
             : `This court has no hearings listed for ${formatCourtDay(day)}.`}
         </EmptyDescription>
       </EmptyHeader>
@@ -540,13 +878,21 @@ function HearingsItemList({
   onEndHearing,
   onPassOver,
   onOpenOrder,
+  postsNextHearing,
+  readOnly,
+  selection,
 }: {
   rows: CourtHearing[];
   seat: CourtRole;
+  /** A day other than today: the items carry no controls, as the table drops its columns. */
+  readOnly: boolean;
   onOpenCase: (hearing: CourtHearing) => void;
   onStartHearing: (hearing: CourtHearing) => void;
   onEndHearing: (hearing: CourtHearing) => void;
   onPassOver: (hearing: CourtHearing) => void;
+  postsNextHearing: boolean;
+  /** Bulk mode: a checkbox at the head of each item. */
+  selection?: { selected: ReadonlySet<string>; onToggle: (id: string) => void };
   /** Optional, and unsupplied: see the note where `openOrder` used to be. */
   onOpenOrder?: (hearing: CourtHearing) => void;
 }) {
@@ -566,6 +912,14 @@ function HearingsItemList({
                 whole item is the target (`rowActivation`), and a 40px box here would
                 only lift the title off the number's baseline. */}
             <p className="flex min-w-0 items-baseline gap-1 text-body-compact font-medium">
+              {selection ? (
+                <Checkbox
+                  className="mr-2 self-center"
+                  checked={selection.selected.has(hearing.id)}
+                  onCheckedChange={() => selection.onToggle(hearing.id)}
+                  aria-label={`Select item ${hearing.item}, ${causeTitle(hearing)}`}
+                />
+              ) : null}
               <span className="shrink-0 text-muted-foreground tabular-nums">
                 {hearing.item}.
               </span>
@@ -591,17 +945,107 @@ function HearingsItemList({
               complainant={complainant.map((counsel) => counsel.name)}
               accused={accused.map((counsel) => counsel.name)}
             />
-            <HearingRowActions
-              hearing={hearing}
-              seat={seat}
-              onStartHearing={onStartHearing}
-              onEndHearing={onEndHearing}
-              onPassOver={onPassOver}
-              onOpenOrder={onOpenOrder}
-            />
+            {readOnly ? null : (
+              <HearingRowActions
+                hearing={hearing}
+                seat={seat}
+                onStartHearing={onStartHearing}
+                onEndHearing={onEndHearing}
+                onPassOver={onPassOver}
+                onOpenOrder={onOpenOrder}
+                postsNextHearing={postsNextHearing}
+              />
+            )}
           </QueueItemRow>
         );
       })}
     </ul>
+  );
+}
+
+/**
+ * A view's statuses as a single-select pill row, All first — the pending-tasks row
+ * (`chrome/pill-plate.ts`) the sign process already uses. Counts are what each pill holds
+ * before search or filters; an empty status cannot narrow anything, so it is disabled
+ * unless it is the one chosen.
+ */
+function StatusPills({
+  label,
+  value,
+  onChange,
+  total,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  total: number;
+  options: { value: string; label: string; count: number; hint?: string }[];
+}) {
+  return (
+    <TooltipProvider delayDuration={300}>
+      <ToggleGroup
+        type="single"
+        size="lg"
+        variant="default"
+        value={value}
+        onValueChange={(next) => {
+          if (next) onChange(next);
+        }}
+        aria-label={label}
+        className={PILL_ROW}
+      >
+        <Pill value="all" label="All" count={total} />
+        {options.map((option) => (
+          <Pill
+            key={option.value}
+            value={option.value}
+            label={option.label}
+            count={option.count}
+            hint={option.hint}
+            disabled={option.count === 0 && value !== option.value}
+          />
+        ))}
+      </ToggleGroup>
+    </TooltipProvider>
+  );
+}
+
+function Pill({
+  value,
+  label,
+  count,
+  hint,
+  disabled,
+}: {
+  value: string;
+  label: string;
+  count: number;
+  hint?: string;
+  disabled?: boolean;
+}) {
+  const item = (
+    <ToggleGroupItem
+      value={value}
+      disabled={disabled}
+      aria-label={`${label}, ${count}`}
+      className={PILL_ITEM}
+    >
+      <span>{label}</span>
+      <span aria-hidden className={PILL_COUNT}>
+        {count}
+      </span>
+    </ToggleGroupItem>
+  );
+  if (!hint) return item;
+  return (
+    <Tooltip>
+      {/* A wrapper, not the pill: Radix writes its own `data-state` onto the trigger,
+          which would overwrite the pill's `on` — the sign process' note. */}
+      <TooltipTrigger asChild>
+        <span className="inline-flex">{item}</span>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{hint}</TooltipContent>
+    </Tooltip>
   );
 }

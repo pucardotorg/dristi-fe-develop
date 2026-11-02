@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import { idUpload } from "@/lib/join/content";
+import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
 
 /**
  * Add-your-ID is a profile task, not part of registration. The local clarity check
@@ -44,12 +45,6 @@ export type SubmittedId = { idType: IdType; file: File };
 type UploadStatus = "empty" | "processing" | "filled";
 type ScanQuality = "good" | "poor" | null;
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const ALLOWED_FILE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "application/pdf",
-]);
 
 function fileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -84,9 +79,7 @@ export function AddIdForm({
   );
   function chooseFile(nextFile: File | undefined) {
     if (!nextFile) return;
-    const valid =
-      ALLOWED_FILE_TYPES.has(nextFile.type) && nextFile.size <= MAX_FILE_SIZE;
-    if (!valid) {
+    if (!isAcceptedDocument(nextFile)) {
       setFile(null);
       setStatus("empty");
       setQuality(null);

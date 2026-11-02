@@ -1,5 +1,8 @@
 "use client";
 
+import { isApplicationTask } from "@/components/tasks/act/task-flows";
+import { TaskViewDialog } from "@/components/tasks/act/task-view-dialog";
+
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -11,17 +14,17 @@ import {
   DEFAULT_FILTERS,
   type Filters,
   isNarrowed,
-  kindCounts,
+  categoryCounts,
   summaryOf,
   VIEW_LABELS,
   viewCounts,
   type World,
 } from "@/lib/tasks/selectors";
 import { headerDate, rupees } from "@/lib/tasks/format";
-import { ACTIONABLE, canArchive, cardKindOf, verbFor } from "@/lib/tasks/permissions";
+import { ACTIONABLE, canArchive, categoryOf, verbFor } from "@/lib/tasks/permissions";
 import { useTasks } from "@/lib/tasks/store";
 import { archive, markDone, unarchive } from "@/lib/tasks/transitions";
-import type { PillKind, Task, TaskId, TaskView, Verb } from "@/lib/tasks/types";
+import type { TaskCategory, Task, TaskId, TaskView, Verb } from "@/lib/tasks/types";
 import { cn } from "@/lib/utils";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -38,7 +41,7 @@ import { FilterRow, KIND_PILLS_ONLY } from "@/components/tasks/filter-row";
 import { useFilters } from "@/components/tasks/filters";
 import { KindPills } from "@/components/tasks/kind-pills";
 import { TasksTable, TasksTableSkeleton } from "@/components/tasks/tasks-table";
-import { type ActMode, type Flow, actModeOf, actPathOf, draftFlowOf, FLOW_DIALOG, flowPathOf, useTaskActions } from "@/components/tasks/use-task-actions";
+import { type ActMode, type Flow, actModeOf, draftFlowOf, FLOW_DIALOG, flowPathOf, useTaskActions } from "@/components/tasks/use-task-actions";
 
 const VIEWS: TaskView[] = ["needs-action", "waiting", "completed", "archived"];
 
@@ -90,7 +93,7 @@ export function TasksScreen() {
   );
 
   const rows = React.useMemo(() => applyFilters(world, filters), [world, filters]);
-  const counts = React.useMemo(() => kindCounts(world, filters), [world, filters]);
+  const counts = React.useMemo(() => categoryCounts(world, filters), [world, filters]);
   const tabCounts = React.useMemo(() => viewCounts(world, filters.query), [world, filters.query]);
   const summary = React.useMemo(() => summaryOf(world), [world]);
   const courts = React.useMemo(() => courtsOf(world), [world]);
@@ -102,6 +105,10 @@ export function TasksScreen() {
   const [flowNotice, setFlowNotice] = React.useState<{ task: Task; flow: Flow } | null>(null);
   /** The act modal — pay and file only (the owner's rule). */
   const [acting, setActing] = React.useState<{ taskId: TaskId; mode: ActMode } | null>(null);
+  /** A task opened to look at — waiting, done or archived — in its view window. */
+  const [viewingId, setViewingId] = React.useState<TaskId | null>(null);
+  const viewingTask = viewingId ? (tasks.find((t) => t.id === viewingId) ?? null) : null;
+  const viewingCase = viewingTask ? (caseOf(world, viewingTask) ?? null) : null;
   /** The respond dialog — a review task's decision acts in place. */
   const [responding, setResponding] = React.useState<Task | null>(null);
   const actingTask = React.useMemo(
@@ -158,8 +165,13 @@ export function TasksScreen() {
           setFlowNotice({ task, flow: "scrutiny" });
           return;
         case "Continue": {
-          // A draft continues in its own flow, behind the dialog; a pay draft is a
-          // payment and acts in place.
+          // A drafted application is finished in View case's Raise application, over
+          // this page; another draft continues in its own flow, behind the dialog; a
+          // pay draft is a payment and acts in place.
+          if (isApplicationTask(task)) {
+            openAct(task, "file");
+            return;
+          }
           const flow = draftFlowOf(task);
           if (flow) setFlowNotice({ task, flow });
           else openAct(task, actModeOf(task));
@@ -176,19 +188,13 @@ export function TasksScreen() {
           return;
         default:
           // "View" — a task waiting on someone else, closed, or held by a vakalatnama
-          // holder who is not you. It opens its own flow to look at rather than to act
-          // in: paying and filing read back in the modal, signing and scrutiny returns
-          // on their pages. A courtroom task has no such surface, and its row already
-          // carries the whole record, so the click does nothing rather than open an
-          // empty shell.
-          {
-            const path = actPathOf(task);
-            if (path) router.push(withOrigin(path, here));
-            else openAct(task, actModeOf(task));
-          }
+          // holder who is not you. It opens in its view window over the list, whatever
+          // its kind (owner, 2026-10-14) — the way every record in the product reads —
+          // rather than leaving for a page.
+          setViewingId(task.id);
       }
     },
-    [act, openAct, router, here]
+    [act, openAct]
   );
 
   const setView = React.useCallback(
@@ -200,7 +206,7 @@ export function TasksScreen() {
   );
 
   const selectKind = React.useCallback(
-    (kinds: PillKind[]) => setFilters((prev: Filters) => ({ ...prev, kinds })),
+    (kinds: TaskCategory[]) => setFilters((prev: Filters) => ({ ...prev, kinds })),
     [setFilters]
   );
 
@@ -251,7 +257,7 @@ export function TasksScreen() {
     // the selection costs whatever its size, and "Pay ₹40" for one is the same promise
     // as "Pay ₹48" for two. The row's own button remains the other way in.
     if (!selectedTasks.length) return null;
-    const kinds = new Set(selectedTasks.map((t) => cardKindOf(t)));
+    const kinds = new Set(selectedTasks.map((t) => categoryOf(t)));
     if (kinds.size !== 1) return null;
     const [kind] = [...kinds];
     if (kind !== "sign" && kind !== "pay") return null;
@@ -362,7 +368,7 @@ export function TasksScreen() {
           </div>
           <div className="w-full min-w-0 md:pointer-fine:w-auto md:pointer-fine:min-w-72 md:pointer-fine:flex-none">
             <FilterRow
-              kindCounts={state === "ready" ? counts : null}
+              categoryCounts={state === "ready" ? counts : null}
               filters={filters}
               courts={courts}
               people={people}
@@ -408,12 +414,15 @@ export function TasksScreen() {
             that nobody looks there after selecting rows (2026-09-16) — a toolbar belongs
             over the thing it acts on. Sticky under the chrome bar, so a set built forty
             rows down keeps its verbs in view. */}
-        {selectedTasks.length ? (
+        {/* Standing, not summoned (owner, 2026-10-14): a bar that appeared only after a
+            tick hid that ticking does anything. Its acts show from the start, waiting
+            on a selection — the shape the court's own signing queues use. */}
+        {state !== "loading" && rows.length ? (
           <SelectionBar
             count={selectedTasks.length}
             batch={batchKind ? { kind: batchKind, tasks: selectedTasks } : null}
             hasPayOrSign={selectedTasks.some((t) => {
-              const k = cardKindOf(t);
+              const k = categoryOf(t);
               return k === "pay" || k === "sign";
             })}
             disabled={!online || !!busy}
@@ -470,6 +479,15 @@ export function TasksScreen() {
         onFinished={(id) => {
           requestHighlight(id);
           focusRow(id);
+        }}
+      />
+
+      <TaskViewDialog
+        task={viewingTask}
+        kase={viewingCase}
+        open={!!viewingTask && !!viewingCase}
+        onOpenChange={(open) => {
+          if (!open) setViewingId(null);
         }}
       />
 
@@ -591,7 +609,9 @@ function SelectionBar({
   /* One line of prose does both jobs: how many are ticked, and — when the set is mixed —
      why there is no Pay or Sign among the acts to the right. */
   const summary =
-    `${count} task${count === 1 ? "" : "s"} selected.` +
+    count === 0
+      ? "Select tasks to pay, sign, mark as done or archive several at once."
+      : `${count} task${count === 1 ? "" : "s"} selected.` +
     (!batch && hasPayOrSign && count > 1
       ? " Paying or signing needs one kind at a time."
       : "");
@@ -605,16 +625,24 @@ function SelectionBar({
          because rows sliding under a translucent bar would decide the contrast of a
          money label; and unlifted, so the table below stays the one raised object and
          this reads as its toolbar rather than a second panel. */
-      className="sticky top-14 z-20 flex flex-wrap items-center justify-end gap-3 rounded-lg border border-hairline bg-card px-4 py-3"
+      /* Narrow, the summary takes its own line and the acts share the next, each an
+         equal part of it; once the bar itself is wide enough (a container query — the
+         sidebar decides its width as much as the window does) they sit on one line,
+         the acts hard right. */
+      className="@container sticky top-14 z-20 rounded-lg border border-hairline bg-card px-4 py-3"
     >
-      <p className="mr-auto flex flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground" aria-live="polite">
+      <div className="flex flex-col gap-3 @3xl:flex-row @3xl:items-center">
+      <p className="flex min-w-0 flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground @3xl:mr-auto" aria-live="polite">
         <span className="tabular-nums">{summary}</span>
-        <Button variant="link" className="h-auto p-0 font-normal underline" onClick={onClear}>
-          Clear
-        </Button>
+        {count ? (
+          <Button variant="link" className="h-auto p-0 font-normal underline" onClick={onClear}>
+            Clear
+          </Button>
+        ) : null}
       </p>
 
-      <Button variant="outline" disabled={disabled} onClick={onArchive}>
+      <div className="flex flex-wrap gap-2 @3xl:flex-nowrap @3xl:justify-end [&>button]:flex-1 @3xl:[&>button]:flex-none">
+      <Button variant="outline" disabled={disabled || count === 0} onClick={onArchive}>
         Archive
       </Button>
       <Button variant="outline" disabled={disabled || !canMarkDone} onClick={onMarkDone}>
@@ -624,7 +652,12 @@ function SelectionBar({
         <Button disabled={disabled} onClick={() => onBatch(batch)} className="tabular-nums">
           {label}
         </Button>
+      ) : count === 0 ? (
+        /* The primary act, named before there is anything for it to act on. */
+        <Button disabled>Pay or sign selected</Button>
       ) : null}
+      </div>
+      </div>
     </div>
   );
 }

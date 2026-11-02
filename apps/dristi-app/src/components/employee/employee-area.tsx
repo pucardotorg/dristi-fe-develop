@@ -7,16 +7,19 @@ import { ChromeShell } from "@/components/chrome/app-chrome";
 import { CourtSearchProvider } from "@/components/employee/court-search";
 import { EmployeeNav } from "@/components/employee/employee-nav";
 import { EmployeeTopBar } from "@/components/employee/employee-top-bar";
+import { ApplicationOrderTriggers } from "@/components/employee/application-order-triggers";
 import { AppToaster } from "@/components/shell/app-toaster";
 
 /**
  * Which part of the bench's side a path belongs to — `AppShell`'s own `areaOf`, one
  * route deep here. The rail is open everywhere except the order composer, which now
  * reads a case file beside the order and needs the width a full rail takes from the
- * page (owner, 2026-09-22).
+ * page (owner, 2026-09-22), and the application workstation, whose three columns need
+ * the same width (owner, 2026-10-08: the side nav "in a collapsed state").
  */
 function railAreaOf(pathname: string): "rail" | "flow" {
-  return /^\/employee\/hearings\/[^/]+\/order(?:\/|$)/.test(pathname)
+  return /^\/employee\/hearings\/[^/]+\/order(?:\/|$)/.test(pathname) ||
+    /^\/employee\/applications\/[^/]+(?:\/|$)/.test(pathname)
     ? "flow"
     : "rail";
 }
@@ -87,6 +90,9 @@ export function EmployeeArea({ children }: { children: React.ReactNode }) {
       {/* Inside the page column, so it inherits the column's `--chrome-page-inset` and
           centres on the bench's workspace rather than on the window. */}
       <AppToaster />
+      {/* A triggered order decides the applications in its workflow, wherever it was
+          signed or completed (owner, 2026-10-14). */}
+      <ApplicationOrderTriggers />
     </ChromeShell>
     </CourtSearchProvider>
   );

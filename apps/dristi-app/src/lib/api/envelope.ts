@@ -9,9 +9,8 @@
  *
  * `unwrapEnvelope` returns what the endpoint is actually about, with `meta` beside it.
  *
- * Known ambiguity, inherited from the renderer: an object whose *only* own field is
- * `data` is indistinguishable from a wrapped list. No endpoint returns that shape today;
- * if one ever does, ask the backend to rename the field rather than special-casing it.
+ * Known ambiguity, inherited from the renderer: an object whose only own field is `data`
+ * looks like a wrapped list. No endpoint returns that shape today.
  */
 
 /** What the backend attaches to every response. */

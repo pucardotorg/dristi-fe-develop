@@ -1,0 +1,111 @@
+/**
+ * Complaints a litigant was asked to sign, remembered against their account so the
+ * complaint stays on their home after the SMS link has done its job.
+ *
+ * A complainant who follows a signing link signs in (or registers) and lands on the
+ * complaint inside File a case; their home lists it among their cases — before
+ * signing, while the filing is under way, and once it is filed. The link is only the
+ * way in.
+ *
+ * Sandbox: kept in this browser's storage, the same session-lite the demo profile uses.
+ * A live deployment reads the parties a signed-in person is named as from the backend.
+ */
+
+import { writeLocalStorageValue } from "@/hooks/use-local-storage-value";
+
+import type { FilingDraft } from "./types";
+
+export const LINKED_COMPLAINTS_KEY = "dristi:linked-complaints";
+
+/**
+ * Set when a litigant signs in by the summons / Join a case door (owner, 2026-10-14):
+ * the demo account opens as a new account, with none of the complaints remembered from
+ * earlier signing links on its home. A signing link clears it again.
+ */
+export const NEW_ACCOUNT_SHELL_KEY = "dristi:new-account-shell";
+
+export function setNewAccountShell(on: boolean): void {
+  try {
+    if (on) window.localStorage.setItem(NEW_ACCOUNT_SHELL_KEY, "1");
+    else window.localStorage.removeItem(NEW_ACCOUNT_SHELL_KEY);
+  } catch {
+    /* blocked storage: the home shows what it has */
+  }
+}
+
+/**
+ * The mobile the litigant signed in with. Sandbox session-lite: the home lists every
+ * complaint that names this number as a complainant, as the backend would.
+ */
+export const SIGNED_IN_MOBILE_KEY = "dristi:signed-in-mobile";
+
+export function setSignedInMobile(mobile: string | null): void {
+  try {
+    if (mobile) window.localStorage.setItem(SIGNED_IN_MOBILE_KEY, mobile);
+    else window.localStorage.removeItem(SIGNED_IN_MOBILE_KEY);
+  } catch {
+    /* blocked storage: the home shows what it has */
+  }
+}
+
+export type LinkedComplaint = { draftId: string; signatoryId: string };
+
+/**
+ * The complaints sent for signature that name this mobile as a complainant — one link
+ * per complainant slot it holds. Drafts not yet sent for signature are the filer's own.
+ */
+export function complaintsNaming(
+  drafts: FilingDraft[],
+  mobile: string,
+  same: (a: string, b: string) => boolean
+): LinkedComplaint[] {
+  if (!mobile) return [];
+  return drafts
+    .filter((d) => d.status === "filed" || !!d.sign.requestedAt)
+    .flatMap((d) =>
+      d.complainants
+        .filter((c) => !!c.mobile && same(c.mobile, mobile))
+        .map((c) => ({ draftId: d.id, signatoryId: `sig-c-${c.id}` }))
+    );
+}
+
+/** The stored list, from its raw value — never throws on a malformed one. */
+export function parseLinkedComplaints(raw: string | null): LinkedComplaint[] {
+  try {
+    const list: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list)
+      ? list.filter(
+          (x): x is LinkedComplaint =>
+            !!x && typeof x.draftId === "string" && typeof x.signatoryId === "string"
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function readLinkedComplaints(): LinkedComplaint[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return parseLinkedComplaints(window.localStorage.getItem(LINKED_COMPLAINTS_KEY));
+  } catch {
+    return [];
+  }
+}
+
+export function rememberLinkedComplaint(link: LinkedComplaint): void {
+  const current = readLinkedComplaints();
+  const next = [
+    link,
+    ...current.filter((x) => !(x.draftId === link.draftId && x.signatoryId === link.signatoryId)),
+  ];
+  const value = JSON.stringify(next);
+  // Unchanged lists are not written again, so reopening a complaint does not reorder
+  // or re-notify anything listening to the key.
+  if (value !== JSON.stringify(current)) writeLocalStorageValue(LINKED_COMPLAINTS_KEY, value);
+}
+
+/** Where a linked complaint opens: inside File a case, in the signed-in shell. */
+export function linkedComplaintHref({ draftId, signatoryId }: LinkedComplaint): string {
+  return `/filings/sign-request?draft=${encodeURIComponent(draftId)}&as=${encodeURIComponent(signatoryId)}`;
+}

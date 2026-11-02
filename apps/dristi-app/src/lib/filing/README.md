@@ -1,10 +1,10 @@
 # E-filing — how the front end works, and where the backend plugs in
 
 The S-138 e-filing flow (`/filings/**`) is moving onto the DRISTI backend section by
-section. A filing starts on the backend and its documents are saved there; the rest of the
-draft is still kept in the browser (IndexedDB) as the form's working copy, and reference
-lookups hit public endpoints. Values are typed by the filer — nothing is read off the
-uploaded documents.
+section. A filing starts on the backend and its documents, complainants, advocates,
+accused and witnesses are saved there; the rest of the draft is still kept in the
+browser (IndexedDB) as the form's working copy, and reference lookups hit public
+endpoints. Values are typed by the filer — nothing is read off the uploaded documents.
 
 ## Model
 
@@ -19,11 +19,11 @@ with the intake).
 
 | Seam | Today | Next |
 | --- | --- | --- |
-| `data/cases-api.ts` — case filing API | "Start filing" opens a backend draft (`POST /cases`) and the local draft takes its id (`draft.caseId`); every intake file is also uploaded as a case document (`use-case-documents.ts`), and removed from the case when cleared or replaced. Identity proof and loan papers have no backend type yet and stay local | Parties, evidence and details sections; then reading drafts back from `GET /cases` |
+| `data/cases-api.ts` — case filing API | "Start filing" opens a backend draft (`POST /cases`) and the local draft takes its id (`draft.caseId`); every intake file is also uploaded as a case document (`use-case-documents.ts`), and removed from the case when cleared or replaced. Identity proof and loan papers have no backend type yet and stay local. Complainants, advocates, accused and witnesses are saved as their step opens and closes (`use-step-sync.ts`, with `use-case-parties.ts` / `use-case-advocates.ts`; mapping in `parties.ts` / `advocates.ts`): only complete parties are sent, and one still missing a field the backend requires is held back with a note naming it; the first phone and address fill the backend's fields and the rest go in `additional_details`; a litigant's own complainant (their account's mobile) is added as `self`, so the backend links their account; a complainant's PoA holder is saved after the complainants, with a mandate naming that complainant's participant (`POST /cases/{id}/poa-holders`), and revoked when no longer named; an institution accused is saved once per person summoned for it; witnesses are the complainant's (`side: COMPLAINANT`); an advocate is found by `GET /advocates?search=` and saved as one representation per complainant they act for, once those complainants are on the case; anything removed from the form is taken off the case | Evidence and details sections; then reading drafts back from `GET /cases` |
 | `data/repository.ts` → `data/indexeddb.ts` | IndexedDB (`dristi-efiling`: `drafts`, `files`) — the working copy of the draft and the file bytes for previews | Removed once the backend holds every section and serves file downloads |
 | `profile.tsx` — `useProfile()` | The signed-in account from `GET /users/me` (name, mobile, email, Bar number) | — |
 | `lookups.ts` — `lookupIfsc`, `lookupPin` | `ifsc.razorpay.com`, `api.postalpincode.in` | The backend's `GET /pincodes/{pincode}`; an IFSC service |
-| `registry.ts` | A fixed stand-in bar register and returning-litigant record | The backend's advocate search (not built yet) |
+| `registry.ts` | A fixed stand-in returning-litigant record (ON Court) | The court's own records, read after the number is verified |
 | Sign & pay (`components/filing/sections/sign-section.tsx`) | Sandbox: any OTP, simulated payment, generated `KL-nnnnnn-yyyy` case-file number, `status = filed` | eSign provider, payment gateway, registry-issued case number |
 
 ## Store

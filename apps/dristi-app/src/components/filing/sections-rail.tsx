@@ -3,9 +3,15 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRightIcon, FilesIcon, PanelLeftOpenIcon } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronRightIcon,
+  CircleDashedIcon,
+  FilesIcon,
+  PanelLeftOpenIcon,
+} from "lucide-react";
 
-import { draftProgress } from "@/lib/filing/selectors";
+import { draftProgress, sectionState, type SectionState } from "@/lib/filing/selectors";
 import {
   FILING_STEPS,
   stepFromPathname,
@@ -14,6 +20,7 @@ import {
 } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -25,11 +32,13 @@ import {
 } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TOP_BAR_HEIGHT, useFilingChrome } from "@/components/filing/chrome";
+import { useFieldPolicy, type HostStep } from "@/components/filing/field-policy";
 import { useLeaveBlocked } from "@/components/filing/leave-guard";
 import {
   UploadedCountBadge,
   UploadedDocsDrawer,
 } from "@/components/filing/uploaded-docs-drawer";
+import { useCourtText } from "@/components/court/court-provider";
 
 /**
  * A row in the rail. `Button` is the DS control that already meets the 40px metric, so
@@ -37,9 +46,12 @@ import {
  * patch. The current step takes the rail's own brand tint, which is also what colours its
  * icon — "you are here" is one cue, not two competing ones.
  */
-const ROW = "h-10 w-full justify-start gap-2 px-2 font-normal";
-const ROW_ACTIVE =
+export const RAIL_ROW = "h-10 w-full justify-start gap-2 px-2 font-normal";
+export const RAIL_ROW_ACTIVE =
   "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+const ROW = RAIL_ROW;
+const ROW_ACTIVE = RAIL_ROW_ACTIVE;
+
 /**
  * Steps listed for orientation with no screen behind them. They keep full contrast — a
  * 50% label is not a readable one — and stay focusable, so the note saying where that
@@ -59,7 +71,49 @@ function useActiveStep(): FilingStep | undefined {
   return FILING_STEPS.find((s) => !s.placeholder && s.id === id);
 }
 
+/** The steps this draft shows, in the rail's groups; a host may leave some out. */
+function useShownGroups() {
+  const { steps } = useFiling();
+  return stepGroups()
+    .map((g) => ({ ...g, steps: g.steps.filter((s) => steps.includes(s.id)) }))
+    .filter((g) => g.steps.length > 0);
+}
+
+/**
+ * What a host's checks found in a section (bulk filing), in place of its progress mark:
+ * the count is what is left to do there.
+ */
+function IssueMark({ count }: { count: number }) {
+  return (
+    <Badge variant="warning" className="ml-auto shrink-0 tabular-nums">
+      {count}
+      <span className="sr-only"> to fix</span>
+    </Badge>
+  );
+}
+
 /* ───────────────────────────── Rows ────────────────────────────────── */
+
+/**
+ * Where a section stands, at the end of its row — supporting information, so it stays
+ * small and quiet: a check for done, a dashed ring for started, nothing for untouched.
+ * The shape carries the meaning and the words are there for a screen reader, so colour
+ * is never the only cue.
+ */
+export function SectionMark({ state }: { state: SectionState }) {
+  if (state === "untouched") return null;
+  return state === "done" ? (
+    <>
+      <CheckIcon aria-hidden className="ml-auto text-success-ink" />
+      <span className="sr-only">, complete</span>
+    </>
+  ) : (
+    <>
+      <CircleDashedIcon aria-hidden className="ml-auto text-muted-foreground" />
+      <span className="sr-only">, in progress</span>
+    </>
+  );
+}
 
 function StepRow({
   step,
@@ -70,8 +124,10 @@ function StepRow({
   active: boolean;
   onNavigate: () => void;
 }) {
-  const { hrefFor } = useFiling();
+  const courtText = useCourtText();
+  const { draft, hrefFor } = useFiling();
   const blocked = useLeaveBlocked();
+  const issues = useFieldPolicy()?.countFor(step.id) ?? 0;
   const Icon = step.icon;
 
   if (step.placeholder) {
@@ -86,11 +142,11 @@ function StepRow({
               className={cn(ROW, ROW_PLACEHOLDER)}
             >
               <Icon aria-hidden />
-              <span className="min-w-0 truncate">{step.title}</span>
+              <span className="min-w-0 truncate">{courtText(step.title)}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right">
-            {step.title}: {PLACEHOLDER_NOTE[step.id] ?? "not a screen of its own"}
+            {courtText(step.title)}: {PLACEHOLDER_NOTE[step.id] ?? "not a screen of its own"}
           </TooltipContent>
         </Tooltip>
       </li>
@@ -115,12 +171,40 @@ function StepRow({
         aria-current={active ? "page" : undefined}
       >
         <Icon aria-hidden className={active ? undefined : "text-muted-foreground"} />
-        <span className="min-w-0 truncate">{step.title}</span>
+        <span className="min-w-0 truncate">{courtText(step.title)}</span>
+        {issues ? <IssueMark count={issues} /> : <SectionMark state={sectionState(draft, step.id)} />}
       </Link>
     </Button>
   );
 
   return <li>{row}</li>;
+}
+
+/** A host's own step (`FieldPolicy.hostSteps`), in the same row as a section. */
+function HostStepRow({ step, onNavigate }: { step: HostStep; onNavigate: () => void }) {
+  const Icon = step.icon;
+  if (step.disabled) {
+    return (
+      <li>
+        <Button type="button" variant="ghost" aria-disabled="true" className={cn(ROW, ROW_PLACEHOLDER)}>
+          <Icon aria-hidden />
+          <span className="min-w-0 truncate">{step.title}</span>
+          <span className="sr-only">, not reached yet</span>
+        </Button>
+      </li>
+    );
+  }
+  return (
+    <li>
+      <Button asChild variant="ghost" className={cn(ROW, step.active && ROW_ACTIVE)}>
+        <Link href={step.href} onClick={onNavigate} aria-current={step.active ? "page" : undefined}>
+          <Icon aria-hidden className={step.active ? undefined : "text-muted-foreground"} />
+          <span className="min-w-0 truncate">{step.title}</span>
+          {step.done ? <SectionMark state="done" /> : null}
+        </Link>
+      </Button>
+    </li>
+  );
 }
 
 function DocsRow({ onOpen }: { onOpen: () => void }) {
@@ -148,7 +232,10 @@ function StepList({
   onNavigate: () => void;
   onOpenDocs: () => void;
 }) {
+  const courtText = useCourtText();
   const active = useActiveStep();
+  const groups = useShownGroups();
+  const host = useFieldPolicy()?.hostSteps;
 
   return (
     <nav aria-label="Filing sections" className="flex flex-col gap-4 px-2">
@@ -158,10 +245,10 @@ function StepList({
         </li>
       </ul>
 
-      {stepGroups().map((g) => (
+      {groups.map((g) => (
         <div key={g.group} className="flex w-full flex-col gap-1">
           <h2 className="px-2 text-caption font-medium text-muted-foreground">
-            {g.group}
+            {courtText(g.group)}
           </h2>
           <ul className="flex flex-col gap-1">
             {g.steps.map((s) => (
@@ -175,13 +262,27 @@ function StepList({
           </ul>
         </div>
       ))}
+
+      {host?.steps.length ? (
+        <div className="flex w-full flex-col gap-1">
+          <h2 className="px-2 text-caption font-medium text-muted-foreground">{host.group}</h2>
+          <ul className="flex flex-col gap-1">
+            {host.steps.map((s) => (
+              <HostStepRow key={s.id} step={s} onNavigate={onNavigate} />
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </nav>
   );
 }
 
 function ProgressBlock() {
-  const { draft } = useFiling();
+  const { draft, steps } = useFiling();
   const progress = draftProgress(draft);
+  // Progress runs to signing and paying; a host that does those elsewhere (bulk filing)
+  // shows its own state on the rows instead of a bar that could never fill.
+  if (!steps.includes("sign")) return null;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -271,8 +372,16 @@ export function SectionsRail() {
 export function SectionsTrigger() {
   const { sectionsSheetOpen, setSectionsSheetOpen } = useFilingChrome();
   const active = useActiveStep();
-  const walked = FILING_STEPS.filter((s) => !s.placeholder);
-  const position = active ? walked.findIndex((s) => s.id === active.id) + 1 : 0;
+  const hostSteps = useFieldPolicy()?.hostSteps?.steps ?? [];
+  const walked = [
+    ...useShownGroups()
+      .flatMap((g) => g.steps)
+      .filter((s) => !s.placeholder)
+      .map((s) => s.id),
+    ...hostSteps.map((s) => s.id),
+  ];
+  const here = active?.id ?? hostSteps.find((s) => s.active)?.id;
+  const position = here ? walked.indexOf(here) + 1 : 0;
 
   // The trigger sticks under the top bar so a thumb never has to scroll back up for it.
   // On the phone form it shrinks to its icon while the page rests and grows back the

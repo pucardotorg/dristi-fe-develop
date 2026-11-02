@@ -13,6 +13,7 @@ import { DocumentPreview } from "@/components/cases/document-preview";
 import {
   ReturnedOnField,
   ReturnRow,
+  outcomeOf,
   type ReturnMark,
 } from "@/components/employee/record-returns-dialog";
 import {
@@ -51,6 +52,8 @@ import {
   type ProcessDocument,
   type ProcessOutcome,
 } from "@/lib/employee/sign-process";
+import { useCourtLocalized } from "@/components/court/court-provider";
+import { useCourtText } from "@/components/court/court-provider";
 
 /** What the paper is called in the signature stage's copy. */
 const NOUN = "process";
@@ -94,6 +97,7 @@ export function SignProcessDialog({
   onSign,
   onAct,
   onRecord,
+  onDownloaded,
   onReturnFocus,
 }: {
   /** The live row — the screen passes it from the line, so the facts follow an act. */
@@ -102,6 +106,8 @@ export function SignProcessDialog({
   onSign: (process: CourtProcess) => void;
   onAct: (act: QuickAct, process: CourtProcess) => void;
   onRecord: (process: CourtProcess, outcome: ProcessOutcome, on: string) => void;
+  /** The row's document was downloaded from the footer — a proclamation By hand is then executed (`DSP-10`). */
+  onDownloaded: (process: CourtProcess) => void;
   onReturnFocus: () => void;
 }) {
   const { held, opening } = useHeldRecord(process);
@@ -123,6 +129,7 @@ export function SignProcessDialog({
           onSign={onSign}
           onAct={onAct}
           onRecord={onRecord}
+          onDownloaded={onDownloaded}
           onReturnFocus={onReturnFocus}
         />
       ) : null}
@@ -136,6 +143,7 @@ function SignProcessBody({
   onSign,
   onAct,
   onRecord,
+  onDownloaded,
   onReturnFocus,
 }: {
   process: CourtProcess;
@@ -143,8 +151,10 @@ function SignProcessBody({
   onSign: (process: CourtProcess) => void;
   onAct: (act: QuickAct, process: CourtProcess) => void;
   onRecord: (process: CourtProcess, outcome: ProcessOutcome, on: string) => void;
+  onDownloaded: (process: CourtProcess) => void;
   onReturnFocus: () => void;
 }) {
+  const courtText = useCourtText();
   const flow = useStagedFlow<Stage>({ order: STAGES, scene: SCENES });
   const choice = useSignatureChoice(NOUN);
   const document = React.useMemo(
@@ -182,13 +192,7 @@ function SignProcessBody({
 
   function runRecord() {
     if (!marked || !returnedOn || !mark) return;
-    onRecord(
-      process,
-      mark.served
-        ? { served: true }
-        : { served: false, reason: mark.reason ?? "Other" },
-      isoDay(returnedOn),
-    );
+    onRecord(process, outcomeOf(mark), isoDay(returnedOn));
     settle(processAct("record"));
   }
 
@@ -226,7 +230,10 @@ function SignProcessBody({
     <Button
       type="button"
       variant="outline"
-      onClick={() => downloadProcessDocument(process)}
+      onClick={() => {
+        downloadProcessDocument(process);
+        onDownloaded(process);
+      }}
     >
       Download
     </Button>
@@ -402,7 +409,7 @@ function SignProcessBody({
       ) : (
         <SignatureStage
           noun={NOUN}
-          subject={`You are adding your signature to the ${inline} in ${process.caseNumber}.`}
+          subject={`You are adding your signature to the ${inline} in ${courtText(process.caseNumber)}.`}
           warning="Signing this process cannot be reversed."
           download={{
             prompt: "Want to read it again?",
@@ -438,6 +445,11 @@ function ProcessFacts({ process }: { process: CourtProcess }) {
   if (process.returnedOn) {
     rows.push(["Came back", formatProcessDate(process.returnedOn)]);
   }
+  /* What was recorded with the outcome (`DSP-08`), only where given. The reason is
+     already in the Status line. */
+  const outcome = process.outcome;
+  if (outcome?.comment) rows.push(["Comment", outcome.comment]);
+  if (outcome?.file) rows.push(["Supporting file", outcome.file.name]);
 
   return (
     <div className="rounded-lg bg-surface-sunken px-4">
@@ -461,9 +473,11 @@ function ProcessFacts({ process }: { process: CourtProcess }) {
 /**
  * The process itself as paper — the same facsimile treatment the other court-side
  * overlays use, bound to this row's own particulars. The addressee sits under the title:
- * a process commands a named person, and who it commands is written on its face first.
+ * a process commands a named person, and who it commands is written on its face first. A
+ * proclamation is published, not addressed, so it has none.
  */
-function ProcessFacsimile({ document }: { document: ProcessDocument }) {
+function ProcessFacsimile({ document: storedDocument }: { document: ProcessDocument }) {
+  const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
@@ -478,7 +492,9 @@ function ProcessFacsimile({ document }: { document: ProcessDocument }) {
         <h3 className="text-center text-body font-semibold">
           {document.title}
         </h3>
-        <p className="text-body">{document.addressee}</p>
+        {document.addressee ? (
+          <p className="text-body">{document.addressee}</p>
+        ) : null}
       </div>
 
       <ol className="flex list-decimal flex-col gap-3 ps-6">

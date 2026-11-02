@@ -138,12 +138,13 @@ export function canPay(seat: FilerSeat): boolean {
 export type CourtSeat = "magistrate" | "bench-clerk" | "typist" | "scrutiny-officer";
 
 /**
- * `ALC-22`: a system action — onboarding, setting or moving a date — is the
- * magistrate's alone. An order may be drafted by the bench clerk or typist too; only
- * the magistrate signs it.
+ * `ALC-22` gives a system action — onboarding, setting or moving a date — to the
+ * magistrate alone. **For now the bench clerk (Punjab & Haryana's Reader) takes them
+ * too** (owner, 2026-10-13): every step of the application flow except signing. An
+ * order may be drafted by the bench clerk or typist; only the magistrate signs it.
  */
 export function canTakeSystemAction(seat: CourtSeat): boolean {
-  return seat === "magistrate";
+  return seat === "magistrate" || seat === "bench-clerk";
 }
 
 export function canDraftOrder(seat: CourtSeat): boolean {
@@ -231,6 +232,21 @@ export type LinkedOrder = {
   signedOn: string;
 };
 
+/**
+ * An order passed on the application through the order screen, whatever it did — onboard
+ * it, list it, decide it (`lib/employee/application-outcome-steps.ts`). `key` is the
+ * order's draft key, so one order is never applied twice.
+ */
+export type PassedOrder = {
+  key: string;
+  id: string;
+  title: string;
+  text: string;
+  signedOn: string;
+  /** What its Application item did, in a line: "Onboarded; listed for 29 Oct". */
+  summary: string;
+};
+
 export type LifecycleEvent = { on: string; text: string };
 
 /**
@@ -273,6 +289,10 @@ export type LifecycleApplication = {
   objectionToId?: string;
   pendingOrder?: PendingOrder;
   linkedOrder?: LinkedOrder;
+  /** Orders passed on it from the order screen, oldest first. */
+  orders?: PassedOrder[];
+  /** The decision as the order recorded it — "Partly allowed" — where it says more than the status. */
+  decisionLabel?: string;
   /** What the type's own workflow did on acceptance (`ALC-16`). */
   workflowResult?: string;
   form: unknown;
@@ -364,8 +384,12 @@ export function pay(
 /* First gate: Review application -------------------------------------------------- */
 
 /**
- * `ALC-05`, `ALC-20`: "set a date" is usable once. Nothing is stored for it — it is
- * read off the task's due date against its default.
+ * `ALC-05`, `ALC-20`: whether the review has been deferred already. Nothing is stored
+ * for it — it is read off the task's due date against its default.
+ *
+ * The lifecycle document makes deferral usable once. Product relaxed that to a warning
+ * (2026-10-08, Anshumanth): the bench keeps the discretion to defer again, and the
+ * screen says it has been deferred before. So this answers a question; it guards nothing.
  */
 export function setADateUsed(app: LifecycleApplication): boolean {
   return Boolean(app.review && app.review.dueOn !== app.review.defaultDueOn);
@@ -379,10 +403,7 @@ export function setReviewDate(
 ): LifecycleApplication {
   expect(app, "pending-review");
   if (!canTakeSystemAction(seat)) {
-    throw new LifecycleError("Only the magistrate sets a date.");
-  }
-  if (setADateUsed(app)) {
-    throw new LifecycleError("A date has already been set once.");
+    throw new LifecycleError("Only the magistrate or bench clerk sets a date.");
   }
   if (!app.review || dueOn <= on) {
     throw new LifecycleError("Choose a date after today.");
@@ -410,7 +431,7 @@ export function onboard(
 ): LifecycleApplication {
   expect(app, "pending-review");
   if (!canTakeSystemAction(seat)) {
-    throw new LifecycleError("Only the magistrate onboards an application.");
+    throw new LifecycleError("Only the magistrate or bench clerk onboards an application.");
   }
   if (choice.mode === "date" && choice.decideOn <= on) {
     throw new LifecycleError("Choose a decision date after today.");
@@ -443,6 +464,40 @@ export function onboard(
   );
 }
 
+/**
+ * Taken up now, then listed after all. Onboarding is done and stays done; what changes
+ * is when the court decides, and — since "now" called for no objection — whether the
+ * other party is asked for one (`ALC-09`, `ALC-11`–`ALC-13`). Product's reading of the
+ * PRD's "change the decision date" (2026-10-08): it lowers the cost of choosing "now",
+ * it does not un-onboard anything.
+ */
+export function listForLater(
+  app: LifecycleApplication,
+  seat: CourtSeat,
+  decideOn: string,
+  inviteObjections: boolean,
+  on: string,
+): LifecycleApplication {
+  expect(app, "pending-decision");
+  if (!canTakeSystemAction(seat)) {
+    throw new LifecycleError("Only the magistrate or bench clerk lists an application.");
+  }
+  if (app.decide?.mode !== "now") {
+    throw new LifecycleError("This application is already listed for a date.");
+  }
+  if (decideOn <= on) throw new LifecycleError("Choose a date after today.");
+  return stamp(
+    app,
+    on,
+    `Listed for ${decideOn} instead of now${inviteObjections ? ", objections invited" : ""}`,
+    {
+      decide: { dueOn: decideOn, mode: "date" },
+      objectionsInvited: inviteObjections,
+      objectionDueBy: inviteObjections ? objectionDeadline(decideOn) : undefined,
+    },
+  );
+}
+
 /** `ALC-15`: the Decide task and any File objection task move together. */
 export function moveDecisionDate(
   app: LifecycleApplication,
@@ -452,7 +507,7 @@ export function moveDecisionDate(
 ): LifecycleApplication {
   expect(app, "pending-decision");
   if (!canTakeSystemAction(seat)) {
-    throw new LifecycleError("Only the magistrate moves the decision date.");
+    throw new LifecycleError("Only the magistrate or bench clerk moves the decision date.");
   }
   if (decideOn <= on) throw new LifecycleError("Choose a date after today.");
   return stamp(app, on, `Decision moved to ${decideOn}`, {
@@ -607,21 +662,24 @@ export type AvailabilityContext = {
 };
 
 /**
- * "Application types → Available when". Types the specification leaves as `?` stay
- * available, and Objection is never started from the chooser — only from a File
- * objection task.
+ * "Application types → Available when". Objection is never started from the
+ * chooser — only from a File objection task. Edit Litigant Details is governed by a
+ * control on the workflow (who can raise it, whose details they can edit) that is not
+ * built, so it stays open. Certified Copy and Warrant Recall are not types in the
+ * specification and are never offered.
  */
 export function typeAvailable(type: string, context: AvailabilityContext): boolean {
   switch (type) {
     case "bail":
       return context.side === "accused";
-    case "edit-litigant-details":
     case "condonation-of-delay":
       return context.side === "complainant";
     case "advancement-reschedule":
     case "postpone":
       return context.hearingScheduled;
     case "objection":
+    case "certified-copy":
+    case "warrant-recall":
       return false;
     default:
       return true;

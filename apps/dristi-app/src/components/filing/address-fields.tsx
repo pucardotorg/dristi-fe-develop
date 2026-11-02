@@ -17,8 +17,7 @@ const PIN_DEBOUNCE_MS = 400;
 type PinFill = { pin: string; district: boolean; state: boolean };
 
 /**
- * Address line · pincode · city · district · state. When `prefilled`, the address was
- * read from a document: fields carry the amber fill and open the source on click.
+ * Address line · pincode · city · district · state.
  *
  * The pincode is the fast path: once six digits are in, the postal service is asked for
  * the district and state and fills whichever of the two is still blank. Anything the
@@ -27,21 +26,20 @@ type PinFill = { pin: string; district: boolean; state: boolean };
 export function AddressFields({
   value,
   onChange,
-  prefilled = false,
-  onViewSource,
-  prefilledFields,
   idPrefix,
+  name,
 }: {
   value: Address;
   onChange: (next: Address) => void;
-  prefilled?: boolean;
-  onViewSource?: (field: keyof Address) => void;
-  prefilledFields?: Partial<Record<keyof Address, boolean>>;
   idPrefix?: string;
+  /**
+   * Where this address sits on its record ("res", "addresses.1.addr"), so a check on
+   * one of its fields can point at it (`FormField name`). Changes nothing otherwise.
+   */
+  name?: string;
 }) {
+  const key = (k: keyof Address) => (name ? `${name}.${k}` : undefined);
   const set = (k: keyof Address) => (v: string) => onChange({ ...value, [k]: v });
-  const pf = (key: keyof Address) => prefilled && !!value[key] && (prefilledFields?.[key] ?? !prefilledFields);
-  const src = (key: keyof Address) => pf(key) && onViewSource ? () => onViewSource(key) : undefined;
 
   const [pinFill, setPinFill] = React.useState<PinFill | null>(null);
 
@@ -108,62 +106,52 @@ export function AddressFields({
 
   return (
     <div className="flex flex-col gap-4">
-      <FormField label="Address line" required>
+      <FormField label="Address line" name={key("line1")} required>
         <TextField
           id={idPrefix ? `${idPrefix}-line1` : undefined}
           value={value.line1}
           onChange={set("line1")}
           placeholder="House / building, street, area"
-          prefilled={pf("line1")}
-                onViewSource={src("line1")}
           autoComplete="address-line1"
         />
       </FormField>
       {/* PIN first: it is the field that fills the two below it, so it comes before the
           ones it answers rather than after them. */}
       <FormRow>
-        <FormField label="Pincode" required>
+        <FormField label="Pincode" name={key("pin")} required>
           <TextField
             value={value.pin}
             onChange={set("pin")}
             placeholder="6-digit"
             inputMode="numeric"
             maxLength={6}
-            prefilled={pf("pin")}
-                onViewSource={src("pin")}
             autoComplete="postal-code"
           />
         </FormField>
-        <FormField label="City / town" required>
+        <FormField label="City / town" name={key("city")} required>
           <TextField
             value={value.city}
             onChange={set("city")}
             placeholder="City or town"
-            prefilled={pf("city")}
-                onViewSource={src("city")}
             autoComplete="address-level2"
           />
         </FormField>
       </FormRow>
       <div className="flex flex-col gap-2">
         <FormRow>
-          <FormField label="District" required>
+          <FormField label="District" name={key("district")} required>
             <TextField
               value={value.district}
               onChange={setDistrict}
               placeholder="District"
-              prefilled={pf("district")}
-                onViewSource={src("district")}
             />
           </FormField>
-          <FormField label="State / UT" required>
+          <FormField label="State / UT" name={key("state")} required>
             <OptionSelect
               value={value.state}
               onValueChange={setState}
               options={STATES}
               placeholder="Select state"
-              prefilled={pf("state")}
-                onViewSource={src("state")}
             />
           </FormField>
         </FormRow>

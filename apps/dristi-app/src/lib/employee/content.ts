@@ -12,11 +12,20 @@
  * actually logs in is still an open product question (`docs/product/open-questions.md`).
  */
 
+import type { CourtId } from "@/lib/court/profiles";
+
 export type CourtRole =
   | "magistrate"
   | "bench-clerk"
   | "scrutiny-officer"
-  | "typist";
+  | "typist"
+  /* Punjab & Haryana only (court-roles §3.3): a Steno who drafts and an Ahlmad who
+     fills order data, separate from the Typist. `seat-roles.ts` says which state has
+     which seat. */
+  | "steno"
+  | "ahlmad"
+  /* All three states (court-roles §3): dispatches and reports e-Post process only. */
+  | "post-officer";
 
 /**
  * How a role is written where it is shown to the person holding it.
@@ -37,7 +46,25 @@ export const COURT_ROLE_LABEL: Record<CourtRole, string> = {
   "bench-clerk": "Bench clerk",
   "scrutiny-officer": "Scrutiny officer",
   typist: "Typist",
+  steno: "Steno",
+  ahlmad: "Ahlmad",
+  "post-officer": "Post officer",
 };
+
+/**
+ * What Punjab & Haryana call a shared seat: the bench clerk is the "Reader". Its Steno
+ * and Ahlmad are seats of their own there, with their own roles (court-roles §3.3), so
+ * they are not relabelled typist or scrutiny-officer seats any more.
+ */
+const PUNJAB_HARYANA_ROLE_LABEL: Partial<Record<CourtRole, string>> = {
+  "bench-clerk": "Reader",
+};
+
+/** A seat's label in the selected state's own words; Kerala's where it has none. */
+export function courtRoleLabel(role: CourtRole, court: CourtId): string {
+  const local = court === "punjab-haryana" ? PUNJAB_HARYANA_ROLE_LABEL[role] : undefined;
+  return local ?? COURT_ROLE_LABEL[role];
+}
 
 /**
  * The seats the court side can be worked from — what the rail's settings control
@@ -70,6 +97,7 @@ export const COURT_SEATS: CourtRole[] = [
   "bench-clerk",
   "scrutiny-officer",
   "typist",
+  "post-officer",
 ];
 
 /**

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 
-import { DesignModeLoader } from "@/components/design-mode-loader";
 import { FeedbackProvider } from "@/components/feedback-provider";
 import { LocaleProvider } from "@/components/shell/locale";
 import { ThemeProvider } from "@/components/theme-provider";
+import { serverBrandHue, serverCourt, serverCourtText } from "@/lib/court/server";
 
 import "./globals.css";
-/* App-owned rules on chrome we do not author; globals.css is synced from the DS. */
+/* App rules for chrome, kept apart from the base tokens in globals.css. */
 import "./chrome.css";
+/* A state's own brand colour (Gujarat's navy), keyed off `data-brand-hue` below. */
+import "./court-palette.css";
 
 export const metadata: Metadata = {
   title: {
@@ -39,7 +41,6 @@ export default function RootLayout({
         >
           <LocaleProvider>
             <FeedbackProvider>{children}</FeedbackProvider>
-            <DesignModeLoader />
           </LocaleProvider>
         </ThemeProvider>
       </body>

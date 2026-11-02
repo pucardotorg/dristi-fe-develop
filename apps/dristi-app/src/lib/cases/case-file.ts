@@ -1,16 +1,12 @@
 /**
- * Case file — the court's compiled documentary record.
+ * Case file — the court's compiled documentary record (View Case handover §6).
  *
- * The nine categories are fixed. Documents inside them accumulate as the
- * case proceeds. This tree is the current QA file: categories that exist
- * but have nothing filed yet still appear, so the spine does not change
- * from case to case.
+ * One tree, read everywhere the case file appears: the case's own Case file
+ * section, the case file beside an order, and the download dialog. Sections
+ * and their documents follow the registry (§6.2) below.
  *
  * Leaves point at the dummy Section 138 PDF pack under /case-file/. Each
- * category PDF starts with a cover page; child documents follow in order.
- *
- * Labels follow Laws sentence case. Statutory short forms (BNSS, PW-1)
- * stay as written.
+ * section PDF starts with a cover page; child documents follow in order.
  */
 import { caseSectionHref } from "./sections";
 
@@ -24,6 +20,9 @@ export type CaseFileNode = {
   href?: string;
   /** 1-based page in `href`. Absent on folders and on whole-file leaves. */
   page?: number;
+  /** False where the registry gives the type no docket page in the
+   *  downloaded case file (§6.3, CF-02): court-made documents. */
+  docket?: boolean;
 };
 
 const CASE_FILE_PDF = {
@@ -60,7 +59,7 @@ export function flattenLeaves(nodes: CaseFileNode[]): CaseFileNode[] {
 
 export function findNode(
   nodes: CaseFileNode[],
-  id: string
+  id: string,
 ): CaseFileNode | undefined {
   for (const node of nodes) {
     if (node.id === id) return node;
@@ -76,7 +75,7 @@ export function findNode(
 export function findPath(
   nodes: CaseFileNode[],
   id: string,
-  trail: CaseFileNode[] = []
+  trail: CaseFileNode[] = [],
 ): CaseFileNode[] | undefined {
   for (const node of nodes) {
     const next = [...trail, node];
@@ -101,7 +100,7 @@ export function firstLeaf(nodes: CaseFileNode[]): CaseFileNode | undefined {
 
 export function parseCaseFileDoc(
   value: string | string[] | undefined,
-  tree: CaseFileNode[] = CASE_FILE_TREE
+  tree: CaseFileNode[] = CASE_FILE_TREE,
 ): string {
   const raw = Array.isArray(value) ? value[0] : value;
   const leaves = flattenLeaves(tree);
@@ -112,7 +111,7 @@ export function parseCaseFileDoc(
 export type CaseFileView = "pdf" | "digital";
 
 export function parseCaseFileView(
-  value: string | string[] | undefined
+  value: string | string[] | undefined,
 ): CaseFileView {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw === "digital" ? "digital" : "pdf";
@@ -121,7 +120,7 @@ export function parseCaseFileView(
 export function caseFileDocHref(
   caseId: string,
   docId: string,
-  view: CaseFileView = "pdf"
+  view: CaseFileView = "pdf",
 ): string {
   const base = caseSectionHref(caseId, "case-file");
   const join = base.includes("?") ? "&" : "?";
@@ -141,6 +140,7 @@ type Filed = {
   href: string;
   /** 1-based page in `href`. Absent when the whole file is the document. */
   page?: number;
+  docket?: boolean;
 };
 
 /**
@@ -215,13 +215,13 @@ const REGISTRY: { id: string; label: string; items: Filed[] }[] = [
     items: [
       {
         id: "vakalatnama-1",
-        label: "Vakalatnama · Ramesh Menon",
+        label: "Vakalatnama — Ramesh Menon",
         href: CASE_FILE_PDF.vakalats,
         page: 3,
       },
       {
         id: "vakalatnama-2",
-        label: "Vakalatnama · P. Balachandran",
+        label: "Vakalatnama — P. Balachandran",
         href: CASE_FILE_PDF.vakalats,
         page: 4,
       },
@@ -257,7 +257,7 @@ const REGISTRY: { id: string; label: string; items: Filed[] }[] = [
     items: [
       {
         id: "plea",
-        label: "313 Examination and Plea · Anand Traders",
+        label: "313 Examination and Plea — Anand Traders",
         href: CASE_FILE_PDF.examinationAccused,
         page: 2,
       },
@@ -269,7 +269,7 @@ const REGISTRY: { id: string; label: string; items: Filed[] }[] = [
     items: [
       {
         id: "signed-statement-accused",
-        label: "Written Statement · Anand Traders",
+        label: "Written Statement — Anand Traders",
         href: CASE_FILE_PDF.examinationAccused,
         page: 4,
       },
@@ -330,6 +330,7 @@ const REGISTRY: { id: string; label: string; items: Filed[] }[] = [
         label: "Order closing complainant evidence",
         href: CASE_FILE_PDF.orders,
         page: 6,
+        docket: false,
       },
     ],
   },
@@ -353,6 +354,7 @@ const REGISTRY: { id: string; label: string; items: Filed[] }[] = [
         label: "Summons",
         href: CASE_FILE_PDF.orders,
         page: 3,
+        docket: false,
       },
     ],
   },
@@ -403,6 +405,7 @@ const REGISTRY: { id: string; label: string; items: Filed[] }[] = [
       ...item,
       href: CASE_FILE_PDF.orders,
       page: index + 2,
+      docket: false,
     })),
   },
 ];
@@ -429,8 +432,9 @@ export const CASE_FILE_TREE: CaseFileNode[] = [
           label: item.label,
           href: item.href,
           page: item.page,
+          docket: item.docket,
         })),
       };
-    }
+    },
   ),
 ];

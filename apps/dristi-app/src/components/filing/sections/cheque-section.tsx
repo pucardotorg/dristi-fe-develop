@@ -12,13 +12,24 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { CreditCardIcon } from "lucide-react";
 
-import { blankCheque } from "@/lib/filing/blank";
+import { blankCheque, removeCaseRecord } from "@/lib/filing/blank";
+import { getRepository } from "@/lib/filing/data";
+import { forgetFile } from "@/lib/filing/files";
 import type { IfscResult } from "@/lib/filing/lookups";
 import { RETURN_REASONS, S138_SAFE_REASONS } from "@/lib/filing/options";
-import { chequeComplete, chequeSourceSlot } from "@/lib/filing/selectors";
+import {
+  chequeComplete,
+  chequePresentIssue,
+  chequePresentedLate,
+  chequeReturnIssue,
+  chequeSourceSlot,
+} from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
-import { removeChequeEvidence, useChequeEvidence } from "@/lib/filing/use-cheque-evidence";
+import {
+  removeChequeEvidence,
+  useChequeEvidence,
+} from "@/lib/filing/use-cheque-evidence";
 import type { ChequeField } from "@/lib/filing/types";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { DateField } from "@/components/filing/date-field";
@@ -38,7 +49,11 @@ import {
   useCorrectionInstanceRequest,
 } from "@/components/filing/posture";
 import { IfscField } from "@/components/filing/ifsc-field";
-import { OptionSelect, PrefixInput, TextField } from "@/components/filing/inputs";
+import {
+  OptionSelect,
+  PrefixInput,
+  TextField,
+} from "@/components/filing/inputs";
 import { InfoWell, SectionNotice } from "@/components/filing/notices";
 import { SectionTabs } from "@/components/filing/section-tabs";
 import { YesNoSegmented } from "@/components/filing/segmented";
@@ -83,8 +98,16 @@ export function ChequeSection() {
   const memoSlot = chequeSourceSlot(draft, index, "return-memo");
   /* Nothing uploaded for this cheque means there is no source document to show at all. */
   const sourceDocs = [
-    { key: "front" as const, slot: frontSlot, fallbackLabel: "Cheque (front side)" },
-    { key: "memo" as const, slot: memoSlot, fallbackLabel: "Cheque return memo" },
+    {
+      key: "front" as const,
+      slot: frontSlot,
+      fallbackLabel: "Cheque (front side)",
+    },
+    {
+      key: "memo" as const,
+      slot: memoSlot,
+      fallbackLabel: "Cheque return memo",
+    },
   ].filter((d) => d.slot?.file);
   const sourceSlot = sourceDoc === "front" ? frontSlot : memoSlot;
 
@@ -129,12 +152,15 @@ export function ChequeSection() {
     const i = removeIndex;
     setRemoveOpen(false);
     if (cheques.length <= 1) return;
-    const removed = cheques[i];
+    // Its upload group goes with it, so the list of documents stops asking for it.
+    let files: ReturnType<typeof removeCaseRecord> = [];
     update((d) => {
-      d.cheques.splice(i, 1);
+      files = removeCaseRecord(d, "cheque", i);
     });
-    // Take its cheque and return-memo evidence off the backend case, if it reached one.
-    removeChequeEvidence(removed);
+    for (const f of files) {
+      forgetFile(f.id);
+      void getRepository().deleteFile(f.id);
+    }
     const remaining = cheques.length - 1;
     let a = index;
     if (i < a) a -= 1;
@@ -146,6 +172,7 @@ export function ChequeSection() {
   const showInheritNote = index > 0 && cheque.sameAsPrev === "yes";
   const previous = index > 0 ? cheques[index - 1] : null;
   const inheritedBank = previous?.bankName || "previous cheque";
+  const presentedLate = chequePresentedLate(cheque);
   const reasonNeedsCheck =
     !!cheque.returnReason && !S138_SAFE_REASONS.has(cheque.returnReason);
 
@@ -186,183 +213,206 @@ export function ChequeSection() {
         />
 
         <CorrectionInstance value={index}>
-        {/* Cheque leaf */}
-        <FormCard
-          title={`Cheque ${index + 1} details`}
-          description="As written on the cheque leaf."
-        >
-          <FormRow>
-            <FormField label="Date on cheque" name="dateOnCheque" required tip="As written on the cheque.">
-              <DateField
-                value={cheque.dateOnCheque}
-                onChange={(v) => editField("dateOnCheque", v)}
-                ariaLabel="Date on cheque"
-              />
-            </FormField>
-            <FormField label="Amount" name="amount" required tip="As written on the cheque.">
-              <PrefixInput
-                prefix="₹"
-                value={cheque.amount}
-                onChange={(v) => editField("amount", v)}
-                placeholder="Enter amount"
-                inputMode="numeric"
-              />
-            </FormField>
-          </FormRow>
-
-          <HalfWidth>
-            <FormField
-              label="Cheque number"
-              name="chequeNumber"
-              required
-              tip="First set of six digits printed at the bottom of the cheque."
-              help="The six-digit number, not the full MICR line."
-            >
-              <TextField
-                value={cheque.chequeNumber}
-                onChange={(v) => editField("chequeNumber", v)}
-                placeholder="6-digit number"
-                inputMode="numeric"
-              />
-            </FormField>
-          </HalfWidth>
-
-          {index > 0 ? (
-            <>
-              <FormDivider />
-              <FormField asGroup label="Are the bank details below the same as the previous cheque?">
-                <YesNoSegmented
-                  value={cheque.sameAsPrev}
-                  onValueChange={(v) =>
-                    update((d) => {
-                      d.cheques[index].sameAsPrev = v;
-                    })
-                  }
-                  ariaLabel="Are the bank details the same as the previous cheque?"
+          {/* Cheque leaf */}
+          <FormCard
+            title={`Cheque ${index + 1} details`}
+            description="As written on the cheque leaf."
+          >
+            <FormRow>
+              <FormField
+                label="Date on cheque"
+                name="dateOnCheque"
+                required
+                tip="As written on the cheque."
+              >
+                <DateField
+                  value={cheque.dateOnCheque}
+                  onChange={(v) => editField("dateOnCheque", v)}
+                  ariaLabel="Date on cheque"
                 />
               </FormField>
-            </>
-          ) : null}
+              <FormField
+                label="Amount"
+                name="amount"
+                required
+                tip="As written on the cheque."
+              >
+                <PrefixInput
+                  prefix="₹"
+                  value={cheque.amount}
+                  onChange={(v) => editField("amount", v)}
+                  placeholder="Enter amount"
+                  inputMode="numeric"
+                />
+              </FormField>
+            </FormRow>
 
-          {showBankFields ? (
-            <>
-              <FormSubhead>Drawer&apos;s bank details</FormSubhead>
-              {/* Keyed to the cheque so a lookup on one tab never speaks for another. */}
-              <IfscField
-                key={cheque.id}
-                value={cheque.ifsc}
-                onChange={editIfsc}
-                onFetched={fillFromIfsc(cheque.id)}
-                fetched={cheque.ifscFetched}
-                tip="The 11-character code on the cheque. Fetch to auto-fill the bank name and branch."
-                placeholder="e.g. SBIN0001234"
-              />
-              <FormRow>
+            <HalfWidth>
+              <FormField
+                label="Cheque number"
+                name="chequeNumber"
+                required
+                tip="First set of six digits printed at the bottom of the cheque."
+                help="The six-digit number, not the full MICR line."
+              >
+                <TextField
+                  value={cheque.chequeNumber}
+                  onChange={(v) => editField("chequeNumber", v)}
+                  placeholder="6-digit number"
+                  inputMode="numeric"
+                />
+              </FormField>
+            </HalfWidth>
+
+            {index > 0 ? (
+              <>
+                <FormDivider />
                 <FormField
-                  label="Bank name"
-                  name="bankName"
-                  required
-                  tip="The bank written on the cheque, i.e. the drawer's (accused's) bank."
+                  asGroup
+                  label="Are the bank details below the same as the previous cheque?"
                 >
-                  <TextField
-                    value={cheque.bankName}
-                    onChange={(v) => editField("bankName", v)}
-                    placeholder="Drawer's bank"
+                  <YesNoSegmented
+                    value={cheque.sameAsPrev}
+                    onValueChange={(v) =>
+                      update((d) => {
+                        d.cheques[index].sameAsPrev = v;
+                      })
+                    }
+                    ariaLabel="Are the bank details the same as the previous cheque?"
                   />
                 </FormField>
-                <FormField
-                  label="Bank branch"
-                  name="bankBranch"
-                  required
-                  tip="The branch written on the cheque, i.e. the drawer's (accused's) branch."
-                >
-                  <TextField
-                    value={cheque.bankBranch}
-                    onChange={(v) => editField("bankBranch", v)}
-                    placeholder="Branch name"
-                  />
-                </FormField>
-              </FormRow>
-            </>
-          ) : null}
+              </>
+            ) : null}
 
-          {showInheritNote ? (
-            <InfoWell>
-              <CreditCardIcon className="size-5 shrink-0" aria-hidden />
-              <p className="min-w-0 flex-1 text-body">
-                Using bank details from Cheque {index}:{" "}
-                <span className="font-semibold">{inheritedBank}</span>
-                {previous?.bankBranch ? `, ${previous.bankBranch}` : ""}.
-              </p>
-            </InfoWell>
-          ) : null}
-        </FormCard>
+            {showBankFields ? (
+              <>
+                <FormSubhead>Drawer&apos;s bank details</FormSubhead>
+                {/* Keyed to the cheque so a lookup on one tab never speaks for another. */}
+                <IfscField
+                  key={cheque.id}
+                  value={cheque.ifsc}
+                  onChange={editIfsc}
+                  onFetched={fillFromIfsc(cheque.id)}
+                  fetched={cheque.ifscFetched}
+                  tip="The 11-character code on the cheque. Fetch to auto-fill the bank name and branch."
+                  placeholder="e.g. SBIN0001234"
+                />
+                <FormRow>
+                  <FormField
+                    label="Bank name"
+                    name="bankName"
+                    required
+                    tip="The bank written on the cheque, i.e. the drawer's (accused's) bank."
+                  >
+                    <TextField
+                      value={cheque.bankName}
+                      onChange={(v) => editField("bankName", v)}
+                      placeholder="Drawer's bank"
+                    />
+                  </FormField>
+                  <FormField
+                    label="Bank branch"
+                    name="bankBranch"
+                    required
+                    tip="The branch written on the cheque, i.e. the drawer's (accused's) branch."
+                  >
+                    <TextField
+                      value={cheque.bankBranch}
+                      onChange={(v) => editField("bankBranch", v)}
+                      placeholder="Branch name"
+                    />
+                  </FormField>
+                </FormRow>
+              </>
+            ) : null}
 
-        {/* Return memo */}
-        <FormCard
-          title="Cheque return memo details"
-          description="From the memo the bank issued when the cheque was dishonoured."
-        >
-          <FormRow>
-            <FormField
-              label="Date of presentation / deposit"
-              name="presentDate"
-              required
-              tip="Date on which the cheque was presented in the bank for clearance."
-              error={cheque.presentDate && cheque.dateOnCheque && cheque.presentDate < cheque.dateOnCheque ? "Cannot be before the date on the cheque." : undefined}
-            >
-              <DateField
-                value={cheque.presentDate}
-                onChange={(v) => editField("presentDate", v)}
-                ariaLabel="Date of presentation or deposit"
-              />
-            </FormField>
-            <FormField
-              label="Date of return"
-              name="returnDate"
-              required
-              tip="Date on which the cheque was dishonoured / returned, as written on the return memo."
-              error={cheque.returnDate && cheque.presentDate && cheque.returnDate < cheque.presentDate ? "Cannot be before the date of presentation." : undefined}
-            >
-              <DateField
-                value={cheque.returnDate}
-                onChange={(v) => editField("returnDate", v)}
-                ariaLabel="Date of return"
-              />
-            </FormField>
-          </FormRow>
+            {showInheritNote ? (
+              <InfoWell>
+                <CreditCardIcon className="size-5 shrink-0" aria-hidden />
+                <p className="min-w-0 flex-1 text-body">
+                  Using bank details from Cheque {index}:{" "}
+                  <span className="font-semibold">{inheritedBank}</span>
+                  {previous?.bankBranch ? `, ${previous.bankBranch}` : ""}.
+                </p>
+              </InfoWell>
+            ) : null}
+          </FormCard>
 
-          <HalfWidth>
-            <FormField
-              label="Return reason"
-              name="returnReason"
-              required
-              tip="Reason for return of the cheque, as per the return memo."
-            >
-              <OptionSelect
-                value={cheque.returnReason}
-                onValueChange={(v) => editField("returnReason", v)}
-                options={RETURN_REASONS}
-                placeholder="Select reason"
-                ariaLabel="Return reason"
-              />
-            </FormField>
-          </HalfWidth>
+          {/* Return memo */}
+          <FormCard
+            title="Cheque return memo details"
+            description="From the memo the bank issued when the cheque was dishonoured."
+          >
+            <FormRow>
+              <FormField
+                label="Date of presentation / deposit"
+                name="presentDate"
+                required
+                tip="Date on which the cheque was presented in the bank for clearance."
+                error={chequePresentIssue(cheque)}
+              >
+                <DateField
+                  value={cheque.presentDate}
+                  onChange={(v) => editField("presentDate", v)}
+                  ariaLabel="Date of presentation or deposit"
+                />
+              </FormField>
+              <FormField
+                label="Date of return"
+                name="returnDate"
+                required
+                tip="Date on which the cheque was dishonoured / returned, as written on the return memo."
+                error={chequeReturnIssue(cheque)}
+              >
+                <DateField
+                  value={cheque.returnDate}
+                  onChange={(v) => editField("returnDate", v)}
+                  ariaLabel="Date of return"
+                />
+              </FormField>
+            </FormRow>
 
-          {reasonNeedsCheck ? (
-            <SectionNotice variant="warning" title="Check that S-138 still applies">
-              Section 138 is squarely attracted when a cheque is returned for{" "}
-              <span className="font-semibold">insufficiency of funds</span> (or because it
-              exceeds the arrangement). For other return reasons, confirm the dishonour
-              still falls within S-138 before filing.
-            </SectionNotice>
-          ) : null}
+            {presentedLate ? (
+              <SectionNotice variant="warning">{presentedLate}</SectionNotice>
+            ) : null}
 
-        </FormCard>
+            <HalfWidth>
+              <FormField
+                label="Return reason"
+                name="returnReason"
+                required
+                tip="Reason for return of the cheque, as per the return memo."
+              >
+                <OptionSelect
+                  value={cheque.returnReason}
+                  onValueChange={(v) => editField("returnReason", v)}
+                  options={RETURN_REASONS}
+                  placeholder="Select reason"
+                  ariaLabel="Return reason"
+                />
+              </FormField>
+            </HalfWidth>
+
+            {reasonNeedsCheck ? (
+              <SectionNotice
+                variant="warning"
+                title="Check that S-138 still applies"
+              >
+                Section 138 is squarely attracted when a cheque is returned for{" "}
+                <span className="font-semibold">insufficiency of funds</span>{" "}
+                (or because it exceeds the arrangement). For other return
+                reasons, confirm the dishonour still falls within S-138 before
+                filing.
+              </SectionNotice>
+            ) : null}
+          </FormCard>
         </CorrectionInstance>
 
         {error ? (
-          <SectionNotice variant="destructive" title="Couldn't save to the court's server">
+          <SectionNotice
+            variant="destructive"
+            title="Couldn't save to the court's server"
+          >
             {error}
           </SectionNotice>
         ) : null}
@@ -379,7 +429,7 @@ export function ChequeSection() {
         open={removeOpen}
         onOpenChange={setRemoveOpen}
         title={`Remove cheque ${removeIndex + 1}`}
-        description="Are you sure you want to delete the details of this cheque? This also removes its return memo details."
+        description="Are you sure you want to delete the details of this cheque? This also removes its return memo details and any documents added for it."
         confirmLabel="Yes, remove"
         onConfirm={confirmRemove}
       />
@@ -388,7 +438,8 @@ export function ChequeSection() {
         open={sourceOpen}
         onOpenChange={setSourceOpen}
         title={
-          sourceSlot?.label ?? (sourceDoc === "front" ? "Cheque (front side)" : "Cheque return memo")
+          sourceSlot?.label ??
+          (sourceDoc === "front" ? "Cheque (front side)" : "Cheque return memo")
         }
         chips={sourceDocs.map((d) => ({
           label: d.slot?.file?.name ?? d.slot?.label ?? d.fallbackLabel,
@@ -397,7 +448,11 @@ export function ChequeSection() {
         }))}
         file={sourceSlot?.file ?? null}
         uploadHref={hrefFor("upload")}
-        imageAlt={sourceDoc === "front" ? "Uploaded cheque" : "Uploaded cheque return memo"}
+        imageAlt={
+          sourceDoc === "front"
+            ? "Uploaded cheque"
+            : "Uploaded cheque return memo"
+        }
         note="Shown from your uploaded document."
       />
     </>

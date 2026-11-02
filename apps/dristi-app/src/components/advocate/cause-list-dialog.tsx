@@ -193,12 +193,19 @@ function CourtMultiFilter({
   );
 }
 
+/** A court as one cause list: its name and, where it has one, its number —
+ * "SARAS Court 2" — so courts that share a name stay apart. */
+function courtName(row: CauseListRow): string {
+  return row.courtNumber ? `${row.courtLabel} ${row.courtNumber}` : row.courtLabel;
+}
+
 export function CauseListDialog({
   open,
   onOpenChange,
   world,
   now,
   day,
+  singleCourt = null,
   highlight,
   onJoin,
   locale,
@@ -209,6 +216,12 @@ export function CauseListDialog({
   now: number;
   /** The day the board is on when the list opens; the modal pages from here. */
   day: string;
+  /**
+   * The deployment's one court, or null where it runs several. With one court the
+   * list is that court's: it says so once, and drops the court filter, the court
+   * columns and sorting by court.
+   */
+  singleCourt?: string | null;
   /** A matter to scroll to and trace when the list opens (the per-hearing jump). */
   highlight?: { caseId: string; nonce: number } | null;
   onJoin: (row: CauseListRow) => void;
@@ -218,9 +231,13 @@ export function CauseListDialog({
   // page session (this wrapper stays mounted while the dialog toggles). Opening the
   // list from a hearing's "view on the cause list" jump then keeps the order the
   // advocate last chose, so the traced row shows in that order. A full page reload
-  // resets it to the Status default; the list's own refresh does not. Date, search
+  // resets it to the Court default; the list's own refresh does not. Date, search
   // and court filter still reset on each open, since the body remounts.
-  const [groupBy, setGroupBy] = React.useState<CauseListGroupBy>("status");
+  //
+  // Court by default (owner, 2026-10-14): each court publishes one cause list, so the
+  // list opens as those lists, one per court. A one-court deployment has no court
+  // grouping and falls back to Status below.
+  const [groupBy, setGroupBy] = React.useState<CauseListGroupBy>("court");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {/* Near full-screen, but inset from the edges so the board behind stays in
@@ -237,8 +254,11 @@ export function CauseListDialog({
           world={world}
           now={now}
           day={day}
+          singleCourt={singleCourt}
           highlight={highlight}
-          groupBy={groupBy}
+          // Sorting by court is not offered with one court; a choice made under
+          // another deployment falls back to the default.
+          groupBy={singleCourt && groupBy === "court" ? "status" : groupBy}
           onGroupByChange={setGroupBy}
           onJoin={onJoin}
           locale={locale}
@@ -252,6 +272,7 @@ function CauseListBody({
   world,
   now,
   day,
+  singleCourt,
   highlight,
   groupBy,
   onGroupByChange,
@@ -261,6 +282,7 @@ function CauseListBody({
   world: World;
   now: number;
   day: string;
+  singleCourt: string | null;
   highlight?: { caseId: string; nonce: number } | null;
   /** Sort-by is owned by the dialog wrapper so it persists across open/close;
       the default is Status (see there). */
@@ -373,7 +395,7 @@ function CauseListBody({
   const courtOptions = React.useMemo(() => {
     const seen = new Map<string, string>();
     for (const r of causeListOn(world, date, now)) {
-      if (!seen.has(r.court)) seen.set(r.court, r.courtLabel);
+      if (!seen.has(r.court)) seen.set(r.court, courtName(r));
     }
     return [...seen].map(([court, label]) => ({ court, label }));
   }, [world, date, now]);
@@ -406,11 +428,11 @@ function CauseListBody({
   const mineCount = React.useMemo(() => filtered.filter((r) => r.mine).length, [filtered]);
   const groups = React.useMemo(() => groupCauseList(filtered, groupBy, intl).map(({ key, rows: items }) => ({
     key,
-    // Item groups read "Item 3"; court groups are the court alone (grouping is by
-    // court, not by court number); status groups read as the status word; hearing-type
-    // groups are the stage itself.
+    // Item groups read "Item 3"; court groups name the court with its number
+    // ("SARAS Court 2") — one cause list per court; status groups read as the status
+    // word; hearing-type groups are the stage itself.
     label: groupBy === "item" ? `${pick(advHome.colItem, locale)} ${key}` :
-      groupBy === "court" ? items[0].courtLabel :
+      groupBy === "court" ? courtName(items[0]) :
       groupBy === "status" ? pick(STATUS_GROUP_LABEL[causeStatusKey(items[0])], locale) : key,
     rows: items,
   })), [filtered, groupBy, intl, locale]);
@@ -570,7 +592,10 @@ function CauseListBody({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" collisionPadding={16} className="w-56">
         <DropdownMenuRadioGroup value={groupBy} onValueChange={(value) => onGroupByChange(value as CauseListGroupBy)}>
-          {(["item", "court", "hearingType", "status"] as const).map((value) => (
+          {(singleCourt
+            ? (["item", "hearingType", "status"] as const)
+            : (["item", "court", "hearingType", "status"] as const)
+          ).map((value) => (
             <DropdownMenuRadioItem key={value} value={value} className="cause-touch-control">
               {groupLabels[value]}
             </DropdownMenuRadioItem>
@@ -609,8 +634,8 @@ function CauseListBody({
               {pick(advHome.causeListTitle, locale)}
             </DialogTitle>
             <DialogDescription className="sr-only text-body-compact text-muted-foreground md:not-sr-only">
-              {courtsLabel
-                ? fillCopy(advHome.causeListScopeCourt, locale, { court: courtsLabel })
+              {singleCourt || courtsLabel
+                ? fillCopy(advHome.causeListScopeCourt, locale, { court: singleCourt ?? courtsLabel ?? "" })
                 : pick(advHome.causeListScope, locale)}{" "}
               · {dateLabel}
             </DialogDescription>
@@ -631,7 +656,7 @@ function CauseListBody({
               {dateDownload}
             </div>
             <div className="flex items-center gap-2">
-              {courtFilter}
+              {singleCourt ? null : courtFilter}
               {sortControl}
               {refreshStamp}
             </div>
@@ -639,7 +664,7 @@ function CauseListBody({
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-2 md:gap-3">
             <div className="flex flex-1 flex-wrap items-center gap-2">
-              {courtFilter}
+              {singleCourt ? null : courtFilter}
               {searchField}
               {sortControl}
             </div>
@@ -680,7 +705,7 @@ function CauseListBody({
                 </div>
                 <div className="flex flex-col gap-4 md:gap-3">
                   {group.rows.map((row) => (
-                    <CauseCard key={row.id} row={row} locale={locale} onJoin={onJoin} />
+                    <CauseCard key={row.id} row={row} showCourt={!singleCourt} locale={locale} onJoin={onJoin} />
                   ))}
                 </div>
               </React.Fragment>
@@ -696,8 +721,12 @@ function CauseListBody({
               <TableRow className={TABLE_HEAD_ROW}>
                 <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-16")}>{pick(advHome.colItem, locale)}</TableHead>
                 <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-1/5")}>{pick(advHome.colCase, locale)}</TableHead>
-                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-32")}>{pick(advHome.colCourt, locale)}</TableHead>
-                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-24 whitespace-nowrap")}>{copy("Court no.", "കോടതി നമ്പർ")}</TableHead>
+                {singleCourt ? null : (
+                  <>
+                    <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-32")}>{pick(advHome.colCourt, locale)}</TableHead>
+                    <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-24 whitespace-nowrap")}>{copy("Court no.", "കോടതി നമ്പർ")}</TableHead>
+                  </>
+                )}
                 <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-1/6")}>{pick(advHome.colAdvocates, locale)}</TableHead>
                 <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-52")}>{pick(advHome.colCaseNumber, locale)}</TableHead>
                 <TableHead className={cn(TABLE_HEAD, STICKY_HEAD)}>{pick(advHome.colHearingType, locale)}</TableHead>
@@ -707,12 +736,12 @@ function CauseListBody({
             {groups.map((group) => (
               <TableBody key={group.key} className={tableBodyClass({ hover: true })}>
                 <TableRow className={tableRowClass({ hover: false })}>
-                  <td colSpan={8} className="sticky top-10 z-10 bg-background px-0 pt-4 pb-2">
+                  <td colSpan={singleCourt ? 6 : 8} className="sticky top-10 z-10 bg-background px-0 pt-4 pb-2">
                     {renderDivider(group)}
                   </td>
                 </TableRow>
                 {group.rows.map((row) => (
-                  <CauseRow key={row.id} row={row} locale={locale} onJoin={onJoin} />
+                  <CauseRow key={row.id} row={row} showCourt={!singleCourt} locale={locale} onJoin={onJoin} />
                 ))}
               </TableBody>
             ))}
@@ -745,7 +774,7 @@ function CauseListBody({
 
 /** Own matters use the resting warm-neutral fill; the label preserves meaning
  * without relying on colour. Only this row's right-hand content makes room. */
-function CauseRow({ row, locale, onJoin }: { row: CauseListRow; locale: Locale; onJoin: (row: CauseListRow) => void }) {
+function CauseRow({ row, showCourt, locale, onJoin }: { row: CauseListRow; showCourt: boolean; locale: Locale; onJoin: (row: CauseListRow) => void }) {
   const cell = cn(TABLE_CELL, "align-middle");
   const canHover = useCanHover();
   const joinLabel = locale === "ml" ? "ഹിയറിംഗിൽ ചേരുക" : "Join hearing";
@@ -770,8 +799,12 @@ function CauseRow({ row, locale, onJoin }: { row: CauseListRow; locale: Locale; 
           ) : null}
         </span>
       </td>
-      <td className={cell}><span className="block truncate" title={row.courtLabel}>{row.courtLabel}</span></td>
-      <td className={cn(cell, "tabular-nums")}>{row.courtNumber ?? "N/A"}</td>
+      {showCourt ? (
+        <>
+          <td className={cell}><span className="block truncate" title={row.courtLabel}>{row.courtLabel}</span></td>
+          <td className={cn(cell, "tabular-nums")}>{row.courtNumber ?? "N/A"}</td>
+        </>
+      ) : null}
       <td className={cn(cell, "text-muted-foreground")}><span className="block truncate" title={row.advocates}>{row.advocates}</span></td>
       {/* Never truncated: the column is sized to hold a full CNR. */}
       <td className={cn(cell, "whitespace-nowrap text-muted-foreground")}><Identifier value={row.caseNumber} label="case number" copyable={canHover} /></td>
@@ -839,7 +872,7 @@ function glideTo(container: HTMLElement, to: number) {
 }
 
 /** Mobile cause-list cards share the home identity block and disclose live actions. */
-function CauseCard({ row, locale, onJoin }: { row: CauseListRow; locale: Locale; onJoin: (row: CauseListRow) => void }) {
+function CauseCard({ row, showCourt, locale, onJoin }: { row: CauseListRow; showCourt: boolean; locale: Locale; onJoin: (row: CauseListRow) => void }) {
   const [open, setOpen] = React.useState(false);
   const [pointerMotion, setPointerMotion] = React.useState(true);
   const ongoing = row.status === "now";
@@ -873,10 +906,12 @@ function CauseCard({ row, locale, onJoin }: { row: CauseListRow; locale: Locale;
           </span> : <span className="shrink-0 md:col-start-4 md:row-start-1 md:justify-self-end md:self-start"><StatusChip status={row.status} passedOver={row.passedOver} passedOverOn={row.passedOverOn} locale={locale} /></span>}
         </div>
         <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 text-body-compact md:contents">
-          <div className="contents md:col-start-3 md:row-start-1 md:flex md:min-w-0 md:flex-col md:gap-0.5">
-            <dt className="text-muted-foreground md:text-caption">{pick(advHome.colCourt, locale)}</dt>
-            <dd className="wrap-anywhere">{row.courtLabel} ·{"\u00a0"}{row.courtNumber ?? "N/A"}</dd>
-          </div>
+          {showCourt ? (
+            <div className="contents md:col-start-3 md:row-start-1 md:flex md:min-w-0 md:flex-col md:gap-0.5">
+              <dt className="text-muted-foreground md:text-caption">{pick(advHome.colCourt, locale)}</dt>
+              <dd className="wrap-anywhere">{row.courtLabel} ·{"\u00a0"}{row.courtNumber ?? "N/A"}</dd>
+            </div>
+          ) : null}
           <div className="contents md:col-span-2 md:col-start-1 md:row-start-2 md:flex md:min-w-0 md:items-baseline md:gap-2">
             <dt className="text-muted-foreground md:shrink-0 md:text-caption">{pick(advHome.colHearingType, locale)}</dt>
             <dd className="wrap-anywhere md:truncate" title={row.hearingType}>{row.hearingType}</dd>

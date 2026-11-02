@@ -22,7 +22,6 @@ import {
   advocateSummaries,
   chequeSummaries,
   complainantSummary,
-  complaintYear,
   documentSummary,
   finalReliefSummary,
   htmlToParagraphs,
@@ -34,6 +33,7 @@ import {
   orNot,
   witnessSummaries,
 } from "./derive";
+import { useCourtText } from "@/components/court/court-provider";
 
 /* ───────────────────────────── Sheet primitives ────────────────────── */
 
@@ -115,6 +115,7 @@ function DocP({
 /* ───────────────────────────── The document ────────────────────────── */
 
 export function CourtDocument({ draft }: { draft: FilingDraft }) {
+  const courtText = useCourtText();
   const complainant = complainantSummary(draft.complainants[0]);
   const advocates = advocateSummaries(draft);
   const accused = accusedSummaries(draft);
@@ -136,11 +137,10 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       {/* Court and cause title */}
       <div className="flex flex-col gap-1 text-center">
         <p className="text-caption font-medium tracking-wide text-paper-muted-foreground">
-          In the {COURT.name}
+          In the {courtText(COURT.name)}
         </p>
-        <p className="text-body-compact font-semibold tabular-nums">
-          Criminal Complaint (CMP) No. ______ of {complaintYear(draft)}
-        </p>
+        {/* No registration-number line: a draft has no number until registration, in
+            any state (owner, 2026-10-09). */}
       </div>
 
       {/* Parties — age is printed only when it was collected. */}
@@ -480,19 +480,26 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
         <tbody>
           <tr>
             <DocCell
-              label="Would you like to settle the case outside the court through alternative methods of dispute resolution?"
+              label="Is the complainant willing to settle the case outside the court through alternative methods of dispute resolution?"
               span={3}
             >
               {adrLabel(draft)}
             </DocCell>
           </tr>
-          <tr>
-            <DocCell label="Any additional details" span={3}>
-              {otherDetails.length ? otherDetails.join(" ") : NOT_PROVIDED}
-            </DocCell>
-          </tr>
         </tbody>
       </DocTable>
+      <p className="mt-4 text-body-compact font-semibold">Any additional details</p>
+      {otherDetails.length ? (
+        /* The filer's text as written — paragraphs and lists kept. */
+        <div
+          className="mt-2 flex flex-col gap-2 text-body-compact leading-relaxed [&_li]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6"
+          dangerouslySetInnerHTML={{
+            __html: courtText(draft.adr.otherDetails),
+          }}
+        />
+      ) : (
+        <DocP className="text-paper-muted-foreground">{NOT_PROVIDED}</DocP>
+      )}
       <p className="mt-4 text-body-compact font-semibold">Interim relief</p>
       {interimRelief.length ? (
         interimRelief.map((p, i) => <DocP key={i}>{p}</DocP>)

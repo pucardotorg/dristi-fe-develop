@@ -20,7 +20,7 @@
 
 import { LANGUAGE_NAME, SECOND_LANGUAGE } from "@/lib/locale-config";
 
-export type Locale = "en" | "ml" | "hi";
+export type Locale = "en" | "ml" | "hi" | "gu" | "pa";
 
 /** English, and the deployment's second language (`lib/locale-config.ts`). */
 export const LOCALES: { value: Locale; label: string }[] = [
@@ -51,7 +51,7 @@ export const STEP_ORDER: StepId[] = [
 ];
 
 /** English and Malayalam always; Hindi where a translation exists, else English is shown. */
-export type Copy = { en: string; ml: string; hi?: string };
+export type Copy = { en: string; ml?: string; hi?: string };
 const t = (en: string, ml: string, hi?: string): Copy => (hi ? { en, ml, hi } : { en, ml });
 
 export const stepTitles: Record<StepId, Copy> = {

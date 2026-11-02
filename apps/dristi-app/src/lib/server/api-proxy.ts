@@ -25,10 +25,8 @@
  *      `/admin/`.
  */
 
+import { API_BASE_PATH } from "../api/paths";
 import type { ApiBaseUrlResult } from "./env";
-
-/** Where this app serves the proxy. The browser client calls paths under it. */
-export const API_PREFIX = "/api/v1";
 
 /** Upper bound for one upstream call. Generous: uploads of scanned documents are slow. */
 export const UPSTREAM_TIMEOUT_MS = 60_000;
@@ -96,9 +94,9 @@ function proxyError(status: number, code: string, detail: string): Response {
  * `search` is passed through verbatim, including the leading `?`.
  */
 export function buildUpstreamUrl(baseUrl: string, pathname: string, search: string): URL | null {
-  if (pathname !== API_PREFIX && !pathname.startsWith(`${API_PREFIX}/`)) return null;
+  if (pathname !== API_BASE_PATH && !pathname.startsWith(`${API_BASE_PATH}/`)) return null;
 
-  const rest = pathname.slice(API_PREFIX.length).replace(/^\/+|\/+$/g, "");
+  const rest = pathname.slice(API_BASE_PATH.length).replace(/^\/+|\/+$/g, "");
   const segments: string[] = [];
   for (const raw of rest ? rest.split("/") : []) {
     let segment: string;

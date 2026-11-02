@@ -5,6 +5,8 @@
  * lookups (IFSC, PIN) live in lookups.ts; there are no mock registries here.
  */
 
+import type { CourtId } from "@/lib/court/profiles";
+
 import type { PaperFallbackReason } from "./types";
 
 export type Option = { value: string; label: string };
@@ -92,6 +94,13 @@ export const GENDER_OPTIONS: Option[] = [
   { value: "other", label: "Other" },
 ];
 
+/** The backend's code for each gender above (dristi-be `parties.models.Gender`). */
+export const GENDER_CODES: Record<string, string> = {
+  male: "MALE",
+  female: "FEMALE",
+  other: "OTHER",
+};
+
 export const ENTITY_TYPES: Option[] = [
   { value: "proprietorship", label: "Proprietorship" },
   { value: "partnership", label: "Partnership firm" },
@@ -126,6 +135,20 @@ export const ACCUSED_ENTITY_TYPES: Option[] = [
   { value: "other", label: "Other entity" },
 ];
 
+/**
+ * The backend's code for each entity type in `ENTITY_TYPES` and `ACCUSED_ENTITY_TYPES`
+ * (dristi-be `parties.models.EntityType`). A new option needs a code here too.
+ */
+export const ENTITY_TYPE_CODES: Record<string, string> = {
+  proprietorship: "PROPRIETORSHIP",
+  partnership: "PARTNERSHIP_FIRM",
+  "private-limited": "PRIVATE_LIMITED_COMPANY",
+  "public-limited": "PUBLIC_LIMITED_COMPANY",
+  "society-trust": "SOCIETY_TRUST",
+  llp: "LLP",
+  other: "OTHER_ENTITY",
+};
+
 /* ───────────────────────────── Cheque & return memo ────────────────── */
 
 export const RETURN_REASONS: Option[] = [
@@ -151,15 +174,6 @@ export const NATURE_OF_DEBT: Option[] = [
   { value: "business", label: "Business / trade transaction" },
   { value: "borrowed", label: "Repayment of borrowed money" },
   { value: "other", label: "Other liability" },
-];
-
-export const WHY_ISSUED: Option[] = [
-  { value: "loan-repay", label: "Towards repayment of a loan" },
-  { value: "goods-pay", label: "Towards payment for goods" },
-  { value: "services-pay", label: "Towards payment for services" },
-  { value: "security", label: "As security, subsequently enforced" },
-  { value: "discharge", label: "Discharge of an existing debt" },
-  { value: "other", label: "Other" },
 ];
 
 export const MODE_OF_SERVICE: Option[] = [
@@ -214,18 +228,22 @@ export const DELIVERY_CHANNEL = "E-post";
 /* ───────────────────────────── Signing ───────────────────────────── */
 
 /**
- * What stopped e-signing — the common failures the owner named (2026-10-06), in plain
- * words rather than legal ones. Every signing window that offers paper asks this; a
- * window with one signer has nobody else to wait on, so it passes a subset rather than
- * keeping a second list.
+ * What stopped e-signing, in plain words rather than legal ones — one reason per way
+ * e-signing can fail here: each instrument (Aadhaar OTP, DSC), another signer, and the
+ * e-sign service itself (owner, 2026-10-07). A slow party is not on the list: paper
+ * still needs their signature by hand, so it is a party who *cannot* e-sign. Not yet
+ * confirmed against what filers actually hit. Every signing window that offers paper
+ * asks this; a window with one signer has nobody else, so it passes a subset rather
+ * than keeping a second list.
  */
 export const PAPER_FALLBACK_REASONS: readonly {
   id: PaperFallbackReason;
   label: string;
 }[] = [
-  { id: "otp-not-received", label: "OTP not received" },
-  { id: "party-did-not-respond", label: "A party did not respond" },
-  { id: "server-not-responding", label: "Server not responding" },
+  { id: "otp-not-received", label: "The OTP didn't arrive" },
+  { id: "dsc-not-working", label: "My DSC isn't working" },
+  { id: "party-cannot-esign", label: "Another party can't e-sign" },
+  { id: "server-not-responding", label: "The e-sign service isn't responding" },
   { id: "other", label: "Something else" },
 ];
 
@@ -327,6 +345,13 @@ export type FeeLine = {
   amount: number;
   /** Charged once for every address process is served at. */
   perAddress?: boolean;
+  /**
+   * Charged once for every advocate on record, or every affidavit filed. Other states'
+   * schedules (`lib/court/fees.ts`) price lines this way; Kerala's do not.
+   */
+  per?: "advocate" | "affidavit";
+  /** Only charged when at least one advocate is on record. */
+  needsAdvocate?: boolean;
   note?: string;
 };
 
@@ -404,3 +429,17 @@ export const POLICE_STATIONS: string[] = [
   "Chadayamangalam Police Station",
   "Pooyappally Police Station",
 ];
+
+/**
+ * Stations only a Punjab and Haryana court lists — the two states share one High Court
+ * (owner, 2026-10-12: "keep Panchkula for Punjab and Haryana, not for Gujarat and
+ * Kerala").
+ */
+const PUNJAB_AND_HARYANA_STATIONS: string[] = ["Panchkula Police Station"];
+
+/** The police stations a court's dropdowns offer. */
+export function policeStationsFor(court: CourtId): string[] {
+  return court === "punjab-haryana"
+    ? [...POLICE_STATIONS, ...PUNJAB_AND_HARYANA_STATIONS]
+    : POLICE_STATIONS;
+}

@@ -10,6 +10,8 @@
  * `./data/` persists it locally today; a backend replaces that layer, not this shape.
  */
 
+import type { BackendRole } from "@/lib/auth/types";
+
 export type YesNo = "yes" | "no";
 export type ISODate = string; // "yyyy-mm-dd" | ""
 
@@ -60,6 +62,29 @@ export type StoredFileRef = {
   ext: string;
 };
 
+/** Pixel box on the source page (page 1 for PDFs), origin top-left. */
+export type ExtractBox = { x0: number; y0: number; x1: number; y1: number };
+
+export type ExtractedField = {
+  value: string;
+  /** 0–100. */
+  confidence: number;
+  box?: ExtractBox;
+};
+
+/**
+ * What reading a document produced — the parsed fields, not the raw text. Only bulk
+ * filing reads documents now (on the server); scrutiny shows what it found.
+ */
+export type DocExtract = {
+  engine: "pdf-text" | "tesseract";
+  /** Mean word confidence, 0–100 (100 for a PDF text layer). */
+  confidence: number;
+  page: { width: number; height: number };
+  fields: Record<string, ExtractedField>;
+  extractedAt: string;
+};
+
 /* ───────────────────────── Intake (Case documents upload) ───────────────────────── */
 
 /** What a slot expects — drives which parser reads the upload and where values land. */
@@ -90,12 +115,22 @@ export type IntakeSlot = {
   syncing?: boolean;
   /** Saving to the backend case failed; the file is still in this browser. */
   syncError?: string;
+  /** Bulk filing: what reading the document found, and whether it was too poor to trust. */
+  extract?: DocExtract;
+  poor?: boolean;
 };
 
 export type IntakeGroup = { n: number; slots: IntakeSlot[] };
 
 export type Intake = {
+  /** One group per cheque: the cheque and its return memo (`DCM-1`, `DCM-2`). */
   cheques: IntakeGroup[];
+  /**
+   * One group per demand notice: the notice, its dispatch and delivery proofs and any
+   * reply (`DCM-3`…`DCM-6`). Counted apart from the cheques — one notice often covers
+   * several cheques.
+   */
+  notices: IntakeGroup[];
   parties: IntakeGroup[];
   supporting: IntakeSlot[];
 };
@@ -103,6 +138,30 @@ export type Intake = {
 /* ───────────────────────────────── Complainant ──────────────────────────────────── */
 
 export type ComplainantType = "individual" | "institution";
+
+/**
+ * Where a complainant, an accused or a witness is saved on the backend case. An
+ * institution accused is saved once per person summoned for it (S-141), so a party can
+ * hold several.
+ */
+export type SavedParty = {
+  /** The backend participants, in the order of the bodies they were saved from. */
+  caseParticipantIds?: string[];
+  /** Each saved body as JSON — unchanged parties are not sent again. */
+  savedBodies?: string[];
+  /** Saving to the backend case failed; the details are still in this browser. */
+  syncError?: string;
+};
+
+/** Where a complainant's PoA holder is saved on the backend case. */
+export type SavedPoaHolder = {
+  participantId: string;
+  mandateIds: string[];
+  /** The complainant participant the mandate was granted for. */
+  forParticipantId: string;
+  /** The saved body as JSON — an unchanged holder is not sent again. */
+  body: string;
+};
 
 export type PoaHolder = {
   mobile: string;
@@ -131,14 +190,14 @@ export type Representative = {
   differentlyAbled: DifferentlyAbled;
 };
 
-/** A video of an advocate reciting the oath, uploaded or recorded in place. */
-export type OathVideoUpload = {
+/** A complainant's oath, recorded through the camera in the signing step (`OTH-1`). */
+export type OathVideo = {
   file: StoredFileRef;
   /** Seconds, read from the file's own metadata; null when it could not be read. */
   durationSeconds: number | null;
 };
 
-export type Complainant = {
+export type Complainant = SavedParty & {
   id: string;
   pip: YesNo;
   type: ComplainantType;
@@ -159,6 +218,9 @@ export type Complainant = {
   perm: Address;
   poa: YesNo;
   poaHolder: PoaHolder;
+  savedPoaHolder?: SavedPoaHolder;
+  /** Saving the PoA holder to the backend case failed, or is waiting on a field. */
+  poaSyncError?: string;
   entType: string;
   entName: string;
   /**
@@ -182,12 +244,24 @@ export type Complainant = {
 
 /* ─────────────────────────────────── Advocate ───────────────────────────────────── */
 
-export type Advocate = {
+/** Where an advocate is saved on the backend case: one representation per client. */
+export type SavedAdvocate = {
+  /** The advocate the representations below are for. */
+  savedAdvocateId?: string;
+  /** Representation ids, by the complainant participant each one acts for. */
+  representations?: Record<string, string>;
+  /** Saving to the backend case failed; the details are still in this browser. */
+  syncError?: string;
+};
+
+export type Advocate = SavedAdvocate & {
   id: string;
   /** Indices into `draft.complainants` this advocate appears for. */
   forComplainants: number[];
   barNumber: string;
   name: string;
+  /** Their id on the backend, from the advocate search; without it they cannot be saved. */
+  advocateId?: string;
 };
 
 /* ─────────────────────────────────── Accused ────────────────────────────────────── */
@@ -199,7 +273,7 @@ export type Advocate = {
  */
 export type AccusedType = "individual" | "institution";
 
-export type Accused = {
+export type Accused = SavedParty & {
   id: string;
   type: AccusedType;
   name: string;
@@ -252,7 +326,6 @@ export type ChequeDetails = {
 
 export type NoticeField =
   | "natureDebt"
-  | "whyIssued"
   | "dispatchDate"
   | "tracking"
   | "modeService"
@@ -261,7 +334,6 @@ export type NoticeField =
 export type DemandNotice = {
   id: string;
   natureDebt: string;
-  whyIssued: string;
   dispatchDate: ISODate;
   modeService: string;
   tracking: string;
@@ -300,13 +372,15 @@ export type Jurisdiction = {
 export type AdrPrayer = {
   adr: "yes" | "no" | "maybe";
   otherDetails: string;
+  /** The additional-details format the text was started from (`details-formats.ts`). */
+  detailsFormat?: string;
   interimRelief: string;
   finalRelief: string;
 };
 
 /* ─────────────────────────────────── Witnesses ──────────────────────────────────── */
 
-export type Witness = {
+export type Witness = SavedParty & {
   id: string;
   fullName: string;
   designation: string;
@@ -345,8 +419,9 @@ export type Signatory = {
   signedWith?: SignInstrument;
   you?: boolean;
   /**
-   * Advocates only: whether the oath is in. Advocates sign *and* take the oath; a
-   * complainant only signs, so this is absent on their rows.
+   * Whether the oath is in. Only a complainant's slot carries one (`OTH-3`) — taken by
+   * the complainant, their PoA holder or an Institution's representative; absent on an
+   * advocate's slot, and everywhere while the oath is switched off.
    */
   oathTaken?: boolean;
 };
@@ -403,14 +478,17 @@ export type AccusedProcessChoice = {
 /**
  * What one signature was made with. Aadhaar OTP and a DSC are both *digital* — the
  * difference is the instrument in the signer's own hands, which is theirs to pick and
- * need not match anyone else's. `paper` is a signature on the uploaded copy.
+ * need not match anyone else's. `paper` is a signature on the uploaded copy. `otp` is a
+ * mobile OTP signature, offered only for bulk filing (`lib/bulk`); whether it is coming
+ * to the product is Bulk Filing PRD §8 Q9, still open.
  */
-export type SignInstrument = "aadhaar" | "dsc" | "paper";
+export type SignInstrument = "aadhaar" | "dsc" | "paper" | "otp";
 
 /** What stopped e-signing, as the person turning to paper says it (`PAPER_FALLBACK_REASONS`). */
 export type PaperFallbackReason =
   | "otp-not-received"
-  | "party-did-not-respond"
+  | "dsc-not-working"
+  | "party-cannot-esign"
   | "server-not-responding"
   | "other";
 
@@ -477,11 +555,12 @@ export type SignState = {
    */
   process: Record<string, AccusedProcessChoice>;
   /**
-   * Advocate signatory id → their oath. Taken during signing, after the e-signature,
-   * by whichever advocate signs for that slot. It affirms the contents of this exact
-   * complaint, so it goes wherever the signatures go when the complaint is edited.
+   * Complainant signatory id (`sig-c-…`) → their oath (`OTH-3`). Recorded during
+   * signing: after the e-signature, or with the phone confirmation in upload mode. An
+   * edit before filing takes it with the signatures; a correction round after a
+   * send-back keeps it unless scrutiny flagged it (`OTH-5`, `carryOverOaths`).
    */
-  oaths: Record<string, AdvocateOath>;
+  oaths: Record<string, OathRecord>;
   paid: boolean;
   paidAt: string | null;
   /** Rupees actually taken — the court fees plus every prepaid process round. */
@@ -491,12 +570,14 @@ export type SignState = {
 };
 
 /**
- * One advocate's oath. `video` is null only for the sandbox shortcut that marks the
+ * One complainant's oath. `video` is null only for the sandbox shortcut that marks the
  * other parties as done — there is no recording behind it, and the rail says so.
+ * `by` is the person who recorded it, by name, as it stood when they did.
  */
-export type AdvocateOath = {
+export type OathRecord = {
   at: string;
-  video: OathVideoUpload | null;
+  video: OathVideo | null;
+  by?: string;
 };
 
 /* ─────────────────────────────────── Draft ──────────────────────────────────────── */
@@ -513,7 +594,7 @@ export type FilingDraft = {
   /**
    * The backend case this draft saves to — the same value as `id`, since the backend
    * keeps the draft session's id for the case. Absent on drafts that live only in this
-   * browser: sample and batch drafts, and drafts made before the backend was wired.
+   * browser: batch drafts, and drafts made before the backend was wired.
    */
   caseId?: string;
   /** `pss25` has no filing flow yet — such a draft opens the placeholder page. */
@@ -521,6 +602,16 @@ export type FilingDraft = {
   status: "draft" | "filed";
   /** Where the person last was — "Continue draft" resumes here. */
   lastStep: StepId;
+  /**
+   * Every section the person has opened. A section counts towards progress, and earns
+   * its tick in the rail, only once it has been opened: some sections are complete before
+   * anyone touches them (the prayer is pre-written, witnesses are optional), and a blank
+   * draft must not read as part-done.
+   *
+   * Absent on drafts written before this was recorded — the samples and older saves —
+   * which are read as every section up to `lastStep` opened.
+   */
+  visited?: StepId[];
   intake: Intake;
   complainants: Complainant[];
   advocates: Advocate[];
@@ -545,8 +636,10 @@ export type FilingDraft = {
    * Set on a filing scrutiny returned. Once the corrections are made, the complaint goes
    * back through the same Sign step as at e-filing (handover `SIG-07`) and is sent back
    * to scrutiny from there instead of paying again. `resubmittedAt` is when it went.
+   * `signingFrom` is when this round's signing opened: an oath recorded before it
+   * carried over from an earlier round (`OTH-5`, `SCR-14`).
    */
-  scrutinyReturn?: { resubmittedAt: string | null };
+  scrutinyReturn?: { resubmittedAt: string | null; signingFrom?: string };
 };
 
 /* ─────────────────────────────────── Profile ────────────────────────────────────── */
@@ -557,6 +650,8 @@ export type FilingDraft = {
  * prefill read from it.
  */
 export type UserProfile = {
+  /** `null` when the account could not be read. */
+  role: BackendRole | null;
   name: string;
   mobile: string;
   email: string;

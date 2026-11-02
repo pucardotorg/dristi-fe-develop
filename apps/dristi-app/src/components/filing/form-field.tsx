@@ -23,10 +23,8 @@ import {
   useCorrection,
   useCorrectionInstance,
 } from "@/components/filing/posture";
+import { useFieldPolicy } from "@/components/filing/field-policy";
 import { defectState } from "@/lib/tasks/defects";
-
-const SourceFieldLabel = React.createContext("this field");
-export function useSourceFieldLabel() { return React.useContext(SourceFieldLabel); }
 
 /** The `*` / "optional" marker after a label. */
 export function RequiredMark({ optional }: { optional?: boolean }) {
@@ -85,7 +83,7 @@ export function FormField({
   tip,
   help,
   helpPlacement = "below",
-  error,
+  error: ownError,
   asGroup = false,
   className,
   children,
@@ -110,6 +108,9 @@ export function FormField({
 }) {
   const correction = useCorrection();
   const instance = useCorrectionInstance();
+  // A host's check on this field (bulk filing), when the section has nothing of its own to say.
+  const policy = useFieldPolicy();
+  const error = ownError ?? (policy && name ? policy.issueAt(instance, name) : null) ?? undefined;
   const defect =
     correction && name ? correction.defectAt(correction.step, instance, name) : null;
   const locked = !!correction && !defect;
@@ -175,9 +176,7 @@ export function FormField({
         <FieldLabel className="text-body-compact">{labelBody}</FieldLabel>
       )}
       {help && helpPlacement === "above" ? <FieldDescription>{help}</FieldDescription> : null}
-      <SourceFieldLabel.Provider value={typeof label === "string" ? label : "this field"}>
-        {children}
-      </SourceFieldLabel.Provider>
+      {children}
       {help && helpPlacement === "below" ? <FieldDescription>{help}</FieldDescription> : null}
       {error ? <FieldError>{error}</FieldError> : null}
     </Field>
@@ -223,7 +222,8 @@ export function FormField({
   if (!correction.showAll) return null;
   return (
     <FieldLock locked={locked}>
-      <div className={cn(locked && "opacity-45")}>{field}</div>
+      {/* Receded by the correction screen's record pane, for every section alike. */}
+      <div>{field}</div>
     </FieldLock>
   );
 }

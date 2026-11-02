@@ -1,29 +1,43 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2Icon, PlusIcon, SearchIcon, XIcon } from "lucide-react";
+import { CheckCircle2Icon, SearchIcon } from "lucide-react";
+import { toast } from "sonner";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { CaseAccessList, initials } from "@/components/access/access-list";
-import { formatPhone, useAccess, type InviteResult } from "@/components/access/access-state";
+import { CaseAccessList } from "@/components/access/access-list";
+import {
+  directoryOptions,
+  PeopleInviteField,
+  type InvitePerson,
+} from "@/components/access/people-invite-field";
+import { useAccess, type InviteResult } from "@/components/access/access-state";
 import { RemoveAdvocateDialog } from "@/components/cases/remove-advocate-dialog";
+import { ChromeAlertDialogContent } from "@/components/chrome/app-chrome";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { pick, type Locale } from "@/lib/onboarding/content";
+import { fill } from "@/lib/join/content";
 import {
-  FREQUENT_COLLABORATORS,
-  PHONE_DIRECTORY,
+  caseLabel,
   fillCopy,
-  roleCopy,
+  inviteFieldCopy,
+  peopleCopy,
   shareCopy,
   type AccessCase,
   type AccessPerson,
@@ -39,12 +53,13 @@ import { Identifier } from "@/components/chrome/identifier";
  * access" is handled by granting idempotently and saying so in the
  * confirmation, never by blocking upfront.
  *
- * The number field resolves against the DRISTI account directory the moment
- * the tenth digit lands; recognised people stack as name-over-number chips,
- * unknown numbers stack as just the number.
+ * People are found by typing (`PeopleInviteField`, `registeredOnly`): the office
+ * is suggested first, and any registered advocate or clerk can be searched by
+ * name, number or Bar ID (owner, 2026-10-21, OFC-20). Whoever is added here
+ * joins the advocate's office on the People page with this case (OFC-51).
  */
 
-type Chip = { phone: string; name?: string };
+type Chip = InvitePerson;
 
 export function ShareDialog({
   open,
@@ -74,17 +89,17 @@ export function ShareDialog({
    */
   extraPeople?: AccessPerson[];
 }) {
-  const { invite, removeGrant, personsOnCase } = useAccess();
+  const { invite, removeGrant, personsOnCase, office } = useAccess();
 
   const [chips, setChips] = React.useState<Chip[]>([]);
-  const [input, setInput] = React.useState("");
-  const [touched, setTouched] = React.useState(false);
-  const [focused, setFocused] = React.useState(false);
   const [result, setResult] = React.useState<InviteResult | null>(null);
   const [accessQuery, setAccessQuery] = React.useState("");
   /* An on-nama advocate whose Remove was clicked; opens the formal removal
      flow (3a/3b) over this dialog. Staff removal stays the one-click revoke. */
   const [removeTarget, setRemoveTarget] = React.useState<string | null>(null);
+  /* Office access about to be removed: confirmed first, like every removal
+     (OFC-36), in the People tab's own words. */
+  const [confirmTarget, setConfirmTarget] = React.useState<AccessPerson | null>(null);
   const [removedDerived, setRemovedDerived] = React.useState<ReadonlySet<string>>(
     new Set(),
   );
@@ -102,29 +117,12 @@ export function ShareDialog({
       ]
     : [];
 
-  const inputValid = /^\d{10}$/.test(input);
-  const lookup = inputValid ? (PHONE_DIRECTORY[input] ?? null) : null;
-
-  /* The wrong-door check: an advocate's number in the share box almost
-     always means "add them to the case", which is the Parties tab's job —
-     office access is all this dialog can grant. The notice names whoever is
-     stacked (or currently resolved) and points to the other door; it warns,
-     never blocks, because giving an advocate plain office access is rare but
-     legitimate. */
-  const advocateNames = [
-    ...chips
-      .filter((chip) => PHONE_DIRECTORY[chip.phone.replace(/\D/g, "")]?.advocate)
-      .map((chip) => chip.name ?? chip.phone),
-    ...(lookup?.advocate ? [lookup.name] : []),
-  ];
 
   function handleOpenChange(nextOpen: boolean) {
     // Closing clears transient invite state so reopening any case scope starts
     // clean without synchronously cascading state updates from an effect.
     if (!nextOpen) {
       setChips([]);
-      setInput("");
-      setTouched(false);
       setResult(null);
       setAccessQuery("");
       setRemovedDerived(new Set());
@@ -132,47 +130,39 @@ export function ShareDialog({
     onOpenChange(nextOpen);
   }
 
-  function stack(chip: Chip) {
-    setChips((current) =>
-      current.some((c) => c.phone === chip.phone) ? current : [...current, chip],
-    );
-  }
-
-  function addPhone() {
-    if (!inputValid) {
-      setTouched(true);
-      return;
+  function confirmRemove() {
+    if (!single || !confirmTarget) return;
+    const personId = confirmTarget.id;
+    removeGrant(personId, single.id);
+    if (personId.startsWith("derived-")) {
+      setRemovedDerived((current) => new Set(current).add(personId));
     }
-    stack({ phone: formatPhone(input), name: lookup?.name });
-    setInput("");
-    setTouched(false);
+    toast.success(
+      fillCopy(peopleCopy.removedNote, locale, {
+        name: confirmTarget.name,
+        case: caseLabel(single),
+      }),
+    );
+    setConfirmTarget(null);
   }
 
   function send() {
-    // A number still sitting in the input counts — nobody should need to press +.
-    let batch = chips;
-    if (inputValid) {
-      const pretty = formatPhone(input);
-      if (!batch.some((c) => c.phone === pretty)) {
-        batch = [...batch, { phone: pretty, name: lookup?.name }];
-      }
-      setInput("");
-    }
-    if (!batch.length) {
-      setTouched(true);
-      return;
-    }
-    setResult(invite(batch.map((c) => c.phone), cases.map((c) => c.id)));
+    const batch = chips;
+    if (!batch.length) return;
+    const result = invite(batch.map((c) => c.phone ?? ""), cases.map((c) => c.id));
+    setResult(result);
+    toast.success(fill(shareCopy.inviteToast, locale, { names: result.names.join(", ") }));
     setChips([]);
   }
 
-  // Suggest frequent collaborators not already stacked, and (single case) not
-  // already holding access — a suggestion you can't act on is just noise.
-  const suggestions = FREQUENT_COLLABORATORS.filter((collab) => {
-    if (chips.some((c) => c.phone === collab.phone)) return false;
-    if (single && onCase.some((p) => p.phone === collab.phone)) return false;
-    return true;
-  });
+  // The registered directory, office first, less (single case) anyone already
+  // holding access — a suggestion you can't act on is just noise.
+  // People on All cases already hold every case and are not offered (OFC-51).
+  const known = directoryOptions(office.map((p) => p.phone)).filter(
+    (option) =>
+      !(single && onCase.some((p) => p.phone === option.phone)) &&
+      !office.some((p) => p.allCases && p.phone === option.phone),
+  );
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -220,157 +210,26 @@ export function ShareDialog({
         <div className="flex flex-col gap-5 overflow-y-auto px-6 py-5">
           {/* ------------------------------------------------ invite controls */}
           <div className="flex flex-col gap-3">
-            {chips.length ? (
-              <div className="flex flex-wrap gap-1.5">
-                {chips.map((chip) => (
-                  <span
-                    key={chip.phone}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-muted py-1 pr-1 pl-2.5 text-caption text-foreground"
-                  >
-                    {/* Recognised numbers carry the registered name over the number. */}
-                    {chip.name ? (
-                      <span className="flex flex-col">
-                        <span className="font-medium">{chip.name}</span>
-                        <span className="text-muted-foreground tabular-nums">{chip.phone}</span>
-                      </span>
-                    ) : (
-                      <span className="font-medium tabular-nums">{chip.phone}</span>
-                    )}
-                    <button
-                      type="button"
-                      aria-label={`${pick(shareCopy.removeChip, locale)} ${chip.name ?? chip.phone}`}
-                      className="flex size-5 items-center justify-center self-start rounded-sm text-muted-foreground hover:text-foreground"
-                      onClick={() =>
-                        setChips((current) => current.filter((c) => c.phone !== chip.phone))
-                      }
-                    >
-                      <XIcon className="size-3.5" aria-hidden />
-                    </button>
-                  </span>
-                ))}
+            <div className="flex items-start gap-2">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <PeopleInviteField
+                  id="share-people"
+                  label={pick(inviteFieldCopy.placeholder, locale)}
+                  known={known}
+                  value={chips}
+                  onValueChange={(next) => {
+                    setChips(next);
+                    setResult(null);
+                  }}
+                  locale={locale}
+                  disabled={readOnly}
+                  registeredOnly
+                />
               </div>
-            ) : null}
-
-            <Field data-invalid={touched && !inputValid}>
-              <FieldLabel htmlFor="share-phone" className="sr-only">
-                {pick(shareCopy.phonePlaceholder, locale)}
-              </FieldLabel>
-              <div className="flex items-start gap-2">
-                <div className="flex flex-1 flex-col gap-1">
-                  {/* The dropdown anchors to the input itself, not the field
-                      block, so it sits tight under the box. */}
-                  <div className="relative">
-                    <Input
-                      id="share-phone"
-                      type="tel"
-                      inputMode="numeric"
-                      autoComplete="off"
-                      disabled={readOnly}
-                      maxLength={10}
-                      placeholder={pick(shareCopy.phonePlaceholder, locale)}
-                      value={input}
-                      onFocus={() => setFocused(true)}
-                      onBlur={() => setFocused(false)}
-                      onChange={(event) => {
-                        setInput(event.target.value.replace(/\D/g, "").slice(0, 10));
-                        setTouched(false);
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          addPhone();
-                        }
-                      }}
-                    />
-
-                    {/* The tenth digit resolves the number against DRISTI's
-                        accounts: registered users show their name (and past
-                        team members their designation); an unknown number is
-                        just the number. One tap stacks it. */}
-                    {inputValid && focused ? (
-                      <div className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-overlay">
-                        <button
-                          type="button"
-                          className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted"
-                          // Mousedown, not click — the input blurs first otherwise
-                          // and the dropdown vanishes before the click lands.
-                          onMouseDown={(event) => {
-                            event.preventDefault();
-                            addPhone();
-                          }}
-                        >
-                          <Avatar className="size-8 shrink-0">
-                            <AvatarFallback className="text-caption font-medium">
-                              {lookup ? initials(lookup.name) : "#"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="flex min-w-0 flex-1 flex-col">
-                            <span className="truncate text-body-compact font-medium">
-                              {lookup ? lookup.name : `+91 ${formatPhone(input)}`}
-                            </span>
-                            {lookup ? (
-                              <span className="truncate text-caption text-muted-foreground">
-                                <span className="tabular-nums">{formatPhone(input)}</span>
-                                {lookup.designation
-                                  ? ` · ${pick(roleCopy[lookup.designation], locale)}`
-                                  : null}
-                              </span>
-                            ) : null}
-                          </span>
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-                  <FieldError>
-                    {touched && !inputValid ? pick(shareCopy.phoneError, locale) : null}
-                  </FieldError>
-                  <p className="text-caption text-muted-foreground tabular-nums">
-                    {pick(shareCopy.demoProfiles, locale)}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  disabled={readOnly || (!chips.length && !inputValid)}
-                  onClick={send}
-                >
-                  {pick(shareCopy.send, locale)}
-                </Button>
-              </div>
-            </Field>
-
-            {advocateNames.length ? (
-              <Alert>
-                <AlertDescription>
-                  {fillCopy(shareCopy.advocateNotice, locale, {
-                    name: [...new Set(advocateNames)].join(", "),
-                  })}
-                </AlertDescription>
-              </Alert>
-            ) : null}
-
-            {suggestions.length && !readOnly ? (
-              <div className="mt-2 flex flex-col gap-2">
-                <p className="text-caption font-medium text-muted-foreground">
-                  {pick(shareCopy.suggestionsLabel, locale)}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {suggestions.map((collab) => (
-                    <button
-                      key={collab.phone}
-                      type="button"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border py-1 pr-3 pl-2 text-caption font-medium text-foreground transition-colors hover:bg-muted"
-                      onClick={() => stack({ phone: collab.phone, name: collab.name })}
-                    >
-                      <PlusIcon className="size-3.5" aria-hidden />
-                      {collab.name}
-                      <span className="font-normal text-muted-foreground">
-                        · {pick(roleCopy[collab.role], locale)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+              <Button type="button" disabled={readOnly || !chips.length} onClick={send}>
+                {pick(shareCopy.send, locale)}
+              </Button>
+            </div>
 
             {result ? (
               <p className="flex items-start gap-1.5 rounded-lg border border-success bg-success-muted px-3 py-2 text-body-compact font-medium text-success-muted-foreground">
@@ -379,7 +238,7 @@ export function ShareDialog({
                   {pick(shareCopy.sentNote, locale)} {result.names.join(", ")}
                   {bulk ? (
                     <>
-                      {" — "}
+                      {" · "}
                       {result.added === 0
                         ? pick(shareCopy.alreadyHadAllNote, locale)
                         : result.skipped === 0
@@ -433,14 +292,8 @@ export function ShareDialog({
                   onRemove={
                     readOnly
                       ? undefined
-                      : (personId) => {
-                          removeGrant(personId, single.id);
-                          if (personId.startsWith("derived-")) {
-                            setRemovedDerived(
-                              (current) => new Set(current).add(personId),
-                            );
-                          }
-                        }
+                      : (personId) =>
+                          setConfirmTarget(onCase.find((p) => p.id === personId) ?? null)
                   }
                   onRemoveVakalat={
                     readOnly
@@ -456,6 +309,31 @@ export function ShareDialog({
           ) : null}
         </div>
       </FlowDialogContent>
+
+      <AlertDialog
+        open={Boolean(confirmTarget)}
+        onOpenChange={(next) => {
+          if (!next) setConfirmTarget(null);
+        }}
+      >
+        <ChromeAlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {fillCopy(peopleCopy.removeOneTitle, locale, {
+                name: confirmTarget?.name ?? "",
+                case: single ? caseLabel(single) : "",
+              })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{pick(peopleCopy.removeBodyOne, locale)}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{pick(peopleCopy.removeAllCancel, locale)}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmRemove}>
+              {pick(peopleCopy.removeFromCase, locale)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </ChromeAlertDialogContent>
+      </AlertDialog>
 
       <RemoveAdvocateDialog
         open={Boolean(removeTarget)}

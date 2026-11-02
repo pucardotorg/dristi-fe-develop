@@ -9,22 +9,28 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   CheckIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
   PencilLineIcon,
   PrinterIcon,
   TriangleAlertIcon,
 } from "lucide-react";
 
-import { caseFilingApi, caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
 import { joinDot } from "@/lib/filing/format";
 import { CASE_TYPE, COURT } from "@/lib/filing/options";
-import { sectionComplete } from "@/lib/filing/selectors";
-import { getStep, neighbours, type StepId } from "@/lib/filing/steps";
+import { useProfile } from "@/lib/filing/profile";
+import { sectionComplete, signatories } from "@/lib/filing/selectors";
+import { neighbours, type StepId } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { FilingDraft } from "@/lib/filing/types";
-import { stepForValidationField, type ValidationError } from "@/lib/filing/validation";
+import {
+  stepForValidationField,
+  type ValidationError,
+} from "@/lib/filing/validation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +48,14 @@ import {
 } from "@/components/ui/dialog";
 import { Dialog } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FilingFooter } from "@/components/filing/filing-footer";
@@ -66,6 +80,7 @@ import {
   totalChequeText,
   witnessSummaries,
 } from "@/components/filing/sections/preview/derive";
+import { useCourtText } from "@/components/court/court-provider";
 
 /* ───────────────────────────── Key-value rows ──────────────────────── */
 
@@ -105,16 +120,33 @@ function SubBlock({ title, rows }: { title: string; rows: Row[] }) {
 }
 
 /** Opens the read-only panel for a section. Changing anything happens in the section. */
-function ReviewButton({ section, onClick }: { section: string; onClick: () => void }) {
+function ReviewButton({
+  section,
+  onClick,
+}: {
+  section: string;
+  onClick: () => void;
+}) {
   return (
     <>
-      <Button type="button" variant="outline" onClick={onClick} className="max-sm:hidden">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onClick}
+        className="max-sm:hidden"
+      >
         <PencilLineIcon data-icon="inline-start" aria-hidden />
         Review
         <span className="sr-only"> {section}</span>
       </Button>
       {/* Phone: the DS small button, so a long section title keeps its line. */}
-      <Button type="button" variant="outline" size="sm" onClick={onClick} className="h-10 sm:hidden">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={onClick}
+        className="h-10 sm:hidden"
+      >
         <PencilLineIcon data-icon="inline-start" aria-hidden />
         Review
         <span className="sr-only"> {section}</span>
@@ -240,7 +272,7 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
         advocates.flatMap((a) => [
           { label: a.label, value: a.nameWithBar },
           { label: "Appearing for", value: a.appearingFor },
-        ])
+        ]),
       ),
     },
     accused: {
@@ -250,7 +282,7 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
         accused.flatMap((a) => [
           { label: a.label, value: joinDot(a.name, a.type) },
           { label: "Address", value: a.address },
-        ])
+        ]),
       ),
     },
     cheque: {
@@ -261,7 +293,7 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
           { label: c.label, value: joinDot(c.amount, c.number) },
           { label: "Drawer’s bank", value: c.drawerBank },
           { label: "Returned", value: c.returned },
-        ])
+        ]),
       ),
     },
     demand: {
@@ -304,7 +336,7 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
         witnesses.flatMap((w) => [
           { label: w.label, value: w.name },
           { label: "Will prove", value: w.prove },
-        ])
+        ]),
       ),
     },
     documents: {
@@ -330,10 +362,68 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
 
 /* ───────────────────────────── Source files ────────────────────────── */
 
+/* ───────────────────────────── Incomplete sections ─────────────────── */
+
+/**
+ * The count of what is left, which opens into the sections themselves. A count alone
+ * says something is missing without saying where; each row here goes straight to that
+ * section, without the Review question — naming the section is already the choice.
+ */
+function IncompleteSections({
+  sections,
+}: {
+  sections: { key: string; title: string; href: string }[];
+}) {
+  const count = sections.length;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button type="button" variant="ghost" className="text-muted-foreground">
+          <TriangleAlertIcon data-icon="inline-start" aria-hidden />
+          {count} section{count === 1 ? "" : "s"} incomplete
+          <ChevronDownIcon data-icon="inline-end" aria-hidden />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent side="top" align="end" className="w-80 gap-2 p-2">
+        <PopoverHeader className="px-2 pt-2">
+          <PopoverTitle className="text-body-compact font-semibold">
+            Still to complete
+          </PopoverTitle>
+          <PopoverDescription className="text-caption">
+            Open a section to finish it.
+          </PopoverDescription>
+        </PopoverHeader>
+        <ul className="flex flex-col">
+          {sections.map((s) => (
+            <li key={s.key}>
+              <Button
+                asChild
+                variant="ghost"
+                className="h-10 w-full justify-start gap-2 px-2 font-normal"
+              >
+                <Link href={s.href}>
+                  <span className="min-w-0 flex-1 truncate text-left">
+                    {s.title}
+                  </span>
+                  <ChevronRightIcon
+                    aria-hidden
+                    className="text-muted-foreground"
+                  />
+                </Link>
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 /* ───────────────────────────── Screen ──────────────────────────────── */
 
 export function PreviewSection() {
-  const { draft, hrefFor } = useFiling();
+  const courtText = useCourtText();
+  const { draft, hrefFor, steps } = useFiling();
   const { prev, next } = neighbours("preview");
   const router = useRouter();
   const [view, setView] = React.useState("synopsis");
@@ -344,7 +434,9 @@ export function PreviewSection() {
   /** The backend completeness check runs on "Continue to sign". */
   const [validating, setValidating] = React.useState(false);
   /** The missing items the backend reported; `null` while the dialog is closed. */
-  const [problems, setProblems] = React.useState<ValidationError[] | null>(null);
+  const [problems, setProblems] = React.useState<ValidationError[] | null>(
+    null,
+  );
   /** The check itself could not run (offline, session ended, draft expired). */
   const [validateError, setValidateError] = React.useState<string | null>(null);
 
@@ -370,7 +462,7 @@ export function PreviewSection() {
    */
   const goTo = React.useCallback(
     (key: PanelKey) => router.push(hrefFor(panels[key].step)),
-    [router, hrefFor, panels]
+    [router, hrefFor, panels],
   );
 
   const review = (key: PanelKey) => {
@@ -392,37 +484,15 @@ export function PreviewSection() {
   // Completeness per section, from the same rule the sidebar counts with.
   const done = (key: PanelKey) => sectionComplete(draft, panels[key].step);
   const readyToSign = sectionComplete(draft, "preview");
-  const outstanding = (Object.keys(panels) as PanelKey[]).filter((k) => !done(k)).length;
-
-  const continueHref = next ? hrefFor(next) : undefined;
-
-  /**
-   * "Continue to sign" asks the court's server whether the filing is complete. If it is, the
-   * filer goes on to sign; if not, the missing items are listed and they stay here to fix
-   * them — the backend is the authority on completeness (not the per-section hints above).
-   */
-  const continueToSign = async () => {
-    const caseId = draft.caseId;
-    // A draft that never reached the server (sample/batch drafts) cannot be validated there.
-    if (!caseId) {
-      if (continueHref) router.push(continueHref);
-      return;
-    }
-    setValidating(true);
-    setValidateError(null);
-    try {
-      const { isValid, errors } = await caseFilingApi.validateCase(caseId);
-      if (isValid) {
-        if (continueHref) router.push(continueHref);
-        return;
-      }
-      setProblems(errors);
-    } catch (err) {
-      setValidateError(caseFilingErrorMessage(err));
-    } finally {
-      setValidating(false);
-    }
-  };
+  // Signing for a complainant means recording the oath in the same step, where the state
+  // asks for one (`OTH-3`), so the way there says so. Advocates never take it.
+  const { profile } = useProfile();
+  const yourOathAhead = signatories(draft, profile).complainants.some(
+    (s) => s.you && s.oathTaken === false,
+  );
+  const incomplete = (Object.keys(panels) as PanelKey[]).filter(
+    (k) => !done(k),
+  );
 
   /** The browser's print dialog — which is also how a PDF is saved. */
   const printFile = () => {
@@ -437,19 +507,38 @@ export function PreviewSection() {
           description={
             <>
               Check everything you have filed. Use{" "}
-              <strong className="font-semibold text-foreground">Review</strong> on any
-              section to open it and change what it holds.
+              <strong className="font-semibold text-foreground">Review</strong>{" "}
+              on any section to open it and change what it holds.
             </>
           }
         />
 
         <Tabs value={view} onValueChange={setView} className="gap-6">
           <div className="flex flex-col items-start justify-between gap-2 border-b border-hairline sm:flex-row sm:items-end">
-            <TabsList variant="line" aria-label="Preview format" className="order-2 p-0 group-data-horizontal/tabs:h-10 sm:order-none">
-              <TabsTrigger value="synopsis" className="h-10 px-3 group-data-horizontal/tabs:after:-bottom-px">Complaint</TabsTrigger>
-              <TabsTrigger value="document" className="h-10 px-3 group-data-horizontal/tabs:after:-bottom-px">Complaint PDF</TabsTrigger>
+            <TabsList
+              variant="line"
+              aria-label="Preview format"
+              className="order-2 p-0 group-data-horizontal/tabs:h-10 sm:order-none"
+            >
+              <TabsTrigger
+                value="synopsis"
+                className="h-10 px-3 group-data-horizontal/tabs:after:-bottom-px"
+              >
+                Complaint
+              </TabsTrigger>
+              <TabsTrigger
+                value="document"
+                className="h-10 px-3 group-data-horizontal/tabs:after:-bottom-px"
+              >
+                Complaint PDF
+              </TabsTrigger>
             </TabsList>
-            <Button type="button" variant="outline" onClick={printFile} className="sm:mb-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={printFile}
+              className="sm:mb-2"
+            >
               <PrinterIcon data-icon="inline-start" aria-hidden />
               Print or save as PDF
             </Button>
@@ -463,8 +552,11 @@ export function PreviewSection() {
               <KeyValues
                 rows={[
                   { term: "Offence", value: CASE_TYPE.offence },
-                  { term: "Court", value: COURT.name },
-                  { term: "Total cheque amount", value: totalChequeText(draft) },
+                  { term: "Court", value: courtText(COURT.name) },
+                  {
+                    term: "Total cheque amount",
+                    value: totalChequeText(draft),
+                  },
                   { term: "Amount claimed", value: amountClaimedText(draft) },
                 ]}
               />
@@ -489,8 +581,14 @@ export function PreviewSection() {
                     : []),
                   { term: "Mobile", value: complainant.mobile },
                   { term: "Email", value: complainant.email },
-                  { term: "Present address", value: complainant.presentAddress },
-                  { term: "Permanent address", value: complainant.permanentAddress },
+                  {
+                    term: "Present address",
+                    value: complainant.presentAddress,
+                  },
+                  {
+                    term: "Permanent address",
+                    value: complainant.permanentAddress,
+                  },
                   { term: "Power of attorney", value: complainant.poa },
                 ]}
               />
@@ -520,7 +618,8 @@ export function PreviewSection() {
                 ))
               ) : (
                 <p className="text-body-compact text-muted-foreground">
-                  No advocate added. The complainant appears as a party in person.
+                  No advocate added. The complainant appears as a party in
+                  person.
                 </p>
               )}
             </FormCard>
@@ -605,10 +704,16 @@ export function PreviewSection() {
             >
               <KeyValues
                 rows={[
-                  { term: "Cheque presented by", value: jurisdiction.presentedBy },
+                  {
+                    term: "Cheque presented by",
+                    value: jurisdiction.presentedBy,
+                  },
                   { term: "Police station", value: jurisdiction.police },
                   { term: "Cause of action", value: jurisdiction.causeDate },
-                  { term: "Complaint filing date", value: jurisdiction.filingDate },
+                  {
+                    term: "Complaint filing date",
+                    value: jurisdiction.filingDate,
+                  },
                   {
                     term: "Within limitation",
                     value: jurisdiction.inTime ? (
@@ -685,7 +790,10 @@ export function PreviewSection() {
                   className="flex items-start gap-3 border-b border-hairline py-3 text-body-compact last:border-b-0"
                 >
                   <span className="flex h-5 shrink-0 items-center">
-                    <CheckIcon className="size-4 text-success-ink" aria-hidden />
+                    <CheckIcon
+                      className="size-4 text-success-ink"
+                      aria-hidden
+                    />
                   </span>
                   {line}
                 </p>
@@ -693,7 +801,10 @@ export function PreviewSection() {
               {documents.remaining ? (
                 <p className="flex items-start gap-3 border-t border-hairline py-3 text-body-compact">
                   <span className="flex h-5 shrink-0 items-center">
-                    <TriangleAlertIcon className="size-4 text-warning-ink" aria-hidden />
+                    <TriangleAlertIcon
+                      className="size-4 text-warning-ink"
+                      aria-hidden
+                    />
                   </span>
                   {documents.remaining} required document
                   {documents.remaining === 1 ? "" : "s"} still to upload
@@ -714,7 +825,10 @@ export function PreviewSection() {
         </Tabs>
 
         {validateError ? (
-          <SectionNotice variant="destructive" title="Couldn't check the filing with the court's server">
+          <SectionNotice
+            variant="destructive"
+            title="Couldn't check the filing with the court's server"
+          >
             {validateError}
           </SectionNotice>
         ) : null}
@@ -731,8 +845,8 @@ export function PreviewSection() {
           <DialogHeader>
             <DialogTitle>Open the {panel?.title ?? ""} section?</DialogTitle>
             <DialogDescription>
-              Changes are made in the section itself. You will come back here from its
-              Continue.
+              Changes are made in the section itself. You will come back here
+              from its Continue.
             </DialogDescription>
           </DialogHeader>
 
@@ -748,7 +862,11 @@ export function PreviewSection() {
           </Field>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setEditKey(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditKey(null)}
+            >
               Stay here
             </Button>
             <Button type="button" onClick={confirmReview}>
@@ -759,13 +877,18 @@ export function PreviewSection() {
       </Dialog>
 
       {/* ── Continue to sign was blocked: what the court still needs ── */}
-      <Dialog open={!!problems} onOpenChange={(open) => { if (!open) setProblems(null); }}>
+      <Dialog
+        open={!!problems}
+        onOpenChange={(open) => {
+          if (!open) setProblems(null);
+        }}
+      >
         <ChromeDialogContent mobileSheet className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Some details are still needed</DialogTitle>
             <DialogDescription>
-              The court needs these before you can sign and submit. Fix each one, then try
-              Continue to sign again.
+              The court needs these before you can sign and submit. Fix each
+              one, then try Continue to sign again.
             </DialogDescription>
           </DialogHeader>
 
@@ -773,9 +896,15 @@ export function PreviewSection() {
             {problems?.map((p, i) => {
               const step = stepForValidationField(p.field);
               return (
-                <li key={`${p.field}-${i}`} className="flex items-start justify-between gap-3 py-3">
+                <li
+                  key={`${p.field}-${i}`}
+                  className="flex items-start justify-between gap-3 py-3"
+                >
                   <span className="flex min-w-0 items-start gap-2 text-body-compact">
-                    <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-warning-ink" aria-hidden />
+                    <TriangleAlertIcon
+                      className="mt-0.5 size-4 shrink-0 text-warning-ink"
+                      aria-hidden
+                    />
                     {p.message}
                   </span>
                   {step ? (
@@ -798,7 +927,11 @@ export function PreviewSection() {
           </ul>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setProblems(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setProblems(null)}
+            >
               Close
             </Button>
           </DialogFooter>
@@ -807,9 +940,15 @@ export function PreviewSection() {
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        onContinue={continueToSign}
-        continueDisabled={validating}
-        continueLabel={validating ? "Checking…" : "Continue to sign"}
+        continueHref={next ? hrefFor(next) : undefined}
+        continueLabel={
+          // A host that signs elsewhere (bulk filing signs the batch at once) is gone back to.
+          !steps.includes("sign")
+            ? "Back to all cases"
+            : yourOathAhead
+              ? "Continue to sign and oath"
+              : "Continue to sign"
+        }
         showSaveState={false}
         status={
           readyToSign ? (
@@ -818,10 +957,13 @@ export function PreviewSection() {
               Reviewed
             </span>
           ) : (
-            <span className="inline-flex items-center gap-2 text-body-compact text-muted-foreground">
-              <TriangleAlertIcon className="size-4" aria-hidden />
-              {outstanding} section{outstanding === 1 ? "" : "s"} incomplete
-            </span>
+            <IncompleteSections
+              sections={incomplete.map((k) => ({
+                key: k,
+                title: courtText(panels[k].title),
+                href: hrefFor(panels[k].step),
+              }))}
+            />
           )
         }
       />

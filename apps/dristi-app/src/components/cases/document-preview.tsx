@@ -27,7 +27,13 @@ import {
 import { cn } from "@/lib/utils";
 import { DOCUMENT_GROUND } from "@/components/cases/document-ground";
 
-import { PdfViewer, isPdfSrc, parsePdfSrc } from "./pdf-viewer";
+import {
+  ComposedDocumentViewer,
+  PdfViewer,
+  isImageSrc,
+  isPdfSrc,
+  parsePdfSrc,
+} from "./pdf-viewer";
 
 /**
  * The one document preview in the product: a well, and the two things anyone
@@ -105,6 +111,13 @@ const wellHeight = {
   tall: "h-[60svh]",
   /** Takes the height its container can spare. */
   fill: "min-h-64 flex-1",
+  /**
+   * The document at its full length, scrolling with the page rather than in a well of its
+   * own — for a column where the document is what is being read top to bottom (the
+   * court's application workstation). Composed documents only: a PDF or a frame has no
+   * height of its own to grow to.
+   */
+  auto: "h-auto overflow-visible",
 } as const;
 
 /**
@@ -220,6 +233,7 @@ export function DocumentPreview({
           title={title}
           source={source}
           surface="bare"
+          scrolls={height !== "auto"}
           className={cn(wellHeight[height], "max-md:overflow-visible")}
         />
       </section>
@@ -249,6 +263,7 @@ export function DocumentPreview({
             back to the body at that size is what keeps them pinned. Scoped to
             this variant — no other caller has a toolbar to pin.
           */
+          scrolls={height !== "auto"}
           className={cn(wellHeight[height], "max-md:overflow-visible")}
           toolbar={
             <DocumentPreviewActions
@@ -307,6 +322,7 @@ export function DocumentPreview({
         title={title}
         source={source}
         surface={surface}
+        scrolls={height !== "auto"}
         className={wellHeight[height]}
       />
     </section>
@@ -495,7 +511,7 @@ function FullViewDialog({
       {/* The primitive parks its close button 8px from the corner, which left
           the title row hard against the top edge. Here it moves in to 16px and
           the row follows it (owner, Sept 18). */}
-      <FlowDialogContent className="flex h-[92svh] flex-col gap-4 overflow-hidden sm:max-w-[calc(100%-4rem)] [&>[data-slot=dialog-close]]:top-4 [&>[data-slot=dialog-close]]:right-4">
+      <FlowDialogContent outsideCloses className="flex h-[92svh] flex-col gap-4 overflow-hidden sm:max-w-[calc(100%-4rem)] [&>[data-slot=dialog-close]]:top-4 [&>[data-slot=dialog-close]]:right-4">
         {/* One plane: title, then the download icon, then the close button.
             The row's centre is the close button's (34px down), and `pr-8`
             leaves the download icon 4px short of it, so the two read as a
@@ -566,11 +582,14 @@ function DocumentWell({
   source,
   toolbar,
   surface = "sunken",
+  scrolls = true,
   className,
 }: {
   title: string;
   source: DocumentPreviewSource;
   surface?: WellSurface;
+  /** Whether the well scrolls its own content — and so has to take focus to be read. */
+  scrolls?: boolean;
   /**
    * Controls that belong **on** the well rather than above it — the quiet
    * variant's two icons. In flow at the well's top-right, so they sit on the
@@ -595,6 +614,18 @@ function DocumentWell({
             rather than leaving the previous one's scroll position behind. */}
         {isPdfSrc(source.src) ? (
           <DocumentPdf src={source.src} title={title} />
+        ) : isImageSrc(source.src) ? (
+          /* A scan reads in the PDF viewer's own frame — same well, zoom buttons and
+             pinch — as the application record shows one (owner, Sept 24: one preview
+             pattern), not the browser's bare image in an iframe. */
+          <ComposedDocumentViewer
+            key={source.src}
+            title={title}
+            className="absolute inset-0 rounded-none bg-transparent"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- a served scan */}
+            <img src={source.src} alt={title} className="block w-full" />
+          </ComposedDocumentViewer>
         ) : (
           <iframe
             key={source.src}
@@ -624,8 +655,8 @@ function DocumentWell({
   if (source.kind === "composed") {
     return (
       <div
-        tabIndex={0}
-        aria-label={`Preview of ${title}`}
+        tabIndex={scrolls ? 0 : undefined}
+        aria-label={scrolls ? `Preview of ${title}` : undefined}
         className={cn(scrollableWell, "flex-col")}
       >
         {toolbar ? (
@@ -653,8 +684,8 @@ function DocumentWell({
 
   return (
     <div
-      tabIndex={0}
-      aria-label={`Preview of ${title}`}
+      tabIndex={scrolls ? 0 : undefined}
+      aria-label={scrolls ? `Preview of ${title}` : undefined}
       className={scrollableWell}
     >
       {toolbar ? (

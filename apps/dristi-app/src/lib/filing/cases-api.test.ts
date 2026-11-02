@@ -9,7 +9,11 @@ import {
   createCaseFilingApi,
 } from "./data/cases-api";
 
-const META = { timestamp: "2026-10-27T10:00:00+05:30", app_version: "abc", spec_version: "1.0" };
+const META = {
+  timestamp: "2026-10-27T10:00:00+05:30",
+  app_version: "abc",
+  spec_version: "1.0",
+};
 
 type Call = { url: string; method: string; body: unknown; raw: unknown };
 
@@ -26,7 +30,11 @@ function setup(respond: (call: Call) => Response) {
     calls.push(call);
     return respond(call);
   }) as typeof fetch;
-  const client = createApiClient({ baseUrl: "/api/v1", fetchImpl, getCsrfToken: () => "tok" });
+  const client = createApiClient({
+    baseUrl: "/api/v1",
+    fetchImpl,
+    getCsrfToken: () => "tok",
+  });
   return { cases: createCaseFilingApi(client), calls };
 }
 
@@ -36,7 +44,10 @@ const httpError = (status: number, codes: string[]) =>
 describe("caseDocumentType", () => {
   it("maps each upload slot to the backend's document type", () => {
     assert.equal(caseDocumentType("cheque-front"), "BOUNCED_CHEQUE");
-    assert.equal(caseDocumentType("delivery-proof"), "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE");
+    assert.equal(
+      caseDocumentType("delivery-proof"),
+      "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE",
+    );
     assert.equal(caseDocumentType("poa"), "POA_DOCUMENT");
     assert.equal(caseDocumentType("other"), "OTHER_SUPPORTING_DOCUMENT");
   });
@@ -52,8 +63,8 @@ describe("startDraft", () => {
     const { cases, calls } = setup(() =>
       Response.json(
         { draft_session_id: "c0ffee", case_type: "CHEQUE_BOUNCE", meta: META },
-        { status: 201 }
-      )
+        { status: 201 },
+      ),
     );
     assert.deepEqual(await cases.startDraft(), { caseId: "c0ffee" });
     assert.equal(calls[0].url, "/api/v1/cases");
@@ -62,7 +73,9 @@ describe("startDraft", () => {
   });
 
   it("refuses a response without a draft session id", async () => {
-    const { cases } = setup(() => Response.json({ meta: META }, { status: 201 }));
+    const { cases } = setup(() =>
+      Response.json({ meta: META }, { status: 201 }),
+    );
     await assert.rejects(cases.startDraft());
   });
 });
@@ -78,14 +91,14 @@ describe("uploadDocument", () => {
           document_type: "BOUNCED_CHEQUE",
           meta: META,
         },
-        { status: 201 }
-      )
+        { status: 201 },
+      ),
     );
     const saved = await cases.uploadDocument(
       "c0ffee",
       new Blob(["%PDF"], { type: "application/pdf" }),
       "cheque.pdf",
-      "BOUNCED_CHEQUE"
+      "BOUNCED_CHEQUE",
     );
     assert.deepEqual(saved, {
       caseId: "c0ffee",
@@ -101,7 +114,10 @@ describe("uploadDocument", () => {
 
   it("encodes the case id in the path", async () => {
     const { cases, calls } = setup(() =>
-      Response.json({ case_id: "a/b", case_document_id: "d", meta: META }, { status: 201 })
+      Response.json(
+        { case_id: "a/b", case_document_id: "d", meta: META },
+        { status: 201 },
+      ),
     );
     await cases.uploadDocument("a/b", new Blob(["x"]), "x.pdf", "RETURN_MEMO");
     assert.equal(calls[0].url, "/api/v1/cases/a%2Fb/documents");
@@ -117,135 +133,173 @@ describe("deleteDocument", () => {
   });
 });
 
-describe("addEvidence", () => {
-  it("posts the evidence type, info and linked document to the case", async () => {
+describe("parties", () => {
+  const party = {
+    person: { name: "Asha" },
+    address: { line1: "12 MG Road" },
+    is_party_in_person: false,
+    additional_details: {},
+  };
+
+  it("adds a complainant or an accused on the role's own path", async () => {
     const { cases, calls } = setup(() =>
       Response.json(
-        { case_evidence_id: "ev-1", evidence_type: "CHEQUE", ordinal: 1, meta: META },
-        { status: 201 }
-      )
+        { case_participant_id: "p1", role: "ACCUSED", meta: META },
+        { status: 201 },
+      ),
     );
-    const saved = await cases.addEvidence("c0ffee", {
-      evidenceType: "CHEQUE",
-      evidenceInfo: { amount: 50000, cheque_number: "456789" },
-      caseDocumentId: "doc-1",
-    });
-    assert.deepEqual(saved, { caseEvidenceId: "ev-1", evidenceType: "CHEQUE", ordinal: 1 });
-    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/evidence");
+    assert.equal(await cases.addParty("c0ffee", "accused", party), "p1");
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/accused");
     assert.equal(calls[0].method, "POST");
+    assert.deepEqual(calls[0].body, party);
+  });
+
+  it("refuses a response without a participant id", async () => {
+    const { cases } = setup(() =>
+      Response.json({ meta: META }, { status: 201 }),
+    );
+    await assert.rejects(cases.addParty("c0ffee", "complainants", party));
+  });
+
+  it("patches and removes a participant by its own id", async () => {
+    const { cases, calls } = setup((call) =>
+      call.method === "DELETE"
+        ? new Response(null, { status: 204 })
+        : Response.json({ case_participant_id: "p1", meta: META }),
+    );
+    await cases.updateParticipant("p1", {
+      name_at_filing: "Asha",
+      phone_number_at_filing: null,
+      gender_at_filing: null,
+      age_at_filing: null,
+      address: {},
+      is_party_in_person: false,
+      additional_details: {},
+    });
+    await cases.removeParticipant("p1");
+    assert.equal(calls[0].url, "/api/v1/case-participants/p1");
+    assert.equal(calls[0].method, "PATCH");
+    assert.equal(calls[1].url, "/api/v1/case-participants/p1");
+    assert.equal(calls[1].method, "DELETE");
+  });
+});
+
+describe("advocates", () => {
+  it("searches approved advocates and reads the page of results", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({
+        count: 1,
+        next: null,
+        previous: null,
+        results: [
+          { id: "adv-1", name: "Anitha R", bar_registration_id: "K/0421/2004" },
+        ],
+        meta: META,
+      }),
+    );
+    assert.deepEqual(await cases.searchAdvocates(" K/04 "), [
+      { id: "adv-1", name: "Anitha R", barNumber: "K/0421/2004" },
+    ]);
+    assert.equal(calls[0].url, "/api/v1/advocates?search=K%2F04");
+  });
+
+  it("does not search on fewer than two characters", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ results: [], meta: META }),
+    );
+    assert.deepEqual(await cases.searchAdvocates(" o "), []);
+    assert.equal(calls.length, 0);
+  });
+
+  it("searches on two characters, for a short name", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ results: [], meta: META }),
+    );
+    await cases.searchAdvocates("om");
+    assert.equal(calls[0].url, "/api/v1/advocates?search=om");
+  });
+
+  it("adds one advocate for several clients and returns the representations", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        { representation_ids: ["r1", "r2"], advocate_id: "adv-1", meta: META },
+        { status: 201 },
+      ),
+    );
+    assert.deepEqual(await cases.addAdvocate("c0ffee", "adv-1", ["p1", "p2"]), [
+      "r1",
+      "r2",
+    ]);
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/advocates");
     assert.deepEqual(calls[0].body, {
-      evidence_type: "CHEQUE",
-      evidence_info: { amount: 50000, cheque_number: "456789" },
-      case_document_id: "doc-1",
+      advocate_id: "adv-1",
+      client_participant_ids: ["p1", "p2"],
     });
   });
 
-  it("leaves case_document_id out when there is no linked document", async () => {
-    const { cases, calls } = setup(() =>
-      Response.json({ case_evidence_id: "ev-2", evidence_type: "RETURN_MEMO", ordinal: 1, meta: META }, { status: 201 })
-    );
-    await cases.addEvidence("c0ffee", { evidenceType: "RETURN_MEMO", evidenceInfo: { return_reason: "x" } });
-    assert.ok(!("case_document_id" in (calls[0].body as object)));
-  });
-
-  it("refuses a response without an evidence id", async () => {
-    const { cases } = setup(() => Response.json({ meta: META }, { status: 201 }));
-    await assert.rejects(
-      cases.addEvidence("c0ffee", { evidenceType: "CHEQUE", evidenceInfo: {} })
-    );
-  });
-});
-
-describe("updateEvidence", () => {
-  it("patches the evidence row by its own id", async () => {
-    const { cases, calls } = setup(() =>
-      Response.json({ case_evidence_id: "ev-1", evidence_type: "CHEQUE", ordinal: 1, meta: META }, { status: 200 })
-    );
-    await cases.updateEvidence("ev-1", { evidenceInfo: { amount: 60000 }, caseDocumentId: "doc-9" });
-    assert.equal(calls[0].url, "/api/v1/case-evidence/ev-1");
-    assert.equal(calls[0].method, "PATCH");
-    assert.deepEqual(calls[0].body, { evidence_info: { amount: 60000 }, case_document_id: "doc-9" });
-  });
-
-  it("omits case_document_id to keep the current link", async () => {
-    const { cases, calls } = setup(() =>
-      Response.json({ case_evidence_id: "ev-1", evidence_type: "CHEQUE", ordinal: 1, meta: META }, { status: 200 })
-    );
-    await cases.updateEvidence("ev-1", { evidenceInfo: { amount: 60000 } });
-    assert.ok(!("case_document_id" in (calls[0].body as object)));
-  });
-
-  it("sends case_document_id: null to unlink a document", async () => {
-    const { cases, calls } = setup(() =>
-      Response.json({ case_evidence_id: "ev-1", evidence_type: "CHEQUE", ordinal: 1, meta: META }, { status: 200 })
-    );
-    await cases.updateEvidence("ev-1", { caseDocumentId: null });
-    assert.deepEqual(calls[0].body, { case_document_id: null });
-  });
-});
-
-describe("deleteEvidence", () => {
-  it("deletes the evidence row by its own id", async () => {
+  it("ends a representation by its own id", async () => {
     const { cases, calls } = setup(() => new Response(null, { status: 204 }));
-    await cases.deleteEvidence("ev-1");
-    assert.equal(calls[0].url, "/api/v1/case-evidence/ev-1");
+    await cases.endRepresentation("r1");
+    assert.equal(calls[0].url, "/api/v1/representations/r1");
     assert.equal(calls[0].method, "DELETE");
   });
 });
 
-describe("validateCase", () => {
-  it("posts to validate and returns the completeness result", async () => {
+describe("PoA holders", () => {
+  it("adds a holder for the parties they act for and returns the mandates", async () => {
     const { cases, calls } = setup(() =>
       Response.json(
         {
-          is_valid: false,
-          errors: [
-            { field: "evidence.cheque", message: "At least one cheque is required" },
-            { field: "affidavit", message: "The affidavit is required" },
-          ],
+          case_participant_id: "h1",
+          poa_mandate_ids: ["m1"],
+          role: "POA_HOLDER",
           meta: META,
         },
-        { status: 200 }
-      )
+        { status: 201 },
+      ),
     );
-    const result = await cases.validateCase("c0ffee");
-    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/validate");
-    assert.equal(calls[0].method, "POST");
-    assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, [
-      { field: "evidence.cheque", message: "At least one cheque is required" },
-      { field: "affidavit", message: "The affidavit is required" },
-    ]);
+    const holder = {
+      person: { name: "Suresh Patel" },
+      address: { line1: "12 MG Road" },
+      represented_participant_ids: ["p1"],
+      additional_details: {},
+    };
+    assert.deepEqual(await cases.addPoaHolder("c0ffee", holder), {
+      participantId: "h1",
+      mandateIds: ["m1"],
+    });
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/poa-holders");
+    assert.deepEqual(calls[0].body, holder);
   });
 
-  it("reports a valid filing with no errors", async () => {
-    const { cases } = setup(() => Response.json({ is_valid: true, errors: [], meta: META }, { status: 200 }));
-    assert.deepEqual(await cases.validateCase("c0ffee"), { isValid: true, errors: [] });
-  });
-
-  it("ignores malformed error entries", async () => {
-    const { cases } = setup(() =>
-      Response.json(
-        { is_valid: false, errors: [{ field: "evidence.cheque", message: "x" }, { field: 1 }, null], meta: META },
-        { status: 200 }
-      )
-    );
-    const result = await cases.validateCase("c0ffee");
-    assert.deepEqual(result.errors, [{ field: "evidence.cheque", message: "x" }]);
+  it("revokes a mandate by its own id", async () => {
+    const { cases, calls } = setup(() => new Response(null, { status: 204 }));
+    await cases.revokePoaMandate("m1");
+    assert.equal(calls[0].url, "/api/v1/poa-mandates/m1");
+    assert.equal(calls[0].method, "DELETE");
   });
 });
 
 describe("caseFilingErrorMessage", () => {
   it("names a submitted case before anything else", () => {
-    assert.match(caseFilingErrorMessage(httpError(409, ["E07001"])), /submitted/);
+    assert.match(
+      caseFilingErrorMessage(httpError(409, ["E07001"])),
+      /submitted/,
+    );
   });
 
   it("says a document type is not accepted", () => {
-    assert.match(caseFilingErrorMessage(httpError(400, ["E07002"])), /doesn't accept/);
+    assert.match(
+      caseFilingErrorMessage(httpError(400, ["E07002"])),
+      /doesn't accept/,
+    );
   });
 
   it("reads 404 as an expired or missing draft", () => {
-    assert.match(caseFilingErrorMessage(httpError(404, [])), /no longer on the court's server/);
+    assert.match(
+      caseFilingErrorMessage(httpError(404, [])),
+      /no longer on the court's server/,
+    );
   });
 
   it("reads 401 and 403 as an ended session", () => {

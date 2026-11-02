@@ -10,6 +10,7 @@ import {
 } from "./sign-in";
 import {
   readCourtRole,
+  registersAtScrutiny,
   seatHasBenchControls,
   setCourtRole,
 } from "./court-role";
@@ -20,7 +21,8 @@ describe("court seats", () => {
      signed-in magistrate opens the settings menu onto a radio group with nothing
      selected. The two lists are the same list, in the same order. */
   it("offers every seat the sign-in offers, and starts signed out in the fixture's", () => {
-    assert.deepEqual(COURT_SEATS, COURT_SIGN_IN_ROLES);
+    /* Kerala's seats; Punjab & Haryana adds a Steno and an Ahlmad (court-roles §3). */
+    assert.deepEqual(COURT_SEATS, COURT_SIGN_IN_ROLES.filter((seat) => seat !== "steno" && seat !== "ahlmad"));
     assert.equal(CURRENT_STAFF.role, "bench-clerk");
     assert.equal(readCourtRole(), CURRENT_STAFF.role);
   });
@@ -93,10 +95,14 @@ describe("court seats", () => {
 });
 
 describe("seatHasBenchControls", () => {
-  it("gives Start / End / Pass over to the bench and not to the typist", () => {
-    assert.equal(seatHasBenchControls("bench-clerk"), true);
-    assert.equal(seatHasBenchControls("magistrate"), true);
-    assert.equal(seatHasBenchControls("typist"), false);
+  it("gives Start / End / Pass over to the hearing controllers of each state's table", () => {
+    for (const court of ["kerala", "gujarat", "punjab-haryana"] as const) {
+      assert.equal(seatHasBenchControls("bench-clerk", court), true);
+      assert.equal(seatHasBenchControls("magistrate", court), true);
+      assert.equal(seatHasBenchControls("typist", court), false);
+    }
+    assert.equal(seatHasBenchControls("steno", "punjab-haryana"), false);
+    assert.equal(seatHasBenchControls("ahlmad", "punjab-haryana"), false);
   });
 });
 
@@ -110,7 +116,7 @@ describe("the orders gate each seat reads", () => {
   /* The point of the typist's board: with no start control on the row, a gate that
      waited for the call would never open, so the whole column would be dead. */
   it("opens on the day's call in the seat with nothing to open it with", () => {
-    assert.equal(seatHasBenchControls("typist"), false);
+    assert.equal(seatHasBenchControls("typist", "kerala"), false);
     assert.equal(canTypeOrder("scheduled"), true);
     assert.equal(canTypeOrder("ongoing"), true);
     assert.equal(canTypeOrder("completed"), true);
@@ -139,6 +145,25 @@ describe("the orders gate each seat reads", () => {
         canDraftOrder(status) || status === "scheduled",
         `${status} disagrees about the orders column`,
       );
+    }
+  });
+});
+
+/* `SCR-11`: Register at Scrutiny needs both roles; the demo staffs them per state. */
+describe("registersAtScrutiny", () => {
+  it("forwards in Kerala, where two people hold the two roles", () => {
+    assert.equal(registersAtScrutiny("scrutiny-officer", "kerala"), false);
+  });
+
+  it("registers in Gujarat and Punjab & Haryana, where one person holds both", () => {
+    for (const court of ["gujarat", "punjab-haryana"] as const) {
+      assert.equal(registersAtScrutiny("scrutiny-officer", court), true, court);
+    }
+  });
+
+  it("does not register from a seat that is not the Scrutiny officer's", () => {
+    for (const role of ["magistrate", "bench-clerk", "typist"] as const) {
+      assert.equal(registersAtScrutiny(role, "gujarat"), false, role);
     }
   });
 });

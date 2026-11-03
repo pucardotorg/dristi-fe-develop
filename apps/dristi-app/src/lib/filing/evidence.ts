@@ -17,7 +17,6 @@ import {
   MODE_OF_SERVICE,
   NATURE_OF_DEBT,
   NON_DELIVERY_REASONS,
-  RETURN_REASONS,
   type Option,
 } from "./options";
 import type { ChequeDetails, DemandNotice } from "./types";
@@ -80,9 +79,23 @@ export function chequeAmount(amount: string): number | null {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
-/** The return reason as written on the memo (the label its stored code stands for). */
-export function returnReasonText(code: string): string {
-  return optionLabel(RETURN_REASONS, code);
+/**
+ * The local return-reason code mapped to the backend's `ReturnReason` enum value. The two
+ * design options "signature differs" and "amount in words/figures differ" have no backend
+ * value yet (tracker B1), so they map to `null` and a memo using them is not sent until the
+ * enum is extended.
+ */
+const RETURN_REASON_VALUE: Record<string, string> = {
+  "funds-insufficient": "FUNDS_INSUFFICIENT",
+  "exceeds-arrangement": "EXCEEDS_ARRANGEMENT",
+  "account-closed": "ACCOUNT_CLOSED",
+  "payment-stopped": "PAYMENT_STOPPED_BY_DRAWER",
+  "refer-to-drawer": "REFER_TO_DRAWER",
+  "stale-cheque": "POST_DATED_OR_STALE",
+};
+
+export function returnReasonValue(code: string): string | null {
+  return RETURN_REASON_VALUE[code] ?? null;
 }
 
 /** Build the `CHEQUE` evidence_info for the cheque at `index`, resolving its bank. */
@@ -104,7 +117,8 @@ export function returnMemoEvidenceInfo(cheque: ChequeDetails): ReturnMemoEvidenc
   return {
     presentation_date: cheque.presentDate,
     return_date: cheque.returnDate,
-    return_reason: returnReasonText(cheque.returnReason),
+    // Readiness guarantees the reason maps to a backend value; "" is a safe fallback.
+    return_reason: returnReasonValue(cheque.returnReason) ?? "",
   };
 }
 
@@ -127,7 +141,9 @@ export function chequeReady(cheques: ChequeDetails[], index: number): boolean {
 
 /** Whether a cheque's return memo has every `RETURN_MEMO` field the backend requires. */
 export function returnMemoReady(cheque: ChequeDetails): boolean {
-  return !!cheque.presentDate && !!cheque.returnDate && !!cheque.returnReason;
+  // The return reason must be one the backend's enum accepts; two design options have no
+  // backend value yet (tracker B1), so a memo using them is held back until the enum grows.
+  return !!cheque.presentDate && !!cheque.returnDate && returnReasonValue(cheque.returnReason) !== null;
 }
 
 /** Local payment-status code → the backend's `PaymentStatus` enum value. */

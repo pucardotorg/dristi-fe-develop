@@ -11,7 +11,7 @@ import {
   demandNoticeReady,
   returnMemoEvidenceInfo,
   returnMemoReady,
-  returnReasonText,
+  returnReasonValue,
 } from "./evidence";
 import type { ChequeDetails, DemandNotice } from "./types";
 
@@ -43,13 +43,15 @@ describe("chequeAmount", () => {
   });
 });
 
-describe("returnReasonText", () => {
-  it("maps the stored option code to the label written on the memo", () => {
-    assert.equal(returnReasonText("funds-insufficient"), "Funds insufficient");
+describe("returnReasonValue", () => {
+  it("maps the stored option code to the backend's ReturnReason enum value", () => {
+    assert.equal(returnReasonValue("funds-insufficient"), "FUNDS_INSUFFICIENT");
+    assert.equal(returnReasonValue("stale-cheque"), "POST_DATED_OR_STALE");
   });
 
-  it("passes an unknown value through unchanged", () => {
-    assert.equal(returnReasonText("something else"), "something else");
+  it("returns null for a reason the backend enum does not have yet (B1)", () => {
+    assert.equal(returnReasonValue("signature-differs"), null);
+    assert.equal(returnReasonValue("amount-mismatch"), null);
   });
 });
 
@@ -113,7 +115,7 @@ describe("returnMemoEvidenceInfo", () => {
     assert.deepEqual(returnMemoEvidenceInfo(filledCheque()), {
       presentation_date: "2024-01-18",
       return_date: "2024-01-22",
-      return_reason: "Funds insufficient",
+      return_reason: "FUNDS_INSUFFICIENT",
     });
   });
 });
@@ -148,10 +150,12 @@ describe("chequeReady", () => {
 });
 
 describe("returnMemoReady", () => {
-  it("is true only when presentation date, return date and reason are all present", () => {
+  it("is true only when presentation date, return date and a backend-known reason are present", () => {
     assert.equal(returnMemoReady(filledCheque()), true);
     assert.equal(returnMemoReady(filledCheque({ returnReason: "" })), false);
     assert.equal(returnMemoReady(filledCheque({ presentDate: "" })), false);
+    // A reason the backend enum does not have yet (B1) holds the memo back.
+    assert.equal(returnMemoReady(filledCheque({ returnReason: "signature-differs" })), false);
   });
 });
 

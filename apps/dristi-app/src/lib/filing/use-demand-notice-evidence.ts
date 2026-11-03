@@ -16,7 +16,7 @@ import * as React from "react";
 
 import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
 import { demandNoticeEvidenceInfo, demandNoticeReady } from "./evidence";
-import { chequeSourceSlot } from "./selectors";
+import { noticeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
 import type { DemandNotice, FilingDraft } from "./types";
 
@@ -30,7 +30,7 @@ async function saveOneNotice(caseId: string, draft: FilingDraft, index: number, 
   if (!demandNoticeReady(notice)) return;
 
   const evidenceInfo = demandNoticeEvidenceInfo(notice);
-  const caseDocumentId = chequeSourceSlot(draft, index, "demand-notice")?.caseDocumentId;
+  const caseDocumentId = noticeSourceSlot(draft, index, "demand-notice")?.caseDocumentId;
 
   if (notice.noticeEvidenceId) {
     await caseFilingApi.updateEvidence(notice.noticeEvidenceId, { evidenceInfo, caseDocumentId });

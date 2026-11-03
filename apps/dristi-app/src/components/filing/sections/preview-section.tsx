@@ -24,7 +24,8 @@ import { joinDot } from "@/lib/filing/format";
 import { CASE_TYPE, COURT } from "@/lib/filing/options";
 import { useProfile } from "@/lib/filing/profile";
 import { sectionComplete, signatories } from "@/lib/filing/selectors";
-import { neighbours, type StepId } from "@/lib/filing/steps";
+import { caseFilingApi, caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
+import { getStep, neighbours, type StepId } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { FilingDraft } from "@/lib/filing/types";
 import {
@@ -499,6 +500,37 @@ export function PreviewSection() {
     if (typeof window !== "undefined") window.print();
   };
 
+  const signAhead = steps.includes("sign");
+  const continueHref = next ? hrefFor(next) : undefined;
+
+  /**
+   * "Continue to sign" asks the court's server whether the filing is complete before going
+   * on to sign. If it is, the filer continues; if not, the missing items are listed and they
+   * stay here — the backend is the authority on completeness (not the hints above). Bulk
+   * filing (no sign step here) and local-only drafts just continue.
+   */
+  const continueToSign = async () => {
+    const caseId = draft.caseId;
+    if (!signAhead || !caseId) {
+      if (continueHref) router.push(continueHref);
+      return;
+    }
+    setValidating(true);
+    setValidateError(null);
+    try {
+      const { isValid, errors } = await caseFilingApi.validateCase(caseId);
+      if (isValid) {
+        if (continueHref) router.push(continueHref);
+        return;
+      }
+      setProblems(errors);
+    } catch (err) {
+      setValidateError(caseFilingErrorMessage(err));
+    } finally {
+      setValidating(false);
+    }
+  };
+
   return (
     <>
       <FilingMain>
@@ -940,14 +972,17 @@ export function PreviewSection() {
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        continueHref={next ? hrefFor(next) : undefined}
+        onContinue={continueToSign}
+        continueDisabled={validating}
         continueLabel={
-          // A host that signs elsewhere (bulk filing signs the batch at once) is gone back to.
-          !steps.includes("sign")
-            ? "Back to all cases"
-            : yourOathAhead
-              ? "Continue to sign and oath"
-              : "Continue to sign"
+          validating
+            ? "Checking…"
+            : // A host that signs elsewhere (bulk filing signs the batch at once) is gone back to.
+              !steps.includes("sign")
+              ? "Back to all cases"
+              : yourOathAhead
+                ? "Continue to sign and oath"
+                : "Continue to sign"
         }
         showSaveState={false}
         status={

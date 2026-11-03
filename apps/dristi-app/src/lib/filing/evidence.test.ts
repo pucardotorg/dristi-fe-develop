@@ -160,7 +160,6 @@ function filledNotice(over: Partial<DemandNotice> = {}): DemandNotice {
   return {
     ...blankNotice(),
     natureDebt: "loan",
-    whyIssued: "loan-repay",
     dispatchDate: "2024-02-01",
     modeService: "rpad",
     tracking: "RR123456789IN",
@@ -184,7 +183,7 @@ describe("demandNoticeEvidenceInfo", () => {
   it("builds the body for a delivered notice, payment status as the enum value", () => {
     assert.deepEqual(demandNoticeEvidenceInfo(filledNotice()), {
       nature_of_debt: "Loan / advance repayment",
-      cheque_issue_reason: "Towards repayment of a loan",
+      cheque_issue_reason: "Loan / advance repayment",
       dispatch_date: "2024-02-01",
       mode_of_service: "Registered post (RPAD)",
       is_delivered: true,
@@ -222,7 +221,6 @@ describe("demandNoticeReady", () => {
 
   it("is false when a required field is missing", () => {
     assert.equal(demandNoticeReady(filledNotice({ natureDebt: "" })), false);
-    assert.equal(demandNoticeReady(filledNotice({ whyIssued: "" })), false);
     assert.equal(demandNoticeReady(filledNotice({ dispatchDate: "" })), false);
     assert.equal(demandNoticeReady(filledNotice({ modeService: "" })), false);
     assert.equal(demandNoticeReady(filledNotice({ paymentStatus: "" })), false);

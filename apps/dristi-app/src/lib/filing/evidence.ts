@@ -18,7 +18,6 @@ import {
   NATURE_OF_DEBT,
   NON_DELIVERY_REASONS,
   RETURN_REASONS,
-  WHY_ISSUED,
   type Option,
 } from "./options";
 import type { ChequeDetails, DemandNotice } from "./types";
@@ -148,7 +147,10 @@ export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody
   const delivered = notice.delivered === "yes";
   const info: EvidenceInfoBody = {
     nature_of_debt: optionLabel(NATURE_OF_DEBT, notice.natureDebt),
-    cheque_issue_reason: optionLabel(WHY_ISSUED, notice.whyIssued),
+    // The design dropped the separate "why issued" field, but the backend still requires
+    // cheque_issue_reason; the PRD merges the two into one field (LDN-1), so it is derived
+    // from the nature of debt until backend/design reconcile (see the demand-notice tracker).
+    cheque_issue_reason: optionLabel(NATURE_OF_DEBT, notice.natureDebt),
     dispatch_date: notice.dispatchDate,
     mode_of_service: optionLabel(MODE_OF_SERVICE, notice.modeService),
     is_delivered: delivered,
@@ -177,7 +179,6 @@ export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody
 export function demandNoticeReady(notice: DemandNotice): boolean {
   const base =
     !!notice.natureDebt &&
-    !!notice.whyIssued &&
     !!notice.dispatchDate &&
     !!notice.modeService &&
     !!notice.paymentStatus;

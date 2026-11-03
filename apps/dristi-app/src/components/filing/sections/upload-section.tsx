@@ -18,45 +18,29 @@
 import * as React from "react";
 import {
   CreditCardIcon,
-  FileTextIcon,
   MailIcon,
   PlusIcon,
   UserIcon,
 } from "lucide-react";
-
-import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 
 import {
   intakeChequeGroup,
   intakeNoticeGroup,
   intakeOtherPartyDoc,
   intakePartyGroup,
-  removeCaseRecord,
   uniqueSlotKeys,
+  type CaseRecordKind,
 } from "@/lib/filing/blank";
-import { getRepository, storeUpload } from "@/lib/filing/data";
-import { forgetFile, useFilePreview } from "@/lib/filing/files";
-import { findIntakeSlot } from "@/lib/filing/selectors";
+import { unsavedDocuments, type DocumentTarget } from "@/lib/filing/case-documents";
+import { findIntakeSlot, intakeSlots } from "@/lib/filing/selectors";
 import { FILINGS_HOME } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
-import {
-  clearCaseDocument,
-  removeFromCase,
-  useCaseDocuments,
-} from "@/lib/filing/use-case-documents";
+import { useCaseDocuments } from "@/lib/filing/use-case-documents";
+import { useRemoveCaseRecord } from "@/lib/filing/use-remove-case-record";
 import { cn } from "@/lib/utils";
-import type { Intake, IntakeSlot } from "@/lib/filing/types";
-import { Badge } from "@/components/ui/badge";
+import type { Intake } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
@@ -65,6 +49,7 @@ import { PANEL_CLASS } from "@/components/filing/form-card";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { useInCorrection } from "@/components/filing/posture";
 import { DocumentCard } from "@/components/filing/upload/document-card";
+import { FilePreviewDialog } from "@/components/filing/upload/file-preview-dialog";
 import { IntakeSlotRow } from "@/components/filing/upload/slot-row";
 import {
   dragCarriesFiles,
@@ -76,49 +61,11 @@ import { pickErrorMessage, useFilePicker } from "@/components/filing/use-file-pi
 
 /* ───────────────────────────── Draft helpers ───────────────────────────── */
 
-/** Every slot on the intake, in display order. */
-function allSlots(intake: Intake): IntakeSlot[] {
-  return [
-    ...intake.cheques.flatMap((g) => g.slots),
-    ...intake.notices.flatMap((g) => g.slots),
-    ...intake.parties.flatMap((g) => g.slots),
-    ...intake.supporting,
-  ];
-}
-
 function takenKeys(intake: Intake): Set<string> {
-  return new Set(allSlots(intake).map((s) => s.key));
+  return new Set(intakeSlots(intake).map((s) => s.key));
 }
 
-/* ───────────────────────────── Preview dialog body ─────────────────────── */
-
-function PreviewBody({ slot }: { slot: IntakeSlot }) {
-  const preview = useFilePreview(slot.file);
-  if (preview.status === "loading") return <Skeleton className="h-64 w-full rounded-lg" />;
-  if (preview.status === "ready" && preview.imageUrl) {
-    return (
-      <div className="overflow-hidden rounded-lg bg-surface-sunken">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={preview.imageUrl}
-          alt={`Scan of ${slot.file?.name ?? slot.label}`}
-          className="max-h-[60vh] w-full object-contain"
-        />
-      </div>
-    );
-  }
-  return (
-    <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-lg bg-surface-sunken text-muted-foreground">
-      <FileTextIcon className="size-8" aria-hidden />
-      <p className="text-body-compact">{slot.file?.name}</p>
-      <p className="text-caption">
-        {preview.status === "missing"
-          ? "File not found in this browser"
-          : "No preview for this file type"}
-      </p>
-    </div>
-  );
-}
+const slotTarget = (key: string): DocumentTarget => ({ kind: "slot", key });
 
 /* ───────────────────────── What a removal will cost ────────────────────── */
 
@@ -146,43 +93,17 @@ export function UploadSection() {
 
   const announce = React.useCallback((message: string) => setAnnouncement(message), []);
 
-  /** Stores in flight, by slot key — a delete or re-upload cancels the older one. */
-  const runs = React.useRef<Record<string, number>>({});
-
-  const { saveToCase, unsaved, retryUnsaved } = useCaseDocuments();
+  const { attachFile, clearFile, retry } = useCaseDocuments();
+  const removeRecord = useRemoveCaseRecord();
+  const unsaved = unsavedDocuments(draft);
 
   /** Store the chosen file on a slot, and save it to the case. */
   const receiveFile = React.useCallback(
     async (key: string, file: File) => {
-      const slot = findIntakeSlot(intake, key);
-      if (!slot) return;
-      const previous = slot.file;
-      const runId = (runs.current[key] ?? 0) + 1;
-      runs.current[key] = runId;
-
-      let ref;
-      try {
-        ref = await storeUpload(file);
-      } catch {
-        setPickError("We couldn't store that file in this browser. Please try again.");
-        return;
-      }
-      if (runs.current[key] !== runId) return;
-
-      update((d) => {
-        const s = findIntakeSlot(d.intake, key);
-        if (!s) return;
-        s.file = ref;
-        clearCaseDocument(s);
-      });
-      if (previous) {
-        forgetFile(previous.id);
-        void getRepository().deleteFile(previous.id);
-      }
-      removeFromCase([slot]);
-      void saveToCase(key, ref, file);
+      const error = await attachFile(slotTarget(key), file);
+      if (error) setPickError(error);
     },
-    [intake, update, saveToCase]
+    [attachFile]
   );
 
   /** Choose (or re-upload) a file for a slot. */
@@ -225,27 +146,10 @@ export function UploadSection() {
     [receiveFile, announce]
   );
 
-  /** Forget the files behind slots we just cleared, here and on the backend case. */
-  function dropFiles(slots: IntakeSlot[]) {
-    for (const { file } of slots) {
-      if (!file) continue;
-      forgetFile(file.id);
-      void getRepository().deleteFile(file.id);
-    }
-    removeFromCase(slots);
-  }
-
   const deleteFile = (key: string) => {
-    runs.current[key] = (runs.current[key] ?? 0) + 1;
     if (previewKey === key) setPreviewKey(null);
     const slot = findIntakeSlot(intake, key);
-    update((d) => {
-      const s = findIntakeSlot(d.intake, key);
-      if (!s) return;
-      s.file = null;
-      clearCaseDocument(s);
-    });
-    if (slot) dropFiles([slot]);
+    clearFile(slotTarget(key));
     announce(`Removed the file for ${slot?.label ?? "that document"}.`);
   };
 
@@ -256,16 +160,10 @@ export function UploadSection() {
       d.intake.cheques.push(group);
     });
 
-  const removeCheque = (index: number) => {
-    const group = intake.cheques[index];
-    if (!group) return;
-    for (const slot of group.slots) runs.current[slot.key] = (runs.current[slot.key] ?? 0) + 1;
-    update((d) => {
-      // The form's cheque goes with its card, so the two stay the same in number.
-      removeCaseRecord(d, "cheque", index);
-    });
-    dropFiles(group.slots);
-    announce(`Cheque ${group.n} removed.`);
+  /* A card is its form record — a cheque, a notice, or (every party) a complainant — so
+     the record goes with it, and the two stay the same in number. */
+  const removeCard = (kind: CaseRecordKind, index: number, name: string) => {
+    if (removeRecord(kind, index)) announce(`${name} removed.`);
   };
 
   const addNotice = () =>
@@ -275,38 +173,12 @@ export function UploadSection() {
       d.intake.notices.push(group);
     });
 
-  const removeNotice = (index: number) => {
-    const group = intake.notices[index];
-    if (!group) return;
-    for (const slot of group.slots) runs.current[slot.key] = (runs.current[slot.key] ?? 0) + 1;
-    update((d) => {
-      // The form's notice goes with its card, so the two stay the same in number.
-      removeCaseRecord(d, "notice", index);
-    });
-    dropFiles(group.slots);
-    announce(`Demand notice ${group.n} removed.`);
-  };
-
   const addParty = () =>
     update((d) => {
       const group = intakePartyGroup(d.intake.parties.length + 1);
       group.slots = uniqueSlotKeys(group.slots, takenKeys(d.intake));
       d.intake.parties.push(group);
     });
-
-  const removeParty = (index: number) => {
-    const group = intake.parties[index];
-    if (!group) return;
-    for (const slot of group.slots) runs.current[slot.key] = (runs.current[slot.key] ?? 0) + 1;
-    update((d) => {
-      d.intake.parties.splice(index, 1);
-      d.intake.parties.forEach((p, i) => {
-        p.n = i + 1;
-      });
-    });
-    dropFiles(group.slots);
-    announce(`Party ${group.n} removed.`);
-  };
 
   const addPartyDoc = (index: number) =>
     update((d) => {
@@ -340,6 +212,7 @@ export function UploadSection() {
     if (pending.kind === "slot") {
       const slot = findIntakeSlot(intake, pending.key);
       return {
+        name: slot?.label ?? "This document",
         title: `Remove ${slot?.label ?? "this document"}?`,
         description:
           "The file is removed from this filing. You can add it again later.",
@@ -358,21 +231,26 @@ export function UploadSection() {
           ? `demand notice ${group?.n}`
           : `party ${group?.n}`;
     const files = group?.slots.filter((s) => s.file).length ?? 0;
+    const documents =
+      files > 0
+        ? `the ${files} document${files === 1 ? "" : "s"} added for them`
+        : "their document slots";
     return {
+      name: name.charAt(0).toUpperCase() + name.slice(1),
       title: `Remove ${name}?`,
       description:
-        files > 0
-          ? `This removes the ${files} document${files === 1 ? "" : "s"} added for it from this filing.`
-          : "This removes it, and its document slots, from this filing.",
+        pending.kind === "party"
+          ? `This removes complainant ${group?.n}, their details and ${documents} from this filing.`
+          : files > 0
+            ? `This removes the ${files} document${files === 1 ? "" : "s"} added for it from this filing.`
+            : "This removes it, and its document slots, from this filing.",
     };
   }, [pending, intake]);
 
   const runPending = () => {
     if (!pending) return;
     if (pending.kind === "slot") deleteFile(pending.key);
-    else if (pending.kind === "cheque") removeCheque(pending.index);
-    else if (pending.kind === "notice") removeNotice(pending.index);
-    else removeParty(pending.index);
+    else if (confirmCopy) removeCard(pending.kind, pending.index, confirmCopy.name);
     setPending(null);
   };
 
@@ -438,10 +316,10 @@ export function UploadSection() {
 
         {unsaved.length > 0 ? (
           <UnsavedNotice
-            labels={unsaved.map((s) => s.label)}
-            error={unsaved[0].syncError ?? ""}
+            labels={unsaved.map((u) => u.label)}
+            error={unsaved[0].error}
             noun="file"
-            onRetry={() => void retryUnsaved()}
+            onRetry={() => retry(unsaved)}
           />
         ) : null}
 
@@ -605,42 +483,14 @@ export function UploadSection() {
         continueLabel="Continue to filing"
       />
 
-      {/* Document preview */}
-      <Dialog
-        open={!!previewFile}
-        onOpenChange={(open) => {
-          if (!open) setPreviewKey(null);
+      <FilePreviewDialog
+        file={previewFile}
+        label={previewSlot?.label ?? "this document"}
+        onClose={() => setPreviewKey(null)}
+        onReplace={() => {
+          if (previewKey) chooseFile(previewKey);
         }}
-      >
-        <ChromeDialogContent mobileSheet className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex flex-wrap items-center gap-2 pr-8">
-              <Badge variant="secondary">{previewFile?.ext}</Badge>
-              <span className="min-w-0 break-all">{previewFile?.name}</span>
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Preview of the file added for {previewSlot?.label}.
-            </DialogDescription>
-          </DialogHeader>
-
-          {previewSlot ? <PreviewBody slot={previewSlot} /> : null}
-
-          <DialogFooter className="sm:justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                if (previewKey) chooseFile(previewKey);
-              }}
-            >
-              Replace file
-            </Button>
-            <Button type="button" onClick={() => setPreviewKey(null)}>
-              Done
-            </Button>
-          </DialogFooter>
-        </ChromeDialogContent>
-      </Dialog>
+      />
 
       {/* Removals delete stored files and take them off the case — always ask first. */}
       <ConfirmDialog

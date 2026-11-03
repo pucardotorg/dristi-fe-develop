@@ -3,11 +3,15 @@ import { describe, it } from "node:test";
 
 import {
   blankCheque,
+  blankComplainant,
   buildDocumentGroups,
+  caseRecordGroup,
   createBlankDraft,
+  intakePartyGroup,
   migrateDraft,
   removeCaseRecord,
   syncIntakeCounts,
+  UPLOAD_INTERRUPTED,
 } from "./blank";
 import { FINAL_RELIEF_TEMPLATE } from "./options";
 import { draftProgress, sectionComplete, sectionState } from "./selectors";
@@ -319,10 +323,113 @@ describe("syncIntakeCounts — form and documents stay in step", () => {
     assert.deepEqual(draft.intake.cheques.map((g) => g.n), [1, 2]);
   });
 
+  it("names the upload group a removal takes, so its files can be discarded first", () => {
+    const draft = createBlankDraft("draft-group");
+    draft.cheques.push(blankCheque());
+    syncIntakeCounts(draft);
+    assert.equal(caseRecordGroup(draft, "cheque", 1), draft.intake.cheques[1]);
+  });
+
   it("keeps the last cheque", () => {
     const draft = createBlankDraft("draft-last");
+    assert.equal(caseRecordGroup(draft, "cheque", 0), undefined);
     removeCaseRecord(draft, "cheque", 0);
     assert.equal(draft.cheques.length, 1);
     assert.equal(draft.intake.cheques.length, 1);
+  });
+
+  it("still shows the remaining cheque's file after the first cheque is removed", () => {
+    const draft = createBlankDraft("draft-renumber");
+    draft.cheques.push(blankCheque());
+    syncIntakeCounts(draft);
+    const file = { id: "f2", name: "c2.pdf", size: 1, type: "application/pdf", ext: "PDF" };
+    draft.intake.cheques[1].slots[0].file = file;
+    removeCaseRecord(draft, "cheque", 0);
+    // The group that was cheque 2 keeps its `c2f` key but is cheque 1 now.
+    const row = buildDocumentGroups(draft)[0].docs.find((d) => d.name === "Cheque");
+    assert.equal(row?.file?.id, "f2");
+  });
+});
+
+describe("syncIntakeCounts — every party is a complainant", () => {
+  it("gives a complainant added on the form a party card", () => {
+    const draft = createBlankDraft("draft-form-complainant");
+    draft.complainants.push(blankComplainant());
+    syncIntakeCounts(draft);
+    assert.equal(draft.intake.parties.length, 2);
+  });
+
+  it("gives a party added on the upload step a complainant", () => {
+    const draft = createBlankDraft("draft-upload-party");
+    draft.intake.parties.push(intakePartyGroup(2));
+    syncIntakeCounts(draft);
+    assert.equal(draft.complainants.length, 2);
+  });
+
+  it("removes a complainant with their card, and from the advocates acting for them", () => {
+    const draft = createBlankDraft("draft-remove-complainant");
+    draft.complainants.push(blankComplainant(), blankComplainant());
+    syncIntakeCounts(draft);
+    const [, second, third] = draft.complainants;
+    draft.advocates[0].forComplainants = [0, 2];
+    removeCaseRecord(draft, "party", 0);
+    assert.deepEqual(
+      draft.complainants.map((c) => c.id),
+      [second.id, third.id]
+    );
+    assert.deepEqual(draft.intake.parties.map((g) => g.n), [1, 2]);
+    assert.deepEqual(draft.advocates[0].forComplainants, [1]);
+  });
+
+  it("lists a complainant's documents from their own card after a removal", () => {
+    const draft = createBlankDraft("draft-complainant-docs");
+    draft.complainants.push(blankComplainant());
+    syncIntakeCounts(draft);
+    const file = { id: "id2", name: "pan.pdf", size: 1, type: "application/pdf", ext: "PDF" };
+    draft.intake.parties[1].slots[0].file = file;
+    removeCaseRecord(draft, "party", 0);
+    const group = buildDocumentGroups(draft).find((g) => g.id === "complainant-1");
+    assert.equal(group?.docs[0].file?.id, "id2");
+  });
+});
+
+describe("migrateDraft — an upload cut short by a reload", () => {
+  const FILE = { id: "f1", name: "scan.pdf", size: 10, type: "application/pdf", ext: "PDF" };
+
+  it("offers the file again instead of leaving it saving forever", () => {
+    const draft = createBlankDraft("draft-interrupted");
+    const slot = draft.intake.cheques[0].slots[0];
+    slot.file = FILE;
+    slot.syncing = true;
+    draft.documents = buildDocumentGroups(draft);
+    draft.documents[0].docs.push({
+      id: "custom",
+      name: "Ledger",
+      required: false,
+      file: FILE,
+      quality: null,
+      digital: false,
+      custom: true,
+      syncing: true,
+    });
+
+    const migrated = migrateDraft(draft);
+    const custom = migrated.documents[0].docs.find((d) => d.id === "custom");
+    for (const record of [migrated.intake.cheques[0].slots[0], custom]) {
+      assert.equal(record?.syncing, false);
+      assert.equal(record?.syncError, UPLOAD_INTERRUPTED);
+    }
+  });
+
+  it("leaves a file already saved to the case alone", () => {
+    const draft = createBlankDraft("draft-saved");
+    const slot = draft.intake.cheques[0].slots[0];
+    slot.file = FILE;
+    slot.caseDocumentId = "doc-1";
+    slot.syncing = true;
+
+    const migrated = migrateDraft(draft).intake.cheques[0].slots[0];
+    assert.equal(migrated.syncing, false);
+    assert.equal(migrated.syncError, undefined);
   });
 });

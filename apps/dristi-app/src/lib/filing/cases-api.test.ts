@@ -7,6 +7,7 @@ import {
   caseDocumentType,
   caseFilingErrorMessage,
   createCaseFilingApi,
+  documentPatch,
 } from "./data/cases-api";
 
 const META = {
@@ -50,11 +51,8 @@ describe("caseDocumentType", () => {
     );
     assert.equal(caseDocumentType("poa"), "POA_DOCUMENT");
     assert.equal(caseDocumentType("other"), "OTHER_SUPPORTING_DOCUMENT");
-  });
-
-  it("has no type for identity proof or loan papers yet, so they are not sent", () => {
-    assert.equal(caseDocumentType("id-proof"), null);
-    assert.equal(caseDocumentType("supporting"), null);
+    assert.equal(caseDocumentType("id-proof"), "IDENTITY_PROOF");
+    assert.equal(caseDocumentType("supporting"), "PROOF_OF_TRANSACTION");
   });
 });
 
@@ -110,6 +108,31 @@ describe("uploadDocument", () => {
     const form = calls[0].raw as FormData;
     assert.equal(form.get("document_type"), "BOUNCED_CHEQUE");
     assert.equal((form.get("file") as File).name, "cheque.pdf");
+    assert.equal(form.has("is_digital"), false);
+    assert.equal(form.has("display_name"), false);
+  });
+
+  it("sends whether the file is digital and the filer's name for it", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "x.pdf", "OTHER_SUPPORTING_DOCUMENT", {
+      isDigital: false,
+      displayName: "  Bank statement ",
+    });
+    const form = calls[0].raw as FormData;
+    assert.equal(form.get("is_digital"), "false");
+    assert.equal(form.get("display_name"), "Bank statement");
+  });
+
+  it("leaves out a blank name", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "x.pdf", "OTHER_SUPPORTING_DOCUMENT", {
+      displayName: "   ",
+    });
+    assert.equal((calls[0].raw as FormData).has("display_name"), false);
   });
 
   it("encodes the case id in the path", async () => {
@@ -121,6 +144,35 @@ describe("uploadDocument", () => {
     );
     await cases.uploadDocument("a/b", new Blob(["x"]), "x.pdf", "RETURN_MEMO");
     assert.equal(calls[0].url, "/api/v1/cases/a%2Fb/documents");
+  });
+});
+
+describe("document links", () => {
+  it("uploads a complainant's document already linked to them", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "id.pdf", "IDENTITY_PROOF", {
+      caseParticipantId: "p-1",
+    });
+    assert.equal((calls[0].raw as FormData).get("case_participant_id"), "p-1");
+  });
+
+  it("patches a saved document's link and details", async () => {
+    const { cases, calls } = setup(() => Response.json({ meta: META }));
+    await cases.updateDocument("doc/1", { case_participant_id: "p-1" });
+    assert.equal(calls[0].url, "/api/v1/case-documents/doc%2F1");
+    assert.equal(calls[0].method, "PATCH");
+    assert.deepEqual(calls[0].body, { case_participant_id: "p-1" });
+  });
+
+  it("builds a patch of only what changed, clearing a blank name", () => {
+    assert.deepEqual(documentPatch({ isDigital: true }), { is_digital: true });
+    assert.deepEqual(documentPatch({ displayName: "  " }), { display_name: null });
+    assert.deepEqual(documentPatch({ displayName: " Ledger " }), { display_name: "Ledger" });
+    assert.deepEqual(documentPatch({ caseParticipantId: undefined }), {
+      case_participant_id: null,
+    });
   });
 });
 
@@ -293,6 +345,11 @@ describe("caseFilingErrorMessage", () => {
       caseFilingErrorMessage(httpError(400, ["E07002"])),
       /doesn't accept/,
     );
+  });
+
+  it("says a witness is already on this side by its current code", () => {
+    assert.match(caseFilingErrorMessage(httpError(409, ["E07032"])), /already a witness/);
+    assert.doesNotMatch(caseFilingErrorMessage(httpError(409, ["E07017"])), /already a witness/);
   });
 
   it("reads 404 as an expired or missing draft", () => {

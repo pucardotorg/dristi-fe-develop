@@ -349,7 +349,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
           <CheckCircle2Icon className="size-7" aria-hidden />
         </span>
         <Heading title={pick(successStep.title, locale)} body={pick(successStep.body, locale)} />
-        <Button size="lg" onClick={() => onFinish ? onFinish({ idSkipped: true, profileIncomplete: true }) : setDestinationNotice(true)}>
+        <Button size="lg" onClick={() => onFinish && role ? onFinish({ idSkipped: true, profileIncomplete: true, name: fullName.trim(), role, mobile }) : setDestinationNotice(true)}>
           {pick(summoned ? successStep.summonedAction : successStep.generalAction, locale)}
         </Button>
         {destinationNotice ? <Alert variant="info" className="text-left"><AlertTitle>Prototype: destination not connected</AlertTitle><AlertDescription>This action will open your portal home.</AlertDescription></Alert> : null}

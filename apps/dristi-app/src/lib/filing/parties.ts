@@ -31,7 +31,7 @@ import type {
   WitnessInput,
 } from "./data/cases-api";
 import { ENTITY_TYPE_CODES, GENDER_CODES } from "./options";
-import { normaliseCinPan } from "./selectors";
+import { isCinOrPan, normaliseCinPan } from "./selectors";
 import type {
   Accused,
   Address,
@@ -97,9 +97,16 @@ function addressBlock(block: AddressBlock): Partial<AddressInput> {
   return address(block.addr, block.police);
 }
 
-function cinPan(value: string): Pick<InstitutionInput, "pan" | "cin"> {
-  const v = normaliseCinPan(value);
-  if (!v) return {};
+/**
+ * A complainant institution's PAN or CIN, or the declaration skipping it (`LIT-18a`). A
+ * half-typed number is not sent: `missingFields` holds the party back until it is whole.
+ */
+function cinPan(
+  c: Pick<Complainant, "entCinPan" | "entCinPanSkippedAt">
+): Pick<InstitutionInput, "pan" | "cin" | "pan_cin_skip_declared"> {
+  if (c.entCinPanSkippedAt) return { pan_cin_skip_declared: true };
+  const v = normaliseCinPan(c.entCinPan);
+  if (!isCinOrPan(v)) return {};
   return v.length === 10 ? { pan: v } : { cin: v };
 }
 
@@ -158,7 +165,7 @@ export function complainantBodies(c: Complainant, isSelf = false): PartyInput[] 
         institution: compact({
           entity_type: ENTITY_TYPE_CODES[c.entType],
           entity_name: c.entName.trim(),
-          ...cinPan(c.entCinPan),
+          ...cinPan(c),
           contact_number: c.entPhone.trim(),
           email_address: c.entEmail.trim(),
         }),
@@ -292,7 +299,16 @@ export function missingFields(body: AnyPartyInput, role: PartyRole): string[] {
     missing.add("name");
   }
   if ("institution" in body && body.institution) {
-    if (!body.institution.entity_type) missing.add("type of entity");
+    const { institution } = body;
+    if (!institution.entity_type) missing.add("type of entity");
+    if (
+      role === "complainants" &&
+      !institution.pan &&
+      !institution.cin &&
+      !institution.pan_cin_skip_declared
+    ) {
+      missing.add("CIN or PAN");
+    }
     if (role === "accused" && body.person && !body.designation) missing.add("designation");
   }
   return [...missing];

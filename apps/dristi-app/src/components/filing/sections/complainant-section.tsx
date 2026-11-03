@@ -26,8 +26,8 @@ import {
 } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
-import { withoutComplainant } from "@/lib/filing/advocates";
-import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
+import { useCaseParties } from "@/lib/filing/use-case-parties";
+import { useRemoveCaseRecord } from "@/lib/filing/use-remove-case-record";
 import type {
   Address,
   Complainant,
@@ -97,6 +97,7 @@ export function ComplainantSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("complainant");
   const { unsaved, retryUnsaved } = useCaseParties("complainant");
+  const removeRecord = useRemoveCaseRecord();
 
   const complainants = draft.complainants;
   const [activeIndex, setActiveIndex] = React.useState(0);
@@ -226,12 +227,7 @@ export function ComplainantSection() {
   };
 
   const removeComplainant = (index: number) => {
-    if (complainants.length <= 1) return;
-    removePartyFromCase(complainants[index]);
-    update((d) => {
-      d.complainants.splice(index, 1);
-      withoutComplainant(d.advocates, index);
-    });
+    if (!removeRecord("party", index)) return;
     setActiveIndex(Math.min(active, complainants.length - 2));
   };
 

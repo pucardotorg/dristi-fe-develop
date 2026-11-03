@@ -2,7 +2,10 @@
  * The case-filing seam against the DRISTI backend (dristi-be "Case Filing API").
  *
  *   startDraft          POST   /cases                       { case_type }  → draft_session_id
- *   uploadDocument      POST   /cases/{id}/documents        multipart: file, document_type
+ *   uploadDocument      POST   /cases/{id}/documents        multipart: file, document_type,
+ *                                                            is_digital?, display_name?,
+ *                                                            case_participant_id?
+ *   updateDocument      PATCH  /case-documents/{case_document_id}  link and details
  *   deleteDocument      DELETE /case-documents/{case_document_id}
  *   addParty            POST   /cases/{id}/complainants | /accused | /witnesses
  *   updateParticipant   PATCH  /case-participants/{case_participant_id}
@@ -26,6 +29,8 @@ import type { IntakeDocType } from "../types";
 /** Registered case-filing error codes this file branches on (spec §7). */
 const E_CASE_SUBMITTED = "E07001";
 const E_TYPE_NOT_ACCEPTED = "E07002";
+/** The person is already a witness for this side (was E07017). */
+const E_WITNESS_EXISTS = "E07032";
 
 /** Scans can be large and connections slow; the proxy allows 60 s per hop. */
 const UPLOAD_TIMEOUT_MS = 60_000;
@@ -41,30 +46,63 @@ export type CaseDocumentType =
   | "AFFIDAVIT"
   | "VAKALATNAMA"
   | "POA_DOCUMENT"
-  | "OTHER_SUPPORTING_DOCUMENT";
+  | "OTHER_SUPPORTING_DOCUMENT"
+  | "IDENTITY_PROOF"
+  | "PROOF_OF_TRANSACTION";
 
 /**
- * The backend type for each upload slot. `null` = the backend has no type for it yet
- * (identity proof; loan agreement / invoice / ledger), so the file stays in this browser.
+ * The backend type for each upload slot. The type says what a document is, not which
+ * cheque or party it is for — every cheque's scan is a `BOUNCED_CHEQUE`.
  */
-const DOCUMENT_TYPE: Record<IntakeDocType, CaseDocumentType | null> = {
+const DOCUMENT_TYPE: Record<IntakeDocType, CaseDocumentType> = {
   "cheque-front": "BOUNCED_CHEQUE",
   "return-memo": "RETURN_MEMO",
   "demand-notice": "LEGAL_DEMAND_NOTICE",
   "dispatch-proof": "PROOF_OF_DISPATCH",
   "delivery-proof": "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE",
   "notice-reply": "REPLY_TO_DEMAND_NOTICE",
-  "id-proof": null,
+  "id-proof": "IDENTITY_PROOF",
   poa: "POA_DOCUMENT",
   vakalatnama: "VAKALATNAMA",
   other: "OTHER_SUPPORTING_DOCUMENT",
-  supporting: null,
+  supporting: "PROOF_OF_TRANSACTION",
 };
 
 export function caseDocumentType(
   docType: IntakeDocType,
 ): CaseDocumentType | null {
   return DOCUMENT_TYPE[docType];
+}
+
+/** What the backend keeps beside an uploaded file, and whose it is. */
+export type CaseDocumentMeta = {
+  /** The filer said the file is an original digital file, not a scan. */
+  isDigital?: boolean;
+  /** The filer's own name for the document — a custom row's typed name. */
+  displayName?: string;
+  /**
+   * The participant the document belongs to: a complainant's identity proof,
+   * vakalatnama or PoA document.
+   */
+  caseParticipantId?: string;
+};
+
+/** A change to a saved document. A field left out is kept; `null` removes it. */
+export type CaseDocumentPatch = {
+  case_participant_id?: string | null;
+  is_digital?: boolean | null;
+  display_name?: string | null;
+};
+
+/** The patch that brings a saved document's details and link to `meta`. */
+export function documentPatch(meta: CaseDocumentMeta): CaseDocumentPatch {
+  const patch: CaseDocumentPatch = {};
+  if ("isDigital" in meta) patch.is_digital = meta.isDigital ?? null;
+  if ("displayName" in meta)
+    patch.display_name = meta.displayName?.trim() || null;
+  if ("caseParticipantId" in meta)
+    patch.case_participant_id = meta.caseParticipantId ?? null;
+  return patch;
 }
 
 export type UploadedCaseDocument = {
@@ -99,6 +137,11 @@ export type InstitutionInput = {
   entity_name: string;
   pan?: string;
   cin?: string;
+  /**
+   * The filer declared they will not give a PAN or CIN. A complainant institution needs a
+   * PAN, a CIN or this, or the backend refuses it (400).
+   */
+  pan_cin_skip_declared?: true;
   contact_number?: string;
   email_address?: string;
 };
@@ -214,6 +257,9 @@ export function caseFilingErrorMessage(error: unknown): string {
   if (error.hasCode(E_TYPE_NOT_ACCEPTED)) {
     return "The court doesn't accept this kind of document for this case.";
   }
+  if (error.hasCode(E_WITNESS_EXISTS)) {
+    return "This person is already a witness for this side.";
+  }
   if (error.status === 401 || error.status === 403) {
     return "Your session has ended. Sign in again to keep saving this filing.";
   }
@@ -242,15 +288,21 @@ export function createCaseFilingApi(client: ApiClient = api) {
       file: Blob,
       fileName: string,
       documentType: CaseDocumentType,
-      signal?: AbortSignal,
+      meta: CaseDocumentMeta = {},
     ): Promise<UploadedCaseDocument> {
       const form = new FormData();
       form.append("file", file, fileName);
       form.append("document_type", documentType);
+      if (meta.isDigital !== undefined)
+        form.append("is_digital", String(meta.isDigital));
+      const displayName = meta.displayName?.trim();
+      if (displayName) form.append("display_name", displayName);
+      if (meta.caseParticipantId)
+        form.append("case_participant_id", meta.caseParticipantId);
       const body = await client.post<CaseDocumentBody>(
         `cases/${encodeURIComponent(caseId)}/documents`,
         form,
-        { timeoutMs: UPLOAD_TIMEOUT_MS, signal },
+        { timeoutMs: UPLOAD_TIMEOUT_MS },
       );
       if (
         typeof body?.case_id !== "string" ||
@@ -266,6 +318,34 @@ export function createCaseFilingApi(client: ApiClient = api) {
             ? body.document_type
             : documentType,
       };
+    },
+
+    /**
+     * Change a saved document's link or details. The file and its type cannot change, so
+     * this is how a document uploaded before its complainant was saved is linked to them.
+     */
+    async updateDocument(
+      caseDocumentId: string,
+      patch: CaseDocumentPatch,
+    ): Promise<void> {
+      await client.patch(
+        `case-documents/${encodeURIComponent(caseDocumentId)}`,
+        patch,
+      );
+    },
+
+    /**
+     * Change a saved document's link or details. The file and its type cannot change, so
+     * this is how a document uploaded before its complainant was saved is linked to them.
+     */
+    async updateDocument(
+      caseDocumentId: string,
+      patch: CaseDocumentPatch,
+    ): Promise<void> {
+      await client.patch(
+        `case-documents/${encodeURIComponent(caseDocumentId)}`,
+        patch,
+      );
     },
 
     /** Remove a document from the case. The stored file itself is kept by the backend. */

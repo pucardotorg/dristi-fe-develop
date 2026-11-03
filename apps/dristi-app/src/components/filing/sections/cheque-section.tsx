@@ -12,9 +12,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { CreditCardIcon } from "lucide-react";
 
-import { blankCheque, removeCaseRecord } from "@/lib/filing/blank";
-import { getRepository } from "@/lib/filing/data";
-import { forgetFile } from "@/lib/filing/files";
+import { blankCheque } from "@/lib/filing/blank";
 import type { IfscResult } from "@/lib/filing/lookups";
 import { RETURN_REASONS, S138_SAFE_REASONS } from "@/lib/filing/options";
 import {
@@ -26,10 +24,8 @@ import {
 } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
-import {
-  removeChequeEvidence,
-  useChequeEvidence,
-} from "@/lib/filing/use-cheque-evidence";
+import { useChequeEvidence } from "@/lib/filing/use-cheque-evidence";
+import { useRemoveCaseRecord } from "@/lib/filing/use-remove-case-record";
 import type { ChequeField } from "@/lib/filing/types";
 import { ConfirmDialog } from "@/components/filing/confirm-dialog";
 import { DateField } from "@/components/filing/date-field";
@@ -71,6 +67,7 @@ function indexOfId(cheques: { id: string }[], id: string): number | null {
 
 export function ChequeSection() {
   const { draft, update, hrefFor } = useFiling();
+  const removeRecord = useRemoveCaseRecord();
   const { prev, next } = neighbours("cheque");
   const router = useRouter();
   const { save, saving, error } = useChequeEvidence();
@@ -151,16 +148,9 @@ export function ChequeSection() {
   const confirmRemove = () => {
     const i = removeIndex;
     setRemoveOpen(false);
-    if (cheques.length <= 1) return;
-    // Its upload group goes with it, so the list of documents stops asking for it.
-    let files: ReturnType<typeof removeCaseRecord> = [];
-    update((d) => {
-      files = removeCaseRecord(d, "cheque", i);
-    });
-    for (const f of files) {
-      forgetFile(f.id);
-      void getRepository().deleteFile(f.id);
-    }
+    // Its upload group goes with it, so the list of documents stops asking for it — and
+    // its files leave this browser and the case.
+    if (!removeRecord("cheque", i)) return;
     const remaining = cheques.length - 1;
     let a = index;
     if (i < a) a -= 1;

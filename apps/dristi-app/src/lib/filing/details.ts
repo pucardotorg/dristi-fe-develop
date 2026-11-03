@@ -101,18 +101,17 @@ export function adrPrayerReady(a: AdrPrayer): boolean {
 /**
  * Build the `adr_other_prayer` section body, or `null` when the final relief is empty.
  *
- * `adr_preference` is an optional `YES` / `NO` enum on the backend; it no longer accepts
- * `MAYBE`, so a "maybe" choice is omitted until the design and backend reconcile (the design
- * still offers Maybe — see the integration tracker). The optional rich-text fields are sent
- * only when they have content; `other_details`, `interim_relief` and `final_relief` are
- * stored as sent and must be sanitised wherever they are rendered.
+ * `adr_preference` is an optional `YES` / `NO` / `MAYBE` enum on the backend; the design's
+ * three choices map one-to-one, so the uppercased choice is always sent. The optional
+ * rich-text fields are sent only when they have content; `other_details`, `interim_relief`
+ * and `final_relief` are stored as sent and must be sanitised wherever they are rendered.
  */
 export function adrPrayerSectionBody(a: AdrPrayer): DetailsSectionBody | null {
   if (!adrPrayerReady(a)) return null;
   const body: DetailsSectionBody = {
     final_relief: a.finalRelief,
+    adr_preference: a.adr.toUpperCase(),
   };
-  if (a.adr === "yes" || a.adr === "no") body.adr_preference = a.adr.toUpperCase();
   if (richTextHasContent(a.otherDetails)) body.other_details = a.otherDetails;
   if (richTextHasContent(a.interimRelief)) body.interim_relief = a.interimRelief;
   return body;

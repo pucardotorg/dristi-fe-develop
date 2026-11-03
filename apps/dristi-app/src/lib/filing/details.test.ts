@@ -150,10 +150,10 @@ describe("adrPrayerSectionBody", () => {
     });
   });
 
-  it("omits adr_preference for the 'maybe' choice (backend accepts only YES/NO)", () => {
+  it("sends MAYBE for the 'maybe' choice (backend accepts YES/NO/MAYBE)", () => {
     const body = adrPrayerSectionBody(adrPrayer({ adr: "maybe" }));
     assert.ok(body);
-    assert.ok(!("adr_preference" in body));
+    assert.equal(body.adr_preference, "MAYBE");
     assert.equal(body.final_relief, "<p>Take cognizance under S-138.</p>");
   });
 

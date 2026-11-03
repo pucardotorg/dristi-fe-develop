@@ -176,6 +176,8 @@ async function buildDraft(
             ? await Promise.all((a.personsResponsible ?? []).map(representative))
             : [],
         jurisdiction: inside ? "yes" : "no",
+        // Bulk keeps this declaration on the batch case (`noContactDeclared`).
+        contactUnknownDeclaredAt: null,
       };
     })
   );

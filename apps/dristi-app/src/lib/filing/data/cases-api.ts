@@ -154,9 +154,16 @@ export type PartyInput = {
   /** The person's capacity for the institution; only with both. */
   designation?: string;
   address: Partial<AddressInput>;
+  /** An individual complainant's, only when it differs from `address`. */
+  permanent_address?: Partial<AddressInput>;
   is_party_in_person: boolean;
   /** Accused only: does the accused reside within this court's jurisdiction. */
   resides_within_jurisdiction?: boolean;
+  /**
+   * Accused only: the filer declared they have no knowledge of the accused's phone or
+   * email and cannot locate them with reasonable effort. Sent only while there is none.
+   */
+  contact_details_unknown_declared?: true;
   additional_details: Record<string, unknown>;
 };
 
@@ -168,6 +175,8 @@ export type PoaHolderInput = {
   self?: true;
   person?: PersonInput;
   address: Partial<AddressInput>;
+  /** Only when it differs from `address`. */
+  permanent_address?: Partial<AddressInput>;
   represented_participant_ids: string[];
   additional_details: Record<string, unknown>;
 };
@@ -199,10 +208,14 @@ export type ParticipantPatch = {
   age_at_filing: number | null;
   designation_at_filing?: string | null;
   address?: Partial<AddressInput>;
+  /** Individual complainants and PoA holders only; `null` clears it (same as `address`). */
+  permanent_address?: Partial<AddressInput> | null;
   /** Complainants and accused only. */
   is_party_in_person?: boolean;
   /** Accused only. */
   resides_within_jurisdiction?: boolean;
+  /** Accused only. */
+  contact_details_unknown_declared?: boolean;
   additional_details: Record<string, unknown>;
   /** Witnesses only. */
   side?: WitnessSide;

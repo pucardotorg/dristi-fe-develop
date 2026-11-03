@@ -190,6 +190,11 @@ export function accusedHasContact(a: Accused): boolean {
   return a.contacts.some((c) => c.mobile.trim() || c.email.trim());
 }
 
+/** The filer's no-contact declaration, which lapses once a phone or email is added. */
+export function accusedContactUnknownDeclared(a: Accused): boolean {
+  return !!a.contactUnknownDeclaredAt && !accusedHasContact(a);
+}
+
 export function complainantComplete(c: Complainant): boolean {
   const institution = c.type === "institution";
   const named = institution ? !!c.entName.trim() : !!c.name.trim();

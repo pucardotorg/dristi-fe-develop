@@ -51,6 +51,12 @@ describe("migrateDraft — drafts written by another branch", () => {
     assert.equal(draft.adr.adr, "no");
   });
 
+  it("gives an older draft's accused no no-contact declaration", () => {
+    const draft = createBlankDraft("draft-old-accused");
+    delete (draft.accused[0] as { contactUnknownDeclaredAt?: unknown }).contactUnknownDeclaredAt;
+    assert.equal(migrateDraft(draft).accused[0].contactUnknownDeclaredAt, null);
+  });
+
   it("leaves the settlement block alone, so the offer ladder survives a trip back", () => {
     const draft = migrateDraft(settlementShaped()) as FilingDraft & {
       settlement?: { offers?: unknown[] };

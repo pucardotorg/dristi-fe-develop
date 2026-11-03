@@ -186,10 +186,9 @@ const UNDELIVERED = {
 describe("demandNoticeEvidenceInfo", () => {
   it("builds the body for a delivered notice, payment status as the enum value", () => {
     assert.deepEqual(demandNoticeEvidenceInfo(filledNotice()), {
-      nature_of_debt: "Loan / advance repayment",
-      cheque_issue_reason: "Loan / advance repayment",
+      nature_of_debt: "LOAN_OR_ADVANCE_REPAYMENT",
       dispatch_date: "2024-02-01",
-      mode_of_service: "Registered post (RPAD)",
+      mode_of_service: "REGISTERED_POST",
       is_delivered: true,
       accused_replied: false,
       payment_status: "NO_PAYMENT_MADE",
@@ -198,11 +197,15 @@ describe("demandNoticeEvidenceInfo", () => {
     });
   });
 
+  it("does not send cheque_issue_reason (the backend dropped it)", () => {
+    assert.ok(!("cheque_issue_reason" in demandNoticeEvidenceInfo(filledNotice())));
+  });
+
   it("sends the return date and reason (not a delivery date) for an undelivered notice", () => {
     const info = demandNoticeEvidenceInfo(filledNotice(UNDELIVERED));
     assert.equal(info.is_delivered, false);
     assert.equal(info.return_date, "2024-02-12");
-    assert.equal(info.non_delivery_reason, "Unclaimed");
+    assert.equal(info.non_delivery_reason, "UNCLAIMED");
     assert.ok(!("delivery_date" in info));
   });
 
@@ -234,9 +237,11 @@ describe("demandNoticeReady", () => {
     assert.equal(demandNoticeReady(filledNotice({ delivered: "yes", deliveryDate: "" })), false);
   });
 
-  it("requires a return date and reason when undelivered", () => {
+  it("requires a return date and a backend-known reason when undelivered", () => {
     assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, returnDate: "" })), false);
     assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "" })), false);
+    // "address incomplete" has no backend enum value yet (B3), so it holds the notice back.
+    assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "incomplete" })), false);
   });
 
   it("requires a valid amount for a part payment", () => {

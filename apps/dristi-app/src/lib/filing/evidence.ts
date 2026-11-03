@@ -13,12 +13,6 @@
  */
 
 import { IFSC_PATTERN } from "./lookups";
-import {
-  MODE_OF_SERVICE,
-  NATURE_OF_DEBT,
-  NON_DELIVERY_REASONS,
-  type Option,
-} from "./options";
 import type { ChequeDetails, DemandNotice } from "./types";
 
 /** Evidence types this module builds (spec 0021 §5.2). */
@@ -26,15 +20,6 @@ export type EvidenceType = "CHEQUE" | "RETURN_MEMO" | "LEGAL_DEMAND_NOTICE";
 
 /** An `evidence_info` body, as the backend's per-type schema expects it. */
 export type EvidenceInfoBody = Record<string, string | number | boolean>;
-
-/**
- * The label a dropdown value stands for. The draft stores option codes; the backend takes
- * the human text, since these fields are free text there until their option lists are
- * agreed (spec 0021 §5.2, "not yet enforced").
- */
-function optionLabel(options: readonly Option[], value: string): string {
-  return options.find((o) => o.value === value)?.label ?? value;
-}
 
 /** A `CHEQUE` evidence_info body, as the backend's schema expects it. */
 export type ChequeEvidenceInfo = {
@@ -152,6 +137,44 @@ const PAYMENT_STATUS_VALUE: Record<"none" | "part", string> = {
   part: "PART_PAYMENT",
 };
 
+/** Local nature-of-debt code → backend `NatureOfDebt` enum value (every option maps). */
+const NATURE_OF_DEBT_VALUE: Record<string, string> = {
+  loan: "LOAN_OR_ADVANCE_REPAYMENT",
+  goods: "GOODS_SUPPLIED",
+  services: "SERVICES_RENDERED",
+  business: "BUSINESS_OR_TRADE_TRANSACTION",
+  borrowed: "BORROWED_MONEY_REPAYMENT",
+  other: "OTHER_LIABILITY",
+};
+
+/** Local mode-of-service code → backend `ModeOfService` enum value (every option maps). */
+const MODE_OF_SERVICE_VALUE: Record<string, string> = {
+  rpad: "REGISTERED_POST",
+  speed: "SPEED_POST",
+  courier: "COURIER",
+  email: "EMAIL",
+  hand: "HAND_DELIVERY",
+  fax: "FAX",
+};
+
+/**
+ * Local non-delivery-reason code → backend `NonDeliveryReason` enum value. "Address
+ * incomplete / incorrect" has no backend value yet (tracker B3), so it maps to `null` and a
+ * notice using it is held back until the enum is extended.
+ */
+const NON_DELIVERY_REASON_VALUE: Record<string, string> = {
+  "not-available": "ADDRESSEE_NOT_AVAILABLE",
+  refused: "REFUSED",
+  left: "LEFT_WITHOUT_INSTRUCTIONS",
+  unclaimed: "UNCLAIMED",
+  lost: "LOST_IN_TRANSIT",
+  other: "OTHER",
+};
+
+export function nonDeliveryReasonValue(code: string): string | null {
+  return NON_DELIVERY_REASON_VALUE[code] ?? null;
+}
+
 /**
  * Build the `LEGAL_DEMAND_NOTICE` evidence_info for a demand notice.
  *
@@ -162,13 +185,11 @@ const PAYMENT_STATUS_VALUE: Record<"none" | "part", string> = {
 export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody {
   const delivered = notice.delivered === "yes";
   const info: EvidenceInfoBody = {
-    nature_of_debt: optionLabel(NATURE_OF_DEBT, notice.natureDebt),
-    // The design dropped the separate "why issued" field, but the backend still requires
-    // cheque_issue_reason; the PRD merges the two into one field (LDN-1), so it is derived
-    // from the nature of debt until backend/design reconcile (see the demand-notice tracker).
-    cheque_issue_reason: optionLabel(NATURE_OF_DEBT, notice.natureDebt),
+    // Readiness guarantees these map; "" is a safe fallback. cheque_issue_reason is no
+    // longer sent — the backend dropped it (the design never had a separate field for it).
+    nature_of_debt: NATURE_OF_DEBT_VALUE[notice.natureDebt] ?? "",
     dispatch_date: notice.dispatchDate,
-    mode_of_service: optionLabel(MODE_OF_SERVICE, notice.modeService),
+    mode_of_service: MODE_OF_SERVICE_VALUE[notice.modeService] ?? "",
     is_delivered: delivered,
     accused_replied: notice.replied === "yes",
   };
@@ -180,9 +201,8 @@ export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody
     if (notice.deliveryDate) info.delivery_date = notice.deliveryDate;
   } else {
     if (notice.returnDate) info.return_date = notice.returnDate;
-    if (notice.nonDeliveryReason) {
-      info.non_delivery_reason = optionLabel(NON_DELIVERY_REASONS, notice.nonDeliveryReason);
-    }
+    const reason = nonDeliveryReasonValue(notice.nonDeliveryReason);
+    if (reason) info.non_delivery_reason = reason;
   }
   if (notice.paymentStatus === "part") {
     const amount = chequeAmount(notice.partAmount);
@@ -203,8 +223,9 @@ export function demandNoticeReady(notice: DemandNotice): boolean {
     // A delivered notice needs its delivery date.
     if (!notice.deliveryDate) return false;
   } else {
-    // An undelivered one needs its return date and the reason it was not delivered.
-    if (!notice.returnDate || !notice.nonDeliveryReason) return false;
+    // An undelivered one needs its return date and a backend-known non-delivery reason
+    // ("address incomplete" has no backend value yet — tracker B3 — so it holds the row back).
+    if (!notice.returnDate || nonDeliveryReasonValue(notice.nonDeliveryReason) === null) return false;
   }
   // A part payment needs a valid amount.
   if (notice.paymentStatus === "part" && chequeAmount(notice.partAmount) === null) return false;

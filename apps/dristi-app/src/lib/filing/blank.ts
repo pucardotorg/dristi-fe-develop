@@ -140,6 +140,7 @@ export const blankAccused = (): Accused => ({
   reps: [blankRepresentative()],
   addresses: [blankAddressBlock()],
   jurisdiction: "yes",
+  contactUnknownDeclaredAt: null,
 });
 
 export const blankCheque = (): ChequeDetails => ({
@@ -738,6 +739,8 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
     c.entCinPan ??= "";
     c.entCinPanSkippedAt ??= null;
   }
+  // The no-contact declaration was asked before it was kept; an older draft has none.
+  for (const a of draft.accused) a.contactUnknownDeclaredAt ??= null;
   // "Why was the cheque issued?" was a prototype-only question that the nature of the
   // debt already answers (LDN-1); it was retired.
   for (const n of draft.notices) {

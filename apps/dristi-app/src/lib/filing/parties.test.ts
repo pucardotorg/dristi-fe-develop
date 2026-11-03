@@ -74,15 +74,30 @@ describe("complainantBodies", () => {
     assert.equal(body.institution, undefined);
   });
 
-  it("keeps a different permanent address in additional details", () => {
+  it("sends a different permanent address as its own field, not in additional details", () => {
     const c = complainant();
     c.permSame = "no";
     c.perm = { ...addr, line1: "4 Beach Road" };
     const [body] = complainantBodies(c);
-    assert.equal(
-      (body.additional_details.permanent_address as { line1: string }).line1,
-      "4 Beach Road"
-    );
+    assert.equal(body.permanent_address?.line1, "4 Beach Road");
+    assert.deepEqual(body.additional_details, {});
+    assert.equal(patchFor(body).permanent_address?.line1, "4 Beach Road");
+  });
+
+  it("sends no permanent address when it is the same, and clears a saved one", () => {
+    const c = complainant();
+    c.permSame = "yes";
+    c.perm = { ...addr, line1: "4 Beach Road" };
+    const [body] = complainantBodies(c);
+    assert.equal("permanent_address" in body, false);
+    assert.equal(patchFor(body).permanent_address, null);
+  });
+
+  it("never sends an institution's patch a permanent address", () => {
+    const c = complainant();
+    c.type = "institution";
+    const [body] = complainantBodies(c);
+    assert.equal("permanent_address" in patchFor(body), false);
   });
 
   it("keeps disability on the person as yes or no, not in additional details", () => {
@@ -177,6 +192,39 @@ describe("accusedBodies", () => {
     const [body] = complainantBodies(complainant());
     assert.equal("resides_within_jurisdiction" in body, false);
     assert.equal("resides_within_jurisdiction" in patchFor(body), false);
+    assert.equal("contact_details_unknown_declared" in patchFor(body), false);
+  });
+
+  it("sends the no-contact declaration while the accused has no phone or email", () => {
+    const a = accused();
+    a.contacts = [{ mobile: "", email: "" }];
+    assert.equal("contact_details_unknown_declared" in accusedBodies(a)[0], false);
+    a.contactUnknownDeclaredAt = "2026-11-03T10:00:00.000Z";
+    const [body] = accusedBodies(a);
+    assert.equal(body.contact_details_unknown_declared, true);
+    assert.equal(patchFor(body).contact_details_unknown_declared, true);
+  });
+
+  it("withdraws the declaration once a phone or email is added", () => {
+    const a = accused();
+    a.contactUnknownDeclaredAt = "2026-11-03T10:00:00.000Z";
+    const [body] = accusedBodies(a);
+    assert.equal("contact_details_unknown_declared" in body, false);
+    assert.equal(patchFor(body).contact_details_unknown_declared, false);
+  });
+
+  it("sends the declaration for every person summoned for an institution", () => {
+    const a = accused();
+    a.type = "institution";
+    a.contacts = [{ mobile: "", email: "" }];
+    a.reps = [
+      { ...blankRepresentative(), name: "A", designation: "Director" },
+      { ...blankRepresentative(), name: "B", designation: "Manager" },
+    ];
+    a.contactUnknownDeclaredAt = "2026-11-03T10:00:00.000Z";
+    const bodies = accusedBodies(a);
+    assert.equal(bodies.length, 2);
+    assert.ok(bodies.every((b) => b.contact_details_unknown_declared === true));
   });
 
   it("keeps further contacts and addresses in additional details", () => {
@@ -633,6 +681,16 @@ describe("PoA holder", () => {
     assert.equal(poaHolderBody(c), null);
   });
 
+  it("sends a different permanent address as its own field", () => {
+    const c = withHolder();
+    assert.equal(poaHolderBody(c)?.permanent_address, undefined);
+    c.poaHolder.permSame = "no";
+    c.poaHolder.perm = { ...addr, line1: "9 Hill Road" };
+    const body = poaHolderBody(c);
+    assert.equal(body?.permanent_address?.line1, "9 Hill Road");
+    assert.deepEqual(body?.additional_details, {});
+  });
+
   it("needs a full address before it is sent", () => {
     const c = withHolder();
     c.poaHolder.res = { ...addr, city: "" };
@@ -668,6 +726,7 @@ describe("PoA holder", () => {
     const patch = (calls[1] as { patch: ParticipantPatch }).patch;
     assert.equal(patch.age_at_filing, 61);
     assert.equal("is_party_in_person" in patch, false);
+    assert.equal(patch.permanent_address, null);
   });
 
   it("revokes the mandate when the complainant no longer has a holder", async () => {

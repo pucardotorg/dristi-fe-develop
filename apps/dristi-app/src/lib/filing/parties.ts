@@ -31,7 +31,7 @@ import type {
   WitnessInput,
 } from "./data/cases-api";
 import { ENTITY_TYPE_CODES, GENDER_CODES } from "./options";
-import { isCinOrPan, normaliseCinPan } from "./selectors";
+import { accusedContactUnknownDeclared, isCinOrPan, normaliseCinPan } from "./selectors";
 import type {
   Accused,
   Address,
@@ -192,10 +192,9 @@ export function complainantBodies(c: Complainant, isSelf = false): PartyInput[] 
         disability_status: disability(c.differentlyAbled),
       }),
       address: address(c.res),
+      ...(c.permSame === "no" ? { permanent_address: address(c.perm) } : {}),
       is_party_in_person,
-      additional_details: compact({
-        permanent_address: c.permSame === "no" ? address(c.perm) : undefined,
-      }),
+      additional_details: {},
     },
   ];
 }
@@ -208,6 +207,7 @@ export function accusedBodies(a: Accused): PartyInput[] {
     address: primary ? addressBlock(primary) : {},
     is_party_in_person: false,
     resides_within_jurisdiction: a.jurisdiction !== "no",
+    ...(accusedContactUnknownDeclared(a) ? { contact_details_unknown_declared: true as const } : {}),
     additional_details: rest,
   };
 
@@ -329,6 +329,21 @@ function isWitness(body: AnyPartyInput): body is WitnessInput {
   return "side" in body;
 }
 
+/**
+ * A permanent address as PATCH takes it: `null` clears one saved earlier once the filer
+ * says it is the same as the residential one.
+ */
+function permanentPatch(
+  body: Pick<PartyInput, "permanent_address">
+): Pick<ParticipantPatch, "permanent_address"> {
+  return { permanent_address: body.permanent_address ?? null };
+}
+
+/** Only an individual complainant has a permanent address; an accused or institution has none. */
+function hasPermanentAddress(body: PartyInput): boolean {
+  return !body.institution && body.resides_within_jurisdiction === undefined;
+}
+
 /** The case's copy of a party's details: everything PATCH may change. */
 export function patchFor(body: AnyPartyInput): ParticipantPatch {
   if (isWitness(body)) {
@@ -354,9 +369,14 @@ export function patchFor(body: AnyPartyInput): ParticipantPatch {
       ? { designation_at_filing: body.designation ?? null }
       : {}),
     address: body.address,
+    ...(hasPermanentAddress(body) ? permanentPatch(body) : {}),
     is_party_in_person: body.is_party_in_person,
+    // Accused only; `false` withdraws a declaration once a phone or email is added.
     ...(body.resides_within_jurisdiction !== undefined
-      ? { resides_within_jurisdiction: body.resides_within_jurisdiction }
+      ? {
+          resides_within_jurisdiction: body.resides_within_jurisdiction,
+          contact_details_unknown_declared: !!body.contact_details_unknown_declared,
+        }
       : {}),
     additional_details: body.additional_details,
   };
@@ -513,9 +533,8 @@ export function poaHolderBody(c: Complainant, isSelf = false): PoaHolderBody | n
     ...(isSelf ? { self: true as const } : {}),
     person: compact({ name: h.name.trim(), phone_number: phone(h.mobile), age: age(h.age) }),
     address: address(h.res),
-    additional_details: compact({
-      permanent_address: h.permSame === "no" ? address(h.perm) : undefined,
-    }),
+    ...(h.permSame === "no" ? { permanent_address: address(h.perm) } : {}),
+    additional_details: {},
   };
 }
 
@@ -533,6 +552,7 @@ function poaHolderPatch(body: PoaHolderBody): ParticipantPatch {
     gender_at_filing: null,
     age_at_filing: body.person?.age ?? null,
     address: body.address,
+    ...permanentPatch(body),
     additional_details: body.additional_details,
   };
 }

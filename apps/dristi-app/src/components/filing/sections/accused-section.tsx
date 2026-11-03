@@ -19,6 +19,7 @@ import { blankAccused } from "@/lib/filing/blank";
 import { ACCUSED_ENTITY_TYPES, ACCUSED_TYPES } from "@/lib/filing/options";
 import {
   accusedComplete,
+  accusedContactUnknownDeclared,
   accusedHasContact,
   accusedLabel,
 } from "@/lib/filing/selectors";
@@ -127,7 +128,8 @@ export function AccusedSection() {
   );
 
   const handleContinue = () => {
-    if (missingContact.length === 0) {
+    // Already declared for every one missing a contact: the filer is not asked twice.
+    if (missingContact.every(accusedContactUnknownDeclared)) {
       goToNext();
       return;
     }
@@ -146,6 +148,16 @@ export function AccusedSection() {
     setNoContactOpen(false);
     setConfirmChecked(false);
     setConfirmOpen(true);
+  };
+
+  /** The tick is a declaration for the court, so it is kept on each accused it names. */
+  const confirmWithoutDetails = () => {
+    const at = new Date().toISOString();
+    const ids = new Set(missingContact.map((acc) => acc.id));
+    update((d) => {
+      for (const acc of d.accused) if (ids.has(acc.id)) acc.contactUnknownDeclaredAt = at;
+    });
+    goToNext();
   };
 
   return (
@@ -351,7 +363,7 @@ export function AccusedSection() {
             </Button>
             <Button
               type="button"
-              onClick={goToNext}
+              onClick={confirmWithoutDetails}
               disabled={!confirmChecked}
               aria-disabled={!confirmChecked || undefined}
             >

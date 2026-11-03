@@ -294,6 +294,12 @@ export type Accused = SavedParty & {
    */
   reps: Representative[];
   jurisdiction: YesNo;
+  /**
+   * When the filer declared they have no knowledge of this accused's phone or email and
+   * cannot locate them with reasonable effort. `null` = no declaration. Counts only while
+   * the accused has no contact (`accusedContactUnknownDeclared`).
+   */
+  contactUnknownDeclaredAt: string | null;
 };
 
 /* ───────────────────────────── Cheque & return memo ─────────────────────────────── */

@@ -25,18 +25,20 @@ function filledJurisdiction(over: Partial<Jurisdiction> = {}): Jurisdiction {
 }
 
 const CAUSE = "2024-02-21";
+const FILING = "2024-03-01";
 
 describe("jurisdictionReady", () => {
-  it("needs a cause-of-action date", () => {
-    assert.equal(jurisdictionReady(filledJurisdiction(), ""), false);
-    assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE), true);
+  it("needs both the cause-of-action and complaint filing dates", () => {
+    assert.equal(jurisdictionReady(filledJurisdiction(), "", FILING), false);
+    assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE, ""), false);
+    assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE, FILING), true);
   });
 
   it("needs the payee bank block and police station when the payee deposited", () => {
-    assert.equal(jurisdictionReady(filledJurisdiction({ ifsc: "" }), CAUSE), false);
-    assert.equal(jurisdictionReady(filledJurisdiction({ ifsc: "BADCODE" }), CAUSE), false);
-    assert.equal(jurisdictionReady(filledJurisdiction({ payeeBankName: "" }), CAUSE), false);
-    assert.equal(jurisdictionReady(filledJurisdiction({ payeePolice: "" }), CAUSE), false);
+    assert.equal(jurisdictionReady(filledJurisdiction({ ifsc: "" }), CAUSE, FILING), false);
+    assert.equal(jurisdictionReady(filledJurisdiction({ ifsc: "BADCODE" }), CAUSE, FILING), false);
+    assert.equal(jurisdictionReady(filledJurisdiction({ payeeBankName: "" }), CAUSE, FILING), false);
+    assert.equal(jurisdictionReady(filledJurisdiction({ payeePolice: "" }), CAUSE, FILING), false);
   });
 
   it("needs only the drawer's police station when the payee did not deposit", () => {
@@ -47,25 +49,26 @@ describe("jurisdictionReady", () => {
       payeeBankBranch: "",
       payeePolice: "",
     };
-    assert.equal(jurisdictionReady(filledJurisdiction({ ...notDeposited, drawerPolice: "Fort" }), CAUSE), true);
-    assert.equal(jurisdictionReady(filledJurisdiction({ ...notDeposited, drawerPolice: "" }), CAUSE), false);
+    assert.equal(jurisdictionReady(filledJurisdiction({ ...notDeposited, drawerPolice: "Fort" }), CAUSE, FILING), true);
+    assert.equal(jurisdictionReady(filledJurisdiction({ ...notDeposited, drawerPolice: "" }), CAUSE, FILING), false);
   });
 });
 
 describe("jurisdictionSectionBody", () => {
-  it("builds the full section when the payee deposited the cheque", () => {
-    assert.deepEqual(jurisdictionSectionBody(filledJurisdiction({ otherPending: "yes" }), CAUSE), {
+  it("builds the full section with the payee's police station when the payee deposited", () => {
+    assert.deepEqual(jurisdictionSectionBody(filledJurisdiction({ otherPending: "yes" }), CAUSE, FILING, false), {
       cheque_deposited_by_payee: true,
       other_complaints_pending: true,
       cause_of_action_date: CAUSE,
+      complaint_filing_date: FILING,
       payee_ifsc_code: "HDFC0000512",
       payee_bank_name: "HDFC Bank",
       payee_bank_branch: "Kochi",
-      bank_police_station: "Ernakulam Central",
+      payee_bank_police_station: "Ernakulam Central",
     });
   });
 
-  it("sends the drawer's police station as bank_police_station when not deposited", () => {
+  it("sends the drawer's police station (no payee bank block) when not deposited", () => {
     const body = jurisdictionSectionBody(
       filledJurisdiction({
         deposited: "no",
@@ -75,30 +78,46 @@ describe("jurisdictionSectionBody", () => {
         payeePolice: "",
         drawerPolice: "Fort",
       }),
-      CAUSE
+      CAUSE,
+      FILING,
+      false
     );
     assert.deepEqual(body, {
       cheque_deposited_by_payee: false,
       other_complaints_pending: false,
       cause_of_action_date: CAUSE,
-      bank_police_station: "Fort",
+      complaint_filing_date: FILING,
+      drawer_bank_police_station: "Fort",
     });
   });
 
-  it("does not send the drawer police station, condonation reason or other cases", () => {
+  it("sends the condonation reason only when the complaint is filed late", () => {
+    const onTime = jurisdictionSectionBody(filledJurisdiction({ condonationReason: "late" }), CAUSE, FILING, false);
+    assert.ok(onTime);
+    assert.ok(!("condonation_reason" in onTime));
+
+    const late = jurisdictionSectionBody(filledJurisdiction({ condonationReason: "Hospitalised" }), CAUSE, FILING, true);
+    assert.ok(late);
+    assert.equal(late.condonation_reason, "Hospitalised");
+  });
+
+  it("does not send the old single police-station key or other cases", () => {
     const body = jurisdictionSectionBody(
-      filledJurisdiction({ drawerPolice: "Fort", condonationReason: "late", otherCases: [{ court: "X", caseNumber: "Y" }] }),
-      CAUSE
+      filledJurisdiction({ otherCases: [{ court: "X", caseNumber: "Y" }] }),
+      CAUSE,
+      FILING,
+      false
     );
     assert.ok(body);
-    for (const key of ["drawer_police_station", "condonation_reason", "other_cases", "filing_date"]) {
+    for (const key of ["bank_police_station", "other_cases"]) {
       assert.ok(!(key in body), `${key} should not be sent`);
     }
   });
 
   it("returns null when the section is not complete", () => {
-    assert.equal(jurisdictionSectionBody(filledJurisdiction(), ""), null);
-    assert.equal(jurisdictionSectionBody(filledJurisdiction({ payeePolice: "" }), CAUSE), null);
+    assert.equal(jurisdictionSectionBody(filledJurisdiction(), "", FILING, false), null);
+    assert.equal(jurisdictionSectionBody(filledJurisdiction(), CAUSE, "", false), null);
+    assert.equal(jurisdictionSectionBody(filledJurisdiction({ payeePolice: "" }), CAUSE, FILING, false), null);
   });
 });
 

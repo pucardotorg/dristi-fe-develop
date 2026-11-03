@@ -27,8 +27,9 @@ export function richTextHasContent(html: string): boolean {
  * `causeDate` is the effective cause-of-action date (typed, or derived from the notice
  * service date — see `limitationView`), not the raw `jurisdiction.causeDate`.
  */
-export function jurisdictionReady(j: Jurisdiction, causeDate: string): boolean {
-  if (!causeDate) return false;
+export function jurisdictionReady(j: Jurisdiction, causeDate: string, filingDate: string): boolean {
+  // Both the cause-of-action and complaint filing dates are required by the section.
+  if (!causeDate || !filingDate) return false;
   // The police station of the branch that grounds jurisdiction is always required: the
   // payee's when they deposited the cheque, otherwise the drawer's.
   const policeStation = j.deposited === "yes" ? j.payeePolice : j.drawerPolice;
@@ -48,34 +49,48 @@ export function jurisdictionReady(j: Jurisdiction, causeDate: string): boolean {
 /**
  * Build the `jurisdiction_limitation` section body, or `null` when it is not complete.
  *
- * The drawer's police station goes in `bank_police_station` when the payee did not deposit
- * the cheque. The other-pending complaints' court/case numbers, the delay condonation reason
- * and the filing date have no home in the schema yet, so they are not sent (see the
- * jurisdiction integration tracker). The filing date is the case's `filed_at`, set at
- * submission.
+ * The police station is split by whose branch grounds jurisdiction: the payee's collecting
+ * branch when they deposited the cheque (sent with their bank details), otherwise the
+ * drawer's. The condonation reason is sent only when the complaint is filed late, since that
+ * is the only time the backend's completeness check requires it. The other-pending
+ * complaints' court/case numbers still have no home in the schema, so they are not sent (see
+ * the jurisdiction integration tracker).
  */
-export function jurisdictionSectionBody(j: Jurisdiction, causeDate: string): DetailsSectionBody | null {
-  if (!jurisdictionReady(j, causeDate)) return null;
+export function jurisdictionSectionBody(
+  j: Jurisdiction,
+  causeDate: string,
+  filingDate: string,
+  late: boolean,
+): DetailsSectionBody | null {
+  if (!jurisdictionReady(j, causeDate, filingDate)) return null;
   const deposited = j.deposited === "yes";
   const body: DetailsSectionBody = {
     cheque_deposited_by_payee: deposited,
     other_complaints_pending: j.otherPending === "yes",
     cause_of_action_date: causeDate,
-    // One field for the branch that grounds jurisdiction: the payee's police station when
-    // they deposited the cheque, otherwise the drawer's. Always required.
-    bank_police_station: (deposited ? j.payeePolice : j.drawerPolice).trim(),
+    complaint_filing_date: filingDate,
   };
   if (deposited) {
     body.payee_ifsc_code = j.ifsc.trim().toUpperCase();
     body.payee_bank_name = j.payeeBankName.trim();
     body.payee_bank_branch = j.payeeBankBranch.trim();
+    body.payee_bank_police_station = j.payeePolice.trim();
+  } else {
+    body.drawer_bank_police_station = j.drawerPolice.trim();
   }
+  if (late && j.condonationReason.trim()) body.condonation_reason = j.condonationReason.trim();
   return body;
 }
 
 /** The jurisdiction section body for a draft, resolving the effective cause-of-action date. */
 export function jurisdictionDetails(draft: FilingDraft): DetailsSectionBody | null {
-  return jurisdictionSectionBody(draft.jurisdiction, limitationView(draft).causeDate);
+  const limitation = limitationView(draft);
+  return jurisdictionSectionBody(
+    draft.jurisdiction,
+    limitation.causeDate,
+    limitation.filingDate,
+    limitation.overBy > 0,
+  );
 }
 
 /** Whether the ADR/prayer section has the one field the backend requires: a final relief. */

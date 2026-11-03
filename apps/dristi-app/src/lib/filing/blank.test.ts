@@ -3,11 +3,15 @@ import { describe, it } from "node:test";
 
 import {
   blankCheque,
+  blankComplainant,
   buildDocumentGroups,
+  caseRecordGroup,
   createBlankDraft,
+  intakePartyGroup,
   migrateDraft,
   removeCaseRecord,
   syncIntakeCounts,
+  UPLOAD_INTERRUPTED,
 } from "./blank";
 import { FINAL_RELIEF_TEMPLATE } from "./options";
 import { draftProgress, sectionComplete, sectionState } from "./selectors";
@@ -45,6 +49,12 @@ describe("migrateDraft — drafts written by another branch", () => {
     assert.equal(draft.adr.interimRelief, "<p>Interim as typed</p>");
     assert.equal(draft.adr.otherDetails, "Nothing further.");
     assert.equal(draft.adr.adr, "no");
+  });
+
+  it("gives an older draft's accused no no-contact declaration", () => {
+    const draft = createBlankDraft("draft-old-accused");
+    delete (draft.accused[0] as { contactUnknownDeclaredAt?: unknown }).contactUnknownDeclaredAt;
+    assert.equal(migrateDraft(draft).accused[0].contactUnknownDeclaredAt, null);
   });
 
   it("leaves the settlement block alone, so the offer ladder survives a trip back", () => {
@@ -139,6 +149,52 @@ describe("migrateDraft — the two-level signing model", () => {
   it("drops a signatory whose signature was recorded as false", () => {
     const draft = migrateDraft(signShaped("esign", { "sig-a-1": false }));
     assert.equal("sig-a-1" in draft.sign.signed, false);
+  });
+});
+
+describe("createBlankDraft — who is filing", () => {
+  const account = {
+    name: "Asha Menon",
+    mobile: "9876543210",
+    email: "asha@example.com",
+    barNumber: "",
+  };
+
+  it("starts a litigant's filing with them as the first complainant", () => {
+    const draft = createBlankDraft("d-litigant", { ...account, role: "LITIGANT" });
+    const [c] = draft.complainants;
+    assert.equal(c.name, "Asha Menon");
+    assert.equal(c.mobile, "9876543210");
+    assert.equal(c.email, "asha@example.com");
+    assert.equal(draft.advocates[0].name, "");
+  });
+
+  it("leaves the complainant blank for an advocate, and fills in the advocate card", () => {
+    const draft = createBlankDraft("d-advocate", {
+      ...account,
+      role: "ADVOCATE",
+      barNumber: "K/0421/2004",
+    });
+    assert.equal(draft.complainants[0].name, "");
+    assert.equal(draft.complainants[0].mobile, "");
+    assert.equal(draft.advocates[0].name, "Asha Menon");
+    assert.equal(draft.advocates[0].barNumber, "K/0421/2004");
+  });
+
+  it("prefills nothing when the account could not be read", () => {
+    const draft = createBlankDraft("d-unknown", { ...account, role: null });
+    assert.equal(draft.complainants[0].name, "");
+    assert.equal(draft.advocates[0].name, "");
+  });
+});
+
+describe("sectionComplete — advocate", () => {
+  it("counts an advocate only once the search has found them", () => {
+    const draft = createBlankDraft("d-adv");
+    draft.advocates[0] = { ...draft.advocates[0], name: "Anitha R", barNumber: "K/0421/2004" };
+    assert.equal(sectionComplete(draft, "advocate"), false);
+    draft.advocates[0].advocateId = "adv-1";
+    assert.equal(sectionComplete(draft, "advocate"), true);
   });
 });
 
@@ -273,10 +329,113 @@ describe("syncIntakeCounts — form and documents stay in step", () => {
     assert.deepEqual(draft.intake.cheques.map((g) => g.n), [1, 2]);
   });
 
+  it("names the upload group a removal takes, so its files can be discarded first", () => {
+    const draft = createBlankDraft("draft-group");
+    draft.cheques.push(blankCheque());
+    syncIntakeCounts(draft);
+    assert.equal(caseRecordGroup(draft, "cheque", 1), draft.intake.cheques[1]);
+  });
+
   it("keeps the last cheque", () => {
     const draft = createBlankDraft("draft-last");
+    assert.equal(caseRecordGroup(draft, "cheque", 0), undefined);
     removeCaseRecord(draft, "cheque", 0);
     assert.equal(draft.cheques.length, 1);
     assert.equal(draft.intake.cheques.length, 1);
+  });
+
+  it("still shows the remaining cheque's file after the first cheque is removed", () => {
+    const draft = createBlankDraft("draft-renumber");
+    draft.cheques.push(blankCheque());
+    syncIntakeCounts(draft);
+    const file = { id: "f2", name: "c2.pdf", size: 1, type: "application/pdf", ext: "PDF" };
+    draft.intake.cheques[1].slots[0].file = file;
+    removeCaseRecord(draft, "cheque", 0);
+    // The group that was cheque 2 keeps its `c2f` key but is cheque 1 now.
+    const row = buildDocumentGroups(draft)[0].docs.find((d) => d.name === "Cheque");
+    assert.equal(row?.file?.id, "f2");
+  });
+});
+
+describe("syncIntakeCounts — every party is a complainant", () => {
+  it("gives a complainant added on the form a party card", () => {
+    const draft = createBlankDraft("draft-form-complainant");
+    draft.complainants.push(blankComplainant());
+    syncIntakeCounts(draft);
+    assert.equal(draft.intake.parties.length, 2);
+  });
+
+  it("gives a party added on the upload step a complainant", () => {
+    const draft = createBlankDraft("draft-upload-party");
+    draft.intake.parties.push(intakePartyGroup(2));
+    syncIntakeCounts(draft);
+    assert.equal(draft.complainants.length, 2);
+  });
+
+  it("removes a complainant with their card, and from the advocates acting for them", () => {
+    const draft = createBlankDraft("draft-remove-complainant");
+    draft.complainants.push(blankComplainant(), blankComplainant());
+    syncIntakeCounts(draft);
+    const [, second, third] = draft.complainants;
+    draft.advocates[0].forComplainants = [0, 2];
+    removeCaseRecord(draft, "party", 0);
+    assert.deepEqual(
+      draft.complainants.map((c) => c.id),
+      [second.id, third.id]
+    );
+    assert.deepEqual(draft.intake.parties.map((g) => g.n), [1, 2]);
+    assert.deepEqual(draft.advocates[0].forComplainants, [1]);
+  });
+
+  it("lists a complainant's documents from their own card after a removal", () => {
+    const draft = createBlankDraft("draft-complainant-docs");
+    draft.complainants.push(blankComplainant());
+    syncIntakeCounts(draft);
+    const file = { id: "id2", name: "pan.pdf", size: 1, type: "application/pdf", ext: "PDF" };
+    draft.intake.parties[1].slots[0].file = file;
+    removeCaseRecord(draft, "party", 0);
+    const group = buildDocumentGroups(draft).find((g) => g.id === "complainant-1");
+    assert.equal(group?.docs[0].file?.id, "id2");
+  });
+});
+
+describe("migrateDraft — an upload cut short by a reload", () => {
+  const FILE = { id: "f1", name: "scan.pdf", size: 10, type: "application/pdf", ext: "PDF" };
+
+  it("offers the file again instead of leaving it saving forever", () => {
+    const draft = createBlankDraft("draft-interrupted");
+    const slot = draft.intake.cheques[0].slots[0];
+    slot.file = FILE;
+    slot.syncing = true;
+    draft.documents = buildDocumentGroups(draft);
+    draft.documents[0].docs.push({
+      id: "custom",
+      name: "Ledger",
+      required: false,
+      file: FILE,
+      quality: null,
+      digital: false,
+      custom: true,
+      syncing: true,
+    });
+
+    const migrated = migrateDraft(draft);
+    const custom = migrated.documents[0].docs.find((d) => d.id === "custom");
+    for (const record of [migrated.intake.cheques[0].slots[0], custom]) {
+      assert.equal(record?.syncing, false);
+      assert.equal(record?.syncError, UPLOAD_INTERRUPTED);
+    }
+  });
+
+  it("leaves a file already saved to the case alone", () => {
+    const draft = createBlankDraft("draft-saved");
+    const slot = draft.intake.cheques[0].slots[0];
+    slot.file = FILE;
+    slot.caseDocumentId = "doc-1";
+    slot.syncing = true;
+
+    const migrated = migrateDraft(draft).intake.cheques[0].slots[0];
+    assert.equal(migrated.syncing, false);
+    assert.equal(migrated.syncError, undefined);
   });
 });

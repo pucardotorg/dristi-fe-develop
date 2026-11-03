@@ -71,7 +71,7 @@ import {
   bondCopy,
   fillCopy,
   type BondSurety,
-} from "@/lib/filing/content";
+} from "@/lib/bail/content";
 import { ADVOCATE_PROFILE_NAME } from "@/lib/advocate/content";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";

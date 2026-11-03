@@ -6,7 +6,9 @@ import {
   Dialog,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { SourceRegion } from "@/components/filing/source-panel";
+
+/** A box over the document image, in percentages of the image box. */
+export type SourceRegion = { left: string; top: string; width: string; height: string };
 
 /** Full-size view of an uploaded image (cheque, Aadhaar, notice…). */
 export function Lightbox({
@@ -22,8 +24,7 @@ export function Lightbox({
   src: string;
   alt: string;
   /**
-   * A box drawn over the page — the scrutiny officer's annotation, mapped by the same
-   * `regionFromBox()` the OCR highlight uses (brief D8).
+   * A box drawn over the page — the scrutiny officer's annotation (brief D8).
    *
    * An outline, and nothing else. The inline mark elsewhere dims everything *but* the box,
    * which is right at thumbnail size; at full size it would grey out the page the advocate

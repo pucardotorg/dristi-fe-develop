@@ -41,7 +41,7 @@ import {
 
 /** Slots a dropped file can still go into, required ones first. */
 function openSlotKeys(slots: IntakeSlot[]): string[] {
-  const free = slots.filter((s) => !s.file && !s.processing);
+  const free = slots.filter((s) => !s.file);
   const required = free.filter((s) => s.required).map((s) => s.key);
   return required.length ? required : free.map((s) => s.key);
 }

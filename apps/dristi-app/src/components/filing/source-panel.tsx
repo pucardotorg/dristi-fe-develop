@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { useFilePreview } from "@/lib/filing/files";
-import type { DocExtract, ExtractBox, StoredFileRef } from "@/lib/filing/types";
+import type { StoredFileRef } from "@/lib/filing/types";
 import { useRoomForLabelledNav, useSourceDock } from "@/hooks/use-min-width";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -42,24 +42,6 @@ import { Lightbox } from "@/components/filing/lightbox";
 
 export type SourceChip = { label: string; active: boolean; onClick: () => void };
 
-/** Highlight box over the document image, in percentages of the image box. */
-export type SourceRegion = { left: string; top: string; width: string; height: string };
-
-/** Pixel box from document reading → percentage region (with a little breathing room). */
-export function regionFromBox(
-  box: ExtractBox | undefined,
-  page: DocExtract["page"] | undefined,
-  pad = 0.01
-): SourceRegion | undefined {
-  if (!box || !page || !page.width || !page.height) return undefined;
-  const l = Math.max(0, box.x0 / page.width - pad);
-  const t = Math.max(0, box.y0 / page.height - pad);
-  const r = Math.min(1, box.x1 / page.width + pad);
-  const b = Math.min(1, box.y1 / page.height + pad);
-  const pct = (n: number) => `${(n * 100).toFixed(2)}%`;
-  return { left: pct(l), top: pct(t), width: pct(r - l), height: pct(b - t) };
-}
-
 export type SourcePanelProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -82,7 +64,6 @@ export type SourcePanelProps = {
   /** The uploaded document to show; `null` when nothing was uploaded for this field yet. */
   file: StoredFileRef | null;
   imageAlt: string;
-  region?: SourceRegion;
   note?: string;
   /** Where "Replace" / "Upload" go — the intake step of this draft. */
   uploadHref: string;
@@ -105,8 +86,8 @@ export function useSourceOpenState(): [boolean, (open: boolean) => void] {
 }
 
 /**
- * "Where did this value come from?" — the uploaded document with the read region
- * highlighted, plus the value box to correct a misread.
+ * The uploaded document beside the form, plus the value box for the field being checked
+ * against it.
  *
  * From `xl` it is a permanent column of the shell beside the form, so the form is pushed
  * rather than covered and the sticky footer keeps its own width. Below `xl` there is no
@@ -300,18 +281,6 @@ function SourcePanelBody(p: SourcePanelProps) {
               <MaximizeIcon data-icon="inline-start" aria-hidden />
               Enlarge
             </Button>
-            {p.field && p.region ? (
-              <div
-                aria-hidden
-                className="pointer-events-none absolute rounded-md border-2 border-primary bg-halo shadow-[0_0_0_9999px_var(--color-scrim)] transition-all"
-                style={{
-                  left: p.region.left,
-                  top: p.region.top,
-                  width: p.region.width,
-                  height: p.region.height,
-                }}
-              />
-            ) : null}
           </div>
         ) : (
           <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-lg bg-surface-sunken text-muted-foreground">

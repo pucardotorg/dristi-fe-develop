@@ -94,6 +94,13 @@ export const GENDER_OPTIONS: Option[] = [
   { value: "other", label: "Other" },
 ];
 
+/** The backend's code for each gender above (dristi-be `parties.models.Gender`). */
+export const GENDER_CODES: Record<string, string> = {
+  male: "MALE",
+  female: "FEMALE",
+  other: "OTHER",
+};
+
 export const ENTITY_TYPES: Option[] = [
   { value: "proprietorship", label: "Proprietorship" },
   { value: "partnership", label: "Partnership firm" },
@@ -127,6 +134,20 @@ export const ACCUSED_ENTITY_TYPES: Option[] = [
   { value: "llp", label: "LLP" },
   { value: "other", label: "Other entity" },
 ];
+
+/**
+ * The backend's code for each entity type in `ENTITY_TYPES` and `ACCUSED_ENTITY_TYPES`
+ * (dristi-be `parties.models.EntityType`). A new option needs a code here too.
+ */
+export const ENTITY_TYPE_CODES: Record<string, string> = {
+  proprietorship: "PROPRIETORSHIP",
+  partnership: "PARTNERSHIP_FIRM",
+  "private-limited": "PRIVATE_LIMITED_COMPANY",
+  "public-limited": "PUBLIC_LIMITED_COMPANY",
+  "society-trust": "SOCIETY_TRUST",
+  llp: "LLP",
+  other: "OTHER_ENTITY",
+};
 
 /* ───────────────────────────── Cheque & return memo ────────────────── */
 
@@ -173,6 +194,20 @@ export const NON_DELIVERY_REASONS: Option[] = [
   { value: "lost", label: "Item lost in transit" },
   { value: "other", label: "Other" },
 ];
+
+/**
+ * The backend's code for each reason in `NON_DELIVERY_REASONS` (`non_delivery_reason`).
+ * A new option needs a code here too.
+ */
+export const NON_DELIVERY_REASON_CODES: Record<string, string> = {
+  "not-available": "ADDRESSEE_NOT_AVAILABLE",
+  refused: "REFUSED",
+  incomplete: "ADDRESS_INCOMPLETE_OR_INCORRECT",
+  left: "LEFT_WITHOUT_INSTRUCTIONS",
+  unclaimed: "UNCLAIMED",
+  lost: "LOST_IN_TRANSIT",
+  other: "OTHER",
+};
 
 export const PAYMENT_STATUS: Option[] = [
   { value: "none", label: "No payment made" },

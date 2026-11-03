@@ -1,14 +1,13 @@
 /**
  * Persistence contract for the e-filing flow.
  *
- * Everything the screens store goes through this interface: drafts (the whole
- * `FilingDraft`), uploaded files (bytes + metadata), and the current person's profile.
- * The only implementation today is IndexedDB in the browser (`./indexeddb.ts`) — enough
- * for the flow to behave like a real app on one machine. The backend team replaces it
- * with an HTTP implementation of the same interface; screens do not change.
+ * Everything the screens keep in this browser goes through this interface: drafts (the
+ * whole `FilingDraft`) and uploaded files (bytes + metadata). The only implementation is
+ * IndexedDB (`./indexeddb.ts`). It is the working copy of a draft while sections move to
+ * the backend one by one (`./cases-api.ts`); it goes once the backend holds them all.
  */
 
-import type { FilingDraft, StoredFileRef, UserProfile } from "../types";
+import type { FilingDraft, StoredFileRef } from "../types";
 
 /** A stored upload: the reference the draft holds plus the bytes. */
 export type StoredFile = StoredFileRef & {
@@ -29,8 +28,4 @@ export interface FilingRepository {
   deleteFile(id: string): Promise<void>;
   /** Drop files no draft references any more (called after a draft is deleted). */
   deleteFiles(ids: string[]): Promise<void>;
-
-  /* Profile (the stand-in for the product session) */
-  getProfile(): Promise<UserProfile | null>;
-  putProfile(profile: UserProfile): Promise<void>;
 }

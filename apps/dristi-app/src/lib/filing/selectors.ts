@@ -13,6 +13,7 @@ import { WALK_ORDER } from "./steps";
 import type {
   Accused,
   Advocate,
+  CaseDocument,
   ChequeDetails,
   Complainant,
   DemandNotice,
@@ -20,6 +21,7 @@ import type {
   DocumentGroup,
   FilingDraft,
   Intake,
+  IntakeGroup,
   IntakeSlot,
   PhoneConfirmer,
   SignInstrument,
@@ -44,6 +46,45 @@ export function findIntakeSlot(intake: Intake, key: string): IntakeSlot | undefi
   return intakeSlots(intake).find((s) => s.key === key);
 }
 
+/** The slot a list-of-documents row mirrors. Keys gain a "-2" suffix after a remove/add. */
+export function resolveIntakeSlot(intake: Intake, key: string): IntakeSlot | undefined {
+  const slots = intakeSlots(intake);
+  return slots.find((s) => s.key === key) ?? slots.find((s) => s.key.startsWith(`${key}-`));
+}
+
+export function findDocumentRow(groups: DocumentGroup[], id: string): CaseDocument | undefined {
+  for (const group of groups) {
+    const row = group.docs.find((d) => d.id === id);
+    if (row) return row;
+  }
+  return undefined;
+}
+
+/**
+ * The list-of-documents row that mirrors an intake slot, if the list shows that slot.
+ * Exact: rows carry their slot's own key, and a prefix would read `c2f`'s row for `c2f-2`.
+ */
+export function rowForSlot(groups: DocumentGroup[], slotKey: string): CaseDocument | undefined {
+  for (const group of groups) {
+    const row = group.docs.find((d) => d.intakeKey === slotKey);
+    if (row) return row;
+  }
+  return undefined;
+}
+
+/**
+ * The list-of-documents group that holds a party's rows, found by the party's slot keys.
+ * Those stay with the party when one before it is removed; the group's id is its
+ * position (`complainant-2`), which does not.
+ */
+export function documentGroupForParty(
+  groups: DocumentGroup[],
+  party: IntakeGroup
+): DocumentGroup | undefined {
+  const keys = new Set(party.slots.map((s) => s.key));
+  return groups.find((g) => g.docs.some((d) => !!d.intakeKey && keys.has(d.intakeKey)));
+}
+
 /** Required-document progress for the intake step (supporting docs are optional). */
 export function intakeProgress(intake: Intake) {
   const required = [
@@ -61,11 +102,6 @@ export function intakeProgress(intake: Intake) {
 /** Files already uploaded at intake — feeds the sidebar count and the documents drawer. */
 export function uploadedIntakeSlots(intake: Intake): IntakeSlot[] {
   return intakeSlots(intake).filter((s) => !!s.file);
-}
-
-/** How many fields document reading filled from this slot. */
-export function extractedFieldCount(slot: IntakeSlot): number {
-  return slot.extract ? Object.keys(slot.extract.fields).length : 0;
 }
 
 /* ───────────────────────────── Parties ─────────────────────────────── */
@@ -154,10 +190,18 @@ export function accusedHasContact(a: Accused): boolean {
   return a.contacts.some((c) => c.mobile.trim() || c.email.trim());
 }
 
+/** The filer's no-contact declaration, which lapses once a phone or email is added. */
+export function accusedContactUnknownDeclared(a: Accused): boolean {
+  return !!a.contactUnknownDeclaredAt && !accusedHasContact(a);
+}
+
 export function complainantComplete(c: Complainant): boolean {
-  const named = c.type === "institution" ? !!c.entName.trim() : !!c.name.trim();
-  const addr = c.type === "institution" ? c.entAddr : c.res;
-  return named && !!c.mobile.trim() && !!addr.line1.trim() && cinPanAnswered(c);
+  const institution = c.type === "institution";
+  const named = institution ? !!c.entName.trim() : !!c.name.trim();
+  // An institution is reached through its representative; the form asks for no `mobile`.
+  const mobile = institution ? c.rep.mobile : c.mobile;
+  const addr = institution ? c.entAddr : c.res;
+  return named && !!mobile.trim() && !!addr.line1.trim() && cinPanAnswered(c);
 }
 
 /* ───────────────────────────── Case details ────────────────────────── */
@@ -544,7 +588,8 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
     case "advocate":
       return (
         draft.complainants.every((c) => c.pip === "yes") ||
-        draft.advocates.some((a) => a.barNumber.trim() && a.name.trim())
+        // Found through the search: only that gives the id that puts them on the case.
+        draft.advocates.some((a) => a.advocateId && a.barNumber.trim() && a.name.trim())
       );
     case "accused":
       return draft.accused.length > 0 && draft.accused.every(accusedComplete);
@@ -661,24 +706,6 @@ export function partySourceSlot(
   docType: "id-proof" | "poa" | "vakalatnama"
 ): IntakeSlot | undefined {
   return draft.intake.parties[index]?.slots.find((s) => s.docType === docType);
-}
-
-/**
- * Which field the source panel should land on for a document: the first one, in the
- * screen's own order, that reading actually found a value for.
- *
- * Landing on a fixed field instead means the panel can open on something nothing was read
- * for — an empty "value used in this field" box beside a document with no region marked,
- * which reads as a broken panel rather than as "we didn't find this one".
- */
-export function firstReadField<T extends string>(
-  slot: IntakeSlot | undefined,
-  order: readonly T[],
-  fallback: T
-): T {
-  const fields = slot?.extract?.fields;
-  if (!fields) return fallback;
-  return order.find((key) => fields[key]?.value) ?? fallback;
 }
 
 /* ───────────────────────────── Court fees ──────────────────────────── */

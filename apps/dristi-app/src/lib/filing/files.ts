@@ -75,6 +75,12 @@ export function forgetFile(id: string) {
   pageCache.delete(id);
 }
 
+/** Drop a stored file for good: its cached previews here and its bytes in the file store. */
+export function discardStoredFile(id: string) {
+  forgetFile(id);
+  void getRepository().deleteFile(id);
+}
+
 const urlCache = new Map<string, string>();
 
 /** Object URL for the raw bytes (images render directly; PDFs open in an iframe). */

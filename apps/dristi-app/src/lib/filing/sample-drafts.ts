@@ -223,7 +223,7 @@ export function buildSampleDraft(sample: Sample, today: string): FilingDraft {
   if (sample.reach === "cheque" || sample.reach === "notice") return d;
 
   const secondCheque = blankCheque();
-  d.cheques.push({ ...cheque, id: secondCheque.id, prefilled: {}, edited: {}, chequeNumber: "447163", amount: "85000", sameAsPrev: "yes" });
+  d.cheques.push({ ...cheque, id: secondCheque.id, chequeNumber: "447163", amount: "85000", sameAsPrev: "yes" });
   d.jurisdiction.deposited = "yes";
   d.jurisdiction.ifsc = "SBIN0070123";
   d.jurisdiction.payeeBankName = "State Bank of India";

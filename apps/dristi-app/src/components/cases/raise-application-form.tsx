@@ -1,6 +1,6 @@
 "use client";
 
-import { bailDialog } from "@/lib/filing/content";
+import { bailDialog } from "@/lib/bail/content";
 import { pick } from "@/lib/onboarding/content";
 import { useCallback, useId, useMemo, useRef, useState } from "react";
 import { FilePenLineIcon } from "lucide-react";

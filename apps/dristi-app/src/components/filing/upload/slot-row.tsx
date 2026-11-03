@@ -5,8 +5,8 @@
  *
  * The DS `DocumentSlot` is the row; everything here composes *around* it rather than
  * restyling it. The slot's `label` takes a ReactNode, so the guidance ("The memo your
- * bank issued when this cheque bounced.") and the read status both live *inside* the row
- * as quiet lines under the title. Nothing about a row's state floats underneath it as an
+ * bank issued when this cheque bounced.") lives *inside* the row as a quiet line under
+ * the title. Nothing about a row's state floats underneath it as an
  * orphan paragraph — that is what used to leave the re-upload button aligned to nothing.
  *
  * Every action sits in one right-aligned cluster at the end of the row, delete always
@@ -15,7 +15,7 @@
  */
 
 import * as React from "react";
-import { CircleCheckIcon, RefreshCwIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 
 import { formatBytes } from "@/lib/filing/files";
 import { defectState } from "@/lib/tasks/defects";
@@ -23,25 +23,15 @@ import { cn } from "@/lib/utils";
 import type { IntakeSlot } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
 import { DocumentSlot } from "@/components/ui/document-slot";
-import { Progress } from "@/components/ui/progress";
 import { useCorrection } from "@/components/filing/posture";
 import { SlotThumbnail } from "@/components/filing/upload/thumbnail";
-import { readOutcome, readToneClass } from "@/components/filing/upload/read-status";
 import {
   useDropTarget,
   type DroppedFiles,
 } from "@/components/filing/upload/use-drop-target";
 
-/**
- * The DS status variant. Never `filled-poor`: that variant forces the "Poor scan" badge,
- * and low confidence is not the outcome — a poor scan that filled seven fields is a read,
- * not a failure. What reading produced is said in words on the row's status line, which
- * is the row's single status cue. See `read-status.ts`.
- */
-function slotStatus(
-  slot: IntakeSlot
-): "processing" | "filled" | "empty" | "empty-optional" {
-  if (slot.processing) return "processing";
+/** The DS status variant. */
+function slotStatus(slot: IntakeSlot): "filled" | "empty" | "empty-optional" {
   if (slot.file) return "filled";
   return slot.required ? "empty" : "empty-optional";
 }
@@ -99,17 +89,7 @@ export function IntakeSlotRow({
   }, [register, defect, slot.key, onChoose]);
 
   const status = slotStatus(slot);
-  const pct = Math.round(slot.progress ?? 0);
-  const showGuidance = !slot.file && !slot.processing && !!slot.desc;
-
-  const outcome = readOutcome(slot);
-  /* While the read is running the slot's meta line and the progress bar already say so;
-     a third "Reading…" line would be the same fact three times. In a correction round the
-     machine-read outcome ("nothing to pre-fill — type the details in the form") is intake
-     advice about a form that is now read-only, so it stands down entirely. */
-  const statusLine =
-    !correction && outcome && outcome.kind !== "reading" ? outcome : null;
-  const StatusIcon = statusLine?.tone === "success" ? CircleCheckIcon : TriangleAlertIcon;
+  const showGuidance = !slot.file && !!slot.desc;
 
   const body = (
     <div
@@ -149,29 +129,10 @@ export function IntakeSlotRow({
               {showGuidance ? (
                 <span className="text-caption text-muted-foreground">{slot.desc}</span>
               ) : null}
-              {statusLine ? (
-                <span
-                  className={cn(
-                    "flex items-start gap-1.5 text-caption",
-                    readToneClass(statusLine.tone)
-                  )}
-                >
-                  {statusLine.tone === "muted" ? null : (
-                    <StatusIcon className="size-4 shrink-0" aria-hidden />
-                  )}
-                  <span>{statusLine.text}</span>
-                </span>
-              ) : null}
             </span>
           }
           filename={slot.file?.name}
-          meta={
-            slot.processing
-              ? `Reading document… ${pct}%`
-              : slot.file
-                ? formatBytes(slot.file.size)
-                : undefined
-          }
+          meta={slot.file ? formatBytes(slot.file.size) : undefined}
           thumbnail={
             slot.file ? (
               <SlotThumbnail file={slot.file} label={slot.label} onPreview={onPreview} />
@@ -201,25 +162,6 @@ export function IntakeSlotRow({
             row's actions is the same on every row whatever a row can do. */}
         {slot.file ? (
           <div className="flex shrink-0 items-center gap-1">
-            {/* A flagged row carries no action of its own. The sanctity that keeps a
-                flagged *field* read-only extends to documents: the scan the Registry saw
-                stays as it is on the row, and the replacement is made in the inset
-                beneath it (brief §15.4). The thumbnail still opens the full view. */}
-            {defect ? null : statusLine?.reupload ? (
-              /* Labelled where there is room; a 40×40 icon button on a phone, where a
-                 118px label would leave the status line about fifty pixels to wrap in.
-                 The accessible name carries the label at every width. */
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onChoose}
-                aria-label={`Re-upload ${slot.label}`}
-                className="max-sm:w-10 max-sm:gap-0 max-sm:px-0 max-sm:has-data-[icon=inline-start]:pl-0"
-              >
-                <RefreshCwIcon data-icon="inline-start" aria-hidden />
-                <span className="max-sm:sr-only">Re-upload</span>
-              </Button>
-            ) : null}
             {/* No delete in a correction round. Removing a filed document is not a way to
                 answer a defect — replacement is the only path — and an empty slot where
                 the Registry saw a document is a worse filing, not a corrected one. */}
@@ -238,10 +180,6 @@ export function IntakeSlotRow({
           </div>
         ) : null}
       </div>
-
-      {slot.processing ? (
-        <Progress value={pct} aria-label={`Reading ${slot.label}`} />
-      ) : null}
     </div>
   );
 

@@ -25,7 +25,7 @@ import {
   bailDialog,
   bondCopy,
   fillCopy,
-} from "@/lib/filing/content";
+} from "@/lib/bail/content";
 import { ADVOCATE_PROFILE_NAME } from "@/lib/advocate/content";
 
 /**

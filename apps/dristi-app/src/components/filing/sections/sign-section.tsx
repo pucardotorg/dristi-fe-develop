@@ -39,9 +39,10 @@ import {
   UploadIcon,
 } from "lucide-react";
 
+import { appUrl } from "@/lib/config";
 import { signingRules } from "@/lib/filing/config";
-import { getRepository, newCaseFileNumber, newPaymentRef } from "@/lib/filing/data";
-import { forgetFile } from "@/lib/filing/files";
+import { newCaseFileNumber, newPaymentRef } from "@/lib/filing/data";
+import { discardStoredFile } from "@/lib/filing/files";
 import { money, toLongDate } from "@/lib/filing/format";
 import {
   CHANNEL_FEE,
@@ -123,8 +124,7 @@ import { CourtDocument } from "@/components/filing/sections/preview/court-docume
 import { useFilePicker } from "@/components/filing/use-file-picker";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Identifier } from "@/components/chrome/identifier";
-==== BASE ====
-==== BASE ====
+import { useCourt, useCourtText } from "@/components/court/court-provider";
 
 type ModalKey =
   | "esign"
@@ -547,14 +547,8 @@ export function SignSection() {
       // exists takes its confirmations with it.
       d.sign.confirmed = {};
     });
-    if (copy) {
-      forgetFile(copy.id);
-      void getRepository().deleteFile(copy.id);
-    }
-    for (const id of oathFiles) {
-      forgetFile(id);
-      void getRepository().deleteFile(id);
-    }
+    if (copy) discardStoredFile(copy.id);
+    for (const id of oathFiles) discardStoredFile(id);
   };
 
   const confirmLeave = () => {
@@ -642,10 +636,7 @@ export function SignSection() {
       d.sign.confirmed = {};
       d.sign.signedCopy = null;
     });
-    if (copy) {
-      forgetFile(copy.id);
-      void getRepository().deleteFile(copy.id);
-    }
+    if (copy) discardStoredFile(copy.id);
     setDigitalSwitchOpen(false);
     openFlow("choose");
   };

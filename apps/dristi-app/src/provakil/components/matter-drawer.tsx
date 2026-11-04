@@ -22,7 +22,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 /** One matter, as the case workspace shows it. */
 export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () => void }) {
   const [tab, setTab] = React.useState<(typeof TABS)[number]>("Overview");
-  React.useEffect(() => setTab("Overview"), [row?.id]);
+  // Another matter opens on its overview: reset while rendering, not in an effect.
+  const [tabFor, setTabFor] = React.useState(row?.id);
+  if (row?.id !== tabFor) {
+    setTabFor(row?.id);
+    setTab("Overview");
+  }
   if (!row) return null;
   const m = row;
   const b = m.borrower;

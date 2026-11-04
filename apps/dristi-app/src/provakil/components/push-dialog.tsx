@@ -83,20 +83,23 @@ export function PushDialog({
   const [showJson, setShowJson] = React.useState(false);
   const [list, setList] = React.useState<Row[]>([]);
 
-  React.useEffect(() => {
-    if (!open) return;
-    setStep("court");
-    setAdvocates(null);
-    setLoadError(null);
-    setTicked(new Set());
-    setBulkTo("");
-    setSent([]);
-    setError(null);
-    setShowJson(false);
-    setList(rows);
-    // Rows are captured on open; the list behind refreshes after a send.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  // Each opening starts fresh: reset while rendering, not in an effect. Rows are captured
+  // on open; the list behind refreshes after a send.
+  const [wasOpen, setWasOpen] = React.useState(false);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setStep("court");
+      setAdvocates(null);
+      setLoadError(null);
+      setTicked(new Set());
+      setBulkTo("");
+      setSent([]);
+      setError(null);
+      setShowJson(false);
+      setList(rows);
+    }
+  }
 
   if (!open) return null;
 

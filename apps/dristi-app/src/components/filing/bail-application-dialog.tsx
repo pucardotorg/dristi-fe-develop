@@ -86,7 +86,9 @@ import {
   bailDialog,
   fillCopy,
 } from "@/lib/filing/content";
-import { ADVOCATE_PROFILE_NAME } from "@/lib/advocate/content";
+import { ADVOCATE_PROFILE_NAME, advDialog } from "@/lib/advocate/content";
+import { newPaymentRef } from "@/lib/filing/data";
+import { GATEWAY_MS, PaymentProcessing, PaymentReceipt } from "@/components/payment/payment-steps";
 import { cn } from "@/lib/utils";
 import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
 import { Identifier } from "@/components/chrome/identifier";
@@ -104,7 +106,15 @@ import { UploadedDocField as SharedUploadedDocField } from "@/components/cases/u
  * tasks, the same decision the join flow made for the vakalatnama fee.
  */
 
-type Stage = "details" | "sureties" | "review" | "sign" | "payment" | "done";
+type Stage =
+  | "details"
+  | "sureties"
+  | "review"
+  | "sign"
+  | "payment"
+  | "processing"
+  | "paid"
+  | "done";
 type YesNo = "yes" | "no";
 
 export type BailApplicationResult = {
@@ -425,7 +435,11 @@ export function BailApplicationDialog({
   const generateTimerRef = React.useRef<number | null>(null);
   const [reviewFullscreen, setReviewFullscreen] = React.useState(false);
 
-  const [signTab, setSignTab] = React.useState<"esign" | "upload">("esign");
+  // Office access never e-signs (OFC-06): the upload tab is the way.
+  const officeAccess = accessCase.viewerAccess === "office";
+  const [signTab, setSignTab] = React.useState<"esign" | "upload">(
+    officeAccess ? "upload" : "esign",
+  );
   const [signedFile, setSignedFile] = React.useState<File | null>(null);
   const [esigned, setEsigned] = React.useState(false);
   const [signTouched, setSignTouched] = React.useState(false);
@@ -464,7 +478,7 @@ export function BailApplicationDialog({
     setReviewFullscreen(false);
     if (generateTimerRef.current !== null) window.clearTimeout(generateTimerRef.current);
     generateTimerRef.current = null;
-    setSignTab("esign");
+    setSignTab(officeAccess ? "upload" : "esign");
     setSignedFile(null);
     setEsigned(false);
     setSignTouched(false);
@@ -624,7 +638,14 @@ export function BailApplicationDialog({
           ? { title: pick(bailDialog.reviewTitle, locale), body: pick(bailDialog.reviewBody, locale) }
           : stage === "sign"
             ? { title: pick(bailDialog.signTitle, locale), body: pick(bailDialog.signBody, locale) }
-            : { title: pick(bailDialog.payTitle, locale), body: pick(bailDialog.payBody, locale) };
+            : stage === "processing"
+              ? {
+                  title: pick(advDialog.payProcessingTitle, locale),
+                  body: pick(advDialog.payProcessingBody, locale),
+                }
+              : stage === "paid"
+                ? { title: pick(advDialog.paidTitle, locale), body: pick(bailDialog.paidBody, locale) }
+                : { title: pick(bailDialog.payTitle, locale), body: pick(bailDialog.payBody, locale) };
 
   // Each stage arrives scrolled to its top; without this the container keeps
   // the previous stage's scroll offset and the new stage opens mid-form.
@@ -639,7 +660,10 @@ export function BailApplicationDialog({
       <FlowDialogContent
         ownBack
         lang={locale}
-        className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
+        className={cn(
+          "flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl",
+          stage === "processing" && "[&_[data-slot=dialog-close]]:hidden",
+        )}
         onInteractOutside={(event) => event.preventDefault()}
       >
         {stage === "done" ? (

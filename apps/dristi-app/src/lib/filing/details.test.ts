@@ -52,11 +52,36 @@ describe("jurisdictionReady", () => {
     assert.equal(jurisdictionReady(filledJurisdiction({ ...notDeposited, drawerPolice: "Fort" }), CAUSE, FILING), true);
     assert.equal(jurisdictionReady(filledJurisdiction({ ...notDeposited, drawerPolice: "" }), CAUSE, FILING), false);
   });
+
+  it("needs every listed other complaint filled when another complaint is pending", () => {
+    const base = { otherPending: "yes" as const };
+    // A pending complaint with no complete entry is not ready (backend requires at least one).
+    assert.equal(
+      jurisdictionReady(filledJurisdiction({ ...base, otherCases: [{ court: "", caseNumber: "" }] }), CAUSE, FILING),
+      false
+    );
+    // A half-filled entry holds the section back.
+    assert.equal(
+      jurisdictionReady(filledJurisdiction({ ...base, otherCases: [{ court: "Munsiff", caseNumber: "" }] }), CAUSE, FILING),
+      false
+    );
+    // One complete entry is ready.
+    assert.equal(
+      jurisdictionReady(filledJurisdiction({ ...base, otherCases: [{ court: "Munsiff", caseNumber: "CC/12/2024" }] }), CAUSE, FILING),
+      true
+    );
+  });
 });
 
 describe("jurisdictionSectionBody", () => {
   it("builds the full section with the payee's police station when the payee deposited", () => {
-    assert.deepEqual(jurisdictionSectionBody(filledJurisdiction({ otherPending: "yes" }), CAUSE, FILING, false), {
+    const body = jurisdictionSectionBody(
+      filledJurisdiction({ otherPending: "yes", otherCases: [{ court: "Munsiff", caseNumber: "CC/12/2024" }] }),
+      CAUSE,
+      FILING,
+      false
+    );
+    assert.deepEqual(body, {
       cheque_deposited_by_payee: true,
       other_complaints_pending: true,
       cause_of_action_date: CAUSE,
@@ -65,7 +90,14 @@ describe("jurisdictionSectionBody", () => {
       payee_bank_name: "HDFC Bank",
       payee_bank_branch: "Kochi",
       payee_bank_police_station: "Ernakulam Central",
+      other_complaints: [{ court: "Munsiff", case_number: "CC/12/2024" }],
     });
+  });
+
+  it("omits other_complaints when no other complaint is pending", () => {
+    const body = jurisdictionSectionBody(filledJurisdiction({ otherPending: "no" }), CAUSE, FILING, false);
+    assert.ok(body);
+    assert.ok(!("other_complaints" in body));
   });
 
   it("sends the drawer's police station (no payee bank block) when not deposited", () => {

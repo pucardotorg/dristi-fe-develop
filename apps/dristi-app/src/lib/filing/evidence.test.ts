@@ -49,9 +49,13 @@ describe("returnReasonValue", () => {
     assert.equal(returnReasonValue("stale-cheque"), "POST_DATED_OR_STALE");
   });
 
-  it("returns null for a reason the backend enum does not have yet (B1)", () => {
-    assert.equal(returnReasonValue("signature-differs"), null);
-    assert.equal(returnReasonValue("amount-mismatch"), null);
+  it("maps the two reasons the backend enum recently gained (B1)", () => {
+    assert.equal(returnReasonValue("signature-differs"), "SIGNATURE_DIFFERS");
+    assert.equal(returnReasonValue("amount-mismatch"), "AMOUNT_MISMATCH");
+  });
+
+  it("returns null for an unknown code", () => {
+    assert.equal(returnReasonValue("not-a-reason"), null);
   });
 });
 
@@ -154,8 +158,10 @@ describe("returnMemoReady", () => {
     assert.equal(returnMemoReady(filledCheque()), true);
     assert.equal(returnMemoReady(filledCheque({ returnReason: "" })), false);
     assert.equal(returnMemoReady(filledCheque({ presentDate: "" })), false);
-    // A reason the backend enum does not have yet (B1) holds the memo back.
-    assert.equal(returnMemoReady(filledCheque({ returnReason: "signature-differs" })), false);
+    // Both signature-differs and amount-mismatch now have backend values (B1), so a memo
+    // using them is ready to save.
+    assert.equal(returnMemoReady(filledCheque({ returnReason: "signature-differs" })), true);
+    assert.equal(returnMemoReady(filledCheque({ returnReason: "amount-mismatch" })), true);
   });
 });
 
@@ -209,6 +215,11 @@ describe("demandNoticeEvidenceInfo", () => {
     assert.ok(!("delivery_date" in info));
   });
 
+  it("maps the 'address incomplete' reason to the backend enum value (B3)", () => {
+    const info = demandNoticeEvidenceInfo(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "incomplete" }));
+    assert.equal(info.non_delivery_reason, "ADDRESS_INCOMPLETE_OR_INCORRECT");
+  });
+
   it("sends part_payment_amount as a number for a part payment", () => {
     const info = demandNoticeEvidenceInfo(filledNotice({ paymentStatus: "part", partAmount: "2,500" }));
     assert.equal(info.payment_status, "PART_PAYMENT");
@@ -240,8 +251,8 @@ describe("demandNoticeReady", () => {
   it("requires a return date and a backend-known reason when undelivered", () => {
     assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, returnDate: "" })), false);
     assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "" })), false);
-    // "address incomplete" has no backend enum value yet (B3), so it holds the notice back.
-    assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "incomplete" })), false);
+    // "address incomplete" now has a backend enum value (B3), so it no longer holds the notice back.
+    assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "incomplete" })), true);
   });
 
   it("requires a valid amount for a part payment", () => {

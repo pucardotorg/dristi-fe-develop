@@ -14,8 +14,23 @@ import { IFSC_PATTERN } from "./lookups";
 import { limitationView } from "./selectors";
 import type { AdrPrayer, FilingDraft, Jurisdiction } from "./types";
 
+/** One other pending S.138 complaint between the same parties, as the backend stores it. */
+export type OtherComplaintBody = { court: string; case_number: string };
+
 /** A details section body, as the backend's section schema expects it. */
-export type DetailsSectionBody = Record<string, string | number | boolean>;
+export type DetailsSectionBody = Record<string, string | number | boolean | OtherComplaintBody[]>;
+
+/**
+ * The completed other-pending complaints to send, each trimmed. A complaint counts only when
+ * both its court and case number are filled; the backend requires at least one when
+ * `other_complaints_pending` is true, and rejects an empty/whitespace value, so blank rows
+ * are left out.
+ */
+export function otherComplaintsBody(j: Jurisdiction): OtherComplaintBody[] {
+  return j.otherCases
+    .filter((c) => c.court.trim() && c.caseNumber.trim())
+    .map((c) => ({ court: c.court.trim(), case_number: c.caseNumber.trim() }));
+}
 
 /** Whether rich-text (HTML) editor output has any real content, not just empty markup. */
 export function richTextHasContent(html: string): boolean {
@@ -30,6 +45,10 @@ export function richTextHasContent(html: string): boolean {
 export function jurisdictionReady(j: Jurisdiction, causeDate: string, filingDate: string): boolean {
   // Both the cause-of-action and complaint filing dates are required by the section.
   if (!causeDate || !filingDate) return false;
+  // When another complaint is pending, the backend requires at least one with a court and
+  // case number, so every listed complaint must be filled in before the section can save.
+  if (j.otherPending === "yes" && otherComplaintsBody(j).length !== j.otherCases.length) return false;
+  if (j.otherPending === "yes" && otherComplaintsBody(j).length === 0) return false;
   // The police station of the branch that grounds jurisdiction is always required: the
   // payee's when they deposited the cheque, otherwise the drawer's.
   const policeStation = j.deposited === "yes" ? j.payeePolice : j.drawerPolice;
@@ -52,9 +71,8 @@ export function jurisdictionReady(j: Jurisdiction, causeDate: string, filingDate
  * The police station is split by whose branch grounds jurisdiction: the payee's collecting
  * branch when they deposited the cheque (sent with their bank details), otherwise the
  * drawer's. The condonation reason is sent only when the complaint is filed late, since that
- * is the only time the backend's completeness check requires it. The other-pending
- * complaints' court/case numbers still have no home in the schema, so they are not sent (see
- * the jurisdiction integration tracker).
+ * is the only time the backend's completeness check requires it. When another complaint is
+ * pending, each one's court and case number is sent in `other_complaints`.
  */
 export function jurisdictionSectionBody(
   j: Jurisdiction,
@@ -64,9 +82,10 @@ export function jurisdictionSectionBody(
 ): DetailsSectionBody | null {
   if (!jurisdictionReady(j, causeDate, filingDate)) return null;
   const deposited = j.deposited === "yes";
+  const pending = j.otherPending === "yes";
   const body: DetailsSectionBody = {
     cheque_deposited_by_payee: deposited,
-    other_complaints_pending: j.otherPending === "yes",
+    other_complaints_pending: pending,
     cause_of_action_date: causeDate,
     complaint_filing_date: filingDate,
   };
@@ -78,6 +97,7 @@ export function jurisdictionSectionBody(
   } else {
     body.drawer_bank_police_station = j.drawerPolice.trim();
   }
+  if (pending) body.other_complaints = otherComplaintsBody(j);
   if (late && j.condonationReason.trim()) body.condonation_reason = j.condonationReason.trim();
   return body;
 }

@@ -13,6 +13,7 @@
  */
 
 import { IFSC_PATTERN } from "./lookups";
+import { NON_DELIVERY_REASON_CODES } from "./options";
 import type { ChequeDetails, DemandNotice } from "./types";
 
 /** Evidence types this module builds (spec 0021 §5.2). */
@@ -65,10 +66,9 @@ export function chequeAmount(amount: string): number | null {
 }
 
 /**
- * The local return-reason code mapped to the backend's `ReturnReason` enum value. The two
- * design options "signature differs" and "amount in words/figures differ" have no backend
- * value yet (tracker B1), so they map to `null` and a memo using them is not sent until the
- * enum is extended.
+ * The local return-reason code mapped to the backend's `ReturnReason` enum value. Every
+ * design option now has a backend value (the enum gained `SIGNATURE_DIFFERS` and
+ * `AMOUNT_MISMATCH`), so an unknown code maps to `null` only as a defensive fallback.
  */
 const RETURN_REASON_VALUE: Record<string, string> = {
   "funds-insufficient": "FUNDS_INSUFFICIENT",
@@ -77,6 +77,8 @@ const RETURN_REASON_VALUE: Record<string, string> = {
   "payment-stopped": "PAYMENT_STOPPED_BY_DRAWER",
   "refer-to-drawer": "REFER_TO_DRAWER",
   "stale-cheque": "POST_DATED_OR_STALE",
+  "signature-differs": "SIGNATURE_DIFFERS",
+  "amount-mismatch": "AMOUNT_MISMATCH",
 };
 
 export function returnReasonValue(code: string): string | null {
@@ -158,21 +160,12 @@ const MODE_OF_SERVICE_VALUE: Record<string, string> = {
 };
 
 /**
- * Local non-delivery-reason code → backend `NonDeliveryReason` enum value. "Address
- * incomplete / incorrect" has no backend value yet (tracker B3), so it maps to `null` and a
- * notice using it is held back until the enum is extended.
+ * Local non-delivery-reason code → backend `NonDeliveryReason` enum value. Every design
+ * option now has a backend value, so an unknown code maps to `null` only as a defensive
+ * fallback. The map itself lives next to the option list in `options.ts`.
  */
-const NON_DELIVERY_REASON_VALUE: Record<string, string> = {
-  "not-available": "ADDRESSEE_NOT_AVAILABLE",
-  refused: "REFUSED",
-  left: "LEFT_WITHOUT_INSTRUCTIONS",
-  unclaimed: "UNCLAIMED",
-  lost: "LOST_IN_TRANSIT",
-  other: "OTHER",
-};
-
 export function nonDeliveryReasonValue(code: string): string | null {
-  return NON_DELIVERY_REASON_VALUE[code] ?? null;
+  return NON_DELIVERY_REASON_CODES[code] ?? null;
 }
 
 /**

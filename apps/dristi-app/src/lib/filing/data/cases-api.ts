@@ -4,7 +4,8 @@
  *   startDraft          POST   /cases                       { case_type }  → draft_session_id
  *   uploadDocument      POST   /cases/{id}/documents        multipart: file, document_type,
  *                                                            is_digital?, display_name?,
- *                                                            case_participant_id?
+ *                                                            case_participant_id?,
+ *                                                            case_evidence_id?
  *   updateDocument      PATCH  /case-documents/{case_document_id}  link and details
  *   deleteDocument      DELETE /case-documents/{case_document_id}
  *   addParty            POST   /cases/{id}/complainants | /accused | /witnesses
@@ -33,6 +34,12 @@ const E_CASE_SUBMITTED = "E07001";
 const E_TYPE_NOT_ACCEPTED = "E07002";
 /** The person is already a witness for this side (was E07017). */
 const E_WITNESS_EXISTS = "E07032";
+/** A notice paper linked to evidence that is not a demand notice. */
+const E_NOT_A_NOTICE = "E07029";
+/** A scan sent with `case_evidence_id`: it is linked from its evidence row instead. */
+const E_EVIDENCE_LINK_NOT_ALLOWED = "E07030";
+/** No active evidence with that id on the case — wrong id, or the evidence was removed. */
+const E_EVIDENCE_NOT_ON_CASE = "E07031";
 
 /** Scans can be large and connections slow; the proxy allows 60 s per hop. */
 const UPLOAD_TIMEOUT_MS = 60_000;
@@ -85,11 +92,18 @@ export type CaseDocumentMeta = {
    * vakalatnama or PoA document.
    */
   caseParticipantId?: string;
+  /**
+   * The demand notice's evidence row a notice paper belongs to: its proof of dispatch,
+   * proof of delivery or reply. A scan (cheque, return memo, notice) never takes this —
+   * its evidence row links to it instead (`updateEvidence`).
+   */
+  caseEvidenceId?: string;
 };
 
 /** A change to a saved document. A field left out is kept; `null` removes it. */
 export type CaseDocumentPatch = {
   case_participant_id?: string | null;
+  case_evidence_id?: string | null;
   is_digital?: boolean | null;
   display_name?: string | null;
 };
@@ -102,6 +116,7 @@ export function documentPatch(meta: CaseDocumentMeta): CaseDocumentPatch {
     patch.display_name = meta.displayName?.trim() || null;
   if ("caseParticipantId" in meta)
     patch.case_participant_id = meta.caseParticipantId ?? null;
+  if ("caseEvidenceId" in meta) patch.case_evidence_id = meta.caseEvidenceId ?? null;
   return patch;
 }
 
@@ -294,6 +309,12 @@ export function caseFilingErrorMessage(error: unknown): string {
   if (error.hasCode(E_WITNESS_EXISTS)) {
     return "This person is already a witness for this side.";
   }
+  if (error.hasCode(E_EVIDENCE_NOT_ON_CASE)) {
+    return "The demand notice this belongs to is no longer on the case. Save the demand notice step again, then try again.";
+  }
+  if (error.hasCode(E_NOT_A_NOTICE) || error.hasCode(E_EVIDENCE_LINK_NOT_ALLOWED)) {
+    return "This document couldn't be attached to its demand notice. Please try again.";
+  }
   if (error.status === 401 || error.status === 403) {
     return "Your session has ended. Sign in again to keep saving this filing.";
   }
@@ -333,6 +354,7 @@ export function createCaseFilingApi(client: ApiClient = api) {
       if (displayName) form.append("display_name", displayName);
       if (meta.caseParticipantId)
         form.append("case_participant_id", meta.caseParticipantId);
+      if (meta.caseEvidenceId) form.append("case_evidence_id", meta.caseEvidenceId);
       const body = await client.post<CaseDocumentBody>(
         `cases/${encodeURIComponent(caseId)}/documents`,
         form,

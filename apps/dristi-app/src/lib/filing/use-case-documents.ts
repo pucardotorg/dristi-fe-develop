@@ -18,11 +18,12 @@ import {
   caseUploadFor,
   findSynced,
   pendingLinks,
+  scanEvidenceId,
   targetId,
   type DocumentsDraft,
   type DocumentTarget,
-  type ParticipantIdOf,
   type PendingLink,
+  type SavedIds,
   type UnsavedDocument,
 } from "./case-documents";
 import {
@@ -91,38 +92,43 @@ function nextRun(draft: Pick<FilingDraft, "id">, target: DocumentTarget): () => 
 
 /**
  * Everything the case should hold for a saved document — its details and, once known,
- * its participant — so a patch that succeeds leaves nothing earlier still to send.
+ * its participant or notice — so a patch that succeeds leaves nothing earlier still to send.
  */
 function fullPatch(draft: DocumentsDraft, target: DocumentTarget, meta?: CaseDocumentMeta) {
-  const { caseParticipantId, ...details } = {
+  const { caseParticipantId, caseEvidenceId, ...details } = {
     ...caseUploadFor(draft, target)?.meta,
     ...meta,
   };
-  // An unknown participant is left alone, not unlinked: it is linked once saved.
-  return documentPatch(caseParticipantId ? { ...details, caseParticipantId } : details);
+  // An unknown participant or notice is left alone, not unlinked: it is linked once saved.
+  return documentPatch({
+    ...details,
+    ...(caseParticipantId ? { caseParticipantId } : {}),
+    ...(caseEvidenceId ? { caseEvidenceId } : {}),
+  });
 }
 
-/** Links being sent, by document and participant, so two passes never send one twice. */
+/** Links being sent, by document and owner, so two passes never send one twice. */
 const linking = new Set<string>();
 
 /**
- * Link one saved document to its participant, with its details. A failure is reported on
- * the document; trying it again uploads it with the link.
+ * Link one saved document to its participant or notice, with its details. A failure is
+ * reported on the document; trying it again uploads it with the link.
  */
 async function linkDocument(latest: () => FilingDraft, update: DraftUpdate, link: PendingLink) {
-  const key = `${link.caseDocumentId}:${link.participantId}`;
+  const key = `${link.caseDocumentId}:${link.participantId ?? link.evidenceId}`;
   if (linking.has(key)) return;
   linking.add(key);
   // Only the copy that was linked: a replaced file goes up with its own link.
   const sameCopy = (r: SyncedFile) => r.caseDocumentId === link.caseDocumentId;
+  const meta: CaseDocumentMeta = link.participantId
+    ? { caseParticipantId: link.participantId }
+    : { caseEvidenceId: link.evidenceId };
   try {
-    await caseFilingApi.updateDocument(
-      link.caseDocumentId,
-      fullPatch(latest(), link.target, { caseParticipantId: link.participantId })
-    );
+    await caseFilingApi.updateDocument(link.caseDocumentId, fullPatch(latest(), link.target, meta));
     patchSynced(update, link.target, (r) => {
       if (!sameCopy(r)) return;
-      r.linkedParticipantId = link.participantId;
+      if (link.participantId) r.linkedParticipantId = link.participantId;
+      else r.linkedEvidenceId = link.evidenceId;
       r.syncError = undefined;
     });
   } catch (error) {
@@ -135,17 +141,17 @@ async function linkDocument(latest: () => FilingDraft, update: DraftUpdate, link
 }
 
 /**
- * Link complainants' saved documents to their participants — run after the complainant
- * step saves, since a document is often uploaded before its complainant is on the case.
- * Each link is its own request, so they go together.
+ * Link saved documents to their complainants and notices — run after the complainant or
+ * demand notice step saves, since a document is often uploaded before what it belongs to
+ * is on the case. Each link is its own request, so they go together.
  */
-export async function linkPartyDocuments(
+export async function linkSavedDocuments(
   latest: () => FilingDraft,
   update: DraftUpdate,
-  participantIdOf?: ParticipantIdOf
+  saved?: SavedIds
 ): Promise<void> {
   await Promise.all(
-    pendingLinks(latest(), participantIdOf).map((link) => linkDocument(latest, update, link))
+    pendingLinks(latest(), saved).map((link) => linkDocument(latest, update, link))
   );
 }
 
@@ -180,6 +186,18 @@ function clearCaseDocument(record: SyncedFile) {
   record.syncing = false;
   record.syncError = undefined;
   record.linkedParticipantId = undefined;
+  record.linkedEvidenceId = undefined;
+}
+
+/**
+ * Point a saved evidence row at its new scan — for a cheque, return memo or notice scan
+ * uploaded after its row was saved. A failure is left to the step's next save, which
+ * sends the scan again.
+ */
+function linkScan(evidenceId: string, caseDocumentId: string) {
+  caseFilingApi.updateEvidence(evidenceId, { caseDocumentId }).catch((error) => {
+    console.warn("[filing] couldn't link a scan to its evidence", evidenceId, error);
+  });
 }
 
 export function useCaseDocuments(): CaseDocuments {
@@ -221,14 +239,22 @@ export function useCaseDocuments(): CaseDocuments {
           r.syncing = false;
           r.caseDocumentId = saved.caseDocumentId;
           r.linkedParticipantId = sent.caseParticipantId;
+          r.linkedEvidenceId = sent.caseEvidenceId;
         });
-        // The complainant may have been saved while this was uploading — read from the
-        // store, which stays current after this step has closed.
-        const owner = caseUploadFor(latest(), target)?.meta.caseParticipantId;
-        if (owner && owner !== sent.caseParticipantId) {
-          const link = { target, caseDocumentId: saved.caseDocumentId, participantId: owner };
+        // The complainant or notice may have been saved while this was uploading — read
+        // from the store, which stays current after this step has closed.
+        const now = caseUploadFor(latest(), target)?.meta;
+        const { caseDocumentId } = saved;
+        if (now?.caseParticipantId && now.caseParticipantId !== sent.caseParticipantId) {
+          const link = { target, caseDocumentId, participantId: now.caseParticipantId };
           void linkDocument(latest, update, link);
         }
+        if (now?.caseEvidenceId && now.caseEvidenceId !== sent.caseEvidenceId) {
+          const link = { target, caseDocumentId, evidenceId: now.caseEvidenceId };
+          void linkDocument(latest, update, link);
+        }
+        const scanOf = target.kind === "slot" ? scanEvidenceId(latest(), target.key) : undefined;
+        if (scanOf) linkScan(scanOf, caseDocumentId);
       } catch (error) {
         if (!stillHere()) return;
         patch(target, (r) => {
@@ -338,6 +364,7 @@ export function useCaseDocuments(): CaseDocuments {
           if (r.caseDocumentId !== caseDocumentId) return;
           r.syncError = undefined;
           if (sent.case_participant_id) r.linkedParticipantId = sent.case_participant_id;
+          if (sent.case_evidence_id) r.linkedEvidenceId = sent.case_evidence_id;
         });
       } catch (error) {
         patch(target, (r) => {

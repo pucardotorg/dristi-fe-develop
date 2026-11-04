@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   blankCheque,
   blankComplainant,
+  blankNotice,
   buildDocumentGroups,
   createBlankDraft,
   removeCaseRecord,
@@ -14,11 +15,18 @@ import {
   caseUploadFor,
   findSynced,
   pendingLinks,
+  scanEvidenceId,
   targetForRow,
   unsavedDocuments,
   unsavedRows,
 } from "./case-documents";
-import type { CaseDocument, FilingDraft, StoredFileRef } from "./types";
+import type {
+  CaseDocument,
+  FilingDraft,
+  IntakeDocType,
+  IntakeSlot,
+  StoredFileRef,
+} from "./types";
 
 const FILE: StoredFileRef = { id: "f1", name: "scan.pdf", size: 10, type: "application/pdf", ext: "PDF" };
 
@@ -177,9 +185,96 @@ describe("complainant document links", () => {
     vakalatnama.caseDocumentId = "d-vak";
     vakalatnama.linkedParticipantId = "p-old";
     assert.deepEqual(
-      pendingLinks(draft, () => "p-new").map((l) => [l.caseDocumentId, l.participantId]),
+      pendingLinks(draft, { participantIdOf: () => "p-new" }).map((l) => [
+        l.caseDocumentId,
+        l.participantId,
+      ]),
       [["d-vak", "p-new"]]
     );
+  });
+});
+
+describe("demand notice papers and scans", () => {
+  /** A draft with two notices, its list of documents built as the store builds it. */
+  function twoNoticeDraft(): FilingDraft {
+    const draft = createBlankDraft("draft-notices");
+    draft.notices.push(blankNotice());
+    syncIntakeCounts(draft);
+    draft.documents = buildDocumentGroups(draft);
+    return draft;
+  }
+
+  function slotOf(draft: FilingDraft, notice: number, docType: IntakeDocType): IntakeSlot {
+    const slot = draft.intake.notices[notice].slots.find((s) => s.docType === docType);
+    assert.ok(slot, `notice ${notice + 1} has no ${docType}`);
+    return slot;
+  }
+
+  it("uploads each notice's papers linked to that notice, once it is saved", () => {
+    const draft = twoNoticeDraft();
+    draft.notices[0].noticeEvidenceId = "ev-1";
+    draft.notices[1].noticeEvidenceId = "ev-2";
+    for (const docType of ["dispatch-proof", "delivery-proof", "notice-reply"] as const) {
+      const first = caseUploadFor(draft, { kind: "slot", key: slotOf(draft, 0, docType).key });
+      const second = caseUploadFor(draft, { kind: "slot", key: slotOf(draft, 1, docType).key });
+      assert.equal(first?.meta.caseEvidenceId, "ev-1", docType);
+      assert.equal(second?.meta.caseEvidenceId, "ev-2", docType);
+    }
+  });
+
+  it("leaves the link out until the notice is on the case", () => {
+    const draft = twoNoticeDraft();
+    const key = slotOf(draft, 0, "delivery-proof").key;
+    assert.equal(caseUploadFor(draft, { kind: "slot", key })?.meta.caseEvidenceId, undefined);
+  });
+
+  it("never sends a scan with case_evidence_id", () => {
+    const draft = twoNoticeDraft();
+    draft.notices[0].noticeEvidenceId = "ev-1";
+    draft.cheques[0].chequeEvidenceId = "ev-chq";
+    const scans = [slotOf(draft, 0, "demand-notice").key, "c1f", "c1m"];
+    for (const key of scans) {
+      const meta = caseUploadFor(draft, { kind: "slot", key })?.meta;
+      assert.equal(meta && "caseEvidenceId" in meta, false, key);
+    }
+  });
+
+  it("lists saved papers not yet linked to their notice, and relinks on a new id", () => {
+    const draft = twoNoticeDraft();
+    const delivery = slotOf(draft, 0, "delivery-proof");
+    delivery.caseDocumentId = "d-pod";
+    const dispatch = slotOf(draft, 0, "dispatch-proof");
+    dispatch.caseDocumentId = "d-dispatch";
+    dispatch.linkedEvidenceId = "ev-1";
+    // Notice 2 is not saved, so its paper waits.
+    slotOf(draft, 1, "delivery-proof").caseDocumentId = "d-pod-2";
+    draft.notices[0].noticeEvidenceId = "ev-1";
+
+    assert.deepEqual(pendingLinks(draft), [
+      { target: { kind: "slot", key: delivery.key }, caseDocumentId: "d-pod", evidenceId: "ev-1" },
+    ]);
+    // Ids just saved, before the draft holds them: notice 1 was saved again as ev-9.
+    assert.deepEqual(
+      pendingLinks(draft, { evidenceIdOf: (n) => (n.id === draft.notices[0].id ? "ev-9" : undefined) })
+        .map((l) => [l.caseDocumentId, l.evidenceId]),
+      [
+        ["d-dispatch", "ev-9"],
+        ["d-pod", "ev-9"],
+      ]
+    );
+  });
+
+  it("names the evidence row that points at each scan", () => {
+    const draft = twoNoticeDraft();
+    draft.cheques[0].chequeEvidenceId = "ev-chq";
+    draft.cheques[0].returnMemoEvidenceId = "ev-memo";
+    draft.notices[1].noticeEvidenceId = "ev-n2";
+    assert.equal(scanEvidenceId(draft, "c1f"), "ev-chq");
+    assert.equal(scanEvidenceId(draft, "c1m"), "ev-memo");
+    assert.equal(scanEvidenceId(draft, slotOf(draft, 1, "demand-notice").key), "ev-n2");
+    assert.equal(scanEvidenceId(draft, slotOf(draft, 0, "demand-notice").key), undefined);
+    // A notice paper is linked the other way, so no row points at it.
+    assert.equal(scanEvidenceId(draft, slotOf(draft, 1, "delivery-proof").key), undefined);
   });
 });
 

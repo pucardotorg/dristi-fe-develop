@@ -174,6 +174,29 @@ describe("document links", () => {
       case_participant_id: null,
     });
   });
+
+  it("uploads a notice paper already linked to its notice's evidence", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "ad.pdf", "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE", {
+      caseEvidenceId: "ev-1",
+    });
+    assert.equal((calls[0].raw as FormData).get("case_evidence_id"), "ev-1");
+  });
+
+  it("leaves case_evidence_id off an upload with no notice", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "chq.pdf", "BOUNCED_CHEQUE");
+    assert.equal((calls[0].raw as FormData).has("case_evidence_id"), false);
+  });
+
+  it("patches a notice paper's link, and null removes it", () => {
+    assert.deepEqual(documentPatch({ caseEvidenceId: "ev-1" }), { case_evidence_id: "ev-1" });
+    assert.deepEqual(documentPatch({ caseEvidenceId: undefined }), { case_evidence_id: null });
+  });
 });
 
 describe("deleteDocument", () => {
@@ -350,6 +373,13 @@ describe("caseFilingErrorMessage", () => {
   it("says a witness is already on this side by its current code", () => {
     assert.match(caseFilingErrorMessage(httpError(409, ["E07032"])), /already a witness/);
     assert.doesNotMatch(caseFilingErrorMessage(httpError(409, ["E07017"])), /already a witness/);
+  });
+
+  it("explains a notice paper that couldn't be linked to its notice", () => {
+    assert.match(caseFilingErrorMessage(httpError(400, ["E07031"])), /no longer on the case/);
+    for (const code of ["E07029", "E07030"]) {
+      assert.match(caseFilingErrorMessage(httpError(400, [code])), /attached to its demand notice/);
+    }
   });
 
   it("reads 404 as an expired or missing draft", () => {

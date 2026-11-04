@@ -39,7 +39,7 @@ import type {
   Witness,
 } from "./types";
 import { syncAdvocates } from "./use-case-advocates";
-import { linkPartyDocuments } from "./use-case-documents";
+import { linkSavedDocuments } from "./use-case-documents";
 import { runStepSave, useStepSync } from "./use-step-sync";
 
 export type PartyKind = "complainant" | "accused" | "witness";
@@ -188,7 +188,9 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
     if (kind !== "complainant") return;
     // Their identity proofs, vakalatnamas and PoA documents were often uploaded before
     // they were on the case, and a complainant added again has a new participant.
-    await linkPartyDocuments(latest, update, (c) => savedParticipantIds(c)[0]);
+    await linkSavedDocuments(latest, update, {
+      participantIdOf: (c) => savedParticipantIds(c)[0],
+    });
     // A complainant added again lost their advocates on the backend; put them back now,
     // queued with the advocate step's own save so the two never add one twice.
     if (reAdded) await runStepSave(caseId, "advocate", () => syncAdvocates(latest, caseId, update));

@@ -36,7 +36,7 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
 
   if (chequeReady(draft.cheques, index)) {
     const evidenceInfo = chequeEvidenceInfo(draft.cheques, index);
-    const caseDocumentId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId;
+    const caseDocumentId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
     if (cheque.chequeEvidenceId) {
       await caseFilingApi.updateEvidence(cheque.chequeEvidenceId, { evidenceInfo, caseDocumentId });
     } else {
@@ -54,7 +54,7 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
 
   if (returnMemoReady(cheque)) {
     const evidenceInfo = returnMemoEvidenceInfo(cheque);
-    const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId;
+    const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
     if (cheque.returnMemoEvidenceId) {
       await caseFilingApi.updateEvidence(cheque.returnMemoEvidenceId, { evidenceInfo, caseDocumentId });
     } else {

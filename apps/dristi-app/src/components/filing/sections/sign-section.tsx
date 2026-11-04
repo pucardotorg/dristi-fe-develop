@@ -123,8 +123,8 @@ import { CourtDocument } from "@/components/filing/sections/preview/court-docume
 import { useFilePicker } from "@/components/filing/use-file-picker";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Identifier } from "@/components/chrome/identifier";
-==== BASE ====
-==== BASE ====
+import { useCourt, useCourtText } from "@/components/court/court-provider";
+import { appUrl } from "@/lib/config";
 
 type ModalKey =
   | "esign"

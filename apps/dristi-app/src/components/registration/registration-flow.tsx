@@ -108,9 +108,11 @@ function Actions({ locale, onBack, submitLabel, pending = false }: {
   );
 }
 
-export function RegistrationFlow({ locale, summoned, initialMobile = "", verifiedMobile, onFinish }: {
+export function RegistrationFlow({ locale, summoned, toSign = false, initialMobile = "", verifiedMobile, onFinish }: {
   locale: Locale;
   summoned: boolean;
+  /** Arrived from a signing link: the last step points at the complaint to sign. */
+  toSign?: boolean;
   initialMobile?: string;
   /** Set when a signed-in account has not finished registering: the number is already
    *  proven by that sign-in, so the contact step opens verified. */
@@ -348,9 +350,9 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
         <span className="flex size-14 items-center justify-center rounded-full bg-success-muted text-success-muted-foreground">
           <CheckCircle2Icon className="size-7" aria-hidden />
         </span>
-        <Heading title={pick(successStep.title, locale)} body={pick(successStep.body, locale)} />
-        <Button size="lg" onClick={() => onFinish ? onFinish({ idSkipped: true, profileIncomplete: true }) : setDestinationNotice(true)}>
-          {pick(summoned ? successStep.summonedAction : successStep.generalAction, locale)}
+        <Heading title={pick(successStep.title, locale)} body={pick(toSign ? successStep.signBody : successStep.body, locale)} />
+        <Button size="lg" onClick={() => onFinish && role ? onFinish({ idSkipped: true, profileIncomplete: true, name: fullName.trim(), role, mobile }) : setDestinationNotice(true)}>
+          {pick(toSign ? successStep.signAction : summoned ? successStep.summonedAction : successStep.generalAction, locale)}
         </Button>
         {destinationNotice ? <Alert variant="info" className="text-left"><AlertTitle>Prototype: destination not connected</AlertTitle><AlertDescription>This action will open your portal home.</AlertDescription></Alert> : null}
       </div>

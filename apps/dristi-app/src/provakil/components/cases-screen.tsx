@@ -45,6 +45,13 @@ const pushable = (r: Row) => r.stage !== "Filed";
 const exportHref = (format: string, rs: Row[]) =>
   `/provakil/api/export?format=${format}&ids=${encodeURIComponent(rs.map((r) => r.id).join(","))}&adv=${encodeURIComponent(rs.map((r) => r.advocate?.enrolment ?? "").join(","))}`;
 
+type MattersResponse = { matters: Row[]; courtReachable: boolean; courtUrl: string };
+
+async function fetchMatters(): Promise<MattersResponse> {
+  const res = await provakilFetch("/api/matters", { cache: "no-store" });
+  return res.json();
+}
+
 export function missingDocs(m: Matter): string[] {
   return REQUIRED_TAGS.filter((t) => !m.documents.some((d) => d.tag === t));
 }
@@ -65,17 +72,23 @@ export function CasesScreen() {
   const [page, setPage] = React.useState(0);
   const PAGE = 50;
 
-  const load = React.useCallback(async () => {
-    const res = await provakilFetch("/api/matters", { cache: "no-store" });
-    const json = await res.json();
+  const show = React.useCallback((json: MattersResponse) => {
     setRows(json.matters);
     setReachable(json.courtReachable);
     setCourtUrl(json.courtUrl);
   }, []);
 
+  const load = React.useCallback(async () => show(await fetchMatters()), [show]);
+
   React.useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    void fetchMatters().then((json) => {
+      if (!cancelled) show(json);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [show]);
 
   const all = rows ?? [];
   const counts = React.useMemo(() => {

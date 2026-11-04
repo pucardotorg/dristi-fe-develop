@@ -112,6 +112,8 @@ export type SyncedFile = {
   syncError?: string;
   /** The participant the saved document is linked to on the case, once it is. */
   linkedParticipantId?: string;
+  /** The demand notice's evidence row a saved notice paper is linked to, once it is. */
+  linkedEvidenceId?: string;
 };
 
 export type IntakeSlot = SyncedFile & {

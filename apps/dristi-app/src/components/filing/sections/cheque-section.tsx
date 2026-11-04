@@ -17,6 +17,7 @@ import type { IfscResult } from "@/lib/filing/lookups";
 import { RETURN_REASONS, S138_SAFE_REASONS } from "@/lib/filing/options";
 import {
   chequeComplete,
+  chequeNumberIssue,
   chequePresentIssue,
   chequePresentedLate,
   chequeReturnIssue,
@@ -242,6 +243,7 @@ export function ChequeSection() {
                 label="Cheque number"
                 name="chequeNumber"
                 required
+                error={chequeNumberIssue(cheque)}
                 tip="First set of six digits printed at the bottom of the cheque."
                 help="The six-digit number, not the full MICR line."
               >

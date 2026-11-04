@@ -86,6 +86,9 @@ export function IfscField({
 
   const code = value.trim().toUpperCase();
   const canFetch = IFSC_PATTERN.test(code);
+  // A non-empty code that is not a well-formed IFSC is flagged so it can't sit there and
+  // silently fail to save at Continue. An empty field is "incomplete", not a format error.
+  const formatError = code.length > 0 && !canFetch ? "Enter a valid IFSC, e.g. SBIN0001234 (11 characters)." : undefined;
 
   // The value can also change from outside — a scrutiny correction writes the same field —
   // so the reset lives here rather than in the change handler.
@@ -141,7 +144,7 @@ export function IfscField({
           : null;
 
   return (
-    <FormField label="IFSC code" name="ifsc" required tip={tip}>
+    <FormField label="IFSC code" name="ifsc" required tip={tip} error={formatError}>
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-2">
           <TextField

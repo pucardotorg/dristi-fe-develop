@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { blankComplainant } from "./blank";
-import { complainantComplete } from "./selectors";
+import { blankCheque, blankComplainant } from "./blank";
+import { chequeNumberIssue, complainantComplete } from "./selectors";
 import type { Complainant } from "./types";
 
 function institution(): Complainant {
@@ -16,6 +16,19 @@ function institution(): Complainant {
   c.rep.mobile = "9876543210";
   return c;
 }
+
+describe("chequeNumberIssue", () => {
+  it("passes an empty field (incomplete, not a format error) and a valid six-digit number", () => {
+    assert.equal(chequeNumberIssue({ ...blankCheque(), chequeNumber: "" }), undefined);
+    assert.equal(chequeNumberIssue({ ...blankCheque(), chequeNumber: "456789" }), undefined);
+  });
+
+  it("flags a number that is not exactly six digits", () => {
+    assert.ok(chequeNumberIssue({ ...blankCheque(), chequeNumber: "76879990" }));
+    assert.ok(chequeNumberIssue({ ...blankCheque(), chequeNumber: "12345" }));
+    assert.ok(chequeNumberIssue({ ...blankCheque(), chequeNumber: "12a456" }));
+  });
+});
 
 describe("complainantComplete", () => {
   it("counts an institution reached through its representative's mobile", () => {

@@ -12,7 +12,7 @@
  * a half-filled cheque stays the browser's working copy until it is finished.
  */
 
-import { IFSC_PATTERN } from "./lookups";
+import { CHEQUE_NUMBER_PATTERN, IFSC_PATTERN } from "./lookups";
 import { NON_DELIVERY_REASON_CODES } from "./options";
 import type { ChequeDetails, DemandNotice } from "./types";
 
@@ -41,8 +41,6 @@ export type ReturnMemoEvidenceInfo = {
 
 /** The drawer's bank written on a cheque. */
 type Bank = { ifsc: string; bankName: string; bankBranch: string };
-
-const CHEQUE_NUMBER_PATTERN = /^[0-9]{6}$/;
 
 /**
  * The bank details that apply to the cheque at `index`. A cheque that answered "same bank

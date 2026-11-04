@@ -2,6 +2,7 @@
 
 import { signingRules } from "./config";
 import { addDays, addMonths, addressToString, daysBetween, nameList, toLongDate, todayIso } from "./format";
+import { CHEQUE_NUMBER_PATTERN } from "./lookups";
 import { KERALA_FEES, type FeeSchedule } from "@/lib/court/fees";
 import {
   CHANNEL_FEE,
@@ -256,6 +257,18 @@ export function chequePresentedLate(c: ChequeDetails): string | undefined {
 export function chequeReturnIssue(c: ChequeDetails): string | undefined {
   if (!c.returnDate || !c.presentDate || c.returnDate >= c.presentDate) return undefined;
   return "Cannot be before the date of presentation.";
+}
+
+/**
+ * What is wrong with the cheque number, if anything: it must be exactly six digits (the
+ * backend enforces the same, so a longer or non-numeric value silently fails to save). An
+ * empty field is "incomplete", not a format error, so it reports nothing.
+ */
+export function chequeNumberIssue(c: ChequeDetails): string | undefined {
+  const number = c.chequeNumber.trim();
+  if (!number) return undefined;
+  if (!CHEQUE_NUMBER_PATTERN.test(number)) return "Enter the six-digit cheque number (digits only).";
+  return undefined;
 }
 
 export function noticeComplete(n: DemandNotice): boolean {

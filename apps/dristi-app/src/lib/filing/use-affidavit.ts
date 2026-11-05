@@ -4,10 +4,10 @@
  * Saves the case's sworn affidavit to the backend when the filer clicks Continue.
  *
  * The affidavit has its own endpoint (`PUT /cases/{id}/affidavit`, spec 0021 §5.4), not a
- * details section. The text sent is the effective affidavit — the filer's edit when they
- * have made one, otherwise the standard text composed from the case (`affidavitBody`) — so
- * the passed value is always non-empty, which the backend requires. Nothing is read back
- * yet, so clearing this browser still loses the draft.
+ * details section. Whatever the editor holds is sent as-is — including an affidavit the
+ * filer has cleared: the backend is the one gate on emptiness (it refuses text that renders
+ * as nothing), and its error is surfaced to the filer rather than the save being skipped
+ * here. Nothing is read back yet, so clearing this browser still loses the draft.
  *
  * A draft without a `caseId` (sample and batch drafts, older drafts) is never sent anywhere.
  */
@@ -15,7 +15,6 @@
 import * as React from "react";
 
 import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
-import { richTextHasContent } from "./details";
 import { useFiling } from "./store";
 
 export type SaveResult = { ok: boolean; error?: string };
@@ -30,9 +29,6 @@ export function useAffidavit() {
     async (affidavit: string): Promise<SaveResult> => {
       const caseId = draft.caseId;
       if (!caseId) return { ok: true };
-      // The backend refuses a blank affidavit; the standard text is never blank, so this
-      // only guards against an empty draft.
-      if (!richTextHasContent(affidavit)) return { ok: true };
       setSaving(true);
       setError(null);
       try {

@@ -198,6 +198,17 @@ describe("sectionComplete — advocate", () => {
   });
 });
 
+describe("sectionComplete — affidavit", () => {
+  it("is complete by default (always composed), and shows done once the step is opened", () => {
+    const draft = createBlankDraft("draft-affidavit");
+    assert.equal(sectionComplete(draft, "affidavit"), true);
+    // Not done until seen — the tick is held back until the step is opened.
+    assert.equal(sectionState(draft, "affidavit"), "untouched");
+    draft.visited = ["affidavit"];
+    assert.equal(sectionState(draft, "affidavit"), "done");
+  });
+});
+
 describe("draftProgress — only what the person has done", () => {
   it("starts a blank draft at 0%, though the prayer and witnesses are complete by default", () => {
     const draft = createBlankDraft("draft-blank-progress");

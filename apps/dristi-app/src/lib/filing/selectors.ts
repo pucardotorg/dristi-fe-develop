@@ -632,6 +632,10 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
       return true; // optional
     case "documents":
       return documentsProgress(draft.documents).remaining === 0;
+    case "affidavit":
+      // Always composed from the case (the filer may edit it), so it is complete by
+      // default; `sectionState` still holds the tick back until the step has been opened.
+      return true;
     case "preview":
       return WALK_ORDER.filter((s) => s !== "preview" && s !== "sign").every((s) =>
         sectionComplete(draft, s)

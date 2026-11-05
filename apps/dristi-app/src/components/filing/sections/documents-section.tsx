@@ -195,7 +195,9 @@ export function DocumentsSection() {
       say(statusText);
       return;
     }
-    router.push(hrefFor("preview"));
+    // The affidavit is the next step; it was once composed on the preview screen, so this
+    // used to skip straight there.
+    router.push(hrefFor("affidavit"));
   };
 
   /* One row's four cells, written once. The table lays them out as columns; on a phone

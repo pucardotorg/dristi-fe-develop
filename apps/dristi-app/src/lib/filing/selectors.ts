@@ -276,7 +276,11 @@ export function noticeComplete(n: DemandNotice): boolean {
 }
 
 export function witnessComplete(w: Witness): boolean {
-  return !!(w.fullName.trim() || w.designation.trim());
+  const named = !!(w.fullName.trim() || w.designation.trim());
+  const hasMobile = w.contacts.some((c) => c.mobile.trim());
+  // A witness now needs an address for service, with a police station (dristi-be spec 0020 §4.2).
+  const hasAddress = w.addresses.some((b) => b.addr.line1.trim() && b.police.trim());
+  return named && hasMobile && hasAddress;
 }
 
 /** Sum of cheque amounts typed so far (digits only), or 0. */
@@ -629,7 +633,8 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
     case "adr-prayer":
       return !!draft.adr.finalRelief.trim();
     case "witnesses":
-      return true; // optional
+      // Optional — zero witnesses is fine — but any witness added must be complete.
+      return draft.witnesses.every(witnessComplete);
     case "documents":
       return documentsProgress(draft.documents).remaining === 0;
     case "affidavit":

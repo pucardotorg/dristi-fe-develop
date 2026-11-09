@@ -11,11 +11,20 @@ describe("stepForValidationField", () => {
   it("maps participant fields to their step", () => {
     assert.equal(stepForValidationField("participants.accused"), "accused");
     assert.equal(stepForValidationField("participants.complainants"), "complainant");
-    // A per-participant id (an advocate / party-in-person gap) is fixed from the complainant.
+    // A per-participant id with no message (an advocate / party-in-person gap) is fixed
+    // from the complainant.
     assert.equal(
       stepForValidationField("participants.3f1c2a9e-7b4d-4e8a-9c61-2d5f8a0b7e14"),
       "complainant"
     );
+  });
+
+  it("routes a per-participant completeness error by the role named in its message", () => {
+    const id = "participants.3f1c2a9e-7b4d-4e8a-9c61-2d5f8a0b7e14";
+    assert.equal(stepForValidationField(id, "Witness #1 has no name or designation."), "witnesses");
+    assert.equal(stepForValidationField(id, "Witness #2 has no mobile number."), "witnesses");
+    assert.equal(stepForValidationField(id, "Accused #2 has no name."), "accused");
+    assert.equal(stepForValidationField(id, "Complainant #1 has no name."), "complainant");
   });
 
   it("maps representation fields to the advocate step", () => {

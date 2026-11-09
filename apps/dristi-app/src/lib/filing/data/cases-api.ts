@@ -206,7 +206,7 @@ export type AddedPoaHolder = { participantId: string; mandateIds: string[] };
 /** Whose witness: the side that calls them. */
 export type WitnessSide = "COMPLAINANT" | "ACCUSED";
 
-/** A witness: always a person. The address is optional, but needs a police station. */
+/** A witness: always a person. The address is required and needs a police station. */
 export type WitnessInput = {
   person: PersonInput;
   /** Their job title ("Branch manager"), kept on the case's copy. */

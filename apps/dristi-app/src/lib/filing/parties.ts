@@ -290,11 +290,19 @@ const ADDRESS_FIELDS: Array<[keyof AddressInput, string]> = [
  */
 export function missingFields(body: AnyPartyInput, role: PartyRole): string[] {
   const missing = new Set<string>();
-  const addressNeeded = role !== "witnesses" || !!body.address;
-  if (addressNeeded) {
-    for (const [field, label] of ADDRESS_FIELDS) if (!body.address?.[field]) missing.add(label);
-    if (role !== "complainants" && !body.address?.police_station) missing.add("police station");
+  // Every role needs an address for service of notice, witnesses now included
+  // (dristi-be spec 0020 §4.2). Only a complainant's address skips the police station.
+  for (const [field, label] of ADDRESS_FIELDS) if (!body.address?.[field]) missing.add(label);
+  if (role !== "complainants" && !body.address?.police_station) missing.add("police station");
+
+  if (role === "witnesses") {
+    // A witness is identified by a name or a designation (the body carries whichever the
+    // filer gave as `person.name`), and the backend now requires a mobile number too.
+    if (!body.person?.name) missing.add("name or designation");
+    if (!body.person?.phone_number) missing.add("mobile number");
+    return [...missing];
   }
+
   if (!body.person?.name && !("institution" in body && body.institution?.entity_name)) {
     missing.add("name");
   }

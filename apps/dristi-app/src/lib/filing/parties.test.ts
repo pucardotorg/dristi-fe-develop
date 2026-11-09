@@ -309,14 +309,31 @@ describe("witnessBodies", () => {
     assert.deepEqual(body.additional_details, {});
   });
 
-  it("names a witness known only by designation, and leaves out a missing address", () => {
+  it("names a witness known only by designation, but still requires their address", () => {
     const w = witness();
     w.fullName = "";
     w.addresses = [blankAddressBlock()];
     const [body] = witnessBodies(w);
     assert.equal(body.person.name, "Branch manager");
     assert.equal("address" in body, false);
-    assert.deepEqual(missingFields(body, "witnesses"), []);
+    // The designation stands in for the name, but a witness now needs an address for service.
+    assert.deepEqual(missingFields(body, "witnesses"), [
+      "address",
+      "city",
+      "pincode",
+      "district",
+      "state",
+      "police station",
+    ]);
+  });
+
+  it("asks a witness with neither a name nor a designation for one, and for a mobile number", () => {
+    const w = witness();
+    w.fullName = "";
+    w.designation = "";
+    w.contacts = [blankContact()];
+    const [body] = witnessBodies(w);
+    assert.deepEqual(missingFields(body, "witnesses"), ["name or designation", "mobile number"]);
   });
 
   it("saves a witness without what they will prove, still as the complainant's", () => {
@@ -387,6 +404,7 @@ describe("missingFields", () => {
     const w = blankWitness();
     w.fullName = "Suresh";
     w.prove = "x";
+    w.contacts = [{ mobile: "9000000002", email: "" }];
     w.addresses = [{ addr: { ...addr }, police: "" }];
     assert.deepEqual(missingFields(witnessBodies(w)[0], "witnesses"), ["police station"]);
   });

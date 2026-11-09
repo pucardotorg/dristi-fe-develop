@@ -1,9 +1,19 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { blankCheque, blankComplainant } from "./blank";
-import { chequeNumberIssue, complainantComplete } from "./selectors";
-import type { Complainant } from "./types";
+import { blankCheque, blankComplainant, blankWitness } from "./blank";
+import { chequeNumberIssue, complainantComplete, witnessComplete } from "./selectors";
+import type { Complainant, Witness } from "./types";
+
+function fullWitness(): Witness {
+  const w = blankWitness();
+  w.fullName = "Suresh Pillai";
+  w.contacts = [{ mobile: "9000000002", email: "" }];
+  w.addresses = [
+    { addr: { ...blankWitness().addresses[0].addr, line1: "12 MG Road" }, police: "Kollam East" },
+  ];
+  return w;
+}
 
 function institution(): Complainant {
   const c = blankComplainant();
@@ -16,6 +26,32 @@ function institution(): Complainant {
   c.rep.mobile = "9876543210";
   return c;
 }
+
+describe("witnessComplete", () => {
+  it("counts a witness with a name (or designation), a mobile and an address with a police station", () => {
+    assert.equal(witnessComplete(fullWitness()), true);
+    const byDesignation = fullWitness();
+    byDesignation.fullName = "";
+    byDesignation.designation = "Branch manager, SBI Kottayam";
+    assert.equal(witnessComplete(byDesignation), true);
+  });
+
+  it("holds back a witness missing a name/designation, a mobile, or the address", () => {
+    const noName = fullWitness();
+    noName.fullName = "";
+    assert.equal(witnessComplete(noName), false);
+
+    const noMobile = fullWitness();
+    noMobile.contacts = [{ mobile: "", email: "" }];
+    assert.equal(witnessComplete(noMobile), false);
+
+    const noPolice = fullWitness();
+    noPolice.addresses = [{ ...noPolice.addresses[0], police: "" }];
+    assert.equal(witnessComplete(noPolice), false);
+
+    assert.equal(witnessComplete(blankWitness()), false);
+  });
+});
 
 describe("chequeNumberIssue", () => {
   it("passes an empty field (incomplete, not a format error) and a valid six-digit number", () => {

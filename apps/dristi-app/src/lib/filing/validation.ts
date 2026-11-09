@@ -15,8 +15,14 @@ export type ValidationError = { field: string; message: string };
 /** The result of `POST /cases/{id}/validate`. */
 export type ValidationResult = { isValid: boolean; errors: ValidationError[] };
 
-/** The filing step a validate error belongs to, or `null` when it maps to none. */
-export function stepForValidationField(field: string): StepId | null {
+/**
+ * The filing step a validate error belongs to, or `null` when it maps to none.
+ *
+ * A per-participant completeness error names the row as `participants.<uuid>`, which does
+ * not say the role, so the witness/accused cases read it from the message
+ * ("Witness #1 has no …", "Accused #2 has no name."). Pass the error's `message` for those.
+ */
+export function stepForValidationField(field: string, message?: string): StepId | null {
   if (field === "affidavit") return "affidavit";
 
   const dot = field.indexOf(".");
@@ -24,11 +30,15 @@ export function stepForValidationField(field: string): StepId | null {
   const rest = dot === -1 ? "" : field.slice(dot + 1);
 
   switch (area) {
-    case "participants":
+    case "participants": {
       if (rest === "accused") return "accused";
-      // `participants.complainants`, or a per-participant id (an advocate / party-in-person
-      // gap reported against one complainant) — both are fixed from the complainant step.
+      if (/^Witness\b/.test(message ?? "")) return "witnesses";
+      if (/^Accused\b/.test(message ?? "")) return "accused";
+      // `participants.complainants`, a complainant / POA-holder gap, or an advocate /
+      // party-in-person gap reported against one complainant — all fixed from the
+      // complainant step.
       return "complainant";
+    }
     case "representations":
       return "advocate";
     case "evidence":

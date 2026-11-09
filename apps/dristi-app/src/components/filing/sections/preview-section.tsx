@@ -926,7 +926,7 @@ export function PreviewSection() {
 
           <ul className="flex flex-col divide-y divide-hairline">
             {problems?.map((p, i) => {
-              const step = stepForValidationField(p.field);
+              const step = stepForValidationField(p.field, p.message);
               return (
                 <li
                   key={`${p.field}-${i}`}

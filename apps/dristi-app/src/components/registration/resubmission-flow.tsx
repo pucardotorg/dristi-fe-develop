@@ -19,7 +19,11 @@
  */
 
 import * as React from "react";
+<<<<<<< HEAD
 import { ArrowLeftIcon } from "lucide-react";
+=======
+import { ArrowLeftIcon, } from "lucide-react";
+>>>>>>> design-main2
 
 import { Button } from "@/components/ui/button";
 import {
@@ -67,6 +71,7 @@ import {
 } from "@/lib/registration/validation";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { PageOutcome } from "@/components/feedback";
 
 import { AwaitingApproval } from "./awaiting-approval";
 import { SubmitErrorAlert } from "./submit-error-alert";
@@ -239,18 +244,19 @@ export function ResubmissionFlow({
 
   if (step === "success") {
     return (
-      <AwaitingApproval
-        title={pick(rejectionUi.resubmittedTitle, locale)}
-        body={
-          applicationNumber
-            ? pick(rejectionUi.resubmittedBody, locale).replace("{id}", applicationNumber)
-            : pick(rejectionUi.resubmittedBodyNoNumber, locale)
-        }
-        action={{
-          label: pick(approvalStep.action, locale),
-          onClick: () => setStep("application"),
-        }}
-      />
+      /* Sent back to the court, not decided yet: the hourglass. */
+      <div className="mx-auto flex min-h-[60vh] w-full max-w-lg flex-col justify-center">
+        <PageOutcome
+          tone="info"
+          title={pick(rejectionUi.resubmittedTitle, locale)}
+          body={pick(rejectionUi.resubmittedBody, locale).replace("{id}", rejection.applicationNumber)}
+          action={
+            <Button size="lg" onClick={() => setStep("application")}>
+              {pick(approvalStep.action, locale)}
+            </Button>
+          }
+        />
+      </div>
     );
   }
 
@@ -300,16 +306,7 @@ export function ResubmissionFlow({
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 md:gap-10">
       <div className="mx-auto w-full max-w-2xl">
         <Stepper
-          className={cn(
-            "w-full",
-            "[&_[data-slot=stepper-item]]:items-center",
-            "[&_[data-slot=stepper-item]>div:first-child]:relative [&_[data-slot=stepper-item]>div:first-child]:justify-center",
-            "[&_[data-slot=stepper-connector]]:absolute [&_[data-slot=stepper-connector]]:top-4 [&_[data-slot=stepper-connector]]:left-[calc(50%+1rem)] [&_[data-slot=stepper-connector]]:mx-0 [&_[data-slot=stepper-connector]]:h-px [&_[data-slot=stepper-connector]]:w-[calc(100%-2rem)]",
-            /* Three short labels fit a phone, so they stay at every width —
-               the full registration hides its six below md, this does not. */
-            "[&_[data-slot=stepper-item]>div:last-child]:w-full [&_[data-slot=stepper-item]>div:last-child]:pr-0 [&_[data-slot=stepper-item]>div:last-child]:text-center"
-          )}
-          aria-label={pick(registrationUi.stepOf, locale)
+                    aria-label={pick(registrationUi.stepOf, locale)
             .replace("{current}", String(stepIndex + 1))
             .replace("{total}", String(STEP_KEYS.length))}
         >

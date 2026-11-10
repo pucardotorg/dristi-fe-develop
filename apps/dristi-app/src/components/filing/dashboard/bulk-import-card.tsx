@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import Link from "next/link";
 import { ArrowRightIcon, DownloadIcon, UploadIcon } from "lucide-react";
@@ -29,6 +31,7 @@ export type BulkBatch = {
 
 /** Cases a client's system pushed across for filing, as one batch. */
 export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | null; needAction?: number }) {
+  const __t = __useTranslations();
   return (
     <Card className={cn(PANEL_CLASS, "gap-0")}>
       <CardHeader className="flex flex-row items-start gap-3">
@@ -39,10 +42,9 @@ export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | n
           <DownloadIcon className="size-5" />
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <CardTitle className="text-body font-semibold">Bulk filing</CardTitle>
+          <CardTitle className="text-body font-semibold">{<__LocalizedText id="bulkImportCard_bulkFiling" />}</CardTitle>
           <CardDescription className="text-body-compact">
-            Bring in many cases from your client&apos;s system and file them together.
-          </CardDescription>
+            {<__LocalizedText id="bulkImportCard_bringInManyCasesFromYourClient" />}{" "}</CardDescription>
         </div>
       </CardHeader>
 
@@ -50,21 +52,19 @@ export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | n
         {batch === null ? (
           <Empty className="items-start gap-0 border-0 p-0 text-left text-wrap">
             <EmptyHeader className="max-w-none items-start">
-              <EmptyTitle className="text-body font-semibold">No imports yet</EmptyTitle>
+              <EmptyTitle className="text-body font-semibold">{<__LocalizedText id="bulkImportCard_noImportsYet" />}</EmptyTitle>
               <EmptyDescription className="text-body-compact text-wrap">
-                Cases a client&apos;s system sends, or an Excel upload, appear here as a batch.
-              </EmptyDescription>
+                {<__LocalizedText id="bulkImportCard_casesAClientSSystemSendsOr" />}{" "}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
           <div className="flex flex-col gap-3 rounded-lg bg-surface-sunken p-4">
             <p className="text-caption font-semibold text-muted-foreground uppercase">
-              Most recent import
-            </p>
+              {<__LocalizedText id="bulkImportCard_mostRecentImport" />}{" "}</p>
             <div>
               <p className="text-body font-semibold">{batch.client}</p>
               <p className="text-caption text-muted-foreground">
-                {batch.what} · received {batch.receivedOn} · via {batch.via}
+                {batch.what} {<__LocalizedText id="bulkImportCard_received" />}{" "}{batch.receivedOn} {<__LocalizedText id="bulkImportCard_via" />}{" "}{batch.via}
               </p>
             </div>
             <StageBar counts={batch.counts} />
@@ -76,24 +76,21 @@ export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | n
           <Button asChild>
             <Link href={`${FILINGS_HOME}/bulk/upload`}>
               <UploadIcon data-icon="inline-start" aria-hidden />
-              Upload Excel
-            </Link>
+              {<__LocalizedText id="bulkImportCard_uploadExcel" />}{" "}</Link>
           </Button>
           {batch ? (
             <Button asChild variant="outline">
               <Link href={`${FILINGS_HOME}/bulk/${batch.id}`}>
-                Review batch
-                <ArrowRightIcon data-icon="inline-end" aria-hidden />
+                {<__LocalizedText id="bulkImportCard_reviewBatch" />}{" "}<ArrowRightIcon data-icon="inline-end" aria-hidden />
               </Link>
             </Button>
           ) : null}
           <Button asChild variant={batch ? "ghost" : "outline"}>
             <Link href={`${FILINGS_HOME}/bulk`}>
-              {batch ? "All batches" : "Open bulk filing"}
+              {batch ? __t("bulkImportCard_allBatches") : __t("bulkImportCard_openBulkFiling")}
               {needAction ? (
                 <Badge variant="warning" className="tabular-nums">
-                  {needAction} need{needAction === 1 ? "s" : ""} action
-                </Badge>
+                  {needAction} {<__LocalizedText id="bulkImportCard_need" />}{needAction === 1 ? "s" : ""} {<__LocalizedText id="bulkImportCard_action" />}{" "}</Badge>
               ) : null}
               {batch ? null : <ArrowRightIcon data-icon="inline-end" aria-hidden />}
             </Link>

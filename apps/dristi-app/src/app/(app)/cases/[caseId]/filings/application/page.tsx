@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -76,6 +77,7 @@ export default async function RaiseApplicationPage({
   params: Promise<{ caseId: string }>;
   searchParams: Promise<{ draft?: string; from?: string; objectTo?: string }>;
 }) {
+  const __t = __useTranslations();
   const { caseId } = await params;
   const { draft, from, objectTo } = await searchParams;
   const record = findCase(caseId);
@@ -99,7 +101,7 @@ export default async function RaiseApplicationPage({
         <CaseBreadcrumbs
           caseId={record.id}
           caseNumber={record.caseNumber}
-          trail={[{ label: "Raise application" }]}
+          trail={[{ label: __t("applicationPage_raiseApplication") }]}
         />
       )}
       {/* View Case's ground, so this reads as the same place and the white

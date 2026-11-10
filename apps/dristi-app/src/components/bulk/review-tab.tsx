@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -20,6 +22,7 @@ import { detailFlags } from "./scrutiny-tab";
  * that needs changing goes back to Case details.
  */
 export function ReviewTab({ batch, go }: BatchCtx) {
+  const __t = __useTranslations();
   const open = batch.cases.filter(
     (c) => c.stage === "held" || c.stage === "ready",
   );
@@ -49,7 +52,7 @@ export function ReviewTab({ batch, go }: BatchCtx) {
   if (!open.length)
     return (
       <Alert>
-        <AlertDescription>Nothing to review.</AlertDescription>
+        <AlertDescription>{<__LocalizedText id="reviewTab_nothingToReview" />}</AlertDescription>
       </Alert>
     );
 
@@ -73,7 +76,7 @@ export function ReviewTab({ batch, go }: BatchCtx) {
     <div className="flex flex-col gap-4">
       {error ? (
         <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{__t(error)}</AlertDescription>
         </Alert>
       ) : null}
       <div className="lg:grid lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start lg:gap-6">
@@ -86,15 +89,14 @@ export function ReviewTab({ batch, go }: BatchCtx) {
         <div className="flex min-w-0 flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-body-compact text-muted-foreground tabular-nums">
-              {at + 1} of {open.length}
+              {at + 1} {<__LocalizedText id="reviewTab_of" />}{" "}{open.length}
             </span>
             <Button
               variant="ghost"
               className="ml-auto"
               onClick={() => go("scrutiny", c.id)}
             >
-              Open the case
-            </Button>
+              {<__LocalizedText id="reviewTab_openTheCase" />}{" "}</Button>
           </div>
           {drafts?.[c.id] ? (
             <CourtDocument draft={drafts[c.id]} />
@@ -112,8 +114,7 @@ export function ReviewTab({ batch, go }: BatchCtx) {
         extra={
           at < open.length - 1 ? (
             <Button variant="outline" size="lg" onClick={() => move(at + 1)}>
-              Next case
-            </Button>
+              {<__LocalizedText id="reviewTab_nextCase" />}{" "}</Button>
           ) : null
         }
         continueLabel={

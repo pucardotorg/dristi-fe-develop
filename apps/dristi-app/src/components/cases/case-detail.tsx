@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import { Suspense } from "react";
 
 import {
@@ -73,6 +74,7 @@ export function CaseDetail({
   /** The court's order screen for this case, behind its Generate order. */
   orderHref?: string;
 }) {
+  const __t = __useTranslations();
   const caseId = record.id;
 
   const section = parseCaseSection(searchParams.section);
@@ -157,7 +159,7 @@ export function CaseDetail({
         ) : (
           <SectionPending
             label={
-              CASE_SECTIONS.find((item) => item.value === section)?.label ??
+              __t(CASE_SECTIONS.find((item) => item.value === section)?.label) ??
               section
             }
           />

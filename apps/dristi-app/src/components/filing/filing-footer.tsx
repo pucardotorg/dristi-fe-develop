@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import Link from "next/link";
@@ -68,6 +69,7 @@ export function FilingFooter({
   extra?: React.ReactNode;
   className?: string;
 }) {
+  const __t = __useTranslations();
   /*
    * A correction round is not a walk through the filing: there is no Back / Continue,
    * and the one primary action is "Submit corrections to scrutiny" in the queue footer
@@ -89,13 +91,13 @@ export function FilingFooter({
       <Button asChild variant="outline" size="lg">
         <Link href={backHref}>
           <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-          {backLabel}
+          {__t(backLabel)}
         </Link>
       </Button>
     ) : onBack ? (
       <Button type="button" variant="outline" size="lg" onClick={onBack}>
         <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-        {backLabel}
+        {__t(backLabel)}
       </Button>
     ) : null;
 
@@ -108,7 +110,7 @@ export function FilingFooter({
       aria-disabled
       className="opacity-50"
     >
-      {continueLabel}
+      {__t(continueLabel)}
       <ArrowRightIcon data-icon="inline-end" aria-hidden />
     </Button>
   );
@@ -120,13 +122,13 @@ export function FilingFooter({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>{blockedPrimary}</TooltipTrigger>
-          <TooltipContent side="top">{continueHint}</TooltipContent>
+          <TooltipContent side="top">{__t(continueHint)}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
     ) : continueHref !== undefined && !continueDisabled ? (
       <Button asChild size="lg" variant={continueVariant}>
         <Link href={continueHref}>
-          {continueLabel}
+          {__t(continueLabel)}
           <ArrowRightIcon data-icon="inline-end" aria-hidden />
         </Link>
       </Button>
@@ -140,7 +142,7 @@ export function FilingFooter({
         aria-disabled={continueDisabled || continueBlocked || undefined}
         className={cn(continueBlocked && "opacity-50")}
       >
-        {continueLabel}
+        {__t(continueLabel)}
         <ArrowRightIcon data-icon="inline-end" aria-hidden />
       </Button>
     );

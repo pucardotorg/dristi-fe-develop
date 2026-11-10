@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * "Upload cases" lands here: a new upload starts with the batch's complainants, in the
@@ -57,7 +58,6 @@ export function UploadStart() {
       className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
     >
       <Spinner className="mr-2 size-4" />
-      Starting an upload…
-    </div>
+      {<__LocalizedText id="uploadStart_startingAnUpload" />}{" "}</div>
   );
 }

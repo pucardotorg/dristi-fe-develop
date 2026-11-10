@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FlaskConicalIcon } from "lucide-react";
@@ -111,6 +113,7 @@ function documentTitleOf(task: Task): string {
 
 /** The case line every act window carries under its title. */
 export function TaskCaseLine({ kase }: { kase: Case }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   return (
     <>
@@ -118,7 +121,7 @@ export function TaskCaseLine({ kase }: { kase: Case }) {
       {kase.stNumber ? (
         <>
           {" · "}
-          <Identifier value={kase.stNumber} label="case number" copyable={false} />
+          <Identifier value={kase.stNumber} label={__t("taskFlows_caseNumber")} copyable={false} />
         </>
       ) : (
         " · Not yet numbered"
@@ -164,6 +167,7 @@ export function TaskPaymentDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const __t = __useTranslations();
   const { task, kase, online, finish } = ctx;
   const { act, busy } = useTaskActions();
   const [stage, setStage] = React.useState<PayStage>("pay");
@@ -214,7 +218,7 @@ export function TaskPaymentDialog({
       <FlowDialogContent className="max-h-[85svh] w-full overflow-y-auto sm:max-w-lg">
         <DialogHeader className="pr-8 text-left">
           <DialogTitle className="text-title-s font-semibold text-balance">
-            {title}
+            {__t(title)}
           </DialogTitle>
           <DialogDescription className="text-body-compact text-muted-foreground">
             <TaskCaseLine kase={kase} />
@@ -225,21 +229,20 @@ export function TaskPaymentDialog({
           <div className="flex flex-col gap-4">
             {failed ? (
               <Banner variant="error">
-                The payment did not go through. Nothing was paid; try again.
-              </Banner>
+                {<__LocalizedText id="taskFlows_thePaymentDidNotGoThroughNothing" />}{" "}</Banner>
             ) : null}
             <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
               {task.feeHead ? (
                 <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>Fee</DescriptionTerm>
+                  <DescriptionTerm>{<__LocalizedText id="taskFlows_fee" />}</DescriptionTerm>
                   <DescriptionDetails>{task.feeHead}</DescriptionDetails>
                 </DescriptionRow>
               ) : null}
               <DescriptionRow className="border-hairline">
-                <DescriptionTerm>Case</DescriptionTerm>
+                <DescriptionTerm>{<__LocalizedText id="taskFlows_case" />}</DescriptionTerm>
                 <DescriptionDetails>
                   {kase.stNumber ? (
-                    <Identifier value={kase.stNumber} label="case number" />
+                    <Identifier value={kase.stNumber} label={__t("taskFlows_caseNumber")} />
                   ) : (
                     kase.parties
                   )}
@@ -247,21 +250,20 @@ export function TaskPaymentDialog({
               </DescriptionRow>
               {task.dueAt ? (
                 <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>Due</DescriptionTerm>
+                  <DescriptionTerm>{<__LocalizedText id="taskFlows_due" />}</DescriptionTerm>
                   <DescriptionDetails className="tabular-nums">
                     {formatCaseDate(task.dueAt)}
                     {overdue > 0 ? (
                       <span className="text-destructive">
                         {" "}
-                        · {overdue === 1 ? "1 day" : `${overdue} days`} overdue
-                      </span>
+                        · {overdue === 1 ? __t("taskFlows_1Day") : `${overdue} days`} {<__LocalizedText id="taskFlows_overdue" />}{" "}</span>
                     ) : null}
                   </DescriptionDetails>
                 </DescriptionRow>
               ) : null}
               {amount ? (
                 <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>Amount</DescriptionTerm>
+                  <DescriptionTerm>{<__LocalizedText id="taskFlows_amount" />}</DescriptionTerm>
                   <DescriptionDetails className="font-semibold tabular-nums">
                     {amount}
                   </DescriptionDetails>
@@ -269,8 +271,7 @@ export function TaskPaymentDialog({
               ) : null}
             </DescriptionList>
             <p className="text-caption text-muted-foreground">
-              Sandbox payment — no money moves.
-            </p>
+              {<__LocalizedText id="taskFlows_sandboxPaymentNoMoneyMoves" />}{" "}</p>
           </div>
         ) : null}
 
@@ -280,11 +281,11 @@ export function TaskPaymentDialog({
           <PaymentReceipt
             amount={amount ?? ""}
             rows={[
-              ...(task.feeHead ? [{ label: "Fee", value: task.feeHead }] : []),
+              ...(task.feeHead ? [{ label: __t("taskFlows_fee"), value: task.feeHead }] : []),
               {
-                label: "Case",
+                label: __t("taskFlows_case"),
                 value: kase.stNumber ? (
-                  <Identifier value={kase.stNumber} label="case number" />
+                  <Identifier value={kase.stNumber} label={__t("taskFlows_caseNumber")} />
                 ) : (
                   kase.parties
                 ),
@@ -292,8 +293,8 @@ export function TaskPaymentDialog({
               ...(receipt
                 ? [
                     {
-                      label: "Receipt",
-                      value: <Identifier value={receipt} label="receipt number" />,
+                      label: __t("taskFlows_receipt"),
+                      value: <Identifier value={receipt} label={__t("taskFlows_receiptNumber")} />,
                     },
                   ]
                 : []),
@@ -308,8 +309,7 @@ export function TaskPaymentDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Pay later
-            </Button>
+              {<__LocalizedText id="taskFlows_payLater" />}{" "}</Button>
             <div className="flex items-center gap-2">
               <TooltipProvider>
                 <DropdownMenu>
@@ -320,24 +320,24 @@ export function TaskPaymentDialog({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          aria-label="Sandbox: choose the gateway result"
+                          aria-label={__t("taskFlows_sandboxChooseTheGatewayResult")}
                           className="text-muted-foreground"
                         >
                           <FlaskConicalIcon aria-hidden />
                         </Button>
                       </DropdownMenuTrigger>
                     </TooltipTrigger>
-                    <TooltipContent>Sandbox: choose the gateway result</TooltipContent>
+                    <TooltipContent>{<__LocalizedText id="taskFlows_sandboxChooseTheGatewayResult" />}</TooltipContent>
                   </Tooltip>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>Sandbox gateway result</DropdownMenuLabel>
+                    <DropdownMenuLabel>{<__LocalizedText id="taskFlows_sandboxGatewayResult" />}</DropdownMenuLabel>
                     <DropdownMenuRadioGroup
                       value={outcome}
                       onValueChange={(value) => setOutcome(value as PaymentResult)}
                     >
                       {OUTCOMES.map((option) => (
                         <DropdownMenuRadioItem key={option.value} value={option.value}>
-                          {option.label}
+                          {__t(option.label)}
                         </DropdownMenuRadioItem>
                       ))}
                     </DropdownMenuRadioGroup>
@@ -350,7 +350,7 @@ export function TaskPaymentDialog({
                 className="flex-1 sm:flex-none"
                 onClick={() => void pay()}
               >
-                {amount ? `Pay ${amount}` : "Pay"}
+                {amount ? __t("taskFlows_payValue0", {value0: String(amount)}) : __t("taskFlows_pay_2f912729")}
               </Button>
             </div>
           </DialogFooter>
@@ -362,8 +362,7 @@ export function TaskPaymentDialog({
               type="button"
               onClick={() => finish(`Paid ${amount ?? ""}`.trim())}
             >
-              Done
-            </Button>
+              {<__LocalizedText id="taskFlows_done" />}{" "}</Button>
           </DialogFooter>
         ) : null}
       </FlowDialogContent>
@@ -387,7 +386,7 @@ export function TaskDocumentsDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { task, kase, finish } = ctx;
+    const { task, kase, finish } = ctx;
   const { act } = useTaskActions();
   return (
     <SubmitDocumentsDialog
@@ -444,6 +443,7 @@ export function TaskApplicationFlow({
   ctx: ActContext;
   onClose: () => void;
 }) {
+  const __t = __useTranslations();
   const { task, kase, user, finish } = ctx;
   const { act } = useTaskActions();
   const record = React.useMemo(() => recordOf(kase, user.name), [kase, user.name]);
@@ -461,7 +461,7 @@ export function TaskApplicationFlow({
       inPlace={{
         onClose,
         done: {
-          label: "Done",
+          label: __t("taskFlows_done"),
           onClick: () => {
             void act(task.id, (x, c) => file(x, c)).then((t) => {
               if (t) finish("Application filed");

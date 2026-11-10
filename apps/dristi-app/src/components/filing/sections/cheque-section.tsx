@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Cheque & return memo — the dishonoured cheque(s) and the bank's memo for each.
@@ -124,6 +126,7 @@ function reasonValue(label: string): string {
 }
 
 export function ChequeSection() {
+  const __t = __useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("cheque");
   const cheques = draft.cheques;
@@ -293,14 +296,14 @@ export function ChequeSection() {
     <>
       <FilingMain sourceOpen={sourceOpen}>
         <FilingPageHeader
-          title="Cheque & return memo"
-          description="Add the dishonoured cheque(s) and the bank's return memo for each."
+          title={__t("chequeSection_chequeReturnMemo")}
+          description={__t("chequeSection_addTheDishonouredChequeSAndThe")}
         />
 
         <SectionTabs
           tabs={cheques.map((c, i) => ({
             id: c.id,
-            label: `Cheque ${i + 1}`,
+            label: __t("chequeSection_chequeValue0", {value0: String(i + 1)}),
             meta: c.amount ? `₹${c.amount}` : undefined,
             status: chequeComplete(c) ? "complete" : "attention",
             removable: cheques.length > 1,
@@ -322,11 +325,11 @@ export function ChequeSection() {
         <CorrectionInstance value={index}>
         {/* Cheque leaf */}
         <FormCard
-          title={`Cheque ${index + 1} details`}
-          description="As written on the cheque leaf."
+          title={__t("chequeSection_chequeValue0Details", {value0: String(index + 1)})}
+          description={__t("chequeSection_asWrittenOnTheChequeLeaf")}
         >
           <FormRow>
-            <FormField label="Date on cheque" name="dateOnCheque" required tip="As written on the cheque.">
+            <FormField label={__t("chequeSection_dateOnCheque")} name="dateOnCheque" required tip="As written on the cheque.">
               <DateField
                 value={cheque.dateOnCheque}
                 onChange={(v) => editField("dateOnCheque", v)}
@@ -335,14 +338,14 @@ export function ChequeSection() {
                 ariaLabel="Date on cheque"
               />
             </FormField>
-            <FormField label="Amount" name="amount" required tip="As written on the cheque.">
+            <FormField label={__t("chequeSection_amount")} name="amount" required tip="As written on the cheque.">
               <PrefixInput
                 prefix="₹"
                 value={cheque.amount}
                 onChange={(v) => editField("amount", v)}
                 prefilled={isPrefilled("amount")}
                 onViewSource={() => openSource("amount")}
-                placeholder="Enter amount"
+                placeholder={__t("chequeSection_enterAmount")}
                 inputMode="numeric"
               />
             </FormField>
@@ -350,7 +353,7 @@ export function ChequeSection() {
 
           <HalfWidth>
             <FormField
-              label="Cheque number"
+              label={__t("chequeSection_chequeNumber")}
               name="chequeNumber"
               required
               tip="First set of six digits printed at the bottom of the cheque."
@@ -361,7 +364,7 @@ export function ChequeSection() {
                 onChange={(v) => editField("chequeNumber", v)}
                 prefilled={isPrefilled("chequeNumber")}
                 onViewSource={() => openSource("chequeNumber")}
-                placeholder="6-digit number"
+                placeholder={__t("chequeSection_6DigitNumber")}
                 inputMode="numeric"
               />
             </FormField>
@@ -370,7 +373,7 @@ export function ChequeSection() {
           {index > 0 ? (
             <>
               <FormDivider />
-              <FormField asGroup label="Are the bank details below the same as the previous cheque?">
+              <FormField asGroup label={__t("chequeSection_areTheBankDetailsBelowTheSame")}>
                 <YesNoSegmented
                   value={cheque.sameAsPrev}
                   onValueChange={(v) =>
@@ -386,7 +389,7 @@ export function ChequeSection() {
 
           {showBankFields ? (
             <>
-              <FormSubhead>Drawer&apos;s bank details</FormSubhead>
+              <FormSubhead>{<__LocalizedText id="chequeSection_drawerSBankDetails" />}</FormSubhead>
               {/* Keyed to the cheque so a lookup on one tab never speaks for another. */}
               <IfscField
                 key={cheque.id}
@@ -395,13 +398,13 @@ export function ChequeSection() {
                 onFetched={fillFromIfsc(cheque.id)}
                 fetched={cheque.ifscFetched}
                 tip="The 11-character code on the cheque. Fetch to auto-fill the bank name and branch."
-                placeholder="e.g. SBIN0001234"
+                placeholder={__t("chequeSection_eGSbin0001234")}
                 prefilled={isPrefilled("ifsc")}
                 onViewSource={() => openSource("ifsc")}
               />
               <FormRow>
                 <FormField
-                  label="Bank name"
+                  label={__t("chequeSection_bankName")}
                   name="bankName"
                   required
                   tip="The bank written on the cheque, i.e. the drawer's (accused's) bank."
@@ -411,11 +414,11 @@ export function ChequeSection() {
                     onChange={(v) => editField("bankName", v)}
                     prefilled={isPrefilled("bankName")}
                     onViewSource={() => openSource("bankName")}
-                    placeholder="Drawer's bank"
+                    placeholder={__t("chequeSection_drawerSBank")}
                   />
                 </FormField>
                 <FormField
-                  label="Bank branch"
+                  label={__t("chequeSection_bankBranch")}
                   name="bankBranch"
                   required
                   tip="The branch written on the cheque, i.e. the drawer's (accused's) branch."
@@ -425,7 +428,7 @@ export function ChequeSection() {
                     onChange={(v) => editField("bankBranch", v)}
                     prefilled={isPrefilled("bankBranch")}
                     onViewSource={() => openSource("bankBranch")}
-                    placeholder="Branch name"
+                    placeholder={__t("chequeSection_branchName")}
                   />
                 </FormField>
               </FormRow>
@@ -436,7 +439,7 @@ export function ChequeSection() {
             <InfoWell>
               <CreditCardIcon className="size-5 shrink-0" aria-hidden />
               <p className="min-w-0 flex-1 text-body">
-                Using bank details from Cheque {index}:{" "}
+                {<__LocalizedText id="chequeSection_usingBankDetailsFromCheque" />}{" "}{index}:{" "}
                 <span className="font-semibold">{inheritedBank}</span>
                 {previous?.bankBranch ? `, ${previous.bankBranch}` : ""}.
               </p>
@@ -446,12 +449,12 @@ export function ChequeSection() {
 
         {/* Return memo */}
         <FormCard
-          title="Cheque return memo details"
-          description="From the memo the bank issued when the cheque was dishonoured."
+          title={__t("chequeSection_chequeReturnMemoDetails")}
+          description={__t("chequeSection_fromTheMemoTheBankIssuedWhen")}
         >
           <FormRow>
             <FormField
-              label="Date of presentation / deposit"
+              label={__t("chequeSection_dateOfPresentationDeposit")}
               name="presentDate"
               required
               tip="Date on which the cheque was presented in the bank for clearance."
@@ -466,7 +469,7 @@ export function ChequeSection() {
               />
             </FormField>
             <FormField
-              label="Date of return"
+              label={__t("chequeSection_dateOfReturn")}
               name="returnDate"
               required
               tip="Date on which the cheque was dishonoured / returned, as written on the return memo."
@@ -488,7 +491,7 @@ export function ChequeSection() {
 
           <HalfWidth>
             <FormField
-              label="Return reason"
+              label={__t("chequeSection_returnReason")}
               name="returnReason"
               required
               tip="Reason for return of the cheque, as per the return memo."
@@ -497,7 +500,7 @@ export function ChequeSection() {
                 value={cheque.returnReason}
                 onValueChange={(v) => editField("returnReason", v)}
                 options={RETURN_REASONS}
-                placeholder="Select reason"
+                placeholder={__t("chequeSection_selectReason")}
                 prefilled={isPrefilled("returnReason")}
                 onViewSource={() => openSource("returnReason")}
                 ariaLabel="Return reason"
@@ -506,12 +509,9 @@ export function ChequeSection() {
           </HalfWidth>
 
           {reasonNeedsCheck ? (
-            <SectionNotice variant="warning" title="Check that S-138 still applies">
-              Section 138 is squarely attracted when a cheque is returned for{" "}
-              <span className="font-semibold">insufficiency of funds</span> (or because it
-              exceeds the arrangement). For other return reasons, confirm the dishonour
-              still falls within S-138 before filing.
-            </SectionNotice>
+            <SectionNotice variant="warning" title={__t("chequeSection_checkThatS138StillApplies")}>
+              {<__LocalizedText id="chequeSection_section138IsSquarelyAttractedWhenA" />}{" "}
+              <span className="font-semibold">{<__LocalizedText id="chequeSection_insufficiencyOfFunds" />}</span> {<__LocalizedText id="chequeSection_orBecauseItExceedsTheArrangementFor" />}{" "}</SectionNotice>
           ) : null}
 
         </FormCard>
@@ -526,21 +526,21 @@ export function ChequeSection() {
       <ConfirmDialog
         open={removeOpen}
         onOpenChange={setRemoveOpen}
-        title={`Remove cheque ${removeIndex + 1}`}
-        description="Are you sure you want to delete the details of this cheque? This also removes its return memo details and any documents added for it."
-        confirmLabel="Yes, remove"
+        title={__t("chequeSection_removeChequeValue0", {value0: String(removeIndex + 1)})}
+        description={__t("chequeSection_areYouSureYouWantToDelete")}
+        confirmLabel={__t("chequeSection_yesRemove")}
         onConfirm={confirmRemove}
       />
 
       <SourcePanel
         open={sourceOpen}
         onOpenChange={setSourceOpen}
-        title={sourceDocLabel}
+        title={__t(sourceDocLabel)}
         field={explaining ? FIELD_LABELS[sourceField] : undefined}
         value={sourceValue}
         onValueChange={setSourceValue}
         chips={sourceDocs.map((d) => ({
-          label: d.slot?.file?.name ?? d.slot?.label ?? d.fallbackLabel,
+          label: d.slot?.file?.name ?? __t(d.slot?.label) ?? __t(d.fallbackLabel),
           active: d.slot === sourceSlot,
           onClick: () => {
             setChosenField(d.entry);
@@ -554,7 +554,7 @@ export function ChequeSection() {
           sourceSlot?.extract?.fields[sourceField]?.box,
           sourceSlot?.extract?.page
         )}
-        note="Shown from your uploaded document."
+        note={__t("chequeSection_shownFromYourUploadedDocument")}
       />
     </>
   );

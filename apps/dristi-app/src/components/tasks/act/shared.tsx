@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Pieces every act flow shares: the "prepared by" note for a signatory, the prepare
@@ -61,11 +63,12 @@ export function RailCard({
   description?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <section className="flex flex-col gap-4 rounded-xl bg-surface-sunken p-4">
       <div className="flex flex-col gap-1">
-        <h3 className="text-body font-semibold">{title}</h3>
-        {description ? <p className="text-body-compact text-muted-foreground">{description}</p> : null}
+        <h3 className="text-body font-semibold">{__t(title)}</h3>
+        {description ? <p className="text-body-compact text-muted-foreground">{__t(description)}</p> : null}
       </div>
       {children}
     </section>
@@ -78,6 +81,7 @@ export function RailCard({
  * informed, not blind.
  */
 export function PreparedNote({ ctx }: { ctx: ActContext }) {
+  const __t = __useTranslations();
   const { task, people, user } = ctx;
   const prepared = task.status === "ready" ? task.prepared : null;
   const draft = task.status === "draft" ? task.draft : null;
@@ -93,11 +97,11 @@ export function PreparedNote({ ctx }: { ctx: ActContext }) {
       <div className="flex items-center gap-2">
         {person ? <PersonAvatar person={person} /> : null}
         <p className="text-caption font-semibold text-muted-foreground">
-          {prepared ? "Prepared by" : "Draft by"} {person?.name ?? "someone"}
+          {prepared ? __t("shared_preparedBy") : __t("shared_draftBy")} {person?.name ?? __t("shared_someone")}
           {at ? ` · ${dateTime(at)}` : ""}
         </p>
       </div>
-      <p className="text-body-compact">{note || <span className="text-muted-foreground">No note.</span>}</p>
+      <p className="text-body-compact">{__t(note) || <span className="text-muted-foreground">{<__LocalizedText id="shared_noNote" />}</span>}</p>
       {files?.length ? (
         <ul className="flex flex-col gap-1">
           {files.map((f) => (
@@ -127,6 +131,7 @@ export function FileChip({
   onRemove?: () => void;
   disabled?: boolean;
 }) {
+  const __t = __useTranslations();
   const [url, setUrl] = React.useState<string | null>(null);
   React.useEffect(() => {
     let live = true;
@@ -153,16 +158,16 @@ export function FileChip({
           rel="noreferrer"
           className="flex min-w-0 flex-1 items-center gap-2 rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
         >
-          {body}
+          {__t(body)}
         </a>
       ) : (
-        <span className="flex min-w-0 flex-1 items-center gap-2">{body}</span>
+        <span className="flex min-w-0 flex-1 items-center gap-2">{__t(body)}</span>
       )}
       {onRemove ? (
         <Button
           variant="ghost"
           size="icon-xs"
-          aria-label={`Remove ${file.name}`}
+          aria-label={__t("shared_removeValue0", {value0: String(file.name)})}
           disabled={disabled}
           onClick={onRemove}
           className="relative after:absolute after:-inset-1"
@@ -196,6 +201,7 @@ export function FileSlot({
   onFile: (ref: StoredFileRef) => void;
   onRemove: () => void;
 }) {
+  const __t = __useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [busy, setBusy] = React.useState(false);
   const id = `slot-${name.replace(/\W+/g, "-").toLowerCase()}`;
@@ -207,7 +213,7 @@ export function FileSlot({
       const ref = await storeUpload(f);
       onFile({ ...ref, slot: name });
     } catch {
-      toast.error("That file could not be stored in this browser.");
+      toast.error(__t("shared_thatFileCouldNotBeStoredIn"));
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -223,10 +229,9 @@ export function FileSlot({
         {file ? (
           <span className="inline-flex items-center gap-1 text-caption text-success-ink">
             <CheckIcon aria-hidden className="size-3.5" />
-            Attached
-          </span>
+            {<__LocalizedText id="shared_attached" />}{" "}</span>
         ) : (
-          <span className="text-caption text-muted-foreground">{optional ? "Optional" : "Missing"}</span>
+          <span className="text-caption text-muted-foreground">{optional ? __t("shared_optional") : __t("shared_missing")}</span>
         )}
       </div>
       {file ? (
@@ -270,6 +275,7 @@ export function PrepareCard({
   complete?: boolean;
   children?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const { task, people, kase, online, finish } = ctx;
   const { act, busy } = useTaskActions();
   const [note, setNote] = React.useState<string>(task.draft?.note ?? task.prepared?.note ?? "");
@@ -279,25 +285,25 @@ export function PrepareCard({
 
   return (
     <RailCard
-      title={ready ? "Prepared" : task.status === "draft" ? "Continue preparing" : "Prepare"}
+      title={ready ? __t("shared_prepared") : task.status === "draft" ? __t("shared_continuePreparing") : __t("shared_prepare")}
       description={
         ready
-          ? `Marked ready${task.prepared ? ` by ${nameOf(people, task.prepared.by)}` : ""}. ${who} will ${what} it. Save again to rework it.`
-          : `${who} must ${what} this. Prepare it here, then mark it ready — they will be asked to ${what} it.`
+          ? __t("shared_markedReadyValue0Value1WillValue2It", {value0: String(task.prepared ? ` by ${nameOf(people, task.prepared.by)}` : ""), value1: String(__t(who)), value2: String(what)})
+          : `${__t(who)} must ${what} this. Prepare it here, then mark it ready — they will be asked to ${what} it.`
       }
     >
       {children}
       <Field>
-        <FieldLabel htmlFor="prepare-note">Note to the signatory</FieldLabel>
+        <FieldLabel htmlFor="prepare-note">{<__LocalizedText id="shared_noteToTheSignatory" />}</FieldLabel>
         <Textarea
           id="prepare-note"
           rows={3}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="What you checked, what they should look at"
+          placeholder={__t("shared_whatYouCheckedWhatTheyShouldLook")}
           disabled={!online || !!busy}
         />
-        <FieldDescription>Optional. Shown with the task when they open it.</FieldDescription>
+        <FieldDescription>{<__LocalizedText id="shared_optionalShownWithTheTaskWhenThey" />}</FieldDescription>
       </Field>
       <div className="flex flex-wrap gap-2">
         {!ready ? (
@@ -305,22 +311,20 @@ export function PrepareCard({
             disabled={!online || !!busy || !complete}
             onClick={async () => {
               const t = await act(task.id, (x, c) => markReady(x, c, note, files));
-              if (t) finish(`Marked ready — ${who} will be asked to ${what} it`);
+              if (t) finish(`Marked ready — ${__t(who)} will be asked to ${what} it`);
             }}
           >
-            Mark ready
-          </Button>
+            {<__LocalizedText id="shared_markReady" />}{" "}</Button>
         ) : null}
         <Button
           variant={ready ? "outline" : "ghost"}
           disabled={!online || !!busy}
           onClick={() => void act(task.id, (x, c) => saveDraft(x, c, note, files), "Saved as a draft")}
         >
-          Save as draft
-        </Button>
+          {<__LocalizedText id="shared_saveAsDraft" />}{" "}</Button>
       </div>
       {!complete && !ready ? (
-        <p className="text-caption text-muted-foreground">Finish the preparation to mark it ready.</p>
+        <p className="text-caption text-muted-foreground">{<__LocalizedText id="shared_finishThePreparationToMarkItReady" />}</p>
       ) : null}
     </RailCard>
   );
@@ -344,11 +348,12 @@ export function OtpDialog({
   title?: string;
   confirmLabel?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FlowDialogContent className="sm:max-w-md">
         {/* Mounted per open, so the code always starts empty. */}
-        {open ? <OtpForm signer={signer} onSign={onSign} title={title} confirmLabel={confirmLabel} /> : null}
+        {open ? <OtpForm signer={signer} onSign={onSign} title={__t(title)} confirmLabel={__t(confirmLabel)} /> : null}
       </FlowDialogContent>
     </Dialog>
   );
@@ -365,22 +370,20 @@ function OtpForm({
   title: string;
   confirmLabel: string;
 }) {
+  const __t = __useTranslations();
   const [otp, setOtp] = React.useState("");
   const [resent, setResent] = React.useState(false);
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{title}</DialogTitle>
+        <DialogTitle>{__t(title)}</DialogTitle>
         <DialogDescription>
-          In the live service, a 6-digit OTP goes to{" "}
-          <strong className="font-semibold text-foreground">{signer.name}</strong>’s Aadhaar-linked
-          mobile. The signature applied is theirs.
-        </DialogDescription>
+          {<__LocalizedText id="shared_inTheLiveServiceA6Digit" />}{" "}
+          <strong className="font-semibold text-foreground">{signer.name}</strong>{<__LocalizedText id="shared_sAadhaarLinkedMobileTheSignatureApplied" />}{" "}</DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-2">
         <Label htmlFor="esign-otp" className="text-body-compact">
-          Enter OTP
-        </Label>
+          {<__LocalizedText id="shared_enterOtp" />}{" "}</Label>
         <InputOTP id="esign-otp" maxLength={6} value={otp} onChange={setOtp} containerClassName="gap-2">
           <InputOTPGroup className="gap-2">
             {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -388,17 +391,17 @@ function OtpForm({
             ))}
           </InputOTPGroup>
         </InputOTP>
-        <p className="text-caption text-muted-foreground">Sandbox — any 6-digit code is accepted here.</p>
+        <p className="text-caption text-muted-foreground">{<__LocalizedText id="shared_sandboxAny6DigitCodeIsAccepted" />}</p>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-body-compact text-muted-foreground">Didn’t get it?</span>
+        <span className="text-body-compact text-muted-foreground">{<__LocalizedText id="shared_didnTGetIt" />}</span>
         <Button type="button" variant="link" className="h-auto p-0 underline" onClick={() => setResent(true)}>
-          {resent ? "Sent again" : "Resend OTP"}
+          {resent ? __t("shared_sentAgain") : __t("shared_resendOtp")}
         </Button>
       </div>
       <Button size="lg" className="w-full" disabled={otp.length < 6} onClick={onSign}>
         <SignatureIcon data-icon="inline-start" aria-hidden />
-        {confirmLabel}
+        {__t(confirmLabel)}
       </Button>
     </>
   );
@@ -411,6 +414,7 @@ function OtpForm({
  * Returning creates the `returned` task and takes you to it.
  */
 export function CourtSandbox({ ctx }: { ctx: ActContext }) {
+  const __t = __useTranslations();
   const { task, online, finish } = ctx;
   const { act, busy } = useTaskActions();
   const [open, setOpen] = React.useState(false);
@@ -419,8 +423,8 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
 
   return (
     <RailCard
-      title="With the court"
-      description="Filed — the registry has it now. These controls stand in for the registry's answer."
+      title={__t("shared_withTheCourt")}
+      description={__t("shared_filedTheRegistryHasItNowThese")}
     >
       <div className="flex flex-wrap gap-2">
         <Button
@@ -431,38 +435,34 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
             if (t) finish("Accepted by the registry");
           }}
         >
-          Court: accept
-        </Button>
+          {<__LocalizedText id="shared_courtAccept" />}{" "}</Button>
         <Button variant="outline" disabled={!online || !!busy} onClick={() => setOpen(true)}>
-          Court: return with defects
-        </Button>
+          {<__LocalizedText id="shared_courtReturnWithDefects" />}{" "}</Button>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <FlowDialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Return with defects</DialogTitle>
+            <DialogTitle>{<__LocalizedText id="shared_returnWithDefects" />}</DialogTitle>
             <DialogDescription>
-              Enter one to three scrutiny remarks. A re-filing task is created with them.
-            </DialogDescription>
+              {<__LocalizedText id="shared_enterOneToThreeScrutinyRemarksA" />}{" "}</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3">
             {defects.map((d, i) => (
               <Field key={i}>
-                <FieldLabel htmlFor={`defect-${i}`}>Defect {i + 1}</FieldLabel>
+                <FieldLabel htmlFor={`defect-${i}`}>{<__LocalizedText id="shared_defect" />}{" "}{i + 1}</FieldLabel>
                 <Input
                   id={`defect-${i}`}
                   value={d}
                   onChange={(e) => setDefects((prev) => prev.map((x, j) => (j === i ? e.target.value : x)))}
-                  placeholder={i === 0 ? "Affidavit not attested by a notary" : "Optional"}
+                  placeholder={i === 0 ? __t("shared_affidavitNotAttestedByANotary") : __t("shared_optional")}
                 />
               </Field>
             ))}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
+              {<__LocalizedText id="shared_cancel" />}{" "}</Button>
             <Button
               disabled={!filled.length || !!busy}
               onClick={async () => {
@@ -476,8 +476,7 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
                 if (t) finish(`Returned — ${filled.length} defect${filled.length === 1 ? "" : "s"} to fix`, createdId);
               }}
             >
-              Return
-            </Button>
+              {<__LocalizedText id="shared_return" />}{" "}</Button>
           </DialogFooter>
         </FlowDialogContent>
       </Dialog>
@@ -488,28 +487,29 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
 /* ───────────────────────────── the closed record ───────────────────────────── */
 
 export function RecordCard({ ctx, title }: { ctx: ActContext; title: string }) {
+  const __t = __useTranslations();
   const { task, people } = ctx;
   const by = people.find((p) => p.id === task.completion?.by);
   return (
-    <RailCard title={title}>
+    <RailCard title={__t(title)}>
       <dl className="flex flex-col gap-2 text-body-compact">
         {task.completion ? (
           <>
             <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">When</dt>
+              <dt className="text-muted-foreground">{<__LocalizedText id="shared_when" />}</dt>
               <dd className="tabular-nums">{dateTime(task.completion.at)}</dd>
             </div>
             {by ? (
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">By</dt>
+                <dt className="text-muted-foreground">{<__LocalizedText id="shared_by" />}</dt>
                 <dd>{by.name}</dd>
               </div>
             ) : null}
             {task.completion.receipt ? (
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Reference</dt>
+                <dt className="text-muted-foreground">{<__LocalizedText id="shared_reference" />}</dt>
                 <dd>
-                  <Identifier value={task.completion.receipt} label="receipt" />
+                  <Identifier value={task.completion.receipt} label={__t("shared_receipt")} />
                 </dd>
               </div>
             ) : null}

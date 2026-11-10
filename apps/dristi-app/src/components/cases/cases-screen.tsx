@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { PAGE_TITLE } from "@/components/shell/page-frame";
 import { Separator } from "@/components/ui/separator";
@@ -93,6 +95,7 @@ export function CasesScreen({
   initialBookmarks: string[];
   now: number;
 }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const { search, effective, go, onSearchChange } = useCasesNavigation(query);
   const [bookmarks, setBookmarks] = React.useState<ReadonlySet<string>>(
@@ -241,11 +244,9 @@ export function CasesScreen({
           <EmptyMedia variant="icon">
             <FolderOpenIcon aria-hidden />
           </EmptyMedia>
-          <EmptyTitle className="text-title-s font-semibold">No cases yet</EmptyTitle>
+          <EmptyTitle className="text-title-s font-semibold">{<__LocalizedText id="casesScreen_noCasesYet" />}</EmptyTitle>
           <EmptyDescription className="text-body">
-            A case appears here once its filing has cleared scrutiny. Drafts and
-            returned filings stay in File a case.
-          </EmptyDescription>
+            {<__LocalizedText id="casesScreen_aCaseAppearsHereOnceItsFiling" />}{" "}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -257,19 +258,17 @@ export function CasesScreen({
             <FileSearchIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            No cases match
-          </EmptyTitle>
+            {<__LocalizedText id="casesScreen_noCasesMatch" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
             {search
-              ? "Nothing here matches this search. Try another case name or number, or clear the filters."
-              : "Nothing here matches these filters. Change them, or clear them to see every case again."}
+              ? __t("casesScreen_nothingHereMatchesThisSearchTryAnother")
+              : __t("casesScreen_nothingHereMatchesTheseFiltersChangeThem")}
           </EmptyDescription>
         </EmptyHeader>
         {narrowed ? (
           <EmptyContent>
             <Button variant="outline" onClick={clearAll}>
-              Clear all filters
-            </Button>
+              {<__LocalizedText id="casesScreen_clearAllFilters" />}{" "}</Button>
           </EmptyContent>
         ) : null}
       </Empty>
@@ -295,13 +294,10 @@ export function CasesScreen({
         variant="error"
         action={
           <Button variant="outline" onClick={() => go({ demo: null })}>
-            Try again
-          </Button>
+            {<__LocalizedText id="casesScreen_tryAgain" />}{" "}</Button>
         }
       >
-        Cases could not be loaded. Nothing has been changed — try again in a
-        moment.
-      </Banner>
+        {<__LocalizedText id="casesScreen_casesCouldNotBeLoadedNothingHas" />}{" "}</Banner>
     ) : (
       <div
         className={cn(
@@ -333,7 +329,7 @@ export function CasesScreen({
             <CasesAppliedFilters query={effective} onChange={applyFilters} />
           </div>
 
-          {body}
+          {__t(body)}
       </div>
     );
 
@@ -367,7 +363,7 @@ export function CasesScreen({
             "flex flex-wrap items-center justify-between gap-4 " + PEEK_PUSH_CLASS
           }
         >
-          <h1 className={PAGE_TITLE}>Cases</h1>
+          <h1 className={PAGE_TITLE}>{<__LocalizedText id="casesScreen_cases" />}</h1>
           <div className="flex min-w-0 flex-wrap items-center gap-3">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -375,7 +371,7 @@ export function CasesScreen({
                   variant="outline"
                   pressed={effective.bookmarked}
                   onPressedChange={(bookmarked) => go({ bookmarked })}
-                  aria-label="Bookmarked cases"
+                  aria-label={__t("casesScreen_bookmarkedCases")}
                   className="size-10 shrink-0"
                 >
                   <BookmarkIcon
@@ -384,7 +380,7 @@ export function CasesScreen({
                   />
                 </Toggle>
               </TooltipTrigger>
-              <TooltipContent>Bookmarked cases</TooltipContent>
+              <TooltipContent>{<__LocalizedText id="casesScreen_bookmarkedCases" />}</TooltipContent>
             </Tooltip>
             <Button size="lg" onClick={joinCase} className="shrink-0">
               <UserPlusIcon data-icon="inline-start" aria-hidden />
@@ -464,6 +460,7 @@ function CasesToolbar({
   search: string;
   onSearchChange: (value: string) => void;
 }) {
+  const __t = __useTranslations();
   const { record, docked, closing } = useCasePeek();
   // Compress the moment a close begins (not when it ends), so the buttons morph back to
   // labels in step with the panel sliding out and the chrome easing back — no end-pop.
@@ -490,14 +487,14 @@ function CasesToolbar({
       }
     >
       <div className="flex min-w-0 flex-col gap-1 max-sm:order-1 sm:shrink-0">
-        <h2 className="text-title-s font-semibold">Your cases</h2>
+        <h2 className="text-title-s font-semibold">{<__LocalizedText id="casesScreen_yourCases" />}</h2>
         {/* Says how many matched out of everything, so a filtered list is never
             mistaken for the whole book. */}
         <p
           className="text-body-compact text-muted-foreground tabular-nums"
           aria-live="polite"
         >
-          Showing {matched} of {total} {total === 1 ? "case" : "cases"}
+          {<__LocalizedText id="casesScreen_showing" />}{" "}{matched} {<__LocalizedText id="casesScreen_of" />}{" "}{total} {total === 1 ? __t("casesScreen_case") : __t("casesScreen_cases_fef66b87")}
         </p>
       </div>
       <div
@@ -520,10 +517,10 @@ function CasesToolbar({
                 "relative shrink-0 gap-0 duration-300 " +
                 (compact ? "px-2.5" : "px-4")
               }
-              aria-label={`Share access${selectedCount ? `, ${selectedCount} selected` : ""}`}
+              aria-label={__t("casesScreen_shareAccessValue0", {value0: String(selectedCount ? `, ${selectedCount} selected` : "")})}
             >
               <Share2Icon aria-hidden />
-              <CollapsibleLabel show={!compact}>Share access</CollapsibleLabel>
+              <CollapsibleLabel show={!compact}>{<__LocalizedText id="casesScreen_shareAccess" />}</CollapsibleLabel>
               {selectedCount ? (
                 <span className="ms-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-caption font-medium tabular-nums text-primary-foreground">
                   {selectedCount}
@@ -532,7 +529,7 @@ function CasesToolbar({
             </Button>
           </TooltipTrigger>
           {/* The name only needs a tooltip while the label is collapsed. */}
-          {compact ? <TooltipContent>Share access</TooltipContent> : null}
+          {compact ? <TooltipContent>{<__LocalizedText id="casesScreen_shareAccess" />}</TooltipContent> : null}
         </Tooltip>
         {/* Columns belong to the table. The cards below `md` have one designed
             shape, so the control that would do nothing there is not offered. */}
@@ -563,8 +560,7 @@ function CasesToolbar({
         }
       >
         <Label htmlFor="cases-search" className="sr-only">
-          Search cases
-        </Label>
+          {<__LocalizedText id="casesScreen_searchCases" />}{" "}</Label>
         <InputGroup>
           <InputGroupAddon>
             <SearchIcon aria-hidden />
@@ -577,7 +573,7 @@ function CasesToolbar({
             onChange={(event) => onSearchChange(event.target.value)}
             // Short enough to read whole in the narrower box the toolbar gets on a
             // tablet on its side; the magnifier already says "search".
-            placeholder={compact ? "Search" : "Case name or number"}
+            placeholder={compact ? __t("casesScreen_search") : __t("casesScreen_caseNameOrNumber")}
           />
         </InputGroup>
       </div>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FolderCheckIcon, SearchXIcon } from "lucide-react";
@@ -84,6 +86,7 @@ const OTHER_APPLICATION_SORTS: CourtSortSpec<OtherApplication, OtherApplicationS
  * only drop the row from this demo queue; they decide nothing and write no order.
  */
 export function OtherApplicationsScreen() {
+  const __t = __useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used — every one of them, so the screen has a single rule rather than a live
      one and a deferred one. Every change resets to page one; the old Search button did
@@ -145,14 +148,13 @@ export function OtherApplicationsScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Others
-        </h1>
+          {<__LocalizedText id="otherApplicationsScreen_others" />}{" "}</h1>
         {/* The count is the whole point of the queue, so the supporting line carries it
             rather than restating the title. Singular is spelled out because "1
             applications" is the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 application is waiting for review."
+            ? __t("otherApplicationsScreen_1ApplicationIsWaitingForReview")
             : `${remaining.length} applications are waiting for review.`}
         </p>
       </header>
@@ -263,25 +265,26 @@ function OtherApplicationFiltersForm({
   /** The list's sort control (`CourtSortSelect`), at the end of the row. */
   trailing?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: __t("otherApplicationsScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: __t("otherApplicationsScreen_caseNameNumberOrAdvocate"),
       }}
       searchRef={searchRef}
       fields={[
         {
           id: "other-applications-stage",
-          label: "Stage",
+          label: __t("otherApplicationsScreen_stage"),
           value: filters.stage,
           all: "all",
           allLabel: "All stages",
           options: OTHER_APPLICATION_STAGES.map((stage) => ({
             value: stage.id,
-            label: stage.label,
+            label: __t(stage.label),
           })),
           onApply: (value) =>
             onChange({
@@ -290,13 +293,13 @@ function OtherApplicationFiltersForm({
         },
         {
           id: "other-applications-type",
-          label: "Application type",
+          label: __t("otherApplicationsScreen_applicationType"),
           value: filters.type,
           all: "all",
           allLabel: "All application types",
           options: OTHER_APPLICATION_TYPES.map((type) => ({
             value: type.id,
-            label: type.label,
+            label: __t(type.label),
           })),
           onApply: (value) =>
             onChange({
@@ -325,6 +328,7 @@ function OtherApplicationsEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -336,19 +340,18 @@ function OtherApplicationsEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match these filters" : "Nothing waiting"}
+          {isFiltered ? __t("otherApplicationsScreen_noMattersMatchTheseFilters") : __t("otherApplicationsScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No application matches the stage, type or search you asked for."
-            : "There are no applications waiting for this court."}
+            ? __t("otherApplicationsScreen_noApplicationMatchesTheStageTypeOr")
+            : __t("otherApplicationsScreen_thereAreNoApplicationsWaitingForThis")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
-          </Button>
+            {<__LocalizedText id="otherApplicationsScreen_clearFilters" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -374,6 +377,7 @@ function OtherApplicationsItemList({
   rows: OtherApplication[];
   onOpen: (application: OtherApplication) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((application) => (
@@ -387,17 +391,17 @@ function OtherApplicationsItemList({
               {...rowOpener}
                 className={rowOpenerClass}
             >
-              <span className="sr-only">Review </span>
+              <span className="sr-only">{<__LocalizedText id="otherApplicationsScreen_review" />}{" "}</span>
               {causeTitle(application)}
             </button>
           <p className="min-w-0 text-body-compact">
             {otherApplicationTypeLabel(application.type)}
           </p>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={application.caseNumber} label="case number" />
+            <Identifier value={application.caseNumber} label={__t("otherApplicationsScreen_caseNumber")} />
             {" · "}
             {otherApplicationStageLabel(application.stage)}
-            {" · Applied "}
+            {__t("otherApplicationsScreen_applied")}
             <span className="tabular-nums">
               {formatOtherApplicationLongDate(application.appliedOn)}
             </span>

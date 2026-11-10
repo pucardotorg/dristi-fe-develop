@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
@@ -83,6 +85,7 @@ export function RegisterScreen({ registerId }: { registerId: string }) {
 }
 
 function Register({ register }: { register: RegisterMeta }) {
+  const __t = __useTranslations();
   const docket = useCourtDocket();
   const today = useCourtToday();
   const searchParams = useSearchParams();
@@ -146,7 +149,7 @@ function Register({ register }: { register: RegisterMeta }) {
     const link = document.createElement("a");
     link.href = url;
     link.download = [
-      `register-${register.no}-${register.id}`,
+      `register-${__t(register.no)}-${register.id}`,
       result.view,
       register.id === "pending" && result.year ? String(result.year) : null,
       today,
@@ -164,10 +167,10 @@ function Register({ register }: { register: RegisterMeta }) {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          {register.no}. {register.name}
+          {__t(register.no)}. {register.name}
         </h1>
         <p className="text-body text-muted-foreground tabular-nums">{countLine(result, isFiltered)}</p>
-        <p className="max-w-3xl text-body-compact text-muted-foreground">{register.description}</p>
+        <p className="max-w-3xl text-body-compact text-muted-foreground">{__t(register.description)}</p>
       </header>
 
       {register.sourceToConfirm ? (
@@ -182,7 +185,7 @@ function Register({ register }: { register: RegisterMeta }) {
                 <div className="-m-1 max-w-full overflow-x-auto p-1">
                   <SegmentedControl
                     type="single"
-                    aria-label="View"
+                    aria-label={__t("registerScreen_view")}
                     value={result.view ?? undefined}
                     onValueChange={(next) => {
                       if (!next) return;
@@ -193,7 +196,7 @@ function Register({ register }: { register: RegisterMeta }) {
                   >
                     {register.views.map((option) => (
                       <SegmentedControlItem key={option.id} value={option.id}>
-                        {option.label}
+                        {__t(option.label)}
                       </SegmentedControlItem>
                     ))}
                   </SegmentedControl>
@@ -202,10 +205,10 @@ function Register({ register }: { register: RegisterMeta }) {
               {result.search ? (
                 <QueueSearchField
                   ref={searchRef}
-                  label="Search this register"
+                  label={__t("registerScreen_searchThisRegister")}
                   labelClassName="sr-only"
                   className="sm:w-80"
-                  placeholder="Case, number or name"
+                  placeholder={__t("registerScreen_caseNumberOrName")}
                   value={query}
                   onChange={(next) => {
                     setQuery(next);
@@ -216,8 +219,7 @@ function Register({ register }: { register: RegisterMeta }) {
               {result.period ? (
                 <div className="flex min-w-0 flex-col gap-2">
                   <Label htmlFor="register-period" className="sr-only">
-                    Period
-                  </Label>
+                    {<__LocalizedText id="registerScreen_period" />}{" "}</Label>
                   <Select
                     value={period}
                     onValueChange={(next) => {
@@ -231,7 +233,7 @@ function Register({ register }: { register: RegisterMeta }) {
                     <SelectContent>
                       {REGISTER_PERIODS.map((option) => (
                         <SelectItem key={option.id} value={option.id}>
-                          {option.label}
+                          {__t(option.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -240,8 +242,7 @@ function Register({ register }: { register: RegisterMeta }) {
               ) : null}
               {isFiltered ? (
                 <Button type="button" variant="ghost" onClick={clearFilters}>
-                  Clear filters
-                </Button>
+                  {<__LocalizedText id="registerScreen_clearFilters" />}{" "}</Button>
               ) : null}
               <Button
                 type="button"
@@ -251,13 +252,12 @@ function Register({ register }: { register: RegisterMeta }) {
                 onClick={download}
               >
                 <DownloadIcon aria-hidden data-icon="inline-start" />
-                Download CSV
-              </Button>
+                {<__LocalizedText id="registerScreen_downloadCsv" />}{" "}</Button>
             </div>
             {longPendingOnly ? (
               <div className="flex flex-wrap items-center gap-2">
                 <AppliedChip
-                  label="Long pending only"
+                  label={__t("registerScreen_longPendingOnly")}
                   onClear={() => {
                     setLongPendingOnly(false);
                     setPage(1);
@@ -268,9 +268,7 @@ function Register({ register }: { register: RegisterMeta }) {
             {register.id === "fees" ? (
               /* Kept as written whichever state is selected: these are Kerala's amounts. */
               <p data-court-raw className="text-body-compact text-muted-foreground">
-                Amounts from Kerala&rsquo;s fee schedule. The application fee is a demo rate; no
-                source gives one.
-              </p>
+                {<__LocalizedText id="registerScreen_amountsFromKeralaSFeeScheduleThe" />}{" "}</p>
             ) : null}
           </div>
 
@@ -289,7 +287,7 @@ function Register({ register }: { register: RegisterMeta }) {
               }}
             >
               <RegisterRows
-                caption={`${result.view === "cmp" ? "CMP" : "ST"} cases pending from ${result.year ?? ""}`}
+                caption={`${result.view === "cmp" ? __t("registerScreen_cmp_50e5ecf1") : __t("registerScreen_st")} cases pending from ${result.year ?? ""}`}
                 result={result}
                 rows={pageRows}
                 start={start}
@@ -347,6 +345,7 @@ function RegisterRows({
   footer: React.ReactNode;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   if (rows.length === 0) {
     return (
       <Empty className="px-0 py-6">
@@ -354,15 +353,13 @@ function RegisterRows({
           <EmptyMedia variant="icon">
             <FileSearchIcon aria-hidden />
           </EmptyMedia>
-          <EmptyTitle className="text-body font-semibold">No entries match</EmptyTitle>
+          <EmptyTitle className="text-body font-semibold">{<__LocalizedText id="registerScreen_noEntriesMatch" />}</EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            Clear the search or widen the period.
-          </EmptyDescription>
+            {<__LocalizedText id="registerScreen_clearTheSearchOrWidenThePeriod" />}{" "}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button type="button" variant="outline" onClick={onClear}>
-            Clear filters
-          </Button>
+            {<__LocalizedText id="registerScreen_clearFilters" />}{" "}</Button>
         </EmptyContent>
       </Empty>
     );
@@ -375,7 +372,7 @@ function RegisterRows({
     <div className="flex min-w-0 flex-col gap-4">
       <div className="min-w-0 overflow-x-auto">
         <DocketTable
-          caption={caption}
+          caption={__t(caption)}
           columns={result.columns}
           rows={rows}
           firstIndex={start}
@@ -407,11 +404,11 @@ function PendingByYear({
     <div className="grid min-w-0 gap-6 lg:grid-cols-3 lg:items-start">
       <div className="min-w-0">
         <Table className="w-full border-separate border-spacing-0 text-body-compact">
-          <caption className="sr-only">{kind} cases pending, by the year they were numbered</caption>
+          <caption className="sr-only">{kind} {<__LocalizedText id="registerScreen_casesPendingByTheYearTheyWere" />}</caption>
           <TableHeader>
             <TableRow className={TABLE_HEAD_ROW}>
-              <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>Year</TableHead>
-              <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>Pending</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>{<__LocalizedText id="registerScreen_year" />}</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>{<__LocalizedText id="registerScreen_pending" />}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className={tableBodyClass({ selectable: true })}>
@@ -437,7 +434,7 @@ function PendingByYear({
                       onClick={() => onYear(entry.year)}
                       className="min-h-10 w-full cursor-pointer rounded-sm text-left font-medium tabular-nums underline-offset-4 outline-none group-hover/row:underline focus-visible:ring-3 focus-visible:ring-focus-ring"
                     >
-                      <span className="sr-only">Show {kind} cases pending from </span>
+                      <span className="sr-only">{<__LocalizedText id="registerScreen_show" />}{" "}{kind} {<__LocalizedText id="registerScreen_casesPendingFrom" />}{" "}</span>
                       {entry.year}
                     </button>
                   </TableCell>
@@ -446,7 +443,7 @@ function PendingByYear({
               );
             })}
             <TableRow className={tableRowClass({ hover: false })}>
-              <TableCell className={cn(TABLE_CELL, "font-semibold")}>Total</TableCell>
+              <TableCell className={cn(TABLE_CELL, "font-semibold")}>{<__LocalizedText id="registerScreen_total" />}</TableCell>
               <TableCell className={cn(TABLE_CELL, "text-right font-semibold tabular-nums")}>
                 {formatCount(result.total)}
               </TableCell>
@@ -456,7 +453,7 @@ function PendingByYear({
       </div>
       <section aria-labelledby="pending-year" className="flex min-w-0 flex-col gap-4 lg:col-span-2">
         <h2 id="pending-year" className="text-body font-semibold">
-          {kind} cases pending from {result.year}
+          {kind} {<__LocalizedText id="registerScreen_casesPendingFrom" />}{" "}{result.year}
           {chosen ? (
             <span className="font-normal text-muted-foreground tabular-nums"> · {formatCount(chosen.count)}</span>
           ) : null}
@@ -476,12 +473,10 @@ function SourceToConfirm({ result }: { result: RegisterResult }) {
       </div>
       <Empty className="px-0 py-6">
         <EmptyHeader>
-          <Badge variant="outline">Source to confirm</Badge>
-          <EmptyTitle className="text-body font-semibold">No entries to show</EmptyTitle>
+          <Badge variant="outline">{<__LocalizedText id="registerScreen_sourceToConfirm" />}</Badge>
+          <EmptyTitle className="text-body font-semibold">{<__LocalizedText id="registerScreen_noEntriesToShow" />}</EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            These columns are from the note. Where DRISTI would get this register&rsquo;s data
-            has not been confirmed, so it holds no entries.
-          </EmptyDescription>
+            {<__LocalizedText id="registerScreen_theseColumnsAreFromTheNoteWhere" />}{" "}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     </section>

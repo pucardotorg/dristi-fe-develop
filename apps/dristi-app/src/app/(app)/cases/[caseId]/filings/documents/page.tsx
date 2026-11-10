@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -31,6 +32,7 @@ export default async function SubmitDocumentsPage({
 }: {
   params: Promise<{ caseId: string }>;
 }) {
+  const __t = __useTranslations();
   const { caseId } = await params;
   const record = findCase(caseId);
   if (!record) notFound();
@@ -41,7 +43,7 @@ export default async function SubmitDocumentsPage({
       <CaseBreadcrumbs
         caseId={record.id}
         caseNumber={record.caseNumber}
-        trail={[{ label: "Submit documents" }]}
+        trail={[{ label: __t("documentsPage_submitDocuments") }]}
       />
       <SubmitDocumentsForm
         caseId={record.id}

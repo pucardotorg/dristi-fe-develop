@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -110,6 +112,7 @@ const tail = (m?: string) =>
 
 /** Bulk signing: everyone who must sign each case (`SIG-03`), by one method for all (`SIG-04`). */
 export function SignTab({ batch, setBatch, go }: BatchCtx) {
+  const __t = __useTranslations();
   const clear = batch.cases.filter(
     (c) => c.stage === "ready" && c.flags.length === 0,
   );
@@ -158,11 +161,9 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
         <Alert variant="warning">
           <InfoIcon aria-hidden />
           <AlertTitle className="tabular-nums">
-            {held + unanswered} case
-            {held + unanswered === 1 ? " isn't" : "s aren't"} ready to sign yet
-          </AlertTitle>
+            {held + unanswered} {<__LocalizedText id="signTab_case" />}{" "}{held + unanswered === 1 ? __t("signTab_isnT") : __t("signTab_sArenT")} {<__LocalizedText id="signTab_readyToSignYet" />}{" "}</AlertTitle>
           <AlertDescription>
-            Finish the case details first:{" "}
+            {<__LocalizedText id="signTab_finishTheCaseDetailsFirst" />}{" "}
             {[
               held ? `${held} need${held === 1 ? "s" : ""} fixing` : "",
               unanswered ? `${unanswered} to check` : "",
@@ -175,8 +176,7 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
               className="underline"
               onClick={() => go("scrutiny")}
             >
-              Go to Case details
-            </button>
+              {<__LocalizedText id="signTab_goToCaseDetails" />}{" "}</button>
           </AlertDescription>
         </Alert>
       ) : null}
@@ -184,24 +184,21 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
       {clear.length === 0 ? (
         <Card className={PANEL_CLASS}>
           <CardContent className="text-body-compact text-muted-foreground">
-            Nothing to sign yet. Finish the documents and case details first.
-          </CardContent>
+            {<__LocalizedText id="signTab_nothingToSignYetFinishTheDocuments" />}{" "}</CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
           <Card className={cn(PANEL_CLASS, "lg:col-span-2")}>
             <CardHeader>
               <CardTitle className="text-body font-semibold">
-                Cases to sign
-              </CardTitle>
+                {<__LocalizedText id="signTab_casesToSign" />}{" "}</CardTitle>
               <CardDescription className="tabular-nums">
-                {chosen.length} of {clear.length} chosen
-              </CardDescription>
+                {chosen.length} {<__LocalizedText id="signTab_of" />}{" "}{clear.length} {<__LocalizedText id="signTab_chosen" />}{" "}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-1">
               <label className="flex min-h-10 items-center gap-3 rounded-lg px-2 hover:bg-accent">
                 <Checkbox
-                  aria-label="All clear cases"
+                  aria-label={__t("signTab_allClearCases")}
                   checked={
                     chosen.length === clear.length
                       ? true
@@ -216,8 +213,7 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
                   }
                 />
                 <span className="text-body-compact font-medium">
-                  All clear cases
-                </span>
+                  {<__LocalizedText id="signTab_allClearCases" />}{" "}</span>
               </label>
               {clear.map((c) => (
                 <label
@@ -256,19 +252,16 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
           <Card className={cn(PANEL_CLASS, "lg:col-span-3")}>
             <CardHeader>
               <CardTitle className="text-body font-semibold">
-                How to sign
-              </CardTitle>
+                {<__LocalizedText id="signTab_howToSign" />}{" "}</CardTitle>
               <CardDescription>
-                Every case needs {signers.map((s) => s.name).join(" and ")}. One
-                method for all of them.
-              </CardDescription>
+                {<__LocalizedText id="signTab_everyCaseNeeds" />}{" "}{signers.map((s) => s.name).join(" and ")}{<__LocalizedText id="signTab_oneMethodForAllOfThem" />}{" "}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <RadioGroup
                 value={method}
                 onValueChange={(v) => setMethod(v as BulkSignMethod)}
                 className="gap-2"
-                aria-label="Signing method"
+                aria-label={__t("signTab_signingMethod")}
               >
                 {METHODS.filter((m) => m.id !== "upload").map((m) => {
                   const Icon = m.icon;
@@ -294,7 +287,7 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
                             id={`sign-${m.id}-title`}
                             className="text-body-compact font-medium"
                           >
-                            {m.title}
+                            {__t(m.title)}
                           </span>
                           <Badge
                             variant={
@@ -312,7 +305,7 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
                           id={`sign-${m.id}-hint`}
                           className="text-caption text-muted-foreground"
                         >
-                          {m.hint}
+                          {__t(m.hint)}
                         </span>
                         {/* The reason, and its source, on demand: a Why link with the citation in its tooltip. */}
                         {m.id === "aadhaar" ? (
@@ -326,11 +319,9 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
                                   onClick={(e) => e.stopPropagation()}
                                   className="w-fit text-caption text-primary underline"
                                 >
-                                  Why?
-                                  <span className="sr-only">
+                                  {<__LocalizedText id="signTab_why" />}{" "}<span className="sr-only">
                                     {" "}
-                                    (opens the specification in a new tab)
-                                  </span>
+                                    {<__LocalizedText id="signTab_opensTheSpecificationInANewTab" />}{" "}</span>
                                 </a>
                               </TooltipTrigger>
                               <TooltipContent
@@ -339,16 +330,12 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
                               >
                                 <span className="flex flex-col gap-2">
                                   <span>
-                                    The government&apos;s rules for Aadhaar
-                                    eSign let one OTP sign at most{" "}
-                                    {AADHAAR_DOCS_PER_OTP} documents. So each
-                                    person signing gets one OTP for every{" "}
-                                    {AADHAAR_DOCS_PER_OTP} cases: 12 cases means
-                                    3 OTPs each.
-                                  </span>
+                                    {<__LocalizedText id="signTab_theGovernmentSRulesForAadhaarEsign" />}{" "}
+                                    {AADHAAR_DOCS_PER_OTP} {<__LocalizedText id="signTab_documentsSoEachPersonSigningGetsOne" />}{" "}
+                                    {AADHAAR_DOCS_PER_OTP} {<__LocalizedText id="signTab_cases12CasesMeans3OtpsEach" />}{" "}</span>
                                   <span>
-                                    Source: {AADHAAR_LIMIT_SOURCE.publisher},{" "}
-                                    {AADHAAR_LIMIT_SOURCE.title}.
+                                    {<__LocalizedText id="signTab_source" />}{" "}{AADHAAR_LIMIT_SOURCE.publisher},{" "}
+                                    {__t(AADHAAR_LIMIT_SOURCE.title)}.
                                   </span>
                                 </span>
                               </TooltipContent>
@@ -364,11 +351,10 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
                   <RadioGroupItem
                     value="upload"
                     id="sign-upload"
-                    aria-label="Upload signed copies (print, sign by hand, scan)"
+                    aria-label={__t("signTab_uploadSignedCopiesPrintSignByHand")}
                   />
                   <span>
-                    Or upload signed copies (print, sign by hand, scan)
-                  </span>
+                    {<__LocalizedText id="signTab_orUploadSignedCopiesPrintSignBy" />}{" "}</span>
                 </label>
               </RadioGroup>
 
@@ -378,7 +364,7 @@ export function SignTab({ batch, setBatch, go }: BatchCtx) {
                 onClick={() => setFlowOpen(true)}
               >
                 <PenToolIcon data-icon="inline-start" aria-hidden />
-                Sign {chosen.length} case{chosen.length === 1 ? "" : "s"}
+                {<__LocalizedText id="signTab_sign" />}{" "}{chosen.length} {<__LocalizedText id="signTab_case" />}{chosen.length === 1 ? "" : "s"}
               </Button>
             </CardContent>
           </Card>
@@ -438,6 +424,7 @@ function SignFlow({
   onDone: () => Promise<void>;
   onPay: () => void;
 }) {
+  const __t = __useTranslations();
   const steps: Step[] = React.useMemo(() => {
     if (method === "upload") return [];
     // Mobile OTP: one OTP, to the filing advocate, for everyone on every case (owner,
@@ -535,39 +522,34 @@ function SignFlow({
                 <CheckIcon className="size-6" aria-hidden />
               </span>
               <DialogTitle className="text-title-s font-semibold">
-                Signing complete
-              </DialogTitle>
+                {<__LocalizedText id="signTab_signingComplete" />}{" "}</DialogTitle>
               <DialogDescription className="text-body-compact text-success-foreground">
-                <span className="tabular-nums">{signed.length}</span> case
-                {signed.length === 1 ? " is" : "s are"} signed and ready to pay.
-              </DialogDescription>
+                <span className="tabular-nums">{signed.length}</span> {<__LocalizedText id="signTab_case" />}{" "}{signed.length === 1 ? __t("signTab_is") : __t("signTab_sAre")} {<__LocalizedText id="signTab_signedAndReadyToPay" />}{" "}</DialogDescription>
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
               <div className="flex items-center justify-between gap-4 text-body-compact">
-                <span className="text-muted-foreground">Signed with</span>
+                <span className="text-muted-foreground">{<__LocalizedText id="signTab_signedWith" />}</span>
                 <span className="font-semibold text-foreground">
-                  {METHODS.find((m) => m.id === method)?.title}
+                  {__t(METHODS.find((m) => m.id === method)?.title)}
                 </span>
               </div>
               <div className="flex items-start justify-between gap-4 text-body-compact">
                 <span className="shrink-0 text-muted-foreground">
-                  Signed by
-                </span>
+                  {<__LocalizedText id="signTab_signedBy" />}{" "}</span>
                 <span className="text-right text-foreground">
                   {signers.map((x) => x.name).join(", ")}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-4 text-body-compact">
-                <span className="text-muted-foreground">Signed on</span>
+                <span className="text-muted-foreground">{<__LocalizedText id="signTab_signedOn" />}</span>
                 <span className="text-foreground tabular-nums">
                   {signedAt.toLocaleString("en-IN", {
                     timeZone: "Asia/Kolkata",
                     dateStyle: "medium",
                     timeStyle: "short",
                   })}{" "}
-                  IST
-                </span>
+                  {<__LocalizedText id="signTab_ist" />}{" "}</span>
               </div>
               <ul className="flex flex-col divide-y divide-hairline rounded-lg border border-hairline">
                 {signed.map((c) => (
@@ -580,7 +562,7 @@ function SignFlow({
                       aria-hidden
                     />
                     <span className="min-w-0 flex-1 truncate">
-                      {c.accused || c.title}
+                      {c.accused || __t(c.title)}
                     </span>
                     <span className="shrink-0 text-caption text-muted-foreground tabular-nums">
                       {c.reference}
@@ -598,10 +580,9 @@ function SignFlow({
                   className="flex-1"
                   onClick={onClose}
                 >
-                  Back to signing
-                </Button>
+                  {<__LocalizedText id="signTab_backToSigning" />}{" "}</Button>
                 <Button size="lg" className="flex-1" onClick={onPay}>
-                  Pay for {signed.length} case{signed.length === 1 ? "" : "s"}
+                  {<__LocalizedText id="signTab_payFor" />}{" "}{signed.length} {<__LocalizedText id="signTab_case" />}{signed.length === 1 ? "" : "s"}
                 </Button>
               </div>
             </div>
@@ -609,15 +590,13 @@ function SignFlow({
         ) : method === "upload" ? (
           <>
             <DialogHeader>
-              <DialogTitle>Upload signed copies</DialogTitle>
+              <DialogTitle>{<__LocalizedText id="signTab_uploadSignedCopies" />}</DialogTitle>
               <DialogDescription>
-                One file per case, named{" "}
-                <span className="font-mono">reference_signed.pdf</span>. Each
-                must carry every signature.
-              </DialogDescription>
+                {<__LocalizedText id="signTab_oneFilePerCaseNamed" />}{" "}
+                <span className="font-mono">{<__LocalizedText id="signTab_referenceSignedPdf" />}</span>{<__LocalizedText id="signTab_eachMustCarryEverySignature" />}{" "}</DialogDescription>
             </DialogHeader>
             <Field className="gap-1.5">
-              <FieldLabel htmlFor="signed-copies">Signed copies</FieldLabel>
+              <FieldLabel htmlFor="signed-copies">{<__LocalizedText id="signTab_signedCopies" />}</FieldLabel>
               <FileDrop
                 id="signed-copies"
                 accept=".pdf"
@@ -637,7 +616,7 @@ function SignFlow({
                   setUploads(map);
                 }}
                 prompt="Drag the signed copies here"
-                hint="PDF, one per case"
+                hint={__t("signTab_pdfOnePerCase")}
               />
             </Field>
             <ul className="flex max-h-60 flex-col gap-1 overflow-y-auto text-body-compact">
@@ -648,27 +627,25 @@ function SignFlow({
                 >
                   <span className="tabular-nums">{c.reference}</span>
                   {uploads[c.id] ? (
-                    <Badge variant="success">Matched</Badge>
+                    <Badge variant="success">{<__LocalizedText id="signTab_matched" />}</Badge>
                   ) : (
-                    <Badge variant="outline">Waiting</Badge>
+                    <Badge variant="outline">{<__LocalizedText id="signTab_waiting" />}</Badge>
                   )}
                 </li>
               ))}
             </ul>
             {error ? (
-              <p className="text-body-compact text-destructive-ink">{error}</p>
+              <p className="text-body-compact text-destructive-ink">{__t(error)}</p>
             ) : null}
             <DialogFooter>
               <Button variant="outline" onClick={onClose} disabled={busy}>
-                Cancel
-              </Button>
+                {<__LocalizedText id="signTab_cancel" />}{" "}</Button>
               <Button
                 disabled={!matchedAll || busy}
                 onClick={() => void finish()}
               >
                 {busy ? <Spinner data-icon="inline-start" /> : null}
-                Submit {cases.length} signed copies
-              </Button>
+                {<__LocalizedText id="signTab_submit" />}{" "}{cases.length} {<__LocalizedText id="signTab_signedCopies_3972c2ad" />}{" "}</Button>
             </DialogFooter>
           </>
         ) : step ? (
@@ -677,19 +654,19 @@ function SignFlow({
                 another, so each is a row; the one signing now holds the code field. */}
             <DialogHeader>
               <DialogTitle>
-                Sign {cases.length} case{cases.length === 1 ? "" : "s"} with{" "}
+                {<__LocalizedText id="signTab_sign" />}{" "}{cases.length} {<__LocalizedText id="signTab_case" />}{cases.length === 1 ? "" : "s"} {<__LocalizedText id="signTab_with" />}{" "}
                 {method === "dsc"
-                  ? "DSC"
+                  ? __t("signTab_dsc_07192986")
                   : method === "aadhaar"
-                    ? "Aadhaar eSign"
-                    : "mobile OTP"}
+                    ? __t("signTab_aadhaarEsign")
+                    : __t("signTab_mobileOtp_39598307")}
               </DialogTitle>
               <DialogDescription className="tabular-nums">
                 {cases
                   .slice(0, 3)
                   .map((c) => c.reference)
                   .join(", ")}
-                {cases.length > 3 ? ` and ${cases.length - 3} more` : ""}
+                {cases.length > 3 ? __t("signTab_andValue0More", {value0: String(cases.length - 3)}) : ""}
               </DialogDescription>
             </DialogHeader>
 
@@ -777,12 +754,12 @@ function SignFlow({
                           )}
                         >
                           {state === "done"
-                            ? "Signed"
+                            ? __t("signTab_signed")
                             : state === "now"
-                              ? "Signing now"
+                              ? __t("signTab_signingNow")
                               : state === "covered"
-                                ? "Signed by the same OTP"
-                                : "Next"}
+                                ? __t("signTab_signedByTheSameOtp")
+                                : __t("signTab_next")}
                         </span>
                       </div>
                       {state === "now" ? (
@@ -791,8 +768,7 @@ function SignFlow({
                           {method === "dsc" ? (
                             <Field className="gap-1.5">
                               <FieldLabel htmlFor="dsc-pin">
-                                {x.name}&apos;s DSC token PIN
-                              </FieldLabel>
+                                {x.name}{<__LocalizedText id="signTab_sDscTokenPin" />}{" "}</FieldLabel>
                               <Input
                                 id="dsc-pin"
                                 type="password"
@@ -807,8 +783,8 @@ function SignFlow({
                             <Field className="gap-1.5">
                               <FieldLabel>
                                 {method === "aadhaar"
-                                  ? `OTP sent to ${x.name}'s Aadhaar-linked mobile`
-                                  : `OTP sent to ${tail(x.mobile)}`}
+                                  ? __t("signTab_otpSentToValue0SAadhaarLinked", {value0: String(x.name)})
+                                  : __t("signTab_otpSentToValue0", {value0: String(tail(x.mobile))})}
                               </FieldLabel>
                               <InputOTP
                                 maxLength={6}
@@ -825,14 +801,12 @@ function SignFlow({
                           )}
                           {step.rounds > 1 ? (
                             <span className="text-caption text-muted-foreground tabular-nums">
-                              OTP {step.round} of {step.rounds}:{" "}
-                              {step.cases.length} case
-                              {step.cases.length === 1 ? "" : "s"}
+                              {<__LocalizedText id="signTab_otp" />}{" "}{step.round} {<__LocalizedText id="signTab_of" />}{" "}{step.rounds}:{" "}
+                              {step.cases.length} {<__LocalizedText id="signTab_case" />}{" "}{step.cases.length === 1 ? "" : "s"}
                             </span>
                           ) : null}
                           <span className="text-caption text-muted-foreground">
-                            Sandbox: any 6 digits.
-                          </span>
+                            {<__LocalizedText id="signTab_sandboxAny6Digits" />}{" "}</span>
                         </div>
                       ) : null}
                     </li>
@@ -841,18 +815,17 @@ function SignFlow({
               })()}
             </ol>
             {error ? (
-              <p className="text-body-compact text-destructive-ink">{error}</p>
+              <p className="text-body-compact text-destructive-ink">{__t(error)}</p>
             ) : null}
             <DialogFooter>
               <Button variant="outline" onClick={onClose} disabled={busy}>
-                Cancel
-              </Button>
+                {<__LocalizedText id="signTab_cancel" />}{" "}</Button>
               <Button
                 disabled={code.replace(/\D/g, "").length < 6 || busy}
                 onClick={() => void next()}
               >
                 {busy ? <Spinner data-icon="inline-start" /> : null}
-                Sign as {step.signer.name.split(" ")[0]}
+                {<__LocalizedText id="signTab_signAs" />}{" "}{step.signer.name.split(" ")[0]}
               </Button>
             </DialogFooter>
           </>

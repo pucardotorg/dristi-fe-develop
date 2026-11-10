@@ -1,3 +1,5 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 import { CaseLink as Link } from "@/components/cases/case-reader";
 import type { ReactNode } from "react";
 import { ChevronRightIcon } from "lucide-react";
@@ -165,6 +167,7 @@ export function CaseParticipants({
   /** The URL named this participant (not the default first row). */
   chosen?: boolean;
 }) {
+  const __t = __useTranslations();
   const litigant = file.litigants.find((row) => row.id === selectedId);
   const witness = file.witnesses.find((row) => row.id === selectedId);
 
@@ -178,8 +181,7 @@ export function CaseParticipants({
         <CardContent className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 flex-col gap-2">
             <h2 id={HEADING_ID} className="text-body font-semibold">
-              Parties
-            </h2>
+              {<__LocalizedText id="caseParticipants_parties" />}{" "}</h2>
             {/* Both counts as plain muted text. The mockup put the litigant
                 count in a filled chip and the witness count in plain text —
                 one data type, two presentations, which is the inconsistency
@@ -240,7 +242,7 @@ export function CaseParticipants({
             chosen={chosen}
           />
           <PartyDetailSlot
-            title={litigant?.name ?? witness?.name ?? "Participant"}
+            title={litigant?.name ?? witness?.name ?? __t("caseParticipants_participant")}
             chosen={chosen}
           >
           {litigant ? (
@@ -255,7 +257,7 @@ export function CaseParticipants({
           ) : witness ? (
             <WitnessDetail witness={witness} viewerSide={viewerSide} />
           ) : (
-            <SectionNote>Select a participant to see their details.</SectionNote>
+            <SectionNote>{<__LocalizedText id="caseParticipants_selectAParticipantToSeeTheirDetails" />}</SectionNote>
           )}
           </PartyDetailSlot>
         </CardContent>
@@ -313,10 +315,11 @@ function MasterList({
   selectedId: string | undefined;
   chosen: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <nav aria-labelledby={LITIGANTS_GROUP_ID} className="flex min-w-0 flex-col gap-2">
-        <Eyebrow id={LITIGANTS_GROUP_ID}>All parties</Eyebrow>
+        <Eyebrow id={LITIGANTS_GROUP_ID}>{<__LocalizedText id="caseParticipants_allParties" />}</Eyebrow>
         <ul className="flex min-w-0 flex-col gap-1 max-lg:gap-2">
           {file.litigants.map((row) => (
             <li key={row.id}>
@@ -337,7 +340,7 @@ function MasterList({
       </nav>
 
       <nav aria-labelledby={WITNESSES_GROUP_ID} className="flex min-w-0 flex-col gap-2">
-        <Eyebrow id={WITNESSES_GROUP_ID}>Witnesses</Eyebrow>
+        <Eyebrow id={WITNESSES_GROUP_ID}>{<__LocalizedText id="caseParticipants_witnesses" />}</Eyebrow>
         {/* The list always renders: after the register's rows come the
             viewer's own applications still with the magistrate — greyed,
             "Awaiting order" — via the client tail, which also owns the
@@ -360,7 +363,7 @@ function MasterList({
                         own, so the number takes the face without a control. */}
                     <Identifier
                       value={row.number}
-                      label="witness number"
+                      label={__t("caseParticipants_witnessNumber")}
                       copyable={false}
                     />
                   </SidePill>
@@ -555,13 +558,14 @@ function DetailSection({
   wide?: boolean;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <div className={cn("flex min-w-0 flex-col gap-2", wide && "@lg:col-span-2")}>
       <h4
         id={id}
         className="text-caption font-semibold text-muted-foreground"
       >
-        {title}
+        {__t(title)}
       </h4>
       {children}
     </div>
@@ -687,6 +691,7 @@ function LitigantDetail({
   viewerSide: PartySideId;
   viewerCanAct: boolean;
 }) {
+  const __t = __useTranslations();
   const linkedWitnesses = witnessesForLitigant(file, litigant.id);
   const sections: { id: string; title: string; facts: ReactNode }[] = [];
 
@@ -706,7 +711,7 @@ function LitigantDetail({
 
   sections.push({
     id: "participant-representation",
-    title: "Representation",
+    title: __t("caseParticipants_representation"),
     facts: litigant.partyInPerson ? (
       <FactWell primary="Party in person" />
     ) : (
@@ -739,7 +744,7 @@ function LitigantDetail({
             )
           )
         ) : (
-          <SectionNote>No advocate on record</SectionNote>
+          <SectionNote>{<__LocalizedText id="caseParticipants_noAdvocateOnRecord" />}</SectionNote>
         )}
         {liveWells}
       </>
@@ -749,7 +754,7 @@ function LitigantDetail({
   if (litigant.powerOfAttorneyHolder) {
     sections.push({
       id: "participant-poa",
-      title: "Power of attorney",
+      title: __t("caseParticipants_powerOfAttorney"),
       /* Remove and Replace (scenarios 6/7) ride the holder's own well —
          own side only, like the Representation wells, and vakalatnama
          holders only, like every removal action. The takeover pool is
@@ -777,7 +782,7 @@ function LitigantDetail({
   if (litigant.personsInCharge.length > 0) {
     sections.push({
       id: "participant-officers",
-      title: "Persons in charge",
+      title: __t("caseParticipants_personsInCharge"),
       facts: litigant.personsInCharge.map((officer) => (
         <FactWell
           key={officer.id}
@@ -798,7 +803,7 @@ function LitigantDetail({
   if (litigant.side !== viewerSide) {
     sections.push({
       id: "participant-addresses",
-      title: "Addresses",
+      title: __t("caseParticipants_addresses"),
       facts: <AlternateAddresses subjectName={litigant.name} />,
     });
   }
@@ -806,14 +811,14 @@ function LitigantDetail({
   if (linkedWitnesses.length > 0) {
     sections.push({
       id: "participant-linked-witnesses",
-      title: "Linked witnesses",
+      title: __t("caseParticipants_linkedWitnesses"),
       facts: linkedWitnesses.map((witness) => (
         <FactWell
           key={witness.id}
           primary={witness.name}
           secondary={
             /* The well is a link — the face without a nested control. */
-            <Identifier value={witness.number} label="witness number" copyable={false} />
+            <Identifier value={witness.number} label={__t("caseParticipants_witnessNumber")} copyable={false} />
           }
           href={participantHref(caseId, witness.id)}
         />
@@ -853,7 +858,7 @@ function LitigantDetail({
             <DetailSection
               key={section.id}
               id={section.id}
-              title={section.title}
+              title={__t(section.title)}
               wide={wide}
             >
               <FactList wide={wide}>{section.facts}</FactList>
@@ -910,6 +915,7 @@ function WitnessDetail({
   witness: CaseWitness;
   viewerSide: PartySideId;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="@container flex min-w-0 flex-col gap-6">
       <DetailHeader
@@ -925,12 +931,12 @@ function WitnessDetail({
         }
         badge={
           <Badge variant="secondary" className="shrink-0">
-            <Identifier value={witness.number} label="witness number" copyable={false} />
+            <Identifier value={witness.number} label={__t("caseParticipants_witnessNumber")} copyable={false} />
           </Badge>
         }
       />
 
-      <DetailSection id="participant-witness-record" title="On the record">
+      <DetailSection id="participant-witness-record" title={__t("caseParticipants_onTheRecord")}>
         {/* Three facts across rather than three bars down: this is the whole
             of what the record holds about a witness, and a label with a
             one-word value wants a third of this pane, not all of it. */}
@@ -954,7 +960,7 @@ function WitnessDetail({
       {/* 11b — the side that called the witness keeps the court's addresses
           for them current; the demo viewer is complainant-side counsel. */}
       {witness.side === viewerSide ? (
-        <DetailSection id="participant-witness-addresses" title="Addresses">
+        <DetailSection id="participant-witness-addresses" title={__t("caseParticipants_addresses")}>
           <AlternateAddresses subjectName={witness.name} />
         </DetailSection>
       ) : null}
@@ -969,16 +975,17 @@ function WitnessDetail({
  * list for exactly this, and a term stays a `dt` whatever it is wearing.
  */
 function WitnessFact({ term, value }: { term: string; value?: string }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow className={cn(WELL_CLASS, "grid-cols-1 border-b-0")}>
       {/* Body, not caption: typography names Body Medium as the role for field
           labels, and caption is 12px — chrome weight for a label the reader is
           here to read. The same term treatment the service pane uses. */}
       <DescriptionTerm>
-        {term}
+        {__t(term)}
       </DescriptionTerm>
       <DescriptionDetails className="min-w-0 font-medium">
-        {value ?? <span className="text-muted-foreground">None</span>}
+        {value ?? <span className="text-muted-foreground">{<__LocalizedText id="caseParticipants_none" />}</span>}
       </DescriptionDetails>
     </DescriptionRow>
   );

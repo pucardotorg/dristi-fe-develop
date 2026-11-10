@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { Label } from "@/components/ui/label";
 import {
@@ -79,6 +81,7 @@ export function ListFooter({
   pageSize: HearingsPageSize;
   onPageSizeChange: (size: HearingsPageSize) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex flex-wrap items-center gap-3">
@@ -88,15 +91,14 @@ export function ListFooter({
             the count changes is a live region that says nothing about the change worth
             hearing. */}
         <p className="text-body-compact text-muted-foreground tabular-nums">
-          Showing {from}–{to} of {total}
+          {<__LocalizedText id="listFooter_showing" />}{" "}{from}–{to} {<__LocalizedText id="listFooter_of" />}{" "}{total}
         </p>
         <div className="flex items-center gap-2">
           <Label
             htmlFor={id}
             className="text-body-compact font-normal text-muted-foreground"
           >
-            Per page
-          </Label>
+            {<__LocalizedText id="listFooter_perPage" />}{" "}</Label>
           <Select
             value={String(pageSize)}
             onValueChange={(next) => {
@@ -142,7 +144,7 @@ export function ListFooter({
                   <PaginationLink
                     href="#"
                     isActive={entry === page}
-                    aria-label={`Go to page ${entry}`}
+                    aria-label={__t("listFooter_goToPageValue0", {value0: String(entry)})}
                     onClick={(event) => {
                       event.preventDefault();
                       onPageChange(entry);

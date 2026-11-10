@@ -1,8 +1,7 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
-import { NEW_ADVOCATE_NAME, setNewAdvocateShell } from "@/lib/advocate/new-account";
 import { setNewAccountShell, setSignedInMobile } from "@/lib/filing/linked-complaints";
-import { isNewAccount } from "@/lib/sign-in/demo-accounts";
 import * as React from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
@@ -38,6 +37,7 @@ const DEMO_CASE: CaseSummary = {
 };
 
 function JoinFlow() {
+  const __t = __useTranslations();
   const params = useParams<{ token?: string[] }>();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -108,9 +108,9 @@ function JoinFlow() {
         query.set("profile", "missing");
       if (locale !== "en") query.set("lang", locale);
       const qs = query.toString();
-      router.push(`${advocate ? "/advocate" : "/home"}${qs ? `?${qs}` : ""}`);
+      router.push(`${advocate ? __t("joinFlow_advocate") : __t("joinFlow_home")}${qs ? `?${qs}` : ""}`);
     },
-    [token, searchParams, locale, router],
+    [token, searchParams, locale, router, __t],
   );
 
   // `?nocase=1` exercises the no-data path — the flow must stay usable when the token

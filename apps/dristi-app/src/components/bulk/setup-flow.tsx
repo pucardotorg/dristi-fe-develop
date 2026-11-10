@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The batch's complainants and advocates, entered before the Excel file (Bulk filing PRD
@@ -88,6 +90,7 @@ export function BulkSetupFlow({
   setupId: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const ready = useGujarat();
   const pathname = usePathname();
   const step = stepFromPathname(pathname);
@@ -130,21 +133,21 @@ export function BulkSetupFlow({
         steps: [
           {
             id: "file",
-            title: upload.documents ? "Case documents" : "Excel file",
+            title: upload.documents ? __t("setupFlow_caseDocuments") : __t("setupFlow_excelFile"),
             icon: FileSpreadsheetIcon,
             href: uploadHref(setupId, "file", ai),
             active: uploadStep === "file",
             done: upload.read && uploadStep !== "file",
           },
           ...(upload.matchColumns
-            ? [{ id: "map", title: "Match columns", icon: Columns3Icon, href: uploadHref(setupId, "map", ai), active: uploadStep === "map", disabled: !upload.read }]
+            ? [{ id: "map", title: __t("setupFlow_matchColumns"), icon: Columns3Icon, href: uploadHref(setupId, "map", ai), active: uploadStep === "map", disabled: !upload.read }]
             : []),
           ...(upload.matchValues
-            ? [{ id: "values", title: "Match values", icon: ListChecksIcon, href: uploadHref(setupId, "values", ai), active: uploadStep === "values", disabled: !upload.read }]
+            ? [{ id: "values", title: __t("setupFlow_matchValues"), icon: ListChecksIcon, href: uploadHref(setupId, "values", ai), active: uploadStep === "values", disabled: !upload.read }]
             : []),
           {
             id: "review",
-            title: "Review",
+            title: __t("setupFlow_review"),
             icon: ClipboardCheckIcon,
             href: uploadHref(setupId, "review", ai),
             active: uploadStep === "review",
@@ -153,7 +156,7 @@ export function BulkSetupFlow({
         ],
       },
     }),
-    [step, upload, uploadStep, setupId, ai],
+    [step, upload, uploadStep, setupId, ai, __t],
   );
 
   if (!ready) return null;
@@ -171,8 +174,7 @@ export function BulkSetupFlow({
           className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
         >
           <Spinner className="mr-2 size-4" />
-          Opening the upload…
-        </div>
+          {<__LocalizedText id="setupFlow_openingTheUpload" />}{" "}</div>
       }
       notFound={
         <div className="flex flex-1 items-center justify-center px-4 py-16">
@@ -182,23 +184,20 @@ export function BulkSetupFlow({
                 <FileQuestionIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="text-body font-semibold">
-                This upload has expired
-              </EmptyTitle>
+                {<__LocalizedText id="setupFlow_thisUploadHasExpired" />}{" "}</EmptyTitle>
               <EmptyDescription className="text-body">
-                An upload that was not finished is kept only in the browser tab it was
-                started in. Start a new one.
-              </EmptyDescription>
+                {<__LocalizedText id="setupFlow_anUploadThatWasNotFinishedIs" />}{" "}</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button asChild>
-                <Link href="/filings/bulk/upload">Start a new upload</Link>
+                <Link href="/filings/bulk/upload">{<__LocalizedText id="setupFlow_startANewUpload" />}</Link>
               </Button>
             </EmptyContent>
           </Empty>
         </div>
       }
     >
-      <DraftBreadcrumbLabel label={ai === "on" ? "Upload cases" : "Upload Excel"} />
+      <DraftBreadcrumbLabel label={ai === "on" ? __t("setupFlow_uploadCases") : __t("setupFlow_uploadExcel")} />
       <UploadStateContext.Provider value={setUpload}>
         <FieldPolicyProvider value={policy}>
           <FilingShell banner={<SetupBar />}>{children}</FilingShell>
@@ -218,13 +217,9 @@ function SetupBar() {
           className="flex w-fit items-center gap-1 text-body-compact text-muted-foreground hover:text-foreground"
         >
           <ArrowLeftIcon className="size-4" aria-hidden />
-          Bulk filing
-        </Link>
+          {<__LocalizedText id="setupFlow_bulkFiling" />}{" "}</Link>
         <SectionNotice variant="neutral">
-          The complainants and advocates, and their documents, are entered once and go on
-          every case in the file. Once the batch is created, each case can change them on
-          its own.
-        </SectionNotice>
+          {<__LocalizedText id="setupFlow_theComplainantsAndAdvocatesAndTheirDocuments" />}{" "}</SectionNotice>
       </div>
     </div>
   );

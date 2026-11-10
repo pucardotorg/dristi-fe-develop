@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { UserRoundPenIcon } from "lucide-react";
@@ -28,7 +29,7 @@ export function YourDetailsItem() {
         onClick={() => setOpen(true)}
       >
         <UserRoundPenIcon aria-hidden />
-        <span className="flex-1 text-left">Your details</span>
+        <span className="flex-1 text-left">{<__LocalizedText id="yourDetailsItem_yourDetails" />}</span>
       </Button>
       <ProfileDialog open={open} onOpenChange={setOpen} />
     </>

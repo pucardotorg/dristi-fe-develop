@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { DownloadIcon, FileTextIcon } from "lucide-react";
@@ -23,6 +25,7 @@ export function OriginalDoc({
 }: {
   original: { file: StoredFileRef; text: string | null };
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
   const pdf = original.file.type === "application/pdf";
   const href = useBulkFileUrl(open ? original.file.id : null);
@@ -36,8 +39,7 @@ export function OriginalDoc({
         onClick={() => setOpen(true)}
       >
         <FileTextIcon data-icon="inline-start" aria-hidden />
-        Original document
-      </Button>
+        {<__LocalizedText id="originalDoc_originalDocument" />}{" "}</Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="flex h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl">
           <div className="flex shrink-0 items-center gap-3 border-b border-hairline px-6 py-4 pr-12">
@@ -46,14 +48,12 @@ export function OriginalDoc({
                 {original.file.name}
               </DialogTitle>
               <DialogDescription className="sr-only">
-                The document this case was read from
-              </DialogDescription>
+                {<__LocalizedText id="originalDoc_theDocumentThisCaseWasReadFrom" />}{" "}</DialogDescription>
             </div>
             <Button asChild variant="outline" size="sm">
               <a href={href ?? undefined} download={original.file.name}>
                 <DownloadIcon data-icon="inline-start" aria-hidden />
-                Download
-              </a>
+                {<__LocalizedText id="originalDoc_download" />}{" "}</a>
             </Button>
           </div>
           {pdf ? (
@@ -65,7 +65,7 @@ export function OriginalDoc({
           ) : (
             <div className="min-h-0 flex-1 overflow-y-auto bg-surface-sunken p-4 sm:p-6">
               <div className="mx-auto max-w-2xl rounded-lg border border-hairline bg-card p-6 text-body-compact whitespace-pre-wrap shadow-raised">
-                {original.text?.trim() || "This document has no readable text."}
+                {original.text?.trim() || __t("originalDoc_thisDocumentHasNoReadableText")}
               </div>
             </div>
           )}

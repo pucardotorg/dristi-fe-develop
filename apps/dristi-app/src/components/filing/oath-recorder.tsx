@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * In-place camera recorder for the oath — the only way an oath is taken (`OTH-1`: recorded,
@@ -79,7 +80,7 @@ export function OathRecorderPanel({
   /** A failure occurred; the camera (if it was ever acquired) has been released. */
   onError: (message: string) => void;
 }) {
-  const videoRef = React.useRef<HTMLVideoElement | null>(null);
+    const videoRef = React.useRef<HTMLVideoElement | null>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
   const recorderRef = React.useRef<MediaRecorder | null>(null);
   const chunksRef = React.useRef<Blob[]>([]);
@@ -218,7 +219,7 @@ export function OathRecorderPanel({
       />
 
       {status === "requesting" ? (
-        <p className="text-body-compact text-muted-foreground">Requesting camera access…</p>
+        <p className="text-body-compact text-muted-foreground">{<__LocalizedText id="oathRecorder_requestingCameraAccess" />}</p>
       ) : null}
 
       {status === "recording" ? (
@@ -234,18 +235,15 @@ export function OathRecorderPanel({
         {status === "live" ? (
           <Button type="button" onClick={startRecording}>
             <CircleIcon data-icon="inline-start" aria-hidden />
-            Start recording
-          </Button>
+            {<__LocalizedText id="oathRecorder_startRecording" />}{" "}</Button>
         ) : null}
         {status === "recording" ? (
           <Button type="button" variant="destructive-solid" onClick={finish}>
             <SquareIcon data-icon="inline-start" aria-hidden />
-            Stop recording
-          </Button>
+            {<__LocalizedText id="oathRecorder_stopRecording" />}{" "}</Button>
         ) : null}
         <Button type="button" variant="outline" onClick={cancel}>
-          Cancel
-        </Button>
+          {<__LocalizedText id="oathRecorder_cancel" />}{" "}</Button>
       </div>
     </div>
   );

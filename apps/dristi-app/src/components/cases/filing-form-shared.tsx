@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -169,6 +171,7 @@ export function FilingFrame({
   contentWidth?: "default" | "wide";
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <div
       className={cn(
@@ -179,22 +182,19 @@ export function FilingFrame({
       <div>
         <Button type="button" variant="ghost" onClick={onExit}>
           <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-          Back to case
-        </Button>
+          {<__LocalizedText id="filingFormShared_backToCase" />}{" "}</Button>
       </div>
 
       <header>
-        <h1 className="text-title-l font-semibold">{title}</h1>
+        <h1 className="text-title-l font-semibold">{__t(title)}</h1>
         <p className="mt-2 max-w-2xl text-body text-muted-foreground">
-          {description}
+          {__t(description)}
         </p>
       </header>
 
       {showPrototypeBanner ? (
         <Banner variant="neutral">
-          Prototype only — filing details and selected files will not be saved
-          or sent.
-        </Banner>
+          {<__LocalizedText id="filingFormShared_prototypeOnlyFilingDetailsAndSelectedFiles" />}{" "}</Banner>
       ) : null}
 
       {showCaseContext && caseNumber ? (
@@ -203,10 +203,10 @@ export function FilingFrame({
             <UserRoundIcon className="mt-0.5 size-5 shrink-0" aria-hidden />
             <div>
               <p className="text-body-compact text-muted-foreground">
-                Case <Identifier value={caseNumber} label="case number" />
+                {<__LocalizedText id="filingFormShared_case" />}{" "}<Identifier value={caseNumber} label={__t("filingFormShared_caseNumber")} />
               </p>
               <p className="text-body font-medium">
-                Filing for Complainant · {complainantName}
+                {<__LocalizedText id="filingFormShared_filingForComplainant" />}{" "}{complainantName}
               </p>
             </div>
           </CardContent>
@@ -247,13 +247,12 @@ export function FileField({
   onFilesChange: (files: File[]) => void;
   onErrorChange: (error: string | undefined) => void;
 }) {
+  const __t = __useTranslations();
   const inputRef = useRef<HTMLInputElement>(null);
   const attached = files.length > 0;
   const hint = (
     <FieldDescription className="text-body-compact">
-      {description ? `${description} ` : ""}PDF, JPG, JPEG or PNG; maximum 10
-      MB per file.
-    </FieldDescription>
+      {description ? `${__t(description)} ` : ""}{<__LocalizedText id="filingFormShared_pdfJpgJpegOrPngMaximum10" />}{" "}</FieldDescription>
   );
 
   function addFiles(selected: File[]) {
@@ -279,7 +278,7 @@ export function FileField({
       {attached ? (
         <>
           <FieldLabel className="flex items-center gap-1.5">
-            <span>{label}</span>
+            <span>{__t(label)}</span>
             {required ? null : <RequiredMark optional />}
           </FieldLabel>
           {/* Add more sits as far below the last file as the files sit from
@@ -302,15 +301,14 @@ export function FileField({
                   <AttachmentContent>
                     <AttachmentTitle>{file.name}</AttachmentTitle>
                     <AttachmentDescription>
-                      {formatFileSize(file.size)} · selected locally
-                    </AttachmentDescription>
+                      {formatFileSize(file.size)} {<__LocalizedText id="filingFormShared_selectedLocally" />}{" "}</AttachmentDescription>
                   </AttachmentContent>
                   <AttachmentActions>
                     <AttachmentAction
                       type="button"
                       variant="destructive-ghost"
                       size="icon"
-                      aria-label={`Remove ${file.name}`}
+                      aria-label={__t("filingFormShared_removeValue0", {value0: String(file.name)})}
                       onClick={() =>
                         onFilesChange(
                           files.filter((item) => fileKey(item) !== fileKey(file))
@@ -324,7 +322,7 @@ export function FileField({
               ))}
             </AttachmentGroup>
             <div className="flex items-center justify-between gap-3">
-              {hint}
+              {__t(hint)}
               <Button
                 type="button"
                 variant="outline"
@@ -332,8 +330,7 @@ export function FileField({
                 onClick={() => inputRef.current?.click()}
               >
                 <PlusIcon data-icon="inline-start" aria-hidden />
-                Add more
-              </Button>
+                {<__LocalizedText id="filingFormShared_addMore" />}{" "}</Button>
             </div>
           </div>
         </>
@@ -341,7 +338,7 @@ export function FileField({
         <DocumentSlot
           status="empty"
           media="icon"
-          label={label}
+          label={__t(label)}
           required={required}
           optional={!required}
           copy={{ optional: "optional", noFile: "No documents added yet" }}
@@ -349,8 +346,8 @@ export function FileField({
         />
       )}
 
-      {attached ? null : hint}
-      <FieldError className="text-body-compact">{error}</FieldError>
+      {attached ? null : __t(hint)}
+      <FieldError className="text-body-compact">{__t(error)}</FieldError>
 
       <input
         ref={inputRef}
@@ -434,13 +431,14 @@ export function ChoicePillGroup<Value extends string>({
   orientation?: "row" | "column";
   onChange: (value: Value) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Field data-invalid={Boolean(error)}>
       <ChoicePills
         legend={legend}
         options={options}
         value={value}
-        error={error}
+        error={__t(error)}
         orientation={orientation}
         onChange={onChange}
       />
@@ -469,6 +467,7 @@ function ChoicePills<Value extends string>({
   orientation: "row" | "column";
   onChange: (value: Value) => void;
 }) {
+  const __t = __useTranslations();
   const fieldProps = useFieldControlProps({});
   const legendId = `${fieldProps.id}-legend`;
 
@@ -507,12 +506,12 @@ function ChoicePills<Value extends string>({
               )}
             >
               <RadioGroupItem id={id} value={option.id} />
-              <span className="min-w-0 flex-1 break-words">{option.label}</span>
+              <span className="min-w-0 flex-1 break-words">{__t(option.label)}</span>
             </FieldLabel>
           );
         })}
       </RadioGroup>
-      <FieldError className="text-body-compact">{error}</FieldError>
+      <FieldError className="text-body-compact">{__t(error)}</FieldError>
     </FieldSet>
   );
 }
@@ -527,6 +526,7 @@ export function ReviewRow({
   className?: string;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow
       className={cn(
@@ -534,7 +534,7 @@ export function ReviewRow({
         className
       )}
     >
-      <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
+      <DescriptionTerm className="text-body-compact">{__t(term)}</DescriptionTerm>
       <DescriptionDetails className="min-w-0 text-body-compact">
         {children}
       </DescriptionDetails>
@@ -561,6 +561,7 @@ export function PrototypeActions({
   onBack?: () => void;
   onCancel: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
@@ -570,8 +571,7 @@ export function PrototypeActions({
           className="w-full sm:w-auto"
           onClick={onCancel}
         >
-          Cancel
-        </Button>
+          {<__LocalizedText id="filingFormShared_cancel" />}{" "}</Button>
         {review ? (
           <Button
             type="button"
@@ -579,8 +579,7 @@ export function PrototypeActions({
             className="w-full sm:w-auto"
             onClick={onBack}
           >
-            Back
-          </Button>
+            {<__LocalizedText id="filingFormShared_back" />}{" "}</Button>
         ) : null}
       </div>
 
@@ -592,14 +591,13 @@ export function PrototypeActions({
             aria-describedby="filing-submit-unavailable"
             className="w-full sm:w-auto"
           >
-            {finalLabel}
+            {__t(finalLabel)}
           </Button>
           <p
             id="filing-submit-unavailable"
             className="text-body-compact text-muted-foreground sm:text-right"
           >
-            Saving, signing and payment are not connected yet.
-          </p>
+            {<__LocalizedText id="filingFormShared_savingSigningAndPaymentAreNotConnected" />}{" "}</p>
         </div>
       ) : (
         <div className="flex flex-col-reverse gap-3 sm:flex-row">
@@ -609,10 +607,9 @@ export function PrototypeActions({
             disabled
             className="w-full sm:w-auto"
           >
-            Save draft
-          </Button>
+            {<__LocalizedText id="filingFormShared_saveDraft" />}{" "}</Button>
           <Button type="submit" className="w-full sm:w-auto">
-            {reviewLabel}
+            {__t(reviewLabel)}
           </Button>
         </div>
       )}
@@ -649,18 +646,16 @@ export function DiscardFilingDialog({
       <AlertDialog open={open} onOpenChange={onOpenChange}>
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Save this {noun} as a draft?</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="filingFormShared_saveThis" />}{" "}{noun} {<__LocalizedText id="filingFormShared_asADraft" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              Finish it later from {finishIn}.
+              {<__LocalizedText id="filingFormShared_finishItLaterFrom" />}{" "}{finishIn}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button type="button" variant="outline" onClick={onDiscard}>
-              Discard
-            </Button>
+              {<__LocalizedText id="filingFormShared_discard" />}{" "}</Button>
             <Button type="button" onClick={onSaveDraft}>
-              Save as draft
-            </Button>
+              {<__LocalizedText id="filingFormShared_saveAsDraft" />}{" "}</Button>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
       </AlertDialog>
@@ -671,16 +666,14 @@ export function DiscardFilingDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <ChromeAlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Discard this {noun}?</AlertDialogTitle>
+          <AlertDialogTitle>{<__LocalizedText id="filingFormShared_discardThis" />}{" "}{noun}?</AlertDialogTitle>
           <AlertDialogDescription>
-            Anything you entered will be lost.
-          </AlertDialogDescription>
+            {<__LocalizedText id="filingFormShared_anythingYouEnteredWillBeLost" />}{" "}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep editing</AlertDialogCancel>
+          <AlertDialogCancel>{<__LocalizedText id="filingFormShared_keepEditing" />}</AlertDialogCancel>
           <AlertDialogAction variant="destructive-solid" onClick={onDiscard}>
-            Discard
-          </AlertDialogAction>
+            {<__LocalizedText id="filingFormShared_discard" />}{" "}</AlertDialogAction>
         </AlertDialogFooter>
       </ChromeAlertDialogContent>
     </AlertDialog>

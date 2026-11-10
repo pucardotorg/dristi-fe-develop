@@ -79,7 +79,7 @@ export function HomeRefreshButton({
   onRefresh: () => void;
   locale: Locale;
 }) {
-  const [lastAt, setLastAt] = React.useState(() => Date.now());
+    const [lastAt, setLastAt] = React.useState(() => Date.now());
   const { phase, trigger } = useRefreshPhase(() => {
     onRefresh();
     setLastAt(Date.now());

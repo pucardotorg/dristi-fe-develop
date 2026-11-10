@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -50,6 +52,7 @@ export function missingDocs(m: Matter): string[] {
 }
 
 export function CasesScreen() {
+  const __t = __useTranslations();
   const [rows, setRows] = React.useState<Row[] | null>(null);
   const [reachable, setReachable] = React.useState(true);
   const [courtUrl, setCourtUrl] = React.useState("");
@@ -74,10 +77,12 @@ export function CasesScreen() {
   }, []);
 
   React.useEffect(() => {
+    // The async callback updates state only after the server responds.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 
-  const all = rows ?? [];
+  const all = React.useMemo(() => rows ?? [], [rows]);
   const counts = React.useMemo(() => {
     const c: Record<string, number> = { All: all.length };
     for (const r of all) c[r.stage] = (c[r.stage] ?? 0) + 1;
@@ -131,29 +136,28 @@ export function CasesScreen() {
       {/* Title */}
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <nav className="flex items-center gap-1 text-[12px] text-(--pv-muted)" aria-label="Breadcrumb">
-            <span>Legal Collections</span>
+          <nav className="flex items-center gap-1 text-[12px] text-(--pv-muted)" aria-label={__t("casesScreen_breadcrumb")}>
+            <span>{<__LocalizedText id="casesScreen_legalCollections" />}</span>
             <ChevronRightIcon className="size-3" aria-hidden />
-            <span>Litigation</span>
+            <span>{<__LocalizedText id="casesScreen_litigation" />}</span>
           </nav>
-          <h1 className="mt-1 text-[22px] font-medium">Section 138 / 25 cases</h1>
+          <h1 className="mt-1 text-[22px] font-medium">{<__LocalizedText id="casesScreen_section13825Cases" />}</h1>
         </div>
         <div className="ml-auto flex gap-2">
           <Button variant="outline" onClick={() => void load()}>
             <RefreshCwIcon className="size-4" aria-hidden />
-            Refresh
-          </Button>
+            {<__LocalizedText id="casesScreen_refresh" />}{" "}</Button>
           <div className="relative">
             <Button variant="outline" onClick={() => setExporting((v) => !v)} aria-haspopup="menu" aria-expanded={exporting}>
               <DownloadIcon className="size-4" aria-hidden />
-              {chosen.length ? `Export ${chosen.length}` : "Export"}
+              {chosen.length ? __t("casesScreen_exportValue0", {value0: String(chosen.length)}) : __t("casesScreen_export")}
               <ChevronDownIcon className="size-4" aria-hidden />
             </Button>
             {exporting ? (
               <div role="menu" className="absolute right-0 top-full z-30 mt-2 w-72 overflow-hidden rounded-md border border-(--pv-line) bg-white py-1 shadow-xl">
                 {[
-                  { format: "saras", title: "SARAS 2.0 bulk filing template", sub: "Uploads on SARAS 2.0 without matching" },
-                  { format: "provakil", title: "Provakil case report", sub: "Provakil's own columns" },
+                  { format: "saras", title: __t("casesScreen_saras20BulkFilingTemplate"), sub: "Uploads on SARAS 2.0 without matching" },
+                  { format: "provakil", title: __t("casesScreen_provakilCaseReport"), sub: "Provakil's own columns" },
                 ].map((o) => (
                   <a
                     key={o.format}
@@ -162,17 +166,16 @@ export function CasesScreen() {
                     onClick={() => setExporting(false)}
                     className="flex flex-col px-3 py-2 hover:bg-(--pv-ground)"
                   >
-                    <span className="text-[13px] font-medium">{o.title}</span>
+                    <span className="text-[13px] font-medium">{__t(o.title)}</span>
                     <span className="text-[11px] text-(--pv-muted)">{o.sub}</span>
                   </a>
                 ))}
               </div>
             ) : null}
           </div>
-          <Button variant="outline" disabled title="Not part of this demo">
+          <Button variant="outline" disabled title={__t("casesScreen_notPartOfThisDemo")}>
             <PlusIcon className="size-4" aria-hidden />
-            Add case
-          </Button>
+            {<__LocalizedText id="casesScreen_addCase" />}{" "}</Button>
         </div>
       </div>
 
@@ -182,7 +185,7 @@ export function CasesScreen() {
           <button
             key={w}
             disabled={i !== 0}
-            title={i === 0 ? undefined : "Not part of this demo"}
+            title={i === 0 ? undefined : __t("casesScreen_notPartOfThisDemo")}
             className={`-mb-px border-b-2 pb-2 text-[13px] font-medium ${
               i === 0 ? "border-(--pv-blue) text-(--pv-blue)" : "cursor-not-allowed border-transparent text-(--pv-muted) opacity-40"
             }`}
@@ -194,12 +197,11 @@ export function CasesScreen() {
 
       {!reachable && rows ? (
         <div className="rounded-md border border-(--pv-amber)/30 bg-(--pv-amber-50) px-4 py-2 text-[13px] text-(--pv-amber)">
-          SARAS 2.0 is not reachable at {courtUrl}. Filing statuses from the court are not shown.
-        </div>
+          {<__LocalizedText id="casesScreen_saras20IsNotReachableAt" />}{" "}{courtUrl}{<__LocalizedText id="casesScreen_filingStatusesFromTheCourtAreNot" />}{" "}</div>
       ) : null}
 
       {/* Stage chips */}
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Stage">
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label={__t("casesScreen_stage")}>
         {STAGES.map((s) => (
           <button
             key={s}
@@ -232,27 +234,26 @@ export function CasesScreen() {
                 setQ(e.target.value);
                 setPage(0);
               }}
-              placeholder="LAN, borrower, branch, cheque no."
+              placeholder={__t("casesScreen_lanBorrowerBranchChequeNo")}
               className="w-full text-[13px] focus:outline-none"
-              aria-label="Search cases"
+              aria-label={__t("casesScreen_searchCases")}
             />
           </div>
           <FilterIcon className="size-4 text-(--pv-muted)" aria-hidden />
-          <select value={region} onChange={(e) => { setRegion(e.target.value); setPage(0); }} className="rounded-md border border-(--pv-line) bg-white px-2 py-1.5 text-[13px]" aria-label="Region">
-            <option value="">All regions</option>
-            <option>Ahmedabad West</option>
-            <option>Ahmedabad East</option>
-            <option>Gandhinagar</option>
+          <select value={region} onChange={(e) => { setRegion(e.target.value); setPage(0); }} className="rounded-md border border-(--pv-line) bg-white px-2 py-1.5 text-[13px]" aria-label={__t("casesScreen_region")}>
+            <option value="">{<__LocalizedText id="casesScreen_allRegions" />}</option>
+            <option>{<__LocalizedText id="casesScreen_ahmedabadWest" />}</option>
+            <option>{<__LocalizedText id="casesScreen_ahmedabadEast" />}</option>
+            <option>{<__LocalizedText id="casesScreen_gandhinagar" />}</option>
           </select>
-          <select value={advocate} onChange={(e) => { setAdvocate(e.target.value); setPage(0); }} className="rounded-md border border-(--pv-line) bg-white px-2 py-1.5 text-[13px]" aria-label="Advocate">
-            <option value="">All advocates</option>
+          <select value={advocate} onChange={(e) => { setAdvocate(e.target.value); setPage(0); }} className="rounded-md border border-(--pv-line) bg-white px-2 py-1.5 text-[13px]" aria-label={__t("casesScreen_advocate")}>
+            <option value="">{<__LocalizedText id="casesScreen_allAdvocates" />}</option>
             {[...new Set(all.map((r) => r.advocate?.name ?? "Unassigned"))].map((a) => (
               <option key={a}>{a}</option>
             ))}
           </select>
           <span className="num ml-auto text-[12px] text-(--pv-muted)">
-            {shown.length} of {all.length} cases
-          </span>
+            {shown.length} {<__LocalizedText id="casesScreen_of" />}{" "}{all.length} {<__LocalizedText id="casesScreen_cases_661ed97e" />}{" "}</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -262,7 +263,7 @@ export function CasesScreen() {
                 <th className="w-10 px-3 py-2.5">
                   <input
                     type="checkbox"
-                    aria-label="Select all shown"
+                    aria-label={__t("casesScreen_selectAllShown")}
                     checked={allTicked}
                     disabled={selectable.length === 0}
                     onChange={() =>
@@ -276,31 +277,29 @@ export function CasesScreen() {
                     className="size-4 accent-(--pv-blue)"
                   />
                 </th>
-                <th className="px-3 py-2.5">LAN</th>
-                <th className="px-3 py-2.5">Borrower</th>
-                <th className="px-3 py-2.5">Branch</th>
-                <th className="px-3 py-2.5 text-right">Cheque amount</th>
-                <th className="px-3 py-2.5">Returned</th>
-                <th className="px-3 py-2.5">Notice</th>
-                <th className="px-3 py-2.5">Cause of action</th>
-                <th className="px-3 py-2.5">File by</th>
-                <th className="px-3 py-2.5">Advocate</th>
-                <th className="px-3 py-2.5">Docs</th>
-                <th className="px-3 py-2.5">Stage</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_lan" />}</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_borrower" />}</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_branch" />}</th>
+                <th className="px-3 py-2.5 text-right">{<__LocalizedText id="casesScreen_chequeAmount" />}</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_returned" />}</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_notice" />}</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_causeOfAction" />}</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_fileBy" />}</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_advocate" />}</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_docs" />}</th>
+                <th className="px-3 py-2.5">{<__LocalizedText id="casesScreen_stage" />}</th>
               </tr>
             </thead>
             <tbody>
               {rows === null ? (
                 <tr>
                   <td colSpan={12} className="px-3 py-10 text-center text-(--pv-muted)">
-                    Loading cases…
-                  </td>
+                    {<__LocalizedText id="casesScreen_loadingCases" />}{" "}</td>
                 </tr>
               ) : shown.length === 0 ? (
                 <tr>
                   <td colSpan={12} className="px-3 py-10 text-center text-(--pv-muted)">
-                    No cases in this view.
-                  </td>
+                    {<__LocalizedText id="casesScreen_noCasesInThisView" />}{" "}</td>
                 </tr>
               ) : (
                 pageRows.map((r) => {
@@ -327,7 +326,7 @@ export function CasesScreen() {
                       <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
-                          aria-label={`Select ${r.lan}`}
+                          aria-label={__t("casesScreen_selectValue0", {value0: String(r.lan)})}
                           checked={selected.has(r.id)}
                           disabled={!can}
                           // React reports a checkbox change from its click, so the click's Shift key is on it.
@@ -348,7 +347,7 @@ export function CasesScreen() {
                       </td>
                       <td className="num px-3 py-2.5 text-right">
                         {formatINR(r.instruments.reduce((s, i) => s + i.amount, 0))}
-                        {r.instruments.length > 1 ? <div className="text-[11px] text-(--pv-muted)">{r.instruments.length} cheques</div> : null}
+                        {r.instruments.length > 1 ? <div className="text-[11px] text-(--pv-muted)">{r.instruments.length} {<__LocalizedText id="casesScreen_cheques" />}</div> : null}
                       </td>
                       <td className="num px-3 py-2.5">
                         <div>{formatDate(r.instruments[0].returnDate)}</div>
@@ -363,7 +362,7 @@ export function CasesScreen() {
                       <td className="num px-3 py-2.5">{formatDate(coa)}</td>
                       <td className={`num px-3 py-2.5 ${overdue ? "font-medium text-(--pv-red)" : ""}`}>{formatDate(fileBy)}</td>
                       <td className="px-3 py-2.5">
-                        {r.advocate ? r.advocate.name : <span className="font-medium text-(--pv-amber)">Unassigned</span>}
+                        {r.advocate ? r.advocate.name : <span className="font-medium text-(--pv-amber)">{<__LocalizedText id="casesScreen_unassigned" />}</span>}
                       </td>
                       <td className="num px-3 py-2.5">
                         <span className={missing.length ? "font-medium text-(--pv-amber)" : "text-(--pv-slate)"}>
@@ -374,7 +373,7 @@ export function CasesScreen() {
                         <Chip tone={STAGE_TONE[r.stage]}>{r.stage}</Chip>
                         {r.stage === "Filed" ? (
                           <div className="mt-0.5 text-[11px] text-(--pv-muted)">
-                            On {r.filedOn ?? "SARAS 2.0"}
+                            {<__LocalizedText id="casesScreen_on" />}{" "}{r.filedOn ?? __t("casesScreen_saras20")}
                             {r.push ? <span className="num"> · {r.push.batchNumber}</span> : null}
                           </div>
                         ) : null}
@@ -390,15 +389,13 @@ export function CasesScreen() {
         {shown.length > PAGE ? (
           <div className="flex items-center gap-3 border-t border-(--pv-line) px-3 py-2 text-[13px]">
             <span className="num text-(--pv-muted)">
-              {at * PAGE + 1}–{Math.min(shown.length, at * PAGE + PAGE)} of {shown.length}
+              {at * PAGE + 1}–{Math.min(shown.length, at * PAGE + PAGE)} {<__LocalizedText id="casesScreen_of" />}{" "}{shown.length}
             </span>
             <div className="ml-auto flex gap-2">
               <Button variant="outline" disabled={at === 0} onClick={() => setPage(at - 1)}>
-                Previous
-              </Button>
+                {<__LocalizedText id="casesScreen_previous" />}{" "}</Button>
               <Button variant="outline" disabled={at >= pages - 1} onClick={() => setPage(at + 1)}>
-                Next
-              </Button>
+                {<__LocalizedText id="casesScreen_next" />}{" "}</Button>
             </div>
           </div>
         ) : null}
@@ -409,29 +406,25 @@ export function CasesScreen() {
         <div className="fixed inset-x-0 bottom-0 z-20 border-t border-(--pv-line) bg-white shadow-[0_-4px_16px_rgba(10,37,64,0.08)] lg:left-60">
           <div className="flex flex-wrap items-center gap-3 px-6 py-3">
             <span className="text-[14px] font-medium">
-              {chosen.length} case{chosen.length === 1 ? "" : "s"} selected
-            </span>
-            <span className="num text-[13px] text-(--pv-muted)">Cheque value {formatINR(chosenValue)}</span>
-            {unassigned ? <span className="text-[13px] font-medium text-(--pv-amber)">{unassigned} without an advocate</span> : null}
+              {chosen.length} {<__LocalizedText id="casesScreen_case" />}{chosen.length === 1 ? "" : "s"} {<__LocalizedText id="casesScreen_selected" />}{" "}</span>
+            <span className="num text-[13px] text-(--pv-muted)">{<__LocalizedText id="casesScreen_chequeValue" />}{" "}{formatINR(chosenValue)}</span>
+            {unassigned ? <span className="text-[13px] font-medium text-(--pv-amber)">{unassigned} {<__LocalizedText id="casesScreen_withoutAnAdvocate" />}</span> : null}
             <button onClick={() => setSelected(new Set())} className="flex items-center gap-1 text-[13px] text-(--pv-muted) hover:text-(--pv-slate)">
               <XIcon className="size-4" aria-hidden />
-              Clear
-            </button>
+              {<__LocalizedText id="casesScreen_clear" />}{" "}</button>
             <div className="ml-auto flex gap-2">
-              <Button variant="outline" disabled title="Not part of this demo">Add label</Button>
+              <Button variant="outline" disabled title={__t("casesScreen_notPartOfThisDemo")}>{<__LocalizedText id="casesScreen_addLabel" />}</Button>
               <Button variant="outline" onClick={() => setAssigning(true)}>
-                Assign advocate
-              </Button>
+                {<__LocalizedText id="casesScreen_assignAdvocate" />}{" "}</Button>
               <Button onClick={() => setPushing(true)}>
                 <SendIcon className="size-4" aria-hidden />
-                File in court
-              </Button>
+                {<__LocalizedText id="casesScreen_fileInCourt" />}{" "}</Button>
             </div>
           </div>
         </div>
       ) : null}
 
-      <MatterDrawer row={open} onClose={() => setOpen(null)} />
+      <MatterDrawer key={open?.id ?? "closed"} row={open} onClose={() => setOpen(null)} />
       <AssignDialog
         open={assigning}
         rows={chosen}
@@ -442,6 +435,7 @@ export function CasesScreen() {
         }}
       />
       <PushDialog
+        key={pushing ? "open" : "closed"}
         open={pushing}
         rows={chosen}
         onClose={() => setPushing(false)}

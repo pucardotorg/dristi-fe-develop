@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -53,22 +55,19 @@ export function DelayCondonationTable({
   rows: DelayCondonationCase[];
   onOpen: (matter: DelayCondonationCase) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="delayCondonationTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="delayCondonationTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
-          </TableHead>
+            {<__LocalizedText id="delayCondonationTable_stage" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Advocates
-          </TableHead>
+            {<__LocalizedText id="delayCondonationTable_advocates" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -99,14 +98,14 @@ export function DelayCondonationTable({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Review </span>
+                <span className="sr-only">{<__LocalizedText id="delayCondonationTable_review" />}{" "}</span>
                 {causeTitle(matter)}
               </button>
             </TableCell>
             <TableCell
               className={cn(TABLE_CELL, "whitespace-nowrap")}
             >
-              <Identifier value={matter.caseNumber} label="case number" />
+              <Identifier value={matter.caseNumber} label={__t("delayCondonationTable_caseNumber_e7329da6")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
               {delayCondonationStageLabel(matter.stage)}

@@ -1,3 +1,5 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 /**
  * The complaint as the court will read it — a paper sheet rendered from the draft.
  *
@@ -73,11 +75,12 @@ function DocCell({
   children: React.ReactNode;
   span?: number;
 }) {
+  const __t = __useTranslations();
   return (
     <td colSpan={span} className="border border-paper-border px-3 py-2 align-top">
       {label ? (
         <span className="block text-caption font-medium text-paper-muted-foreground">
-          {label}
+          {__t(label)}
         </span>
       ) : null}
       <span className="block break-words text-body-compact">{children}</span>
@@ -115,6 +118,7 @@ function DocP({
 /* ───────────────────────────── The document ────────────────────────── */
 
 export function CourtDocument({ draft }: { draft: FilingDraft }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const complainant = complainantSummary(draft.complainants[0]);
   const advocates = advocateSummaries(draft);
@@ -137,7 +141,7 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       {/* Court and cause title */}
       <div className="flex flex-col gap-1 text-center">
         <p className="text-caption font-medium tracking-wide text-paper-muted-foreground">
-          In the {courtText(COURT.name)}
+          {<__LocalizedText id="courtDocument_inThe" />}{" "}{courtText(COURT.name)}
         </p>
         {/* No registration-number line: a draft has no number until registration, in
             any state (owner, 2026-10-09). */}
@@ -153,29 +157,28 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
           <p className="mt-1 text-caption font-medium leading-relaxed text-paper-muted-foreground">
             {complainant.age ? (
               <>
-                Aged {complainant.age} years,
-                <br />
+                {<__LocalizedText id="courtDocument_aged" />}{" "}{complainant.age} {<__LocalizedText id="courtDocument_years" />}{" "}<br />
               </>
             ) : null}
             R/o {complainant.presentAddress}
           </p>
         </div>
-        <p className="shrink-0 text-body-compact italic">… Complainant</p>
+        <p className="shrink-0 text-body-compact italic">{<__LocalizedText id="courtDocument_complainant" />}</p>
       </div>
 
-      <p className="py-1 text-center text-body-compact italic">Versus</p>
+      <p className="py-1 text-center text-body-compact italic">{<__LocalizedText id="courtDocument_versus" />}</p>
 
       <div className="flex items-start justify-between gap-4 py-1">
         <div className="min-w-0">
           <p className="text-body-compact font-semibold break-words">
-            {firstAccused ? firstAccused.heading : NOT_PROVIDED}
+            {firstAccused ? __t(firstAccused.heading) : NOT_PROVIDED}
             {othersSuffix(accused.length)}
           </p>
           <p className="mt-1 text-caption font-medium leading-relaxed text-paper-muted-foreground">
             R/o {firstAccused ? firstAccused.address : NOT_PROVIDED}
           </p>
         </div>
-        <p className="shrink-0 text-body-compact italic">… Accused</p>
+        <p className="shrink-0 text-body-compact italic">{<__LocalizedText id="courtDocument_accused" />}</p>
       </div>
 
       {/* Legal heading — the case type's own long-form proceeding title. */}
@@ -184,86 +187,86 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       </h2>
 
       {/* ── Synopsis ── */}
-      <DocSection>Synopsis</DocSection>
+      <DocSection>{<__LocalizedText id="courtDocument_synopsis" />}</DocSection>
       <DocTable>
         <tbody>
-          <DocGroupRow>Parties</DocGroupRow>
+          <DocGroupRow>{<__LocalizedText id="courtDocument_parties" />}</DocGroupRow>
           <tr>
-            <DocCell label="Complainant name">{complainant.name}</DocCell>
-            <DocCell label="Accused name">
-              {firstAccused ? firstAccused.heading : NOT_PROVIDED}
+            <DocCell label={__t("courtDocument_complainantName")}>{complainant.name}</DocCell>
+            <DocCell label={__t("courtDocument_accusedName")}>
+              {firstAccused ? __t(firstAccused.heading) : NOT_PROVIDED}
             </DocCell>
-            <DocCell label="Complainant’s advocate name">
+            <DocCell label={__t("courtDocument_complainantSAdvocateName")}>
               {leadAdvocateName(draft)}
             </DocCell>
           </tr>
 
-          <DocGroupRow>Cheque details</DocGroupRow>
+          <DocGroupRow>{<__LocalizedText id="courtDocument_chequeDetails" />}</DocGroupRow>
           <tr>
-            <DocCell label="Date on cheque">
+            <DocCell label={__t("courtDocument_dateOnCheque")}>
               {longDate(draft.cheques[0]?.dateOnCheque ?? "")}
             </DocCell>
-            <DocCell label="Amount">{cheques[0]?.amount ?? NOT_PROVIDED}</DocCell>
-            <DocCell label="Cheque number">{cheques[0]?.number ?? NOT_PROVIDED}</DocCell>
+            <DocCell label={__t("courtDocument_amount")}>{cheques[0]?.amount ?? NOT_PROVIDED}</DocCell>
+            <DocCell label={__t("courtDocument_chequeNumber")}>{cheques[0]?.number ?? NOT_PROVIDED}</DocCell>
           </tr>
           <tr>
-            <DocCell label="Bank name">{cheques[0]?.bankName ?? NOT_PROVIDED}</DocCell>
-            <DocCell label="Bank branch" span={2}>
+            <DocCell label={__t("courtDocument_bankName")}>{cheques[0]?.bankName ?? NOT_PROVIDED}</DocCell>
+            <DocCell label={__t("courtDocument_bankBranch")} span={2}>
               {cheques[0]?.bankBranch ?? NOT_PROVIDED}
             </DocCell>
           </tr>
 
-          <DocGroupRow>Dishonour</DocGroupRow>
+          <DocGroupRow>{<__LocalizedText id="courtDocument_dishonour" />}</DocGroupRow>
           <tr>
-            <DocCell label="Date of presentation">
+            <DocCell label={__t("courtDocument_dateOfPresentation")}>
               {longDate(draft.cheques[0]?.presentDate ?? "")}
             </DocCell>
-            <DocCell label="Date on return memo">
+            <DocCell label={__t("courtDocument_dateOnReturnMemo")}>
               {longDate(draft.cheques[0]?.returnDate ?? "")}
             </DocCell>
-            <DocCell label="Return reason">
+            <DocCell label={__t("courtDocument_returnReason")}>
               {cheques[0]?.returnReason ?? NOT_PROVIDED}
             </DocCell>
           </tr>
           <tr>
-            <DocCell label="Bank branch (complainant)" span={3}>
+            <DocCell label={__t("courtDocument_bankBranchComplainant")} span={3}>
               {jurisdiction.bank}
             </DocCell>
           </tr>
 
-          <DocGroupRow>Demand notice</DocGroupRow>
+          <DocGroupRow>{<__LocalizedText id="courtDocument_demandNotice" />}</DocGroupRow>
           <tr>
-            <DocCell label="Date of dispatch of demand notice">
+            <DocCell label={__t("courtDocument_dateOfDispatchOfDemandNotice")}>
               {longDate(draft.notices[0]?.dispatchDate ?? "")}
             </DocCell>
-            <DocCell label="Mode of service">{notice.mode}</DocCell>
-            <DocCell label="Whether delivered?">{notice.deliveredYesNo}</DocCell>
+            <DocCell label={__t("courtDocument_modeOfService")}>{notice.mode}</DocCell>
+            <DocCell label={__t("courtDocument_whetherDelivered")}>{notice.deliveredYesNo}</DocCell>
           </tr>
           <tr>
-            <DocCell label="Date of delivery">
+            <DocCell label={__t("courtDocument_dateOfDelivery")}>
               {longDate(draft.notices[0]?.deliveryDate ?? "")}
             </DocCell>
-            <DocCell label="Has the accused replied to the demand notice?" span={2}>
+            <DocCell label={__t("courtDocument_hasTheAccusedRepliedToTheDemand")} span={2}>
               {notice.replied}
             </DocCell>
           </tr>
 
-          <DocGroupRow>Cause of action</DocGroupRow>
+          <DocGroupRow>{<__LocalizedText id="courtDocument_causeOfAction" />}</DocGroupRow>
           <tr>
-            <DocCell label="Date of cause of action">
+            <DocCell label={__t("courtDocument_dateOfCauseOfAction")}>
               {longDate(jurisdiction.causeDateIso)}
             </DocCell>
-            <DocCell label="Jurisdiction invoked under Section 142(2)">
+            <DocCell label={__t("courtDocument_jurisdictionInvokedUnderSection1422")}>
               {jurisdiction.depositedByPayee
                 ? `${jurisdiction.bankBranch}, the complainant’s bank branch`
-                : "Drawer (accused) bank branch"}
+                : __t("courtDocument_drawerAccusedBankBranch")}
             </DocCell>
-            <DocCell label="Any other complaint pending between the same parties?">
+            <DocCell label={__t("courtDocument_anyOtherComplaintPendingBetweenTheSame")}>
               {jurisdiction.otherPending}
             </DocCell>
           </tr>
 
-          <DocGroupRow>Prayer / relief sought</DocGroupRow>
+          <DocGroupRow>{<__LocalizedText id="courtDocument_prayerReliefSought" />}</DocGroupRow>
           <tr>
             <DocCell span={3}>
               {finalReliefSummary(draft)}. {INTERIM_RELIEF_SUMMARY}.
@@ -273,31 +276,31 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       </DocTable>
 
       {/* ── 1. Party details ── */}
-      <DocSection>1. Party details</DocSection>
+      <DocSection>{<__LocalizedText id="courtDocument_1PartyDetails" />}</DocSection>
 
-      <DocSub>1.1. Complainant</DocSub>
+      <DocSub>{<__LocalizedText id="courtDocument_11Complainant" />}</DocSub>
       <DocTable>
         <tbody>
-          <DocGroupRow>Complainant 1</DocGroupRow>
+          <DocGroupRow>{<__LocalizedText id="courtDocument_complainant1" />}</DocGroupRow>
           <tr>
-            <DocCell label="Complainant type">{complainant.type}</DocCell>
-            <DocCell label="Full name">{complainant.name}</DocCell>
-            <DocCell label="Mobile number">{complainant.mobile}</DocCell>
+            <DocCell label={__t("courtDocument_complainantType")}>{complainant.type}</DocCell>
+            <DocCell label={__t("courtDocument_fullName")}>{complainant.name}</DocCell>
+            <DocCell label={__t("courtDocument_mobileNumber")}>{complainant.mobile}</DocCell>
           </tr>
           <tr>
-            <DocCell label="Email address">{complainant.email}</DocCell>
-            <DocCell label="Permanent address">{complainant.permanentAddress}</DocCell>
-            <DocCell label="Present address">{complainant.presentAddress}</DocCell>
+            <DocCell label={__t("courtDocument_emailAddress")}>{complainant.email}</DocCell>
+            <DocCell label={__t("courtDocument_permanentAddress")}>{complainant.permanentAddress}</DocCell>
+            <DocCell label={__t("courtDocument_presentAddress")}>{complainant.presentAddress}</DocCell>
           </tr>
           <tr>
-            <DocCell label="PoA for complainant 1" span={3}>
+            <DocCell label={__t("courtDocument_poaForComplainant1")} span={3}>
               {complainant.poa}
             </DocCell>
           </tr>
         </tbody>
       </DocTable>
 
-      <DocSub>1.2. Advocate (complainant)</DocSub>
+      <DocSub>{<__LocalizedText id="courtDocument_12AdvocateComplainant" />}</DocSub>
       {advocates.length ? (
         <DocTable>
           <tbody>
@@ -305,12 +308,12 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
               <React.Fragment key={a.key}>
                 <DocGroupRow span={2}>
                   {a.forAll
-                    ? "Advocate for all complainants"
-                    : `Advocate for ${a.appearingFor}`}
+                    ? __t("courtDocument_advocateForAllComplainants")
+                    : __t("courtDocument_advocateForValue0", {value0: String(a.appearingFor)})}
                 </DocGroupRow>
                 <tr>
-                  <DocCell label="Full name">{a.name}</DocCell>
-                  <DocCell label="Bar registration">{a.bar}</DocCell>
+                  <DocCell label={__t("courtDocument_fullName")}>{a.name}</DocCell>
+                  <DocCell label={__t("courtDocument_barRegistration")}>{a.bar}</DocCell>
                 </tr>
               </React.Fragment>
             ))}
@@ -318,20 +321,19 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
         </DocTable>
       ) : (
         <DocP className="text-paper-muted-foreground">
-          No advocate has been added. The complainant appears as a party in person.
-        </DocP>
+          {<__LocalizedText id="courtDocument_noAdvocateHasBeenAddedTheComplainant" />}{" "}</DocP>
       )}
 
-      <DocSub>1.3. Accused</DocSub>
+      <DocSub>{<__LocalizedText id="courtDocument_13Accused" />}</DocSub>
       <DocTable>
         <tbody>
           {accused.map((a) => (
             <React.Fragment key={a.key}>
-              <DocGroupRow>{a.label}</DocGroupRow>
+              <DocGroupRow>{__t(a.label)}</DocGroupRow>
               <tr>
-                <DocCell label={a.isEntity ? "Type of entity" : "Type"}>{a.type}</DocCell>
-                <DocCell label="Full name">{a.name}</DocCell>
-                <DocCell label="Address">{a.address}</DocCell>
+                <DocCell label={a.isEntity ? __t("courtDocument_typeOfEntity") : __t("courtDocument_type")}>{a.type}</DocCell>
+                <DocCell label={__t("courtDocument_fullName")}>{a.name}</DocCell>
+                <DocCell label={__t("courtDocument_address")}>{a.address}</DocCell>
               </tr>
             </React.Fragment>
           ))}
@@ -339,35 +341,35 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       </DocTable>
 
       {/* ── 2. Case details ── */}
-      <DocSection>2. Case details</DocSection>
+      <DocSection>{<__LocalizedText id="courtDocument_2CaseDetails" />}</DocSection>
 
-      <DocSub>2.1. Cheque and return memo details</DocSub>
+      <DocSub>{<__LocalizedText id="courtDocument_21ChequeAndReturnMemoDetails" />}</DocSub>
       <DocTable>
         <tbody>
           {cheques.map((c, i) => (
             <React.Fragment key={c.key}>
-              <DocGroupRow>{c.label}</DocGroupRow>
+              <DocGroupRow>{__t(c.label)}</DocGroupRow>
               <tr>
-                <DocCell label="Date on cheque">
+                <DocCell label={__t("courtDocument_dateOnCheque")}>
                   {longDate(draft.cheques[i].dateOnCheque)}
                 </DocCell>
-                <DocCell label="Amount">{c.amount}</DocCell>
-                <DocCell label="Cheque number">{c.number}</DocCell>
+                <DocCell label={__t("courtDocument_amount")}>{c.amount}</DocCell>
+                <DocCell label={__t("courtDocument_chequeNumber")}>{c.number}</DocCell>
               </tr>
               <tr>
-                <DocCell label="Bank name">{c.bankName}</DocCell>
-                <DocCell label="Bank branch" span={2}>
+                <DocCell label={__t("courtDocument_bankName")}>{c.bankName}</DocCell>
+                <DocCell label={__t("courtDocument_bankBranch")} span={2}>
                   {c.bankBranch}
                 </DocCell>
               </tr>
               <tr>
-                <DocCell label="Date of presentation">
+                <DocCell label={__t("courtDocument_dateOfPresentation")}>
                   {longDate(draft.cheques[i].presentDate)}
                 </DocCell>
-                <DocCell label="Date of return">
+                <DocCell label={__t("courtDocument_dateOfReturn")}>
                   {longDate(draft.cheques[i].returnDate)}
                 </DocCell>
-                <DocCell label="Return reason">
+                <DocCell label={__t("courtDocument_returnReason")}>
                   {orNot(optionLabel(RETURN_REASONS, draft.cheques[i].returnReason))}
                 </DocCell>
               </tr>
@@ -376,32 +378,32 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
         </tbody>
       </DocTable>
 
-      <DocSub>2.2. Demand notice details</DocSub>
+      <DocSub>{<__LocalizedText id="courtDocument_22DemandNoticeDetails" />}</DocSub>
       <DocTable>
         <tbody>
           {draft.notices.map((n, i) => {
             const s = noticeSummary(n);
             return (
               <React.Fragment key={n.id}>
-                <DocGroupRow>Demand notice {i + 1}</DocGroupRow>
+                <DocGroupRow>{<__LocalizedText id="courtDocument_demandNotice" />}{" "}{i + 1}</DocGroupRow>
                 <tr>
-                  <DocCell label="Nature of debt or other liability" span={3}>
+                  <DocCell label={__t("courtDocument_natureOfDebtOrOtherLiability")} span={3}>
                     {s.nature}
                   </DocCell>
                 </tr>
                 <tr>
-                  <DocCell label="Date of dispatch of demand notice">
+                  <DocCell label={__t("courtDocument_dateOfDispatchOfDemandNotice")}>
                     {longDate(n.dispatchDate)}
                   </DocCell>
-                  <DocCell label="Mode of service">{s.mode}</DocCell>
-                  <DocCell label="Whether delivered?">{s.deliveredYesNo}</DocCell>
+                  <DocCell label={__t("courtDocument_modeOfService")}>{s.mode}</DocCell>
+                  <DocCell label={__t("courtDocument_whetherDelivered")}>{s.deliveredYesNo}</DocCell>
                 </tr>
                 <tr>
-                  <DocCell label="Date of delivery">{longDate(n.deliveryDate)}</DocCell>
-                  <DocCell label="Has the accused replied to the demand notice?">
+                  <DocCell label={__t("courtDocument_dateOfDelivery")}>{longDate(n.deliveryDate)}</DocCell>
+                  <DocCell label={__t("courtDocument_hasTheAccusedRepliedToTheDemand")}>
                     {s.replied}
                   </DocCell>
-                  <DocCell label="Has the drawer made full or part payment due under the cheque?">
+                  <DocCell label={__t("courtDocument_hasTheDrawerMadeFullOrPart")}>
                     {s.paidYesNo}
                   </DocCell>
                 </tr>
@@ -411,38 +413,37 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
         </tbody>
       </DocTable>
 
-      <DocSub>2.3. Jurisdiction and limitation</DocSub>
+      <DocSub>{<__LocalizedText id="courtDocument_23JurisdictionAndLimitation" />}</DocSub>
       <DocTable>
         <tbody>
           <tr>
             <DocCell
-              label="Was the cheque delivered for collection at a bank account?"
+              label={__t("courtDocument_wasTheChequeDeliveredForCollectionAt")}
               span={3}
             >
-              {jurisdiction.depositedByPayee ? "Yes" : "No"}
+              {jurisdiction.depositedByPayee ? __t("courtDocument_yes") : __t("courtDocument_no")}
             </DocCell>
           </tr>
           {jurisdiction.depositedByPayee ? (
             <>
-              <DocGroupRow>Payee (complainant) bank details</DocGroupRow>
+              <DocGroupRow>{<__LocalizedText id="courtDocument_payeeComplainantBankDetails" />}</DocGroupRow>
               <tr>
-                <DocCell label="IFSC code">{jurisdiction.ifsc}</DocCell>
-                <DocCell label="Bank name">{jurisdiction.bankName}</DocCell>
-                <DocCell label="Bank branch">{jurisdiction.bankBranch}</DocCell>
+                <DocCell label={__t("courtDocument_ifscCode")}>{jurisdiction.ifsc}</DocCell>
+                <DocCell label={__t("courtDocument_bankName")}>{jurisdiction.bankName}</DocCell>
+                <DocCell label={__t("courtDocument_bankBranch")}>{jurisdiction.bankBranch}</DocCell>
               </tr>
             </>
           ) : null}
           <tr>
-            <DocCell label="Police station" span={3}>
+            <DocCell label={__t("courtDocument_policeStation")} span={3}>
               {jurisdiction.police}
             </DocCell>
           </tr>
           <DocGroupRow>
-            Other cheque dishonour complaints between the same parties
-          </DocGroupRow>
+            {<__LocalizedText id="courtDocument_otherChequeDishonourComplaintsBetweenTheSame" />}{" "}</DocGroupRow>
           <tr>
             <DocCell
-              label="Is there any other cheque dishonour complaint pending between the same parties?"
+              label={__t("courtDocument_isThereAnyOtherChequeDishonourComplaint")}
               span={3}
             >
               {jurisdiction.otherPending}
@@ -450,24 +451,24 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
           </tr>
           {jurisdiction.otherCases.map((c, i) => (
             <tr key={`${c.court}-${c.caseNumber}-${i}`}>
-              <DocCell label="Court">{orNot(c.court)}</DocCell>
-              <DocCell label="Case number" span={2}>
+              <DocCell label={__t("courtDocument_court")}>{orNot(c.court)}</DocCell>
+              <DocCell label={__t("courtDocument_caseNumber")} span={2}>
                 {orNot(c.caseNumber)}
               </DocCell>
             </tr>
           ))}
           <tr>
-            <DocCell label="Date of cause of action">
+            <DocCell label={__t("courtDocument_dateOfCauseOfAction")}>
               {longDate(jurisdiction.causeDateIso)}
             </DocCell>
-            <DocCell label="Date of complaint filing">
+            <DocCell label={__t("courtDocument_dateOfComplaintFiling")}>
               {longDate(jurisdiction.filingDateIso)}
             </DocCell>
-            <DocCell label="Duration of delay">{jurisdiction.delayText}</DocCell>
+            <DocCell label={__t("courtDocument_durationOfDelay")}>{__t(jurisdiction.delayText)}</DocCell>
           </tr>
           {jurisdiction.condonationReason ? (
             <tr>
-              <DocCell label="Reason for praying condonation of delay" span={3}>
+              <DocCell label={__t("courtDocument_reasonForPrayingCondonationOfDelay")} span={3}>
                 {jurisdiction.condonationReason}
               </DocCell>
             </tr>
@@ -475,12 +476,12 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
         </tbody>
       </DocTable>
 
-      <DocSub>2.4. ADR, prayer and other details</DocSub>
+      <DocSub>{<__LocalizedText id="courtDocument_24AdrPrayerAndOtherDetails" />}</DocSub>
       <DocTable>
         <tbody>
           <tr>
             <DocCell
-              label="Is the complainant willing to settle the case outside the court through alternative methods of dispute resolution?"
+              label={__t("courtDocument_isTheComplainantWillingToSettleThe")}
               span={3}
             >
               {adrLabel(draft)}
@@ -488,7 +489,7 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
           </tr>
         </tbody>
       </DocTable>
-      <p className="mt-4 text-body-compact font-semibold">Any additional details</p>
+      <p className="mt-4 text-body-compact font-semibold">{<__LocalizedText id="courtDocument_anyAdditionalDetails" />}</p>
       {otherDetails.length ? (
         /* The filer's text as written — paragraphs and lists kept. */
         <div
@@ -500,13 +501,13 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       ) : (
         <DocP className="text-paper-muted-foreground">{NOT_PROVIDED}</DocP>
       )}
-      <p className="mt-4 text-body-compact font-semibold">Interim relief</p>
+      <p className="mt-4 text-body-compact font-semibold">{<__LocalizedText id="courtDocument_interimRelief" />}</p>
       {interimRelief.length ? (
         interimRelief.map((p, i) => <DocP key={i}>{p}</DocP>)
       ) : (
         <DocP className="text-paper-muted-foreground">{NOT_PROVIDED}</DocP>
       )}
-      <p className="mt-4 text-body-compact font-semibold">Final relief</p>
+      <p className="mt-4 text-body-compact font-semibold">{<__LocalizedText id="courtDocument_finalRelief" />}</p>
       {finalRelief.length ? (
         finalRelief.map((p, i) => (
           <DocP key={i} className={i > 0 ? "ml-4" : undefined}>
@@ -518,33 +519,33 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       )}
 
       {/* ── 3. Evidence ── */}
-      <DocSection>3. Evidence</DocSection>
+      <DocSection>{<__LocalizedText id="courtDocument_3Evidence" />}</DocSection>
 
-      <DocSub>3.1. List of witnesses</DocSub>
+      <DocSub>{<__LocalizedText id="courtDocument_31ListOfWitnesses" />}</DocSub>
       <DocTable>
         <tbody>
           {witnesses.map((w) => (
             <React.Fragment key={w.key}>
-              <DocGroupRow>{w.label}</DocGroupRow>
+              <DocGroupRow>{__t(w.label)}</DocGroupRow>
               <tr>
-                <DocCell label={w.term === "Designation" ? "Designation" : "Full name"}>
+                <DocCell label={w.term === "Designation" ? __t("courtDocument_designation") : __t("courtDocument_fullName")}>
                   {w.name}
                 </DocCell>
-                <DocCell label="What will this witness prove?" span={2}>
+                <DocCell label={__t("courtDocument_whatWillThisWitnessProve")} span={2}>
                   {w.prove}
                 </DocCell>
               </tr>
               <tr>
-                <DocCell label="Mobile number">{w.mobile}</DocCell>
-                <DocCell label="Email id">{w.email}</DocCell>
-                <DocCell label="Address">{w.address}</DocCell>
+                <DocCell label={__t("courtDocument_mobileNumber")}>{w.mobile}</DocCell>
+                <DocCell label={__t("courtDocument_emailId")}>{w.email}</DocCell>
+                <DocCell label={__t("courtDocument_address")}>{w.address}</DocCell>
               </tr>
             </React.Fragment>
           ))}
         </tbody>
       </DocTable>
 
-      <DocSub>3.2. List of documents</DocSub>
+      <DocSub>{<__LocalizedText id="courtDocument_32ListOfDocuments" />}</DocSub>
       <div className="mt-2 overflow-x-auto">
         <table className="w-full table-fixed border-collapse">
           <colgroup>
@@ -555,14 +556,11 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
           <thead>
             <tr>
               <th className="border border-paper-border bg-paper-muted px-3 py-2 text-left text-body-compact font-semibold text-paper-muted-foreground">
-                S. no.
-              </th>
+                {<__LocalizedText id="courtDocument_sNo" />}{" "}</th>
               <th className="border border-paper-border bg-paper-muted px-3 py-2 text-left text-body-compact font-semibold text-paper-muted-foreground">
-                Document name
-              </th>
+                {<__LocalizedText id="courtDocument_documentName" />}{" "}</th>
               <th className="border border-paper-border bg-paper-muted px-3 py-2 text-left text-body-compact font-semibold text-paper-muted-foreground">
-                Natively digital
-              </th>
+                {<__LocalizedText id="courtDocument_nativelyDigital" />}{" "}</th>
             </tr>
           </thead>
           <tbody>
@@ -578,24 +576,22 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
                       </span>
                     ) : null}
                   </DocCell>
-                  <DocCell>{d.digital ? "Yes" : "No"}</DocCell>
+                  <DocCell>{d.digital ? __t("courtDocument_yes") : __t("courtDocument_no")}</DocCell>
                 </tr>
               ))
             ) : (
               <tr>
-                <DocCell span={3}>No documents have been uploaded yet.</DocCell>
+                <DocCell span={3}>{<__LocalizedText id="courtDocument_noDocumentsHaveBeenUploadedYet" />}</DocCell>
               </tr>
             )}
           </tbody>
         </table>
       </div>
       <DocP>
-        Signed on {jurisdiction.filingDateIso ? toLongDate(jurisdiction.filingDateIso) : "__"}.
-        Please see Page __ for the signatures.
-      </DocP>
+        {<__LocalizedText id="courtDocument_signedOn" />}{" "}{jurisdiction.filingDateIso ? toLongDate(jurisdiction.filingDateIso) : "__"}{<__LocalizedText id="courtDocument_pleaseSeePageForTheSignatures" />}{" "}</DocP>
 
       {/* ── 4. Affidavit ── */}
-      <DocSection>4. Affidavit</DocSection>
+      <DocSection>{<__LocalizedText id="courtDocument_4Affidavit" />}</DocSection>
       {/*
         The same text the Affidavit step shows and the filer may have edited — rendered
         from one expression rather than regenerated here, because a sworn document that
@@ -606,28 +602,19 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
         dangerouslySetInnerHTML={{ __html: affidavitBody(draft) }}
       />
 
-      <h4 className="mt-8 text-body-compact font-semibold">Complainant</h4>
+      <h4 className="mt-8 text-body-compact font-semibold">{<__LocalizedText id="courtDocument_complainant_4b427c96" />}</h4>
       <DocP>
-        I confirm that I have read and understood all the documents I am submitting
-        through this filing, including the:
-        <br />
-        1. Complaint
-        <br />
-        2. Affidavit of fact
-      </DocP>
-      <h4 className="mt-6 text-body-compact font-semibold">Advocate</h4>
+        {<__LocalizedText id="courtDocument_iConfirmThatIHaveReadAnd" />}{" "}<br />
+        {<__LocalizedText id="courtDocument_1Complaint" />}{" "}<br />
+        {<__LocalizedText id="courtDocument_2AffidavitOfFact" />}{" "}</DocP>
+      <h4 className="mt-6 text-body-compact font-semibold">{<__LocalizedText id="courtDocument_advocate" />}</h4>
       <DocP>
-        I confirm the identity of the party, and that the party has read and fully
-        understood the contents of the affidavit.
-      </DocP>
+        {<__LocalizedText id="courtDocument_iConfirmTheIdentityOfTheParty" />}{" "}</DocP>
       <DocP>
-        I confirm that the complaint has been properly drafted and presented in accordance
-        with legal requirements.
-      </DocP>
+        {<__LocalizedText id="courtDocument_iConfirmThatTheComplaintHasBeen" />}{" "}</DocP>
       <DocP className="text-center">***</DocP>
       <DocP className="text-paper-muted-foreground">
-        Please turn over the page to see the documents uploaded by the complainant.
-      </DocP>
+        {<__LocalizedText id="courtDocument_pleaseTurnOverThePageToSee" />}{" "}</DocP>
     </Card>
   );
 }

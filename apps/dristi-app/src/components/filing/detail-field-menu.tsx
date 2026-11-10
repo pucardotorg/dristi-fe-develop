@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The e-filing fields, grouped by section and searchable — the list a filer inserts from
@@ -30,6 +32,7 @@ export function DetailFieldMenu({
   describe: (field: DetailField) => string;
   label?: string;
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -43,16 +46,16 @@ export function DetailFieldMenu({
           onMouseDown={(e) => e.preventDefault()}
         >
           <BracesIcon data-icon="inline-start" aria-hidden />
-          {label}
+          {__t(label)}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <Command>
-          <CommandInput placeholder="Search fields" />
+          <CommandInput placeholder={__t("detailFieldMenu_searchFields")} />
           <CommandList className="max-h-80">
-            <CommandEmpty>No field by that name.</CommandEmpty>
+            <CommandEmpty>{<__LocalizedText id="detailFieldMenu_noFieldByThatName" />}</CommandEmpty>
             {DETAIL_FIELD_GROUPS.map((group) => (
-              <CommandGroup key={group.label} heading={group.label}>
+              <CommandGroup key={group.label} heading={__t(group.label)}>
                 {group.fields.map((field) => (
                   <CommandItem
                     key={field.name}

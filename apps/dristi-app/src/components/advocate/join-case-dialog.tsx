@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -219,6 +220,7 @@ function UploadedDocField({
   onFileChange: (file: File | null) => void;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const url = useObjectUrl(file);
@@ -247,7 +249,7 @@ function UploadedDocField({
       <DocumentSlot
         status={file ? "filled" : "empty"}
         media={file ? "thumbnail" : "icon"}
-        label={label}
+        label={__t(label)}
         required={required}
         filename={file?.name}
         meta={file ? fileSize(file.size) : undefined}
@@ -320,6 +322,7 @@ export function AdvocateJoinCaseDialog({
   /** The person chose Litigant or PoA holder; continue this case in the litigant flow. */
   onJoinAsLitigant: (kind: "self" | "poa") => void;
 }) {
+  const __t = __useTranslations();
   /* From the summons the case is known but the code is still asked, as on every other
      way in (owner, 2026-10-14) — the litigant's door does the same. */
   const initialStage: Stage = mode === "summons" ? "code" : "lookup";
@@ -676,7 +679,7 @@ export function AdvocateJoinCaseDialog({
     registerAccessCase({
       id: caseId,
       viewerAccess: "vakalatnama",
-      title: joinCase.title,
+      title: __t(joinCase.title),
       caseNumber: joinCase.caseNumber,
       court: joinCase.court,
       nextHearing: joinCase.hearingDate,
@@ -775,14 +778,14 @@ export function AdvocateJoinCaseDialog({
               ? pick(advDialog.leaveTitle, locale)
               : stage === "done"
                 ? pick(unpaidOutcome ? advDialog.unpaidTitle : advDialog.joinedTitle, locale)
-                : headerCopy.title}
+                : __t(headerCopy.title)}
           </DialogTitle>
           <DialogDescription className="text-body-compact text-pretty text-muted-foreground">
             {leaving
               ? pick(advDialog.leaveBody, locale)
               : stage === "done"
                 ? pick(unpaidOutcome ? advDialog.unpaidBody : advDialog.joinedBody, locale)
-                : headerCopy.body}
+                : __t(headerCopy.body)}
           </DialogDescription>
         </DialogHeader>
 
@@ -1332,7 +1335,7 @@ export function AdvocateJoinCaseDialog({
                 <DescriptionRow className="border-hairline">
                   <DescriptionTerm>{pick(advDialog.payCase, locale)}</DescriptionTerm>
                   <DescriptionDetails>
-                    <Identifier value={joinCase.caseNumber} label="case number" />
+                    <Identifier value={joinCase.caseNumber} label={__t("joinCaseDialog_caseNumber")} />
                   </DescriptionDetails>
                 </DescriptionRow>
                 {gujaratFee ? (
@@ -1371,11 +1374,11 @@ export function AdvocateJoinCaseDialog({
                   { label: pick(advDialog.payFeeHead, locale), value: pick(advDialog.payFeeName, locale) },
                   {
                     label: pick(advDialog.payCase, locale),
-                    value: <Identifier value={joinCase.caseNumber} label="case number" />,
+                    value: <Identifier value={joinCase.caseNumber} label={__t("joinCaseDialog_caseNumber")} />,
                   },
                   {
                     label: pick(advDialog.paidRef, locale),
-                    value: <Identifier value={paymentRef} label="payment reference" />,
+                    value: <Identifier value={paymentRef} label={__t("joinCaseDialog_paymentReference")} />,
                   },
                 ]}
               />
@@ -1586,7 +1589,7 @@ export function AdvocateJoinCaseDialog({
                   </Button>
                 ) : (
                   <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                    {locale === "ml" ? "ഇപ്പോൾ വേണ്ട" : "Not now"}
+                    {locale === "ml" ? "ഇപ്പോൾ വേണ്ട" : __t("joinCaseDialog_notNow")}
                   </Button>
                 )}
                 {/* Download sits next to the primary action as a compact icon; the label

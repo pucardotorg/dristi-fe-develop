@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CircleCheckIcon } from "lucide-react";
@@ -62,37 +64,34 @@ export function CaseBadge({
   if (fields)
     return (
       <Badge variant="warning" className="tabular-nums">
-        {fields} field{fields === 1 ? "" : "s"} to complete
-      </Badge>
+        {fields} {<__LocalizedText id="stage_field" />}{fields === 1 ? "" : "s"} {<__LocalizedText id="stage_toComplete" />}{" "}</Badge>
     );
   if (docs > 0)
     return (
       <Badge variant="warning" className="tabular-nums">
-        {docs} document{docs === 1 ? "" : "s"} missing
-      </Badge>
+        {docs} {<__LocalizedText id="stage_document" />}{docs === 1 ? "" : "s"} {<__LocalizedText id="stage_missing" />}{" "}</Badge>
     );
   const scans = c.flags.filter((f) => f.rule === "dcm-poor").length;
   if (scans)
     return (
       <Badge variant="warning" className="tabular-nums">
-        {scans} scan{scans === 1 ? "" : "s"} hard to read
-      </Badge>
+        {scans} {<__LocalizedText id="stage_scan" />}{scans === 1 ? "" : "s"} {<__LocalizedText id="stage_hardToRead" />}{" "}</Badge>
     );
   return (
     <Badge variant="success">
       <CircleCheckIcon data-icon="inline-start" aria-hidden />
-      Complete
-    </Badge>
+      {<__LocalizedText id="stage_complete" />}{" "}</Badge>
   );
 }
 
 export function StageBadge({ stage }: { stage: CaseStage }) {
+  const __t = __useTranslations();
   return (
     <Badge variant={STAGE[stage].variant}>
       {stage === "filed" ? (
         <CircleCheckIcon data-icon="inline-start" aria-hidden />
       ) : null}
-      {STAGE[stage].label}
+      {__t(STAGE[stage].label)}
     </Badge>
   );
 }
@@ -106,6 +105,7 @@ export function StageTip({
   counts: Record<CaseStage, number>;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <TooltipProvider>
       <Tooltip>
@@ -125,7 +125,7 @@ export function StageTip({
                   aria-hidden
                   className={cn("size-2 rounded-full", STAGE[k].fill)}
                 />
-                {STAGE[k].label}: {counts[k]}
+                {__t(STAGE[k].label)}: {counts[k]}
               </li>
             ))}
           </ul>
@@ -142,6 +142,7 @@ export function StageBar({
   counts: Record<CaseStage, number>;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const total = STAGE_ORDER.reduce((s, k) => s + counts[k], 0);
   if (total === 0) return null;
   return (
@@ -173,7 +174,7 @@ export function StageBar({
               aria-hidden
               className={cn("size-2 shrink-0 rounded-full", STAGE[k].fill)}
             />
-            {STAGE[k].label}
+            {__t(STAGE[k].label)}
             <span className="font-medium tabular-nums text-foreground">
               {counts[k]}
             </span>

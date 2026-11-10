@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { ChevronDown, TriangleAlert } from "lucide-react";
@@ -33,6 +34,7 @@ export function MobileHearingCard({ hearing, locale, queue, onOpenCase, onOpenTa
   onOpenTasks: ((id: string, taskIds: string[]) => void) | null;
   onViewInCauseList: ((id: string) => void) | null;
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
   const [pointerMotion, setPointerMotion] = React.useState(true);
   const ongoing = hearing.status === "now";
@@ -55,7 +57,7 @@ export function MobileHearingCard({ hearing, locale, queue, onOpenCase, onOpenTa
             {/* Up to two lines, so the access button beside it never squeezes it to a stub. */}
             <span className={cn("line-clamp-2 text-body-compact font-semibold", ongoing ? "text-primary" : "text-foreground")}>{hearing.kase.parties}</span>
             {/* The whole card is one tap target, so the number keeps the face only. */}
-            <Identifier value={hearing.kase.stNumber || hearing.kase.cnr} label="case number" copyable={false} className="text-body-compact wrap-anywhere text-muted-foreground" />
+            <Identifier value={hearing.kase.stNumber || hearing.kase.cnr} label={__t("mobileHearingCard_caseNumber")} copyable={false} className="text-body-compact wrap-anywhere text-muted-foreground" />
           </span>
           {/* The pending-task mark, centred on the 32px access button to its right. */}
           {count > 0 ? (

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * One document row on the case-documents screen.
@@ -77,6 +79,7 @@ export function IntakeSlotRow({
   onFiles: (dropped: DroppedFiles) => void;
   onOverChange?: (over: boolean) => void;
 }) {
+  const __t = __useTranslations();
   const ids = React.useId();
   const titleId = `${ids}-title`;
   const { isOver, dropProps } = useDropTarget({ onFiles, onOverChange });
@@ -139,11 +142,11 @@ export function IntakeSlotRow({
           label={
             <span className="flex flex-col gap-1">
               <span id={titleId}>
-                {slot.label}
+                {__t(slot.label)}
                 {/* Phone: "optional" as the form fields say it, a quiet word after the
                     name. The DS badge wrapped under the guidance and split the block. */}
                 {!slot.required && !slot.file ? (
-                  <span className="font-normal text-muted-foreground sm:hidden"> optional</span>
+                  <span className="font-normal text-muted-foreground sm:hidden"> {<__LocalizedText id="slotRow_optional" />}</span>
                 ) : null}
               </span>
               {showGuidance ? (
@@ -159,7 +162,7 @@ export function IntakeSlotRow({
                   {statusLine.tone === "muted" ? null : (
                     <StatusIcon className="size-4 shrink-0" aria-hidden />
                   )}
-                  <span>{statusLine.text}</span>
+                  <span>{__t(statusLine.text)}</span>
                 </span>
               ) : null}
             </span>
@@ -174,7 +177,7 @@ export function IntakeSlotRow({
           }
           thumbnail={
             slot.file ? (
-              <SlotThumbnail file={slot.file} label={slot.label} onPreview={onPreview} />
+              <SlotThumbnail file={slot.file} label={__t(slot.label)} onPreview={onPreview} />
             ) : undefined
           }
           onChooseFile={onChoose}
@@ -213,11 +216,11 @@ export function IntakeSlotRow({
                 type="button"
                 variant="outline"
                 onClick={onChoose}
-                aria-label={`Re-upload ${slot.label}`}
+                aria-label={__t("slotRow_reUploadValue0", {value0: String(__t(slot.label))})}
                 className="max-sm:w-10 max-sm:gap-0 max-sm:px-0 max-sm:has-data-[icon=inline-start]:pl-0"
               >
                 <RefreshCwIcon data-icon="inline-start" aria-hidden />
-                <span className="max-sm:sr-only">Re-upload</span>
+                <span className="max-sm:sr-only">{<__LocalizedText id="slotRow_reUpload" />}</span>
               </Button>
             ) : null}
             {/* No delete in a correction round. Removing a filed document is not a way to
@@ -229,7 +232,7 @@ export function IntakeSlotRow({
                 variant="ghost"
                 size="icon"
                 onClick={onDelete}
-                aria-label={`Remove the file added for ${slot.label}`}
+                aria-label={__t("slotRow_removeTheFileAddedForValue0", {value0: String(__t(slot.label))})}
                 className="text-muted-foreground hover:text-destructive"
               >
                 <Trash2Icon aria-hidden />
@@ -240,7 +243,7 @@ export function IntakeSlotRow({
       </div>
 
       {slot.processing ? (
-        <Progress value={pct} aria-label={`Reading ${slot.label}`} />
+        <Progress value={pct} aria-label={__t("slotRow_readingValue0", {value0: String(__t(slot.label))})} />
       ) : null}
     </div>
   );
@@ -260,12 +263,12 @@ export function IntakeSlotRow({
           resolved ? "border-l-success-ink" : active ? "border-l-primary" : "border-l-border"
         )}
       >
-        {body}
+        {__t(body)}
       </div>
     );
   }
   /* Untouched by scrutiny: off the screen unless the header's "show full filing" toggle
      brings it back — and then visibly out of play. */
   if (locked && !correction?.showAll) return null;
-  return <div className={cn(locked && "opacity-45")}>{body}</div>;
+  return <div className={cn(locked && "opacity-45")}>{__t(body)}</div>;
 }

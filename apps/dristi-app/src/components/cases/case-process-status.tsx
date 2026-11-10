@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useState, type ReactNode } from "react";
 import { CaseLink as Link } from "@/components/cases/case-reader";
@@ -79,12 +81,9 @@ export function CaseProcessStatus({ record }: { record: CaseRecord }) {
                 <MailXIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="text-body font-semibold">
-                No process issued yet
-              </EmptyTitle>
+                {<__LocalizedText id="caseProcessStatus_noProcessIssuedYet" />}{" "}</EmptyTitle>
               <EmptyDescription>
-                Notices, summons and warrants appear here once the court issues
-                them.
-              </EmptyDescription>
+                {<__LocalizedText id="caseProcessStatus_noticesSummonsAndWarrantsAppearHereOnce" />}{" "}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         </CardContent>
@@ -110,6 +109,7 @@ function ProcessPeople({
   caseId: string;
   people: ProcessPerson[];
 }) {
+  const __t = __useTranslations();
   const [active, setActive] = useState(people[0].id);
   return (
     /* One white frame holds the people's tabs and their rounds, so the row
@@ -123,7 +123,7 @@ function ProcessPeople({
         >
           <div className={STRIP_ROW}>
             <OverflowTabsList
-              aria-label="People process was issued to"
+              aria-label={__t("caseProcessStatus_peopleProcessWasIssuedTo")}
               value={active}
               onSelect={setActive}
               className={STRIP_LIST}
@@ -209,6 +209,7 @@ function Round({
   number: number;
   defaultOpen: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <Collapsible
       defaultOpen={defaultOpen}
@@ -227,7 +228,7 @@ function Round({
             />
             <span className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-6 gap-y-1">
               <span className="text-body-compact font-semibold text-foreground">
-                Round {number}: {processTitle(round.processes)}
+                {<__LocalizedText id="caseProcessStatus_round" />}{" "}{number}: {processTitle(round.processes)}
               </span>
               <span className="flex min-w-0 flex-wrap items-center gap-y-1 text-body-compact text-muted-foreground group-data-[state=open]/round:hidden max-sm:flex-col max-sm:items-start">
                 {round.channels.map((channel) => (
@@ -247,7 +248,7 @@ function Round({
                         STATUS_DOT[channel.status],
                       )}
                     />
-                    {channel.type} · {channelStatusView(channel.status).label}
+                    {channel.type} · {__t(channelStatusView(channel.status).label)}
                   </span>
                 ))}
               </span>
@@ -261,7 +262,7 @@ function Round({
               Channel column's width matches the term column, so a round has
               one left edge for its facts and its Destination column. */}
           <DescriptionList className="sm:px-4">
-            <FactRow label="Order issued">
+            <FactRow label={__t("caseProcessStatus_orderIssued")}>
               {round.order ? (
                 <>
                   <span className="tabular-nums">{round.order.on}</span>
@@ -271,15 +272,14 @@ function Round({
                       href={orderHref(caseId, round.order.id)}
                       className={FACT_LINK}
                     >
-                      View order
-                    </Link>
+                      {<__LocalizedText id="caseProcessStatus_viewOrder" />}{" "}</Link>
                   ) : null}
                 </>
               ) : (
-                <Muted>None</Muted>
+                <Muted>{<__LocalizedText id="caseProcessStatus_none" />}</Muted>
               )}
             </FactRow>
-            <FactRow label="Linked hearing">
+            <FactRow label={__t("caseProcessStatus_linkedHearing")}>
               {round.hearing ? (
                 <>
                   {round.hearing.id ? (
@@ -301,7 +301,7 @@ function Round({
                   </Muted>
                 </>
               ) : (
-                <Muted>None</Muted>
+                <Muted>{<__LocalizedText id="caseProcessStatus_none" />}</Muted>
               )}
             </FactRow>
           </DescriptionList>
@@ -316,22 +316,22 @@ function Round({
                   className="border-t border-hairline py-4 first:border-t-0 first:pt-0 last:pb-0"
                 >
                   <DescriptionList>
-                    <FactRow label="Sent via">
+                    <FactRow label={__t("caseProcessStatus_sentVia")}>
                       <span className="font-medium">{channel.type}</span>
                     </FactRow>
-                    <FactRow label="Destination">
+                    <FactRow label={__t("caseProcessStatus_destination")}>
                       <span className="wrap-anywhere">
                         {channel.destination}
                       </span>
                     </FactRow>
-                    <FactRow label="Status">
+                    <FactRow label={__t("caseProcessStatus_status")}>
                       <StatusMark channel={channel} />
                     </FactRow>
-                    <FactRow label="Fee paid on">
+                    <FactRow label={__t("caseProcessStatus_feePaidOn")}>
                       <FeePaid on={channel.feePaidOn} />
                     </FactRow>
                     {hasRemarks(channel) ? (
-                      <FactRow label="Remarks">
+                      <FactRow label={__t("caseProcessStatus_remarks")}>
                         <ChannelRemarks channel={channel} />
                       </FactRow>
                     ) : null}
@@ -353,18 +353,14 @@ function Round({
               <TableHeader>
                 <TableRow className={TABLE_HEAD_ROW}>
                   <TableHead className={cn(TABLE_HEAD, "w-36 xl:w-44")}>
-                    Channel
-                  </TableHead>
-                  <TableHead className={TABLE_HEAD}>Destination</TableHead>
+                    {<__LocalizedText id="caseProcessStatus_channel" />}{" "}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{<__LocalizedText id="caseProcessStatus_destination" />}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "w-44")}>
-                    Status
-                  </TableHead>
+                    {<__LocalizedText id="caseProcessStatus_status" />}{" "}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "w-36")}>
-                    Fee paid on
-                  </TableHead>
+                    {<__LocalizedText id="caseProcessStatus_feePaidOn" />}{" "}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "w-1/5 xl:w-1/4")}>
-                    Remarks
-                  </TableHead>
+                    {<__LocalizedText id="caseProcessStatus_remarks" />}{" "}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className={tableBodyClass({ hover: false })}>
@@ -407,9 +403,10 @@ function Round({
  *  label column narrows with the table's Channel column, so the values and
  *  the Destination column keep one left edge at every width. */
 function FactRow({ label, children }: { label: string; children: ReactNode }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow className="gap-1 border-b-0 py-2 max-sm:grid-cols-1 sm:gap-4 sm:max-xl:grid-cols-[8rem_1fr]">
-      <DescriptionTerm>{label}</DescriptionTerm>
+      <DescriptionTerm>{__t(label)}</DescriptionTerm>
       <DescriptionDetails className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         {children}
       </DescriptionDetails>
@@ -455,8 +452,7 @@ function ChannelRemarks({ channel }: { channel: ProcessChannel }) {
             download={channel.executionReport.fileName}
           >
             <DownloadIcon data-icon="inline-start" aria-hidden />
-            Execution report
-          </a>
+            {<__LocalizedText id="caseProcessStatus_executionReport" />}{" "}</a>
         </Button>
       ) : null}
     </span>
@@ -472,6 +468,7 @@ function ChannelRemarks({ channel }: { channel: ProcessChannel }) {
  * always carries the meaning, never the colour alone.
  */
 function StatusMark({ channel }: { channel: ProcessChannel }) {
+  const __t = __useTranslations();
   return (
     <span className="grid grid-cols-[auto_1fr] items-center gap-x-2 whitespace-nowrap">
       <span
@@ -479,7 +476,7 @@ function StatusMark({ channel }: { channel: ProcessChannel }) {
         className={cn("size-2 rounded-full", STATUS_DOT[channel.status])}
       />
       <span className="text-foreground">
-        {channelStatusView(channel.status).label}
+        {__t(channelStatusView(channel.status).label)}
       </span>
       <span className="col-start-2 tabular-nums text-muted-foreground">
         {channel.statusOn}
@@ -493,7 +490,7 @@ function FeePaid({ on }: { on?: string }) {
   return on ? (
     <span className="tabular-nums">{on}</span>
   ) : (
-    <Muted>Not paid yet</Muted>
+    <Muted>{<__LocalizedText id="caseProcessStatus_notPaidYet" />}</Muted>
   );
 }
 

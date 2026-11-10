@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -82,6 +84,7 @@ export function CaseHeaderActions({
    *  the court has no order screen to open for it yet. */
   orderHref?: string;
 }) {
+  const __t = __useTranslations();
   const bail = useCaseBail();
   const [shareOpen, setShareOpen] = React.useState(false);
   const [downloadOpen, setDownloadOpen] = React.useState(false);
@@ -113,14 +116,14 @@ export function CaseHeaderActions({
                 variant="outline"
                 size="icon"
                 className={WORDED_ON_TABLET}
-                aria-label="Share access to this case"
+                aria-label={__t("caseHeaderActions_shareAccessToThisCase")}
                 onClick={() => setShareOpen(true)}
               >
                 <Share2Icon aria-hidden />
-                <span className={TABLET_WORD}>Share access</span>
+                <span className={TABLET_WORD}>{<__LocalizedText id="caseHeaderActions_shareAccess" />}</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Share access to this case</TooltipContent>
+            <TooltipContent side="bottom">{<__LocalizedText id="caseHeaderActions_shareAccessToThisCase" />}</TooltipContent>
           </Tooltip>
         ) : null}
 
@@ -131,14 +134,14 @@ export function CaseHeaderActions({
               variant="outline"
               size="icon"
               className={WORDED_ON_TABLET}
-              aria-label="Download case file"
+              aria-label={__t("caseHeaderActions_downloadCaseFile")}
               onClick={() => setDownloadOpen(true)}
             >
               <DownloadIcon aria-hidden />
-              <span className={TABLET_WORD}>Download</span>
+              <span className={TABLET_WORD}>{<__LocalizedText id="caseHeaderActions_download" />}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Download case file</TooltipContent>
+          <TooltipContent side="bottom">{<__LocalizedText id="caseHeaderActions_downloadCaseFile" />}</TooltipContent>
         </Tooltip>
 
         {court ? (
@@ -150,14 +153,13 @@ export function CaseHeaderActions({
             className="flex-1 md:pointer-fine:flex-none md:landscape:flex-none"
             onClick={() => setSubmitOpen(true)}
           >
-            Submit documents
-          </Button>
+            {<__LocalizedText id="caseHeaderActions_submitDocuments" />}{" "}</Button>
         ) : null}
 
         {court ? (
           orderHref ? (
             <Button asChild className={GENERATE_ORDER}>
-              <Link href={orderHref}>Generate order</Link>
+              <Link href={orderHref}>{<__LocalizedText id="caseHeaderActions_generateOrder" />}</Link>
             </Button>
           ) : (
             <Tooltip>
@@ -167,27 +169,23 @@ export function CaseHeaderActions({
                   aria-disabled
                   className={`${GENERATE_ORDER} aria-disabled:opacity-50 aria-disabled:hover:bg-primary aria-disabled:active:translate-y-0`}
                 >
-                  Generate order
-                </Button>
+                  {<__LocalizedText id="caseHeaderActions_generateOrder" />}{" "}</Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" align="end">
-                The order screen is not connected for this case yet
-              </TooltipContent>
+                {<__LocalizedText id="caseHeaderActions_theOrderScreenIsNotConnectedFor" />}{" "}</TooltipContent>
             </Tooltip>
           )
         ) : (
         <DropdownMenu open={filingsOpen} onOpenChange={setFilingsOpen}>
           <DropdownMenuTrigger asChild>
             <Button type="button" className="order-first flex-1 md:pointer-fine:order-none md:pointer-fine:flex-none md:landscape:order-none md:landscape:flex-none">
-              Make filings
-              <ChevronDownIcon data-icon="inline-end" aria-hidden />
+              {<__LocalizedText id="caseHeaderActions_makeFilings" />}{" "}<ChevronDownIcon data-icon="inline-end" aria-hidden />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-max min-w-(--radix-dropdown-menu-trigger-width) whitespace-nowrap">
             <DropdownMenuItem asChild>
               <Link href={`/cases/${caseId}/filings/application`}>
-                Raise application
-              </Link>
+                {<__LocalizedText id="caseHeaderActions_raiseApplication" />}{" "}</Link>
             </DropdownMenuItem>
             {/* A dialog over the case, as every filing is; not a page. */}
             <DropdownMenuItem
@@ -197,8 +195,7 @@ export function CaseHeaderActions({
                 setSubmitOpen(true);
               }}
             >
-              Submit documents
-            </DropdownMenuItem>
+              {<__LocalizedText id="caseHeaderActions_submitDocuments" />}{" "}</DropdownMenuItem>
             {/* Bail is raised from Raise application, under its own type. */}
             {disposed ? null : (
               <DropdownMenuItem
@@ -208,8 +205,7 @@ export function CaseHeaderActions({
                   bail.openBondDirect();
                 }}
               >
-                Generate bail bond
-              </DropdownMenuItem>
+                {<__LocalizedText id="caseHeaderActions_generateBailBond" />}{" "}</DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -219,8 +215,7 @@ export function CaseHeaderActions({
                 bail.openStatus();
               }}
             >
-              Bond status
-            </DropdownMenuItem>
+              {<__LocalizedText id="caseHeaderActions_bondStatus" />}{" "}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         )}
@@ -241,9 +236,9 @@ export function CaseHeaderActions({
         }
         caseLine={
           <>
-            <Identifier value={accessCase.caseNumber} label="case number" />
+            <Identifier value={accessCase.caseNumber} label={__t("caseHeaderActions_caseNumber")} />
             <span aria-hidden> · </span>
-            {accessCase.title}
+            {__t(accessCase.title)}
           </>
         }
         // Lands on the register the submission is designed to appear in.
@@ -261,7 +256,7 @@ export function CaseHeaderActions({
         open={downloadOpen}
         onOpenChange={setDownloadOpen}
         caseNumber={accessCase.caseNumber}
-        title={accessCase.title}
+        title={__t(accessCase.title)}
         court={accessCase.court}
       />
 

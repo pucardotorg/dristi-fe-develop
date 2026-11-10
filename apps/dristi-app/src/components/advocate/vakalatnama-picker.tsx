@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FileTextIcon, Maximize2Icon, SearchIcon } from "lucide-react";
@@ -155,11 +156,9 @@ function VakalatnamaPreviewDialog({
             <div className="mx-auto flex max-w-sm flex-col gap-5 rounded-md border border-hairline bg-surface px-6 py-8">
               <div className="flex flex-col items-center gap-1 text-center">
                 <p className="text-caption tracking-widest text-muted-foreground uppercase">
-                  Vakalatnama
-                </p>
+                  {<__LocalizedText id="vakalatnamaPicker_vakalatnama" />}{" "}</p>
                 <p className="text-caption text-pretty text-muted-foreground">
-                  In the Court of the Judicial First Class Magistrate I
-                </p>
+                  {<__LocalizedText id="vakalatnamaPicker_inTheCourtOfTheJudicialFirst" />}{" "}</p>
                 <p className="text-body-compact font-semibold">{item.caseRef}</p>
               </div>
               <dl className="flex flex-col gap-3">
@@ -187,11 +186,11 @@ function VakalatnamaPreviewDialog({
               <div className="flex items-end justify-between gap-6 pt-4">
                 <div className="flex w-full flex-col gap-1">
                   <div className="h-px w-full bg-border" aria-hidden />
-                  <p className="text-caption text-muted-foreground">Signature of party</p>
+                  <p className="text-caption text-muted-foreground">{<__LocalizedText id="vakalatnamaPicker_signatureOfParty" />}</p>
                 </div>
                 <div className="flex w-full flex-col gap-1">
                   <div className="h-px w-full bg-border" aria-hidden />
-                  <p className="text-caption text-muted-foreground">Accepted by advocate</p>
+                  <p className="text-caption text-muted-foreground">{<__LocalizedText id="vakalatnamaPicker_acceptedByAdvocate" />}</p>
                 </div>
               </div>
             </div>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Sign — the document preview above the signing well, as an act-modal body. A signatory
@@ -31,19 +33,18 @@ import {
 
 /** The signatory's own signing well. */
 function SignCard({ ctx }: { ctx: ActContext }) {
+  const __t = __useTranslations();
   const { task, user, online, finish } = ctx;
   const { act, busy } = useTaskActions();
   const [otpOpen, setOtpOpen] = React.useState(false);
   return (
-    <RailCard title="Add your signature" description={signatoryLine(ctx, "Signing")}>
+    <RailCard title={__t("signPage_addYourSignature")} description={signatoryLine(ctx, "Signing")}>
       <PreparedNote ctx={ctx} />
       <Button size="lg" disabled={!online || !!busy} onClick={() => setOtpOpen(true)}>
         <SignatureIcon data-icon="inline-start" aria-hidden />
-        E-Sign with Aadhaar OTP
-      </Button>
+        {<__LocalizedText id="signPage_eSignWithAadhaarOtp" />}{" "}</Button>
       <p className="text-caption text-muted-foreground">
-        The signed document is attached to the task and the case file. Sandbox — nothing reaches a court.
-      </p>
+        {<__LocalizedText id="signPage_theSignedDocumentIsAttachedToThe" />}{" "}</p>
       <OtpDialog
         open={otpOpen}
         onOpenChange={setOtpOpen}

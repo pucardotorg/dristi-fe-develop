@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -119,6 +121,7 @@ function SignBailBondBody({
   onReject: (bond: SignBailBond) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const flow = useStagedFlow<SignStage>({
     order: SIGN_STAGES,
@@ -138,17 +141,17 @@ function SignBailBondBody({
       className="h-[85dvh] sm:max-w-4xl"
       /* The reference titles this overlay with the cause and the paper — "… vs … - Bail
          Bond" — and that is the right pair: the bond has no name of its own. */
-      title={reading ? `${causeTitle(bond)} — Bail bond` : "Add signature"}
+      title={reading ? `${causeTitle(bond)} — Bail bond` : __t("signBailBondDialog_addSignature")}
       titleRef={flow.titleRef}
       /* The litigant leads the supporting line rather than the case number, because with
          two bonds to a case the litigant is the only thing that says which of them is
          open. It stands on both stages: it is what the signature is being put to. */
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
-          Executed by {bond.litigant} <span aria-hidden>· </span>
+          {<__LocalizedText id="signBailBondDialog_executedBy" />}{" "}{bond.litigant} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={bond.caseNumber} label="case number" copyable={false} />{" "}
-          · Added {formatSignBailBondDate(bond.addedOn)}
+          <Identifier value={bond.caseNumber} label={__t("signBailBondDialog_caseNumber")} copyable={false} />{" "}
+          {<__LocalizedText id="signBailBondDialog_added" />}{" "}{formatSignBailBondDate(bond.addedOn)}
         </DialogDescription>
       }
       sceneKey={flow.sceneKey}
@@ -165,11 +168,9 @@ function SignBailBondBody({
               variant="outline"
               onClick={() => onReject(bond)}
             >
-              Reject
-            </Button>
+              {<__LocalizedText id="signBailBondDialog_reject" />}{" "}</Button>
             <Button type="button" onClick={() => flow.go("sign")}>
-              Proceed to sign
-            </Button>
+              {<__LocalizedText id="signBailBondDialog_proceedToSign" />}{" "}</Button>
           </>
         ) : (
           <SignatureActions
@@ -188,14 +189,14 @@ function SignBailBondBody({
              `flex-1`, and `min-h-0` lets it shrink rather than pushing the footer. */
           className="min-h-0 flex-1"
           height="fill"
-          title={document.title}
+          title={__t(document.title)}
           source={{
             kind: "composed",
             content: <BailBondFacsimile document={document} />,
           }}
           download={{
             onDownload: () => downloadSignBailBondDocument(bond),
-            label: `Download the bail bond of ${bond.litigant}`,
+            label: __t("signBailBondDialog_downloadTheBailBondOfValue0", {value0: String(bond.litigant)}),
           }}
         />
       ) : (
@@ -225,12 +226,13 @@ function SignBailBondBody({
  * two weights ui-craft §1.3 allows.
  */
 function BailBondFacsimile({ document: storedDocument }: { document: SignBailBondDocument }) {
+  const __t = __useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-4">
         <p className="text-center text-body tabular-nums">
-          Case Number: {document.caseNumber}
+          {<__LocalizedText id="signBailBondDialog_caseNumber_38ad5e9d" />}{" "}{document.caseNumber}
         </p>
         <h3 className="text-center text-title-s font-semibold">
           {document.court}
@@ -241,7 +243,7 @@ function BailBondFacsimile({ document: storedDocument }: { document: SignBailBon
         </div>
       </header>
 
-      <h4 className="text-center text-body font-semibold">{document.title}</h4>
+      <h4 className="text-center text-body font-semibold">{__t(document.title)}</h4>
 
       <div className="flex flex-col gap-3">
         {document.recital.map((paragraph, index) => (
@@ -259,7 +261,7 @@ function BailBondFacsimile({ document: storedDocument }: { document: SignBailBon
         ))}
       </ol>
 
-      <p className="text-body">Dated this the {document.dated}.</p>
+      <p className="text-body">{<__LocalizedText id="signBailBondDialog_datedThisThe" />}{" "}{document.dated}.</p>
 
       {/* Who put their hand to it. A description list rather than prose, because the
           reference's paper signs itself in a block and a bench checking a bond checks the

@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { PrinterIcon } from "lucide-react";
@@ -11,8 +12,7 @@ export function SummonsToolbar() {
     <div className="summons-toolbar flex w-full max-w-[210mm] justify-end">
       <Button variant="outline" onClick={() => window.print()}>
         <PrinterIcon data-icon="inline-start" aria-hidden />
-        Print or save as PDF
-      </Button>
+        {<__LocalizedText id="summonsToolbar_printOrSaveAsPdf" />}{" "}</Button>
     </div>
   );
 }

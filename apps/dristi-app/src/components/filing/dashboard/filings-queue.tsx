@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -174,6 +176,7 @@ export function FilingsQueue({
       the row (or the selection) only names what it acts on. */
   onBulk: (kind: "sign" | "pay", rows: QueueRow[]) => void;
 }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -275,17 +278,17 @@ export function FilingsQueue({
             className={cn("col-span-2 shrink-0", DESK_AUTO)}
           >
             <Trash2Icon data-icon="inline-start" aria-hidden />
-            Discard {selectedIds.length} {selectedIds.length === 1 ? "draft" : "drafts"}
+            {<__LocalizedText id="filingsQueue_discard" />}{" "}{selectedIds.length} {selectedIds.length === 1 ? __t("filingsQueue_draft") : __t("filingsQueue_drafts")}
           </Button>
         ) : bulkKind === "sign" && selectedRows.length > 0 && !cards ? (
           <Button onClick={() => onBulk("sign", selectedRows)} className="shrink-0 tabular-nums">
             <PenToolIcon data-icon="inline-start" aria-hidden />
-            Sign {selectedRows.length} {selectedRows.length === 1 ? "document" : "documents"}
+            {<__LocalizedText id="filingsQueue_sign" />}{" "}{selectedRows.length} {selectedRows.length === 1 ? __t("filingsQueue_document") : __t("filingsQueue_documents")}
           </Button>
         ) : bulkKind === "pay" && selectedRows.length > 0 && !cards ? (
           <Button onClick={() => onBulk("pay", selectedRows)} className="shrink-0 tabular-nums">
             <WalletIcon data-icon="inline-start" aria-hidden />
-            Pay {money(selectedRows.reduce((sum, row) => sum + (row.amount ?? 0), 0))}
+            {<__LocalizedText id="filingsQueue_pay" />}{" "}{money(selectedRows.reduce((sum, row) => sum + (row.amount ?? 0), 0))}
           </Button>
         ) : null}
         <div className={cn("relative col-span-2", DESK_SEARCH)}>
@@ -296,8 +299,8 @@ export function FilingsQueue({
           <Input
             value={view.q}
             onChange={(event) => go({ q: event.target.value, page: 1 })}
-            placeholder="Search by party name or number"
-            aria-label="Filter this list by party name or number"
+            placeholder={__t("filingsQueue_searchByPartyNameOrNumber")}
+            aria-label={__t("filingsQueue_filterThisListByPartyNameOr")}
             className="pl-9"
           />
         </div>
@@ -305,10 +308,10 @@ export function FilingsQueue({
           <NativeSelect
             value={court}
             onChange={(event) => go({ court: event.target.value, page: 1 })}
-            aria-label="Filter by court"
+            aria-label={__t("filingsQueue_filterByCourt")}
             className={cn("w-full", DESK_AUTO)}
           >
-            <NativeSelectOption value="">All courts</NativeSelectOption>
+            <NativeSelectOption value="">{<__LocalizedText id="filingsQueue_allCourts" />}</NativeSelectOption>
             {courts.map((name) => (
               <NativeSelectOption key={name} value={name}>
                 {name}
@@ -319,12 +322,12 @@ export function FilingsQueue({
         <NativeSelect
           value={sort.value}
           onChange={(event) => go({ sort: event.target.value, page: 1 })}
-          aria-label="Order this list"
+          aria-label={__t("filingsQueue_orderThisList")}
           className={cn("w-full", courts.length > 1 ? null : "col-span-2", DESK_AUTO)}
         >
           {TAB_SORTS[view.tab].map((option) => (
             <NativeSelectOption key={option.value} value={option.value}>
-              {option.label}
+              {__t(option.label)}
             </NativeSelectOption>
           ))}
         </NativeSelect>
@@ -343,12 +346,12 @@ export function FilingsQueue({
               {rows.length === 0 ? <InboxIcon aria-hidden /> : <SearchIcon aria-hidden />}
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
-              {rows.length === 0 ? emptyTitle(view.tab) : "No filings match your search"}
+              {rows.length === 0 ? emptyTitle(view.tab) : __t("filingsQueue_noFilingsMatchYourSearch")}
             </EmptyTitle>
             <EmptyDescription className="text-body-compact">
               {rows.length === 0
                 ? emptyHint(view.tab)
-                : "Try a different name or number, or clear the filters."}
+                : __t("filingsQueue_tryADifferentNameOrNumberOr")}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
@@ -356,15 +359,13 @@ export function FilingsQueue({
               view.tab === "drafts" ? (
                 <Button asChild>
                   <Link href={NEW_FILING}>
-                    Start a cheque-bounce filing
-                    <ArrowRightIcon data-icon="inline-end" aria-hidden />
+                    {<__LocalizedText id="filingsQueue_startAChequeBounceFiling" />}{" "}<ArrowRightIcon data-icon="inline-end" aria-hidden />
                   </Link>
                 </Button>
               ) : null
             ) : (
               <Button variant="outline" onClick={() => go({ q: "", court: "", page: 1 })}>
-                Clear filters
-              </Button>
+                {<__LocalizedText id="filingsQueue_clearFilters" />}{" "}</Button>
             )}
           </EmptyContent>
         </Empty>
@@ -390,7 +391,7 @@ export function FilingsQueue({
                       <Checkbox
                         checked={selected.has(row.id)}
                         onCheckedChange={() => toggleSelected(row.id)}
-                        aria-label={`Select ${row.parties}`}
+                        aria-label={__t("filingsQueue_selectValue0", {value0: String(row.parties)})}
                         className="size-5"
                       />
                     ) : undefined
@@ -399,15 +400,14 @@ export function FilingsQueue({
                     <>
                       <Button asChild>
                         <Link href={withOrigin(row.action.href, here)}>
-                          {row.action.label}
+                          {__t(row.action.label)}
                           <ArrowRightIcon data-icon="inline-end" aria-hidden />
                         </Link>
                       </Button>
                       {row.discardable ? (
                         <Button variant="outline" onClick={() => onDiscard([row.id])}>
                           <Trash2Icon data-icon="inline-start" aria-hidden />
-                          Discard
-                        </Button>
+                          {<__LocalizedText id="filingsQueue_discard" />}{" "}</Button>
                       ) : null}
                     </>
                   }
@@ -452,7 +452,7 @@ export function FilingsQueue({
                       <>
                         <span className="text-body-compact">{row.caseType}</span>
                         <span className="text-caption text-muted-foreground tabular-nums">
-                          Last saved {row.progress.savedOn}
+                          {<__LocalizedText id="filingsQueue_lastSaved" />}{" "}{row.progress.savedOn}
                         </span>
                       </>
                     ) : (
@@ -461,7 +461,7 @@ export function FilingsQueue({
                         <span className="text-caption text-muted-foreground">
                           {row.ref ? <Identifier value={row.ref} copyable={false} /> : null}
                           {row.ref && row.court ? <span aria-hidden> · </span> : null}
-                          {row.court || (row.ref ? null : "Court not assigned")}
+                          {row.court || (row.ref ? null : __t("filingsQueue_courtNotAssigned"))}
                         </span>
                       </>
                     )}
@@ -490,8 +490,7 @@ export function FilingsQueue({
                 className="w-full"
                 onClick={() => setVisible((count) => count + SHOW_MORE_STEP)}
               >
-                Show more
-                <ChevronDownIcon data-icon="inline-end" aria-hidden />
+                {<__LocalizedText id="filingsQueue_showMore" />}{" "}<ChevronDownIcon data-icon="inline-end" aria-hidden />
               </Button>
             </div>
           ) : null}
@@ -505,7 +504,7 @@ export function FilingsQueue({
             <div className="pointer-events-none sticky bottom-0 z-30 h-0">
               <div
                 role="region"
-                aria-label="Selected filings"
+                aria-label={__t("filingsQueue_selectedFilings")}
                 inert={selectedIds.length === 0 || undefined}
                 className={cn(
                   "border-hairline shadow-modal pointer-events-auto absolute inset-x-4 bottom-[calc(--spacing(4)+env(safe-area-inset-bottom))] flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-opacity",
@@ -514,23 +513,21 @@ export function FilingsQueue({
                 )}
               >
                 <p className="flex flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground" aria-live="polite">
-                  <span className="tabular-nums">{selectedIds.length} selected</span>
+                  <span className="tabular-nums">{selectedIds.length} {<__LocalizedText id="filingsQueue_selected" />}</span>
                   <Button
                     variant="link"
                     className="h-auto p-0 font-normal underline"
                     onClick={() => setSelected(new Set())}
                   >
-                    Clear
-                  </Button>
+                    {<__LocalizedText id="filingsQueue_clear" />}{" "}</Button>
                 </p>
                 {bulkKind === "discard" ? (
                   <Button variant="destructive" onClick={() => onDiscard(selectedIds)}>
-                    <Trash2Icon data-icon="inline-start" aria-hidden />Discard
-                  </Button>
+                    <Trash2Icon data-icon="inline-start" aria-hidden />{<__LocalizedText id="filingsQueue_discard" />}{" "}</Button>
                 ) : (
                   <Button onClick={() => onBulk(bulkKind === "sign" ? "sign" : "pay", selectedRows)}>
                     {bulkKind === "sign" ? <PenToolIcon data-icon="inline-start" aria-hidden /> : <WalletIcon data-icon="inline-start" aria-hidden />}
-                    {bulkKind === "sign" ? "Sign" : "Pay"}
+                    {bulkKind === "sign" ? __t("filingsQueue_sign") : __t("filingsQueue_pay")}
                   </Button>
                 )}
               </div>
@@ -538,7 +535,7 @@ export function FilingsQueue({
           ) : null}
 
           <div className={cn("overflow-x-auto", REGISTER_TABLE_ONLY)}>
-            <Table aria-label={layout.label}>
+            <Table aria-label={__t(layout.label)}>
               <TableHeader>
                 <TableRow className="border-hairline">
                   {selectable ? (
@@ -548,8 +545,8 @@ export function FilingsQueue({
                         onCheckedChange={(checked) => setManySelected(pageIds, checked === true)}
                         aria-label={
                           pageState === true
-                            ? "Clear the selection on this page"
-                            : "Select every row on this page that can be acted on"
+                            ? __t("filingsQueue_clearTheSelectionOnThisPage")
+                            : __t("filingsQueue_selectEveryRowOnThisPageThat")
                         }
                       />
                     </TableHead>
@@ -595,7 +592,7 @@ export function FilingsQueue({
                             <Checkbox
                               checked={selected.has(row.id)}
                               onCheckedChange={() => toggleSelected(row.id)}
-                              aria-label={`Select ${row.parties}`}
+                              aria-label={__t("filingsQueue_selectValue0", {value0: String(row.parties)})}
                             />
                           </div>
                         ) : null}
@@ -621,7 +618,7 @@ export function FilingsQueue({
           </div>
 
           <p className={cn("px-4 pb-4 text-caption text-muted-foreground", REGISTER_CARDS_ONLY)}>
-            Showing <span className="tabular-nums">{slice.length}</span> of{" "}
+            {<__LocalizedText id="filingsQueue_showing" />}{" "}<span className="tabular-nums">{slice.length}</span> {<__LocalizedText id="filingsQueue_of" />}{" "}
             <span className="tabular-nums">{filtered.length}</span>
           </p>
 
@@ -635,23 +632,22 @@ export function FilingsQueue({
                 caption type, so the count and the size read as one sentence. */}
             <div className="flex items-center gap-3">
               <p className="text-caption leading-none text-muted-foreground">
-                Showing <span className="tabular-nums">{start + 1}</span>–
+                {<__LocalizedText id="filingsQueue_showing" />}{" "}<span className="tabular-nums">{start + 1}</span>–
                 <span className="tabular-nums">
                   {Math.min(start + view.size, filtered.length)}
                 </span>{" "}
-                of <span className="tabular-nums">{filtered.length}</span>
+                {<__LocalizedText id="filingsQueue_of" />}{" "}<span className="tabular-nums">{filtered.length}</span>
               </p>
               <NativeSelect
                 value={String(view.size)}
                 onChange={(event) => go({ size: Number(event.target.value), page: 1 })}
-                aria-label="Rows per page"
+                aria-label={__t("filingsQueue_rowsPerPage")}
                 size="sm"
                 className="w-auto [&_select]:text-caption"
               >
                 {PAGE_SIZES.map((size) => (
                   <NativeSelectOption key={size} value={String(size)}>
-                    {size} per page
-                  </NativeSelectOption>
+                    {size} {<__LocalizedText id="filingsQueue_perPage" />}{" "}</NativeSelectOption>
                 ))}
               </NativeSelect>
             </div>
@@ -672,7 +668,7 @@ export function FilingsQueue({
                           href="#"
                           onClick={goto(go, entry)}
                           isActive={entry === page}
-                          aria-label={`Go to page ${entry}`}
+                          aria-label={__t("filingsQueue_goToPageValue0", {value0: String(entry)})}
                         >
                           {entry}
                         </PaginationLink>
@@ -699,10 +695,9 @@ export function FilingsQueue({
   return (
     <Card className={cn(PANEL_CLASS, "gap-0 overflow-visible py-0")}>
       <div className={cn("flex flex-col gap-1 px-4 pt-4 pb-4", DESK_HEAD)}>
-        <h2 className="text-title-s font-semibold text-foreground">Your filings</h2>
+        <h2 className="text-title-s font-semibold text-foreground">{<__LocalizedText id="filingsQueue_yourFilings" />}</h2>
         <p className="text-body-compact text-muted-foreground">
-          All your filings, finished and in progress. Each tab is a stage.
-        </p>
+          {<__LocalizedText id="filingsQueue_allYourFilingsFinishedAndInProgress" />}{" "}</p>
       </div>
 
       <Tabs
@@ -720,7 +715,7 @@ export function FilingsQueue({
         <div className={cn("sticky top-14 z-10 border-b border-hairline bg-card px-4", DESK_GUTTER)}>
           {/* Never a sideways scroll: what does not fit folds into More (owner, Sept 21). */}
           <OverflowTabsList
-            aria-label="Filing states"
+            aria-label={__t("filingsQueue_filingStates")}
             value={view.tab}
             onSelect={(value) => {
               if (!isQueueTab(value)) return;
@@ -735,7 +730,7 @@ export function FilingsQueue({
                 measure: count,
                 label: (
                   <>
-                    {entry.label}
+                    {__t(entry.label)}
                     <span className="tabular-nums text-muted-foreground">{count}</span>
                   </>
                 ),
@@ -748,7 +743,7 @@ export function FilingsQueue({
             selected one mounts. */}
         {QUEUE_TABS.map((entry) => (
           <TabsContent key={entry.id} value={entry.id}>
-            {body}
+            {__t(body)}
           </TabsContent>
         ))}
       </Tabs>
@@ -771,7 +766,7 @@ function headingFor(column: ColumnId, layout: (typeof TAB_LAYOUT)[QueueTab]): Re
     case "progress":
       return "Last saved";
     case "action":
-      return <span className="sr-only">Action</span>;
+      return <span className="sr-only">{<__LocalizedText id="filingsQueue_action" />}</span>;
   }
 }
 

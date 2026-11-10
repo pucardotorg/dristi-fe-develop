@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -94,6 +95,7 @@ export function FilingMain({
   sourceOpen?: boolean;
   className?: string;
 }) {
+  const __t = __useTranslations();
   /*
    * In a correction round this column is the middle of three panes and the frame around
    * it already carries the page gutters, so it drops the wide ones and its own max-width
@@ -106,7 +108,7 @@ export function FilingMain({
 
   if (inCorrection) {
     return (
-      <div className={cn("flex w-full min-w-0 flex-col gap-6", className)}>{body}</div>
+      <div className={cn("flex w-full min-w-0 flex-col gap-6", className)}>{__t(body)}</div>
     );
   }
 
@@ -130,7 +132,7 @@ export function FilingMain({
           width === "narrow" && "mx-auto max-w-2xl"
         )}
       >
-        {body}
+        {__t(body)}
       </div>
     </div>
   );

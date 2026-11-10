@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -28,6 +29,7 @@ import { pick, type Locale } from "@/lib/onboarding/content";
  * A case joined here appears under Your cases at once, and opens.
  */
 export function AdvocateShellHome({ locale }: { locale: Locale }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const { displayName, switchProfile } = useProfile();
   const name = displayName.replace(/^Adv\.\s*/, "");
@@ -52,7 +54,7 @@ export function AdvocateShellHome({ locale }: { locale: Locale }) {
                       <Badge variant={entry.joined ? "success" : "warning"}>
                         {pick(entry.joined ? advShellHome.statusJoined : advShellHome.statusUnpaid, locale)}
                       </Badge>
-                      <p className="text-body font-semibold text-pretty">{entry.joinCase.title}</p>
+                      <p className="text-body font-semibold text-pretty">{__t(entry.joinCase.title)}</p>
                     </div>
                     <div className="flex flex-col gap-2 text-caption text-muted-foreground">
                       <p>
@@ -60,7 +62,7 @@ export function AdvocateShellHome({ locale }: { locale: Locale }) {
                           {pick(advShellHome.caseNumberLabel, locale)}
                         </span>
                         <br />
-                        <Identifier value={entry.joinCase.caseNumber} label="case number" />
+                        <Identifier value={entry.joinCase.caseNumber} label={__t("advocateShellHome_caseNumber")} />
                       </p>
                       <p>
                         <span className="font-medium text-foreground">

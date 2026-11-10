@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -83,6 +85,7 @@ export function NotificationsBell({
   onRead: () => void;
   onClearAll: () => void;
 }) {
+  const __t = __useTranslations();
   const unreadCount = notifications.filter((n) => n.unread).length;
   const hasPersistentAttention = notifications.some((n) => n.persistent);
   const hasClearable = notifications.some((n) => n.stale);
@@ -103,13 +106,11 @@ export function NotificationsBell({
           variant="ghost"
           size="icon"
           className="relative [&_svg]:size-5"
-          aria-label={`Notifications${
-            unreadCount
+          aria-label={__t("notifications_notificationsValue0", {value0: String(unreadCount
               ? ` (${unreadCount} unread)`
               : hasPersistentAttention
-                ? " · needs attention"
-                : ""
-          }`}
+                ? __t("notifications_needsAttention")
+                : "")})}
         >
           <BellIcon aria-hidden />
           {/*
@@ -142,7 +143,7 @@ export function NotificationsBell({
         className="w-88 max-w-[calc(100vw-2rem)] p-0"
       >
         <div className="flex min-h-12 items-center justify-between gap-3 border-b border-hairline px-4 py-2">
-          <p className="text-body-compact font-semibold">Notifications</p>
+          <p className="text-body-compact font-semibold">{<__LocalizedText id="notifications_notifications" />}</p>
           {notifications.length > 0 ? (
             <Button
               variant="ghost"
@@ -150,15 +151,13 @@ export function NotificationsBell({
               disabled={!hasClearable}
               onClick={onClearAll}
             >
-              Clear all
-            </Button>
+              {<__LocalizedText id="notifications_clearAll" />}{" "}</Button>
           ) : null}
         </div>
 
         {notifications.length === 0 ? (
           <p className="px-4 py-6 text-body-compact text-muted-foreground">
-            Nothing needs your attention right now.
-          </p>
+            {<__LocalizedText id="notifications_nothingNeedsYourAttentionRightNow" />}{" "}</p>
         ) : (
           <ul className="max-h-96 overflow-y-auto">
             {notifications.map((n) => {
@@ -174,10 +173,10 @@ export function NotificationsBell({
                           : "font-medium text-foreground",
                       )}
                     >
-                      {n.title}
+                      {__t(n.title)}
                     </p>
                     <p className="text-caption text-muted-foreground">
-                      {n.body}
+                      {__t(n.body)}
                     </p>
                   </div>
                 </>

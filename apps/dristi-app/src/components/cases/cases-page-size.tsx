@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -38,6 +40,7 @@ export function CasesPageSizeSelect({
   onChange: (pageSize: CasesPageSize) => void;
   id?: string;
 }) {
+  const __t = __useTranslations();
   const isPreset =
     typeof value === "number" && (PAGE_SIZES as readonly number[]).includes(value);
   const [customOpen, setCustomOpen] = React.useState(
@@ -62,8 +65,7 @@ export function CasesPageSizeSelect({
         htmlFor={id}
         className="text-body-compact font-normal text-muted-foreground"
       >
-        Per page
-      </Label>
+        {<__LocalizedText id="casesPageSize_perPage" />}{" "}</Label>
       <Select
         value={selected}
         onValueChange={(next) => {
@@ -95,8 +97,8 @@ export function CasesPageSizeSelect({
               {size}
             </SelectItem>
           ))}
-          <SelectItem value={ALL}>All</SelectItem>
-          <SelectItem value={CUSTOM}>Custom…</SelectItem>
+          <SelectItem value={ALL}>{<__LocalizedText id="casesPageSize_all" />}</SelectItem>
+          <SelectItem value={CUSTOM}>{<__LocalizedText id="casesPageSize_custom" />}</SelectItem>
         </SelectContent>
       </Select>
       {customOpen ? (
@@ -106,7 +108,7 @@ export function CasesPageSizeSelect({
           min={1}
           max={MAX_PAGE_SIZE}
           value={draft}
-          aria-label="Rows per page"
+          aria-label={__t("casesPageSize_rowsPerPage")}
           className="w-20 text-body tabular-nums"
           autoFocus
           onChange={(event) => setDraft(event.target.value)}

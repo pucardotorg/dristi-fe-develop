@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Demand notice & debt — the statutory notice and the debt the cheque was meant to clear.
@@ -117,6 +119,7 @@ function indexOfId(notices: { id: string }[], id: string): number | null {
 }
 
 export function DemandNoticeSection() {
+  const __t = __useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("demand-notice");
   const notices = draft.notices;
@@ -255,14 +258,14 @@ export function DemandNoticeSection() {
     <>
       <FilingMain sourceOpen={sourceOpen}>
         <FilingPageHeader
-          title="Demand notice & debt"
-          description="Details of the statutory demand notice sent to the accused, and the debt the cheque was meant to discharge."
+          title={__t("demandNoticeSection_demandNoticeDebt")}
+          description={__t("demandNoticeSection_detailsOfTheStatutoryDemandNoticeSent")}
         />
 
         <SectionTabs
           tabs={notices.map((n, i) => ({
             id: n.id,
-            label: `Demand notice ${i + 1}`,
+            label: __t("demandNoticeSection_demandNoticeValue0", {value0: String(i + 1)}),
             status: noticeComplete(n) ? "complete" : "attention",
             removable: notices.length > 1,
           }))}
@@ -283,18 +286,16 @@ export function DemandNoticeSection() {
         <CorrectionInstance value={index}>
 
         <SectionNotice variant="neutral">
-          Where several notices went out for one cheque, use the one issued within 30
-          days of the return. Add a notice per cheque.
-        </SectionNotice>
+          {<__LocalizedText id="demandNoticeSection_whereSeveralNoticesWentOutForOne" />}{" "}</SectionNotice>
 
         {/* What the cheque was meant to discharge */}
         <FormCard
-          title="Nature of debt"
-          description="The debt or liability the cheque was meant to discharge."
+          title={__t("demandNoticeSection_natureOfDebt")}
+          description={__t("demandNoticeSection_theDebtOrLiabilityTheChequeWas")}
         >
           <FormRow>
             <FormField
-              label="Nature of debt or other liability"
+              label={__t("demandNoticeSection_natureOfDebtOrOtherLiability")}
               name="natureDebt"
               required
               tip="The legally enforceable debt or liability that existed when the cheque was issued."
@@ -313,12 +314,12 @@ export function DemandNoticeSection() {
 
         {/* The notice itself, and how it was served */}
         <FormCard
-          title="Legal demand notice"
-          description="The statutory notice demanding payment, sent after the cheque was dishonoured."
+          title={__t("demandNoticeSection_legalDemandNotice")}
+          description={__t("demandNoticeSection_theStatutoryNoticeDemandingPaymentSentAfter")}
         >
           <FormRow>
             <FormField
-              label="Date of dispatch of demand notice"
+              label={__t("demandNoticeSection_dateOfDispatchOfDemandNotice")}
               name="dispatchDate"
               required
               error={noticeDispatchIssue(draft, index)}
@@ -332,7 +333,7 @@ export function DemandNoticeSection() {
                 ariaLabel="Date of dispatch of demand notice"
               />
             </FormField>
-            <FormField label="Mode of service" name="modeService" required>
+            <FormField label={__t("demandNoticeSection_modeOfService")} name="modeService" required>
               <OptionSelect
                 value={notice.modeService}
                 prefilled={isPrefilled("modeService")}
@@ -346,13 +347,12 @@ export function DemandNoticeSection() {
 
           {noticeDispatchLate(draft, index) ? (
             <SectionNotice variant="warning">
-              Demand notice not issued within 30 days of the return of the cheque as unpaid.
-            </SectionNotice>
+              {<__LocalizedText id="demandNoticeSection_demandNoticeNotIssuedWithin30Days" />}{" "}</SectionNotice>
           ) : null}
 
           <HalfWidth>
             <FormField
-              label="Tracking number"
+              label={__t("demandNoticeSection_trackingNumber")}
               name="tracking"
               optional
               tip="Consignment / tracking number from the postal or courier receipt."
@@ -362,7 +362,7 @@ export function DemandNoticeSection() {
                 prefilled={isPrefilled("tracking")}
                 onViewSource={() => openSource("tracking")}
                 onChange={(v) => editField("tracking", v)}
-                placeholder="Enter tracking number"
+                placeholder={__t("demandNoticeSection_enterTrackingNumber")}
                 autoComplete="off"
               />
             </FormField>
@@ -370,7 +370,7 @@ export function DemandNoticeSection() {
 
           <FormDivider />
 
-          <FormField asGroup label="Whether delivered?" name="delivered" required>
+          <FormField asGroup label={__t("demandNoticeSection_whetherDelivered")} name="delivered" required>
             <YesNoSegmented
               value={notice.delivered}
               onValueChange={(v) => set("delivered", v)}
@@ -382,7 +382,7 @@ export function DemandNoticeSection() {
             <>
               <FormRow>
                 <FormField name="deliveryDate"
-                  label="Date of delivery"
+                  label={__t("demandNoticeSection_dateOfDelivery")}
                   required
                   error={noticeServiceIssue(notice)}
                   help="The 15-day payment window runs from this date."
@@ -396,7 +396,7 @@ export function DemandNoticeSection() {
                   />
                 </FormField>
               </FormRow>
-              <FormField asGroup name="replied" label="Has the accused replied to the demand notice?">
+              <FormField asGroup name="replied" label={__t("demandNoticeSection_hasTheAccusedRepliedToTheDemand")}>
                 <YesNoSegmented
                   value={notice.replied}
                   onValueChange={(v) => set("replied", v)}
@@ -408,7 +408,7 @@ export function DemandNoticeSection() {
             <>
               <FormRow>
                 <FormField name="returnDate"
-                  label="Date of return as not delivered"
+                  label={__t("demandNoticeSection_dateOfReturnAsNotDelivered")}
                   required
                   error={noticeServiceIssue(notice)}
                 >
@@ -418,7 +418,7 @@ export function DemandNoticeSection() {
                     ariaLabel="Date of return as not delivered"
                   />
                 </FormField>
-                <FormField label="Reason for non-delivery" name="nonDeliveryReason" required>
+                <FormField label={__t("demandNoticeSection_reasonForNonDelivery")} name="nonDeliveryReason" required>
                   <OptionSelect
                     value={notice.nonDeliveryReason}
                     onValueChange={(v) => set("nonDeliveryReason", v)}
@@ -428,22 +428,19 @@ export function DemandNoticeSection() {
                 </FormField>
               </FormRow>
               <SectionNotice variant="info">
-                A notice returned unserved can still count as valid service, if it was
-                correctly addressed and dispatched. Keep the envelope and the tracking
-                record.
-              </SectionNotice>
+                {<__LocalizedText id="demandNoticeSection_aNoticeReturnedUnservedCanStillCount" />}{" "}</SectionNotice>
             </>
           )}
         </FormCard>
 
         {/* Anything already paid comes off the claim */}
         <FormCard
-          title="Payment against the cheque"
-          description="Whether the accused has paid any part of the cheque amount."
+          title={__t("demandNoticeSection_paymentAgainstTheCheque")}
+          description={__t("demandNoticeSection_whetherTheAccusedHasPaidAnyPart")}
         >
           <HalfWidth>
             <FormField name="paymentStatus"
-              label="Has the drawer (accused) made full or part payment due under the cheque?"
+              label={__t("demandNoticeSection_hasTheDrawerAccusedMadeFullOr")}
               required
               tip="If any amount has already been paid, the balance due is what is claimed in the complaint."
             >
@@ -461,7 +458,7 @@ export function DemandNoticeSection() {
           {notice.paymentStatus === "part" ? (
             <HalfWidth>
               <FormField name="partAmount"
-                label="How much payment has already been made?"
+                label={__t("demandNoticeSection_howMuchPaymentHasAlreadyBeenMade")}
                 required
                 help="Deducted from the cheque amount to arrive at the balance claimed."
               >
@@ -469,7 +466,7 @@ export function DemandNoticeSection() {
                   prefix="₹"
                   value={notice.partAmount}
                   onChange={(v) => set("partAmount", v)}
-                  placeholder="Amount paid so far"
+                  placeholder={__t("demandNoticeSection_amountPaidSoFar")}
                   inputMode="numeric"
                 />
               </FormField>
@@ -487,16 +484,16 @@ export function DemandNoticeSection() {
       <ConfirmDialog
         open={removeOpen}
         onOpenChange={setRemoveOpen}
-        title={`Remove demand notice ${removeIndex + 1}`}
-        description="Are you sure you want to delete the details of this demand notice and any documents added for it? This cannot be undone."
-        confirmLabel="Yes, remove"
+        title={__t("demandNoticeSection_removeDemandNoticeValue0", {value0: String(removeIndex + 1)})}
+        description={__t("demandNoticeSection_areYouSureYouWantToDelete")}
+        confirmLabel={__t("demandNoticeSection_yesRemove")}
         onConfirm={confirmRemove}
       />
 
       <SourcePanel
         open={sourceOpen}
         onOpenChange={setSourceOpen}
-        title={sourceSlot?.label ?? DOC_LABELS[sourceDoc]}
+        title={__t(sourceSlot?.label) ?? __t(DOC_LABELS[sourceDoc])}
         field={explaining ? FIELD_LABELS[sourceField] : undefined}
         // Only the dispatch date has no other way to be corrected once machine-read
         // (its field opens this panel instead of a picker), so it gets the value box.
@@ -511,7 +508,7 @@ export function DemandNoticeSection() {
             : undefined
         }
         chips={uploadedDocs.map((doc) => ({
-          label: slots[doc]?.file?.name ?? slots[doc]?.label ?? DOC_LABELS[doc],
+          label: slots[doc]?.file?.name ?? __t(slots[doc]?.label) ?? __t(DOC_LABELS[doc]),
           active: doc === sourceDoc,
           onClick: () => {
             setChosenField(entryFieldFor(doc));
@@ -520,12 +517,12 @@ export function DemandNoticeSection() {
         }))}
         file={sourceSlot?.file ?? null}
         uploadHref={hrefFor("upload")}
-        imageAlt={`Uploaded ${sourceSlot?.label ?? "document"}`}
+        imageAlt={`Uploaded ${__t(sourceSlot?.label) ?? __t("demandNoticeSection_document")}`}
         region={regionFromBox(
           sourceSlot?.extract?.fields[sourceField]?.box,
           sourceSlot?.extract?.page
         )}
-        note="Shown from your uploaded document."
+        note={__t("demandNoticeSection_shownFromYourUploadedDocument")}
       />
     </>
   );

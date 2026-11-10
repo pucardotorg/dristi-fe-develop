@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
@@ -76,6 +77,7 @@ export function HomeGreeting({
   /** The day's actions (cause list, join, refresh), drawn at the header's right on a desktop. */
   actions?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const stripRef = React.useRef<HTMLUListElement>(null);
   const shiftWeek = (delta: number, pointer: boolean) => {
     onShiftWeek(delta);
@@ -223,7 +225,7 @@ export function HomeGreeting({
             {fillCopy(greetingCopy(nowDate.getHours()), locale, { name: firstName })}
           </p>
           <h1 className="text-title font-semibold tracking-tight text-balance">
-            {title}
+            {__t(title)}
           </h1>
           {/* The week strip's per-day dot carries its own text equivalent
               through the tooltip and the sr-only line below. */}
@@ -239,7 +241,7 @@ export function HomeGreeting({
           </p>
           {/* ds-typography-allow: owner asked for the title a step under title-l (28px) so the actions keep its row beside the tasks panel. */}
           <h1 className="text-[1.75rem] leading-9 font-semibold tracking-tight text-balance">
-            {title}
+            {__t(title)}
           </h1>
         </div>
         {/* The pending-tasks side tab, out on the screen's right edge. */}

@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -101,6 +102,7 @@ export function OrderDoorScreen({ door }: { door: OrderDoor }) {
 }
 
 function OrderDoorBody({ door }: { door: OrderDoor }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const { hearing, context, today } = door;
   const appearances = hearing?.appearances;
@@ -154,7 +156,7 @@ function OrderDoorBody({ door }: { door: OrderDoor }) {
     <OrderEditorComposer
       queue={{
         key: door.draftKey,
-        heading: door.heading,
+        heading: __t(door.heading),
         caseNumber: door.document.caseNumber,
         origin:
           door.origin ??
@@ -162,7 +164,7 @@ function OrderDoorBody({ door }: { door: OrderDoor }) {
             ? `Hearing · ${courtHearingPurposeLabel(hearing.purpose)}`
             : "Order"),
       }}
-      heading={door.heading}
+      heading={__t(door.heading)}
       facts={door.facts}
       navAction={door.navAction}
       frame={{

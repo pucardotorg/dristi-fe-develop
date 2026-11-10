@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -36,14 +37,15 @@ export function FormCard({
   className?: string;
   contentClassName?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <Card className={cn(PANEL_CLASS, "gap-6", className)}>
       <CardHeader className={action && !description ? "items-center" : undefined}>
-        <CardTitle className="text-body font-semibold">{title}</CardTitle>
+        <CardTitle className="text-body font-semibold">{__t(title)}</CardTitle>
         {description ? (
-          <CardDescription className="text-body-compact">{description}</CardDescription>
+          <CardDescription className="text-body-compact">{__t(description)}</CardDescription>
         ) : null}
-        {action ? <CardAction className={!description ? "row-span-1 self-center" : undefined}>{action}</CardAction> : null}
+        {action ? <CardAction className={!description ? "row-span-1 self-center" : undefined}>{__t(action)}</CardAction> : null}
       </CardHeader>
       <CardContent className={cn("flex flex-col gap-6", contentClassName)}>
         {children}

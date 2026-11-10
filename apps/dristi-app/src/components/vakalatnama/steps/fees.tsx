@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * S7 — fees, the final step. Paid online (no stamps); amounts indicative until verified
@@ -27,11 +29,12 @@ function boundNumber(vak: Vakalatnama): string | undefined {
 }
 
 function FeeRow({ label, note, amount }: { label: string; note?: string; amount: number }) {
+  const __t = __useTranslations();
   return (
     <div className="flex items-baseline justify-between gap-4 py-2">
       <div className="flex flex-col">
-        <span className="text-body">{label}</span>
-        {note ? <span className="text-caption text-muted-foreground">{note}</span> : null}
+        <span className="text-body">{__t(label)}</span>
+        {note ? <span className="text-caption text-muted-foreground">{__t(note)}</span> : null}
       </div>
       <span className="text-body font-medium tabular-nums">{rupee(amount)}</span>
     </div>
@@ -39,6 +42,7 @@ function FeeRow({ label, note, amount }: { label: string; note?: string; amount:
 }
 
 export function FeesStep({ vak: stored }: { vak: Vakalatnama }) {
+  const __t = __useTranslations();
   /* The vakalatnama carries Kerala's figures from when it was drawn. Another state's
      court (Settings) charges its own — schedules 2 and 3 of the payment logic — so the
      step shows and totals those instead. */
@@ -62,30 +66,28 @@ export function FeesStep({ vak: stored }: { vak: Vakalatnama }) {
       <div className="flex flex-col gap-6">
         <Alert variant="success">
           <CheckCircle2Icon aria-hidden />
-          <AlertTitle>Vakalatnama executed</AlertTitle>
+          <AlertTitle>{<__LocalizedText id="fees_vakalatnamaExecuted" />}</AlertTitle>
           <AlertDescription>
-            Fees paid and all parties signed. The instrument is sealed with its audit trail
-            {vak.boundCaseNumber ? (
+            {<__LocalizedText id="fees_feesPaidAndAllPartiesSignedThe" />}{" "}{vak.boundCaseNumber ? (
               <>
                 {" "}
-                and carries case number{" "}
+                {<__LocalizedText id="fees_andCarriesCaseNumber" />}{" "}
                 {/* Inside a `role="alert"` sentence — the face, not a control. */}
-                <Identifier value={vak.boundCaseNumber} label="case number" copyable={false} />
+                <Identifier value={vak.boundCaseNumber} label={__t("fees_caseNumber")} copyable={false} />
               </>
             ) : null}
-            . Sandbox — no real payment or signature service was used.
-          </AlertDescription>
+            {<__LocalizedText id="fees_sandboxNoRealPaymentOrSignatureService" />}{" "}</AlertDescription>
         </Alert>
 
         <VakalatnamaDocument vak={vak} />
 
-        <FormCard title="Audit trail" description="What was signed, how, and when.">
+        <FormCard title={__t("fees_auditTrail")} description={__t("fees_whatWasSignedHowAndWhen")}>
           <div className="divide-y divide-hairline">
             {board.map((s) => (
               <div key={s.id} className="flex items-baseline justify-between gap-4 py-2">
-                <span className="text-body-compact">{s.label}</span>
+                <span className="text-body-compact">{__t(s.label)}</span>
                 <span className="text-caption tabular-nums text-muted-foreground">
-                  {s.method === "upload" ? "Uploaded" : "eSign"}
+                  {s.method === "upload" ? __t("fees_uploaded") : __t("fees_esign")}
                   {s.signedAt ? ` · ${new Date(s.signedAt).toLocaleString("en-IN")}` : ""}
                 </span>
               </div>
@@ -98,36 +100,33 @@ export function FeesStep({ vak: stored }: { vak: Vakalatnama }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <FormCard title="Fees" description="Paid online — no stamps to affix.">
+      <FormCard title={__t("fees_fees")} description={__t("fees_paidOnlineNoStampsToAffix")}>
         <div className="rounded-lg bg-surface-sunken p-4">
           <div className="divide-y divide-hairline">
-            <FeeRow label="Court fee" amount={vak.fees.courtFee} />
+            <FeeRow label={__t("fees_courtFee")} amount={vak.fees.courtFee} />
             <FeeRow
-              label="Advocates’ Welfare Fund"
-              note="Contribution due on a vakalatnama"
+              label={__t("fees_advocatesWelfareFund")}
+              note={__t("fees_contributionDueOnAVakalatnama")}
               amount={vak.fees.welfareFund}
             />
           </div>
           <div className="mt-2 flex items-baseline justify-between gap-4 border-t border-border pt-3">
-            <span className="text-body font-semibold">Total</span>
+            <span className="text-body font-semibold">{<__LocalizedText id="fees_total" />}</span>
             <span className="text-title-s font-semibold tabular-nums">{rupee(total)}</span>
           </div>
         </div>
 
         <Alert>
           <InfoIcon aria-hidden />
-          <AlertTitle>Amounts to be confirmed</AlertTitle>
+          <AlertTitle>{<__LocalizedText id="fees_amountsToBeConfirmed" />}</AlertTitle>
           <AlertDescription>
-            These figures are indicative. The court fee and welfare-fund contribution are
-            confirmed against the current schedule before filing.
-          </AlertDescription>
+            {<__LocalizedText id="fees_theseFiguresAreIndicativeTheCourtFee" />}{" "}</AlertDescription>
         </Alert>
 
         <div className="flex items-center gap-3">
           <Button type="button" onClick={pay}>
-            Pay {rupee(total)} &amp; complete
-          </Button>
-          <span className="text-caption text-muted-foreground">Sandbox — no card needed</span>
+            {<__LocalizedText id="fees_pay" />}{" "}{rupee(total)} {<__LocalizedText id="fees_complete" />}{" "}</Button>
+          <span className="text-caption text-muted-foreground">{<__LocalizedText id="fees_sandboxNoCardNeeded" />}</span>
         </div>
       </FormCard>
     </div>

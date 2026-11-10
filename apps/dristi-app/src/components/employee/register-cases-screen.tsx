@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FolderCheckIcon, SearchXIcon } from "lucide-react";
@@ -116,6 +118,7 @@ const REGISTER_SORTS: CourtSortSpec<RegisterCase, RegisterSort>[] = [
  * the number, because that is the question the reference labelled.
  */
 export function RegisterCasesScreen() {
+  const __t = __useTranslations();
   /* Returning from a complaint, the queue slides in from the left — the direction it was
      left in, so coming back reads as coming back (owner, 2026-09-12). */
   const arrival = useArrival();
@@ -166,14 +169,13 @@ export function RegisterCasesScreen() {
     >
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Register cases
-        </h1>
+          {<__LocalizedText id="registerCasesScreen_registerCases" />}{" "}</h1>
         {/* The count is the whole point of the queue, so the supporting line carries
             it rather than restating the title. Singular is spelled out because
             "1 complaints" is the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {REGISTER_QUEUE.length === 1
-            ? "1 complaint is waiting to be registered."
+            ? __t("registerCasesScreen_1ComplaintIsWaitingToBeRegistered")
             : `${REGISTER_QUEUE.length} complaints are waiting to be registered.`}
         </p>
       </header>
@@ -267,13 +269,14 @@ function RegisterCasesFilters({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: __t("registerCasesScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: __t("registerCasesScreen_caseNameNumberOrAdvocate"),
       }}
       fields={fields}
       trailing={trailing}
@@ -297,6 +300,7 @@ function RegisterCasesEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -308,19 +312,18 @@ function RegisterCasesEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match this search" : "Nothing waiting"}
+          {isFiltered ? __t("registerCasesScreen_noMattersMatchThisSearch") : __t("registerCasesScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No complaint waiting to be registered matches the search you asked for."
-            : "Every complaint before this court is already on the register."}
+            ? __t("registerCasesScreen_noComplaintWaitingToBeRegisteredMatches")
+            : __t("registerCasesScreen_everyComplaintBeforeThisCourtIsAlready")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
-          </Button>
+            {<__LocalizedText id="registerCasesScreen_clearSearch" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -337,6 +340,7 @@ function RegisterCasesEmpty({
  * where a clerk is most likely to be reading a queue they cannot act on otherwise.
  */
 function RegisterCasesItemList({ rows }: { rows: RegisterCase[] }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((matter) => (
@@ -354,14 +358,14 @@ function RegisterCasesItemList({ rows }: { rows: RegisterCase[] }) {
             className="flex min-h-10 min-w-0 items-center"
           />
           <p className="text-caption text-muted-foreground">
-            <Identifier value={matter.filingNumber} label="filing number" />
+            <Identifier value={matter.filingNumber} label={__t("registerCasesScreen_filingNumber")} />
             {" · "}
             <span className="tabular-nums text-warning-ink">
               {matter.daysSinceSubmitted}
             </span>{" "}
             {matter.daysSinceSubmitted === 1
-              ? "day since submitted"
-              : "days since submitted"}
+              ? __t("registerCasesScreen_daySinceSubmitted")
+              : __t("registerCasesScreen_daysSinceSubmitted")}
           </p>
           <CounselCell
             complainant={counselFor(matter, "complainant").map(

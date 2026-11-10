@@ -1,3 +1,5 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 import type * as React from "react";
 
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
@@ -33,10 +35,11 @@ export function StepGroup({
   heading: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <h3 className="text-body-compact font-semibold text-muted-foreground">
-        {heading}
+        {__t(heading)}
       </h3>
       <Timeline className="text-body-compact">{children}</Timeline>
     </div>
@@ -75,6 +78,7 @@ export function Step({
    *  so the screen the bench is on stays where it was. */
   href?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <TimelineItem status={status} className="pb-0">
       {/* Three columns once the panel is wide: the step, what it means, and the day it
@@ -93,11 +97,11 @@ export function Step({
                 rel="noopener"
                 className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
               >
-                {label}
-                <span className="sr-only"> (opens in a new tab)</span>
+                {__t(label)}
+                <span className="sr-only"> {<__LocalizedText id="stepTimeline_opensInANewTab" />}</span>
               </a>
             ) : (
-              label
+              __t(label)
             )}
           </span>
           <span className="col-start-2 row-start-1 shrink-0 text-right tabular-nums text-muted-foreground @xl:col-start-3">
@@ -112,7 +116,7 @@ export function Step({
                   : "text-muted-foreground",
               )}
             >
-              {note}
+              {__t(note)}
               {aside ? (
                 <span
                   className={cn(

@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import {
@@ -54,6 +55,7 @@ export function RichTextEditor({
   toolbarEnd?: React.ReactNode;
   handleRef?: React.Ref<RichTextEditorHandle>;
 }) {
+  const __t = __useTranslations();
   const ref = React.useRef<HTMLDivElement>(null);
   const lastValue = React.useRef<string>("");
   // The caret, kept while focus is away in a picker so an insert lands where it was.
@@ -131,7 +133,7 @@ export function RichTextEditor({
           meet rather than overlap. */}
       <div
         role="toolbar"
-        aria-label="Text formatting"
+        aria-label={__t("richTextEditor_textFormatting")}
         className="flex flex-wrap items-center gap-2 border-b border-hairline bg-surface-sunken px-2 py-1"
       >
         {TOOLS.map((t) => (
@@ -140,7 +142,7 @@ export function RichTextEditor({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label={t.label}
+            aria-label={__t(t.label)}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => run(t.cmd)}
             className="relative after:absolute after:-inset-1"
@@ -158,7 +160,7 @@ export function RichTextEditor({
             aria-hidden
             className="pointer-events-none absolute left-4 top-3 text-body-compact text-muted-foreground"
           >
-            {placeholder}
+            {__t(placeholder)}
           </span>
         ) : null}
         <div
@@ -166,7 +168,7 @@ export function RichTextEditor({
           ref={ref}
           role="textbox"
           aria-multiline="true"
-          aria-label={ariaLabel}
+          aria-label={__t(ariaLabel)}
           contentEditable
           suppressContentEditableWarning
           onInput={emit}

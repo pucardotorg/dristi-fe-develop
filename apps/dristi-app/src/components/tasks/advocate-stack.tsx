@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { advocatesOf } from "@/lib/tasks/permissions";
 import type { Case, Person } from "@/lib/tasks/types";
@@ -37,6 +38,7 @@ export function AdvocateStack({
   max?: number;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const all = advocates ?? advocatesOf(kase, people);
   const shown = all.slice(0, max);
   const rest = all.length - shown.length;
@@ -46,7 +48,7 @@ export function AdvocateStack({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <AvatarGroup role="group" aria-label={`${label}: ${names}`} className={cn("w-fit -space-x-1", className)}>
+        <AvatarGroup role="group" aria-label={`${__t(label)}: ${names}`} className={cn("w-fit -space-x-1", className)}>
           {shown.map((p) => (
             <PersonAvatar key={p.id} person={p} you={p.id === user.id} size="default" />
           ))}
@@ -60,7 +62,7 @@ export function AdvocateStack({
           {all.map((p) => (
             <li key={p.id}>
               {p.name}
-              {onVakalatnama(p) ? " · on the vakalatnama" : null}
+              {onVakalatnama(p) ? __t("advocateStack_onTheVakalatnama") : null}
             </li>
           ))}
         </ul>

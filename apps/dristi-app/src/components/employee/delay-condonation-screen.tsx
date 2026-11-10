@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FolderCheckIcon, SearchXIcon } from "lucide-react";
@@ -89,6 +91,7 @@ const DELAY_CONDONATION_SORTS: CourtSortSpec<DelayCondonationCase, DelayCondonat
  * demo queue; they condone nothing and write no order.
  */
 export function DelayCondonationScreen() {
+  const __t = __useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used — every one of them, so the screen has a single rule rather than a live
      one and a deferred one. Every change resets to page one; the old Search button did
@@ -144,14 +147,13 @@ export function DelayCondonationScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Delay condonation
-        </h1>
+          {<__LocalizedText id="delayCondonationScreen_delayCondonation" />}{" "}</h1>
         {/* The count is the whole point of the queue, so the supporting line
             carries it rather than restating the title. Singular is spelled
             out because "1 applications" is the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 application is waiting for review."
+            ? __t("delayCondonationScreen_1ApplicationIsWaitingForReview")
             : `${remaining.length} applications are waiting for review.`}
         </p>
       </header>
@@ -263,25 +265,26 @@ function DelayCondonationFilters({
   /** The list's sort control (`CourtSortSelect`), at the end of the row. */
   trailing?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: __t("delayCondonationScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: __t("delayCondonationScreen_caseNameNumberOrAdvocate"),
       }}
       searchRef={searchRef}
       fields={[
         {
           id: "delay-condonation-stage",
-          label: "Stage",
+          label: __t("delayCondonationScreen_stage"),
           value: filters.stage,
           all: "all",
           allLabel: "All stages",
           options: DELAY_CONDONATION_STAGES.map((stage) => ({
             value: stage.id,
-            label: stage.label,
+            label: __t(stage.label),
           })),
           onApply: (value) =>
             onChange({
@@ -311,6 +314,7 @@ function DelayCondonationEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -322,19 +326,18 @@ function DelayCondonationEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match these filters" : "Nothing waiting"}
+          {isFiltered ? __t("delayCondonationScreen_noMattersMatchTheseFilters") : __t("delayCondonationScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No delay condonation application matches the stage or search you asked for."
-            : "There are no delay condonation applications waiting for this court."}
+            ? __t("delayCondonationScreen_noDelayCondonationApplicationMatchesTheStage")
+            : __t("delayCondonationScreen_thereAreNoDelayCondonationApplicationsWaiting")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
-          </Button>
+            {<__LocalizedText id="delayCondonationScreen_clearFilters" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -360,6 +363,7 @@ function DelayCondonationItemList({
   rows: DelayCondonationCase[];
   onOpen: (matter: DelayCondonationCase) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((matter) => (
@@ -373,14 +377,14 @@ function DelayCondonationItemList({
               {...rowOpener}
                 className={rowOpenerClass}
             >
-              <span className="sr-only">Review </span>
+              <span className="sr-only">{<__LocalizedText id="delayCondonationScreen_review" />}{" "}</span>
               {causeTitle(matter)}
             </button>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={matter.caseNumber} label="case number" />
+            <Identifier value={matter.caseNumber} label={__t("delayCondonationScreen_caseNumber")} />
             {" · "}
             {delayCondonationStageLabel(matter.stage)}
-            {" · Applied "}
+            {__t("delayCondonationScreen_applied")}
             <span className="tabular-nums">
               {formatDelayCondonationLongDate(matter.appliedOn)}
             </span>

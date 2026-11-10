@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { useMemo } from "react";
 
@@ -88,6 +89,7 @@ function ApplicationBody({
   onDismiss: (application: ListingApplication) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const document = useMemo(
     () => buildListingApplicationDocument(hearing, application),
     [hearing, application],
@@ -101,10 +103,10 @@ function ApplicationBody({
           {/* The overlay renders this as its accessible description. */}
           <Identifier
             value={application.number}
-            label="application number"
+            label={__t("listingApplicationDialog_applicationNumber")}
             copyable={false}
           />
-          {" · item "}
+          {__t("listingApplicationDialog_item")}
           <span className="tabular-nums">{hearing.item}</span>
           {" · "}
           {causeTitle(hearing)}
@@ -116,10 +118,10 @@ function ApplicationBody({
             {listingApplicationLabel(application)}
           </ReviewRow>
           <ReviewRow term="Application number">
-            <Identifier value={application.number} label="application number" />
+            <Identifier value={application.number} label={__t("listingApplicationDialog_applicationNumber")} />
           </ReviewRow>
           <ReviewRow term="Case number">
-            <Identifier value={hearing.caseNumber} label="case number" />
+            <Identifier value={hearing.caseNumber} label={__t("listingApplicationDialog_caseNumber")} />
           </ReviewRow>
           <ReviewRow term="Stage">
             {courtCaseStageLabel(hearing.stage)}

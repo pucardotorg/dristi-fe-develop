@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import Link from "next/link";
 
@@ -58,7 +60,7 @@ export function CognizanceCaseLink({
       {...rowOpener}
       className={cn(rowOpenerClass, className)}
     >
-      <span className="sr-only">Complaint from </span>
+      <span className="sr-only">{<__LocalizedText id="cognizanceTable_complaintFrom" />}{" "}</span>
       {causeTitle(matter)}
     </Link>
   );
@@ -82,16 +84,17 @@ export function DelayCell({
   matter: CognizanceCase;
   standalone?: boolean;
 }) {
+  const __t = __useTranslations();
   const late = delayDays(matter);
   if (late === null) {
     /* Only reachable standalone: the column exists on the With delay tab alone. */
-    return <span className="text-muted-foreground">In time</span>;
+    return <span className="text-muted-foreground">{<__LocalizedText id="cognizanceTable_inTime" />}</span>;
   }
   if (!standalone) return <span className="tabular-nums">{late}</span>;
   return (
     <span>
       <span className="tabular-nums">{late}</span>{" "}
-      {late === 1 ? "day late" : "days late"}
+      {late === 1 ? __t("cognizanceTable_dayLate") : __t("cognizanceTable_daysLate")}
     </span>
   );
 }
@@ -118,6 +121,7 @@ export function CognizanceTable({
   rows: CognizanceCase[];
   tab: CognizanceTab;
 }) {
+  const __t = __useTranslations();
   const showDelay = tab === "with-delay";
   const columns = showDelay ? 4 : 3;
   return (
@@ -125,18 +129,14 @@ export function CognizanceTable({
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="cognizanceTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="cognizanceTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Advocates
-          </TableHead>
+            {<__LocalizedText id="cognizanceTable_advocates" />}{" "}</TableHead>
           {showDelay ? (
             <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap text-right")}>
-              Days of delay
-            </TableHead>
+              {<__LocalizedText id="cognizanceTable_daysOfDelay" />}{" "}</TableHead>
           ) : null}
         </TableRow>
       </TableHeader>
@@ -160,7 +160,7 @@ export function CognizanceTable({
             <TableCell
               className={cn(TABLE_CELL, "whitespace-nowrap")}
             >
-              <Identifier value={matter.caseNumber} label="case number" />
+              <Identifier value={matter.caseNumber} label={__t("cognizanceTable_caseNumber_2e64a1e1")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
               <CounselCell

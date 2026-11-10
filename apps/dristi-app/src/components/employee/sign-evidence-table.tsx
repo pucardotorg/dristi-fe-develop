@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -71,6 +73,7 @@ export function SignEvidenceTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (row: SignEvidence) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const selectedOnPage = rows.filter((row) => selectedIds.has(row.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
@@ -92,23 +95,19 @@ export function SignEvidenceTable({
                  once the list is paged. */
               aria-label={
                 allSelected
-                  ? "Clear the documents on this page"
-                  : "Select the documents on this page"
+                  ? __t("signEvidenceTable_clearTheDocumentsOnThisPage")
+                  : __t("signEvidenceTable_selectTheDocumentsOnThisPage")
               }
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="signEvidenceTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="signEvidenceTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
-            Document
-          </TableHead>
+            {<__LocalizedText id="signEvidenceTable_document" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Evidence number
-          </TableHead>
+            {<__LocalizedText id="signEvidenceTable_evidenceNumber" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass({ selectable: true })}>
@@ -133,7 +132,7 @@ export function SignEvidenceTable({
                 <Checkbox
                   checked={selected}
                   onCheckedChange={() => onToggle(row)}
-                  aria-label={`Select ${document}, ${exhibit}, in ${courtText(row.caseNumber)}`}
+                  aria-label={__t("signEvidenceTable_selectValue0Value1InValue2", {value0: String(document), value1: String(exhibit), value2: String(courtText(row.caseNumber))})}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -152,14 +151,14 @@ export function SignEvidenceTable({
                   {...rowOpener}
                 className={rowOpenerClass}
                 >
-                  <span className="sr-only">{`Read and sign ${document}, ${exhibit}, in `}</span>
+                  <span className="sr-only">{__t("signEvidenceTable_readAndSignValue0Value1In", {value0: String(document), value1: String(exhibit)})}</span>
                   {causeTitle(row)}
                 </button>
               </TableCell>
               <TableCell
                 className={cn(TABLE_CELL, "whitespace-nowrap")}
               >
-                <Identifier value={row.caseNumber} label="case number" />
+                <Identifier value={row.caseNumber} label={__t("signEvidenceTable_caseNumber_ae1f0a2b")} />
               </TableCell>
               {/* Plain text, not a chip. Ten document heads tinted down a column is
                   decoration, and the words are already the whole fact (ui-craft §4). */}

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { SearchXIcon, StampIcon } from "lucide-react";
@@ -82,6 +84,7 @@ import { Identifier } from "@/components/chrome/identifier";
  * of a complaint's file, not on the list.
  */
 export function CognizanceScreen() {
+  const __t = __useTranslations();
   /* Returning from a complaint, the queue slides in from the left — the direction it was
      left in, so coming back reads as coming back. */
   const arrival = useArrival();
@@ -146,14 +149,13 @@ export function CognizanceScreen() {
     >
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Take cognizance
-        </h1>
+          {<__LocalizedText id="cognizanceScreen_takeCognizance" />}{" "}</h1>
         {/* The count is the point of a queue, so the supporting line carries it rather
             than restating the title. Singular is spelled out, because "1 complaints" is
             the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {COGNIZANCE_QUEUE.length === 1
-            ? "1 complaint is on the register waiting for cognizance."
+            ? __t("cognizanceScreen_1ComplaintIsOnTheRegisterWaiting")
             : `${COGNIZANCE_QUEUE.length} complaints are on the register waiting for cognizance.`}
         </p>
       </header>
@@ -175,8 +177,8 @@ export function CognizanceScreen() {
             variant="line"
             aria-label={
               courtProfile(court).cognizanceSplit === "delay"
-                ? "Whether the complaint was filed in time"
-                : "The type the case was registered as"
+                ? __t("cognizanceScreen_whetherTheComplaintWasFiledInTime")
+                : __t("cognizanceScreen_theTypeTheCaseWasRegisteredAs")
             }
             className="h-10 w-max min-w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-10"
           >
@@ -186,7 +188,7 @@ export function CognizanceScreen() {
                 value={queueTab.id}
                 className="h-10 flex-none gap-2 px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
               >
-                {queueTab.label}
+                {__t(queueTab.label)}
                 {/* How many stand here, counted over the whole queue so the number does
                     not move as the search box is typed into. It inherits the trigger's
                     colour, so the count and its label read as one thing. */}
@@ -297,20 +299,21 @@ export function CognizanceFiltersRow({
   sort: CognizanceSort;
   onSortChange: (sort: CognizanceSort) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: __t("cognizanceScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: __t("cognizanceScreen_caseNameNumberOrAdvocate"),
       }}
       fields={[
         {
           /* Whether the demand notice reached the accused decides how cause of action is
              reckoned, so it is the one fact on the file the bench sorts a pile by. */
           id: "cognizance-notice",
-          label: "Demand notice",
+          label: __t("cognizanceScreen_demandNotice"),
           value: filters.notice ?? "all",
           all: "all",
           allLabel: "Any notice",
@@ -372,6 +375,7 @@ export function CognizanceEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   const clear =
     tab === "with-delay"
       ? "No complaint filed beyond the month is waiting for a decision."
@@ -383,19 +387,18 @@ export function CognizanceEmpty({
           {isFiltered ? <SearchXIcon aria-hidden /> : <StampIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No complaints match this search" : "Nothing waiting"}
+          {isFiltered ? __t("cognizanceScreen_noComplaintsMatchThisSearch") : __t("cognizanceScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No complaint on this tab matches what you have asked for."
+            ? __t("cognizanceScreen_noComplaintOnThisTabMatchesWhat")
             : clear}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
-          </Button>
+            {<__LocalizedText id="cognizanceScreen_clearFilters" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -417,6 +420,7 @@ export function CognizanceItemList({
   rows: CognizanceCase[];
   tab: CognizanceTab;
 }) {
+  const __t = __useTranslations();
   const showDelay = tab === "with-delay";
   return (
     <ul className="flex flex-col gap-3">
@@ -432,7 +436,7 @@ export function CognizanceItemList({
             className="flex min-h-10 min-w-0 items-center"
           />
           <p className="text-caption text-muted-foreground">
-            <Identifier value={matter.caseNumber} label="case number" />
+            <Identifier value={matter.caseNumber} label={__t("cognizanceScreen_caseNumber")} />
             {showDelay ? (
               <>
                 {" · "}

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useMemo, useState } from "react";
 import { FileTextIcon, FileXIcon, XIcon } from "lucide-react";
@@ -96,6 +98,7 @@ function ReviewBody({
   onEdit?: (application: ApplicationRecord) => void;
   onReplaceFile?: (application: ApplicationRecord, file: File) => void;
 }) {
+  const __t = __useTranslations();
   const count = applications.length;
   const [openId, setOpenId] = useState(applications[0].id);
   const open =
@@ -121,16 +124,15 @@ function ReviewBody({
       <div className="flex shrink-0 items-center gap-2 border-b border-hairline py-3 pr-3 pl-6">
         <div className="min-w-0 flex-1">
           <DialogTitle className="text-body-compact font-semibold text-pretty sm:truncate">
-            Sign {count} {filingNoun(applications)}
+            {<__LocalizedText id="signReviewDialog_sign" />}{" "}{count} {filingNoun(applications)}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Read each one, then sign them together.
-          </DialogDescription>
+            {<__LocalizedText id="signReviewDialog_readEachOneThenSignThemTogether" />}{" "}</DialogDescription>
         </div>
         <DialogClose asChild>
           <Button type="button" variant="ghost" size="icon-sm">
             <XIcon aria-hidden />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{<__LocalizedText id="signReviewDialog_close" />}</span>
           </Button>
         </DialogClose>
       </div>
@@ -140,7 +142,7 @@ function ReviewBody({
         <div className="flex min-h-0 flex-1 flex-col @3xl/review:flex-row">
           <div className="flex max-h-72 shrink-0 flex-col gap-1.5 overflow-y-auto border-b border-hairline p-4 @3xl/review:max-h-none @3xl/review:w-80 @3xl/review:border-r @3xl/review:border-b-0">
             <h3 className="text-caption font-medium text-muted-foreground">
-              {filingNoun(applications) === "documents" ? "Documents" : "Applications"}
+              {filingNoun(applications) === "documents" ? __t("signReviewDialog_documents_75be68a9") : __t("signReviewDialog_applications")}
             </h3>
             <ul className="-mx-2 flex flex-col gap-0.5">
               {applications.map((item) => (
@@ -168,8 +170,8 @@ function ReviewBody({
                         {item.name}
                       </span>
                       <span className="text-caption text-muted-foreground tabular-nums">
-                        Created {item.createdShort}
-                        {item.draftedBy ? ` · Drafted by ${item.draftedBy}` : null}
+                        {<__LocalizedText id="signReviewDialog_created" />}{" "}{item.createdShort}
+                        {item.draftedBy ? __t("signReviewDialog_draftedByValue0", {value0: String(item.draftedBy)}) : null}
                       </span>
                     </span>
                   </button>
@@ -181,7 +183,7 @@ function ReviewBody({
           {composed ? (
             <ComposedDocumentViewer
               key={open.id}
-              title={composed.document.title}
+              title={__t(composed.document.title)}
               className="min-h-64 min-w-0 flex-1 rounded-none"
             >
               <GeneratedApplicationDocument
@@ -193,17 +195,17 @@ function ReviewBody({
           ) : image && file ? (
             <ComposedDocumentViewer
               key={file.src}
-              title={file.label}
+              title={__t(file.label)}
               className="min-h-64 min-w-0 flex-1 rounded-none"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- a local file's object URL */}
-              <img src={image} alt={file.label} className="block w-full" />
+              <img src={image} alt={__t(file.label)} className="block w-full" />
             </ComposedDocumentViewer>
           ) : pdf && file ? (
             <PdfViewer
               key={file.src}
               src={pdf.url}
-              title={file.label}
+              title={__t(file.label)}
               pages={pdf.page ? { from: pdf.page, to: pdf.page } : undefined}
               className="min-h-64 flex-1 rounded-none"
             />
@@ -217,13 +219,13 @@ function ReviewBody({
                   </EmptyMedia>
                   <EmptyTitle className="text-body font-semibold">
                     {open.documents.length === 0
-                      ? "Nothing to show for this one"
-                      : "Its documents are not on file yet"}
+                      ? __t("signReviewDialog_nothingToShowForThisOne")
+                      : __t("signReviewDialog_itsDocumentsAreNotOnFileYet")}
                   </EmptyTitle>
                   <EmptyDescription>
                     {open.documents.length === 0
-                      ? "No file is attached to it."
-                      : "They open here once the files are uploaded."}
+                      ? __t("signReviewDialog_noFileIsAttachedToIt")
+                      : __t("signReviewDialog_theyOpenHereOnceTheFilesAre")}
                   </EmptyDescription>
                 </EmptyHeader>
               </Empty>
@@ -243,7 +245,7 @@ function ReviewBody({
               className="w-full sm:w-auto"
               onClick={() => onEdit(open)}
             >
-              Edit<span className="sr-only"> {open.name}</span>
+              {<__LocalizedText id="signReviewDialog_edit" />}<span className="sr-only"> {open.name}</span>
             </Button>
           ) : replaceable ? (
             <ReplaceFileButton
@@ -256,7 +258,7 @@ function ReviewBody({
             className="w-full sm:w-auto"
             onClick={() => onSign(applications)}
           >
-            Sign all {count}
+            {<__LocalizedText id="signReviewDialog_signAll" />}{" "}{count}
           </Button>
         </div>
       </footer>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import type { ReactNode } from "react";
 
@@ -25,10 +27,11 @@ import {
  * a case in a tab of its own, where there is nothing to go back to.
  */
 export function CaseBackButton() {
+  const __t = __useTranslations();
   if (useCaseReader() === "court") return null;
   return (
     <div className={PAGE_BACK_COLUMN}>
-      <PageBackButton href="/cases" label="Back to cases" />
+      <PageBackButton href="/cases" label={__t("caseHeaderParts_backToCases")} />
     </div>
   );
 }
@@ -50,6 +53,7 @@ export function CaseNumberLine({
   history: PastCaseNumber[];
   className?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <span
       className={cn(
@@ -59,7 +63,7 @@ export function CaseNumberLine({
     >
       <Identifier
         value={caseNumber}
-        label="case number"
+        label={__t("caseHeaderParts_caseNumber")}
       />
       <span className="flex">
         <CaseNumberHistory history={history} />
@@ -82,6 +86,7 @@ export function CaseStageBadges({
   stage: ReactNode;
   subStages: string[];
 }) {
+  const __t = __useTranslations();
   return (
     <TooltipProvider>
       <span className="flex flex-wrap items-center gap-1.5">
@@ -89,14 +94,14 @@ export function CaseStageBadges({
           <TooltipTrigger asChild>
             <span>{stage}</span>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Case stage</TooltipContent>
+          <TooltipContent side="bottom">{<__LocalizedText id="caseHeaderParts_caseStage" />}</TooltipContent>
         </Tooltip>
         {subStages.map((label) => (
           <Tooltip key={label}>
             <TooltipTrigger asChild>
-              <Badge variant="outline">{label}</Badge>
+              <Badge variant="outline">{__t(label)}</Badge>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Secondary stage</TooltipContent>
+            <TooltipContent side="bottom">{<__LocalizedText id="caseHeaderParts_secondaryStage" />}</TooltipContent>
           </Tooltip>
         ))}
       </span>

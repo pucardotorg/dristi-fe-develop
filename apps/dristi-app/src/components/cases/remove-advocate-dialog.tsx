@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Remove an advocate — scenarios 3a and 3b of the party-actions spec, one
@@ -126,6 +128,7 @@ export function RemoveAdvocateDialog({
       point's chance to show the wait ("requested · awaiting consent"). */
   onRequested?: (route: "consent" | "magistrate") => void;
 }) {
+  const __t = __useTranslations();
   const [step, setStep] = useState<RemoveStep>(1);
   const [reason, setReason] = useState("");
   const [docFile, setDocFile] = useState<File | null>(null);
@@ -200,9 +203,9 @@ export function RemoveAdvocateDialog({
   const applicationDoc = {
     matter: "Application for the removal of an advocate",
     facts: [
-      { term: "Advocate", value: advocateName },
-      ...(partyName ? [{ term: "Representing", value: partyName }] : []),
-      ...(docFile ? [{ term: "Annexure", value: docFile.name }] : []),
+      { term: __t("removeAdvocateDialog_advocate"), value: advocateName },
+      ...(partyName ? [{ term: __t("removeAdvocateDialog_representing_240f5461"), value: partyName }] : []),
+      ...(docFile ? [{ term: __t("removeAdvocateDialog_annexure"), value: docFile.name }] : []),
     ],
     prayer: [
       `The applicant, counsel on record in the above matter, prays that ${advocateName} be removed from the vakalatnama${partyName ? ` of ${partyName}` : ""}.`,
@@ -231,12 +234,12 @@ export function RemoveAdvocateDialog({
                   <div className="flex min-w-0 flex-col gap-1.5">
                     <DialogTitle className="text-title-s font-semibold text-balance">
                       {route === "consent"
-                        ? `Request sent to ${advocateName}`
-                        : "Application sent to the magistrate"}
+                        ? __t("removeAdvocateDialog_requestSentToValue0", {value0: String(advocateName)})
+                        : __t("removeAdvocateDialog_applicationSentToTheMagistrate")}
                     </DialogTitle>
                     <DialogDescription className="text-pretty">
                       {route === "consent"
-                        ? "They can accept or reject it. You'll be notified either way."
+                        ? __t("removeAdvocateDialog_theyCanAcceptOrRejectItYou")
                         : `${advocateName} stays on the case until the order is passed.`}
                     </DialogDescription>
                   </div>
@@ -244,8 +247,7 @@ export function RemoveAdvocateDialog({
               </DialogHeader>
               <footer className="flex shrink-0 justify-end border-t border-hairline px-6 py-4">
                 <Button type="button" onClick={closeClean}>
-                  Done
-                </Button>
+                  {<__LocalizedText id="removeAdvocateDialog_done" />}{" "}</Button>
               </footer>
             </>
           ) : (
@@ -254,12 +256,12 @@ export function RemoveAdvocateDialog({
                 <FlowStepper
                   steps={STEPS}
                   current={step}
-                  label="Remove advocate progress"
+                  label={__t("removeAdvocateDialog_removeAdvocateProgress")}
                 />
               </div>
               <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
                 <DialogTitle className="text-title-s font-semibold text-balance">
-                  {step === 1 ? `Remove ${advocateName}` : current.title}
+                  {step === 1 ? __t("removeAdvocateDialog_removeValue0", {value0: String(advocateName)}) : __t(current.title)}
                 </DialogTitle>
                 {/* No text-pretty here: it balanced the last line by breaking
                     early mid-sentence, which read as a stray line break
@@ -267,11 +269,11 @@ export function RemoveAdvocateDialog({
                 <DialogDescription>
                   {step === 3 && route
                     ? route === "consent"
-                      ? `Once ${advocateName} accepts, they come off the vakalatnama.`
-                      : `Once the magistrate orders it, ${advocateName} comes off the vakalatnama.`
+                      ? __t("removeAdvocateDialog_onceValue0AcceptsTheyComeOffThe", {value0: String(advocateName)})
+                      : __t("removeAdvocateDialog_onceTheMagistrateOrdersItValue0Comes", {value0: String(advocateName)})
                     : step === 2 && route === "consent"
-                      ? `Give ${advocateName} the context for the request.`
-                      : current.description}
+                      ? __t("removeAdvocateDialog_giveValue0TheContextForTheRequest", {value0: String(advocateName)})
+                      : __t(current.description)}
                 </DialogDescription>
               </DialogHeader>
 
@@ -285,8 +287,7 @@ export function RemoveAdvocateDialog({
                   {step === 1 ? (
                     <Field data-invalid={Boolean(errors.route)}>
                       <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                        Who approves the removal?
-                      </FieldLabel>
+                        {<__LocalizedText id="removeAdvocateDialog_whoApprovesTheRemoval" />}{" "}</FieldLabel>
                       <RadioGroup
                         value={route}
                         onValueChange={(value) => {
@@ -305,13 +306,10 @@ export function RemoveAdvocateDialog({
                           <div className="flex min-w-0 flex-col gap-0.5">
                             <div className="flex min-h-10 items-center">
                               <Label htmlFor="remove-route-consent">
-                                Ask {advocateName} to consent
-                              </Label>
+                                {<__LocalizedText id="removeAdvocateDialog_ask" />}{" "}{advocateName} {<__LocalizedText id="removeAdvocateDialog_toConsent" />}{" "}</Label>
                             </div>
                             <p className="-mt-2 pb-1 text-caption text-muted-foreground">
-                              They accept or reject the request. Quicker when
-                              the exit is amicable.
-                            </p>
+                              {<__LocalizedText id="removeAdvocateDialog_theyAcceptOrRejectTheRequestQuicker" />}{" "}</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-2">
@@ -324,13 +322,10 @@ export function RemoveAdvocateDialog({
                           <div className="flex min-w-0 flex-col gap-0.5">
                             <div className="flex min-h-10 items-center">
                               <Label htmlFor="remove-route-magistrate">
-                                Apply to the magistrate
-                              </Label>
+                                {<__LocalizedText id="removeAdvocateDialog_applyToTheMagistrate" />}{" "}</Label>
                             </div>
                             <p className="-mt-2 pb-1 text-caption text-muted-foreground">
-                              The magistrate hears the application and passes
-                              an order. Use this when consent is unlikely.
-                            </p>
+                              {<__LocalizedText id="removeAdvocateDialog_theMagistrateHearsTheApplicationAndPasses" />}{" "}</p>
                           </div>
                         </div>
                       </RadioGroup>
@@ -343,18 +338,16 @@ export function RemoveAdvocateDialog({
                           className="block w-full text-body font-semibold leading-snug"
                           htmlFor="remove-reason"
                         >
-                          Why should they be removed?
-                          {route === "consent" ? (
+                          {<__LocalizedText id="removeAdvocateDialog_whyShouldTheyBeRemoved" />}{" "}{route === "consent" ? (
                             <span className="font-normal text-muted-foreground">
                               {" "}
-                              (optional)
-                            </span>
+                              {<__LocalizedText id="removeAdvocateDialog_optional" />}{" "}</span>
                           ) : null}
                         </FieldLabel>
                         <FieldDescription>
                           {route === "consent"
-                            ? `Context for ${advocateName}; they see it with the request.`
-                            : "The magistrate reads this to decide the application."}
+                            ? __t("removeAdvocateDialog_contextForValue0TheySeeItWith", {value0: String(advocateName)})
+                            : __t("removeAdvocateDialog_theMagistrateReadsThisToDecideThe")}
                         </FieldDescription>
                         <Textarea
                           id="remove-reason"
@@ -375,20 +368,16 @@ export function RemoveAdvocateDialog({
 
                       <Field data-invalid={Boolean(errors.document)}>
                         <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                          Supporting document
-                          {route === "consent" ? (
+                          {<__LocalizedText id="removeAdvocateDialog_supportingDocument" />}{" "}{route === "consent" ? (
                             <span className="font-normal text-muted-foreground">
                               {" "}
-                              (optional)
-                            </span>
+                              {<__LocalizedText id="removeAdvocateDialog_optional" />}{" "}</span>
                           ) : null}
                         </FieldLabel>
                         <FieldDescription>
-                          Whatever evidences the grounds: correspondence, a
-                          client instruction, a notice.
-                        </FieldDescription>
+                          {<__LocalizedText id="removeAdvocateDialog_whateverEvidencesTheGroundsCorrespondenceAClient" />}{" "}</FieldDescription>
                         <UploadedDocField
-                          label="Supporting document"
+                          label={__t("removeAdvocateDialog_supportingDocument")}
                           required={route === "magistrate"}
                           file={docFile}
                           onFileChange={(file) => {
@@ -412,7 +401,7 @@ export function RemoveAdvocateDialog({
                         {partyName ? (
                           <span className="text-muted-foreground">
                             {" "}
-                            · representing {partyName}
+                            {<__LocalizedText id="removeAdvocateDialog_representing" />}{" "}{partyName}
                           </span>
                         ) : null}
                       </ReviewRow>
@@ -431,7 +420,7 @@ export function RemoveAdvocateDialog({
                       <ReviewRow term="Approved by">
                         {route === "consent"
                           ? `${advocateName}, by consent`
-                          : "The magistrate, by order"}
+                          : __t("removeAdvocateDialog_theMagistrateByOrder")}
                       </ReviewRow>
                     </DescriptionList>
                   )}
@@ -445,15 +434,13 @@ export function RemoveAdvocateDialog({
                     variant="outline"
                     onClick={() => setStep((s) => (s - 1) as RemoveStep)}
                   >
-                    Back
-                  </Button>
+                    {<__LocalizedText id="removeAdvocateDialog_back" />}{" "}</Button>
                 ) : (
                   <span aria-hidden className="hidden sm:block" />
                 )}
                 {step < 3 ? (
                   <Button type="submit" form="remove-advocate-form">
-                    Continue
-                  </Button>
+                    {<__LocalizedText id="removeAdvocateDialog_continue" />}{" "}</Button>
                 ) : route === "consent" ? (
                   <Button
                     type="button"
@@ -463,12 +450,10 @@ export function RemoveAdvocateDialog({
                       setDone(true);
                     }}
                   >
-                    Send request
-                  </Button>
+                    {<__LocalizedText id="removeAdvocateDialog_sendRequest" />}{" "}</Button>
                 ) : (
                   <Button type="button" onClick={() => setSignOpen(true)}>
-                    Continue to sign
-                  </Button>
+                    {<__LocalizedText id="removeAdvocateDialog_continueToSign" />}{" "}</Button>
                 )}
               </footer>
             </>
@@ -484,7 +469,7 @@ export function RemoveAdvocateDialog({
           closeClean();
         }}
         confirmation={{
-          title: "Application sent to the magistrate",
+          title: __t("removeAdvocateDialog_applicationSentToTheMagistrate"),
           description: `${advocateName} stays on the case until the order is passed.`,
         }}
       />
@@ -495,16 +480,14 @@ export function RemoveAdvocateDialog({
       >
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard this request?</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="removeAdvocateDialog_discardThisRequest" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              The details entered here will be lost if you discard this draft.
-            </AlertDialogDescription>
+              {<__LocalizedText id="removeAdvocateDialog_theDetailsEnteredHereWillBeLost" />}{" "}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="removeAdvocateDialog_keepEditing" />}</AlertDialogCancel>
             <AlertDialogAction variant="destructive-solid" onClick={closeClean}>
-              Discard draft
-            </AlertDialogAction>
+              {<__LocalizedText id="removeAdvocateDialog_discardDraft" />}{" "}</AlertDialogAction>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
       </AlertDialog>
@@ -519,9 +502,10 @@ function ReviewRow({
   term: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow className="grid-cols-1 sm:grid-cols-[minmax(7rem,10rem)_1fr]">
-      <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
+      <DescriptionTerm className="text-body-compact">{__t(term)}</DescriptionTerm>
       <DescriptionDetails className="text-body-compact">
         {children}
       </DescriptionDetails>

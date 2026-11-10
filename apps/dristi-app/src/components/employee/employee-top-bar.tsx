@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import Link from "next/link";
@@ -178,6 +179,7 @@ const DIVIDER_VISIBILITY =
  * is on screen stays entirely in CSS.
  */
 function CourtNavTrigger({ hasTrail }: { hasTrail: boolean }) {
+  const __t = __useTranslations();
   const collapsed = useRailCollapsed();
   /* Activating this on a desktop hides it, because unfolding hands the control back to the
      rail's header — so the keyboard has to go with it. */
@@ -188,7 +190,7 @@ function CourtNavTrigger({ hasTrail }: { hasTrail: boolean }) {
         {...CHROME_FOLD_TRIGGER}
         {...handoff}
         aria-label={
-          collapsed ? "Expand court navigation" : "Open court navigation"
+          collapsed ? __t("employeeTopBar_expandCourtNavigation") : __t("employeeTopBar_openCourtNavigation")
         }
         /* The guarded selector, not the plain `[&_svg]:size-5`: `Button` declares its own
            `[&_svg:not([class*='size-'])]:size-4`, which tailwind-merge treats as a
@@ -257,6 +259,7 @@ const crumbFace = (crumb: CourtCrumb) =>
   crumb.mono ? "font-mono tabular-nums" : undefined;
 
 function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
+  const __t = __useTranslations();
   const last = crumbs.length - 1;
 
   return (
@@ -293,7 +296,7 @@ function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
                 {crumb.href ? (
                   <BreadcrumbLink asChild className={CRUMB_LINK}>
                     <Link href={crumb.href} className={crumbFace(crumb)}>
-                      {crumb.label}
+                      {__t(crumb.label)}
                     </Link>
                   </BreadcrumbLink>
                 ) : isLast ? (
@@ -304,7 +307,7 @@ function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
                   <BreadcrumbPage
                     className={cn("truncate", crumbFace(crumb))}
                   >
-                    {crumb.label}
+                    {__t(crumb.label)}
                   </BreadcrumbPage>
                 ) : (
                   /* A section with no href is still a disclosure in the rail, not a
@@ -312,7 +315,7 @@ function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
                      section the queue's href in `courtTrail`, so the same label is a
                      link there. It is not dressed as a link it cannot be. */
                   <span className={cn("truncate", crumbFace(crumb))}>
-                    {crumb.label}
+                    {__t(crumb.label)}
                   </span>
                 )}
               </BreadcrumbItem>

@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -42,6 +43,7 @@ export function PartyDetailSlot({
   chosen: boolean;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const stacked = useMediaQuery(STACKED_QUERY);
   const router = useRouter();
   const pathname = usePathname();
@@ -80,7 +82,7 @@ export function PartyDetailSlot({
           paddingBottom: "calc(var(--spacing) * 4 + env(safe-area-inset-bottom))",
         }}
       >
-        <DrawerTitle className="sr-only">{title}</DrawerTitle>
+        <DrawerTitle className="sr-only">{__t(title)}</DrawerTitle>
         {/* The close control every other bottom drawer carries, top right. The
             pane's own heading starts under it, clear of the button. */}
         <div className="flex shrink-0 justify-end px-2">
@@ -89,7 +91,7 @@ export function PartyDetailSlot({
               variant="ghost"
               size="icon"
               className="text-muted-foreground"
-              aria-label="Close"
+              aria-label={__t("partyDetailSlot_close")}
             >
               <XIcon aria-hidden />
             </Button>

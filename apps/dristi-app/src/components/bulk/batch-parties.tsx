@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -43,6 +45,7 @@ export function BatchParties({
   formatId: string;
   setFormatId: (id: string) => void;
 }) {
+  const __t = __useTranslations();
   const formats = React.useSyncExternalStore(
     subscribeToDetailsFormats,
     readDetailsFormats,
@@ -51,7 +54,7 @@ export function BatchParties({
   return (
     <>
       <Field className="gap-1.5">
-        <FieldLabel>Willing to settle through ADR</FieldLabel>
+        <FieldLabel>{<__LocalizedText id="batchParties_willingToSettleThroughAdr" />}</FieldLabel>
         <RadioGroup
           value={adr}
           onValueChange={(v) => setAdr(v as Adr)}
@@ -66,40 +69,37 @@ export function BatchParties({
               <RadioGroupItem
                 value={v}
                 id={`adr-${v}`}
-                aria-label={label}
+                aria-label={__t(label)}
               />
-              {label}
+              {__t(label)}
             </label>
           ))}
         </RadioGroup>
       </Field>
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="details-format">Additional details</FieldLabel>
+        <FieldLabel htmlFor="details-format">{<__LocalizedText id="batchParties_additionalDetails" />}</FieldLabel>
         <NativeSelect
           id="details-format"
           value={formatId}
           onChange={(e) => setFormatId(e.target.value)}
         >
-          <NativeSelectOption value="">Only what the sheet has</NativeSelectOption>
+          <NativeSelectOption value="">{<__LocalizedText id="batchParties_onlyWhatTheSheetHas" />}</NativeSelectOption>
           {formats.map((f) => (
             <NativeSelectOption key={f.id} value={f.id}>
-              Generate from: {f.name || "Untitled"}
+              {<__LocalizedText id="batchParties_generateFrom" />}{" "}{f.name || __t("batchParties_untitled")}
             </NativeSelectOption>
           ))}
         </NativeSelect>
         <FieldDescription>
-          Each case gets the format&apos;s text with its own details filled in. A case
-          whose sheet row has additional details keeps them. Every case can still be
-          edited on its own.{" "}
+          {<__LocalizedText id="batchParties_eachCaseGetsTheFormatSText" />}{" "}
           <Link
             href="/filings/formats"
             target="_blank"
             rel="noopener"
             className="inline-flex items-center gap-1 text-foreground underline underline-offset-3"
           >
-            Edit formats
-            <ExternalLinkIcon aria-hidden className="size-3" />
-            <span className="sr-only">(opens in a new tab)</span>
+            {<__LocalizedText id="batchParties_editFormats" />}{" "}<ExternalLinkIcon aria-hidden className="size-3" />
+            <span className="sr-only">{<__LocalizedText id="batchParties_opensInANewTab" />}</span>
           </Link>
         </FieldDescription>
       </Field>

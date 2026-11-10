@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -150,6 +152,7 @@ function FoundInFile({
   props: Props;
   instances: Record<GroupId, Instance[]>;
 }) {
+  const __t = __useTranslations();
   const groups = GROUPS.filter((g) => g.repeats && !g.parent);
   return (
     <section
@@ -162,8 +165,7 @@ function FoundInFile({
           className="flex items-center gap-2 text-body-compact font-semibold"
         >
           <SheetTile small />
-          Found in your file
-        </h3>
+          {<__LocalizedText id="columnMapping_foundInYourFile" />}{" "}</h3>
         {foundSentence(groups, instances).map((line) => (
           <p key={line} className="text-caption text-muted-foreground">
             {line}
@@ -195,7 +197,7 @@ function FoundInFile({
                 className="size-8"
                 disabled={n <= floor}
                 onClick={() => set(n - 1)}
-                aria-label={`One fewer: ${name}`}
+                aria-label={__t("columnMapping_oneFewerValue0", {value0: String(name)})}
               >
                 <MinusIcon aria-hidden />
               </Button>
@@ -204,7 +206,7 @@ function FoundInFile({
                 size="icon"
                 className="size-8"
                 onClick={() => set(n + 1)}
-                aria-label={`One more: ${name}`}
+                aria-label={__t("columnMapping_oneMoreValue0", {value0: String(name)})}
               >
                 <PlusIcon aria-hidden />
               </Button>
@@ -230,18 +232,19 @@ function ColumnOption({
   sample: string;
   usedFor?: string[];
 }) {
+  const __t = __useTranslations();
   return (
     <span className="flex w-full min-w-0 items-center gap-2">
       <span className="max-w-[60%] shrink-0 truncate font-medium">{name}</span>
       <span className="min-w-0 flex-1 truncate font-mono text-caption text-muted-foreground">
-        {sample || "empty"}
+        {sample || __t("columnMapping_empty")}
       </span>
       {/* Already matched elsewhere: a column can feed two fields, so it stays pickable. */}
       {usedFor.length ? (
         <Badge
           variant="success"
           className="min-w-0 max-w-[50%] shrink truncate"
-          title={`Used for ${usedFor.join(", ")}`}
+          title={__t("columnMapping_usedForValue0", {value0: String(usedFor.join(", "))})}
         >
           <CheckIcon data-icon="inline-start" aria-hidden />
           <span className="truncate">
@@ -290,6 +293,7 @@ function ColumnPicker({
   /** Matched and fitting, matched but not fitting, or not matched: the field's outline says it. */
   state: Link;
 }) {
+  const __t = __useTranslations();
   const used = React.useContext(UsedContext);
   const anchor = useComboboxAnchor();
   const options = React.useMemo<PickOption[]>(
@@ -303,13 +307,13 @@ function ColumnPicker({
       })),
       ...(list
         ? LISTS[list].map((o): PickOption => ({
-            value: `every:${o.label}`,
+            value: `every:${__t(o.label)}`,
             name: o.label,
             kind: "every",
           }))
         : []),
     ],
-    [headers, firsts, list],
+    [headers, firsts, list, __t],
   );
   const selected = options.find((o) => o.value === value) ?? options[0];
   return (
@@ -338,7 +342,7 @@ function ColumnPicker({
       <div ref={anchor} className="w-full">
         <ComboboxInput
           id={id}
-          aria-label={label}
+          aria-label={__t(label)}
           className={cn(
             "w-full",
             // Open, the field and its list read as one box: the field's lower corners square off.
@@ -354,7 +358,7 @@ function ColumnPicker({
           )}
           autoComplete="off"
           showTrigger={false}
-          placeholder="Type to search columns"
+          placeholder={__t("columnMapping_typeToSearchColumns")}
           // A chosen column's name is selected on focus, so typing starts a new search.
           onFocus={(e) => e.currentTarget.select()}
         >
@@ -368,7 +372,7 @@ function ColumnPicker({
               </span>
             ) : null}
             <InputGroupButton size="icon-xs" variant="ghost" asChild>
-              <ComboboxTrigger aria-label="Show columns" />
+              <ComboboxTrigger aria-label={__t("columnMapping_showColumns")} />
             </InputGroupButton>
           </InputGroupAddon>
         </ComboboxInput>
@@ -382,7 +386,7 @@ function ColumnPicker({
         sideOffset={-1}
         className="min-w-(--anchor-width) overflow-x-hidden border border-ring ring-0 data-[side=bottom]:rounded-t-none data-[side=bottom]:border-t-0 data-[side=top]:rounded-b-none data-[side=top]:border-b-0"
       >
-        <ComboboxEmpty>No column matches</ComboboxEmpty>
+        <ComboboxEmpty>{<__LocalizedText id="columnMapping_noColumnMatches" />}</ComboboxEmpty>
         <ComboboxList className="overflow-x-hidden overscroll-x-none">
           {(o: PickOption) => (
             <ComboboxItem
@@ -403,7 +407,7 @@ function ColumnPicker({
                 />
               ) : o.kind === "every" ? (
                 <span>
-                  <span className="text-muted-foreground">Every row: </span>
+                  <span className="text-muted-foreground">{<__LocalizedText id="columnMapping_everyRow" />}{" "}</span>
                   {o.name}
                 </span>
               ) : (
@@ -433,6 +437,7 @@ function FieldRow({
   instance: Instance;
   props: Props;
 }) {
+  const __t = __useTranslations();
   const g = GROUPS.find((x) => x.id === column.group)!;
   const src = sourceFor(column, instance, props.map, props.headers);
   const id = `map-${column.key}-${instanceKey(instance) || "0"}`;
@@ -494,7 +499,7 @@ function FieldRow({
       <div className="flex min-w-0 flex-col">
         <ColumnPicker
           id={id}
-          label={`Column in your sheet for ${column.header}`}
+          label={__t("columnMapping_columnInYourSheetForValue0", {value0: String(column.header)})}
           value={sourceValue(src) || NONE}
           headers={props.headers}
           firsts={firsts}
@@ -515,13 +520,13 @@ function FieldRow({
             if (!open) setPending(null);
           }}
           destructive={false}
-          title={`Move "${pending ? props.headers[Number(pending.value)] : ""}" to ${column.header}?`}
+          title={__t("columnMapping_moveValue0ToValue1", {value0: String(pending ? props.headers[Number(pending.value)] : ""), value1: String(column.header)})}
           description={
             pending
-              ? `It is matched to ${pending.others.map((o) => o.label).join(", ")}. Matching it here removes it from there, and that field will need another column.`
+              ? __t("columnMapping_itIsMatchedToValue0MatchingIt", {value0: String(pending.others.map((o) => o.label).join(", "))})
               : undefined
           }
-          confirmLabel="Move it here"
+          confirmLabel={__t("columnMapping_moveItHere")}
           onConfirm={() => {
             if (pending) commit(pending.value, pending.others);
             setPending(null);
@@ -529,7 +534,7 @@ function FieldRow({
         />
         {fit && !fit.ok ? (
           <span className="pt-1 pl-1 text-caption text-warning-ink">
-            {fit.note}
+            {__t(fit.note)}
           </span>
         ) : null}
       </div>
@@ -549,6 +554,7 @@ type Link = "ok" | "warn" | "none";
  * same; the label says the state.
  */
 function LinkNode({ state, className }: { state: Link; className?: string }) {
+  const __t = __useTranslations();
   const label =
     state === "ok"
       ? "Matched"
@@ -558,8 +564,8 @@ function LinkNode({ state, className }: { state: Link; className?: string }) {
   return (
     <span
       role="img"
-      aria-label={label}
-      title={label}
+      aria-label={__t(label)}
+      title={__t(label)}
       className={cn(
         "relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full",
         state === "ok" && "bg-success text-success-foreground",
@@ -615,8 +621,7 @@ function SidesHeader() {
     >
       <span className="flex items-center gap-3 text-body-compact font-semibold text-foreground">
         <AppTile />
-        Field in the case
-      </span>
+        {<__LocalizedText id="columnMapping_fieldInTheCase" />}{" "}</span>
       <span className="hidden sm:block" />
       <ArrowDownIcon
         className="ml-3 size-4 text-muted-foreground sm:hidden"
@@ -624,8 +629,7 @@ function SidesHeader() {
       />
       <span className="flex items-center gap-3 text-body-compact font-semibold text-foreground">
         <SheetTile />
-        Column in your sheet
-      </span>
+        {<__LocalizedText id="columnMapping_columnInYourSheet" />}{" "}</span>
     </div>
   );
 }
@@ -644,12 +648,13 @@ function Section({
   props: Props;
   heading?: boolean;
 }) {
+  const __t = __useTranslations();
   if (!columns.length) return null;
   return (
     <section className="flex flex-col">
       {heading ? (
         <h4 className="text-caption font-semibold text-muted-foreground uppercase">
-          {group.label}
+          {__t(group.label)}
         </h4>
       ) : null}
       <ul className="flex flex-col divide-y divide-hairline">
@@ -668,6 +673,7 @@ function Section({
  * with its `_n` suffix unless the filer picks another.
  */
 export function ColumnMapping(props: Props) {
+  const __t = __useTranslations();
   const [showOptional, setShowOptional] = React.useState(false);
   const instances = React.useMemo(
     () => instancesIn(props.headers, props.counts),
@@ -686,7 +692,7 @@ export function ColumnMapping(props: Props) {
         const where = g.parent
           ? `${instances.accused.length > 1 ? `Accused ${i[0]} · ` : ""}${siblings > 1 ? `${g.label.replace(/^Accused /, "")} ${i[1]} · ` : ""}`
           : g.repeats && list.length > 1
-            ? `${g.label} ${i[0]} · `
+            ? `${__t(g.label)} ${i[0]} · `
             : "";
         for (const c of COLUMNS.filter((x) => x.group === g.id)) {
           const src = sourceFor(c, i, props.map, props.headers);
@@ -699,7 +705,7 @@ export function ColumnMapping(props: Props) {
       }
     }
     return out;
-  }, [instances, props.map, props.headers]);
+  }, [instances, props.map, props.headers, __t]);
   // Which tab is open in each repeating section; kept while counts change.
   const [openTab, setOpenTab] = React.useState<
     Partial<Record<GroupId, string>>
@@ -803,14 +809,12 @@ export function ColumnMapping(props: Props) {
         <section className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <h3 className="text-body font-semibold">
-              Match each field to a column
-            </h3>
+              {<__LocalizedText id="columnMapping_matchEachFieldToAColumn" />}{" "}</h3>
             <Badge
               variant={matched === requiredSlots.length ? "success" : "warning"}
               className="tabular-nums"
             >
-              {matched} of {requiredSlots.length} required matched
-            </Badge>
+              {matched} {<__LocalizedText id="columnMapping_of" />}{" "}{requiredSlots.length} {<__LocalizedText id="columnMapping_requiredMatched" />}{" "}</Badge>
             <Button
               variant="ghost"
               className="ml-auto"
@@ -826,15 +830,15 @@ export function ColumnMapping(props: Props) {
                 aria-hidden
               />
               {showOptional
-                ? "Hide optional fields"
-                : `Show optional fields (${optionalCount})`}
+                ? __t("columnMapping_hideOptionalFields")
+                : __t("columnMapping_showOptionalFieldsValue0", {value0: String(optionalCount)})}
             </Button>
           </div>
 
           <div className="xl:grid xl:grid-cols-[13rem_minmax(0,1fr)] xl:items-start xl:gap-6">
             {/* Secondary nav: the single filing's sections, to jump between them. */}
             <nav
-              aria-label="Sections to match"
+              aria-label={__t("columnMapping_sectionsToMatch")}
               className="sticky top-20 hidden xl:block"
             >
               <ul className="flex flex-col gap-1">
@@ -866,7 +870,7 @@ export function ColumnMapping(props: Props) {
                           }
                         />
                         <span className="min-w-0 truncate">
-                          {step?.title ?? "Case"}
+                          {__t(step?.title) ?? __t("columnMapping_case")}
                         </span>
                         {(() => {
                           // Said in numbers, not a mark to decode: "2 of 5", or a tick when all are.
@@ -874,12 +878,12 @@ export function ColumnMapping(props: Props) {
                           return n === of && of > 0 ? (
                             <span className="ml-auto flex items-center gap-1 text-caption text-success-ink">
                               <CheckIcon className="size-4" aria-hidden />
-                              <span className="sr-only">all {of} matched</span>
+                              <span className="sr-only">{<__LocalizedText id="columnMapping_all" />}{" "}{of} {<__LocalizedText id="columnMapping_matched" />}</span>
                             </span>
                           ) : (
                             <span className="ml-auto text-caption tabular-nums text-muted-foreground">
-                              {n} of {of}
-                              <span className="sr-only"> matched</span>
+                              {n} {<__LocalizedText id="columnMapping_of" />}{" "}{of}
+                              <span className="sr-only"> {<__LocalizedText id="columnMapping_matched" />}</span>
                             </span>
                           );
                         })()}
@@ -904,7 +908,7 @@ export function ColumnMapping(props: Props) {
                   chosen !== undefined && keys.includes(chosen)
                     ? chosen
                     : keys[0];
-                const name = (i: Instance) => `${g.label} ${i[0]}`;
+                const name = (i: Instance) => `${__t(g.label)} ${i[0]}`;
                 return (
                   // Laid out as the single filing lays out a section: heading, tabs, then cards.
                   <section
@@ -964,7 +968,7 @@ export function ColumnMapping(props: Props) {
                           )
                           .map(({ c, ci }) => ({
                             key: `${c.id}-${instanceKey(ci)}`,
-                            title: `${c.label} ${ci[1]}`,
+                            title: `${__t(c.label)} ${ci[1]}`,
                             group: c,
                             inst: ci,
                           })),
@@ -975,7 +979,7 @@ export function ColumnMapping(props: Props) {
                         <div key={part.key} className="flex flex-col gap-2">
                           {part.title ? (
                             <h4 className="text-body font-semibold">
-                              {part.title}
+                              {__t(part.title)}
                             </h4>
                           ) : null}
                           <Card

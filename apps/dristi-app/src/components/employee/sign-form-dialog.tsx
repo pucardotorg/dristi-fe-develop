@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -99,6 +101,7 @@ function SignFormBody({
   onSign: (form: SignForm) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const flow = useStagedFlow<SignStage>({
     order: SIGN_STAGES,
@@ -113,19 +116,19 @@ function SignFormBody({
       /* The width and the height the *document* needs, held for both stages — see
          `SignOrderDialog` for why the height is definite at every width. */
       className="h-[85dvh] sm:max-w-4xl"
-      title={reading ? signFormProcessLabel(form.process) : "Add signature"}
+      title={reading ? signFormProcessLabel(form.process) : __t("signFormDialog_addSignature")}
       titleRef={flow.titleRef}
       /* The form's own state — waiting for this bench's signature — in the DS's sentence
          case rather than the reference's `PENDING_REVIEW`. `warning` is the variant
          `ReschedulingRequestDialog` already spends on a pending application, so the two
          court-side review overlays report a pending state the same way. It stands on both
          stages, because nothing has been signed until Submit. */
-      titleAside={<Badge variant="warning">Pending signature</Badge>}
+      titleAside={<Badge variant="warning">{<__LocalizedText id="signFormDialog_pendingSignature" />}</Badge>}
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(form)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={form.caseNumber} label="case number" copyable={false} />
+          <Identifier value={form.caseNumber} label={__t("signFormDialog_caseNumber")} copyable={false} />
         </DialogDescription>
       }
       sceneKey={flow.sceneKey}
@@ -137,8 +140,7 @@ function SignFormBody({
       footer={
         reading ? (
           <Button type="button" onClick={() => flow.go("sign")}>
-            Proceed to sign
-          </Button>
+            {<__LocalizedText id="signFormDialog_proceedToSign" />}{" "}</Button>
         ) : (
           <SignatureActions
             choice={choice}
@@ -156,14 +158,14 @@ function SignFormBody({
              `flex-1`, and `min-h-0` lets it shrink rather than pushing the footer. */
           className="min-h-0 flex-1"
           height="fill"
-          title={document.title}
+          title={__t(document.title)}
           source={{
             kind: "composed",
             content: <FormFacsimile document={document} />,
           }}
           download={{
             onDownload: () => downloadSignFormDocument(form),
-            label: `Download ${document.title}`,
+            label: __t("signFormDialog_downloadValue0", {value0: String(__t(document.title))}),
           }}
         />
       ) : (
@@ -186,18 +188,19 @@ function SignFormBody({
  * overlay uses, bound to this form's own particulars.
  */
 function FormFacsimile({ document: storedDocument }: { document: SignFormDocument }) {
+  const __t = __useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {<__LocalizedText id="signFormDialog_caseNo" />}{" "}{document.caseNumber}
         </p>
         <p className="text-body font-semibold">{document.matter}</p>
       </header>
 
-      <h3 className="text-center text-body font-semibold">{document.title}</h3>
+      <h3 className="text-center text-body font-semibold">{__t(document.title)}</h3>
 
       <ol className="flex list-decimal flex-col gap-3 ps-6">
         {document.paragraphs.map((paragraph, index) => (
@@ -208,10 +211,10 @@ function FormFacsimile({ document: storedDocument }: { document: SignFormDocumen
       </ol>
 
       <p className="text-body">{document.closing}</p>
-      <p className="text-body">Dated this the {document.dated}.</p>
+      <p className="text-body">{<__LocalizedText id="signFormDialog_datedThisThe" />}{" "}{document.dated}.</p>
 
       <section className="flex flex-col gap-1">
-        <h4 className="text-body font-semibold">Deponent</h4>
+        <h4 className="text-body font-semibold">{<__LocalizedText id="signFormDialog_deponent" />}</h4>
         <p className="text-body">{document.deponent.name}</p>
         <p className="text-body-compact text-paper-muted-foreground">
           {document.deponent.capacity}
@@ -222,7 +225,7 @@ function FormFacsimile({ document: storedDocument }: { document: SignFormDocumen
 
       {document.advocate ? (
         <section className="flex flex-col gap-1">
-          <h4 className="text-body font-semibold">Advocate</h4>
+          <h4 className="text-body font-semibold">{<__LocalizedText id="signFormDialog_advocate" />}</h4>
           <p className="text-body">{document.advocate}</p>
         </section>
       ) : null}

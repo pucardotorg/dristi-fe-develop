@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FileSpreadsheetIcon, UploadIcon } from "lucide-react";
@@ -36,6 +38,7 @@ export function FileDrop({
   hint: string;
   disabled?: boolean;
 }) {
+  const __t = __useTranslations();
   const input = React.useRef<HTMLInputElement>(null);
   const [over, setOver] = React.useState(false);
   const chosen = files.length > 0;
@@ -72,22 +75,21 @@ export function FileDrop({
               </span>
             ))}
             {files.length > 3 ? (
-              <span className="text-caption text-muted-foreground tabular-nums">and {files.length - 3} more</span>
+              <span className="text-caption text-muted-foreground tabular-nums">{<__LocalizedText id="fileDrop_and" />}{" "}{files.length - 3} {<__LocalizedText id="fileDrop_more" />}</span>
             ) : null}
           </div>
           <Button type="button" variant="outline" size="sm" onClick={choose} disabled={disabled}>
-            Change
-          </Button>
+            {<__LocalizedText id="fileDrop_change" />}{" "}</Button>
         </>
       ) : (
         <>
           <UploadIcon className="size-8 text-muted-foreground" aria-hidden />
           <div className="flex flex-col gap-0.5">
             <span className="text-body-compact font-medium">{prompt}</span>
-            <span className="text-caption text-muted-foreground">or choose {multiple ? "them" : "it"} from your computer · {hint}</span>
+            <span className="text-caption text-muted-foreground">{<__LocalizedText id="fileDrop_orChoose" />}{" "}{multiple ? __t("fileDrop_them") : __t("fileDrop_it")} {<__LocalizedText id="fileDrop_fromYourComputer" />}{" "}{__t(hint)}</span>
           </div>
           <Button type="button" variant="outline" onClick={choose} disabled={disabled}>
-            Choose {multiple ? "files" : "file"}
+            {<__LocalizedText id="fileDrop_choose" />}{" "}{multiple ? __t("fileDrop_files") : __t("fileDrop_file")}
           </Button>
         </>
       )}

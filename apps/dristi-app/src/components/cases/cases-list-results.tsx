@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import type { MouseEvent } from "react";
 
@@ -137,7 +139,8 @@ export function CasesPager({
   onPageSizeChange: (pageSize: CasesPageSize) => void;
   pageLink: (page: number) => PageLink;
 }) {
-  // On a phone the count and the page size hold the two ends of one line and
+  const __t = __useTranslations();
+    // On a phone the count and the page size hold the two ends of one line and
   // the pager centres under them. Left-stacked, the three read as dropped there
   // (owner, Sept 21).
   return (
@@ -149,7 +152,7 @@ export function CasesPager({
           className="text-body-compact text-muted-foreground tabular-nums"
           aria-live="polite"
         >
-          Rows {from}–{to} of {total}
+          {<__LocalizedText id="casesListResults_rows" />}{" "}{from}–{to} {<__LocalizedText id="casesListResults_of" />}{" "}{total}
         </p>
         <CasesPageSizeSelect
           value={pageSize}
@@ -173,7 +176,7 @@ export function CasesPager({
                     <PaginationLink
                       {...pageLink(entry)}
                       isActive={entry === page}
-                      aria-label={`Go to page ${entry}`}
+                      aria-label={__t("casesListResults_goToPageValue0", {value0: String(entry)})}
                     >
                       {entry}
                     </PaginationLink>

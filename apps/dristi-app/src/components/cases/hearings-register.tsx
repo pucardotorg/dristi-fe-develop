@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useState, type ReactNode, type RefObject } from "react";
 import { CaseLink as Link } from "@/components/cases/case-reader";
@@ -67,6 +69,7 @@ export function HearingsList({
   recentId?: string | null;
   recentRowRef?: (node: HTMLTableRowElement | null) => void;
 }) {
+  const __t = __useTranslations();
   const tray = useOneOpen<string>();
   if (hearings.length === 0) {
     return (
@@ -76,11 +79,9 @@ export function HearingsList({
             <CalendarOffIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body font-semibold">
-            No hearings yet
-          </EmptyTitle>
+            {<__LocalizedText id="hearingsRegister_noHearingsYet" />}{" "}</EmptyTitle>
           <EmptyDescription>
-            Hearings appear here once the court lists this case.
-          </EmptyDescription>
+            {<__LocalizedText id="hearingsRegister_hearingsAppearHereOnceTheCourtLists" />}{" "}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -100,8 +101,7 @@ export function HearingsList({
             className={cn(recentId === hearing.id && RECENT_ROW)}
             actions={
               <Button type="button" onClick={() => onOpen(hearing)}>
-                View hearing
-              </Button>
+                {<__LocalizedText id="hearingsRegister_viewHearing" />}{" "}</Button>
             }
           >
             <div className="-mt-1 flex flex-wrap items-center gap-2">
@@ -112,7 +112,7 @@ export function HearingsList({
                 {hearing.date}
               </time>
               <Badge variant={hearing.status.variant}>
-                {hearing.status.label}
+                {__t(hearing.status.label)}
               </Badge>
             </div>
           </RegisterTrayCard>
@@ -123,12 +123,11 @@ export function HearingsList({
     <Table>
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={cn(TABLE_HEAD, "w-36")}>Date</TableHead>
-          <TableHead className={TABLE_HEAD}>Hearing purpose</TableHead>
-          <TableHead className={cn(TABLE_HEAD, "w-32")}>Status</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "w-36")}>{<__LocalizedText id="hearingsRegister_date" />}</TableHead>
+          <TableHead className={TABLE_HEAD}>{<__LocalizedText id="hearingsRegister_hearingPurpose" />}</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "w-32")}>{<__LocalizedText id="hearingsRegister_status" />}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "w-24")}>
-            Action
-          </TableHead>
+            {<__LocalizedText id="hearingsRegister_action" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -151,7 +150,7 @@ export function HearingsList({
             </TableCell>
             <TableCell className={TABLE_CELL}>
               <Badge variant={hearing.status.variant}>
-                {hearing.status.label}
+                {__t(hearing.status.label)}
               </Badge>
             </TableCell>
             <TableCell className={TABLE_CELL}>
@@ -170,7 +169,7 @@ export function HearingsList({
 }
 
 const NOT_RECORDED = (
-  <span className="text-muted-foreground">Not recorded</span>
+  <span className="text-muted-foreground">{<__LocalizedText id="hearingsRegister_notRecorded" />}</span>
 );
 
 /**
@@ -190,6 +189,7 @@ export function HearingDetail({
   /** Absent inside the pop-up, where the way back is the dialog's footer. */
   onBack?: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex min-w-0 flex-col items-start gap-2">
@@ -202,8 +202,7 @@ export function HearingDetail({
             onClick={onBack}
           >
             <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-            All hearings
-          </Button>
+            {<__LocalizedText id="hearingsRegister_allHearings" />}{" "}</Button>
         ) : null}
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3
@@ -213,7 +212,7 @@ export function HearingDetail({
           >
             {hearing.purpose}
           </h3>
-          <Badge variant={hearing.status.variant}>{hearing.status.label}</Badge>
+          <Badge variant={hearing.status.variant}>{__t(hearing.status.label)}</Badge>
         </div>
       </div>
 
@@ -254,20 +253,19 @@ export function HearingDetail({
         </Row>
         <Row term="Hearing summary">
           {hearing.summary ? (
-            <span className="font-normal">{hearing.summary}</span>
+            <span className="font-normal">{__t(hearing.summary)}</span>
           ) : (
             <span className="text-muted-foreground">
-              No order has been passed for this hearing yet.
-            </span>
+              {<__LocalizedText id="hearingsRegister_noOrderHasBeenPassedForThis" />}{" "}</span>
           )}
         </Row>
         <Row term="Order">
           {hearing.order && orderHref ? (
             <Button variant="link" asChild className="h-auto px-0 text-left">
-              <Link href={orderHref}>{hearing.order.title}</Link>
+              <Link href={orderHref}>{__t(hearing.order.title)}</Link>
             </Button>
           ) : (
-            <span className="text-muted-foreground">No order yet</span>
+            <span className="text-muted-foreground">{<__LocalizedText id="hearingsRegister_noOrderYet" />}</span>
           )}
         </Row>
       </DescriptionList>
@@ -276,9 +274,10 @@ export function HearingDetail({
 }
 
 function Row({ term, children }: { term: string; children: ReactNode }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow className="border-hairline py-2.5 max-sm:grid-cols-1 max-sm:gap-1">
-      <DescriptionTerm>{term}</DescriptionTerm>
+      <DescriptionTerm>{__t(term)}</DescriptionTerm>
       <DescriptionDetails className="min-w-0 font-medium text-pretty">
         {children}
       </DescriptionDetails>
@@ -302,7 +301,7 @@ export function CaseHearingsSection({
   return (
     <RestingCard>
       <CardContent className="flex flex-col gap-4">
-        <h2 className="text-body font-semibold text-foreground">Hearings</h2>
+        <h2 className="text-body font-semibold text-foreground">{<__LocalizedText id="hearingsRegister_hearings" />}</h2>
         {openHearing ? (
           <HearingDetail
             hearing={openHearing}

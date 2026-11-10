@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Witnesses — who the complainant intends to rely on, and how the court reaches them.
@@ -30,6 +32,7 @@ import { AddressBlockList, ContactList } from "@/components/filing/repeat-lists"
 import { SectionTabs } from "@/components/filing/section-tabs";
 
 export function WitnessesSection() {
+  const __t = __useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("witnesses");
 
@@ -80,14 +83,14 @@ export function WitnessesSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="Witnesses"
-          description="List the witnesses the complainant intends to rely on, and how the court can reach them."
+          title={__t("witnessesSection_witnesses")}
+          description={__t("witnessesSection_listTheWitnessesTheComplainantIntendsTo")}
         />
 
         <SectionTabs
           tabs={draft.witnesses.map((wit, i) => ({
             id: wit.id,
-            label: `Witness ${i + 1}`,
+            label: __t("witnessesSection_witnessValue0", {value0: String(i + 1)}),
             status: witnessComplete(wit) ? "complete" : "attention",
             removable: draft.witnesses.length > 1,
           }))}
@@ -102,8 +105,8 @@ export function WitnessesSection() {
         <CorrectionInstance value={index}>
         {/* Identity */}
         <FormCard
-          title={`Witness ${index + 1}`}
-          description="Enough for the court to identify this witness."
+          title={__t("witnessesSection_witnessValue0", {value0: String(index + 1)})}
+          description={__t("witnessesSection_enoughForTheCourtToIdentifyThis")}
         >
           {/*
             Name and designation are one question with two ways of answering it, so the
@@ -114,28 +117,28 @@ export function WitnessesSection() {
           */}
           <FormField
             asGroup
-            label="How is this witness identified?"
+            label={__t("witnessesSection_howIsThisWitnessIdentified")}
             required
             help="Either one is enough. Use the designation if you only know the office they hold."
             helpPlacement="above"
           >
             <div className="flex flex-col gap-4">
-              <FormField label="Full name" name="fullName">
+              <FormField label={__t("witnessesSection_fullName")} name="fullName">
                 <TextField
                   value={w.fullName}
                   onChange={(v) => setField("fullName", v)}
-                  placeholder="e.g. Ramesh Nair"
+                  placeholder={__t("witnessesSection_eGRameshNair")}
                   autoComplete="off"
                 />
               </FormField>
 
-              <FieldSeparator>OR</FieldSeparator>
+              <FieldSeparator>{<__LocalizedText id="witnessesSection_or" />}</FieldSeparator>
 
-              <FormField label="Designation" name="designation">
+              <FormField label={__t("witnessesSection_designation")} name="designation">
                 <TextField
                   value={w.designation}
                   onChange={(v) => setField("designation", v)}
-                  placeholder="e.g. Bank Manager, SBI Sector 17"
+                  placeholder={__t("witnessesSection_eGBankManagerSbiSector17")}
                   autoComplete="off"
                 />
               </FormField>
@@ -143,7 +146,7 @@ export function WitnessesSection() {
           </FormField>
 
           <HalfWidth>
-            <FormField label="Age" optional>
+            <FormField label={__t("witnessesSection_age")} optional>
               <TextField
                 value={w.age}
                 onChange={(v) => setField("age", v)}
@@ -153,19 +156,19 @@ export function WitnessesSection() {
             </FormField>
           </HalfWidth>
 
-          <FormField label="What will this witness prove?" optional>
+          <FormField label={__t("witnessesSection_whatWillThisWitnessProve")} optional>
             <Textarea
               value={w.prove}
               onChange={(e) => setField("prove", e.target.value)}
-              placeholder="e.g. Confirms the cheque was handed over on 4 March"
+              placeholder={__t("witnessesSection_eGConfirmsTheChequeWasHanded")}
             />
           </FormField>
         </FormCard>
 
         {/* Contact */}
         <FormCard
-          title={`Witness ${index + 1} contact details`}
-          description="Where the court can reach this witness."
+          title={__t("witnessesSection_witnessValue0ContactDetails", {value0: String(index + 1)})}
+          description={__t("witnessesSection_whereTheCourtCanReachThisWitness")}
         >
           <ContactList
             contacts={w.contacts}
@@ -178,10 +181,9 @@ export function WitnessesSection() {
         </FormCard>
 
         {/* Service addresses */}
-        <FormCard title={`Witness ${index + 1} address details`}>
+        <FormCard title={__t("witnessesSection_witnessValue0AddressDetails", {value0: String(index + 1)})}>
           <SectionNotice variant="info">
-            The court tries every address listed here.
-          </SectionNotice>
+            {<__LocalizedText id="witnessesSection_theCourtTriesEveryAddressListedHere" />}{" "}</SectionNotice>
           <AddressBlockList
             blocks={w.addresses}
             onChange={(addresses) => setField("addresses", addresses)}
@@ -201,9 +203,9 @@ export function WitnessesSection() {
         onOpenChange={(open) => {
           if (!open) setRemoveId(null);
         }}
-        title={`Remove witness ${removeNumber}`}
-        description="Are you sure you want to delete this witness and all their details? This cannot be undone."
-        confirmLabel="Yes, remove"
+        title={__t("witnessesSection_removeWitnessValue0", {value0: String(removeNumber)})}
+        description={__t("witnessesSection_areYouSureYouWantToDelete")}
+        confirmLabel={__t("witnessesSection_yesRemove")}
         onConfirm={confirmRemove}
       />
     </>

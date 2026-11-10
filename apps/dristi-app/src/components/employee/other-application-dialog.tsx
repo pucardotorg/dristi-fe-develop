@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { useMemo } from "react";
 
@@ -75,6 +76,7 @@ function ApplicationBody({
   onReject: (application: OtherApplication) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const document = useMemo(
     () => buildOtherApplicationDocument(application),
     [application],
@@ -86,7 +88,7 @@ function ApplicationBody({
       description={
         <>
           {/* The overlay renders this as its accessible description. */}
-          <Identifier value={application.caseNumber} label="case number" copyable={false} />
+          <Identifier value={application.caseNumber} label={__t("otherApplicationDialog_caseNumber")} copyable={false} />
           {" · "}
           {causeTitle(application)}
         </>
@@ -97,7 +99,7 @@ function ApplicationBody({
             {otherApplicationTypeLabel(application.type)}
           </ReviewRow>
           <ReviewRow term="Case number">
-            <Identifier value={application.caseNumber} label="case number" />
+            <Identifier value={application.caseNumber} label={__t("otherApplicationDialog_caseNumber")} />
           </ReviewRow>
           <ReviewRow term="Stage">
             {otherApplicationStageLabel(application.stage)}

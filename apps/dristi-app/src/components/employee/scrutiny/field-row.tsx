@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { toast } from "sonner";
@@ -60,6 +62,7 @@ export function FieldRow({
   aiOn: boolean;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const __t = __useTranslations();
   const { docById } = useScrutinyCase();
   const flag = controller.flags[field.id];
   const selected = controller.selectedId === field.id;
@@ -106,7 +109,7 @@ export function FieldRow({
         }
       }}
     >
-      <DescriptionTerm>{field.label}</DescriptionTerm>
+      <DescriptionTerm>{__t(field.label)}</DescriptionTerm>
       <DescriptionDetails>
         <div className="flex items-start gap-2">
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -136,16 +139,12 @@ export function FieldRow({
                   <span className="inline-flex size-8 shrink-0 items-center justify-center text-muted-foreground">
                     <FileTextIcon className="size-4" aria-hidden="true" />
                     <span className="sr-only">
-                      {`Read from Doc ${docById[field.doc]?.no}, ${docById[field.doc]?.name}${
-                        field.srcnote ? ` — ${field.srcnote}` : ""
-                      }`}
+                      {__t("fieldRow_readFromDocValue0Value1Value2", {value0: String(__t(docById[field.doc]?.no)), value1: String(docById[field.doc]?.name), value2: String(field.srcnote ? ` — ${field.srcnote}` : "")})}
                     </span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {`Read from Doc ${docById[field.doc]?.no}, ${docById[field.doc]?.name}${
-                    field.srcnote ? ` — ${field.srcnote}` : ""
-                  }`}
+                  {__t("fieldRow_readFromDocValue0Value1Value2", {value0: String(__t(docById[field.doc]?.no)), value1: String(docById[field.doc]?.name), value2: String(field.srcnote ? ` — ${field.srcnote}` : "")})}
                 </TooltipContent>
               </Tooltip>
             ) : null}
@@ -158,7 +157,7 @@ export function FieldRow({
                      the registry works on tablets, so a coarse pointer gets the full 40px
                      (DS Laws, ACCESSIBILITY §5). */
                   className="[@media(pointer:coarse)]:size-10"
-                  aria-label={`${flagTitle}: ${field.label}`}
+                  aria-label={`${__t(flagTitle)}: ${__t(field.label)}`}
                   onClick={(event) => {
                     event.stopPropagation();
                     controller.openComposer(field.id);
@@ -167,7 +166,7 @@ export function FieldRow({
                   <FlagIcon />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{flagTitle}</TooltipContent>
+              <TooltipContent>{__t(flagTitle)}</TooltipContent>
             </Tooltip>
           </div>
         </div>
@@ -198,6 +197,7 @@ const NOT_PROVIDED = "Not provided";
 
 /** The filed value. A raised item never replaces it — the advocate makes the fix. */
 function ValueLines({ field }: { field: FlatField }) {
+  const __t = __useTranslations();
   /*
    * Prose (the affidavit, the prayer) stops at four lines with Show more. Printed whole,
    * the affidavit alone ran ~1,400px in the one scrolling fields panel and pushed the
@@ -236,7 +236,7 @@ function ValueLines({ field }: { field: FlatField }) {
           aria-expanded={expanded}
           onClick={() => setExpanded((open) => !open)}
         >
-          {expanded ? "Show less" : "Show more"}
+          {expanded ? __t("fieldRow_showLess") : __t("fieldRow_showMore")}
         </Button>
       ) : null}
     </div>
@@ -263,6 +263,7 @@ function Hints({
   flag?: FlagType;
   aiOn: boolean;
 }) {
+  const __t = __useTranslations();
   const { docById } = useScrutinyCase();
   const lines: React.ReactNode[] = [];
   const flagged = !!flag;
@@ -280,28 +281,26 @@ function Hints({
           alt=""
           className="h-8 w-12 rounded-sm object-cover"
         />
-        <span className="tabular-nums">Doc {thumbDoc.no}</span>
+        <span className="tabular-nums">{<__LocalizedText id="fieldRow_doc" />}{" "}{__t(thumbDoc.no)}</span>
       </div>,
     );
   }
   if (aiOn && field.docread && !flagged) {
     lines.push(
       <HintLine key="docread" tone="warning" icon={<TriangleAlertIcon />}>
-        Document shows a different value.
-      </HintLine>,
+        {<__LocalizedText id="fieldRow_documentShowsADifferentValue" />}{" "}</HintLine>,
     );
   }
   if (aiOn && field.ocrfail && !flagged) {
     lines.push(
       <HintLine key="ocrfail" tone="warning" icon={<TriangleAlertIcon />}>
-        Couldn&rsquo;t read this in the document.
-      </HintLine>,
+        {<__LocalizedText id="fieldRow_couldnTReadThisInTheDocument" />}{" "}</HintLine>,
     );
   }
   if (field.note) {
     lines.push(
       <HintLine key="note" tone="muted" icon={<HistoryIcon />}>
-        {field.note}
+        {__t(field.note)}
       </HintLine>,
     );
   }
@@ -371,6 +370,7 @@ function RaisedItem({
   controller: ScrutinyController;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const __t = __useTranslations();
   const { docById, docRow, fieldById } = useScrutinyCase();
   const partnerId = flag.linkedTo ?? flag.linkedFrom ?? null;
   const partner = partnerId ? fieldById[partnerId] : undefined;
@@ -402,7 +402,7 @@ function RaisedItem({
     >
       <div className="flex items-center gap-2">
         <Badge variant="destructive">
-          {field.docrow ? "Document issue" : "Flag"}
+          {field.docrow ? __t("fieldRow_documentIssue") : __t("fieldRow_flag")}
         </Badge>
         <span className="ms-auto -my-1 flex shrink-0 gap-0.5 opacity-0 transition-opacity group-hover/frow:opacity-100 group-focus-within/frow:opacity-100 group-aria-selected/frow:opacity-100 [@media(hover:none)]:opacity-100">
           {/* `xs` is the record's own density — two words inside a well inside a row —
@@ -416,8 +416,7 @@ function RaisedItem({
               controller.openComposer(field.id);
             }}
           >
-            Edit
-          </Button>
+            {<__LocalizedText id="fieldRow_edit" />}{" "}</Button>
           <Button
             variant="destructive-ghost"
             size="xs"
@@ -437,52 +436,51 @@ function RaisedItem({
                 )} stays.`,
                 {
                   action: {
-                    label: "Remove it too",
+                    label: __t("fieldRow_removeItToo"),
                     onClick: () => controller.removeFlag(stranded),
                   },
                 },
               );
             }}
           >
-            Remove
-          </Button>
+            {<__LocalizedText id="fieldRow_remove" />}{" "}</Button>
         </span>
       </div>
 
       <RecordList>
         {field.docrow && flag.reason ? (
-          <RecordRow label="Reason">{flag.reason}</RecordRow>
+          <RecordRow label={__t("fieldRow_reason")}>{flag.reason}</RecordRow>
         ) : null}
 
         {flag.comment ? (
-          <RecordRow label="FSO’s comment">
+          <RecordRow label={__t("fieldRow_fsoSComment")}>
             <span className="break-words">{flag.comment}</span>
           </RecordRow>
         ) : silent ? (
-          <RecordRow label="FSO’s comment">
+          <RecordRow label={__t("fieldRow_fsoSComment")}>
             <span className="text-warning-ink">{SILENT_FALLBACK}</span>
           </RecordRow>
         ) : null}
 
         {reuploadApplies ? (
-          <RecordRow label="Re-upload requested">
+          <RecordRow label={__t("fieldRow_reUploadRequested")}>
             {partner ? (
               <RecordLink onClick={() => onGoToItem(partner.id)}>
-                Yes — {docName(partner.docrow ?? "", docById)}
+                {<__LocalizedText id="fieldRow_yes" />}{" "}{docName(partner.docrow ?? "", docById)}
                 {controller.flags[partner.id]?.reason
                   ? ` · ${controller.flags[partner.id]?.reason}`
                   : ""}
               </RecordLink>
             ) : (
-              <span className="text-muted-foreground">No</span>
+              <span className="text-muted-foreground">{<__LocalizedText id="fieldRow_no" />}</span>
             )}
           </RecordRow>
         ) : null}
 
         {field.docrow && partner ? (
-          <RecordRow label="Raised with">
+          <RecordRow label={__t("fieldRow_raisedWith")}>
             <RecordLink onClick={() => onGoToItem(partner.id)}>
-              {partner.label}
+              {__t(partner.label)}
             </RecordLink>
           </RecordRow>
         ) : null}

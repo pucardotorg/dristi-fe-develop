@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
@@ -63,7 +64,7 @@ import { useCourtText } from "@/components/court/court-provider";
 const idFace = (crumb: Crumb) => (crumb.mono ? "font-mono tabular-nums" : undefined);
 
 function useTrail() {
-  const { crumbs, crumbRoot } = useChrome();
+    const { crumbs, crumbRoot } = useChrome();
   const pathname = usePathname();
   /*
    * The trail's root. A screen that knows which door it was reached through publishes
@@ -93,6 +94,7 @@ function TrailList({
   /** What stands in for the entries left out. */
   lead?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const { crumbs, root } = useTrail();
   const last = crumbs.length - 1;
   return (
@@ -103,11 +105,11 @@ function TrailList({
         {crumbs.length && root.href ? (
           <BreadcrumbLink asChild>
             <Link href={root.href} className={idFace(root)}>
-              {root.label}
+              {__t(root.label)}
             </Link>
           </BreadcrumbLink>
         ) : (
-          <BreadcrumbPage className={idFace(root)}>{root.label}</BreadcrumbPage>
+          <BreadcrumbPage className={idFace(root)}>{__t(root.label)}</BreadcrumbPage>
         )}
       </BreadcrumbItem>
       )}
@@ -116,7 +118,7 @@ function TrailList({
         // Entry 0 is the root, so crumb `i` is entry `i + 1`.
         if (i + 1 < skip) return null;
         return (
-          <React.Fragment key={`${i}-${crumb.label}`}>
+          <React.Fragment key={`${i}-${__t(crumb.label)}`}>
             <BreadcrumbSeparator className="shrink-0" data-trail-separator />
             <BreadcrumbItem
               className={isLast ? "min-w-0" : "shrink-0"}
@@ -124,16 +126,16 @@ function TrailList({
             >
               {isLast ? (
                 <BreadcrumbPage className={cn("truncate font-medium", idFace(crumb))}>
-                  {crumb.label}
+                  {__t(crumb.label)}
                 </BreadcrumbPage>
               ) : crumb.href ? (
                 <BreadcrumbLink asChild>
                   <Link href={crumb.href} className={idFace(crumb)}>
-                    {crumb.label}
+                    {__t(crumb.label)}
                   </Link>
                 </BreadcrumbLink>
               ) : (
-                <span className={idFace(crumb)}>{crumb.label}</span>
+                <span className={idFace(crumb)}>{__t(crumb.label)}</span>
               )}
             </BreadcrumbItem>
           </React.Fragment>
@@ -170,13 +172,14 @@ function ChromeBreadcrumb({
   /** A quiet control that belongs to the page the trail names, set just after it. */
   after?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const { crumbs, root } = useTrail();
   const slotRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
   // How many leading entries are folded away. 0 = the whole trail shows.
   const [skip, setSkip] = React.useState(0);
   const entries = crumbs.length + 1;
-  const trailKey = `${root.label}|${crumbs.map((crumb) => crumb.label).join("|")}`;
+  const trailKey = `${__t(root.label)}|${crumbs.map((crumb) => crumb.label).join("|")}`;
 
   // Room decides, not a breakpoint (owner, Sept 21: an iPad with space to
   // spare was still getting the folded trail). The whole trail is drawn once,
@@ -242,7 +245,7 @@ function ChromeBreadcrumb({
                 type="button"
                 aria-expanded={open}
                 aria-controls={TRAIL_ROW_ID}
-                aria-label="Show the full path"
+                aria-label={__t("topBar_showTheFullPath")}
                 onClick={onToggle}
                 className="-mx-2 flex size-10 cursor-pointer items-center justify-center rounded-lg outline-none transition-colors active:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
               >
@@ -276,6 +279,7 @@ const FOLD_BUTTON_WIDTH = 24;
  * rail is open — the DS's own `SidebarTrigger` carries the state in its label instead.
  */
 function NavTrigger() {
+  const __t = __useTranslations();
   const { open, isMobile } = useSidebar();
   // An open rail carries its own collapse control, in its header. Repeating it here
   // would put it back at the head of the breadcrumb row — which is what made it read as
@@ -285,7 +289,7 @@ function NavTrigger() {
     <>
       <SidebarTrigger
         size="icon"
-        aria-label="Expand main navigation"
+        aria-label={__t("topBar_expandMainNavigation")}
         className="shrink-0 text-muted-foreground [&_svg]:size-5"
       />
       {/* The trigger belongs to the rail, the crumbs to the page. With the rail collapsed
@@ -310,6 +314,7 @@ function NavTrigger() {
  * opened — which also means nothing here is clearable until a real source lands.
  */
 function useTaskNotifications() {
+  const __t = __useTranslations();
   const world = useTasks();
   const [readIds, setReadIds] = React.useState<ReadonlySet<string>>(new Set());
 
@@ -329,8 +334,8 @@ function useTaskNotifications() {
         const kase = caseOf(w, t);
         return {
           id: t.id,
-          title: t.title,
-          body: `${days === 0 ? "Due today" : `${days} day${days === 1 ? "" : "s"} overdue`}${
+          title: __t(t.title),
+          body: `${days === 0 ? __t("topBar_dueToday") : `${days} day${days === 1 ? "" : "s"} overdue`}${
             kase ? ` · ${kase.parties}` : ""
           }`,
           unread: !readIds.has(t.id),
@@ -349,8 +354,8 @@ function useTaskNotifications() {
         const kase = caseOf(w, t);
         return {
           id: t.id,
-          title: t.title,
-          body: `Awaiting your decision${kase ? ` · ${kase.parties}` : ""}`,
+          title: __t(t.title),
+          body: __t("topBar_awaitingYourDecisionValue0", {value0: String(kase ? ` · ${kase.parties}` : "")}),
           unread: !readIds.has(t.id),
           tone: "info" as const,
           persistent: true,
@@ -358,7 +363,7 @@ function useTaskNotifications() {
         };
       });
     return [...requests, ...overdue];
-  }, [state, people, cases, tasks, user, readIds]);
+  }, [state, people, cases, tasks, user, readIds, __t]);
 
   const markAllRead = React.useCallback(() => {
     setReadIds((prev) => {
@@ -388,6 +393,7 @@ function useTaskNotifications() {
  * three show English until translations arrive (`pick` falls back).
  */
 function LanguageToggle() {
+  const __t = __useTranslations();
   const { locale, setLocale, secondLanguage, setSecondLanguage } = useLocale();
   const options = [
     { value: "en" as Locale, label: LANGUAGE_NAME.en },
@@ -404,7 +410,7 @@ function LanguageToggle() {
       >
         {options.map((l) => (
           <SegmentedControlItem key={l.value} value={l.value} lang={l.value}>
-            {l.label}
+            {__t(l.label)}
           </SegmentedControlItem>
         ))}
       </SegmentedControl>
@@ -414,14 +420,16 @@ function LanguageToggle() {
             type="button"
             variant="ghost"
             size="icon-xs"
-            aria-label="Choose the second language"
+            aria-label={pick({ en: "common_chooseSecondLanguage" }, locale)}
             className="relative after:absolute after:-inset-1"
           >
             <ChevronDownIcon className="size-4" aria-hidden />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto min-w-40">
-          <DropdownMenuLabel>Second language</DropdownMenuLabel>
+          <DropdownMenuLabel>
+            {pick({ en: "common_secondLanguage" }, locale)}
+          </DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={secondLanguage}
             onValueChange={(next) => {

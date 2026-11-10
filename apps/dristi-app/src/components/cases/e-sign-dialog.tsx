@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -97,6 +99,7 @@ export function ESignDialog({
   /** A next step straight from the confirmation, beside leaving it for later. */
   proceed?: { label: string; laterLabel: string; onClick: () => void };
 }) {
+  const __t = __useTranslations();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [step, setStep] = useState<Step>("method");
   const [otp, setOtp] = useState("");
@@ -194,10 +197,10 @@ export function ESignDialog({
                   tabIndex={-1}
                   className="text-body font-semibold text-balance outline-none"
                 >
-                  {confirmation.title}
+                  {__t(confirmation.title)}
                 </DialogTitle>
                 <DialogDescription>
-                  {SIGNED_WITH[signedWith]} {confirmation.description}
+                  {SIGNED_WITH[signedWith]} {__t(confirmation.description)}
                 </DialogDescription>
               </div>
             </div>
@@ -210,9 +213,9 @@ export function ESignDialog({
                 tabIndex={-1}
                 className="text-body font-semibold text-balance outline-none"
               >
-                {title}
+                {__t(title)}
               </DialogTitle>
-              <DialogDescription>{description}</DialogDescription>
+              <DialogDescription>{__t(description)}</DialogDescription>
             </DialogHeader>
 
             <div
@@ -227,7 +230,7 @@ export function ESignDialog({
                 <>
                   <Banner variant="info">{OFFICE_NO_ESIGN}</Banner>
                   <ChoiceCard
-                    title="Upload a signed copy"
+                    title={__t("eSignDialog_uploadASignedCopy")}
                     tone="bg-warning-muted text-warning-muted-foreground"
                     icon={<UploadIcon className="size-5" />}
                     onClick={() => {
@@ -235,19 +238,17 @@ export function ESignDialog({
                       setStep("upload");
                     }}
                   >
-                    One file signed by an advocate on the vakalatnama.
-                  </ChoiceCard>
+                    {<__LocalizedText id="eSignDialog_oneFileSignedByAnAdvocateOn" />}{" "}</ChoiceCard>
                 </>
               ) : step === "method" ? (
                 <>
                   <ChoiceCard
-                    title="Sign digitally"
+                    title={__t("eSignDialog_signDigitally")}
                     tone="bg-brand-muted text-brand-muted-foreground"
                     icon={<SignatureIcon className="size-5" />}
                     onClick={() => setStep("instrument")}
                   >
-                    You sign the {noun} with your DSC or Aadhaar e-sign.
-                  </ChoiceCard>
+                    {<__LocalizedText id="eSignDialog_youSignThe" />}{" "}{noun} {<__LocalizedText id="eSignDialog_withYourDscOrAadhaarESign" />}{" "}</ChoiceCard>
                   <PaperFallbackLink
                     onClick={() => {
                       setFileError(undefined);
@@ -286,10 +287,10 @@ export function ESignDialog({
                 <>
                   <Field data-invalid={Boolean(fileError) && !file}>
                     <FieldLabel className="block w-full font-semibold leading-snug">
-                      Signed {noun}
+                      {<__LocalizedText id="eSignDialog_signed" />}{" "}{noun}
                     </FieldLabel>
                     <UploadedDocField
-                      label={`Signed ${noun}`}
+                      label={__t("eSignDialog_signedValue0", {value0: String(noun)})}
                       required
                       file={file}
                       onFileChange={(next) => {
@@ -313,12 +314,10 @@ export function ESignDialog({
               variant="outline"
               onClick={() => (step === "instrument" ? setStep("method") : onBack())}
             >
-              Back
-            </Button>
+              {<__LocalizedText id="eSignDialog_back" />}{" "}</Button>
             {onSignLater ? (
               <Button type="button" variant="ghost" onClick={onSignLater}>
-                I&rsquo;ll sign later
-              </Button>
+                {<__LocalizedText id="eSignDialog_iLlSignLater" />}{" "}</Button>
             ) : null}
           </footer>
         ) : null}
@@ -326,30 +325,25 @@ export function ESignDialog({
         {step === "otp" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
-            </Button>
+              {<__LocalizedText id="eSignDialog_back" />}{" "}</Button>
             <Button type="button" disabled={otp.length < 6} onClick={() => signWith("aadhaar")}>
-              Verify and sign
-            </Button>
+              {<__LocalizedText id="eSignDialog_verifyAndSign" />}{" "}</Button>
           </footer>
         ) : null}
 
         {step === "dsc" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
-            </Button>
+              {<__LocalizedText id="eSignDialog_back" />}{" "}</Button>
             <Button type="button" disabled={!dscFound} onClick={() => signWith("dsc")}>
-              Sign with this certificate
-            </Button>
+              {<__LocalizedText id="eSignDialog_signWithThisCertificate" />}{" "}</Button>
           </footer>
         ) : null}
 
         {step === "upload" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("method")}>
-              Back
-            </Button>
+              {<__LocalizedText id="eSignDialog_back" />}{" "}</Button>
             <Button
               type="button"
               onClick={() => {
@@ -360,7 +354,7 @@ export function ESignDialog({
                 signWith("paper");
               }}
             >
-              {submitLabel}
+              {__t(submitLabel)}
             </Button>
           </footer>
         ) : null}
@@ -370,16 +364,15 @@ export function ESignDialog({
             {proceed ? (
               <>
                 <Button type="button" variant="outline" onClick={onComplete}>
-                  {proceed.laterLabel}
+                  {__t(proceed.laterLabel)}
                 </Button>
                 <Button type="button" onClick={proceed.onClick}>
-                  {proceed.label}
+                  {__t(proceed.label)}
                 </Button>
               </>
             ) : (
               <Button type="button" onClick={onComplete}>
-                Done
-              </Button>
+                {<__LocalizedText id="eSignDialog_done" />}{" "}</Button>
             )}
           </footer>
         ) : null}
@@ -403,6 +396,7 @@ export function DocumentSignatureDialog({
   onSignLater?: () => void;
   onComplete: () => void;
 }) {
+  const __t = __useTranslations();
   const several = count > 1;
   return (
     <ESignDialog
@@ -416,10 +410,10 @@ export function DocumentSignatureDialog({
       onComplete={onComplete}
       confirmation={{
         tone: "done",
-        title: several ? `${count} documents submitted` : "Document submitted",
+        title: several ? `${count} documents submitted` : __t("eSignDialog_documentSubmitted"),
         description: several
-          ? "They are on the case record now. Everyone on the case can see them."
-          : "It is on the case record now. Everyone on the case can see it.",
+          ? __t("eSignDialog_theyAreOnTheCaseRecordNow")
+          : __t("eSignDialog_itIsOnTheCaseRecordNow"),
       }}
     />
   );

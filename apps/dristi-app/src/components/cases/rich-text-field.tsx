@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import type * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -238,6 +240,7 @@ export function RichTextField({
    */
   tables?: boolean;
 }) {
+  const __t = __useTranslations();
   const editorRef = useRef<HTMLDivElement>(null);
   const initialHtmlRef = useRef(value.html);
   const fieldProps = useFieldControlProps({});
@@ -311,11 +314,11 @@ export function RichTextField({
     if (ghost && parent) parent.removeChild(ghost);
     const emitted = {
       html: stripGhostHtml(editor.innerHTML),
-      text: editor.innerText,
+      text: __t(editor.innerText),
     };
     if (ghost && parent) parent.insertBefore(ghost, next);
     onChange(emitted);
-  }, [onChange]);
+  }, [onChange, __t]);
 
   /** Take the preview off the screen. Called before any key that is not about it. */
   const clearGhost = useCallback(() => {
@@ -500,7 +503,7 @@ export function RichTextField({
     /* Exactly what the caller said to show. Naming a standing order, that is its name —
        one line, no reflow. Finishing a sentence, it is the part not yet typed, which
        joins the words already on the line with no space of its own. */
-    const words = mode === "trigger" ? ` ${pick.label}` : pick.ghost;
+    const words = mode === "trigger" ? ` ${__t(pick.label)}` : pick.ghost;
     /* The same node, moved, when it says the same thing: a held candidate is the common
        case while a query narrows, and replacing the node then would restart it. */
     if (standing && standing.textContent === words) {
@@ -510,7 +513,7 @@ export function RichTextField({
       ghostRef.current = drawGhost(reading.host, words);
     }
     setShown((current) =>
-      current?.key === pick.key ? current : { key: pick.key, label: pick.label },
+      current?.key === pick.key ? current : { key: pick.key, label: __t(pick.label) },
     );
   }
 
@@ -809,7 +812,7 @@ export function RichTextField({
     <InputGroup className={cn("h-auto flex-col items-stretch", className)}>
       <div
         role="toolbar"
-        aria-label="Formatting"
+        aria-label={__t("richTextField_formatting")}
         /* `px-1` against the control's `px-4`: a 40px button centres a 16px icon at
            12px, so 4 + 12 lands the first icon on the same 16px line the text below it
            starts from. The toolbar and the paragraph read as one left edge instead of
@@ -827,13 +830,13 @@ export function RichTextField({
           spacing={0}
           value={marks}
           onValueChange={(next: string[]) => run(changedCommands(next, marks))}
-          aria-label="Text style"
+          aria-label={__t("richTextField_textStyle")}
         >
           {MARKS.map(({ command, label, Icon }) => (
             <ToggleGroupItem
               key={command}
               value={command}
-              aria-label={label}
+              aria-label={__t(label)}
               className={compact ? "size-8" : "size-10"}
             >
               <Icon aria-hidden />
@@ -846,13 +849,13 @@ export function RichTextField({
           spacing={0}
           value={lists}
           onValueChange={(next: string[]) => run(changedCommands(next, lists))}
-          aria-label="Lists"
+          aria-label={__t("richTextField_lists")}
         >
           {LISTS.map(({ command, label, Icon }) => (
             <ToggleGroupItem
               key={command}
               value={command}
-              aria-label={label}
+              aria-label={__t(label)}
               className={compact ? "size-8" : "size-10"}
             >
               <Icon aria-hidden />
@@ -875,13 +878,13 @@ export function RichTextField({
             const picked = next.find((command) => command !== alignment);
             if (picked) run([picked]);
           }}
-          aria-label="Alignment"
+          aria-label={__t("richTextField_alignment")}
         >
           {ALIGNMENTS.map(({ command, label, Icon }) => (
             <ToggleGroupItem
               key={command}
               value={command}
-              aria-label={label}
+              aria-label={__t(label)}
               className={compact ? "size-8" : "size-10"}
             >
               <Icon aria-hidden />
@@ -890,15 +893,15 @@ export function RichTextField({
         </ToggleGroup>
 
         {tables ? (
-          <div role="group" aria-label="Table" className="flex items-center">
+          <div role="group" aria-label={__t("richTextField_table")} className="flex items-center">
             {/* Ghost is the toolbar treatment the toggles wear: nothing at rest,
                 `accent` on hover. A button, not a toggle — inserting has no "on". */}
             <Button
               type="button"
               variant="ghost"
               size={compact ? "icon-xs" : "icon"}
-              aria-label="Insert table"
-              title="Insert table"
+              aria-label={__t("richTextField_insertTable")}
+              title={__t("richTextField_insertTable")}
               onClick={insertTable}
             >
               <TableIcon aria-hidden />
@@ -921,8 +924,7 @@ export function RichTextField({
                     variant="ghost"
                     size={compact ? "xs" : "default"}
                   >
-                    Table
-                    <ChevronDownIcon data-icon="inline-end" aria-hidden />
+                    {<__LocalizedText id="richTextField_table" />}{" "}<ChevronDownIcon data-icon="inline-end" aria-hidden />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -931,24 +933,19 @@ export function RichTextField({
                   onCloseAutoFocus={returnFromTableMenu}
                 >
                   <DropdownMenuItem onSelect={() => editTable(addRowBelow)}>
-                    Add row below
-                  </DropdownMenuItem>
+                    {<__LocalizedText id="richTextField_addRowBelow" />}{" "}</DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => editTable(addColumnRight)}>
-                    Add column right
-                  </DropdownMenuItem>
+                    {<__LocalizedText id="richTextField_addColumnRight" />}{" "}</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={() => editTable(deleteRow)}>
-                    Delete row
-                  </DropdownMenuItem>
+                    {<__LocalizedText id="richTextField_deleteRow" />}{" "}</DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => editTable(deleteColumn)}>
-                    Delete column
-                  </DropdownMenuItem>
+                    {<__LocalizedText id="richTextField_deleteColumn" />}{" "}</DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
                     onSelect={() => editTable(deleteTable)}
                   >
-                    Delete table
-                  </DropdownMenuItem>
+                    {<__LocalizedText id="richTextField_deleteTable" />}{" "}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : null}
@@ -975,7 +972,7 @@ export function RichTextField({
           `suggestion`. */}
       {suggestion ? (
         <p aria-live="polite" className="sr-only">
-          {shown ? `Suggestion: ${shown.label}. Press Tab to accept.` : ""}
+          {shown ? __t("richTextField_suggestionValue0PressTabToAccept", {value0: String(__t(shown.label))}) : ""}
         </p>
       ) : null}
     </InputGroup>

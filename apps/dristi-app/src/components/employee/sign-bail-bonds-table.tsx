@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -77,6 +79,7 @@ export function SignBailBondsTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (bond: SignBailBond) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const selectedOnPage = rows.filter((bond) => selectedIds.has(bond.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
@@ -99,20 +102,17 @@ export function SignBailBondsTable({
                  paged. */
               aria-label={
                 allSelected
-                  ? "Clear the bail bonds on this page"
-                  : "Select the bail bonds on this page"
+                  ? __t("signBailBondsTable_clearTheBailBondsOnThisPage")
+                  : __t("signBailBondsTable_selectTheBailBondsOnThisPage")
               }
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="signBailBondsTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="signBailBondsTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Litigant
-          </TableHead>
+            {<__LocalizedText id="signBailBondsTable_litigant" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass({ selectable: true })}>
@@ -137,7 +137,7 @@ export function SignBailBondsTable({
                 <Checkbox
                   checked={selected}
                   onCheckedChange={() => onToggle(bond)}
-                  aria-label={`Select the bail bond of ${bond.litigant} in ${courtText(bond.caseNumber)}`}
+                  aria-label={__t("signBailBondsTable_selectTheBailBondOfValue0In", {value0: String(bond.litigant), value1: String(courtText(bond.caseNumber))})}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -154,7 +154,7 @@ export function SignBailBondsTable({
                 className={rowOpenerClass}
                 >
                   <span className="sr-only">
-                    {`Read the bail bond of ${bond.litigant} in `}
+                    {__t("signBailBondsTable_readTheBailBondOfValue0In", {value0: String(bond.litigant)})}
                   </span>
                   {causeTitle(bond)}
                 </button>
@@ -162,7 +162,7 @@ export function SignBailBondsTable({
               <TableCell
                 className={cn(TABLE_CELL, "whitespace-nowrap")}
               >
-                <Identifier value={bond.caseNumber} label="case number" />
+                <Identifier value={bond.caseNumber} label={__t("signBailBondsTable_caseNumber_541bb6f4")} />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
                 {bond.litigant}

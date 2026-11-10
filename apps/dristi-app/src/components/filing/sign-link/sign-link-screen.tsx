@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * **`/sign` — where a signing link lands.**
@@ -179,6 +181,7 @@ function SignLinkBody({
   signatoryId: string;
   inShell: boolean;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const router = useRouter();
   const { draft, update } = useFiling();
@@ -290,7 +293,6 @@ function SignLinkBody({
         }}
         onSignedIn={finishSignIn}
         onRegistered={finishSignIn}
-        toSign
       />
     );
   }
@@ -313,55 +315,52 @@ function SignLinkBody({
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 md:py-12">
         <div className="flex flex-col gap-2">
           <h1 className="text-title text-balance font-semibold">
-            {filed ? "This complaint has been filed" : "You have been asked to sign a complaint"}
+            {filed ? __t("signLinkScreen_thisComplaintHasBeenFiled") : __t("signLinkScreen_youHaveBeenAskedToSignA")}
           </h1>
           <p className="text-body text-pretty text-muted-foreground">
-            {filer} is filing {parties} in the {courtText(COURT.name)}.
+            {filer} {<__LocalizedText id="signLinkScreen_isFiling" />}{" "}{parties} {<__LocalizedText id="signLinkScreen_inThe" />}{" "}{courtText(COURT.name)}.
           </p>
         </div>
 
         {filed ? (
           <SectionNotice variant="neutral">
-            Nothing more is needed from you. The complaint is with the court.
-          </SectionNotice>
+            {<__LocalizedText id="signLinkScreen_nothingMoreIsNeededFromYouThe" />}{" "}</SectionNotice>
         ) : owed ? (
           <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-card p-4 shadow-raised sm:flex-row sm:items-center sm:justify-between">
             <p className="text-body-compact text-muted-foreground">
               {needsConfirm
                 ? needsOath
-                  ? "You still need to confirm you signed, and record your oath."
-                  : "You still need to confirm you signed."
+                  ? __t("signLinkScreen_youStillNeedToConfirmYouSigned")
+                  : __t("signLinkScreen_youStillNeedToConfirmYouSigned_067bbd08")
                 : needsSign && needsOath
-                  ? "You still need to sign and record your oath."
+                  ? __t("signLinkScreen_youStillNeedToSignAndRecord")
                   : needsSign
-                    ? "You still need to sign."
-                    : "You still need to record your oath."}
+                    ? __t("signLinkScreen_youStillNeedToSign")
+                    : __t("signLinkScreen_youStillNeedToRecordYourOath")}
             </p>
             <Button
               type="button"
               onClick={() => openAt(signedIn ? nextAct : "why")}
               className="shrink-0"
             >
-              Continue
-            </Button>
+              {<__LocalizedText id="signLinkScreen_continue" />}{" "}</Button>
           </div>
         ) : (
           <SectionNotice variant="success" announce="polite">
             {swears
-              ? "You have signed and recorded your oath. Nothing more is needed."
-              : "You have signed. Nothing more is needed."}
+              ? __t("signLinkScreen_youHaveSignedAndRecordedYourOath")
+              : __t("signLinkScreen_youHaveSignedNothingMoreIsNeeded")}
           </SectionNotice>
         )}
 
         <section aria-labelledby="sign-link-document" className="flex flex-col gap-3">
           <h2 id="sign-link-document" className="text-body font-semibold">
-            The complaint
-          </h2>
+            {<__LocalizedText id="signLinkScreen_theComplaint" />}{" "}</h2>
           {/* Scrolls on its own, so it is focusable for a keyboard reader. */}
           <div
             tabIndex={0}
             role="region"
-            aria-label="Complaint document"
+            aria-label={__t("signLinkScreen_complaintDocument")}
             className="max-h-[70vh] overflow-y-auto rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <CourtDocument draft={draft} />
@@ -462,6 +461,7 @@ function SignLinkWizard({
   onSignIn: () => void;
   onClose: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const flow = useStagedFlow<Stage>({ order: ORDER[start], scene: SCENES, arrival: "forward" });
   /** Only a complainant records an oath (`OTH-3`), and only where the state asks for one. */
@@ -498,13 +498,13 @@ function SignLinkWizard({
   /* The steps this person has, in order — the trail and the "what happens next" list. */
   const acts: { key: "sign" | "oath"; label: string }[] = [
     ...(signsHere
-      ? [{ key: "sign" as const, label: onPaper ? "Confirm by OTP" : "E-sign" }]
+      ? [{ key: "sign" as const, label: onPaper ? __t("signLinkScreen_confirmByOtp") : __t("signLinkScreen_eSign") }]
       : []),
-    ...(sworn ? [{ key: "oath" as const, label: "Oath" }] : []),
+    ...(sworn ? [{ key: "oath" as const, label: __t("signLinkScreen_oath") }] : []),
   ];
   const trail = (current: "sign" | "oath"): TrailStep[] =>
     acts.map((act) => ({
-      label: act.label,
+      label: __t(act.label),
       state:
         act.key === current
           ? "current"
@@ -541,7 +541,7 @@ function SignLinkWizard({
   const title = {
     why: "You have been asked to sign",
     account: "Sign in first",
-    confirm: "Confirm you signed",
+    confirm: __t("signLinkScreen_confirmYouSigned"),
     sign: "Sign the complaint",
     otp: "Enter the OTP",
     dsc: "Sign with your DSC",
@@ -555,7 +555,7 @@ function SignLinkWizard({
     account: null,
     confirm: confirmTail
       ? `Sent to your mobile ending ${confirmTail}.`
-      : "Sent to your mobile.",
+      : __t("signLinkScreen_sentToYourMobile"),
     sign: "Use whichever you have.",
     otp: "Sent to your Aadhaar-linked mobile.",
     dsc: "Plug in your certificate and keep the signing utility running.",
@@ -568,81 +568,66 @@ function SignLinkWizard({
     why: (
       <>
         <Button type="button" variant="ghost" onClick={onClose}>
-          Read the complaint
-        </Button>
+          {<__LocalizedText id="signLinkScreen_readTheComplaint" />}{" "}</Button>
         <Button type="button" onClick={proceed}>
-          {signedIn ? "Start" : "Sign in to start"}
+          {signedIn ? __t("signLinkScreen_start") : __t("signLinkScreen_signInToStart")}
         </Button>
       </>
     ),
     account: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.go("why")}>
-          Back
-        </Button>
+          {<__LocalizedText id="signLinkScreen_back" />}{" "}</Button>
         <Button type="button" onClick={onSignIn}>
-          Sign in
-        </Button>
+          {<__LocalizedText id="signLinkScreen_signIn" />}{" "}</Button>
       </>
     ),
     confirm: (
       <>
         <Button type="button" variant="ghost" onClick={onClose}>
-          I&rsquo;ll do it later
-        </Button>
+          {<__LocalizedText id="signLinkScreen_iLlDoItLater" />}{" "}</Button>
         <Button type="button" disabled={otp.length < 6} onClick={confirm}>
-          Confirm
-        </Button>
+          {<__LocalizedText id="signLinkScreen_confirm" />}{" "}</Button>
       </>
     ),
     sign: (
       <Button type="button" variant="ghost" onClick={onClose}>
-        I&rsquo;ll do it later
-      </Button>
+        {<__LocalizedText id="signLinkScreen_iLlDoItLater" />}{" "}</Button>
     ),
     otp: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.go("sign")}>
-          Back
-        </Button>
+          {<__LocalizedText id="signLinkScreen_back" />}{" "}</Button>
         <Button type="button" disabled={otp.length < 6} onClick={() => sign("aadhaar")}>
-          Verify and sign
-        </Button>
+          {<__LocalizedText id="signLinkScreen_verifyAndSign" />}{" "}</Button>
       </>
     ),
     dsc: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.go("sign")}>
-          Back
-        </Button>
+          {<__LocalizedText id="signLinkScreen_back" />}{" "}</Button>
         <Button type="button" disabled={!dscFound} onClick={() => sign("dsc")}>
-          Sign with this certificate
-        </Button>
+          {<__LocalizedText id="signLinkScreen_signWithThisCertificate" />}{" "}</Button>
       </>
     ),
     signed: sworn ? (
       <Button type="button" onClick={() => flow.go("oath")}>
-        Record my oath
-      </Button>
+        {<__LocalizedText id="signLinkScreen_recordMyOath" />}{" "}</Button>
     ) : (
       <Button type="button" onClick={onClose}>
-        Done
-      </Button>
+        {<__LocalizedText id="signLinkScreen_done" />}{" "}</Button>
     ),
     oath: (
       <>
         <Button type="button" variant="ghost" onClick={onClose}>
-          I&rsquo;ll do it later
-        </Button>
+          {<__LocalizedText id="signLinkScreen_iLlDoItLater" />}{" "}</Button>
         <Button type="button" disabled={!oath} onClick={() => flow.go("done")}>
-          Submit oath
-        </Button>
+          {<__LocalizedText id="signLinkScreen_submitOath" />}{" "}</Button>
       </>
     ),
     done: (
       <Button type="button" onClick={onClose}>
-        Close
-      </Button>
+        {<__LocalizedText id="signLinkScreen_close" />}{" "}</Button>
     ),
   }[flow.stage];
 
@@ -656,9 +641,9 @@ function SignLinkWizard({
     <StagedOverlay
       mobileSheet
       className="sm:max-w-2xl"
-      title={title}
+      title={__t(title)}
       titleRef={flow.titleRef}
-      description={description}
+      description={__t(description)}
       sceneKey={flow.sceneKey}
       motion={flow.motion}
       footer={footer}
@@ -666,17 +651,16 @@ function SignLinkWizard({
       {flow.stage === "why" ? (
         <StageColumn>
           <p className="text-body">
-            {filer} is filing your cheque bounce case. Before it can go to court:
-          </p>
+            {filer} {<__LocalizedText id="signLinkScreen_isFilingYourChequeBounceCaseBefore" />}{" "}</p>
 
           <ol className="flex flex-col gap-3">
             {[
-              ...(signedIn ? [] : [{ icon: LogInIcon, title: "Sign in, or create an account" }]),
-              ...(needsSign ? [{ icon: SignatureIcon, title: "Sign the complaint with Aadhaar OTP or DSC" }] : []),
+              ...(signedIn ? [] : [{ icon: LogInIcon, title: __t("signLinkScreen_signInOrCreateAnAccount") }]),
+              ...(needsSign ? [{ icon: SignatureIcon, title: __t("signLinkScreen_signTheComplaintWithAadhaarOtpOr") }] : []),
               ...(needsConfirm
-                ? [{ icon: SignatureIcon, title: "Confirm by OTP that you signed the paper copy" }]
+                ? [{ icon: SignatureIcon, title: __t("signLinkScreen_confirmByOtpThatYouSignedThe") }]
                 : []),
-              ...(sworn && needsOath ? [{ icon: VideoIcon, title: "Record your oath on video" }] : []),
+              ...(sworn && needsOath ? [{ icon: VideoIcon, title: __t("signLinkScreen_recordYourOathOnVideo") }] : []),
             ].map(({ icon: Icon, title: t }, i) => (
               <li key={t} className="flex items-center gap-3">
                 <span
@@ -694,23 +678,23 @@ function SignLinkWizard({
 
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border border-hairline bg-surface-sunken p-4 sm:grid-cols-2">
             <div className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-body-compact text-muted-foreground">Case</dt>
+              <dt className="text-body-compact text-muted-foreground">{<__LocalizedText id="signLinkScreen_case" />}</dt>
               <dd className="text-body-compact font-medium">{parties}</dd>
             </div>
             <div className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-body-compact text-muted-foreground">Court</dt>
+              <dt className="text-body-compact text-muted-foreground">{<__LocalizedText id="signLinkScreen_court" />}</dt>
               <dd className="text-body-compact font-medium">{courtText(COURT.name)}</dd>
             </div>
             {chequeAmount ? (
               <div className="flex min-w-0 flex-col gap-0.5">
-                <dt className="text-body-compact text-muted-foreground">Cheque amount</dt>
+                <dt className="text-body-compact text-muted-foreground">{<__LocalizedText id="signLinkScreen_chequeAmount" />}</dt>
                 <dd className="text-body-compact font-medium tabular-nums">
                   {money(Number(chequeAmount.replace(/[^\d.]/g, "")) || 0)}
                 </dd>
               </div>
             ) : null}
             <div className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-body-compact text-muted-foreground">You sign as</dt>
+              <dt className="text-body-compact text-muted-foreground">{<__LocalizedText id="signLinkScreen_youSignAs" />}</dt>
               <dd className="text-body-compact font-medium">
                 {isAdvocate ? me.name : me.role.split(" · ")[0]}
               </dd>
@@ -720,17 +704,14 @@ function SignLinkWizard({
       ) : flow.stage === "account" ? (
         <StageColumn>
           <p className="text-body">
-            Sign in, or create an account if you are new. You will come straight back to
-            this complaint.
-          </p>
+            {<__LocalizedText id="signLinkScreen_signInOrCreateAnAccountIf" />}{" "}</p>
         </StageColumn>
       ) : flow.stage === "confirm" ? (
         <StageColumn>
           {acts.length > 1 ? <StepTrail steps={trail("sign")} /> : null}
           <p className="text-body">
-            Entering the OTP confirms that you signed the paper copy of this complaint that{" "}
-            {filer} is uploading.
-          </p>
+            {<__LocalizedText id="signLinkScreen_enteringTheOtpConfirmsThatYouSigned" />}{" "}
+            {filer} {<__LocalizedText id="signLinkScreen_isUploading" />}{" "}</p>
           <OtpEntry id="link-confirm-otp" value={otp} onChange={setOtp} resent={resent} onResend={resendOtp} />
         </StageColumn>
       ) : flow.stage === "sign" ? (
@@ -813,11 +794,9 @@ function LinkUnavailable({ inShell = false }: { inShell?: boolean }) {
         </header>
       )}
       <main className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-4 py-12">
-        <h1 className="text-title text-balance font-semibold">This link is no longer active</h1>
+        <h1 className="text-title text-balance font-semibold">{<__LocalizedText id="signLinkScreen_thisLinkIsNoLongerActive" />}</h1>
         <p className="text-body text-muted-foreground">
-          The complaint may have been changed and sent again, or the request recalled. Ask
-          the advocate filing it to send you a new link.
-        </p>
+          {<__LocalizedText id="signLinkScreen_theComplaintMayHaveBeenChangedAnd" />}{" "}</p>
       </main>
     </div>
   );

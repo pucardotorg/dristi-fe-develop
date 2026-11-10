@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import type { ReactNode } from "react";
 import { CaseLink as Link } from "@/components/cases/case-reader";
@@ -96,6 +98,7 @@ export function CaseSectionTabs({
   section: CaseSection;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   const router = useCaseRouter();
 
   if (!isNavSection(section)) {
@@ -114,7 +117,7 @@ export function CaseSectionTabs({
                 href={caseSectionHref(caseId, item.value)}
                 className={STRIP_LINK}
               >
-                {item.label}
+                {__t(item.label)}
               </Link>
             ))}
           </nav>
@@ -147,7 +150,7 @@ export function CaseSectionTabs({
           triggerClassName={STRIP_TRIGGER}
           items={CASE_NAV_SECTIONS.map((item) => ({
             value: item.value,
-            label: item.label,
+            label: __t(item.label),
           }))}
         />
       </div>
@@ -168,6 +171,7 @@ export function CaseSectionTabs({
 }
 
 export function SectionPending({ label }: { label: string }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border border-dashed border-border">
       <EmptyHeader>
@@ -175,12 +179,9 @@ export function SectionPending({ label }: { label: string }) {
           <HourglassIcon aria-hidden />
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {label} is not designed yet
-        </EmptyTitle>
+          {__t(label)} {<__LocalizedText id="caseSectionTabs_isNotDesignedYet" />}{" "}</EmptyTitle>
         <EmptyDescription>
-          The case header is in place. This section of the file still needs to
-          be built.
-        </EmptyDescription>
+          {<__LocalizedText id="caseSectionTabs_theCaseHeaderIsInPlaceThis" />}{" "}</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

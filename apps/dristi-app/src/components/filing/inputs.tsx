@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { FileSearchIcon } from "lucide-react";
@@ -57,13 +58,14 @@ export function SourceField({ children, onViewSource, disabled }: {
   onViewSource?: () => void;
   disabled?: boolean;
 }) {
+  const __t = __useTranslations();
   const label = useSourceFieldLabel();
   if (!onViewSource) return children;
   return (
     <div className="flex min-w-0 items-start gap-2">
       <div className="min-w-0 flex-1">{children}</div>
       <Button type="button" variant="outline" size="icon" disabled={disabled}
-        aria-label={`View source for ${label}`} title={`View source for ${label}`}
+        aria-label={__t("inputs_viewSourceForValue0", {value0: String(__t(label))})} title={__t("inputs_viewSourceForValue0", {value0: String(__t(label))})}
         aria-haspopup="dialog" onClick={onViewSource}>
         <FileSearchIcon aria-hidden />
       </Button>
@@ -88,13 +90,14 @@ export function ReadOnlyValue({
   ariaLabel?: string;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const hint = useFieldReadOnlyHint();
   return (
     <Input
       id={id}
       readOnly
       value={value}
-      aria-label={ariaLabel}
+      aria-label={__t(ariaLabel)}
       aria-describedby={hint}
       className={cn("w-full", className)}
     />
@@ -161,6 +164,7 @@ export function PrefixInput({
   prefilled?: boolean;
   onViewSource?: () => void;
 }) {
+  const __t = __useTranslations();
   const disabled = useLockedDisabled(props.disabled);
   const readOnly = useFieldReadOnly();
   const hint = useFieldReadOnlyHint();
@@ -191,7 +195,7 @@ export function PrefixInput({
         onChange={(e) => onChange(e.target.value)}
         onClick={inlineOpen ? onViewSource : undefined}
         aria-describedby={hint}
-        aria-description={amber ? "Machine filled, not yet verified" : undefined}
+        aria-description={amber ? __t("inputs_machineFilledNotYetVerified") : undefined}
         className={cn(inlineOpen && "cursor-pointer")}
         {...props}
         readOnly={readOnly || props.readOnly}
@@ -229,6 +233,7 @@ export function OptionSelect({
   className?: string;
   id?: string;
 }) {
+  const __t = __useTranslations();
   const opts: Option[] = options.map((o) =>
     typeof o === "string" ? { value: o, label: o } : o
   );
@@ -255,7 +260,7 @@ export function OptionSelect({
     <Select value={value || undefined} onValueChange={onValueChange} disabled={isDisabled}>
       <SelectTrigger
         id={id}
-        aria-label={ariaLabel}
+        aria-label={__t(ariaLabel)}
         onPointerDown={inlineOpen ? onViewSource : undefined}
         className={cn(
           "w-full",
@@ -263,7 +268,7 @@ export function OptionSelect({
           className
         )}
       >
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={__t(placeholder)} />
       </SelectTrigger>
       {/*
         The DS default is `item-aligned`, which lays the open list over the trigger — on a
@@ -273,7 +278,7 @@ export function OptionSelect({
       <SelectContent position="popper" align="start" sideOffset={4} className="w-(--radix-select-trigger-width)">
         {opts.map((o) => (
           <SelectItem key={o.value} value={o.value}>
-            {o.label}
+            {__t(o.label)}
           </SelectItem>
         ))}
       </SelectContent>
@@ -328,6 +333,7 @@ export function ComboField({
   ariaLabel?: string;
   id?: string;
 }) {
+  const __t = __useTranslations();
   const locked = useLockedDisabled(disabled);
   const readOnly = useFieldReadOnly();
   if (readOnly) {
@@ -349,8 +355,8 @@ export function ComboField({
     >
       <ComboboxInput
         id={id}
-        aria-label={ariaLabel}
-        placeholder={placeholder}
+        aria-label={__t(ariaLabel)}
+        placeholder={__t(placeholder)}
         className="w-full"
         autoComplete="off"
       />
@@ -360,7 +366,7 @@ export function ComboField({
           advocate join dialog's combobox carries. No effect on the filing
           pages, which have no modal. */}
       <ComboboxContent className="pointer-events-auto">
-        <ComboboxEmpty>{emptyLabel}</ComboboxEmpty>
+        <ComboboxEmpty>{__t(emptyLabel)}</ComboboxEmpty>
         <ComboboxList>
           {(item: unknown) => (
             <ComboboxItem key={itemKey(item)} value={item}>

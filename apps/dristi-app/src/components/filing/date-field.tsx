@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { CalendarDaysIcon } from "lucide-react";
@@ -36,6 +37,7 @@ export function DateField({
   className?: string;
   id?: string;
 }) {
+  const __t = __useTranslations();
   const disabled = useLockedDisabled();
   const readOnly = useFieldReadOnly();
   const docked = useSourceDocked();
@@ -62,15 +64,15 @@ export function DateField({
         variant="outline"
         onClick={onViewSource}
         disabled={disabled}
-        aria-label={ariaLabel}
-        aria-description="Machine filled, not yet verified. Opens the source document."
+        aria-label={__t(ariaLabel)}
+        aria-description={__t("dateField_machineFilledNotYetVerifiedOpensThe")}
         className={cn(
           "w-full justify-start gap-2 border-dashed border-warning-ink bg-prefilled font-normal hover:bg-prefilled",
           className
         )}
       >
         <CalendarDaysIcon data-icon="inline-start" aria-hidden />
-        <span className="truncate">{toDisplayDate(value) || placeholder}</span>
+        <span className="truncate">{toDisplayDate(value) || __t(placeholder)}</span>
       </Button>
     );
   }
@@ -80,7 +82,7 @@ export function DateField({
       value={isoToDate(value)}
       onValueChange={(d) => onChange(dateToIso(d))}
       disabled={disabled}
-      placeholder={placeholder}
+      placeholder={__t(placeholder)}
       /* Locked in a correction round: the same quiet sunken fill as every other locked
          control (the correction screen restores full opacity; see its centre pane). */
       className={cn("w-full", amber && "border-dashed border-warning-ink bg-prefilled hover:bg-prefilled", disabled && "disabled:bg-surface-sunken", className)}

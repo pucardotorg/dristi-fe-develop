@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * **A complainant's oath, recorded during signing** (e-filing handover §18.2, `OTH`).
@@ -55,6 +57,7 @@ const ON_CAMERA = [
 ] as const;
 
 function OathVideoPlayer({ file }: { file: StoredFileRef }) {
+  const __t = __useTranslations();
   const [url, setUrl] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -72,7 +75,7 @@ function OathVideoPlayer({ file }: { file: StoredFileRef }) {
     <video
       src={url}
       controls
-      aria-label="Your recorded oath"
+      aria-label={__t("oathCapture_yourRecordedOath")}
       className="aspect-video w-full rounded-lg bg-surface-sunken object-contain"
     />
   );
@@ -93,6 +96,7 @@ export function OathCapture({
   /** A new clip has been stored. The previous one is released here, not by the caller. */
   onChange: (next: OathVideo) => void;
 }) {
+  const __t = __useTranslations();
   const [recording, setRecording] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -143,13 +147,12 @@ export function OathCapture({
         className="flex flex-col gap-3 rounded-lg border border-hairline bg-card p-4"
       >
         <h3 id="oath-on-camera" className="text-body font-semibold">
-          Before you record
-        </h3>
+          {<__LocalizedText id="oathCapture_beforeYouRecord" />}{" "}</h3>
         <ul className="flex flex-col gap-2">
           {ON_CAMERA.map(({ icon: Icon, text }) => (
             <li key={text} className="flex items-start gap-3 text-body-compact">
               <Icon aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-              {text}
+              {__t(text)}
             </li>
           ))}
         </ul>
@@ -157,12 +160,11 @@ export function OathCapture({
 
       <section aria-labelledby="oath-words" className="flex flex-col gap-3">
         <h3 id="oath-words" className="text-body font-semibold">
-          Say these words
-        </h3>
+          {<__LocalizedText id="oathCapture_sayTheseWords" />}{" "}</h3>
         {name.trim() ? (
           <p className="text-body-compact text-muted-foreground">
-            Recording as <span className="font-medium text-foreground">{name.trim()}</span>
-            {forWhom ? `, for ${forWhom}` : ""}.
+            {<__LocalizedText id="oathCapture_recordingAs" />}{" "}<span className="font-medium text-foreground">{name.trim()}</span>
+            {forWhom ? __t("oathCapture_forValue0", {value0: String(forWhom)}) : ""}.
           </p>
         ) : null}
         <blockquote className="rounded-lg border border-hairline bg-surface-sunken p-4 text-body text-foreground">
@@ -172,15 +174,14 @@ export function OathCapture({
 
       {error ? (
         <SectionNotice variant="warning" announce="polite">
-          {error}
+          {__t(error)}
         </SectionNotice>
       ) : null}
 
       {value ? (
         <section aria-labelledby="oath-recorded" className="flex flex-col gap-3">
           <h3 id="oath-recorded" className="text-body font-semibold">
-            Your oath
-          </h3>
+            {<__LocalizedText id="oathCapture_yourOath" />}{" "}</h3>
           <OathVideoPlayer file={value.file} />
           {value.durationSeconds !== null ? (
             <p className="text-caption text-muted-foreground tabular-nums">
@@ -193,8 +194,7 @@ export function OathCapture({
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" onClick={record} disabled={busy}>
                 <RefreshCwIcon data-icon="inline-start" aria-hidden />
-                Record again
-              </Button>
+                {<__LocalizedText id="oathCapture_recordAgain" />}{" "}</Button>
             </div>
           )}
         </section>
@@ -203,20 +203,18 @@ export function OathCapture({
       ) : (
         <section aria-labelledby="oath-how" className="flex flex-col gap-3">
           <h3 id="oath-how" className="text-body font-semibold">
-            Record your oath
-          </h3>
+            {<__LocalizedText id="oathCapture_recordYourOath" />}{" "}</h3>
           <ChoiceCard
-            title="Record with your camera"
+            title={__t("oathCapture_recordWithYourCamera")}
             tone="bg-brand-muted text-brand-muted-foreground"
             icon={<VideoIcon className="size-5" />}
             onClick={record}
           >
-            Opens your camera here. Recording stops at {formatDuration(OATH_MAX_SECONDS)}.
+            {<__LocalizedText id="oathCapture_opensYourCameraHereRecordingStopsAt" />}{" "}{formatDuration(OATH_MAX_SECONDS)}.
           </ChoiceCard>
           {busy ? (
             <p role="status" className="text-body-compact text-muted-foreground">
-              Saving your recording&hellip;
-            </p>
+              {<__LocalizedText id="oathCapture_savingYourRecording" />}{" "}</p>
           ) : null}
         </section>
       )}

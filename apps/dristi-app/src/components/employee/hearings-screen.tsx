@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useCourt } from "@/components/court/court-provider";
 import * as React from "react";
@@ -137,6 +139,7 @@ const HEARING_PILLS: { id: TodaysCauseStatus; label: string }[] =
  * below them would be the box-in-box the layering model rules out (ui-craft §4).
  */
 export function HearingsScreen() {
+  const __t = __useTranslations();
   const { court } = useCourt();
   const today = useCourtToday();
   /* Which seat the court side is being worked from. It decides what the rows offer, not
@@ -436,7 +439,7 @@ export function HearingsScreen() {
             <span aria-hidden className="mx-8 hidden h-18 w-px bg-hairline lg:block" />
             <div className="flex min-w-0 flex-col gap-2">
               <h1 className="text-title text-balance font-semibold">
-                {otherDay ? "Hearings" : <>Today&rsquo;s hearings</>}
+                {otherDay ? __t("hearingsScreen_hearings") : <>{<__LocalizedText id="hearingsScreen_todaySHearings" />}</>}
               </h1>
               {/* On a desktop the big date already says the day, month and year; the
                   line repeats it only where the week strip stands in for it. */}
@@ -470,7 +473,7 @@ export function HearingsScreen() {
           searchRef={searchRef}
           leading={
             <StatusPills
-                label="Hearing status"
+                label={__t("hearingsScreen_hearingStatus")}
                 /* The pills are the quick form of the Status filter: one status, or All.
                    Several statuses picked in the Filters panel light no pill. */
                 value={
@@ -489,7 +492,7 @@ export function HearingsScreen() {
                 total={listed.length}
                 options={HEARING_PILLS.map((pill) => ({
                   value: pill.id,
-                  label: pill.label,
+                  label: __t(pill.label),
                   count: listed.filter((hearing) => hearing.status === pill.id)
                     .length,
                 }))}
@@ -518,7 +521,7 @@ export function HearingsScreen() {
                   }
                 >
                   <ListChecksIcon data-icon="inline-start" aria-hidden />
-                  {bulk ? "Exit bulk" : "Bulk"}
+                  {bulk ? __t("hearingsScreen_exitBulk") : __t("hearingsScreen_bulk")}
                 </Button>
               ) : null}
               {/* The board's columns, as the advocate Cases list offers them. */}
@@ -599,7 +602,7 @@ export function HearingsScreen() {
 
             {liveMessage ? (
               <p className="sr-only" aria-live="polite">
-                {liveMessage}
+                {__t(liveMessage)}
               </p>
             ) : null}
 
@@ -690,6 +693,7 @@ function HearingsFilters({
   /** The list's sort control (`CourtSortSelect`), at the end of the row. */
   trailing?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   /* The pills take a row of their own above the filters: sharing one, the last pill
      was clipped off the end at desktop width once there were five of them. */
   return (
@@ -698,19 +702,19 @@ function HearingsFilters({
       <CourtFilters
         searchRef={searchRef}
         search={{
-          label: "Search cases",
+          label: __t("hearingsScreen_searchCases"),
           value: filters.query,
           onChange: (query) => onChange({ query }),
-          placeholder: "Case name or number",
+          placeholder: __t("hearingsScreen_caseNameOrNumber"),
         }}
         fields={[]}
         /* Every one takes several values, as a multi-select dropdown (owner, 2026-10-15). */
         multi={[
           {
             id: "hearings-status",
-            label: "Status",
+            label: __t("hearingsScreen_status"),
             values: filters.statuses,
-            placeholder: "All statuses",
+            placeholder: __t("hearingsScreen_allStatuses"),
             options: CAUSE_LIST_STATUS_ORDER.map((status) => ({
               value: status,
               label: statusWord(status),
@@ -720,44 +724,44 @@ function HearingsFilters({
           },
           {
             id: "hearings-advocate",
-            label: "Advocate",
+            label: __t("hearingsScreen_advocate"),
             values: filters.advocates,
             options: advocates.map((name) => ({ value: name, label: name })),
-            placeholder: "All advocates",
+            placeholder: __t("hearingsScreen_allAdvocates"),
             onApply: (values) => onChange({ advocates: values }),
           },
           {
             id: "hearings-stage",
-            label: "Case stage",
+            label: __t("hearingsScreen_caseStage"),
             values: filters.stages,
-            placeholder: "All stages",
+            placeholder: __t("hearingsScreen_allStages"),
             options: COURT_CASE_STAGES.map((stage) => ({
               value: stage.id,
-              label: stage.label,
+              label: __t(stage.label),
             })),
             onApply: (values) =>
               onChange({ stages: values as HearingFilters["stages"] }),
           },
           {
             id: "hearings-purpose",
-            label: "Purpose",
+            label: __t("hearingsScreen_purpose"),
             values: filters.purposes,
-            placeholder: "All purposes",
+            placeholder: __t("hearingsScreen_allPurposes"),
             options: COURT_HEARING_PURPOSES.map((purpose) => ({
               value: purpose.id,
-              label: purpose.label,
+              label: __t(purpose.label),
             })),
             onApply: (values) =>
               onChange({ purposes: values as HearingFilters["purposes"] }),
           },
           {
             id: "hearings-orders",
-            label: "Orders",
+            label: __t("hearingsScreen_orders"),
             values: filters.orders,
-            placeholder: "All orders",
+            placeholder: __t("hearingsScreen_allOrders"),
             options: LISTING_ORDER_MARKS.map((mark) => ({
               value: mark.id,
-              label: mark.label,
+              label: __t(mark.label),
             })),
             onApply: (values) =>
               onChange({ orders: values as HearingFilters["orders"] }),
@@ -766,12 +770,12 @@ function HearingsFilters({
             ? [
                 {
                   id: "hearings-next-hearing",
-                  label: "Next hearing",
+                  label: __t("hearingsScreen_nextHearing"),
                   values: filters.nextHearing,
-                  placeholder: "Set or not",
+                  placeholder: __t("hearingsScreen_setOrNot"),
                   options: NEXT_HEARING_MARKS.map((mark) => ({
                     value: mark.id,
-                    label: mark.label,
+                    label: __t(mark.label),
                   })),
                   onApply: (values: string[]) =>
                     onChange({
@@ -808,10 +812,9 @@ function JoinVideoCourt() {
         <TooltipTrigger asChild>
           <Button aria-disabled className="w-full shrink-0 sm:w-fit">
             <VideoIcon data-icon="inline-start" aria-hidden />
-            Join VC
-          </Button>
+            {<__LocalizedText id="hearingsScreen_joinVc" />}{" "}</Button>
         </TooltipTrigger>
-        <TooltipContent>Not available yet</TooltipContent>
+        <TooltipContent>{<__LocalizedText id="hearingsScreen_notAvailableYet" />}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -833,6 +836,7 @@ function HearingsEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -844,19 +848,18 @@ function HearingsEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match these filters" : "Nothing listed"}
+          {isFiltered ? __t("hearingsScreen_noMattersMatchTheseFilters") : __t("hearingsScreen_nothingListed")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No matter on this day's list matches the filters or search you chose."
-            : `This court has no hearings listed for ${formatCourtDay(day)}.`}
+            ? __t("hearingsScreen_noMatterOnThisDaySList")
+            : __t("hearingsScreen_thisCourtHasNoHearingsListedFor", {value0: String(formatCourtDay(day))})}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
-          </Button>
+            {<__LocalizedText id="hearingsScreen_clearFilters" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -896,6 +899,7 @@ function HearingsItemList({
   /** Optional, and unsupplied: see the note where `openOrder` used to be. */
   onOpenOrder?: (hearing: CourtHearing) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((hearing) => {
@@ -917,7 +921,7 @@ function HearingsItemList({
                   className="mr-2 self-center"
                   checked={selection.selected.has(hearing.id)}
                   onCheckedChange={() => selection.onToggle(hearing.id)}
-                  aria-label={`Select item ${hearing.item}, ${causeTitle(hearing)}`}
+                  aria-label={__t("hearingsScreen_selectItemValue0Value1", {value0: String(hearing.item), value1: String(causeTitle(hearing))})}
                 />
               ) : null}
               <span className="shrink-0 text-muted-foreground tabular-nums">
@@ -936,7 +940,7 @@ function HearingsItemList({
               {courtHearingStatusLabel(hearing.status)}
             </Badge>
             <p className="text-caption text-muted-foreground">
-              <Identifier value={hearing.caseNumber} label="case number" /> ·{" "}
+              <Identifier value={hearing.caseNumber} label={__t("hearingsScreen_caseNumber")} /> ·{" "}
               {courtHearingPurposeLabel(hearing.purpose)}
             </p>
             {/* Comfortable, not dense: on a phone the +N chip gets the full 40×40
@@ -982,6 +986,7 @@ function StatusPills({
   total: number;
   options: { value: string; label: string; count: number; hint?: string }[];
 }) {
+  const __t = __useTranslations();
   return (
     <TooltipProvider delayDuration={300}>
       <ToggleGroup
@@ -992,17 +997,17 @@ function StatusPills({
         onValueChange={(next) => {
           if (next) onChange(next);
         }}
-        aria-label={label}
+        aria-label={__t(label)}
         className={PILL_ROW}
       >
-        <Pill value="all" label="All" count={total} />
+        <Pill value="all" label={__t("hearingsScreen_all")} count={total} />
         {options.map((option) => (
           <Pill
             key={option.value}
             value={option.value}
-            label={option.label}
+            label={__t(option.label)}
             count={option.count}
-            hint={option.hint}
+            hint={__t(option.hint)}
             disabled={option.count === 0 && value !== option.value}
           />
         ))}
@@ -1024,14 +1029,15 @@ function Pill({
   hint?: string;
   disabled?: boolean;
 }) {
+  const __t = __useTranslations();
   const item = (
     <ToggleGroupItem
       value={value}
       disabled={disabled}
-      aria-label={`${label}, ${count}`}
+      aria-label={`${__t(label)}, ${count}`}
       className={PILL_ITEM}
     >
-      <span>{label}</span>
+      <span>{__t(label)}</span>
       <span aria-hidden className={PILL_COUNT}>
         {count}
       </span>
@@ -1045,7 +1051,7 @@ function Pill({
       <TooltipTrigger asChild>
         <span className="inline-flex">{item}</span>
       </TooltipTrigger>
-      <TooltipContent side="bottom">{hint}</TooltipContent>
+      <TooltipContent side="bottom">{__t(hint)}</TooltipContent>
     </Tooltip>
   );
 }

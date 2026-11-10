@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -151,6 +153,7 @@ function QuickOrderContent({
   view: string;
   onDone: (message: string) => void;
 }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const textId = React.useId();
   const dateId = React.useId();
@@ -196,7 +199,7 @@ function QuickOrderContent({
       key,
       heading: partiesLabel(record),
       caseNumber: record.caseNumber,
-      origin: `Application · ${application.typeLabel}`,
+      origin: `Application · ${__t(application.typeLabel)}`,
       orderHref: href,
     };
     /* Pending orders, its page and the triggers read the order screen's draft. */
@@ -227,15 +230,15 @@ function QuickOrderContent({
       className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
     >
       <DialogHeader className="shrink-0 p-6 pr-16">
-        <DialogTitle className="text-title-s font-semibold">{request.title}</DialogTitle>
+        <DialogTitle className="text-title-s font-semibold">{__t(request.title)}</DialogTitle>
         <DialogDescription>
-          {application.typeLabel} · {partiesLabel(record)}
+          {__t(application.typeLabel)} · {partiesLabel(record)}
         </DialogDescription>
       </DialogHeader>
 
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-6 pb-6">
         <Field>
-          <FieldLabel htmlFor={textId}>Order</FieldLabel>
+          <FieldLabel htmlFor={textId}>{<__LocalizedText id="applicationQuickOrder_order" />}</FieldLabel>
           <Textarea
             id={textId}
             value={text}
@@ -247,7 +250,7 @@ function QuickOrderContent({
         {request.needsHearingDate ? (
           <ListingDateField
             id={dateId}
-            label="Next hearing"
+            label={__t("applicationQuickOrder_nextHearing")}
             value={nextHearing}
             on={on}
             hearing={hearing}
@@ -258,10 +261,9 @@ function QuickOrderContent({
 
       <DialogFooter className="mx-0 mb-0 shrink-0 sm:items-center sm:justify-between">
         <Button type="button" variant="outline" onClick={openInOrderScreen}>
-          Open in order screen
-        </Button>
+          {<__LocalizedText id="applicationQuickOrder_openInOrderScreen" />}{" "}</Button>
         <Button type="button" disabled={!ready} onClick={pass}>
-          {canSign ? "Sign order" : "Send for signing"}
+          {canSign ? __t("applicationQuickOrder_signOrder") : __t("applicationQuickOrder_sendForSigning")}
         </Button>
       </DialogFooter>
     </ChromeDialogContent>

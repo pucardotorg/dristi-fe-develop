@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { CheckIcon } from "lucide-react";
 
@@ -22,7 +23,7 @@ export function OrderSaveIndicator() {
       className="inline-flex items-center gap-1.5 text-body-compact text-muted-foreground"
     >
       <CheckIcon className="size-4 text-success-ink" aria-hidden />
-      <span className="text-success-ink">Saved</span>
+      <span className="text-success-ink">{<__LocalizedText id="orderSaveIndicator_saved" />}</span>
     </span>
   );
 }

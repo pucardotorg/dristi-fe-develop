@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -67,6 +69,7 @@ const ORDER_PARAM = "order";
  * case update can link straight to it.
  */
 export function CaseOrders({ record }: { record: CaseRecord }) {
+  const __t = __useTranslations();
   const orders = useMemo(() => {
     try {
       return ordersFile(record)
@@ -96,8 +99,8 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
       <OrdersPanel>
         <Alert variant="destructive">
           <CircleAlertIcon aria-hidden />
-          <AlertTitle>Orders and notifications could not be loaded</AlertTitle>
-          <AlertDescription>Refresh the page to try again.</AlertDescription>
+          <AlertTitle>{<__LocalizedText id="caseOrders_ordersAndNotificationsCouldNotBeLoaded" />}</AlertTitle>
+          <AlertDescription>{<__LocalizedText id="caseOrders_refreshThePageToTryAgain" />}</AlertDescription>
         </Alert>
       </OrdersPanel>
     );
@@ -127,11 +130,11 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
           onValueChange={(next) => {
             if (isOrderKindFilter(next)) setKind(next);
           }}
-          aria-label="Show orders or notifications"
+          aria-label={__t("caseOrders_showOrdersOrNotifications")}
         >
           {ORDER_KIND_FILTERS.map((item) => (
             <SegmentedControlItem key={item.id} value={item.id}>
-              {item.label}
+              {__t(item.label)}
             </SegmentedControlItem>
           ))}
         </SegmentedControl>
@@ -145,13 +148,13 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
               {kind === "notification"
-                ? "No notifications yet"
-                : "No orders yet"}
+                ? __t("caseOrders_noNotificationsYet")
+                : __t("caseOrders_noOrdersYet")}
             </EmptyTitle>
             <EmptyDescription>
               {kind === "notification"
-                ? "Notices from the court about listings appear here."
-                : "Orders appear here once the court publishes them."}
+                ? __t("caseOrders_noticesFromTheCourtAboutListingsAppear")
+                : __t("caseOrders_ordersAppearHereOnceTheCourtPublishes")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -164,15 +167,14 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
           {rows.map((order) => (
             <li key={order.id}>
               <RegisterTrayCard
-                title={order.title}
+                title={__t(order.title)}
                 open={tray.isOpen(order.id)}
                 onOpenChange={tray.toggle(order.id)}
                 marked={openOrder?.id === order.id}
                 className={cn(recentId === order.id && RECENT_ROW)}
                 actions={
                   <Button type="button" onClick={() => setOpenOrder(order)}>
-                    View order
-                  </Button>
+                    {<__LocalizedText id="caseOrders_viewOrder" />}{" "}</Button>
                 }
               >
                 <time
@@ -194,10 +196,10 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
         <Table>
           <TableHeader>
             <TableRow className={TABLE_HEAD_ROW}>
-              <TableHead className={cn(TABLE_HEAD, "w-36")}>Date</TableHead>
-              <TableHead className={cn(TABLE_HEAD, "w-1/3")}>Title</TableHead>
-              <TableHead className={TABLE_HEAD}>BoTD</TableHead>
-              <TableHead className={cn(TABLE_HEAD, "w-24")}>Action</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "w-36")}>{<__LocalizedText id="caseOrders_date" />}</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "w-1/3")}>{<__LocalizedText id="caseOrders_title" />}</TableHead>
+              <TableHead className={TABLE_HEAD}>{<__LocalizedText id="caseOrders_botd" />}</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "w-24")}>{<__LocalizedText id="caseOrders_action" />}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className={tableBodyClass({ marksOpenRow: true })}>
@@ -226,7 +228,7 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
                     "font-medium whitespace-normal"
                   )}
                 >
-                  {order.title}
+                  {__t(order.title)}
                 </TableCell>
                 <TableCell
                   className={cn(
@@ -239,13 +241,13 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
                   ) : (
                     <>
                       <span aria-hidden>—</span>
-                      <span className="sr-only">Not recorded</span>
+                      <span className="sr-only">{<__LocalizedText id="caseOrders_notRecorded" />}</span>
                     </>
                   )}
                 </TableCell>
                 <TableCell className={TABLE_CELL}>
                   <RowViewButton
-                    label={order.title}
+                    label={__t(order.title)}
                     onClick={() => setOpenOrder(order)}
                   />
                 </TableCell>
@@ -274,8 +276,7 @@ export function OrdersLoading() {
   return (
     <OrdersPanel busy>
       <span className="sr-only" role="status">
-        Loading orders and notifications
-      </span>
+        {<__LocalizedText id="caseOrders_loadingOrdersAndNotifications" />}{" "}</span>
       <div className="flex flex-col gap-2">
         {Array.from({ length: 5 }, (_, index) => (
           <Skeleton key={index} className="h-10 w-full rounded-lg" />
@@ -294,14 +295,14 @@ function OrdersPanel({
   busy?: boolean;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <RestingCard>
       <CardContent className="flex flex-col gap-4" aria-busy={busy}>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <h2 className="w-full text-body font-semibold text-foreground md:pointer-fine:w-auto md:landscape:w-auto">
-            Orders & Notifications
-          </h2>
-          {action}
+            {<__LocalizedText id="caseOrders_ordersNotifications" />}{" "}</h2>
+          {__t(action)}
         </div>
         {children}
       </CardContent>

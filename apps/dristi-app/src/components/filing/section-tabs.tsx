@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { PlusIcon, XIcon } from "lucide-react";
@@ -45,6 +46,7 @@ export function SectionTabs({
   addAfterTabs?: boolean;
   className?: string;
 }) {
+  const __t = __useTranslations();
   /* Adding a cheque or removing a complainant is an edit, not a correction (brief D3). */
   const inCorrection = useInCorrection();
   const canEditList = !inCorrection;
@@ -119,9 +121,9 @@ export function SectionTabs({
                   )}
                 />
                 <span className="sr-only">
-                  {t.status === "complete" ? "Complete:" : "Needs attention:"}
+                  {t.status === "complete" ? __t("sectionTabs_complete_4c333469") : __t("sectionTabs_needsAttention")}
                 </span>
-                {t.label}
+                {__t(t.label)}
                 {t.meta ? (
                   <span className="font-normal text-muted-foreground">{t.meta}</span>
                 ) : null}
@@ -131,7 +133,7 @@ export function SectionTabs({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  aria-label={`Remove ${t.label}`}
+                  aria-label={__t("sectionTabs_removeValue0", {value0: String(__t(t.label))})}
                   className="text-muted-foreground hover:text-destructive"
                   onClick={() => onRemove(t.id)}
                 >
@@ -151,7 +153,7 @@ export function SectionTabs({
           className="shrink-0 text-primary"
         >
           <PlusIcon data-icon="inline-start" aria-hidden />
-          {addLabel}
+          {__t(addLabel)}
         </Button>
       ) : null}
       </div>

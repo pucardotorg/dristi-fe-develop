@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 /**
  * The rejected registration's correction round (PM, Sept 3).
@@ -105,6 +106,7 @@ function OfficerMessage({
   applicationNumber: string | null;
   message: string;
 }) {
+  const __t = __useTranslations();
   const [expanded, setExpanded] = React.useState(false);
   const clamps = message.length > CLAMP_THRESHOLD;
   return (
@@ -120,7 +122,7 @@ function OfficerMessage({
           clamps && !expanded && "line-clamp-3"
         )}
       >
-        &ldquo;{message}&rdquo;
+        &ldquo;{__t(message)}&rdquo;
       </p>
       {clamps ? (
         <Button
@@ -144,6 +146,7 @@ export function ResubmissionFlow({
   locale: Locale;
   rejection: RejectedRegistration;
 }) {
+  const __t = __useTranslations();
   const [step, setStep] = React.useState<Step>("name");
   const [fullName, setFullName] = React.useState(rejection.name);
   const [email, setEmail] = React.useState(rejection.email);
@@ -180,7 +183,7 @@ export function ResubmissionFlow({
     <OfficerMessage
       locale={locale}
       applicationNumber={applicationNumber}
-      message={rejection.officerMessage}
+      message={__t(rejection.officerMessage)}
     />
   ) : null;
 
@@ -280,7 +283,7 @@ export function ResubmissionFlow({
           <DescriptionRow>
             <DescriptionTerm>{pick(verification.numberLabel, locale)}</DescriptionTerm>
             <DescriptionDetails>
-              <Identifier value={regNumber} label="registration number" />
+              <Identifier value={regNumber} label={__t("resubmissionFlow_registrationNumber")} />
             </DescriptionDetails>
           </DescriptionRow>
           {idFile ? (
@@ -381,7 +384,7 @@ export function ResubmissionFlow({
                 {pick(rejectionUi.notApprovedBody, locale)}
               </p>
             </div>
-            {officerMessage}
+            {__t(officerMessage)}
             <Field data-invalid={(touched && !fullName.trim()) || Boolean(serverErrors.name)}>
               <FieldLabel>
                 {pick(nameStep.fullName, locale)}{" "}
@@ -434,7 +437,7 @@ export function ResubmissionFlow({
                 {pick(contactStep.body, locale)}
               </p>
             </div>
-            {officerMessage}
+            {__t(officerMessage)}
             <Field>
               <FieldLabel>{pick(contactStep.mobile, locale)}</FieldLabel>
               <InputGroup className="has-disabled:opacity-100 has-disabled:bg-surface-sunken dark:has-disabled:bg-surface-sunken">
@@ -515,7 +518,7 @@ export function ResubmissionFlow({
                 {pick(verification.body, locale)}
               </p>
             </div>
-            {officerMessage}
+            {__t(officerMessage)}
             <Field
               data-invalid={(touched && !regNumber.trim()) || Boolean(serverErrors.regNumber)}
             >

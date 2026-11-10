@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { ChevronRightIcon } from "lucide-react";
@@ -192,7 +194,7 @@ export function CourtDashboardScreen() {
     <TooltipProvider>
       <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
         <header className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-title text-balance font-semibold">Dashboard</h1>
+          <h1 className="text-title text-balance font-semibold">{<__LocalizedText id="courtDashboardScreen_dashboard" />}</h1>
           <p className="text-body-compact text-muted-foreground">
             {courtText(court)} · {formatCourtDay(today)}
           </p>
@@ -303,6 +305,7 @@ function Overview({
   reading: PeriodReading;
   picker: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const latest = docket.today;
   const { from, to } = reading.selection;
   const now = filedAndClosed(docket, reading.selection);
@@ -338,12 +341,12 @@ function Overview({
     const inCourt = "Days in court";
     if (key === "filed") {
       const rows = filedCases(docket, reading.selection);
-      return { title: `Cases filed · ${period}`, summary: plural(rows.length, "case", "cases"), rows, daysHeader: "Days since filing", details: pastNote };
+      return { title: __t("courtDashboardScreen_casesFiledValue0", {value0: String(period)}), summary: plural(rows.length, "case", "cases"), rows, daysHeader: "Days since filing", details: pastNote };
     }
     if (key === "closed") {
       const rows = closedCases(docket, reading.selection);
       return {
-        title: `Cases closed · ${period}`,
+        title: __t("courtDashboardScreen_casesClosedValue0", {value0: String(period)}),
         summary: `${plural(rows.length, "case", "cases")} · ${formatCount(disposed)} disposed, ${formatCount(out.toLongPending)} to long pending`,
         rows,
         daysHeader: "Days from filing to closing",
@@ -370,14 +373,14 @@ function Overview({
     const path = stagePathFor(docket, reading.selection)[stage.key];
     const on = reading.live ? "" : ` · on ${formatDayShort(to)}`;
     if (kind === "stage") {
-      return { title: `${stage.label}: all pending${on}`, summary: `${plural(path.rows.length, "case", "cases")} · longest in the stage first`, rows: path.rows, daysHeader: "Days in stage", details: pastNote };
+      return { title: `${__t(stage.label)}: all pending${on}`, summary: `${plural(path.rows.length, "case", "cases")} · longest in the stage first`, rows: path.rows, daysHeader: "Days in stage", details: pastNote };
     }
     if (kind === "bin") {
       const b = path.bins[Number(bin)];
       const span = b.to === null ? `${formatCount(b.from)}+ days` : b.from === b.to ? `${formatCount(b.from)} days` : `${formatCount(b.from)}–${formatCount(b.to)} days`;
-      return { title: `${stage.label}: ${span} in the stage${on}`, summary: plural(b.rows.length, "case", "cases"), rows: b.rows, daysHeader: "Days in stage", details: pastNote };
+      return { title: `${__t(stage.label)}: ${span} in the stage${on}`, summary: plural(b.rows.length, "case", "cases"), rows: b.rows, daysHeader: "Days in stage", details: pastNote };
     }
-    return { title: `${stage.label} over ${limit} days${on}`, summary: `${plural(end.overdue[stage.key].length, "case", "cases")} · longest first`, rows: end.overdue[stage.key], daysHeader: "Days in stage", details: pastNote };
+    return { title: `${__t(stage.label)} over ${limit} days${on}`, summary: `${plural(end.overdue[stage.key].length, "case", "cases")} · longest first`, rows: end.overdue[stage.key], daysHeader: "Days in stage", details: pastNote };
   };
   const spec = list.open ? resolve(list.open) : null;
   const opener = (key: OverviewList) => ({
@@ -389,14 +392,14 @@ function Overview({
   const versus = (current: number, baseline: number | undefined, goodUp: boolean | null) => {
     if (reading.compare === "none") return null;
     if (baseline === undefined || name === null) {
-      return <p className="text-body-compact text-muted-foreground">No earlier data to compare</p>;
+      return <p className="text-body-compact text-muted-foreground">{<__LocalizedText id="courtDashboardScreen_noEarlierDataToCompare" />}</p>;
     }
     const b = Math.round(baseline);
     const diff = current - b;
     if (!diff) {
       return (
         <p className="text-body-compact text-muted-foreground tabular-nums">
-          Same as {name} ({formatCount(b)})
+          {<__LocalizedText id="courtDashboardScreen_sameAs" />}{" "}{name} ({formatCount(b)})
         </p>
       );
     }
@@ -411,7 +414,7 @@ function Overview({
       >
         <span aria-hidden>{diff > 0 ? "▲ " : "▼ "}</span>
         {formatCount(Math.abs(diff))}
-        {share} {diff > 0 ? "more" : "fewer"} than {name}{" "}
+        {share} {diff > 0 ? __t("courtDashboardScreen_more") : __t("courtDashboardScreen_fewer")} {<__LocalizedText id="courtDashboardScreen_than" />}{" "}{name}{" "}
         <span className="text-muted-foreground">({formatCount(b)})</span>
       </p>
     );
@@ -419,27 +422,26 @@ function Overview({
 
   return (
     <section aria-labelledby="dash-overview" className={PANEL}>
-      <PanelHeader id="dash-overview" title="Overview">
+      <PanelHeader id="dash-overview" title={__t("courtDashboardScreen_overview")}>
         {picker}
       </PanelHeader>
 
       <div className="flex min-w-0 flex-col gap-3">
         <div className="grid min-w-0 gap-px overflow-hidden rounded-xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.4fr)]">
           <div className="flex min-w-0 flex-col items-start gap-1 bg-surface-sunken p-4 sm:px-6">
-            <p className="text-body-compact font-semibold">Cases filed</p>
+            <p className="text-body-compact font-semibold">{<__LocalizedText id="courtDashboardScreen_casesFiled" />}</p>
             <CountButton name="cases filed" className="text-title-l font-semibold" {...opener("filed")}>
               <CountUp value={now.filed} format={countText} />
             </CountButton>
             {versus(now.filed, base?.filed, null)}
           </div>
           <div className="flex min-w-0 flex-col items-start gap-1 bg-surface-sunken p-4 sm:px-6">
-            <p className="text-body-compact font-semibold">Cases closed</p>
+            <p className="text-body-compact font-semibold">{<__LocalizedText id="courtDashboardScreen_casesClosed" />}</p>
             <CountButton name="cases closed" className="text-title-l font-semibold" {...opener("closed")}>
               <CountUp value={now.closed} format={countText} />
             </CountButton>
             <p className="text-caption text-muted-foreground tabular-nums">
-              {formatCount(disposed)} disposed
-              {out.toLongPending ? ` · ${formatCount(out.toLongPending)} to long pending` : ""}
+              {formatCount(disposed)} {<__LocalizedText id="courtDashboardScreen_disposed" />}{" "}{out.toLongPending ? ` · ${formatCount(out.toLongPending)} to long pending` : ""}
             </p>
             {versus(now.closed, base?.closed, true)}
           </div>
@@ -457,7 +459,7 @@ function Overview({
                 ? `${formatCount(-net)} fewer than ${startWord}`
                 : net > 0
                   ? `${formatCount(net)} more than ${startWord}`
-                  : `Same as ${startWord}`}
+                  : __t("courtDashboardScreen_sameAsValue0", {value0: String(startWord)})}
             </Badge>
             <p className="flex flex-wrap gap-x-3 text-body-compact text-muted-foreground tabular-nums">
               {(
@@ -468,8 +470,8 @@ function Overview({
                 ] as const
               ).map(([key, label, n]) => (
                 <span key={key} className="inline-flex items-center gap-1">
-                  {label}
-                  <CountButton name={`pending, ${label}`} className="font-semibold" {...opener(key)}>
+                  {__t(label)}
+                  <CountButton name={`pending, ${__t(label)}`} className="font-semibold" {...opener(key)}>
                     {formatCount(n)}
                   </CountButton>
                 </span>
@@ -478,10 +480,9 @@ function Overview({
           </div>
           <div className="flex min-w-0 flex-col justify-center gap-3 bg-surface-sunken p-4 sm:col-span-2 sm:px-6 xl:col-span-1">
             <p className="text-body-compact font-semibold">
-              How long the {formatCount(end.pending)} pending cases have been in court
-            </p>
+              {<__LocalizedText id="courtDashboardScreen_howLongThe" />}{" "}{formatCount(end.pending)} {<__LocalizedText id="courtDashboardScreen_pendingCasesHaveBeenInCourt" />}{" "}</p>
             <SegmentBar
-              label="Pending cases by when they were filed"
+              label={__t("courtDashboardScreen_pendingCasesByWhenTheyWereFiled")}
               controls={listId}
               className="h-3.5 [&>*:first-child]:rounded-l-sm [&>*:last-child]:rounded-r-sm"
               segments={ages.map((value, i) => ({
@@ -515,8 +516,8 @@ function Overview({
           <CaseListBox
             key={list.open}
             id={`dash-overview-${list.open}`}
-            title={spec.title}
-            summary={spec.summary}
+            title={__t(spec.title)}
+            summary={__t(spec.summary)}
             details={spec.details}
             rows={spec.rows}
             daysHeader={spec.daysHeader}
@@ -530,6 +531,7 @@ function Overview({
 
 /** What the comparison is made of: each baseline window, with its filed and closed counts. */
 function BaselineBreakdown({ docket, reading }: { docket: CourtDocket; reading: PeriodReading }) {
+  const __t = __useTranslations();
   if (reading.compare === "none" || !reading.baseline.length) return null;
   const latest = docket.today;
   const windows = baselineWindows(docket, reading);
@@ -541,20 +543,20 @@ function BaselineBreakdown({ docket, reading }: { docket: CourtDocket; reading: 
       <CollapsibleTrigger asChild>
         <Button variant="link" className="group/base h-10 w-fit gap-1 px-0 text-body-compact">
           <ChevronRightIcon aria-hidden className="transition-transform group-data-[state=open]/base:rotate-90 motion-reduce:transition-none" />
-          {averaged ? `What the ${windows.length}-period average is made of` : "What the comparison is made of"}
+          {averaged ? __t("courtDashboardScreen_whatTheValue0PeriodAverageIsMade", {value0: String(windows.length)}) : __t("courtDashboardScreen_whatTheComparisonIsMadeOf")}
         </Button>
       </CollapsibleTrigger>
       <CollapsibleContent className="min-w-0">
         <div className="relative min-w-0 overflow-x-auto">
           <Table className="w-full border-separate border-spacing-0 text-body-compact">
-            <caption className="sr-only">Comparison baseline, filed and closed in each window</caption>
+            <caption className="sr-only">{<__LocalizedText id="courtDashboardScreen_comparisonBaselineFiledAndClosedInEach" />}</caption>
             <TableHeader>
               <TableRow className={TABLE_HEAD_ROW}>
                 <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-                  {averaged ? "Window" : "Compared with"}
+                  {averaged ? __t("courtDashboardScreen_window") : __t("courtDashboardScreen_comparedWith")}
                 </TableHead>
-                <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>Cases filed</TableHead>
-                <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>Cases closed</TableHead>
+                <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>{<__LocalizedText id="courtDashboardScreen_casesFiled" />}</TableHead>
+                <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>{<__LocalizedText id="courtDashboardScreen_casesClosed" />}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className={tableBodyClass({ hover: false })}>
@@ -570,14 +572,14 @@ function BaselineBreakdown({ docket, reading }: { docket: CourtDocket; reading: 
               ))}
               {averaged ? (
                 <TableRow className={tableRowClass({ hover: false })}>
-                  <TableCell className={cn(TABLE_CELL, "font-semibold")}>Average</TableCell>
+                  <TableCell className={cn(TABLE_CELL, "font-semibold")}>{<__LocalizedText id="courtDashboardScreen_average" />}</TableCell>
                   <TableCell className={cn(TABLE_CELL, "text-right font-semibold tabular-nums")}>
                     {one(avg("filed"))}
-                    <span className="font-normal text-muted-foreground"> · shown as {formatCount(Math.round(avg("filed")))}</span>
+                    <span className="font-normal text-muted-foreground"> {<__LocalizedText id="courtDashboardScreen_shownAs" />}{" "}{formatCount(Math.round(avg("filed")))}</span>
                   </TableCell>
                   <TableCell className={cn(TABLE_CELL, "text-right font-semibold tabular-nums")}>
                     {one(avg("closed"))}
-                    <span className="font-normal text-muted-foreground"> · shown as {formatCount(Math.round(avg("closed")))}</span>
+                    <span className="font-normal text-muted-foreground"> {<__LocalizedText id="courtDashboardScreen_shownAs" />}{" "}{formatCount(Math.round(avg("closed")))}</span>
                   </TableCell>
                 </TableRow>
               ) : null}
@@ -646,6 +648,7 @@ function StagePath({
   reading: PeriodReading;
   opener: Opener;
 }) {
+  const __t = __useTranslations();
   const end = positionOn(docket, reading.end);
   const before = reading.overdueSince === null ? null : positionOn(docket, reading.overdueSince);
   const path = stagePathFor(docket, reading.selection);
@@ -673,13 +676,13 @@ function StagePath({
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <h3 className="text-body font-semibold">
-        Where the pending cases are{" "}
-        <span className="text-body-compact font-normal text-muted-foreground">· select a stage for details</span>
+        {<__LocalizedText id="courtDashboardScreen_whereThePendingCasesAre" />}{" "}
+        <span className="text-body-compact font-normal text-muted-foreground">{<__LocalizedText id="courtDashboardScreen_selectAStageForDetails" />}</span>
       </h3>
       <div ref={box} className={cn(BOX, "flex flex-col pt-3")}>
         <div aria-hidden className="hidden grid-cols-6 px-2 pb-2 text-caption text-muted-foreground xl:grid">
-          <span className="col-span-2 mx-1 border-b border-hairline px-3 pb-1.5">CMP · before cognizance</span>
-          <span className="col-span-4 mx-1 border-b border-hairline px-3 pb-1.5">ST · after cognizance</span>
+          <span className="col-span-2 mx-1 border-b border-hairline px-3 pb-1.5">{<__LocalizedText id="courtDashboardScreen_cmpBeforeCognizance" />}</span>
+          <span className="col-span-4 mx-1 border-b border-hairline px-3 pb-1.5">{<__LocalizedText id="courtDashboardScreen_stAfterCognizance" />}</span>
         </div>
         <ol className="grid min-w-0 xl:grid-cols-6 xl:px-2 xl:pt-4">
           {STAGES.map((stage, i) => {
@@ -703,7 +706,7 @@ function StagePath({
                       <span
                         role="img"
                         tabIndex={0}
-                        aria-label={`${plural(moved, "case", "cases")} moved from ${prev.label} to ${stage.label} ${during}`}
+                        aria-label={`${plural(moved, "case", "cases")} moved from ${__t(prev.label)} to ${__t(stage.label)} ${during}`}
                         className="z-10 flex w-fit items-center gap-1 rounded-full border border-hairline bg-card px-1.5 py-0.5 outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring xl:absolute xl:-top-3.5 xl:left-0 xl:-translate-x-1/2"
                       >
                         <TrickleDots count={moved} trigger={trigger} />
@@ -711,7 +714,7 @@ function StagePath({
                       </span>
                     </TooltipTrigger>
                     <TooltipContent className="tabular-nums">
-                      {plural(moved, "case", "cases")} moved from {prev.label} to {stage.label} {during}
+                      {plural(moved, "case", "cases")} {<__LocalizedText id="courtDashboardScreen_movedFrom" />}{" "}{__t(prev.label)} {<__LocalizedText id="courtDashboardScreen_to" />}{" "}{__t(stage.label)} {during}
                     </TooltipContent>
                   </Tooltip>
                 ) : null}
@@ -719,14 +722,14 @@ function StagePath({
                   type="button"
                   aria-expanded={on}
                   aria-controls={detailId}
-                  aria-label={`${stage.label}: ${plural(n, "case", "cases")} pending, ${formatCount(late)} over ${p.limit} days. ${on ? "Close" : "Open"} the details`}
+                  aria-label={`${__t(stage.label)}: ${plural(n, "case", "cases")} pending, ${formatCount(late)} over ${p.limit} days. ${on ? __t("courtDashboardScreen_close") : __t("courtDashboardScreen_open")} the details`}
                   onClick={() => setSelected(on ? null : stage.key)}
                   className={cn(
                     "-mx-1 flex flex-col gap-1.5 rounded-lg border border-transparent px-2 pt-2 pb-2.5 text-left outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-focus-ring motion-reduce:transition-none",
                     on && "border-primary bg-brand-muted ring-1 ring-primary ring-inset hover:bg-brand-muted",
                   )}
                 >
-                  <span className="text-body font-semibold">{stage.label}</span>
+                  <span className="text-body font-semibold">{__t(stage.label)}</span>
                   <CountUp value={n} format={countText} className="text-title font-semibold tabular-nums" />
                   <span aria-hidden className="h-1 overflow-hidden rounded-full bg-track">
                     <span data-grow="x" className="block h-full origin-left rounded-full bg-muted-foreground" style={{ width: `${(n / most) * 100}%` }} />
@@ -746,22 +749,21 @@ function StagePath({
                     />
                   </span>
                   <span className="flex gap-2.5 text-caption text-muted-foreground tabular-nums">
-                    <span>+{formatCount(p.cameIn)} in</span>
-                    <span>−{formatCount(p.left)} out</span>
+                    <span>+{formatCount(p.cameIn)} {<__LocalizedText id="courtDashboardScreen_in" />}</span>
+                    <span>−{formatCount(p.left)} {<__LocalizedText id="courtDashboardScreen_out" />}</span>
                   </span>
                   <span className="text-caption text-muted-foreground tabular-nums">
-                    {p.median === null ? "No cases" : `Typically here ${plural(p.median, "day", "days")}`}
+                    {p.median === null ? __t("courtDashboardScreen_noCases") : __t("courtDashboardScreen_typicallyHereValue0", {value0: String(plural(p.median, "day", "days"))})}
                   </span>
                 </button>
                 <span>
                   {late ? (
-                    <CountButton name={`at ${stage.label}`} className="-my-2 text-body-compact text-warning-ink" {...opener(`late-${stage.key}`)}>
+                    <CountButton name={`at ${__t(stage.label)}`} className="-my-2 text-body-compact text-warning-ink" {...opener(`late-${stage.key}`)}>
                       <span>
-                        <strong className="font-semibold">{formatCount(late)}</strong> over {p.limit} days
-                      </span>
+                        <strong className="font-semibold">{formatCount(late)}</strong> {<__LocalizedText id="courtDashboardScreen_over" />}{" "}{p.limit} {<__LocalizedText id="courtDashboardScreen_days" />}{" "}</span>
                     </CountButton>
                   ) : (
-                    <span className="text-body-compact text-success-ink">None over {p.limit} days</span>
+                    <span className="text-body-compact text-success-ink">{<__LocalizedText id="courtDashboardScreen_noneOver" />}{" "}{p.limit} {<__LocalizedText id="courtDashboardScreen_days" />}</span>
                   )}
                 </span>
                 {diff !== null ? (
@@ -774,11 +776,11 @@ function StagePath({
                     {diff ? (
                       <>
                         <span aria-hidden>{diff > 0 ? "▲ " : "▼ "}</span>
-                        <span className="sr-only">{diff > 0 ? "Up " : "Down "}</span>
-                        {formatCount(Math.abs(diff))} over the limit {since}
+                        <span className="sr-only">{diff > 0 ? __t("courtDashboardScreen_up") : __t("courtDashboardScreen_down")}</span>
+                        {formatCount(Math.abs(diff))} {<__LocalizedText id="courtDashboardScreen_overTheLimit" />}{" "}{since}
                       </>
                     ) : (
-                      `No change ${since}`
+                      __t("courtDashboardScreen_noChangeValue0", {value0: String(since)})
                     )}
                   </span>
                 ) : null}
@@ -795,15 +797,12 @@ function StagePath({
         <p className="mt-2 flex flex-wrap gap-x-6 gap-y-1 border-t border-hairline px-4 py-3 text-caption text-muted-foreground sm:px-6">
           <span className="inline-flex items-center gap-2">
             <span aria-hidden className="h-2.5 w-3.5 rounded-xs bg-brand-accent" />
-            Days in the stage, within the review point
-          </span>
+            {<__LocalizedText id="courtDashboardScreen_daysInTheStageWithinTheReview" />}{" "}</span>
           <span className="inline-flex items-center gap-2">
             <span aria-hidden className={cn("h-2.5 w-3.5 rounded-xs", LATE_SWATCH)} />
-            Past the review point
-          </span>
+            {<__LocalizedText id="courtDashboardScreen_pastTheReviewPoint" />}{" "}</span>
           <span className="tabular-nums">
-            Not counted above: {plural(end.longPending, "case", "cases")} on the long pending register.
-          </span>
+            {<__LocalizedText id="courtDashboardScreen_notCountedAbove" />}{" "}{plural(end.longPending, "case", "cases")} {<__LocalizedText id="courtDashboardScreen_onTheLongPendingRegister" />}{" "}</span>
         </p>
       </div>
     </div>
@@ -825,6 +824,7 @@ function StageDetailView({
   onClose: () => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const stage = STAGES.find((s) => s.key === key)!;
   const p = stagePathFor(docket, reading.selection)[key];
   const end = positionOn(docket, reading.end);
@@ -837,7 +837,7 @@ function StageDetailView({
   useGrowIn(box, `${key}:${reading.selection.from}:${reading.selection.to}`);
   const fact = (label: string, value: React.ReactNode, sub?: string) => (
     <div className="flex flex-col">
-      <dt className="text-caption text-muted-foreground">{label}</dt>
+      <dt className="text-caption text-muted-foreground">{__t(label)}</dt>
       <dd className="text-title-s font-semibold tabular-nums">{value}</dd>
       {sub ? <dd className="text-caption text-muted-foreground">{sub}</dd> : null}
     </div>
@@ -851,20 +851,18 @@ function StageDetailView({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-0.5">
           <h4 id="dash-stage-detail-title" className="text-body font-semibold">
-            {stage.label}
+            {__t(stage.label)}
           </h4>
           <p className="text-body-compact text-muted-foreground">
-            {STAGE_DESCRIPTION[key]}. Review point: {p.limit} days in the stage.
-          </p>
+            {STAGE_DESCRIPTION[key]}{<__LocalizedText id="courtDashboardScreen_reviewPoint" />}{" "}{p.limit} {<__LocalizedText id="courtDashboardScreen_daysInTheStage" />}{" "}</p>
         </div>
         <Button type="button" variant="outline" onClick={onClose}>
-          Close
-        </Button>
+          {<__LocalizedText id="courtDashboardScreen_close" />}{" "}</Button>
       </div>
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1.1fr)]">
         <div className="flex min-w-0 flex-col gap-2">
-          <span className="text-caption text-muted-foreground">Days in the stage, {plural(n, "case", "cases")}</span>
-          <div role="group" aria-label={`${stage.label}: days in the stage`} className="relative mt-6 flex h-36 items-end gap-1 border-b border-border">
+          <span className="text-caption text-muted-foreground">{<__LocalizedText id="courtDashboardScreen_daysInTheStage_f07c2e93" />}{" "}{plural(n, "case", "cases")}</span>
+          <div role="group" aria-label={`${__t(stage.label)}: days in the stage`} className="relative mt-6 flex h-36 items-end gap-1 border-b border-border">
             {p.bins.map((b, i) => {
               const c = b.rows.length;
               const tip = `${plural(c, "case", "cases")} · ${binSpan(b.from, b.to)} in ${stage.label.toLowerCase()}`;
@@ -876,7 +874,7 @@ function StageDetailView({
                       <button
                         type="button"
                         data-grow="y"
-                        aria-label={`${tip}, ${o.expanded ? "hide" : "show"} the cases`}
+                        aria-label={`${tip}, ${o.expanded ? __t("courtDashboardScreen_hide") : __t("courtDashboardScreen_show")} the cases`}
                         aria-expanded={o.expanded}
                         aria-controls={o.controls}
                         onClick={(event) => o.onOpen(event.currentTarget)}
@@ -903,29 +901,27 @@ function StageDetailView({
               className="absolute -top-5 bottom-0 w-0 border-l border-dashed border-foreground"
               style={{ left: `${(p.reviewAfter / p.bins.length) * 100}%` }}
             >
-              <span className="absolute top-0 left-1 text-caption whitespace-nowrap">Review point · {p.limit} days</span>
+              <span className="absolute top-0 left-1 text-caption whitespace-nowrap">{<__LocalizedText id="courtDashboardScreen_reviewPoint_12369941" />}{" "}{p.limit} {<__LocalizedText id="courtDashboardScreen_days" />}</span>
             </span>
           </div>
           <div aria-hidden className="flex justify-between text-caption text-muted-foreground tabular-nums">
-            <span>0 days</span>
-            <span>{formatCount(p.limit * 2)}+ days</span>
+            <span>{<__LocalizedText id="courtDashboardScreen_0Days" />}</span>
+            <span>{formatCount(p.limit * 2)}{<__LocalizedText id="courtDashboardScreen_days_7b0d9b50" />}</span>
           </div>
           <p className="flex flex-wrap gap-x-4 text-caption text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <span aria-hidden className="h-2.5 w-3.5 rounded-xs bg-brand-accent" />
-              Within {p.limit} days
-            </span>
+              {<__LocalizedText id="courtDashboardScreen_within" />}{" "}{p.limit} {<__LocalizedText id="courtDashboardScreen_days" />}{" "}</span>
             <span className="inline-flex items-center gap-1.5">
               <span aria-hidden className={cn("h-2.5 w-3.5 rounded-xs", LATE_SWATCH)} />
-              Past the review point
-            </span>
+              {<__LocalizedText id="courtDashboardScreen_pastTheReviewPoint" />}{" "}</span>
           </p>
         </div>
         <dl className="grid grid-cols-2 content-start gap-x-4 gap-y-3">
           {fact(
             "Pending",
             n ? (
-              <CountButton name={`pending at ${stage.label}`} className="-my-2" {...opener(`stage-${key}`)}>
+              <CountButton name={`pending at ${__t(stage.label)}`} className="-my-2" {...opener(`stage-${key}`)}>
                 {formatCount(n)}
               </CountButton>
             ) : (
@@ -936,7 +932,7 @@ function StageDetailView({
           {fact(
             "Past the review point",
             late ? (
-              <CountButton name={`over ${p.limit} days at ${stage.label}`} className="-my-2" {...opener(`late-${key}`)}>
+              <CountButton name={`over ${p.limit} days at ${__t(stage.label)}`} className="-my-2" {...opener(`late-${key}`)}>
                 {formatCount(late)}
               </CountButton>
             ) : (
@@ -959,12 +955,12 @@ function StageDetailView({
             : null}
         </dl>
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="text-caption text-muted-foreground">Waiting longest</span>
+          <span className="text-caption text-muted-foreground">{<__LocalizedText id="courtDashboardScreen_waitingLongest" />}</span>
           <ol className="flex flex-col">
             {p.rows.slice(0, 5).map((r) => (
               <li key={r.case.id} className="flex justify-between gap-3 border-t border-hairline py-1.5 text-body-compact">
                 <span className="min-w-0 truncate">
-                  <span className="font-semibold tabular-nums">{r.case.caseNumber}</span> {r.case.title}
+                  <span className="font-semibold tabular-nums">{r.case.caseNumber}</span> {__t(r.case.title)}
                 </span>
                 <span className={cn("shrink-0 tabular-nums", r.days > p.limit ? "font-semibold text-warning-ink" : "")}>
                   {plural(r.days, "day", "days")}
@@ -981,8 +977,7 @@ function StageDetailView({
               aria-controls={opener(`late-${key}`).controls}
               onClick={(event) => opener(`late-${key}`).onOpen(event.currentTarget)}
             >
-              Show all {formatCount(late)} past the review point
-            </Button>
+              {<__LocalizedText id="courtDashboardScreen_showAll" />}{" "}{formatCount(late)} {<__LocalizedText id="courtDashboardScreen_pastTheReviewPoint_562f7c96" />}{" "}</Button>
           ) : null}
         </div>
       </div>

@@ -1,3 +1,5 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -5,10 +7,11 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
+  const __t = __useTranslations();
   return (
     <nav
       role="navigation"
-      aria-label="pagination"
+      aria-label={__t("pagination_pagination")}
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
       {...props}
@@ -66,15 +69,16 @@ function PaginationPrevious({
   text = "Previous",
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
+  const __t = __useTranslations();
   return (
     <PaginationLink
-      aria-label="Go to previous page"
+      aria-label={__t("pagination_goToPreviousPage")}
       size="default"
       className={cn("pl-1.5!", className)}
       {...props}
     >
       <ChevronLeftIcon data-icon="inline-start" />
-      <span className="hidden sm:block">{text}</span>
+      <span className="hidden sm:block">{__t(text)}</span>
     </PaginationLink>
   )
 }
@@ -84,14 +88,15 @@ function PaginationNext({
   text = "Next",
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
+  const __t = __useTranslations();
   return (
     <PaginationLink
-      aria-label="Go to next page"
+      aria-label={__t("pagination_goToNextPage")}
       size="default"
       className={cn("pr-1.5!", className)}
       {...props}
     >
-      <span className="hidden sm:block">{text}</span>
+      <span className="hidden sm:block">{__t(text)}</span>
       <ChevronRightIcon data-icon="inline-end" />
     </PaginationLink>
   )
@@ -113,7 +118,7 @@ function PaginationEllipsis({
     >
       <MoreHorizontalIcon
       />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">{<__LocalizedText id="pagination_morePages" />}</span>
     </span>
   )
 }

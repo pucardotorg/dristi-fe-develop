@@ -1,4 +1,5 @@
 "use client"
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 
 import * as React from "react"
 import { Progress as ProgressPrimitive } from "radix-ui"
@@ -12,10 +13,11 @@ function Progress({
   "aria-labelledby": ariaLabelledBy,
   ...props
 }: React.ComponentProps<typeof ProgressPrimitive.Root>) {
+  const __t = __useTranslations();
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
-      aria-label={ariaLabel}
+      aria-label={__t(ariaLabel)}
       aria-labelledby={ariaLabelledBy}
       className={cn(
         "relative flex h-1 w-full items-center overflow-x-hidden rounded-full bg-track",

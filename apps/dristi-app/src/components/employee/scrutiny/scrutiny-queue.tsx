@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FileSearchIcon, InboxIcon } from "lucide-react";
@@ -83,6 +85,7 @@ function columnOptions(rows: Filing[], key: "stage" | "type") {
  * the tab selects, so nothing inside the table needs to repeat it.
  */
 export function ScrutinyQueue() {
+  const __t = __useTranslations();
   const [tab, setTab] = React.useState<Ball>("registry");
   const [owner, setOwner] = React.useState<QueueOwner>("anyone");
   const [text, setText] = React.useState("");
@@ -137,8 +140,7 @@ export function ScrutinyQueue() {
       <header className="flex flex-col gap-2">
         {/* The rail's label, word for word — the court screens' own convention. */}
         <h1 className="text-title text-balance font-semibold">
-          Scrutinise submitted cases
-        </h1>
+          {<__LocalizedText id="scrutinyQueue_scrutiniseSubmittedCases" />}{" "}</h1>
         {/* The count is the whole point of the queue, so the supporting line carries it
             rather than restating the title — and it counts what the rail counts: the
             filings sitting with the registry, which is this desk's actual inbox.
@@ -146,7 +148,7 @@ export function ScrutinyQueue() {
             notices. */}
         <p className="text-body text-muted-foreground">
           {SCRUTINY_QUEUE_COUNT === 1
-            ? "1 complaint is waiting to be scrutinised."
+            ? __t("scrutinyQueue_1ComplaintIsWaitingToBeScrutinised")
             : `${SCRUTINY_QUEUE_COUNT} complaints are waiting to be scrutinised.`}
         </p>
       </header>
@@ -165,7 +167,7 @@ export function ScrutinyQueue() {
         <div className="overflow-x-auto border-b border-hairline">
           <TabsList
             variant="line"
-            aria-label="Whose hands the filing is in"
+            aria-label={__t("scrutinyQueue_whoseHandsTheFilingIsIn")}
             className="h-10 w-max min-w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-10"
           >
             {QUEUE_TABS.map((queueTab) => (
@@ -174,7 +176,7 @@ export function ScrutinyQueue() {
                 value={queueTab.id}
                 className="h-10 flex-none gap-2 px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
               >
-                {queueTab.label}
+                {__t(queueTab.label)}
                 {/* How much is standing here. One presentation across all three —
                     Closed included, because a count shown two ways is two data types
                     to the eye — and it inherits the trigger's colour so the count and
@@ -213,7 +215,7 @@ export function ScrutinyQueue() {
                   extraFields={[
                     {
                       id: "scrutiny-stage",
-                      label: "Stage",
+                      label: __t("scrutinyQueue_stage"),
                       value: stage,
                       all: "all",
                       allLabel: "All stages",
@@ -225,7 +227,7 @@ export function ScrutinyQueue() {
                     },
                     {
                       id: "scrutiny-case-type",
-                      label: "Case type",
+                      label: __t("scrutinyQueue_caseType"),
                       value: caseType,
                       all: "all",
                       allLabel: "All case types",
@@ -332,24 +334,25 @@ function QueueFilters({
   /** The sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search filings",
+        label: __t("scrutinyQueue_searchFilings"),
         value: text,
         onChange: onTextChange,
-        placeholder: "filing no., party or advocate",
+        placeholder: __t("scrutinyQueue_filingNoPartyOrAdvocate"),
       }}
       fields={[
         {
           id: "scrutiny-claimed-by",
-          label: "Claimed by",
+          label: __t("scrutinyQueue_claimedBy"),
           value: owner,
           all: "anyone",
           allLabel: "Anyone",
           options: [
-            { value: "me", label: "Me" },
-            { value: "unclaimed", label: "Unclaimed" },
+            { value: "me", label: __t("scrutinyQueue_me") },
+            { value: "unclaimed", label: __t("scrutinyQueue_unclaimed") },
           ],
           onApply: (value) => onOwnerChange(value as QueueOwner),
         },
@@ -377,6 +380,7 @@ function QueueEmpty({
   onClearFilters: () => void;
   onGoToAdvocate: () => void;
 }) {
+  const __t = __useTranslations();
   if (filtered) {
     return (
       <Empty className="border-0 p-0">
@@ -385,16 +389,13 @@ function QueueEmpty({
             <FileSearchIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            No filings match these filters
-          </EmptyTitle>
+            {<__LocalizedText id="scrutinyQueue_noFilingsMatchTheseFilters" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
-            Nothing in this tab matches the search or the claim filter.
-          </EmptyDescription>
+            {<__LocalizedText id="scrutinyQueue_nothingInThisTabMatchesTheSearch" />}{" "}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={onClearFilters}>
-            Clear filters
-          </Button>
+            {<__LocalizedText id="scrutinyQueue_clearFilters" />}{" "}</Button>
         </EmptyContent>
       </Empty>
     );
@@ -409,15 +410,15 @@ function QueueEmpty({
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {tab === "registry"
-            ? "Nothing awaiting scrutiny"
+            ? __t("scrutinyQueue_nothingAwaitingScrutiny")
             : tab === "advocate"
-              ? "Nothing with advocates"
-              : "No cases closed yet"}
+              ? __t("scrutinyQueue_nothingWithAdvocates")
+              : __t("scrutinyQueue_noCasesClosedYet")}
         </EmptyTitle>
         {tab === "registry" ? (
           <EmptyDescription className="text-body">
             {withAdvocates === 1
-              ? "1 filing is with an advocate."
+              ? __t("scrutinyQueue_1FilingIsWithAnAdvocate")
               : `${withAdvocates} filings are with advocates.`}
           </EmptyDescription>
         ) : null}
@@ -425,8 +426,7 @@ function QueueEmpty({
       {tab === "registry" ? (
         <EmptyContent>
           <Button variant="outline" onClick={onGoToAdvocate}>
-            View filings with advocates
-          </Button>
+            {<__LocalizedText id="scrutinyQueue_viewFilingsWithAdvocates" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>

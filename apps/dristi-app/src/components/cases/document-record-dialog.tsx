@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useState } from "react";
 import { DownloadIcon, FileTextIcon, FileXIcon, XIcon } from "lucide-react";
@@ -108,6 +110,7 @@ function DocumentBody({
   document: CaseDocument;
   peopleById: Map<string, DocumentPerson>;
 }) {
+  const __t = __useTranslations();
   /* A document filed with several files lists them; the one picked shows. */
   const files = document.files ?? [];
   const [openSrc, setOpenSrc] = useState(files[0]?.src);
@@ -125,17 +128,17 @@ function DocumentBody({
       <div className="flex shrink-0 items-center gap-2 border-b border-hairline py-3 pr-3 pl-6">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <DialogTitle className="text-body-compact font-semibold text-pretty sm:truncate">
-            {document.title}
+            {__t(document.title)}
           </DialogTitle>
           {/* The status is held, not shown (DSB-05); only the two that change
               what the reader does with it are said. */}
           {document.evidenceNumber ? (
-            <Badge variant="secondary">Marked as evidence</Badge>
+            <Badge variant="secondary">{<__LocalizedText id="documentRecordDialog_markedAsEvidence" />}</Badge>
           ) : pendingReview ? (
-            <Badge variant="warning">Pending review</Badge>
+            <Badge variant="warning">{<__LocalizedText id="documentRecordDialog_pendingReview" />}</Badge>
           ) : null}
           <DialogDescription className="sr-only">
-            {documentTypeLabel(document.type)} filed on {file.caseNumber}
+            {documentTypeLabel(document.type)} {<__LocalizedText id="documentRecordDialog_filedOn" />}{" "}{file.caseNumber}
           </DialogDescription>
         </div>
         {src ? (
@@ -148,22 +151,22 @@ function DocumentBody({
                     download={downloadName(document) ?? true}
                     aria-label={
                       pendingReview
-                        ? `Download ${document.title}, not yet signed by the magistrate`
-                        : `Download ${document.title}`
+                        ? __t("documentRecordDialog_downloadValue0NotYetSignedByThe", {value0: String(__t(document.title))})
+                        : __t("documentRecordDialog_downloadValue0", {value0: String(__t(document.title))})
                     }
                   >
                     <DownloadIcon aria-hidden />
                   </a>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Download</TooltipContent>
+              <TooltipContent side="bottom">{<__LocalizedText id="documentRecordDialog_download" />}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : null}
         <DialogClose asChild>
           <Button type="button" variant="ghost" size="icon-sm">
             <XIcon aria-hidden />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{<__LocalizedText id="documentRecordDialog_close" />}</span>
           </Button>
         </DialogClose>
       </div>
@@ -174,35 +177,34 @@ function DocumentBody({
             <div className="flex flex-col divide-y divide-hairline">
               {pendingReview ? (
                 <p className="pb-3 text-body-compact text-foreground">
-                  Signed by the parties. Waiting for the magistrate to sign.
-                </p>
+                  {<__LocalizedText id="documentRecordDialog_signedByThePartiesWaitingForThe" />}{" "}</p>
               ) : null}
 
               <FactGroup>
-                <Fact label="ID">
+                <Fact label={__t("documentRecordDialog_id")}>
                   {document.provisionalId ? (
                     /* Copyable like every other identifier here (owner,
                        Oct 8), and only as wide as itself. */
                     <span className="flex">
-                      <Identifier value={document.provisionalId} label="document ID" />
+                      <Identifier value={document.provisionalId} label={__t("documentRecordDialog_documentId")} />
                     </span>
                   ) : (
-                    <Muted>Given when submitted</Muted>
+                    <Muted>{<__LocalizedText id="documentRecordDialog_givenWhenSubmitted" />}</Muted>
                   )}
                 </Fact>
               </FactGroup>
 
               <FactGroup columns={2}>
-                <Fact label="Document type">
+                <Fact label={__t("documentRecordDialog_documentType")}>
                   {documentTypeLabel(document.type)}
                 </Fact>
-                <Fact label="Source">{documentSourceLabel(document.source)}</Fact>
-                <Fact label="Submitted on">
+                <Fact label={__t("documentRecordDialog_source")}>{documentSourceLabel(document.source)}</Fact>
+                <Fact label={__t("documentRecordDialog_submittedOn")}>
                   <span className="tabular-nums">
                     {formatCaseDate(document.submittedOn)}
                   </span>
                 </Fact>
-                <Fact label="Submitted by">
+                <Fact label={__t("documentRecordDialog_submittedBy")}>
                   <span className="flex flex-col gap-0.5">
                     <span>{displayName(submittedByName(document, peopleById))}</span>
                     {role ? (
@@ -216,9 +218,9 @@ function DocumentBody({
 
               {document.evidenceNumber ? (
                 <FactGroup>
-                  <Fact label="Evidence number">
+                  <Fact label={__t("documentRecordDialog_evidenceNumber")}>
                     <span className="flex">
-                      <Identifier value={document.evidenceNumber} label="evidence number" />
+                      <Identifier value={document.evidenceNumber} label={__t("documentRecordDialog_evidenceNumber_e91ce1f4")} />
                     </span>
                   </Fact>
                 </FactGroup>
@@ -227,27 +229,27 @@ function DocumentBody({
               {document.linkedApplication || document.linkedHearing ? (
                 <FactGroup>
                   {document.linkedApplication ? (
-                    <Fact label="Filed with">
+                    <Fact label={__t("documentRecordDialog_filedWith")}>
                       <span className="flex flex-col items-start gap-0.5">
                         <Identifier
                           value={document.linkedApplication.id}
-                          label="application id"
+                          label={__t("documentRecordDialog_applicationId")}
                         />
                         <span className="text-caption font-normal text-muted-foreground">
-                          {document.linkedApplication.label}
+                          {__t(document.linkedApplication.label)}
                         </span>
                       </span>
                     </Fact>
                   ) : null}
                   {document.linkedHearing ? (
-                    <Fact label="Hearing">
+                    <Fact label={__t("documentRecordDialog_hearing")}>
                       <span className="flex flex-col items-start gap-0.5">
                         <Identifier
                           value={document.linkedHearing.id}
-                          label="hearing id"
+                          label={__t("documentRecordDialog_hearingId")}
                         />
                         <span className="text-caption font-normal text-muted-foreground">
-                          {document.linkedHearing.label}
+                          {__t(document.linkedHearing.label)}
                         </span>
                       </span>
                     </Fact>
@@ -259,8 +261,7 @@ function DocumentBody({
             {files.length > 1 ? (
               <div className="flex flex-col gap-1.5 border-t border-hairline pt-3">
                 <h3 className="text-caption font-medium text-muted-foreground">
-                  Files
-                </h3>
+                  {<__LocalizedText id="documentRecordDialog_files" />}{" "}</h3>
                 <ul className="-mx-2 flex flex-col gap-0.5">
                   {files.map((item) => (
                     <li key={item.src}>
@@ -277,7 +278,7 @@ function DocumentBody({
                           aria-hidden
                           className="size-4 shrink-0 text-muted-foreground"
                         />
-                        <span className="min-w-0 break-words">{item.label}</span>
+                        <span className="min-w-0 break-words">{__t(item.label)}</span>
                       </button>
                     </li>
                   ))}
@@ -291,17 +292,17 @@ function DocumentBody({
           {image ? (
             <ComposedDocumentViewer
               key={src}
-              title={openLabel}
+              title={__t(openLabel)}
               className="min-h-64 min-w-0 flex-1 rounded-none"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- a local file's object URL */}
-              <img src={image} alt={openLabel} className="block w-full" />
+              <img src={image} alt={__t(openLabel)} className="block w-full" />
             </ComposedDocumentViewer>
           ) : pdf ? (
             <PdfViewer
               key={src}
               src={pdf.url}
-              title={document.title}
+              title={__t(document.title)}
               pages={pdf.page ? { from: pdf.page, to: pdf.page } : undefined}
               className="min-h-64 flex-1 rounded-none"
             />
@@ -313,11 +314,9 @@ function DocumentBody({
                     <FileXIcon aria-hidden />
                   </EmptyMedia>
                   <EmptyTitle className="text-body font-semibold">
-                    No file attached
-                  </EmptyTitle>
+                    {<__LocalizedText id="documentRecordDialog_noFileAttached" />}{" "}</EmptyTitle>
                   <EmptyDescription>
-                    This record has no file on it yet.
-                  </EmptyDescription>
+                    {<__LocalizedText id="documentRecordDialog_thisRecordHasNoFileOnIt" />}{" "}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             </div>
@@ -334,6 +333,7 @@ function DocumentBody({
  * document keeps the width.
  */
 function Comments({ fieldId }: { fieldId: string }) {
+  const __t = __useTranslations();
   const [comments, setComments] = useState<{ id: string; body: string }[]>([]);
   const [draft, setDraft] = useState("");
   const scopeId = `${fieldId}-scope`;
@@ -355,11 +355,9 @@ function Comments({ fieldId }: { fieldId: string }) {
           htmlFor={fieldId}
           className="text-body-compact font-semibold text-foreground"
         >
-          Comments
-        </FieldLabel>
+          {<__LocalizedText id="documentRecordDialog_comments" />}{" "}</FieldLabel>
         <p id={scopeId} className="text-caption text-muted-foreground">
-          On this file only. Not a filing.
-        </p>
+          {<__LocalizedText id="documentRecordDialog_onThisFileOnlyNotAFiling" />}{" "}</p>
       </div>
       {comments.length > 0 ? (
         <ul className="flex flex-col gap-1.5">
@@ -368,7 +366,7 @@ function Comments({ fieldId }: { fieldId: string }) {
               key={comment.id}
               className="rounded-lg bg-surface-sunken px-3 py-2 text-body-compact whitespace-pre-wrap text-foreground"
             >
-              {comment.body}
+              {__t(comment.body)}
             </li>
           ))}
         </ul>
@@ -376,7 +374,7 @@ function Comments({ fieldId }: { fieldId: string }) {
       <Field>
         <Textarea
           id={fieldId}
-          placeholder="Write a comment"
+          placeholder={__t("documentRecordDialog_writeAComment")}
           rows={2}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
@@ -391,8 +389,7 @@ function Comments({ fieldId }: { fieldId: string }) {
         disabled={!draft.trim()}
         onClick={post}
       >
-        Post
-      </Button>
+        {<__LocalizedText id="documentRecordDialog_post" />}{" "}</Button>
     </section>
   );
 }

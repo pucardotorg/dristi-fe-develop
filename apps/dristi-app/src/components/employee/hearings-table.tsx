@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useCourt } from "@/components/court/court-provider";
 import * as React from "react";
@@ -221,7 +223,7 @@ export function HearingCaseButton({
       {/* The cause title alone is the whole of what a sighted reader needs under a
           column headed "Case name"; out of that column it is a control named after two
           parties and nothing else. */}
-      <span className="sr-only">Open case overview for </span>
+      <span className="sr-only">{<__LocalizedText id="hearingsTable_openCaseOverviewFor" />}{" "}</span>
       {causeTitle(hearing)}
     </button>
   );
@@ -255,6 +257,7 @@ export function HearingSessionButton({
   onPassOver: (hearing: CourtHearing) => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const { court } = useCourt();
   /* One ref for whichever of Start and End is showing, so focus can land on the control
      after Pass over takes the chevron away (`PassOverMenu`). */
@@ -328,8 +331,7 @@ export function HearingSessionButton({
         )}
         onClick={() => onStartHearing(hearing)}
       >
-        Start hearing
-      </Button>
+        {<__LocalizedText id="hearingsTable_startHearing" />}{" "}</Button>
     );
   } else if (canEndHearing(hearing.status)) {
     session = (
@@ -362,8 +364,7 @@ export function HearingSessionButton({
         className={cn(SESSION_SLOT_CLASS, "flex-1", split && "border-r-0")}
         onClick={() => onEndHearing(hearing)}
       >
-        End hearing
-      </Button>
+        {<__LocalizedText id="hearingsTable_endHearing" />}{" "}</Button>
     );
   }
   if (session) {
@@ -374,7 +375,7 @@ export function HearingSessionButton({
        to land. */
     const dress = canEndHearing(hearing.status) ? "destructive" : variant;
     return (
-      <ButtonGroup aria-label={`Hearing, item ${hearing.item}`} className={className}>
+      <ButtonGroup aria-label={__t("hearingsTable_hearingItemValue0", {value0: String(hearing.item)})} className={className}>
         {session}
         {split ? (
           <PassOverMenu
@@ -406,8 +407,7 @@ export function HearingSessionButton({
       variant="outline"
       className={cn(SESSION_SLOT_CLASS, className)}
     >
-      Hearing ended
-    </Button>
+      {<__LocalizedText id="hearingsTable_hearingEnded" />}{" "}</Button>
   );
 }
 
@@ -469,6 +469,7 @@ function PassOverMenu({
   /** The session control beside the chevron — focus's place when the row stays put. */
   sessionRef: React.RefObject<HTMLButtonElement | null>;
 }) {
+  const __t = __useTranslations();
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   /* Where the row stood when Pass over was chosen; `undefined` while the menu closes
      any other way, and Radix's own return to the trigger is left alone. */
@@ -481,7 +482,7 @@ function PassOverMenu({
           type="button"
           variant={dress}
           size="icon"
-          aria-label={`Pass over item ${hearing.item}, ${causeTitle(hearing)}`}
+          aria-label={__t("hearingsTable_passOverItemValue0Value1", {value0: String(hearing.item), value1: String(causeTitle(hearing))})}
           className={cn(
             "relative before:absolute before:top-1/2 before:left-0 before:h-4 before:w-px before:-translate-y-1/2",
             dress === "outline" &&
@@ -519,8 +520,7 @@ function PassOverMenu({
           }}
         >
           <UserRoundXIcon aria-hidden />
-          Pass over
-        </DropdownMenuItem>
+          {<__LocalizedText id="hearingsTable_passOver" />}{" "}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -682,10 +682,11 @@ export function HearingOrdersButton({
   onOpen?: (hearing: CourtHearing) => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const { court } = useCourt();
   const label = drafted
-    ? `Resume draft order for item ${hearing.item}, ${causeTitle(hearing)}`
-    : `Order for item ${hearing.item}, ${causeTitle(hearing)}`;
+    ? __t("hearingsTable_resumeDraftOrderForItemValue0Value1", {value0: String(hearing.item), value1: String(causeTitle(hearing))})
+    : __t("hearingsTable_orderForItemValue0Value1", {value0: String(hearing.item), value1: String(causeTitle(hearing))});
   /* One column, two preconditions — see above — and neither of them is asked about an
      order that has already been drawn up. */
   const open =
@@ -761,10 +762,10 @@ export function HearingOrdersButton({
         className={dressClass}
         /* Named or not, the reason travels in the accessible name: the words say what
            the control is, not why it will not open. */
-        aria-label={`${label} (${
+        aria-label={`${__t(label)} (${
           canStartHearing(hearing.status)
-            ? "available once the hearing starts"
-            : "the matter was not heard"
+            ? __t("hearingsTable_availableOnceTheHearingStarts")
+            : __t("hearingsTable_theMatterWasNotHeard")
         })`}
       >
         {content}
@@ -787,7 +788,7 @@ export function HearingOrdersButton({
            colour is never allowed to be the only carrier (`ACCESSIBILITY.md` — status
            without colour-alone). The tick is the third carrier: it survives greyscale
            and every form of colour blindness, which the green on its own does not. */
-        aria-label={recorded ? `${label} (order recorded)` : label}
+        aria-label={recorded ? `${__t(label)} (order recorded)` : __t(label)}
         onClick={() => onOpen?.(hearing)}
       >
         {content}
@@ -821,7 +822,7 @@ export function HearingOrdersButton({
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>{control}</TooltipTrigger>
-        <TooltipContent>Draft</TooltipContent>
+        <TooltipContent>{<__LocalizedText id="hearingsTable_draft" />}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -969,6 +970,7 @@ export function HearingsTable({
   onPassOver: (hearing: CourtHearing) => void;
   onOpenOrder?: (hearing: CourtHearing) => void;
 }) {
+  const __t = __useTranslations();
   const drafts = useOrderDrafts();
   const [dragging, setDragging] = React.useState<CauseListColumnId | null>(null);
   const [over, setOver] = React.useState<{
@@ -1065,7 +1067,7 @@ export function HearingsTable({
       case "caseNumber":
         /* The product's one identifier treatment; it stops its own click from reaching
            the row opener. */
-        return <Identifier value={hearing.caseNumber} label="case number" />;
+        return <Identifier value={hearing.caseNumber} label={__t("hearingsTable_caseNumber")} />;
       case "advocates":
         return (
           <CounselCell
@@ -1124,10 +1126,7 @@ export function HearingsTable({
   return (
     <>
       <p id={COLUMNS_HINT_ID} className="sr-only">
-        Drag a column heading to change its order. With a heading focused, press Alt
-        and Left arrow or Alt and Right arrow to move it. Show, hide or reset columns
-        from Edit columns.
-      </p>
+        {<__LocalizedText id="hearingsTable_dragAColumnHeadingToChangeIts" />}{" "}</p>
       <Table
         className="w-full border-separate border-spacing-0 text-body-compact"
         aria-describedby={COLUMNS_HINT_ID}
@@ -1144,8 +1143,8 @@ export function HearingsTable({
                   onCheckedChange={(next) => selection.onToggleAll(next === true)}
                   aria-label={
                     selection.all === true
-                      ? "Clear the selection"
-                      : "Select every hearing in this list"
+                      ? __t("hearingsTable_clearTheSelection")
+                      : __t("hearingsTable_selectEveryHearingInThisList")
                   }
                 />
               </TableHead>
@@ -1189,7 +1188,7 @@ export function HearingsTable({
                     aria-hidden
                     className="absolute top-1/2 left-0.5 size-3.5 -translate-y-1/2 text-muted-foreground"
                   />
-                  {column.label}
+                  {__t(column.label)}
                 </TableHead>
               );
             })}
@@ -1220,7 +1219,7 @@ export function HearingsTable({
                     checked={selection.selected.has(hearing.id)}
                     onCheckedChange={() => selection.onToggle(hearing.id)}
                     onClick={(event) => event.stopPropagation()}
-                    aria-label={`Select item ${hearing.item}, ${causeTitle(hearing)}`}
+                    aria-label={__t("hearingsTable_selectItemValue0Value1", {value0: String(hearing.item), value1: String(causeTitle(hearing))})}
                   />
                 </TableCell>
               ) : null}

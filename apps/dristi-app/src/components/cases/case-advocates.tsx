@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -180,6 +181,7 @@ export function CaseAdvocates({
    *  hit area, and a 40px trigger sets the row height for the whole table. */
   dense?: boolean;
 }) {
+  const __t = __useTranslations();
   /* Above the early return — hooks run on every render or not at all. */
   const { open, openedByHover, onOpenChange, hoverProps } = useHoverPopover();
   const names = counselFor(record, side);
@@ -246,7 +248,7 @@ export function CaseAdvocates({
                 {/* The dense table says just "+2" (owner, Sept 21): the
                     column is narrow and the dotted rule already says there is
                     more. The case header keeps the PM's "+2 others". */}
-                {dense ? `+${extra}` : `+${extra} ${extra === 1 ? "other" : "others"}`}
+                {dense ? `+${extra}` : `+${extra} ${extra === 1 ? __t("caseAdvocates_other") : __t("caseAdvocates_others")}`}
               </button>
             ) : (
               <Badge

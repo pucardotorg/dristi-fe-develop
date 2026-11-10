@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /** S3 — what the appointment covers, and the editable terms (§4a). */
 
@@ -25,6 +27,7 @@ import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
 
 export function ScopeStep({ vak }: { vak: Vakalatnama }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const setScope = (patch: Partial<Scope>) =>
     updateVak(vak.id, (p) => ({ ...p, scope: { ...p.scope, ...patch } }));
@@ -35,29 +38,29 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
   const [caseQuery, setCaseQuery] = React.useState(s.caseNumber);
 
   const scopeOptions = [
-    { value: "specific", label: "A specific case" },
-    ...(config.standingEnabled ? [{ value: "standing", label: "All cases (standing)" }] : []),
+    { value: "specific", label: __t("scope_aSpecificCase") },
+    ...(config.standingEnabled ? [{ value: "standing", label: __t("scope_allCasesStanding") }] : []),
   ];
 
   return (
     <div className="flex flex-col gap-6">
-      <FormCard title="Court" description="Which court this appointment is for.">
-        <FormField label="Court" asGroup>
+      <FormCard title={__t("scope_court")} description={__t("scope_whichCourtThisAppointmentIsFor")}>
+        <FormField label={__t("scope_court")} asGroup>
           <OptionSelect
             value={s.court}
             onValueChange={(v) => setScope({ court: v })}
             options={COURTS.map((court) => ({ value: court, label: courtText(court) }))}
-            placeholder="Select the court"
+            placeholder={__t("scope_selectTheCourt")}
             ariaLabel="Court"
           />
         </FormField>
       </FormCard>
 
       <FormCard
-        title="What does this vakalatnama cover?"
-        description="One case, or a standing appointment across all of the litigant’s cases."
+        title={__t("scope_whatDoesThisVakalatnamaCover")}
+        description={__t("scope_oneCaseOrAStandingAppointmentAcross")}
       >
-        <FormField label="Scope" asGroup>
+        <FormField label={__t("scope_scope")} asGroup>
           <Segmented
             size="compact"
             value={s.type}
@@ -69,14 +72,14 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
 
         {s.type === "specific" ? (
           <>
-            <FormField label="Is the case already filed?" asGroup>
+            <FormField label={__t("scope_isTheCaseAlreadyFiled")} asGroup>
               <Segmented
                 size="compact"
                 value={s.caseState}
                 onValueChange={(v) => setScope({ caseState: v as Scope["caseState"] })}
                 options={[
-                  { value: "filed", label: "Already filed" },
-                  { value: "not_filed", label: "Not yet filed" },
+                  { value: "filed", label: __t("scope_alreadyFiled") },
+                  { value: "not_filed", label: __t("scope_notYetFiled") },
                 ]}
                 ariaLabel="Case state"
               />
@@ -85,7 +88,7 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
             {s.caseState === "filed" ? (
               <>
                 <FormField
-                  label="Find your case"
+                  label={__t("scope_findYourCase")}
                   asGroup
                   help="Search the cases you’re already a party to."
                 >
@@ -102,12 +105,12 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
                           {/* A combobox row is an option — no control nested inside it. */}
                           <Identifier
                             value={fc.caseNumber}
-                            label="case number"
+                            label={__t("scope_caseNumber")}
                             className="text-body-compact"
                             copyable={false}
                           />
                           <span className="text-caption text-muted-foreground">
-                            {fc.title} · {courtText(fc.court)}
+                            {__t(fc.title)} · {courtText(fc.court)}
                           </span>
                         </div>
                       );
@@ -117,8 +120,8 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
                       setScope({ caseNumber: fc.caseNumber, court: fc.court });
                       setCaseQuery(fc.caseNumber);
                     }}
-                    placeholder="Search by case number or party"
-                    emptyLabel="No matching case found."
+                    placeholder={__t("scope_searchByCaseNumberOrParty")}
+                    emptyLabel={__t("scope_noMatchingCaseFound")}
                     ariaLabel="Search your cases"
                   />
                 </FormField>
@@ -129,12 +132,12 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
                     <div className="flex min-w-0 flex-col">
                       <Identifier
                         value={s.caseNumber}
-                        label="case number"
+                        label={__t("scope_caseNumber")}
                         className="self-start text-body-compact"
                       />
                       <span className="text-caption text-muted-foreground">
-                        {LITIGANT_CASES.find((c) => c.caseNumber === s.caseNumber)?.title ??
-                          "Selected case"}
+                        {__t(LITIGANT_CASES.find((c) => c.caseNumber === s.caseNumber)?.title) ??
+                          __t("scope_selectedCase")}
                       </span>
                     </div>
                   </div>
@@ -143,24 +146,22 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
             ) : (
               <>
                 <FormField
-                  label="Link a draft filing"
+                  label={__t("scope_linkADraftFiling")}
                   optional
                   help="Attach this to a draft you’re preparing, or note the matter. The case number is filled in when it’s registered."
                 >
                   <TextField
                     value={s.draftRef}
                     onChange={(v) => setScope({ draftRef: v })}
-                    placeholder="Draft reference or a short note"
+                    placeholder={__t("scope_draftReferenceOrAShortNote")}
                     className="max-w-md"
                   />
                 </FormField>
                 <Alert>
                   <InfoIcon aria-hidden />
-                  <AlertTitle>The case number stays blank for now</AlertTitle>
+                  <AlertTitle>{<__LocalizedText id="scope_theCaseNumberStaysBlankForNow" />}</AlertTitle>
                   <AlertDescription>
-                    Like the paper form, this vakalatnama can be signed before the case is
-                    filed. Its number is added once the court registers the case.
-                  </AlertDescription>
+                    {<__LocalizedText id="scope_likeThePaperFormThisVakalatnamaCan" />}{" "}</AlertDescription>
                 </Alert>
               </>
             )}
@@ -168,10 +169,9 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
         ) : (
           <Alert>
             <InfoIcon aria-hidden />
-            <AlertTitle>A standing appointment</AlertTitle>
+            <AlertTitle>{<__LocalizedText id="scope_aStandingAppointment" />}</AlertTitle>
             <AlertDescription>
-              This covers all of the litigant’s cases, not one specific matter.
-            </AlertDescription>
+              {<__LocalizedText id="scope_thisCoversAllOfTheLitigantS" />}{" "}</AlertDescription>
           </Alert>
         )}
       </FormCard>
@@ -183,6 +183,7 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
 
 /** The granted-powers block — standard by default, collapsed, editable on request. */
 function TermsPanel({ terms, onChange }: { terms: Terms; onChange: (t: Terms) => void }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(false);
 
@@ -200,13 +201,13 @@ function TermsPanel({ terms, onChange }: { terms: Terms; onChange: (t: Terms) =>
 
   return (
     <FormCard
-      title="Terms — the powers you grant"
-      description="Standard by default. Open to read them, and edit if you need to."
+      title={__t("scope_termsThePowersYouGrant")}
+      description={__t("scope_standardByDefaultOpenToReadThem")}
       action={
         terms.source === "edited" ? (
-          <span className="text-caption font-medium text-warning-ink">Edited</span>
+          <span className="text-caption font-medium text-warning-ink">{<__LocalizedText id="scope_edited" />}</span>
         ) : (
-          <span className="text-caption text-muted-foreground">Standard</span>
+          <span className="text-caption text-muted-foreground">{<__LocalizedText id="scope_standard" />}</span>
         )
       }
     >
@@ -217,7 +218,7 @@ function TermsPanel({ terms, onChange }: { terms: Terms; onChange: (t: Terms) =>
               aria-hidden
               className={open ? "rotate-180 transition-transform" : "transition-transform"}
             />
-            {open ? "Hide terms" : "View terms"}
+            {open ? __t("scope_hideTerms") : __t("scope_viewTerms")}
           </Button>
         </CollapsibleTrigger>
 
@@ -227,19 +228,17 @@ function TermsPanel({ terms, onChange }: { terms: Terms; onChange: (t: Terms) =>
               <ol className="flex list-decimal flex-col gap-2 rounded-lg bg-surface-sunken p-4 pl-9 text-body-compact">
                 {terms.clauses.map((c, i) => (
                   <li key={i} className="pl-1 leading-relaxed">
-                    {c || <span className="text-muted-foreground">Empty clause</span>}
+                    {c || <span className="text-muted-foreground">{<__LocalizedText id="scope_emptyClause" />}</span>}
                   </li>
                 ))}
               </ol>
               <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={() => setEditing(true)}>
-                  Edit terms
-                </Button>
+                  {<__LocalizedText id="scope_editTerms" />}{" "}</Button>
                 {terms.source === "edited" ? (
                   <Button type="button" variant="ghost" onClick={reset}>
                     <RotateCcwIcon aria-hidden />
-                    Reset to standard
-                  </Button>
+                    {<__LocalizedText id="scope_resetToStandard" />}{" "}</Button>
                 ) : null}
               </div>
             </>
@@ -255,13 +254,13 @@ function TermsPanel({ terms, onChange }: { terms: Terms; onChange: (t: Terms) =>
                     onChange={(ev) => setClause(i, ev.target.value)}
                     rows={2}
                     className="flex-1"
-                    aria-label={`Clause ${i + 1}`}
+                    aria-label={__t("scope_clauseValue0", {value0: String(i + 1)})}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    aria-label={`Remove clause ${i + 1}`}
+                    aria-label={__t("scope_removeClauseValue0", {value0: String(i + 1)})}
                     onClick={() => removeClause(i)}
                     className="text-muted-foreground"
                   >
@@ -272,15 +271,12 @@ function TermsPanel({ terms, onChange }: { terms: Terms; onChange: (t: Terms) =>
               <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={addClause}>
                   <PlusIcon aria-hidden />
-                  Add a clause
-                </Button>
+                  {<__LocalizedText id="scope_addAClause" />}{" "}</Button>
                 <Button type="button" variant="ghost" onClick={reset}>
                   <RotateCcwIcon aria-hidden />
-                  Reset to standard
-                </Button>
+                  {<__LocalizedText id="scope_resetToStandard" />}{" "}</Button>
                 <Button type="button" onClick={() => setEditing(false)}>
-                  Done editing
-                </Button>
+                  {<__LocalizedText id="scope_doneEditing" />}{" "}</Button>
               </div>
             </div>
           )}

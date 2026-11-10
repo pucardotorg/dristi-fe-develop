@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -100,6 +102,7 @@ export function useLinkedComplaints(): Loaded[] {
 }
 
 export function LinkedComplaintCard({ item }: { item: Loaded }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const { badge, variant, action } = standing(item);
   const filer = item.draft.advocates[0]?.name.trim();
@@ -112,13 +115,13 @@ export function LinkedComplaintCard({ item }: { item: Loaded }) {
         </div>
         <div className="flex flex-col gap-2 text-caption text-muted-foreground">
           <p>
-            <span className="font-medium text-foreground">Court</span>
+            <span className="font-medium text-foreground">{<__LocalizedText id="linkedComplaintCards_court" />}</span>
             <br />
             {courtText(COURT.name)}
           </p>
           {filer ? (
             <p>
-              <span className="font-medium text-foreground">Filed by</span>
+              <span className="font-medium text-foreground">{<__LocalizedText id="linkedComplaintCards_filedBy" />}</span>
               <br />
               {filer}
             </p>
@@ -126,7 +129,7 @@ export function LinkedComplaintCard({ item }: { item: Loaded }) {
         </div>
         <Button asChild variant="outline" className="mt-auto w-full">
           <Link href={linkedComplaintHref(item.link)}>
-            {action}
+            {__t(action)}
             <ArrowRightIcon data-icon="inline-end" aria-hidden />
           </Link>
         </Button>

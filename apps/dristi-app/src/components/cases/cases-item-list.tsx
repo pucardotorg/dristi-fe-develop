@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -57,6 +59,7 @@ export function CasesItemList({
   hideStage = false,
   hideLongPendingFlag = false,
 }: ListProps) {
+  const __t = __useTranslations();
   const { record: openRecord } = useCasePeek();
   const { selected, toggle, enabled: selectable } = useCasesSelection();
   const selecting = selectable && selected.size > 0;
@@ -106,7 +109,7 @@ export function CasesItemList({
                   <Checkbox
                     checked={picked}
                     onCheckedChange={() => toggle(record.id)}
-                    aria-label={`Select ${partiesLabel(record)}`}
+                    aria-label={__t("casesItemList_selectValue0", {value0: String(partiesLabel(record))})}
                     className="size-5"
                   />
                 </div>
@@ -150,8 +153,7 @@ export function CasesItemList({
             {next?.on ? (
               <div className="flex flex-col gap-0.5 border-t border-hairline pt-3">
                 <span className="text-caption text-muted-foreground">
-                  Next hearing
-                </span>
+                  {<__LocalizedText id="casesItemList_nextHearing" />}{" "}</span>
                 <span className="text-body-compact text-foreground">
                   <span className="font-medium tabular-nums">
                     {formatCaseDate(next.on)}

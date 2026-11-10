@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { DownloadIcon, XIcon } from "lucide-react";
 
@@ -36,6 +38,7 @@ export function OrderRecordDialog({
   order: OrderRecord | null;
   onOpenChange: (open: boolean) => void;
 }) {
+  const __t = __useTranslations();
   const doc = order?.issuedDocument;
 
   return (
@@ -55,7 +58,7 @@ export function OrderRecordDialog({
             <div className="flex shrink-0 items-center gap-2 border-b border-hairline py-3 pr-3 pl-6">
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <DialogTitle className="text-body-compact font-semibold text-pretty sm:truncate">
-                  {order.title}
+                  {__t(order.title)}
                 </DialogTitle>
                 <DialogDescription className="text-caption font-medium tabular-nums text-muted-foreground">
                   {formatCaseDate(order.issuedOn)}
@@ -66,19 +69,19 @@ export function OrderRecordDialog({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="ghost" size="icon-sm" asChild>
-                        <a href={doc.href} download aria-label="Download">
+                        <a href={doc.href} download aria-label={__t("orderRecordDialog_download")}>
                           <DownloadIcon aria-hidden />
                         </a>
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">Download</TooltipContent>
+                    <TooltipContent side="bottom">{<__LocalizedText id="orderRecordDialog_download" />}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               ) : null}
               <DialogClose asChild>
                 <Button type="button" variant="ghost" size="icon-sm">
                   <XIcon aria-hidden />
-                  <span className="sr-only">Close</span>
+                  <span className="sr-only">{<__LocalizedText id="orderRecordDialog_close" />}</span>
                 </Button>
               </DialogClose>
             </div>
@@ -88,7 +91,7 @@ export function OrderRecordDialog({
                 src={doc.href}
                 /* The sample orders are single pages of one compiled file. */
                 pages={doc.page ? { from: doc.page, to: doc.page } : undefined}
-                title={order.title}
+                title={__t(order.title)}
                 className="flex-1 rounded-none"
               />
             ) : null}

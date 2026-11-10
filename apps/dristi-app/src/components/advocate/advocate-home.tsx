@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -192,6 +193,7 @@ function HomeBody({
   config?: AdvocateHomeConfig;
   filterVariant?: FilterVariant;
 }) {
+  const __t = __useTranslations();
   const isMobile = useIsMobile();
   const store = useTasks();
   const { state, people, cases, tasks, user, reload } = store;
@@ -292,11 +294,11 @@ function HomeBody({
   const onJoinCourt = React.useCallback(() => setJoinOpen(true), []);
   const announceJoin = React.useCallback(
     (parties: string, courtLabel: string, courtNumber: string | null) => {
-      toast.info(pick({ en: "Hearing link unavailable", ml: "വിചാരണ ലിങ്ക് ലഭ്യമല്ല" }, locale), {
-        description: `${parties} · ${courtLabel}${courtNumber ? ` · ${courtNumber}` : ""}`,
+      toast.info(pick({ en: "advocateHome_hearingLinkUnavailable", ml: "വിചാരണ ലിങ്ക് ലഭ്യമല്ല" }, locale), {
+        description: `${parties} · ${__t(courtLabel)}${courtNumber ? ` · ${courtNumber}` : ""}`,
       });
     },
-    [locale]
+    [locale, __t]
   );
   const onJoinHearing = React.useCallback(
     (row: CauseListRow) => announceJoin(row.parties, row.courtLabel, row.courtNumber),

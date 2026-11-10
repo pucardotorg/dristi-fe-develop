@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import NextImage from "next/image";
@@ -60,7 +61,7 @@ export function AddIdForm({
   onSubmitted: (submission: SubmittedId) => void;
   onCancel: () => void;
 }) {
-  const [idType, setIdType] = React.useState<IdType | "">("");
+    const [idType, setIdType] = React.useState<IdType | "">("");
   const [file, setFile] = React.useState<File | null>(null);
   const [status, setStatus] = React.useState<UploadStatus>("empty");
   const [quality, setQuality] = React.useState<ScanQuality>(null);
@@ -257,7 +258,7 @@ export function AddIdForm({
                 </FieldError>
               </Field>
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={onCancel}>{<__LocalizedText id="addIdDialog_cancel" />}</Button>
           <Button type="submit">{pick(idUpload.submit, locale)}</Button>
         </div>
       </form>
@@ -293,7 +294,7 @@ export function AddIdForm({
 }
 
 export function SubmittedIdSummary({ submission, locale }: { submission: SubmittedId; locale: Locale }) {
-  const [previewOpen, setPreviewOpen] = React.useState(false);
+    const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewUrl] = React.useState(() => URL.createObjectURL(submission.file));
 
   React.useEffect(() => () => URL.revokeObjectURL(previewUrl), [previewUrl]);
@@ -315,7 +316,7 @@ export function SubmittedIdSummary({ submission, locale }: { submission: Submitt
         <div className="min-w-0">
           <p className="truncate font-medium">{submission.file.name}</p>
           <p className="text-muted-foreground">{pick(idUpload.idTypes[submission.idType], locale)} · {fileSize(submission.file.size)}</p>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => setPreviewOpen(true)}>View ID</Button>
+          <Button type="button" variant="link" className="h-auto p-0" onClick={() => setPreviewOpen(true)}>{<__LocalizedText id="addIdDialog_viewId" />}</Button>
         </div>
       </div>
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>

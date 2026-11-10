@@ -1,3 +1,5 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { CheckCircle2Icon, ChevronRightIcon, ScaleIcon } from "lucide-react";
@@ -9,52 +11,52 @@ export const metadata: Metadata = { title: "SARAS 2.0 connector" };
 
 /** Settings › Integrations › SARAS 2.0: what the connector sends, and from where. */
 export default async function Page() {
+  const __t = __useTranslations();
   // SARAS 2.0 is served from this same address (`app/provakil/layout.tsx`).
   const h = await headers();
   const DRISTI_URL = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
   return (
     <div className="flex flex-col gap-5 p-6">
       <div>
-        <nav className="flex items-center gap-1 text-[12px] text-(--pv-muted)" aria-label="Breadcrumb">
-          <span>Settings</span>
+        <nav className="flex items-center gap-1 text-[12px] text-(--pv-muted)" aria-label={__t("sarasPage_breadcrumb")}>
+          <span>{<__LocalizedText id="sarasPage_settings" />}</span>
           <ChevronRightIcon className="size-3" aria-hidden />
-          <span>Integrations</span>
+          <span>{<__LocalizedText id="sarasPage_integrations" />}</span>
         </nav>
         <div className="mt-1 flex items-center gap-3">
           <span className="flex size-10 items-center justify-center rounded-md bg-(--pv-plum-50) text-(--pv-plum)">
             <ScaleIcon className="size-5" aria-hidden />
           </span>
           <div>
-            <h1 className="text-[22px] font-medium">SARAS 2.0 e-filing connector</h1>
-            <p className="text-[13px] text-(--pv-muted)">Section 138 complaints to SARAS 2.0, Gujarat, through its Bulk Filing API</p>
+            <h1 className="text-[22px] font-medium">{<__LocalizedText id="sarasPage_saras20EFilingConnector" />}</h1>
+            <p className="text-[13px] text-(--pv-muted)">{<__LocalizedText id="sarasPage_section138ComplaintsToSaras20" />}</p>
           </div>
           <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-(--pv-teal-50) px-3 py-1 text-[12px] font-medium text-[#00796b]">
             <CheckCircle2Icon className="size-4" aria-hidden />
-            Connected
-          </span>
+            {<__LocalizedText id="sarasPage_connected" />}{" "}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <section className="rounded-lg border border-(--pv-line) bg-white p-4 shadow-sm">
-          <h2 className="mb-3 font-medium">Connection</h2>
+          <h2 className="mb-3 font-medium">{<__LocalizedText id="sarasPage_connection" />}</h2>
           <dl className="flex flex-col gap-2 text-[13px]">
-            <div><dt className="text-[11px] text-(--pv-muted) uppercase">Endpoint</dt><dd className="num break-all">{DRISTI_URL}/api/bulk/v1/batches</dd></div>
-            <div><dt className="text-[11px] text-(--pv-muted) uppercase">API key</dt><dd className="num">••••••••••••-key</dd></div>
-            <div><dt className="text-[11px] text-(--pv-muted) uppercase">Court</dt><dd>Ahmedabad, Gujarat (S-138 NI Act)</dd></div>
-            <div><dt className="text-[11px] text-(--pv-muted) uppercase">Willing to settle by ADR</dt><dd>No</dd></div>
+            <div><dt className="text-[11px] text-(--pv-muted) uppercase">{<__LocalizedText id="sarasPage_endpoint" />}</dt><dd className="num break-all">{DRISTI_URL}{<__LocalizedText id="sarasPage_apiBulkV1Batches" />}</dd></div>
+            <div><dt className="text-[11px] text-(--pv-muted) uppercase">{<__LocalizedText id="sarasPage_apiKey" />}</dt><dd className="num">{<__LocalizedText id="sarasPage_key" />}</dd></div>
+            <div><dt className="text-[11px] text-(--pv-muted) uppercase">{<__LocalizedText id="sarasPage_court" />}</dt><dd>{<__LocalizedText id="sarasPage_ahmedabadGujaratS138NiAct" />}</dd></div>
+            <div><dt className="text-[11px] text-(--pv-muted) uppercase">{<__LocalizedText id="sarasPage_willingToSettleByAdr" />}</dt><dd>{<__LocalizedText id="sarasPage_no" />}</dd></div>
           </dl>
         </section>
         <section className="rounded-lg border border-(--pv-line) bg-white p-4 shadow-sm">
-          <h2 className="mb-3 font-medium">Complainant (company profile)</h2>
+          <h2 className="mb-3 font-medium">{<__LocalizedText id="sarasPage_complainantCompanyProfile" />}</h2>
           <dl className="flex flex-col gap-2 text-[13px]">
-            <div><dt className="text-[11px] text-(--pv-muted) uppercase">Legal name</dt><dd>{BANK.legalName}</dd></div>
-            <div><dt className="text-[11px] text-(--pv-muted) uppercase">CIN</dt><dd className="num">{BANK.cin}</dd></div>
-            <div><dt className="text-[11px] text-(--pv-muted) uppercase">Registered office</dt><dd>{BANK.registeredOffice.line}, {BANK.registeredOffice.city} {BANK.registeredOffice.pincode}</dd></div>
+            <div><dt className="text-[11px] text-(--pv-muted) uppercase">{<__LocalizedText id="sarasPage_legalName" />}</dt><dd>{BANK.legalName}</dd></div>
+            <div><dt className="text-[11px] text-(--pv-muted) uppercase">{<__LocalizedText id="sarasPage_cin" />}</dt><dd className="num">{BANK.cin}</dd></div>
+            <div><dt className="text-[11px] text-(--pv-muted) uppercase">{<__LocalizedText id="sarasPage_registeredOffice" />}</dt><dd>{BANK.registeredOffice.line}, {BANK.registeredOffice.city} {BANK.registeredOffice.pincode}</dd></div>
           </dl>
         </section>
         <section className="rounded-lg border border-(--pv-line) bg-white p-4 shadow-sm">
-          <h2 className="mb-3 font-medium">Authorised officers</h2>
+          <h2 className="mb-3 font-medium">{<__LocalizedText id="sarasPage_authorisedOfficers" />}</h2>
           <ul className="flex flex-col gap-2 text-[13px]">
             {Object.entries(OFFICERS).map(([region, o]) => (
               <li key={region}>
@@ -63,7 +65,7 @@ export default async function Page() {
               </li>
             ))}
           </ul>
-          <h3 className="mt-4 mb-2 text-[11px] text-(--pv-muted) uppercase">Empanelled advocates</h3>
+          <h3 className="mt-4 mb-2 text-[11px] text-(--pv-muted) uppercase">{<__LocalizedText id="sarasPage_empanelledAdvocates" />}</h3>
           <ul className="flex flex-col gap-1 text-[13px]">
             {ADVOCATES.map((a) => (
               <li key={a.enrolment}>{a.name} <span className="num text-(--pv-muted)">{a.enrolment}</span></li>
@@ -74,17 +76,17 @@ export default async function Page() {
 
       <section className="rounded-lg border border-(--pv-line) bg-white shadow-sm">
         <div className="border-b border-(--pv-line) p-4">
-          <h2 className="font-medium">Field mapping</h2>
-          <p className="text-[13px] text-(--pv-muted)">Fixed rules. A value no rule covers is sent as it is and held by SARAS 2.0 for review.</p>
+          <h2 className="font-medium">{<__LocalizedText id="sarasPage_fieldMapping" />}</h2>
+          <p className="text-[13px] text-(--pv-muted)">{<__LocalizedText id="sarasPage_fixedRulesAValueNoRuleCovers" />}</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[860px] text-left text-[13px]">
             <thead className="bg-[#f7f9fc] text-[11px] tracking-wide text-(--pv-muted) uppercase">
               <tr>
-                <th className="px-4 py-2.5">SARAS 2.0 field</th>
-                <th className="px-4 py-2.5">ID</th>
-                <th className="px-4 py-2.5">Provakil source</th>
-                <th className="px-4 py-2.5">Rule</th>
+                <th className="px-4 py-2.5">{<__LocalizedText id="sarasPage_saras20Field" />}</th>
+                <th className="px-4 py-2.5">{<__LocalizedText id="sarasPage_id" />}</th>
+                <th className="px-4 py-2.5">{<__LocalizedText id="sarasPage_provakilSource" />}</th>
+                <th className="px-4 py-2.5">{<__LocalizedText id="sarasPage_rule" />}</th>
               </tr>
             </thead>
             {MAPPING.map((g) => (

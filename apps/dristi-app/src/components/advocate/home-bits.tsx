@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import type { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
@@ -193,6 +195,7 @@ export function RowAction({
   rest?: ReactNode;
   className?: string;
 }) {
+  const __t = __useTranslations();
   return (
     // Both states occupy the same grid cell, so the cell is as wide as the wider
     // of them and nothing reflows when they trade places.
@@ -210,7 +213,7 @@ export function RowAction({
         onClick={onClick}
         className="col-start-1 row-start-1 pointer-events-none opacity-0 transition-opacity group-hover/row:pointer-events-auto group-hover/row:opacity-100 group-focus-within/row:pointer-events-auto group-focus-within/row:opacity-100"
       >
-        {label}
+        {__t(label)}
       </Button>
     </span>
   );
@@ -235,7 +238,7 @@ export function ItemChip({
   /** No well: the label and number stand on the row as they are (desktop board). */
   bare?: boolean;
 }) {
-  return (
+    return (
     <span
       aria-hidden="true"
       className={cn(
@@ -252,7 +255,7 @@ export function ItemChip({
     >
       {size === "lg" ? (
         <>
-          <span className="text-caption text-muted-foreground">Item</span>
+          <span className="text-caption text-muted-foreground">{<__LocalizedText id="homeBits_item" />}</span>
           <span className="text-title-s font-semibold tabular-nums">{item}</span>
         </>
       ) : (
@@ -309,6 +312,7 @@ export function HomeTaskRow({
   onOpen: () => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const due = dueCueOf(task, new Date(now));
   return (
     <div
@@ -323,7 +327,7 @@ export function HomeTaskRow({
           onClick={onOpen}
           className="text-left text-body-compact font-medium after:absolute after:inset-0 after:rounded-lg focus-visible:outline-none focus-visible:after:ring-3 focus-visible:after:ring-ring/50"
         >
-          {task.title}
+          {__t(task.title)}
         </button>
         {sub ? (
           <span className="text-caption text-muted-foreground">{sub}</span>
@@ -332,7 +336,7 @@ export function HomeTaskRow({
       <div className="relative z-10 flex shrink-0 items-center gap-3">
         <DueCue overdue={due.overdue}>{due.primary}</DueCue>
         <Button variant="outline" size="xs" onClick={onOpen}>
-          {action}
+          {__t(action)}
         </Button>
       </div>
     </div>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -133,6 +135,7 @@ export function SignProcessTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (process: CourtProcess) => void;
 }) {
+  const __t = __useTranslations();
   const selectedOnPage = rows.filter((row) => selectedIds.has(row.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
   const someSelected = selectedOnPage > 0 && !allSelected;
@@ -166,20 +169,17 @@ export function SignProcessTable({
               /* Every row in view — the list is not paged. */
               aria-label={
                 allSelected
-                  ? "Clear every process shown"
-                  : "Select every process shown"
+                  ? __t("signProcessTable_clearEveryProcessShown")
+                  : __t("signProcessTable_selectEveryProcessShown")
               }
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="signProcessTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="signProcessTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-36 whitespace-normal")}>
-            Process type
-          </TableHead>
+            {<__LocalizedText id="signProcessTable_processType" />}{" "}</TableHead>
           <TableHead
             className={cn(
               TABLE_HEAD,
@@ -189,11 +189,9 @@ export function SignProcessTable({
             {tab.dateColumn}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Delivery channel
-          </TableHead>
+            {<__LocalizedText id="signProcessTable_deliveryChannel" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Hearing date
-          </TableHead>
+            {<__LocalizedText id="signProcessTable_hearingDate" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       {bands ? (
@@ -234,12 +232,13 @@ export function SignProcessTable({
  * and its own rows; more air above than below does the rest.
  */
 function BandLabel({ status, count }: { status: ProcessStatus; count: number }) {
+  const __t = __useTranslations();
   return (
     <div className="flex w-full items-baseline gap-2 border-b border-hairline px-4 pt-4 pb-2">
       {/* 14px, the table's own size: a band names the rows under it and must not read
           smaller than the data it heads. */}
       <span className="text-body-compact font-semibold text-foreground">
-        {status.label}
+        {__t(status.label)}
       </span>
       <span className="text-body-compact tabular-nums text-muted-foreground">
         {count}
@@ -261,6 +260,7 @@ function ProcessRow({
   onToggle: (process: CourtProcess) => void;
   onOpen: (process: CourtProcess) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const type = courtProcessTypeLabel(process.type);
   const inline = courtProcessTypeInline(process.type);
@@ -273,7 +273,7 @@ function ProcessRow({
         <Checkbox
           checked={selected}
           onCheckedChange={() => onToggle(process)}
-          aria-label={`Select the ${inline} in ${courtText(process.caseNumber)}`}
+          aria-label={__t("signProcessTable_selectTheValue0InValue1", {value0: String(inline), value1: String(courtText(process.caseNumber))})}
         />
       </TableCell>
       {/* The row's opener. Quiet `text-foreground` rather than a teal underline: the teal
@@ -287,12 +287,12 @@ function ProcessRow({
           {...rowOpener}
           className={rowOpenerClass}
         >
-          <span className="sr-only">Read the {inline} in </span>
+          <span className="sr-only">{<__LocalizedText id="signProcessTable_readThe" />}{" "}{inline} {<__LocalizedText id="signProcessTable_in" />}{" "}</span>
           {causeTitle(process)}
         </button>
       </TableCell>
       <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-        <Identifier value={process.caseNumber} label="case number" />
+        <Identifier value={process.caseNumber} label={__t("signProcessTable_caseNumber_4f38d5f1")} />
       </TableCell>
       {/* Which instrument this is — the fact that tells three rows of one case apart. */}
       <TableCell className={cn(TABLE_CELL, "min-w-36 whitespace-normal")}>

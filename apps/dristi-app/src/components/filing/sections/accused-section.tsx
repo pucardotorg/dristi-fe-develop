@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Accused details — who the complaint is against, how the court can reach them, and
@@ -54,6 +56,7 @@ import { SectionTabs } from "@/components/filing/section-tabs";
 import { YesNoSegmented } from "@/components/filing/segmented";
 
 export function AccusedSection() {
+  const __t = __useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const router = useRouter();
   const { prev, next } = neighbours("accused");
@@ -149,14 +152,14 @@ export function AccusedSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="Accused details"
-          description="Add the person or entity this complaint is filed against."
+          title={__t("accusedSection_accusedDetails")}
+          description={__t("accusedSection_addThePersonOrEntityThisComplaint")}
         />
 
         <SectionTabs
           tabs={draft.accused.map((acc, i) => ({
             id: acc.id,
-            label: `Accused ${i + 1}`,
+            label: __t("accusedSection_accusedValue0", {value0: String(i + 1)}),
             meta: acc.name || undefined,
             status: accusedComplete(acc) ? "complete" : "attention",
             removable: draft.accused.length > 1,
@@ -179,9 +182,9 @@ export function AccusedSection() {
           Age is gone. It was optional, nothing downstream read it, and nobody knows the
           age of the person they are suing (owner, 2026-08-19).
         */}
-        <FormCard title={isIndividual ? `Accused ${index + 1} details` : "Entity details"}>
+        <FormCard title={isIndividual ? __t("accusedSection_accusedValue0Details", {value0: String(index + 1)}) : __t("accusedSection_entityDetails")}>
           <FormRow>
-            <FormField label="Accused type" required>
+            <FormField label={__t("accusedSection_accusedType")} required>
               <OptionSelect
                 value={a.type}
                 onValueChange={(v) => setField("type", v as AccusedType)}
@@ -189,22 +192,22 @@ export function AccusedSection() {
               />
             </FormField>
             {isIndividual ? null : (
-              <FormField label="Type of entity" name="entType" required>
+              <FormField label={__t("accusedSection_typeOfEntity")} name="entType" required>
                 <OptionSelect
                   value={a.entType}
                   onValueChange={(v) => setField("entType", v)}
                   options={ACCUSED_ENTITY_TYPES}
-                  placeholder="Select type"
+                  placeholder={__t("accusedSection_selectType")}
                 />
               </FormField>
             )}
           </FormRow>
           <HalfWidth>
-            <FormField label={isIndividual ? "Full name" : "Entity name"} name="name" required>
+            <FormField label={isIndividual ? __t("accusedSection_fullName") : __t("accusedSection_entityName")} name="name" required>
               <TextField
                 value={a.name}
                 onChange={(v) => setField("name", v)}
-                placeholder="As it should appear on the summons"
+                placeholder={__t("accusedSection_asItShouldAppearOnTheSummons")}
                 autoComplete="off"
               />
             </FormField>
@@ -218,8 +221,8 @@ export function AccusedSection() {
         */}
         {isIndividual ? null : (
           <FormCard
-            title="Who is summoned for the entity"
-            description="Directors, partners or officers in charge of the business when the cheque was dishonoured. Each is summoned with the entity."
+            title={__t("accusedSection_whoIsSummonedForTheEntity")}
+            description={__t("accusedSection_directorsPartnersOrOfficersInChargeOf")}
           >
             <RepresentativeList
               reps={a.reps}
@@ -230,8 +233,8 @@ export function AccusedSection() {
 
         {/* Contact */}
         <FormCard
-          title="Contact details"
-          description="Where the court can reach the accused."
+          title={__t("accusedSection_contactDetails")}
+          description={__t("accusedSection_whereTheCourtCanReachTheAccused")}
         >
           <ContactList
             contacts={a.contacts}
@@ -240,7 +243,7 @@ export function AccusedSection() {
         </FormCard>
 
         {/* Service addresses */}
-        <FormCard title="Address details">
+        <FormCard title={__t("accusedSection_addressDetails")}>
           {!draft.dismissed.accusedAddress ? (
             <SectionNotice
               variant="info"
@@ -250,8 +253,7 @@ export function AccusedSection() {
                 })
               }
             >
-              The summons goes to every address listed here.
-            </SectionNotice>
+              {<__LocalizedText id="accusedSection_theSummonsGoesToEveryAddressListed" />}{" "}</SectionNotice>
           ) : null}
           <AddressBlockList
             blocks={a.addresses}
@@ -260,10 +262,10 @@ export function AccusedSection() {
         </FormCard>
 
         {/* Jurisdiction */}
-        <FormCard title="Jurisdiction">
+        <FormCard title={__t("accusedSection_jurisdiction")}>
           <FormField
             asGroup
-            label="Does the accused reside within the jurisdiction of this court?"
+            label={__t("accusedSection_doesTheAccusedResideWithinTheJurisdiction")}
             help="The court decides jurisdiction on the facts."
           >
             <YesNoSegmented
@@ -292,20 +294,16 @@ export function AccusedSection() {
               >
                 <InfoIcon className="size-5" />
               </span>
-              <DialogTitle>No contact details added</DialogTitle>
+              <DialogTitle>{<__LocalizedText id="accusedSection_noContactDetailsAdded" />}</DialogTitle>
             </div>
             <DialogDescription>
-              No phone number or email has been added for {missingNames}. Adding one
-              increases the chances of the summons being delivered.
-            </DialogDescription>
+              {<__LocalizedText id="accusedSection_noPhoneNumberOrEmailHasBeen" />}{" "}{missingNames}{<__LocalizedText id="accusedSection_addingOneIncreasesTheChancesOfThe" />}{" "}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={proceedWithoutDetails}>
-              Proceed without details
-            </Button>
+              {<__LocalizedText id="accusedSection_proceedWithoutDetails" />}{" "}</Button>
             <Button type="button" onClick={goToMissing}>
-              Add details
-            </Button>
+              {<__LocalizedText id="accusedSection_addDetails" />}{" "}</Button>
           </DialogFooter>
         </ChromeDialogContent>
       </Dialog>
@@ -314,7 +312,7 @@ export function AccusedSection() {
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <ChromeDialogContent mobileSheet aria-describedby={confirmStatementId} className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Confirm: proceed without details</DialogTitle>
+            <DialogTitle>{<__LocalizedText id="accusedSection_confirmProceedWithoutDetails" />}</DialogTitle>
           </DialogHeader>
           <Label
             htmlFor={confirmCheckboxId}
@@ -329,22 +327,19 @@ export function AccusedSection() {
             />
             {/* Wraps to several lines — the Label's own leading-none would collide. */}
             <span className="leading-normal">
-              I confirm that I have no knowledge of the electronic contact details of{" "}
-              {missingNames}, and cannot locate them with reasonable effort.
-            </span>
+              {<__LocalizedText id="accusedSection_iConfirmThatIHaveNoKnowledge" />}{" "}
+              {missingNames}{<__LocalizedText id="accusedSection_andCannotLocateThemWithReasonableEffort" />}{" "}</span>
           </Label>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={goToMissing}>
-              Add details
-            </Button>
+              {<__LocalizedText id="accusedSection_addDetails" />}{" "}</Button>
             <Button
               type="button"
               onClick={goToNext}
               disabled={!confirmChecked}
               aria-disabled={!confirmChecked || undefined}
             >
-              Confirm
-            </Button>
+              {<__LocalizedText id="accusedSection_confirm" />}{" "}</Button>
           </DialogFooter>
         </ChromeDialogContent>
       </Dialog>
@@ -354,9 +349,9 @@ export function AccusedSection() {
         onOpenChange={(open) => {
           if (!open) setPendingRemove(null);
         }}
-        title={`Remove ${pendingRemoveLabel || "accused"}`}
-        description="Are you sure you want to delete this accused and all their contact and address details? This cannot be undone."
-        confirmLabel="Yes, remove"
+        title={__t("accusedSection_removeValue0", {value0: String(__t(pendingRemoveLabel) || __t("accusedSection_accused"))})}
+        description={__t("accusedSection_areYouSureYouWantToDelete")}
+        confirmLabel={__t("accusedSection_yesRemove")}
         onConfirm={() => {
           if (pendingRemove) removeAccused(pendingRemove);
           setPendingRemove(null);

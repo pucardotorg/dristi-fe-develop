@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { cn } from "@/lib/utils";
@@ -33,10 +34,11 @@ export function Lightbox({
   region?: SourceRegion;
   caption?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <ChromeDialogContent className={cn("max-w-[calc(100%-2rem)] p-0 sm:max-w-4xl", region && "gap-0")}>
-        <DialogTitle className="sr-only">{alt || "Document"}</DialogTitle>
+        <DialogTitle className="sr-only">{alt || __t("lightbox_document")}</DialogTitle>
         {src ? (
           <div className="relative overflow-hidden rounded-xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -55,7 +57,7 @@ export function Lightbox({
           </div>
         ) : null}
         {caption ? (
-          <p className="px-4 pb-4 text-caption text-muted-foreground">{caption}</p>
+          <p className="px-4 pb-4 text-caption text-muted-foreground">{__t(caption)}</p>
         ) : null}
       </ChromeDialogContent>
     </Dialog>

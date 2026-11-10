@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -134,11 +136,11 @@ export function CourtSortSelect<T extends string>({
   options: CourtSortOption<T>[];
   onChange: (value: T) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-col max-sm:w-full">
       <Label htmlFor={id} className="sr-only">
-        Sort by
-      </Label>
+        {<__LocalizedText id="courtFilters_sortBy" />}{" "}</Label>
       <Select value={value} onValueChange={(next) => onChange(next as T)}>
         <SelectTrigger
           id={id}
@@ -150,7 +152,7 @@ export function CourtSortSelect<T extends string>({
         <SelectContent>
           {options.map((option) => (
             <SelectItem key={option.id} value={option.id}>
-              {option.label}
+              {__t(option.label)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -219,6 +221,7 @@ export function CourtFilters({
   /** Reset every filter (fields, date and the search) back to the screen's default. */
   onClearAll: () => void;
 }) {
+  const __t = __useTranslations();
   const labelHidden = search.labelHidden ?? true;
   const appliedFields = fields.filter((field) => field.value !== field.all);
   const appliedMulti = multi.filter((field) => field.values.length > 0);
@@ -240,24 +243,24 @@ export function CourtFilters({
       }}
     >
       <QueueSearchField
-        label={search.label}
+        label={__t(search.label)}
         labelClassName={labelHidden ? "sr-only" : undefined}
         className="w-full"
         ref={searchRef}
         value={search.value}
         onChange={search.onChange}
-        placeholder={search.placeholder}
+        placeholder={__t(search.placeholder)}
       />
     </form>
   ) : (
     <QueueSearchField
-      label={search.label}
+      label={__t(search.label)}
       labelClassName={labelHidden ? "sr-only" : undefined}
       className={leading ? "sm:w-64" : "sm:w-80"}
       ref={searchRef}
       value={search.value}
       onChange={search.onChange}
-      placeholder={search.placeholder}
+      placeholder={__t(search.placeholder)}
     />
   );
 
@@ -280,17 +283,17 @@ export function CourtFilters({
               htmlFor={only.id}
               className={labelHidden ? "sr-only" : "text-body-compact"}
             >
-              {only.label}
+              {__t(only.label)}
             </Label>
             <Select value={only.value} onValueChange={only.onApply}>
               <SelectTrigger id={only.id} className="w-full sm:w-52">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={only.all}>{only.allLabel}</SelectItem>
+                <SelectItem value={only.all}>{__t(only.allLabel)}</SelectItem>
                 {only.options.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                    {__t(option.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -306,7 +309,7 @@ export function CourtFilters({
                   : "w-fit text-body-compact font-medium"
               }
             >
-              {date.label}
+              {__t(date.label)}
             </span>
             <div role="group" aria-labelledby="court-filter-date">
               <DatePicker
@@ -321,8 +324,7 @@ export function CourtFilters({
         {trailing}
         {applied > 0 || search.value !== "" ? (
           <Button type="button" variant="ghost" onClick={onClearAll}>
-            Clear filters
-          </Button>
+            {<__LocalizedText id="courtFilters_clearFilters" />}{" "}</Button>
         ) : null}
       </div>
     );
@@ -364,14 +366,14 @@ export function CourtFilters({
       {applied > 0 ? (
         <div
           className="flex flex-wrap items-center gap-2"
-          aria-label="Applied filters"
+          aria-label={__t("courtFilters_appliedFilters")}
         >
           {appliedFields.map((field) => (
             <AppliedChip
               key={field.id}
               label={
-                field.options.find((option) => option.value === field.value)
-                  ?.label ?? field.value
+                __t(field.options.find((option) => option.value === field.value)
+                  ?.label) ?? field.value
               }
               onClear={() => field.onApply(field.all)}
             />
@@ -381,7 +383,7 @@ export function CourtFilters({
               <AppliedChip
                 key={`${field.id}-${value}`}
                 label={
-                  field.options.find((option) => option.value === value)?.label ??
+                  __t(field.options.find((option) => option.value === value)?.label) ??
                   value
                 }
                 onClear={() =>
@@ -392,7 +394,7 @@ export function CourtFilters({
           )}
           {date?.active ? (
             <AppliedChip
-              label={date.chipLabel}
+              label={__t(date.chipLabel)}
               onClear={() => date.onApply(undefined)}
             />
           ) : null}
@@ -403,8 +405,7 @@ export function CourtFilters({
             className="text-muted-foreground"
           >
             <XIcon data-icon="inline-start" aria-hidden />
-            Clear all
-          </Button>
+            {<__LocalizedText id="courtFilters_clearAll" />}{" "}</Button>
         </div>
       ) : null}
     </div>
@@ -422,6 +423,7 @@ function CourtFiltersSheet({
   date?: CourtFilterDate;
   applied: number;
 }) {
+  const __t = __useTranslations();
   const seed = React.useCallback(
     () => ({
       fields: Object.fromEntries(fields.map((field) => [field.id, field.value])),
@@ -476,11 +478,10 @@ function CourtFiltersSheet({
           type="button"
           variant="outline"
           className="shrink-0"
-          aria-label={`Filters${applied ? `, ${applied} applied` : ""}`}
+          aria-label={__t("courtFilters_filtersValue0", {value0: String(applied ? `, ${applied} applied` : "")})}
         >
           <SlidersHorizontalIcon data-icon="inline-start" aria-hidden />
-          Filters
-          {applied ? (
+          {<__LocalizedText id="courtFilters_filters" />}{" "}{applied ? (
             <span className="ms-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-caption font-medium tabular-nums text-primary-foreground">
               {applied}
             </span>
@@ -494,14 +495,14 @@ function CourtFiltersSheet({
         style={SHEET_MOTION}
       >
         <SheetHeader>
-          <SheetTitle className="text-title-s font-semibold">Filters</SheetTitle>
+          <SheetTitle className="text-title-s font-semibold">{<__LocalizedText id="courtFilters_filters" />}</SheetTitle>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
           {fields.map((field) => (
             <div key={field.id} className="flex min-w-0 flex-col gap-2">
               <Label htmlFor={field.id} className="text-body-compact">
-                {field.label}
+                {__t(field.label)}
               </Label>
               <Select
                 value={draft.fields[field.id] ?? field.all}
@@ -516,10 +517,10 @@ function CourtFiltersSheet({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={field.all}>{field.allLabel}</SelectItem>
+                  <SelectItem value={field.all}>{__t(field.allLabel)}</SelectItem>
                   {field.options.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {__t(option.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -549,7 +550,7 @@ function CourtFiltersSheet({
                 id="court-filter-date"
                 className="w-fit text-body-compact font-medium"
               >
-                {date.label}
+                {__t(date.label)}
               </span>
               <div role="group" aria-labelledby="court-filter-date">
                 <DatePicker
@@ -568,15 +569,13 @@ function CourtFiltersSheet({
         <SheetFooter className="flex-row items-center justify-between border-t border-hairline">
           {draftCount ? (
             <Button type="button" variant="ghost" onClick={clearDraft}>
-              Clear filters
-            </Button>
+              {<__LocalizedText id="courtFilters_clearFilters" />}{" "}</Button>
           ) : (
             <span />
           )}
           <SheetClose asChild>
             <Button type="button" onClick={apply}>
-              Apply filters
-            </Button>
+              {<__LocalizedText id="courtFilters_applyFilters" />}{" "}</Button>
           </SheetClose>
         </SheetFooter>
       </SheetContent>
@@ -594,13 +593,14 @@ function MultiSelectField({
   value: readonly string[];
   onChange: (next: string[]) => void;
 }) {
+  const __t = __useTranslations();
   const anchor = useComboboxAnchor();
   const labelId = `${field.id}-label`;
   const picked = field.options.filter((option) => value.includes(option.value));
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <Label id={labelId} className="text-body-compact">
-        {field.label}
+        {__t(field.label)}
       </Label>
       <Combobox
         multiple
@@ -619,11 +619,11 @@ function MultiSelectField({
             {(chosen: CourtFilterOption[]) => (
               <>
                 {chosen.map((option) => (
-                  <ComboboxChip key={option.value}>{option.label}</ComboboxChip>
+                  <ComboboxChip key={option.value}>{__t(option.label)}</ComboboxChip>
                 ))}
                 <ComboboxChipsInput
                   aria-labelledby={labelId}
-                  placeholder={chosen.length ? undefined : field.placeholder}
+                  placeholder={chosen.length ? undefined : __t(field.placeholder)}
                 />
               </>
             )}
@@ -632,11 +632,11 @@ function MultiSelectField({
         {/* The sheet is modal and freezes the body's pointer events; the list, portalled
             there, re-enables its own. */}
         <ComboboxContent anchor={anchor} className="pointer-events-auto">
-          <ComboboxEmpty>Nothing matches.</ComboboxEmpty>
+          <ComboboxEmpty>{<__LocalizedText id="courtFilters_nothingMatches" />}</ComboboxEmpty>
           <ComboboxList>
             {(option: CourtFilterOption) => (
               <ComboboxItem key={option.value} value={option}>
-                {option.label}
+                {__t(option.label)}
               </ComboboxItem>
             )}
           </ComboboxList>

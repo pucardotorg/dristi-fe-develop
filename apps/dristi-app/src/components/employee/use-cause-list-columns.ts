@@ -98,7 +98,7 @@ export function useCauseListColumns(
       }
       listeners.forEach((listener) => listener());
     },
-    [key, seat, readerPosts],
+    [key, seat, readerPosts, court],
   );
 
   return {

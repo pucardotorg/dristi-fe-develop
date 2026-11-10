@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CheckIcon, ClockIcon } from "lucide-react";
@@ -64,6 +66,7 @@ export function TaskViewDialog({
 }
 
 function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: () => void }) {
+  const __t = __useTranslations();
   const { people, user, online } = useTasks();
   const { act, busy } = useTaskActions();
   const closed = ["done", "expired", "obsolete", "archived"].includes(task.status) || Boolean(task.archived);
@@ -78,7 +81,7 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
     <FlowDialogContent className="max-h-[85svh] w-full overflow-y-auto sm:max-w-xl">
       <DialogHeader className="pr-8 text-left">
         <div className="flex flex-wrap items-center gap-2">
-          <DialogTitle className="text-title-s font-semibold text-balance">{task.title}</DialogTitle>
+          <DialogTitle className="text-title-s font-semibold text-balance">{__t(task.title)}</DialogTitle>
           <Badge variant={task.status === "done" ? "success" : closed ? "secondary" : "info"}>
             {task.status === "done" ? <CheckIcon aria-hidden /> : closed ? null : <ClockIcon aria-hidden />}
             {standing}
@@ -92,7 +95,7 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
       <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
         {task.dueAt ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Due</DescriptionTerm>
+            <DescriptionTerm>{<__LocalizedText id="taskViewDialog_due" />}</DescriptionTerm>
             <DescriptionDetails className="tabular-nums">
               {longDate(task.dueAt)}
               {task.deadlineNote ? (
@@ -103,19 +106,19 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
         ) : null}
         {task.feeHead ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Fee</DescriptionTerm>
+            <DescriptionTerm>{<__LocalizedText id="taskViewDialog_fee" />}</DescriptionTerm>
             <DescriptionDetails>{task.feeHead}</DescriptionDetails>
           </DescriptionRow>
         ) : null}
         {task.amountPaise !== undefined ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Amount</DescriptionTerm>
+            <DescriptionTerm>{<__LocalizedText id="taskViewDialog_amount" />}</DescriptionTerm>
             <DescriptionDetails className="font-semibold tabular-nums">{rupees(task.amountPaise)}</DescriptionDetails>
           </DescriptionRow>
         ) : null}
         {task.documentsNeeded?.length ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Documents</DescriptionTerm>
+            <DescriptionTerm>{<__LocalizedText id="taskViewDialog_documents" />}</DescriptionTerm>
             <DescriptionDetails>
               <ul className="flex flex-col gap-1">
                 {task.documentsNeeded.map((name) => {
@@ -126,7 +129,7 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
                       {/* Attaching is a filing's part; a signature is on the document itself. */}
                       {uploads || files.length ? (
                         <span className="text-body-compact text-muted-foreground">
-                          {files.length ? files.map((f) => f.name).join(", ") : "Not attached"}
+                          {files.length ? files.map((f) => f.name).join(", ") : __t("taskViewDialog_notAttached")}
                         </span>
                       ) : null}
                     </li>
@@ -138,21 +141,21 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
         ) : null}
         {loose.length ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Files</DescriptionTerm>
+            <DescriptionTerm>{<__LocalizedText id="taskViewDialog_files" />}</DescriptionTerm>
             <DescriptionDetails>{loose.map((f) => f.name).join(", ")}</DescriptionDetails>
           </DescriptionRow>
         ) : null}
         {reference ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>{task.completion?.receipt ? "Receipt" : "Gateway reference"}</DescriptionTerm>
+            <DescriptionTerm>{task.completion?.receipt ? __t("taskViewDialog_receipt") : __t("taskViewDialog_gatewayReference")}</DescriptionTerm>
             <DescriptionDetails>
-              <Identifier value={reference} label="reference" />
+              <Identifier value={reference} label={__t("taskViewDialog_reference")} />
             </DescriptionDetails>
           </DescriptionRow>
         ) : null}
         {task.completion ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Completed</DescriptionTerm>
+            <DescriptionTerm>{<__LocalizedText id="taskViewDialog_completed" />}</DescriptionTerm>
             <DescriptionDetails className="tabular-nums">
               {dateTime(task.completion.at)}
               {by ? ` · ${by.name}` : ""}
@@ -164,12 +167,11 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
       {task.history.length ? (
         <section aria-labelledby={`history-${task.id}`} className="flex flex-col gap-2">
           <h3 id={`history-${task.id}`} className="text-body-compact font-semibold">
-            History
-          </h3>
+            {<__LocalizedText id="taskViewDialog_history" />}{" "}</h3>
           <ol className="flex flex-col border-l border-hairline pl-4">
             {[...task.history].reverse().map((entry, index) => (
               <li key={index} className="flex flex-col gap-0.5 py-1.5">
-                <span className="text-body-compact">{entry.text}</span>
+                <span className="text-body-compact">{__t(entry.text)}</span>
                 <span className="text-caption text-muted-foreground tabular-nums">{dateTime(entry.at)}</span>
               </li>
             ))}
@@ -189,11 +191,10 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
               })
             }
           >
-            Sandbox: the gateway confirms
-          </Button>
+            {<__LocalizedText id="taskViewDialog_sandboxTheGatewayConfirms" />}{" "}</Button>
         ) : null}
         <DialogClose asChild>
-          <Button type="button">Close</Button>
+          <Button type="button">{<__LocalizedText id="taskViewDialog_close" />}</Button>
         </DialogClose>
       </DialogFooter>
     </FlowDialogContent>

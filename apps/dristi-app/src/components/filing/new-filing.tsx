@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -18,6 +20,7 @@ import { Spinner } from "@/components/ui/spinner";
  * never returns to a page that would create another.
  */
 export function NewFiling() {
+  const __t = __useTranslations();
   const router = useRouter();
   const { profile, ready } = useProfile();
   const [error, setError] = React.useState<string | null>(null);
@@ -36,12 +39,11 @@ export function NewFiling() {
   if (error) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center">
-        <p className="text-body text-foreground">{error}</p>
+        <p className="text-body text-foreground">{__t(error)}</p>
         <Button asChild variant="outline">
           <Link href={FILINGS_HOME}>
             <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-            Back to dashboard
-          </Link>
+            {<__LocalizedText id="newFiling_backToDashboard" />}{" "}</Link>
         </Button>
       </div>
     );
@@ -54,7 +56,6 @@ export function NewFiling() {
       className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
     >
       <Spinner className="mr-2 size-4" />
-      Starting a new filing…
-    </div>
+      {<__LocalizedText id="newFiling_startingANewFiling" />}{" "}</div>
   );
 }

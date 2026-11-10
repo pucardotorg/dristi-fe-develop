@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { CheckIcon } from "lucide-react"
@@ -69,6 +70,7 @@ function StepperItem({
     /** Accessible name for the navigable control; falls back to the title text. */
     activateLabel?: string
   }) {
+  const __t = __useTranslations();
   const indicator =
     status === "complete" ? <CheckIcon className="size-4" aria-hidden /> : step
   const label = activateLabel ?? (typeof title === "string" ? title : undefined)
@@ -85,7 +87,7 @@ function StepperItem({
             type="button"
             data-slot="stepper-indicator"
             onClick={onActivate}
-            aria-label={label}
+            aria-label={__t(label)}
             className={cn(
               stepperIndicatorVariants({ status }),
               "cursor-pointer outline-none transition-[box-shadow,background-color] hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/50 dark:hover:brightness-110"
@@ -125,7 +127,7 @@ function StepperItem({
                     : "text-foreground"
                 )}
               >
-                {title}
+                {__t(title)}
               </button>
             ) : (
               <p
@@ -136,7 +138,7 @@ function StepperItem({
                     : "text-foreground"
                 )}
               >
-                {title}
+                {__t(title)}
               </p>
             )
           ) : null}

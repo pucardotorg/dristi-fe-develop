@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { VideoIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react";
@@ -62,14 +64,12 @@ function OathRecording({ doc }: { doc: BundleDoc }) {
     <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 bg-surface-sunken p-6 text-center">
       <VideoIcon aria-hidden className="size-8 text-muted-foreground" />
       <p className="text-body-compact font-medium text-foreground">
-        Oath recording
-        {doc.durationSeconds ? (
+        {<__LocalizedText id="bundleView_oathRecording" />}{" "}{doc.durationSeconds ? (
           <span className="tabular-nums"> · {formatDuration(doc.durationSeconds)}</span>
         ) : null}
       </p>
       <p className="max-w-xs text-body-compact text-muted-foreground">
-        Sandbox: this sample filing has no recording behind it. A filed oath plays here.
-      </p>
+        {<__LocalizedText id="bundleView_sandboxThisSampleFilingHasNoRecording" />}{" "}</p>
     </div>
   );
 }
@@ -89,6 +89,7 @@ export function BundleView({
   spot: { doc: string; rect: Rect } | null;
   ref?: React.Ref<BundleHandle>;
 }) {
+  const __t = __useTranslations();
   const { bundle } = useScrutinyCase();
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [zoomBase, setZoomBase] = React.useState(880);
@@ -266,8 +267,7 @@ export function BundleView({
          * floor keeps the title readable and the subtitle drops out first.
          */}
         <b className="me-auto min-w-0 flex-1 truncate text-body-compact font-semibold">
-          Case bundle
-        </b>
+          {<__LocalizedText id="bundleView_caseBundle" />}{" "}</b>
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -278,18 +278,18 @@ export function BundleView({
               size="icon"
               onClick={() => stepZoom(-1)}
               disabled={zoom <= ZOOM_STEPS[0]}
-              aria-label="Zoom out"
+              aria-label={__t("bundleView_zoomOut")}
             >
               <ZoomOutIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Zoom out</TooltipContent>
+          <TooltipContent>{<__LocalizedText id="bundleView_zoomOut" />}</TooltipContent>
         </Tooltip>
         <Button
           variant="ghost"
           className="tabular-nums"
           onClick={() => zoomTo(100)}
-          aria-label={`Zoom is ${zoom} percent — reset to 100 percent`}
+          aria-label={__t("bundleView_zoomIsValue0PercentResetTo100", {value0: String(zoom)})}
         >
           {zoom}%
         </Button>
@@ -300,12 +300,12 @@ export function BundleView({
               size="icon"
               onClick={() => stepZoom(1)}
               disabled={zoom >= ZOOM_STEPS[ZOOM_STEPS.length - 1]}
-              aria-label="Zoom in"
+              aria-label={__t("bundleView_zoomIn")}
             >
               <ZoomInIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Zoom in</TooltipContent>
+          <TooltipContent>{<__LocalizedText id="bundleView_zoomIn" />}</TooltipContent>
         </Tooltip>
       </div>
 
@@ -345,7 +345,7 @@ export function BundleView({
                 {/* The only navigational anchor in a scroll this long, so it reads as
                     one: caption size, but foreground ink at 600 rather than grey. */}
                 <div className="text-caption font-semibold text-foreground">
-                  <span className="tabular-nums">{doc.no}</span> · {doc.name}
+                  <span className="tabular-nums">{__t(doc.no)}</span> · {doc.name}
                 </div>
                 <div
                   className={cn(

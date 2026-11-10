@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 /**
  * A lightweight ID-document picker. Prototype only: it records the chosen file's name,
@@ -19,6 +20,7 @@ export function IdUpload({
   onChange: (filename: string) => void;
   label?: string;
 }) {
+  const __t = __useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   if (value) {
@@ -30,7 +32,7 @@ export function IdUpload({
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="Remove ID"
+          aria-label={__t("idUpload_removeId")}
           onClick={() => onChange("")}
           className="text-muted-foreground"
         >
@@ -60,7 +62,7 @@ export function IdUpload({
         className="w-fit"
       >
         <UploadIcon aria-hidden />
-        {label}
+        {__t(label)}
       </Button>
     </>
   );

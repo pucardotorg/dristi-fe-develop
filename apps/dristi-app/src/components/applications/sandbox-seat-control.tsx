@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useId } from "react";
 
@@ -17,19 +19,18 @@ import { setSandboxSeat, useSandboxSeat } from "@/lib/applications/store";
  * on the screen so it is never mistaken for a product control.
  */
 export function SandboxSeatControl() {
+  const __t = __useTranslations();
   const seat = useSandboxSeat();
   const roleId = useId();
   const sideId = useId();
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-hairline bg-surface-sunken p-3">
       <p className="text-caption font-semibold text-muted-foreground">
-        Sandbox · acting as
-      </p>
+        {<__LocalizedText id="sandboxSeatControl_sandboxActingAs" />}{" "}</p>
       <div className="flex flex-wrap gap-3">
         <Field className="w-auto min-w-48 gap-1.5">
           <FieldLabel htmlFor={roleId} className="text-caption">
-            Role
-          </FieldLabel>
+            {<__LocalizedText id="sandboxSeatControl_role" />}{" "}</FieldLabel>
           <NativeSelect
             id={roleId}
             value={seat.role}
@@ -39,15 +40,14 @@ export function SandboxSeatControl() {
           >
             {FILER_ROLES.map((role) => (
               <NativeSelectOption key={role.id} value={role.id}>
-                {role.label}
+                {__t(role.label)}
               </NativeSelectOption>
             ))}
           </NativeSelect>
         </Field>
         <Field className="w-auto min-w-48 gap-1.5">
           <FieldLabel htmlFor={sideId} className="text-caption">
-            Side
-          </FieldLabel>
+            {<__LocalizedText id="sandboxSeatControl_side" />}{" "}</FieldLabel>
           <NativeSelect
             id={sideId}
             value={seat.opposing ? "opposing" : "own"}
@@ -55,8 +55,8 @@ export function SandboxSeatControl() {
               setSandboxSeat({ ...seat, opposing: event.target.value === "opposing" })
             }
           >
-            <NativeSelectOption value="own">Your side of the case</NativeSelectOption>
-            <NativeSelectOption value="opposing">The other side</NativeSelectOption>
+            <NativeSelectOption value="own">{<__LocalizedText id="sandboxSeatControl_yourSideOfTheCase" />}</NativeSelectOption>
+            <NativeSelectOption value="opposing">{<__LocalizedText id="sandboxSeatControl_theOtherSide" />}</NativeSelectOption>
           </NativeSelect>
         </Field>
       </div>

@@ -22,7 +22,7 @@ export function CaseBreadcrumbs({
   /** Anything under the case — a section, a form. Absent on the case's own overview. */
   trail?: Crumb[];
 }) {
-  const caseNumber = useCaseNumber()(storedCaseNumber);
+    const caseNumber = useCaseNumber()(storedCaseNumber);
   const crumbs: Crumb[] = [
     trail.length
       ? {

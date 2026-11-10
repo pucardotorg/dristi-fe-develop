@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /** S1 — the litigant the vakalatnama is from. Individual, or organisation via signatory. */
 
@@ -18,6 +20,7 @@ import type { Address, Executant, Vakalatnama } from "@/lib/vakalatnama/types";
 const RELATIONS = ["S/o", "D/o", "W/o"];
 
 export function ExecutantStep({ vak }: { vak: Vakalatnama }) {
+  const __t = __useTranslations();
   const e = vak.executant;
   const set = (patch: Partial<Executant>) =>
     updateVak(vak.id, (p) => ({ ...p, executant: { ...p.executant, ...patch } }));
@@ -28,26 +31,24 @@ export function ExecutantStep({ vak }: { vak: Vakalatnama }) {
       {vak.creatorRole === "litigant" ? (
         <Alert>
           <InfoIcon aria-hidden />
-          <AlertTitle>Filed as yourself</AlertTitle>
+          <AlertTitle>{<__LocalizedText id="executant_filedAsYourself" />}</AlertTitle>
           <AlertDescription>
-            You are the litigant on this vakalatnama. Your details are yours to confirm and
-            edit — nothing is filled from another party.
-          </AlertDescription>
+            {<__LocalizedText id="executant_youAreTheLitigantOnThisVakalatnama" />}{" "}</AlertDescription>
         </Alert>
       ) : null}
 
       <FormCard
-        title="Who is appointing the advocate?"
-        description="The litigant this vakalatnama is from."
+        title={__t("executant_whoIsAppointingTheAdvocate")}
+        description={__t("executant_theLitigantThisVakalatnamaIsFrom")}
       >
-        <FormField label="Executant" asGroup>
+        <FormField label={__t("executant_executant")} asGroup>
           <Segmented
             size="compact"
             value={e.kind}
             onValueChange={(v) => set({ kind: v })}
             options={[
-              { value: "individual", label: "An individual" },
-              { value: "organisation", label: "An organisation" },
+              { value: "individual", label: __t("executant_anIndividual") },
+              { value: "organisation", label: __t("executant_anOrganisation") },
             ]}
             ariaLabel="Executant kind"
           />
@@ -56,69 +57,69 @@ export function ExecutantStep({ vak }: { vak: Vakalatnama }) {
         {e.kind === "individual" ? (
           <>
             <FormRow>
-              <FormField label="Full name" required>
+              <FormField label={__t("executant_fullName")} required>
                 <TextField
                   value={e.name}
                   onChange={(v) => set({ name: v })}
-                  placeholder="As on record"
+                  placeholder={__t("executant_asOnRecord")}
                   autoComplete="name"
                 />
               </FormField>
-              <FormField label="Age" required>
+              <FormField label={__t("executant_age")} required>
                 <TextField
                   value={e.age}
                   onChange={(v) => set({ age: v.replace(/\D/g, "").slice(0, 3) })}
-                  placeholder="Years"
+                  placeholder={__t("executant_years")}
                   inputMode="numeric"
                   className="max-w-32"
                 />
               </FormField>
             </FormRow>
             <FormRow>
-              <FormField label="Relation" optional>
+              <FormField label={__t("executant_relation")} optional>
                 <OptionSelect
                   value={e.relationType}
                   onValueChange={(v) => set({ relationType: v as Executant["relationType"] })}
                   options={RELATIONS}
-                  placeholder="S/o · D/o · W/o"
+                  placeholder={__t("executant_relationPlaceholder")}
                 />
               </FormField>
-              <FormField label="Relation name" optional>
+              <FormField label={__t("executant_relationName")} optional>
                 <TextField
                   value={e.relationName}
                   onChange={(v) => set({ relationName: v })}
-                  placeholder="Father / husband’s name"
+                  placeholder={__t("executant_fatherHusbandSName")}
                 />
               </FormField>
             </FormRow>
           </>
         ) : (
           <>
-            <FormField label="Organisation name" required>
+            <FormField label={__t("executant_organisationName")} required>
               <TextField
                 value={e.orgName}
                 onChange={(v) => set({ orgName: v })}
-                placeholder="e.g. a bank or company"
+                placeholder={__t("executant_eGABankOrCompany")}
               />
             </FormField>
             <FormRow>
               <FormField
-                label="Authorised signatory"
+                label={__t("executant_authorisedSignatory")}
                 required
                 help="The person who signs for the organisation."
               >
                 <TextField
                   value={e.signatoryName}
                   onChange={(v) => set({ signatoryName: v })}
-                  placeholder="Name"
+                  placeholder={__t("executant_name")}
                   autoComplete="name"
                 />
               </FormField>
-              <FormField label="Designation" optional>
+              <FormField label={__t("executant_designation")} optional>
                 <TextField
                   value={e.signatoryDesignation}
                   onChange={(v) => set({ signatoryDesignation: v })}
-                  placeholder="e.g. Manager"
+                  placeholder={__t("executant_eGManager")}
                 />
               </FormField>
             </FormRow>
@@ -127,7 +128,7 @@ export function ExecutantStep({ vak }: { vak: Vakalatnama }) {
 
         <FormRow>
           <FormField
-            label="Mobile number"
+            label={__t("executant_mobileNumber")}
             required
             help="The signing OTP is sent to this number."
           >
@@ -135,18 +136,18 @@ export function ExecutantStep({ vak }: { vak: Vakalatnama }) {
               prefix="+91"
               value={e.mobile}
               onChange={(v) => set({ mobile: v.replace(/\D/g, "").slice(0, 10) })}
-              placeholder="10-digit mobile"
+              placeholder={__t("executant_10DigitMobile")}
               inputMode="numeric"
               autoComplete="tel-national"
             />
           </FormField>
-          <FormField label="ID card" required help="Proof of identity for the signer.">
+          <FormField label={__t("executant_idCard")} required help="Proof of identity for the signer.">
             <IdUpload value={e.idDoc} onChange={(v) => set({ idDoc: v })} />
           </FormField>
         </FormRow>
       </FormCard>
 
-      <FormCard title="Address" description="The litigant’s address for the record.">
+      <FormCard title={__t("executant_address")} description={__t("executant_theLitigantSAddressForTheRecord")}>
         <AddressFields value={e.address} onChange={setAddress} idPrefix="vak-exec" />
       </FormCard>
     </div>

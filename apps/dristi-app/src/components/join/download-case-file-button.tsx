@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { DownloadIcon } from "lucide-react";
 
@@ -22,6 +23,7 @@ export function DownloadCaseFileButton({
   label: string;
   onClick: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <TooltipProvider>
       <Tooltip>
@@ -30,13 +32,13 @@ export function DownloadCaseFileButton({
             type="button"
             variant="outline"
             size="icon"
-            aria-label={label}
+            aria-label={__t(label)}
             onClick={onClick}
           >
             <DownloadIcon aria-hidden />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{label}</TooltipContent>
+        <TooltipContent>{__t(label)}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

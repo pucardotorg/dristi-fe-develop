@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useCallback, useEffect, useState } from "react";
 import { ChevronDownIcon, SearchIcon } from "lucide-react";
@@ -37,6 +39,7 @@ export function RegisterFilter({
   onChange: (values: string[]) => void;
   options: { value: string; label: string }[];
 }) {
+  const __t = __useTranslations();
   const summary =
     values.length === 0
       ? "All"
@@ -56,8 +59,8 @@ export function RegisterFilter({
           className="h-10 w-full max-w-full justify-between gap-1.5 font-normal md:pointer-fine:h-9 md:pointer-fine:w-auto md:pointer-fine:justify-center md:landscape:h-9 md:landscape:w-auto md:landscape:justify-center"
         >
           <span className="flex min-w-0 items-center gap-1.5">
-            <span className="text-muted-foreground">{label}</span>
-            <span className="truncate font-medium">{summary}</span>
+            <span className="text-muted-foreground">{__t(label)}</span>
+            <span className="truncate font-medium">{__t(summary)}</span>
           </span>
           <ChevronDownIcon
             aria-hidden
@@ -83,14 +86,14 @@ export function RegisterFilter({
               )
             }
           >
-            {item.label}
+            {__t(item.label)}
           </DropdownMenuCheckboxItem>
         ))}
         {values.length > 0 ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => onChange([])}>
-              Clear {label.toLowerCase()}
+              {<__LocalizedText id="registerControls_clear" />}{" "}{label.toLowerCase()}
             </DropdownMenuItem>
           </>
         ) : null}
@@ -115,6 +118,7 @@ export function RegisterSearch({
   onChange: (value: string) => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <div
       className={cn(
@@ -128,8 +132,8 @@ export function RegisterSearch({
       />
       <Input
         type="search"
-        aria-label={label}
-        placeholder={label}
+        aria-label={__t(label)}
+        placeholder={__t(label)}
         className="h-10 pl-8 md:pointer-fine:h-9 md:landscape:h-9"
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -148,6 +152,7 @@ export function RowViewButton({
   label: string;
   onClick: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Button
       type="button"
@@ -159,7 +164,7 @@ export function RowViewButton({
         onClick();
       }}
     >
-      View<span className="sr-only">: {label}</span>
+      {<__LocalizedText id="registerControls_view" />}<span className="sr-only">: {__t(label)}</span>
     </Button>
   );
 }

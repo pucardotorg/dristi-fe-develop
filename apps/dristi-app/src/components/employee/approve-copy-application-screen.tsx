@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FileCheck2Icon, SearchXIcon } from "lucide-react";
@@ -134,6 +136,7 @@ function plural(count: number, one: string, many: string): string {
  * no fee is assessed, nobody is told, and nothing persists past a reload.
  */
 export function ApproveCopyApplicationScreen() {
+  const __t = __useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used, so there is never a moment where what the bench has asked for and what
      the table is showing disagree. Every change resets to page one — the old Search
@@ -273,14 +276,13 @@ export function ApproveCopyApplicationScreen() {
       <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 pb-0 md:p-8 md:pb-0">
         <header className="flex flex-col gap-2">
           <h1 className="text-title text-balance font-semibold">
-            Approve copy application
-          </h1>
+            {<__LocalizedText id="approveCopyApplicationScreen_approveCopyApplication" />}{" "}</h1>
           {/* The count is the whole point of the queue, so the supporting line carries it
               rather than restating the title. Singular is spelled out because
               "1 applications" is the kind of thing a court notices. */}
           <p className="text-body text-muted-foreground">
             {remaining.length === 1
-              ? "1 application is waiting for approval."
+              ? __t("approveCopyApplicationScreen_1ApplicationIsWaitingForApproval")
               : `${remaining.length} applications are waiting for approval.`}
           </p>
         </header>
@@ -382,7 +384,7 @@ export function ApproveCopyApplicationScreen() {
             aria-live="polite"
           >
             {selectedIds.size === 0
-              ? "Select applications to accept them together."
+              ? __t("approveCopyApplicationScreen_selectApplicationsToAcceptThemTogether")
               : `${selectedIds.size} ${plural(selectedIds.size, "application", "applications")} selected.`}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -393,8 +395,7 @@ export function ApproveCopyApplicationScreen() {
                 className="w-full sm:w-fit"
                 onClick={() => setPicked(new Set())}
               >
-                Clear selection
-              </Button>
+                {<__LocalizedText id="approveCopyApplicationScreen_clearSelection" />}{" "}</Button>
             ) : null}
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -403,8 +404,7 @@ export function ApproveCopyApplicationScreen() {
                   className="w-full sm:w-fit"
                   disabled={selectedIds.size === 0}
                 >
-                  Accept applications
-                </Button>
+                  {<__LocalizedText id="approveCopyApplicationScreen_acceptApplications" />}{" "}</Button>
               </AlertDialogTrigger>
               <ChromeAlertDialogContent
                 onCloseAutoFocus={(event) => {
@@ -417,22 +417,21 @@ export function ApproveCopyApplicationScreen() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>
                     {selectedIds.size === 1
-                      ? "Accept this copy application?"
-                      : `Accept ${selectedIds.size} copy applications?`}
+                      ? __t("approveCopyApplicationScreen_acceptThisCopyApplication")
+                      : __t("approveCopyApplicationScreen_acceptValue0CopyApplications", {value0: String(selectedIds.size)})}
                   </AlertDialogTitle>
                   <AlertDialogDescription className="text-body">
                     {selectedIds.size === 1
-                      ? "The copying section is told to prepare the copy asked for, and the applicant is told it was allowed."
-                      : "The copying section is told to prepare every copy asked for, and each applicant is told their application was allowed."}
+                      ? __t("approveCopyApplicationScreen_theCopyingSectionIsToldToPrepare")
+                      : __t("approveCopyApplicationScreen_theCopyingSectionIsToldToPrepare_0d2f9fb7")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
 
                 
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Back</AlertDialogCancel>
+                  <AlertDialogCancel>{<__LocalizedText id="approveCopyApplicationScreen_back" />}</AlertDialogCancel>
                   <AlertDialogAction onClick={acceptSelected}>
-                    Accept
-                  </AlertDialogAction>
+                    {<__LocalizedText id="approveCopyApplicationScreen_accept" />}{" "}</AlertDialogAction>
                 </AlertDialogFooter>
               </ChromeAlertDialogContent>
             </AlertDialog>
@@ -478,13 +477,14 @@ function CopyApplicationFilters({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search applications",
+        label: __t("approveCopyApplicationScreen_searchApplications"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Application number, case number or petitioner",
+        placeholder: __t("approveCopyApplicationScreen_applicationNumberCaseNumberOrPetitioner"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -509,6 +509,7 @@ function CopyApplicationsEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -521,20 +522,19 @@ function CopyApplicationsEmpty({
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isFiltered
-            ? "No applications match this search"
-            : "No copy applications waiting"}
+            ? __t("approveCopyApplicationScreen_noApplicationsMatchThisSearch")
+            : __t("approveCopyApplicationScreen_noCopyApplicationsWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No application waiting for approval matches the number or name you searched for."
-            : "Every copy application in front of this court has been dealt with."}
+            ? __t("approveCopyApplicationScreen_noApplicationWaitingForApprovalMatchesThe")
+            : __t("approveCopyApplicationScreen_everyCopyApplicationInFrontOfThis")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
-          </Button>
+            {<__LocalizedText id="approveCopyApplicationScreen_clearSearch" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -560,6 +560,7 @@ function CopyApplicationItemList({
   onToggle: (application: CopyApplication) => void;
   onOpen: (application: CopyApplication) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((application) => (
@@ -573,7 +574,7 @@ function CopyApplicationItemList({
           <Checkbox
             checked={selectedIds.has(application.id)}
             onCheckedChange={() => onToggle(application)}
-            aria-label={`Select ${application.applicationNumber}, ${application.applicant.name}`}
+            aria-label={__t("approveCopyApplicationScreen_selectValue0Value1", {value0: String(application.applicationNumber), value1: String(application.applicant.name)})}
             className="mt-1"
           />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -583,19 +584,19 @@ function CopyApplicationItemList({
               {...rowOpener}
                 className={rowOpenerClass}
             >
-              <span className="sr-only">Review </span>
+              <span className="sr-only">{<__LocalizedText id="approveCopyApplicationScreen_review" />}{" "}</span>
               {/* The number is the row's opener — the face without a second control. */}
-              <Identifier value={application.applicationNumber} label="application number" copyable={false} />
+              <Identifier value={application.applicationNumber} label={__t("approveCopyApplicationScreen_applicationNumber")} copyable={false} />
             </button>
             <p className="min-w-0 text-body-compact">
               {application.applicant.name}
             </p>
             <p className="min-w-0 text-caption text-muted-foreground">
-              {application.record.description}
+              {__t(application.record.description)}
             </p>
             <p className="text-caption text-muted-foreground">
-              <Identifier value={application.caseNumber} label="case number" />
-              {" · Raised "}
+              <Identifier value={application.caseNumber} label={__t("approveCopyApplicationScreen_caseNumber")} />
+              {__t("approveCopyApplicationScreen_raised")}
               <span className="tabular-nums">
                 {formatCopyApplicationDate(application.raisedOn)}
               </span>

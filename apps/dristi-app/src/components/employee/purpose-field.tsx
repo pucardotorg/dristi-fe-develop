@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   Combobox,
@@ -39,6 +41,7 @@ export function PurposeField({
   ariaLabel?: string;
   labelledBy?: string;
 }) {
+  const __t = __useTranslations();
   const selected = COURT_HEARING_PURPOSES.find((entry) => entry.id === value) ?? null;
   return (
     <Combobox
@@ -53,9 +56,9 @@ export function PurposeField({
     >
       <ComboboxInput
         id={id}
-        aria-label={labelledBy ? undefined : ariaLabel}
+        aria-label={labelledBy ? undefined : __t(ariaLabel)}
         aria-labelledby={labelledBy}
-        placeholder={placeholder}
+        placeholder={__t(placeholder)}
         disabled={disabled}
         className="w-full"
         autoComplete="off"
@@ -63,11 +66,11 @@ export function PurposeField({
       {/* pointer-events-auto: a Radix modal dialog sets pointer-events:none on the body,
           which would swallow this portalled popup inside the hearing dialog. */}
       <ComboboxContent className="pointer-events-auto">
-        <ComboboxEmpty>No purpose matches.</ComboboxEmpty>
+        <ComboboxEmpty>{<__LocalizedText id="purposeField_noPurposeMatches" />}</ComboboxEmpty>
         <ComboboxList>
           {(item: Purpose) => (
             <ComboboxItem key={item.id} value={item}>
-              {item.label}
+              {__t(item.label)}
             </ComboboxItem>
           )}
         </ComboboxList>

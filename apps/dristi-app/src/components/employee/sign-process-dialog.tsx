@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CircleCheckIcon, TriangleAlertIcon } from "lucide-react";
@@ -154,6 +156,7 @@ function SignProcessBody({
   onDownloaded: (process: CourtProcess) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const flow = useStagedFlow<Stage>({ order: STAGES, scene: SCENES });
   const choice = useSignatureChoice(NOUN);
@@ -202,14 +205,12 @@ function SignProcessBody({
       case "sign":
         return (
           <Button type="button" onClick={() => flow.go("sign")}>
-            Sign this process
-          </Button>
+            {<__LocalizedText id="signProcessDialog_signThisProcess" />}{" "}</Button>
         );
       case "record":
         return (
           <Button type="button" onClick={() => setMode("record")}>
-            Record return
-          </Button>
+            {<__LocalizedText id="signProcessDialog_recordReturn" />}{" "}</Button>
         );
       default:
         return (
@@ -220,7 +221,7 @@ function SignProcessBody({
               setMode("act");
             }}
           >
-            {available.confirm}
+            {__t(available.confirm)}
           </Button>
         );
     }
@@ -235,8 +236,7 @@ function SignProcessBody({
         onDownloaded(process);
       }}
     >
-      Download
-    </Button>
+      {<__LocalizedText id="signProcessDialog_download" />}{" "}</Button>
   );
 
   let footer: React.ReactNode;
@@ -260,8 +260,7 @@ function SignProcessBody({
           {moveLine(asking.id, [process])}
         </p>
         <Button type="button" variant="outline" onClick={() => settle()}>
-          Back
-        </Button>
+          {<__LocalizedText id="signProcessDialog_back" />}{" "}</Button>
         <Button
           type="button"
           onClick={() => {
@@ -269,7 +268,7 @@ function SignProcessBody({
             settle(asking);
           }}
         >
-          {asking.confirm}
+          {__t(asking.confirm)}
         </Button>
       </>
     );
@@ -301,19 +300,16 @@ function SignProcessBody({
         </p>
         {download}
         <Button type="button" onClick={onClose}>
-          Done
-        </Button>
+          {<__LocalizedText id="signProcessDialog_done" />}{" "}</Button>
       </>
     );
   } else if (mode === "record") {
     footer = (
       <>
         <Button type="button" variant="outline" onClick={() => setMode("read")}>
-          Back
-        </Button>
+          {<__LocalizedText id="signProcessDialog_back" />}{" "}</Button>
         <Button type="button" disabled={!marked || !returnedOn} onClick={runRecord}>
-          Record return
-        </Button>
+          {<__LocalizedText id="signProcessDialog_recordReturn" />}{" "}</Button>
       </>
     );
   } else {
@@ -329,21 +325,21 @@ function SignProcessBody({
     stage === "sign"
       ? "Add signature"
       : mode === "act" && asking
-        ? asking.question(`this ${asking.noun?.one ?? "process"}`)
+        ? asking.question(`this ${asking.noun?.one ?? __t("signProcessDialog_process")}`)
         : document.title;
 
   return (
     <StagedOverlay
       /* The paper's width and a definite height at every width, held for every stage. */
       className="h-[85dvh] sm:max-w-4xl xl:max-w-6xl"
-      title={title}
+      title={__t(title)}
       titleRef={flow.titleRef}
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(process)} <span aria-hidden>· </span>
           <Identifier
             value={process.caseNumber}
-            label="case number"
+            label={__t("signProcessDialog_caseNumber")}
             copyable={false}
           />
         </DialogDescription>
@@ -371,7 +367,7 @@ function SignProcessBody({
               /* What came back, beside the paper it came back on — above the facts,
                  because while recording it is the task in hand. */
               <section
-                aria-label={`What the ${inline} came back as`}
+                aria-label={__t("signProcessDialog_whatTheValue0CameBackAs", {value0: String(inline)})}
                 className="flex flex-col gap-4 rounded-lg border border-hairline bg-card p-4"
               >
                 <ReturnedOnField value={returnedOn} onChange={setReturnedOn} />
@@ -399,7 +395,7 @@ function SignProcessBody({
             height="fill"
             variant="quiet"
             surface="card"
-            title={document.title}
+            title={__t(document.title)}
             source={{
               kind: "composed",
               content: <ProcessFacsimile document={document} />,
@@ -428,13 +424,14 @@ function SignProcessBody({
  * A sunken well, the application-review overlays' treatment.
  */
 function ProcessFacts({ process }: { process: CourtProcess }) {
+  const __t = __useTranslations();
   const rows: [string, React.ReactNode][] = [
     ["Status", <ProcessStatusText key="s" process={process} inline />],
     ["Process type", courtProcessTypeLabel(process.type)],
     ["Delivery channel", processChannelLabel(process.channel)],
     [
       "Case number",
-      <Identifier key="c" value={process.caseNumber} label="case number" />,
+      <Identifier key="c" value={process.caseNumber} label={__t("signProcessDialog_caseNumber")} />,
     ],
     ["Hearing date", formatProcessDate(process.hearingDate)],
     ["Payment made", formatProcessDate(process.paidOn)],
@@ -459,7 +456,7 @@ function ProcessFacts({ process }: { process: CourtProcess }) {
             key={term}
             className="grid-cols-[minmax(7rem,9rem)_1fr] border-hairline"
           >
-            <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
+            <DescriptionTerm className="text-body-compact">{__t(term)}</DescriptionTerm>
             <DescriptionDetails className="min-w-0 text-body-compact tabular-nums">
               {value}
             </DescriptionDetails>
@@ -477,20 +474,21 @@ function ProcessFacts({ process }: { process: CourtProcess }) {
  * proclamation is published, not addressed, so it has none.
  */
 function ProcessFacsimile({ document: storedDocument }: { document: ProcessDocument }) {
+  const __t = __useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {<__LocalizedText id="signProcessDialog_caseNo" />}{" "}{document.caseNumber}
         </p>
         <p className="text-body font-semibold">{document.matter}</p>
       </header>
 
       <div className="flex flex-col gap-2">
         <h3 className="text-center text-body font-semibold">
-          {document.title}
+          {__t(document.title)}
         </h3>
         {document.addressee ? (
           <p className="text-body">{document.addressee}</p>
@@ -507,7 +505,7 @@ function ProcessFacsimile({ document: storedDocument }: { document: ProcessDocum
 
       <div className="flex flex-col gap-2">
         <p className="text-body">{document.channel}</p>
-        <p className="text-body">Dated this the {document.dated}.</p>
+        <p className="text-body">{<__LocalizedText id="signProcessDialog_datedThisThe" />}{" "}{document.dated}.</p>
       </div>
 
       <p className="text-body text-paper-muted-foreground">

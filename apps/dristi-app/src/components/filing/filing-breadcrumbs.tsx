@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { usePathname } from "next/navigation";
 
@@ -25,6 +26,7 @@ const CASE_FILING_LABEL = `Case filing under ${CASE_TYPE.short}`;
  * to send anyone to.
  */
 export function FilingBreadcrumbs() {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const pathname = usePathname();
   const { draftLabel } = useFilingChrome();
@@ -37,15 +39,15 @@ export function FilingBreadcrumbs() {
 
   const crumbs: Crumb[] = [];
   if (first === "new") {
-    crumbs.push({ label: "New filing" });
+    crumbs.push({ label: __t("filingBreadcrumbs_newFiling") });
   } else if (first === "bulk") {
-    crumbs.push({ label: "Bulk filing" });
+    crumbs.push({ label: __t("filingBreadcrumbs_bulkFiling") });
   } else if (first === "formats") {
-    crumbs.push({ label: "Additional details formats" });
+    crumbs.push({ label: __t("filingBreadcrumbs_additionalDetailsFormats") });
   } else if (stepId) {
     crumbs.push({
       label:
-        draftLabel && draftLabel !== "Untitled filing" ? draftLabel : CASE_FILING_LABEL,
+        draftLabel && draftLabel !== "Untitled filing" ? __t(draftLabel) : CASE_FILING_LABEL,
     });
     crumbs.push({ label: courtText(getStep(stepId).title) });
   } else if (first) {

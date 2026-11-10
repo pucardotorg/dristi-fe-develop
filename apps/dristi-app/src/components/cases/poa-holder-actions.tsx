@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Remove and Replace for a Power of Attorney holder — scenarios 6 and 7 of
@@ -87,6 +89,7 @@ export function PoaHolderWell({
   caseRef: CaseRef;
   existingPeople: ExistingPersonOption[];
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = useState<"remove" | "replace" | null>(null);
   /* Once an application is out, the well is the requester's waiting view —
      the line names what was asked, the menu retires so the same request
@@ -117,7 +120,7 @@ export function PoaHolderWell({
                 variant="ghost"
                 size="icon-sm"
                 className="shrink-0 text-muted-foreground"
-                aria-label={`Actions for ${holder}`}
+                aria-label={__t("poaHolderActions_actionsForValue0", {value0: String(holder)})}
               >
                 <EllipsisVerticalIcon aria-hidden />
               </Button>
@@ -125,15 +128,13 @@ export function PoaHolderWell({
             <DropdownMenuContent align="end" className="min-w-44">
               <DropdownMenuItem onSelect={() => setOpen("replace")}>
                 <UserRoundPenIcon aria-hidden />
-                Replace holder
-              </DropdownMenuItem>
+                {<__LocalizedText id="poaHolderActions_replaceHolder" />}{" "}</DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
                 onSelect={() => setOpen("remove")}
               >
                 <Trash2Icon aria-hidden />
-                Remove holder
-              </DropdownMenuItem>
+                {<__LocalizedText id="poaHolderActions_removeHolder" />}{" "}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
@@ -155,7 +156,7 @@ export function PoaHolderWell({
         existingPeople={existingPeople}
         onRequested={(newHolder) =>
           setPending(
-            `Replacement by ${newHolder || "a new holder"} requested · awaiting order`
+            `Replacement by ${newHolder || __t("poaHolderActions_aNewHolder")} requested · awaiting order`
           )
         }
       />
@@ -197,6 +198,7 @@ function RemovePoaDialog({
   /** Fired when the application goes out — the well's waiting view. */
   onRequested?: () => void;
 }) {
+  const __t = __useTranslations();
   const [step, setStep] = useState<1 | 2>(1);
   const [reason, setReason] = useState("");
   const [docFile, setDocFile] = useState<File | null>(null);
@@ -245,9 +247,9 @@ function RemovePoaDialog({
   const applicationDoc = {
     matter: "Application for the removal of a PoA-holder",
     facts: [
-      { term: "PoA-holder", value: holder },
-      { term: "For", value: partyName },
-      ...(docFile ? [{ term: "Annexure", value: docFile.name }] : []),
+      { term: __t("poaHolderActions_poaHolder"), value: holder },
+      { term: __t("poaHolderActions_for_dbdc3dee"), value: partyName },
+      ...(docFile ? [{ term: __t("poaHolderActions_annexure"), value: docFile.name }] : []),
     ],
     prayer: [
       `The applicant, counsel on record in the above matter, prays that ${holder} cease to be the Power of Attorney holder of ${partyName}.`,
@@ -271,12 +273,12 @@ function RemovePoaDialog({
                   the review does not read as a different task (owner, Sept 2). */}
               <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
                 <DialogTitle className="text-title-s font-semibold text-balance">
-                  Remove {holder}
+                  {<__LocalizedText id="poaHolderActions_remove" />}{" "}{holder}
                 </DialogTitle>
                 <DialogDescription>
                   {step === 2
-                    ? `Once the magistrate orders it, ${holder} is no longer ${partyName}'s PoA-holder.`
-                    : current.description}
+                    ? __t("poaHolderActions_onceTheMagistrateOrdersItValue0Is", {value0: String(holder), value1: String(partyName)})
+                    : __t(current.description)}
                 </DialogDescription>
               </DialogHeader>
 
@@ -294,11 +296,9 @@ function RemovePoaDialog({
                           className="block w-full text-body font-semibold leading-snug"
                           htmlFor="remove-poa-reason"
                         >
-                          Why should they be removed?
-                        </FieldLabel>
+                          {<__LocalizedText id="poaHolderActions_whyShouldTheyBeRemoved" />}{" "}</FieldLabel>
                         <FieldDescription>
-                          The magistrate reads this to decide the application.
-                        </FieldDescription>
+                          {<__LocalizedText id="poaHolderActions_theMagistrateReadsThisToDecideThe" />}{" "}</FieldDescription>
                         <Textarea
                           id="remove-poa-reason"
                           className="min-h-24"
@@ -318,10 +318,9 @@ function RemovePoaDialog({
 
                       <Field data-invalid={Boolean(errors.document)}>
                         <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                          Supporting document
-                        </FieldLabel>
+                          {<__LocalizedText id="poaHolderActions_supportingDocument" />}{" "}</FieldLabel>
                         <UploadedDocField
-                          label="Supporting document"
+                          label={__t("poaHolderActions_supportingDocument")}
                           required
                           file={docFile}
                           onFileChange={(file) => {
@@ -349,19 +348,16 @@ function RemovePoaDialog({
                     variant="outline"
                     onClick={() => setStep(1)}
                   >
-                    Back
-                  </Button>
+                    {<__LocalizedText id="poaHolderActions_back" />}{" "}</Button>
                 ) : (
                   <span aria-hidden className="hidden sm:block" />
                 )}
                 {step === 1 ? (
                   <Button type="submit" form="remove-poa-form">
-                    Continue
-                  </Button>
+                    {<__LocalizedText id="poaHolderActions_continue" />}{" "}</Button>
                 ) : (
                   <Button type="button" onClick={() => setSignOpen(true)}>
-                    Continue to sign
-                  </Button>
+                    {<__LocalizedText id="poaHolderActions_continueToSign" />}{" "}</Button>
                 )}
               </footer>
             </>
@@ -376,7 +372,7 @@ function RemovePoaDialog({
           closeClean();
         }}
         confirmation={{
-          title: "Application sent to the magistrate",
+          title: __t("poaHolderActions_applicationSentToTheMagistrate"),
           description: `${holder} stays ${partyName}'s PoA-holder until the order is passed.`,
         }}
       />
@@ -432,6 +428,7 @@ function ReplacePoaDialog({
   /** Fired when the application goes out, with the new holder's name. */
   onRequested?: (newHolder: string) => void;
 }) {
+  const __t = __useTranslations();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [holderMode, setHolderMode] = useState<HolderMode>("new");
   const [newName, setNewName] = useState("");
@@ -520,22 +517,22 @@ function ReplacePoaDialog({
   const applicationDoc = {
     matter: "Application for the replacement of a PoA-holder",
     facts: [
-      { term: "Outgoing holder", value: holder },
+      { term: __t("poaHolderActions_outgoingHolder"), value: holder },
       {
-        term: "New holder",
+        term: __t("poaHolderActions_newHolder"),
         value:
           holderMode === "existing"
             ? `${newHolderName} (already on this case)`
             : newHolderName,
       },
-      { term: "For", value: partyName },
+      { term: __t("poaHolderActions_for_dbdc3dee"), value: partyName },
       ...(holderMode === "new" && newPhone
-        ? [{ term: "Mobile number", value: newPhone }]
+        ? [{ term: __t("poaHolderActions_mobileNumber"), value: newPhone }]
         : []),
-      ...(deedFile ? [{ term: "Annexure", value: deedFile.name }] : []),
+      ...(deedFile ? [{ term: __t("poaHolderActions_annexure"), value: deedFile.name }] : []),
     ],
     prayer: [
-      `The applicant, counsel on record in the above matter, prays that ${holder} cease to be the Power of Attorney holder of ${partyName}, and that ${newHolderName || "the person named above"} be recognised in their place under the deed annexed.`,
+      `The applicant, counsel on record in the above matter, prays that ${holder} cease to be the Power of Attorney holder of ${partyName}, and that ${newHolderName || __t("poaHolderActions_thePersonNamedAbove")} be recognised in their place under the deed annexed.`,
       `Grounds: ${reason.trim()}`,
       "It is prayed that this Hon'ble Court may allow this application and pass such orders as are deemed fit.",
     ],
@@ -557,17 +554,17 @@ function ReplacePoaDialog({
                 <FlowStepper
                   steps={REPLACE_STEPS}
                   current={step}
-                  label="Replace PoA-holder progress"
+                  label={__t("poaHolderActions_replacePoaHolderProgress")}
                 />
               </div>
               <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
                 <DialogTitle className="text-title-s font-semibold text-balance">
-                  {step === 1 ? `Replace ${holder}` : current.title}
+                  {step === 1 ? __t("poaHolderActions_replaceValue0", {value0: String(holder)}) : __t(current.title)}
                 </DialogTitle>
                 <DialogDescription>
                   {step === 3
-                    ? `Once the magistrate orders it, ${newHolderName || "the new holder"} holds ${partyName}'s Power of Attorney in place of ${holder}.`
-                    : current.description}
+                    ? __t("poaHolderActions_onceTheMagistrateOrdersItValue0Holds", {value0: String(newHolderName || __t("poaHolderActions_theNewHolder")), value1: String(partyName), value2: String(holder)})
+                    : __t(current.description)}
                 </DialogDescription>
               </DialogHeader>
 
@@ -582,8 +579,7 @@ function ReplacePoaDialog({
                     <>
                       <Field>
                         <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                          Who takes over?
-                        </FieldLabel>
+                          {<__LocalizedText id="poaHolderActions_whoTakesOver" />}{" "}</FieldLabel>
                         <RadioGroup
                           value={holderMode}
                           onValueChange={(value) => {
@@ -594,7 +590,7 @@ function ReplacePoaDialog({
                         >
                           <div className="flex min-h-10 items-center gap-2">
                             <RadioGroupItem id="replace-poa-new" value="new" />
-                            <Label htmlFor="replace-poa-new">Someone new</Label>
+                            <Label htmlFor="replace-poa-new">{<__LocalizedText id="poaHolderActions_someoneNew" />}</Label>
                           </div>
                           <div className="flex min-h-10 items-center gap-2">
                             <RadioGroupItem
@@ -602,8 +598,7 @@ function ReplacePoaDialog({
                               value="existing"
                             />
                             <Label htmlFor="replace-poa-existing">
-                              Someone already on this case
-                            </Label>
+                              {<__LocalizedText id="poaHolderActions_someoneAlreadyOnThisCase" />}{" "}</Label>
                           </div>
                         </RadioGroup>
                       </Field>
@@ -612,8 +607,7 @@ function ReplacePoaDialog({
                         <>
                           <Field data-invalid={Boolean(errors.holderName)}>
                             <FieldLabel htmlFor="replace-poa-name">
-                              Full name
-                            </FieldLabel>
+                              {<__LocalizedText id="poaHolderActions_fullName" />}{" "}</FieldLabel>
                             <Input
                               id="replace-poa-name"
                               autoComplete="off"
@@ -630,8 +624,7 @@ function ReplacePoaDialog({
                           </Field>
                           <Field data-invalid={Boolean(errors.holderPhone)}>
                             <FieldLabel htmlFor="replace-poa-phone">
-                              Mobile number
-                            </FieldLabel>
+                              {<__LocalizedText id="poaHolderActions_mobileNumber" />}{" "}</FieldLabel>
                             <Input
                               id="replace-poa-phone"
                               type="tel"
@@ -657,12 +650,9 @@ function ReplacePoaDialog({
                       ) : (
                         <Field data-invalid={Boolean(errors.existing)}>
                           <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                            Who takes on the role?
-                          </FieldLabel>
+                            {<__LocalizedText id="poaHolderActions_whoTakesOnTheRole" />}{" "}</FieldLabel>
                           <FieldDescription>
-                            No new person joins the case. They take on the PoA
-                            role alongside what they already are.
-                          </FieldDescription>
+                            {<__LocalizedText id="poaHolderActions_noNewPersonJoinsTheCaseThey" />}{" "}</FieldDescription>
                           <RadioGroup
                             value={existingKey}
                             onValueChange={(value) => {
@@ -705,11 +695,9 @@ function ReplacePoaDialog({
                           className="block w-full text-body font-semibold leading-snug"
                           htmlFor="replace-poa-reason"
                         >
-                          Why is {holder} being replaced?
-                        </FieldLabel>
+                          {<__LocalizedText id="poaHolderActions_whyIs" />}{" "}{holder} {<__LocalizedText id="poaHolderActions_beingReplaced" />}{" "}</FieldLabel>
                         <FieldDescription>
-                          The magistrate reads this to decide the application.
-                        </FieldDescription>
+                          {<__LocalizedText id="poaHolderActions_theMagistrateReadsThisToDecideThe" />}{" "}</FieldDescription>
                         <Textarea
                           id="replace-poa-reason"
                           className="min-h-24"
@@ -729,14 +717,13 @@ function ReplacePoaDialog({
 
                       <Field data-invalid={Boolean(errors.deed)}>
                         <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                          New Power of Attorney deed
-                        </FieldLabel>
+                          {<__LocalizedText id="poaHolderActions_newPowerOfAttorneyDeed" />}{" "}</FieldLabel>
                         <FieldDescription>
-                          The executed deed naming{" "}
-                          {newHolderName || "the new holder"} for {partyName}.
+                          {<__LocalizedText id="poaHolderActions_theExecutedDeedNaming" />}{" "}
+                          {newHolderName || __t("poaHolderActions_theNewHolder")} {<__LocalizedText id="poaHolderActions_for" />}{" "}{partyName}.
                         </FieldDescription>
                         <UploadedDocField
-                          label="New Power of Attorney deed"
+                          label={__t("poaHolderActions_newPowerOfAttorneyDeed")}
                           required
                           file={deedFile}
                           onFileChange={(file) => {
@@ -764,19 +751,16 @@ function ReplacePoaDialog({
                     variant="outline"
                     onClick={() => setStep((s) => (s - 1) as 1 | 2)}
                   >
-                    Back
-                  </Button>
+                    {<__LocalizedText id="poaHolderActions_back" />}{" "}</Button>
                 ) : (
                   <span aria-hidden className="hidden sm:block" />
                 )}
                 {step < 3 ? (
                   <Button type="submit" form="replace-poa-form">
-                    Continue
-                  </Button>
+                    {<__LocalizedText id="poaHolderActions_continue" />}{" "}</Button>
                 ) : (
                   <Button type="button" onClick={() => setSignOpen(true)}>
-                    Continue to sign
-                  </Button>
+                    {<__LocalizedText id="poaHolderActions_continueToSign" />}{" "}</Button>
                 )}
               </footer>
             </>
@@ -792,8 +776,8 @@ function ReplacePoaDialog({
           closeClean();
         }}
         confirmation={{
-          title: "Application sent to the magistrate",
-          description: `${holder} is replaced by ${newHolderName || "the new holder"} once the order is passed.`,
+          title: __t("poaHolderActions_applicationSentToTheMagistrate"),
+          description: `${holder} is replaced by ${newHolderName || __t("poaHolderActions_theNewHolder")} once the order is passed.`,
         }}
       />
 
@@ -823,16 +807,14 @@ function DiscardConfirm({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <ChromeAlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Discard this application?</AlertDialogTitle>
+          <AlertDialogTitle>{<__LocalizedText id="poaHolderActions_discardThisApplication" />}</AlertDialogTitle>
           <AlertDialogDescription>
-            The details entered here will be lost if you discard this draft.
-          </AlertDialogDescription>
+            {<__LocalizedText id="poaHolderActions_theDetailsEnteredHereWillBeLost" />}{" "}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep editing</AlertDialogCancel>
+          <AlertDialogCancel>{<__LocalizedText id="poaHolderActions_keepEditing" />}</AlertDialogCancel>
           <AlertDialogAction variant="destructive-solid" onClick={onDiscard}>
-            Discard draft
-          </AlertDialogAction>
+            {<__LocalizedText id="poaHolderActions_discardDraft" />}{" "}</AlertDialogAction>
         </AlertDialogFooter>
       </ChromeAlertDialogContent>
     </AlertDialog>

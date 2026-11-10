@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { type ReactNode } from "react";
 import { CaseLink as Link } from "@/components/cases/case-reader";
@@ -56,15 +58,16 @@ export function DigitalRecord({
   emptyTitle?: string;
   emptyDescription?: string;
 }) {
+  const __t = __useTranslations();
   if (!pane) {
     return (
       <Empty className="min-h-0 flex-1 border border-dashed border-border">
         <EmptyHeader>
           <EmptyTitle className="text-body font-semibold">
-            {emptyTitle}
+            {__t(emptyTitle)}
           </EmptyTitle>
           <EmptyDescription>
-            {emptyDescription}
+            {__t(emptyDescription)}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -87,7 +90,7 @@ export function DigitalRecord({
       {pane.fields && pane.fields.length > 0 ? (
         <DescriptionList>
           {pane.fields.map((item, index) => (
-            <FieldRow key={`${item.term}-${index}`} field={item} />
+            <FieldRow key={`${__t(item.term)}-${index}`} field={item} />
           ))}
         </DescriptionList>
       ) : null}
@@ -95,9 +98,9 @@ export function DigitalRecord({
       {pane.blocks?.map((block) => (
         <div key={block.title} className="flex flex-col gap-2">
           <h3 className="text-body-compact font-semibold text-foreground">
-            {block.title}
+            {__t(block.title)}
           </h3>
-          <p className="text-body-compact text-muted-foreground">{block.body}</p>
+          <p className="text-body-compact text-muted-foreground">{__t(block.body)}</p>
         </div>
       ))}
 
@@ -112,7 +115,7 @@ export function DigitalRecord({
               >
                 <ItemContent className="gap-2">
                   <ItemTitle className="line-clamp-none min-w-0">
-                    {person.title}
+                    {__t(person.title)}
                   </ItemTitle>
                   <ItemDescription className="line-clamp-none">
                     {person.detail}
@@ -132,16 +135,17 @@ export function DigitalRecord({
 }
 
 function FieldRow({ field }: { field: ComplaintField }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow>
-      <DescriptionTerm>{field.term}</DescriptionTerm>
+      <DescriptionTerm>{__t(field.term)}</DescriptionTerm>
       <DescriptionDetails
         className={cn(
           field.empty ? "text-muted-foreground" : "font-medium"
         )}
       >
         {field.id ? (
-          <Identifier value={field.value} label={field.term} />
+          <Identifier value={field.value} label={__t(field.term)} />
         ) : (
           field.value
         )}
@@ -157,10 +161,11 @@ function DocumentStrip({
   caseId: string;
   documents: ComplaintDocument[];
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-body-compact font-semibold text-foreground">Documents</h3>
-      <ul aria-label="Documents" className="flex gap-4 overflow-x-auto pb-1">
+      <h3 className="text-body-compact font-semibold text-foreground">{<__LocalizedText id="digitalRecord_documents" />}</h3>
+      <ul aria-label={__t("digitalRecord_documents")} className="flex gap-4 overflow-x-auto pb-1">
         {documents.map((doc) => (
           <li key={doc.id} className="w-48 shrink-0">
             <DocumentTile caseId={caseId} document={doc} />
@@ -178,6 +183,7 @@ function DocumentTile({
   caseId: string;
   document: ComplaintDocument;
 }) {
+  const __t = __useTranslations();
   const src = complaintDocumentSrc(document);
   const href = complaintDocumentHref(caseId, document);
   const preview = (
@@ -192,7 +198,7 @@ function DocumentTile({
           <DocumentThumbnail src={src} />
         ) : (
           <div className="flex size-full items-center justify-center">
-            <p className="text-body-compact text-muted-foreground">Not uploaded</p>
+            <p className="text-body-compact text-muted-foreground">{<__LocalizedText id="digitalRecord_notUploaded" />}</p>
           </div>
         )}
       </AspectRatio>
@@ -204,7 +210,7 @@ function DocumentTile({
       <div className="flex flex-col gap-2">
         {preview}
         <p className="text-body-compact font-medium text-foreground">
-          {document.label}
+          {__t(document.label)}
         </p>
       </div>
     );
@@ -217,11 +223,10 @@ function DocumentTile({
     >
       {preview}
       <span className="text-body-compact font-medium text-foreground">
-        {document.label}
+        {__t(document.label)}
       </span>
       <span className="text-caption font-medium text-muted-foreground">
-        Open in case file
-      </span>
+        {<__LocalizedText id="digitalRecord_openInCaseFile" />}{" "}</span>
     </Link>
   );
 }

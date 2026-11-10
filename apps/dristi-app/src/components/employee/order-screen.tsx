@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -70,6 +72,7 @@ function HearingOrder({ hearing }: { hearing: CourtHearing }) {
  * (`order-demo.ts`); every other one opens empty.
  */
 export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const session = useHearingSession();
   const today = useCourtToday();
@@ -96,10 +99,10 @@ export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
     fixedIds: NO_FIXED_ITEMS,
     heading: causeTitle(hearing),
     facts: [
-      { label: "Item", value: String(hearing.item) },
-      { label: "Case", value: hearing.caseNumber, identifier: true },
-      { label: "Stage", value: courtCaseStageLabel(hearing.stage) },
-      { label: "Purpose", value: courtHearingPurposeLabel(hearing.purpose) },
+      { label: __t("orderScreen_item"), value: String(hearing.item) },
+      { label: __t("orderScreen_case"), value: hearing.caseNumber, identifier: true },
+      { label: __t("orderScreen_stage"), value: courtCaseStageLabel(hearing.stage) },
+      { label: __t("orderScreen_purpose"), value: courtHearingPurposeLabel(hearing.purpose) },
     ],
     courtLine: courtText(`Before the ${CURRENT_STAFF.court}`),
     subLine: `${hearing.caseNumber} · ${causeTitle(hearing)} · Hearing on ${formatOrderDate(today)}`,
@@ -107,9 +110,9 @@ export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
       <Button asChild variant="outline" className="w-full shrink-0 sm:w-fit">
         <Link
           href={`/employee/hearings/${upNext.id}/order`}
-          aria-label={`Next case · Item ${upNext.item}, ${causeTitle(upNext)}`}
+          aria-label={__t("orderScreen_nextCaseItemValue0Value1", {value0: String(upNext.item), value1: String(causeTitle(upNext))})}
         >
-          Next case · Item {upNext.item}
+          {<__LocalizedText id="orderScreen_nextCaseItem" />}{" "}{upNext.item}
           <ChevronRightIcon data-icon="inline-end" aria-hidden />
         </Link>
       </Button>
@@ -119,10 +122,9 @@ export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
         variant="outline"
         disabled
         className="w-full shrink-0 sm:w-fit"
-        aria-label="Next case (no other hearing is ongoing)"
+        aria-label={__t("orderScreen_nextCaseNoOtherHearingIsOngoing")}
       >
-        Next case
-        <ChevronRightIcon data-icon="inline-end" aria-hidden />
+        {<__LocalizedText id="orderScreen_nextCase" />}{" "}<ChevronRightIcon data-icon="inline-end" aria-hidden />
       </Button>
     ),
     context,
@@ -141,18 +143,14 @@ export function OrderMissing() {
             <CalendarX2Icon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            This listing is not on the board
-          </EmptyTitle>
+            {<__LocalizedText id="orderScreen_thisListingIsNotOnTheBoard" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
-            The order composer opens a matter from today&rsquo;s cause list.
-            This one is not there.
-          </EmptyDescription>
+            {<__LocalizedText id="orderScreen_theOrderComposerOpensAMatterFrom" />}{" "}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
             <Link href="/employee/hearings">
-              Back to today&rsquo;s hearings
-            </Link>
+              {<__LocalizedText id="orderScreen_backToTodaySHearings" />}{" "}</Link>
           </Button>
         </EmptyContent>
       </Empty>

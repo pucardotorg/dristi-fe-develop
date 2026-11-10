@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { REGISTER_TABLE_ONLY } from "@/components/cases/register-layout";
 import { cn } from "@/lib/utils";
@@ -63,6 +65,7 @@ export function CaseOverview({
   record: CaseRecord;
   now: number;
 }) {
+  const __t = __useTranslations();
   const court = useCaseReader() === "court";
   const model = caseOverviewModel(record, now);
   const [archived, setArchived] = useState<string[]>([]);
@@ -73,9 +76,9 @@ export function CaseOverview({
     setArchived((current) => [...current, id]);
     toast("Task archived", {
       position: "bottom-center",
-      description: `${title}. You can find it under Take action, Archive.`,
+      description: `${__t(title)}. You can find it under Take action, Archive.`,
       action: {
-        label: "Undo",
+        label: __t("caseOverview_undo"),
         onClick: () =>
           setArchived((current) => current.filter((item) => item !== id)),
       },
@@ -163,11 +166,12 @@ function BlockHeader({
   count?: number;
   action?: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-1">
       <div className="flex min-w-0 items-center gap-2">
         <h2 id={id} className="text-body font-semibold text-foreground">
-          {title}
+          {__t(title)}
         </h2>
         {count === undefined ? null : (
           <Badge variant="secondary" className="tabular-nums">
@@ -175,7 +179,7 @@ function BlockHeader({
           </Badge>
         )}
       </div>
-      {action}
+      {__t(action)}
     </div>
   );
 }
@@ -205,6 +209,7 @@ function NextHearingBlock({
   next: OverviewNextHearing;
   court: boolean;
 }) {
+  const __t = __useTranslations();
   const [hearingsOpen, setHearingsOpen] = useState(false);
   const hearingsTriggerRef = useRef<HTMLAnchorElement | null>(null);
   const tile = next.tile;
@@ -216,7 +221,7 @@ function NextHearingBlock({
     >
       <BlockHeader
         id={NEXT_HEARING_HEADING}
-        title="Next hearing"
+        title={__t("caseOverview_nextHearing")}
         action={
           /* Not for the court: its Hearings tab is one press away. */
           court ? undefined : (
@@ -241,8 +246,7 @@ function NextHearingBlock({
                   setHearingsOpen(true);
                 }}
               >
-                View All Hearings
-              </Link>
+                {<__LocalizedText id="caseOverview_viewAllHearings" />}{" "}</Link>
             </Button>
           )
         }
@@ -287,15 +291,14 @@ function NextHearingBlock({
             <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
               {tile.today ? (
                 <Badge variant="warning" className={WELL_CHIP_STROKE.warning}>
-                  Today
-                </Badge>
+                  {<__LocalizedText id="caseOverview_today" />}{" "}</Badge>
               ) : null}
               {next.status ? (
                 <Badge
                   variant={next.status.variant}
                   className={WELL_CHIP_STROKE[next.status.variant]}
                 >
-                  {next.status.label}
+                  {__t(next.status.label)}
                 </Badge>
               ) : null}
             </div>
@@ -315,7 +318,7 @@ function NextHearingBlock({
           </p>
           {next.last ? (
             <p className="text-caption font-medium text-muted-foreground">
-              Last heard on {next.last.on}
+              {<__LocalizedText id="caseOverview_lastHeardOn" />}{" "}{next.last.on}
               {next.last.purpose ? ` · ${next.last.purpose}` : null}
             </p>
           ) : null}
@@ -341,6 +344,7 @@ function CaseUpdatesBlock({
   updates: OverviewUpdate[];
   court: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <section
       id="case-timeline"
@@ -349,12 +353,11 @@ function CaseUpdatesBlock({
     >
       <BlockHeader
         id={CASE_UPDATES_HEADING}
-        title="Case updates"
+        title={__t("caseOverview_caseUpdates")}
         action={
           <Button variant="link" asChild className={BLOCK_LINK}>
             <Link href={caseSectionHref(record.id, "case-history")}>
-              View all updates
-            </Link>
+              {<__LocalizedText id="caseOverview_viewAllUpdates" />}{" "}</Link>
           </Button>
         }
       />
@@ -364,7 +367,7 @@ function CaseUpdatesBlock({
            case stands in for on the cause list. */
         <GroupedCaseHistory hearing={DEMO_LISTING} throughLastOrder />
       ) : (
-        <Timeline aria-label="Case updates, newest first">
+        <Timeline aria-label={__t("caseOverview_caseUpdatesNewestFirst")}>
           {updates.map((update) => (
             <TimelineItem key={update.id} status={update.status}>
               {/* The whole row is the link, bled out so the hover fill clears
@@ -374,7 +377,7 @@ function CaseUpdatesBlock({
                 className="-mx-2 -my-1.5 flex min-h-10 min-w-0 flex-col gap-1 rounded-lg px-2 py-1.5 outline-none hover:bg-surface-sunken focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <p className="text-body-compact font-medium text-foreground">
-                  {update.title}
+                  {__t(update.title)}
                 </p>
                 <span className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary">{update.category}</Badge>
@@ -404,6 +407,7 @@ function PendingTasksBlock({
   consentTask?: ReactNode;
   onArchive: (id: string, title: string) => void;
 }) {
+  const __t = __useTranslations();
   const count = tasks.length + (bondTask ? 1 : 0) + (consentTask ? 1 : 0);
   return (
     <section
@@ -412,22 +416,21 @@ function PendingTasksBlock({
     >
       <BlockHeader
         id={PENDING_TASKS_HEADING}
-        title="Take action"
+        title={__t("caseOverview_takeAction")}
         count={count}
       />
       {count === 0 ? (
         <p className="pt-2 text-body-compact text-muted-foreground">
-          Nothing is pending on this case.
-        </p>
+          {<__LocalizedText id="caseOverview_nothingIsPendingOnThisCase" />}{" "}</p>
       ) : (
         <>
           {caption ? (
             <p className="text-caption font-medium text-muted-foreground">
-              {caption}
+              {__t(caption)}
             </p>
           ) : null}
           {/* One divided list, not N stacked panels. */}
-          <ItemGroup aria-label="Take action">
+          <ItemGroup aria-label={__t("caseOverview_takeAction")}>
             {consentTask}
             {tasks.map((task, index) => (
               <Fragment key={task.id}>
@@ -437,7 +440,7 @@ function PendingTasksBlock({
                   />
                 ) : null}
                 <PendingTaskRow
-                  title={task.title}
+                  title={__t(task.title)}
                   respond={{
                     href: task.respondHref ?? task.action?.href ?? task.href,
                   }}

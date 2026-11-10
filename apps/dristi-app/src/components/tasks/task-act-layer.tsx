@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { isApplicationTask } from "@/components/tasks/act/task-flows";
 import { TaskViewDialog } from "@/components/tasks/act/task-view-dialog";
@@ -38,6 +39,7 @@ import {
  * world updates together.
  */
 export function useTaskAct() {
+  const __t = __useTranslations();
   const store = useTasks();
   const router = useRouter();
   // Whichever screen is hosting the layer — the flow's way back.
@@ -136,9 +138,9 @@ export function useTaskAct() {
       <ConfirmDialog
         open={!!flowNotice}
         onOpenChange={(open) => !open && setFlowNotice(null)}
-        title={flowNotice ? FLOW_DIALOG[flowNotice.flow].title : ""}
-        description={flowNotice ? FLOW_DIALOG[flowNotice.flow].description : undefined}
-        confirmLabel="Continue"
+        title={flowNotice ? __t(FLOW_DIALOG[flowNotice.flow].title) : ""}
+        description={flowNotice ? __t(FLOW_DIALOG[flowNotice.flow].description) : undefined}
+        confirmLabel={__t("taskActLayer_continue")}
         destructive={false}
         onConfirm={() => {
           const notice = flowNotice;
@@ -150,13 +152,13 @@ export function useTaskAct() {
       <ConfirmDialog
         open={!!confirmDone}
         onOpenChange={(open) => !open && setConfirmDone(null)}
-        title="Mark as done?"
+        title={__t("taskActLayer_markAsDone")}
         description={
           confirmDone
-            ? `“${confirmDone.title}” — this records that it was completed outside DRISTI. Nothing is sent to the court.`
+            ? `“${__t(confirmDone.title)}” — this records that it was completed outside DRISTI. Nothing is sent to the court.`
             : undefined
         }
-        confirmLabel="Mark as done"
+        confirmLabel={__t("taskActLayer_markAsDone_b342c4d5")}
         destructive={false}
         onConfirm={() => {
           const task = confirmDone;

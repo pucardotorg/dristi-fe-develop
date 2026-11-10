@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MinusIcon, PlusIcon } from "lucide-react";
@@ -84,6 +86,7 @@ export function PdfViewer({
   thumbnail?: boolean;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   /* Held with the src it came from, so a new src reads as "loading" at once
      without resetting state from inside the effect. */
@@ -185,7 +188,7 @@ export function PdfViewer({
       <div
         ref={scrollRef}
         role={thumbnail ? undefined : "document"}
-        aria-label={thumbnail ? undefined : title}
+        aria-label={thumbnail ? undefined : __t(title)}
         aria-hidden={thumbnail ? true : undefined}
         tabIndex={thumbnail ? undefined : 0}
         className={cn(
@@ -197,16 +200,14 @@ export function PdfViewer({
       >
         {failed ? (
           <p className="p-6 text-body-compact text-muted-foreground">
-            This document could not be shown. Try downloading it instead.
-          </p>
+            {<__LocalizedText id="pdfViewer_thisDocumentCouldNotBeShownTry" />}{" "}</p>
         ) : !doc ? (
           <div
             role="status"
             className="flex h-full items-center justify-center gap-2 text-body-compact text-muted-foreground"
           >
             <Spinner aria-hidden />
-            Loading document
-          </div>
+            {<__LocalizedText id="pdfViewer_loadingDocument" />}{" "}</div>
         ) : (
           <div
             className={cn(
@@ -244,13 +245,14 @@ function ZoomControl({
   zoom: number;
   onZoom: (next: (current: number) => number) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="absolute right-3 bottom-3 flex items-center gap-0.5 rounded-lg border border-hairline bg-card p-0.5 shadow-raised">
       <Button
         type="button"
         variant="ghost"
         size="icon-xs"
-        aria-label="Zoom out"
+        aria-label={__t("pdfViewer_zoomOut")}
         disabled={zoom <= MIN_ZOOM}
         onClick={() => onZoom((current) => clampZoom(current - ZOOM_STEP))}
       >
@@ -261,7 +263,7 @@ function ZoomControl({
         variant="ghost"
         size="xs"
         className="w-12 tabular-nums"
-        aria-label={`Zoom ${Math.round(zoom * 100)} percent. Reset to fit`}
+        aria-label={__t("pdfViewer_zoomValue0PercentResetToFit", {value0: String(Math.round(zoom * 100))})}
         onClick={() => onZoom(() => 1)}
       >
         {Math.round(zoom * 100)}%
@@ -270,7 +272,7 @@ function ZoomControl({
         type="button"
         variant="ghost"
         size="icon-xs"
-        aria-label="Zoom in"
+        aria-label={__t("pdfViewer_zoomIn")}
         disabled={zoom >= MAX_ZOOM}
         onClick={() => onZoom((current) => clampZoom(current + ZOOM_STEP))}
       >
@@ -296,6 +298,7 @@ export function ComposedDocumentViewer({
   children: React.ReactNode;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(0);
   const [zoom, setZoom] = useState(1);
@@ -339,7 +342,7 @@ export function ComposedDocumentViewer({
       <div
         ref={scrollRef}
         role="document"
-        aria-label={title}
+        aria-label={__t(title)}
         tabIndex={0}
         className="absolute inset-0 overflow-auto overscroll-contain rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
@@ -371,6 +374,7 @@ function PdfPage({
   aspect: number;
   root: React.RefObject<HTMLDivElement | null>;
 }) {
+  const __t = __useTranslations();
   const holderRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [near, setNear] = useState(false);
@@ -435,7 +439,7 @@ function PdfPage({
     >
       <canvas
         ref={canvasRef}
-        aria-label={`Page ${number}`}
+        aria-label={__t("pdfViewer_pageValue0", {value0: String(number)})}
         role="img"
         className="block size-full"
       />

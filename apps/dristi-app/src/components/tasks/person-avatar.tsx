@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import type * as React from "react";
 
@@ -51,6 +52,7 @@ export function PersonAvatar({
    */
   label?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <Avatar
       size={size}
@@ -73,7 +75,7 @@ export function PersonAvatar({
       >
         {person.initials}
       </AvatarFallback>
-      <span className="sr-only">{label ?? ` — ${person.name}`}</span>
+      <span className="sr-only">{__t(label) ?? ` — ${person.name}`}</span>
     </Avatar>
   );
 }

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Preview — everything the filing contains, twice over.
@@ -82,6 +84,7 @@ import { useCourtText } from "@/components/court/court-provider";
 type Row = { term: string; value: React.ReactNode };
 
 function KeyValues({ rows }: { rows: Row[] }) {
+  const __t = __useTranslations();
   return (
     <DescriptionList>
       {rows.map((r, i) => (
@@ -89,11 +92,11 @@ function KeyValues({ rows }: { rows: Row[] }) {
            this product. Side by side, a 7rem label column left an address five lines
            of a 150px column. From `sm` up the two columns stand as designed. */
         <DescriptionRow
-          key={`${r.term}-${i}`}
+          key={`${__t(r.term)}-${i}`}
           className="max-sm:grid-cols-1 max-sm:gap-0.5 max-sm:border-hairline max-sm:py-2.5"
         >
           <DescriptionTerm className="text-body-compact text-muted-foreground max-sm:text-caption">
-            {r.term}
+            {__t(r.term)}
           </DescriptionTerm>
           <DescriptionDetails className="text-body-compact font-medium text-foreground tabular-nums">
             {r.value}
@@ -106,9 +109,10 @@ function KeyValues({ rows }: { rows: Row[] }) {
 
 /** A named sub-record inside a card — "Advocate 1", "Cheque 2". */
 function SubBlock({ title, rows }: { title: string; rows: Row[] }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-caption font-medium text-muted-foreground">{title}</p>
+      <p className="text-caption font-medium text-muted-foreground">{__t(title)}</p>
       <KeyValues rows={rows} />
     </div>
   );
@@ -120,14 +124,12 @@ function ReviewButton({ section, onClick }: { section: string; onClick: () => vo
     <>
       <Button type="button" variant="outline" onClick={onClick} className="max-sm:hidden">
         <PencilLineIcon data-icon="inline-start" aria-hidden />
-        Review
-        <span className="sr-only"> {section}</span>
+        {<__LocalizedText id="previewSection_review" />}{" "}<span className="sr-only"> {section}</span>
       </Button>
       {/* Phone: the DS small button, so a long section title keeps its line. */}
       <Button type="button" variant="outline" size="sm" onClick={onClick} className="h-10 sm:hidden">
         <PencilLineIcon data-icon="inline-start" aria-hidden />
-        Review
-        <span className="sr-only"> {section}</span>
+        {<__LocalizedText id="previewSection_review" />}{" "}<span className="sr-only"> {section}</span>
       </Button>
     </>
   );
@@ -141,13 +143,11 @@ function SectionState({ complete }: { complete: boolean }) {
   return complete ? (
     <span className="flex items-center gap-1 text-caption font-medium text-muted-foreground">
       <CheckIcon className="size-3.5" aria-hidden />
-      Complete
-    </span>
+      {<__LocalizedText id="previewSection_complete" />}{" "}</span>
   ) : (
     <span className="flex items-center gap-1 text-caption font-medium text-warning-ink">
       <TriangleAlertIcon className="size-3.5" aria-hidden />
-      Incomplete
-    </span>
+      {<__LocalizedText id="previewSection_incomplete" />}{" "}</span>
   );
 }
 
@@ -352,24 +352,22 @@ function IncompleteSections({
 }: {
   sections: { key: string; title: string; href: string }[];
 }) {
+  const __t = __useTranslations();
   const count = sections.length;
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button type="button" variant="ghost" className="text-muted-foreground">
           <TriangleAlertIcon data-icon="inline-start" aria-hidden />
-          {count} section{count === 1 ? "" : "s"} incomplete
-          <ChevronDownIcon data-icon="inline-end" aria-hidden />
+          {count} {<__LocalizedText id="previewSection_section" />}{count === 1 ? "" : "s"} {<__LocalizedText id="previewSection_incomplete_7c54068d" />}{" "}<ChevronDownIcon data-icon="inline-end" aria-hidden />
         </Button>
       </PopoverTrigger>
       <PopoverContent side="top" align="end" className="w-80 gap-2 p-2">
         <PopoverHeader className="px-2 pt-2">
           <PopoverTitle className="text-body-compact font-semibold">
-            Still to complete
-          </PopoverTitle>
+            {<__LocalizedText id="previewSection_stillToComplete" />}{" "}</PopoverTitle>
           <PopoverDescription className="text-caption">
-            Open a section to finish it.
-          </PopoverDescription>
+            {<__LocalizedText id="previewSection_openASectionToFinishIt" />}{" "}</PopoverDescription>
         </PopoverHeader>
         <ul className="flex flex-col">
           {sections.map((s) => (
@@ -380,7 +378,7 @@ function IncompleteSections({
                 className="h-10 w-full justify-start gap-2 px-2 font-normal"
               >
                 <Link href={s.href}>
-                  <span className="min-w-0 flex-1 truncate text-left">{s.title}</span>
+                  <span className="min-w-0 flex-1 truncate text-left">{__t(s.title)}</span>
                   <ChevronRightIcon aria-hidden className="text-muted-foreground" />
                 </Link>
               </Button>
@@ -395,6 +393,7 @@ function IncompleteSections({
 /* ───────────────────────────── Screen ──────────────────────────────── */
 
 export function PreviewSection() {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const { draft, hrefFor, steps } = useFiling();
   const { prev, next } = neighbours("preview");
@@ -425,10 +424,9 @@ export function PreviewSection() {
    * "Open full section" anyway (owner, 2026-09-24). Now it asks once, and a person who
    * does not want to be asked again says so in the question itself.
    */
-  const goTo = React.useCallback(
-    (key: PanelKey) => router.push(hrefFor(panels[key].step)),
-    [router, hrefFor, panels]
-  );
+  function goTo(key: PanelKey) {
+    router.push(hrefFor(panels[key].step));
+  }
 
   const review = (key: PanelKey) => {
     if (skipReviewPrompt()) {
@@ -466,45 +464,42 @@ export function PreviewSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="Preview"
+          title={__t("previewSection_preview")}
           description={
             <>
-              Check everything you have filed. Use{" "}
-              <strong className="font-semibold text-foreground">Review</strong> on any
-              section to open it and change what it holds.
-            </>
+              {<__LocalizedText id="previewSection_checkEverythingYouHaveFiledUse" />}{" "}
+              <strong className="font-semibold text-foreground">{<__LocalizedText id="previewSection_review" />}</strong> {<__LocalizedText id="previewSection_onAnySectionToOpenItAnd" />}{" "}</>
           }
         />
 
         <Tabs value={view} onValueChange={setView} className="gap-6">
           <div className="flex flex-col items-start justify-between gap-2 border-b border-hairline sm:flex-row sm:items-end">
-            <TabsList variant="line" aria-label="Preview format" className="order-2 p-0 group-data-horizontal/tabs:h-10 sm:order-none">
-              <TabsTrigger value="synopsis" className="h-10 px-3 group-data-horizontal/tabs:after:-bottom-px">Complaint</TabsTrigger>
-              <TabsTrigger value="document" className="h-10 px-3 group-data-horizontal/tabs:after:-bottom-px">Complaint PDF</TabsTrigger>
+            <TabsList variant="line" aria-label={__t("previewSection_previewFormat")} className="order-2 p-0 group-data-horizontal/tabs:h-10 sm:order-none">
+              <TabsTrigger value="synopsis" className="h-10 px-3 group-data-horizontal/tabs:after:-bottom-px">{<__LocalizedText id="previewSection_complaint" />}</TabsTrigger>
+              <TabsTrigger value="document" className="h-10 px-3 group-data-horizontal/tabs:after:-bottom-px">{<__LocalizedText id="previewSection_complaintPdf" />}</TabsTrigger>
             </TabsList>
             <Button type="button" variant="outline" onClick={printFile} className="sm:mb-2">
               <PrinterIcon data-icon="inline-start" aria-hidden />
-              Print or save as PDF
-            </Button>
+              {<__LocalizedText id="previewSection_printOrSaveAsPdf" />}{" "}</Button>
           </div>
 
           {/* ── Synopsis ── */}
           <TabsContent value="synopsis" className="flex flex-col gap-6">
             {/* No status badge here: the card captions below say it per section, and the
                 footer says it once for the filing. */}
-            <FormCard title="Filing summary">
+            <FormCard title={__t("previewSection_filingSummary")}>
               <KeyValues
                 rows={[
-                  { term: "Offence", value: CASE_TYPE.offence },
-                  { term: "Court", value: courtText(COURT.name) },
-                  { term: "Total cheque amount", value: totalChequeText(draft) },
-                  { term: "Amount claimed", value: amountClaimedText(draft) },
+                  { term: __t("previewSection_offence"), value: CASE_TYPE.offence },
+                  { term: __t("previewSection_court"), value: courtText(COURT.name) },
+                  { term: __t("previewSection_totalChequeAmount"), value: totalChequeText(draft) },
+                  { term: __t("previewSection_amountClaimed"), value: amountClaimedText(draft) },
                 ]}
               />
             </FormCard>
 
             <FormCard
-              title="Complainant"
+              title={__t("previewSection_complainant")}
               action={
                 <CardActions
                   complete={done("complainant")}
@@ -515,22 +510,22 @@ export function PreviewSection() {
             >
               <KeyValues
                 rows={[
-                  { term: "Name", value: complainant.name },
-                  { term: "Type", value: complainant.type },
+                  { term: __t("previewSection_name"), value: complainant.name },
+                  { term: __t("previewSection_type"), value: complainant.type },
                   ...(complainant.cinPan
-                    ? [{ term: "CIN or PAN", value: complainant.cinPan }]
+                    ? [{ term: __t("previewSection_cinOrPan"), value: complainant.cinPan }]
                     : []),
-                  { term: "Mobile", value: complainant.mobile },
-                  { term: "Email", value: complainant.email },
-                  { term: "Present address", value: complainant.presentAddress },
-                  { term: "Permanent address", value: complainant.permanentAddress },
-                  { term: "Power of attorney", value: complainant.poa },
+                  { term: __t("previewSection_mobile"), value: complainant.mobile },
+                  { term: __t("previewSection_email"), value: complainant.email },
+                  { term: __t("previewSection_presentAddress"), value: complainant.presentAddress },
+                  { term: __t("previewSection_permanentAddress"), value: complainant.permanentAddress },
+                  { term: __t("previewSection_powerOfAttorney"), value: complainant.poa },
                 ]}
               />
             </FormCard>
 
             <FormCard
-              title="Advocates"
+              title={__t("previewSection_advocates")}
               action={
                 <CardActions
                   complete={done("advocate")}
@@ -543,23 +538,22 @@ export function PreviewSection() {
                 advocates.map((a) => (
                   <SubBlock
                     key={a.key}
-                    title={a.label}
+                    title={__t(a.label)}
                     rows={[
-                      { term: "Name", value: a.name },
-                      { term: "Bar registration", value: a.bar },
-                      { term: "Appearing for", value: a.appearingFor },
+                      { term: __t("previewSection_name"), value: a.name },
+                      { term: __t("previewSection_barRegistration"), value: a.bar },
+                      { term: __t("previewSection_appearingFor"), value: a.appearingFor },
                     ]}
                   />
                 ))
               ) : (
                 <p className="text-body-compact text-muted-foreground">
-                  No advocate added. The complainant appears as a party in person.
-                </p>
+                  {<__LocalizedText id="previewSection_noAdvocateAddedTheComplainantAppearsAs" />}{" "}</p>
               )}
             </FormCard>
 
             <FormCard
-              title="Accused"
+              title={__t("previewSection_accused")}
               action={
                 <CardActions
                   complete={done("accused")}
@@ -571,18 +565,18 @@ export function PreviewSection() {
               {accused.map((a) => (
                 <SubBlock
                   key={a.key}
-                  title={a.label}
+                  title={__t(a.label)}
                   rows={[
-                    { term: "Name", value: a.name },
-                    { term: "Type", value: a.type },
-                    { term: "Address", value: a.addressWithPolice },
+                    { term: __t("previewSection_name"), value: a.name },
+                    { term: __t("previewSection_type"), value: a.type },
+                    { term: __t("previewSection_address"), value: a.addressWithPolice },
                   ]}
                 />
               ))}
             </FormCard>
 
             <FormCard
-              title="Cheque & return memo"
+              title={__t("previewSection_chequeReturnMemo")}
               action={
                 <CardActions
                   complete={done("cheque")}
@@ -594,19 +588,19 @@ export function PreviewSection() {
               {cheques.map((c) => (
                 <SubBlock
                   key={c.key}
-                  title={c.label}
+                  title={__t(c.label)}
                   rows={[
-                    { term: "Amount", value: c.amount },
-                    { term: "Cheque no. / date", value: c.numberAndDate },
-                    { term: "Drawer’s bank", value: c.drawerBank },
-                    { term: "Returned", value: c.returned },
+                    { term: __t("previewSection_amount"), value: c.amount },
+                    { term: __t("previewSection_chequeNoDate"), value: c.numberAndDate },
+                    { term: __t("previewSection_drawerSBank"), value: c.drawerBank },
+                    { term: __t("previewSection_returned"), value: c.returned },
                   ]}
                 />
               ))}
             </FormCard>
 
             <FormCard
-              title="Demand notice & debt"
+              title={__t("previewSection_demandNoticeDebt")}
               action={
                 <CardActions
                   complete={done("demand")}
@@ -617,17 +611,17 @@ export function PreviewSection() {
             >
               <KeyValues
                 rows={[
-                  { term: "Nature of debt", value: notice.nature },
-                  { term: "Notice dispatched", value: notice.dispatched },
-                  { term: "Delivered", value: notice.delivered },
-                  { term: "Reply received", value: notice.replied },
-                  { term: "Payment received", value: notice.payment },
+                  { term: __t("previewSection_natureOfDebt"), value: notice.nature },
+                  { term: __t("previewSection_noticeDispatched"), value: notice.dispatched },
+                  { term: __t("previewSection_delivered"), value: notice.delivered },
+                  { term: __t("previewSection_replyReceived"), value: notice.replied },
+                  { term: __t("previewSection_paymentReceived"), value: notice.payment },
                 ]}
               />
             </FormCard>
 
             <FormCard
-              title="Jurisdiction & limitation"
+              title={__t("previewSection_jurisdictionLimitation")}
               action={
                 <CardActions
                   complete={done("jurisdiction")}
@@ -638,21 +632,20 @@ export function PreviewSection() {
             >
               <KeyValues
                 rows={[
-                  { term: "Cheque presented by", value: jurisdiction.presentedBy },
-                  { term: "Police station", value: jurisdiction.police },
-                  { term: "Cause of action", value: jurisdiction.causeDate },
-                  { term: "Complaint filing date", value: jurisdiction.filingDate },
+                  { term: __t("previewSection_chequePresentedBy"), value: jurisdiction.presentedBy },
+                  { term: __t("previewSection_policeStation"), value: jurisdiction.police },
+                  { term: __t("previewSection_causeOfAction"), value: jurisdiction.causeDate },
+                  { term: __t("previewSection_complaintFilingDate"), value: jurisdiction.filingDate },
                   {
-                    term: "Within limitation",
+                    term: __t("previewSection_withinLimitation"),
                     value: jurisdiction.inTime ? (
                       <Badge variant="success">
                         <CheckIcon aria-hidden />
-                        Yes, in time
-                      </Badge>
+                        {<__LocalizedText id="previewSection_yesInTime" />}{" "}</Badge>
                     ) : (
                       <Badge variant="warning">
                         <TriangleAlertIcon aria-hidden />
-                        {jurisdiction.delayText}
+                        {__t(jurisdiction.delayText)}
                       </Badge>
                     ),
                   },
@@ -661,7 +654,7 @@ export function PreviewSection() {
             </FormCard>
 
             <FormCard
-              title="ADR, other details & prayer"
+              title={__t("previewSection_adrOtherDetailsPrayer")}
               action={
                 <CardActions
                   complete={done("adr")}
@@ -672,15 +665,15 @@ export function PreviewSection() {
             >
               <KeyValues
                 rows={[
-                  { term: "Open to settlement (ADR)", value: adrLabel(draft) },
-                  { term: "Interim relief", value: INTERIM_RELIEF_SUMMARY },
-                  { term: "Final relief", value: finalReliefSummary(draft) },
+                  { term: __t("previewSection_openToSettlementAdr"), value: adrLabel(draft) },
+                  { term: __t("previewSection_interimRelief"), value: INTERIM_RELIEF_SUMMARY },
+                  { term: __t("previewSection_finalRelief"), value: finalReliefSummary(draft) },
                 ]}
               />
             </FormCard>
 
             <FormCard
-              title="Witnesses"
+              title={__t("previewSection_witnesses")}
               action={
                 <CardActions
                   complete={done("witnesses")}
@@ -692,17 +685,17 @@ export function PreviewSection() {
               {witnesses.map((w) => (
                 <SubBlock
                   key={w.key}
-                  title={w.label}
+                  title={__t(w.label)}
                   rows={[
-                    { term: w.term, value: w.name },
-                    { term: "Will prove", value: w.prove },
+                    { term: __t(w.term), value: w.name },
+                    { term: __t("previewSection_willProve"), value: w.prove },
                   ]}
                 />
               ))}
             </FormCard>
 
             <FormCard
-              title="Documents"
+              title={__t("previewSection_documents")}
               action={
                 <CardActions
                   complete={done("documents")}
@@ -728,14 +721,11 @@ export function PreviewSection() {
                   <span className="flex h-5 shrink-0 items-center">
                     <TriangleAlertIcon className="size-4 text-warning-ink" aria-hidden />
                   </span>
-                  {documents.remaining} required document
-                  {documents.remaining === 1 ? "" : "s"} still to upload
-                </p>
+                  {documents.remaining} {<__LocalizedText id="previewSection_requiredDocument" />}{" "}{documents.remaining === 1 ? "" : "s"} {<__LocalizedText id="previewSection_stillToUpload" />}{" "}</p>
               ) : null}
               {!documents.lines.length && !documents.remaining ? (
                 <p className="py-3 text-body-compact text-muted-foreground">
-                  No documents added yet.
-                </p>
+                  {<__LocalizedText id="previewSection_noDocumentsAddedYet" />}{" "}</p>
               ) : null}
             </FormCard>
           </TabsContent>
@@ -756,11 +746,9 @@ export function PreviewSection() {
       >
         <ChromeDialogContent mobileSheet className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Open the {panel?.title ?? ""} section?</DialogTitle>
+            <DialogTitle>{<__LocalizedText id="previewSection_openThe" />}{" "}{__t(panel?.title) ?? ""} {<__LocalizedText id="previewSection_section_04130a27" />}</DialogTitle>
             <DialogDescription>
-              Changes are made in the section itself. You will come back here from its
-              Continue.
-            </DialogDescription>
+              {<__LocalizedText id="previewSection_changesAreMadeInTheSectionItself" />}{" "}</DialogDescription>
           </DialogHeader>
 
           <Field orientation="horizontal">
@@ -770,17 +758,14 @@ export function PreviewSection() {
               onCheckedChange={(checked) => setDontAsk(checked === true)}
             />
             <FieldLabel htmlFor="skip-review-prompt" className="font-normal">
-              Don&rsquo;t ask me again
-            </FieldLabel>
+              {<__LocalizedText id="previewSection_donTAskMeAgain" />}{" "}</FieldLabel>
           </Field>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setEditKey(null)}>
-              Stay here
-            </Button>
+              {<__LocalizedText id="previewSection_stayHere" />}{" "}</Button>
             <Button type="button" onClick={confirmReview}>
-              Open section
-            </Button>
+              {<__LocalizedText id="previewSection_openSection" />}{" "}</Button>
           </DialogFooter>
         </ChromeDialogContent>
       </Dialog>
@@ -801,8 +786,7 @@ export function PreviewSection() {
           readyToSign ? (
             <span className="inline-flex items-center gap-2 text-body-compact text-success-ink">
               <CheckIcon className="size-4" aria-hidden />
-              Reviewed
-            </span>
+              {<__LocalizedText id="previewSection_reviewed" />}{" "}</span>
           ) : (
             <IncompleteSections
               sections={incomplete.map((k) => ({

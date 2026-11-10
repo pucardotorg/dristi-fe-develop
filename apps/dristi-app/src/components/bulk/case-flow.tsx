@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * One case of a batch, open in the single filing's own sections.
@@ -105,6 +107,7 @@ export function BulkCaseFlow({
   caseId: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const ready = useGujarat();
   const { profile } = useCourt();
   const aiParam = useSearchParams().get("ai");
@@ -177,7 +180,7 @@ export function BulkCaseFlow({
     if (elsewhere.length) {
       const s = firstFlaggedStep(elsewhere);
       return {
-        label: `Next to ${elsewhere.some((f) => f.level === "hold") ? "fix" : "check"}: ${courtText(getStep(s).title)}`,
+        label: __t("caseFlow_nextToValue0Value1", {value0: String(elsewhere.some((f) => f.level === "hold") ? __t("caseFlow_fix") : __t("caseFlow_check")), value1: String(courtText(getStep(s).title))}),
         href: caseFlowHref(batchId, c, s, aiParam),
       };
     }
@@ -187,22 +190,21 @@ export function BulkCaseFlow({
     const status = (
       <span className="inline-flex items-center gap-2 text-body-compact text-success-ink">
         <CheckIcon className="size-4" aria-hidden />
-        {editable(c) ? "This case is ready" : "Nothing to change here"}
+        {editable(c) ? __t("caseFlow_thisCaseIsReady") : __t("caseFlow_nothingToChangeHere")}
         {left ? (
           <span className="text-muted-foreground tabular-nums">
-            · {left} more {left === 1 ? "case needs" : "cases need"} you
-          </span>
+            · {left} {<__LocalizedText id="caseFlow_more" />}{" "}{left === 1 ? __t("caseFlow_caseNeeds") : __t("caseFlow_casesNeed")} {<__LocalizedText id="caseFlow_you" />}{" "}</span>
         ) : null}
       </span>
     );
     return toFix
       ? {
-          label: "Next case to fix",
+          label: __t("caseFlow_nextCaseToFix"),
           href: caseFlowHref(batchId, toFix, firstFlaggedStep(toFix.flags), aiParam),
           status,
         }
-      : { label: "Back to all cases", href: batchHref(batchId, "scrutiny", aiParam, c.id), status };
-  }, [batch, c, step, batchId, aiParam, courtText]);
+      : { label: __t("caseFlow_backToAllCases"), href: batchHref(batchId, "scrutiny", aiParam, c.id), status };
+  }, [batch, c, step, batchId, aiParam, courtText, __t]);
 
   const policy = React.useMemo<FieldPolicy>(() => {
     const flags = c?.flags ?? [];
@@ -240,8 +242,7 @@ export function BulkCaseFlow({
           className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
         >
           <Spinner className="mr-2 size-4" />
-          Opening the case…
-        </div>
+          {<__LocalizedText id="caseFlow_openingTheCase" />}{" "}</div>
       }
       notFound={
         <div className="flex flex-1 items-center justify-center px-4 py-16">
@@ -250,17 +251,15 @@ export function BulkCaseFlow({
               <EmptyMedia variant="icon">
                 <FileQuestionIcon aria-hidden />
               </EmptyMedia>
-              <EmptyTitle className="text-body font-semibold">This case isn&apos;t in the batch</EmptyTitle>
+              <EmptyTitle className="text-body font-semibold">{<__LocalizedText id="caseFlow_thisCaseIsnTInTheBatch" />}</EmptyTitle>
               <EmptyDescription className="text-body">
-                It may have been clubbed into another batch, or the link is old.
-              </EmptyDescription>
+                {<__LocalizedText id="caseFlow_itMayHaveBeenClubbedIntoAnother" />}{" "}</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button asChild>
                 <Link href={batchHref(batchId, "scrutiny", aiParam)}>
                   <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-                  Back to the batch
-                </Link>
+                  {<__LocalizedText id="caseFlow_backToTheBatch" />}{" "}</Link>
               </Button>
             </EmptyContent>
           </Empty>
@@ -277,7 +276,7 @@ export function BulkCaseFlow({
               c={c}
               step={step}
               aiParam={aiParam}
-              error={error}
+              error={__t(error)}
               setBatch={setBatch}
               onBatchFixed={() => setGeneration((g) => g + 1)}
             />
@@ -317,6 +316,7 @@ function CaseBar({
   setBatch: (b: BatchView) => void;
   onBatchFixed: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const { flush, update } = useFiling();
   const [busy, setBusy] = React.useState(false);
@@ -339,14 +339,14 @@ function CaseBar({
 
   const frame = (body: React.ReactNode) => (
     <div className="bg-muted px-6 pt-6 lg:px-12 dark:bg-background">
-      <div className="flex w-full max-w-4xl flex-col gap-3">{body}</div>
+      <div className="flex w-full max-w-4xl flex-col gap-3">{__t(body)}</div>
     </div>
   );
 
   if (error && !batch)
     return frame(
       <Alert variant="destructive">
-        <AlertDescription>{error}</AlertDescription>
+        <AlertDescription>{__t(error)}</AlertDescription>
       </Alert>,
     );
   if (!batch || !c) return frame(<Skeleton className="h-16 w-full rounded-xl" />);
@@ -373,20 +373,19 @@ function CaseBar({
         <Button asChild variant="ghost" className="-ml-2">
           <Link href={batchHref(batchId, "scrutiny", aiParam, c.id)}>
             <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-            All cases
-          </Link>
+            {<__LocalizedText id="caseFlow_allCases" />}{" "}</Link>
         </Button>
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="flex flex-wrap items-center gap-2">
-            <span className="text-body-compact font-semibold">{c.title}</span>
+            <span className="text-body-compact font-semibold">{__t(c.title)}</span>
             <CaseBadge c={c} />
           </span>
           <span className="flex flex-wrap gap-x-2 text-caption text-muted-foreground tabular-nums">
             <span>
-              Case {at + 1} of {cases.length} in {batch.number}
+              {<__LocalizedText id="caseFlow_case" />}{" "}{at + 1} {<__LocalizedText id="caseFlow_of" />}{" "}{cases.length} {<__LocalizedText id="caseFlow_in" />}{" "}{batch.number}
             </span>
             <span>· {c.reference}</span>
-            {c.cheque ? <span>· Cheque {c.cheque}</span> : null}
+            {c.cheque ? <span>{<__LocalizedText id="caseFlow_cheque" />}{" "}{c.cheque}</span> : null}
           </span>
           {c.original ? (
             <span className="mt-1">
@@ -394,28 +393,25 @@ function CaseBar({
             </span>
           ) : null}
         </div>
-        <nav aria-label="Cases in this batch" className="flex flex-wrap items-center gap-2">
+        <nav aria-label={__t("caseFlow_casesInThisBatch")} className="flex flex-wrap items-center gap-2">
           {prev ? (
             <Button asChild variant="outline">
               <Link href={sameStep(prev)}>
                 <ChevronLeftIcon data-icon="inline-start" aria-hidden />
-                Previous
-              </Link>
+                {<__LocalizedText id="caseFlow_previous" />}{" "}</Link>
             </Button>
           ) : null}
           {next ? (
             <Button asChild variant="outline">
               <Link href={sameStep(next)}>
-                Next
-                <ChevronRightIcon data-icon="inline-end" aria-hidden />
+                {<__LocalizedText id="caseFlow_next" />}{" "}<ChevronRightIcon data-icon="inline-end" aria-hidden />
               </Link>
             </Button>
           ) : null}
           {toFix ? (
             <Button asChild variant="outline">
               <Link href={caseFlowHref(batchId, toFix, firstFlaggedStep(toFix.flags), aiParam)}>
-                Next case to fix
-                <ChevronRightIcon data-icon="inline-end" aria-hidden />
+                {<__LocalizedText id="caseFlow_nextCaseToFix" />}{" "}<ChevronRightIcon data-icon="inline-end" aria-hidden />
               </Link>
             </Button>
           ) : null}
@@ -427,7 +423,7 @@ function CaseBar({
           {here.length ? (
             <>
               <h2 className="text-body-compact font-semibold">
-                To {verb(here)} in {courtText(step ? getStep(step).title : "this section")}
+                {<__LocalizedText id="caseFlow_to" />}{" "}{verb(here)} {<__LocalizedText id="caseFlow_in" />}{" "}{courtText(step ? getStep(step).title : "this section")}
               </h2>
               <ul className="flex flex-col gap-3">
                 {here.map((f) => (
@@ -438,18 +434,16 @@ function CaseBar({
           ) : c.flags.length ? (
             <p className="flex items-center gap-2 text-body-compact text-muted-foreground">
               <CheckIcon aria-hidden className="size-4 text-success-ink" />
-              Nothing to fix or check in this section.
-            </p>
+              {<__LocalizedText id="caseFlow_nothingToFixOrCheckInThis" />}{" "}</p>
           ) : (
             <p className="flex items-center gap-2 text-body-compact text-muted-foreground">
               <CheckIcon aria-hidden className="size-4 text-success-ink" />
-              Nothing to fix or check in this case.
-            </p>
+              {<__LocalizedText id="caseFlow_nothingToFixOrCheckInThis_fa8a743d" />}{" "}</p>
           )}
           {elsewhere.length ? (
             <p className="flex flex-wrap items-center gap-x-1 text-body-compact text-muted-foreground">
               <span>
-                {here.length ? "Also" : "Still"} to {verb(later)}:
+                {here.length ? __t("caseFlow_also") : __t("caseFlow_still")} {<__LocalizedText id="caseFlow_to_05ffaeee" />}{" "}{verb(later)}:
               </span>
               {elsewhere.map(({ s, n }, i) => (
                 <span key={s} className="tabular-nums">
@@ -475,8 +469,7 @@ function CaseBar({
             onClick={() => update(demoFill)}
           >
             <WandSparklesIcon data-icon="inline-start" aria-hidden />
-            Fill with demo values
-          </Button>
+            {<__LocalizedText id="caseFlow_fillWithDemoValues" />}{" "}</Button>
         </div>
       ) : null}
     </Card>,
@@ -510,8 +503,7 @@ function FlagRow({
             disabled={busy}
             onClick={() => void act({ action: "declare-no-contact", caseId, accusedId: fix.accusedId })}
           >
-            Declare neither is known
-          </Button>
+            {<__LocalizedText id="caseFlow_declareNeitherIsKnown" />}{" "}</Button>
         ) : null}
         {f.level === "soft" ? (
           <Button
@@ -520,8 +512,7 @@ function FlagRow({
             disabled={busy}
             onClick={() => void act({ action: "skip", caseId, flagId: f.id })}
           >
-            Skip
-          </Button>
+            {<__LocalizedText id="caseFlow_skip" />}{" "}</Button>
         ) : null}
       </div>
       {/* What the batch owns is locked in the case, so it is fixed here, once, for every case. */}
@@ -550,20 +541,21 @@ function BatchFix({
   busy: boolean;
   onApply: (value: string) => Promise<void>;
 }) {
+  const __t = __useTranslations();
   const id = React.useId();
   const [value, setValue] = React.useState(fix.value ?? "");
   return (
     <div className="ml-8 flex max-w-md flex-col gap-2">
       <Field className="gap-1.5">
         <FieldLabel htmlFor={id} className="text-body-compact">
-          {fix.label}
+          {__t(fix.label)}
         </FieldLabel>
         {fix.kind === "select" ? (
           <NativeSelect id={id} value={value} onChange={(e) => setValue(e.target.value)} className="w-full">
-            <NativeSelectOption value="">Select</NativeSelectOption>
+            <NativeSelectOption value="">{<__LocalizedText id="caseFlow_select" />}</NativeSelectOption>
             {fix.options.map((o) => (
               <NativeSelectOption key={o.value} value={o.value}>
-                {o.label}
+                {__t(o.label)}
               </NativeSelectOption>
             ))}
           </NativeSelect>
@@ -576,7 +568,7 @@ function BatchFix({
             onChange={(e) => setValue(e.target.value)}
           />
         )}
-        <FieldDescription>Applies to every case in the batch that is not signed yet.</FieldDescription>
+        <FieldDescription>{<__LocalizedText id="caseFlow_appliesToEveryCaseInTheBatch" />}</FieldDescription>
       </Field>
       <Button
         variant="outline"
@@ -584,8 +576,7 @@ function BatchFix({
         disabled={busy || !value.trim()}
         onClick={() => void onApply(value)}
       >
-        Apply to every case
-      </Button>
+        {<__LocalizedText id="caseFlow_applyToEveryCase" />}{" "}</Button>
     </div>
   );
 }

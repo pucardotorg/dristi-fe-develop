@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The universal Add-people entry on the Parties tab — the PM's call (Sept 1):
@@ -58,22 +59,18 @@ export function CaseAddPeople({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type="button" className="w-full shrink-0 sm:w-auto">
-            Add people
-            <ChevronDownIcon data-icon="inline-end" aria-hidden />
+            {<__LocalizedText id="caseAddPeople_addPeople" />}{" "}<ChevronDownIcon data-icon="inline-end" aria-hidden />
           </Button>
         </DropdownMenuTrigger>
         {/* Wide enough that no task name wraps — a menu item is a label,
             not a paragraph. */}
         <DropdownMenuContent align="end" className="min-w-60">
           <DropdownMenuItem onSelect={() => setDialog("advocate")}>
-            Add an advocate
-          </DropdownMenuItem>
+            {<__LocalizedText id="caseAddPeople_addAnAdvocate" />}{" "}</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setDialog("witness")}>
-            Add a witness
-          </DropdownMenuItem>
+            {<__LocalizedText id="caseAddPeople_addAWitness" />}{" "}</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setDialog("poa")}>
-            Add a Power of Attorney holder
-          </DropdownMenuItem>
+            {<__LocalizedText id="caseAddPeople_addAPowerOfAttorneyHolder" />}{" "}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 

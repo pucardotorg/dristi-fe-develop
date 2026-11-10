@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { BookmarkIcon } from "lucide-react";
 
@@ -16,6 +17,7 @@ export function BookmarkButton({
   onToggle: () => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <Button
       type="button"
@@ -33,8 +35,8 @@ export function BookmarkButton({
       <BookmarkIcon className={cn("size-5", bookmarked && "fill-current")} />
       <span className="sr-only">
         {bookmarked
-          ? `Remove bookmark from ${caseLabel}`
-          : `Bookmark ${caseLabel}`}
+          ? __t("bookmarkButton_removeBookmarkFromValue0", {value0: String(__t(caseLabel))})
+          : __t("bookmarkButton_bookmarkValue0", {value0: String(__t(caseLabel))})}
       </span>
     </Button>
   );

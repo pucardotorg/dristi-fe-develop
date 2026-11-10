@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { NextIntlClientProvider } from "next-intl";
 
+import { getMessages } from "@/i18n/messages";
 import type { Locale } from "@/lib/onboarding/content";
 import {
   SECOND_LANGUAGE,
@@ -12,8 +14,8 @@ import {
 /**
  * App-wide language. The old Portal shell carried locale as a prop pair; on the one
  * shared shell it is context, so the top-bar toggle and every screen read the same
- * source. Citizen-facing screens (home, join, bond) render bilingual copy; professional
- * screens simply ignore it.
+ * source. Catalog-backed screens follow this locale; existing regional-language copy
+ * remains available through `pick`.
  */
 type LocaleValue = {
   locale: Locale;
@@ -54,7 +56,15 @@ export function LocaleProvider({
     [locale, secondLanguage, setSecondLanguage],
   );
 
-  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
+  return (
+    <NextIntlClientProvider
+      locale={locale}
+      messages={getMessages(locale)}
+      timeZone="Asia/Kolkata"
+    >
+      <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
+    </NextIntlClientProvider>
+  );
 }
 
 export function useLocale(): LocaleValue {

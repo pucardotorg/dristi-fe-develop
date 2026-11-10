@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Alternate addresses for an accused party or a witness — scenarios 11a and
@@ -40,6 +42,7 @@ export type AlternateAddress = {
 };
 
 export function AlternateAddresses({ subjectName }: { subjectName: string }) {
+  const __t = __useTranslations();
   const [addresses, setAddresses] = useState<AlternateAddress[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -72,7 +75,7 @@ export function AlternateAddresses({ subjectName }: { subjectName: string }) {
             variant="ghost"
             size="icon-sm"
             className="shrink-0 text-muted-foreground"
-            aria-label={`Remove the address in ${address.address.locality}`}
+            aria-label={__t("alternateAddresses_removeTheAddressInValue0", {value0: String(address.address.locality)})}
             onClick={() =>
               setAddresses((current) =>
                 current.filter((item) => item.id !== address.id)
@@ -86,8 +89,8 @@ export function AlternateAddresses({ subjectName }: { subjectName: string }) {
 
       <p className="text-body-compact text-muted-foreground">
         {addresses.length === 0
-          ? "Give the court another address to try, beyond what the complaint holds."
-          : "The court tries every address listed here."}
+          ? __t("alternateAddresses_giveTheCourtAnotherAddressToTry")
+          : __t("alternateAddresses_theCourtTriesEveryAddressListedHere")}
       </p>
       <div>
         <Button
@@ -98,8 +101,7 @@ export function AlternateAddresses({ subjectName }: { subjectName: string }) {
           onClick={() => setOpen(true)}
         >
           <PlusIcon data-icon="inline-start" aria-hidden />
-          Add address
-        </Button>
+          {<__LocalizedText id="alternateAddresses_addAddress" />}{" "}</Button>
       </div>
 
       <AddAddressDialog
@@ -123,6 +125,7 @@ function AddAddressDialog({
   subjectName: string;
   onAdd: (address: AlternateAddress) => void;
 }) {
+  const __t = __useTranslations();
   const [address, setAddress] = useState<StructuredAddress>(
     emptyStructuredAddress
   );
@@ -166,12 +169,10 @@ function AddAddressDialog({
       <FlowDialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
         <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
           <DialogTitle className="text-title-s font-semibold text-balance">
-            Add an address for {subjectName}
+            {<__LocalizedText id="alternateAddresses_addAnAddressFor" />}{" "}{subjectName}
           </DialogTitle>
           <DialogDescription>
-            Another address the court can try. No approval is involved; it
-            takes effect at once.
-          </DialogDescription>
+            {<__LocalizedText id="alternateAddresses_anotherAddressTheCourtCanTryNo" />}{" "}</DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
@@ -192,16 +193,15 @@ function AddAddressDialog({
               }}
             />
             {error ? (
-              <p className="text-body-compact text-destructive-ink">{error}</p>
+              <p className="text-body-compact text-destructive-ink">{__t(error)}</p>
             ) : null}
 
             <Field>
               <FieldLabel htmlFor="alt-address-station">
-                Police station (optional)
-              </FieldLabel>
+                {<__LocalizedText id="alternateAddresses_policeStationOptional" />}{" "}</FieldLabel>
               <Input
                 id="alt-address-station"
-                placeholder="The station this address falls under"
+                placeholder={__t("alternateAddresses_theStationThisAddressFallsUnder")}
                 value={policeStation}
                 onChange={(event) => setPoliceStation(event.target.value)}
               />
@@ -211,8 +211,7 @@ function AddAddressDialog({
 
         <footer className="flex shrink-0 justify-end border-t border-hairline px-6 py-4">
           <Button type="submit" form="alternate-address-form">
-            Add address
-          </Button>
+            {<__LocalizedText id="alternateAddresses_addAddress" />}{" "}</Button>
         </footer>
       </FlowDialogContent>
     </Dialog>

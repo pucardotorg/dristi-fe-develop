@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -100,6 +102,7 @@ export function PendingOrdersScreen({
   /** `?tab=` — the editor's Sent for signing returns to Drafting, not the seat's move. */
   initialTab?: PendingOrderStage;
 } = {}) {
+  const __t = __useTranslations();
   const router = useRouter();
   const seat = useCourtRole();
   const { court } = useCourt();
@@ -171,8 +174,7 @@ export function PendingOrdersScreen({
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Pending orders
-        </h1>
+          {<__LocalizedText id="pendingOrdersScreen_pendingOrders" />}{" "}</h1>
         <p className="text-body text-muted-foreground">
           {headline(move, count)}
         </p>
@@ -191,7 +193,7 @@ export function PendingOrdersScreen({
           <div className="overflow-x-auto border-b border-hairline">
             <TabsList
               variant="line"
-              aria-label="Which orders to show"
+              aria-label={__t("pendingOrdersScreen_whichOrdersToShow")}
               className="h-10 w-max min-w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-10"
             >
               {[
@@ -205,7 +207,7 @@ export function PendingOrdersScreen({
                   value={value}
                   className="h-10 flex-none gap-2 px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
                 >
-                  {label}
+                  {__t(label)}
                   <span className="font-normal tabular-nums">{total}</span>
                 </TabsTrigger>
               ))}
@@ -226,8 +228,8 @@ export function PendingOrdersScreen({
                       <Checkbox
                         aria-label={
                           signer
-                            ? "Select the orders awaiting your signature in this list"
-                            : "Select the orders with order data to fill in this list"
+                            ? __t("pendingOrdersScreen_selectTheOrdersAwaitingYourSignatureIn")
+                            : __t("pendingOrdersScreen_selectTheOrdersWithOrderDataTo")
                         }
                         disabled={signable.length === 0}
                         checked={
@@ -247,28 +249,23 @@ export function PendingOrdersScreen({
                   <TableHead
                     className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}
                   >
-                    Case name
-                  </TableHead>
+                    {<__LocalizedText id="pendingOrdersScreen_caseName" />}{" "}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-                    Case number
-                  </TableHead>
+                    {<__LocalizedText id="pendingOrdersScreen_caseNumber" />}{" "}</TableHead>
                   <TableHead
                     className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}
                   >
-                    Title
-                  </TableHead>
+                    {<__LocalizedText id="pendingOrdersScreen_title" />}{" "}</TableHead>
                   {showText ? (
                     <TableHead
                       className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}
                     >
-                      Order
-                    </TableHead>
+                      {<__LocalizedText id="pendingOrdersScreen_order" />}{" "}</TableHead>
                   ) : null}
                   <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-                    Status
-                  </TableHead>
+                    {<__LocalizedText id="pendingOrdersScreen_status" />}{" "}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>
-                    <span className="sr-only">Action</span>
+                    <span className="sr-only">{<__LocalizedText id="pendingOrdersScreen_action" />}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -286,7 +283,7 @@ export function PendingOrdersScreen({
                       <TableCell className={cn(TABLE_CELL, "w-px")}>
                         {pickStage && inPendingStage(row, signing, pickStage) ? (
                           <Checkbox
-                            aria-label={`Select ${row.heading}`}
+                            aria-label={__t("pendingOrdersScreen_selectValue0", {value0: String(__t(row.heading))})}
                             checked={selected.has(row.key)}
                             onCheckedChange={() => toggle(row.key)}
                           />
@@ -302,18 +299,18 @@ export function PendingOrdersScreen({
                         className={rowOpenerClass}
                         onClick={() => open(row)}
                       >
-                        {row.heading}
+                        {__t(row.heading)}
                       </button>
                     </TableCell>
                     <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                      <Identifier value={row.caseNumber} label="case number" />
+                      <Identifier value={row.caseNumber} label={__t("pendingOrdersScreen_caseNumber_1351532b")} />
                     </TableCell>
                     <TableCell
                       className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}
                     >
                       {/* The order's title (`PND-03`, `TIT-06`) — where it came from is no
                           longer shown. */}
-                      {row.title ?? "Order"}
+                      {__t(row.title) ?? __t("pendingOrdersScreen_order")}
                     </TableCell>
                     {showText ? (
                       <TableCell
@@ -324,7 +321,7 @@ export function PendingOrdersScreen({
                       >
                         {orderTextPreview(
                           drafts[editorDraftKey(row.key)]?.body?.text ?? "",
-                        ) || "No text yet"}
+                        ) || __t("pendingOrdersScreen_noTextYet")}
                       </TableCell>
                     ) : null}
                     {/* Signature and order data, two pills side by side in one column
@@ -342,10 +339,10 @@ export function PendingOrdersScreen({
                         }
                       >
                         {row.stage === "triggered"
-                          ? "Data triggered"
+                          ? __t("pendingOrdersScreen_dataTriggered")
                           : row.workflowComplete
-                            ? "Data complete"
-                            : "Data to fill"}
+                            ? __t("pendingOrdersScreen_dataComplete")
+                            : __t("pendingOrdersScreen_dataToFill")}
                       </Badge>
                       </div>
                     </TableCell>
@@ -379,7 +376,7 @@ export function PendingOrdersScreen({
               {notice ||
                 (chosen.length
                   ? `${chosen.length} selected.`
-                  : "Select orders to add the same items to their order data.")}
+                  : __t("pendingOrdersScreen_selectOrdersToAddTheSameItems"))}
             </p>
             <Button
               type="button"
@@ -389,8 +386,7 @@ export function PendingOrdersScreen({
                 setAskItems(true);
               }}
             >
-              Add order items
-            </Button>
+              {<__LocalizedText id="pendingOrdersScreen_addOrderItems" />}{" "}</Button>
           </div>
         ) : null}
 
@@ -399,7 +395,7 @@ export function PendingOrdersScreen({
             <p className="text-body-compact text-muted-foreground">
               {chosen.length
                 ? `${chosen.length} selected.`
-                : "Select the orders to sign, or open one to read it first."}
+                : __t("pendingOrdersScreen_selectTheOrdersToSignOrOpen")}
             </p>
             <Button
               type="button"
@@ -407,7 +403,7 @@ export function PendingOrdersScreen({
               onClick={() => setAskSign(true)}
             >
               {chosen.length === 1
-                ? "Sign 1 order"
+                ? __t("pendingOrdersScreen_sign1Order")
                 : `Sign ${chosen.length || ""} orders`.replace("  ", " ")}
             </Button>
           </div>
@@ -431,19 +427,15 @@ export function PendingOrdersScreen({
           <AlertDialogHeader>
             <AlertDialogTitle>
               {chosen.length === 1
-                ? "Sign this order?"
-                : `Sign ${chosen.length} orders?`}
+                ? __t("pendingOrdersScreen_signThisOrder")
+                : __t("pendingOrdersScreen_signValue0Orders", {value0: String(chosen.length)})}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Your signature issues{" "}
-              {chosen.length === 1 ? "the order" : "each order"}. Its order
-              data is triggered once it is complete — at once, for any the
-              steno has already completed.
-              This cannot be reversed.
-            </AlertDialogDescription>
+              {<__LocalizedText id="pendingOrdersScreen_yourSignatureIssues" />}{" "}
+              {chosen.length === 1 ? __t("pendingOrdersScreen_theOrder") : __t("pendingOrdersScreen_eachOrder")}{<__LocalizedText id="pendingOrdersScreen_itsOrderDataIsTriggeredOnceIt" />}{" "}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="pendingOrdersScreen_back" />}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 markOrdersSigned(chosen.map((row) => row.key));
@@ -455,8 +447,7 @@ export function PendingOrdersScreen({
                 );
               }}
             >
-              Sign
-            </AlertDialogAction>
+              {<__LocalizedText id="pendingOrdersScreen_sign" />}{" "}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -478,10 +469,10 @@ function headline(
 }
 
 function SignatureBadge({ stage }: { stage: PendingOrderStage }) {
-  if (stage === "drafting") return <Badge variant="secondary">Not sent</Badge>;
+  if (stage === "drafting") return <Badge variant="secondary">{<__LocalizedText id="pendingOrdersScreen_notSent" />}</Badge>;
   if (stage === "awaiting-signature")
-    return <Badge variant="warning">Awaiting signature</Badge>;
-  return <Badge variant="success">Signed</Badge>;
+    return <Badge variant="warning">{<__LocalizedText id="pendingOrdersScreen_awaitingSignature" />}</Badge>;
+  return <Badge variant="success">{<__LocalizedText id="pendingOrdersScreen_signed" />}</Badge>;
 }
 
 /**
@@ -503,6 +494,7 @@ function actionLabel(
 }
 
 function PendingEmpty({ tab }: { tab: Tab }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -511,21 +503,19 @@ function PendingEmpty({ tab }: { tab: Tab }) {
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {tab === "awaiting-signature"
-            ? "Nothing is awaiting a signature"
+            ? __t("pendingOrdersScreen_nothingIsAwaitingASignature")
             : tab === "workflow-to-fill"
-              ? "No order data to fill"
+              ? __t("pendingOrdersScreen_noOrderDataToFill")
               : tab === "triggered"
-                ? "No order data triggered yet"
-                : "No orders pending"}
+                ? __t("pendingOrdersScreen_noOrderDataTriggeredYet")
+                : __t("pendingOrdersScreen_noOrdersPending")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
-          Orders typed on the full-page editor appear here as soon as they are
-          started, and stay until their order data is triggered.
-        </EmptyDescription>
+          {<__LocalizedText id="pendingOrdersScreen_ordersTypedOnTheFullPageEditor" />}{" "}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button asChild variant="outline">
-          <Link href="/employee/hearings">Go to today&apos;s hearings</Link>
+          <Link href="/employee/hearings">{<__LocalizedText id="pendingOrdersScreen_goToTodaySHearings" />}</Link>
         </Button>
       </EmptyContent>
     </Empty>

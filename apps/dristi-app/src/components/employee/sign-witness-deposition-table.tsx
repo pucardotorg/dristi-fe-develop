@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -71,6 +73,7 @@ export function SignWitnessDepositionTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (deposition: WitnessDeposition) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const selectedOnPage = rows.filter((row) => selectedIds.has(row.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
@@ -92,26 +95,21 @@ export function SignWitnessDepositionTable({
                  keep once the list is paged. */
               aria-label={
                 allSelected
-                  ? "Clear the depositions on this page"
-                  : "Select the depositions on this page"
+                  ? __t("signWitnessDepositionTable_clearTheDepositionsOnThisPage")
+                  : __t("signWitnessDepositionTable_selectTheDepositionsOnThisPage")
               }
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="signWitnessDepositionTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="signWitnessDepositionTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
-            Witness name
-          </TableHead>
+            {<__LocalizedText id="signWitnessDepositionTable_witnessName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Date of deposition
-          </TableHead>
+            {<__LocalizedText id="signWitnessDepositionTable_dateOfDeposition" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-nowrap")}>
-            Advocates
-          </TableHead>
+            {<__LocalizedText id="signWitnessDepositionTable_advocates" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass({ selectable: true })}>
@@ -138,7 +136,7 @@ export function SignWitnessDepositionTable({
                   /* The sheet, not the row: one case can put four of these in the list,
                      and a label naming only the cause would read aloud four times
                      identically. */
-                  aria-label={`Select the deposition of ${deposition.witness.name}, ${tag}, in ${courtText(deposition.caseNumber)}`}
+                  aria-label={__t("signWitnessDepositionTable_selectTheDepositionOfValue0Value1In", {value0: String(deposition.witness.name), value1: String(tag), value2: String(courtText(deposition.caseNumber))})}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -160,7 +158,7 @@ export function SignWitnessDepositionTable({
                 className={rowOpenerClass}
                 >
                   <span className="sr-only">
-                    Read and sign the deposition of {deposition.witness.name} in{" "}
+                    {<__LocalizedText id="signWitnessDepositionTable_readAndSignTheDepositionOf" />}{" "}{deposition.witness.name} {<__LocalizedText id="signWitnessDepositionTable_in" />}{" "}
                   </span>
                   {causeTitle(deposition)}
                 </button>
@@ -168,7 +166,7 @@ export function SignWitnessDepositionTable({
               <TableCell
                 className={cn(TABLE_CELL, "whitespace-nowrap")}
               >
-                <Identifier value={deposition.caseNumber} label="case number" />
+                <Identifier value={deposition.caseNumber} label={__t("signWitnessDepositionTable_caseNumber_ab8d4a40")} />
               </TableCell>
               {/* The name carries the fact; the tag labels it, so it recedes to muted
                   the way the `(C)` / `(A)` marks do in the advocates cell beside it.

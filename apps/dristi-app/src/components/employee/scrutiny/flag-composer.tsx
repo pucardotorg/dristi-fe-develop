@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CheckIcon, FileUpIcon } from "lucide-react";
@@ -47,6 +49,7 @@ export function FlagComposer({
   controller: ScrutinyController;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const __t = __useTranslations();
   const { draft, pendingFocus } = controller;
   const noteRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -104,7 +107,7 @@ export function FlagComposer({
              * listed accessibility defect, and a voice user says the label.
              */}
             <FieldLabel>
-              {isDocRow ? "What’s wrong with this document?" : "Note for the advocate"}
+              {isDocRow ? __t("flagComposer_whatSWrongWithThisDocument") : __t("flagComposer_noteForTheAdvocate")}
             </FieldLabel>
 
             <Textarea
@@ -112,8 +115,8 @@ export function FlagComposer({
               className="max-h-32 min-h-16"
               placeholder={
                 isDocRow
-                  ? "e.g. Only the address side was uploaded — please upload the front."
-                  : "e.g. The amount does not match the cheque — check it against the instrument."
+                  ? __t("flagComposer_eGOnlyTheAddressSideWas")
+                  : __t("flagComposer_eGTheAmountDoesNotMatch")
               }
               value={draft.text}
               onClick={(event) => event.stopPropagation()}
@@ -138,8 +141,8 @@ export function FlagComposer({
             {speechless ? (
               <FieldError>
                 {isDocRow
-                  ? "Say what’s wrong — pick a reason or write a line."
-                  : "Say what’s wrong — one line is enough."}
+                  ? __t("flagComposer_sayWhatSWrongPickAReason")
+                  : __t("flagComposer_sayWhatSWrongOneLineIs")}
               </FieldError>
             ) : null}
         </Field>
@@ -161,16 +164,15 @@ export function FlagComposer({
           on a court screen. */}
       <div className="flex flex-wrap items-center justify-end gap-2">
         <Button variant="ghost" onClick={() => controller.closeComposer()}>
-          Cancel
-        </Button>
+          {<__LocalizedText id="flagComposer_cancel" />}{" "}</Button>
         <Button
           disabled={!canSave}
           aria-label={
-            draft.linked ? "Save the flag and the document issue" : undefined
+            draft.linked ? __t("flagComposer_saveTheFlagAndTheDocumentIssue") : undefined
           }
           onClick={() => controller.saveFlag()}
         >
-          {draft.linked ? "Save both" : isDocRow ? "Save issue" : "Save flag"}
+          {draft.linked ? __t("flagComposer_saveBoth") : isDocRow ? __t("flagComposer_saveIssue") : __t("flagComposer_saveFlag")}
         </Button>
       </div>
       </div>
@@ -192,6 +194,7 @@ function ReasonChips({
   value: string | null;
   onChange: (reason: string | null) => void;
 }) {
+  const __t = __useTranslations();
   return (
     /*
      * Selection is a mark, not a fill. The DS on-state for an outline toggle is
@@ -207,7 +210,7 @@ function ReasonChips({
       value={value ?? ""}
       onValueChange={(next) => onChange(next || null)}
       className="flex flex-wrap gap-1.5"
-      aria-label="What is wrong with the document"
+      aria-label={__t("flagComposer_whatIsWrongWithTheDocument")}
     >
       {DOC_REASONS.map((reason) => (
         <ToggleGroupItem
@@ -244,6 +247,7 @@ function ConsequenceStrip({
   controller: ScrutinyController;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const __t = __useTranslations();
   const { docById, docRow } = useScrutinyCase();
   const draft = controller.draft;
   if (!draft) return null;
@@ -270,7 +274,7 @@ function ConsequenceStrip({
       <span className="text-caption text-muted-foreground">
         {raised
           ? `${docName(sourceDoc, docById)} is already flagged for re-upload.`
-          : "Is something wrong with the entire document?"}
+          : __t("flagComposer_isSomethingWrongWithTheEntireDocument")}
       </span>
       <Button
         variant={raised ? "ghost" : "outline"}
@@ -287,7 +291,7 @@ function ConsequenceStrip({
           else controller.linkDoc(sourceDoc);
         }}
       >
-        {raised ? "Open that flag" : "Flag the entire document instead"}
+        {raised ? __t("flagComposer_openThatFlag") : __t("flagComposer_flagTheEntireDocumentInstead")}
       </Button>
     </div>
   );
@@ -302,6 +306,7 @@ function ConsequenceStrip({
  * the officer's behalf is the machine making the claim.
  */
 function LinkedBlock({ controller }: { controller: ScrutinyController }) {
+  const __t = __useTranslations();
   const { docById } = useScrutinyCase();
   const linked = controller.draft?.linked;
   if (!linked) return null;
@@ -320,8 +325,7 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
           aria-hidden="true"
         />
         <span className="min-w-0 flex-1 text-body-compact font-medium">
-          Also raising: {docName(linked.docId, docById)} — re-upload
-        </span>
+          {<__LocalizedText id="flagComposer_alsoRaising" />}{" "}{docName(linked.docId, docById)} {<__LocalizedText id="flagComposer_reUpload" />}{" "}</span>
         <Button
           variant="ghost"
           size="xs"
@@ -331,8 +335,7 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
             controller.clearLinked();
           }}
         >
-          Undo
-        </Button>
+          {<__LocalizedText id="flagComposer_undo" />}{" "}</Button>
       </div>
 
       {/*
@@ -346,14 +349,14 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
          * One Field for the chip row and the note: the label is visible and belongs to
          * both, which is what keeps the note out of placeholder-only territory.
          */}
-        <FieldLabel>What&rsquo;s wrong with the document?</FieldLabel>
+        <FieldLabel>{<__LocalizedText id="flagComposer_whatSWrongWithTheDocument" />}</FieldLabel>
         <ReasonChips
           value={linked.reason}
           onChange={(reason) => controller.updateLinked({ reason })}
         />
         <Textarea
           className="max-h-32 min-h-16"
-          placeholder="Note for the advocate (optional)"
+          placeholder={__t("flagComposer_noteForTheAdvocateOptional")}
           value={linked.note}
           onClick={(event) => event.stopPropagation()}
           onChange={(event) =>
@@ -368,8 +371,7 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
          */}
         {missing ? (
           <FieldDescription>
-            Pick what&rsquo;s wrong to enable Save.
-          </FieldDescription>
+            {<__LocalizedText id="flagComposer_pickWhatSWrongToEnableSave" />}{" "}</FieldDescription>
         ) : null}
       </Field>
     </div>

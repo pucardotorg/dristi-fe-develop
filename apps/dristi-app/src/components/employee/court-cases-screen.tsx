@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -87,6 +89,7 @@ const COURT_CASES_SORTS: CourtSortSpec<CourtCase, CourtCasesSort>[] = [
  * the filtering version never managed.
  */
 export function CourtCasesScreen() {
+  const __t = __useTranslations();
   const today = useCourtToday();
   const searchParams = useSearchParams();
 
@@ -150,8 +153,7 @@ export function CourtCasesScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          All cases
-        </h1>
+          {<__LocalizedText id="courtCasesScreen_allCases" />}{" "}</h1>
         {/* The count line says what is in view and what the court holds, in that order,
             because when a filter is on the first number is the one being read. */}
         <p className="text-body text-muted-foreground tabular-nums">
@@ -167,16 +169,16 @@ export function CourtCasesScreen() {
       <section className="flex min-w-0 flex-col gap-6 rounded-xl border border-hairline bg-card p-6 shadow-raised">
         <CourtFilters
           search={{
-            label: "Search cases",
+            label: __t("courtCasesScreen_searchCases"),
             value: filters.query,
             onChange: (query) => change({ query }),
-            placeholder: "Case number, complainant or accused",
+            placeholder: __t("courtCasesScreen_caseNumberComplainantOrAccused"),
           }}
           searchRef={searchRef}
           fields={[
             {
               id: "court-cases-priority",
-              label: "Priority",
+              label: __t("courtCasesScreen_priority"),
               value: filters.priority ?? "any",
               all: "any",
               allLabel: "Any priority",
@@ -191,13 +193,13 @@ export function CourtCasesScreen() {
             },
             {
               id: "court-cases-stage",
-              label: "Stage",
+              label: __t("courtCasesScreen_stage"),
               value: filters.stage ?? "all",
               all: "all",
               allLabel: "All stages",
               options: COURT_CASE_STAGES.map((stage) => ({
                 value: stage.id,
-                label: stage.label,
+                label: __t(stage.label),
               })),
               onApply: (value) =>
                 change({
@@ -223,7 +225,7 @@ export function CourtCasesScreen() {
             category; this says what being in it means, which a 56px control cannot. */}
         {active ? (
           <p className="text-body-compact text-muted-foreground">
-            <span className="font-semibold text-foreground">{active.title}.</span>{" "}
+            <span className="font-semibold text-foreground">{__t(active.title)}.</span>{" "}
             {active.meaning}
           </p>
         ) : null}
@@ -242,16 +244,13 @@ export function CourtCasesScreen() {
                 <FolderSearchIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="text-body font-semibold">
-                No case matches
-              </EmptyTitle>
+                {<__LocalizedText id="courtCasesScreen_noCaseMatches" />}{" "}</EmptyTitle>
               <EmptyDescription className="text-body-compact">
-                Nothing on this court&rsquo;s file answers the filters set above.
-              </EmptyDescription>
+                {<__LocalizedText id="courtCasesScreen_nothingOnThisCourtSFileAnswers" />}{" "}</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button type="button" variant="outline" onClick={clearFilters}>
-                Clear filters
-              </Button>
+                {<__LocalizedText id="courtCasesScreen_clearFilters" />}{" "}</Button>
             </EmptyContent>
           </Empty>
         ) : (

@@ -1,4 +1,5 @@
 "use client"
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 
 import * as React from "react"
 import { useMemo } from "react"
@@ -263,6 +264,7 @@ function FieldError({
 }: React.ComponentProps<"div"> & {
   errors?: Array<{ message?: string } | undefined>
 }) {
+  const __t = __useTranslations();
   const ctx = useFieldContext()
   const errorId = id ?? ctx?.errorId
 
@@ -293,11 +295,11 @@ function FieldError({
       <ul className="ms-4 flex list-disc flex-col gap-1">
         {uniqueErrors.map(
           (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>
+            error?.message && <li key={index}>{__t(error.message)}</li>
         )}
       </ul>
     )
-  }, [children, errors])
+  }, [children, errors, __t])
 
   if (!content) {
     return null

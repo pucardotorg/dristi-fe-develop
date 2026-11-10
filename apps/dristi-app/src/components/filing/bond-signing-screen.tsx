@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { PenLineIcon } from "lucide-react";
@@ -42,6 +43,7 @@ const ALL_SURETIES = [...BOND_SURETIES, BOND_THIRD_SURETY];
 const PARTY_PHONES = [BOND_LITIGANT.phone, ...ALL_SURETIES.map((entry) => entry.phone)];
 
 export function BondSigningScreen() {
+  const __t = __useTranslations();
   const [locale, setLocale] = React.useState<Locale>("en");
   const [stage, setStage] = React.useState<"phone" | "status">("phone");
   const [phone, setPhone] = React.useState("");
@@ -91,7 +93,7 @@ export function BondSigningScreen() {
         >
           {LOCALES.map((l) => (
             <SegmentedControlItem key={l.value} value={l.value}>
-              {l.label}
+              {__t(l.label)}
             </SegmentedControlItem>
           ))}
         </SegmentedControl>
@@ -108,7 +110,7 @@ export function BondSigningScreen() {
           <p className="text-body text-pretty text-muted-foreground">
             {fillCopy(bondCopy.partyIntro, locale, {
               caseNumber: DEMO_CASE.caseNumber,
-              title: DEMO_CASE.title,
+              title: __t(DEMO_CASE.title),
             })}
           </p>
         </div>

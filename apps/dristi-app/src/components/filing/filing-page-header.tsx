@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -25,6 +26,7 @@ export function FilingPageHeader({
   actions?: React.ReactNode;
   className?: string;
 }) {
+  const __t = __useTranslations();
   /* The correction screen owns the page's one `h1`; a section title under it is an `h2`. */
   const Heading = useInCorrection() ? "h2" : "h1";
   return (
@@ -35,10 +37,10 @@ export function FilingPageHeader({
             <p className="text-caption font-medium text-primary">{eyebrow}</p>
           ) : null}
           <Heading className="text-title font-semibold tracking-tight text-foreground">
-            {title}
+            {__t(title)}
           </Heading>
           {description ? (
-            <p className="max-w-3xl text-body text-muted-foreground">{description}</p>
+            <p className="max-w-3xl text-body text-muted-foreground">{__t(description)}</p>
           ) : null}
         </div>
         {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}

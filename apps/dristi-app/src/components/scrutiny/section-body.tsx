@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Which section the centre pane shows.
@@ -64,12 +65,9 @@ export function SectionBody({ step }: { step: StepId }) {
             <FileTextIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body font-semibold">
-            Nothing to correct here
-          </EmptyTitle>
+            {<__LocalizedText id="sectionBody_nothingToCorrectHere" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            Signing and fees are not part of a correction round. Pick a section from the
-            list, or open a defect from the queue.
-          </EmptyDescription>
+            {<__LocalizedText id="sectionBody_signingAndFeesAreNotPartOf" />}{" "}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );

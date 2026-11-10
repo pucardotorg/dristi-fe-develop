@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -70,6 +72,7 @@ import { cn } from "@/lib/utils";
  *   source without leaving the line you were on. Below 1280px the same panel is a sheet.
  */
 export function CaseFileView({ review }: { review: CaseReview }) {
+  const __t = __useTranslations();
   const bundle = React.useMemo(() => caseBundleFor(review), [review]);
   const [query, setQuery] = React.useState("");
   const [selected, setSelected] = React.useState<{
@@ -131,8 +134,8 @@ export function CaseFileView({ review }: { review: CaseReview }) {
       <div className="flex min-w-0 flex-col gap-8">
         <div className="flex flex-wrap items-end gap-3">
           <QueueSearchField
-            label="Search the case file"
-            placeholder="A name, a number, a date or a document"
+            label={__t("registerCaseFile_searchTheCaseFile")}
+            placeholder={__t("registerCaseFile_aNameANumberADateOr")}
             value={query}
             onChange={setQuery}
             className="w-full max-w-md"
@@ -145,19 +148,18 @@ export function CaseFileView({ review }: { review: CaseReview }) {
             onClick={() => setSheetOpen(true)}
           >
             <FilesIcon aria-hidden />
-            Documents
-          </Button>
+            {<__LocalizedText id="registerCaseFile_documents" />}{" "}</Button>
         </div>
 
         {needle && (matchCount > 0 || docMatches > 0) ? (
           <p role="status" className="-mt-4 text-body-compact text-muted-foreground">
             <span className="tabular-nums">{matchCount}</span>{" "}
-            {matchCount === 1 ? "particular" : "particulars"}
+            {matchCount === 1 ? __t("registerCaseFile_particular") : __t("registerCaseFile_particulars")}
             {docMatches > 0 ? (
               <>
                 {" · "}
                 <span className="tabular-nums">{docMatches}</span>{" "}
-                {docMatches === 1 ? "document, in the list" : "documents, in the list"}
+                {docMatches === 1 ? __t("registerCaseFile_documentInTheList") : __t("registerCaseFile_documentsInTheList")}
               </>
             ) : null}
           </p>
@@ -170,16 +172,13 @@ export function CaseFileView({ review }: { review: CaseReview }) {
                 <SearchXIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="font-semibold text-title-s">
-                Nothing in this file matches “{query.trim()}”
+                {<__LocalizedText id="registerCaseFile_nothingInThisFileMatches" />}{query.trim()}”
               </EmptyTitle>
               <EmptyDescription className="text-body-compact">
-                Try part of a name, a number or a date, or clear the search to see the
-                whole file.
-              </EmptyDescription>
+                {<__LocalizedText id="registerCaseFile_tryPartOfANameANumber" />}{" "}</EmptyDescription>
             </EmptyHeader>
             <Button type="button" variant="outline" onClick={() => setQuery("")}>
-              Clear search
-            </Button>
+              {<__LocalizedText id="registerCaseFile_clearSearch" />}{" "}</Button>
           </Empty>
         ) : (
           /* One card per group, in the e-filing's order, spaced apart — no section
@@ -220,7 +219,7 @@ export function CaseFileView({ review }: { review: CaseReview }) {
           less that, so the panel's foot lands on the fold. */}
       <aside
         ref={asideRef}
-        aria-label="Documents"
+        aria-label={__t("registerCaseFile_documents")}
         /* The fill runs to the window's edge; the contents stop where the page's own
            right margin is, so "18 filed" and the document numbers line up with the
            Register button above them (owner, 2026-09-12). */
@@ -232,8 +231,8 @@ export function CaseFileView({ review }: { review: CaseReview }) {
       <Sheet open={sheetOpen && !wide} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="gap-0 p-0 data-[side=right]:sm:max-w-md">
           <SheetHeader className="sr-only">
-            <SheetTitle>Documents</SheetTitle>
-            <SheetDescription>The documents this complaint was filed with.</SheetDescription>
+            <SheetTitle>{<__LocalizedText id="registerCaseFile_documents" />}</SheetTitle>
+            <SheetDescription>{<__LocalizedText id="registerCaseFile_theDocumentsThisComplaintWasFiledWith" />}</SheetDescription>
           </SheetHeader>
           <div className="flex min-h-0 flex-1 flex-col pt-12">{panel}</div>
         </SheetContent>
@@ -290,7 +289,8 @@ function groupView(group: CaseGroup, needle: string): GroupView | null {
 
 /** The text with every occurrence of the search marked. */
 function Marked({ text, needle }: { text: string; needle: string }) {
-  if (!needle) return <>{text}</>;
+  const __t = __useTranslations();
+  if (!needle) return <>{__t(text)}</>;
   const lower = text.toLowerCase();
   const parts: React.ReactNode[] = [];
   let from = 0;
@@ -343,6 +343,7 @@ function GroupCard({
   selected: { key: string; rowId?: string } | null;
   onShow: (key: string | null, rowId?: string, term?: string) => void;
 }) {
+  const __t = __useTranslations();
   const { group } = view;
   const Icon = group.icon;
   const docNo = (key: string) => bundle.docs.find((doc) => doc.key === key);
@@ -386,7 +387,7 @@ function GroupCard({
         <Band gutter={gutter}>
           <p className="py-2 text-body-compact text-muted-foreground">
             {group.empty.explanation ??
-              (group.empty.reason === "none-named" ? "None named" : "None on record")}
+              (group.empty.reason === "none-named" ? __t("registerCaseFile_noneNamed_55081916") : __t("registerCaseFile_noneOnRecord"))}
           </p>
         </Band>
       ) : null}
@@ -399,7 +400,7 @@ function GroupCard({
             columns={recordColumns(view.records)}
             rows={view.records.map((record) => ({
               key: record.record.id,
-              label: record.record.heading,
+              label: __t(record.record.heading),
               cells: recordColumns(view.records).map((term) =>
                 record.facts.find((item) => item.fact.term === term),
               ),
@@ -411,8 +412,8 @@ function GroupCard({
 
       {chunks.map((chunk, index) => (
         <Band
-          key={`${chunk.title ?? "rest"}-${index}`}
-          title={chunk.title}
+          key={`${__t(chunk.title) ?? __t("registerCaseFile_rest")}-${index}`}
+          title={__t(chunk.title)}
           needle={needle}
           gutter={gutter}
         >
@@ -421,7 +422,7 @@ function GroupCard({
               columns={chunk.columns}
               rows={chunk.rows.map((matrixRow) => ({
                 key: matrixRow.label,
-                label: matrixRow.label,
+                label: __t(matrixRow.label),
                 cells: matrixRow.cells,
               }))}
               {...row}
@@ -468,7 +469,7 @@ function Band({
   gutter: boolean;
   children: React.ReactNode;
 }) {
-  return (
+    return (
     <section
       className={cn(
         "grid gap-x-8 gap-y-2 border-t border-hairline px-6 py-4 md:px-8 md:py-6",
@@ -515,6 +516,7 @@ function FactRow({
   selected,
   onShow,
 }: RowProps & { item: FactItem }) {
+  const __t = __useTranslations();
   const { id, fact, label } = item;
   const source = fact.source ? docNo(fact.source) : undefined;
   const current = selected?.rowId === id;
@@ -535,7 +537,7 @@ function FactRow({
         <Value fact={fact} needle={needle} />
         {source ? (
           <EyeButton
-            title={source.title}
+            title={__t(source.title)}
             no={source.no}
             shown={current}
             onClick={() => onShow(source.key, id, fact.term)}
@@ -548,6 +550,7 @@ function FactRow({
 
 /** A value as filed — or, where the form was left empty, the words for that. */
 function Value({ fact, needle }: { fact: CaseFact; needle: string }) {
+  const __t = __useTranslations();
   return (
     <span
       className={cn(
@@ -563,7 +566,7 @@ function Value({ fact, needle }: { fact: CaseFact; needle: string }) {
         fact.exception && "text-warning-ink",
       )}
     >
-      {fact.value ? <Marked text={fact.value} needle={needle} /> : "Not provided"}
+      {fact.value ? <Marked text={fact.value} needle={needle} /> : __t("registerCaseFile_notProvided")}
     </span>
   );
 }
@@ -582,6 +585,7 @@ function EyeButton({
   onClick: () => void;
   group?: "row" | "cell";
 }) {
+  const __t = __useTranslations();
   return (
     <Button
       type="button"
@@ -592,7 +596,7 @@ function EyeButton({
         group === "row" ? "group-hover/row:opacity-100" : "group-hover/cell:opacity-100",
         shown && "opacity-100",
       )}
-      aria-label={`Show ${title}, document ${no}`}
+      aria-label={__t("registerCaseFile_showValue0DocumentValue1", {value0: String(__t(title)), value1: String(__t(no))})}
       onClick={(event) => {
         event.stopPropagation();
         onClick();
@@ -632,6 +636,7 @@ function MatrixBand({
   columns: string[];
   rows: { key: string; label: string; cells: (FactItem | undefined)[] }[];
 }) {
+  const __t = __useTranslations();
   const grid =
     columns.length === 3
       ? "@lg:grid-cols-[minmax(0,12rem)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]"
@@ -645,7 +650,7 @@ function MatrixBand({
           grid,
         )}
       >
-        <span className={cn(records && "font-semibold text-foreground")}>{rowHeading}</span>
+        <span className={cn(records && "font-semibold text-foreground")}>{__t(rowHeading)}</span>
         {columns.map((column) => (
           <span key={column} className="font-semibold text-foreground">
             {column}
@@ -694,6 +699,7 @@ function MatrixCell({
   selected,
   onShow,
 }: RowProps & { column: string; cell: FactItem | undefined }) {
+  const __t = __useTranslations();
   const source = cell?.fact.source ? docNo(cell.fact.source) : undefined;
   const current = !!cell && selected?.rowId === cell.id;
   return (
@@ -710,12 +716,12 @@ function MatrixCell({
       {cell ? (
         <Value fact={cell.fact} needle={needle} />
       ) : (
-        <span className="text-muted-foreground">Not provided</span>
+        <span className="text-muted-foreground">{<__LocalizedText id="registerCaseFile_notProvided" />}</span>
       )}
       {source && cell ? (
         <EyeButton
           group="cell"
-          title={source.title}
+          title={__t(source.title)}
           no={source.no}
           shown={current}
           onClick={() => onShow(source.key, cell.id, cell.fact.term)}
@@ -737,6 +743,7 @@ function MatrixCell({
  * screen reader hears a list of them. The ticks are only its picture.
  */
 function ContentsRail({ groups }: { groups: CaseGroup[] }) {
+  const __t = __useTranslations();
   const [active, setActive] = React.useState(groups[0]?.id ?? "");
 
   React.useEffect(() => {
@@ -768,7 +775,7 @@ function ContentsRail({ groups }: { groups: CaseGroup[] }) {
   if (groups.length < 2) return null;
 
   return (
-    <nav aria-label="Case file contents" className="group/toc sticky top-32 w-4">
+    <nav aria-label={__t("registerCaseFile_caseFileContents")} className="group/toc sticky top-32 w-4">
       <div aria-hidden className="flex flex-col items-end gap-3 py-2">
         {groups.map((group) => (
           <span
@@ -805,7 +812,7 @@ function ContentsRail({ groups }: { groups: CaseGroup[] }) {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {group.title}
+              {__t(group.title)}
             </button>
           </li>
         ))}
@@ -859,15 +866,13 @@ function DocumentPanel({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-baseline justify-between gap-3 border-b border-hairline px-8 py-4">
-        <h2 className="text-body font-semibold">Documents</h2>
+        <h2 className="text-body font-semibold">{<__LocalizedText id="registerCaseFile_documents" />}</h2>
         <span className="text-body-compact tabular-nums text-muted-foreground">
-          {bundle.docs.length} filed
-        </span>
+          {bundle.docs.length} {<__LocalizedText id="registerCaseFile_filed" />}{" "}</span>
       </div>
       {docs.length === 0 && absent.length === 0 ? (
         <p className="px-8 py-4 text-body-compact text-muted-foreground">
-          No document matches.
-        </p>
+          {<__LocalizedText id="registerCaseFile_noDocumentMatches" />}{" "}</p>
       ) : (
         <DocumentScroller
           docs={docs}

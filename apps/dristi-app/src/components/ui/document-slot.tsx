@@ -1,4 +1,5 @@
 "use client"
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -71,6 +72,7 @@ function DocumentSlot({
       chooseFile?: string
     }
   }) {
+  const __t = __useTranslations();
   const isEmpty = status === "empty" || status === "empty-optional"
   const showOptional = optional || status === "empty-optional"
   const qualityTone =
@@ -103,14 +105,14 @@ function DocumentSlot({
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
-          <p className="text-sm font-medium text-foreground">{label}</p>
+          <p className="text-sm font-medium text-foreground">{__t(label)}</p>
           {required && isEmpty ? (
             <span className="text-destructive" aria-hidden>
               *
             </span>
           ) : null}
           {showOptional ? (
-            <Badge variant="secondary">{copy?.optional ?? "Optional"}</Badge>
+            <Badge variant="secondary">{copy?.optional ?? __t("documentSlot_optional")}</Badge>
           ) : null}
         </div>
         {(filename || meta) && !isEmpty ? (
@@ -120,17 +122,17 @@ function DocumentSlot({
         ) : null}
         {isEmpty ? (
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {copy?.noFile ?? "No file chosen yet"}
+            {copy?.noFile ?? __t("documentSlot_noFileChosenYet")}
           </p>
         ) : null}
         {qualityTone === "good" ? (
           <Badge variant="success" className="mt-2">
-            {copy?.goodScan ?? "Good scan"}
+            {copy?.goodScan ?? __t("documentSlot_goodScan")}
           </Badge>
         ) : null}
         {qualityTone === "poor" ? (
           <Badge variant="warning" className="mt-2">
-            {copy?.poorScan ?? "Poor scan"}
+            {copy?.poorScan ?? __t("documentSlot_poorScan")}
           </Badge>
         ) : null}
       </div>
@@ -143,7 +145,7 @@ function DocumentSlot({
           disabled={disabled}
           onClick={onChooseFile}
         >
-          {copy?.chooseFile ?? "Choose file"}
+          {copy?.chooseFile ?? __t("documentSlot_chooseFile")}
         </Button>
       ) : null}
     </div>

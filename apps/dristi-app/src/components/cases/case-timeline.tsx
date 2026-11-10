@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { CaseLink as Link } from "@/components/cases/case-reader";
 import * as React from "react";
@@ -70,6 +72,7 @@ const TYPE_OPTIONS: TypeOption[] = [
 ];
 
 export function CaseTimeline({ record }: { record: CaseRecord }) {
+  const __t = __useTranslations();
   const model = caseTimelineModel(
     record,
     new Date(`${FIXTURE_TODAY}T23:59:59`).getTime()
@@ -114,12 +117,9 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
               id="case-history-empty-heading"
               className="text-body font-semibold"
             >
-              No case history yet
-            </EmptyTitle>
+              {<__LocalizedText id="caseTimeline_noCaseHistoryYet" />}{" "}</EmptyTitle>
             <EmptyDescription>
-              Events that have already taken place on this case will appear
-              here.
-            </EmptyDescription>
+              {<__LocalizedText id="caseTimeline_eventsThatHaveAlreadyTakenPlaceOn" />}{" "}</EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
@@ -130,10 +130,9 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
                 id="all-case-events-heading"
                 className="text-body font-semibold"
               >
-                All case events
-              </h3>
+                {<__LocalizedText id="caseTimeline_allCaseEvents" />}{" "}</h3>
               <p className="text-caption font-medium tabular-nums text-muted-foreground">
-                {model.firstDateLabel} to {model.latestDateLabel}
+                {__t(model.firstDateLabel)} {<__LocalizedText id="caseTimeline_to" />}{" "}{__t(model.latestDateLabel)}
               </p>
             </div>
           </CardHeader>
@@ -146,10 +145,9 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
             />
             {days.length === 0 ? (
               <p className="text-body-compact text-muted-foreground">
-                Nothing of these types on this case.
-              </p>
+                {<__LocalizedText id="caseTimeline_nothingOfTheseTypesOnThisCase" />}{" "}</p>
             ) : (
-              <Timeline aria-label="Case History, newest first">
+              <Timeline aria-label={__t("caseTimeline_caseHistoryNewestFirst")}>
                 {days.map((day) => (
                   <TimelineItem
                     key={day.on}
@@ -161,7 +159,7 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
                         dateTime={day.on}
                         className="text-body-compact font-semibold tabular-nums text-foreground"
                       >
-                        {day.dateLabel}
+                        {__t(day.dateLabel)}
                       </time>
 
                       <ItemGroup>
@@ -192,12 +190,13 @@ function TimelineEvent({
   caseId: string;
   event: CaseTimelineEvent;
 }) {
+  const __t = __useTranslations();
   /* line-clamp-none: the label is the whole event, and a Malayalam or Gujarati
      translation of it will wrap rather than fit the DS one-line default. */
   const title = (
     <ItemContent className="min-w-0">
       <ItemTitle className="line-clamp-none font-normal">
-        {event.label}
+        {__t(event.label)}
       </ItemTitle>
     </ItemContent>
   );
@@ -217,7 +216,7 @@ function TimelineEvent({
           role="listitem"
           className="-mx-2 w-auto px-2 py-1.5 hover:bg-transparent"
         >
-          {title}
+          {__t(title)}
         </Item>
         {botd}
       </>
@@ -234,9 +233,9 @@ function TimelineEvent({
         <Link
           href={caseSectionHref(caseId, event.ref)}
           role="listitem"
-          aria-label={`${event.label}, open ${sectionLabel(event.ref)}`}
+          aria-label={`${__t(event.label)}, open ${sectionLabel(event.ref)}`}
         >
-          {title}
+          {__t(title)}
           <ItemActions aria-hidden>
             <ChevronRightIcon className="size-4 text-muted-foreground" />
           </ItemActions>

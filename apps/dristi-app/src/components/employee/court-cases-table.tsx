@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -65,6 +67,7 @@ export function CourtCasesTable({
   today: string;
   onOpen: (record: CourtCase) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
@@ -73,20 +76,15 @@ export function CourtCasesTable({
               exception here cost the screen its copy affordance, because the number was
               the row's opener and a control cannot nest another (owner, 2026-09-18). */}
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="courtCasesTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="courtCasesTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
-          </TableHead>
+            {<__LocalizedText id="courtCasesTable_stage" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Next hearing
-          </TableHead>
+            {<__LocalizedText id="courtCasesTable_nextHearing" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
-            Priority
-          </TableHead>
+            {<__LocalizedText id="courtCasesTable_priority" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -111,12 +109,12 @@ export function CourtCasesTable({
                   {...rowOpener}
                   className={cn(rowOpenerClass, "font-medium")}
                 >
-                  <span className="sr-only">Open </span>
+                  <span className="sr-only">{<__LocalizedText id="courtCasesTable_open" />}{" "}</span>
                   {courtCaseTitle(record)}
                 </button>
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                <Identifier value={record.caseNumber} label="case number" />
+                <Identifier value={record.caseNumber} label={__t("courtCasesTable_caseNumber_6bbf5b92")} />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
                 {courtCaseStageLabel(record.stage)}
@@ -130,7 +128,7 @@ export function CourtCasesTable({
                 {next ? (
                   formatListingDate(next)
                 ) : (
-                  <span className="text-muted-foreground">No date fixed</span>
+                  <span className="text-muted-foreground">{<__LocalizedText id="courtCasesTable_noDateFixed" />}</span>
                 )}
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}>
@@ -169,6 +167,7 @@ export function CourtCaseItemList({
   today: string;
   onOpen: (record: CourtCase) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((record) => {
@@ -187,7 +186,7 @@ export function CourtCaseItemList({
                 {...rowOpener}
                 className={cn(rowOpenerClass, "w-fit text-body font-semibold")}
               >
-                <span className="sr-only">Open </span>
+                <span className="sr-only">{<__LocalizedText id="courtCasesTable_open" />}{" "}</span>
                 {courtCaseTitle(record)}
               </button>
               <span className="text-body-compact text-muted-foreground">
@@ -195,10 +194,10 @@ export function CourtCaseItemList({
               </span>
             </div>
             <span className="text-body-compact text-muted-foreground">
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={__t("courtCasesTable_caseNumber_6bbf5b92")} />
             </span>
             <span className="text-body-compact text-muted-foreground tabular-nums">
-              {next ? `Next hearing ${formatListingDate(next)}` : "No date fixed"}
+              {next ? __t("courtCasesTable_nextHearingValue0", {value0: String(formatListingDate(next))}) : __t("courtCasesTable_noDateFixed")}
             </span>
             {record.flags.length === 0 ? null : (
               <div className="flex flex-wrap gap-1.5">

@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import {
@@ -29,7 +30,10 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Banner } from "@/components/ui/banner";
-import { OFFICE_NO_ESIGN } from "@/components/cases/case-office-access";
+import {
+  OFFICE_NO_ESIGN,
+  useCaseOfficeAccess,
+} from "@/components/cases/case-office-access";
 import { Button } from "@/components/ui/button";
 import {
   DescriptionList,
@@ -86,12 +90,21 @@ import {
   bailDialog,
   fillCopy,
 } from "@/lib/filing/content";
-import { ADVOCATE_PROFILE_NAME } from "@/lib/advocate/content";
+import {
+  ADVOCATE_PROFILE_NAME,
+  advDialog,
+} from "@/lib/advocate/content";
 import { cn } from "@/lib/utils";
 import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
-import { UploadedDocField as SharedUploadedDocField } from "@/components/cases/uploaded-doc-field";
+import { useProfile } from "@/components/shell/profile";
+import { newPaymentRef } from "@/lib/filing/data";
+import {
+  GATEWAY_MS,
+  PaymentProcessing,
+  PaymentReceipt,
+} from "@/components/payment/payment-steps";
 
 
 /**
@@ -104,7 +117,15 @@ import { UploadedDocField as SharedUploadedDocField } from "@/components/cases/u
  * tasks, the same decision the join flow made for the vakalatnama fee.
  */
 
-type Stage = "details" | "sureties" | "review" | "sign" | "payment" | "done";
+type Stage =
+  | "details"
+  | "sureties"
+  | "review"
+  | "sign"
+  | "payment"
+  | "processing"
+  | "paid"
+  | "done";
 type YesNo = "yes" | "no";
 
 export type BailApplicationResult = {
@@ -137,6 +158,7 @@ export function UploadedDocField({
   onFileChange: (file: File | null) => void;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const url = useObjectUrl(file);
@@ -165,7 +187,7 @@ export function UploadedDocField({
       <DocumentSlot
         status={file ? "filled" : "empty"}
         media={file ? "thumbnail" : "icon"}
-        label={label}
+        label={__t(label)}
         required={required}
         filename={file?.name}
         meta={file ? fileSize(file.size) : undefined}
@@ -288,6 +310,7 @@ function ApplicationDraft({
   expanded?: boolean;
   onExpand?: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   return (
     <div
@@ -327,7 +350,7 @@ function ApplicationDraft({
           })}
         </p>
         <p className="text-center text-body-compact text-pretty">
-          {fillCopy(bailDialog.draftMatterLine, locale, { title: accessCase.title })}
+          {fillCopy(bailDialog.draftMatterLine, locale, { title: __t(accessCase.title) })}
         </p>
         <RichTextValueView
           value={grounds}
@@ -376,6 +399,9 @@ export function BailApplicationDialog({
   locale: Locale;
   onSubmitted?: (result: BailApplicationResult) => void;
 }) {
+  const __t = __useTranslations();
+  const { profileRole } = useProfile();
+  const officeAccess = useCaseOfficeAccess() && profileRole !== "litigant";
   const [stage, setStage] = React.useState<Stage>("details");
 
   const [petitionerId, setPetitionerId] = React.useState("");
@@ -661,9 +687,9 @@ export function BailApplicationDialog({
         ) : (
           <DialogHeader className="shrink-0 border-b border-hairline px-6 py-5 pr-14 text-left">
             <DialogTitle className="text-title-s font-semibold text-balance">
-              {headerCopy.title}
+              {__t(headerCopy.title)}
             </DialogTitle>
-            <DialogDescription className="text-pretty">{headerCopy.body}</DialogDescription>
+            <DialogDescription className="text-pretty">{__t(headerCopy.body)}</DialogDescription>
             {/* Where the terms already are, while they are being entered. */}
             {stage === "details" || stage === "sureties" ? (
               <p className="text-body-compact text-pretty text-muted-foreground">
@@ -672,9 +698,9 @@ export function BailApplicationDialog({
             ) : null}
             {/* The case this filing belongs to is constant across stages. */}
             <p className="text-caption text-muted-foreground">
-              <Identifier value={accessCase.caseNumber} label="case number" />
+              <Identifier value={accessCase.caseNumber} label={__t("bailApplicationDialog_caseNumber")} />
               <span aria-hidden> · </span>
-              {accessCase.title}
+              {__t(accessCase.title)}
             </p>
           </DialogHeader>
         )}
@@ -852,7 +878,7 @@ export function BailApplicationDialog({
                                 value={doc.title}
                                 onChange={(event) => update({ title: event.target.value })}
                               />
-                              <FieldError>{errors.title}</FieldError>
+                              <FieldError>{__t(errors.title)}</FieldError>
                             </Field>
                           </div>
                           <Field data-invalid={Boolean(errors.file)}>
@@ -1400,7 +1426,7 @@ export function BailApplicationDialog({
                 { label: pick(advDialog.payFeeHead, locale), value: pick(bailDialog.feeLine, locale) },
                 {
                   label: pick(advDialog.paidRef, locale),
-                  value: <Identifier value={paymentRef} label="payment reference" />,
+                  value: <Identifier value={paymentRef} label={__t("bailApplicationDialog_paymentReference")} />,
                 },
               ]}
             />
@@ -1422,7 +1448,7 @@ export function BailApplicationDialog({
                 <DescriptionRow className="items-center border-hairline">
                   <DescriptionTerm>{pick(bailDialog.submissionIdLabel, locale)}</DescriptionTerm>
                   <DescriptionDetails className="flex items-center gap-2">
-                    <Identifier value={BAIL_SUBMISSION_ID} label="submission id" />
+                    <Identifier value={BAIL_SUBMISSION_ID} label={__t("bailApplicationDialog_submissionId")} />
                   </DescriptionDetails>
                 </DescriptionRow>
                 <DescriptionRow className="border-hairline">

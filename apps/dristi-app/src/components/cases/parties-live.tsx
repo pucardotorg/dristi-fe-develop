@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Session-local additions to the Parties list.
@@ -94,8 +95,7 @@ export function WitnessListExtras({
     return (
       <li>
         <p className="text-body-compact text-muted-foreground">
-          No witness has been listed yet.
-        </p>
+          {<__LocalizedText id="partiesLive_noWitnessHasBeenListedYet" />}{" "}</p>
       </li>
     );
   }
@@ -111,7 +111,7 @@ export function WitnessListExtras({
               <span className="block max-w-full text-body-compact font-semibold text-muted-foreground">
                 {displayName(name)}
               </span>
-              <Badge variant="warning">Awaiting order</Badge>
+              <Badge variant="warning">{<__LocalizedText id="partiesLive_awaitingOrder" />}</Badge>
             </span>
           </div>
         </li>
@@ -136,8 +136,7 @@ export function LivePoaPendingSection({ partyId }: { partyId: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <h4 className="text-caption font-semibold text-muted-foreground">
-        Power of attorney
-      </h4>
+        {<__LocalizedText id="partiesLive_powerOfAttorney" />}{" "}</h4>
       <div className="grid min-w-0 items-start gap-2">
         {holders.map((holder) => (
           <div
@@ -148,8 +147,7 @@ export function LivePoaPendingSection({ partyId }: { partyId: string }) {
               {holder}
             </span>
             <span className="block truncate text-caption text-muted-foreground">
-              Application sent · awaiting order
-            </span>
+              {<__LocalizedText id="partiesLive_applicationSentAwaitingOrder" />}{" "}</span>
           </div>
         ))}
       </div>

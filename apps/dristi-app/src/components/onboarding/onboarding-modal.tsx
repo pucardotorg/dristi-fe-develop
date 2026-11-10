@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { ArrowLeftIcon, ArrowRightIcon, GlobeIcon, XIcon } from "lucide-react";
@@ -82,6 +83,7 @@ export function OnboardingModal({
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
 }) {
+  const __t = __useTranslations();
   const [index, setIndex] = React.useState(0);
   const step = STEP_ORDER[index];
   const isFirst = index === 0;
@@ -151,7 +153,7 @@ export function OnboardingModal({
               <SelectContent>
                 {LOCALES.map((l) => (
                   <SelectItem key={l.value} value={l.value}>
-                    {l.label}
+                    {__t(l.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -171,7 +173,7 @@ export function OnboardingModal({
 
           {/* ---------------------------------------------- journey markers */}
           <nav
-            aria-label="Progress"
+            aria-label={__t("onboardingModal_progress")}
             className="shrink-0 border-b border-hairline"
           >
             <div className="mx-auto w-full max-w-3xl px-6 py-4 md:max-w-6xl md:px-8 lg:px-12">

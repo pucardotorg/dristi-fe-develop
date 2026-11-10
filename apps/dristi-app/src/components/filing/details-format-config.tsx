@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Additional details formats (`/filings/formats`): the texts a filer can start "Any
@@ -79,12 +81,10 @@ function VariableLegend() {
     <div className="flex flex-wrap gap-3 text-caption text-muted-foreground">
       <span className="flex items-center gap-1.5">
         <Dot filled />
-        Filled from the e-filing form
-      </span>
+        {<__LocalizedText id="detailsFormatConfig_filledFromTheEFilingForm" />}{" "}</span>
       <span className="flex items-center gap-1.5">
         <Dot filled={false} />
-        Filer writes
-      </span>
+        {<__LocalizedText id="detailsFormatConfig_filerWrites" />}{" "}</span>
     </div>
   );
 }
@@ -97,13 +97,13 @@ function VariableMappings({
   format: DetailsFormat;
   onMap: (variable: string, mapping: string) => void;
 }) {
+  const __t = __useTranslations();
   const variables = bracketsIn(format.html);
 
   if (!variables.length) {
     return (
       <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4 text-center text-body-compact text-muted-foreground italic">
-        No [variables] in the format text
-      </div>
+        {<__LocalizedText id="detailsFormatConfig_noVariablesInTheFormatText" />}{" "}</div>
     );
   }
 
@@ -124,8 +124,7 @@ function VariableMappings({
               </span>
               {byName ? (
                 <span className="shrink-0 text-caption text-muted-foreground">
-                  matched by name
-                </span>
+                  {<__LocalizedText id="detailsFormatConfig_matchedByName" />}{" "}</span>
               ) : null}
             </div>
             <Select
@@ -134,16 +133,16 @@ function VariableMappings({
             >
               <SelectTrigger
                 className="w-full sm:w-64"
-                aria-label={`What fills [${variable}]`}
+                aria-label={__t("detailsFormatConfig_whatFillsValue0", {value0: String(variable)})}
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={FILER_WRITES}>Filer writes</SelectItem>
+                <SelectItem value={FILER_WRITES}>{<__LocalizedText id="detailsFormatConfig_filerWrites" />}</SelectItem>
                 <SelectSeparator />
                 {DETAIL_FIELD_GROUPS.map((group) => (
                   <SelectGroup key={group.label}>
-                    <SelectLabel>{group.label}</SelectLabel>
+                    <SelectLabel>{__t(group.label)}</SelectLabel>
                     {group.fields.map((f) => (
                       <SelectItem key={f.name} value={f.name}>
                         {f.name}
@@ -169,6 +168,7 @@ function FormatEditor({
   onDuplicate: () => void;
   onDelete: () => void;
 }) {
+  const __t = __useTranslations();
   const editor = React.useRef<RichTextEditorHandle>(null);
   const update = (patch: Partial<DetailsFormat>) => saveDetailsFormat({ ...format, ...patch });
 
@@ -179,7 +179,7 @@ function FormatEditor({
           value={format.name}
           onChange={(e) => update({ name: e.target.value })}
           className="text-title font-semibold"
-          aria-label="Format name"
+          aria-label={__t("detailsFormatConfig_formatName")}
         />
 
         <div className="flex items-start gap-3 rounded-lg border border-hairline bg-surface-sunken p-3">
@@ -190,47 +190,39 @@ function FormatEditor({
           />
           <div className="flex flex-col gap-0.5">
             <Label htmlFor={`default-${format.id}`} className="text-body-compact font-medium">
-              Use as the default format
-            </Label>
+              {<__LocalizedText id="detailsFormatConfig_useAsTheDefaultFormat" />}{" "}</Label>
             <p className="text-caption text-muted-foreground">
-              A filing whose additional details are empty gets this text when the section
-              opens, and bulk uploads choose it first. Only one format can be the default.
-            </p>
+              {<__LocalizedText id="detailsFormatConfig_aFilingWhoseAdditionalDetailsAreEmpty" />}{" "}</p>
           </div>
         </div>
 
         <section className="flex flex-col gap-2">
-          <Label className={SECTION_LABEL}>Format text</Label>
+          <Label className={SECTION_LABEL}>{<__LocalizedText id="detailsFormatConfig_formatText" />}</Label>
           <RichTextEditor
             value={format.html}
             onChange={(html) => update({ html })}
             ariaLabel="Format text"
-            placeholder="The text the filer starts from. Use [brackets] for variables."
+            placeholder={__t("detailsFormatConfig_theTextTheFilerStartsFromUse")}
             minHeightClassName="min-h-96"
             handleRef={editor}
             toolbarEnd={
               <DetailFieldMenu
-                label="Insert variable"
+                label={__t("detailsFormatConfig_insertVariable")}
                 onPick={(field) => editor.current?.insertText(`[${field.name}]`)}
                 describe={(field) => getStep(field.step).title}
               />
             }
           />
           <p className="text-caption text-muted-foreground">
-            Write any name in [brackets] for a variable, or insert one from the e-filing
-            form. The filer starts from this text in &ldquo;Any additional details&rdquo;
-            and edits it from there.
-          </p>
+            {<__LocalizedText id="detailsFormatConfig_writeAnyNameInBracketsForA" />}{" "}</p>
         </section>
 
         <VariableLegend />
 
         <section className="flex flex-col gap-2">
-          <Label className={SECTION_LABEL}>Variables</Label>
+          <Label className={SECTION_LABEL}>{<__LocalizedText id="detailsFormatConfig_variables" />}</Label>
           <p className="text-caption text-muted-foreground">
-            Choose the e-filing field that fills each variable. A variable left to the
-            filer stays in their text as a blank to write over.
-          </p>
+            {<__LocalizedText id="detailsFormatConfig_chooseTheEFilingFieldThatFills" />}{" "}</p>
           <VariableMappings
             format={format}
             onMap={(variable, mapping) =>
@@ -243,13 +235,11 @@ function FormatEditor({
 
         <div className="flex items-center gap-2">
           <span className="text-caption text-muted-foreground">
-            Changes save as you make them, in this browser.
-          </span>
+            {<__LocalizedText id="detailsFormatConfig_changesSaveAsYouMakeThemIn" />}{" "}</span>
           <span className="flex-1" />
           <Button type="button" variant="outline" size="sm" onClick={onDuplicate}>
             <CopyIcon data-icon="inline-start" aria-hidden />
-            Duplicate
-          </Button>
+            {<__LocalizedText id="detailsFormatConfig_duplicate" />}{" "}</Button>
           <Button
             type="button"
             variant="outline"
@@ -258,8 +248,7 @@ function FormatEditor({
             className="text-destructive hover:bg-destructive-muted"
           >
             <TrashIcon data-icon="inline-start" aria-hidden />
-            Delete
-          </Button>
+            {<__LocalizedText id="detailsFormatConfig_delete" />}{" "}</Button>
         </div>
       </div>
     </ScrollArea>
@@ -270,11 +259,9 @@ export function DetailsFormatsScreen() {
   return (
     <div className={cn("flex w-full flex-1 flex-col gap-6", PAGE_GROUND, PAGE_GUTTER)}>
       <header className="flex flex-col gap-1">
-        <h1 className={cn(PAGE_TITLE, "text-foreground")}>Additional details formats</h1>
+        <h1 className={cn(PAGE_TITLE, "text-foreground")}>{<__LocalizedText id="detailsFormatConfig_additionalDetailsFormats" />}</h1>
         <p className={PAGE_SUBTITLE}>
-          The texts a filing can start &ldquo;Any additional details&rdquo; from, and the
-          e-filing field that fills each variable.
-        </p>
+          {<__LocalizedText id="detailsFormatConfig_theTextsAFilingCanStartAny" />}{" "}</p>
       </header>
       <DetailsFormatConfig />
     </div>
@@ -282,6 +269,7 @@ export function DetailsFormatsScreen() {
 }
 
 function DetailsFormatConfig() {
+  const __t = __useTranslations();
   const formats = React.useSyncExternalStore(
     subscribeToDetailsFormats,
     readDetailsFormats,
@@ -303,8 +291,7 @@ function DetailsFormatConfig() {
           <ScrollArea className="max-h-[40vh] min-h-0 flex-1 md:max-h-none">
             <div className="flex flex-col gap-0.5 p-3">
               <div className="px-2 py-1.5 text-caption font-bold uppercase tracking-wider text-muted-foreground">
-                Any additional details
-              </div>
+                {<__LocalizedText id="detailsFormatConfig_anyAdditionalDetails" />}{" "}</div>
               {formats.map((f) => (
                 <button
                   key={f.id}
@@ -319,14 +306,13 @@ function DetailsFormatConfig() {
                   )}
                 >
                   <FileTextIcon aria-hidden className="size-3.5 shrink-0" />
-                  <span className="min-w-0 flex-1 truncate">{f.name || "Untitled"}</span>
+                  <span className="min-w-0 flex-1 truncate">{f.name || __t("detailsFormatConfig_untitled")}</span>
                   {f.isDefault ? (
                     <Badge
                       variant={selected?.id === f.id ? "secondary" : "outline"}
                       className="shrink-0"
                     >
-                      Default
-                    </Badge>
+                      {<__LocalizedText id="detailsFormatConfig_default" />}{" "}</Badge>
                   ) : null}
                 </button>
               ))}
@@ -338,8 +324,7 @@ function DetailsFormatConfig() {
                 className="mx-2 mt-2"
               >
                 <PlusIcon data-icon="inline-start" aria-hidden />
-                New format
-              </Button>
+                {<__LocalizedText id="detailsFormatConfig_newFormat" />}{" "}</Button>
             </div>
           </ScrollArea>
         </div>
@@ -363,8 +348,7 @@ function DetailsFormatConfig() {
             />
           ) : (
             <div className="flex min-h-64 items-center justify-center text-body-compact text-muted-foreground">
-              No formats. Filers write additional details from a blank box.
-            </div>
+              {<__LocalizedText id="detailsFormatConfig_noFormatsFilersWriteAdditionalDetailsFrom" />}{" "}</div>
           )}
         </div>
       </CardContent>

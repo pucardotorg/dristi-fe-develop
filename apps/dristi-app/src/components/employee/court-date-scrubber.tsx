@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -63,6 +65,7 @@ export function CourtDateScrubber({
   /** Lets the weekday under the square fade while the strip is out. */
   onRevealChange: (open: boolean, instant: boolean) => void;
 }) {
+  const __t = __useTranslations();
   const canScrub = React.useSyncExternalStore(subscribePointer, finePointer, () => false);
   const [anchor, setAnchor] = React.useState(day);
   const [preview, setPreview] = React.useState(NEARBY_RADIUS);
@@ -157,7 +160,7 @@ export function CourtDateScrubber({
         ref={faceRef}
         variant="ghost"
         type="button"
-        aria-label={`${canScrub ? "Preview nearby sitting days" : "Pick a date"}: ${formatCourtDay(day)}`}
+        aria-label={`${canScrub ? __t("courtDateScrubber_previewNearbySittingDays") : __t("courtDateScrubber_pickADate")}: ${formatCourtDay(day)}`}
         aria-describedby={canScrub ? helpId : undefined}
         aria-haspopup={canScrub ? undefined : "dialog"}
         onFocus={(event) => {
@@ -190,9 +193,7 @@ export function CourtDateScrubber({
         {children}
       </Button>
       <span id={helpId} className="sr-only">
-        Move across the date to preview nearby sitting days. Click to choose one. With a
-        keyboard, use Left and Right, then Enter or Space. Escape cancels.
-      </span>
+        {<__LocalizedText id="courtDateScrubber_moveAcrossTheDateToPreviewNearby" />}{" "}</span>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {keyboard && open ? formatCourtDay(previewDay) : ""}
       </span>
@@ -251,7 +252,7 @@ export function CourtDateScrubber({
               title={formatCourtDay(previewDay)}
             >
               <span className="court-scrubber-pointer absolute -top-1 size-1.5 -translate-x-1/2 rounded-full bg-inherit" />
-              <span className="min-w-0 truncate">{bubbleLabel}</span>
+              <span className="min-w-0 truncate">{__t(bubbleLabel)}</span>
             </Badge>
           </div>
         </div>

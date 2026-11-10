@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { RefreshCwIcon } from "lucide-react";
@@ -45,8 +47,7 @@ function FetchDetailsButton({
       ) : (
         <RefreshCwIcon data-icon="inline-start" aria-hidden />
       )}
-      Fetch details
-    </Button>
+      {<__LocalizedText id="ifscField_fetchDetails" />}{" "}</Button>
   );
 }
 
@@ -85,6 +86,7 @@ export function IfscField({
   prefilled?: boolean;
   onViewSource?: () => void;
 }) {
+  const __t = __useTranslations();
   const [status, setStatus] = React.useState<IfscStatus>("idle");
   const statusId = React.useId();
 
@@ -130,22 +132,22 @@ export function IfscField({
     status === "not-found"
       ? {
           tone: "warning" as const,
-          text: "We couldn't find this IFSC. Check the code, or type the bank details",
+          text: __t("ifscField_weCouldnTFindThisIfscCheck"),
         }
       : status === "error"
         ? {
             tone: "warning" as const,
-            text: "Couldn't reach the IFSC registry. Type the bank details below",
+            text: __t("ifscField_couldnTReachTheIfscRegistryType"),
           }
         : fetched && status === "idle"
           ? {
               tone: "success" as const,
-              text: "Bank name and branch filled from the IFSC registry",
+              text: __t("ifscField_bankNameAndBranchFilledFromThe"),
             }
           : null;
 
   return (
-    <FormField label="IFSC code" name="ifsc" required tip={tip}>
+    <FormField label={__t("ifscField_ifscCode")} name="ifsc" required tip={tip}>
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-2">
           <TextField
@@ -153,7 +155,7 @@ export function IfscField({
             onChange={(v) => onChange(v.toUpperCase())}
             prefilled={prefilled}
             onViewSource={onViewSource}
-            placeholder={placeholder}
+            placeholder={__t(placeholder)}
             autoComplete="off"
             aria-describedby={result ? statusId : undefined}
           />
@@ -164,7 +166,7 @@ export function IfscField({
           />
         </div>
         <LookupStatus id={statusId} tone={result?.tone ?? "success"}>
-          {result?.text}
+          {__t(result?.text)}
         </LookupStatus>
       </div>
     </FormField>

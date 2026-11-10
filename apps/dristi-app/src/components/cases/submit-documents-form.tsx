@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
@@ -238,6 +240,7 @@ export function SubmitDocumentsDialog({
   court?: { name: string; role: string; court: string };
   onSubmitted: () => void;
 }) {
+  const __t = __useTranslations();
   const partyFiler = useDocumentFiler(court ? undefined : caseId);
   const filer = court
     ? {
@@ -257,10 +260,10 @@ export function SubmitDocumentsDialog({
       ? {
           id: saved.id,
           type: saved.type,
-          title: saved.title,
+          title: __t(saved.title),
           files: savedDocumentFiles(saved.id),
         }
-      : { ...emptyDraft(), type: initial?.type ?? "", title: initial?.title ?? "" };
+      : { ...emptyDraft(), type: initial?.type ?? "", title: __t(initial?.title) ?? "" };
   });
   const [draft, setDraft] = useState<DocumentDraft>(start);
   const [errors, setErrors] = useState<Errors>({});
@@ -387,11 +390,9 @@ export function SubmitDocumentsDialog({
         >
           <DialogHeader className="shrink-0 border-b border-hairline px-6 py-4 pr-12 text-left">
             <DialogTitle className="text-title-s font-semibold text-balance">
-              Submit documents
-            </DialogTitle>
+              {<__LocalizedText id="submitDocumentsForm_submitDocuments" />}{" "}</DialogTitle>
             <DialogDescription className="text-body-compact text-pretty">
-              Place an affidavit, a memo or evidence on the case record.
-            </DialogDescription>
+              {<__LocalizedText id="submitDocumentsForm_placeAnAffidavitAMemoOrEvidence" />}{" "}</DialogDescription>
             {caseLine ? (
               <p className="text-caption text-muted-foreground">{caseLine}</p>
             ) : null}
@@ -405,23 +406,23 @@ export function SubmitDocumentsDialog({
             className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-6 py-6"
           >
             <SelectField
-              label="Document type"
+              label={__t("submitDocumentsForm_documentType")}
               value={draft.type}
               options={TYPE_OPTIONS}
-              placeholder="Choose a type"
+              placeholder={__t("submitDocumentsForm_chooseAType")}
               error={errors.type}
               onChange={(value) => update({ type: value as SubmissionDocumentTypeId })}
             />
             <TextField
-              label="Document title"
+              label={__t("submitDocumentsForm_documentTitle")}
               value={draft.title}
-              error={errors.title}
+              error={__t(errors.title)}
               onChange={(title) => update({ title })}
             />
             <FileField
               required
               compact
-              label="Files"
+              label={__t("submitDocumentsForm_files")}
               files={draft.files}
               error={errors.files}
               onFilesChange={(files) => update({ files })}
@@ -433,11 +434,9 @@ export function SubmitDocumentsDialog({
 
           <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={requestClose}>
-              Cancel
-            </Button>
+              {<__LocalizedText id="submitDocumentsForm_cancel" />}{" "}</Button>
             <Button type="submit" form={formId}>
-              Review submission
-            </Button>
+              {<__LocalizedText id="submitDocumentsForm_reviewSubmission" />}{" "}</Button>
           </footer>
         </FlowDialogContent>
       </Dialog>
@@ -504,8 +503,7 @@ function AdvocateFilesDialog({
       <FlowDialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
         <DialogHeader className="shrink-0 border-b border-hairline px-6 py-4 pr-12 text-left">
           <DialogTitle className="text-title-s font-semibold text-balance">
-            Submit documents
-          </DialogTitle>
+            {<__LocalizedText id="submitDocumentsForm_submitDocuments" />}{" "}</DialogTitle>
           {caseLine ? (
             <p className="text-caption text-muted-foreground">{caseLine}</p>
           ) : null}
@@ -516,17 +514,14 @@ function AdvocateFilesDialog({
               <FileTextIcon className="size-7" aria-hidden />
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold text-foreground">
-              Your advocate submits documents for you
-            </EmptyTitle>
+              {<__LocalizedText id="submitDocumentsForm_yourAdvocateSubmitsDocumentsForYou" />}{" "}</EmptyTitle>
             <DialogDescription className="text-body-compact text-muted-foreground">
-              Once they do, you can see them on the case&apos;s Documents tab.
-            </DialogDescription>
+              {<__LocalizedText id="submitDocumentsForm_onceTheyDoYouCanSeeThem" />}{" "}</DialogDescription>
           </EmptyHeader>
         </Empty>
         <footer className="flex shrink-0 justify-end border-t border-hairline bg-surface-sunken px-6 py-4">
           <Button type="button" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
+            {<__LocalizedText id="submitDocumentsForm_close" />}{" "}</Button>
         </footer>
       </FlowDialogContent>
     </Dialog>
@@ -555,6 +550,7 @@ function ReviewDialog({
   onAction: () => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const [index, setIndex] = useState(0);
   /* Opens on the first file each time. */
   const [wasOpen, setWasOpen] = useState(open);
@@ -594,7 +590,7 @@ function ReviewDialog({
       </h3>
       {files.length > 1 ? (
         <span className="shrink-0 text-caption tabular-nums text-muted-foreground">
-          {index + 1} of {files.length}
+          {index + 1} {<__LocalizedText id="submitDocumentsForm_of" />}{" "}{files.length}
         </span>
       ) : null}
     </div>
@@ -607,7 +603,7 @@ function ReviewDialog({
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="Previous file"
+          aria-label={__t("submitDocumentsForm_previousFile")}
           disabled={index === 0}
           onClick={() => step(-1)}
         >
@@ -617,7 +613,7 @@ function ReviewDialog({
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="Next file"
+          aria-label={__t("submitDocumentsForm_nextFile")}
           disabled={index === files.length - 1}
           onClick={() => step(1)}
         >
@@ -649,16 +645,14 @@ function ReviewDialog({
         <div className="flex shrink-0 items-start gap-2 border-b border-hairline py-3 pr-3 pl-6">
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <DialogTitle className="text-body font-semibold text-pretty">
-              Review submission
-            </DialogTitle>
+              {<__LocalizedText id="submitDocumentsForm_reviewSubmission" />}{" "}</DialogTitle>
             <DialogDescription className="text-body-compact">
-              Check the document before it is signed.
-            </DialogDescription>
+              {<__LocalizedText id="submitDocumentsForm_checkTheDocumentBeforeItIsSigned" />}{" "}</DialogDescription>
           </div>
           <DialogClose asChild>
             <Button type="button" variant="ghost" size="icon-sm">
               <XIcon aria-hidden />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{<__LocalizedText id="submitDocumentsForm_close" />}</span>
             </Button>
           </DialogClose>
         </div>
@@ -668,11 +662,11 @@ function ReviewDialog({
             <div className="flex max-h-72 shrink-0 flex-col overflow-y-auto border-b border-hairline p-4 @3xl/record:max-h-none @3xl/record:w-80 @3xl/record:border-r @3xl/record:border-b-0">
               <div className="flex flex-col divide-y divide-hairline">
                 <FactGroup>
-                  <Fact label="Document title">{title}</Fact>
+                  <Fact label={__t("submitDocumentsForm_documentTitle")}>{__t(title)}</Fact>
                 </FactGroup>
                 <FactGroup columns={2}>
-                  <Fact label="Document type">{typeLabel}</Fact>
-                  <Fact label="Files">
+                  <Fact label={__t("submitDocumentsForm_documentType")}>{__t(typeLabel)}</Fact>
+                  <Fact label={__t("submitDocumentsForm_files")}>
                     <span className="tabular-nums">{files.length}</span>
                   </Fact>
                 </FactGroup>
@@ -680,8 +674,7 @@ function ReviewDialog({
 
               <div className="flex flex-col gap-1.5 border-t border-hairline pt-3">
                 <h3 className="text-caption font-medium text-muted-foreground">
-                  Files
-                </h3>
+                  {<__LocalizedText id="submitDocumentsForm_files" />}{" "}</h3>
                 <ul className="-mx-2 flex flex-col gap-0.5">
                   {files.map((file, position) => (
                     <li key={`${file.name}-${file.size}-${file.lastModified}`}>
@@ -750,10 +743,9 @@ function ReviewDialog({
                 />
               ) : (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl bg-card p-6 text-center">
-                  <p className="text-body font-medium">No files attached</p>
+                  <p className="text-body font-medium">{<__LocalizedText id="submitDocumentsForm_noFilesAttached" />}</p>
                   <p className="text-body-compact text-muted-foreground">
-                    Go back and add at least one file.
-                  </p>
+                    {<__LocalizedText id="submitDocumentsForm_goBackAndAddAtLeastOne" />}{" "}</p>
                 </div>
               )}
             </div>
@@ -762,10 +754,9 @@ function ReviewDialog({
 
         <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Back
-          </Button>
+            {<__LocalizedText id="submitDocumentsForm_back" />}{" "}</Button>
           <Button type="button" onClick={onAction}>
-            {actionLabel}
+            {__t(actionLabel)}
           </Button>
         </footer>
       </FlowDialogContent>

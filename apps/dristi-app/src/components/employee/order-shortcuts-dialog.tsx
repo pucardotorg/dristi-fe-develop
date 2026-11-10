@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { PencilIcon, Trash2Icon } from "lucide-react";
@@ -47,7 +49,7 @@ export function useOrderShortcuts(): readonly OrderShortcut[] {
  * never finished for the typist — and the shortcut's text in place of `/` and the query.
  */
 export function useShortcutSuggestion(): RichTextSuggestion {
-  const shortcuts = useOrderShortcuts();
+    const shortcuts = useOrderShortcuts();
   return React.useMemo(
     () => ({
       resolve: (query, mode) =>
@@ -82,6 +84,7 @@ export function OrderShortcutsDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const __t = __useTranslations();
   const shortcuts = useOrderShortcuts();
   const [editing, setEditing] = React.useState<string | null>(null);
   const [name, setName] = React.useState("");
@@ -112,7 +115,7 @@ export function OrderShortcutsDialog({
   function save() {
     setTried(true);
     if (nameError || textError) return;
-    const body = { text: text.text, html: text.html };
+    const body = { text: __t(text.text), html: text.html };
     if (editing) updateOrderShortcut(editing, { name, ...body });
     else addOrderShortcut(name, body);
     reset();
@@ -128,11 +131,9 @@ export function OrderShortcutsDialog({
     >
       <DialogContent className="flex max-h-[90svh] flex-col gap-6 overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Shortcuts</DialogTitle>
+          <DialogTitle>{<__LocalizedText id="orderShortcutsDialog_shortcuts" />}</DialogTitle>
           <DialogDescription>
-            In the order, type <kbd className="font-mono">/</kbd> and the start
-            of a name, then press Tab to put its text in.
-          </DialogDescription>
+            {<__LocalizedText id="orderShortcutsDialog_inTheOrderType" />}{" "}<kbd className="font-mono">/</kbd> {<__LocalizedText id="orderShortcutsDialog_andTheStartOfANameThen" />}{" "}</DialogDescription>
         </DialogHeader>
 
         <ul className="-mx-2 flex max-h-72 min-h-32 shrink-0 flex-col overflow-y-auto">
@@ -144,18 +145,18 @@ export function OrderShortcutsDialog({
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <p className="text-body-compact font-medium">{entry.name}</p>
                 <p className="line-clamp-2 text-body-compact text-muted-foreground">
-                  {entry.text}
+                  {__t(entry.text)}
                 </p>
               </div>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label={`Edit ${entry.name}`}
+                aria-label={__t("orderShortcutsDialog_editValue0", {value0: String(entry.name)})}
                 onClick={() => {
                   setEditing(entry.id);
                   setName(entry.name);
-                  setText({ html: shortcutHtml(entry), text: entry.text });
+                  setText({ html: shortcutHtml(entry), text: __t(entry.text) });
                   setFormKey((key) => key + 1);
                   setTried(false);
                 }}
@@ -166,7 +167,7 @@ export function OrderShortcutsDialog({
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label={`Remove ${entry.name}`}
+                aria-label={__t("orderShortcutsDialog_removeValue0", {value0: String(entry.name)})}
                 onClick={() => {
                   removeOrderShortcut(entry.id);
                   if (editing === entry.id) reset();
@@ -178,8 +179,7 @@ export function OrderShortcutsDialog({
           ))}
           {shortcuts.length === 0 ? (
             <li className="px-2 py-3 text-body-compact text-muted-foreground">
-              No shortcuts yet. Add one below.
-            </li>
+              {<__LocalizedText id="orderShortcutsDialog_noShortcutsYetAddOneBelow" />}{" "}</li>
           ) : null}
         </ul>
 
@@ -193,10 +193,10 @@ export function OrderShortcutsDialog({
           }}
         >
           <h3 className="text-body-compact font-semibold">
-            {editing ? "Edit shortcut" : "New shortcut"}
+            {editing ? __t("orderShortcutsDialog_editShortcut") : __t("orderShortcutsDialog_newShortcut")}
           </h3>
           <Field data-invalid={tried && nameError ? true : undefined}>
-            <FieldLabel htmlFor={nameId}>Name</FieldLabel>
+            <FieldLabel htmlFor={nameId}>{<__LocalizedText id="orderShortcutsDialog_name" />}</FieldLabel>
             <Input
               id={nameId}
               value={name}
@@ -206,7 +206,7 @@ export function OrderShortcutsDialog({
             {tried && nameError ? <FieldError>{nameError}</FieldError> : null}
           </Field>
           <Field data-invalid={tried && textError ? true : undefined}>
-            <FieldLabel id={textId}>Text</FieldLabel>
+            <FieldLabel id={textId}>{<__LocalizedText id="orderShortcutsDialog_text" />}</FieldLabel>
             <RichTextField
               key={formKey}
               labelId={textId}
@@ -222,11 +222,10 @@ export function OrderShortcutsDialog({
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             {editing ? (
               <Button type="button" variant="outline" onClick={reset}>
-                Cancel
-              </Button>
+                {<__LocalizedText id="orderShortcutsDialog_cancel" />}{" "}</Button>
             ) : null}
             <Button type="submit">
-              {editing ? "Save shortcut" : "Add shortcut"}
+              {editing ? __t("orderShortcutsDialog_saveShortcut") : __t("orderShortcutsDialog_addShortcut")}
             </Button>
           </div>
         </form>

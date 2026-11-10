@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -76,7 +77,7 @@ export function PersonRow({
    */
   onRemoveVakalat?: () => void;
 }) {
-  const isVakalat = grant.role === "vakalat";
+    const isVakalat = grant.role === "vakalat";
   const grantInviter = grant.addedBy ?? person.addedBy;
   const addedByLine =
     grantInviter === "self"
@@ -161,6 +162,7 @@ export function SelfRow({
    */
   accessLabel?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex items-center gap-3 py-2.5">
       <Avatar className="size-9 shrink-0">
@@ -173,7 +175,7 @@ export function SelfRow({
         <p className="truncate text-caption text-muted-foreground tabular-nums">{SELF.phone}</p>
       </div>
       <span className="shrink-0 text-caption text-muted-foreground">
-        {accessLabel ?? pick(roleCopy.vakalat, locale)}
+        {__t(accessLabel) ?? pick(roleCopy.vakalat, locale)}
       </span>
     </div>
   );

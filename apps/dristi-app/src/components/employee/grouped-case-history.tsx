@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { ChevronDownIcon, ExternalLinkIcon, HistoryIcon } from "lucide-react";
@@ -94,16 +96,17 @@ export function CaseHistoryList({
   /** The type filter above the list. */
   filter?: boolean;
 }) {
+  const __t = __useTranslations();
 
   const typeOptions = React.useMemo<TypeOption[]>(() => {
     const present = new Set(rows.map((row) => row.type));
     return [
       ...HISTORY_TYPES.filter((type) => present.has(type.value)),
       ...(present.has("other")
-        ? [{ value: "other", label: "Other events" }]
+        ? [{ value: "other", label: __t("groupedCaseHistory_otherEvents") }]
         : []),
     ];
-  }, [rows]);
+  }, [rows, __t]);
   const [types, setTypes] = React.useState<string[]>([]);
   const [expanded, setExpanded] = React.useState<Set<string>>(() => new Set());
   const jumpTo = React.useRef<string | null>(null);
@@ -162,11 +165,9 @@ export function CaseHistoryList({
             <HistoryIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body-compact font-semibold tracking-normal">
-            No case history yet
-          </EmptyTitle>
+            {<__LocalizedText id="groupedCaseHistory_noCaseHistoryYet" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            Events and orders on this case will appear here.
-          </EmptyDescription>
+            {<__LocalizedText id="groupedCaseHistory_eventsAndOrdersOnThisCaseWill" />}{" "}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -182,8 +183,7 @@ export function CaseHistoryList({
       className="flex min-w-0 flex-col gap-4"
     >
       <h2 id="grouped-case-history" className="sr-only">
-        Case history
-      </h2>
+        {<__LocalizedText id="groupedCaseHistory_caseHistory" />}{" "}</h2>
       {filter ? (
         <HistoryTypeFilter
           options={typeOptions}
@@ -194,12 +194,11 @@ export function CaseHistoryList({
 
       {shown.length === 0 ? (
         <p className="text-body-compact text-muted-foreground">
-          Nothing of these types on this case.
-        </p>
+          {<__LocalizedText id="groupedCaseHistory_nothingOfTheseTypesOnThisCase" />}{" "}</p>
       ) : (
         <Timeline
           className="text-body-compact"
-          aria-label="Case history, newest first"
+          aria-label={__t("groupedCaseHistory_caseHistoryNewestFirst")}
         >
           {shown.map((row) => (
             <TimelineItem
@@ -256,6 +255,7 @@ function Head({ on, children }: { on: string; children: React.ReactNode }) {
 }
 
 function EventLine({ row }: { row: Extract<HistoryRow, { kind: "event" }> }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <Head on={row.on}>
@@ -266,14 +266,14 @@ function EventLine({ row }: { row: Extract<HistoryRow, { kind: "event" }> }) {
             rel="noopener"
             className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
-            {row.label}
-            <span className="sr-only"> (opens in a new tab)</span>
+            {__t(row.label)}
+            <span className="sr-only"> {<__LocalizedText id="groupedCaseHistory_opensInANewTab" />}</span>
           </a>
         ) : (
-          <span>{row.label}</span>
+          <span>{__t(row.label)}</span>
         )}
       </Head>
-      {row.note ? <p className="text-muted-foreground">{row.note}</p> : null}
+      {row.note ? <p className="text-muted-foreground">{__t(row.note)}</p> : null}
     </div>
   );
 }
@@ -290,6 +290,7 @@ function OrderLine({
   row: OrderRow;
   onGo: (id: string) => void;
 }) {
+  const __t = __useTranslations();
   const summaryId = `${row.id}-summary`;
   return (
     <div
@@ -300,18 +301,16 @@ function OrderLine({
       )}
     >
       <Head on={row.on}>
-        <span className="font-medium">{row.label}</span>
+        <span className="font-medium">{__t(row.label)}</span>
       </Head>
       {row.last ? (
         <Badge variant="info" className="mb-1">
-          Last order
-        </Badge>
+          {<__LocalizedText id="groupedCaseHistory_lastOrder" />}{" "}</Badge>
       ) : null}
-      <p id={summaryId}>{row.summary}</p>
+      <p id={summaryId}>{__t(row.summary)}</p>
       <div className="flex min-w-0 flex-wrap items-center gap-x-4">
         <NewTabLink href={row.href} focusTarget describedBy={summaryId}>
-          Open the order
-        </NewTabLink>
+          {<__LocalizedText id="groupedCaseHistory_openTheOrder" />}{" "}</NewTabLink>
         {row.affects.map((thread) => (
           <Button
             key={thread.id}
@@ -321,7 +320,7 @@ function OrderLine({
             className="h-10 w-fit px-0 text-muted-foreground"
             onClick={() => onGo(thread.id)}
           >
-            Go to {thread.label}
+            {<__LocalizedText id="groupedCaseHistory_goTo" />}{" "}{__t(thread.label)}
           </Button>
         ))}
       </div>
@@ -351,7 +350,7 @@ function NewTabLink({
         aria-describedby={describedBy}
       >
         {children}
-        <span className="sr-only"> (opens in a new tab)</span>
+        <span className="sr-only"> {<__LocalizedText id="groupedCaseHistory_opensInANewTab" />}</span>
         <ExternalLinkIcon data-icon="inline-end" aria-hidden />
       </a>
     </Button>
@@ -377,6 +376,7 @@ function ThreadLine({
   onOpenChange: (open: boolean) => void;
   onGo: (id: string) => void;
 }) {
+  const __t = __useTranslations();
   const updatedOn = threadUpdatedOn(row);
   const count = row.steps.length;
   return (
@@ -391,7 +391,7 @@ function ThreadLine({
             >
               <span className="min-w-0">
                 <span className="sr-only">{row.entity}: </span>
-                {row.label}
+                {__t(row.label)}
               </span>
               <ChevronDownIcon
                 aria-hidden
@@ -406,7 +406,7 @@ function ThreadLine({
             {/* With one step, the day it began is the day on the right. */}
             {count > 1 ? (
               <>
-                started{" "}
+                {<__LocalizedText id="groupedCaseHistory_started" />}{" "}
                 <time dateTime={row.on} className="tabular-nums">
                   {formatTimelineDate(row.on)}
                 </time>
@@ -414,17 +414,17 @@ function ThreadLine({
               </>
             ) : null}
             <span className="tabular-nums">{count}</span>{" "}
-            {STEPS_PLURAL.select(count) === "one" ? "update" : "updates"}
+            {STEPS_PLURAL.select(count) === "one" ? __t("groupedCaseHistory_update") : __t("groupedCaseHistory_updates")}
           </span>
           <NewTabLink href={row.href}>
             {row.entity === "Process"
-              ? `Open in ${NOTICE_PROCESS_STATUS}`
-              : "Open the application"}
+              ? __t("groupedCaseHistory_openInValue0", {value0: String(NOTICE_PROCESS_STATUS)})
+              : __t("groupedCaseHistory_openTheApplication")}
           </NewTabLink>
         </div>
         <CollapsibleContent>
           <ol
-            aria-label={`${row.label}, newest first`}
+            aria-label={`${__t(row.label)}, newest first`}
             className="mt-2 flex flex-col gap-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2"
           >
             {row.steps.toReversed().map((step, index) => (
@@ -439,7 +439,7 @@ function ThreadLine({
                   {formatTimelineDate(step.on)}
                 </time>
                 <span className="min-w-0">
-                  {step.label}
+                  {__t(step.label)}
                   {step.orderId ? (
                     <>
                       {" · "}
@@ -448,8 +448,7 @@ function ThreadLine({
                         className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                         onClick={() => onGo(step.orderId!)}
                       >
-                        See the order
-                      </button>
+                        {<__LocalizedText id="groupedCaseHistory_seeTheOrder" />}{" "}</button>
                     </>
                   ) : null}
                 </span>

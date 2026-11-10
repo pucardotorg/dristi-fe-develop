@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import Link from "next/link";
 
@@ -62,7 +64,7 @@ export function RegisterCaseLink({
       {/* Under a column headed "Case name" the cause title is the whole of what a
           sighted reader needs; out of that column it is a link named after two
           parties and nothing else. */}
-      <span className="sr-only">Complaint from </span>
+      <span className="sr-only">{<__LocalizedText id="registerCasesTable_complaintFrom" />}{" "}</span>
       {causeTitle(matter)}
     </Link>
   );
@@ -97,24 +99,21 @@ export function RegisterCaseLink({
 export const REGISTER_CASES_PATH = "/employee/register-cases";
 
 export function RegisterCasesTable({ rows }: { rows: RegisterCase[] }) {
+  const __t = __useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="registerCasesTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Filing number
-          </TableHead>
+            {<__LocalizedText id="registerCasesTable_filingNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Advocates
-          </TableHead>
+            {<__LocalizedText id="registerCasesTable_advocates" />}{" "}</TableHead>
           <TableHead
             className={cn(TABLE_HEAD, "whitespace-nowrap text-right")}
           >
-            Days since submitted
-          </TableHead>
+            {<__LocalizedText id="registerCasesTable_daysSinceSubmitted" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -144,7 +143,7 @@ export function RegisterCasesTable({ rows }: { rows: RegisterCase[] }) {
               />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              <Identifier value={matter.filingNumber} label="filing number" />
+              <Identifier value={matter.filingNumber} label={__t("registerCasesTable_filingNumber_4ec3cc55")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
               <CounselCell

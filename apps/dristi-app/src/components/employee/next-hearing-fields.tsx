@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CalendarDaysIcon } from "lucide-react";
@@ -76,6 +78,7 @@ export function NextDateField({
   labelledBy?: string;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const today = useCourtToday();
   const session = useHearingSession();
   const [posting, change] = useHearingPosting(hearing);
@@ -104,7 +107,7 @@ export function NextDateField({
             aria-label={
               labelledBy
                 ? undefined
-                : `Next hearing date for item ${hearing.item}, ${causeTitle(hearing)}: ${shown}`
+                : __t("nextHearingFields_nextHearingDateForItemValue0Value1", {value0: String(hearing.item), value1: String(causeTitle(hearing)), value2: String(shown)})
             }
             className={cn(
               "w-full justify-start gap-2 text-left font-normal tabular-nums",
@@ -162,15 +165,13 @@ export function NextDateField({
                   htmlFor={`${id}-none`}
                   className="cursor-pointer text-body-compact font-normal"
                 >
-                  Not listed again
-                </Label>
+                  {<__LocalizedText id="nextHearingFields_notListedAgain" />}{" "}</Label>
                 <Button
                   type="button"
                   className="ml-auto"
                   onClick={() => setOpen(false)}
                 >
-                  Done
-                </Button>
+                  {<__LocalizedText id="nextHearingFields_done" />}{" "}</Button>
               </div>
             </div>
           ) : null}
@@ -190,6 +191,7 @@ export function NextPurposeField({
   labelledBy?: string;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const [posting, change] = useHearingPosting(hearing);
   const listed = posting.next === "list";
   return (
@@ -198,7 +200,7 @@ export function NextPurposeField({
         value={listed ? posting.nextPurpose : null}
         disabled={!listed}
         onChange={(nextPurpose) => change({ nextPurpose })}
-        placeholder={listed ? "Choose a purpose" : "Not listed"}
+        placeholder={listed ? __t("nextHearingFields_chooseAPurpose") : __t("nextHearingFields_notListed")}
         labelledBy={labelledBy}
         ariaLabel={`Next hearing purpose for item ${hearing.item}, ${causeTitle(hearing)}`}
       />
@@ -224,6 +226,7 @@ export function LoadCalendar({
   load: ReadonlyMap<string, DayLoad>;
   onSelect: (day: string | null) => void;
 }) {
+  const __t = __useTranslations();
   const countOn = (date: Date) => load.get(isoDay(date))?.total ?? 0;
   return (
     <Calendar
@@ -239,9 +242,9 @@ export function LoadCalendar({
           const count = countOn(date);
           const listed = modifiers.disabled
             ? ""
-            : `, ${count} ${count === 1 ? "hearing" : "hearings"} listed`;
+            : `, ${count} ${count === 1 ? __t("nextHearingFields_hearing") : __t("nextHearingFields_hearings")} listed`;
           return `${formatCourtDay(isoDay(date))}${listed}${
-            modifiers.selected ? ", selected" : ""
+            modifiers.selected ? __t("nextHearingFields_selected") : ""
           }`;
         },
       }}
@@ -271,6 +274,7 @@ export function DayBreakdown({
   day: string | null;
   load: DayLoad | undefined;
 }) {
+  const __t = __useTranslations();
   return (
     <section
       aria-live="polite"
@@ -280,12 +284,12 @@ export function DayBreakdown({
         <>
           <div className="flex flex-col gap-1">
             <h3 className="text-body-compact font-semibold">
-              Already listed on {formatCourtDay(day)}
+              {<__LocalizedText id="nextHearingFields_alreadyListedOn" />}{" "}{formatCourtDay(day)}
             </h3>
             <p className="text-body-compact text-muted-foreground tabular-nums">
               {load
-                ? `${load.total} ${load.total === 1 ? "hearing" : "hearings"}`
-                : "No hearings yet"}
+                ? `${load.total} ${load.total === 1 ? __t("nextHearingFields_hearing") : __t("nextHearingFields_hearings")}`
+                : __t("nextHearingFields_noHearingsYet")}
             </p>
           </div>
           {load ? (
@@ -295,7 +299,7 @@ export function DayBreakdown({
                   key={entry.id}
                   className="flex items-baseline justify-between gap-4 text-body-compact"
                 >
-                  <span className="min-w-0">{entry.label}</span>
+                  <span className="min-w-0">{__t(entry.label)}</span>
                   <span className="shrink-0 font-medium tabular-nums">
                     {entry.count}
                   </span>
@@ -306,8 +310,7 @@ export function DayBreakdown({
         </>
       ) : (
         <p className="text-body-compact text-muted-foreground">
-          Pick a date to see what is already listed on it, by purpose.
-        </p>
+          {<__LocalizedText id="nextHearingFields_pickADateToSeeWhatIs" />}{" "}</p>
       )}
     </section>
   );

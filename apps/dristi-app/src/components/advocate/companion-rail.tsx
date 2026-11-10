@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -90,39 +92,9 @@ function matchesHighlight(task: Task, highlight: TaskHighlight): boolean {
  * uses a strong ease-out; reduced-motion drops the travel for a plain fade.
  */
 function TaskTraceStyles() {
+  const __t = __useTranslations();
   return (
-    <style>{`
-      @keyframes task-trace-draw {
-        /* A short delay lets the rail settle and the eye arrive; then the stroke
-           travels at a steady, gentle pace (soft start, not a fast ease-out that
-           is already half-drawn before it is noticed), holds, and fades. */
-        0%   { stroke-dashoffset: 100; opacity: 1; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-        55%  { stroke-dashoffset: 0;   opacity: 1; }
-        74%  { stroke-dashoffset: 0;   opacity: 1; animation-timing-function: ease-out; }
-        100% { stroke-dashoffset: 0;   opacity: 0; }
-      }
-      @keyframes task-trace-fade {
-        0% { opacity: 0; } 20% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; }
-      }
-      .task-trace-rect {
-        x: 1.5px; y: 1.5px;
-        width: calc(100% - 3px);
-        height: calc(100% - 3px);
-        rx: 7px;
-        fill: none;
-        stroke: var(--brand-accent);
-        stroke-width: 2px;
-        stroke-dasharray: 100;
-        stroke-dashoffset: 100;
-        animation: task-trace-draw 2000ms 60ms forwards;
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .task-trace-rect {
-          stroke-dashoffset: 0;
-          animation: task-trace-fade 1500ms 60ms ease forwards;
-        }
-      }
-    `}</style>
+    <style>{__t("companionRail_keyframesTaskTraceDrawAShortDelay")}</style>
   );
 }
 
@@ -289,8 +261,8 @@ function caseNumberOf(world: World, task: Task | undefined): string | undefined 
 }
 
 function groupLabel(locale: Locale, group: TaskPanelGroup): string {
-  if (group.key === "related") return pick({ en: "Other tasks for this case", ml: "ഈ കേസിന്റെ മറ്റ് ജോലികൾ" }, locale);
-  if (group.key === "hearing") return pick({ en: "For this case", ml: "ഈ കേസിന്" }, locale);
+  if (group.key === "related") return pick({ en: "companionRail_otherTasksForThisCase", ml: "ഈ കേസിന്റെ മറ്റ് ജോലികൾ" }, locale);
+  if (group.key === "hearing") return pick({ en: "companionRail_forThisCase", ml: "ഈ കേസിന്" }, locale);
   if (group.key === "today") return pick(advHome.groupToday, locale);
   return pick(advHome.groupSoon, locale);
 }
@@ -312,10 +284,11 @@ function PanelHeader({
   locale: Locale;
   onClose: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col gap-1 px-4 pt-4 pb-3">
       <div className="flex items-center gap-2">
-        <h2 className="flex-1 text-title-s font-semibold">{title}</h2>
+        <h2 className="flex-1 text-title-s font-semibold">{__t(title)}</h2>
         <Button
           variant="ghost"
           size="icon-sm"
@@ -327,7 +300,7 @@ function PanelHeader({
         </Button>
       </div>
       {caption ? (
-        <p className="text-caption text-muted-foreground">{caption}</p>
+        <p className="text-caption text-muted-foreground">{__t(caption)}</p>
       ) : null}
     </div>
   );
@@ -351,6 +324,7 @@ function BucketTrigger({
   /** The nearest bucket, whose header carries the warning ink. */
   lead?: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <CollapsibleTrigger
       className={cn(
@@ -369,7 +343,7 @@ function BucketTrigger({
               lead ? "text-warning-ink" : "text-muted-foreground"
             )}
           >
-            {label}
+            {__t(label)}
           </span>
           <span
             className={cn(
@@ -433,6 +407,7 @@ function TaskCard({
   /** When set, this card is being traced — the stroke runs, keyed by the nonce. */
   traceNonce?: number | null;
 }) {
+  const __t = __useTranslations();
   const Icon = KIND_ICON[task.kind];
   const due = dueCueOf(task, new Date(world.now));
   const dense = RAIL_VARIANT === "B";
@@ -448,8 +423,8 @@ function TaskCard({
             <Icon className="size-4" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col items-stretch gap-0.5">
-            <CollapsibleTrigger title={task.title} className={cn(CARD_TITLE, "group/task")}>
-              {task.title}
+            <CollapsibleTrigger title={__t(task.title)} className={cn(CARD_TITLE, "group/task")}>
+              {__t(task.title)}
             </CollapsibleTrigger>
             <span className="w-full text-caption break-words text-muted-foreground">
               {railCaseLineOf(world, task)}
@@ -471,8 +446,7 @@ function TaskCard({
             </Button>
             {onArchive ? (
               <Button variant="outline" className="shrink-0 border-transparent bg-card" onClick={() => onArchive(task)}>
-                <Archive aria-hidden="true" />Archive
-              </Button>
+                <Archive aria-hidden="true" />{<__LocalizedText id="companionRail_archive" />}{" "}</Button>
             ) : null}
           </div>
         </CollapsibleContent>
@@ -500,10 +474,10 @@ function TaskCard({
         <button
           type="button"
           onClick={() => onAct(task)}
-          title={task.title}
+          title={__t(task.title)}
           className={CARD_TITLE}
         >
-          {task.title}
+          {__t(task.title)}
         </button>
         <span className="w-full text-caption break-words text-muted-foreground md:truncate md:pointer-coarse:overflow-visible md:pointer-coarse:whitespace-normal">
           {railCaseLineOf(world, task)}
@@ -571,11 +545,12 @@ function ArchiveButton({
   onArchive: (task: Task) => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <button
       type="button"
-      aria-label={`Archive: ${task.title}`}
-      title="Archive"
+      aria-label={__t("companionRail_archiveValue0", {value0: String(__t(task.title))})}
+      title={__t("companionRail_archive")}
       onClick={(event) => {
         event.stopPropagation();
         onArchive(task);
@@ -765,7 +740,7 @@ function TasksPanel({
       <TaskTraceStyles />
       <PanelHeader
         title={pick(advHome.railTitle, locale)}
-        caption={related.length ? pick({ en: "Due in the next 3 days and tasks for this case", ml: "അടുത്ത 3 ദിവസത്തെ ജോലികളും ഈ കേസിന്റെ ജോലികളും" }, locale) : pick(advHome.railScope, locale)}
+        caption={related.length ? pick({ en: "companionRail_dueInTheNext3DaysAnd", ml: "അടുത്ത 3 ദിവസത്തെ ജോലികളും ഈ കേസിന്റെ ജോലികളും" }, locale) : pick(advHome.railScope, locale)}
         locale={locale}
         onClose={onClose}
       />
@@ -832,12 +807,13 @@ function StripButton({
   active: boolean;
   onClick: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           type="button"
-          aria-label={label}
+          aria-label={__t(label)}
           aria-pressed={active}
           onClick={onClick}
           className={cn(
@@ -875,7 +851,7 @@ function StripButton({
           ) : null}
         </button>
       </TooltipTrigger>
-      <TooltipContent side="left">{label}</TooltipContent>
+      <TooltipContent side="left">{__t(label)}</TooltipContent>
     </Tooltip>
   );
 }
@@ -901,13 +877,14 @@ function PendingTasksTab({
   onToggle: () => void;
   buttonRef?: React.Ref<HTMLButtonElement>;
 }) {
+  const __t = __useTranslations();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           ref={buttonRef}
           type="button"
-          aria-label={label}
+          aria-label={__t(label)}
           aria-pressed={open}
           onClick={onToggle}
           className={cn(
@@ -928,7 +905,7 @@ function PendingTasksTab({
           </span>
         </button>
       </TooltipTrigger>
-      <TooltipContent side="left">{label}</TooltipContent>
+      <TooltipContent side="left">{__t(label)}</TooltipContent>
     </Tooltip>
   );
 }

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FileTextIcon, Trash2Icon, UploadIcon } from "lucide-react";
@@ -183,6 +185,7 @@ export function SignatureFields({
    */
   noun?: string;
 }) {
+  const __t = __useTranslations();
   const otpId = React.useId();
   const [resent, setResent] = React.useState(false);
 
@@ -211,8 +214,7 @@ export function SignatureFields({
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor={otpId} className="text-body-compact">
-              Enter OTP
-            </Label>
+              {<__LocalizedText id="signSignatureFields_enterOtp" />}{" "}</Label>
             <InputOTP
               id={otpId}
               maxLength={OTP_LENGTH}
@@ -233,23 +235,19 @@ export function SignatureFields({
             {/* What the live service would do, and what this one does — said here rather
                 than left for the bench to infer from a code that accepts anything. */}
             <p className="text-caption text-muted-foreground">
-              In the live service a {OTP_LENGTH}-digit code goes to your
-              Aadhaar-linked mobile and the signature applied is yours. Sandbox
-              — any {OTP_LENGTH}-digit code is accepted here.
-            </p>
+              {<__LocalizedText id="signSignatureFields_inTheLiveServiceA" />}{" "}{OTP_LENGTH}{<__LocalizedText id="signSignatureFields_digitCodeGoesToYourAadhaarLinked" />}{" "}{OTP_LENGTH}{<__LocalizedText id="signSignatureFields_digitCodeIsAcceptedHere" />}{" "}</p>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-body-compact text-muted-foreground">
-              Didn&rsquo;t get it?
-            </span>
+              {<__LocalizedText id="signSignatureFields_didnTGetIt" />}{" "}</span>
             <Button
               type="button"
               variant="link"
               className="h-auto p-0 underline"
               onClick={() => setResent(true)}
             >
-              {resent ? "Sent again" : "Resend OTP"}
+              {resent ? __t("signSignatureFields_sentAgain") : __t("signSignatureFields_resendOtp")}
             </Button>
           </div>
         </div>
@@ -267,8 +265,7 @@ export function SignatureFields({
         <p className="text-body text-muted-foreground">
           {download.prompt}{" "}
           <Button type="button" variant="link" onClick={download.onDownload}>
-            Download it
-          </Button>
+            {<__LocalizedText id="signSignatureFields_downloadIt" />}{" "}</Button>
         </p>
       ) : null}
     </div>
@@ -287,6 +284,7 @@ export function SignedCopyUpload({
   choice: SignatureChoice;
   noun?: string;
 }) {
+  const __t = __useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   return (
     <Field data-invalid={Boolean(choice.fileError)}>
@@ -300,22 +298,20 @@ export function SignedCopyUpload({
       >
         <UploadIcon className="size-8 text-muted-foreground" aria-hidden />
         <p className="text-body text-muted-foreground">
-          Drag and drop the signed {noun}, or
-        </p>
+          {<__LocalizedText id="signSignatureFields_dragAndDropTheSigned" />}{" "}{noun}{<__LocalizedText id="signSignatureFields_or" />}{" "}</p>
         <Button
           type="button"
           variant="outline"
           onClick={() => inputRef.current?.click()}
         >
-          Browse files
-        </Button>
+          {<__LocalizedText id="signSignatureFields_browseFiles" />}{" "}</Button>
         <input
           ref={inputRef}
           type="file"
           accept={ACCEPTED_FILE_TYPES}
           tabIndex={-1}
           className="sr-only"
-          aria-label={`Choose the signed ${noun}`}
+          aria-label={__t("signSignatureFields_chooseTheSignedValue0", {value0: String(noun)})}
           onChange={(event) => {
             choice.chooseFile(Array.from(event.target.files ?? []));
             event.currentTarget.value = "";
@@ -323,8 +319,7 @@ export function SignedCopyUpload({
         />
       </div>
       <FieldDescription className="text-body-compact">
-        PDF, JPG, JPEG or PNG; maximum 10 MB.
-      </FieldDescription>
+        {<__LocalizedText id="signSignatureFields_pdfJpgJpegOrPngMaximum10" />}{" "}</FieldDescription>
       <FieldError className="text-body-compact">
         {choice.fileError}
       </FieldError>
@@ -338,15 +333,14 @@ export function SignedCopyUpload({
             <AttachmentContent>
               <AttachmentTitle>{choice.file.name}</AttachmentTitle>
               <AttachmentDescription>
-                {formatFileSize(choice.file.size)} · selected locally
-              </AttachmentDescription>
+                {formatFileSize(choice.file.size)} {<__LocalizedText id="signSignatureFields_selectedLocally" />}{" "}</AttachmentDescription>
             </AttachmentContent>
             <AttachmentActions>
               <AttachmentAction
                 type="button"
                 variant="destructive-ghost"
                 size="icon"
-                aria-label={`Remove ${choice.file.name}`}
+                aria-label={__t("signSignatureFields_removeValue0", {value0: String(choice.file.name)})}
                 onClick={choice.clearFile}
               >
                 <Trash2Icon aria-hidden />

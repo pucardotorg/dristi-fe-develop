@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -75,13 +77,13 @@ export function ItemsCard({
   onEdit: (block: ItemBlock) => void;
   onRemove: (block: ItemBlock) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Card className={cn(PANEL_CLASS, "min-w-0 gap-0 p-0")}>
       <div className={FRAMED_HEAD}>
-        <h2 className="text-body-compact font-semibold">Items</h2>
+        <h2 className="text-body-compact font-semibold">{<__LocalizedText id="orderItems_items" />}</h2>
         <span className="text-body-compact tabular-nums text-muted-foreground">
-          {items.length + (pinned ? 1 : 0)} in this order
-        </span>
+          {items.length + (pinned ? 1 : 0)} {<__LocalizedText id="orderItems_inThisOrder" />}{" "}</span>
       </div>
       <div className={cn(FRAMED_BODY, "flex min-w-0 flex-col gap-4")}>
         {items.length > 0 || pinned ? (
@@ -92,11 +94,10 @@ export function ItemsCard({
                   1.
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="text-body-compact">{pinned.label}</span>
+                  <span className="text-body-compact">{__t(pinned.label)}</span>
                   {pinned.gaps > 0 ? (
                     <span className="text-caption text-warning-ink">
-                      {pinned.gaps} mandatory to fill
-                    </span>
+                      {pinned.gaps} {<__LocalizedText id="orderItems_mandatoryToFill" />}{" "}</span>
                   ) : null}
                 </span>
                 {disabled ? null : (
@@ -104,7 +105,7 @@ export function ItemsCard({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    aria-label={`Edit ${pinned.label}`}
+                    aria-label={__t("orderItems_editValue0", {value0: String(__t(pinned.label))})}
                     onClick={pinned.onEdit}
                   >
                     <PencilIcon aria-hidden />
@@ -125,11 +126,10 @@ export function ItemsCard({
                     {index + (pinned ? 2 : 1)}.
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-body-compact">{template.label}</span>
+                    <span className="text-body-compact">{__t(template.label)}</span>
                     {gaps.length > 0 ? (
                       <span className="text-caption text-warning-ink">
-                        {gaps.length} mandatory to fill
-                      </span>
+                        {gaps.length} {<__LocalizedText id="orderItems_mandatoryToFill" />}{" "}</span>
                     ) : null}
                   </span>
                   {disabled ? null : (
@@ -139,7 +139,7 @@ export function ItemsCard({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          aria-label={`Edit ${template.label}`}
+                          aria-label={__t("orderItems_editValue0", {value0: String(__t(template.label))})}
                           onClick={() => onEdit(block)}
                         >
                           <PencilIcon aria-hidden />
@@ -150,7 +150,7 @@ export function ItemsCard({
                           type="button"
                           variant="destructive-ghost"
                           size="icon"
-                          aria-label={`Remove ${template.label}`}
+                          aria-label={__t("orderItems_removeValue0", {value0: String(__t(template.label))})}
                           onClick={() => onRemove(block)}
                         >
                           <Trash2Icon aria-hidden />
@@ -200,6 +200,7 @@ function ItemSearch({
   reasonFor: (template: OrderTemplate) => string | null;
   onChoose: (type: OrderTemplateId) => void;
 }) {
+  const __t = __useTranslations();
   const [query, setQuery] = React.useState("");
   /* Open the moment the field is entered, not only once something is typed (owner,
      2026-10-12): a drafter looks at what is available before knowing what to search. */
@@ -217,12 +218,12 @@ function ItemSearch({
   const groups = [
     {
       id: "likely",
-      label: "Likely at this hearing",
+      label: __t("orderItems_likelyAtThisHearing"),
       rows: likely.filter(matches),
     },
     ...ORDER_GROUPS.map((group) => ({
       id: group.id,
-      label: group.label,
+      label: __t(group.label),
       rows: browsableTemplates().filter(
         (template) => template.group === group.id && matches(template),
       ),
@@ -342,13 +343,13 @@ function ItemSearch({
           >
             <QueueSearchField
               ref={inputRef}
-              label="Add an item"
+              label={__t("orderItems_addAnItem")}
               value={query}
               onChange={(value) => {
                 setQuery(value);
                 setOpen(true);
               }}
-              placeholder="Search the catalogue"
+              placeholder={__t("orderItems_searchTheCatalogue")}
               className="w-full"
             />
           </div>
@@ -378,7 +379,7 @@ function ItemSearch({
         >
           {/* What the panel holds, so it reads as the catalogue and not as more card. */}
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-hairline px-3 py-2 text-body-compact text-muted-foreground">
-            <span>{needle ? "Matching items" : "Order items"}</span>
+            <span>{needle ? __t("orderItems_matchingItems") : __t("orderItems_orderItems")}</span>
             <span className="tabular-nums">{count}</span>
           </div>
           <div
@@ -393,7 +394,7 @@ function ItemSearch({
           >
             {groups.length === 0 ? (
               <p className="px-2 py-3 text-body-compact text-muted-foreground">
-                No item matches “{query.trim()}”.
+                {<__LocalizedText id="orderItems_noItemMatches" />}{query.trim()}”.
               </p>
             ) : (
               groups.map((group) => (
@@ -406,7 +407,7 @@ function ItemSearch({
                     id={`catalogue-${group.id}`}
                     className="px-2 pt-2 pb-1 text-body-compact text-muted-foreground"
                   >
-                    {group.label}
+                    {__t(group.label)}
                   </h3>
                   <ul className="flex min-w-0 flex-col">
                     {group.rows.map((template) => (
@@ -440,8 +441,7 @@ function ItemSearch({
             id="catalogue-suggested"
             className="text-body-compact text-muted-foreground"
           >
-            Likely at this hearing
-          </h3>
+            {<__LocalizedText id="orderItems_likelyAtThisHearing" />}{" "}</h3>
           <ul className="-mx-2 flex min-w-0 flex-col">
             {likely.map((template) => (
               <CatalogueRow
@@ -468,6 +468,7 @@ function CatalogueRow({
   reason: string | null;
   onChoose: (type: OrderTemplateId) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <li className="min-w-0">
       <button
@@ -485,7 +486,7 @@ function CatalogueRow({
         />
         <span className="flex min-w-0 flex-1 flex-col">
           <span className={cn(reason && "text-muted-foreground")}>
-            {template.label}
+            {__t(template.label)}
           </span>
           {reason ? (
             <span className="text-muted-foreground">{reason}</span>
@@ -519,6 +520,7 @@ export function ItemDialog({
   /** What the dialog says about where the item goes. */
   description?: string;
 }) {
+  const __t = __useTranslations();
   /* What was last open, kept while the dialog animates out — otherwise its title and
      fields vanish a beat before it does. */
   const [shown, setShown] = React.useState(editing);
@@ -552,11 +554,11 @@ export function ItemDialog({
       >
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            {label}
+            {__t(label)}
           </DialogTitle>
           <DialogDescription>
-            {description ??
-              "Recorded in this order's data. Nothing is written into the order's text."}
+            {__t(description) ??
+              __t("orderItems_recordedInThisOrderSDataNothing")}
           </DialogDescription>
         </DialogHeader>
         {block ? (
@@ -585,22 +587,20 @@ export function ItemDialog({
             className="w-full sm:w-auto"
             onClick={onClose}
           >
-            Cancel
-          </Button>
+            {<__LocalizedText id="orderItems_cancel" />}{" "}</Button>
           <Button
             type="button"
             className="w-full sm:w-auto"
             onClick={onConfirm}
           >
-            {shown?.mode === "edit" ? "Save" : "Add to order"}
+            {shown?.mode === "edit" ? __t("orderItems_save") : __t("orderItems_addToOrder")}
           </Button>
           {gaps.length > 0 ? (
             <Badge
               variant="warning"
               className="self-start tabular-nums sm:order-first sm:mr-auto sm:self-auto"
             >
-              {gaps.length} mandatory to fill
-            </Badge>
+              {gaps.length} {<__LocalizedText id="orderItems_mandatoryToFill" />}{" "}</Badge>
           ) : null}
         </DialogFooter>
       </DialogContent>

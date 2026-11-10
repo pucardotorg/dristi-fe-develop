@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -55,25 +57,21 @@ export function OtherApplicationsTable({
   rows: OtherApplication[];
   onOpen: (application: OtherApplication) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="otherApplicationsTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="otherApplicationsTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
-          </TableHead>
+            {<__LocalizedText id="otherApplicationsTable_stage" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Advocates
-          </TableHead>
+            {<__LocalizedText id="otherApplicationsTable_advocates" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
-            Application type
-          </TableHead>
+            {<__LocalizedText id="otherApplicationsTable_applicationType" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -100,14 +98,14 @@ export function OtherApplicationsTable({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Review </span>
+                <span className="sr-only">{<__LocalizedText id="otherApplicationsTable_review" />}{" "}</span>
                 {causeTitle(application)}
               </button>
             </TableCell>
             <TableCell
               className={cn(TABLE_CELL, "whitespace-nowrap")}
             >
-              <Identifier value={application.caseNumber} label="case number" />
+              <Identifier value={application.caseNumber} label={__t("otherApplicationsTable_caseNumber_18f4e454")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
               {otherApplicationStageLabel(application.stage)}

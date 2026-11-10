@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -37,6 +38,7 @@ export function KindPills({
   loading?: boolean;
   onSelect: (kinds: TaskCategory[]) => void;
 }) {
+  const __t = __useTranslations();
   const total = counts ? CATEGORY_ORDER.reduce((sum, k) => sum + counts[k], 0) : null;
   return (
     <ToggleGroup
@@ -54,17 +56,17 @@ export function KindPills({
         // Pressing the chosen pill again leaves nothing chosen, which is Everything.
         onSelect(!value || value === "all" ? [] : [value as TaskCategory]);
       }}
-      aria-label="Categories"
+      aria-label={__t("kindPills_categories")}
       /* The row scrolls sideways on a phone; the padding keeps a focus ring off the
          clipping edge and gives the widened touch target room. */
       className={PILL_ROW}
     >
-      <Pill value="all" label="Everything" count={total} loading={loading} />
+      <Pill value="all" label={__t("kindPills_everything")} count={total} loading={loading} />
       {CATEGORY_ORDER.map((kind) => (
         <Pill
           key={kind}
           value={kind}
-          label={CATEGORY_LABELS[kind]}
+          label={__t(CATEGORY_LABELS[kind])}
           count={counts?.[kind] ?? null}
           loading={loading}
           /* A kind with nothing in it cannot narrow anything — but the pill you are
@@ -89,15 +91,16 @@ function Pill({
   loading?: boolean;
   disabled?: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <ToggleGroupItem
       value={value}
       disabled={disabled || loading}
-      aria-label={count === null ? label : `${label}, ${count}`}
+      aria-label={count === null ? __t(label) : `${__t(label)}, ${count}`}
       /* The shared pill — see `chrome/pill-plate.ts` for the treatment and its rulings. */
       className={PILL_ITEM}
     >
-      <span>{label}</span>
+      <span>{__t(label)}</span>
       <span aria-hidden className={PILL_COUNT}>
         {loading || count === null ? "–" : count}
       </span>

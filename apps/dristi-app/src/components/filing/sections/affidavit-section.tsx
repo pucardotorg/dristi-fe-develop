@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Affidavit — the sworn half of the complaint, composed from the case and left editable.
@@ -31,6 +33,7 @@ import { RichTextEditor } from "@/components/filing/rich-text-editor";
 import { affidavitBody } from "@/components/filing/sections/preview/derive";
 
 export function AffidavitSection() {
+  const __t = __useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("affidavit");
   const [resetOpen, setResetOpen] = React.useState(false);
@@ -42,8 +45,8 @@ export function AffidavitSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="Affidavit"
-          description="The sworn statement that goes on the record with the complaint."
+          title={__t("affidavitSection_affidavit")}
+          description={__t("affidavitSection_theSwornStatementThatGoesOnThe")}
           actions={
             edited ? (
               <Button
@@ -53,24 +56,21 @@ export function AffidavitSection() {
                 onClick={() => setResetOpen(true)}
               >
                 <RotateCcwIcon data-icon="inline-start" aria-hidden />
-                Restore standard text
-              </Button>
+                {<__LocalizedText id="affidavitSection_restoreStandardText" />}{" "}</Button>
             ) : null
           }
         />
 
         {/* Sworn evidence, so what it is gets said before the box, not after. */}
-        <SectionNotice variant="warning" title="This is sworn evidence">
-          Sworn under Section 225 of the Bharatiya Nagarik Suraksha Sanhita, 2023. Read
-          it through and change anything that does not match the case.
-        </SectionNotice>
+        <SectionNotice variant="warning" title={__t("affidavitSection_thisIsSwornEvidence")}>
+          {<__LocalizedText id="affidavitSection_swornUnderSection225OfTheBharatiya" />}{" "}</SectionNotice>
 
         <FormCard
-          title="Affidavit of fact"
+          title={__t("affidavitSection_affidavitOfFact")}
           description={
             edited
-              ? "Your wording. It no longer follows the rest of the filing."
-              : "Written from the case details, and follows them until you edit it."
+              ? __t("affidavitSection_yourWordingItNoLongerFollowsThe")
+              : __t("affidavitSection_writtenFromTheCaseDetailsAndFollows")
           }
         >
           <RichTextEditor
@@ -94,9 +94,9 @@ export function AffidavitSection() {
       <ConfirmDialog
         open={resetOpen}
         onOpenChange={setResetOpen}
-        title="Restore the standard affidavit?"
-        description="Your edits are discarded and the text goes back to the standard wording."
-        confirmLabel="Restore"
+        title={__t("affidavitSection_restoreTheStandardAffidavit")}
+        description={__t("affidavitSection_yourEditsAreDiscardedAndTheText")}
+        confirmLabel={__t("affidavitSection_restore")}
         onConfirm={() => {
           update((d) => {
             d.affidavit = "";

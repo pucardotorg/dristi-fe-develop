@@ -19,7 +19,7 @@ export function CaseParties({
   record: CaseRecord;
   selectedId: string | undefined;
 }) {
-  const file = participantsFile(record);
+    const file = participantsFile(record);
   return (
     <CaseParticipants
       file={file}

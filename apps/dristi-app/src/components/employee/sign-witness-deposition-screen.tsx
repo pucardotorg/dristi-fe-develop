@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { SearchXIcon, UserCheckIcon } from "lucide-react";
@@ -118,6 +120,7 @@ function plural(count: number, one: string, many: string): string {
  * from the demo queue and nothing else — see `lib/employee/sign-witness-deposition.ts`.
  */
 export function SignWitnessDepositionScreen() {
+  const __t = __useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used, so there is never a moment where what the bench has asked for and what
      the table is showing disagree. Every change resets to page one — the old Search
@@ -240,14 +243,13 @@ export function SignWitnessDepositionScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Sign witness deposition
-        </h1>
+          {<__LocalizedText id="signWitnessDepositionScreen_signWitnessDeposition" />}{" "}</h1>
         {/* The count is the whole point of the queue, so the supporting line carries it
             rather than restating the title. Singular is spelled out because
             "1 depositions" is the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 deposition is waiting for your signature."
+            ? __t("signWitnessDepositionScreen_1DepositionIsWaitingForYourSignature")
             : `${remaining.length} depositions are waiting for your signature.`}
         </p>
       </header>
@@ -391,13 +393,14 @@ function DepositionFiltersForm({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: __t("signWitnessDepositionScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or witness",
+        placeholder: __t("signWitnessDepositionScreen_caseNameNumberOrWitness"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -436,6 +439,7 @@ function SignBar({
   /** Handed down so the confirmation can give the keyboard back to this button. */
   signRef: React.Ref<HTMLButtonElement>;
 }) {
+  const __t = __useTranslations();
   const summary =
     notice ||
     (count === 0
@@ -449,13 +453,12 @@ function SignBar({
           className="mr-auto text-body-compact text-muted-foreground tabular-nums"
           aria-live="polite"
         >
-          {summary}
+          {__t(summary)}
         </p>
 
         {count > 0 ? (
           <Button type="button" variant="ghost" onClick={onClearSelection}>
-            Clear selection
-          </Button>
+            {<__LocalizedText id="signWitnessDepositionScreen_clearSelection" />}{" "}</Button>
         ) : null}
 
         <Button
@@ -466,8 +469,8 @@ function SignBar({
           onClick={onRequestSign}
         >
           {count > 0
-            ? `Sign ${count} ${plural(count, "deposition", "depositions")}`
-            : "Sign selected depositions"}
+            ? __t("signWitnessDepositionScreen_signValue0Value1", {value0: String(count), value1: String(plural(count, "deposition", "depositions"))})
+            : __t("signWitnessDepositionScreen_signSelectedDepositions")}
         </Button>
       </div>
     </div>
@@ -489,6 +492,7 @@ function DepositionsEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -501,20 +505,19 @@ function DepositionsEmpty({
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isFiltered
-            ? "No depositions match this search"
-            : "Nothing left to sign"}
+            ? __t("signWitnessDepositionScreen_noDepositionsMatchThisSearch")
+            : __t("signWitnessDepositionScreen_nothingLeftToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No deposition waiting for signature matches the case, number or witness you asked for."
-            : "Every deposition recorded by this court has been signed."}
+            ? __t("signWitnessDepositionScreen_noDepositionWaitingForSignatureMatchesThe")
+            : __t("signWitnessDepositionScreen_everyDepositionRecordedByThisCourtHas")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
-          </Button>
+            {<__LocalizedText id="signWitnessDepositionScreen_clearSearch" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -540,6 +543,7 @@ function DepositionItemList({
   onToggle: (deposition: WitnessDeposition) => void;
   onOpen: (deposition: WitnessDeposition) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   return (
     <ul className="flex flex-col gap-3">
@@ -557,7 +561,7 @@ function DepositionItemList({
               <Checkbox
                 checked={selectedIds.has(deposition.id)}
                 onCheckedChange={() => onToggle(deposition)}
-                aria-label={`Select the deposition of ${deposition.witness.name}, ${tag}, in ${courtText(deposition.caseNumber)}`}
+                aria-label={__t("signWitnessDepositionScreen_selectTheDepositionOfValue0Value1In", {value0: String(deposition.witness.name), value1: String(tag), value2: String(courtText(deposition.caseNumber))})}
               />
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -567,7 +571,7 @@ function DepositionItemList({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Read and sign </span>
+                <span className="sr-only">{<__LocalizedText id="signWitnessDepositionScreen_readAndSign" />}{" "}</span>
                 {causeTitle(deposition)}
               </button>
               <p className="min-w-0 text-body-compact">
@@ -579,8 +583,8 @@ function DepositionItemList({
                 <span className="sr-only">{`, ${tag}, ${witnessRoleLabel(deposition)}`}</span>
               </p>
               <p className="text-caption text-muted-foreground">
-                <Identifier value={deposition.caseNumber} label="case number" />
-                {" · Recorded "}
+                <Identifier value={deposition.caseNumber} label={__t("signWitnessDepositionScreen_caseNumber")} />
+                {__t("signWitnessDepositionScreen_recorded")}
                 <span className="tabular-nums">
                   {formatDepositionDate(deposition.depositionOn)}
                 </span>

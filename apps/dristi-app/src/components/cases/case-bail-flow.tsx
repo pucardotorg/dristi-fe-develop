@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -180,6 +181,7 @@ export function BondTaskRow({
   now: number;
   onArchive?: () => void;
 }) {
+  const __t = __useTranslations();
   const { locale } = useLocale();
   const value = React.useContext(CaseBailContext);
   if (!value || value.bondPhase === "none") return null;
@@ -217,7 +219,7 @@ export function BondTaskRow({
         </Badge>
         <Identifier
           value={BOND_ID}
-          label="bond number"
+          label={__t("caseBailFlow_bondNumber")}
           className="text-caption text-muted-foreground"
         />
       </div>

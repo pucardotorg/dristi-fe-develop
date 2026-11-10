@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 /**
  * The preview control for a document on file — one implementation, now three callers.
@@ -46,11 +47,12 @@ export function ThumbnailButton({
   onPreview: (event: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <button
       type="button"
       onClick={onPreview}
-      aria-label={label}
+      aria-label={__t(label)}
       className="group/thumb relative size-full cursor-pointer rounded-md outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
     >
       {children}
@@ -79,10 +81,11 @@ export function SlotThumbnail({
   label: string;
   onPreview: () => void;
 }) {
+  const __t = __useTranslations();
   const preview = useFilePreview(file);
   return (
     <ThumbnailButton
-      label={`Preview ${file?.name ?? label}`}
+      label={__t("thumbnail_previewValue0", {value0: String(file?.name ?? __t(label))})}
       onPreview={onPreview}
     >
       {preview.status === "loading" ? (
@@ -92,7 +95,7 @@ export function SlotThumbnail({
         <img src={preview.imageUrl} alt="" className="size-full object-cover" />
       ) : (
         <span className="flex size-full items-center justify-center text-caption font-semibold text-muted-foreground">
-          {file?.ext ?? "File"}
+          {file?.ext ?? __t("thumbnail_file")}
         </span>
       )}
     </ThumbnailButton>

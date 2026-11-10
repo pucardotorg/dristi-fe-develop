@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -29,6 +31,7 @@ import type { BatchCtx } from "./batch-screen";
 import { CaseBadge } from "./stage";
 
 export function CasesTab({ batch, go }: BatchCtx) {
+  const __t = __useTranslations();
   // Pending cases only; filed ones live under Filed.
   const pending = batch.cases.filter((c) => c.stage !== "filed");
   const filed = batch.cases.length - pending.length;
@@ -37,15 +40,14 @@ export function CasesTab({ batch, go }: BatchCtx) {
     <div className="flex flex-col gap-3">
       {filed ? (
         <p className="text-body-compact text-muted-foreground tabular-nums">
-          {pending.length ? `${pending.length} pending. ` : "Nothing pending. "}
-          {filed} filed.{" "}
+          {pending.length ? `${pending.length} pending. ` : __t("casesTab_nothingPending")}
+          {filed} {<__LocalizedText id="casesTab_filed" />}{" "}
           <button
             type="button"
             className="underline"
             onClick={() => go("filed")}
           >
-            See filed cases
-          </button>
+            {<__LocalizedText id="casesTab_seeFiledCases" />}{" "}</button>
         </p>
       ) : null}
       {pending.length ? (
@@ -53,23 +55,20 @@ export function CasesTab({ batch, go }: BatchCtx) {
           <div className="overflow-x-auto p-2">
             <Table
               className="border-separate border-spacing-0"
-              aria-label="Cases in this batch"
+              aria-label={__t("casesTab_casesInThisBatch")}
             >
               <TableHeader>
                 <TableRow className={TABLE_HEAD_ROW}>
                   <TableHead className={cn(TABLE_HEAD, "pl-4")}>
-                    Reference
-                  </TableHead>
-                  <TableHead className={TABLE_HEAD}>Parties</TableHead>
+                    {<__LocalizedText id="casesTab_reference" />}{" "}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{<__LocalizedText id="casesTab_parties" />}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "text-right")}>
-                    Cheque amount
-                  </TableHead>
-                  <TableHead className={TABLE_HEAD}>Cause of action</TableHead>
-                  <TableHead className={TABLE_HEAD}>File by</TableHead>
-                  <TableHead className={TABLE_HEAD}>Documents</TableHead>
+                    {<__LocalizedText id="casesTab_chequeAmount" />}{" "}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{<__LocalizedText id="casesTab_causeOfAction" />}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{<__LocalizedText id="casesTab_fileBy" />}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{<__LocalizedText id="casesTab_documents" />}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "pr-4")}>
-                    Status
-                  </TableHead>
+                    {<__LocalizedText id="casesTab_status" />}{" "}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className={tableBodyClass()}>
@@ -99,7 +98,7 @@ export function CasesTab({ batch, go }: BatchCtx) {
                     <TableCell
                       className={cn(TABLE_CELL, "min-w-56 whitespace-normal")}
                     >
-                      {c.title}
+                      {__t(c.title)}
                     </TableCell>
                     <TableCell
                       className={cn(TABLE_CELL, "text-right tabular-nums")}
@@ -107,7 +106,7 @@ export function CasesTab({ batch, go }: BatchCtx) {
                       {money(c.amount)}
                     </TableCell>
                     <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
-                      {c.causeDate ? toLongDate(c.causeDate) : "Not yet"}
+                      {c.causeDate ? toLongDate(c.causeDate) : __t("casesTab_notYet")}
                     </TableCell>
                     <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
                       {c.fileBy ? toLongDate(c.fileBy) : "—"}
@@ -119,7 +118,7 @@ export function CasesTab({ batch, go }: BatchCtx) {
                         c.docs.have < c.docs.need && "text-warning-ink",
                       )}
                     >
-                      {c.docs.have} of {c.docs.need}
+                      {c.docs.have} {<__LocalizedText id="casesTab_of" />}{" "}{c.docs.need}
                     </TableCell>
                     <TableCell
                       className={cn(TABLE_CELL, "pr-4 whitespace-normal")}
@@ -128,8 +127,7 @@ export function CasesTab({ batch, go }: BatchCtx) {
                         <CaseBadge c={c} />
                         {c.stage !== "filed" && c.flags.length ? (
                           <span className="text-caption text-muted-foreground tabular-nums">
-                            {c.flags.length} flag
-                            {c.flags.length === 1 ? "" : "s"}
+                            {c.flags.length} {<__LocalizedText id="casesTab_flag" />}{" "}{c.flags.length === 1 ? "" : "s"}
                           </span>
                         ) : null}
                         {c.caseFileNumber ? (

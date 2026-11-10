@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
@@ -96,6 +98,7 @@ export function Identifier({
   /** Off where the identifier is decorative or already inside a control. */
   copyable?: boolean;
 }) {
+  const __t = __useTranslations();
   const [copied, setCopied] = React.useState(false);
   const timer = React.useRef<number | null>(null);
   /* Case numbers, CNRs and filing numbers are stored in Kerala's terms and shown in the
@@ -126,7 +129,7 @@ export function Identifier({
         timer.current = window.setTimeout(() => setCopied(false), 1600);
         toast(
           <span>
-            Copied <span className="font-mono tabular-nums">{value}</span>
+            {<__LocalizedText id="identifier_copied" />}{" "}<span className="font-mono tabular-nums">{value}</span>
           </span>,
           { icon: <CopyIcon className="size-4" aria-hidden /> }
         );
@@ -139,14 +142,14 @@ export function Identifier({
   return (
     <button
       type="button"
-      title={copied ? "Copied" : `Copy ${label}`}
+      title={copied ? __t("identifier_copied") : __t("identifier_copyValue0", {value0: String(__t(label))})}
       onClick={(event) => {
         /* These sit inside rows that open their record on click. Copying an identifier
            is not asking for the record. */
         event.stopPropagation();
         copy();
       }}
-      aria-label={copied ? `${label} copied` : `Copy the ${label}, ${value}`}
+      aria-label={copied ? `${__t(label)} copied` : __t("identifier_copyTheValue0Value1", {value0: String(__t(label)), value1: String(value)})}
       className={cn(
         face,
         /* Negative inline margin against the pill's padding, so the resting text sits

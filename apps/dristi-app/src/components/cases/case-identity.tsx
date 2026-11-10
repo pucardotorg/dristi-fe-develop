@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import type { ReactNode } from "react";
 
@@ -41,6 +43,7 @@ export function CasePeekTrigger({
   tone?: IdentityTone;
   hideLongPendingFlag?: boolean;
 }) {
+  const __t = __useTranslations();
   const { open, record: openRecord } = useCasePeek();
   const label = partiesLabel(record);
   const expanded = openRecord?.id === record.id;
@@ -56,11 +59,11 @@ export function CasePeekTrigger({
         IDENTITY_TONE[tone]
       )}
     >
-      <span className="sr-only">Preview </span>
+      <span className="sr-only">{<__LocalizedText id="caseIdentity_preview" />}{" "}</span>
       {/* The number is already this row's preview control, so it takes the face
           without a second control inside it. */}
-      <Identifier value={record.caseNumber} label="case number" copyable={false} />
-      <span className="sr-only">{`, ${label}`}</span>
+      <Identifier value={record.caseNumber} label={__t("caseIdentity_caseNumber")} copyable={false} />
+      <span className="sr-only">{`, ${__t(label)}`}</span>
     </button>
   );
 }
@@ -82,8 +85,7 @@ export function CaseFlags({ record }: { record: CaseRecord }) {
   if (!record.longPending) return null;
   return (
     <Badge variant="warning" className="shrink-0">
-      Long pending
-    </Badge>
+      {<__LocalizedText id="caseIdentity_longPending" />}{" "}</Badge>
   );
 }
 
@@ -127,6 +129,7 @@ export function CaseStage({
   /** Substage / disposed date under the stage. Off on the dense table. */
   detail?: boolean;
 }) {
+  const __t = __useTranslations();
   const label = record.disposal
     ? outcomeLabel(record.disposal.outcome)
     : stageLabel(record.stage);
@@ -142,7 +145,7 @@ export function CaseStage({
         variant={record.disposal ? "secondary" : "info"}
         className="shrink-0"
       >
-        {label}
+        {__t(label)}
       </Badge>
       {secondary ? (
         <span className="text-caption text-muted-foreground">{secondary}</span>

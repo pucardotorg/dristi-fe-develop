@@ -3,15 +3,18 @@
  *
  * The form and the backend cut a party differently, so this file is where they meet:
  *
- *   - The backend takes one phone and one address per party. The first filled-in one of
- *     each fills its fields; the rest, and anything else the form asks that the backend
- *     has no field for, go in `additional_details`, so nothing is lost.
+ *   - The backend takes lists of mobile numbers, emails and addresses, the first of each
+ *     the primary. An institution's own go inside `institution`; the lists outside it are
+ *     the person's — the individual, or the one acting for the institution.
  *   - An institution accused is saved once per person summoned for it (S-141): each is a
  *     person for the institution, with their designation.
- *   - Who a party is (person or institution, email, disability, PAN / CIN — and for the people
+ *   - Who a party is (person or institution, the filer or not — and for the people
  *     summoned for one institution, their name) cannot be changed on the backend. A
  *     change there removes the participant and adds it again, which puts it last in its
  *     role; any other change is a PATCH of the case's copy.
+ *   - A PATCH carrying `institution` re-links the participant to the institution its PAN or
+ *     CIN names, creating one when there is none, so it is sent only when the company
+ *     itself changed; its contacts are changed through `institution_contacts`.
  *
  * Pure apart from the API it is handed, so it is tested without rendering the form.
  */
@@ -22,6 +25,7 @@ import { isIndianMobile, toBackendMobile, toNationalMobile } from "@/lib/auth/mo
 import type {
   AddressInput,
   CaseFilingApi,
+  ContactLists,
   InstitutionInput,
   ParticipantPatch,
   PartyInput,
@@ -37,7 +41,6 @@ import type {
   Address,
   AddressBlock,
   Complainant,
-  Contact,
   DifferentlyAbled,
   Gender,
   Representative,
@@ -110,34 +113,63 @@ function cinPan(
   return v.length === 10 ? { pan: v } : { cin: v };
 }
 
+/**
+ * Does editor output show any text? An empty editor still emits markup (`<p><br></p>`,
+ * `<p>&nbsp;</p>`), which the backend refuses as blank.
+ */
+function hasVisibleText(html: string): boolean {
+  return !!html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&(nbsp|#160|#xa0);/gi, " ")
+    .trim();
+}
+
+/** A complainant appearing in person files the affidavit for it; anyone else files none. */
+function affidavit(
+  c: Pick<Complainant, "pip" | "affidavit">
+): Pick<PartyInput, "party_in_person_affidavit"> {
+  return c.pip === "yes" && hasVisibleText(c.affidavit)
+    ? { party_in_person_affidavit: c.affidavit }
+    : {};
+}
+
 function representative(rep: Representative): PersonInput {
   return compact({
     name: rep.name.trim(),
-    phone_number: phone(rep.mobile),
-    email_address: rep.email.trim(),
     age: age(rep.age),
     gender: gender(rep.gender),
     disability_status: disability(rep.differentlyAbled),
   });
 }
 
-/** The first filled-in contact and address, and the rest for `additional_details`. */
-function firstAndRest(contacts: Contact[], addresses: AddressBlock[]) {
-  const [first, ...otherContacts] = contacts.filter((x) => x.mobile.trim() || x.email.trim());
-  const primary = addresses.find((b) => b.addr.line1.trim());
-  const otherAddresses = addresses.filter((b) => b !== primary && hasAddress(b.addr));
+/** Each value once, in order, blanks dropped; the backend refuses a repeat (E07033). */
+function unique(values: Array<string | undefined>, key = (v: string) => v): string[] {
+  const seen = new Set<string>();
+  return values.filter((v): v is string => {
+    if (!v || seen.has(key(v))) return false;
+    seen.add(key(v));
+    return true;
+  });
+}
+
+/** Contact lists as the backend takes them, primary first; an empty list is left out. */
+function contactLists(
+  mobiles: Array<string | undefined>,
+  emails: Array<string | undefined>,
+  addresses: Partial<AddressInput>[]
+): ContactLists {
+  const mobile_numbers = unique(mobiles);
+  const email_addresses = unique(emails, (e) => e.toLowerCase());
   return {
-    first,
-    primary,
-    rest: compact({
-      other_contacts: otherContacts.length
-        ? otherContacts.map((x) =>
-            compact({ phone_number: phone(x.mobile), email_address: x.email.trim() })
-          )
-        : undefined,
-      other_addresses: otherAddresses.length ? otherAddresses.map(addressBlock) : undefined,
-    }),
+    ...(mobile_numbers.length ? { mobile_numbers } : {}),
+    ...(email_addresses.length ? { email_addresses } : {}),
+    ...(addresses.length ? { addresses } : {}),
   };
+}
+
+/** The addresses filled in at all, in the form's order; a part-filled one is checked later. */
+function addressBlocks(blocks: AddressBlock[]): Partial<AddressInput>[] {
+  return blocks.filter((b) => hasAddress(b.addr)).map(addressBlock);
 }
 
 /* ───────────────────────────────── Complainant ──────────────────────────────────── */
@@ -166,16 +198,22 @@ export function complainantBodies(c: Complainant, isSelf = false): PartyInput[] 
           entity_type: ENTITY_TYPE_CODES[c.entType],
           entity_name: c.entName.trim(),
           ...cinPan(c),
-          contact_number: c.entPhone.trim(),
-          email_address: c.entEmail.trim(),
+          // A company's number may be a landline, so it is sent as typed.
+          ...contactLists([c.entPhone.trim()], [c.entEmail.trim()], [address(c.entAddr)]),
         }),
         person,
         designation: person ? c.rep.designation.trim() : undefined,
-        address: address(c.entAddr),
+        // The representative's own; an institution with nobody acting for it sends none.
+        ...(person
+          ? contactLists(
+              [phone(c.rep.mobile)],
+              [c.rep.email.trim()],
+              hasAddress(c.rep.addr) ? [address(c.rep.addr)] : []
+            )
+          : {}),
         is_party_in_person,
-        additional_details: compact({
-          representative_address: hasAddress(c.rep.addr) ? address(c.rep.addr) : undefined,
-        }),
+        ...affidavit(c),
+        additional_details: {},
       }),
     ];
   }
@@ -185,15 +223,14 @@ export function complainantBodies(c: Complainant, isSelf = false): PartyInput[] 
       ...(isSelf ? { self: true as const } : {}),
       person: compact({
         name: c.name.trim(),
-        phone_number: phone(c.mobile),
-        email_address: c.email.trim(),
         age: age(c.age),
         gender: gender(c.gender),
         disability_status: disability(c.differentlyAbled),
       }),
-      address: address(c.res),
+      ...contactLists([phone(c.mobile)], [c.email.trim()], [address(c.res)]),
       ...(c.permSame === "no" ? { permanent_address: address(c.perm) } : {}),
       is_party_in_person,
+      ...affidavit(c),
       additional_details: {},
     },
   ];
@@ -201,50 +238,56 @@ export function complainantBodies(c: Complainant, isSelf = false): PartyInput[] 
 
 /* ─────────────────────────────────── Accused ────────────────────────────────────── */
 
+/**
+ * The accused's contacts are the individual's, or the institution's own. The people
+ * summoned for an institution send their own mobile and email; their address stays in
+ * `additional_details`, since the form asks no police station for it and the backend
+ * refuses an accused's address without one.
+ */
 export function accusedBodies(a: Accused): PartyInput[] {
-  const { first, primary, rest } = firstAndRest(a.contacts, a.addresses);
-  const base = {
-    address: primary ? addressBlock(primary) : {},
+  const emails = a.contacts.map((x) => x.email.trim());
+  const addresses = addressBlocks(a.addresses);
+  const declared = accusedContactUnknownDeclared(a);
+  /**
+   * The no-contact declaration goes only on a body that sends no phone or email at all,
+   * the company's or the person's own: the backend refuses it alongside either.
+   */
+  const base = (...sent: ContactLists[]) => ({
     is_party_in_person: false,
     resides_within_jurisdiction: a.jurisdiction !== "no",
-    ...(accusedContactUnknownDeclared(a) ? { contact_details_unknown_declared: true as const } : {}),
-    additional_details: rest,
-  };
+    ...(declared && !sent.some((l) => l.mobile_numbers || l.email_addresses)
+      ? { contact_details_unknown_declared: true as const }
+      : {}),
+    additional_details: {},
+  });
 
   if (a.type === "individual") {
-    return [
-      {
-        ...base,
-        person: compact({
-          name: a.name.trim(),
-          phone_number: first ? phone(first.mobile) : undefined,
-          email_address: first?.email.trim(),
-        }),
-      },
-    ];
+    const own = contactLists(a.contacts.map((x) => phone(x.mobile)), emails, addresses);
+    return [{ ...base(own), person: compact({ name: a.name.trim() }), ...own }];
   }
 
   const institution = compact({
     entity_type: ENTITY_TYPE_CODES[a.entType],
     entity_name: a.name.trim(),
-    contact_number: first?.mobile.trim(),
-    email_address: first?.email.trim(),
+    // A company's number may be a landline, so it is sent as typed.
+    ...contactLists(a.contacts.map((x) => x.mobile.trim()), emails, addresses),
   });
   const reps = a.reps.filter((r) => r.name.trim());
-  if (reps.length === 0) return [{ ...base, institution }];
+  if (reps.length === 0) return [{ ...base(institution), institution }];
 
-  return reps.map((rep) =>
-    compact({
-      ...base,
+  return reps.map((rep) => {
+    const own = contactLists([phone(rep.mobile)], [rep.email.trim()], []);
+    return compact({
+      ...base(institution, own),
       institution,
       person: representative(rep),
       designation: rep.designation.trim(),
+      ...own,
       additional_details: compact({
-        ...rest,
         representative_address: hasAddress(rep.addr) ? address(rep.addr) : undefined,
       }),
-    })
-  );
+    });
+  });
 }
 
 /* ─────────────────────────────────── Witness ────────────────────────────────────── */
@@ -255,20 +298,21 @@ export function accusedBodies(a: Accused): PartyInput[] {
  * them here too.
  */
 export function witnessBodies(w: Witness): WitnessInput[] {
-  const { first, primary, rest } = firstAndRest(w.contacts, w.addresses);
   return [
     compact({
       person: compact({
         name: w.fullName.trim() || w.designation.trim(),
-        phone_number: first ? phone(first.mobile) : undefined,
-        email_address: first?.email.trim(),
         age: age(w.age),
       }),
+      ...contactLists(
+        w.contacts.map((x) => phone(x.mobile)),
+        w.contacts.map((x) => x.email.trim()),
+        addressBlocks(w.addresses)
+      ),
       designation: w.designation.trim(),
-      address: primary ? addressBlock(primary) : undefined,
       side: "COMPLAINANT" as const,
       what_will_witness_prove: w.prove.trim(),
-      additional_details: rest,
+      additional_details: {},
     }),
   ];
 }
@@ -290,16 +334,30 @@ const ADDRESS_FIELDS: Array<[keyof AddressInput, string]> = [
  */
 export function missingFields(body: AnyPartyInput, role: PartyRole): string[] {
   const missing = new Set<string>();
-  const addressNeeded = role !== "witnesses" || !!body.address;
-  if (addressNeeded) {
-    for (const [field, label] of ADDRESS_FIELDS) if (!body.address?.[field]) missing.add(label);
-    if (role !== "complainants" && !body.address?.police_station) missing.add("police station");
+  const institution = "institution" in body ? body.institution : undefined;
+  /** Every address sent must be whole; an accused's or a witness's needs a police station. */
+  const checkAddresses = (list: Partial<AddressInput>[] | undefined, whose = "") => {
+    if (!list?.length) {
+      missing.add(`${whose}address`);
+      return;
+    }
+    for (const a of list) {
+      for (const [field, label] of ADDRESS_FIELDS) if (!a[field]) missing.add(whose + label);
+      if (role !== "complainants" && !a.police_station) missing.add(`${whose}police station`);
+    }
+  };
+  // Whoever is served needs an address: the individual their own, an institution its own.
+  if (institution) {
+    checkAddresses(institution.addresses);
+    // The representative's own is optional, but one sent must be whole.
+    if (body.addresses?.length) checkAddresses(body.addresses, "representative's ");
+  } else {
+    checkAddresses(body.addresses);
   }
-  if (!body.person?.name && !("institution" in body && body.institution?.entity_name)) {
+  if (!body.person?.name && !institution?.entity_name) {
     missing.add("name");
   }
-  if ("institution" in body && body.institution) {
-    const { institution } = body;
+  if (institution) {
     if (!institution.entity_type) missing.add("type of entity");
     if (
       role === "complainants" &&
@@ -330,46 +388,91 @@ function isWitness(body: AnyPartyInput): body is WitnessInput {
 }
 
 /**
- * A permanent address as PATCH takes it: `null` clears one saved earlier once the filer
- * says it is the same as the residential one.
+ * The contact lists as PATCH takes them: whole, since each one sent replaces the list, and
+ * empty rather than left out, since one left out is kept as it was.
  */
-function permanentPatch(
-  body: Pick<PartyInput, "permanent_address">
-): Pick<ParticipantPatch, "permanent_address"> {
-  return { permanent_address: body.permanent_address ?? null };
+function listsPatch(body: ContactLists): Required<ContactLists> {
+  return {
+    mobile_numbers: body.mobile_numbers ?? [],
+    email_addresses: body.email_addresses ?? [],
+    addresses: body.addresses ?? [],
+  };
 }
 
-/** Only an individual complainant has a permanent address; an accused or institution has none. */
-function hasPermanentAddress(body: PartyInput): boolean {
-  return !body.institution && body.resides_within_jurisdiction === undefined;
+const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * What the backend sets on the person (disability, permanent address), sent only when it
+ * changed: it refuses them for a person another account created. `null` clears either.
+ */
+function personPatch(
+  body: Pick<PartyInput, "person" | "permanent_address">,
+  before: Pick<PartyInput, "person" | "permanent_address"> | undefined,
+  hasPermanentAddress: boolean
+): Pick<ParticipantPatch, "disability_status" | "permanent_address"> {
+  const disability = body.person?.disability_status ?? null;
+  const permanent = body.permanent_address ?? null;
+  return {
+    ...(body.person && (!before || disability !== (before.person?.disability_status ?? null))
+      ? { disability_status: disability }
+      : {}),
+    ...(hasPermanentAddress && (!before || !same(permanent, before.permanent_address ?? null))
+      ? { permanent_address: permanent }
+      : {}),
+  };
 }
 
-/** The case's copy of a party's details: everything PATCH may change. */
-export function patchFor(body: AnyPartyInput): ParticipantPatch {
+/**
+ * A company's part of a PATCH. Its contacts go in `institution_contacts`, always whole.
+ * `institution` re-links the participant to the company its PAN or CIN names (a new one
+ * when there is none), so it is sent only when the company itself changed.
+ */
+function institutionPatch(
+  institution: InstitutionInput,
+  before: InstitutionInput | undefined
+): Pick<ParticipantPatch, "institution" | "institution_contacts"> {
+  const split = ({ mobile_numbers, email_addresses, addresses, ...company }: InstitutionInput) => ({
+    company,
+    contacts: { mobile_numbers, email_addresses, addresses },
+  });
+  const { company, contacts } = split(institution);
+  return {
+    institution_contacts: listsPatch(contacts),
+    ...(!before || !same(company, split(before).company) ? { institution: company } : {}),
+  };
+}
+
+/**
+ * The case's copy of a party's details: everything PATCH may change. `before` is the body
+ * last saved, if any; what PATCH sends only on a change is compared against it.
+ */
+export function patchFor(body: AnyPartyInput, before?: AnyPartyInput): ParticipantPatch {
   if (isWitness(body)) {
     return {
       name_at_filing: body.person.name,
-      phone_number_at_filing: body.person.phone_number ?? null,
       gender_at_filing: body.person.gender ?? null,
       age_at_filing: body.person.age ?? null,
       designation_at_filing: body.designation ?? null,
-      ...(body.address ? { address: body.address } : {}),
+      ...listsPatch(body),
       additional_details: body.additional_details,
       side: body.side,
       what_will_witness_prove: body.what_will_witness_prove,
     };
   }
+  const previous = before && !isWitness(before) ? before : undefined;
+  // Only an individual complainant has a permanent address.
+  const hasPermanentAddress = !body.institution && body.resides_within_jurisdiction === undefined;
   return {
     name_at_filing: body.person?.name ?? body.institution?.entity_name ?? "",
-    phone_number_at_filing:
-      (body.person ? body.person.phone_number : body.institution?.contact_number) ?? null,
     gender_at_filing: body.person?.gender ?? null,
     age_at_filing: body.person?.age ?? null,
     ...(body.person && body.institution
       ? { designation_at_filing: body.designation ?? null }
       : {}),
-    address: body.address,
-    ...(hasPermanentAddress(body) ? permanentPatch(body) : {}),
+    // An institution with nobody acting for it has no contacts outside `institution`.
+    ...(body.person || body.self ? listsPatch(body) : {}),
+    ...(body.institution ? institutionPatch(body.institution, previous?.institution) : {}),
+    ...personPatch(body, previous, hasPermanentAddress),
     is_party_in_person: body.is_party_in_person,
     // Accused only; `false` withdraws a declaration once a phone or email is added.
     ...(body.resides_within_jurisdiction !== undefined
@@ -377,7 +480,8 @@ export function patchFor(body: AnyPartyInput): ParticipantPatch {
           resides_within_jurisdiction: body.resides_within_jurisdiction,
           contact_details_unknown_declared: !!body.contact_details_unknown_declared,
         }
-      : {}),
+      : // Complainant only; `null` withdraws one saved earlier, once they take an advocate.
+        { party_in_person_affidavit: body.party_in_person_affidavit ?? null }),
     additional_details: body.additional_details,
   };
 }
@@ -389,16 +493,14 @@ export function patchFor(body: AnyPartyInput): ParticipantPatch {
  */
 function identity(body: AnyPartyInput, byName: boolean): string {
   const name = byName ? (body.person?.name ?? null) : null;
-  if (isWitness(body)) return JSON.stringify({ email: body.person.email_address ?? null });
-  // The institution's number is the case's copy (`phone_number_at_filing`), so it is left out.
+  if (isWitness(body)) return JSON.stringify({ witness: true });
+  // An institution's details are changed by PATCH, which re-links it; only switching
+  // between an individual and an institution needs the participant added again.
   return JSON.stringify({
     self: !!body.self,
     person: !!body.person,
     name,
-    email: body.person?.email_address ?? null,
-    // Kept on the person, which PATCH never changes.
-    disability: body.person?.disability_status ?? null,
-    institution: body.institution ? { ...body.institution, contact_number: undefined } : null,
+    institution: !!body.institution,
   });
 }
 
@@ -408,9 +510,24 @@ export function partyChanged(bodies: AnyPartyInput[], saved: SavedParty): boolea
   return bodies.length !== before.length || bodies.some((b, i) => JSON.stringify(b) !== before[i]);
 }
 
-export type PartySaveResult = Required<Pick<SavedParty, "caseParticipantIds" | "savedBodies">> & {
-  error?: unknown;
-};
+export type PartySaveResult = Required<Pick<SavedParty, "caseParticipantIds" | "savedBodies">> &
+  Pick<SavedParty, "institutionId"> & {
+    error?: unknown;
+  };
+
+/*
+ * Fields set to `undefined` below are left out of the request, which is sent as JSON.
+ */
+
+/** Another person summoned for a company already on the case: joined to it by its id. */
+function joining(body: PartyInput, institutionId: string): PartyInput {
+  return { ...body, institution: undefined, institution_id: institutionId };
+}
+
+/** A PATCH without the company's part, once another participant's PATCH has carried it. */
+function withoutCompany(patch: ParticipantPatch): ParticipantPatch {
+  return { ...patch, institution: undefined, institution_contacts: undefined };
+}
 
 export type PartyApi = Pick<CaseFilingApi, "addParty" | "updateParticipant" | "removeParticipant">;
 
@@ -432,6 +549,10 @@ function unpatched<T extends object>(body: T): string {
  *
  * The filer is added as `self`, which takes the backend's record of them as it is, so what
  * they typed here (age, gender, a fuller name) is then written to the case's copy.
+ *
+ * An accused company is one institution on the case, whoever is summoned for it. Each
+ * person after the first joins it by `institution_id`, and its own details and contacts go
+ * on one PATCH, which the backend applies to everyone summoned for it.
  */
 export async function saveParty(
   api: PartyApi,
@@ -462,6 +583,9 @@ export async function saveParty(
 
   const caseParticipantIds: string[] = [];
   const savedBodies: string[] = [];
+  // The company is on the case only while someone summoned for it still is.
+  let institutionId = match.some((k) => k !== undefined) ? saved.institutionId : undefined;
+  let companySent = false;
   let removed = 0;
   let i = 0;
   try {
@@ -472,21 +596,31 @@ export async function saveParty(
       const body = bodies[i];
       const k = match[i];
       if (k !== undefined) {
-        if (olds[k].json !== json[i]) await api.updateParticipant(olds[k].id, patchFor(body));
+        if (olds[k].json !== json[i]) {
+          const patch = patchFor(body, olds[k].body);
+          await api.updateParticipant(olds[k].id, companySent ? withoutCompany(patch) : patch);
+          companySent ||= "institution_contacts" in patch;
+        }
         caseParticipantIds.push(olds[k].id);
         savedBodies.push(json[i]);
         continue;
       }
       const self = !isWitness(body) && !!body.self;
-      const id = await api.addParty(caseId, role, self ? { ...body, person: undefined } : body);
-      caseParticipantIds.push(id);
+      const sent = self
+        ? { ...body, person: undefined }
+        : role === "accused" && !isWitness(body) && body.institution && institutionId
+          ? joining(body, institutionId)
+          : body;
+      const added = await api.addParty(caseId, role, sent);
+      institutionId ??= added.institutionId ?? undefined;
+      caseParticipantIds.push(added.participantId);
       savedBodies.push(self ? unpatched(body) : json[i]);
       if (self) {
-        await api.updateParticipant(id, patchFor(body));
+        await api.updateParticipant(added.participantId, patchFor(body));
         savedBodies[savedBodies.length - 1] = json[i];
       }
     }
-    return { caseParticipantIds, savedBodies };
+    return { caseParticipantIds, savedBodies, institutionId };
   } catch (error) {
     // Whatever was not reached is still on the case as it was.
     for (; i < bodies.length; i++) {
@@ -499,7 +633,9 @@ export async function saveParty(
       caseParticipantIds.push(old.id);
       savedBodies.push(old.json);
     }
-    return { caseParticipantIds, savedBodies, error };
+    // Still on the case through whoever was kept or added.
+    institutionId = caseParticipantIds.length ? (institutionId ?? saved.institutionId) : undefined;
+    return { caseParticipantIds, savedBodies, institutionId, error };
   }
 }
 
@@ -531,8 +667,8 @@ export function poaHolderBody(c: Complainant, isSelf = false): PoaHolderBody | n
   }
   return {
     ...(isSelf ? { self: true as const } : {}),
-    person: compact({ name: h.name.trim(), phone_number: phone(h.mobile), age: age(h.age) }),
-    address: address(h.res),
+    person: compact({ name: h.name.trim(), age: age(h.age) }),
+    ...contactLists([phone(h.mobile)], [], [address(h.res)]),
     ...(h.permSame === "no" ? { permanent_address: address(h.perm) } : {}),
     additional_details: {},
   };
@@ -540,19 +676,19 @@ export function poaHolderBody(c: Complainant, isSelf = false): PoaHolderBody | n
 
 /** What the backend still needs before it takes this holder: a full address. */
 export function poaHolderMissing(body: PoaHolderBody): string[] {
-  return ADDRESS_FIELDS.filter(([field]) => !body.address[field]).map(([, label]) => label);
+  const first = body.addresses?.[0] ?? {};
+  return ADDRESS_FIELDS.filter(([field]) => !first[field]).map(([, label]) => label);
 }
 
 /** The case's copy of the holder: everything PATCH may change for them. */
-function poaHolderPatch(body: PoaHolderBody): ParticipantPatch {
+function poaHolderPatch(body: PoaHolderBody, before?: PoaHolderBody): ParticipantPatch {
   return {
     name_at_filing: body.person?.name ?? "",
-    phone_number_at_filing: body.person?.phone_number ?? null,
     // The form does not ask a holder's gender.
     gender_at_filing: null,
     age_at_filing: body.person?.age ?? null,
-    address: body.address,
-    ...permanentPatch(body),
+    ...listsPatch(body),
+    ...personPatch(body, before, true),
     additional_details: body.additional_details,
   };
 }
@@ -599,7 +735,7 @@ export async function savePoaHolder(
     const json = JSON.stringify(body);
     if (current) {
       if (current.body !== json) {
-        await api.updateParticipant(current.participantId, poaHolderPatch(body));
+        await api.updateParticipant(current.participantId, poaHolderPatch(body, before));
       }
       return { saved: { ...current, body: json } };
     }

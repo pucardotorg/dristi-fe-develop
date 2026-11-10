@@ -498,6 +498,7 @@ export function AdvocateSection() {
           vakalatnama?.file
             ? [
                 {
+                  id: "vakalatnama",
                   label: vakalatnama.file.name,
                   active: true,
                   onClick: () => setSourceOpen(true),

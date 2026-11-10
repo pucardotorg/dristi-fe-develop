@@ -9,7 +9,8 @@
 import { isApiError } from "@/lib/api";
 
 import type { CaseFilingApi } from "./data/cases-api";
-import type { Advocate, SavedAdvocate } from "./types";
+import { representedIndices } from "./selectors";
+import type { Advocate, Complainant, SavedAdvocate } from "./types";
 
 export type AdvocateApi = Pick<CaseFilingApi, "addAdvocate" | "endRepresentation">;
 
@@ -81,6 +82,24 @@ export function advocateChanged(
     held.length !== clientIds.length ||
     clientIds.some((c) => !held.includes(c))
   );
+}
+
+/**
+ * The complainant participants an advocate acts for; `undefined` for one not on the case
+ * yet. A complainant appearing in person has no advocate, whatever the row says.
+ */
+export function advocateClientIds(
+  advocate: Advocate,
+  complainants: Complainant[],
+  participantIdOf: (c: Complainant) => string | undefined
+): Array<string | undefined> {
+  const represented = representedIndices(complainants);
+  return advocate.forComplainants
+    .filter((k) => represented.includes(k))
+    .map((k) => {
+      const complainant = complainants[k];
+      return complainant ? participantIdOf(complainant) : undefined;
+    });
 }
 
 /** End every representation an advocate holds, for when the row is removed or cleared. */

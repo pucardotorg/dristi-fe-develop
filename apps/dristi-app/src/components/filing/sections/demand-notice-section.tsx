@@ -370,6 +370,7 @@ export function DemandNoticeSection() {
         onOpenChange={setSourceOpen}
         title={sourceSlot?.label ?? DOC_LABELS[sourceDoc]}
         chips={uploadedDocs.map((doc) => ({
+          id: doc,
           label: slots[doc]?.file?.name ?? slots[doc]?.label ?? DOC_LABELS[doc],
           active: doc === sourceDoc,
           onClick: () => setSourceDoc(doc),

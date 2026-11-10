@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { ArrowLeftIcon } from "lucide-react";
@@ -41,6 +43,7 @@ export function CaseHearingsDialog({
   /** Opens straight onto one hearing, for a link that names it. */
   initialHearingId?: string | null;
 }) {
+  const __t = __useTranslations();
   const hearings = useMemo(() => hearingRecords(record), [record]);
   const [openId, setOpenId] = useState<string | null>(initialHearingId);
   const openHearing = hearings.find((item) => item.id === openId) ?? null;
@@ -93,10 +96,9 @@ export function CaseHearingsDialog({
       >
         <DialogHeader className="gap-1 border-b border-hairline px-6 py-4 text-left">
           <DialogTitle className="text-title-s font-semibold">
-            Hearings
-          </DialogTitle>
+            {<__LocalizedText id="caseHearingsDialog_hearings" />}{" "}</DialogTitle>
           <p className="text-caption font-medium text-muted-foreground">
-            <Identifier value={record.caseNumber} label="case number" />
+            <Identifier value={record.caseNumber} label={__t("caseHearingsDialog_caseNumber")} />
           </p>
         </DialogHeader>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
@@ -124,8 +126,7 @@ export function CaseHearingsDialog({
           <DialogFooter className="mx-0 mb-0 shrink-0 sm:justify-start">
             <Button type="button" variant="outline" onClick={stepBack}>
               <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-              All hearings
-            </Button>
+              {<__LocalizedText id="caseHearingsDialog_allHearings" />}{" "}</Button>
           </DialogFooter>
         ) : null}
       </FlowDialogContent>

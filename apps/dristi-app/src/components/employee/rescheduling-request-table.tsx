@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -60,22 +62,19 @@ export function ReschedulingRequestTable({
   rows: ReschedulingRequest[];
   onOpen: (request: ReschedulingRequest) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="reschedulingRequestTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="reschedulingRequestTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Date of application
-          </TableHead>
+            {<__LocalizedText id="reschedulingRequestTable_dateOfApplication" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Date of next hearing
-          </TableHead>
+            {<__LocalizedText id="reschedulingRequestTable_dateOfNextHearing" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -93,12 +92,12 @@ export function ReschedulingRequestTable({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Review </span>
+                <span className="sr-only">{<__LocalizedText id="reschedulingRequestTable_review" />}{" "}</span>
                 {causeTitle(request)}
               </button>
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              <Identifier value={request.caseNumber} label="case number" />
+              <Identifier value={request.caseNumber} label={__t("reschedulingRequestTable_caseNumber_e4621960")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>
               {formatRequestDate(request.appliedOn)}

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { GripVerticalIcon } from "lucide-react";
@@ -85,6 +87,7 @@ export function CasesTable({
   hideStage?: boolean;
   hideLongPendingFlag?: boolean;
 }) {
+  const __t = __useTranslations();
   const { isVisible, order, reorder, shift } = useCasesTableColumns();
   const { record: openRecord } = useCasePeek();
   const { selected, toggle, setMany, enabled: selectable } = useCasesSelection();
@@ -196,10 +199,7 @@ export function CasesTable({
   return (
     <>
       <p id={COLUMNS_HINT_ID} className="sr-only">
-        Drag a column header by its handle to change its order. With a header
-        focused, press Alt and Left arrow or Alt and Right arrow to move it. Show,
-        hide, or reset columns from the columns menu.
-      </p>
+        {<__LocalizedText id="casesTable_dragAColumnHeaderByItsHandle" />}{" "}</p>
       <Table
         className="w-full border-separate border-spacing-0 text-body-compact"
         aria-describedby={COLUMNS_HINT_ID}
@@ -224,8 +224,8 @@ export function CasesTable({
                     }
                     aria-label={
                       allState === true
-                        ? `Clear the selection of all ${allIds.length} cases`
-                        : `Select all ${allIds.length} cases`
+                        ? __t("casesTable_clearTheSelectionOfAllValue0Cases", {value0: String(allIds.length)})
+                        : __t("casesTable_selectAllValue0Cases", {value0: String(allIds.length)})
                     }
                   />
                 </div>
@@ -274,7 +274,7 @@ export function CasesTable({
                     aria-hidden
                     className="-ml-1 size-3.5 shrink-0 text-muted-foreground"
                   />
-                  {column.label}
+                  {__t(column.label)}
                 </span>
               </TableHead>
               );
@@ -285,7 +285,7 @@ export function CasesTable({
                 "sticky right-0 z-20 w-12 bg-surface-sunken px-1"
               )}
             >
-              <span className="sr-only">Bookmark</span>
+              <span className="sr-only">{<__LocalizedText id="casesTable_bookmark" />}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -334,7 +334,7 @@ export function CasesTable({
                     <Checkbox
                       checked={selected.has(record.id)}
                       onCheckedChange={() => toggle(record.id)}
-                      aria-label={`Select ${partiesLabel(record)}`}
+                      aria-label={__t("casesTable_selectValue0", {value0: String(partiesLabel(record))})}
                     />
                   </div>
                 </TableCell>

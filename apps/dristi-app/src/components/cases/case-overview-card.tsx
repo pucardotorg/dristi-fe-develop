@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useState, type ReactNode } from "react";
 import { CaseLink as Link } from "@/components/cases/case-reader";
@@ -63,6 +65,7 @@ export function OverviewSection({
   action?: ReactNode;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <section id={id} className="min-w-0 scroll-mt-6">
       <RestingCard>
@@ -77,7 +80,7 @@ export function OverviewSection({
               action ? "min-h-10" : undefined,
             )}
           >
-            <h2 className="text-body font-semibold">{title}</h2>
+            <h2 className="text-body font-semibold">{__t(title)}</h2>
             {count === undefined ? null : (
               <span className="text-body-compact tabular-nums text-muted-foreground">
                 {count}
@@ -86,10 +89,10 @@ export function OverviewSection({
           </div>
           {description ? (
             <CardDescription className="text-caption">
-              {description}
+              {__t(description)}
             </CardDescription>
           ) : null}
-          {action ? <CardAction>{action}</CardAction> : null}
+          {action ? <CardAction>{__t(action)}</CardAction> : null}
         </CardHeader>
         {children}
       </RestingCard>
@@ -114,11 +117,12 @@ export function OverviewRow({
   narrow?: boolean;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow
       className={narrow ? "max-sm:grid-cols-1 max-sm:gap-y-1" : undefined}
     >
-      <DescriptionTerm>{term}</DescriptionTerm>
+      <DescriptionTerm>{__t(term)}</DescriptionTerm>
       <DescriptionDetails className="font-medium">
         {children}
       </DescriptionDetails>
@@ -144,6 +148,7 @@ export function PendingTaskRow({
   /** The lines under the title: deadline, owner, note. */
   children?: ReactNode;
 }) {
+  const __t = __useTranslations();
   const [trayOpen, setTrayOpen] = useState(false);
   return (
     <>
@@ -153,7 +158,7 @@ export function PendingTaskRow({
           Sept 21). */}
       <div role="listitem" className={cn("py-1", REGISTER_CARDS_ONLY)}>
         <RegisterTrayCard
-          title={title}
+          title={__t(title)}
           open={trayOpen}
           onOpenChange={setTrayOpen}
           className="shadow-none"
@@ -162,17 +167,15 @@ export function PendingTaskRow({
               {onArchive ? (
                 <Button type="button" variant="outline" onClick={onArchive}>
                   <ArchiveIcon data-icon="inline-start" aria-hidden />
-                  Archive
-                </Button>
+                  {<__LocalizedText id="caseOverviewCard_archive" />}{" "}</Button>
               ) : null}
               {"href" in respond ? (
                 <Button asChild>
-                  <Link href={respond.href}>Respond</Link>
+                  <Link href={respond.href}>{<__LocalizedText id="caseOverviewCard_respond" />}</Link>
                 </Button>
               ) : (
                 <Button type="button" onClick={respond.onClick}>
-                  Respond
-                </Button>
+                  {<__LocalizedText id="caseOverviewCard_respond" />}{" "}</Button>
               )}
             </>
           }
@@ -192,7 +195,7 @@ export function PendingTaskRow({
       )}
     >
       <ItemContent className="gap-1.5">
-        <ItemTitle className="line-clamp-none min-w-0">{title}</ItemTitle>
+        <ItemTitle className="line-clamp-none min-w-0">{__t(title)}</ItemTitle>
         {children}
       </ItemContent>
       <ItemActions className="shrink-0 gap-1 max-sm:basis-full">
@@ -204,7 +207,7 @@ export function PendingTaskRow({
             asChild
           >
             <Link href={respond.href}>
-              Respond<span className="sr-only">: {title}</span>
+              {<__LocalizedText id="caseOverviewCard_respond" />}<span className="sr-only">: {__t(title)}</span>
             </Link>
           </Button>
         ) : (
@@ -215,7 +218,7 @@ export function PendingTaskRow({
             className="max-sm:h-10 max-sm:flex-1"
             onClick={respond.onClick}
           >
-            Respond<span className="sr-only">: {title}</span>
+            {<__LocalizedText id="caseOverviewCard_respond" />}<span className="sr-only">: {__t(title)}</span>
           </Button>
         )}
         {onArchive ? (
@@ -226,13 +229,13 @@ export function PendingTaskRow({
                 variant="ghost"
                 size="icon-sm"
                 className="text-muted-foreground max-sm:size-10"
-                aria-label={`Archive task: ${title}`}
+                aria-label={__t("caseOverviewCard_archiveTaskValue0", {value0: String(__t(title))})}
                 onClick={onArchive}
               >
                 <ArchiveIcon aria-hidden />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Archive</TooltipContent>
+            <TooltipContent side="bottom">{<__LocalizedText id="caseOverviewCard_archive" />}</TooltipContent>
           </Tooltip>
         ) : null}
       </ItemActions>

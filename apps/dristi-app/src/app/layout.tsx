@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
+import { AccessProvider } from "@/components/access/access-state";
 import { FeedbackProvider } from "@/components/feedback-provider";
 import { LocaleProvider } from "@/components/shell/locale";
 import { ThemeProvider } from "@/components/theme-provider";
-import { serverBrandHue, serverCourt, serverCourtText } from "@/lib/court/server";
 
 import "./globals.css";
 /* App rules for chrome, kept apart from the base tokens in globals.css. */
@@ -40,7 +40,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LocaleProvider>
-            <FeedbackProvider>{children}</FeedbackProvider>
+            <AccessProvider>
+              <FeedbackProvider>{children}</FeedbackProvider>
+            </AccessProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The vakalatnama wizard: a stepped flow over one persisted draft. The stepper is the
@@ -39,14 +41,14 @@ const STEPS: { key: string; title: string; render: (p: StepProps) => React.React
 const LAST = STEPS.length - 1;
 
 export function VakalatnamaWizard({ id }: { id: string }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const vak = useVak(id);
 
   if (!vak) {
     return (
       <div className="flex flex-1 items-center justify-center p-12 text-body text-muted-foreground">
-        This vakalatnama isn’t in this browser.
-      </div>
+        {<__LocalizedText id="wizard_thisVakalatnamaIsnTInThisBrowser" />}{" "}</div>
     );
   }
 
@@ -67,15 +69,14 @@ export function VakalatnamaWizard({ id }: { id: string }) {
     <div className="flex min-w-0 flex-1 flex-col">
       {/* Vakalatnama › New vakalatnama, so the trail links back to the list. The steps
           are views of this one page; the stepper names them, the trail does not. */}
-      <Breadcrumbs crumbs={[{ label: "New vakalatnama" }]} />
+      <Breadcrumbs crumbs={[{ label: __t("wizard_newVakalatnama") }]} />
       {/* Content flows; the page body scrolls (the app pattern). */}
       <div className="px-4 pb-8 pt-6 sm:px-6 lg:px-12">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
           <header className="flex flex-col gap-1">
-            <h1 className="text-title font-semibold tracking-tight">New vakalatnama</h1>
+            <h1 className="text-title font-semibold tracking-tight">{<__LocalizedText id="wizard_newVakalatnama" />}</h1>
             <p className="text-body text-muted-foreground">
-              Appoint one or more advocates for a litigant, for one case or all cases.
-            </p>
+              {<__LocalizedText id="wizard_appointOneOrMoreAdvocatesForA" />}{" "}</p>
           </header>
 
           {/* Registration's stepper, the product's one journey stepper (owner,
@@ -83,22 +84,22 @@ export function VakalatnamaWizard({ id }: { id: string }) {
           <div>
             <Stepper
               className={CENTRED_STEPPER}
-              aria-label={`Step ${step + 1} of ${STEPS.length}`}
+              aria-label={__t("wizard_stepValue0OfValue1", {value0: String(step + 1), value1: String(STEPS.length)})}
             >
               {STEPS.map((s, i) => (
                 <StepperItem
                   key={s.key}
                   step={i + 1}
-                  title={s.title}
+                  title={__t(s.title)}
                   status={i < step ? "complete" : i === step ? "current" : "upcoming"}
                   onActivate={i <= step && !executed ? () => go(i) : undefined}
                 />
               ))}
             </Stepper>
             <p className={STEP_CAPTION}>
-              Step {step + 1} of {STEPS.length}
+              {<__LocalizedText id="wizard_step" />}{" "}{step + 1} {<__LocalizedText id="wizard_of" />}{" "}{STEPS.length}
               {" · "}
-              <span className="font-medium text-foreground">{active.title}</span>
+              <span className="font-medium text-foreground">{__t(active.title)}</span>
             </p>
           </div>
 
@@ -116,29 +117,27 @@ export function VakalatnamaWizard({ id }: { id: string }) {
               onClick={() => (step === 0 ? router.push("/vakalatnama") : go(step - 1))}
             >
               <ArrowLeftIcon aria-hidden />
-              {step === 0 ? "Cancel" : "Back"}
+              {step === 0 ? __t("wizard_cancel") : __t("wizard_back")}
             </Button>
 
             {step < LAST ? (
               <div className="flex items-center gap-3">
                 {continueBlocked ? (
                   <span className="text-caption text-muted-foreground">
-                    All parties must sign to continue
-                  </span>
+                    {<__LocalizedText id="wizard_allPartiesMustSignToContinue" />}{" "}</span>
                 ) : null}
                 <Button
                   type="button"
                   onClick={() => go(step + 1)}
                   disabled={continueBlocked}
                 >
-                  {continueLabel}
+                  {__t(continueLabel)}
                   <ArrowRightIcon aria-hidden />
                 </Button>
               </div>
             ) : (
               <span className="text-body-compact text-muted-foreground">
-                Pay to complete
-              </span>
+                {<__LocalizedText id="wizard_payToComplete" />}{" "}</span>
             )}
           </div>
         </footer>
@@ -147,8 +146,7 @@ export function VakalatnamaWizard({ id }: { id: string }) {
           <div className="mx-auto flex w-full max-w-4xl items-center justify-end gap-4 px-4 py-4 sm:px-6 lg:px-12">
             <Button type="button" onClick={() => router.push("/vakalatnama")}>
               <CheckIcon aria-hidden />
-              Done
-            </Button>
+              {<__LocalizedText id="wizard_done" />}{" "}</Button>
           </div>
         </footer>
       )}

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -159,6 +161,7 @@ function plural(count: number, one: string, many: string): string {
  * (`lib/employee/draft-orders.ts`).
  */
 export function SignOrdersScreen() {
+  const __t = __useTranslations();
   /* The queue is state because signing changes it. One list, so the table, the rail
      count on the next render and the bar can never disagree about what is still
      pending. */
@@ -329,8 +332,7 @@ export function SignOrdersScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Sign orders
-        </h1>
+          {<__LocalizedText id="signOrdersScreen_signOrders" />}{" "}</h1>
         {/* The count is the whole point of the queue, so the supporting line carries it
             rather than restating the title. Singular is spelled out because "1 orders"
             is the kind of thing a court notices.
@@ -342,14 +344,14 @@ export function SignOrdersScreen() {
         <p className="text-body text-muted-foreground">
           {tab === "pending"
             ? pending.length === 1
-              ? "1 order is waiting for your signature."
+              ? __t("signOrdersScreen_1OrderIsWaitingForYourSignature")
               : `${pending.length} orders are waiting for your signature.`
             : tab === "signed"
               ? signedCount === 1
-                ? "1 order is signed and issued."
+                ? __t("signOrdersScreen_1OrderIsSignedAndIssued")
                 : `${signedCount} orders are signed and issued.`
             : draftRows.length === 1
-              ? "1 order from today's sitting has not been sent for signature."
+              ? __t("signOrdersScreen_1OrderFromTodaySSittingHas")
               : `${draftRows.length} orders from today's sitting have not been sent for signature.`}
         </p>
       </header>
@@ -405,7 +407,7 @@ export function SignOrdersScreen() {
           <div className="overflow-x-auto border-b border-hairline">
             <TabsList
               variant="line"
-              aria-label="Which orders to show"
+              aria-label={__t("signOrdersScreen_whichOrdersToShow")}
               className="h-10 w-max min-w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-10"
             >
               {(
@@ -420,7 +422,7 @@ export function SignOrdersScreen() {
                   value={value}
                   className="h-10 flex-none gap-2 px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
                 >
-                  {label}
+                  {__t(label)}
                   {/* How much is standing here, inheriting the trigger's colour so the
                       count and its label read as one thing rather than as a badge stuck
                       to a tab (ui-craft §2). */}
@@ -585,18 +587,19 @@ function SignOrderFiltersForm({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: __t("signOrdersScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name or number",
+        placeholder: __t("signOrdersScreen_caseNameOrNumber"),
       }}
       searchRef={searchRef}
       fields={fields}
       date={{
-        label: "Date added",
+        label: __t("signOrdersScreen_dateAdded"),
         value: filters.addedOn ? parseIsoDay(filters.addedOn) : undefined,
         active: filters.addedOn !== "",
         chipLabel: filters.addedOn ? formatListingDate(filters.addedOn) : "",
@@ -637,6 +640,7 @@ function SignBar({
   /** Handed down so the confirmation can give the keyboard back to this button. */
   signRef: React.Ref<HTMLButtonElement>;
 }) {
+  const __t = __useTranslations();
   const summary =
     notice ||
     (count === 0
@@ -650,7 +654,7 @@ function SignBar({
           className="mr-auto text-body-compact text-muted-foreground tabular-nums"
           aria-live="polite"
         >
-          {summary}
+          {__t(summary)}
         </p>
 
         <Button
@@ -661,8 +665,8 @@ function SignBar({
           onClick={onRequestSign}
         >
           {count > 0
-            ? `Sign ${count} ${plural(count, "order", "orders")}`
-            : "Sign selected orders"}
+            ? __t("signOrdersScreen_signValue0Value1", {value0: String(count), value1: String(plural(count, "order", "orders"))})
+            : __t("signOrdersScreen_signSelectedOrders")}
         </Button>
       </div>
     </div>
@@ -687,6 +691,7 @@ function SignOrdersEmpty({
   signed: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -699,24 +704,23 @@ function SignOrdersEmpty({
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isFiltered
-            ? "No orders match these filters"
+            ? __t("signOrdersScreen_noOrdersMatchTheseFilters")
             : signed
-              ? "Nothing signed yet"
-              : "Nothing to sign"}
+              ? __t("signOrdersScreen_nothingSignedYet")
+              : __t("signOrdersScreen_nothingToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No order matches the type, date or search you asked for."
+            ? __t("signOrdersScreen_noOrderMatchesTheTypeDateOr")
             : signed
-              ? "Orders you sign here are published and kept on this tab."
-              : "Every order this court has drawn up has been signed."}
+              ? __t("signOrdersScreen_ordersYouSignHereArePublishedAnd")
+              : __t("signOrdersScreen_everyOrderThisCourtHasDrawnUp")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
-          </Button>
+            {<__LocalizedText id="signOrdersScreen_clearFilters" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -746,6 +750,7 @@ function SignOrdersItemList({
   /** The Signed tab: nothing to select, and the day it was signed. */
   signed: boolean;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   return (
     <ul className="flex flex-col gap-3">
@@ -762,7 +767,7 @@ function SignOrdersItemList({
                 <Checkbox
                   checked={selectedIds.has(order.id)}
                   onCheckedChange={() => onToggle(order)}
-                  aria-label={`Select ${title} in ${courtText(order.caseNumber)}`}
+                  aria-label={__t("signOrdersScreen_selectValue0InValue1", {value0: String(__t(title)), value1: String(courtText(order.caseNumber))})}
                 />
               </span>
             ) : (
@@ -778,15 +783,15 @@ function SignOrdersItemList({
                 className={rowOpenerClass}
               >
                 <span className="sr-only">
-                  {pending ? "Read and sign " : "Read "}
-                  {title} in{" "}
+                  {pending ? __t("signOrdersScreen_readAndSign") : __t("signOrdersScreen_read")}
+                  {__t(title)} {<__LocalizedText id="signOrdersScreen_in" />}{" "}
                 </span>
                 {causeTitle(order)}
               </button>
-              <p className="min-w-0 text-body-compact">{title}</p>
+              <p className="min-w-0 text-body-compact">{__t(title)}</p>
               <p className="text-caption text-muted-foreground">
-                <Identifier value={order.caseNumber} label="case number" />
-                {signed ? " · Signed " : " · Added "}
+                <Identifier value={order.caseNumber} label={__t("signOrdersScreen_caseNumber")} />
+                {signed ? __t("signOrdersScreen_signed_9f3b6efb") : __t("signOrdersScreen_added")}
                 <span className="tabular-nums">
                   {formatSignOrderDate(
                     signed ? (order.signedOn ?? order.addedOn) : order.addedOn,
@@ -821,16 +826,13 @@ function DraftOrdersEmpty() {
           <FilePenLineIcon aria-hidden />
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          No orders are being written
-        </EmptyTitle>
+          {<__LocalizedText id="signOrdersScreen_noOrdersAreBeingWritten" />}{" "}</EmptyTitle>
         <EmptyDescription className="text-body">
-          An order is drawn up at the sitting it belongs to. Orders you start on
-          today&apos;s cause list appear here until they are sent for signature.
-        </EmptyDescription>
+          {<__LocalizedText id="signOrdersScreen_anOrderIsDrawnUpAtThe" />}{" "}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button asChild variant="outline">
-          <Link href="/employee/hearings">Go to today&apos;s hearings</Link>
+          <Link href="/employee/hearings">{<__LocalizedText id="signOrdersScreen_goToTodaySHearings" />}</Link>
         </Button>
       </EmptyContent>
     </Empty>
@@ -842,13 +844,14 @@ function DraftOrdersEmpty() {
  * table's order, and its one act at full width.
  */
 function DraftOrdersItemList({ rows }: { rows: HearingOrder[] }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((order) => (
         <QueueItemRow key={order.hearing.id} className="flex min-w-0 flex-col gap-2">
           <p className="text-body-compact font-medium">{causeTitle(order.hearing)}</p>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={order.hearing.caseNumber} label="case number" />
+            <Identifier value={order.hearing.caseNumber} label={__t("signOrdersScreen_caseNumber")} />
           </p>
           <div className="flex flex-col gap-1 text-body-compact">
             <DrawnUpAt order={order} />

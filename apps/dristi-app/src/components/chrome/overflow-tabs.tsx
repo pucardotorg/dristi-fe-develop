@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { ChevronDownIcon } from "lucide-react";
@@ -65,6 +66,7 @@ export function OverflowTabsList({
   moreLabel?: string;
   "aria-label"?: string;
 }) {
+  const __t = __useTranslations();
   const listRef = React.useRef<HTMLDivElement>(null);
   const measureKey = items.map((item) => `${item.value}:${item.measure ?? ""}`).join("|");
   const [measured, setMeasured] = React.useState<{
@@ -127,7 +129,7 @@ export function OverflowTabsList({
     <TabsList
       ref={listRef}
       variant="line"
-      aria-label={ariaLabel}
+      aria-label={__t(ariaLabel)}
       className={cn("flex-nowrap overflow-x-clip", className)}
     >
       {shown.map((item) => (
@@ -137,7 +139,7 @@ export function OverflowTabsList({
           data-overflow-tab
           className={triggerClassName}
         >
-          {item.label}
+          {__t(item.label)}
         </TabsTrigger>
       ))}
       {measuring || folded.length ? (
@@ -158,7 +160,7 @@ export function OverflowTabsList({
                 data-state={currentFolded ? "active" : "inactive"}
                 className={triggerClassName}
               >
-                {moreLabel}
+                {__t(moreLabel)}
                 <ChevronDownIcon
                   aria-hidden
                   className={cn("self-center text-muted-foreground", chevronClassName)}
@@ -179,7 +181,7 @@ export function OverflowTabsList({
                         "font-semibold before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-brand-accent"
                     )}
                   >
-                    {item.label}
+                    {__t(item.label)}
                   </DropdownMenuItem>
                 );
               })}

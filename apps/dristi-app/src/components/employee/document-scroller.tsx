@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -64,6 +66,7 @@ export function DocumentScroller({
   active: ScrollerActive | null;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   /* When a fact selects a document, bring it to the top of the column — moving *this*
@@ -115,7 +118,7 @@ export function DocumentScroller({
           <section
             key={doc.key}
             data-doc={doc.key}
-            aria-label={doc.title}
+            aria-label={__t(doc.title)}
             className="flex scroll-mt-4 flex-col gap-2"
           >
             {/* The one navigational anchor in a long scroll, so it reads as one: caption
@@ -124,12 +127,12 @@ export function DocumentScroller({
                 header band carries them — never laid over the scan they would cover. */}
             <div className="flex min-h-10 items-center justify-between gap-2">
               <h3 className="text-caption font-semibold text-foreground">
-                <span className="tabular-nums">{doc.no}</span> · {doc.title}
+                <span className="tabular-nums">{__t(doc.no)}</span> · {__t(doc.title)}
               </h3>
               {/* A scan opens in the viewer with its zoom; a facsimile opens as itself,
                   large, in the same Full view. */}
               <DocumentPreviewActions
-                title={doc.title}
+                title={__t(doc.title)}
                 source={
                   doc.src
                     ? { kind: "src", src: doc.src }
@@ -191,8 +194,8 @@ export function DocumentScroller({
       })}
 
       {absent.length > 0 ? (
-        <section className="flex flex-col gap-2" aria-label="Not filed">
-          <h3 className="text-caption font-semibold text-muted-foreground">Not filed</h3>
+        <section className="flex flex-col gap-2" aria-label={__t("documentScroller_notFiled")}>
+          <h3 className="text-caption font-semibold text-muted-foreground">{<__LocalizedText id="documentScroller_notFiled" />}</h3>
           {absent.map((doc) => (
             <p
               key={doc.key}
@@ -202,7 +205,7 @@ export function DocumentScroller({
                 aria-hidden
                 className="h-8 w-6 shrink-0 rounded-sm border border-dashed border-input"
               />
-              {doc.title}
+              {__t(doc.title)}
             </p>
           ))}
         </section>

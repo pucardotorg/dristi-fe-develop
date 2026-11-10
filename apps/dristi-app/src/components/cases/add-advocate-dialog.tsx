@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Add advocates — scenario 1 of the party-actions spec: an advocate already
@@ -145,6 +147,7 @@ export function AddAdvocateDialog({
   /** The viewer's own clients only; never the opposing side. */
   litigants: PartyOption[];
 }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const [step, setStep] = useState<AdvocateStep>(1);
   const [phoneInput, setPhoneInput] = useState("");
@@ -307,14 +310,14 @@ export function AddAdvocateDialog({
                   </span>
                   <div className="flex min-w-0 flex-col gap-1.5">
                     <DialogTitle className="text-title-s font-semibold text-balance">
-                      {chips.length === 1 ? "Advocate added" : "Advocates added"}
+                      {chips.length === 1 ? __t("addAdvocateDialog_advocateAdded") : __t("addAdvocateDialog_advocatesAdded")}
                     </DialogTitle>
                     <DialogDescription className="text-pretty">
                       <NamesWithOthers
                         names={advocateNames}
                         othersLabel="Other advocates"
                       />{" "}
-                      can now act on this case for{" "}
+                      {<__LocalizedText id="addAdvocateDialog_canNowActOnThisCaseFor" />}{" "}
                       <NamesWithOthers
                         names={chosenParties.map((p) => p.name)}
                         othersLabel="Other parties"
@@ -326,8 +329,7 @@ export function AddAdvocateDialog({
               </DialogHeader>
               <footer className="flex shrink-0 justify-end border-t border-hairline px-6 py-4">
                 <Button type="button" onClick={closeClean}>
-                  Done
-                </Button>
+                  {<__LocalizedText id="addAdvocateDialog_done" />}{" "}</Button>
               </footer>
             </>
           ) : (
@@ -340,12 +342,12 @@ export function AddAdvocateDialog({
             <FlowStepper
               steps={STEPS}
               current={step}
-              label="Add advocates progress"
+              label={__t("addAdvocateDialog_addAdvocatesProgress")}
             />
           </div>
           <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
             <DialogTitle className="text-title-s font-semibold text-balance">
-              {current.title}
+              {__t(current.title)}
             </DialogTitle>
             <DialogDescription className="text-pretty">
               {/* Step 2's description carries the deed's own facts, so the
@@ -354,12 +356,12 @@ export function AddAdvocateDialog({
                   stepper, title, section - owner, Sept 1). */}
               {step === 2 ? (
                 <>
-                  Attach the vakalatnama executed by{" "}
+                  {<__LocalizedText id="addAdvocateDialog_attachTheVakalatnamaExecutedBy" />}{" "}
                   <NamesWithOthers
                     names={chosenParties.map((p) => p.name)}
                     othersLabel="Other parties"
                   />{" "}
-                  in favour of{" "}
+                  {<__LocalizedText id="addAdvocateDialog_inFavourOf" />}{" "}
                   <NamesWithOthers
                     names={advocateNames}
                     othersLabel="Other advocates"
@@ -367,7 +369,7 @@ export function AddAdvocateDialog({
                   .
                 </>
               ) : (
-                current.description
+                __t(current.description)
               )}
             </DialogDescription>
           </DialogHeader>
@@ -386,11 +388,9 @@ export function AddAdvocateDialog({
                       className="block w-full text-body font-semibold leading-snug"
                       htmlFor="advocate-phone"
                     >
-                      Advocates
-                    </FieldLabel>
+                      {<__LocalizedText id="addAdvocateDialog_advocates" />}{" "}</FieldLabel>
                     <FieldDescription>
-                      Everyone added here goes on the same vakalatnama.
-                    </FieldDescription>
+                      {<__LocalizedText id="addAdvocateDialog_everyoneAddedHereGoesOnTheSame" />}{" "}</FieldDescription>
 
                     {chips.length ? (
                       <div className="flex flex-wrap gap-1.5">
@@ -410,7 +410,7 @@ export function AddAdvocateDialog({
                                 misaligned (owner's call, Sept 1). */}
                             <button
                               type="button"
-                              aria-label={`Remove ${chip.name}`}
+                              aria-label={__t("addAdvocateDialog_removeValue0", {value0: String(chip.name)})}
                               className="flex size-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
                               onClick={() =>
                                 setChips((existing) =>
@@ -434,7 +434,7 @@ export function AddAdvocateDialog({
                         <Input
                           readOnly
                           tabIndex={-1}
-                          aria-label="Mobile number"
+                          aria-label={__t("addAdvocateDialog_mobileNumber")}
                           className="w-40 shrink-0 text-muted-foreground tabular-nums"
                           value={`+91 ${formatAdvocatePhone(pendingInvite)}`}
                         />
@@ -443,8 +443,8 @@ export function AddAdvocateDialog({
                           autoFocus
                           autoComplete="off"
                           className="min-w-0 flex-1"
-                          placeholder="Advocate's name"
-                          aria-label={`Name for +91 ${formatAdvocatePhone(pendingInvite)}`}
+                          placeholder={__t("addAdvocateDialog_advocateSName")}
+                          aria-label={__t("addAdvocateDialog_nameFor91Value0", {value0: String(formatAdvocatePhone(pendingInvite))})}
                           value={inviteName}
                           onChange={(event) => {
                             setInviteName(event.target.value);
@@ -465,14 +465,13 @@ export function AddAdvocateDialog({
                           variant="outline"
                           onClick={commitInvite}
                         >
-                          Add
-                        </Button>
+                          {<__LocalizedText id="addAdvocateDialog_add" />}{" "}</Button>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
                           className="text-muted-foreground"
-                          aria-label="Cancel this invite"
+                          aria-label={__t("addAdvocateDialog_cancelThisInvite")}
                           onClick={() => {
                             setPendingInvite(null);
                             setInviteName("");
@@ -494,7 +493,7 @@ export function AddAdvocateDialog({
                           inputMode="numeric"
                           autoComplete="off"
                           maxLength={10}
-                          placeholder="10-digit mobile number"
+                          placeholder={__t("addAdvocateDialog_10DigitMobileNumber")}
                           value={phoneInput}
                           onFocus={() => setFocused(true)}
                           onBlur={() => setFocused(false)}
@@ -544,11 +543,11 @@ export function AddAdvocateDialog({
                                     <span className="tabular-nums">
                                       {formatAdvocatePhone(phoneInput)}
                                     </span>
-                                    {" · Bar ID "}
+                                    {__t("addAdvocateDialog_barId_f9b6b871")}
                                     {/* The whole lookup result is the button. */}
                                     <Identifier
                                       value={lookup.barId}
-                                      label="bar id"
+                                      label={__t("addAdvocateDialog_barId")}
                                       copyable={false}
                                     />
                                   </>
@@ -565,8 +564,7 @@ export function AddAdvocateDialog({
 
                     {alreadyStacked ? (
                       <FieldDescription>
-                        This advocate is already in the list.
-                      </FieldDescription>
+                        {<__LocalizedText id="addAdvocateDialog_thisAdvocateIsAlreadyInTheList" />}{" "}</FieldDescription>
                     ) : null}
 
                     <FieldError>{errors.advocates}</FieldError>
@@ -574,7 +572,7 @@ export function AddAdvocateDialog({
                         the line explains the register-on-join instead. */}
                     <p className="text-caption text-muted-foreground tabular-nums">
                       {pendingInvite
-                        ? "Not on DRISTI yet. They'll be asked to register when they join."
+                        ? __t("addAdvocateDialog_notOnDristiYetTheyLlBe")
                         : ADVOCATE_DEMO_NUMBERS}
                     </p>
                   </Field>
@@ -583,12 +581,9 @@ export function AddAdvocateDialog({
 
                   <Field data-invalid={Boolean(errors.parties)}>
                     <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                      Who will they represent?
-                    </FieldLabel>
+                      {<__LocalizedText id="addAdvocateDialog_whoWillTheyRepresent" />}{" "}</FieldLabel>
                     <FieldDescription>
-                      Your clients on this case. The vakalatnama must be signed
-                      by every party picked here.
-                    </FieldDescription>
+                      {<__LocalizedText id="addAdvocateDialog_yourClientsOnThisCaseTheVakalatnama" />}{" "}</FieldDescription>
                     <div className="flex flex-col gap-1">
                       {litigants.map((party) => (
                         <div
@@ -636,16 +631,14 @@ export function AddAdvocateDialog({
                     >
                       <TabsList className="w-full border border-hairline bg-surface-sunken">
                         <TabsTrigger value="upload" className="flex-1">
-                          Upload a file
-                        </TabsTrigger>
+                          {<__LocalizedText id="addAdvocateDialog_uploadAFile" />}{" "}</TabsTrigger>
                         <TabsTrigger value="saved" className="flex-1">
-                          Generated vakalatnamas
-                        </TabsTrigger>
+                          {<__LocalizedText id="addAdvocateDialog_generatedVakalatnamas" />}{" "}</TabsTrigger>
                       </TabsList>
                       <TabsContent value="upload" className="pt-3">
                         <Field data-invalid={Boolean(errors.vakalatnama)}>
                           <UploadedDocField
-                            label="Signed vakalatnama"
+                            label={__t("addAdvocateDialog_signedVakalatnama")}
                             required
                             file={vakalatFile}
                             onFileChange={(file) => {
@@ -682,8 +675,7 @@ export function AddAdvocateDialog({
 
                   <div className="flex flex-col gap-3 border-t border-hairline pt-5 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-body-compact font-medium">
-                      Don&apos;t have a vakalatnama yet?
-                    </p>
+                      {<__LocalizedText id="addAdvocateDialog_donTHaveAVakalatnamaYet" />}{" "}</p>
                     {/* Straight into a fresh e-sign draft, the same way the
                         Vakalatnama section's own New button starts one. The
                         dialog draft is lost on navigation, the same trade
@@ -697,8 +689,7 @@ export function AddAdvocateDialog({
                       }
                     >
                       <FilePlus2Icon aria-hidden />
-                      Generate one in the portal
-                    </Button>
+                      {<__LocalizedText id="addAdvocateDialog_generateOneInThePortal" />}{" "}</Button>
                   </div>
                 </>
               ) : (
@@ -710,14 +701,13 @@ export function AddAdvocateDialog({
                           {chip.name}
                           {chip.barId ? (
                             <span className="text-muted-foreground">
-                              {" · Bar ID "}
-                              <Identifier value={chip.barId} label="bar id" />
+                              {__t("addAdvocateDialog_barId_f9b6b871")}
+                              <Identifier value={chip.barId} label={__t("addAdvocateDialog_barId")} />
                             </span>
                           ) : (
                             <span className="text-muted-foreground">
                               {" "}
-                              (not yet registered)
-                            </span>
+                              {<__LocalizedText id="addAdvocateDialog_notYetRegistered" />}{" "}</span>
                           )}
                         </span>
                       ))}
@@ -748,15 +738,13 @@ export function AddAdvocateDialog({
                 variant="outline"
                 onClick={() => setStep((s) => (s - 1) as AdvocateStep)}
               >
-                Back
-              </Button>
+                {<__LocalizedText id="addAdvocateDialog_back" />}{" "}</Button>
             ) : (
               <span aria-hidden className="hidden sm:block" />
             )}
             {step < 3 ? (
               <Button type="submit" form="add-advocates-form">
-                Continue
-              </Button>
+                {<__LocalizedText id="addAdvocateDialog_continue" />}{" "}</Button>
             ) : (
               <Button
                 type="button"
@@ -767,7 +755,7 @@ export function AddAdvocateDialog({
                   setDone(true);
                 }}
               >
-                {chips.length === 1 ? "Add advocate" : "Add advocates"}
+                {chips.length === 1 ? __t("addAdvocateDialog_addAdvocate") : __t("addAdvocateDialog_addAdvocates")}
               </Button>
             )}
           </footer>
@@ -782,16 +770,14 @@ export function AddAdvocateDialog({
       >
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard advocate draft?</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="addAdvocateDialog_discardAdvocateDraft" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              The details entered here will be lost if you discard this draft.
-            </AlertDialogDescription>
+              {<__LocalizedText id="addAdvocateDialog_theDetailsEnteredHereWillBeLost" />}{" "}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="addAdvocateDialog_keepEditing" />}</AlertDialogCancel>
             <AlertDialogAction variant="destructive-solid" onClick={closeClean}>
-              Discard draft
-            </AlertDialogAction>
+              {<__LocalizedText id="addAdvocateDialog_discardDraft" />}{" "}</AlertDialogAction>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
       </AlertDialog>
@@ -806,9 +792,10 @@ function ReviewRow({
   term: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow className="grid-cols-1 sm:grid-cols-[minmax(7rem,10rem)_1fr]">
-      <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
+      <DescriptionTerm className="text-body-compact">{__t(term)}</DescriptionTerm>
       <DescriptionDetails className="text-body-compact">
         {children}
       </DescriptionDetails>
@@ -836,24 +823,24 @@ function NamesWithOthers({
   names: string[];
   othersLabel: string;
 }) {
+  const __t = __useTranslations();
   if (names.length <= 2) return <>{formatNames(names)}</>;
   const rest = names.slice(2);
   return (
     <>
-      {names.slice(0, 2).join(", ")} and{" "}
+      {names.slice(0, 2).join(", ")} {<__LocalizedText id="addAdvocateDialog_and" />}{" "}
       <Popover>
         <PopoverTrigger asChild>
           <button
             type="button"
             className="inline-flex items-center rounded-sm underline decoration-dotted underline-offset-4 hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            aria-label={othersLabel}
+            aria-label={__t(othersLabel)}
           >
-            {rest.length} more
-          </button>
+            {rest.length} {<__LocalizedText id="addAdvocateDialog_more" />}{" "}</button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-64">
           <p className="text-caption font-semibold text-muted-foreground">
-            {othersLabel}
+            {__t(othersLabel)}
           </p>
           <ul className="mt-2 flex flex-col gap-1 text-body-compact">
             {rest.map((name) => (

@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { SearchIcon, XIcon } from "lucide-react";
@@ -69,6 +70,7 @@ export function QueueSearchField({
   labelClassName?: string;
   ref?: React.Ref<HTMLInputElement>;
 }) {
+  const __t = __useTranslations();
   const typed = value !== "";
 
   return (
@@ -80,7 +82,7 @@ export function QueueSearchField({
           filters (owner, 2026-09-14). `labelClassName` is the one surface where even that
           is too loud; see the prop. */}
       <FieldLabel className={cn("text-body-compact", labelClassName)}>
-        {label}
+        {__t(label)}
       </FieldLabel>
       <InputGroup>
         <InputGroupAddon>
@@ -96,7 +98,7 @@ export function QueueSearchField({
           autoComplete="off"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          placeholder={placeholder}
+          placeholder={__t(placeholder)}
           className="[&::-webkit-search-cancel-button]:appearance-none"
         />
         {typed ? (
@@ -109,7 +111,7 @@ export function QueueSearchField({
                 one does more. */}
             <InputGroupButton
               size="icon-xs"
-              aria-label="Clear search"
+              aria-label={__t("queueSearchField_clearSearch")}
               onClick={() => onChange("")}
               className="relative after:absolute after:-inset-2 after:content-['']"
             >

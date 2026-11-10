@@ -1,3 +1,5 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 import * as React from "react";
 import { CircleCheckIcon, InfoIcon, PhoneIcon } from "lucide-react";
 
@@ -59,13 +61,14 @@ export function CaseIdentity({
   locale: Locale;
   lead: string;
 }) {
+  const __t = __useTranslations();
   /* Three facts, three rows (owner, Oct 6): run together with dots they read as one
      long line. The same row grid as the full case details, so the step after the
      code shows these facts where this one did. */
   const facts: { label: keyof typeof caseDetails; value: React.ReactNode }[] = [
     {
       label: "caseNumber",
-      value: <Identifier value={joinCase.caseNumber} label="case number" />,
+      value: <Identifier value={joinCase.caseNumber} label={__t("caseDetails_caseNumber")} />,
     },
     { label: "court", value: joinCase.court },
     { label: "courtroom", value: joinCase.courtroom },
@@ -110,6 +113,7 @@ export function CaseTitleWithOthers({
   joinCase: JoinCase;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const otherMarker = " and 1 other";
   const otherAccused = joinCase.accused.slice(1);
   const hasOtherAccused =
@@ -123,7 +127,7 @@ export function CaseTitleWithOthers({
       {titleLead}
       {hasOtherAccused ? (
         <>
-          {" and "}
+          {__t("caseDetails_and")}
           <Popover>
             <PopoverTrigger asChild>
               <button
@@ -131,8 +135,7 @@ export function CaseTitleWithOthers({
                 className="inline-flex min-h-10 items-center rounded-sm underline decoration-dotted underline-offset-4 hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 aria-label={pick(caseDetails.otherAccused, locale)}
               >
-                1 other
-              </button>
+                {<__LocalizedText id="caseDetails_1Other" />}{" "}</button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-64">
               <p className="text-caption font-semibold text-muted-foreground">
@@ -215,6 +218,7 @@ export function CaseDetails({
   outcome?: string;
   className?: string;
 }) {
+  const __t = __useTranslations();
   /* `idLabel` marks the rows whose value is a registry identifier rather than a
      fact about the case — they carry the identifier face and can be copied. */
   const rows: {
@@ -283,7 +287,7 @@ export function CaseDetails({
                     </Popover>
                   </span>
                 ) : row.idLabel ? (
-                  <Identifier value={row.value} label={row.idLabel} />
+                  <Identifier value={row.value} label={__t(row.idLabel)} />
                 ) : (
                   row.value
                 );
@@ -298,7 +302,7 @@ export function CaseDetails({
       <div className="flex flex-col gap-1">
         <CaseTitleWithOthers joinCase={joinCase} locale={locale} />
         <p className="text-body-compact text-muted-foreground">
-          <Identifier value={joinCase.caseNumber} label="case number" />
+          <Identifier value={joinCase.caseNumber} label={__t("caseDetails_caseNumber")} />
           <span aria-hidden> · </span>
           {pick(caseDetails.caseTypeBadge, locale)}
         </p>

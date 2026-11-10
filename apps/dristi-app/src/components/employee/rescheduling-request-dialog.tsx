@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { useMemo } from "react";
 
@@ -72,6 +73,7 @@ function RequestBody({
   onReject: (request: ReschedulingRequest) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const document = useMemo(
     () => buildReschedulingDocument(request),
     [request],
@@ -87,7 +89,7 @@ function RequestBody({
       facts={
         <>
           <ReviewRow term="Case number">
-            <Identifier value={request.caseNumber} label="case number" />
+            <Identifier value={request.caseNumber} label={__t("reschedulingRequestDialog_caseNumber")} />
           </ReviewRow>
           <ReviewRow term="Application sent on">
             {formatRequestLongDate(request.appliedOn)}

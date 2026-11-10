@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import type { CSSProperties } from "react";
@@ -76,6 +78,7 @@ export function CheckGroup<T extends string>({
    *  sheet does not open to a wall of names. Searching overrides the cap. */
   collapseAfter?: number;
 }) {
+  const __t = __useTranslations();
   const [needle, setNeedle] = React.useState("");
   const [expanded, setExpanded] = React.useState(false);
   const searching = searchable && Boolean(needle.trim());
@@ -114,8 +117,8 @@ export function CheckGroup<T extends string>({
               type="search"
               value={needle}
               onChange={(event) => setNeedle(event.target.value)}
-              placeholder="Find a name"
-              aria-label={`Find in ${legend.toLowerCase()}`}
+              placeholder={__t("casesFilters_findAName")}
+              aria-label={__t("casesFilters_findInValue0", {value0: String(legend.toLowerCase())})}
               autoComplete="off"
               className="h-full text-body-compact"
             />
@@ -124,8 +127,7 @@ export function CheckGroup<T extends string>({
       </div>
       {searchable && shown.length === 0 ? (
         <p className="px-2 py-2 text-body-compact text-muted-foreground">
-          No names match.
-        </p>
+          {<__LocalizedText id="casesFilters_noNamesMatch" />}{" "}</p>
       ) : null}
       <ul className="flex flex-col">
         {shown.map((option) => {
@@ -149,7 +151,7 @@ export function CheckGroup<T extends string>({
                     onChange(toggleIn(value, option.value, checked === true))
                   }
                 />
-                <span className="min-w-0 flex-1">{option.label}</span>
+                <span className="min-w-0 flex-1">{__t(option.label)}</span>
                 {option.count !== undefined ? (
                   <span className="text-body-compact text-muted-foreground tabular-nums">
                     {option.count}
@@ -168,17 +170,16 @@ export function CheckGroup<T extends string>({
           className="h-auto w-fit px-2 py-1"
           onClick={() => setExpanded((open) => !open)}
         >
-          {collapsed ? `Show all ${filtered.length}` : "Show fewer"}
+          {collapsed ? __t("casesFilters_showAllValue0", {value0: String(filtered.length)}) : __t("casesFilters_showFewer")}
           {collapsed ? (
             <span className="text-muted-foreground tabular-nums">
               {" "}
-              ({hiddenCount} more)
-            </span>
+              ({hiddenCount} {<__LocalizedText id="casesFilters_more" />}{" "}</span>
           ) : null}
         </Button>
       ) : null}
       {note ? (
-        <p className="px-2 text-caption text-muted-foreground">{note}</p>
+        <p className="px-2 text-caption text-muted-foreground">{__t(note)}</p>
       ) : null}
     </FieldSet>
   );
@@ -221,6 +222,7 @@ export function CasesFiltersButton({
    *  used when the case peek squeezes the toolbar. */
   compact?: boolean;
 }) {
+  const __t = __useTranslations();
   const [draft, setDraft] = React.useState<FilterDraft>(() => draftFrom(query));
 
   function set<K extends keyof FilterDraft>(key: K, next: FilterDraft[K]) {
@@ -243,10 +245,10 @@ export function CasesFiltersButton({
           variant="outline"
           data-toolbar-action
           className={"shrink-0 gap-0 duration-300 " + (compact ? "px-2.5" : "px-4")}
-          aria-label={`Filters${applied ? `, ${applied} applied` : ""}`}
+          aria-label={__t("casesFilters_filtersValue0", {value0: String(applied ? `, ${applied} applied` : "")})}
         >
           <SlidersHorizontalIcon aria-hidden />
-          <CollapsibleLabel show={!compact}>Filters</CollapsibleLabel>
+          <CollapsibleLabel show={!compact}>{<__LocalizedText id="casesFilters_filters" />}</CollapsibleLabel>
           {applied ? (
             <span className="ms-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-caption font-medium tabular-nums text-primary-foreground">
               {applied}
@@ -275,7 +277,7 @@ export function CasesFiltersButton({
         }
       >
         <SheetHeader>
-          <SheetTitle className="text-title-s font-semibold">Filters</SheetTitle>
+          <SheetTitle className="text-title-s font-semibold">{<__LocalizedText id="casesFilters_filters" />}</SheetTitle>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
@@ -301,7 +303,7 @@ export function CasesFiltersButton({
             locked={CASE_TYPES.length === 1}
             note={
               CASE_TYPES.length === 1
-                ? "The only case type this court files, for now."
+                ? __t("casesFilters_theOnlyCaseTypeThisCourtFiles")
                 : undefined
             }
           />
@@ -331,13 +333,12 @@ export function CasesFiltersButton({
                 setDraft({ status: [], type: query.type, stage: [], advocates: [] })
               }
             >
-              Clear filters
-            </Button>
+              {<__LocalizedText id="casesFilters_clearFilters" />}{" "}</Button>
           ) : (
             <span />
           )}
           <SheetClose asChild>
-            <Button onClick={() => onApply(draft)}>Show cases</Button>
+            <Button onClick={() => onApply(draft)}>{<__LocalizedText id="casesFilters_showCases" />}</Button>
           </SheetClose>
         </SheetFooter>
       </SheetContent>
@@ -357,27 +358,28 @@ export function CasesAppliedFilters({
   query: CasesQuery;
   onChange: (patch: FilterPatch) => void;
 }) {
+  const __t = __useTranslations();
   if (!isNarrowed(query)) return null;
   const chips: { key: string; label: string; clear: () => void }[] = [];
 
   if (query.bookmarked) {
     chips.push({
       key: "bookmarked",
-      label: "Bookmarked",
+      label: __t("casesFilters_bookmarked"),
       clear: () => onChange({ bookmarked: false }),
     });
   }
   for (const status of query.status) {
     chips.push({
       key: `status-${status}`,
-      label: CASE_STATUSES.find((entry) => entry.value === status)?.label ?? status,
+      label: __t(CASE_STATUSES.find((entry) => entry.value === status)?.label) ?? status,
       clear: () => onChange({ status: query.status.filter((entry) => entry !== status) }),
     });
   }
   for (const type of query.type) {
     chips.push({
       key: `type-${type}`,
-      label: CASE_TYPES.find((entry) => entry.value === type)?.label ?? type,
+      label: __t(CASE_TYPES.find((entry) => entry.value === type)?.label) ?? type,
       clear: () => onChange({ type: query.type.filter((entry) => entry !== type) }),
     });
   }
@@ -398,9 +400,9 @@ export function CasesAppliedFilters({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2" aria-label="Applied filters">
+    <div className="flex flex-wrap items-center gap-2" aria-label={__t("casesFilters_appliedFilters")}>
       {chips.map((chip) => (
-        <AppliedChip key={chip.key} label={chip.label} onClear={chip.clear} />
+        <AppliedChip key={chip.key} label={__t(chip.label)} onClear={chip.clear} />
       ))}
       <Button
         variant="ghost"
@@ -408,8 +410,7 @@ export function CasesAppliedFilters({
         className="text-muted-foreground"
       >
         <XIcon data-icon="inline-start" aria-hidden />
-        Clear all
-      </Button>
+        {<__LocalizedText id="casesFilters_clearAll" />}{" "}</Button>
     </div>
   );
 }

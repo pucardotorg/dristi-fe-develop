@@ -1,4 +1,5 @@
 "use client"
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 
 import * as React from "react"
 import { format } from "date-fns"
@@ -40,6 +41,7 @@ function DatePicker({
   disabled,
   className,
 }: DatePickerProps) {
+  const __t = __useTranslations();
   const [internalValue, setInternalValue] = React.useState<Date | undefined>(
     defaultValue
   )
@@ -64,7 +66,7 @@ function DatePicker({
         >
           <CalendarDaysIcon data-icon="inline-start" aria-hidden />
           <span className="truncate">
-            {selected ? format(selected, "PPP") : placeholder}
+            {selected ? format(selected, "PPP") : __t(placeholder)}
           </span>
         </Button>
       </PopoverTrigger>
@@ -83,6 +85,7 @@ function DateRangePicker({
   disabled,
   className,
 }: DateRangePickerProps) {
+  const __t = __useTranslations();
   const [internalValue, setInternalValue] = React.useState<
     DateRange | undefined
   >(defaultValue)
@@ -112,7 +115,7 @@ function DateRangePicker({
           )}
         >
           <CalendarDaysIcon data-icon="inline-start" aria-hidden />
-          <span className="truncate">{label}</span>
+          <span className="truncate">{__t(label)}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

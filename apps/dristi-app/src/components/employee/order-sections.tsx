@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   CheckIcon,
@@ -117,6 +119,7 @@ export function AttendanceSection({
   attendance: ComposerAttendance;
   disabled: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <section
       id="order-attendance"
@@ -129,8 +132,7 @@ export function AttendanceSection({
           id="order-attendance-heading"
           className="text-body-compact font-semibold"
         >
-          Attendance
-        </h2>
+          {<__LocalizedText id="orderSections_attendance" />}{" "}</h2>
         {disabled ? null : (
           <Button
             type="button"
@@ -138,8 +140,7 @@ export function AttendanceSection({
             className="-mr-3 text-body-compact"
             onClick={attendance.onMarkAllPresent}
           >
-            Mark all present
-          </Button>
+            {<__LocalizedText id="orderSections_markAllPresent" />}{" "}</Button>
         )}
       </div>
       {/* A container, so every row changes shape together at the list's width — never
@@ -167,7 +168,7 @@ export function AttendanceSection({
                   className="grid shrink-0 grid-cols-2 gap-1 @min-[24rem]:w-48"
                 >
                   <MarkButton
-                    label="Present"
+                    label={__t("orderSections_present")}
                     checked={mark === "present"}
                     tone="present"
                     disabled={disabled}
@@ -179,7 +180,7 @@ export function AttendanceSection({
                     }
                   />
                   <MarkButton
-                    label="Absent"
+                    label={__t("orderSections_absent")}
                     checked={mark === "absent"}
                     tone="absent"
                     disabled={disabled}
@@ -200,8 +201,7 @@ export function AttendanceSection({
           from leaving a person unmarked — so the roll is never incomplete, and attendance
           never holds up sending for signing (`ATT-04`). */}
       <p className="text-caption text-muted-foreground">
-        Anyone left unmarked is recorded as not required, and is not printed on the order.
-      </p>
+        {<__LocalizedText id="orderSections_anyoneLeftUnmarkedIsRecordedAsNot" />}{" "}</p>
     </section>
   );
 }
@@ -223,6 +223,7 @@ function MarkButton({
   disabled: boolean;
   onClick: () => void;
 }) {
+  const __t = __useTranslations();
   const Icon = tone === "present" ? CheckIcon : XIcon;
   return (
     <button
@@ -241,7 +242,7 @@ function MarkButton({
       )}
     >
       <Icon className="size-4" aria-hidden />
-      {label}
+      {__t(label)}
     </button>
   );
 }
@@ -256,6 +257,7 @@ export function ApplicationsSection({
   /** Standing as its own card, with a head band (the order data). */
   framed?: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <section
       id="order-applications"
@@ -271,8 +273,7 @@ export function ApplicationsSection({
           id="order-applications-heading"
           className="text-body-compact font-semibold"
         >
-          Applications
-        </h2>
+          {<__LocalizedText id="orderSections_applications" />}{" "}</h2>
       </div>
       <div className="min-w-0">
         <ul className="@container flex min-w-0 flex-col divide-y divide-hairline rounded-xl border border-hairline">
@@ -301,12 +302,11 @@ export function ApplicationsSection({
                   type="button"
                   variant="ghost"
                   className="-my-2 -mr-2 shrink-0 text-body-compact @min-[36rem]:my-0 @min-[36rem]:mr-0"
-                  aria-label={`View ${application.type} ${application.number}`}
+                  aria-label={__t("orderSections_viewValue0Value1", {value0: String(application.type), value1: String(application.number)})}
                   onClick={() => applications.onOpen(application.id)}
                 >
                   <EyeIcon data-icon="inline-start" aria-hidden />
-                  View
-                </Button>
+                  {<__LocalizedText id="orderSections_view" />}{" "}</Button>
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 {application.decision ? (
@@ -319,8 +319,8 @@ export function ApplicationsSection({
                       }
                     >
                       {application.decision === "allowed"
-                        ? "Accepted"
-                        : "Rejected"}
+                        ? __t("orderSections_accepted")
+                        : __t("orderSections_rejected")}
                     </Badge>
                     {disabled ? null : (
                       <Button
@@ -331,8 +331,7 @@ export function ApplicationsSection({
                           applications.onDecide(application.id, null)
                         }
                       >
-                        Undo
-                      </Button>
+                        {<__LocalizedText id="orderSections_undo" />}{" "}</Button>
                     )}
                   </>
                 ) : disabled ? null : (
@@ -345,8 +344,7 @@ export function ApplicationsSection({
                         applications.onDecide(application.id, "dismissed")
                       }
                     >
-                      Reject
-                    </Button>
+                      {<__LocalizedText id="orderSections_reject" />}{" "}</Button>
                     <Button
                       type="button"
                       variant="success"
@@ -354,8 +352,7 @@ export function ApplicationsSection({
                         applications.onDecide(application.id, "allowed")
                       }
                     >
-                      Accept
-                    </Button>
+                      {<__LocalizedText id="orderSections_accept" />}{" "}</Button>
                   </>
                 )}
               </div>
@@ -397,8 +394,7 @@ export function NextHearingSection({
     >
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         <h2 id={`${id}-heading`} className="text-body-compact font-semibold">
-          Next hearing
-        </h2>
+          {<__LocalizedText id="orderSections_nextHearing" />}{" "}</h2>
         {fromCauseList ? null : (
         <div className="flex min-h-10 items-center gap-2">
           <Checkbox
@@ -413,8 +409,7 @@ export function NextHearingSection({
             htmlFor={`${id}-none`}
             className="cursor-pointer text-body-compact font-normal"
           >
-            Not listed again
-          </Label>
+            {<__LocalizedText id="orderSections_notListedAgain" />}{" "}</Label>
         </div>
         )}
       </div>
@@ -437,8 +432,7 @@ export function NextHearingSection({
                 id={`${id}-date-label`}
                 className="text-body-compact font-medium"
               >
-                Date
-              </span>
+                {<__LocalizedText id="orderSections_date" />}{" "}</span>
             }
             value={nextHearing.date ?? ""}
             today={today}
@@ -450,8 +444,7 @@ export function NextHearingSection({
               id={`${id}-purpose-label`}
               className="text-body-compact font-medium"
             >
-              Purpose
-            </span>
+              {<__LocalizedText id="orderSections_purpose" />}{" "}</span>
             <PurposeField
               value={nextHearing.purpose}
               disabled={off}
@@ -483,20 +476,20 @@ function CausePostingValues({
   date: string | null;
   purpose: CourtHearingPurposeId | "";
 }) {
+  const __t = __useTranslations();
   const listed = next !== "none";
   return (
     <div className="grid min-w-0 gap-4 sm:grid-cols-2">
       <div className="flex min-w-0 flex-col gap-2">
         <Label htmlFor={`${id}-date`} className="text-body-compact font-medium">
-          Date
-        </Label>
+          {<__LocalizedText id="orderSections_date" />}{" "}</Label>
         <Input
           id={`${id}-date`}
           readOnly
           value={
             !listed ? "Not listed again" : date ? formatListingDate(date) : ""
           }
-          placeholder="Not set"
+          placeholder={__t("orderSections_notSet")}
           className="tabular-nums"
         />
       </div>
@@ -505,13 +498,12 @@ function CausePostingValues({
           htmlFor={`${id}-purpose`}
           className="text-body-compact font-medium"
         >
-          Purpose
-        </Label>
+          {<__LocalizedText id="orderSections_purpose" />}{" "}</Label>
         <Input
           id={`${id}-purpose`}
           readOnly
           value={listed && purpose ? courtHearingPurposeLabel(purpose) : ""}
-          placeholder={listed ? "Not set" : "Not listed"}
+          placeholder={listed ? __t("orderSections_notSet") : __t("orderSections_notListed")}
         />
       </div>
     </div>

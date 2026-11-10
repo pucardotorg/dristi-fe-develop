@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -261,6 +263,7 @@ function RequestBody({
   onNext: (request: RegistrationRequest) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const [reason, setReason] = React.useState("");
   const [touched, setTouched] = React.useState(false);
   const reasonRef = React.useRef<HTMLTextAreaElement>(null);
@@ -314,7 +317,7 @@ function RequestBody({
          looked at the card. It is the first row of Identity instead. */
       title={STAGE_TITLE[stage](noun)}
       titleRef={flow.titleRef}
-      titleAside={<Badge variant={badge.variant}>{badge.label}</Badge>}
+      titleAside={<Badge variant={badge.variant}>{__t(badge.label)}</Badge>}
       /* No description (owner, 2026-10-07): the application number was the only thing
          here, and it is a backend reference the court never needs to read or quote. */
       /* Keyed on the request so the title, the state and the number fade in with the
@@ -356,21 +359,18 @@ function RequestBody({
               variant="destructive"
               onClick={() => go("reject")}
             >
-              Reject
-            </Button>
+              {<__LocalizedText id="approveRegistrationsDialog_reject" />}{" "}</Button>
             {/* The overlay's one teal button, on every stage that has one: the guarded
                 act. Approval is where a credential is granted — the person can then act
                 as an advocate on real §138 files — which is why there is no bulk path
                 anywhere on this screen and why the photograph is opened one at a time. */}
             <Button type="button" onClick={() => go("approve")}>
-              Approve
-            </Button>
+              {<__LocalizedText id="approveRegistrationsDialog_approve" />}{" "}</Button>
           </>
         ) : stage === "reject" ? (
           <>
             <Button type="button" variant="ghost" onClick={() => go("review")}>
-              Back
-            </Button>
+              {<__LocalizedText id="approveRegistrationsDialog_back" />}{" "}</Button>
             {/* "Confirm rejection", not "Reject" again: a second button with the same
                 word as the one that got you here reads as nothing having happened
                 (owner, 2026-09-11, on the approve pair). */}
@@ -383,14 +383,12 @@ function RequestBody({
                 go("rejected");
               }}
             >
-              Confirm rejection
-            </Button>
+              {<__LocalizedText id="approveRegistrationsDialog_confirmRejection" />}{" "}</Button>
           </>
         ) : stage === "approve" ? (
           <>
             <Button type="button" variant="ghost" onClick={() => go("review")}>
-              Back
-            </Button>
+              {<__LocalizedText id="approveRegistrationsDialog_back" />}{" "}</Button>
             <Button
               type="button"
               onClick={() => {
@@ -398,8 +396,7 @@ function RequestBody({
                 go("approved");
               }}
             >
-              Confirm approval
-            </Button>
+              {<__LocalizedText id="approveRegistrationsDialog_confirmApproval" />}{" "}</Button>
           </>
         ) : (
           <>
@@ -411,18 +408,15 @@ function RequestBody({
                 nothing, and the button already says what pressing it will do. */}
             {next === null ? (
               <p className="text-body-compact text-muted-foreground sm:mr-auto sm:self-center">
-                No more requests are waiting.
-              </p>
+                {<__LocalizedText id="approveRegistrationsDialog_noMoreRequestsAreWaiting" />}{" "}</p>
             ) : null}
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Close
-              </Button>
+                {<__LocalizedText id="approveRegistrationsDialog_close" />}{" "}</Button>
             </DialogClose>
             {next ? (
               <Button type="button" onClick={() => onNext(next)}>
-                View next application
-                <ArrowRightIcon data-icon="inline-end" aria-hidden />
+                {<__LocalizedText id="approveRegistrationsDialog_viewNextApplication" />}{" "}<ArrowRightIcon data-icon="inline-end" aria-hidden />
               </Button>
             ) : null}
           </>
@@ -476,6 +470,7 @@ function ReviewStage({
   request: RegistrationRequest;
   factsRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const __t = __useTranslations();
   const rounds = rejectionRows(request);
   const changed = comparisonBlocks(request).find(
     (block) => block.id === "changed",
@@ -489,13 +484,13 @@ function ReviewStage({
         className="flex min-w-0 flex-col gap-6 outline-none md:min-h-0 md:overflow-y-auto"
       >
         {/* Two groups and, on a request that has been sent back, a third. */}
-        <FactGroup label="Request" rows={requestRows(request)} />
+        <FactGroup label={__t("approveRegistrationsDialog_request")} rows={requestRows(request)} />
         {/* **Under Request, and open.** On a profile update, what changed is the request —
             the owner's ruling after a round with it folded into a disclosure: *"that's a
             separate thing altogether… I don't think this is too important to see hidden
             away in a drop-down"* (2026-09-11). */}
         {changed ? <ComparisonSection block={changed} /> : null}
-        <FactGroup label="Identity" rows={identityRows(request)} />
+        <FactGroup label={__t("approveRegistrationsDialog_identity")} rows={identityRows(request)} />
 
         {rounds.length > 0 ? <EarlierRejections rounds={rounds} /> : null}
       </div>
@@ -517,7 +512,8 @@ function ReviewStage({
  * as the cards beside it, because it is the fifth attribute.
  */
 function EvidenceColumn({ request }: { request: RegistrationRequest }) {
-  const noun = registrantNoun(request.registrantKind);
+  const __t = __useTranslations();
+    const noun = registrantNoun(request.registrantKind);
   return (
     <DocumentPreview
       variant="quiet"
@@ -530,7 +526,7 @@ function EvidenceColumn({ request }: { request: RegistrationRequest }) {
         content: (
           <IdCardPhoto
             src={request.photo.src}
-            alt={`Photograph of the ${idCardName(request.registrantKind)} uploaded by ${request.fullName}`}
+            alt={__t("approveRegistrationsDialog_photographOfTheValue0UploadedByValue1", {value0: String(idCardName(request.registrantKind)), value1: String(request.fullName)})}
             noun={noun}
           />
         ),
@@ -538,7 +534,7 @@ function EvidenceColumn({ request }: { request: RegistrationRequest }) {
       download={{
         href: request.photo.src,
         filename: request.photo.filename,
-        label: `Download ${idPhotoLabel(request.registrantKind)}`,
+        label: __t("approveRegistrationsDialog_downloadValue0", {value0: String(idPhotoLabel(request.registrantKind))}),
       }}
     />
   );
@@ -585,6 +581,7 @@ function DecisionStage({
   reasonRef: React.RefObject<HTMLTextAreaElement | null>;
   onChange: (value: string) => void;
 }) {
+  const __t = __useTranslations();
   const rejecting = stage === "reject" || stage === "rejected";
   const settled = stage === "approved" || stage === "rejected";
   const empty = reason.trim() === "";
@@ -619,7 +616,7 @@ function DecisionStage({
               belongs to, and the pill above has just said. */}
           <Identifier
             value={request.registrationNumber}
-            label="registration number"
+            label={__t("approveRegistrationsDialog_registrationNumber")}
             className="self-start text-body-compact text-muted-foreground"
           />
         </div>
@@ -663,13 +660,12 @@ function DecisionStage({
                     aria-hidden
                     className="size-4 shrink-0 text-destructive-ink"
                   />
-                  Why are you rejecting this?
-                </FieldLabel>
+                  {<__LocalizedText id="approveRegistrationsDialog_whyAreYouRejectingThis" />}{" "}</FieldLabel>
                 <Textarea
                   id={id}
                   ref={reasonRef}
                   className="min-h-32 text-body"
-                  placeholder={`e.g. The name on the ${idCardName(request.registrantKind)} is different from the name you typed. Please check and submit again.`}
+                  placeholder={__t("approveRegistrationsDialog_eGTheNameOnTheValue0", {value0: String(idCardName(request.registrantKind))})}
                   value={reason}
                   onChange={(event) => onChange(event.target.value)}
                 />
@@ -677,7 +673,7 @@ function DecisionStage({
                     attempted yet reads as a scolding, and a line stating the rule before
                     it is broken is exposition. */}
                 {touched && empty ? (
-                  <FieldError>Write a reason first.</FieldError>
+                  <FieldError>{<__LocalizedText id="approveRegistrationsDialog_writeAReasonFirst" />}</FieldError>
                 ) : null}
               </Field>
             )}
@@ -746,6 +742,7 @@ function StatusStrip({
   rejecting: boolean;
   settled: boolean;
 }) {
+  const __t = __useTranslations();
   const approved = stage === "approved";
 
   return (
@@ -781,12 +778,12 @@ function StatusStrip({
               whichever way the decision went, and the reason sitting in the well below
               needs no sentence to explain that it was sent. */}
           <span role="status" className="font-medium">
-            {approved ? "Account created" : "Account rejected"}
+            {approved ? __t("approveRegistrationsDialog_accountCreated") : __t("approveRegistrationsDialog_accountRejected")}
           </span>
         </>
       ) : (
         <span className="font-medium">
-          {rejecting ? "You are rejecting" : "You are approving"}
+          {rejecting ? __t("approveRegistrationsDialog_youAreRejecting") : __t("approveRegistrationsDialog_youAreApproving")}
         </span>
       )}
     </div>
@@ -865,9 +862,10 @@ function StageCard({
  * values inside are what the eye lands on.
  */
 function GroupHeading({ label }: { label: string }) {
+  const __t = __useTranslations();
   return (
     <h3 className="text-caption font-semibold text-muted-foreground">
-      {label}
+      {__t(label)}
     </h3>
   );
 }
@@ -880,9 +878,10 @@ function GroupHeading({ label }: { label: string }) {
  * two-column table with no header is a description list wearing a table's markup.
  */
 function FactGroup({ label, rows }: { label: string; rows: FactRow[] }) {
+  const __t = __useTranslations();
   return (
     <section className="flex flex-col gap-2">
-      <GroupHeading label={label} />
+      <GroupHeading label={__t(label)} />
       <StageCard className="gap-0">
         <DescriptionList>
           {rows.map((row) => (
@@ -924,6 +923,7 @@ const formatClass: Record<RowFormat, string> = {
  * having two shapes instead of one row that grows a treatment per scenario.
  */
 function FactRowView({ row }: { row: FactRow }) {
+  const __t = __useTranslations();
   const value = row.pill ? (
     /* A category, shown as the same pill everywhere it appears — the queue's Account type
        column included. */
@@ -957,7 +957,7 @@ function FactRowView({ row }: { row: FactRow }) {
       {value}
       {row.note ? (
         <span className="mt-1 block text-caption tabular-nums text-muted-foreground">
-          {row.note}
+          {__t(row.note)}
         </span>
       ) : null}
     </ReviewRow>
@@ -989,9 +989,10 @@ function FactRowView({ row }: { row: FactRow }) {
  * what makes it scannable (D20).
  */
 function ComparisonSection({ block }: { block: ComparisonBlock }) {
+  const __t = __useTranslations();
   return (
     <section className="flex flex-col gap-2">
-      <GroupHeading label={block.label} />
+      <GroupHeading label={__t(block.label)} />
       <StageCard>
         <ComparisonTable block={block} />
       </StageCard>
@@ -1000,6 +1001,7 @@ function ComparisonSection({ block }: { block: ComparisonBlock }) {
 }
 
 function ComparisonTable({ block }: { block: ComparisonBlock }) {
+  const __t = __useTranslations();
   const span = block.columns.length + 1;
 
   return (
@@ -1018,7 +1020,7 @@ function ComparisonTable({ block }: { block: ComparisonBlock }) {
                 {/* The corner cell of a comparison table names nothing — the row's own
                     term is the label. Named for a screen reader, which reads a header
                     cell for every column it announces. */}
-                <span className="sr-only">Detail</span>
+                <span className="sr-only">{<__LocalizedText id="approveRegistrationsDialog_detail" />}</span>
               </TableHead>
               {block.columns.map((column) => (
                 <TableHead
@@ -1044,7 +1046,7 @@ function ComparisonTable({ block }: { block: ComparisonBlock }) {
                 <TableCell
                   className={cn(TABLE_CELL, "align-top text-muted-foreground")}
                 >
-                  {row.term}
+                  {__t(row.term)}
                 </TableCell>
                 {row.values.map((value, index) => (
                   <TableCell
@@ -1057,7 +1059,7 @@ function ComparisonTable({ block }: { block: ComparisonBlock }) {
                       value.absent && "text-muted-foreground",
                     )}
                   >
-                    {value.text}
+                    {__t(value.text)}
                   </TableCell>
                 ))}
               </TableRow>
@@ -1083,11 +1085,12 @@ function ComparisonTable({ block }: { block: ComparisonBlock }) {
  * carries it.
  */
 function EarlierRejections({ rounds }: { rounds: FactRow[] }) {
+  const __t = __useTranslations();
   const [newest, ...older] = rounds;
 
   return (
     <section className="flex flex-col gap-2">
-      <GroupHeading label="Earlier rejections" />
+      <GroupHeading label={__t("approveRegistrationsDialog_earlierRejections")} />
       <StageCard className="gap-0">
         <DescriptionList>
           <FactRowView row={newest} />
@@ -1100,7 +1103,7 @@ function EarlierRejections({ rounds }: { rounds: FactRow[] }) {
                 on a tablet. */}
             <CollapsibleTrigger className="group/earlier flex min-h-10 w-fit items-center gap-1.5 rounded-lg text-left text-caption text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-focus-ring">
               {older.length === 1
-                ? "1 earlier round"
+                ? __t("approveRegistrationsDialog_1EarlierRound")
                 : `${older.length} earlier rounds`}
               <ChevronDownIcon
                 aria-hidden
@@ -1142,7 +1145,7 @@ function IdCardPhoto({
   alt: string;
   noun: string;
 }) {
-  const [status, setStatus] = React.useState<"loading" | "ready" | "failed">(
+    const [status, setStatus] = React.useState<"loading" | "ready" | "failed">(
     "loading",
   );
 
@@ -1155,12 +1158,9 @@ function IdCardPhoto({
         <div className="m-auto flex flex-col items-center gap-3 py-8 text-center">
           <ImageOffIcon className="size-10 text-muted-foreground" aria-hidden />
           <p className="text-body font-medium">
-            This photo could not be opened
-          </p>
+            {<__LocalizedText id="approveRegistrationsDialog_thisPhotoCouldNotBeOpened" />}{" "}</p>
           <p className="text-body-compact text-muted-foreground">
-            Try downloading it. You can still decide this request — or reject it
-            and ask the {noun} to upload the card again.
-          </p>
+            {<__LocalizedText id="approveRegistrationsDialog_tryDownloadingItYouCanStillDecide" />}{" "}{noun} {<__LocalizedText id="approveRegistrationsDialog_toUploadTheCardAgain" />}{" "}</p>
         </div>
       ) : null}
       {/* The well keeps its height while the file is on its way. A well that collapses

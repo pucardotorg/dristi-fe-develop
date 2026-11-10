@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -589,6 +590,7 @@ function RailBody({
   navLabel?: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <>
       {header ? <SidebarHeader className="p-0">{header}</SidebarHeader> : null}
@@ -608,7 +610,7 @@ function RailBody({
         {/* The primitives are all `div`s, so an area that wants one landmark over the
             whole rail asks for it here. An area that labels each group instead — as the
             advocate's does — passes no `navLabel` and brings its own. */}
-        {navLabel ? <nav aria-label={navLabel}>{children}</nav> : children}
+        {navLabel ? <nav aria-label={__t(navLabel)}>{children}</nav> : children}
       </SidebarContent>
       {footer ? <SidebarFooter className="p-0">{footer}</SidebarFooter> : null}
     </>
@@ -660,6 +662,7 @@ export function ChromeRail({
   footer?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   // Whether this rail folds is the shell's to say — see `ChromeShell`. The DS's third
   // mode, `"offcanvas"`, is offered by neither: it is the other one that throws the plate
   // away below `md`, and nothing here has wanted a rail that leaves the layout entirely.
@@ -705,14 +708,14 @@ export function ChromeRail({
             : "",
         ].join(" ")}
       >
-        {body}
+        {__t(body)}
       </Sidebar>
       <ChromeRailSheet
         vars={vars}
-        title={sheetTitle}
-        description={sheetDescription}
+        title={__t(sheetTitle)}
+        description={__t(sheetDescription)}
       >
-        {body}
+        {__t(body)}
       </ChromeRailSheet>
     </>
   );
@@ -738,6 +741,7 @@ function ChromeRailSheet({
   description?: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const { openMobile, setOpenMobile } = useSidebar();
   return (
     <Sheet open={openMobile} onOpenChange={setOpenMobile}>
@@ -780,9 +784,9 @@ function ChromeRailSheet({
         ].join(" ")}
       >
         <SheetHeader className="sr-only">
-          <SheetTitle>{title ?? "Navigation"}</SheetTitle>
+          <SheetTitle>{__t(title) ?? __t("appChrome_navigation")}</SheetTitle>
           {description ? (
-            <SheetDescription>{description}</SheetDescription>
+            <SheetDescription>{__t(description)}</SheetDescription>
           ) : null}
         </SheetHeader>
         {children}

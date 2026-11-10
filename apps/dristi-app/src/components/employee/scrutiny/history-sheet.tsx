@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { cn } from "@/lib/utils";
 import {
@@ -34,6 +36,7 @@ export function HistorySheet({
   aiOn: boolean;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const __t = __useTranslations();
   const { history, historySummary } = useScrutinyCase();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -43,7 +46,7 @@ export function HistorySheet({
        */}
       <SheetContent side="right" className="data-[side=right]:sm:max-w-100">
         <SheetHeader>
-          <SheetTitle>Case history</SheetTitle>
+          <SheetTitle>{<__LocalizedText id="historySheet_caseHistory" />}</SheetTitle>
           <SheetDescription>{historySummary}</SheetDescription>
         </SheetHeader>
 
@@ -56,9 +59,9 @@ export function HistorySheet({
           <Timeline>
             {history.map((event, i) => (
               <TimelineItem
-                key={`${event.title}-${i}`}
+                key={`${__t(event.title)}-${i}`}
                 status={event.status}
-                title={event.title}
+                title={__t(event.title)}
                 description={
                   aiOn && event.aiNote
                     ? `${event.meta} · ${event.aiNote}`
@@ -94,7 +97,7 @@ export function HistorySheet({
                               : "text-muted-foreground",
                           )}
                         >
-                          {item.open ? "open" : item.status}
+                          {item.open ? __t("historySheet_open") : item.status}
                         </span>
                       </button>
                     ))}

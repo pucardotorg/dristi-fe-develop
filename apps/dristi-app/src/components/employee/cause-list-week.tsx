@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
@@ -53,6 +55,7 @@ export function CauseListWeek({
   onSelectDay: (day: string) => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   /* The week shown follows the chosen day, but the arrows page it without choosing a
      day — the same split the advocate strip makes. */
   const [weekStart, setWeekStart] = React.useState(() => mondayOf(day));
@@ -75,7 +78,7 @@ export function CauseListWeek({
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       <ul
-        aria-label={`Week of ${SPOKEN_DAY.format(parseIsoDay(weekStart))}`}
+        aria-label={__t("causeListWeek_weekOfValue0", {value0: String(SPOKEN_DAY.format(parseIsoDay(weekStart)))})}
         className="order-first grid basis-full grid-cols-7 gap-1"
       >
         {week.map((cell) => {
@@ -89,8 +92,8 @@ export function CauseListWeek({
                 type="button"
                 aria-pressed={isSelected}
                 disabled={!sits}
-                aria-label={`${SPOKEN_DAY.format(parseIsoDay(cell))}${isToday ? ", today" : ""}, ${
-                  sits ? `${casesLine(count)} listed` : "court does not sit"
+                aria-label={`${SPOKEN_DAY.format(parseIsoDay(cell))}${isToday ? __t("causeListWeek_today_b99dedc6") : ""}, ${
+                  sits ? `${casesLine(count)} listed` : __t("causeListWeek_courtDoesNotSit")
                 }`}
                 onClick={() => choose(cell)}
                 className={cn(
@@ -116,7 +119,7 @@ export function CauseListWeek({
                   {sits ? (
                     <>
                       {count}
-                      <span className="hidden sm:inline"> {count === 1 ? "case" : "cases"}</span>
+                      <span className="hidden sm:inline"> {count === 1 ? __t("causeListWeek_case") : __t("causeListWeek_cases")}</span>
                     </>
                   ) : (
                     "–"
@@ -131,7 +134,7 @@ export function CauseListWeek({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Previous week"
+        aria-label={__t("causeListWeek_previousWeek")}
         className="text-muted-foreground"
         onClick={() => setWeekStart(addDays(weekStart, -7))}
       >
@@ -141,7 +144,7 @@ export function CauseListWeek({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Next week"
+        aria-label={__t("causeListWeek_nextWeek")}
         className="text-muted-foreground"
         onClick={() => setWeekStart(addDays(weekStart, 7))}
       >
@@ -153,7 +156,7 @@ export function CauseListWeek({
             type="button"
             variant="outline"
             size="icon"
-            aria-label="Pick a date"
+            aria-label={__t("causeListWeek_pickADate")}
             className="text-muted-foreground"
           >
             <CalendarDaysIcon aria-hidden />
@@ -176,8 +179,7 @@ export function CauseListWeek({
       </Popover>
       {awayFromToday ? (
         <Button type="button" variant="outline" onClick={() => choose(today)}>
-          Today
-        </Button>
+          {<__LocalizedText id="causeListWeek_today" />}{" "}</Button>
       ) : null}
     </div>
   );

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { SearchIcon, SlidersHorizontalIcon, XIcon } from "lucide-react";
@@ -50,6 +52,7 @@ const KIND_IN_SHEET_ONLY = "md:pointer-fine:hidden";
  * history or jump the page; `/` still focuses it.
  */
 function SearchBox({ query, onChange }: { query: string; onChange: (q: string) => void }) {
+  const __t = __useTranslations();
   const ref = React.useRef<HTMLInputElement>(null);
   const [text, setText] = React.useState(query);
   // When the URL changes underneath (Clear, back/forward), follow it.
@@ -86,10 +89,10 @@ function SearchBox({ query, onChange }: { query: string; onChange: (q: string) =
       <InputGroupInput
         ref={ref}
         type="search"
-        aria-label="Search these tasks"
+        aria-label={__t("filterRow_searchTheseTasks")}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Search case or task"
+        placeholder={__t("filterRow_searchCaseOrTask")}
         autoComplete="off"
         enterKeyHint="search"
       />
@@ -135,6 +138,7 @@ export function FilterRow({
   onChange: (patch: Partial<Filters>) => void;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   /* What the sheet holds. The search lives outside it and shows its own box.
      Kinds count only where the sheet is what holds them; with a mouse the
      pressed pills already say so, one row up. */
@@ -157,10 +161,9 @@ export function FilterRow({
 
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" aria-label={`Filters${applied ? `, ${applied} applied` : ""}`}>
+          <Button variant="outline" aria-label={__t("filterRow_filtersValue0", {value0: String(applied ? `, ${applied} applied` : "")})}>
             <SlidersHorizontalIcon data-icon="inline-start" aria-hidden />
-            Filters
-            {applied ? (
+            {<__LocalizedText id="filterRow_filters" />}{" "}{applied ? (
               <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-caption font-medium tabular-nums text-primary-foreground">
                 {applied}
               </span>
@@ -169,10 +172,9 @@ export function FilterRow({
         </SheetTrigger>
         <SheetContent side="right" className="w-full sm:max-w-sm">
           <SheetHeader>
-            <SheetTitle className="text-title-s font-semibold">Filters</SheetTitle>
+            <SheetTitle className="text-title-s font-semibold">{<__LocalizedText id="filterRow_filters" />}</SheetTitle>
             <SheetDescription className="text-body-compact">
-              Narrow the list. Anything you set stays visible on the row behind this.
-            </SheetDescription>
+              {<__LocalizedText id="filterRow_narrowTheListAnythingYouSetStays" />}{" "}</SheetDescription>
           </SheetHeader>
 
           {/* Checkboxes, as on the Cases filters: any combination can be asked
@@ -184,7 +186,7 @@ export function FilterRow({
                 legend="Category"
                 options={CATEGORY_ORDER.map((kind) => ({
                   value: kind,
-                  label: CATEGORY_LABELS[kind],
+                  label: __t(CATEGORY_LABELS[kind]),
                   count: categoryCounts?.[kind],
                 }))}
                 value={filters.kinds}
@@ -194,7 +196,7 @@ export function FilterRow({
             <CheckGroup
               id="tasks-filter-due"
               legend="Due"
-              options={DUES.map((due) => ({ value: due, label: DUE_LABELS[due] }))}
+              options={DUES.map((due) => ({ value: due, label: __t(DUE_LABELS[due]) }))}
               value={filters.dues}
               onChange={(dues) => onChange({ dues })}
             />
@@ -219,11 +221,10 @@ export function FilterRow({
           <SheetFooter>
             {narrowed ? (
               <Button variant="outline" onClick={onClear}>
-                Clear all filters
-              </Button>
+                {<__LocalizedText id="filterRow_clearAllFilters" />}{" "}</Button>
             ) : null}
             <SheetClose asChild>
-              <Button>Show the tasks</Button>
+              <Button>{<__LocalizedText id="filterRow_showTheTasks" />}</Button>
             </SheetClose>
           </SheetFooter>
         </SheetContent>
@@ -239,14 +240,14 @@ export function FilterRow({
         : filters.kinds.map((kind) => (
             <AppliedChip
               key={kind}
-              label={CATEGORY_LABELS[kind]}
+              label={__t(CATEGORY_LABELS[kind])}
               onClear={() => onChange({ kinds: without(filters.kinds, kind) })}
             />
           ))}
       {filters.dues.map((due) => (
         <AppliedChip
           key={due}
-          label={DUE_LABELS[due]}
+          label={__t(DUE_LABELS[due])}
           onClear={() => onChange({ dues: without(filters.dues, due) })}
         />
       ))}
@@ -260,7 +261,7 @@ export function FilterRow({
       {filters.advocates.map((id) => (
         <AppliedChip
           key={id}
-          label={people.find((p) => p.id === id)?.name ?? "Advocate"}
+          label={people.find((p) => p.id === id)?.name ?? __t("filterRow_advocate")}
           onClear={() => onChange({ advocates: without(filters.advocates, id) })}
         />
       ))}
@@ -268,8 +269,7 @@ export function FilterRow({
       {narrowed ? (
         <Button variant="ghost" onClick={onClear} className={cn("text-muted-foreground")}>
           <XIcon data-icon="inline-start" aria-hidden />
-          Clear
-        </Button>
+          {<__LocalizedText id="filterRow_clear" />}{" "}</Button>
       ) : null}
     </div>
   );

@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { Link2Icon } from "lucide-react";
@@ -51,13 +52,14 @@ export function RecordRow({
   label: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <>
       {/* 14px muted, not 12: the owner's standing rule for key-value data (2026-09-11,
           restated 2026-09-18 on this dialog — *"avoid the use of 12 size copy for these
           kind of things"*). Hierarchy here is colour and column, not size, so the label
           and its value are one size and the whole record reads as one table. */}
-      <dt className="text-body-compact text-muted-foreground">{label}</dt>
+      <dt className="text-body-compact text-muted-foreground">{__t(label)}</dt>
       <dd className="-mt-1 min-w-0 text-body-compact leading-snug @[22rem]:mt-0">
         {children}
       </dd>
@@ -88,11 +90,12 @@ export function FieldValue({
    */
   copyable?: boolean;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   if (!field.ident) return <>{courtText(value)}</>;
   /* Copyable even in the field row, which is an option rather than a button:
      `Identifier` keeps the click from reaching the row and selecting it. */
-  return <Identifier value={value} label={field.label} copyable={copyable} />;
+  return <Identifier value={value} label={__t(field.label)} copyable={copyable} />;
 }
 
 /**

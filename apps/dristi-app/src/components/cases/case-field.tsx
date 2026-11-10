@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import { type TableColumnId } from "@/lib/cases/table-columns";
 import { counselFor, type CaseRecord } from "@/lib/cases/types";
 import { viewerAccess, viewerRepresentation } from "@/lib/cases/viewer";
@@ -24,6 +25,7 @@ export function CaseField({
   /** Drop the "Long pending" badge — set inside the long pending register. */
   hideLongPendingFlag?: boolean;
 }) {
+  const __t = __useTranslations();
   const list = presentation === "list";
 
   switch (id) {
@@ -56,7 +58,7 @@ export function CaseField({
       const access = viewerAccess(record);
       return (
         <CasePlain>
-          {access.kind === "vakalatnama" ? "Vakalatnama" : "Office access"}
+          {access.kind === "vakalatnama" ? __t("caseField_vakalatnama_9828c461") : __t("caseField_officeAccess")}
         </CasePlain>
       );
     }

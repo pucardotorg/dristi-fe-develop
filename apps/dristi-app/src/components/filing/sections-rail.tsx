@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -87,7 +89,7 @@ function IssueMark({ count }: { count: number }) {
   return (
     <Badge variant="warning" className="ml-auto shrink-0 tabular-nums">
       {count}
-      <span className="sr-only"> to fix</span>
+      <span className="sr-only"> {<__LocalizedText id="sectionsRail_toFix" />}</span>
     </Badge>
   );
 }
@@ -105,12 +107,12 @@ export function SectionMark({ state }: { state: SectionState }) {
   return state === "done" ? (
     <>
       <CheckIcon aria-hidden className="ml-auto text-success-ink" />
-      <span className="sr-only">, complete</span>
+      <span className="sr-only">{<__LocalizedText id="sectionsRail_complete" />}</span>
     </>
   ) : (
     <>
       <CircleDashedIcon aria-hidden className="ml-auto text-muted-foreground" />
-      <span className="sr-only">, in progress</span>
+      <span className="sr-only">{<__LocalizedText id="sectionsRail_inProgress" />}</span>
     </>
   );
 }
@@ -124,6 +126,7 @@ function StepRow({
   active: boolean;
   onNavigate: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const { draft, hrefFor } = useFiling();
   const blocked = useLeaveBlocked();
@@ -146,7 +149,7 @@ function StepRow({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right">
-            {courtText(step.title)}: {PLACEHOLDER_NOTE[step.id] ?? "not a screen of its own"}
+            {courtText(step.title)}: {PLACEHOLDER_NOTE[step.id] ?? __t("sectionsRail_notAScreenOfItsOwn")}
           </TooltipContent>
         </Tooltip>
       </li>
@@ -182,14 +185,15 @@ function StepRow({
 
 /** A host's own step (`FieldPolicy.hostSteps`), in the same row as a section. */
 function HostStepRow({ step, onNavigate }: { step: HostStep; onNavigate: () => void }) {
+  const __t = __useTranslations();
   const Icon = step.icon;
   if (step.disabled) {
     return (
       <li>
         <Button type="button" variant="ghost" aria-disabled="true" className={cn(ROW, ROW_PLACEHOLDER)}>
           <Icon aria-hidden />
-          <span className="min-w-0 truncate">{step.title}</span>
-          <span className="sr-only">, not reached yet</span>
+          <span className="min-w-0 truncate">{__t(step.title)}</span>
+          <span className="sr-only">{<__LocalizedText id="sectionsRail_notReachedYet" />}</span>
         </Button>
       </li>
     );
@@ -199,7 +203,7 @@ function HostStepRow({ step, onNavigate }: { step: HostStep; onNavigate: () => v
       <Button asChild variant="ghost" className={cn(ROW, step.active && ROW_ACTIVE)}>
         <Link href={step.href} onClick={onNavigate} aria-current={step.active ? "page" : undefined}>
           <Icon aria-hidden className={step.active ? undefined : "text-muted-foreground"} />
-          <span className="min-w-0 truncate">{step.title}</span>
+          <span className="min-w-0 truncate">{__t(step.title)}</span>
           {step.done ? <SectionMark state="done" /> : null}
         </Link>
       </Button>
@@ -217,7 +221,7 @@ function DocsRow({ onOpen }: { onOpen: () => void }) {
       className={ROW}
     >
       <FilesIcon aria-hidden className="text-muted-foreground" />
-      <span className="min-w-0 flex-1 truncate text-left">View uploaded documents</span>
+      <span className="min-w-0 flex-1 truncate text-left">{<__LocalizedText id="sectionsRail_viewUploadedDocuments" />}</span>
       <UploadedCountBadge />
     </Button>
   );
@@ -232,13 +236,14 @@ function StepList({
   onNavigate: () => void;
   onOpenDocs: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const active = useActiveStep();
   const groups = useShownGroups();
   const host = useFieldPolicy()?.hostSteps;
 
   return (
-    <nav aria-label="Filing sections" className="flex flex-col gap-4 px-2">
+    <nav aria-label={__t("sectionsRail_filingSections")} className="flex flex-col gap-4 px-2">
       <ul className="flex w-full flex-col gap-1">
         <li>
           <DocsRow onOpen={onOpenDocs} />
@@ -278,6 +283,7 @@ function StepList({
 }
 
 function ProgressBlock() {
+  const __t = __useTranslations();
   const { draft, steps } = useFiling();
   const progress = draftProgress(draft);
   // Progress runs to signing and paying; a host that does those elsewhere (bulk filing)
@@ -287,10 +293,10 @@ function ProgressBlock() {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-caption">
-        <span className="font-medium text-foreground">Progress</span>
+        <span className="font-medium text-foreground">{<__LocalizedText id="sectionsRail_progress" />}</span>
         <span className="tabular-nums text-muted-foreground">{progress}%</span>
       </div>
-      <Progress value={progress} aria-label="Filing progress" className="h-1.5" />
+      <Progress value={progress} aria-label={__t("sectionsRail_filingProgress")} className="h-1.5" />
     </div>
   );
 }
@@ -311,6 +317,7 @@ function ProgressBlock() {
  * is no width for it, so it becomes a sheet opened from the "Sections" button.
  */
 export function SectionsRail() {
+  const __t = __useTranslations();
   const { sectionsSheetOpen, setSectionsSheetOpen } = useFilingChrome();
   const [docsOpen, setDocsOpen] = React.useState(false);
   const closeSheet = () => setSectionsSheetOpen(false);
@@ -318,12 +325,12 @@ export function SectionsRail() {
   return (
     <>
       <aside
-        aria-label="Sections"
+        aria-label={__t("sectionsRail_sections")}
         style={{ top: TOP_BAR_HEIGHT, height: `calc(100svh - ${TOP_BAR_HEIGHT})` }}
         className="sticky hidden w-72 shrink-0 flex-col self-start overflow-y-auto border-r border-hairline bg-sidebar lg:pointer-fine:flex lg:landscape:flex"
       >
         <div className="flex flex-col gap-3 px-4 py-4">
-          <span className="text-body font-medium text-foreground">Sections</span>
+          <span className="text-body font-medium text-foreground">{<__LocalizedText id="sectionsRail_sections" />}</span>
           <ProgressBlock />
         </div>
 
@@ -335,10 +342,9 @@ export function SectionsRail() {
       <Sheet open={sectionsSheetOpen} onOpenChange={setSectionsSheetOpen}>
         <SheetContent side="left" className="w-full overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="text-title-s font-semibold">Sections</SheetTitle>
+            <SheetTitle className="text-title-s font-semibold">{<__LocalizedText id="sectionsRail_sections" />}</SheetTitle>
             <SheetDescription className="text-body-compact">
-              Every part of this filing, in the order the court form takes them.
-            </SheetDescription>
+              {<__LocalizedText id="sectionsRail_everyPartOfThisFilingInThe" />}{" "}</SheetDescription>
           </SheetHeader>
           <div className="px-4">
             <ProgressBlock />
@@ -455,10 +461,9 @@ export function SectionsTrigger() {
         >
           <PanelLeftOpenIcon aria-hidden />
           <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden whitespace-nowrap pl-2">
-            Sections
-            {position ? (
+            {<__LocalizedText id="sectionsRail_sections" />}{" "}{position ? (
               <span className="ml-auto pl-3 text-caption font-normal tabular-nums text-muted-foreground">
-                Step {position} of {walked.length}
+                {<__LocalizedText id="sectionsRail_step" />}{" "}{position} {<__LocalizedText id="sectionsRail_of" />}{" "}{walked.length}
               </span>
             ) : null}
             <ChevronRightIcon aria-hidden className="text-muted-foreground" />

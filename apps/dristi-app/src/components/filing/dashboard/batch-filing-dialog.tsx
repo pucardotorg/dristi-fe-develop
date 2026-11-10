@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CheckIcon, PenToolIcon, WalletIcon } from "lucide-react";
@@ -52,6 +54,7 @@ export function BatchFilingDialog({
   /** The batch went through (however many rows actually qualified) and can be reread. */
   onFinished: () => void;
 }) {
+  const __t = __useTranslations();
   const courtFees = useCourt().profile.fees;
   const [step, setStep] = React.useState<"confirm" | "success">("confirm");
   const [running, setRunning] = React.useState(false);
@@ -140,28 +143,27 @@ export function BatchFilingDialog({
               <DialogTitle className="tabular-nums">
                 {kind === "sign"
                   ? one
-                    ? "Sign this document?"
-                    : `Sign ${n} documents?`
+                    ? __t("batchFilingDialog_signThisDocument")
+                    : __t("batchFilingDialog_signValue0Documents", {value0: String(n)})
                   : one
-                    ? `Pay ${money(total)}?`
-                    : `Pay ${money(total)} for ${n} filings?`}
+                    ? __t("batchFilingDialog_payValue0", {value0: String(money(total))})
+                    : __t("batchFilingDialog_payValue0ForValue1Filings", {value0: String(money(total)), value1: String(n)})}
               </DialogTitle>
               <DialogDescription>
                 {kind === "sign"
                   ? one
-                    ? "Signed as you, and attached to this filing."
-                    : `One OTP signs all ${n}, as you. Each filing closes on its own signature.`
+                    ? __t("batchFilingDialog_signedAsYouAndAttachedToThis")
+                    : __t("batchFilingDialog_oneOtpSignsAllValue0AsYou", {value0: String(n)})
                   : one
-                    ? "Charged now, against this filing's own bill."
-                    : `One transaction across ${n} filings, each charged its own bill.`}
+                    ? __t("batchFilingDialog_chargedNowAgainstThisFilingSOwn")
+                    : __t("batchFilingDialog_oneTransactionAcrossValue0FilingsEachCharged", {value0: String(n)})}
               </DialogDescription>
             </DialogHeader>
 
             {kind === "sign" ? (
               <div className="flex flex-col gap-2">
                 <Label htmlFor="batch-filing-otp" className="text-body-compact font-medium">
-                  Aadhaar OTP
-                </Label>
+                  {<__LocalizedText id="batchFilingDialog_aadhaarOtp" />}{" "}</Label>
                 <InputOTP
                   id="batch-filing-otp"
                   maxLength={6}
@@ -180,19 +182,16 @@ export function BatchFilingDialog({
                   </InputOTPGroup>
                 </InputOTP>
                 <p className="text-caption text-muted-foreground">
-                  Sandbox — any six digits work.
-                </p>
+                  {<__LocalizedText id="batchFilingDialog_sandboxAnySixDigitsWork" />}{" "}</p>
               </div>
             ) : (
               <p className="text-caption text-muted-foreground">
-                Sandbox payment — no money moves.
-              </p>
+                {<__LocalizedText id="batchFilingDialog_sandboxPaymentNoMoneyMoves" />}{" "}</p>
             )}
 
             <DialogFooter>
               <Button type="button" variant="outline" disabled={running} onClick={close}>
-                Cancel
-              </Button>
+                {<__LocalizedText id="batchFilingDialog_cancel" />}{" "}</Button>
               <Button
                 type="button"
                 disabled={running || (kind === "sign" && otp.length < 6)}
@@ -203,17 +202,17 @@ export function BatchFilingDialog({
                 {running ? (
                   <>
                     <Spinner data-icon="inline-start" aria-hidden />
-                    {kind === "sign" ? "Signing…" : "Paying…"}
+                    {kind === "sign" ? __t("batchFilingDialog_signing") : __t("batchFilingDialog_paying")}
                   </>
                 ) : kind === "sign" ? (
                   <>
                     <PenToolIcon data-icon="inline-start" aria-hidden />
-                    {one ? "Sign" : `Sign ${n} documents`}
+                    {one ? __t("batchFilingDialog_sign_e5b4f215") : __t("batchFilingDialog_signValue0Documents_85136d7b", {value0: String(n)})}
                   </>
                 ) : (
                   <>
                     <WalletIcon data-icon="inline-start" aria-hidden />
-                    Pay {money(total)}
+                    {<__LocalizedText id="batchFilingDialog_pay" />}{" "}{money(total)}
                   </>
                 )}
               </Button>
@@ -231,24 +230,24 @@ export function BatchFilingDialog({
                 <DialogTitle className="text-title-s font-semibold tabular-nums text-success-foreground">
                   {kind === "sign"
                     ? acted === 0
-                      ? "Nothing was signed"
+                      ? __t("batchFilingDialog_nothingWasSigned")
                       : acted === 1
-                        ? "Document signed"
+                        ? __t("batchFilingDialog_documentSigned")
                         : `${acted} documents signed`
                     : acted === 0
-                      ? "Nothing was paid"
+                      ? __t("batchFilingDialog_nothingWasPaid")
                       : `${money(total)} paid`}
                 </DialogTitle>
                 <DialogDescription className="text-body-compact text-pretty text-success-foreground">
                   {kind === "sign"
                     ? sworeLater > 0
                       ? acted === 1
-                        ? "Your oath is still to be taken on this filing. Open it from this tab to record it."
+                        ? __t("batchFilingDialog_yourOathIsStillToBeTaken")
                         : sworeLater === 1
-                          ? "Your oath is still to be taken on one of them. Open it from this tab to record it."
-                          : `Your oath is still to be taken on ${sworeLater} of them. Open each from this tab to record it.`
-                      : "One OTP covered the set, the same as signing one at a time. A filing still waiting on another party stays on this tab until they sign."
-                    : "This is a sandbox — nothing has been sent to a real court."}
+                          ? __t("batchFilingDialog_yourOathIsStillToBeTaken_5bf5ad66")
+                          : __t("batchFilingDialog_yourOathIsStillToBeTaken_2b6570f0", {value0: String(sworeLater)})
+                      : __t("batchFilingDialog_oneOtpCoveredTheSetTheSame")
+                    : __t("batchFilingDialog_thisIsASandboxNothingHasBeen")}
                 </DialogDescription>
               </div>
               <span className="flex size-10 items-center justify-center rounded-full bg-success-foreground">
@@ -257,8 +256,7 @@ export function BatchFilingDialog({
             </div>
             <DialogFooter>
               <Button type="button" onClick={close}>
-                Done
-              </Button>
+                {<__LocalizedText id="batchFilingDialog_done" />}{" "}</Button>
             </DialogFooter>
           </>
         )}

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { Columns3Icon } from "lucide-react";
 
@@ -28,20 +30,19 @@ export function CauseListColumnsMenu({
 }: {
   state: ReturnType<typeof useCauseListColumns>;
 }) {
+  const __t = __useTranslations();
   const { columns, toggle, showAll, reset, isDefault, isAllVisible } = state;
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button type="button" variant="outline" className="shrink-0">
           <Columns3Icon aria-hidden />
-          Edit columns
-        </Button>
+          {<__LocalizedText id="causeListColumnsMenu_editColumns" />}{" "}</Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-64">
         <PopoverHeader className="px-2 pt-1">
           <PopoverTitle className="text-body-compact font-medium">
-            Show or hide columns
-          </PopoverTitle>
+            {<__LocalizedText id="causeListColumnsMenu_showOrHideColumns" />}{" "}</PopoverTitle>
         </PopoverHeader>
         <ul className="flex flex-col">
           {columns.order.map((id) => {
@@ -59,7 +60,7 @@ export function CauseListColumnsMenu({
                     disabled={column.locked}
                     onCheckedChange={() => toggle(id)}
                   />
-                  {column.label}
+                  {__t(column.label)}
                 </Label>
               </li>
             );
@@ -75,8 +76,7 @@ export function CauseListColumnsMenu({
             disabled={isAllVisible}
             onClick={showAll}
           >
-            Show all
-          </Button>
+            {<__LocalizedText id="causeListColumnsMenu_showAll" />}{" "}</Button>
           <Button
             type="button"
             variant="ghost"
@@ -85,8 +85,7 @@ export function CauseListColumnsMenu({
             disabled={isDefault}
             onClick={reset}
           >
-            Reset to default
-          </Button>
+            {<__LocalizedText id="causeListColumnsMenu_resetToDefault" />}{" "}</Button>
         </div>
       </PopoverContent>
     </Popover>

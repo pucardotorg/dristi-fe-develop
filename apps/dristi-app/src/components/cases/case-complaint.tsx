@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useState } from "react";
 import { useCaseRouter } from "@/components/cases/case-reader";
@@ -62,6 +64,7 @@ export function CaseComplaint({
   record: CaseRecord;
   partId: string;
 }) {
+  const __t = __useTranslations();
   const router = useCaseRouter();
   const tree = complaintTree(record.id);
   const selected = findNode(tree, partId);
@@ -98,12 +101,9 @@ export function CaseComplaint({
       <Empty className="border border-dashed border-border">
         <EmptyHeader>
           <EmptyTitle className="text-title-s font-semibold">
-            Complaint is not in this fixture
-          </EmptyTitle>
+            {<__LocalizedText id="caseComplaint_complaintIsNotInThisFixture" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
-            Structured complaint details are filed for the dummy Section 138
-            case. Open Sunil Varghese v. Anand Traders to read them.
-          </EmptyDescription>
+            {<__LocalizedText id="caseComplaint_structuredComplaintDetailsAreFiledForThe" />}{" "}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -138,8 +138,7 @@ export function CaseComplaint({
             variant="outline"
             className="w-full shrink-0 sm:w-auto md:hidden"
           >
-            Browse complaint
-          </Button>
+            {<__LocalizedText id="caseComplaint_browseComplaint" />}{" "}</Button>
         </SheetTrigger>
         <SheetContent
           side="left"
@@ -147,14 +146,12 @@ export function CaseComplaint({
         >
           <SheetHeader>
             <SheetTitle className="text-title-s font-semibold">
-              Complaint
-            </SheetTitle>
+              {<__LocalizedText id="caseComplaint_complaint" />}{" "}</SheetTitle>
             <SheetDescription>
-              Choose a record to open.
-            </SheetDescription>
+              {<__LocalizedText id="caseComplaint_chooseARecordToOpen" />}{" "}</SheetDescription>
           </SheetHeader>
           <div className="px-4 pb-6">
-            <nav aria-label="Complaint">
+            <nav aria-label={__t("caseComplaint_complaint")}>
               <ComplaintIndex {...indexProps} />
             </nav>
           </div>
@@ -163,8 +160,8 @@ export function CaseComplaint({
 
       <Card className="flex min-h-[calc(100svh-theme(spacing.14)-theme(spacing.6))] flex-col overflow-hidden py-0 hover:bg-card md:min-h-[calc(100svh-theme(spacing.14)-theme(spacing.8))] md:flex-row md:items-stretch md:gap-0">
         <div className="hidden w-80 shrink-0 flex-col gap-4 p-6 md:flex">
-          <h2 className="text-title-s font-semibold">Complaint</h2>
-          <nav aria-label="Complaint">
+          <h2 className="text-title-s font-semibold">{<__LocalizedText id="caseComplaint_complaint" />}</h2>
+          <nav aria-label={__t("caseComplaint_complaint")}>
             <ComplaintIndex {...indexProps} />
           </nav>
         </div>
@@ -172,7 +169,7 @@ export function CaseComplaint({
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-6">
           <div className="flex shrink-0 flex-wrap items-start justify-between gap-4">
             <h2 className="min-w-0 text-title-s font-semibold">
-              {headingText}
+              {__t(headingText)}
               {headingId ? (
                 <>
                   {" "}
@@ -215,6 +212,7 @@ function ComplaintIndex({
   onFolderOpenChange: (id: string, open: boolean) => void;
   depth?: number;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col">
       {nodes.map((node) => (
@@ -233,7 +231,7 @@ function ComplaintIndex({
                 >
                   <IndexLabel
                     number={node.number}
-                    label={node.label}
+                    label={__t(node.label)}
                     labelId={node.labelId}
                   />
                   <ChevronDownIcon
@@ -263,8 +261,7 @@ function ComplaintIndex({
                       depthPad[Math.min(depth + 1, depthPad.length - 1)]
                     )}
                   >
-                    None in this file yet
-                  </p>
+                    {<__LocalizedText id="caseComplaint_noneInThisFileYet" />}{" "}</p>
                 )}
               </CollapsibleContent>
             </Collapsible>
@@ -283,7 +280,7 @@ function ComplaintIndex({
               >
                 <IndexLabel
                   number={node.number}
-                  label={node.label}
+                  label={__t(node.label)}
                   labelId={node.labelId}
                 />
               </button>
@@ -312,13 +309,14 @@ function IndexLabel({
   label: string;
   labelId?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <span className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 text-left">
       <span className="tabular-nums text-muted-foreground">
         {fileNumberLabel(number)}
       </span>
       <span className="min-w-0 whitespace-normal">
-        {label}
+        {__t(label)}
         {labelId ? (
           <>
             {" "}

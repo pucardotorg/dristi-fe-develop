@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -80,7 +82,7 @@ export function SourceLabel({
   source: BatchSummary["source"];
   to?: string | null;
 }) {
-  const name =
+    const name =
     source.kind === "api"
       ? `${source.system} API`
       : source.kind === "excel"
@@ -103,7 +105,7 @@ export function SourceLabel({
         )}
       >
         {source.kind === "api" ? (
-          <span className="text-caption font-bold tracking-wide">API</span>
+          <span className="text-caption font-bold tracking-wide">{<__LocalizedText id="batchesScreen_api" />}</span>
         ) : source.kind === "excel" ? (
           <FileSpreadsheetIcon className="size-5" />
         ) : source.kind === "documents" ? (
@@ -124,7 +126,7 @@ export function SourceLabel({
         ) : null}
         {to ? (
           <span className="truncate text-caption text-muted-foreground">
-            To {to}
+            {<__LocalizedText id="batchesScreen_to" />}{" "}{to}
           </span>
         ) : null}
       </span>
@@ -134,6 +136,7 @@ export function SourceLabel({
 
 /** Every batch, newest first. Batches never mix; clubbing is the filer's deliberate act. */
 export function BatchesScreen() {
+  const __t = __useTranslations();
   const ready = useGujarat();
   const { profile } = useCourt();
   const params = useSearchParams();
@@ -209,7 +212,7 @@ export function BatchesScreen() {
                 return next;
               })
             }
-            aria-label={`Select ${b.number}`}
+            aria-label={__t("batchesScreen_selectValue0", {value0: String(b.number)})}
           />
         ) : null}
       </TableCell>
@@ -223,12 +226,11 @@ export function BatchesScreen() {
         </Link>
         {b.openedAt === null ? (
           <Badge variant="destructive" className="ml-2">
-            New
-          </Badge>
+            {<__LocalizedText id="batchesScreen_new" />}{" "}</Badge>
         ) : null}
         {b.clubbedFrom.length ? (
           <div className="text-caption font-normal text-muted-foreground">
-            From {b.clubbedFrom.join(", ")}
+            {<__LocalizedText id="batchesScreen_from" />}{" "}{b.clubbedFrom.join(", ")}
           </div>
         ) : null}
       </TableCell>
@@ -249,12 +251,11 @@ export function BatchesScreen() {
       </TableCell>
       <TableCell className={cn(TABLE_CELL, "pr-6 whitespace-normal")}>
         {b.clubbedInto ? (
-          <Badge variant="outline">Clubbed into {b.clubbedIntoNumber}</Badge>
+          <Badge variant="outline">{<__LocalizedText id="batchesScreen_clubbedInto" />}{" "}{b.clubbedIntoNumber}</Badge>
         ) : b.total > 0 && b.counts.filed === b.total ? (
           <Badge variant="success">
             <CircleCheckIcon data-icon="inline-start" aria-hidden />
-            Done: all {b.total} filed
-          </Badge>
+            {<__LocalizedText id="batchesScreen_doneAll" />}{" "}{b.total} {<__LocalizedText id="batchesScreen_filed" />}{" "}</Badge>
         ) : (
           <StageBar counts={b.counts} />
         )}
@@ -272,21 +273,18 @@ export function BatchesScreen() {
     >
       <header className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex flex-col gap-1">
-          <h1 className={cn(PAGE_TITLE, "text-foreground")}>Bulk filing</h1>
+          <h1 className={cn(PAGE_TITLE, "text-foreground")}>{<__LocalizedText id="batchesScreen_bulkFiling" />}</h1>
           <p className={PAGE_SUBTITLE}>
-            Each push from a client&apos;s system and each Excel upload is its
-            own batch.
-          </p>
+            {<__LocalizedText id="batchesScreen_eachPushFromAClientSSystem" />}{" "}</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row md:ml-auto">
           <Button variant="outline" onClick={() => void downloadTemplate()}>
             <DownloadIcon data-icon="inline-start" aria-hidden />
-            Download Excel template
-          </Button>
+            {<__LocalizedText id="batchesScreen_downloadExcelTemplate" />}{" "}</Button>
           <Button asChild>
             <Link href="/filings/bulk/upload">
               <UploadIcon data-icon="inline-start" aria-hidden />
-              {ai === "on" ? "Upload cases" : "Upload Excel"}
+              {ai === "on" ? __t("batchesScreen_uploadCases") : __t("batchesScreen_uploadExcel")}
             </Link>
           </Button>
         </div>
@@ -294,26 +292,24 @@ export function BatchesScreen() {
 
       {error ? (
         <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{__t(error)}</AlertDescription>
         </Alert>
       ) : null}
 
       <Card className={cn(PANEL_CLASS, "gap-0 py-0")}>
         <div className="flex flex-wrap items-center gap-3 px-6 py-4">
-          <h2 className="sr-only">Batches</h2>
+          <h2 className="sr-only">{<__LocalizedText id="batchesScreen_batches" />}</h2>
           <Tabs value={view} onValueChange={setView}>
             <TabsList>
               <TabsTrigger value="active">
-                In progress
-                {batches ? (
+                {<__LocalizedText id="batchesScreen_inProgress" />}{" "}{batches ? (
                   <span className="text-muted-foreground tabular-nums">
                     {open.length}
                   </span>
                 ) : null}
               </TabsTrigger>
               <TabsTrigger value="completed">
-                Completed
-                {batches ? (
+                {<__LocalizedText id="batchesScreen_completed" />}{" "}{batches ? (
                   <span className="text-muted-foreground tabular-nums">
                     {closed.length}
                   </span>
@@ -329,16 +325,14 @@ export function BatchesScreen() {
                 </span>
               ) : null}
               <span className="text-caption text-muted-foreground tabular-nums">
-                {chosen.length} selected
-              </span>
+                {chosen.length} {<__LocalizedText id="batchesScreen_selected" />}{" "}</span>
               <Button
                 variant="outline"
                 disabled={chosen.length < 2 || !sameClient || clubbing}
                 onClick={() => void club()}
               >
                 <Layers2Icon data-icon="inline-start" aria-hidden />
-                Club {chosen.length} batches
-              </Button>
+                {<__LocalizedText id="batchesScreen_club" />}{" "}{chosen.length} {<__LocalizedText id="batchesScreen_batches_52af2f83" />}{" "}</Button>
             </div>
           ) : null}
         </div>
@@ -352,8 +346,8 @@ export function BatchesScreen() {
         ) : batches.length > 0 && shown.length === 0 ? (
           <p className="px-6 pb-6 text-body-compact text-muted-foreground">
             {view === "completed"
-              ? "No completed batches."
-              : "No batches in progress."}
+              ? __t("batchesScreen_noCompletedBatches")
+              : __t("batchesScreen_noBatchesInProgress")}
           </p>
         ) : batches.length === 0 ? (
           <Empty className="border-0 pb-12">
@@ -361,11 +355,9 @@ export function BatchesScreen() {
               <EmptyMedia variant="icon">
                 <Layers2Icon aria-hidden />
               </EmptyMedia>
-              <EmptyTitle>No batches yet</EmptyTitle>
+              <EmptyTitle>{<__LocalizedText id="batchesScreen_noBatchesYet" />}</EmptyTitle>
               <EmptyDescription>
-                Cases pushed from a client&apos;s system, or uploaded from
-                Excel, arrive here as batches.
-              </EmptyDescription>
+                {<__LocalizedText id="batchesScreen_casesPushedFromAClientSSystem" />}{" "}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
@@ -373,7 +365,7 @@ export function BatchesScreen() {
             {/* Phones: one stacked card per batch, nothing to scroll sideways. */}
             <ul
               className="flex flex-col divide-y divide-hairline md:hidden"
-              aria-label="Batches"
+              aria-label={__t("batchesScreen_batches")}
             >
               {shown.map((b) => {
                 const selectable = !finished(b);
@@ -391,7 +383,7 @@ export function BatchesScreen() {
                               return next;
                             })
                           }
-                          aria-label={`Select ${b.number}`}
+                          aria-label={__t("batchesScreen_selectValue0", {value0: String(b.number)})}
                         />
                       </span>
                     ) : null}
@@ -404,10 +396,10 @@ export function BatchesScreen() {
                           {b.number}
                         </span>
                         {b.openedAt === null ? (
-                          <Badge variant="destructive">New</Badge>
+                          <Badge variant="destructive">{<__LocalizedText id="batchesScreen_new" />}</Badge>
                         ) : null}
                         <span className="ml-auto text-caption text-muted-foreground tabular-nums">
-                          {b.total} case{b.total === 1 ? "" : "s"} ·{" "}
+                          {b.total} {<__LocalizedText id="batchesScreen_case" />}{b.total === 1 ? "" : "s"} ·{" "}
                           {toLongDate(b.createdAt.slice(0, 10))}
                         </span>
                       </span>
@@ -421,7 +413,7 @@ export function BatchesScreen() {
                       />
                       {b.clubbedInto ? (
                         <Badge variant="outline">
-                          Clubbed into {b.clubbedIntoNumber}
+                          {<__LocalizedText id="batchesScreen_clubbedInto" />}{" "}{b.clubbedIntoNumber}
                         </Badge>
                       ) : b.total > 0 && b.counts.filed === b.total ? (
                         <Badge variant="success">
@@ -429,8 +421,7 @@ export function BatchesScreen() {
                             data-icon="inline-start"
                             aria-hidden
                           />
-                          Done: all {b.total} filed
-                        </Badge>
+                          {<__LocalizedText id="batchesScreen_doneAll" />}{" "}{b.total} {<__LocalizedText id="batchesScreen_filed" />}{" "}</Badge>
                       ) : (
                         <StageBar counts={b.counts} />
                       )}
@@ -442,23 +433,21 @@ export function BatchesScreen() {
             <div className="hidden overflow-x-auto px-2 pb-2 md:block">
               <Table
                 className="border-separate border-spacing-0"
-                aria-label="Batches"
+                aria-label={__t("batchesScreen_batches")}
               >
                 <TableHeader>
                   <TableRow className={TABLE_HEAD_ROW}>
                     <TableHead className={cn(TABLE_HEAD, "w-12 pl-6")}>
-                      <span className="sr-only">Select</span>
+                      <span className="sr-only">{<__LocalizedText id="batchesScreen_select" />}</span>
                     </TableHead>
-                    <TableHead className={TABLE_HEAD}>Batch</TableHead>
-                    <TableHead className={TABLE_HEAD}>Came in by</TableHead>
-                    <TableHead className={TABLE_HEAD}>Complainant</TableHead>
-                    <TableHead className={TABLE_HEAD}>Received</TableHead>
+                    <TableHead className={TABLE_HEAD}>{<__LocalizedText id="batchesScreen_batch" />}</TableHead>
+                    <TableHead className={TABLE_HEAD}>{<__LocalizedText id="batchesScreen_cameInBy" />}</TableHead>
+                    <TableHead className={TABLE_HEAD}>{<__LocalizedText id="batchesScreen_complainant" />}</TableHead>
+                    <TableHead className={TABLE_HEAD}>{<__LocalizedText id="batchesScreen_received" />}</TableHead>
                     <TableHead className={cn(TABLE_HEAD, "text-right")}>
-                      Cases
-                    </TableHead>
+                      {<__LocalizedText id="batchesScreen_cases" />}{" "}</TableHead>
                     <TableHead className={cn(TABLE_HEAD, "pr-6")}>
-                      Where they stand
-                    </TableHead>
+                      {<__LocalizedText id="batchesScreen_whereTheyStand" />}{" "}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className={tableBodyClass({ selectable: true })}>

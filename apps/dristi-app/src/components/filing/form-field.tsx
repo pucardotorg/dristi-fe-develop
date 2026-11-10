@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { InfoIcon } from "lucide-react";
@@ -32,14 +34,14 @@ export function useSourceFieldLabel() { return React.useContext(SourceFieldLabel
 /** The `*` / "optional" marker after a label. */
 export function RequiredMark({ optional }: { optional?: boolean }) {
   if (optional) {
-    return <span className="font-normal text-muted-foreground">optional</span>;
+    return <span className="font-normal text-muted-foreground">{<__LocalizedText id="formField_optional" />}</span>;
   }
   return (
     <>
       <span aria-hidden className="text-destructive">
         *
       </span>
-      <span className="sr-only">required</span>
+      <span className="sr-only">{<__LocalizedText id="formField_required" />}</span>
     </>
   );
 }
@@ -50,6 +52,7 @@ export function RequiredMark({ optional }: { optional?: boolean }) {
  * carries a tip is still the height of one that doesn't.
  */
 export function LabelTip({ children }: { children: React.ReactNode }) {
+  const __t = __useTranslations();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -57,7 +60,7 @@ export function LabelTip({ children }: { children: React.ReactNode }) {
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="More about this field"
+          aria-label={__t("formField_moreAboutThisField")}
           className="-my-3 -mr-2.5 -ml-2 align-middle text-muted-foreground"
         >
           <InfoIcon aria-hidden />
@@ -109,6 +112,7 @@ export function FormField({
   className?: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const correction = useCorrection();
   const instance = useCorrectionInstance();
   // A host's check on this field (bulk filing), when the section has nothing of its own to say.
@@ -144,11 +148,11 @@ export function FormField({
         resolved ? "text-success-ink" : "text-muted-foreground"
       )}
     >
-      · {resolved ? "corrected" : "flagged"}
+      · {resolved ? __t("formField_corrected") : __t("formField_flagged")}
       <span className="sr-only">
         {resolved
-          ? " by scrutiny, and corrected in the corrections panel"
-          : " by scrutiny. Correct it in the corrections panel"}
+          ? __t("formField_byScrutinyAndCorrectedInTheCorrections")
+          : __t("formField_byScrutinyCorrectItInTheCorrections")}
       </span>
     </span>
   ) : null;
@@ -158,7 +162,7 @@ export function FormField({
       {/* One inline run, so on a label that wraps the mark and the tip follow its last
           word instead of standing at the far end of the row, a line away from it. */}
       <span>
-        {label}
+        {__t(label)}
         {marker ? <> {marker}</> : null}
         {tip ? (
           <>
@@ -178,12 +182,12 @@ export function FormField({
       ) : (
         <FieldLabel className="text-body-compact">{labelBody}</FieldLabel>
       )}
-      {help && helpPlacement === "above" ? <FieldDescription>{help}</FieldDescription> : null}
+      {help && helpPlacement === "above" ? <FieldDescription>{__t(help)}</FieldDescription> : null}
       <SourceFieldLabel.Provider value={typeof label === "string" ? label : "this field"}>
         {children}
       </SourceFieldLabel.Provider>
-      {help && helpPlacement === "below" ? <FieldDescription>{help}</FieldDescription> : null}
-      {error ? <FieldError>{error}</FieldError> : null}
+      {help && helpPlacement === "below" ? <FieldDescription>{__t(help)}</FieldDescription> : null}
+      {error ? <FieldError>{__t(error)}</FieldError> : null}
     </Field>
   );
 

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useMemo, useState } from "react";
 import { useCaseRouter } from "@/components/cases/case-reader";
@@ -36,7 +38,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   ancestorIds,
   CASE_FILE_TREE,
@@ -111,6 +112,7 @@ export function CaseFile({
   docId: string;
   view: CaseFileView;
 }) {
+  const __t = __useTranslations();
   const router = useCaseRouter();
   const selected = findNode(CASE_FILE_TREE, docId);
   const pane = caseFileDigitalPane(record, docId);
@@ -170,11 +172,11 @@ export function CaseFile({
     const id = caseFileRegisterDocumentId(nodeId);
     const document = id ? register.find((item) => item.id === id) : undefined;
     if (document) {
-      return { key: document.id, title: document.title, number: document.evidenceNumber };
+      return { key: document.id, title: __t(document.title), number: document.evidenceNumber };
     }
     const node = findNode(CASE_FILE_TREE, nodeId);
     const key = `casefile:${nodeId}`;
-    return { key, title: node?.label ?? nodeId, number: marks[key] ?? null };
+    return { key, title: __t(node?.label) ?? nodeId, number: marks[key] ?? null };
   };
 
   const indexProps = {
@@ -188,7 +190,7 @@ export function CaseFile({
       canMark: (nodeId: string) => canMark && !evidenceTarget(nodeId).number,
       onMark: (nodeId: string) => {
         const target = evidenceTarget(nodeId);
-        if (!target.number) setMarking({ id: target.key, title: target.title });
+        if (!target.number) setMarking({ id: target.key, title: __t(target.title) });
       },
     },
   };
@@ -206,8 +208,7 @@ export function CaseFile({
                 from the left, not a page and not a menu (owner, Sept 21). */}
             <span className="flex items-center gap-2">
               <PanelLeftOpenIcon aria-hidden />
-              Browse case file
-            </span>
+              {<__LocalizedText id="caseFile_browseCaseFile" />}{" "}</span>
             <ChevronRightIcon aria-hidden className="text-muted-foreground" />
           </Button>
         </SheetTrigger>
@@ -217,12 +218,11 @@ export function CaseFile({
         >
           <SheetHeader>
             <SheetTitle className="text-title-s font-semibold">
-              Case file
-            </SheetTitle>
-            <SheetDescription>Choose a document to open.</SheetDescription>
+              {<__LocalizedText id="caseFile_caseFile" />}{" "}</SheetTitle>
+            <SheetDescription>{<__LocalizedText id="caseFile_chooseADocumentToOpen" />}</SheetDescription>
           </SheetHeader>
           <div className="px-4 pb-6">
-            <nav aria-label="Case file">
+            <nav aria-label={__t("caseFile_caseFile")}>
               <CaseFileIndex {...indexProps} />
             </nav>
           </div>
@@ -239,10 +239,9 @@ export function CaseFile({
           {/* The row height of the document's title bar beside it, so the two
               headings and the PDF/Digital switch share one centre line. */}
           <h2 className="flex min-h-10 shrink-0 items-center px-2 text-body font-semibold">
-            Case file
-          </h2>
+            {<__LocalizedText id="caseFile_caseFile" />}{" "}</h2>
           <ScrollArea type="always" className="min-h-0 flex-1">
-            <nav aria-label="Case file">
+            <nav aria-label={__t("caseFile_caseFile")}>
               <CaseFileIndex {...indexProps} />
             </nav>
           </ScrollArea>
@@ -260,8 +259,8 @@ export function CaseFile({
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <h2 className="min-w-0 text-body font-semibold">
                 {selected && !isCaseFileFolder(selected)
-                  ? selected.label
-                  : "Case file"}
+                  ? __t(selected.label)
+                  : __t("caseFile_caseFile")}
               </h2>
               {view === "digital" && pane?.badges && pane.badges.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
@@ -293,11 +292,11 @@ export function CaseFile({
                 */}
                 {leafSrc && leafLabel ? (
                   <DocumentPreviewActions
-                    title={leafLabel}
+                    title={__t(leafLabel)}
                     source={{ kind: "src", src: leafSrc }}
                     download={{
                       href: leafSrc,
-                      label: `Download ${leafLabel} PDF`,
+                      label: __t("caseFile_downloadValue0Pdf", {value0: String(__t(leafLabel))}),
                     }}
                   />
                 ) : null}
@@ -361,6 +360,7 @@ export function CaseFileIndex({
   };
   depth?: number;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col">
       {nodes.map((node) => (
@@ -386,7 +386,7 @@ export function CaseFileIndex({
                     requestAnimationFrame(() => scrollNodeIntoIndex(item));
                   }}
                 >
-                  <IndexLabel number={node.number} label={node.label} />
+                  <IndexLabel number={node.number} label={__t(node.label)} />
                   <ChevronDownIcon
                     className="pointer-events-none mt-0.5 size-4 shrink-0 text-muted-foreground group-aria-expanded/file-row:hidden"
                     aria-hidden
@@ -415,8 +415,7 @@ export function CaseFileIndex({
                       depthPad[Math.min(depth + 1, depthPad.length - 1)]
                     )}
                   >
-                    None in this file yet
-                  </p>
+                    {<__LocalizedText id="caseFile_noneInThisFileYet" />}{" "}</p>
                 )}
               </CollapsibleContent>
             </Collapsible>
@@ -441,12 +440,12 @@ export function CaseFileIndex({
                           "bg-accent font-medium hover:bg-accent"
                       )}
                     >
-                      <IndexLabel number={node.number} label={node.label} />
+                      <IndexLabel number={node.number} label={__t(node.label)} />
                       {evidence?.numberFor(node.id) ? (
                         <Badge
                           variant="secondary"
                           className="shrink-0 font-mono"
-                          aria-label={`Marked as evidence, ${evidence.numberFor(node.id)}`}
+                          aria-label={__t("caseFile_markedAsEvidenceValue0", {value0: String(evidence.numberFor(node.id))})}
                         >
                           {evidence.numberFor(node.id)}
                         </Badge>
@@ -457,15 +456,13 @@ export function CaseFileIndex({
                     {evidence?.canMark(node.id) ? (
                       <>
                         <ContextMenuItem onSelect={() => evidence.onMark(node.id)}>
-                          Mark as evidence
-                        </ContextMenuItem>
+                          {<__LocalizedText id="caseFile_markAsEvidence" />}{" "}</ContextMenuItem>
                         <ContextMenuSeparator />
                       </>
                     ) : null}
                     <ContextMenuItem asChild>
                       <a href={node.href} download>
-                        Download
-                      </a>
+                        {<__LocalizedText id="caseFile_download" />}{" "}</a>
                     </ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
@@ -476,7 +473,7 @@ export function CaseFileIndex({
                       variant="ghost"
                       size="icon-sm"
                       className="absolute top-1 right-1 text-muted-foreground md:pointer-fine:top-0.5 md:landscape:top-0.5"
-                      aria-label={`Actions for ${node.label}`}
+                      aria-label={__t("caseFile_actionsForValue0", {value0: String(__t(node.label))})}
                     >
                       <EllipsisVerticalIcon aria-hidden />
                     </Button>
@@ -485,15 +482,13 @@ export function CaseFileIndex({
                     {evidence?.canMark(node.id) ? (
                       <>
                         <DropdownMenuItem onSelect={() => evidence.onMark(node.id)}>
-                          Mark as evidence
-                        </DropdownMenuItem>
+                          {<__LocalizedText id="caseFile_markAsEvidence" />}{" "}</DropdownMenuItem>
                         <DropdownMenuSeparator />
                       </>
                     ) : null}
                     <DropdownMenuItem asChild>
                       <a href={node.href} download>
-                        Download
-                      </a>
+                        {<__LocalizedText id="caseFile_download" />}{" "}</a>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -523,12 +518,13 @@ function scrollNodeIntoIndex(node: HTMLElement) {
 }
 
 function IndexLabel({ number, label }: { number: string; label: string }) {
+  const __t = __useTranslations();
   return (
     <span className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 text-left">
       <span className="tabular-nums text-muted-foreground">
         {fileNumberLabel(number)}
       </span>
-      <span className="min-w-0 whitespace-normal">{label}</span>
+      <span className="min-w-0 whitespace-normal">{__t(label)}</span>
     </span>
   );
 }
@@ -540,6 +536,7 @@ function DocumentViewSwitch({
   view: CaseFileView;
   onViewChange: (view: CaseFileView) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <SegmentedControl
       type="single"
@@ -549,11 +546,11 @@ function DocumentViewSwitch({
         if (next === "pdf" || next === "digital") onViewChange(next);
       }}
       className="shrink-0"
-      aria-label="Document view"
+      aria-label={__t("caseFile_documentView")}
       aria-controls="case-file-document"
     >
-      <SegmentedControlItem value="pdf">PDF</SegmentedControlItem>
-      <SegmentedControlItem value="digital">Digital</SegmentedControlItem>
+      <SegmentedControlItem value="pdf">{<__LocalizedText id="caseFile_pdf" />}</SegmentedControlItem>
+      <SegmentedControlItem value="digital">{<__LocalizedText id="caseFile_digital" />}</SegmentedControlItem>
     </SegmentedControl>
   );
 }
@@ -577,6 +574,7 @@ function DocumentPane({
   pane: ComplaintPane | undefined;
   view: CaseFileView;
 }) {
+  const __t = __useTranslations();
   const leaf = node && !isCaseFileFolder(node) ? node : undefined;
   const src = leaf ? caseFilePdfSrc(leaf) : undefined;
 
@@ -597,7 +595,7 @@ function DocumentPane({
         )}
         aria-hidden={view === "pdf" ? undefined : true}
       >
-        <CaseFilePdf src={src} title={leaf.label} />
+        <CaseFilePdf src={src} title={__t(leaf.label)} />
       </div>
 
       {view === "digital" ? (
@@ -608,12 +606,9 @@ function DocumentPane({
             <Empty className="min-h-0 flex-1 border border-dashed border-border bg-background">
               <EmptyHeader>
                 <EmptyTitle className="text-body font-semibold">
-                  No digital record
-                </EmptyTitle>
+                  {<__LocalizedText id="caseFile_noDigitalRecord" />}{" "}</EmptyTitle>
                 <EmptyDescription>
-                  No digital record is filed for this paper. Open PDF to read
-                  the document.
-                </EmptyDescription>
+                  {<__LocalizedText id="caseFile_noDigitalRecordIsFiledForThis" />}{" "}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           )}
@@ -625,12 +620,13 @@ function DocumentPane({
 
 /** A leaf with a page is one document inside its section's compiled file. */
 function CaseFilePdf({ src, title }: { src: string; title: string }) {
+  const __t = __useTranslations();
   const { url, page } = parsePdfSrc(src);
   return (
     <PdfViewer
       key={src}
       src={url}
-      title={title}
+      title={__t(title)}
       pages={page ? { from: page, to: page } : undefined}
       className="size-full"
     />
@@ -645,11 +641,9 @@ function NoDocumentSelected() {
     >
       <EmptyHeader>
         <EmptyTitle className="text-body font-semibold">
-          No document selected
-        </EmptyTitle>
+          {<__LocalizedText id="caseFile_noDocumentSelected" />}{" "}</EmptyTitle>
         <EmptyDescription>
-          Choose an item from the case file to open it here.
-        </EmptyDescription>
+          {<__LocalizedText id="caseFile_chooseAnItemFromTheCaseFile" />}{" "}</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

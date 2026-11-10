@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -53,6 +55,7 @@ export function MarkEvidenceDialog({
   taken: (string | null | undefined)[];
   onOpenChange: (open: boolean) => void;
 }) {
+  const __t = __useTranslations();
   const [side, setSide] = useState<EvidenceSide | "">("");
   const [error, setError] = useState<string | undefined>(undefined);
   /* What was open stays drawn while the dialog animates out. */
@@ -63,7 +66,7 @@ export function MarkEvidenceDialog({
     setError(undefined);
   }
 
-  const options = EVIDENCE_SIDES.map((item) => ({ id: item.id, label: item.label }));
+  const options = EVIDENCE_SIDES.map((item) => ({ id: item.id, label: __t(item.label) }));
 
   function mark() {
     if (!shown) return;
@@ -82,10 +85,9 @@ export function MarkEvidenceDialog({
       <FlowDialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-md">
         <DialogHeader className="shrink-0 border-b border-hairline px-6 py-4 pr-12 text-left">
           <DialogTitle className="text-title-s font-semibold text-balance">
-            Mark as evidence
-          </DialogTitle>
+            {<__LocalizedText id="markEvidenceDialog_markAsEvidence" />}{" "}</DialogTitle>
           <DialogDescription className="text-body-compact text-pretty">
-            {shown?.title}
+            {__t(shown?.title)}
             {shown?.provisionalId ? ` · ${shown.provisionalId}` : ""}
           </DialogDescription>
         </DialogHeader>
@@ -94,7 +96,7 @@ export function MarkEvidenceDialog({
             legend="Marked for"
             options={options}
             value={side}
-            error={error}
+            error={__t(error)}
             orientation="column"
             onChange={(value) => {
               setSide(value);
@@ -104,7 +106,7 @@ export function MarkEvidenceDialog({
           {/* The number the choice gives, once there is a choice (DSB-14). */}
           {side ? (
             <p className="text-body-compact text-foreground">
-              It becomes{" "}
+              {<__LocalizedText id="markEvidenceDialog_itBecomes" />}{" "}
               <span className="font-mono font-medium">
                 {nextEvidenceNumber(taken, side)}
               </span>
@@ -114,11 +116,9 @@ export function MarkEvidenceDialog({
         </div>
         <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
+            {<__LocalizedText id="markEvidenceDialog_cancel" />}{" "}</Button>
           <Button type="button" onClick={mark}>
-            Mark as evidence
-          </Button>
+            {<__LocalizedText id="markEvidenceDialog_markAsEvidence" />}{" "}</Button>
         </footer>
       </FlowDialogContent>
     </Dialog>

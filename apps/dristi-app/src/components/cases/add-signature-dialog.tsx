@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -151,6 +153,7 @@ export function AddSignatureDialog({
    */
   done?: { label: string; onClick: () => void };
 }) {
+  const __t = __useTranslations();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const firstStep: SignatureStep = handoffTo ? "pending" : "method";
   const [step, setStep] = useState<SignatureStep>(firstStep);
@@ -332,13 +335,13 @@ export function AddSignatureDialog({
                   className="text-body font-semibold text-balance outline-none"
                 >
                   {handoffTo
-                    ? `Saved. Waiting for ${handoffTo} to sign`
-                    : "Saved. Waiting for your signature"}
+                    ? __t("addSignatureDialog_savedWaitingForValue0ToSign", {value0: String(handoffTo)})
+                    : __t("addSignatureDialog_savedWaitingForYourSignature")}
                 </DialogTitle>
                 <DialogDescription>
                   {handoffTo
-                    ? "Nothing has gone to the court yet. They sign it from the case's Applications tab."
-                    : "Nothing has gone to the court yet. Sign it from the case's Applications tab when you are ready."}
+                    ? __t("addSignatureDialog_nothingHasGoneToTheCourtYet")
+                    : __t("addSignatureDialog_nothingHasGoneToTheCourtYet_c63accda")}
                 </DialogDescription>
               </div>
             </div>
@@ -349,20 +352,20 @@ export function AddSignatureDialog({
                 <dd className="min-w-0 text-right font-medium">
                   {objection
                     ? objection.target
-                    : applicationTypeGuide(draft.type || "application-others")
-                        .label}
+                    : __t(applicationTypeGuide(draft.type || "application-others")
+                        .label)}
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5">
-                <dt className="text-muted-foreground">Case</dt>
+                <dt className="text-muted-foreground">{<__LocalizedText id="addSignatureDialog_case" />}</dt>
                 <dd className="font-medium">
-                  <Identifier value={record.caseNumber} label="case number" />
+                  <Identifier value={record.caseNumber} label={__t("addSignatureDialog_caseNumber")} />
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-4 py-2.5">
-                <dt className="text-muted-foreground">Status</dt>
+                <dt className="text-muted-foreground">{<__LocalizedText id="addSignatureDialog_status" />}</dt>
                 <dd>
-                  <Badge variant="warning">Pending signature</Badge>
+                  <Badge variant="warning">{<__LocalizedText id="addSignatureDialog_pendingSignature" />}</Badge>
                 </dd>
               </div>
             </dl>
@@ -378,13 +381,13 @@ export function AddSignatureDialog({
                   tabIndex={-1}
                   className="text-body font-semibold text-balance outline-none"
                 >
-                  {stepTitle}
+                  {__t(stepTitle)}
                 </DialogTitle>
                 {step === "signed" ? (
-                  <Badge variant="success">Signed</Badge>
+                  <Badge variant="success">{<__LocalizedText id="addSignatureDialog_signed" />}</Badge>
                 ) : null}
               </div>
-              <DialogDescription>{stepDescription}</DialogDescription>
+              <DialogDescription>{__t(stepDescription)}</DialogDescription>
             </DialogHeader>
 
             <div
@@ -400,13 +403,12 @@ export function AddSignatureDialog({
               {step === "method" ? (
                 <>
                   <ChoiceCard
-                    title="Sign digitally"
+                    title={__t("addSignatureDialog_signDigitally")}
                     tone="bg-brand-muted text-brand-muted-foreground"
                     icon={<SignatureIcon className="size-5" />}
                     onClick={() => setStep("instrument")}
                   >
-                    You sign the {noun} with your DSC or Aadhaar e-sign.
-                  </ChoiceCard>
+                    {<__LocalizedText id="addSignatureDialog_youSignThe" />}{" "}{noun} {<__LocalizedText id="addSignatureDialog_withYourDscOrAadhaarESign" />}{" "}</ChoiceCard>
                   <PaperFallbackLink
                     onClick={() => {
                       setFileError(undefined);
@@ -445,10 +447,10 @@ export function AddSignatureDialog({
                 <>
                   <Field data-invalid={Boolean(fileError) && !file}>
                     <FieldLabel className="block w-full font-semibold leading-snug">
-                      Signed {noun}
+                      {<__LocalizedText id="addSignatureDialog_signed" />}{" "}{noun}
                     </FieldLabel>
                     <UploadedDocField
-                      label={`Signed ${noun}`}
+                      label={__t("addSignatureDialog_signedValue0", {value0: String(noun)})}
                       required
                       file={file}
                       onFileChange={(next) => {
@@ -462,15 +464,13 @@ export function AddSignatureDialog({
                   {/* Where e-filing keeps it: the unsigned copy is only needed to
                       sign on paper, so it is offered on the paper path. */}
                   <p className="flex flex-wrap items-center gap-1 text-body-compact">
-                    Need the unsigned {noun} to sign on paper?
-                    <Button
+                    {<__LocalizedText id="addSignatureDialog_needTheUnsigned" />}{" "}{noun} {<__LocalizedText id="addSignatureDialog_toSignOnPaper" />}{" "}<Button
                       type="button"
                       variant="link"
                       className="h-auto p-0 underline"
                       onClick={() => downloadGeneratedApplication(draft, record)}
                     >
-                      Download it
-                    </Button>
+                      {<__LocalizedText id="addSignatureDialog_downloadIt" />}{" "}</Button>
                   </p>
                 </>
               ) : null}
@@ -478,10 +478,10 @@ export function AddSignatureDialog({
               {step === "signed" ? (
                 <Banner variant="success">
                   {signedWith === "aadhaar"
-                    ? "Signed with Aadhaar OTP."
+                    ? __t("addSignatureDialog_signedWithAadhaarOtp")
                     : signedWith === "dsc"
-                      ? "Signed with a DSC."
-                      : `Signed copy added to this ${noun}.`}
+                      ? __t("addSignatureDialog_signedWithADsc")
+                      : __t("addSignatureDialog_signedCopyAddedToThisValue0", {value0: String(noun)})}
                 </Banner>
               ) : null}
 
@@ -495,12 +495,12 @@ export function AddSignatureDialog({
                   amount={COURT_FEE}
                   rows={[
                     {
-                      label: "Case",
-                      value: <Identifier value={record.caseNumber} label="case number" />,
+                      label: __t("addSignatureDialog_case"),
+                      value: <Identifier value={record.caseNumber} label={__t("addSignatureDialog_caseNumber")} />,
                     },
                     {
-                      label: "Payment reference",
-                      value: <Identifier value={paymentRef} label="payment reference" />,
+                      label: __t("addSignatureDialog_paymentReference_ad54dc64"),
+                      value: <Identifier value={paymentRef} label={__t("addSignatureDialog_paymentReference")} />,
                     },
                   ]}
                 />
@@ -525,35 +525,29 @@ export function AddSignatureDialog({
                 onBack();
               }}
             >
-              Back
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_back" />}{" "}</Button>
             {/* Sign later stays, as e-filing words it: saved unsigned, waiting in
                 Applications as Pending signature. */}
             <Button type="button" variant="ghost" onClick={() => setStep("pending")}>
-              I&rsquo;ll sign later
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_iLlSignLater" />}{" "}</Button>
           </footer>
         ) : null}
 
         {step === "otp" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_back" />}{" "}</Button>
             <Button type="button" disabled={otp.length < 6} onClick={() => signWith("aadhaar")}>
-              Verify and sign
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_verifyAndSign" />}{" "}</Button>
           </footer>
         ) : null}
 
         {step === "dsc" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_back" />}{" "}</Button>
             <Button type="button" disabled={!dscFound} onClick={() => signWith("dsc")}>
-              Sign with this certificate
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_signWithThisCertificate" />}{" "}</Button>
           </footer>
         ) : null}
 
@@ -561,16 +555,14 @@ export function AddSignatureDialog({
           <footer className={FOOTER}>
             <span aria-hidden />
             <Button type="button" onClick={() => setStep("success")}>
-              Continue
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_continue" />}{" "}</Button>
           </footer>
         ) : null}
 
         {step === "upload" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={backToMethods}>
-              Back
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_back" />}{" "}</Button>
             <Button
               type="button"
               onClick={() => {
@@ -581,19 +573,16 @@ export function AddSignatureDialog({
                 signWith("paper");
               }}
             >
-              Submit signature
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_submitSignature" />}{" "}</Button>
           </footer>
         ) : null}
 
         {step === "signed" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={backToMethods}>
-              Back
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_back" />}{" "}</Button>
             <Button type="button" onClick={() => setStep("payment")}>
-              Proceed to payment
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_proceedToPayment" />}{" "}</Button>
           </footer>
         ) : null}
 
@@ -605,8 +594,7 @@ export function AddSignatureDialog({
               <span aria-hidden />
             ) : (
               <Button type="button" variant="outline" onClick={backToMethods}>
-                Sign now
-              </Button>
+                {<__LocalizedText id="addSignatureDialog_signNow" />}{" "}</Button>
             )}
             <Button
               type="button"
@@ -615,7 +603,7 @@ export function AddSignatureDialog({
                 done?.onClick();
               }}
             >
-              {done?.label ?? "Done"}
+              {__t(done?.label) ?? __t("addSignatureDialog_done")}
             </Button>
           </footer>
         ) : null}
@@ -630,11 +618,9 @@ export function AddSignatureDialog({
                 setStep("success");
               }}
             >
-              Skip
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_skip" />}{" "}</Button>
             <Button type="button" onClick={() => setStep("processing")}>
-              Make payment
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_makePayment" />}{" "}</Button>
           </footer>
         ) : null}
 
@@ -646,8 +632,7 @@ export function AddSignatureDialog({
               onClick={() => downloadGeneratedApplication(draft, record)}
             >
               <DownloadIcon data-icon="inline-start" aria-hidden />
-              Download submission
-            </Button>
+              {<__LocalizedText id="addSignatureDialog_downloadSubmission" />}{" "}</Button>
             {paid ? (
               <Button
                 type="button"
@@ -656,12 +641,11 @@ export function AddSignatureDialog({
                   done?.onClick();
                 }}
               >
-                {done?.label ?? "Done"}
+                {__t(done?.label) ?? __t("addSignatureDialog_done")}
               </Button>
             ) : (
               <Button type="button" onClick={() => setStep("processing")}>
-                Make payment
-              </Button>
+                {<__LocalizedText id="addSignatureDialog_makePayment" />}{" "}</Button>
             )}
           </footer>
         ) : null}
@@ -692,6 +676,7 @@ function SuccessContent({
   noun: string;
   objection?: { target: string; inSentence: string; decision?: string };
 }) {
+  const __t = __useTranslations();
   const next = objection
     ? `It is read with the other side's ${objection.inSentence} when the court decides it${
         objection.decision ? ` on ${objection.decision}` : ""
@@ -724,24 +709,24 @@ function SuccessContent({
             tabIndex={-1}
             className="text-body font-semibold text-balance outline-none"
           >
-            {paid ? `${noun} submitted` : "Signed. Waiting for payment"}
+            {paid ? `${noun} submitted` : __t("addSignatureDialog_signedWaitingForPayment")}
           </DialogTitle>
           <DialogDescription>
             {paid
               ? next
-              : "Nothing reaches the court until the court fee is paid. Pay it here, or later from the case's Applications tab."}
+              : __t("addSignatureDialog_nothingReachesTheCourtUntilTheCourt")}
           </DialogDescription>
         </div>
       </div>
 
       {paid ? (
-        <Banner variant="success">Court fee of {COURT_FEE} paid.</Banner>
+        <Banner variant="success">{<__LocalizedText id="addSignatureDialog_courtFeeOf" />}{" "}{COURT_FEE} {<__LocalizedText id="addSignatureDialog_paid" />}</Banner>
       ) : null}
 
       <DescriptionList className="rounded-lg bg-surface-sunken px-4 py-1">
         <DescriptionRow className="grid-cols-[1fr_auto] items-center">
           <DescriptionTerm className="text-body-compact">
-            {paid ? "Submission date" : "Signed on"}
+            {paid ? __t("addSignatureDialog_submissionDate") : __t("addSignatureDialog_signedOn")}
           </DescriptionTerm>
           <DescriptionDetails className="text-body-compact">
             {formatCaseDate(new Date().toISOString())}
@@ -750,19 +735,19 @@ function SuccessContent({
         {paid ? (
           <DescriptionRow className="grid-cols-[1fr_auto] items-center">
             <DescriptionTerm className="text-body-compact">
-              {objection ? "Filing ID" : "Temporary ID"}
+              {objection ? __t("addSignatureDialog_filingId") : __t("addSignatureDialog_temporaryId_3ac01c7a")}
             </DescriptionTerm>
             {/* The value is its own copy control now, so the icon button beside it
                 went with the conversion — same confirmation, one thing to hit. */}
             <DescriptionDetails className="flex items-center gap-2 text-body-compact font-medium">
-              <Identifier value={temporaryId} label="temporary id" />
+              <Identifier value={temporaryId} label={__t("addSignatureDialog_temporaryId")} />
             </DescriptionDetails>
           </DescriptionRow>
         ) : (
           <DescriptionRow className="grid-cols-[1fr_auto] items-center">
-            <DescriptionTerm className="text-body-compact">Status</DescriptionTerm>
+            <DescriptionTerm className="text-body-compact">{<__LocalizedText id="addSignatureDialog_status" />}</DescriptionTerm>
             <DescriptionDetails>
-              <Badge variant="warning">Pending payment</Badge>
+              <Badge variant="warning">{<__LocalizedText id="addSignatureDialog_pendingPayment" />}</Badge>
             </DescriptionDetails>
           </DescriptionRow>
         )}

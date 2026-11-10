@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CircleCheckIcon } from "lucide-react";
@@ -271,6 +273,7 @@ function SignBulkConfirmBody({
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   /* The stage, the direction it travelled and where focus lands, from the shared frame.
      There is no direction to travel here — both stages share one scene — so what this
      contributes is the settling: no remount, no slide, and focus moved to the header
@@ -347,19 +350,17 @@ function SignBulkConfirmBody({
                 className="tabular-nums"
                 onClick={onDownload}
               >
-                Download {signed.count}{" "}
-                {signed.count === 1 ? "document" : "documents"}
+                {<__LocalizedText id="signBulkConfirmDialog_download" />}{" "}{signed.count}{" "}
+                {signed.count === 1 ? __t("signBulkConfirmDialog_document") : __t("signBulkConfirmDialog_documents")}
               </Button>
             ) : null}
             <Button type="button" onClick={onClose}>
-              Done
-            </Button>
+              {<__LocalizedText id="signBulkConfirmDialog_done" />}{" "}</Button>
           </>
         ) : (
           <>
             <Button type="button" variant="outline" onClick={onClose}>
-              Back
-            </Button>
+              {<__LocalizedText id="signBulkConfirmDialog_back" />}{" "}</Button>
             <Button
               type="button"
               onClick={() => {
@@ -370,7 +371,7 @@ function SignBulkConfirmBody({
                 flow.go("success");
               }}
             >
-              {act.confirm}
+              {__t(act.confirm)}
             </Button>
           </>
         )
@@ -432,6 +433,7 @@ function ActCard({
   /** The act has run: the same card, stamped. */
   done: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     /* Flush: the band and the rows draw their own rules edge to edge, so the card's own
        padding is off and `overflow-hidden` is what keeps the band inside the radius. */
@@ -481,16 +483,16 @@ function ActCard({
             key={kind.label}
             className="grid-cols-[1fr_auto] items-center border-hairline"
           >
-            <DescriptionTerm className="text-body">{kind.label}</DescriptionTerm>
+            <DescriptionTerm className="text-body">{__t(kind.label)}</DescriptionTerm>
             <DescriptionDetails className="text-body tabular-nums">
               {kind.count}
             </DescriptionDetails>
           </DescriptionRow>
         ))}
         <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-          <DescriptionTerm className="text-body">Cases</DescriptionTerm>
+          <DescriptionTerm className="text-body">{<__LocalizedText id="signBulkConfirmDialog_cases" />}</DescriptionTerm>
           <DescriptionDetails className="text-body tabular-nums">
-            {signed.cases === 1 ? "1 case" : `${signed.cases} cases`}
+            {signed.cases === 1 ? __t("signBulkConfirmDialog_1Case") : `${signed.cases} cases`}
           </DescriptionDetails>
         </DescriptionRow>
       </DescriptionList>

@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -54,6 +55,7 @@ export function DateScrubber({
   onOpenCalendar: () => void;
   onRevealChange: (open: boolean, instant: boolean) => void;
 }) {
+  const __t = __useTranslations();
   const canScrub = React.useSyncExternalStore(subscribePointer, finePointer, () => false);
   const [anchor, setAnchor] = React.useState(selectedDay);
   const [preview, setPreview] = React.useState(NEARBY_DATE_RADIUS);
@@ -168,7 +170,7 @@ export function DateScrubber({
         {children}
       </Button>
       <span id={helpId} className="sr-only">{pick(advHome.previewDateHelp, locale)}</span>
-      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{keyboard && open ? previewLabel : ""}</span>
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{keyboard && open ? __t(previewLabel) : ""}</span>
 
       <div aria-hidden="true" className="date-scrubber-strip pointer-events-none absolute inset-x-0 top-full h-12 overflow-y-clip">
         <div className="mt-1 grid h-4" style={{ gridTemplateColumns: `repeat(${NEARBY_DATE_COUNT}, minmax(0, 1fr))` }}>
@@ -199,10 +201,10 @@ export function DateScrubber({
                 previewTone === "today" ? "bg-primary text-primary-foreground" : previewTone === "past" ? "bg-accent-strong text-foreground" : "bg-foreground text-background"
               )}
               style={{ "--scrub-anchor": ((preview + 0.5) / NEARBY_DATE_COUNT) * 100 } as React.CSSProperties}
-              title={previewLabel}
+              title={__t(previewLabel)}
             >
               <span className="date-scrubber-pointer absolute -top-1 size-1.5 -translate-x-1/2 rounded-full bg-inherit" />
-              <span className="min-w-0 truncate">{bubbleLabel}</span>
+              <span className="min-w-0 truncate">{__t(bubbleLabel)}</span>
             </Badge>
           </div>
         </div>

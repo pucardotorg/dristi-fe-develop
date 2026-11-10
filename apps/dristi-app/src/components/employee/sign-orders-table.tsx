@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -87,6 +89,7 @@ export function SignOrdersTable({
    */
   signed?: boolean;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   /* Only a pending order can be signed, so only a pending order can be selected — the
      header box speaks for those rows alone, and a page of already-signed orders has
@@ -116,23 +119,20 @@ export function SignOrdersTable({
                  the list is paged. */
                 aria-label={
                   allSelected
-                    ? "Clear the orders on this page"
-                    : "Select the orders on this page"
+                    ? __t("signOrdersTable_clearTheOrdersOnThisPage")
+                    : __t("signOrdersTable_selectTheOrdersOnThisPage")
                 }
               />
             </TableHead>
           )}
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="signOrdersTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="signOrdersTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
-            Title
-          </TableHead>
+            {<__LocalizedText id="signOrdersTable_title" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            {signed ? "Date signed" : "Date added"}
+            {signed ? __t("signOrdersTable_dateSigned") : __t("signOrdersTable_dateAdded")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -162,7 +162,7 @@ export function SignOrdersTable({
                     <Checkbox
                       checked={selected}
                       onCheckedChange={() => onToggle(order)}
-                      aria-label={`Select ${title} in ${courtText(order.caseNumber)}`}
+                      aria-label={__t("signOrdersTable_selectValue0InValue1", {value0: String(__t(title)), value1: String(courtText(order.caseNumber))})}
                     />
                   ) : null}
                 </TableCell>
@@ -186,14 +186,14 @@ export function SignOrdersTable({
                   className={rowOpenerClass}
                 >
                   <span className="sr-only">
-                    {pending ? "Read and sign " : "Read "}
-                    {title} in{" "}
+                    {pending ? __t("signOrdersTable_readAndSign") : __t("signOrdersTable_read")}
+                    {__t(title)} {<__LocalizedText id="signOrdersTable_in" />}{" "}
                   </span>
                   {causeTitle(order)}
                 </button>
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                <Identifier value={order.caseNumber} label="case number" />
+                <Identifier value={order.caseNumber} label={__t("signOrdersTable_caseNumber_444a3954")} />
               </TableCell>
               {/* Which decision this is — the fact that tells four rows of one case
                   apart. Plain text, like process type on Sign forms: the opener already
@@ -201,7 +201,7 @@ export function SignOrdersTable({
               <TableCell
                 className={cn(TABLE_CELL, "min-w-56 whitespace-normal")}
               >
-                {title}
+                {__t(title)}
               </TableCell>
               <TableCell
                 className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}

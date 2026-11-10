@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon } from "lucide-react";
@@ -23,20 +25,17 @@ export function CaseStateBadge({
   if (holds)
     return (
       <Badge variant="destructive" className="shrink-0 tabular-nums">
-        {holds} field{holds === 1 ? "" : "s"} to complete
-      </Badge>
+        {holds} {<__LocalizedText id="caseList_field" />}{holds === 1 ? "" : "s"} {<__LocalizedText id="caseList_toComplete" />}{" "}</Badge>
     );
   if (checks)
     return (
       <Badge variant="warning" className="shrink-0 tabular-nums">
-        {checks} to check
-      </Badge>
+        {checks} {<__LocalizedText id="caseList_toCheck" />}{" "}</Badge>
     );
   return (
     <Badge variant="success" className="shrink-0">
       <CheckIcon data-icon="inline-start" aria-hidden />
-      Complete
-    </Badge>
+      {<__LocalizedText id="caseList_complete" />}{" "}</Badge>
   );
 }
 
@@ -56,6 +55,7 @@ export function CaseList({
   onSelect: (id: string) => void;
   stateOf: (c: CaseView) => { holds: number; checks: number };
 }) {
+  const __t = __useTranslations();
   const scroller = React.useRef<HTMLUListElement>(null);
   const [hidden, setHidden] = React.useState({ above: 0, below: 0 });
 
@@ -106,7 +106,7 @@ export function CaseList({
       )}
     >
       <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
-        <span className="text-body-compact font-semibold">Cases</span>
+        <span className="text-body-compact font-semibold">{<__LocalizedText id="caseList_cases" />}</span>
         <span className="text-caption text-muted-foreground tabular-nums">
           {cases.length}
         </span>
@@ -115,7 +115,7 @@ export function CaseList({
         <ul
           ref={scroller}
           onScroll={measure}
-          aria-label="Cases"
+          aria-label={__t("caseList_cases")}
           className="flex max-h-[calc(100dvh-16rem)] flex-col gap-1 overflow-y-auto overscroll-contain p-2"
         >
           {cases.map((c) => {
@@ -135,7 +135,7 @@ export function CaseList({
                 >
                   <span className="flex min-w-0 flex-1 flex-col items-start text-left">
                     <span className="w-full truncate font-medium">
-                      {c.accused || c.title}
+                      {c.accused || __t(c.title)}
                     </span>
                     <span className="w-full truncate text-caption text-muted-foreground tabular-nums">
                       {c.reference}
@@ -158,8 +158,7 @@ export function CaseList({
               onClick={() => page(-1)}
             >
               <ArrowUpIcon data-icon="inline-start" aria-hidden />
-              {hidden.above} more above
-            </Button>
+              {hidden.above} {<__LocalizedText id="caseList_moreAbove" />}{" "}</Button>
           </div>
         ) : null}
         {hidden.below ? (
@@ -171,8 +170,7 @@ export function CaseList({
               onClick={() => page(1)}
             >
               <ArrowDownIcon data-icon="inline-start" aria-hidden />
-              {hidden.below} more below
-            </Button>
+              {hidden.below} {<__LocalizedText id="caseList_moreBelow" />}{" "}</Button>
           </div>
         ) : null}
       </div>

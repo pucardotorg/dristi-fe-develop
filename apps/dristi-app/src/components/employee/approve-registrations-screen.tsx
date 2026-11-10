@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { SearchXIcon, UserCheckIcon } from "lucide-react";
@@ -112,6 +114,7 @@ const TABS: { id: RegistrationsTab; label: string }[] = [
  * access is granted or withheld, no reason is sent, and nothing persists past a reload.
  */
 export function ApproveRegistrationsScreen() {
+  const __t = __useTranslations();
   const [tab, setTab] = React.useState<RegistrationsTab>("pending");
   /* One state, filtered as typed; every change resets to page one, so a narrowed list
      never leaves the reader on page three of nothing. */
@@ -221,7 +224,7 @@ export function ApproveRegistrationsScreen() {
         </h1>
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 registration is waiting for approval."
+            ? __t("approveRegistrationsScreen_1RegistrationIsWaitingForApproval")
             : `${remaining.length} registrations are waiting for approval.`}
         </p>
       </header>
@@ -235,7 +238,7 @@ export function ApproveRegistrationsScreen() {
         <div className="overflow-x-auto border-b border-hairline [scrollbar-width:none]">
           <TabsList
             variant="line"
-            aria-label="Registrations"
+            aria-label={__t("approveRegistrationsScreen_registrations")}
             className="h-10 w-max min-w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-10"
           >
             {TABS.map((entry) => (
@@ -244,7 +247,7 @@ export function ApproveRegistrationsScreen() {
                 value={entry.id}
                 className="h-10 flex-none gap-2 px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
               >
-                {entry.label}
+                {__t(entry.label)}
                 {/* Counts mean work: only Pending carries one. */}
                 {entry.id === "pending" ? (
                   <span className="font-normal tabular-nums">{remaining.length}</span>
@@ -383,10 +386,11 @@ function RegistrationFilters({
   decidedSort: DecidedSort;
   onDecidedSortChange: (sort: DecidedSort) => void;
 }) {
+  const __t = __useTranslations();
   const fields: CourtFilterField[] = [
     {
       id: "registrations-account-type",
-      label: "Account type",
+      label: __t("approveRegistrationsScreen_accountType"),
       value: filters.accountType,
       all: "all",
       allLabel: "All account types",
@@ -399,7 +403,7 @@ function RegistrationFilters({
     fields.push(
       {
         id: "registrations-request-type",
-        label: "Request type",
+        label: __t("approveRegistrationsScreen_requestType"),
         value: filters.requestType,
         all: "all",
         allLabel: "All request types",
@@ -409,7 +413,7 @@ function RegistrationFilters({
       },
       {
         id: "registrations-wait",
-        label: "Waiting",
+        label: __t("approveRegistrationsScreen_waiting"),
         value: filters.wait,
         all: "all",
         allLabel: "Any wait",
@@ -422,10 +426,10 @@ function RegistrationFilters({
   return (
     <CourtFilters
       search={{
-        label: "Search registrations",
+        label: __t("approveRegistrationsScreen_searchRegistrations"),
         value: filters.query,
         onChange: (query) => onChange({ query }),
-        placeholder: "Name or registration number",
+        placeholder: __t("approveRegistrationsScreen_nameOrRegistrationNumber"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -480,6 +484,7 @@ function RegistrationsEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -487,19 +492,18 @@ function RegistrationsEmpty({
           {isFiltered ? <SearchXIcon aria-hidden /> : <UserCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No registrations match" : EMPTY_COPY[tab].title}
+          {isFiltered ? __t("approveRegistrationsScreen_noRegistrationsMatch") : __t(EMPTY_COPY[tab].title)}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "Nothing on this tab matches the search and filters you have applied."
-            : EMPTY_COPY[tab].description}
+            ? __t("approveRegistrationsScreen_nothingOnThisTabMatchesTheSearch")
+            : __t(EMPTY_COPY[tab].description)}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear all
-          </Button>
+            {<__LocalizedText id="approveRegistrationsScreen_clearAll" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -517,6 +521,7 @@ function RegistrationItemList({
   rows: RegistrationRequest[];
   onOpen: (request: RegistrationRequest) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((request) => (
@@ -532,14 +537,14 @@ function RegistrationItemList({
             {...rowOpener}
             className={rowOpenerClass}
           >
-            <span className="sr-only">Review </span>
+            <span className="sr-only">{<__LocalizedText id="approveRegistrationsScreen_review" />}{" "}</span>
             <span lang={request.fullNameLang}>{request.fullName}</span>
           </button>
           <div className="flex flex-wrap items-center gap-2 text-caption text-muted-foreground">
             <Badge variant={accountTypeVariant(request.registrantKind)}>
               {roleLabel(request.registrantKind)}
             </Badge>
-            <Identifier value={request.registrationNumber} label="registration number" />
+            <Identifier value={request.registrationNumber} label={__t("approveRegistrationsScreen_registrationNumber")} />
             <span aria-hidden>·</span>
             <span
               className={cn(
@@ -563,6 +568,7 @@ function DecidedItemList({
   rows: DecidedRegistration[];
   outcome: RegistrationOutcome;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((entry) => (
@@ -579,7 +585,7 @@ function DecidedItemList({
             </Badge>
             <Identifier
               value={entry.request.registrationNumber}
-              label="registration number"
+              label={__t("approveRegistrationsScreen_registrationNumber")}
             />
             <span aria-hidden>·</span>
             <span className="tabular-nums">

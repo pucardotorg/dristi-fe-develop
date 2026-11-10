@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { type ReactNode } from "react";
 import Link from "next/link";
@@ -148,18 +150,14 @@ function HearingMissing() {
             <CalendarX2Icon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            This listing is not on the board
-          </EmptyTitle>
+            {<__LocalizedText id="hearingOverviewScreen_thisListingIsNotOnTheBoard" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
-            A case overview opens a matter from today&rsquo;s cause list. This
-            one is not there.
-          </EmptyDescription>
+            {<__LocalizedText id="hearingOverviewScreen_aCaseOverviewOpensAMatterFrom" />}{" "}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
             <Link href="/employee/hearings">
-              Back to today&rsquo;s hearings
-            </Link>
+              {<__LocalizedText id="hearingOverviewScreen_backToTodaySHearings" />}{" "}</Link>
           </Button>
         </EmptyContent>
       </Empty>
@@ -235,14 +233,15 @@ function HearingOverview({ hearing }: { hearing: CourtHearing }) {
  * here would put a paragraph inside the dialog's own.
  */
 export function HearingOverviewCaption({ hearing }: { hearing: CourtHearing }) {
+  const __t = __useTranslations();
   return (
     <>
       {/* The item is a *position* in today's board and keeps plain figures; the case
           number is an identifier and takes the treatment. The rule is by kind of fact,
           which is why these two sit side by side wearing different faces. */}
-      Item <span className="tabular-nums">{hearing.item}</span>
+      {<__LocalizedText id="hearingOverviewScreen_item" />}{" "}<span className="tabular-nums">{hearing.item}</span>
       {" · "}
-      <Identifier value={hearing.caseNumber} label="case number" />
+      <Identifier value={hearing.caseNumber} label={__t("hearingOverviewScreen_caseNumber")} />
       {" · "}
       {courtHearingPurposeLabel(hearing.purpose)}
     </>
@@ -276,6 +275,7 @@ export function HearingOverviewSections({
    */
   nextHearing?: ReactNode;
 }) {
+  const __t = __useTranslations();
   const extras = hearingCaseExtras(hearing.id);
 
   return (
@@ -289,30 +289,25 @@ export function HearingOverviewSections({
       >
         <TabsList
           variant="line"
-          aria-label="About this case"
+          aria-label={__t("hearingOverviewScreen_aboutThisCase")}
           className={`justify-start rounded-none p-0 ${TAB_LIST[surface]}`}
         >
           {nextHearing ? (
             <TabsTrigger value="next-hearing" className={TAB_TRIGGER}>
-              Next hearing
-            </TabsTrigger>
+              {<__LocalizedText id="hearingOverviewScreen_nextHearing" />}{" "}</TabsTrigger>
           ) : null}
           <TabsTrigger value="history" className={TAB_TRIGGER}>
-            Case history
-          </TabsTrigger>
+            {<__LocalizedText id="hearingOverviewScreen_caseHistory" />}{" "}</TabsTrigger>
           <TabsTrigger value="details" className={TAB_TRIGGER}>
-            Case details
-          </TabsTrigger>
+            {<__LocalizedText id="hearingOverviewScreen_caseDetails" />}{" "}</TabsTrigger>
           <TabsTrigger value="data-flags" className={TAB_TRIGGER}>
-            Data flags
-          </TabsTrigger>
+            {<__LocalizedText id="hearingOverviewScreen_dataFlags" />}{" "}</TabsTrigger>
         </TabsList>
         {/* Every order on the case, in the case's own Orders tab — a browser tab of its
             own, as View case opens, so the overview stays where the bench left it. */}
         <Button asChild variant="link" size="sm" className="h-auto shrink-0 px-0">
           <a href={HEARING_DEMO_CASE_ORDERS_HREF} target="_blank" rel="noopener">
-            View all orders
-            <span className="sr-only"> (opens in a new tab)</span>
+            {<__LocalizedText id="hearingOverviewScreen_viewAllOrders" />}{" "}<span className="sr-only"> {<__LocalizedText id="hearingOverviewScreen_opensInANewTab" />}</span>
             <ExternalLinkIcon data-icon="inline-end" aria-hidden />
           </a>
         </Button>
@@ -414,8 +409,7 @@ export function ViewCaseAction({
   return (
     <Button asChild variant={variant} className="w-fit shrink-0">
       <a href={HEARING_DEMO_CASE_HREF} target="_blank" rel="noopener">
-        View case
-        <span className="sr-only"> (opens in a new tab)</span>
+        {<__LocalizedText id="hearingOverviewScreen_viewCase" />}{" "}<span className="sr-only"> {<__LocalizedText id="hearingOverviewScreen_opensInANewTab" />}</span>
         <ExternalLinkIcon data-icon="inline-end" aria-hidden />
       </a>
     </Button>
@@ -456,8 +450,7 @@ function CaseFactsPanel({
       aria-labelledby="case-facts"
     >
       <h2 id="case-facts" className="sr-only">
-        Case details
-      </h2>
+        {<__LocalizedText id="hearingOverviewScreen_caseDetails" />}{" "}</h2>
       <DescriptionList>
         <FactRow surface={surface} term="Stage">
           {courtCaseStageLabel(hearing.stage)}
@@ -521,9 +514,10 @@ function FactRow({
   term: string;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow className={FACT_ROW_CLASS}>
-      <DescriptionTerm className={BODY[surface]}>{term}</DescriptionTerm>
+      <DescriptionTerm className={BODY[surface]}>{__t(term)}</DescriptionTerm>
       <DescriptionDetails className={`${BODY[surface]} font-medium`}>
         {children}
       </DescriptionDetails>
@@ -543,16 +537,17 @@ function PartyRow({
   name: string;
   counsel: string[];
 }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow className={FACT_ROW_CLASS}>
-      <DescriptionTerm className={BODY[surface]}>{term}</DescriptionTerm>
+      <DescriptionTerm className={BODY[surface]}>{__t(term)}</DescriptionTerm>
       <DescriptionDetails className={`flex flex-col gap-1 ${BODY[surface]}`}>
         {/* A corporate accused runs long. The row's value column is `1fr`, so the
             name wraps inside it rather than pushing the panel wide. */}
         <span className="font-medium">{name}</span>
         {counsel.length > 0 ? (
           <span className="text-body-compact text-muted-foreground">
-            Counsel: {formatCounselList(counsel)}
+            {<__LocalizedText id="hearingOverviewScreen_counsel" />}{" "}{formatCounselList(counsel)}
           </span>
         ) : null}
       </DescriptionDetails>

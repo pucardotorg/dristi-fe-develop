@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CircleCheckIcon } from "lucide-react";
@@ -47,6 +49,7 @@ export const ist = (iso: string) =>
  * grouped by the payment that filed it. From here each case goes to scrutiny on its own.
  */
 export function FiledTab({ batch, go }: BatchCtx) {
+  const __t = __useTranslations();
   const filed = batch.cases.filter((c) => c.stage === "filed");
   const left = batch.total - filed.length;
   // A filed case opens read-only, as the court will read it.
@@ -72,8 +75,7 @@ export function FiledTab({ batch, go }: BatchCtx) {
     return (
       <Card className={PANEL_CLASS}>
         <CardContent className="text-body-compact text-muted-foreground">
-          Nothing filed yet. Cases show here once they are paid for.
-        </CardContent>
+          {<__LocalizedText id="filedTab_nothingFiledYetCasesShowHereOnce" />}{" "}</CardContent>
       </Card>
     );
   }
@@ -87,17 +89,16 @@ export function FiledTab({ batch, go }: BatchCtx) {
             {`${filed.length} of ${batch.total} cases filed`}
           </AlertTitle>
           <AlertDescription>
-            Each case now goes to the court on its own for checking.
-            {left ? (
+            {<__LocalizedText id="filedTab_eachCaseNowGoesToTheCourt" />}{" "}{left ? (
               <>
                 {" "}
-                <span className="tabular-nums">{left}</span> still to go.{" "}
+                <span className="tabular-nums">{left}</span> {<__LocalizedText id="filedTab_stillToGo" />}{" "}
                 <button
                   type="button"
                   className="underline"
                   onClick={() => go(batch.counts.signed ? "pay" : "scrutiny")}
                 >
-                  {batch.counts.signed ? "Go to payment" : "Open scrutiny"}
+                  {batch.counts.signed ? __t("filedTab_goToPayment") : __t("filedTab_openScrutiny")}
                 </button>
               </>
             ) : null}
@@ -111,30 +112,27 @@ export function FiledTab({ batch, go }: BatchCtx) {
           <Card key={p.ref} className={cn(PANEL_CLASS, "gap-0 py-0")}>
             <CardHeader className="px-6 py-4">
               <CardTitle className="text-body font-semibold tabular-nums">
-                {cases.length} filed at {ist(p.at)}
+                {cases.length} {<__LocalizedText id="filedTab_filedAt" />}{" "}{ist(p.at)}
               </CardTitle>
               <CardDescription className="tabular-nums">
-                Transaction {p.ref} · {money(p.amount)}
+                {<__LocalizedText id="filedTab_transaction" />}{" "}{p.ref} · {money(p.amount)}
               </CardDescription>
             </CardHeader>
             <div className="overflow-x-auto px-2 pb-2">
               <Table
                 className="border-separate border-spacing-0"
-                aria-label={`Cases filed by ${p.ref}`}
+                aria-label={__t("filedTab_casesFiledByValue0", {value0: String(p.ref)})}
               >
                 <TableHeader>
                   <TableRow className={TABLE_HEAD_ROW}>
                     <TableHead className={cn(TABLE_HEAD, "pl-4")}>
-                      Reference
-                    </TableHead>
-                    <TableHead className={TABLE_HEAD}>Parties</TableHead>
+                      {<__LocalizedText id="filedTab_reference" />}{" "}</TableHead>
+                    <TableHead className={TABLE_HEAD}>{<__LocalizedText id="filedTab_parties" />}</TableHead>
                     <TableHead className={TABLE_HEAD}>
-                      Case file number
-                    </TableHead>
-                    <TableHead className={TABLE_HEAD}>Receipt</TableHead>
+                      {<__LocalizedText id="filedTab_caseFileNumber" />}{" "}</TableHead>
+                    <TableHead className={TABLE_HEAD}>{<__LocalizedText id="filedTab_receipt" />}</TableHead>
                     <TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
-                      Paid
-                    </TableHead>
+                      {<__LocalizedText id="filedTab_paid" />}{" "}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className={tableBodyClass({ hover: true })}>
@@ -167,7 +165,7 @@ export function FiledTab({ batch, go }: BatchCtx) {
                       <TableCell
                         className={cn(TABLE_CELL, "min-w-56 whitespace-normal")}
                       >
-                        {c.title}
+                        {__t(c.title)}
                       </TableCell>
                       <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
                         {c.caseFileNumber}
@@ -198,11 +196,10 @@ export function FiledTab({ batch, go }: BatchCtx) {
             <>
               <div className="flex shrink-0 flex-col gap-0.5 border-b border-hairline px-6 py-4 pr-12">
                 <DialogTitle className="truncate text-title-s font-semibold">
-                  {opened.title}
+                  {__t(opened.title)}
                 </DialogTitle>
                 <DialogDescription className="tabular-nums">
-                  {opened.reference} · Case file {opened.caseFileNumber} ·
-                  Receipt {opened.receiptNumber}
+                  {opened.reference} {<__LocalizedText id="filedTab_caseFile" />}{" "}{opened.caseFileNumber} {<__LocalizedText id="filedTab_receipt_0c502a4b" />}{" "}{opened.receiptNumber}
                 </DialogDescription>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto bg-surface-sunken p-4 sm:p-6">
@@ -210,8 +207,7 @@ export function FiledTab({ batch, go }: BatchCtx) {
                   <CourtDocument draft={drafts[opened.id]} />
                 ) : drafts ? (
                   <p className="text-body-compact text-muted-foreground">
-                    This case could not be loaded.
-                  </p>
+                    {<__LocalizedText id="filedTab_thisCaseCouldNotBeLoaded" />}{" "}</p>
                 ) : (
                   <div className="flex justify-center py-12">
                     <Spinner className="size-6" />

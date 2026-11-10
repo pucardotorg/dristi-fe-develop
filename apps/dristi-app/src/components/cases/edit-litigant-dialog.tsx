@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Edit a litigant's details — scenario 10 of the party-actions spec. A change
@@ -77,6 +79,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { idUpload } from "@/lib/join/content";
+import { pick } from "@/lib/onboarding/content";
+import { useLocale } from "@/components/shell/locale";
 import { useCourtLocalized, useCourtText } from "@/components/court/court-provider";
 
 /** The record's address — the app's one structured grammar. */
@@ -106,7 +110,7 @@ export type EditableLitigant = {
  */
 const ID_TYPES = Object.entries(idUpload.idTypes).map(([value, copy]) => ({
   value,
-  label: copy.en,
+  label: copy,
 }));
 
 /**
@@ -167,6 +171,7 @@ export function EditLitigantAction({
   litigant: EditableLitigant;
   caseRef: CaseRef;
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = useState(false);
   /* A sent correction shows where its result will land — the tag rides the
      pane header until the order passes. Session-local, like every pending
@@ -175,14 +180,14 @@ export function EditLitigantAction({
   return (
     <>
       {requested ? (
-        <Badge variant="warning">Correction requested</Badge>
+        <Badge variant="warning">{<__LocalizedText id="editLitigantDialog_correctionRequested" />}</Badge>
       ) : null}
       <Button
         type="button"
         variant="ghost"
         size="icon-sm"
         className="shrink-0 text-muted-foreground"
-        aria-label={`Edit details for ${litigant.name}`}
+        aria-label={__t("editLitigantDialog_editDetailsForValue0", {value0: String(litigant.name)})}
         onClick={() => setOpen(true)}
       >
         <PencilIcon aria-hidden />
@@ -214,9 +219,11 @@ function EditLitigantDialog({
   /** Fired when the application goes out — the pane header's pending tag. */
   onRequested?: () => void;
 }) {
+  const __t = __useTranslations();
   /* The record's pre-fill. Mobile is display only — the number is how this
      party signs in, so it never rides a correction application. */
   const recordMobile = litigant.mobile ?? demoMobile(litigant.name);
+  const { locale } = useLocale();
   // The record's address is prefilled in the selected court's places (`CourtSwitch`).
   const recordAddress = useCourtLocalized(litigant.address ?? demoAddress(litigant.name));
   const recordId =
@@ -246,7 +253,7 @@ function EditLitigantDialog({
   const changes = useMemo(() => {
     const list: { term: string; value: string; was?: string }[] = [];
     if (name.trim() && name.trim() !== litigant.name) {
-      list.push({ term: "Name", value: name.trim(), was: litigant.name });
+      list.push({ term: __t("editLitigantDialog_name"), value: name.trim(), was: litigant.name });
     }
     if (
       isEntity &&
@@ -254,7 +261,7 @@ function EditLitigantDialog({
       representative.trim() !== litigant.entityRepresentative
     ) {
       list.push({
-        term: "Represented by",
+        term: __t("editLitigantDialog_representedBy"),
         value: representative.trim(),
         was: litigant.entityRepresentative,
       });
@@ -262,10 +269,10 @@ function EditLitigantDialog({
     const formatted = formatStructuredAddress(address);
     const wasFormatted = formatStructuredAddress(recordAddress);
     if (formatted && formatted !== wasFormatted) {
-      list.push({ term: "Address", value: formatted, was: wasFormatted });
+      list.push({ term: __t("editLitigantDialog_address"), value: formatted, was: wasFormatted });
     }
     return list;
-  }, [name, representative, address, recordAddress, litigant, isEntity]);
+  }, [name, representative, address, recordAddress, litigant, isEntity, __t]);
 
   const isDirty = useMemo(
     () => changes.length > 0 || Boolean(idType || docFile || replacingId),
@@ -302,9 +309,9 @@ function EditLitigantDialog({
   const applicationDoc = {
     matter: "Application for the correction of a litigant's details",
     facts: [
-      { term: "Party", value: litigant.name },
+      { term: __t("editLitigantDialog_party"), value: litigant.name },
       ...changes.map((change) => ({
-        term: change.term,
+        term: __t(change.term),
         value: change.was
           ? `${change.value} (recorded as ${change.was})`
           : change.value,
@@ -312,9 +319,9 @@ function EditLitigantDialog({
       ...(docFile
         ? [
             {
-              term: "Annexure",
+              term: __t("editLitigantDialog_annexure"),
               value: idType
-                ? `${ID_TYPES.find((t) => t.value === idType)?.label ?? "ID proof"} · ${docFile.name}`
+                ? `${pick(ID_TYPES.find((t) => t.value === idType)?.label ?? { en: "editLitigantDialog_idProof" }, locale)} · ${docFile.name}`
                 : docFile.name,
             },
           ]
@@ -357,12 +364,12 @@ function EditLitigantDialog({
                   the review does not read as a different task (owner, Sept 2). */}
               <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
                 <DialogTitle className="text-title-s font-semibold text-balance">
-                  Edit details for {litigant.name}
+                  {<__LocalizedText id="editLitigantDialog_editDetailsFor" />}{" "}{litigant.name}
                 </DialogTitle>
                 <DialogDescription>
                   {step === 1
-                    ? "Correct what the record holds about this party. The application goes to the magistrate."
-                    : "Review the application, then continue to sign it."}
+                    ? __t("editLitigantDialog_correctWhatTheRecordHoldsAboutThis")
+                    : __t("editLitigantDialog_reviewTheApplicationThenContinueToSign")}
                 </DialogDescription>
               </DialogHeader>
 
@@ -380,8 +387,7 @@ function EditLitigantDialog({
                           className="block w-full text-body font-semibold leading-snug"
                           htmlFor="edit-litigant-name"
                         >
-                          Name
-                        </FieldLabel>
+                          {<__LocalizedText id="editLitigantDialog_name" />}{" "}</FieldLabel>
                         <Input
                           id="edit-litigant-name"
                           value={name}
@@ -403,11 +409,9 @@ function EditLitigantDialog({
                             className="block w-full text-body font-semibold leading-snug"
                             htmlFor="edit-litigant-rep"
                           >
-                            Represented by
-                          </FieldLabel>
+                            {<__LocalizedText id="editLitigantDialog_representedBy" />}{" "}</FieldLabel>
                           <FieldDescription>
-                            The person who speaks for the entity in this case.
-                          </FieldDescription>
+                            {<__LocalizedText id="editLitigantDialog_thePersonWhoSpeaksForTheEntity" />}{" "}</FieldDescription>
                           <Input
                             id="edit-litigant-rep"
                             value={representative}
@@ -424,12 +428,9 @@ function EditLitigantDialog({
                           className="block w-full text-body font-semibold leading-snug"
                           htmlFor="edit-litigant-mobile"
                         >
-                          Mobile number
-                        </FieldLabel>
+                          {<__LocalizedText id="editLitigantDialog_mobileNumber" />}{" "}</FieldLabel>
                         <FieldDescription>
-                          The number this party signs in with. It cannot be
-                          changed by an application.
-                        </FieldDescription>
+                          {<__LocalizedText id="editLitigantDialog_theNumberThisPartySignsInWith" />}{" "}</FieldDescription>
                         <Input
                           id="edit-litigant-mobile"
                           value={recordMobile}
@@ -443,8 +444,7 @@ function EditLitigantDialog({
                           pre-filled from the record. */}
                       <div className="flex flex-col gap-3">
                         <p className="text-body font-semibold leading-snug">
-                          Address
-                        </p>
+                          {<__LocalizedText id="editLitigantDialog_address" />}{" "}</p>
                         <StructuredAddressFields
                           idPrefix="edit-litigant-addr"
                           value={address}
@@ -476,8 +476,8 @@ function EditLitigantDialog({
                           htmlFor="edit-litigant-id-type"
                         >
                           {recordId && !replacingId
-                            ? "ID proof"
-                            : "ID proof (optional)"}
+                            ? __t("editLitigantDialog_idProof")
+                            : __t("editLitigantDialog_idProofOptional")}
                         </FieldLabel>
                         {recordId && !replacingId ? (
                           <>
@@ -489,8 +489,7 @@ function EditLitigantDialog({
                                 Replaceable, never removable: a record doc
                                 is not this dialog's to delete. */}
                             <FieldDescription>
-                              The ID on record for this party.
-                            </FieldDescription>
+                              {<__LocalizedText id="editLitigantDialog_theIdOnRecordForThisParty" />}{" "}</FieldDescription>
                             <Attachment className="w-full">
                               <AttachmentMedia className="w-14">
                                 <DocumentThumbnailButton
@@ -503,7 +502,7 @@ function EditLitigantDialog({
                               </AttachmentMedia>
                               <AttachmentContent>
                                 <AttachmentTitle>
-                                  {recordId.typeLabel}
+                                  {__t(recordId.typeLabel)}
                                 </AttachmentTitle>
                                 <AttachmentDescription>
                                   {recordId.fileName}
@@ -516,8 +515,7 @@ function EditLitigantDialog({
                                   className="h-auto p-0"
                                   onClick={() => setReplacingId(true)}
                                 >
-                                  Replace
-                                </Button>
+                                  {<__LocalizedText id="editLitigantDialog_replace" />}{" "}</Button>
                               </AttachmentActions>
                             </Attachment>
                             <DocumentPreviewDialog
@@ -527,9 +525,9 @@ function EditLitigantDialog({
                               url={RECORD_ID_URL}
                               locale="en"
                               copy={{
-                                title: `${recordId.typeLabel} on record`,
+                                title: `${__t(recordId.typeLabel)} on record`,
                                 description:
-                                  "The ID this party submitted to the court.",
+                                  __t("editLitigantDialog_theIdThisPartySubmittedToThe"),
                                 alt: recordId.typeLabel,
                               }}
                             />
@@ -537,14 +535,13 @@ function EditLitigantDialog({
                         ) : (
                           <>
                             <FieldDescription>
-                              An official ID that shows the corrected detail.
-                            </FieldDescription>
+                              {<__LocalizedText id="editLitigantDialog_anOfficialIdThatShowsTheCorrected" />}{" "}</FieldDescription>
                             <Select value={idType} onValueChange={setIdType}>
                               <SelectTrigger
                                 id="edit-litigant-id-type"
                                 className="w-full"
                               >
-                                <SelectValue placeholder="Type of ID" />
+                                <SelectValue placeholder={__t("editLitigantDialog_typeOfId")} />
                               </SelectTrigger>
                               <SelectContent>
                                 {ID_TYPES.map((option) => (
@@ -552,13 +549,13 @@ function EditLitigantDialog({
                                     key={option.value}
                                     value={option.value}
                                   >
-                                    {option.label}
+                                    {pick(option.label, locale)}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                             <UploadedDocField
-                              label="ID proof"
+                              label={__t("editLitigantDialog_idProof")}
                               file={docFile}
                               onFileChange={setDocFile}
                             />
@@ -575,8 +572,7 @@ function EditLitigantDialog({
                                     setDocFile(null);
                                   }}
                                 >
-                                  Keep the ID on record
-                                </Button>
+                                  {<__LocalizedText id="editLitigantDialog_keepTheIdOnRecord" />}{" "}</Button>
                               </div>
                             ) : null}
                           </>
@@ -595,19 +591,16 @@ function EditLitigantDialog({
               <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
                 {step > 1 ? (
                   <Button type="button" variant="outline" onClick={() => setStep(1)}>
-                    Back
-                  </Button>
+                    {<__LocalizedText id="editLitigantDialog_back" />}{" "}</Button>
                 ) : (
                   <span aria-hidden className="hidden sm:block" />
                 )}
                 {step === 1 ? (
                   <Button type="submit" form="edit-litigant-form">
-                    Continue
-                  </Button>
+                    {<__LocalizedText id="editLitigantDialog_continue" />}{" "}</Button>
                 ) : (
                   <Button type="button" onClick={() => setSignOpen(true)}>
-                    Continue to sign
-                  </Button>
+                    {<__LocalizedText id="editLitigantDialog_continueToSign" />}{" "}</Button>
                 )}
               </footer>
             </>
@@ -622,8 +615,8 @@ function EditLitigantDialog({
           closeClean();
         }}
         confirmation={{
-          title: "Application sent to the magistrate",
-          description: `The record for ${litigant.name} stays as it is until the order is passed.`,
+          title: __t("editLitigantDialog_applicationSentToTheMagistrate"),
+          description: __t("editLitigantDialog_theRecordForValue0StaysAsIt", {value0: String(litigant.name)}),
         }}
       />
 
@@ -633,16 +626,14 @@ function EditLitigantDialog({
       >
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard this application?</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="editLitigantDialog_discardThisApplication" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              The details entered here will be lost if you discard this draft.
-            </AlertDialogDescription>
+              {<__LocalizedText id="editLitigantDialog_theDetailsEnteredHereWillBeLost" />}{" "}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="editLitigantDialog_keepEditing" />}</AlertDialogCancel>
             <AlertDialogAction variant="destructive-solid" onClick={closeClean}>
-              Discard draft
-            </AlertDialogAction>
+              {<__LocalizedText id="editLitigantDialog_discardDraft" />}{" "}</AlertDialogAction>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
       </AlertDialog>

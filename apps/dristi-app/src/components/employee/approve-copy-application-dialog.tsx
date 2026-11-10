@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useMemo } from "react";
 
@@ -101,6 +103,7 @@ function ApplicationBody({
   onReject: (application: CopyApplication) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const document = useMemo(
     () => buildCopyApplicationDocument(application),
     [application],
@@ -117,21 +120,20 @@ function ApplicationBody({
       <DialogHeader className="shrink-0 gap-2 p-6 pr-16">
         <div className="flex flex-wrap items-center gap-2">
           <DialogTitle className="text-title-s font-semibold">
-            Review application
-          </DialogTitle>
+            {<__LocalizedText id="approveCopyApplicationDialog_reviewApplication" />}{" "}</DialogTitle>
           {/* The application's own state — waiting on this bench — in the DS's sentence
               case rather than the reference's Title Case. `warning` is the variant the
               court-side review overlays already spend on a pending application, so all
               four report a pending state the same way. This is the one place the state is
               stated: the list behind it is entirely pending, so it says it once, here,
               instead of thirty times down a column. */}
-          <Badge variant="warning">Pending approval</Badge>
+          <Badge variant="warning">{<__LocalizedText id="approveCopyApplicationDialog_pendingApproval" />}</Badge>
         </div>
         <DialogDescription className="text-body-compact text-muted-foreground">
           {/* No copy control inside the dialog's accessible description. */}
           <Identifier
             value={application.applicationNumber}
-            label="application number"
+            label={__t("approveCopyApplicationDialog_applicationNumber")}
             copyable={false}
           />
           {" · "}
@@ -158,13 +160,13 @@ function ApplicationBody({
         <div className="xl:min-h-0 xl:overflow-y-auto">
           <div className="rounded-lg bg-surface-sunken p-4">
             <DescriptionList>
-              <ReviewRow term="Application type">Copy application</ReviewRow>
+              <ReviewRow term="Application type">{<__LocalizedText id="approveCopyApplicationDialog_copyApplication" />}</ReviewRow>
               <ReviewRow term="Case number">
-                <Identifier value={application.caseNumber} label="case number" />
+                <Identifier value={application.caseNumber} label={__t("approveCopyApplicationDialog_caseNumber")} />
               </ReviewRow>
               <ReviewRow term="Copy sought">
-                {application.record.description}
-                {", dated "}
+                {__t(application.record.description)}
+                {__t("approveCopyApplicationDialog_dated")}
                 <span className="tabular-nums">
                   {formatCopyApplicationLongDate(application.record.dated)}
                 </span>
@@ -186,14 +188,14 @@ function ApplicationBody({
         <DocumentPreview
           className="min-h-96 md:min-h-0"
           height="fill"
-          title={document.title}
+          title={__t(document.title)}
           source={{
             kind: "composed",
             content: <ApplicationFacsimile document={document} />,
           }}
           download={{
             onDownload: () => downloadCopyApplicationDocument(application),
-            label: `Download ${document.title}`,
+            label: __t("approveCopyApplicationDialog_downloadValue0", {value0: String(__t(document.title))}),
           }}
         />
       </div>
@@ -203,11 +205,9 @@ function ApplicationBody({
           variant="destructive"
           onClick={() => onReject(application)}
         >
-          Reject
-        </Button>
+          {<__LocalizedText id="approveCopyApplicationDialog_reject" />}{" "}</Button>
         <Button type="button" onClick={() => onAccept(application)}>
-          Accept
-        </Button>
+          {<__LocalizedText id="approveCopyApplicationDialog_accept" />}{" "}</Button>
       </DialogFooter>
     </ChromeDialogContent>
   );
@@ -222,23 +222,24 @@ function ApplicationFacsimile({
 }: {
   document: CopyApplicationDocument;
 }) {
+  const __t = __useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground [&_[data-slot=description-details]]:text-paper-foreground [&_[data-slot=description-term]]:text-paper-muted-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Copy application no. {document.applicationNumber}
+          {<__LocalizedText id="approveCopyApplicationDialog_copyApplicationNo" />}{" "}{document.applicationNumber}
         </p>
         <p className="text-body font-semibold">
-          In case no. {document.caseNumber}
+          {<__LocalizedText id="approveCopyApplicationDialog_inCaseNo" />}{" "}{document.caseNumber}
         </p>
         <p className="text-body-compact text-paper-muted-foreground">
           {document.matter}
         </p>
       </header>
 
-      <h3 className="text-center text-body font-semibold">{document.title}</h3>
+      <h3 className="text-center text-body font-semibold">{__t(document.title)}</h3>
 
       <DescriptionList className="rounded-md border border-paper-border px-4">
         {document.facts.map((fact) => (
@@ -257,7 +258,7 @@ function ApplicationFacsimile({
       </ol>
 
       <section className="flex flex-col gap-2">
-        <h4 className="text-body font-semibold">Prayer</h4>
+        <h4 className="text-body font-semibold">{<__LocalizedText id="approveCopyApplicationDialog_prayer" />}</h4>
         <p className="text-body whitespace-pre-wrap">{document.prayer}</p>
       </section>
 
@@ -267,10 +268,10 @@ function ApplicationFacsimile({
           {document.applicant.capacity}
         </p>
         <p className="text-body-compact text-paper-muted-foreground">
-          Presented by {document.filedBy}
+          {<__LocalizedText id="approveCopyApplicationDialog_presentedBy" />}{" "}{document.filedBy}
         </p>
         <p className="text-body-compact text-paper-muted-foreground">
-          Dated this {document.dated}, at {document.place}
+          {<__LocalizedText id="approveCopyApplicationDialog_datedThis" />}{" "}{document.dated}{<__LocalizedText id="approveCopyApplicationDialog_at" />}{" "}{document.place}
         </p>
       </footer>
     </article>

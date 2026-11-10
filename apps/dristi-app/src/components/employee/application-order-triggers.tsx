@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { toast } from "sonner";
@@ -71,6 +72,7 @@ export function quietTrigger(orderKey: string): void {
  * twice. Where the browser has no Web Locks, every tab acts, as before.
  */
 export function ApplicationOrderTriggers() {
+  const __t = __useTranslations();
   const ready = useApplicationsReady();
   const apps = useLifecycleApplications();
   const orders = usePendingOrders();
@@ -127,7 +129,7 @@ export function ApplicationOrderTriggers() {
               key: order.key,
               id: allotOrderId(),
               title: orderTitle(draft),
-              text: draft.body?.text ?? "",
+              text: __t(draft.body?.text) ?? "",
               signedOn: on,
             },
             { allotNumber: () => allotApplicationNumber(on), ...workflowOf(app) },
@@ -137,10 +139,10 @@ export function ApplicationOrderTriggers() {
         });
         const id = `${order.key}:outcome`;
         if (result.ok && summary) {
-          toast(`${owner.typeLabel} application: ${summary}.`);
+          toast(`${__t(owner.typeLabel)} application: ${__t(summary)}.`);
         } else if (!result.ok && !reported.current.has(id)) {
           reported.current.add(id);
-          toast.error(`${owner.typeLabel} application could not be updated: ${result.error}`);
+          toast.error(`${__t(owner.typeLabel)} application could not be updated: ${__t(result.error)}`);
         }
       }
       for (const outcome of applicationOrderOutcomes(draft.blocks)) {
@@ -153,7 +155,7 @@ export function ApplicationOrderTriggers() {
               "magistrate",
               {
                 kind: outcome.kind,
-                text: draft.body?.text ?? "",
+                text: __t(draft.body?.text) ?? "",
                 newHearingOn: outcomeHearingDate(outcome, app, draft),
               },
               on,
@@ -163,19 +165,19 @@ export function ApplicationOrderTriggers() {
             on,
           ),
         );
-        const label = `${application.typeLabel} application`;
+        const label = `${__t(application.typeLabel)} application`;
         const id = `${order.key}:${application.id}`;
         if (result.ok) {
           if (!told.delete(order.key)) {
-            toast(`${label} ${SETTLED[outcome.kind]} by the signed order.`);
+            toast(`${__t(label)} ${SETTLED[outcome.kind]} by the signed order.`);
           }
         } else if (!reported.current.has(id)) {
           reported.current.add(id);
-          toast.error(`${label} could not be ${SETTLED[outcome.kind]}: ${result.error}`);
+          toast.error(`${__t(label)} could not be ${SETTLED[outcome.kind]}: ${__t(result.error)}`);
         }
       }
     }
-  }, [ready, leader, apps, orders, signing, drafts, session, readerPosts]);
+  }, [ready, leader, apps, orders, signing, drafts, session, readerPosts, __t]);
 
   return null;
 }

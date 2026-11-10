@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import Link from "next/link";
 
@@ -78,7 +80,7 @@ function CauseLink({ filing }: { filing: Filing }) {
       {...rowOpener}
       className="flex min-h-10 w-full items-center rounded-sm font-medium underline-offset-4 outline-none group-hover/row:underline focus-visible:ring-3 focus-visible:ring-focus-ring focus-visible:underline"
     >
-      <span className="sr-only">Scrutinise </span>
+      <span className="sr-only">{<__LocalizedText id="queueTable_scrutinise" />}{" "}</span>
       {filing.parties}
     </Link>
   );
@@ -103,38 +105,32 @@ function CauseLink({ filing }: { filing: Filing }) {
  * is one panel rather than a box inside a box.
  */
 export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
+  const __t = __useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Parties
-          </TableHead>
+            {<__LocalizedText id="queueTable_parties" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Filing no.
-          </TableHead>
+            {<__LocalizedText id="queueTable_filingNo" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
-          </TableHead>
+            {<__LocalizedText id="queueTable_stage" />}{" "}</TableHead>
           {/* Where Reason used to be. The case type was the quiet second line under the
               parties, which is a column's worth of fact hiding inside another column's
               cell — the owner asked for the swap on 2026-09-17: the type earns a heading,
               and "1 item open" was saying in prose what Stage and Waiting already say in
               their own columns. */}
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case type
-          </TableHead>
+            {<__LocalizedText id="queueTable_caseType" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Advocate
-          </TableHead>
+            {<__LocalizedText id="queueTable_advocate" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            With
-          </TableHead>
+            {<__LocalizedText id="queueTable_with" />}{" "}</TableHead>
           <TableHead
             className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}
           >
-            Waiting
-          </TableHead>
+            {<__LocalizedText id="queueTable_waiting" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -152,7 +148,7 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
               <CauseLink filing={filing} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              <Identifier value={filing.no} label="filing number" />
+              <Identifier value={filing.no} label={__t("queueTable_filingNumber")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
               {filing.stage}
@@ -173,7 +169,7 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
                 filing.self ? "font-medium" : "text-muted-foreground",
               )}
             >
-              {filing.who}
+              {__t(filing.who)}
             </TableCell>
             {/* Right-aligned because it is a compared number, and it is the sort key. */}
             <TableCell
@@ -196,6 +192,7 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
  * spells out what it is.
  */
 export function ScrutinyQueueItemList({ rows }: { rows: Filing[] }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((filing) => (
@@ -204,7 +201,7 @@ export function ScrutinyQueueItemList({ rows }: { rows: Filing[] }) {
             <CauseLink filing={filing} />
           </div>
           <p className="min-w-0 text-body-compact text-muted-foreground">
-            <Identifier value={filing.no} label="filing number" />
+            <Identifier value={filing.no} label={__t("queueTable_filingNumber")} />
           </p>
           <p className="text-caption text-muted-foreground">
             {filing.type}
@@ -213,9 +210,9 @@ export function ScrutinyQueueItemList({ rows }: { rows: Filing[] }) {
           </p>
           <p className="text-caption text-muted-foreground">
             {filing.advocate}
-            {" · with "}
-            {filing.who}
-            {" · waiting "}
+            {__t("queueTable_with_09936b55")}
+            {__t(filing.who)}
+            {__t("queueTable_waiting_1729fdf2")}
             <WaitingCell filing={filing} />
           </p>
         </QueueItemRow>

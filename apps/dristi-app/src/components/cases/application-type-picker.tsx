@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useId, useMemo } from "react";
 import { ArrowRightIcon, SearchIcon, XIcon } from "lucide-react";
@@ -66,6 +68,7 @@ export function ApplicationTypePicker({
   stageName: string;
   onChoose: (type: ApplicationTypeId) => void;
 }) {
+  const __t = __useTranslations();
   const results = useMemo(
     () =>
       searchApplicationTypes(query).filter(
@@ -96,15 +99,15 @@ export function ApplicationTypePicker({
       <p aria-live="polite" className="sr-only">
         {typed
           ? ranked
-            ? `${matched.length} of ${results.length} application types match what you typed. ${matched[0].guide.label} is the closest.`
-            : "No application type matches what you typed. All types are listed."
+            ? `${matched.length} of ${results.length} application types match what you typed. ${__t(matched[0].guide.label)} is the closest.`
+            : __t("applicationTypePicker_noApplicationTypeMatchesWhatYouTyped")
           : ""}
       </p>
 
       {ranked ? (
         <>
           <TypeSection
-            title={matched.length === 1 ? "Closest match" : "Closest matches"}
+            title={matched.length === 1 ? __t("applicationTypePicker_closestMatch") : __t("applicationTypePicker_closestMatches")}
             guides={matched.map((result) => result.guide)}
             value={value}
             leadId={matched[0].guide.id}
@@ -112,7 +115,7 @@ export function ApplicationTypePicker({
           />
           {others.length > 0 ? (
             <TypeSection
-              title="More application types"
+              title={__t("applicationTypePicker_moreApplicationTypes")}
               guides={others.map((result) => result.guide)}
               value={value}
               onChoose={onChoose}
@@ -123,21 +126,19 @@ export function ApplicationTypePicker({
         <>
           {typed ? (
             <p className="text-body-compact text-muted-foreground">
-              Nothing matched that. Pick a type below. Generic takes anything the
-              rest do not cover.
-            </p>
+              {<__LocalizedText id="applicationTypePicker_nothingMatchedThatPickATypeBelow" />}{" "}</p>
           ) : null}
           {leading.length > 0 ? (
             <>
               <TypeSection
-                title={`Suggested at the ${stageName} stage`}
+                title={__t("applicationTypePicker_suggestedAtTheValue0Stage", {value0: String(stageName)})}
                 guides={leading}
                 value={value}
                 onChoose={onChoose}
               />
               <Separator className="bg-hairline" />
               <TypeSection
-                title="More application types"
+                title={__t("applicationTypePicker_moreApplicationTypes")}
                 guides={rest}
                 value={value}
                 onChoose={onChoose}
@@ -166,6 +167,7 @@ export function ApplicationTypeSearch({
   query: string;
   onQueryChange: (query: string) => void;
 }) {
+  const __t = __useTranslations();
   /* Centred, wide and a step taller than a register's search (owner, Oct 8,
      as it was before Sept 21): with eighteen types, searching is how most
      filers will start, so it leads the page like a search engine's box. */
@@ -179,8 +181,8 @@ export function ApplicationTypeSearch({
         type="text"
         role="searchbox"
         enterKeyHint="search"
-        aria-label="Search application types in your own words"
-        placeholder="Search in your own words, like “my client can’t attend”"
+        aria-label={__t("applicationTypePicker_searchApplicationTypesInYourOwnWords")}
+        placeholder={__t("applicationTypePicker_searchInYourOwnWordsLikeMy")}
         autoComplete="off"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
@@ -190,7 +192,7 @@ export function ApplicationTypeSearch({
         <InputGroupAddon align="inline-end">
           <InputGroupButton
             size="icon-sm"
-            aria-label="Clear the search"
+            aria-label={__t("applicationTypePicker_clearTheSearch")}
             onClick={() => onQueryChange("")}
           >
             <XIcon aria-hidden />
@@ -215,6 +217,7 @@ function TypeSection({
   leadId?: ApplicationTypeId;
   onChoose: (type: ApplicationTypeId) => void;
 }) {
+  const __t = __useTranslations();
   const headingId = useId();
 
   return (
@@ -225,7 +228,7 @@ function TypeSection({
         id={headingId}
         className="text-body-compact font-semibold text-muted-foreground"
       >
-        {title}
+        {__t(title)}
       </h2>
       <TypeGrid
         guides={guides}
@@ -298,6 +301,7 @@ function TypeCard({
   lead: boolean;
   onChoose: (type: ApplicationTypeId) => void;
 }) {
+  const __t = __useTranslations();
   const Icon = guide.icon;
 
   return (
@@ -317,15 +321,15 @@ function TypeCard({
     >
       <button
         type="button"
-        aria-label={`${guide.label}: ${guide.description}`}
+        aria-label={`${__t(guide.label)}: ${__t(guide.description)}`}
         onClick={() => onChoose(guide.id)}
       >
         <div className="flex w-full items-center gap-2">
           <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           {chosen ? (
-            <Badge variant="outline">Chosen</Badge>
+            <Badge variant="outline">{<__LocalizedText id="applicationTypePicker_chosen" />}</Badge>
           ) : lead ? (
-            <Badge variant="secondary">Closest match</Badge>
+            <Badge variant="secondary">{<__LocalizedText id="applicationTypePicker_closestMatch" />}</Badge>
           ) : null}
           <ArrowRightIcon
             className="ml-auto size-4 shrink-0 text-muted-foreground"
@@ -335,10 +339,10 @@ function TypeCard({
 
         <ItemContent className="w-full min-w-0 gap-1 text-left">
           <ItemTitle className="line-clamp-none w-full text-body-compact font-semibold break-words text-foreground">
-            {guide.label}
+            {__t(guide.label)}
           </ItemTitle>
           <ItemDescription className="line-clamp-none text-body-compact text-muted-foreground">
-            {guide.description}
+            {__t(guide.description)}
           </ItemDescription>
         </ItemContent>
       </button>

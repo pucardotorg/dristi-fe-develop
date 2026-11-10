@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The parts every signing window is built from — the filer's own (`sign-flow-dialog`)
@@ -59,6 +61,7 @@ export function SettledCard({
   rows: Signatory[];
   footnote: string;
 }) {
+  const __t = __useTranslations();
   return (
     <div
       className={cn(
@@ -85,21 +88,21 @@ export function SettledCard({
               <p className="text-body-compact font-semibold text-foreground">
                 {s.name}
                 {s.you ? (
-                  <span className="ps-2 font-medium text-muted-foreground">You</span>
+                  <span className="ps-2 font-medium text-muted-foreground">{<__LocalizedText id="signStages_you" />}</span>
                 ) : null}
               </p>
               <p className="text-body-compact text-muted-foreground">{s.role}</p>
             </div>
             {s.status === "signed" && s.oathTaken === false ? (
-              <Badge variant="secondary">Oath pending</Badge>
+              <Badge variant="secondary">{<__LocalizedText id="signStages_oathPending" />}</Badge>
             ) : s.status === "signed" ? (
               <Badge variant="success">
                 <CheckIcon aria-hidden />
-                {s.oathTaken ? "Signed and sworn" : "Signed"}
+                {s.oathTaken ? __t("signStages_signedAndSworn") : __t("signStages_signed_8cba97e4")}
               </Badge>
             ) : (
               /* Says what is waiting, not just that something is (owner, 2026-10-13). */
-              <Badge variant="secondary">Signature pending</Badge>
+              <Badge variant="secondary">{<__LocalizedText id="signStages_signaturePending" />}</Badge>
             )}
           </li>
         ))}
@@ -135,6 +138,7 @@ export function ChoiceCard({
   onClick: () => void;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <button
       type="button"
@@ -151,7 +155,7 @@ export function ChoiceCard({
         {icon}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="text-body font-semibold text-foreground">{title}</span>
+        <span className="text-body font-semibold text-foreground">{__t(title)}</span>
         <span className="text-body-compact text-muted-foreground">{children}</span>
       </span>
       <ChevronRightIcon
@@ -175,28 +179,26 @@ export function InstrumentChoice({
   onAadhaar: () => void;
   onDsc: () => void;
 }) {
+  const __t = __useTranslations();
   const questionId = React.useId();
   return (
     <div role="group" aria-labelledby={questionId} className="flex flex-col gap-3">
       <h3 id={questionId} className="text-body font-semibold">
-        How will you e-sign?
-      </h3>
+        {<__LocalizedText id="signStages_howWillYouESign" />}{" "}</h3>
       <ChoiceCard
-        title="Aadhaar OTP"
+        title={__t("signStages_aadhaarOtp")}
         tone="bg-info-muted text-info-muted-foreground"
         icon={<SignatureIcon className="size-5" />}
         onClick={onAadhaar}
       >
-        A six-digit code goes to the mobile number registered with your Aadhaar.
-      </ChoiceCard>
+        {<__LocalizedText id="signStages_aSixDigitCodeGoesToThe" />}{" "}</ChoiceCard>
       <ChoiceCard
-        title="My DSC"
+        title={__t("signStages_myDsc")}
         tone="bg-brand-muted text-brand-muted-foreground"
         icon={<ShieldCheckIcon className="size-5" />}
         onClick={onDsc}
       >
-        The Digital Signature Certificate already set up on this computer.
-      </ChoiceCard>
+        {<__LocalizedText id="signStages_theDigitalSignatureCertificateAlreadySetUp" />}{" "}</ChoiceCard>
     </div>
   );
 }
@@ -215,6 +217,7 @@ export function OtpEntry({
   resent: boolean;
   onResend: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col items-center gap-3">
       <InputOTP
@@ -222,7 +225,7 @@ export function OtpEntry({
         maxLength={6}
         value={value}
         onChange={onChange}
-        aria-label="One-time password"
+        aria-label={__t("signStages_oneTimePassword")}
         containerClassName="gap-2"
         autoFocus
       >
@@ -242,11 +245,10 @@ export function OtpEntry({
         className="h-auto p-0 text-body-compact"
         onClick={onResend}
       >
-        {resent ? "Sent again" : "Send it again"}
+        {resent ? __t("signStages_sentAgain") : __t("signStages_sendItAgain")}
       </Button>
       <p className="text-body-compact text-muted-foreground">
-        Sandbox — any six digits work.
-      </p>
+        {<__LocalizedText id="signStages_sandboxAnySixDigitsWork" />}{" "}</p>
     </div>
   );
 }
@@ -256,6 +258,7 @@ export function OtpEntry({
  * this says it is looking rather than presenting a certificate it never went to find.
  */
 export function DscLookup({ found, holder }: { found: boolean; holder: string }) {
+  const __t = __useTranslations();
   return (
     /* The height is held across both states so the footer does not jump. */
     <div aria-live="polite" className="flex min-h-20 flex-col justify-center">
@@ -264,23 +267,21 @@ export function DscLookup({ found, holder }: { found: boolean; holder: string })
           <ShieldCheckIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-success-ink" />
           <div className="flex min-w-0 flex-col gap-0.5">
             <p className="truncate text-body-compact font-medium">
-              {holder || "Certificate found on this computer"}
+              {holder || __t("signStages_certificateFoundOnThisComputer")}
             </p>
             <p className="text-body-compact text-muted-foreground">
               {holder
-                ? "Class 3 individual certificate, found on this computer"
-                : "Class 3 individual certificate"}
+                ? __t("signStages_class3IndividualCertificateFoundOnThis")
+                : __t("signStages_class3IndividualCertificate")}
             </p>
             <p className="text-body-compact text-muted-foreground">
-              Sandbox — no certificate store is read.
-            </p>
+              {<__LocalizedText id="signStages_sandboxNoCertificateStoreIsRead" />}{" "}</p>
           </div>
         </div>
       ) : (
         <p className="flex items-center gap-3 text-body-compact text-muted-foreground">
           <Spinner className="size-4 shrink-0" aria-hidden />
-          Looking for a certificate on this computer&hellip;
-        </p>
+          {<__LocalizedText id="signStages_lookingForACertificateOnThisComputer" />}{" "}</p>
       )}
     </div>
   );
@@ -333,15 +334,16 @@ const CENTRED_TRAIL = cn(
  * `aria-current="step"`.
  */
 export function StepTrail({ steps }: { steps: TrailStep[] }) {
+  const __t = __useTranslations();
   return (
-    <Stepper aria-label="Your steps" className={cn(CENTRED_TRAIL, "pb-2")}>
+    <Stepper aria-label={__t("signStages_yourSteps")} className={cn(CENTRED_TRAIL, "pb-2")}>
       {steps.map((step, i) => (
         <StepperItem
           key={step.label}
           step={i + 1}
           status={STEPPER_STATUS[step.state]}
           aria-current={step.state === "current" ? "step" : undefined}
-          title={step.label}
+          title={__t(step.label)}
         >
           <span className="sr-only">, {SPOKEN_STATE[step.state]}</span>
         </StepperItem>

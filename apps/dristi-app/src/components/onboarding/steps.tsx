@@ -137,7 +137,7 @@ export function PapersStep({ locale, caseSummary }: StepProps) {
 /* ------------------------------------------------------------ 2 · choices */
 
 export function ChoicesStep({ locale }: StepProps) {
-  return (
+    return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4">
         <p className="max-w-prose text-body text-pretty text-foreground">

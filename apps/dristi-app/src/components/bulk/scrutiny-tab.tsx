@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -57,6 +59,7 @@ const KIND: Record<
 
 /** One flag, as a line: a tinted mark for its kind, what is wrong, and where. */
 export function FlagLine({ flag }: { flag: Flag }) {
+  const __t = __useTranslations();
   const k = KIND[kindOf(flag)];
   return (
     <div className="flex items-start gap-2 text-body-compact">
@@ -71,7 +74,7 @@ export function FlagLine({ flag }: { flag: Flag }) {
       </span>
       <span className="min-w-0 pt-0.5">
         <span className="sr-only">{k.name}: </span>
-        {flag.message}{" "}
+        {__t(flag.message)}{" "}
         <Badge
           variant="outline"
           className="ml-1 align-middle font-normal text-muted-foreground"
@@ -108,6 +111,7 @@ type Show = "all" | "hold" | "check" | "ready";
  * Documents are on their own tab.
  */
 export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
+  const __t = __useTranslations();
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const closed = !!batch.clubbedInto;
@@ -148,24 +152,23 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
   const skipped = open.flatMap((c) => c.skipped.map((f) => ({ c, f })));
 
   const chips: { id: Show; label: string; ink?: string }[] = [
-    { id: "all", label: "All" },
-    { id: "hold", label: "Needs fixing", ink: "text-destructive-ink" },
-    { id: "check", label: "To check", ink: "text-warning-ink" },
-    { id: "ready", label: "Ready", ink: "text-success-ink" },
+    { id: "all", label: __t("scrutinyTab_all") },
+    { id: "hold", label: __t("scrutinyTab_needsFixing"), ink: "text-destructive-ink" },
+    { id: "check", label: __t("scrutinyTab_toCheck"), ink: "text-warning-ink" },
+    { id: "ready", label: __t("scrutinyTab_ready"), ink: "text-success-ink" },
   ];
 
   if (!open.length)
     return (
       <Alert variant="success">
         <AlertDescription>
-          Nothing open here.{" "}
+          {<__LocalizedText id="scrutinyTab_nothingOpenHere" />}{" "}
           <button
             type="button"
             className="underline"
             onClick={() => go("sign")}
           >
-            Go to Sign
-          </button>
+            {<__LocalizedText id="scrutinyTab_goToSign" />}{" "}</button>
         </AlertDescription>
       </Alert>
     );
@@ -175,7 +178,7 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
       <div
         className="flex flex-wrap items-center gap-2"
         role="group"
-        aria-label="Show cases"
+        aria-label={__t("scrutinyTab_showCases")}
       >
         {chips.map((c) => (
           <Button
@@ -186,7 +189,7 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
             onClick={() => setShow(c.id)}
             className="rounded-full aria-pressed:border-primary aria-pressed:bg-accent-strong"
           >
-            {c.label}
+            {__t(c.label)}
             <span
               className={cn("tabular-nums", c.ink ?? "text-muted-foreground")}
             >
@@ -198,7 +201,7 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
 
       {error ? (
         <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{__t(error)}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -217,17 +220,17 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
                 >
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="text-body-compact font-medium">
-                      {c.title}
+                      {__t(c.title)}
                     </span>
                     <span className="flex flex-wrap gap-x-2 text-caption text-muted-foreground tabular-nums">
                       <span>{c.reference}</span>
-                      {c.cheque ? <span>· Cheque {c.cheque}</span> : null}
+                      {c.cheque ? <span>{<__LocalizedText id="scrutinyTab_cheque" />}{" "}{c.cheque}</span> : null}
                       {c.amount ? <span>· {money(c.amount)}</span> : null}
                     </span>
                     {first ? (
                       <span className="mt-1 text-caption text-muted-foreground">
-                        {first.where}: {first.message}
-                        {f.length > 1 ? ` (and ${f.length - 1} more)` : ""}
+                        {first.where}: {__t(first.message)}
+                        {f.length > 1 ? __t("scrutinyTab_andValue0More", {value0: String(f.length - 1)}) : ""}
                       </span>
                     ) : null}
                   </span>
@@ -245,7 +248,7 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
 
       {skipped.length ? (
         <section className="flex flex-col gap-2">
-          <h3 className="text-body font-semibold">Skipped checks</h3>
+          <h3 className="text-body font-semibold">{<__LocalizedText id="scrutinyTab_skippedChecks" />}</h3>
           <Card className={cn(PANEL_CLASS, "gap-0 px-4 py-1")}>
             <ul className="flex flex-col divide-y divide-hairline">
               {skipped.map(({ c, f }) => (
@@ -255,7 +258,7 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
                 >
                   <div className="min-w-0 flex-1">
                     <span className="text-body-compact font-medium">
-                      {c.title}
+                      {__t(c.title)}
                     </span>
                     <FlagLine flag={f} />
                   </div>
@@ -267,8 +270,7 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
                     }
                   >
                     <Undo2Icon data-icon="inline-start" aria-hidden />
-                    Undo skip
-                  </Button>
+                    {<__LocalizedText id="scrutinyTab_undoSkip" />}{" "}</Button>
                 </li>
               ))}
             </ul>

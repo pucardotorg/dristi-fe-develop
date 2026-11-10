@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * **Paper, as the way out when e-signing has not worked — never as its equal.**
@@ -32,10 +34,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 export function PaperFallbackLink({ onClick }: { onClick: () => void }) {
   return (
     <p className="flex flex-wrap items-center gap-x-1 text-body-compact text-muted-foreground">
-      Unable to e-sign?
-      <Button type="button" variant="link" className="px-0 underline" onClick={onClick}>
-        Upload a physically signed copy
-      </Button>
+      {<__LocalizedText id="paperFallback_unableToESign" />}{" "}<Button type="button" variant="link" className="px-0 underline" onClick={onClick}>
+        {<__LocalizedText id="paperFallback_uploadAPhysicallySignedCopy" />}{" "}</Button>
     </p>
   );
 }
@@ -60,13 +60,13 @@ export function PaperFallbackQuestion({
   /** A window with one signer drops "Another party can't e-sign" — there is nobody else. */
   reasons?: readonly { id: PaperFallbackReason; label: string }[];
 }) {
+  const __t = __useTranslations();
   const questionId = React.useId();
   const optionId = React.useId();
   return (
     <div className="flex flex-col gap-3">
       <h3 id={questionId} className="text-body font-semibold">
-        What went wrong with e-signing?
-      </h3>
+        {<__LocalizedText id="paperFallback_whatWentWrongWithESigning" />}{" "}</h3>
       <RadioGroup
         value={value}
         onValueChange={(next) => onChange(next as PaperFallbackReason)}
@@ -80,7 +80,7 @@ export function PaperFallbackQuestion({
               <Field orientation="horizontal" className="gap-3">
                 <RadioGroupItem value={reason.id} id={id} />
                 {/* Reasons wrap in longer languages rather than clip. */}
-                <span className="text-body font-normal text-foreground">{reason.label}</span>
+                <span className="text-body font-normal text-foreground">{__t(reason.label)}</span>
               </Field>
             </FieldLabel>
           );

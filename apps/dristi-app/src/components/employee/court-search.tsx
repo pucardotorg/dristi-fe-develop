@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -84,6 +86,7 @@ function haystack(row: CourtSearchRow): string {
 }
 
 function Results({ onNavigate }: { onNavigate: () => void }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const [query, setQuery] = React.useState("");
 
@@ -102,18 +105,17 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
   return (
     /* Filtering is ours, not cmdk's: a queue is found by its family's name as well as its
        own, which is not the text on the row. */
-    <Command shouldFilter={false} label="Search this court">
+    <Command shouldFilter={false} label={__t("courtSearch_searchThisCourt")}>
       <CommandInput
         value={query}
         onValueChange={setQuery}
-        placeholder="Search queues and screens"
+        placeholder={__t("courtSearch_searchQueuesAndScreens")}
       />
       <CommandList>
         <CommandEmpty className="text-body-compact text-muted-foreground">
-          Nothing here is called that.
-        </CommandEmpty>
+          {<__LocalizedText id="courtSearch_nothingHereIsCalledThat" />}{" "}</CommandEmpty>
         {rows.length > 0 ? (
-          <CommandGroup heading="Go to">
+          <CommandGroup heading={__t("courtSearch_goTo")}>
             {rows.map((row) => {
               const Icon = row.item.icon;
               return (
@@ -126,7 +128,7 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
                     <Icon aria-hidden className="text-muted-foreground" />
                   ) : null}
                   <span className="min-w-0 flex-1 truncate text-body-compact font-medium text-foreground">
-                    {row.item.label}
+                    {__t(row.item.label)}
                   </span>
                   {/* The family, so a result says which part of the court it belongs to
                       without the reader having to know the rail by heart. */}
@@ -201,6 +203,7 @@ export function CourtSearchProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
   const shortcut = useShortcutLabel();
 
@@ -226,8 +229,8 @@ export function CourtSearchProvider({
       <CommandDialog
         open={open}
         onOpenChange={setOpen}
-        title="Search this court"
-        description="Find a queue or a screen by name, or by the part of the court it belongs to."
+        title={__t("courtSearch_searchThisCourt")}
+        description={__t("courtSearch_findAQueueOrAScreenBy")}
       >
         <Results onNavigate={() => setOpen(false)} />
       </CommandDialog>

@@ -1,4 +1,5 @@
 "use client"
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
@@ -46,11 +47,12 @@ function CommandDialog({
   className?: string
   showCloseButton?: boolean
 }) {
+  const __t = __useTranslations();
   return (
     <Dialog {...props}>
       <DialogHeader className="sr-only">
-        <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
+        <DialogTitle>{__t(title)}</DialogTitle>
+        <DialogDescription>{__t(description)}</DialogDescription>
       </DialogHeader>
       <DialogContent
         className={cn(

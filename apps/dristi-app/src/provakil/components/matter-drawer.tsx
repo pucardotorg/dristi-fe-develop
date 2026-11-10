@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FileTextIcon, XIcon } from "lucide-react";
@@ -11,9 +13,10 @@ import { Chip, STAGE_TONE } from "./ui";
 const TABS = ["Overview", "Instrument & notice", "Documents", "Activity"] as const;
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const __t = __useTranslations();
   return (
     <div>
-      <dt className="text-[11px] text-(--pv-muted) uppercase">{label}</dt>
+      <dt className="text-[11px] text-(--pv-muted) uppercase">{__t(label)}</dt>
       <dd className="mt-0.5">{children || "—"}</dd>
     </div>
   );
@@ -21,21 +24,21 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 /** One matter, as the case workspace shows it. */
 export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () => void }) {
+  const __t = __useTranslations();
   const [tab, setTab] = React.useState<(typeof TABS)[number]>("Overview");
-  React.useEffect(() => setTab("Overview"), [row?.id]);
   if (!row) return null;
   const m = row;
   const b = m.borrower;
 
   const activity = [
-    { at: m.npaDate, text: "Account classified NPA" },
-    { at: m.instruments[0].returnDate, text: `Cheque ${m.instruments[0].chequeNo} returned: ${m.instruments[0].returnReason.slice(5)}` },
-    { at: m.notice.dispatchDate, text: `Demand notice dispatched by ${m.notice.mode}` },
-    ...(m.notice.statusDate ? [{ at: m.notice.statusDate, text: `Notice ${m.notice.status.toLowerCase()}` }] : []),
-    { at: isoDaysAgo(3), text: `Case assigned to Legal Manager ${m.legalManager}` },
-    ...m.notes.map((n) => ({ at: n.at, text: `Note added by ${n.by}` })),
-    ...(m.push ? [{ at: m.push.at.slice(0, 10), text: `Filed on SARAS 2.0 in ${m.push.batchNumber}` }] : []),
-    ...(m.stage === "Filed" && m.cnr ? [{ at: isoDaysAgo(1), text: `Filed. CNR ${m.cnr}` }] : []),
+    { at: m.npaDate, text: __t("matterDrawer_accountClassifiedNpa") },
+    { at: m.instruments[0].returnDate, text: __t("matterDrawer_chequeValue0ReturnedValue1", {value0: String(m.instruments[0].chequeNo), value1: String(m.instruments[0].returnReason.slice(5))}) },
+    { at: m.notice.dispatchDate, text: __t("matterDrawer_demandNoticeDispatchedByValue0", {value0: String(m.notice.mode)}) },
+    ...(m.notice.statusDate ? [{ at: m.notice.statusDate, text: __t("matterDrawer_noticeValue0", {value0: String(m.notice.status.toLowerCase())}) }] : []),
+    { at: isoDaysAgo(3), text: __t("matterDrawer_caseAssignedToLegalManagerValue0", {value0: String(m.legalManager)}) },
+    ...m.notes.map((n) => ({ at: n.at, text: __t("matterDrawer_noteAddedByValue0", {value0: String(n.by)}) })),
+    ...(m.push ? [{ at: m.push.at.slice(0, 10), text: __t("matterDrawer_filedOnSaras20InValue0", {value0: String(m.push.batchNumber)}) }] : []),
+    ...(m.stage === "Filed" && m.cnr ? [{ at: isoDaysAgo(1), text: __t("matterDrawer_filedCnrValue0", {value0: String(m.cnr)}) }] : []),
   ].sort((a, c) => (a.at < c.at ? 1 : -1));
 
   return (
@@ -43,16 +46,16 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
       <aside
         className="flex h-full w-full max-w-2xl flex-col bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
-        aria-label={`Case ${m.lan}`}
+        aria-label={__t("matterDrawer_caseValue0", {value0: String(m.lan)})}
       >
         <div className="border-b border-(--pv-line) px-5 pt-4">
           <div className="flex items-start gap-3">
             <div>
               <div className="num text-[12px] text-(--pv-muted)">{m.lan} · {m.product}</div>
-              <h2 className="text-[18px] font-medium">Tata Capital Ltd vs {b.name}</h2>
+              <h2 className="text-[18px] font-medium">{<__LocalizedText id="matterDrawer_tataCapitalLtdVs" />}{" "}{b.name}</h2>
               <div className="mt-1 flex flex-wrap gap-1.5">
                 <Chip tone={STAGE_TONE[m.stage]}>{m.stage}</Chip>
-                <Chip>Section 138 NI Act</Chip>
+                <Chip>{<__LocalizedText id="matterDrawer_section138NiAct" />}</Chip>
                 {m.labels.map((l) => (
                   <Chip key={l} tone="plum">
                     {l}
@@ -60,7 +63,7 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
                 ))}
               </div>
             </div>
-            <button onClick={onClose} className="ml-auto rounded-full p-1.5 text-(--pv-muted) hover:bg-(--pv-ground)" aria-label="Close">
+            <button onClick={onClose} className="ml-auto rounded-full p-1.5 text-(--pv-muted) hover:bg-(--pv-ground)" aria-label={__t("matterDrawer_close")}>
               <XIcon className="size-5" />
             </button>
           </div>
@@ -80,12 +83,12 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
         <div className="flex-1 overflow-y-auto p-5 text-[13px]">
           {tab === "Overview" ? (
             <dl className="grid grid-cols-2 gap-4">
-              <Field label="Borrower">{b.name}</Field>
-              <Field label="Constitution">{b.constitution}</Field>
-              <Field label="Mobile">{b.mobile}</Field>
-              <Field label="Email">{b.email}</Field>
+              <Field label={__t("matterDrawer_borrower")}>{b.name}</Field>
+              <Field label={__t("matterDrawer_constitution")}>{b.constitution}</Field>
+              <Field label={__t("matterDrawer_mobile")}>{b.mobile}</Field>
+              <Field label={__t("matterDrawer_email")}>{b.email}</Field>
               <div className="col-span-2">
-                <Field label="Addresses">
+                <Field label={__t("matterDrawer_addresses")}>
                   {b.addresses.map((a) => (
                     <div key={a.line}>
                       <span className="text-(--pv-muted)">{a.type}:</span> {a.line}, {a.city} {a.pincode}
@@ -95,7 +98,7 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
               </div>
               {b.persons.length ? (
                 <div className="col-span-2">
-                  <Field label="Directors / partners">
+                  <Field label={__t("matterDrawer_directorsPartners")}>
                     {b.persons.map((p) => (
                       <div key={p.name}>
                         {p.name}, {p.designation}
@@ -104,34 +107,34 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
                   </Field>
                 </div>
               ) : null}
-              <Field label="Branch">{m.branch} · {m.region}</Field>
-              <Field label="Legal manager">{m.legalManager}</Field>
-              <Field label="Advocate">
+              <Field label={__t("matterDrawer_branch")}>{m.branch} · {m.region}</Field>
+              <Field label={__t("matterDrawer_legalManager")}>{m.legalManager}</Field>
+              <Field label={__t("matterDrawer_advocate")}>
                 {m.advocate ? (
                   <>
                     {m.advocate.name} <span className="num text-(--pv-muted)">{m.advocate.enrolment}</span>
                   </>
                 ) : (
-                  <span className="font-medium text-(--pv-amber)">Unassigned</span>
+                  <span className="font-medium text-(--pv-amber)">{<__LocalizedText id="matterDrawer_unassigned" />}</span>
                 )}
               </Field>
-              <Field label="DPD">
+              <Field label={__t("matterDrawer_dpd")}>
                 <span className="num">{m.dpd}</span>
               </Field>
-              <Field label="NPA since">{formatDate(m.npaDate)}</Field>
-              <Field label="Outstanding">
+              <Field label={__t("matterDrawer_npaSince")}>{formatDate(m.npaDate)}</Field>
+              <Field label={__t("matterDrawer_outstanding")}>
                 <span className="num">{formatINR(m.outstanding)}</span>
               </Field>
-              <Field label="Cause of action">{formatDate(causeOfAction(m))}</Field>
-              <Field label="File by">{formatDate(limitationEnds(m))}</Field>
+              <Field label={__t("matterDrawer_causeOfAction")}>{formatDate(causeOfAction(m))}</Field>
+              <Field label={__t("matterDrawer_fileBy")}>{formatDate(limitationEnds(m))}</Field>
               {m.push ? (
-                <Field label="SARAS 2.0 batch">
+                <Field label={__t("matterDrawer_saras20Batch")}>
                   <a href={m.push.url} target="_blank" rel="noreferrer" className="num text-(--pv-blue) underline">
                     {m.push.batchNumber}
                   </a>
                 </Field>
               ) : null}
-              {m.cnr ? <Field label="CNR">{m.cnr}</Field> : null}
+              {m.cnr ? <Field label={__t("matterDrawer_cnr")}>{m.cnr}</Field> : null}
             </dl>
           ) : null}
 
@@ -139,39 +142,39 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
             <div className="flex flex-col gap-5">
               {m.instruments.map((q, i) => (
                 <section key={q.chequeNo}>
-                  <h3 className="mb-2 font-medium">Cheque {m.instruments.length > 1 ? i + 1 : ""}</h3>
+                  <h3 className="mb-2 font-medium">{<__LocalizedText id="matterDrawer_cheque" />}{" "}{m.instruments.length > 1 ? i + 1 : ""}</h3>
                   <dl className="grid grid-cols-2 gap-4">
-                    <Field label="Cheque no."><span className="num">{q.chequeNo}</span></Field>
-                    <Field label="Amount"><span className="num">{formatINR(q.amount)}</span></Field>
-                    <Field label="Cheque date">{formatDate(q.chequeDate)}</Field>
-                    <Field label="Drawee IFSC"><span className="num">{q.draweeIfsc}</span></Field>
-                    <Field label="Drawer account"><span className="num">{q.drawerAccount}</span></Field>
-                    <Field label="Deposited">{formatDate(q.depositDate)} at <span className="num">{q.collectingIfsc}</span></Field>
-                    <Field label="Returned">{formatDate(q.returnDate)}</Field>
-                    <Field label="Return reason">{q.returnReason}</Field>
+                    <Field label={__t("matterDrawer_chequeNo")}><span className="num">{q.chequeNo}</span></Field>
+                    <Field label={__t("matterDrawer_amount")}><span className="num">{formatINR(q.amount)}</span></Field>
+                    <Field label={__t("matterDrawer_chequeDate")}>{formatDate(q.chequeDate)}</Field>
+                    <Field label={__t("matterDrawer_draweeIfsc")}><span className="num">{q.draweeIfsc}</span></Field>
+                    <Field label={__t("matterDrawer_drawerAccount")}><span className="num">{q.drawerAccount}</span></Field>
+                    <Field label={__t("matterDrawer_deposited")}>{formatDate(q.depositDate)} {<__LocalizedText id="matterDrawer_at" />}{" "}<span className="num">{q.collectingIfsc}</span></Field>
+                    <Field label={__t("matterDrawer_returned")}>{formatDate(q.returnDate)}</Field>
+                    <Field label={__t("matterDrawer_returnReason")}>{q.returnReason}</Field>
                   </dl>
                 </section>
               ))}
               <section>
-                <h3 className="mb-2 font-medium">Demand notice</h3>
+                <h3 className="mb-2 font-medium">{<__LocalizedText id="matterDrawer_demandNotice" />}</h3>
                 <dl className="grid grid-cols-2 gap-4">
-                  <Field label="Dispatched">{formatDate(m.notice.dispatchDate)}</Field>
-                  <Field label="Mode">{m.notice.mode}</Field>
-                  <Field label="Consignment no."><span className="num">{m.notice.consignmentNo}</span></Field>
-                  <Field label="Status">{m.notice.status}{m.notice.statusDate ? `, ${formatDate(m.notice.statusDate)}` : ""}</Field>
-                  <Field label="Reply received">{m.notice.replyReceived ? "Yes" : "No"}</Field>
-                  <Field label="Received after notice"><span className="num">{formatINR(m.receivedAfterNotice)}</span></Field>
+                  <Field label={__t("matterDrawer_dispatched")}>{formatDate(m.notice.dispatchDate)}</Field>
+                  <Field label={__t("matterDrawer_mode")}>{m.notice.mode}</Field>
+                  <Field label={__t("matterDrawer_consignmentNo")}><span className="num">{m.notice.consignmentNo}</span></Field>
+                  <Field label={__t("matterDrawer_status")}>{m.notice.status}{m.notice.statusDate ? `, ${formatDate(m.notice.statusDate)}` : ""}</Field>
+                  <Field label={__t("matterDrawer_replyReceived")}>{m.notice.replyReceived ? __t("matterDrawer_yes") : __t("matterDrawer_no")}</Field>
+                  <Field label={__t("matterDrawer_receivedAfterNotice")}><span className="num">{formatINR(m.receivedAfterNotice)}</span></Field>
                 </dl>
               </section>
               {m.notes.length ? (
                 <section>
-                  <h3 className="mb-2 font-medium">Notes</h3>
+                  <h3 className="mb-2 font-medium">{<__LocalizedText id="matterDrawer_notes" />}</h3>
                   {m.notes.map((n) => (
                     <div key={n.at} className="rounded-md bg-(--pv-ground) p-3">
                       <div className="text-[11px] text-(--pv-muted)">
                         {n.by} · {formatDate(n.at)} {n.tag ? <Chip tone="plum">{n.tag}</Chip> : null}
                       </div>
-                      <p className="mt-1">{n.text}</p>
+                      <p className="mt-1">{__t(n.text)}</p>
                     </div>
                   ))}
                 </section>
@@ -200,7 +203,7 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
                 <li key={`${a.at}-${i}`} className="mb-4 ml-4">
                   <span className={`absolute -left-1.5 mt-1 size-3 rounded-full border-2 border-white ${i === 0 ? "bg-(--pv-blue)" : "bg-(--pv-muted)/50"}`} />
                   <div className="num text-[11px] text-(--pv-muted)">{formatDate(a.at)}</div>
-                  <div>{a.text}</div>
+                  <div>{__t(a.text)}</div>
                 </li>
               ))}
             </ol>

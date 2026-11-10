@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
 
@@ -38,6 +40,7 @@ export function CountBarChart({
   unit: string;
   data: CountBar[];
 }) {
+  const __t = __useTranslations();
   const config = {
     value: { label: unit.charAt(0).toUpperCase() + unit.slice(1), color: "var(--color-chart-1)" },
   } satisfies ChartConfig;
@@ -48,7 +51,7 @@ export function CountBarChart({
       <ChartContainer config={config} className="aspect-auto h-56 w-full">
         <BarChart
           accessibilityLayer
-          title={title}
+          title={__t(title)}
           data={points}
           margin={{ top: 24, right: 4, left: 0, bottom: 0 }}
         >
@@ -80,17 +83,17 @@ export function CountBarChart({
           so `sr-only` on the table itself still widened the page at a phone's width. */}
       <div className="sr-only">
         <table>
-          <caption>{title}</caption>
+          <caption>{__t(title)}</caption>
           <thead>
             <tr>
-              <th scope="col">Period</th>
-              <th scope="col">{config.value.label}</th>
+              <th scope="col">{<__LocalizedText id="countBarChart_period" />}</th>
+              <th scope="col">{__t(config.value.label)}</th>
             </tr>
           </thead>
           <tbody>
             {data.map((bar) => (
               <tr key={bar.label}>
-                <th scope="row">{bar.label}</th>
+                <th scope="row">{__t(bar.label)}</th>
                 <td>{formatCount(bar.value)}</td>
               </tr>
             ))}

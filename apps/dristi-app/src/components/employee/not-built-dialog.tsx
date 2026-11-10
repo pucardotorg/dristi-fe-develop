@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { ConstructionIcon } from "lucide-react";
 
@@ -52,31 +53,28 @@ export function NotBuiltDialog({
       <ChromeDialogContent className="sm:max-w-md">
         {/* Radix needs a titled dialog; the visible title lives in the Empty below, so the
             header is spoken only. */}
-        <DialogTitle className="sr-only">Not built yet</DialogTitle>
+        <DialogTitle className="sr-only">{<__LocalizedText id="notBuiltDialog_notBuiltYet" />}</DialogTitle>
         <DialogDescription className="sr-only">
-          {opens} is not built yet.
-        </DialogDescription>
+          {opens} {<__LocalizedText id="notBuiltDialog_isNotBuiltYet" />}{" "}</DialogDescription>
         <Empty className="border-0 p-0 py-4">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <ConstructionIcon aria-hidden />
             </EmptyMedia>
             <EmptyTitle className="text-title-s font-semibold">
-              Not built yet
-            </EmptyTitle>
+              {<__LocalizedText id="notBuiltDialog_notBuiltYet" />}{" "}</EmptyTitle>
             <EmptyDescription className="text-body text-pretty">
               {item ? (
                 <>
                   <span className="font-medium text-foreground">{item}</span>{" "}
-                  would open {opens}.{" "}
+                  {<__LocalizedText id="notBuiltDialog_wouldOpen" />}{" "}{opens}.{" "}
                 </>
               ) : null}
-              That screen hasn&rsquo;t been built yet.
-            </EmptyDescription>
+              {<__LocalizedText id="notBuiltDialog_thatScreenHasnTBeenBuiltYet" />}{" "}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <DialogClose asChild>
-              <Button type="button">Back</Button>
+              <Button type="button">{<__LocalizedText id="notBuiltDialog_back" />}</Button>
             </DialogClose>
           </EmptyContent>
         </Empty>

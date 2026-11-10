@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -71,6 +73,7 @@ export function PushDialog({
   onClose: () => void;
   onSent: () => void;
 }) {
+  const __t = __useTranslations();
   const [step, setStep] = React.useState<"court" | "assign" | "sending" | "done" | "error">("court");
   const [court, setCourt] = React.useState("saras");
   const [advocates, setAdvocates] = React.useState<Advocate[] | null>(null);
@@ -81,22 +84,9 @@ export function PushDialog({
   const [sent, setSent] = React.useState<Sent[]>([]);
   const [error, setError] = React.useState<{ error: string; details?: string[] } | null>(null);
   const [showJson, setShowJson] = React.useState(false);
-  const [list, setList] = React.useState<Row[]>([]);
-
-  React.useEffect(() => {
-    if (!open) return;
-    setStep("court");
-    setAdvocates(null);
-    setLoadError(null);
-    setTicked(new Set());
-    setBulkTo("");
-    setSent([]);
-    setError(null);
-    setShowJson(false);
-    setList(rows);
-    // Rows are captured on open; the list behind refreshes after a send.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  // The caller keys this dialog by its open state, capturing the selected rows
+  // for one filing round and resetting every step on the next open.
+  const [list] = React.useState<Row[]>(rows);
 
   if (!open) return null;
 
@@ -155,7 +145,7 @@ export function PushDialog({
       setStep("done");
       onSent();
     } catch {
-      setError({ error: "The request did not complete." });
+      setError({ error: __t("pushDialog_theRequestDidNotComplete") });
       setStep("error");
     }
   };
@@ -171,9 +161,9 @@ export function PushDialog({
           </span>
           <div>
             <h2 id="push-title" className="text-[16px] font-medium">
-              {step === "done" ? `Filed on ${chosenCourt.name}` : `File ${list.length} case${list.length === 1 ? "" : "s"} in court`}
+              {step === "done" ? __t("pushDialog_filedOnValue0", {value0: String(chosenCourt.name)}) : __t("pushDialog_fileValue0CaseValue1InCourt", {value0: String(list.length), value1: String(list.length === 1 ? "" : "s")})}
             </h2>
-            <ol className="mt-0.5 flex gap-3 text-[12px]" aria-label="Steps">
+            <ol className="mt-0.5 flex gap-3 text-[12px]" aria-label={__t("pushDialog_steps")}>
               {STEPS.map((s, i) => (
                 <li key={s} className={i === stepIndex ? "font-medium text-(--pv-blue)" : i < stepIndex ? "text-(--pv-slate)" : "text-(--pv-muted)"}>
                   {i + 1}. {s}
@@ -181,7 +171,7 @@ export function PushDialog({
               ))}
             </ol>
           </div>
-          <button onClick={onClose} className="ml-auto rounded-full p-1.5 text-(--pv-muted) hover:bg-(--pv-ground)" aria-label="Close">
+          <button onClick={onClose} className="ml-auto rounded-full p-1.5 text-(--pv-muted) hover:bg-(--pv-ground)" aria-label={__t("pushDialog_close")}>
             <XIcon className="size-5" />
           </button>
         </div>
@@ -190,9 +180,8 @@ export function PushDialog({
           {step === "court" ? (
             <div className="flex flex-col gap-3">
               <p className="text-[13px] text-(--pv-slate)">
-                {list.length} cases · {formatINR(value)} · Tata Capital Ltd, through {officer.name}. Choose the court to file in.
-              </p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Court">
+                {list.length} {<__LocalizedText id="pushDialog_cases" />}{" "}{formatINR(value)} {<__LocalizedText id="pushDialog_tataCapitalLtdThrough" />}{" "}{officer.name}{<__LocalizedText id="pushDialog_chooseTheCourtToFileIn" />}{" "}</p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup" aria-label={__t("pushDialog_court")}>
                 {COURTS.map((c) => (
                   <label
                     key={c.id}
@@ -221,22 +210,21 @@ export function PushDialog({
               ) : advocates === null ? (
                 <div className="flex items-center gap-2 text-[13px] text-(--pv-muted)">
                   <Loader2Icon className="size-4 animate-spin" aria-hidden />
-                  Asking {chosenCourt.name} for Tata Capital&apos;s advocates…
-                </div>
+                  {<__LocalizedText id="pushDialog_asking" />}{" "}{chosenCourt.name} {<__LocalizedText id="pushDialog_forTataCapitalSAdvocates" />}{" "}</div>
               ) : (
                 <>
                   <p className="text-[13px] text-(--pv-slate)">
                     {`${advocates.length} advocates are registered on ${chosenCourt.name} for Tata Capital. Each advocate's cases go to their own login as one batch.`}
                   </p>
                   <div className="flex flex-wrap items-center gap-2 rounded-md bg-(--pv-ground) px-3 py-2 text-[13px]">
-                    <span className="font-medium">{ticked.size ? `${ticked.size} ticked` : "Tick cases to assign them together"}</span>
+                    <span className="font-medium">{ticked.size ? `${ticked.size} ticked` : __t("pushDialog_tickCasesToAssignThemTogether")}</span>
                     <select
                       value={bulkTo}
                       onChange={(e) => setBulkTo(e.target.value)}
                       className="rounded-md border border-(--pv-line) bg-white px-2 py-1.5"
-                      aria-label="Advocate for the ticked cases"
+                      aria-label={__t("pushDialog_advocateForTheTickedCases")}
                     >
-                      <option value="">Choose advocate</option>
+                      <option value="">{<__LocalizedText id="pushDialog_chooseAdvocate" />}</option>
                       {advocates.map((a) => (
                         <option key={a.enrolment} value={a.enrolment}>
                           {a.name} · {a.enrolment}
@@ -251,9 +239,8 @@ export function PushDialog({
                         setTicked(new Set());
                       }}
                     >
-                      Assign
-                    </Button>
-                    <span className="num ml-auto text-(--pv-muted)">{unassigned ? `${unassigned} without an advocate` : "Every case has an advocate"}</span>
+                      {<__LocalizedText id="pushDialog_assign" />}{" "}</Button>
+                    <span className="num ml-auto text-(--pv-muted)">{unassigned ? `${unassigned} without an advocate` : __t("pushDialog_everyCaseHasAnAdvocate")}</span>
                   </div>
                   <table className="w-full text-left text-[13px]">
                     <thead className="text-[11px] text-(--pv-muted) uppercase">
@@ -261,17 +248,17 @@ export function PushDialog({
                         <th className="w-8 py-2 pr-2">
                           <input
                             type="checkbox"
-                            aria-label="Tick every case"
+                            aria-label={__t("pushDialog_tickEveryCase")}
                             checked={allTicked}
                             onChange={() => setTicked(allTicked ? new Set() : new Set(list.map((m) => m.id)))}
                             className="size-4 accent-(--pv-blue)"
                           />
                         </th>
-                        <th className="py-2 pr-3">LAN</th>
-                        <th className="py-2 pr-3">Borrower</th>
-                        <th className="py-2 pr-3 text-right">Amount</th>
-                        <th className="py-2 pr-3">Advocate</th>
-                        <th className="py-2">Before filing</th>
+                        <th className="py-2 pr-3">{<__LocalizedText id="pushDialog_lan" />}</th>
+                        <th className="py-2 pr-3">{<__LocalizedText id="pushDialog_borrower" />}</th>
+                        <th className="py-2 pr-3 text-right">{<__LocalizedText id="pushDialog_amount" />}</th>
+                        <th className="py-2 pr-3">{<__LocalizedText id="pushDialog_advocate" />}</th>
+                        <th className="py-2">{<__LocalizedText id="pushDialog_beforeFiling" />}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -282,7 +269,7 @@ export function PushDialog({
                             <td className="py-2 pr-2">
                               <input
                                 type="checkbox"
-                                aria-label={`Tick ${m.lan}`}
+                                aria-label={__t("pushDialog_tickValue0", {value0: String(m.lan)})}
                                 checked={ticked.has(m.id)}
                                 onChange={() =>
                                   setTicked((prev) => {
@@ -303,9 +290,9 @@ export function PushDialog({
                                 value={assigned[m.id] ?? ""}
                                 onChange={(e) => setAssigned((prev) => ({ ...prev, [m.id]: e.target.value }))}
                                 className={`w-full rounded-md border bg-white px-2 py-1 ${assigned[m.id] ? "border-(--pv-line)" : "border-(--pv-amber)"}`}
-                                aria-label={`Advocate for ${m.lan}`}
+                                aria-label={__t("pushDialog_advocateForValue0", {value0: String(m.lan)})}
                               >
-                                <option value="">Choose</option>
+                                <option value="">{<__LocalizedText id="pushDialog_choose" />}</option>
                                 {advocates.map((a) => (
                                   <option key={a.enrolment} value={a.enrolment}>
                                     {a.name}
@@ -323,7 +310,7 @@ export function PushDialog({
                                   ))}
                                 </div>
                               ) : (
-                                <Chip tone="teal">Complete</Chip>
+                                <Chip tone="teal">{<__LocalizedText id="pushDialog_complete" />}</Chip>
                               )}
                             </td>
                           </tr>
@@ -343,13 +330,12 @@ export function PushDialog({
                   <CheckCircle2Icon className="mt-0.5 size-5 shrink-0 text-(--pv-teal)" aria-hidden />
                   <div className="text-[13px]">
                     <div className="text-[15px] font-medium">
-                      {b.response.cases.length} case{b.response.cases.length === 1 ? "" : "s"} to {b.advocate.name}
+                      {b.response.cases.length} {<__LocalizedText id="pushDialog_case" />}{b.response.cases.length === 1 ? "" : "s"} {<__LocalizedText id="pushDialog_to" />}{" "}{b.advocate.name}
                     </div>
                     <div className="text-(--pv-slate)">
-                      Batch <span className="num">{b.response.batchNumber}</span> in their {chosenCourt.name} login.
-                    </div>
+                      {<__LocalizedText id="pushDialog_batch" />}{" "}<span className="num">{b.response.batchNumber}</span> {<__LocalizedText id="pushDialog_inTheir" />}{" "}{chosenCourt.name} {<__LocalizedText id="pushDialog_login" />}{" "}</div>
                     <a href={b.response.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-(--pv-blue) underline">
-                      Open on {chosenCourt.name}
+                      {<__LocalizedText id="pushDialog_openOn" />}{" "}{chosenCourt.name}
                       <ExternalLinkIcon className="size-3.5" aria-hidden />
                     </a>
                   </div>
@@ -357,7 +343,7 @@ export function PushDialog({
               ))}
               <button onClick={() => setShowJson((v) => !v)} className="flex items-center gap-1.5 self-start text-[13px] text-(--pv-blue)">
                 <CodeIcon className="size-4" aria-hidden />
-                {showJson ? "Hide API request" : "Show API request"}
+                {showJson ? __t("pushDialog_hideApiRequest") : __t("pushDialog_showApiRequest")}
               </button>
               {showJson ? (
                 <pre className="max-h-80 overflow-auto rounded-md bg-(--pv-navy) p-3 text-[11px] leading-relaxed text-[#cfe3ff]">
@@ -371,7 +357,7 @@ export function PushDialog({
             <div className="flex gap-3 rounded-md bg-(--pv-red-50) p-4 text-[13px] text-(--pv-red)">
               <TriangleAlertIcon className="mt-0.5 size-5 shrink-0" aria-hidden />
               <div>
-                <div className="font-medium">{error.error}</div>
+                <div className="font-medium">{__t(error.error)}</div>
                 {error.details?.map((d) => <div key={d}>{d}</div>)}
               </div>
             </div>
@@ -384,29 +370,25 @@ export function PushDialog({
           ) : null}
           {step === "done" ? (
             <Button onClick={onClose} className="ml-auto">
-              Done
-            </Button>
+              {<__LocalizedText id="pushDialog_done" />}{" "}</Button>
           ) : step === "court" ? (
             <>
               <Button variant="outline" onClick={onClose} className="ml-auto">
-                Cancel
-              </Button>
+                {<__LocalizedText id="pushDialog_cancel" />}{" "}</Button>
               <Button onClick={() => void loadAdvocates()} disabled={!chosenCourt.open}>
-                Next: advocates
-              </Button>
+                {<__LocalizedText id="pushDialog_nextAdvocates" />}{" "}</Button>
             </>
           ) : (
             <>
               <Button variant="outline" onClick={() => setStep("court")} className="ml-auto" disabled={step === "sending"}>
-                Back
-              </Button>
+                {<__LocalizedText id="pushDialog_back" />}{" "}</Button>
               <Button onClick={() => void send()} disabled={step === "sending" || !advocates || unassigned > 0}>
                 {step === "sending" ? <Loader2Icon className="size-4 animate-spin" aria-hidden /> : null}
                 {step === "sending"
-                  ? `Filing ${list.length} cases…`
+                  ? __t("pushDialog_filingValue0Cases", {value0: String(list.length)})
                   : step === "error"
-                    ? "Try again"
-                    : `File ${list.length} case${list.length === 1 ? "" : "s"} on ${chosenCourt.name}`}
+                    ? __t("pushDialog_tryAgain")
+                    : __t("pushDialog_fileValue0CaseValue1OnValue2", {value0: String(list.length), value1: String(list.length === 1 ? "" : "s"), value2: String(chosenCourt.name)})}
               </Button>
             </>
           )}

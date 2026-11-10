@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 /**
  * The Add-people dialogs' upload control.
@@ -30,7 +31,10 @@ import {
   DocumentThumbnailButton,
   useObjectUrl,
 } from "@/components/document-preview";
-import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
+import {
+  isAcceptedDocument,
+  MAX_FILE_SIZE,
+} from "@/lib/uploads/accepted-document";
 
 export const UPLOAD_HELP = "Upload a JPG, JPEG, PNG or PDF up to 10 MB.";
 
@@ -45,6 +49,7 @@ function fileSize(bytes: number) {
  * no way back to what was attached).
  */
 export function ReviewDocValue({ file }: { file: File | null }) {
+  const __t = __useTranslations();
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const url = useObjectUrl(file);
   if (!file) return null;
@@ -56,7 +61,7 @@ export function ReviewDocValue({ file }: { file: File | null }) {
         variant="ghost"
         size="icon-sm"
         className="shrink-0 text-muted-foreground"
-        aria-label={`View ${file.name}`}
+        aria-label={__t("uploadedDocField_viewValue0", {value0: String(file.name)})}
         onClick={() => setPreviewOpen(true)}
       >
         <Maximize2Icon aria-hidden />
@@ -69,7 +74,7 @@ export function ReviewDocValue({ file }: { file: File | null }) {
         locale="en"
         copy={{
           title: file.name,
-          description: "Check the document is readable before continuing.",
+          description: __t("uploadedDocField_checkTheDocumentIsReadableBeforeContinuing"),
           alt: file.name,
         }}
       />
@@ -107,6 +112,7 @@ export function UploadedDocField({
   /** The preview's language, for a host that speaks the viewer's. */
   locale?: Locale;
 }) {
+  const __t = __useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const url = useObjectUrl(file);
@@ -142,7 +148,7 @@ export function UploadedDocField({
             />
           </AttachmentMedia>
           <AttachmentContent>
-            <AttachmentTitle>{label}</AttachmentTitle>
+            <AttachmentTitle>{__t(label)}</AttachmentTitle>
             <AttachmentDescription>
               {file.name} · {fileSize(file.size)}
             </AttachmentDescription>
@@ -157,7 +163,7 @@ export function UploadedDocField({
               className="h-auto p-0"
               onClick={() => inputRef.current?.click()}
             >
-              {copy?.changeFile ?? "Change file"}
+              {copy?.changeFile ?? __t("uploadedDocField_changeFile")}
             </Button>
             <Button
               type="button"
@@ -165,7 +171,7 @@ export function UploadedDocField({
               className="h-auto p-0 text-destructive-ink"
               onClick={() => onFileChange(null)}
             >
-              {copy?.remove ?? "Remove"}
+              {copy?.remove ?? __t("uploadedDocField_remove")}
             </Button>
           </AttachmentActions>
         </Attachment>
@@ -173,7 +179,7 @@ export function UploadedDocField({
         <DocumentSlot
           status="empty"
           media="icon"
-          label={label}
+          label={__t(label)}
           required={required}
           onChooseFile={() => inputRef.current?.click()}
           copy={
@@ -194,10 +200,10 @@ export function UploadedDocField({
         url={url}
         locale={locale}
         copy={{
-          title: label,
+          title: __t(label),
           description:
-            copy?.previewDescription ??
-            "Check the document is readable before continuing.",
+            __t(copy?.previewDescription) ??
+            __t("uploadedDocField_checkTheDocumentIsReadableBeforeContinuing"),
           alt: copy?.previewAlt ?? label,
         }}
       />
@@ -218,6 +224,7 @@ export function ReplaceFileButton({
   label?: string;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   return (
     <>
@@ -240,7 +247,7 @@ export function ReplaceFileButton({
         className={className}
         onClick={() => inputRef.current?.click()}
       >
-        {label}
+        {__t(label)}
       </Button>
     </>
   );

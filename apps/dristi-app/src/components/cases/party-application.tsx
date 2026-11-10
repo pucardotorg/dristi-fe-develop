@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The application ending every application-type party flow shares (PM,
@@ -82,6 +84,7 @@ export function PartyApplicationDocument({
   caseRef: CaseRef;
   doc: PartyApplicationDoc;
 }) {
+  const __t = __useTranslations();
   // The download carries what the sheet shows: the selected state's court and numbers.
   const courtCaseRef = useCourtLocalized(caseRef);
   const courtDoc = useCourtLocalized(doc);
@@ -93,7 +96,7 @@ export function PartyApplicationDocument({
         <DescriptionList>
           <ReviewRow term="Application">{doc.matter}</ReviewRow>
           <ReviewRow term="Case">
-            <Identifier value={caseRef.caseNumber} label="case number" />
+            <Identifier value={caseRef.caseNumber} label={__t("partyApplication_caseNumber")} />
           </ReviewRow>
           <ReviewRow term="Generated on">{generatedOn}</ReviewRow>
         </DescriptionList>
@@ -108,7 +111,7 @@ export function PartyApplicationDocument({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label={`Download ${doc.matter}`}
+            aria-label={__t("partyApplication_downloadValue0", {value0: String(doc.matter)})}
             onClick={() => downloadPartyApplication(courtCaseRef, courtDoc, generatedOn)}
           >
             <DownloadIcon aria-hidden />
@@ -149,6 +152,7 @@ function FullViewButton({
   title: string;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -156,7 +160,7 @@ function FullViewButton({
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label={`Full view of ${title}`}
+          aria-label={__t("partyApplication_fullViewOfValue0", {value0: String(__t(title))})}
         >
           <Maximize2Icon aria-hidden />
         </Button>
@@ -164,15 +168,14 @@ function FullViewButton({
       <FlowDialogContent className="flex h-[92svh] flex-col gap-4 overflow-hidden sm:max-w-[calc(100%-4rem)]">
         <DialogHeader className="pr-12">
           <DialogTitle className="text-title-s font-semibold break-words">
-            {title}
+            {__t(title)}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Full view. Close to go back.
-          </DialogDescription>
+            {<__LocalizedText id="partyApplication_fullViewCloseToGoBack" />}{" "}</DialogDescription>
         </DialogHeader>
         <div
           tabIndex={0}
-          aria-label={`Preview of ${title}`}
+          aria-label={__t("partyApplication_previewOfValue0", {value0: String(__t(title))})}
           className={cn(
             "min-h-0 flex-1 overflow-auto rounded-xl p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
             DOCUMENT_GROUND
@@ -198,16 +201,17 @@ function PartyApplicationPaper({
   doc: PartyApplicationDoc;
   generatedOn: string;
 }) {
+  const __t = __useTranslations();
   const caseRef = useCourtLocalized(storedCaseRef);
   const doc = useCourtLocalized(storedDoc);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground [&_[data-slot=description-details]]:text-paper-foreground [&_[data-slot=description-term]]:text-paper-muted-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{caseRef.court}</p>
-        <p className="text-body font-semibold">Case no. {caseRef.caseNumber}</p>
-        <p className="text-body font-semibold">{caseRef.title}</p>
+        <p className="text-body font-semibold">{<__LocalizedText id="partyApplication_caseNo" />}{" "}{caseRef.caseNumber}</p>
+        <p className="text-body font-semibold">{__t(caseRef.title)}</p>
         <p className="text-body-compact text-paper-muted-foreground">
-          {doc.matter} · Date: {generatedOn}
+          {doc.matter} {<__LocalizedText id="partyApplication_date" />}{" "}{generatedOn}
         </p>
       </header>
 
@@ -230,8 +234,7 @@ function PartyApplicationPaper({
       <div className="flex w-1/2 flex-col gap-1 self-end pt-4">
         <div className="h-px w-full bg-paper-border" aria-hidden />
         <p className="text-caption text-paper-muted-foreground">
-          {SELF.name}, Advocate
-        </p>
+          {SELF.name}{<__LocalizedText id="partyApplication_advocate" />}{" "}</p>
       </div>
     </article>
   );
@@ -344,6 +347,7 @@ export function SignMethodCard({
   description: string;
   onClick: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <button
       type="button"
@@ -365,10 +369,10 @@ export function SignMethodCard({
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-body-compact font-semibold text-foreground">
-          {title}
+          {__t(title)}
         </span>
         <span className="text-body-compact text-muted-foreground">
-          {description}
+          {__t(description)}
         </span>
       </span>
     </button>
@@ -382,9 +386,10 @@ function ReviewRow({
   term: string;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow className="grid-cols-1 sm:grid-cols-[minmax(7rem,10rem)_1fr]">
-      <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
+      <DescriptionTerm className="text-body-compact">{__t(term)}</DescriptionTerm>
       <DescriptionDetails className="text-body-compact">
         {children}
       </DescriptionDetails>

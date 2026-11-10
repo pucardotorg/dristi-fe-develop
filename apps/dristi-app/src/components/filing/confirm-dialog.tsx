@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -35,24 +36,25 @@ export function ConfirmDialog({
   destructive?: boolean;
   onConfirm: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <ChromeAlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogTitle>{__t(title)}</AlertDialogTitle>
           {description ? (
-            <AlertDialogDescription>{description}</AlertDialogDescription>
+            <AlertDialogDescription>{__t(description)}</AlertDialogDescription>
           ) : null}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogCancel>{__t(cancelLabel)}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className={
               destructive ? buttonVariants({ variant: "destructive-solid" }) : undefined
             }
           >
-            {confirmLabel}
+            {__t(confirmLabel)}
           </AlertDialogAction>
         </AlertDialogFooter>
       </ChromeAlertDialogContent>

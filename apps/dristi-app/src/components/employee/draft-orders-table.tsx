@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import Link from "next/link";
 
@@ -44,27 +46,23 @@ import { cn } from "@/lib/utils";
  *   order is the one thing to do with a row here. The rest of the row opens it too.
  */
 export function DraftOrdersTable({ rows }: { rows: HearingOrder[] }) {
+  const __t = __useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Case name
-          </TableHead>
+            {<__LocalizedText id="draftOrdersTable_caseName" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="draftOrdersTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
-            Drawn up at
-          </TableHead>
+            {<__LocalizedText id="draftOrdersTable_drawnUpAt" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
-            In this order
-          </TableHead>
+            {<__LocalizedText id="draftOrdersTable_inThisOrder" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Still to fill
-          </TableHead>
+            {<__LocalizedText id="draftOrdersTable_stillToFill" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>
-            <span className="sr-only">Action</span>
+            <span className="sr-only">{<__LocalizedText id="draftOrdersTable_action" />}</span>
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -84,7 +82,7 @@ export function DraftOrdersTable({ rows }: { rows: HearingOrder[] }) {
                 {causeTitle(hearing)}
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                <Identifier value={hearing.caseNumber} label="case number" />
+                <Identifier value={hearing.caseNumber} label={__t("draftOrdersTable_caseNumber_d720690e")} />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}>
                 <DrawnUpAt order={order} />
@@ -110,7 +108,7 @@ export function DraftOrdersTable({ rows }: { rows: HearingOrder[] }) {
 export function DrawnUpAt({ order }: { order: HearingOrder }) {
   return (
     <span className="flex flex-col">
-      <span>Hearing</span>
+      <span>{<__LocalizedText id="draftOrdersTable_hearing" />}</span>
       <span className="text-muted-foreground">
         {courtHearingPurposeLabel(order.hearing.purpose)}
       </span>
@@ -123,7 +121,7 @@ export function InThisOrder({ order }: { order: HearingOrder }) {
   return order.items.length ? (
     <span>{order.items.join(", ")}</span>
   ) : (
-    <span className="text-muted-foreground">Typed text only</span>
+    <span className="text-muted-foreground">{<__LocalizedText id="draftOrdersTable_typedTextOnly" />}</span>
   );
 }
 
@@ -132,10 +130,9 @@ export function StillToFill({ order }: { order: HearingOrder }) {
   const count = order.gaps.length;
   return count ? (
     <span className="text-warning-ink tabular-nums" title={order.gaps.join("\n")}>
-      {count} to fill
-    </span>
+      {count} {<__LocalizedText id="draftOrdersTable_toFill" />}{" "}</span>
   ) : (
-    <span className="text-muted-foreground">Nothing left</span>
+    <span className="text-muted-foreground">{<__LocalizedText id="draftOrdersTable_nothingLeft" />}</span>
   );
 }
 
@@ -150,8 +147,7 @@ export function ContinueDrafting({
   return (
     <Button asChild variant="outline" size="sm" className={cn("text-body-compact", className)}>
       <Link href={draftOrderHref(order.hearing)} {...rowOpener}>
-        Continue drafting
-        <span className="sr-only"> the order in {causeTitle(order.hearing)}</span>
+        {<__LocalizedText id="draftOrdersTable_continueDrafting" />}{" "}<span className="sr-only"> {<__LocalizedText id="draftOrdersTable_theOrderIn" />}{" "}{causeTitle(order.hearing)}</span>
       </Link>
     </Button>
   );

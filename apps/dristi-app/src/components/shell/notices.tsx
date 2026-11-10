@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import {
@@ -98,6 +99,7 @@ export function SectionNotice({
   onDismiss?: () => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const { Icon, alert, surface, icon, dismiss } = NOTICE_STYLE[variant];
   return (
     <Alert
@@ -106,14 +108,14 @@ export function SectionNotice({
       className={cn("py-3 pl-3", surface, onDismiss && "pr-12", className)}
     >
       <Icon aria-hidden className={icon} />
-      {title ? <AlertTitle>{title}</AlertTitle> : null}
+      {title ? <AlertTitle>{__t(title)}</AlertTitle> : null}
       <AlertDescription>{children}</AlertDescription>
       {onDismiss ? (
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="Dismiss"
+          aria-label={__t("notices_dismiss")}
           onClick={onDismiss}
           className={cn("absolute right-1 top-1", dismiss)}
         >

@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { ArrowLeftIcon, ChevronDownIcon, PencilRulerIcon, Share2Icon } from "lucide-react";
@@ -71,10 +72,11 @@ function WireCard({ className, children }: { className?: string; children: React
 }
 
 function WireframeNotice({ text }: { text: string }) {
+  const __t = __useTranslations();
   return (
     <p className="flex items-start gap-1.5 text-caption text-pretty text-muted-foreground">
       <PencilRulerIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-      {text}
+      {__t(text)}
     </p>
   );
 }
@@ -94,6 +96,7 @@ export function CasesWireframe({
   onApplicationSubmitted?: (result: BailApplicationResult) => void;
   onBondSubmitted?: (result: BailBondResult) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const [selected, setSelected] = React.useState<string[]>([]);
   const [shareOpen, setShareOpen] = React.useState(false);
@@ -154,9 +157,9 @@ export function CasesWireframe({
 
           <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex min-w-0 flex-col gap-1">
-              <h1 className="text-title text-balance font-semibold">{openCase.title}</h1>
+              <h1 className="text-title text-balance font-semibold">{__t(openCase.title)}</h1>
               <p className="text-caption text-muted-foreground">
-                <Identifier value={openCase.caseNumber} label="case number" />
+                <Identifier value={openCase.caseNumber} label={__t("casesWireframe_caseNumber")} />
                 <span aria-hidden> · </span>
                 {courtText(openCase.court)}
               </p>
@@ -261,7 +264,7 @@ export function CasesWireframe({
                     </p>
                     <Identifier
                       value={BOND_ID}
-                      label="bond number"
+                      label={__t("casesWireframe_bondNumber")}
                       className="self-start text-caption text-muted-foreground"
                     />
                   </div>
@@ -409,10 +412,10 @@ export function CasesWireframe({
                     htmlFor={`select-${entry.id}`}
                     className="text-body-compact font-semibold text-pretty"
                   >
-                    {entry.title}
+                    {__t(entry.title)}
                   </Label>
                   <p className="text-caption text-muted-foreground">
-                    <Identifier value={entry.caseNumber} label="case number" />
+                    <Identifier value={entry.caseNumber} label={__t("casesWireframe_caseNumber")} />
                     <span aria-hidden> · </span>
                     {courtText(entry.court)}
                   </p>

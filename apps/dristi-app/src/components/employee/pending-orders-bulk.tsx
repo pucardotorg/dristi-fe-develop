@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { PlusIcon } from "lucide-react";
@@ -70,6 +72,7 @@ export function AddOrderItemsDialog({
   onOpenChange: (open: boolean) => void;
   onDone: (message: string) => void;
 }) {
+  const __t = __useTranslations();
   const today = useCourtToday();
   const anchor = useComboboxAnchor();
   const [picked, setPicked] = React.useState<OrderTemplate[]>([]);
@@ -105,7 +108,7 @@ export function AddOrderItemsDialog({
       if (result.added.length) writeOrderDraft(key, result.draft);
       added += result.added.length;
       for (const skip of result.skipped) {
-        skipped.push(`${order.heading}: ${orderTemplate(skip.type).label} — ${skip.reason}`);
+        skipped.push(`${__t(order.heading)}: ${__t(orderTemplate(skip.type).label)} — ${skip.reason}`);
       }
     }
     onDone(
@@ -119,16 +122,13 @@ export function AddOrderItemsDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            Add order items
-          </DialogTitle>
+            {<__LocalizedText id="pendingOrdersBulk_addOrderItems" />}{" "}</DialogTitle>
           <DialogDescription className="text-body-compact">
-            Added to the order data of {hearingOrders.length} selected{" "}
-            {plural(hearingOrders.length, "order", "orders")}. An item an order already
-            has, or cannot hold beside its other items, is left out of that order.
-          </DialogDescription>
+            {<__LocalizedText id="pendingOrdersBulk_addedToTheOrderDataOf" />}{" "}{hearingOrders.length} {<__LocalizedText id="pendingOrdersBulk_selected" />}{" "}
+            {plural(hearingOrders.length, "order", "orders")}{<__LocalizedText id="pendingOrdersBulk_anItemAnOrderAlreadyHasOr" />}{" "}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2">
-          <Label id="bulk-items-label">Order items</Label>
+          <Label id="bulk-items-label">{<__LocalizedText id="pendingOrdersBulk_orderItems" />}</Label>
           <Combobox
             multiple
             items={options}
@@ -142,22 +142,22 @@ export function AddOrderItemsDialog({
                 {(chosen: OrderTemplate[]) => (
                   <>
                     {chosen.map((template) => (
-                      <ComboboxChip key={template.id}>{template.label}</ComboboxChip>
+                      <ComboboxChip key={template.id}>{__t(template.label)}</ComboboxChip>
                     ))}
                     <ComboboxChipsInput
                       aria-labelledby="bulk-items-label"
-                      placeholder={chosen.length ? undefined : "Choose items"}
+                      placeholder={chosen.length ? undefined : __t("pendingOrdersBulk_chooseItems")}
                     />
                   </>
                 )}
               </ComboboxValue>
             </ComboboxChips>
             <ComboboxContent anchor={anchor} className="pointer-events-auto">
-              <ComboboxEmpty>No item matches.</ComboboxEmpty>
+              <ComboboxEmpty>{<__LocalizedText id="pendingOrdersBulk_noItemMatches" />}</ComboboxEmpty>
               <ComboboxList>
                 {(template: OrderTemplate) => (
                   <ComboboxItem key={template.id} value={template}>
-                    {template.label}
+                    {__t(template.label)}
                   </ComboboxItem>
                 )}
               </ComboboxList>
@@ -172,8 +172,7 @@ export function AddOrderItemsDialog({
                 id="bulk-items-likely"
                 className="text-body-compact text-muted-foreground"
               >
-                Likely at these hearings
-              </h3>
+                {<__LocalizedText id="pendingOrdersBulk_likelyAtTheseHearings" />}{" "}</h3>
               <ul className="-mx-2 flex min-w-0 flex-col">
                 {likely.map((template) => (
                   <li key={template.id} className="min-w-0">
@@ -186,8 +185,8 @@ export function AddOrderItemsDialog({
                         aria-hidden
                         className="size-4 shrink-0 text-muted-foreground"
                       />
-                      <span className="sr-only">Add </span>
-                      {template.label}
+                      <span className="sr-only">{<__LocalizedText id="pendingOrdersBulk_add" />}{" "}</span>
+                      {__t(template.label)}
                     </button>
                   </li>
                 ))}
@@ -197,30 +196,26 @@ export function AddOrderItemsDialog({
           {needDetails.length ? (
             <p className="text-caption text-muted-foreground">
               {needDetails.map((template) => template.label).join(", ")}{" "}
-              {plural(needDetails.length, "has", "have")} details of {plural(needDetails.length, "its", "their")}{" "}
-              own; fill them in each order before marking its order data complete.
-            </p>
+              {plural(needDetails.length, "has", "have")} {<__LocalizedText id="pendingOrdersBulk_detailsOf" />}{" "}{plural(needDetails.length, "its", "their")}{" "}
+              {<__LocalizedText id="pendingOrdersBulk_ownFillThemInEachOrderBefore" />}{" "}</p>
           ) : null}
           {left > 0 ? (
             <p className="text-caption text-muted-foreground">
-              {left} selected {plural(left, "order is", "orders are")} not from a
-              hearing and {plural(left, "is", "are")} left out; open{" "}
-              {plural(left, "it", "them")} to add items.
-            </p>
+              {left} {<__LocalizedText id="pendingOrdersBulk_selected" />}{" "}{plural(left, "order is", "orders are")} {<__LocalizedText id="pendingOrdersBulk_notFromAHearingAnd" />}{" "}{plural(left, "is", "are")} {<__LocalizedText id="pendingOrdersBulk_leftOutOpen" />}{" "}
+              {plural(left, "it", "them")} {<__LocalizedText id="pendingOrdersBulk_toAddItems" />}{" "}</p>
           ) : null}
         </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
-            </Button>
+              {<__LocalizedText id="pendingOrdersBulk_cancel" />}{" "}</Button>
           </DialogClose>
           <Button
             type="button"
             disabled={picked.length === 0 || hearingOrders.length === 0}
             onClick={apply}
           >
-            Add to {hearingOrders.length} {plural(hearingOrders.length, "order", "orders")}
+            {<__LocalizedText id="pendingOrdersBulk_addTo" />}{" "}{hearingOrders.length} {plural(hearingOrders.length, "order", "orders")}
           </Button>
         </DialogFooter>
       </DialogContent>

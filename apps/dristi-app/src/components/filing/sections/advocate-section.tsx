@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Advocate details — the advocates on the Vakalatnama, and which complainant each acts for.
@@ -57,6 +59,7 @@ import {
 const MAX_ADVOCATES = 6;
 
 export function AdvocateSection() {
+  const __t = __useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("advocate");
   const { profile } = useProfile();
@@ -165,8 +168,8 @@ export function AdvocateSection() {
     <>
       <FilingMain sourceOpen={sourceOpen}>
         <FilingPageHeader
-          title="Advocate details"
-          description="Add the advocates representing the complainant, as listed on the Vakalatnama."
+          title={__t("advocateSection_advocateDetails")}
+          description={__t("advocateSection_addTheAdvocatesRepresentingTheComplainantAs")}
           actions={
             !sourceOpen ? (
               <ViewSourceButton onClick={() => setSourceOpen(true)} />
@@ -180,21 +183,20 @@ export function AdvocateSection() {
           <SectionNotice
             variant="info"
             title={
-              allInPerson ? "The complainant appears in person" : "Appearing as a party in person"
+              allInPerson ? __t("advocateSection_theComplainantAppearsInPerson") : __t("advocateSection_appearingAsAPartyInPerson")
             }
           >
             {allInPerson
-              ? "This filing has no advocate on record. The complainant conducts the case in person."
+              ? __t("advocateSection_thisFilingHasNoAdvocateOnRecord")
               : `${pipLabels.join(" and ")} ${
-                  pipLabels.length > 1 ? "conduct" : "conducts"
+                  pipLabels.length > 1 ? __t("advocateSection_conduct") : __t("advocateSection_conducts")
                 } the case in person, so no advocate goes on record for them.`}{" "}
-            Change this under{" "}
+            {<__LocalizedText id="advocateSection_changeThisUnder" />}{" "}
             <Link
               href={hrefFor("complainant")}
               className="font-medium text-current underline underline-offset-2"
             >
-              Complainant details
-            </Link>
+              {<__LocalizedText id="advocateSection_complainantDetails" />}{" "}</Link>
             .
           </SectionNotice>
         ) : null}
@@ -204,15 +206,14 @@ export function AdvocateSection() {
         {allInPerson || draft.dismissed.advocateInfo ? null : (
           <SectionNotice
             variant="neutral"
-            title="Adding an advocate"
+            title={__t("advocateSection_addingAnAdvocate")}
             onDismiss={() =>
               update((d) => {
                 d.dismissed.advocateInfo = true;
               })
             }
           >
-            Only advocates registered on the court portal can appear on a filing.
-          </SectionNotice>
+            {<__LocalizedText id="advocateSection_onlyAdvocatesRegisteredOnTheCourtPortal" />}{" "}</SectionNotice>
         )}
 
         {allInPerson ? null : advocates.map((a, i) => {
@@ -235,11 +236,11 @@ export function AdvocateSection() {
           return (
             <FormCard
               key={a.id}
-              title={`Advocate ${i + 1}`}
+              title={__t("advocateSection_advocateValue0", {value0: String(i + 1)})}
               action={
                 advocates.length > 1 ? (
                   <RemoveButton
-                    label={`Remove advocate ${i + 1}`}
+                    label={__t("advocateSection_removeAdvocateValue0", {value0: String(i + 1)})}
                     onClick={() => removeAdvocate(i)}
                   />
                 ) : undefined
@@ -247,13 +248,13 @@ export function AdvocateSection() {
             >
               {/* A lone short answer takes half the card, like every other one. */}
               <HalfWidth>
-                <FormField asGroup label="Advocate for" required>
+                <FormField asGroup label={__t("advocateSection_advocateFor")} required>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       type="button"
                       variant="outline"
-                      aria-label="Advocate for"
+                      aria-label={__t("advocateSection_advocateFor")}
                       className="w-full justify-between font-normal"
                     >
                       <span
@@ -263,7 +264,7 @@ export function AdvocateSection() {
                             : "min-w-0 truncate"
                         }
                       >
-                        {forLabel}
+                        {__t(forLabel)}
                       </span>
                       <ChevronDownIcon
                         data-icon="inline-end"
@@ -278,8 +279,7 @@ export function AdvocateSection() {
                       onCheckedChange={() => toggleAll(i, allSelected)}
                       onSelect={(event) => event.preventDefault()}
                     >
-                      All complainants
-                    </DropdownMenuCheckboxItem>
+                      {<__LocalizedText id="advocateSection_allComplainants" />}{" "}</DropdownMenuCheckboxItem>
                     {choices.map((label, k) => {
                       const inPerson = isPartyInPerson(draft.complainants[k]);
                       return (
@@ -290,11 +290,10 @@ export function AdvocateSection() {
                           onCheckedChange={() => toggleComplainant(i, k)}
                           onSelect={(event) => event.preventDefault()}
                         >
-                          <span className="min-w-0 truncate">{label}</span>
+                          <span className="min-w-0 truncate">{__t(label)}</span>
                           {inPerson ? (
                             <span className="ml-auto pl-3 text-caption font-medium text-muted-foreground">
-                              In person
-                            </span>
+                              {<__LocalizedText id="advocateSection_inPerson" />}{" "}</span>
                           ) : null}
                         </DropdownMenuCheckboxItem>
                       );
@@ -311,7 +310,7 @@ export function AdvocateSection() {
                 register is the whole path — there is nothing to type by hand.
               */}
               {onRegister ? (
-                <FormField asGroup label="Advocate" required>
+                <FormField asGroup label={__t("advocateSection_advocate")} required>
                   <div className="flex items-start gap-3 rounded-lg bg-surface-sunken p-4">
                     <span
                       aria-hidden
@@ -326,7 +325,7 @@ export function AdvocateSection() {
                       <p className="truncate text-caption text-muted-foreground">
                         <Identifier
                           value={onRegister.barNumber}
-                          label="bar registration"
+                          label={__t("advocateSection_barRegistration")}
                         />
                       </p>
                     </div>
@@ -334,7 +333,7 @@ export function AdvocateSection() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      aria-label={`Change advocate ${i + 1}`}
+                      aria-label={__t("advocateSection_changeAdvocateValue0", {value0: String(i + 1)})}
                       onClick={() => {
                         setQuery(a.id, "");
                         update((d) => {
@@ -343,12 +342,11 @@ export function AdvocateSection() {
                         });
                       }}
                     >
-                      Change
-                    </Button>
+                      {<__LocalizedText id="advocateSection_change" />}{" "}</Button>
                   </div>
                 </FormField>
               ) : (
-                <FormField label="Advocate" required>
+                <FormField label={__t("advocateSection_advocate")} required>
                   <ComboField
                     value={queries[a.id] ?? ""}
                     onChange={(v: string) => {
@@ -376,15 +374,15 @@ export function AdvocateSection() {
                             {/* A combobox row is an option — no control nested inside it. */}
                             <Identifier
                               value={adv.barNumber}
-                              label="bar registration"
+                              label={__t("advocateSection_barRegistration")}
                               copyable={false}
                             />
                           </span>
                         </span>
                       );
                     }}
-                    placeholder="Name or bar number"
-                    emptyLabel="No one on the register by that name or number."
+                    placeholder={__t("advocateSection_nameOrBarNumber")}
+                    emptyLabel={__t("advocateSection_noOneOnTheRegisterByThat")}
                     ariaLabel="Advocate"
                   />
                 </FormField>
@@ -398,12 +396,11 @@ export function AdvocateSection() {
                   className="w-fit"
                   // Six identical "Use my details" in a row otherwise; the visible label
                   // stays inside the accessible name, so voice control still works.
-                  aria-label={`Use my details for advocate ${i + 1}`}
+                  aria-label={__t("advocateSection_useMyDetailsForAdvocateValue0", {value0: String(i + 1)})}
                   onClick={() => fillFromProfile(i)}
                 >
                   <UserRoundIcon data-icon="inline-start" aria-hidden />
-                  Use my details
-                </Button>
+                  {<__LocalizedText id="advocateSection_useMyDetails" />}{" "}</Button>
               ) : null}
             </FormCard>
           );
@@ -418,8 +415,7 @@ export function AdvocateSection() {
             disabled={advocates.length >= MAX_ADVOCATES}
           >
             <PlusIcon data-icon="inline-start" aria-hidden />
-            Add another advocate
-          </Button>
+            {<__LocalizedText id="advocateSection_addAnotherAdvocate" />}{" "}</Button>
         )}
       </FilingMain>
 
@@ -432,7 +428,7 @@ export function AdvocateSection() {
         open={sourceOpen}
         onOpenChange={setSourceOpen}
         eyebrow="Uploaded document"
-        title="Vakalatnama"
+        title={__t("advocateSection_vakalatnama")}
         chips={
           vakalatnama?.file
             ? [
@@ -447,7 +443,7 @@ export function AdvocateSection() {
         file={vakalatnama?.file ?? null}
         uploadHref={hrefFor("upload")}
         imageAlt="Uploaded Vakalatnama"
-        note="Copy the advocate's name and bar number from this document."
+        note={__t("advocateSection_copyTheAdvocateSNameAndBar")}
       />
     </>
   );

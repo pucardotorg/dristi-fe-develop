@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CalendarDaysIcon } from "lucide-react";
@@ -64,6 +66,7 @@ export function ListingDateField({
   hint?: string;
   onChange: (value: Date | undefined) => void;
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
   const labelId = `${id}-label`;
   const triggerId = `${id}-trigger`;
@@ -91,7 +94,7 @@ export function ListingDateField({
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabel id={labelId} htmlFor={triggerId}>
-        {label}
+        {__t(label)}
       </FieldLabel>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -112,7 +115,7 @@ export function ListingDateField({
           >
             <CalendarDaysIcon data-icon="inline-start" aria-hidden />
             <span className="truncate tabular-nums">
-              {day ? formatListingDate(day) : "Pick a date"}
+              {day ? formatListingDate(day) : __t("listingDateField_pickADate")}
             </span>
           </Button>
         </PopoverTrigger>
@@ -132,7 +135,7 @@ export function ListingDateField({
             labels={{
               labelDayButton: (date, modifiers, options, dateLib) =>
                 `${labelDayButton(date, modifiers, options, dateLib)}${
-                  modifiers.hearing ? ", next hearing" : ""
+                  modifiers.hearing ? __t("listingDateField_nextHearing") : ""
                 }`,
             }}
             onSelect={(next) => {
@@ -143,9 +146,9 @@ export function ListingDateField({
         </PopoverContent>
       </Popover>
       {invalid ? (
-        <FieldError id={`${id}-error`}>Choose a sitting day after today.</FieldError>
+        <FieldError id={`${id}-error`}>{<__LocalizedText id="listingDateField_chooseASittingDayAfterToday" />}</FieldError>
       ) : description ? (
-        <FieldDescription id={descriptionId}>{description}</FieldDescription>
+        <FieldDescription id={descriptionId}>{__t(description)}</FieldDescription>
       ) : null}
     </Field>
   );

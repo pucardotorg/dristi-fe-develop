@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -156,6 +158,7 @@ function SignEvidenceBody({
   onSign: (row: SignEvidence) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const flow = useStagedFlow({ order: STAGES, scene: SCENE });
 
@@ -207,12 +210,12 @@ function SignEvidenceBody({
          stages rather than blinking out of a header that is meant to hold still.
          `warning` is the variant the other court-side overlays already spend on a pending
          state, so the three report one thing the same way. */
-      titleAside={<Badge variant="warning">Pending signature</Badge>}
+      titleAside={<Badge variant="warning">{<__LocalizedText id="signEvidenceDialog_pendingSignature" />}</Badge>}
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(row)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={row.caseNumber} label="case number" copyable={false} />
+          <Identifier value={row.caseNumber} label={__t("signEvidenceDialog_caseNumber")} copyable={false} />
         </DialogDescription>
       }
       sceneKey={flow.sceneKey}
@@ -225,24 +228,20 @@ function SignEvidenceBody({
               variant="outline"
               onClick={() => flow.go("edit")}
             >
-              Edit details
-            </Button>
+              {<__LocalizedText id="signEvidenceDialog_editDetails" />}{" "}</Button>
             <Button type="button" disabled={blank} onClick={() => onSign(row)}>
-              E-sign
-            </Button>
+              {<__LocalizedText id="signEvidenceDialog_eSign" />}{" "}</Button>
           </>
         ) : (
           <>
             <Button type="button" variant="outline" onClick={cancel}>
-              Cancel
-            </Button>
+              {<__LocalizedText id="signEvidenceDialog_cancel" />}{" "}</Button>
             <Button
               type="submit"
               form="mark-as-evidence"
               disabled={Boolean(error)}
             >
-              Proceed
-            </Button>
+              {<__LocalizedText id="signEvidenceDialog_proceed" />}{" "}</Button>
           </>
         )
       }
@@ -275,7 +274,7 @@ function SignEvidenceBody({
           series={series}
           markedThrough={markedThrough}
           serial={serial}
-          error={error}
+          error={__t(error)}
           onMarkedThroughChange={setMarkedThrough}
           onSerialChange={setSerial}
           onProceed={() => {
@@ -322,6 +321,7 @@ function DetailsStage({
   blank: boolean;
   onBusinessOfTheDayChange: (id: string, botd: string) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col gap-4">
       <Card size="sm" className="border-hairline shadow-raised">
@@ -335,7 +335,7 @@ function DetailsStage({
               {witnessLabel(markedThroughWitness(row))}
             </ReviewRow>
             <ReviewRow term="Evidence number">
-              <Identifier value={evidenceNumber(row)} label="evidence number" />
+              <Identifier value={evidenceNumber(row)} label={__t("signEvidenceDialog_evidenceNumber")} />
             </ReviewRow>
           </DescriptionList>
         </CardContent>
@@ -344,7 +344,7 @@ function DetailsStage({
       <Card size="sm" className="border-hairline shadow-raised">
         <CardContent>
           <Field data-invalid={blank}>
-            <FieldLabel className="text-body">Business of the day</FieldLabel>
+            <FieldLabel className="text-body">{<__LocalizedText id="signEvidenceDialog_businessOfTheDay" />}</FieldLabel>
             <Textarea
               rows={2}
               value={line}
@@ -355,8 +355,7 @@ function DetailsStage({
             />
             {blank ? (
               <FieldError className="text-body-compact">
-                Write what the court did with this document before signing it.
-              </FieldError>
+                {<__LocalizedText id="signEvidenceDialog_writeWhatTheCourtDidWithThis" />}{" "}</FieldError>
             ) : null}
           </Field>
         </CardContent>
@@ -411,6 +410,7 @@ function MarkAsEvidenceStage({
   onSerialChange: (value: string) => void;
   onProceed: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Card size="sm" className="border-hairline shadow-raised">
       <CardContent>
@@ -423,12 +423,12 @@ function MarkAsEvidenceStage({
           }}
         >
           <Field>
-            <FieldLabel className="text-body">Document title</FieldLabel>
+            <FieldLabel className="text-body">{<__LocalizedText id="signEvidenceDialog_documentTitle" />}</FieldLabel>
             <Input readOnly value={evidenceDocumentLabel(row.document)} />
           </Field>
 
           <Field>
-            <FieldLabel className="text-body">Uploaded by</FieldLabel>
+            <FieldLabel className="text-body">{<__LocalizedText id="signEvidenceDialog_uploadedBy" />}</FieldLabel>
             <Input readOnly value={row.uploadedBy} />
           </Field>
 
@@ -438,8 +438,7 @@ function MarkAsEvidenceStage({
               row uses. */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="evidence-marked-through" className="w-fit text-body">
-              Evidence marked through
-            </Label>
+              {<__LocalizedText id="signEvidenceDialog_evidenceMarkedThrough" />}{" "}</Label>
             <Select value={markedThrough} onValueChange={onMarkedThroughChange}>
               <SelectTrigger id="evidence-marked-through" className="w-full">
                 <SelectValue />
@@ -455,7 +454,7 @@ function MarkAsEvidenceStage({
           </div>
 
           <Field data-invalid={Boolean(error)}>
-            <FieldLabel className="text-body">Evidence number</FieldLabel>
+            <FieldLabel className="text-body">{<__LocalizedText id="signEvidenceDialog_evidenceNumber_d99383e3" />}</FieldLabel>
             <InputGroup>
               <InputGroupAddon variant="field">
                 <InputGroupText>{series}</InputGroupText>
@@ -470,11 +469,9 @@ function MarkAsEvidenceStage({
               />
             </InputGroup>
             <FieldDescription className="text-body-compact">
-              The series follows the witness — P for the complainant&apos;s
-              exhibits, D for the accused&apos;s, C for the court&apos;s own.
-            </FieldDescription>
+              {<__LocalizedText id="signEvidenceDialog_theSeriesFollowsTheWitnessPFor" />}{" "}</FieldDescription>
             {error ? (
-              <FieldError className="text-body-compact">{error}</FieldError>
+              <FieldError className="text-body-compact">{__t(error)}</FieldError>
             ) : null}
           </Field>
         </form>

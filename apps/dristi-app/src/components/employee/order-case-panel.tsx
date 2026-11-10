@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -81,6 +83,7 @@ export function OrderCasePanel({
   /** The Data flags tab's content; without it the tab says there is nothing yet. */
   dataFlagsContent?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const [tab, setTab] = React.useState("case-file");
   const [query, setQuery] = React.useState("");
   /* Which sections are open: any holding a paper already linked. */
@@ -133,7 +136,7 @@ export function OrderCasePanel({
       CASE_FILE_TREE.map((node) => ({
         id: node.id,
         outline: node.number,
-        label: node.label,
+        label: __t(node.label),
         /* A section that is one document of its own name is that document's row. */
         single: !isCaseFileFolder(node),
         rows: (isCaseFileFolder(node)
@@ -142,11 +145,11 @@ export function OrderCasePanel({
         ).map((leaf): DocumentRow => ({
           id: leaf.id,
           outline: leaf.number,
-          label: leaf.label,
+          label: __t(leaf.label),
           node: leaf,
         })),
       })),
-    [],
+    [__t],
   );
 
   const allRows = sections.flatMap((section) => section.rows);
@@ -162,7 +165,7 @@ export function OrderCasePanel({
       rows: section.rows.filter(
         (row) =>
           !needle ||
-          `${row.label} ${section.label}`
+          `${__t(row.label)} ${__t(section.label)}`
             .toLowerCase()
             .includes(needle),
       ),
@@ -203,29 +206,26 @@ export function OrderCasePanel({
         <div className="h-14 shrink-0 border-b border-hairline px-1">
           <TabsList
             variant="line"
-            aria-label="Beside the order"
+            aria-label={__t("orderCasePanel_besideTheOrder")}
             className="h-14 w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-14"
           >
             <TabsTrigger
               value="case-file"
               className="h-full flex-none px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
             >
-              Case file
-            </TabsTrigger>
+              {<__LocalizedText id="orderCasePanel_caseFile" />}{" "}</TabsTrigger>
             {historyContent ? (
               <TabsTrigger
                 value="history"
                 className="h-full flex-none px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
               >
-                Case history
-              </TabsTrigger>
+                {<__LocalizedText id="orderCasePanel_caseHistory" />}{" "}</TabsTrigger>
             ) : null}
             <TabsTrigger
               value="data-flags"
               className="h-full flex-none px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
             >
-              Data flags
-            </TabsTrigger>
+              {<__LocalizedText id="orderCasePanel_dataFlags" />}{" "}</TabsTrigger>
           </TabsList>
         </div>
 
@@ -256,8 +256,7 @@ export function OrderCasePanel({
                   onClick={closeInline}
                 >
                   <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-                  Case file
-                </Button>
+                  {<__LocalizedText id="orderCasePanel_caseFile" />}{" "}</Button>
                 <div className="flex min-w-0 items-center gap-2">
                   <TooltipProvider>
                     <Tooltip>
@@ -266,13 +265,13 @@ export function OrderCasePanel({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          aria-label={`Full view of ${viewing.label}`}
+                          aria-label={__t("orderCasePanel_fullViewOfValue0", {value0: String(__t(viewing.label))})}
                           onClick={() => setPopped(true)}
                         >
                           <Maximize2Icon aria-hidden />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Full view</TooltipContent>
+                      <TooltipContent>{<__LocalizedText id="orderCasePanel_fullView" />}</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                   {disabled ? null : (
@@ -292,8 +291,8 @@ export function OrderCasePanel({
                         <LinkIcon data-icon="inline-start" aria-hidden />
                       )}
                       {links.includes(viewing.id)
-                        ? "Linked to the order"
-                        : "Link to the order"}
+                        ? __t("orderCasePanel_linkedToTheOrder")
+                        : __t("orderCasePanel_linkToTheOrder")}
                     </Button>
                   )}
                 </div>
@@ -304,30 +303,28 @@ export function OrderCasePanel({
                 className="min-w-0 text-body font-semibold break-words focus-visible:outline-none"
               >
                 <OutlineNumber number={viewing.outline} />
-                {viewing.label}
+                {__t(viewing.label)}
               </h3>
               {viewing.node && caseFilePdfSrc(viewing.node) ? (
                 <CaseDocument
                   key={viewing.id}
                   src={caseFilePdfSrc(viewing.node) ?? ""}
-                  title={viewing.label}
+                  title={__t(viewing.label)}
                 />
               ) : (
                 <p className="text-body-compact text-muted-foreground">
-                  This paper has no copy in the case file to show.
-                </p>
+                  {<__LocalizedText id="orderCasePanel_thisPaperHasNoCopyInThe" />}{" "}</p>
               )}
             </div>
           ) : (
             <div ref={listRef} className="contents">
               <div className="flex min-w-0 flex-col gap-1">
                 <Label htmlFor={searchId} className="sr-only">
-                  Search the case file
-                </Label>
+                  {<__LocalizedText id="orderCasePanel_searchTheCaseFile" />}{" "}</Label>
                 <Input
                   id={searchId}
                   type="search"
-                  placeholder="Search the case file"
+                  placeholder={__t("orderCasePanel_searchTheCaseFile")}
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                 />
@@ -343,8 +340,7 @@ export function OrderCasePanel({
                       id={`${searchId}-linked`}
                       className="text-body-compact font-semibold"
                     >
-                      Linked to this order
-                    </h3>
+                      {<__LocalizedText id="orderCasePanel_linkedToThisOrder" />}{" "}</h3>
                     {linkedRows.length > 0 ? (
                       <span className="text-body-compact tabular-nums text-muted-foreground">
                         {linkedRows.length}
@@ -353,8 +349,7 @@ export function OrderCasePanel({
                   </div>
                   {linkedRows.length === 0 ? (
                     <p className="px-2 pb-1 text-body-compact text-muted-foreground">
-                      Nothing yet. Choose Link on a document below.
-                    </p>
+                      {<__LocalizedText id="orderCasePanel_nothingYetChooseLinkOnADocument" />}{" "}</p>
                   ) : (
                     /* The list rows' grammar in the well: one hover per row, the name
                    shortening before anything else does, and the unlink held to one edge. */
@@ -371,14 +366,14 @@ export function OrderCasePanel({
                               onClick={() => open(row, `linked:${row.id}`)}
                               className="flex min-h-10 min-w-0 flex-1 items-center rounded-md px-2 text-left text-body-compact font-medium focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                             >
-                              <span className="truncate">{row.label}</span>
+                              <span className="truncate">{__t(row.label)}</span>
                             </button>
                             {disabled ? null : (
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="icon-sm"
-                                aria-label={`Unlink ${row.label}`}
+                                aria-label={__t("orderCasePanel_unlinkValue0", {value0: String(__t(row.label))})}
                                 className="relative shrink-0 text-muted-foreground after:absolute after:-inset-1 after:content-[''] group-hover/row:text-foreground hover:bg-accent-strong"
                                 onClick={() => toggle(row.id)}
                               >
@@ -395,7 +390,7 @@ export function OrderCasePanel({
 
               {shown.length === 0 ? (
                 <p className="text-body-compact text-muted-foreground">
-                  Nothing in the case file matches &ldquo;{query.trim()}&rdquo;.
+                  {<__LocalizedText id="orderCasePanel_nothingInTheCaseFileMatches" />}{query.trim()}&rdquo;.
                 </p>
               ) : (
                 /* The case file as folders (owner, 2026-10-13): a section is one quiet row
@@ -417,7 +412,7 @@ export function OrderCasePanel({
                       return (
                         <ul
                           key={section.id}
-                          aria-label={section.label}
+                          aria-label={__t(section.label)}
                           className="flex min-w-0 flex-col"
                         >
                           <DocumentLine
@@ -470,7 +465,7 @@ export function OrderCasePanel({
                             />
                             <span className="min-w-0 flex-1 truncate font-medium">
                               <OutlineNumber number={section.outline} />
-                              {section.label}
+                              {__t(section.label)}
                             </span>
                             <span className="shrink-0 text-muted-foreground tabular-nums">
                               {section.rows.length}
@@ -529,9 +524,9 @@ export function OrderCasePanel({
           <DialogHeader className="flex-row items-start justify-between gap-4 pr-12">
             <div className="flex min-w-0 flex-col gap-1">
               <DialogTitle className="text-title-s font-semibold">
-                {viewing?.label}
+                {__t(viewing?.label)}
               </DialogTitle>
-              <DialogDescription>From the case file</DialogDescription>
+              <DialogDescription>{<__LocalizedText id="orderCasePanel_fromTheCaseFile" />}</DialogDescription>
             </div>
             {viewing && !disabled ? (
               <Button
@@ -546,8 +541,8 @@ export function OrderCasePanel({
                   <LinkIcon data-icon="inline-start" aria-hidden />
                 )}
                 {links.includes(viewing.id)
-                  ? "Linked to the order"
-                  : "Link to the order"}
+                  ? __t("orderCasePanel_linkedToTheOrder")
+                  : __t("orderCasePanel_linkToTheOrder")}
               </Button>
             ) : null}
           </DialogHeader>
@@ -557,7 +552,7 @@ export function OrderCasePanel({
             <CaseDocument
               key={viewing.id}
               src={caseFilePdfSrc(viewing.node) ?? ""}
-              title={viewing.label}
+              title={__t(viewing.label)}
             />
           ) : null}
         </DialogContent>
@@ -568,11 +563,12 @@ export function OrderCasePanel({
 
 /** A leaf with a page is one document inside its section's compiled file. */
 function CaseDocument({ src, title }: { src: string; title: string }) {
+  const __t = __useTranslations();
   const { url, page } = parsePdfSrc(src);
   return (
     <PdfViewer
       src={url}
-      title={title}
+      title={__t(title)}
       pages={page ? { from: page, to: page } : undefined}
       className="min-h-0 flex-1"
     />
@@ -607,40 +603,39 @@ function DocumentLine({
   /** Names the open button, so focus can come back to it from the inline viewer. */
   opens: string;
 }) {
+  const __t = __useTranslations();
   return (
     <li className="group/row relative flex min-w-0 items-center gap-1 rounded-lg transition-colors hover:bg-accent has-focus-visible:bg-accent">
       <button
         type="button"
         data-opens={opens}
         onClick={onOpen}
-        title={row.label}
+        title={__t(row.label)}
         className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-lg py-2 pr-2 pl-2 text-left text-body-compact focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
       >
         {icon}
         <span className={cn("min-w-0 flex-1 truncate", icon && "font-medium")}>
           <OutlineNumber number={row.outline} />
-          {row.label}
+          {__t(row.label)}
         </span>
       </button>
       {linked ? (
         disabled ? (
           <span className="inline-flex h-9 shrink-0 items-center gap-1 px-2 text-body-compact font-medium text-success-ink">
             <CheckIcon className="size-4" aria-hidden />
-            Linked
-          </span>
+            {<__LocalizedText id="orderCasePanel_linked" />}{" "}</span>
         ) : (
           <Button
             type="button"
             variant="ghost"
             size="sm"
             aria-pressed
-            aria-label={`Unlink ${row.label} from the order`}
+            aria-label={__t("orderCasePanel_unlinkValue0FromTheOrder", {value0: String(__t(row.label))})}
             className="relative shrink-0 px-2 text-body-compact font-medium text-success-ink after:absolute after:-inset-1 after:content-[''] hover:bg-accent-strong hover:text-success-ink"
             onClick={onToggle}
           >
             <CheckIcon data-icon="inline-start" aria-hidden />
-            Linked
-          </Button>
+            {<__LocalizedText id="orderCasePanel_linked" />}{" "}</Button>
         )
       ) : disabled ? null : (
         /* Over the row's end, fading in from the row's fill so a shortened name runs
@@ -657,13 +652,12 @@ function DocumentLine({
             variant="ghost"
             size="sm"
             aria-pressed={false}
-            aria-label={`Link ${row.label} to the order`}
+            aria-label={__t("orderCasePanel_linkValue0ToTheOrder", {value0: String(__t(row.label))})}
             className="px-2 text-body-compact font-medium hover:bg-accent-strong"
             onClick={onToggle}
           >
             <LinkIcon data-icon="inline-start" aria-hidden />
-            Link
-          </Button>
+            {<__LocalizedText id="orderCasePanel_link" />}{" "}</Button>
         </div>
       )}
     </li>

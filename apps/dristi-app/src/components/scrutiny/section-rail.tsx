@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 /**
  * The filing's sections, with the defect count scrutiny raised on each.
@@ -64,6 +65,7 @@ export function SectionRail({
   onlyFlagged?: boolean;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const groups: { group: string; steps: FilingStep[] }[] = [];
   for (const s of CORRECTION_STEPS) {
     if (onlyFlagged && countFor(s.id) === 0) continue;
@@ -73,7 +75,7 @@ export function SectionRail({
   }
 
   return (
-    <nav aria-label="Filing sections" className={cn("flex flex-col gap-4 px-2", className)}>
+    <nav aria-label={__t("sectionRail_filingSections")} className={cn("flex flex-col gap-4 px-2", className)}>
       {groups.map((g) => (
         <div key={g.group} className="flex w-full flex-col gap-1">
           <h2 className="px-2 text-caption font-medium text-muted-foreground">{g.group}</h2>
@@ -97,7 +99,7 @@ export function SectionRail({
                     className={cn(ROW, active && ROW_ACTIVE)}
                   >
                     <Icon aria-hidden className={active ? undefined : "text-muted-foreground"} />
-                    <span className="min-w-0 flex-1 text-left break-words">{s.title}</span>
+                    <span className="min-w-0 flex-1 text-left break-words">{__t(s.title)}</span>
                     {/* A plain muted count, not a warning badge per row: four ambers
                         down the rail is alarm fatigue, and the one amber in this
                         screen's chrome is the deadline in the queue header (ui-craft
@@ -107,7 +109,7 @@ export function SectionRail({
                       <span className="text-caption font-medium tabular-nums text-muted-foreground">
                         {count}
                         <span className="sr-only">
-                          {count === 1 ? " defect" : " defects"}
+                          {count === 1 ? __t("sectionRail_defect") : __t("sectionRail_defects")}
                         </span>
                       </span>
                     ) : null}

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The outgoing advocate's side of removal-by-consent (scenario 3b): the
@@ -111,19 +113,18 @@ function RemovalConsentRow({
   onResolved: () => void;
   onArchive?: () => void;
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <PendingTaskRow
-        title="Respond to a removal request"
+        title={__t("removalConsentTask_respondToARemovalRequest")}
         respond={{ onClick: () => setOpen(true) }}
         onArchive={onArchive}
       >
         <TaskNote>
-          {displayName(fixture.requester)} asks that you come off {fixture.party}&apos;s
-          vakalatnama.
-        </TaskNote>
+          {displayName(fixture.requester)} {<__LocalizedText id="removalConsentTask_asksThatYouComeOff" />}{" "}{fixture.party}{<__LocalizedText id="removalConsentTask_sVakalatnama" />}{" "}</TaskNote>
       </PendingTaskRow>
 
       <RemovalConsentDialog
@@ -149,6 +150,7 @@ function RemovalConsentDialog({
   fixture: RemovalConsentFixture;
   onResolved: () => void;
 }) {
+  const __t = __useTranslations();
   const [note, setNote] = useState("");
   const [decision, setDecision] = useState<Decision>(null);
   const [docOpen, setDocOpen] = useState(false);
@@ -190,12 +192,12 @@ function RemovalConsentDialog({
                 <div className="flex min-w-0 flex-col gap-1.5">
                   <DialogTitle className="text-title-s font-semibold text-balance">
                     {decision === "accepted"
-                      ? "Removal accepted"
-                      : "Request rejected"}
+                      ? __t("removalConsentTask_removalAccepted")
+                      : __t("removalConsentTask_requestRejected")}
                   </DialogTitle>
                   <DialogDescription>
                     {decision === "accepted"
-                      ? `You come off ${fixture.party}'s vakalatnama and your access to this case ends.`
+                      ? __t("removalConsentTask_youComeOffValue0SVakalatnamaAnd", {value0: String(fixture.party)})
                       : `${fixture.requester} will be notified. They can still apply to the magistrate for an order.`}
                   </DialogDescription>
                 </div>
@@ -203,18 +205,16 @@ function RemovalConsentDialog({
             </DialogHeader>
             <footer className="flex shrink-0 justify-end border-t border-hairline px-6 py-4">
               <Button type="button" onClick={close}>
-                Done
-              </Button>
+                {<__LocalizedText id="removalConsentTask_done" />}{" "}</Button>
             </footer>
           </>
         ) : (
           <>
             <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
               <DialogTitle className="text-title-s font-semibold text-balance">
-                Removal request
-              </DialogTitle>
+                {<__LocalizedText id="removalConsentTask_removalRequest" />}{" "}</DialogTitle>
               <DialogDescription>
-                {displayName(fixture.requester)} asks that you come off the vakalatnama for{" "}
+                {displayName(fixture.requester)} {<__LocalizedText id="removalConsentTask_asksThatYouComeOffTheVakalatnama" />}{" "}
                 {fixture.party}.
               </DialogDescription>
             </DialogHeader>
@@ -237,7 +237,7 @@ function RemovalConsentDialog({
                       variant="ghost"
                       size="icon-sm"
                       className="shrink-0 text-muted-foreground"
-                      aria-label={`View ${fixture.document}`}
+                      aria-label={__t("removalConsentTask_viewValue0", {value0: String(fixture.document)})}
                       onClick={() => setDocOpen(true)}
                     >
                       <Maximize2Icon aria-hidden />
@@ -248,8 +248,7 @@ function RemovalConsentDialog({
 
               <Field>
                 <FieldLabel htmlFor="consent-note">
-                  Add a note (optional)
-                </FieldLabel>
+                  {<__LocalizedText id="removalConsentTask_addANoteOptional" />}{" "}</FieldLabel>
                 <Textarea
                   id="consent-note"
                   className="min-h-20"
@@ -268,15 +267,13 @@ function RemovalConsentDialog({
                 variant="outline"
                 onClick={() => setDecision("rejected")}
               >
-                Reject
-              </Button>
+                {<__LocalizedText id="removalConsentTask_reject" />}{" "}</Button>
               <Button
                 type="button"
                 variant="destructive-solid"
                 onClick={() => setDecision("accepted")}
               >
-                Accept removal
-              </Button>
+                {<__LocalizedText id="removalConsentTask_acceptRemoval" />}{" "}</Button>
             </footer>
           </>
         )}
@@ -305,6 +302,7 @@ function ConsentDocumentDialog({
   onOpenChange: (open: boolean) => void;
   fixture: RemovalConsentFixture;
 }) {
+  const __t = __useTranslations();
   const [downloadNotice, setDownloadNotice] = useState(false);
 
   return (
@@ -323,26 +321,24 @@ function ConsentDocumentDialog({
           variant="ghost"
           size="icon-sm"
           className="absolute top-4 right-14 text-muted-foreground"
-          aria-label={`Download ${fixture.document}`}
+          aria-label={__t("removalConsentTask_downloadValue0", {value0: String(fixture.document)})}
           onClick={() => setDownloadNotice(true)}
         >
           <DownloadIcon aria-hidden />
         </Button>
         <DialogHeader className="pr-20 text-left">
-          <DialogTitle>Supporting document</DialogTitle>
+          <DialogTitle>{<__LocalizedText id="removalConsentTask_supportingDocument" />}</DialogTitle>
           <DialogDescription>{fixture.document}</DialogDescription>
         </DialogHeader>
         {downloadNotice ? (
           <p className="text-caption text-muted-foreground">
-            Downloads are not wired in this prototype.
-          </p>
+            {<__LocalizedText id="removalConsentTask_downloadsAreNotWiredInThisPrototype" />}{" "}</p>
         ) : null}
         <div className="min-h-0 flex-1 overflow-y-auto rounded-lg bg-surface-sunken p-4">
           <div className="mx-auto flex max-w-sm flex-col gap-5 rounded-md border border-hairline bg-surface px-6 py-8">
             <div className="flex flex-col items-center gap-1 text-center">
               <p className="text-caption tracking-widest text-muted-foreground uppercase">
-                Letter of instruction
-              </p>
+                {<__LocalizedText id="removalConsentTask_letterOfInstruction" />}{" "}</p>
               <p className="text-body-compact font-semibold">{fixture.party}</p>
               <p className="text-caption text-muted-foreground tabular-nums">
                 {fixture.requestedOn}
@@ -358,7 +354,7 @@ function ConsentDocumentDialog({
             <div className="flex w-1/2 flex-col gap-1 self-end pt-4">
               <div className="h-px w-full bg-border" aria-hidden />
               <p className="text-caption text-muted-foreground">
-                Signature of {fixture.party}
+                {<__LocalizedText id="removalConsentTask_signatureOf" />}{" "}{fixture.party}
               </p>
             </div>
           </div>
@@ -375,9 +371,10 @@ function ReviewRow({
   term: string;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <DescriptionRow className="grid-cols-1 sm:grid-cols-[minmax(7rem,10rem)_1fr]">
-      <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
+      <DescriptionTerm className="text-body-compact">{__t(term)}</DescriptionTerm>
       <DescriptionDetails className="text-body-compact">
         {children}
       </DescriptionDetails>

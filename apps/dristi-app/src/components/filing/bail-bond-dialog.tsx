@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import {
@@ -276,6 +277,7 @@ export function BailBondDialog({
   mode: BondMode;
   onSubmitted?: (result: BailBondResult) => void;
 }) {
+  const __t = __useTranslations();
   const [stage, setStage] = React.useState<Stage>("details");
 
   // Direct-mode fields; in task/edit mode the magistrate's terms stand in.
@@ -520,13 +522,13 @@ export function BailBondDialog({
         ) : (
           <DialogHeader className="shrink-0 border-b border-hairline px-6 py-5 pr-14 text-left">
             <DialogTitle className="text-title-s font-semibold text-balance">
-              {headerCopy.title}
+              {__t(headerCopy.title)}
             </DialogTitle>
-            <DialogDescription className="text-pretty">{headerCopy.body}</DialogDescription>
+            <DialogDescription className="text-pretty">{__t(headerCopy.body)}</DialogDescription>
             <p className="text-caption text-muted-foreground">
-              <Identifier value={accessCase.caseNumber} label="case number" />
+              <Identifier value={accessCase.caseNumber} label={__t("bailBondDialog_caseNumber")} />
               <span aria-hidden> · </span>
-              {accessCase.title}
+              {__t(accessCase.title)}
             </p>
           </DialogHeader>
         )}
@@ -1097,7 +1099,7 @@ export function BailBondDialog({
                 <DescriptionRow className="items-center border-hairline">
                   <DescriptionTerm>{pick(bondCopy.bondIdLabel, locale)}</DescriptionTerm>
                   <DescriptionDetails>
-                    <Identifier value={BOND_ID} label="bond number" />
+                    <Identifier value={BOND_ID} label={__t("bailBondDialog_bondNumber")} />
                   </DescriptionDetails>
                 </DescriptionRow>
                 {method === "esign" ? (

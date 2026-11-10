@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The vakalatnama instrument, rendered from the draft — the paper as it would read. Shown
@@ -21,10 +23,11 @@ import type { Vakalatnama } from "@/lib/vakalatnama/types";
 import { configFor } from "@/lib/vakalatnama/data";
 
 function Line({ label, value }: { label: string; value: React.ReactNode }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-wrap items-baseline gap-x-2">
       <span className="text-caption font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
+        {__t(label)}
       </span>
       <span className="text-body-compact tabular-nums">{value}</span>
     </div>
@@ -38,6 +41,7 @@ export function VakalatnamaDocument({
   vak: Vakalatnama;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const service = serviceAdvocate(vak);
   const config = configFor(vak.scope.court);
   const caseNo =
@@ -52,16 +56,14 @@ export function VakalatnamaDocument({
       {/* Court header */}
       <header className="flex flex-col items-center gap-1 text-center">
         <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">
-          Before the
-        </p>
+          {<__LocalizedText id="document_beforeThe" />}{" "}</p>
         <h2 className="text-title-s font-semibold">
           {vak.scope.court || config.court}
         </h2>
         <p className="text-body-compact text-muted-foreground">
-          Cheque bounce — Section 138, Negotiable Instruments Act, 1881
-        </p>
-        <p className="mt-2 text-body-compact tabular-nums">Case No. {caseNo}</p>
-        <p className="mt-4 text-title-s font-semibold tracking-tight">VAKALATNAMA</p>
+          {<__LocalizedText id="document_chequeBounceSection138NegotiableInstrumentsAct" />}{" "}</p>
+        <p className="mt-2 text-body-compact tabular-nums">{<__LocalizedText id="document_caseNo" />}{" "}{caseNo}</p>
+        <p className="mt-4 text-title-s font-semibold tracking-tight">{<__LocalizedText id="document_vakalatnama" />}</p>
       </header>
 
       <div className="h-px w-full bg-hairline" />
@@ -69,12 +71,9 @@ export function VakalatnamaDocument({
       {/* Body */}
       <div className="flex flex-col gap-4 text-body leading-relaxed">
         <p>
-          <span className="font-medium">{executantIntro(vak.executant)}</span>, do hereby
-          appoint and retain{" "}
+          <span className="font-medium">{executantIntro(vak.executant)}</span>{<__LocalizedText id="document_doHerebyAppointAndRetain" />}{" "}
           <span className="font-medium">{advocateNames(vak)}</span>
-          {vak.advocates.length > 1 ? ", Advocates," : ", Advocate,"} to appear and act for
-          me/us in the above matter, and empower them:
-        </p>
+          {vak.advocates.length > 1 ? __t("document_advocates") : __t("document_advocate")} {<__LocalizedText id="document_toAppearAndActForMeUs" />}{" "}</p>
 
         <ol className="flex list-decimal flex-col gap-2 pl-6 text-body-compact">
           {vak.terms.clauses.map((c, i) => (
@@ -86,8 +85,7 @@ export function VakalatnamaDocument({
 
         {vak.terms.source === "edited" ? (
           <p className="text-caption text-warning-ink">
-            These terms have been edited from the standard set.
-          </p>
+            {<__LocalizedText id="document_theseTermsHaveBeenEditedFromThe" />}{" "}</p>
         ) : null}
       </div>
 
@@ -98,20 +96,17 @@ export function VakalatnamaDocument({
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-1">
             <span className="text-caption font-medium uppercase tracking-wide text-muted-foreground">
-              Executant
-            </span>
+              {<__LocalizedText id="document_executant" />}{" "}</span>
             <span className="text-body font-medium">
               {executantName(vak.executant)}
             </span>
             <span className="text-caption text-muted-foreground">
-              Signature of the party
-            </span>
+              {<__LocalizedText id="document_signatureOfTheParty" />}{" "}</span>
           </div>
 
           <div className="flex flex-col gap-1">
             <span className="text-caption font-medium uppercase tracking-wide text-muted-foreground">
-              I know the party
-            </span>
+              {<__LocalizedText id="document_iKnowTheParty" />}{" "}</span>
             <span className="text-body-compact">{service?.name || "—"}</span>
           </div>
         </div>
@@ -119,14 +114,13 @@ export function VakalatnamaDocument({
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-1">
             <span className="text-caption font-medium uppercase tracking-wide text-muted-foreground">
-              Signed before me / accepted
-            </span>
+              {<__LocalizedText id="document_signedBeforeMeAccepted" />}{" "}</span>
             {vak.advocates.length === 0 ? (
               <span className="text-body-compact text-muted-foreground">—</span>
             ) : (
               vak.advocates.map((a) => (
                 <span key={a.id} className="text-body-compact">
-                  {a.name.trim() || "[advocate]"}
+                  {a.name.trim() || __t("document_advocate_5a5e9655")}
                   {a.enrolmentNo ? (
                     <span className="ml-1 font-mono text-caption text-muted-foreground">
                       ({a.enrolmentNo})
@@ -134,8 +128,7 @@ export function VakalatnamaDocument({
                   ) : null}
                   {a.forService ? (
                     <span className="ml-1 text-caption text-muted-foreground">
-                      · for service
-                    </span>
+                      {<__LocalizedText id="document_forService" />}{" "}</span>
                   ) : null}
                 </span>
               ))
@@ -144,18 +137,17 @@ export function VakalatnamaDocument({
 
           <div className="flex flex-col gap-1">
             <span className="text-caption font-medium uppercase tracking-wide text-muted-foreground">
-              Witness
-            </span>
+              {<__LocalizedText id="document_witness" />}{" "}</span>
             {vak.attestation.hasWitness ? (
               <span className="text-body-compact">
                 {vak.attestation.name.trim() ||
-                  (vak.attestation.kind === "notary" ? "Notary" : "Witness")}
+                  (vak.attestation.kind === "notary" ? __t("document_notary_e17cc9a9") : __t("document_witness"))}
                 {vak.attestation.kind === "notary" ? (
-                  <span className="ml-1 text-caption text-muted-foreground">· Notary</span>
+                  <span className="ml-1 text-caption text-muted-foreground">{<__LocalizedText id="document_notary" />}</span>
                 ) : null}
               </span>
             ) : (
-              <span className="text-body-compact text-muted-foreground">No witness</span>
+              <span className="text-body-compact text-muted-foreground">{<__LocalizedText id="document_noWitness" />}</span>
             )}
           </div>
         </div>
@@ -163,7 +155,7 @@ export function VakalatnamaDocument({
 
       {service ? (
         <div className="rounded-lg bg-surface-sunken p-4">
-          <Line label="Address for service" value={service.name} />
+          <Line label={__t("document_addressForService")} value={service.name} />
           <p className="mt-1 text-body-compact text-muted-foreground">
             {service.address.line1
               ? [
@@ -175,7 +167,7 @@ export function VakalatnamaDocument({
                 ]
                   .filter((s) => s && s.trim())
                   .join(", ")
-              : "Address on record"}
+              : __t("document_addressOnRecord")}
           </p>
         </div>
       ) : null}

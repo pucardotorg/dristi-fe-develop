@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -56,6 +58,7 @@ export function CognizanceTabScreen({ tab }: { tab: CognizanceTab }) {
 }
 
 function SplitQueue({ tab }: { tab: CognizanceTab }) {
+  const __t = __useTranslations();
   const arrival = useArrival();
   const [filters, setFilters] = React.useState<CognizanceFilters>(
     EMPTY_COGNIZANCE_FILTERS,
@@ -97,11 +100,11 @@ function SplitQueue({ tab }: { tab: CognizanceTab }) {
     >
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Take cognizance — {label}
+          {<__LocalizedText id="cognizanceTabScreen_takeCognizance" />}{" "}{__t(label)}
         </h1>
         <p className="text-body text-muted-foreground">
           {total === 1
-            ? "1 complaint is on the register waiting for cognizance."
+            ? __t("cognizanceTabScreen_1ComplaintIsOnTheRegisterWaiting")
             : `${total} complaints are on the register waiting for cognizance.`}
         </p>
       </header>

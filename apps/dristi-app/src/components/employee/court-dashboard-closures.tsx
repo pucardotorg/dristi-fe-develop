@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { ChevronRightIcon } from "lucide-react";
@@ -124,6 +126,7 @@ export function Closures({
   baselineLabel: string | null;
   averaged: boolean;
 }) {
+  const __t = __useTranslations();
   const now = outcomesIn(docket, reading.selection);
   const base = averageOver(reading.baseline, (p) => outcomesIn(docket, p));
   const summary = closureSummary(docket, reading.selection);
@@ -151,7 +154,7 @@ export function Closures({
   const delta = (current: number | null, previous: number | null | undefined, unit: (v: number) => string, goodUp: boolean | null) => {
     if (current === null || previous === null || previous === undefined || !baselineLabel) return null;
     const d = current - previous;
-    if (Math.abs(d) < 1e-9) return <span className="text-caption text-muted-foreground">Same as {vs}</span>;
+    if (Math.abs(d) < 1e-9) return <span className="text-caption text-muted-foreground">{<__LocalizedText id="courtDashboardClosures_sameAs" />}{" "}{vs}</span>;
     const tone = goodUp === null ? "flat" : d > 0 === goodUp ? "good" : "bad";
     return (
       <span
@@ -161,8 +164,8 @@ export function Closures({
         )}
       >
         <span aria-hidden>{d > 0 ? "▲ " : "▼ "}</span>
-        <span className="sr-only">{d > 0 ? "Up " : "Down "}</span>
-        {unit(Math.abs(d))} vs {vs}
+        <span className="sr-only">{d > 0 ? __t("courtDashboardClosures_up") : __t("courtDashboardClosures_down")}</span>
+        {unit(Math.abs(d))} {<__LocalizedText id="courtDashboardClosures_vs" />}{" "}{vs}
       </span>
     );
   };
@@ -171,11 +174,11 @@ export function Closures({
   const spec = (() => {
     const key = list.open;
     if (!key) return null;
-    if (key === "all") return { title: `Cases closed · ${period}`, rows };
+    if (key === "all") return { title: __t("courtDashboardClosures_casesClosedValue0", {value0: String(period)}), rows };
     if (key.startsWith("col-") && timeline) {
       const col = timeline.columns[Number(key.slice(4))];
       return {
-        title: `Closed ${timeline.unit === "day" ? `on ${formatDay(col.from)}` : formatSpan(col.from, col.to, docket.today)}`,
+        title: __t("courtDashboardClosures_closedValue0", {value0: String(timeline.unit === "day" ? `on ${formatDay(col.from)}` : formatSpan(col.from, col.to, docket.today))}),
         rows: rows.filter((r) => r.closedOn >= col.from && r.closedOn <= col.to),
       };
     }
@@ -194,7 +197,7 @@ export function Closures({
     <section ref={section} aria-labelledby="dash-closures" className={PANEL}>
       <PanelHeader
         id="dash-closures"
-        title="How cases were closed"
+        title={__t("courtDashboardClosures_howCasesWereClosed")}
         line={`Judgements, settlements, early endings and transfers to the long pending register${
           baselineLabel ? `, compared with ${vs}` : ""
         }`}
@@ -203,21 +206,20 @@ export function Closures({
       </PanelHeader>
 
       <div className="grid min-w-0 gap-px overflow-hidden rounded-xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-4">
-        <Figure label="Cases closed">
+        <Figure label={__t("courtDashboardClosures_casesClosed")}>
           <CountButton name="cases closed" className="text-title font-semibold" {...opener("all")}>
             <CountUp value={summary.total} format={count} />
           </CountButton>
           {delta(summary.total, baseSummary?.total, (v) => formatCount(Math.round(v)), true)}
           <span className="text-caption text-muted-foreground tabular-nums">
-            {plural(summary.toLongPending, "of them", "of them")} to the long pending register
-          </span>
+            {plural(summary.toLongPending, "of them", "of them")} {<__LocalizedText id="courtDashboardClosures_toTheLongPendingRegister" />}{" "}</span>
         </Figure>
-        <Figure label="Decided at trial">
+        <Figure label={__t("courtDashboardClosures_decidedAtTrial")}>
           <span className="text-title font-semibold tabular-nums">{total ? pct(judged / total) : "–"}</span>
           {delta(share(judged, total), baseSummary ? share(baseJudged, baseSummary.total) : null, (v) => `${Math.round(v)} pts`, null)}
           <span className="text-caption text-muted-foreground tabular-nums">{plural(judged, "judgement", "judgements")}</span>
         </Figure>
-        <Figure label="Conviction rate">
+        <Figure label={__t("courtDashboardClosures_convictionRate")}>
           <span className="text-title font-semibold tabular-nums">{judged ? pct(summary.convicted / judged) : "–"}</span>
           {delta(
             share(summary.convicted, judged),
@@ -226,26 +228,26 @@ export function Closures({
             null,
           )}
           <span className="text-caption text-muted-foreground tabular-nums">
-            {judged ? `${formatCount(summary.convicted)} of ${plural(judged, "judgement", "judgements")}` : "No judgements"}
+            {judged ? `${formatCount(summary.convicted)} of ${plural(judged, "judgement", "judgements")}` : __t("courtDashboardClosures_noJudgements")}
           </span>
         </Figure>
-        <Figure label="Median time to close">
+        <Figure label={__t("courtDashboardClosures_medianTimeToClose")}>
           <span className="text-title font-semibold tabular-nums">
             {summary.medianDays === null ? "–" : plural(summary.medianDays, "day", "days")}
           </span>
           {delta(summary.medianDays, baseSummary?.medianDays, (v) => plural(Math.round(v), "day", "days"), false)}
-          <span className="text-caption text-muted-foreground">From filing, disposed cases only</span>
+          <span className="text-caption text-muted-foreground">{<__LocalizedText id="courtDashboardClosures_fromFilingDisposedCasesOnly" />}</span>
         </Figure>
       </div>
 
       <div className={cn(BOX, "grid min-w-0 items-center gap-x-4 gap-y-1.5 p-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:px-6")}>
         <div className="flex min-w-0 flex-col">
           <span className="text-body-compact font-semibold tabular-nums">{current}</span>
-          <span className="text-caption text-muted-foreground tabular-nums">{formatCount(total)} closed</span>
+          <span className="text-caption text-muted-foreground tabular-nums">{formatCount(total)} {<__LocalizedText id="courtDashboardClosures_closed" />}</span>
         </div>
         {total ? (
           <SegmentBar
-            label={`Cases closed, ${period}, by outcome`}
+            label={__t("courtDashboardClosures_casesClosedValue0ByOutcome", {value0: String(period)})}
             controls={listId}
             grow
             className="h-8 [&>*:first-child]:rounded-l-md [&>*:last-child]:rounded-r-md"
@@ -259,7 +261,7 @@ export function Closures({
                 tip: `${x.name}: ${plural(now[x.key], "case", "cases")} (${pct(s)})`,
                 content: text ? (
                   <span aria-hidden className={cn("pointer-events-none truncate px-1.5 text-caption font-semibold", x.ink)}>
-                    {text}
+                    {__t(text)}
                   </span>
                 ) : null,
                 onHover: hover(x.key),
@@ -268,31 +270,31 @@ export function Closures({
             })}
           />
         ) : (
-          <span className="text-body-compact text-muted-foreground">No closures</span>
+          <span className="text-body-compact text-muted-foreground">{<__LocalizedText id="courtDashboardClosures_noClosures" />}</span>
         )}
         {base && baselineLabel ? (
           <>
             <div className="flex min-w-0 flex-col max-sm:mt-2">
-              <span className="text-body-compact text-muted-foreground">{baselineLabel}</span>
+              <span className="text-body-compact text-muted-foreground">{__t(baselineLabel)}</span>
               <span className="text-caption text-muted-foreground tabular-nums">
-                {formatCount(Math.round(baseTotal))} closed{averaged ? " on average" : ""}
+                {formatCount(Math.round(baseTotal))} {<__LocalizedText id="courtDashboardClosures_closed" />}{averaged ? __t("courtDashboardClosures_onAverage") : ""}
               </span>
             </div>
             {baseTotal ? (
               <SegmentBar
-                label={`Cases closed, ${baselineLabel}, by outcome`}
+                label={__t("courtDashboardClosures_casesClosedValue0ByOutcome", {value0: String(__t(baselineLabel))})}
                 grow
                 className="h-4 [&>*:first-child]:rounded-l-md [&>*:last-child]:rounded-r-md"
                 segments={OUTCOMES.map((x) => ({
                   key: x.key,
                   value: base[x.key],
                   className: cn(x.fill, dim(picked, x.key)),
-                  tip: `${baselineLabel} · ${x.name}: ${averaged ? base[x.key].toFixed(1) : formatCount(Math.round(base[x.key]))}${averaged ? " on average" : ""} (${pct(base[x.key] / baseTotal)})`,
+                  tip: `${__t(baselineLabel)} · ${x.name}: ${averaged ? base[x.key].toFixed(1) : formatCount(Math.round(base[x.key]))}${averaged ? __t("courtDashboardClosures_onAverage") : ""} (${pct(base[x.key] / baseTotal)})`,
                   onHover: hover(x.key),
                 }))}
               />
             ) : (
-              <span className="text-body-compact text-muted-foreground">No closures</span>
+              <span className="text-body-compact text-muted-foreground">{<__LocalizedText id="courtDashboardClosures_noClosures" />}</span>
             )}
           </>
         ) : null}
@@ -326,10 +328,9 @@ export function Closures({
       </div>
 
       <p className="text-body-compact text-muted-foreground">
-        Select an outcome for its details and cases.
-        {baselineLabel
-          ? ` The short line on each bar marks ${vs}; ▲ ▼ show the change in its share of closures, in percentage points.`
-          : " To compare with another period, choose it in the calendar."}
+        {<__LocalizedText id="courtDashboardClosures_selectAnOutcomeForItsDetailsAnd" />}{" "}{baselineLabel
+          ? __t("courtDashboardClosures_theShortLineOnEachBarMarks", {value0: String(vs)})
+          : __t("courtDashboardClosures_toCompareWithAnotherPeriodChooseIt")}
       </p>
 
       <div id={listId} className="min-w-0 empty:hidden">
@@ -337,7 +338,7 @@ export function Closures({
           <CaseListBox
             key={list.open}
             id={`dash-closures-${list.open}`}
-            title={spec.title}
+            title={__t(spec.title)}
             summary={`${plural(spec.rows.length, "case", "cases")} · longest in court first`}
             rows={spec.rows}
             daysHeader="Days from filing to closing"
@@ -350,9 +351,10 @@ export function Closures({
 }
 
 function Figure({ label, children }: { label: string; children: React.ReactNode }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-col items-start gap-0.5 bg-surface-sunken px-4 py-3">
-      <span className="text-body-compact text-muted-foreground">{label}</span>
+      <span className="text-body-compact text-muted-foreground">{__t(label)}</span>
       {children}
     </div>
   );
@@ -391,6 +393,7 @@ function OutcomeRow({
   now: Outcomes;
   opener: Opener;
 }) {
+  const __t = __useTranslations();
   const share = total ? value / total : 0;
   const change = base !== null && baseTotal && total ? Math.round((share - base / baseTotal) * 100) : null;
   const detail = open ? outcomeDetail(rows) : null;
@@ -438,7 +441,7 @@ function OutcomeRow({
         {change !== null ? (
           <span className="text-right text-caption text-muted-foreground tabular-nums whitespace-nowrap max-sm:hidden">
             <span aria-hidden>{change > 0 ? "▲ " : change < 0 ? "▼ " : ""}</span>
-            {change ? plural(Math.abs(change), "pt", "pts") : "±0 pts"}
+            {change ? plural(Math.abs(change), "pt", "pts") : __t("courtDashboardClosures_0Pts")}
           </span>
         ) : (
           <span className="max-sm:hidden" />
@@ -449,7 +452,7 @@ function OutcomeRow({
         />
         <span className="sr-only">
           {base !== null && baselineLabel
-            ? `${baselineLabel}: ${pct(base / Math.max(1, baseTotal))} of closures. ${change ? `${change > 0 ? "Up" : "Down"} ${Math.abs(change)} points.` : "No change."}`
+            ? `${__t(baselineLabel)}: ${pct(base / Math.max(1, baseTotal))} of closures. ${change ? `${change > 0 ? __t("courtDashboardClosures_up_ffcea8bc") : __t("courtDashboardClosures_down_f40976fd")} ${Math.abs(change)} points.` : __t("courtDashboardClosures_noChange")}`
             : ""}
         </span>
       </button>
@@ -458,16 +461,16 @@ function OutcomeRow({
           <div className={cn(RESOLVE_IN_PLACE, "flex flex-col gap-4 px-4 pt-1 pb-4 sm:ml-6")}>
             <dl className="flex flex-wrap gap-x-8 gap-y-2">
               <div className="flex flex-col">
-                <dt className="text-caption text-muted-foreground">Median time to close</dt>
+                <dt className="text-caption text-muted-foreground">{<__LocalizedText id="courtDashboardClosures_medianTimeToClose" />}</dt>
                 <dd className="text-body font-semibold tabular-nums">
                   {detail.medianDays === null ? "–" : plural(detail.medianDays, "day", "days")}
                 </dd>
               </div>
               {x.key !== "toLongPending" ? (
                 <div className="flex flex-col">
-                  <dt className="text-caption text-muted-foreground">Closed before cognizance</dt>
+                  <dt className="text-caption text-muted-foreground">{<__LocalizedText id="courtDashboardClosures_closedBeforeCognizance" />}</dt>
                   <dd className="text-body font-semibold tabular-nums">
-                    {formatCount(detail.beforeCognizance)} <span className="font-normal text-muted-foreground">of {formatCount(rows.length)}</span>
+                    {formatCount(detail.beforeCognizance)} <span className="font-normal text-muted-foreground">{<__LocalizedText id="courtDashboardClosures_of" />}{" "}{formatCount(rows.length)}</span>
                   </dd>
                 </div>
               ) : null}
@@ -475,13 +478,13 @@ function OutcomeRow({
             {subs ? <Bands label={`${x.name}, by how`} rows={subs.map(([l, n]) => ({ label: l, value: n }))} of={value} /> : null}
             {rows.length ? (
               <div className="flex max-w-md flex-col gap-1">
-                <span className="text-caption text-muted-foreground">Time from filing</span>
+                <span className="text-caption text-muted-foreground">{<__LocalizedText id="courtDashboardClosures_timeFromFiling" />}</span>
                 <ul aria-label={`${x.name}, time from filing`} className="flex flex-col">
                   {detail.ages.map((band, i) => {
                     const most = Math.max(1, ...detail.ages.map((b) => b.rows.length));
                     return (
                       <li key={band.label} className="grid grid-cols-[7rem_minmax(0,1fr)_3rem] items-center gap-2 text-body-compact">
-                        <span>{band.label}</span>
+                        <span>{__t(band.label)}</span>
                         <span aria-hidden className="h-2 overflow-hidden rounded-full bg-track">
                           <span data-grow="x" className="block h-full origin-left rounded-full bg-brand-accent" style={{ width: `${(band.rows.length / most) * 100}%` }} />
                         </span>
@@ -511,7 +514,7 @@ function OutcomeRow({
                 aria-controls={opener(x.key).controls}
                 onClick={(event) => opener(x.key).onOpen(event.currentTarget)}
               >
-                Show the {plural(rows.length, "case", "cases")}
+                {<__LocalizedText id="courtDashboardClosures_showThe" />}{" "}{plural(rows.length, "case", "cases")}
               </Button>
             ) : null}
           </div>
@@ -522,11 +525,12 @@ function OutcomeRow({
 }
 
 function Bands({ label, rows, of }: { label: string; rows: { label: string; value: number }[]; of: number }) {
+  const __t = __useTranslations();
   return (
-    <ul aria-label={label} className="flex max-w-md flex-col gap-1">
+    <ul aria-label={__t(label)} className="flex max-w-md flex-col gap-1">
       {rows.map((r) => (
         <li key={r.label} className="grid grid-cols-[7rem_minmax(0,1fr)_3rem] items-center gap-2 text-body-compact">
-          <span>{r.label}</span>
+          <span>{__t(r.label)}</span>
           <span aria-hidden className="h-2 overflow-hidden rounded-full bg-track">
             <span data-grow="x" className="block h-full origin-left rounded-full bg-brand-accent" style={{ width: `${of ? (r.value / of) * 100 : 0}%` }} />
           </span>
@@ -555,6 +559,7 @@ function Timeline({
   opener: Opener;
   latest: number;
 }) {
+  const __t = __useTranslations();
   const { unit, columns, busiest } = timeline;
   const most = Math.max(1, ...columns.map((c) => c.total));
   const name = (c: TimelineColumn) =>
@@ -563,12 +568,12 @@ function Timeline({
   return (
     <div className={cn(BOX, "flex min-w-0 flex-col gap-2 p-4")}>
       <div className="flex flex-wrap justify-between gap-2">
-        <span className="text-body-compact font-semibold">Closures by {unit}</span>
+        <span className="text-body-compact font-semibold">{<__LocalizedText id="courtDashboardClosures_closuresBy" />}{" "}{unit}</span>
         <span className="text-caption text-muted-foreground tabular-nums">
-          Busiest: {name(busiest)}, {formatCount(busiest.total)}
+          {<__LocalizedText id="courtDashboardClosures_busiest" />}{" "}{name(busiest)}, {formatCount(busiest.total)}
         </span>
       </div>
-      <div role="group" aria-label={`Closures by ${unit}`} className="flex h-44 items-end gap-0.5 border-b border-border">
+      <div role="group" aria-label={__t("courtDashboardClosures_closuresByValue0", {value0: String(unit)})} className="flex h-44 items-end gap-0.5 border-b border-border">
         {columns.map((c, i) => {
           const parts = OUTCOMES.filter((o) => c.by[o.key]).map((o) => `${o.short} ${c.by[o.key]}`);
           const tip = `${name(c)}: ${plural(c.total, "closure", "closures")}${parts.length ? ` · ${parts.join(", ")}` : ""}${c.weekend ? ` · ${WEEKDAY[new Date(c.from).getUTCDay()]}` : ""}`;
@@ -578,7 +583,7 @@ function Timeline({
                 {c.total ? (
                   <button
                     type="button"
-                    aria-label={`${tip}, ${opener(`col-${i}`).expanded ? "hide" : "show"} the cases`}
+                    aria-label={`${tip}, ${opener(`col-${i}`).expanded ? __t("courtDashboardClosures_hide") : __t("courtDashboardClosures_show")} the cases`}
                     aria-expanded={opener(`col-${i}`).expanded}
                     aria-controls={opener(`col-${i}`).controls}
                     onClick={(event) => opener(`col-${i}`).onOpen(event.currentTarget)}
@@ -632,7 +637,7 @@ function Timeline({
         )}
       </div>
       {unit === "day" ? (
-        <p className="text-caption text-muted-foreground">Hatched columns are Saturdays and Sundays.</p>
+        <p className="text-caption text-muted-foreground">{<__LocalizedText id="courtDashboardClosures_hatchedColumnsAreSaturdaysAndSundays" />}</p>
       ) : null}
     </div>
   );

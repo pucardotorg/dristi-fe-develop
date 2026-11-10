@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   SignatureFields,
@@ -126,12 +127,10 @@ export function SignatureActions({
     <>
       {onBack ? (
         <Button type="button" variant="outline" onClick={onBack}>
-          Back
-        </Button>
+          {<__LocalizedText id="signMethodStage_back" />}{" "}</Button>
       ) : null}
       <Button type="button" disabled={!choice.canSubmit} onClick={onSubmit}>
-        Submit
-      </Button>
+        {<__LocalizedText id="signMethodStage_submit" />}{" "}</Button>
     </>
   );
 }

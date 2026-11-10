@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import Link from "next/link";
 import { ArrowLeftIcon, FileQuestionIcon } from "lucide-react";
@@ -42,8 +43,7 @@ export function DraftFrame({
           className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
         >
           <Spinner className="mr-2 size-4" />
-          Opening your draft…
-        </div>
+          {<__LocalizedText id="draftFrame_openingYourDraft" />}{" "}</div>
       }
       notFound={
         <div className="flex flex-1 items-center justify-center px-4 py-16">
@@ -53,19 +53,15 @@ export function DraftFrame({
                 <FileQuestionIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="text-body font-semibold">
-                This draft isn&apos;t here any more
-              </EmptyTitle>
+                {<__LocalizedText id="draftFrame_thisDraftIsnTHereAnyMore" />}{" "}</EmptyTitle>
               <EmptyDescription className="text-body">
-                It may have been discarded, or the link is from another browser. Your drafts
-                are listed on the dashboard.
-              </EmptyDescription>
+                {<__LocalizedText id="draftFrame_itMayHaveBeenDiscardedOrThe" />}{" "}</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button asChild>
                 <Link href={FILINGS_HOME}>
                   <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-                  Back to dashboard
-                </Link>
+                  {<__LocalizedText id="draftFrame_backToDashboard" />}{" "}</Link>
               </Button>
             </EmptyContent>
           </Empty>

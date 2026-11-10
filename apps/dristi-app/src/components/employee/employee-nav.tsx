@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -188,6 +190,7 @@ function spokenNote(item: CourtNavItem): string {
  * "nothing waiting" outright rather than left with silence.
  */
 function RowContents({ item }: { item: CourtNavItem }) {
+  const __t = __useTranslations();
   const Icon = item.icon;
   const note = spokenNote(item);
   return (
@@ -225,9 +228,9 @@ function RowContents({ item }: { item: CourtNavItem }) {
           flex child of zero visible width is still a flex child, and it holds a centred
           glyph hard against the leading edge. */}
       <span className="min-w-0 flex-1 truncate group-data-[collapsible=icon]:hidden">
-        {item.label}
+        {__t(item.label)}
       </span>
-      {note ? <span className="sr-only">, {note}</span> : null}
+      {note ? <span className="sr-only">, {__t(note)}</span> : null}
       {item.count !== undefined && item.count > 0 ? (
         /* How much is waiting: the advocate rail's mark — a red spark and a numeral
            (`TasksCount`), so both sides of the product say "work waiting" the same way.
@@ -305,6 +308,7 @@ function CourtNavRow({
    */
   active?: boolean;
 }) {
+  const __t = __useTranslations();
   const pathname = usePathname();
   const collapsed = useRailCollapsed();
 
@@ -315,7 +319,7 @@ function CourtNavRow({
         <SidebarMenuButton
           asChild
           isActive={isActive}
-          tooltip={item.label}
+          tooltip={__t(item.label)}
           className={RAIL_ROW}
         >
           <Link href={item.href} aria-current={isActive ? "page" : undefined}>
@@ -344,7 +348,7 @@ function CourtNavRow({
                       }
                     >
                       <span className="min-w-0 flex-1 truncate">
-                        {child.label}
+                        {__t(child.label)}
                       </span>
                       {child.count !== undefined && child.count > 0 ? (
                         <span className="shrink-0 text-caption text-muted-foreground tabular-nums">
@@ -484,6 +488,7 @@ function CourtNavGroupMark({
   /** The section's header while the strip is closed — see `useFoldFocusHandoff`. */
   ref: React.Ref<HTMLButtonElement>;
 }) {
+  const __t = __useTranslations();
   const Icon = group.icon;
   return (
     <SidebarMenuButton
@@ -494,7 +499,7 @@ function CourtNavGroupMark({
          the generic value, for the current item in a set of six. Without it the white card
          says "you are here" to everyone who can see the strip and to nobody who cannot. */
       aria-current={isActive ? true : undefined}
-      tooltip={group.label}
+      tooltip={__t(group.label)}
       className={RAIL_ROW}
       onClick={onPress}
     >
@@ -502,7 +507,7 @@ function CourtNavGroupMark({
       {/* The glyph is decorative, so the button needs words of its own — and they say more
           than the tooltip beside it does. The tooltip names the section for someone who
           can see the strip; this names it and its consequence for someone who cannot. */}
-      <span className="sr-only">{group.label}, expands the navigation</span>
+      <span className="sr-only">{__t(group.label)}{<__LocalizedText id="employeeNav_expandsTheNavigation" />}</span>
     </SidebarMenuButton>
   );
 }
@@ -525,12 +530,13 @@ function CourtNavGroupMark({
  * in this rail relies on.
  */
 function CourtSearchRow() {
+  const __t = __useTranslations();
   const { open, shortcut } = useCourtSearch();
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         type="button"
-        tooltip="Search this court"
+        tooltip={__t("employeeNav_searchThisCourt")}
         aria-keyshortcuts="Meta+K Control+K"
         className={RAIL_ROW}
         onClick={open}
@@ -551,8 +557,7 @@ function CourtSearchRow() {
             of zero visible width is still a flex child; this row was written fresh and did
             not inherit it. */}
         <span className="min-w-0 flex-1 truncate group-data-[collapsible=icon]:hidden">
-          Search
-        </span>
+          {<__LocalizedText id="employeeNav_search" />}{" "}</span>
         {/* The advocate rail's own treatment (`SearchShortcut`), on the owner's call that
             the two should match: plain muted caption pushed to the trailing edge, not a
             bordered mono keycap. A stroked box in a rail whose only other strokes are its
@@ -644,6 +649,7 @@ function CourtNavBreak() {
  * is the only thing left holding twenty marks in groups.
  */
 function CourtNavOpenSection({ group }: { group: CourtNavGroup }) {
+  const __t = __useTranslations();
   return (
     /* `gap-0` folded, because the label is still a flex child there. The DS takes it out
        of view with `-mt-8 opacity-0` rather than `display:none` — so its height cancels
@@ -653,7 +659,7 @@ function CourtNavOpenSection({ group }: { group: CourtNavGroup }) {
     <div className="flex flex-col gap-1 group-data-[collapsible=icon]:gap-0">
       <CourtNavBreak />
       <SidebarGroupLabel className="sticky top-0 z-10 bg-sidebar">
-        {group.label}
+        {__t(group.label)}
       </SidebarGroupLabel>
       <SidebarMenu className={RAIL_MENU}>
         {group.items.map((item) => (
@@ -731,6 +737,7 @@ function CourtNavGroupSection({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const __t = __useTranslations();
   const Icon = group.icon;
   const collapsed = useRailCollapsed();
   const { setOpen: setRailOpen } = useSidebar();
@@ -799,7 +806,7 @@ function CourtNavGroupSection({
           >
             <Icon aria-hidden />
             <span className="min-w-0 flex-1 truncate text-left">
-              {group.label}
+              {__t(group.label)}
             </span>
             {/* One mark turned rather than two swapped: the toggle's width is constant
                 by construction, so the label's truncation point cannot move as the
@@ -871,6 +878,7 @@ function CourtNavGroupSection({
  * every other label in this rail makes when the strip takes over.
  */
 function CourtRailHeader() {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const { isMobile } = useSidebar();
   const { court } = useCourtSession();
@@ -893,7 +901,7 @@ function CourtRailHeader() {
           {...handoff}
           /* Only ever on screen while the rail is open, so the label states the one thing
              it does. Its counterpart on the bar names the other direction. */
-          aria-label="Collapse court navigation"
+          aria-label={__t("employeeNav_collapseCourtNavigation")}
           className={`${RAIL_ICON_BUTTON} group-data-[collapsible=icon]:hidden`}
         />
       )}
@@ -962,6 +970,7 @@ type MoreSetting = {
 };
 
 function CourtSettingsControl() {
+  const __t = __useTranslations();
   const seat = useCourtRole();
   const { court, setCourt } = useCourt();
   const [layout, setLayout] = useCourtNavLayout();
@@ -980,7 +989,7 @@ function CourtSettingsControl() {
        reloads them in this browser. */
     {
       id: "demo-seed",
-      label: "Demo data",
+      label: __t("employeeNav_demoData"),
       value: demoSeed,
       options: DEMO_SEED_OPTIONS,
       onChange: (next) => {
@@ -995,13 +1004,13 @@ function CourtSettingsControl() {
     },
     {
       id: "rail-layout",
-      label: "Rail layout",
+      label: __t("employeeNav_railLayout"),
       value: layout,
       options: [
-        { id: "open", label: "All queues" },
-        { id: "grouped", label: "Grouped by type" },
-        { id: "actions", label: "Today’s actions" },
-        { id: "schedule", label: "Today’s schedule" },
+        { id: "open", label: __t("employeeNav_allQueues") },
+        { id: "grouped", label: __t("employeeNav_groupedByType") },
+        { id: "actions", label: __t("employeeNav_todaySActions") },
+        { id: "schedule", label: __t("employeeNav_todaySSchedule") },
       ],
       onChange: (next) => setLayout(next as CourtNavLayout),
     },
@@ -1011,11 +1020,11 @@ function CourtSettingsControl() {
       ? [
           {
             id: "take-cognizance",
-            label: "Take cognizance",
+            label: __t("employeeNav_takeCognizance"),
             value: cognizanceLayout,
             options: [
-              { id: "tabs", label: "Combined, with tabs" },
-              { id: "split", label: "Split into two rows" },
+              { id: "tabs", label: __t("employeeNav_combinedWithTabs") },
+              { id: "split", label: __t("employeeNav_splitIntoTwoRows") },
             ],
             onChange: (next: string) =>
               setCognizanceLayout(next as CognizanceLayout),
@@ -1025,7 +1034,7 @@ function CourtSettingsControl() {
     /* Owner, 2026-10-15. */
     {
       id: "next-hearing-entry",
-      label: "Next hearing entered by",
+      label: __t("employeeNav_nextHearingEnteredBy"),
       value: nextHearingEntry,
       options: NEXT_HEARING_ENTRY_OPTIONS,
       onChange: (next) => setNextHearingEntry(next as NextHearingEntry),
@@ -1040,30 +1049,28 @@ function CourtSettingsControl() {
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="Court settings"
+            aria-label={__t("employeeNav_courtSettings")}
             onClick={() => setOpen(true)}
             className={`${RAIL_ICON_BUTTON} group-data-[collapsible=icon]:hidden`}
           >
             <SettingsIcon aria-hidden />
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="top">Court settings</TooltipContent>
+        <TooltipContent side="top">{<__LocalizedText id="employeeNav_courtSettings" />}</TooltipContent>
       </Tooltip>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-title-s font-semibold">
-              Court settings
-            </DialogTitle>
+              {<__LocalizedText id="employeeNav_courtSettings" />}{" "}</DialogTitle>
             <DialogDescription className="text-body-compact">
-              Changes apply at once, in this browser.
-            </DialogDescription>
+              {<__LocalizedText id="employeeNav_changesApplyAtOnceInThisBrowser" />}{" "}</DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="settings-seat">Working as</Label>
+              <Label htmlFor="settings-seat">{<__LocalizedText id="employeeNav_workingAs" />}</Label>
               <Select
                 value={seat}
                 onValueChange={(next) => setCourtRole(next as CourtRole)}
@@ -1081,7 +1088,7 @@ function CourtSettingsControl() {
               </Select>
             </div>
             <div className="flex flex-col gap-2" data-court-raw="">
-              <Label htmlFor="settings-court">Court</Label>
+              <Label htmlFor="settings-court">{<__LocalizedText id="employeeNav_court" />}</Label>
               <Select
                 value={court}
                 onValueChange={(next) => {
@@ -1110,8 +1117,7 @@ function CourtSettingsControl() {
                 size="sm"
                 className="group/more w-fit gap-1 px-2 text-muted-foreground"
               >
-                More settings
-                <ChevronDownIcon
+                {<__LocalizedText id="employeeNav_moreSettings" />}{" "}<ChevronDownIcon
                   aria-hidden
                   className="transition-transform group-data-[state=open]/more:rotate-180"
                 />
@@ -1127,7 +1133,7 @@ function CourtSettingsControl() {
                     htmlFor={`settings-${setting.id}`}
                     className="text-caption font-normal text-muted-foreground"
                   >
-                    {setting.label}
+                    {__t(setting.label)}
                   </Label>
                   <Select value={setting.value} onValueChange={setting.onChange}>
                     <SelectTrigger
@@ -1140,7 +1146,7 @@ function CourtSettingsControl() {
                     <SelectContent>
                       {setting.options.map((option) => (
                         <SelectItem key={option.id} value={option.id}>
-                          {option.label}
+                          {__t(option.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1155,8 +1161,7 @@ function CourtSettingsControl() {
                   htmlFor="settings-tabs-shown"
                   className="text-caption font-normal text-muted-foreground"
                 >
-                  Tabs to show
-                </Label>
+                  {<__LocalizedText id="employeeNav_tabsToShow" />}{" "}</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -1166,8 +1171,7 @@ function CourtSettingsControl() {
                       size="sm"
                       className="w-full justify-between font-normal"
                     >
-                      {shown.length} of {OPTIONAL_COURT_NAV_ROWS.length} shown
-                      <ChevronDownIcon aria-hidden className="text-muted-foreground" />
+                      {shown.length} {<__LocalizedText id="employeeNav_of" />}{" "}{OPTIONAL_COURT_NAV_ROWS.length} {<__LocalizedText id="employeeNav_shown" />}{" "}<ChevronDownIcon aria-hidden className="text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="min-w-56">
@@ -1184,7 +1188,7 @@ function CourtSettingsControl() {
                           )
                         }
                       >
-                        {row.label}
+                        {__t(row.label)}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </DropdownMenuContent>
@@ -1199,8 +1203,7 @@ function CourtSettingsControl() {
                 className="w-fit px-2 text-destructive"
                 onClick={() => setConfirmReset(true)}
               >
-                Reset sandbox data
-              </Button>
+                {<__LocalizedText id="employeeNav_resetSandboxData" />}{" "}</Button>
             </CollapsibleContent>
           </Collapsible>
         </DialogContent>
@@ -1209,15 +1212,12 @@ function CourtSettingsControl() {
       <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Reset sandbox data?</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="employeeNav_resetSandboxData_c0589cf4" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              The sample applications come back, and the hearings and orders go
-              back to the chosen demo data. Applications filed, orders typed and bulk
-              batches made in this browser are removed. This cannot be undone.
-            </AlertDialogDescription>
+              {<__LocalizedText id="employeeNav_theSampleApplicationsComeBackAndThe" />}{" "}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="employeeNav_cancel" />}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={() => {
@@ -1226,8 +1226,7 @@ function CourtSettingsControl() {
                 toast("Sandbox data reset. The sample applications are back.");
               }}
             >
-              Reset
-            </AlertDialogAction>
+              {<__LocalizedText id="employeeNav_reset" />}{" "}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -1314,7 +1313,7 @@ function CourtIdentityFooter() {
             onClick={onSignOut}
           >
             <LogOutIcon aria-hidden />
-            <span className="flex-1 text-left">Sign out</span>
+            <span className="flex-1 text-left">{<__LocalizedText id="employeeNav_signOut" />}</span>
           </Button>
         </PopoverContent>
       </Popover>
@@ -1360,7 +1359,7 @@ function withShownRows(
 }
 
 export function EmployeeNav() {
-  const [cognizanceLayout] = useCognizanceLayout();
+    const [cognizanceLayout] = useCognizanceLayout();
   const seat = useCourtRole();
   const { court } = useCourt();
   /* The split rows are the delay split's; a case-type deployment keeps its tabs. */

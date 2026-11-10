@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -94,6 +96,7 @@ const readToday = () => isoDay(new Date());
  * `lib/employee/sign-a-diary.ts`.
  */
 export function SignADiaryScreen() {
+  const __t = __useTranslations();
   const today = React.useSyncExternalStore(
     NEVER_CHANGES,
     readToday,
@@ -180,8 +183,7 @@ export function SignADiaryScreen() {
           tabIndex={-1}
           className="text-title text-balance font-semibold outline-none"
         >
-          Sign A-Diary
-        </h1>
+          {<__LocalizedText id="signADiaryScreen_signADiary" />}{" "}</h1>
         {/* The count is the whole point of the queue, so the supporting line carries it
             rather than restating the title. It counts days, because a day is what gets
             signed, and only days that are over, because only those can be — the same
@@ -189,11 +191,11 @@ export function SignADiaryScreen() {
             of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {register.length === 0
-            ? "This court's A-Diary is signed up to date."
+            ? __t("signADiaryScreen_thisCourtSADiaryIsSigned")
             : waitingDays.length === 0
-              ? "Nothing is waiting for your signature. Today's A-Diary can be signed once the day is over."
+              ? __t("signADiaryScreen_nothingIsWaitingForYourSignatureToday")
               : waitingDays.length === 1
-                ? "1 day of this court's A-Diary is waiting for your signature."
+                ? __t("signADiaryScreen_1DayOfThisCourtSA")
                 : `${waitingDays.length} days of this court's A-Diary are waiting for your signature.`}
         </p>
       </header>
@@ -213,14 +215,13 @@ export function SignADiaryScreen() {
           />
           {rows.length === 0 ? null : canSignADiaryDay(shownDay, today) ? (
             <Button onClick={() => setSigningDay(shownDay)}>
-              Sign the A-Diary for {formatADiaryDate(shownDay)}
+              {<__LocalizedText id="signADiaryScreen_signTheADiaryFor" />}{" "}{formatADiaryDate(shownDay)}
             </Button>
           ) : (
             /* Today, said in words rather than as a disabled button: what the bench
                needs to know is when, not that it cannot. */
             <p className="text-body-compact text-muted-foreground sm:max-w-xs sm:text-right">
-              This day&apos;s A-Diary can be signed once the day is over.
-            </p>
+              {<__LocalizedText id="signADiaryScreen_thisDaySADiaryCanBe" />}{" "}</p>
           )}
         </div>
 
@@ -327,6 +328,7 @@ function SignADiaryFilters({
   unsignedDays: string[];
   onChange: (filters: ADiaryFilters) => void;
 }) {
+  const __t = __useTranslations();
   const day = resolveADiaryDay(filters, today);
   const [open, setOpen] = React.useState(false);
   const unsigned = React.useMemo(() => unsignedDays.map(parseIsoDay), [unsignedDays]);
@@ -337,8 +339,7 @@ function SignADiaryFilters({
       onSubmit={(event) => event.preventDefault()}
     >
       <Label htmlFor="sign-a-diary-date" className="w-fit text-body-compact font-medium">
-        A-Diary dated
-      </Label>
+        {<__LocalizedText id="signADiaryScreen_aDiaryDated" />}{" "}</Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -365,8 +366,8 @@ function SignADiaryFilters({
             modifiers={{ unsigned }}
             labels={{
               labelDayButton: (date, modifiers) =>
-                `${formatCourtDay(isoDay(date))}${modifiers.unsigned ? ", unsigned" : ""}${
-                  modifiers.selected ? ", selected" : ""
+                `${formatCourtDay(isoDay(date))}${modifiers.unsigned ? __t("signADiaryScreen_unsigned_aca017d3") : ""}${
+                  modifiers.selected ? __t("signADiaryScreen_selected") : ""
                 }`,
             }}
             components={{ DayButton: UnsignedDayButton }}
@@ -374,8 +375,7 @@ function SignADiaryFilters({
           />
           <p className="flex items-center gap-2 text-caption text-muted-foreground">
             <span aria-hidden className="size-1.5 rounded-full bg-current" />
-            Unsigned
-          </p>
+            {<__LocalizedText id="signADiaryScreen_unsigned" />}{" "}</p>
         </PopoverContent>
       </Popover>
     </form>
@@ -427,6 +427,7 @@ function SignADiaryEmpty({
   signed: boolean;
   onShowToday: () => void;
 }) {
+  const __t = __useTranslations();
   const isToday = day === today;
 
   if (signed) {
@@ -437,17 +438,14 @@ function SignADiaryEmpty({
             <BookCheckIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            The A-Diary for {formatADiaryDate(day)} is signed
-          </EmptyTitle>
+            {<__LocalizedText id="signADiaryScreen_theADiaryFor" />}{" "}{formatADiaryDate(day)} {<__LocalizedText id="signADiaryScreen_isSigned" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
-            Its entries can no longer be changed.
-          </EmptyDescription>
+            {<__LocalizedText id="signADiaryScreen_itsEntriesCanNoLongerBeChanged" />}{" "}</EmptyDescription>
         </EmptyHeader>
         {hasUnsigned ? (
           <EmptyContent>
             <Button variant="outline" onClick={onShowToday}>
-              Show today&apos;s diary
-            </Button>
+              {<__LocalizedText id="signADiaryScreen_showTodaySDiary" />}{" "}</Button>
           </EmptyContent>
         ) : null}
       </Empty>
@@ -462,11 +460,9 @@ function SignADiaryEmpty({
             <BookCheckIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            The A-Diary is signed
-          </EmptyTitle>
+            {<__LocalizedText id="signADiaryScreen_theADiaryIsSigned" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
-            Every day of this court&apos;s A-Diary carries your signature.
-          </EmptyDescription>
+            {<__LocalizedText id="signADiaryScreen_everyDayOfThisCourtSA" />}{" "}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -484,20 +480,19 @@ function SignADiaryEmpty({
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isToday
-            ? "Nothing in today's diary yet"
-            : `No entry for ${formatADiaryDate(day)}`}
+            ? __t("signADiaryScreen_nothingInTodaySDiaryYet")
+            : __t("signADiaryScreen_noEntryForValue0", {value0: String(formatADiaryDate(day))})}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isToday
-            ? "Entries appear here as this court deals with the matters on today's list."
-            : `This court's register holds no unsigned entry for ${formatCourtDay(day)}.`}
+            ? __t("signADiaryScreen_entriesAppearHereAsThisCourtDeals")
+            : __t("signADiaryScreen_thisCourtSRegisterHoldsNoUnsigned", {value0: String(formatCourtDay(day))})}
         </EmptyDescription>
       </EmptyHeader>
       {isToday ? null : (
         <EmptyContent>
           <Button variant="outline" onClick={onShowToday}>
-            Show today&apos;s diary
-          </Button>
+            {<__LocalizedText id="signADiaryScreen_showTodaySDiary" />}{" "}</Button>
         </EmptyContent>
       )}
     </Empty>
@@ -519,6 +514,7 @@ function SignADiaryItemList({
   rows: ADiaryEntry[];
   onOpen: (entry: ADiaryEntry) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   return (
     <ul className="flex flex-col gap-3">
@@ -531,13 +527,13 @@ function SignADiaryItemList({
                 className={rowOpenerClass}
           >
             <span className="sr-only">
-              Read and correct the entry in {courtText(entry.caseNumber)}.{" "}
+              {<__LocalizedText id="signADiaryScreen_readAndCorrectTheEntryIn" />}{" "}{courtText(entry.caseNumber)}.{" "}
             </span>
             <span className="line-clamp-4">{entry.business}</span>
           </button>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={entry.caseNumber} label="case number" />
-            {" · Next hearing "}
+            <Identifier value={entry.caseNumber} label={__t("signADiaryScreen_caseNumber")} />
+            {__t("signADiaryScreen_nextHearing")}
             <span className="tabular-nums">
               {formatADiaryDate(entry.nextHearing)}
             </span>

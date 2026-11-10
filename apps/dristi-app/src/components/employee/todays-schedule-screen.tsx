@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -32,6 +34,7 @@ const readToday = () => isoDay(new Date());
  * screen just carves the hearings out of it first.
  */
 export function TodaysScheduleScreen() {
+  const __t = __useTranslations();
   const today = React.useSyncExternalStore(NEVER_CHANGES, readToday, readToday);
   const { court } = useCourt();
   const seat = useCourtRole();
@@ -44,27 +47,25 @@ export function TodaysScheduleScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Today’s schedule
-        </h1>
+          {<__LocalizedText id="todaysScheduleScreen_todaySSchedule" />}{" "}</h1>
         <p className="text-body text-muted-foreground tabular-nums">
-          Today, {formatCourtDay(today)} ·{" "}
-          {total === 1 ? "1 waiting" : `${total} waiting`}
+          {<__LocalizedText id="todaysScheduleScreen_today" />}{" "}{formatCourtDay(today)} ·{" "}
+          {total === 1 ? __t("todaysScheduleScreen_1Waiting") : `${total} waiting`}
         </p>
       </header>
 
       {hearings?.href ? (
         <section
-          aria-label="Today's hearings"
+          aria-label={__t("todaysScheduleScreen_todaySHearings")}
           className="flex min-w-0 flex-col gap-4 rounded-xl border border-hairline bg-card shadow-raised p-6"
         >
           <Item asChild variant="outline" className="px-6 py-4">
             <Link href={hearings.href}>
               <ItemContent>
                 <span className="text-caption font-medium text-muted-foreground">
-                  Conducting today
-                </span>
+                  {<__LocalizedText id="todaysScheduleScreen_conductingToday" />}{" "}</span>
                 <ItemTitle className="text-title-s font-semibold">
-                  {hearings.label}
+                  {__t(hearings.label)}
                 </ItemTitle>
               </ItemContent>
               <ItemActions className="gap-3">
@@ -73,8 +74,7 @@ export function TodaysScheduleScreen() {
                     {hearings.count ?? 0}
                   </span>
                   <span className="text-caption text-muted-foreground">
-                    listed
-                  </span>
+                    {<__LocalizedText id="todaysScheduleScreen_listed" />}{" "}</span>
                 </span>
                 <ChevronRightIcon
                   aria-hidden
@@ -87,12 +87,11 @@ export function TodaysScheduleScreen() {
       ) : null}
 
       <section
-        aria-label="The rest of today's work"
+        aria-label={__t("todaysScheduleScreen_theRestOfTodaySWork")}
         className="flex min-w-0 flex-col gap-4 rounded-xl border border-hairline bg-card shadow-raised p-6"
       >
         <h2 className="text-body-compact font-medium text-muted-foreground">
-          Other work today
-        </h2>
+          {<__LocalizedText id="todaysScheduleScreen_otherWorkToday" />}{" "}</h2>
         <ItemGroup className="gap-3">
           {rest
             .filter((item) => item.href)

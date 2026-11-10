@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CircleCheckIcon, TriangleAlertIcon } from "lucide-react";
@@ -98,6 +100,7 @@ function MoveConfirmBody({
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   /* Captured on opening: the act empties the selection, and the question must not
      change under the clerk. */
   const [count] = React.useState(givenCount);
@@ -158,16 +161,15 @@ function MoveConfirmBody({
           <>
             {onDownload ? (
               <Button type="button" variant="outline" onClick={onDownload}>
-                Download {count} {one ? "document" : "documents"}
+                {<__LocalizedText id="processMoveDialog_download" />}{" "}{count} {one ? __t("processMoveDialog_document") : __t("processMoveDialog_documents")}
               </Button>
             ) : null}
             <Button ref={doneRef} type="button" onClick={onClose}>
-              Done
-            </Button>
+              {<__LocalizedText id="processMoveDialog_done" />}{" "}</Button>
           </>
         ) : (
           <>
-            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="processMoveDialog_back" />}</AlertDialogCancel>
             {/* A plain button, not the primitive's Action, which would close the window
                 before the outcome could show. */}
             <Button
@@ -177,7 +179,7 @@ function MoveConfirmBody({
                 setDone(true);
               }}
             >
-              {act.confirm}
+              {__t(act.confirm)}
             </Button>
           </>
         )}

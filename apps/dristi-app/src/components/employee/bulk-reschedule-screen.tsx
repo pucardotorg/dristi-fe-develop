@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -212,6 +214,7 @@ function nextRangeFromPick(
  * the place it matters, rather than letting the screen imply the act is finished.
  */
 export function BulkRescheduleScreen() {
+  const __t = __useTranslations();
   const today = React.useSyncExternalStore(NEVER_CHANGES, readToday, readToday);
 
   /* One applied state, which is what the board answers. The search reaches it as it is
@@ -439,8 +442,7 @@ export function BulkRescheduleScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Bulk reschedule hearings
-        </h1>
+          {<__LocalizedText id="bulkRescheduleScreen_bulkRescheduleHearings" />}{" "}</h1>
       </header>
 
       {/* One panel: the range and the list are one unit of work, so they share one lifted
@@ -474,7 +476,7 @@ export function BulkRescheduleScreen() {
           <div className="overflow-x-auto border-b border-hairline">
             <TabsList
               variant="line"
-              aria-label="Which matters to show"
+              aria-label={__t("bulkRescheduleScreen_whichMattersToShow")}
               className="h-10 w-max min-w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-10"
             >
               {(
@@ -504,7 +506,7 @@ export function BulkRescheduleScreen() {
                   value={value}
                   className="h-10 flex-none gap-2 px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
                 >
-                  {label}
+                  {__t(label)}
                   {/* How much is standing here, inheriting the trigger's colour so the
                       count and its label read as one thing rather than as a badge stuck
                       to a tab (ui-craft §2). */}
@@ -650,6 +652,7 @@ function RangeFilters({
   onQueryChange: (query: string) => void;
   onRangeChange: (from: string | null, to: string | null) => void;
 }) {
+  const __t = __useTranslations();
   return (
     /* Two fields, each a label over one control — the shape today's cause list uses,
        so the bottoms line up. */
@@ -659,7 +662,7 @@ function RangeFilters({
     >
       <RangeField
         id="reschedule-range"
-        label="Hearing dates"
+        label={__t("bulkRescheduleScreen_hearingDates")}
         range={filters}
         floor={floor}
         onChange={onRangeChange}
@@ -667,11 +670,11 @@ function RangeFilters({
       />
 
       <QueueSearchField
-        label="Search cases"
+        label={__t("bulkRescheduleScreen_searchCases")}
         className="sm:w-64"
         value={filters.query}
         onChange={onQueryChange}
-        placeholder="Case name or number"
+        placeholder={__t("bulkRescheduleScreen_caseNameOrNumber")}
       />
     </form>
   );
@@ -774,6 +777,7 @@ function RangeField({
   onChange: (from: string | null, to: string | null) => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
   /* What the calendar is showing, which is the applied span until the bench draws over
      it. Seeded every time the surface opens rather than once, so a span abandoned by an
@@ -833,7 +837,7 @@ function RangeField({
         data-range-part={id}
         className="w-fit text-body-compact font-medium"
       >
-        {label}
+        {__t(label)}
       </label>
       <div className={cn("relative w-full min-w-0", className)}>
         <Popover
@@ -974,8 +978,7 @@ function RangeField({
                 onClick={applyDraft}
                 className="w-full md:w-auto"
               >
-                Apply
-              </Button>
+                {<__LocalizedText id="bulkRescheduleScreen_apply" />}{" "}</Button>
             </div>
           </PopoverContent>
         </Popover>
@@ -1003,7 +1006,7 @@ function RangeField({
             size="icon-xs"
             /* Named for what it does, which is not "clear the field": it puts the board
                back on the court's own day. */
-            aria-label={`Back to ${floor.from === null ? "no dates" : formatListingDate(floor.from)}`}
+            aria-label={__t("bulkRescheduleScreen_backToValue0", {value0: String(floor.from === null ? __t("bulkRescheduleScreen_noDates") : formatListingDate(floor.from))})}
             onClick={() => {
               onChange(floor.from, floor.to);
               /* The field's own clear is not a draft: it gives the span back on the
@@ -1045,6 +1048,7 @@ function NothingToMove({
   everythingMoved: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   /* With no span asked for, the board is everything this court has listed — so there is
      no window to name and the sentence does without one. */
   const span =
@@ -1068,24 +1072,23 @@ function NothingToMove({
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isSearched
-            ? "No matters match this search"
+            ? __t("bulkRescheduleScreen_noMattersMatchThisSearch")
             : everythingMoved
-              ? "Everything here has been rescheduled"
-              : "Nothing to move"}
+              ? __t("bulkRescheduleScreen_everythingHereHasBeenRescheduled")
+              : __t("bulkRescheduleScreen_nothingToMove")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isSearched
-            ? `No matter listed${span} matches the case name or number you asked for.`
+            ? __t("bulkRescheduleScreen_noMatterListedValue0MatchesTheCase", {value0: String(span)})
             : everythingMoved
-              ? `Every matter listed${span} is on the Recently scheduled tab.`
-              : `This court has nothing listed${span} that it could move.`}
+              ? __t("bulkRescheduleScreen_everyMatterListedValue0IsOnThe", {value0: String(span)})
+              : __t("bulkRescheduleScreen_thisCourtHasNothingListedValue0That", {value0: String(span)})}
         </EmptyDescription>
       </EmptyHeader>
       {isSearched ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
-          </Button>
+            {<__LocalizedText id="bulkRescheduleScreen_clearFilters" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -1125,6 +1128,7 @@ function RescheduledRecord({
   shownDay: string | null;
   onShowDay: (day: string | null) => void;
 }) {
+  const __t = __useTranslations();
   const newDate = { days, value: shownDay, onChange: onShowDay };
 
   return (
@@ -1139,8 +1143,7 @@ function RescheduledRecord({
       {days.length > 1 ? (
         <div className="flex flex-col gap-2 xl:hidden">
           <span className="text-body font-medium" id="record-date-filter">
-            New hearing date
-          </span>
+            {<__LocalizedText id="bulkRescheduleScreen_newHearingDate" />}{" "}</span>
           <div className="sm:w-64">
             <NewDateFilterField
               days={days}
@@ -1173,8 +1176,8 @@ function RescheduledRecord({
             newDate={newDate}
             caption={
               shownDay === null
-                ? "Hearings this session has rescheduled"
-                : `Hearings rescheduled to ${formatCourtDay(shownDay)}`
+                ? __t("bulkRescheduleScreen_hearingsThisSessionHasRescheduled")
+                : __t("bulkRescheduleScreen_hearingsRescheduledToValue0", {value0: String(formatCourtDay(shownDay))})
             }
           />
         </div>
@@ -1201,12 +1204,9 @@ function NothingRescheduled() {
           <CalendarCheck2Icon aria-hidden />
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          Nothing rescheduled yet
-        </EmptyTitle>
+          {<__LocalizedText id="bulkRescheduleScreen_nothingRescheduledYet" />}{" "}</EmptyTitle>
         <EmptyDescription className="text-body">
-          Matters you move from the All hearings tab appear here, with the date
-          they were listed on and the date they go to.
-        </EmptyDescription>
+          {<__LocalizedText id="bulkRescheduleScreen_mattersYouMoveFromTheAllHearings" />}{" "}</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );
@@ -1238,6 +1238,7 @@ function RescheduleItemList({
   /** The record's rows say where they went as well as where they were. */
   showNewDate?: boolean;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   return (
     <ul className="flex flex-col gap-3">
@@ -1275,19 +1276,19 @@ function RescheduleItemList({
                   onCheckedChange={(next) =>
                     selection.onToggle(row.id, next === true)
                   }
-                  aria-label={`Select ${row.title}, ${courtText(row.caseNumber)}`}
+                  aria-label={__t("bulkRescheduleScreen_selectValue0Value1", {value0: String(__t(row.title)), value1: String(courtText(row.caseNumber))})}
                 />
               </span>
             ) : null}
             <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <p className="text-body-compact font-medium">{row.title}</p>
+              <p className="text-body-compact font-medium">{__t(row.title)}</p>
               <p className="text-caption text-muted-foreground">
-                <Identifier value={row.caseNumber} label="case number" /> ·{" "}
+                <Identifier value={row.caseNumber} label={__t("bulkRescheduleScreen_caseNumber")} /> ·{" "}
                 {courtCaseStageLabel(row.stage)} ·{" "}
                 {courtHearingPurposeLabel(row.purpose)}
               </p>
               <p className="text-body-compact tabular-nums text-muted-foreground">
-                {selection ? "" : "Previously "}
+                {selection ? "" : __t("bulkRescheduleScreen_previously")}
                 {formatListingDate(row.date)}
               </p>
               {/* The move's other end, in the row's one emphasised line — the same
@@ -1295,7 +1296,7 @@ function RescheduleItemList({
                   the record exists to state. */}
               {showNewDate && row.newDate ? (
                 <p className="text-body-compact font-medium tabular-nums">
-                  New hearing date · {formatListingDate(row.newDate)}
+                  {<__LocalizedText id="bulkRescheduleScreen_newHearingDate_cbd68346" />}{" "}{formatListingDate(row.newDate)}
                 </p>
               ) : null}
             </div>
@@ -1354,6 +1355,7 @@ function CommitBar({
    */
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
   const summaryRef = React.useRef<HTMLParagraphElement>(null);
   const count = selected.length;
@@ -1392,9 +1394,9 @@ function CommitBar({
           aria-live="polite"
         >
           {total === 0
-            ? "Nothing listed in this range."
+            ? __t("bulkRescheduleScreen_nothingListedInThisRange")
             : count === 0
-              ? "Select the matters to move."
+              ? __t("bulkRescheduleScreen_selectTheMattersToMove")
               : `${count} of ${total} ${plural(total, "matter", "matters")} selected`}
         </p>
 
@@ -1414,8 +1416,8 @@ function CommitBar({
           <DialogTrigger asChild>
             <Button disabled={count === 0} className="w-full sm:w-fit">
               {count > 0
-                ? `Reschedule ${count} ${plural(count, "hearing", "hearings")}`
-                : "Reschedule hearings"}
+                ? __t("bulkRescheduleScreen_rescheduleValue0Value1", {value0: String(count), value1: String(plural(count, "hearing", "hearings"))})
+                : __t("bulkRescheduleScreen_rescheduleHearings")}
             </Button>
           </DialogTrigger>
           {/* Always mounted; `session` is what starts it over — see above. Radix takes
@@ -1560,6 +1562,7 @@ function RescheduleOverlay({
   onReschedule: (day: string, moving: ReschedulableHearing[]) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const [day, setDay] = React.useState<string | null>(null);
   /**
    * What the act did, captured at the moment it ran.
@@ -1631,8 +1634,8 @@ function RescheduleOverlay({
         stage === "signed" && outcome
           ? `${outcome.moved} ${plural(outcome.moved, "hearing", "hearings")} rescheduled`
           : stage === "sign"
-            ? "Sign the rescheduling order"
-            : "Pick a new date"
+            ? __t("bulkRescheduleScreen_signTheReschedulingOrder")
+            : __t("bulkRescheduleScreen_pickANewDate")
       }
       titleRef={flow.titleRef}
       sceneKey={flow.sceneKey}
@@ -1675,9 +1678,8 @@ function RescheduleOverlay({
       description={
         stage === "day" ? (
           <DialogDescription className="text-body-compact tabular-nums text-muted-foreground">
-            {count} selected {plural(count, "hearing", "hearings")}{" "}
-            {plural(count, "moves", "move")} to one new date.
-          </DialogDescription>
+            {count} {<__LocalizedText id="bulkRescheduleScreen_selected" />}{" "}{plural(count, "hearing", "hearings")}{" "}
+            {plural(count, "moves", "move")} {<__LocalizedText id="bulkRescheduleScreen_toOneNewDate" />}{" "}</DialogDescription>
         ) : null
       }
       footer={
@@ -1691,12 +1693,11 @@ function RescheduleOverlay({
                 identical before the signature and after it, which is the whole claim the
                 resolving band is making. */}
             <p className="text-body-compact text-muted-foreground sm:mr-auto sm:self-center">
-              No notification has gone to the parties yet.
-            </p>
+              {<__LocalizedText id="bulkRescheduleScreen_noNotificationHasGoneToTheParties" />}{" "}</p>
             {/* One way out, and it is the way back to the board — where the rows the act
                 moved are now carrying both of their dates. */}
             <DialogClose asChild>
-              <Button type="button">Done</Button>
+              <Button type="button">{<__LocalizedText id="bulkRescheduleScreen_done" />}</Button>
             </DialogClose>
           </>
         ) : stage === "sign" ? (
@@ -1704,8 +1705,7 @@ function RescheduleOverlay({
             {/* Ghost, like the step back on the registrations overlay: retracing is not
                 an alternative to the act beside it. */}
             <Button type="button" variant="ghost" onClick={() => go("day")}>
-              Back
-            </Button>
+              {<__LocalizedText id="bulkRescheduleScreen_back" />}{" "}</Button>
             {/* **Sign and reschedule** — the verb and what it achieves, which is the
                 shape the court side already uses for a signature that does something
                 beyond being a signature: an order's footer says *Sign and publish*
@@ -1739,15 +1739,13 @@ function RescheduleOverlay({
                 go("signed");
               }}
             >
-              Sign and reschedule
-            </Button>
+              {<__LocalizedText id="bulkRescheduleScreen_signAndReschedule" />}{" "}</Button>
           </>
         ) : (
           <>
             <DialogClose asChild>
               <Button type="button" variant="ghost">
-                Cancel
-              </Button>
+                {<__LocalizedText id="bulkRescheduleScreen_cancel" />}{" "}</Button>
             </DialogClose>
             {/* Off until a day is held. Nothing else can be wrong with it: the calendar
                 offers no day that any of these matters is already on or past.
@@ -1768,8 +1766,7 @@ function RescheduleOverlay({
               disabled={day === null}
               onClick={() => go("sign")}
             >
-              Next
-            </Button>
+              {<__LocalizedText id="bulkRescheduleScreen_next" />}{" "}</Button>
           </>
         )
       }
@@ -1831,6 +1828,7 @@ function PickDay({
    */
   earliest: string;
 }) {
+  const __t = __useTranslations();
   return (
     <Card size="sm" className="border-hairline px-4 shadow-raised">
       <div className="flex flex-col gap-3">
@@ -1848,7 +1846,7 @@ function PickDay({
             grid moves, and only where it has to. */}
         <div
           role="group"
-          aria-label="New hearing date"
+          aria-label={__t("bulkRescheduleScreen_newHearingDate")}
           className="-mx-3 sm:mx-0"
         >
           <Calendar
@@ -1974,11 +1972,10 @@ function SignOrder({
             {/* `role="status"` is what gets the outcome spoken: focus lands on the header
                 title, which announces itself and nothing under it. */}
             <span role="status" className="font-medium">
-              Order signed
-            </span>
+              {<__LocalizedText id="bulkRescheduleScreen_orderSigned" />}{" "}</span>
           </>
         ) : (
-          <span className="font-medium">Preparing to move</span>
+          <span className="font-medium">{<__LocalizedText id="bulkRescheduleScreen_preparingToMove" />}</span>
         )}
       </div>
 
@@ -1999,15 +1996,14 @@ function SignOrder({
         className="grid grid-cols-1 px-4 sm:grid-cols-[auto_1fr] [&>*]:col-span-1 [&>*]:gap-x-4 [&>*]:gap-y-0.5 sm:[&>*]:col-span-2 [&>*]:grid-cols-subgrid"
       >
         <DescriptionRow className="border-hairline">
-          <DescriptionTerm className="text-body-compact">Cases</DescriptionTerm>
+          <DescriptionTerm className="text-body-compact">{<__LocalizedText id="bulkRescheduleScreen_cases" />}</DescriptionTerm>
           <DescriptionDetails className="text-body-compact tabular-nums">
             {cases} {plural(cases, "case", "cases")}
           </DescriptionDetails>
         </DescriptionRow>
         <DescriptionRow className="border-hairline">
           <DescriptionTerm className="text-body-compact">
-            To new hearing date
-          </DescriptionTerm>
+            {<__LocalizedText id="bulkRescheduleScreen_toNewHearingDate" />}{" "}</DescriptionTerm>
           {/* The court's own register writes the day, weekday and all: the bench is
               committing to a sitting day, and which day of the week it is is half of
               what makes that answer right. */}

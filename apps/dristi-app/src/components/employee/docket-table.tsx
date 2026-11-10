@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CircleAlertIcon } from "lucide-react";
@@ -59,30 +61,32 @@ const TONE_VARIANT: Record<StatusTone, "success" | "warning" | "info" | "outline
 
 /** A status in its DS fill pair, always with its word — and an alert mark when it warns. */
 export function StatusBadge({ text, tone }: { text: string; tone: StatusTone }) {
+  const __t = __useTranslations();
   return (
     <Badge variant={TONE_VARIANT[tone]}>
       {tone === "warning" ? <CircleAlertIcon aria-hidden data-icon="inline-start" /> : null}
-      {text}
+      {__t(text)}
     </Badge>
   );
 }
 
 /** One register cell, drawn for what it holds. */
 export function CellView({ value }: { value: CellValue }) {
+  const __t = __useTranslations();
   switch (value.kind) {
     case "text":
-      return <span className={value.strong ? "font-semibold" : undefined}>{value.text}</span>;
+      return <span className={value.strong ? "font-semibold" : undefined}>{__t(value.text)}</span>;
     case "id":
-      return <Identifier value={value.text} label={value.label} />;
+      return <Identifier value={value.text} label={__t(value.label)} />;
     case "case":
       return (
         <span className="flex min-w-0 flex-col gap-0.5">
           <Identifier
             value={value.number}
-            label="case number"
+            label={__t("docketTable_caseNumber")}
             className="w-fit text-muted-foreground"
           />
-          <span className="font-medium">{value.title}</span>
+          <span className="font-medium">{__t(value.title)}</span>
         </span>
       );
     case "date":
@@ -105,7 +109,7 @@ export function CellView({ value }: { value: CellValue }) {
       return (
         <span className="text-muted-foreground">
           <span aria-hidden>—</span>
-          <span className="sr-only">None</span>
+          <span className="sr-only">{<__LocalizedText id="docketTable_none" />}</span>
         </span>
       );
   }
@@ -132,14 +136,15 @@ export function DocketTable({
   /** Lead with the register's "Sl. no." column. */
   serial?: boolean;
 }) {
+  const __t = __useTranslations();
   const span = columns.length + (serial ? 1 : 0);
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
-      <caption className="sr-only">{caption}</caption>
+      <caption className="sr-only">{__t(caption)}</caption>
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           {serial ? (
-            <TableHead className={cn(TABLE_HEAD, "w-px text-right whitespace-nowrap")}>Sl. no.</TableHead>
+            <TableHead className={cn(TABLE_HEAD, "w-px text-right whitespace-nowrap")}>{<__LocalizedText id="docketTable_slNo" />}</TableHead>
           ) : null}
           {columns.map((column) => (
             <TableHead
@@ -214,6 +219,7 @@ export function DocketCaseList({
   rows: CaseListRow[];
   daysHeader: string;
 }) {
+  const __t = __useTranslations();
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -228,7 +234,7 @@ export function DocketCaseList({
       wrap: true,
       cell: (row) => {
         const c = (row as CaseListRow).case;
-        return { kind: "case", number: c.caseNumber, title: c.title };
+        return { kind: "case", number: c.caseNumber, title: __t(c.title) };
       },
     },
     { header: "Stage", cell: (row) => ({ kind: "text", text: stageLabel((row as CaseListRow).case) }) },
@@ -241,14 +247,14 @@ export function DocketCaseList({
   ];
 
   if (rows.length === 0) {
-    return <p className="text-body-compact text-muted-foreground">No cases.</p>;
+    return <p className="text-body-compact text-muted-foreground">{<__LocalizedText id="docketTable_noCases" />}</p>;
   }
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
       <div className="min-w-0 overflow-x-auto">
-        <DocketTable caption={caption} columns={columns} rows={pageRows} serial={false} />
+        <DocketTable caption={__t(caption)} columns={columns} rows={pageRows} serial={false} />
       </div>
       <ListFooter
         id={`${id}-page-size`}

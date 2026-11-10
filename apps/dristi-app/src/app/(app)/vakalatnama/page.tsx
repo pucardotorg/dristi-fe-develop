@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /** Vakalatnama — list of instruments in this browser, and the entry point to create one. */
 
@@ -52,20 +54,17 @@ export default function VakalatnamaListPage() {
             (owner, Sept 21): beside a two-line subtitle it crowded the heading. */}
         <header className="flex flex-col gap-4 sm:landscape:flex-row sm:landscape:items-start sm:landscape:justify-between">
           <div className="flex min-w-0 flex-col gap-1">
-            <h1 className={PAGE_TITLE}>Vakalatnama</h1>
+            <h1 className={PAGE_TITLE}>{<__LocalizedText id="vakalatnamaPage_vakalatnama" />}</h1>
             <p className={PAGE_SUBTITLE}>
-              Appoint advocates for a litigant, for one case or all cases. You can start one
-              before a case is filed.
-            </p>
+              {<__LocalizedText id="vakalatnamaPage_appointAdvocatesForALitigantForOne" />}{" "}</p>
           </div>
           <Button type="button" onClick={create} className="shrink-0 self-start max-sm:w-full max-sm:self-stretch">
             <PlusIcon aria-hidden />
-            New vakalatnama
-          </Button>
+            {<__LocalizedText id="vakalatnamaPage_newVakalatnama" />}{" "}</Button>
         </header>
 
         <section className="flex flex-col gap-4">
-          <h2 className="text-body font-semibold">Your vakalatnamas</h2>
+          <h2 className="text-body font-semibold">{<__LocalizedText id="vakalatnamaPage_yourVakalatnamas" />}</h2>
 
           {!ready ? null : list.length === 0 ? (
             <Card className={PANEL_CLASS}>
@@ -74,10 +73,9 @@ export default function VakalatnamaListPage() {
                   <EmptyMedia variant="icon">
                     <ScrollTextIcon aria-hidden />
                   </EmptyMedia>
-                  <EmptyTitle>Nothing here yet</EmptyTitle>
+                  <EmptyTitle>{<__LocalizedText id="vakalatnamaPage_nothingHereYet" />}</EmptyTitle>
                   <EmptyDescription>
-                    Create your first vakalatnama to appoint an advocate.
-                  </EmptyDescription>
+                    {<__LocalizedText id="vakalatnamaPage_createYourFirstVakalatnamaToAppointAn" />}{" "}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             </Card>
@@ -95,6 +93,7 @@ export default function VakalatnamaListPage() {
 }
 
 function VakRow({ vak, onDiscard }: { vak: Vakalatnama; onDiscard: () => void }) {
+  const __t = __useTranslations();
   const name = executantName(vak.executant);
   const advocates = vak.advocates.length;
 
@@ -111,10 +110,10 @@ function VakRow({ vak, onDiscard }: { vak: Vakalatnama; onDiscard: () => void })
             </span>
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className="truncate text-body font-medium">
-                {name === "the litigant" ? "Untitled vakalatnama" : name}
+                {name === "the litigant" ? __t("vakalatnamaPage_untitledVakalatnama") : name}
               </span>
               <span className="truncate text-caption text-muted-foreground">
-                {scopeLabel(vak)} · {advocates} advocate{advocates === 1 ? "" : "s"}
+                {scopeLabel(vak)} · {advocates} {<__LocalizedText id="vakalatnamaPage_advocate" />}{advocates === 1 ? "" : "s"}
               </span>
             </div>
           </Link>
@@ -127,7 +126,7 @@ function VakRow({ vak, onDiscard }: { vak: Vakalatnama; onDiscard: () => void })
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="Discard"
+            aria-label={__t("vakalatnamaPage_discard")}
             onClick={onDiscard}
             className="text-muted-foreground"
           >

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -168,6 +170,7 @@ function PanelResizeHandle({
   onResize: (width: number) => void;
   onCommit: () => void;
 }) {
+  const __t = __useTranslations();
   const drag = React.useRef<{ x: number; w: number } | null>(null);
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -211,7 +214,7 @@ function PanelResizeHandle({
     <div
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize the documents panel"
+      aria-label={__t("cognizanceCaseScreen_resizeTheDocumentsPanel")}
       aria-valuenow={Math.round(width)}
       aria-valuemin={DOC_PANEL_MIN}
       tabIndex={0}
@@ -233,6 +236,7 @@ function PanelResizeHandle({
 }
 
 function CaseBody({ matter }: { matter: CognizanceCase }) {
+  const __t = __useTranslations();
   /* The day is the reader's, not the server's — the whole chain is worked backwards from
      how long this complaint has waited, so the clock that matters is the one in the room
      (`use-court-today.ts`). */
@@ -327,10 +331,9 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
 
   const documentsHeader = (
     <div className="flex shrink-0 items-baseline justify-between gap-3 border-b border-hairline px-8 py-4">
-      <h2 className="text-body font-semibold">Documents</h2>
+      <h2 className="text-body font-semibold">{<__LocalizedText id="cognizanceCaseScreen_documents" />}</h2>
       <span className="text-body-compact tabular-nums text-muted-foreground">
-        {documents.length} filed
-      </span>
+        {documents.length} {<__LocalizedText id="cognizanceCaseScreen_filed" />}{" "}</span>
     </div>
   );
 
@@ -377,8 +380,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
               {caseTypeSplit ? null : (
                 <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
                   <a href={`/employee/cases/${matter.id}`} target="_blank" rel="noopener">
-                    View case
-                    <span className="sr-only"> (opens in a new tab)</span>
+                    {<__LocalizedText id="cognizanceCaseScreen_viewCase" />}{" "}<span className="sr-only"> {<__LocalizedText id="cognizanceCaseScreen_opensInANewTab" />}</span>
                     <ExternalLinkIcon data-icon="inline-end" aria-hidden />
                   </a>
                 </Button>
@@ -395,13 +397,13 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
                   variant={act === "dismiss" && caseTypeSplit ? "ghost" : "outline"}
                 >
                   <Link href={orderHref(matter, act)} onClick={openOrder}>
-                    {COGNIZANCE_ACTS[act].label}
+                    {__t(COGNIZANCE_ACTS[act].label)}
                   </Link>
                 </Button>
               ))}
               <Button asChild>
                 <Link href={orderHref(matter, recommended)} onClick={openOrder}>
-                  {COGNIZANCE_ACTS[recommended].label}
+                  {__t(COGNIZANCE_ACTS[recommended].label)}
                 </Link>
               </Button>
             </div>
@@ -436,7 +438,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
             {/* Touch, and every screen below `xl`: the documents flow at the foot of the one
                 page scroll rather than a docked pane — never a box within a box. */}
             <section
-              aria-label="Documents"
+              aria-label={__t("cognizanceCaseScreen_documents")}
               className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-hairline bg-card shadow-raised xl:pointer-fine:hidden"
             >
               {documentsHeader}
@@ -450,7 +452,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
               (inline, so it can be dragged live), and only on `desktopPanel` so a touch
               tablet never reserves a track for a pane it does not show. */}
           <aside
-            aria-label="Documents"
+            aria-label={__t("cognizanceCaseScreen_documents")}
             className="relative hidden min-h-0 shrink-0 flex-col border-l border-hairline bg-card xl:pointer-fine:flex"
             style={desktopPanel ? { width: docWidth } : undefined}
           >
@@ -489,11 +491,12 @@ function CaseSummaryPanel({
   /** Carry View case on the summary's own heading, off the decision bar. */
   viewCase?: boolean;
 }) {
+  const __t = __useTranslations();
   /* All three are registry identifiers, so all three take the identifier treatment. */
   const cells = [
-    { label: "Case number", value: matter.caseNumber, idLabel: "case number" },
-    { label: "Filing number", value: matter.filingNumber, idLabel: "filing number" },
-    { label: "CNR", value: cnrFor(matter), idLabel: "CNR" },
+    { label: __t("cognizanceCaseScreen_caseNumber"), value: matter.caseNumber, idLabel: "case number" },
+    { label: __t("cognizanceCaseScreen_filingNumber"), value: matter.filingNumber, idLabel: "filing number" },
+    { label: __t("cognizanceCaseScreen_cnr"), value: cnrFor(matter), idLabel: "CNR" },
   ];
   return (
     <section aria-labelledby="case-summary" className="flex min-w-0 flex-col gap-3">
@@ -505,16 +508,14 @@ function CaseSummaryPanel({
           id="case-summary"
           className={viewCase ? "text-body font-semibold text-foreground" : EYEBROW}
         >
-          Case summary
-        </h2>
+          {<__LocalizedText id="cognizanceCaseScreen_caseSummary" />}{" "}</h2>
         {/* The case's identity is what View case opens in full, so it rides here rather
             than among the acts on the bar — a plain tertiary button, still opening the
             case in a tab of its own (owner, 2026-10-13). */}
         {viewCase ? (
           <Button asChild variant="ghost" className="-my-2.5">
             <a href={`/employee/cases/${matter.id}`} target="_blank" rel="noopener">
-              View case
-              <span className="sr-only"> (opens in a new tab)</span>
+              {<__LocalizedText id="cognizanceCaseScreen_viewCase" />}{" "}<span className="sr-only"> {<__LocalizedText id="cognizanceCaseScreen_opensInANewTab" />}</span>
               <ExternalLinkIcon data-icon="inline-end" aria-hidden />
             </a>
           </Button>
@@ -524,9 +525,9 @@ function CaseSummaryPanel({
         <dl className="grid gap-px bg-hairline @md:grid-cols-3">
           {cells.map((cell) => (
             <div key={cell.label} className="flex min-w-0 flex-col gap-1 bg-card p-6">
-              <dt className="text-caption text-muted-foreground">{cell.label}</dt>
+              <dt className="text-caption text-muted-foreground">{__t(cell.label)}</dt>
               <dd className="text-body-compact font-medium break-words">
-                <Identifier value={cell.value} label={cell.idLabel} />
+                <Identifier value={cell.value} label={__t(cell.idLabel)} />
               </dd>
             </div>
           ))}
@@ -563,6 +564,7 @@ function CaseFactsPanel({
   active: { fieldId: string } | null;
   onOpen: (field: CognizanceField) => void;
 }) {
+  const __t = __useTranslations();
   return (
     // One sheet, not five. Each chunk was a card with its own 49px banded header, and for
     // eleven fields that chrome — five bands, four gaps between cards — was most of the
@@ -587,7 +589,7 @@ function CaseFactsPanel({
           )}
         >
           {chunk.caption ? (
-            <p className={cn(EYEBROW, "px-2 @md:col-span-2")}>{chunk.caption}</p>
+            <p className={cn(EYEBROW, "px-2 @md:col-span-2")}>{__t(chunk.caption)}</p>
           ) : null}
           {chunk.fields.map((field) => {
             const finding = findings.find((entry) => entry.term === field.term);
@@ -627,6 +629,7 @@ function FieldRow({
   active: boolean;
   onOpen: (field: CognizanceField) => void;
 }) {
+  const __t = __useTranslations();
   const open = field.source ? () => onOpen(field) : undefined;
   return (
     // Register cases' synopsis `Fact`: the label above the value, no rule under it. It sits
@@ -648,13 +651,13 @@ function FieldRow({
         onClick={open}
       >
         <DescriptionTerm className="text-body-compact">
-          {field.term}
+          {__t(field.term)}
           {/* The PRD's tooltip, where it gives one (cheat sheet §4). Its own click must not
               also open the field's document. */}
           {field.tooltip ? (
             <span className="ml-1" onClick={(event) => event.stopPropagation()}>
               <TooltipProvider>
-                <LabelTip>{field.tooltip}</LabelTip>
+                <LabelTip>{__t(field.tooltip)}</LabelTip>
               </TooltipProvider>
             </span>
           ) : null}
@@ -662,7 +665,7 @@ function FieldRow({
         <DescriptionDetails className="min-w-0 text-body-compact text-pretty">
           <span className="font-medium">{field.value}</span>
           {field.note ? (
-            <span className="text-muted-foreground"> · {field.note}</span>
+            <span className="text-muted-foreground"> · {__t(field.note)}</span>
           ) : null}
         </DescriptionDetails>
         {open ? (
@@ -670,7 +673,7 @@ function FieldRow({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label={`Show ${field.term} in the documents`}
+            aria-label={__t("cognizanceCaseScreen_showValue0InTheDocuments", {value0: String(__t(field.term))})}
             className={cn(
               "absolute top-1 right-1 text-muted-foreground opacity-0 transition-opacity focus-visible:opacity-100 group-hover/field:opacity-100 [@media(hover:none)]:opacity-100",
               active && "opacity-100",
@@ -721,16 +724,13 @@ function CaseMissing() {
             <FileQuestionIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="font-semibold text-title-s">
-            This complaint is not waiting for cognizance
-          </EmptyTitle>
+            {<__LocalizedText id="cognizanceCaseScreen_thisComplaintIsNotWaitingForCognizance" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
-            A complaint opens from the list of those on the register waiting for
-            cognizance. This one is not on it.
-          </EmptyDescription>
+            {<__LocalizedText id="cognizanceCaseScreen_aComplaintOpensFromTheListOf" />}{" "}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href={COGNIZANCE_PATH}>Back to take cognizance</Link>
+            <Link href={COGNIZANCE_PATH}>{<__LocalizedText id="cognizanceCaseScreen_backToTakeCognizance" />}</Link>
           </Button>
         </EmptyContent>
       </Empty>

@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { CheckIcon, TriangleAlertIcon } from "lucide-react";
 
@@ -7,7 +8,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 /** "Saving… / Saved / Couldn't save" for the footer — reads the store's real write state. */
 export function SavingIndicator() {
-  const { saveState } = useFiling();
+    const { saveState } = useFiling();
   return (
     <span
       role="status"
@@ -17,17 +18,16 @@ export function SavingIndicator() {
       {saveState === "saving" ? (
         <>
           <Spinner className="size-4" />
-          Saving…
-        </>
+          {<__LocalizedText id="savingIndicator_saving" />}{" "}</>
       ) : saveState === "error" ? (
         <>
           <TriangleAlertIcon className="size-4 text-destructive-ink" aria-hidden />
-          <span className="text-destructive-ink">Couldn&apos;t save. Retrying</span>
+          <span className="text-destructive-ink">{<__LocalizedText id="savingIndicator_couldnTSaveRetrying" />}</span>
         </>
       ) : (
         <>
           <CheckIcon className="size-4 text-success-ink" aria-hidden />
-          <span className="text-success-ink">Saved</span>
+          <span className="text-success-ink">{<__LocalizedText id="savingIndicator_saved" />}</span>
         </>
       )}
     </span>

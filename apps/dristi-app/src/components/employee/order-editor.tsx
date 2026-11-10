@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -128,6 +130,7 @@ export function OrderEditorHeader({
   onPanelToggle?: () => void;
   navAction?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <header
       data-order-head=""
@@ -135,7 +138,7 @@ export function OrderEditorHeader({
     >
       <div className="flex min-w-0 flex-col gap-2">
         <h1 className="min-w-0 text-title font-semibold text-balance">
-          {heading}
+          {__t(heading)}
         </h1>
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-6 gap-y-1">
           {facts.map((fact) => (
@@ -143,7 +146,7 @@ export function OrderEditorHeader({
               key={fact.label}
               className="flex min-w-0 items-baseline gap-2 text-body-compact"
             >
-              <span className="text-muted-foreground">{fact.label}</span>
+              <span className="text-muted-foreground">{__t(fact.label)}</span>
               {fact.identifier ? (
                 <Identifier
                   value={fact.value}
@@ -167,8 +170,7 @@ export function OrderEditorHeader({
             onClick={onPanelToggle}
           >
             <PanelRightIcon data-icon="inline-start" aria-hidden />
-            Side panel
-          </Button>
+            {<__LocalizedText id="orderEditor_sidePanel" />}{" "}</Button>
         ) : null}
         {navAction}
       </div>
@@ -291,16 +293,17 @@ export function PaperRecital({
   /** What the page says when nothing has been entered. */
   empty: string;
 }) {
+  const __t = __useTranslations();
   return (
-    <div aria-label={label} role="group" className="flex flex-col gap-1">
+    <div aria-label={__t(label)} role="group" className="flex flex-col gap-1">
       {lines.length > 0 ? (
         lines.map((line) => (
           <p key={line.label} className="text-body">
-            <span className="font-semibold">{line.label}:</span> {line.value}
+            <span className="font-semibold">{__t(line.label)}:</span> {line.value}
           </p>
         ))
       ) : (
-        <p className="text-body text-muted-foreground">{empty}</p>
+        <p className="text-body text-muted-foreground">{__t(empty)}</p>
       )}
     </div>
   );
@@ -365,8 +368,7 @@ export function OrderPaperEditor({
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <span id="order-paper-label" className="sr-only">
-        Order text
-      </span>
+        {<__LocalizedText id="orderEditor_orderText" />}{" "}</span>
       <RichTextField
         key={revision}
         value={value}
@@ -423,8 +425,9 @@ export function OrderPaperView({
   status?: string;
   className?: string;
 }) {
+  const __t = __useTranslations();
   return (
-    <article aria-label="Order text" className={cn(PAPER, className)}>
+    <article aria-label={__t("orderEditor_orderText")} className={cn(PAPER, className)}>
       <PaperHead frame={frame} attendance={parts?.attendance} />
       {value.text.trim() ? (
         <RichTextValueView
@@ -433,8 +436,7 @@ export function OrderPaperView({
         />
       ) : (
         <p className={cn("py-6 text-body text-muted-foreground", PAGE_X)}>
-          Nothing has been typed in this order.
-        </p>
+          {<__LocalizedText id="orderEditor_nothingHasBeenTypedInThisOrder" />}{" "}</p>
       )}
       <PaperFoot
         frame={frame}
@@ -466,27 +468,28 @@ export function OrderProgress({
   stage: PendingOrderStage;
   workflowComplete: boolean;
 }) {
+  const __t = __useTranslations();
   const signed = stage === "workflow-to-fill" || stage === "triggered";
   const triggered = stage === "triggered";
   return (
     <ul
-      aria-label="Where this order stands"
+      aria-label={__t("orderEditor_whereThisOrderStands")}
       className="flex flex-wrap items-center gap-x-6 gap-y-1 text-body-compact"
     >
       <li className="inline-flex items-center gap-2">
-        <span className="text-muted-foreground">Signature</span>
+        <span className="text-muted-foreground">{<__LocalizedText id="orderEditor_signature" />}</span>
         <Badge variant={signed ? "success" : "warning"}>
-          {signed ? "Signed" : stage === "drafting" ? "Not sent" : "Awaiting"}
+          {signed ? __t("orderEditor_signed") : stage === "drafting" ? __t("orderEditor_notSent") : __t("orderEditor_awaiting")}
         </Badge>
       </li>
       <li className="inline-flex items-center gap-2">
-        <span className="text-muted-foreground">Order data</span>
+        <span className="text-muted-foreground">{<__LocalizedText id="orderEditor_orderData" />}</span>
         <Badge
           variant={
             triggered ? "success" : workflowComplete ? "info" : "secondary"
           }
         >
-          {triggered ? "Triggered" : workflowComplete ? "Complete" : "To fill"}
+          {triggered ? __t("orderEditor_triggered") : workflowComplete ? __t("orderEditor_complete") : __t("orderEditor_toFill")}
         </Badge>
       </li>
     </ul>
@@ -610,6 +613,7 @@ export function OrderWorkflowFields({
   fixedIds?: readonly string[];
   disabled?: boolean;
 }) {
+  const __t = __useTranslations();
   const [editing, setEditing] = React.useState<{
     block: ItemBlock;
     mode: "add" | "edit";
@@ -669,7 +673,7 @@ export function OrderWorkflowFields({
       <Card className={cn(PANEL_CLASS, "min-w-0 gap-0 p-0")}>
         <div className={FRAMED_HEAD}>
           <h2 className="text-body-compact font-semibold">
-            <label htmlFor="order-title">Title</label>
+            <label htmlFor="order-title">{<__LocalizedText id="orderEditor_title" />}</label>
           </h2>
           {draft.title?.trim() && !titleLocked ? (
             <Button
@@ -678,8 +682,7 @@ export function OrderWorkflowFields({
               className="-mr-3 text-body-compact"
               onClick={() => setDraft((current) => ({ ...current, title: undefined }))}
             >
-              Use the items’ title
-            </Button>
+              {<__LocalizedText id="orderEditor_useTheItemsTitle" />}{" "}</Button>
           ) : null}
         </div>
         <div className={cn(FRAMED_BODY, "flex min-w-0 flex-col gap-2")}>
@@ -694,8 +697,7 @@ export function OrderWorkflowFields({
             }}
           />
           <p className="text-caption text-muted-foreground">
-            Lists of orders show this title. Left empty, it follows the order items.
-          </p>
+            {<__LocalizedText id="orderEditor_listsOfOrdersShowThisTitleLeft" />}{" "}</p>
         </div>
       </Card>
 
@@ -711,7 +713,7 @@ export function OrderWorkflowFields({
         pinned={
           applicationItem && outcome
             ? {
-                label: `Application · ${applicationItem.label}`,
+                label: __t("orderEditor_applicationValue0", {value0: String(__t(applicationItem.label))}),
                 gaps: applicationOutcomeGaps(
                   outcome,
                   Boolean(applicationItem.workflow),
@@ -746,7 +748,7 @@ export function OrderWorkflowFields({
       {/* The A-Diary text, last (§6, `PUB-04`): the order text by default, or its own. */}
       <Card className={cn(PANEL_CLASS, "min-w-0 gap-0 p-0")}>
         <div className={FRAMED_HEAD}>
-          <h2 className="text-body-compact font-semibold">A-Diary text</h2>
+          <h2 className="text-body-compact font-semibold">{<__LocalizedText id="orderEditor_aDiaryText" />}</h2>
         </div>
         <div className={cn(FRAMED_BODY, "flex min-w-0 flex-col gap-3")}>
           <div className="flex items-start gap-3">
@@ -761,23 +763,20 @@ export function OrderWorkflowFields({
                   /* Unticked for the first time: start from the order's own words. */
                   aDiaryText:
                     checked === true
-                      ? current.aDiaryText
-                      : (current.aDiaryText ?? orderText),
+                      ? __t(current.aDiaryText)
+                      : (__t(current.aDiaryText) ?? __t(orderText)),
                 }))
               }
             />
             <label htmlFor="order-adiary-same" className="text-body-compact">
-              The A-Diary text and order text are the same
-            </label>
+              {<__LocalizedText id="orderEditor_theADiaryTextAndOrderText" />}{" "}</label>
           </div>
           {aDiarySame ? (
             <p className="text-caption text-muted-foreground">
-              The A-Diary entry is the order text in full, with its attendance and next
-              hearing lines.
-            </p>
+              {<__LocalizedText id="orderEditor_theADiaryEntryIsTheOrder" />}{" "}</p>
           ) : (
             <Textarea
-              aria-label="A-Diary text"
+              aria-label={__t("orderEditor_aDiaryText")}
               value={draft.aDiaryText ?? ""}
               disabled={disabled}
               rows={5}
@@ -815,7 +814,7 @@ export function OrderWorkflowFields({
           setEditing((current) => (current ? { ...current, block } : current))
         }
         onClose={() => setEditing(null)}
-        description="Recorded in this order's data, and set moving once the order is signed and its order data is complete. Nothing is written into the order's text."
+        description={__t("orderEditor_recordedInThisOrderSDataAnd")}
         onConfirm={() => {
           if (!editing) return;
           commit(editing.block, editing.mode);
@@ -908,6 +907,7 @@ export function OrderEditorComposer({
   /** The Data flags tab (ORD-15) — the listing's attendance history. */
   dataFlagsContent?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const rootRef = React.useRef<HTMLDivElement>(null);
   const bands = useBands(rootRef);
   const [panelOpen, setPanelOpen] = React.useState(true);
@@ -936,13 +936,13 @@ export function OrderEditorComposer({
     if (empty) return;
     noteOrderDraft({
       key,
-      heading: queueHeading,
+      heading: __t(queueHeading),
       caseNumber,
       origin,
       title,
       orderHref: window.location.pathname + window.location.search,
     });
-  }, [empty, key, queueHeading, caseNumber, origin, title]);
+  }, [empty, key, queueHeading, caseNumber, origin, title, __t]);
 
   function finish() {
     if (empty) {
@@ -976,7 +976,7 @@ export function OrderEditorComposer({
       style={bands}
     >
       <OrderEditorHeader
-        heading={heading}
+        heading={__t(heading)}
         facts={facts}
         panelOpen={view === "order" && panelOpen}
         onPanelToggle={() => {
@@ -1012,12 +1012,11 @@ export function OrderEditorComposer({
               onValueChange={(next) => {
                 if (next === "order" || next === "workflow") setView(next);
               }}
-              aria-label="What to work on"
+              aria-label={__t("orderEditor_whatToWorkOn")}
             >
-              <SegmentedControlItem value="order">Order</SegmentedControlItem>
+              <SegmentedControlItem value="order">{<__LocalizedText id="orderEditor_order" />}</SegmentedControlItem>
               <SegmentedControlItem value="workflow">
-                Order data
-              </SegmentedControlItem>
+                {<__LocalizedText id="orderEditor_orderData" />}{" "}</SegmentedControlItem>
             </SegmentedControl>
             {finished ? (
               <OrderProgress
@@ -1027,16 +1026,14 @@ export function OrderEditorComposer({
             ) : view === "order" ? (
               <div className="flex items-center gap-3">
                 <span className="hidden text-body-compact text-muted-foreground sm:inline">
-                  Type <kbd className="font-mono">/</kbd> for a shortcut
-                </span>
+                  {<__LocalizedText id="orderEditor_type" />}{" "}<kbd className="font-mono">/</kbd> {<__LocalizedText id="orderEditor_forAShortcut" />}{" "}</span>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => setShortcutsOpen(true)}
                 >
-                  Shortcuts
-                </Button>
+                  {<__LocalizedText id="orderEditor_shortcuts" />}{" "}</Button>
               </div>
             ) : null}
           </div>
@@ -1113,8 +1110,7 @@ export function OrderEditorComposer({
             {finished ? (
               <Button asChild variant="link" className="-ml-3">
                 <Link href={pendingOrderHref(queue.key)}>
-                  Open in Pending orders
-                </Link>
+                  {<__LocalizedText id="orderEditor_openInPendingOrders" />}{" "}</Link>
               </Button>
             ) : !empty || entry ? (
               /* `DFT-06`: the order drafter may discard a draft; it issues nothing and
@@ -1125,8 +1121,7 @@ export function OrderEditorComposer({
                 className="-ml-3"
                 onClick={() => setAskDiscard(true)}
               >
-                Discard draft
-              </Button>
+                {<__LocalizedText id="orderEditor_discardDraft" />}{" "}</Button>
             ) : null}
           </div>
           {stage === "awaiting-signature" ? (
@@ -1145,8 +1140,7 @@ export function OrderEditorComposer({
                 );
               }}
             >
-              Move back to draft
-            </Button>
+              {<__LocalizedText id="orderEditor_moveBackToDraft" />}{" "}</Button>
           ) : null}
           {finished ? null : (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -1162,8 +1156,7 @@ export function OrderEditorComposer({
                   setAskOpen(true);
                 }}
               >
-                Send for signing
-              </Button>
+                {<__LocalizedText id="orderEditor_sendForSigning" />}{" "}</Button>
             </div>
           )}
         </div>
@@ -1172,18 +1165,14 @@ export function OrderEditorComposer({
       <AlertDialog open={askOpen} onOpenChange={setAskOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Send this order for signing?</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="orderEditor_sendThisOrderForSigning" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              It goes to the magistrate in Pending orders. Until it is signed it can be moved back to draft and edited. Its
-              order data is triggered once it is signed and its order data is
-              marked complete.
-            </AlertDialogDescription>
+              {<__LocalizedText id="orderEditor_itGoesToTheMagistrateInPending" />}{" "}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="orderEditor_back" />}</AlertDialogCancel>
             <AlertDialogAction onClick={() => finish()}>
-              Send for signing
-            </AlertDialogAction>
+              {<__LocalizedText id="orderEditor_sendForSigning" />}{" "}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -1194,17 +1183,17 @@ export function OrderEditorComposer({
       <AlertDialog open={sentOpen} onOpenChange={setSentOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Sent for signing</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="orderEditor_sentForSigning" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              It is in Pending orders, awaiting the magistrate.{" "}
+              {<__LocalizedText id="orderEditor_itIsInPendingOrdersAwaitingThe" />}{" "}
               {nextDraft
-                ? `Next draft: ${nextDraft.heading}, ${nextDraft.caseNumber}.`
-                : "No other drafts are waiting."}
+                ? __t("orderEditor_nextDraftValue0Value1", {value0: String(__t(nextDraft.heading)), value1: String(nextDraft.caseNumber)})
+                : __t("orderEditor_noOtherDraftsAreWaiting")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             {nextDraft ? null : (
-              <AlertDialogCancel>Stay here</AlertDialogCancel>
+              <AlertDialogCancel>{<__LocalizedText id="orderEditor_stayHere" />}</AlertDialogCancel>
             )}
             <AlertDialogAction
               variant={nextDraft ? "outline" : "default"}
@@ -1212,12 +1201,10 @@ export function OrderEditorComposer({
                 router.push(pendingOrdersHref(nextDraft ? "drafting" : undefined))
               }
             >
-              Back to Pending orders
-            </AlertDialogAction>
+              {<__LocalizedText id="orderEditor_backToPendingOrders" />}{" "}</AlertDialogAction>
             {nextDraft ? (
               <AlertDialogAction onClick={() => router.push(nextDraft.orderHref)}>
-                Next draft
-              </AlertDialogAction>
+                {<__LocalizedText id="orderEditor_nextDraft" />}{" "}</AlertDialogAction>
             ) : null}
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1226,14 +1213,12 @@ export function OrderEditorComposer({
       <AlertDialog open={askDiscard} onOpenChange={setAskDiscard}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard this draft?</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="orderEditor_discardThisDraft" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              Its text and order data are removed, and it leaves Pending orders. Nothing is
-              issued or recorded on the case. This cannot be undone.
-            </AlertDialogDescription>
+              {<__LocalizedText id="orderEditor_itsTextAndOrderDataAreRemoved" />}{" "}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep the draft</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="orderEditor_keepTheDraft" />}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setDraft(() => EMPTY_ORDER_DRAFT);
@@ -1242,8 +1227,7 @@ export function OrderEditorComposer({
                 toast("Draft discarded.");
               }}
             >
-              Discard draft
-            </AlertDialogAction>
+              {<__LocalizedText id="orderEditor_discardDraft" />}{" "}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

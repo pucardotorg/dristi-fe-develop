@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { toast } from "sonner";
@@ -49,6 +51,7 @@ export function DownloadCaseFileDialog({
   title: string;
   court: string;
 }) {
+  const __t = __useTranslations();
   const [format, setFormat] = React.useState<Format>("pdf");
   const [sections, setSections] = React.useState<string[]>([]);
   const [preparing, setPreparing] = React.useState(false);
@@ -66,7 +69,7 @@ export function DownloadCaseFileDialog({
 
   async function download() {
     if (format === "zip") {
-      toast.success("Preparing your download", {
+      toast.success(__t("downloadCaseFileDialog_preparingYourDownload"), {
         position: "bottom-center",
         description: `${caseNumber}. It will start in a moment.`,
       });
@@ -95,9 +98,9 @@ export function DownloadCaseFileDialog({
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
       onOpenChange(false);
     } catch {
-      toast.error("The case file could not be prepared", {
+      toast.error(__t("downloadCaseFileDialog_theCaseFileCouldNotBePrepared"), {
         position: "bottom-center",
-        description: "Try again. Nothing was downloaded.",
+        description: __t("downloadCaseFileDialog_tryAgainNothingWasDownloaded"),
       });
     } finally {
       setPreparing(false);
@@ -109,8 +112,7 @@ export function DownloadCaseFileDialog({
       <ChromeDialogContent className="flex max-h-[calc(100dvh---spacing(12))] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
         <DialogHeader className="gap-1 border-b border-hairline px-6 py-4 text-left">
           <DialogTitle className="text-title-s font-semibold">
-            Download case file
-          </DialogTitle>
+            {<__LocalizedText id="downloadCaseFileDialog_downloadCaseFile" />}{" "}</DialogTitle>
           <p className="font-mono text-caption font-medium text-muted-foreground">
             {caseNumber}
           </p>
@@ -120,7 +122,7 @@ export function DownloadCaseFileDialog({
           <RadioGroup
             value={format}
             onValueChange={(value) => setFormat(value as Format)}
-            aria-label="What to download"
+            aria-label={__t("downloadCaseFileDialog_whatToDownload")}
             className="flex flex-col gap-1"
           >
             {FORMATS.map((item) => (
@@ -129,14 +131,14 @@ export function DownloadCaseFileDialog({
                   value={item.value}
                   id={`download-${item.value}`}
                 />
-                <Label htmlFor={`download-${item.value}`}>{item.label}</Label>
+                <Label htmlFor={`download-${item.value}`}>{__t(item.label)}</Label>
               </div>
             ))}
           </RadioGroup>
 
           {format === "sections" ? (
             <fieldset className="flex flex-col gap-1 rounded-lg bg-surface-sunken p-3">
-              <legend className="sr-only">Sections to include</legend>
+              <legend className="sr-only">{<__LocalizedText id="downloadCaseFileDialog_sectionsToInclude" />}</legend>
               {CASE_FILE_TREE.map((node) => (
                 <div key={node.id} className="flex min-h-8 items-center gap-2">
                   <Checkbox
@@ -150,7 +152,7 @@ export function DownloadCaseFileDialog({
                     htmlFor={`download-section-${node.id}`}
                     className="font-normal"
                   >
-                    {node.label}
+                    {__t(node.label)}
                   </Label>
                 </div>
               ))}
@@ -164,10 +166,9 @@ export function DownloadCaseFileDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
           >
-            Cancel
-          </Button>
+            {<__LocalizedText id="downloadCaseFileDialog_cancel" />}{" "}</Button>
           <Button type="button" disabled={blocked} onClick={download}>
-            {preparing ? "Preparing…" : "Download"}
+            {preparing ? __t("downloadCaseFileDialog_preparing") : __t("downloadCaseFileDialog_download")}
           </Button>
         </div>
       </ChromeDialogContent>

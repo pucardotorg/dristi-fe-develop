@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import NextImage from "next/image";
@@ -57,7 +58,7 @@ export function DocumentThumbnailButton({ file, url, locale, onOpen, className }
   onOpen: () => void;
   className?: string;
 }) {
-  return (
+    return (
     <button
       type="button"
       className={cn("group relative flex items-center justify-center overflow-hidden bg-cover bg-center outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
@@ -84,6 +85,7 @@ export function DocumentPreviewDialog({ open, onOpenChange, file, url, locale, c
    *  document kinds (vakalatnama, supporting letters). */
   copy?: { title: string; description: string; alt: string };
 }) {
+  const __t = __useTranslations();
   const isPdf = file?.type === "application/pdf";
   const [transform, setTransform] = React.useState({ scale: 1, x: 0, y: 0 });
   const pointers = React.useRef(new Map<number, { x: number; y: number }>());
@@ -143,12 +145,12 @@ export function DocumentPreviewDialog({ open, onOpenChange, file, url, locale, c
           the dialog's shape, capped by the viewport on both axes. */}
       <ChromeDialogContent lang={locale} className={cn("flex max-h-[90dvh] flex-col gap-4 overflow-hidden p-4 sm:p-6", isPdf ? "h-[85dvh] w-[calc(100vw-2rem)] max-w-3xl" : "w-fit min-w-[min(20rem,calc(100vw-2rem))] max-w-[min(calc(100vw-2rem),72rem)]")}>
         <DialogHeader className="pr-10 text-left">
-          <DialogTitle>{copy?.title ?? pick(idUpload.previewTitle, locale)}</DialogTitle>
+          <DialogTitle>{__t(copy?.title) ?? pick(idUpload.previewTitle, locale)}</DialogTitle>
           {/* One line on desktop: the nowrap description sets the dialog's minimum
               width (the dialog is w-fit), so a narrow portrait scan can never squeeze
               this sentence into an awkward break. Phones still wrap — the screen is
               genuinely narrower than the sentence. */}
-          <DialogDescription className="text-pretty sm:text-nowrap">{copy?.description ?? pick(idUpload.previewDescription, locale)}</DialogDescription>
+          <DialogDescription className="text-pretty sm:text-nowrap">{__t(copy?.description) ?? pick(idUpload.previewDescription, locale)}</DialogDescription>
         </DialogHeader>
         {url && isPdf ? (
           <div className="min-h-0 flex-1 overflow-hidden rounded-lg bg-surface-sunken p-2">

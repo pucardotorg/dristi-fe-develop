@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { useMemo } from "react";
 
@@ -78,6 +79,7 @@ function MatterBody({
   onReject: (matter: DelayCondonationCase) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const document = useMemo(
     () => buildDelayCondonationDocument(matter),
     [matter],
@@ -89,7 +91,7 @@ function MatterBody({
       description={
         <>
           {/* The overlay renders this as its accessible description. */}
-          <Identifier value={matter.caseNumber} label="case number" copyable={false} />
+          <Identifier value={matter.caseNumber} label={__t("delayCondonationDialog_caseNumber")} copyable={false} />
           {" · "}
           {causeTitle(matter)}
         </>
@@ -100,7 +102,7 @@ function MatterBody({
             {DELAY_CONDONATION_TYPE_LABEL}
           </ReviewRow>
           <ReviewRow term="Case number">
-            <Identifier value={matter.caseNumber} label="case number" />
+            <Identifier value={matter.caseNumber} label={__t("delayCondonationDialog_caseNumber")} />
           </ReviewRow>
           <ReviewRow term="Stage">
             {delayCondonationStageLabel(matter.stage)}

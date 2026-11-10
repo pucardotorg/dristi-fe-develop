@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import type { SVGProps } from "react";
@@ -95,6 +96,7 @@ export function AccessButton({
   label?: string;
   variant?: "outline" | "ghost";
 }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
   const name = pick(access.office ? advHome.accessOfficeLabel : advHome.accessMineLabel, locale);
   const Icon = access.office ? UserRound : VakalatnamaIcon;
@@ -119,7 +121,7 @@ export function AccessButton({
               )}
             >
               <Icon aria-hidden="true" className={cn("size-4", iconClassName)} />
-              {label ? <span>{label}</span> : null}
+              {label ? <span>{__t(label)}</span> : null}
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>

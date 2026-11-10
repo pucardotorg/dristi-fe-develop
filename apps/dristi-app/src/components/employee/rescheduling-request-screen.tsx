@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FolderCheckIcon, SearchXIcon } from "lucide-react";
@@ -130,6 +132,7 @@ const RESCHEDULING_SORTS: CourtSortSpec<ReschedulingRequest, ReschedulingSort>[]
  * do not write an order or move the listing.
  */
 export function ReschedulingRequestScreen() {
+  const __t = __useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used, so there is never a moment where what the bench has asked for and what
      the table is showing disagree. Every change resets to page one — the old Search
@@ -189,11 +192,10 @@ export function ReschedulingRequestScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Rescheduling request
-        </h1>
+          {<__LocalizedText id="reschedulingRequestScreen_reschedulingRequest" />}{" "}</h1>
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 application is waiting for review."
+            ? __t("reschedulingRequestScreen_1ApplicationIsWaitingForReview")
             : `${remaining.length} applications are waiting for review.`}
         </p>
       </header>
@@ -294,13 +296,14 @@ function ReschedulingFiltersRow({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: __t("reschedulingRequestScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: __t("reschedulingRequestScreen_caseNameNumberOrAdvocate"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -317,6 +320,7 @@ function ReschedulingEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -328,19 +332,18 @@ function ReschedulingEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match this search" : "Nothing waiting"}
+          {isFiltered ? __t("reschedulingRequestScreen_noMattersMatchThisSearch") : __t("reschedulingRequestScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No rescheduling request matches the search you asked for."
-            : "Every rescheduling request before this court has been reviewed."}
+            ? __t("reschedulingRequestScreen_noReschedulingRequestMatchesTheSearchYou")
+            : __t("reschedulingRequestScreen_everyReschedulingRequestBeforeThisCourtHas")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
-          </Button>
+            {<__LocalizedText id="reschedulingRequestScreen_clearSearch" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -362,6 +365,7 @@ function ReschedulingRequestItemList({
   rows: ReschedulingRequest[];
   onOpen: (request: ReschedulingRequest) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((request) => (
@@ -380,16 +384,16 @@ function ReschedulingRequestItemList({
             {...rowOpener}
             className={rowOpenerClass}
           >
-            <span className="sr-only">Review </span>
+            <span className="sr-only">{<__LocalizedText id="reschedulingRequestScreen_review" />}{" "}</span>
             {causeTitle(request)}
           </button>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={request.caseNumber} label="case number" />
-            {" · Applied "}
+            <Identifier value={request.caseNumber} label={__t("reschedulingRequestScreen_caseNumber")} />
+            {__t("reschedulingRequestScreen_applied")}
             <span className="tabular-nums">
               {formatRequestLongDate(request.appliedOn)}
             </span>
-            {" · Listed "}
+            {__t("reschedulingRequestScreen_listed")}
             <span className="tabular-nums">
               {formatListingDate(request.listedOn)}
             </span>

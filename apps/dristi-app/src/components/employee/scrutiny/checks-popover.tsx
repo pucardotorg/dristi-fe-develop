@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CircleHelpIcon } from "lucide-react";
@@ -24,6 +26,7 @@ import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-co
  * replace, so it cannot be hidden behind a menu.
  */
 export function ChecksPopover() {
+  const __t = __useTranslations();
   const { checks } = useScrutinyCase();
   const [checked, setChecked] = React.useState<Set<number>>(() => new Set());
 
@@ -45,12 +48,12 @@ export function ChecksPopover() {
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" aria-label="What to check">
+            <Button variant="outline" size="icon" aria-label={__t("checksPopover_whatToCheck")}>
               <CircleHelpIcon />
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent>What to check</TooltipContent>
+        <TooltipContent>{<__LocalizedText id="checksPopover_whatToCheck" />}</TooltipContent>
       </Tooltip>
       <PopoverContent align="end" className="w-72">
         <FieldGroup data-slot="checkbox-group" className="gap-2.5">

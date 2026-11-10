@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The full-page act frame — for the flows that do NOT act in the list's modal (the
@@ -50,19 +52,16 @@ const CRUMB: Record<ActPageAction, string> = {
 
 /** The one quiet notice per page: what is interim, and what is not real here. */
 function Notice({ action, task }: { action: ActPageAction; task: Task }) {
+  const __t = __useTranslations();
   if (action === "sign" || (action === "continue" && task.kind === "sign")) {
     return (
-      <SectionNotice variant="neutral" title="Sandbox">
-        Any 6-digit OTP is accepted and the signature stamp is generated locally — nothing
-        reaches a court.
-      </SectionNotice>
+      <SectionNotice variant="neutral" title={__t("actPage_sandbox")}>
+        {<__LocalizedText id="actPage_any6DigitOtpIsAcceptedAnd" />}{" "}</SectionNotice>
     );
   }
   return (
-    <SectionNotice variant="neutral" title="Interim screen">
-      The e-filing flow is not built yet — this stands in for it. Sandbox: uploads stay in
-      this browser and the registry&apos;s answer is whatever you pick.
-    </SectionNotice>
+    <SectionNotice variant="neutral" title={__t("actPage_interimScreen")}>
+      {<__LocalizedText id="actPage_theEFilingFlowIsNotBuilt" />}{" "}</SectionNotice>
   );
 }
 
@@ -75,6 +74,7 @@ function Body({ ctx, action }: { ctx: ActContext; action: ActPageAction }) {
 }
 
 export function TaskActPage({ action }: { action: ActPageAction }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const params = useParams<{ taskId: string }>();
   const router = useRouter();
@@ -115,16 +115,16 @@ export function TaskActPage({ action }: { action: ActPageAction }) {
                   <EmptyMedia variant="icon">
                     <FileTextIcon aria-hidden />
                   </EmptyMedia>
-                  <EmptyTitle>{forbidden ? "Not on your access" : "This task is not here"}</EmptyTitle>
+                  <EmptyTitle>{forbidden ? __t("actPage_notOnYourAccess") : __t("actPage_thisTaskIsNotHere")}</EmptyTitle>
                   <EmptyDescription>
                     {forbidden
-                      ? "You are not on this case's vakalatnama or its access list."
-                      : "It may have been reset with the sandbox, or the link is wrong."}
+                      ? __t("actPage_youAreNotOnThisCaseS")
+                      : __t("actPage_itMayHaveBeenResetWithThe")}
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
                   <Button asChild variant="outline">
-                    <Link href="/tasks">Back to tasks</Link>
+                    <Link href="/tasks">{<__LocalizedText id="actPage_backToTasks" />}</Link>
                   </Button>
                 </EmptyContent>
               </Empty>
@@ -154,7 +154,7 @@ export function TaskActPage({ action }: { action: ActPageAction }) {
         crumbs={
           origin
             ? [{ label: CRUMB[action] }]
-            : [{ label: task.title, href: back }, { label: CRUMB[action] }]
+            : [{ label: __t(task.title), href: back }, { label: CRUMB[action] }]
         }
       />
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 md:px-6 lg:px-8">
@@ -162,17 +162,16 @@ export function TaskActPage({ action }: { action: ActPageAction }) {
           <Button asChild variant="ghost" size="xs" className="self-start text-muted-foreground">
             <Link href={back}>
               <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-              Back to tasks
-            </Link>
+              {<__LocalizedText id="actPage_backToTasks" />}{" "}</Link>
           </Button>
           <header className="flex flex-col gap-1">
-            <h1 className="text-title font-semibold text-foreground text-balance">{task.title}</h1>
+            <h1 className="text-title font-semibold text-foreground text-balance">{__t(task.title)}</h1>
             <p className="text-body-compact text-muted-foreground">
               {kase.parties}
               {kase.stNumber ? (
                 <>
                   {" · "}
-                  <Identifier value={kase.stNumber} label="case number" />
+                  <Identifier value={kase.stNumber} label={__t("actPage_caseNumber")} />
                 </>
               ) : (
                 " · Not yet numbered"

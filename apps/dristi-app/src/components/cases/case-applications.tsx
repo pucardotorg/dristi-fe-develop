@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -125,6 +127,7 @@ import { SignReviewDialog } from "@/components/cases/sign-review-dialog";
  * side's applications appear only once the court has onboarded them.
  */
 export function CaseApplications({ record }: { record: CaseRecord }) {
+  const __t = __useTranslations();
   const { viewer, register } = useFilingsRegister(record);
   const [types, setTypes] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
@@ -165,8 +168,8 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
       <ApplicationsPanel>
         <Alert variant="destructive">
           <CircleAlertIcon aria-hidden />
-          <AlertTitle>Applications could not be loaded</AlertTitle>
-          <AlertDescription>Refresh the page to try again.</AlertDescription>
+          <AlertTitle>{<__LocalizedText id="caseApplications_applicationsCouldNotBeLoaded" />}</AlertTitle>
+          <AlertDescription>{<__LocalizedText id="caseApplications_refreshThePageToTryAgain" />}</AlertDescription>
         </Alert>
       </ApplicationsPanel>
     );
@@ -181,12 +184,9 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
               <FileTextIcon aria-hidden />
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
-              You are not a party to this case
-            </EmptyTitle>
+              {<__LocalizedText id="caseApplications_youAreNotAPartyToThis" />}{" "}</EmptyTitle>
             <EmptyDescription>
-              Applications show here for the parties to a case and their
-              advocates.
-            </EmptyDescription>
+              {<__LocalizedText id="caseApplications_applicationsShowHereForThePartiesTo" />}{" "}</EmptyDescription>
           </EmptyHeader>
         </Empty>
       </ApplicationsPanel>
@@ -272,22 +272,22 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
         )}
       >
         <RegisterFilter
-          label="Type"
+          label={__t("caseApplications_type")}
           values={types}
           onChange={setTypes}
           options={APPLICATION_TYPE_OPTIONS}
         />
         <RegisterFilter
-          label="Status"
+          label={__t("caseApplications_status")}
           values={statuses}
           onChange={setStatuses}
           options={FILING_STATUSES.map((item) => ({
             value: item.id,
-            label: item.label,
+            label: __t(item.label),
           }))}
         />
         <RegisterFilter
-          label="Filed by"
+          label={__t("caseApplications_filedBy")}
           values={filers}
           onChange={setFilers}
           options={register.people.map((person) => ({
@@ -307,13 +307,12 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
               setQuery("");
             }}
           >
-            Clear filters
-          </Button>
+            {<__LocalizedText id="caseApplications_clearFilters" />}{" "}</Button>
         ) : null}
         {/* On a phone the search leads and the filters follow it (owner, Sept 21). */}
         <div className={REGISTER_ROW_SEARCH}>
           <RegisterSearch
-            label="Search by application number"
+            label={__t("caseApplications_searchByApplicationNumber")}
             value={query}
             onChange={setQuery}
           />
@@ -329,10 +328,10 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
         >
           {filtered
             ? rows.length === 1
-              ? "1 application matches the filters"
+              ? __t("caseApplications_1ApplicationMatchesTheFilters")
               : `${rows.length} applications match the filters`
             : rows.length === 1
-              ? "1 application"
+              ? __t("caseApplications_1Application")
               : `${rows.length} applications`}
         </p>
       ) : null}
@@ -348,14 +347,14 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
               )}
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
-              {filtered ? "No applications match" : "No applications yet"}
+              {filtered ? __t("caseApplications_noApplicationsMatch") : __t("caseApplications_noApplicationsYet")}
             </EmptyTitle>
             <EmptyDescription>
               {filtered
-                ? "Try a different filter or clear them."
+                ? __t("caseApplications_tryADifferentFilterOrClearThem")
                 : canDraft
-                  ? "Use Make filings to raise an application."
-                  : "Applications filed on your behalf show here."}
+                  ? __t("caseApplications_useMakeFilingsToRaiseAnApplication")
+                  : __t("caseApplications_applicationsFiledOnYourBehalfShowHere")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -522,6 +521,7 @@ export function SignAndPayDialogs({
    *  Back closed everything). */
   onBack?: (batch: ApplicationRecord[]) => void;
 }) {
+  const __t = __useTranslations();
   /* What is being signed, kept past the close: the dialog's wording
      otherwise flips to "Application signed" as it animates out. */
   const [signed, setSigned] = useState<ApplicationRecord[]>(signing);
@@ -596,7 +596,7 @@ export function SignAndPayDialogs({
            form; only an advocate or party in person signs, and both may pay
            (owner, Sept 24: signing stopped short of payment here). */
         proceed={{
-          label: "Proceed to payment",
+          label: __t("caseApplications_proceedToPayment"),
           laterLabel: "Pay later",
           onClick: () => {
             const batch = signing;
@@ -612,11 +612,11 @@ export function SignAndPayDialogs({
           count > 1
             ? {
                 title: `${count} ${noun} signed`,
-                description: "Pay the court fee to submit them to the court.",
+                description: __t("caseApplications_payTheCourtFeeToSubmitThem"),
               }
             : {
                 title: `${noun.charAt(0).toUpperCase()}${noun.slice(1)} signed`,
-                description: "Pay the court fee to submit it to the court.",
+                description: __t("caseApplications_payTheCourtFeeToSubmitIt"),
               }
         }
       />
@@ -649,8 +649,7 @@ export function ApplicationsLoading() {
   return (
     <ApplicationsPanel busy>
       <span className="sr-only" role="status">
-        Loading applications
-      </span>
+        {<__LocalizedText id="caseApplications_loadingApplications" />}{" "}</span>
       <div className="flex flex-col gap-2">
         {Array.from({ length: 5 }, (_, index) => (
           <Skeleton key={index} className="h-10 w-full rounded-lg" />
@@ -674,8 +673,7 @@ function ApplicationsPanel({
       <CardContent className="flex flex-col gap-4" aria-busy={busy}>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <h2 className="text-body font-semibold text-foreground">
-            Applications
-          </h2>
+            {<__LocalizedText id="caseApplications_applications" />}{" "}</h2>
           {search}
         </div>
         {children}
@@ -703,7 +701,7 @@ export function NeedsAction({
   onObject?: (applicationId: string) => void;
   onOpen: (id: string) => void;
 }) {
-  const count = entries.reduce(
+    const count = entries.reduce(
     (sum, entry) =>
       sum + (entry.kind === "group" ? entry.applications.length : 1),
     0
@@ -719,8 +717,7 @@ export function NeedsAction({
           id="applications-needs-action"
           className="text-body-compact font-semibold text-foreground"
         >
-          Needs attention
-        </h3>
+          {<__LocalizedText id="caseApplications_needsAttention" />}{" "}</h3>
         <Badge variant="secondary" className="tabular-nums">
           {count}
         </Badge>
@@ -813,9 +810,10 @@ function CardTitle({
   label: string;
   badge?: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-      <span>{label}</span>
+      <span>{__t(label)}</span>
       {badge}
     </span>
   );
@@ -828,10 +826,11 @@ function whenIn(days: number): string {
 /** Muted, with the clock the objection's amber line carries, and no brackets:
  *  it is a deadline, just the lower one (owner, Sept 24). */
 function ExpiryNote({ text }: { text: string }) {
+  const __t = __useTranslations();
   return (
     <span className="inline-flex items-center gap-1 font-medium whitespace-nowrap tabular-nums">
       <ClockIcon className="size-3.5 shrink-0" aria-hidden />
-      {text}
+      {__t(text)}
     </span>
   );
 }
@@ -894,6 +893,7 @@ function TouchActionCard({
   onOpen: (id: string) => void;
   nested?: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <RegisterTrayCard
       title={
@@ -902,7 +902,7 @@ function TouchActionCard({
           badge={
             nested ? null : (
               <Badge variant={application.statusVariant}>
-                {application.statusLabel}
+                {__t(application.statusLabel)}
               </Badge>
             )
           }
@@ -917,8 +917,7 @@ function TouchActionCard({
             variant="outline"
             onClick={() => onOpen(application.id)}
           >
-            View
-          </Button>
+            {<__LocalizedText id="caseApplications_view" />}{" "}</Button>
           <StepAction caseId={caseId} application={application} onAct={onAct} />
         </>
       }
@@ -929,7 +928,7 @@ function TouchActionCard({
       <div className="-mt-1 flex flex-col gap-1 text-caption font-normal text-muted-foreground">
         <span>{filedLine(application)}</span>
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1 tabular-nums">
-          <span>Created {application.createdShort}</span>
+          <span>{<__LocalizedText id="caseApplications_created" />}{" "}{application.createdShort}</span>
           {expiryText(application) ? (
             <ExpiryNote text={expiryText(application)!} />
           ) : null}
@@ -970,6 +969,7 @@ function TouchActionGroup({
   onAct: (applications: ApplicationRecord[]) => void;
   onOpen: (id: string) => void;
 }) {
+  const __t = __useTranslations();
   const [lead] = entry.applications;
   const count = entry.applications.length;
   const signing = entry.step === "sign";
@@ -984,7 +984,7 @@ function TouchActionGroup({
           label={groupTitle(entry)}
           badge={
             <>
-              <Badge variant={lead.statusVariant}>{lead.statusLabel}</Badge>
+              <Badge variant={lead.statusVariant}>{__t(lead.statusLabel)}</Badge>
               {groupExpiryText(entry.applications) ? (
                 <span className="text-caption font-normal text-muted-foreground">
                   <ExpiryNote text={groupExpiryText(entry.applications)!} />
@@ -1015,7 +1015,7 @@ function TouchActionGroup({
               className="w-full"
               onClick={() => onAct(entry.applications)}
             >
-              {signing ? `Sign all ${count}` : `Pay all ${count}`}
+              {signing ? __t("caseApplications_signAllValue0", {value0: String(count)}) : __t("caseApplications_payAllValue0", {value0: String(count)})}
             </Button>
           ) : null}
         </>
@@ -1035,6 +1035,7 @@ function GroupMemberCard({
   onAct: (applications: ApplicationRecord[]) => void;
   onOpen: (id: string) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-hairline bg-card p-3">
       <div className="flex flex-col gap-1">
@@ -1044,7 +1045,7 @@ function GroupMemberCard({
         <div className="flex flex-col gap-1 text-caption font-normal text-muted-foreground">
           <span>{filedLine(application)}</span>
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1 tabular-nums">
-            <span>Created {application.createdShort}</span>
+            <span>{<__LocalizedText id="caseApplications_created" />}{" "}{application.createdShort}</span>
             {expiryText(application) ? (
               <ExpiryNote text={expiryText(application)!} />
             ) : null}
@@ -1057,7 +1058,7 @@ function GroupMemberCard({
           variant="outline"
           onClick={() => onOpen(application.id)}
         >
-          View<span className="sr-only">: {application.typeLabel}</span>
+          {<__LocalizedText id="caseApplications_view" />}<span className="sr-only">: {__t(application.typeLabel)}</span>
         </Button>
         {application.step && application.step !== "continue" ? (
           <Button
@@ -1065,8 +1066,8 @@ function GroupMemberCard({
             variant="outline"
             onClick={() => onAct([application])}
           >
-            {STEP_COPY[application.step]}
-            <span className="sr-only">: {application.typeLabel}</span>
+            {__t(STEP_COPY[application.step])}
+            <span className="sr-only">: {__t(application.typeLabel)}</span>
           </Button>
         ) : null}
       </div>
@@ -1087,6 +1088,7 @@ function ActionRow({
   /** Inside a group the status is already said once, on the group. */
   nested?: boolean;
 }) {
+  const __t = __useTranslations();
   const step = application.step ? STEP_COPY[application.step] : null;
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5">
@@ -1101,7 +1103,7 @@ function ActionRow({
           </button>
           {nested ? null : (
             <Badge variant={application.statusVariant}>
-              {application.statusLabel}
+              {__t(application.statusLabel)}
             </Badge>
           )}
         </div>
@@ -1109,7 +1111,7 @@ function ActionRow({
             (owner, Oct 8). */}
         <p className="flex flex-wrap items-center gap-x-1 gap-y-1 text-caption font-normal text-muted-foreground">
           <span>{`${filedLine(application)} ·`}</span>
-          <span className="tabular-nums">Created {application.created}</span>
+          <span className="tabular-nums">{<__LocalizedText id="caseApplications_created" />}{" "}{application.created}</span>
           {expiryText(application) ? (
             <>
               <span aria-hidden>·</span>
@@ -1127,7 +1129,7 @@ function ActionRow({
             onClick={() => onAct([application])}
           >
             {step}
-            <span className="sr-only">: {application.typeLabel}</span>
+            <span className="sr-only">: {__t(application.typeLabel)}</span>
           </Button>
       ) : null}
     </div>
@@ -1147,6 +1149,7 @@ function ActionGroup({
   onAct: (applications: ApplicationRecord[]) => void;
   onOpen: (id: string) => void;
 }) {
+  const __t = __useTranslations();
   const [lead] = entry.applications;
   const signing = entry.step === "sign";
   /* Bulk signing is only for a filer with the tool set up; everyone else signs
@@ -1160,7 +1163,7 @@ function ActionGroup({
           <p className="text-body-compact font-medium text-foreground">
             {groupTitle(entry)}
           </p>
-          <Badge variant={lead.statusVariant}>{lead.statusLabel}</Badge>
+          <Badge variant={lead.statusVariant}>{__t(lead.statusLabel)}</Badge>
           {groupExpiryText(entry.applications) ? (
             <span className="text-caption font-medium text-muted-foreground">
               <ExpiryNote text={groupExpiryText(entry.applications)!} />
@@ -1174,10 +1177,9 @@ function ActionGroup({
             size="sm"
             className="group/expand max-sm:h-10"
           >
-            <span className="group-aria-expanded/expand:hidden">Show all</span>
+            <span className="group-aria-expanded/expand:hidden">{<__LocalizedText id="caseApplications_showAll" />}</span>
             <span className="hidden group-aria-expanded/expand:inline">
-              Hide
-            </span>
+              {<__LocalizedText id="caseApplications_hide" />}{" "}</span>
             <ChevronDownIcon
               data-icon="inline-end"
               aria-hidden
@@ -1193,7 +1195,7 @@ function ActionGroup({
             className="max-sm:h-10"
             onClick={() => onAct(entry.applications)}
           >
-            {signing ? "Sign all" : "Pay all"}
+            {signing ? __t("caseApplications_signAll") : __t("caseApplications_payAll")}
           </Button>
         ) : null}
       </div>
@@ -1256,6 +1258,7 @@ function objectionLine(task: ObjectionTask): string {
  * the task closes when the date passes.
  */
 function ObjectionDue({ task }: { task: ObjectionTask }) {
+  const __t = __useTranslations();
   const days = Math.round(
     (Date.parse(`${task.dueOn}T00:00:00Z`) -
       Date.parse(`${FIXTURE_TODAY}T00:00:00Z`)) /
@@ -1274,7 +1277,7 @@ function ObjectionDue({ task }: { task: ObjectionTask }) {
       )}
     >
       {urgent ? <ClockIcon className="size-3.5 shrink-0" aria-hidden /> : null}
-      {task.canFile ? "Object" : "Due"} {when}, by {task.due}
+      {task.canFile ? __t("caseApplications_object") : __t("caseApplications_due")} {when}{<__LocalizedText id="caseApplications_by" />}{" "}{task.due}
     </span>
   );
 }
@@ -1288,6 +1291,7 @@ function ObjectionRow({
   onOpen: (id: string) => void;
   onObject: (applicationId: string) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5">
       <div className="flex min-w-0 flex-1 flex-col gap-1 max-sm:basis-full">
@@ -1313,8 +1317,7 @@ function ObjectionRow({
           className="max-sm:h-10"
           onClick={() => onObject(task.application.id)}
         >
-          File objection
-          <span className="sr-only">: {task.application.typeLabel}</span>
+          {<__LocalizedText id="caseApplications_fileObjection" />}{" "}<span className="sr-only">: {__t(task.application.typeLabel)}</span>
         </Button>
       ) : (
         <Button
@@ -1324,8 +1327,7 @@ function ObjectionRow({
           className="max-sm:h-10"
           onClick={() => onOpen(task.application.id)}
         >
-          View
-          <span className="sr-only">: {task.application.typeLabel}</span>
+          {<__LocalizedText id="caseApplications_view" />}{" "}<span className="sr-only">: {__t(task.application.typeLabel)}</span>
         </Button>
       )}
     </div>
@@ -1357,15 +1359,13 @@ function TouchObjectionCard({
             variant="outline"
             onClick={() => onOpen(task.application.id)}
           >
-            View
-          </Button>
+            {<__LocalizedText id="caseApplications_view" />}{" "}</Button>
           {task.canFile ? (
             <Button
               type="button"
               onClick={() => onObject(task.application.id)}
             >
-              File objection
-            </Button>
+              {<__LocalizedText id="caseApplications_fileObjection" />}{" "}</Button>
           ) : null}
         </>
       }
@@ -1450,11 +1450,12 @@ function ApplicationNumber({
   item: ApplicationRecord;
   copyable?: boolean;
 }) {
+  const __t = __useTranslations();
   if (item.applicationNumber) {
     return (
       <Identifier
         value={item.applicationNumber}
-        label="application number"
+        label={__t("caseApplications_applicationNumber")}
         copyable={copyable}
       />
     );
@@ -1466,16 +1467,16 @@ function ApplicationNumber({
       <span className="flex flex-col gap-0.5">
         <Identifier
           value={item.temporaryId}
-          label="temporary ID"
+          label={__t("caseApplications_temporaryId")}
           copyable={copyable}
         />
-        <span className="font-normal text-muted-foreground">Temporary</span>
+        <span className="font-normal text-muted-foreground">{<__LocalizedText id="caseApplications_temporary" />}</span>
       </span>
     ) : (
-      <Identifier value={item.temporaryId} label="ID" copyable={copyable} />
+      <Identifier value={item.temporaryId} label={__t("caseApplications_id")} copyable={copyable} />
     );
   }
-  return <Dash label="Not allotted" />;
+  return <Dash label={__t("caseApplications_notAllotted")} />;
 }
 
 function ApplicationsTable({
@@ -1489,6 +1490,7 @@ function ApplicationsTable({
   recentId: string | null;
   recentRowRef: (node: HTMLTableRowElement | null) => void;
 }) {
+  const __t = __useTranslations();
   const tray = useOneOpen<string>();
   return (
     <>
@@ -1502,7 +1504,7 @@ function ApplicationsTable({
               <CardTitle
                 label={item.name}
                 badge={
-                  <Badge variant={item.statusVariant}>{item.statusLabel}</Badge>
+                  <Badge variant={item.statusVariant}>{__t(item.statusLabel)}</Badge>
                 }
               />
             }
@@ -1511,25 +1513,24 @@ function ApplicationsTable({
             className={cn(recentId === item.id && RECENT_ROW)}
             actions={
               <Button type="button" onClick={() => onOpen(item.id)}>
-                View application
-              </Button>
+                {<__LocalizedText id="caseApplications_viewApplication" />}{" "}</Button>
             }
           >
             <p className="-mt-2 text-caption text-muted-foreground">
               {item.applicationNumber ? (
                 <Identifier
                   value={item.applicationNumber}
-                  label="application number"
+                  label={__t("caseApplications_applicationNumber")}
                   copyable={false}
                 />
               ) : item.temporaryId ? (
                 <>
                   <Identifier
                     value={item.temporaryId}
-                    label="temporary ID"
+                    label={__t("caseApplications_temporaryId")}
                     copyable={false}
                   />
-                  {awaitingNumber(item) ? " · Temporary" : null}
+                  {awaitingNumber(item) ? __t("caseApplications_temporary_f2de6b37") : null}
                 </>
               ) : objectionTarget(item) ? null : (
                 /* An objection never gets a court number; its line says what
@@ -1542,7 +1543,7 @@ function ApplicationsTable({
             </p>
             {note ? (
               <span className={cn("-mt-2", noteClass(!item.waitingOn))}>
-                {note}
+                {__t(note)}
               </span>
             ) : null}
             <div className="flex flex-col gap-1 border-t border-hairline pt-3">
@@ -1555,13 +1556,13 @@ function ApplicationsTable({
                 ) : null}
                 {item.draftedBy ? (
                   <span className="text-caption text-muted-foreground">
-                    {` · Drafted by ${item.draftedBy}`}
+                    {__t("caseApplications_draftedByValue0", {value0: String(item.draftedBy)})}
                   </span>
                 ) : null}
               </p>
               <p className="text-caption tabular-nums text-muted-foreground">
-                Created {item.createdShort}
-                {item.submittedShort ? ` · Submitted ${item.submittedShort}` : ""}
+                {<__LocalizedText id="caseApplications_created" />}{" "}{item.createdShort}
+                {item.submittedShort ? __t("caseApplications_submittedValue0", {value0: String(item.submittedShort)}) : ""}
               </p>
             </div>
           </RegisterTrayCard>
@@ -1573,13 +1574,13 @@ function ApplicationsTable({
     <Table>
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={TABLE_HEAD}>Type</TableHead>
-          <TableHead className={TABLE_HEAD}>Number</TableHead>
-          <TableHead className={TABLE_HEAD}>Status</TableHead>
-          <TableHead className={TABLE_HEAD}>Filed by</TableHead>
-          <TableHead className={TABLE_HEAD}>Created on</TableHead>
-          <TableHead className={TABLE_HEAD}>Submitted on</TableHead>
-          <TableHead className={TABLE_HEAD}>Action</TableHead>
+          <TableHead className={TABLE_HEAD}>{<__LocalizedText id="caseApplications_type" />}</TableHead>
+          <TableHead className={TABLE_HEAD}>{<__LocalizedText id="caseApplications_number" />}</TableHead>
+          <TableHead className={TABLE_HEAD}>{<__LocalizedText id="caseApplications_status" />}</TableHead>
+          <TableHead className={TABLE_HEAD}>{<__LocalizedText id="caseApplications_filedBy" />}</TableHead>
+          <TableHead className={TABLE_HEAD}>{<__LocalizedText id="caseApplications_createdOn" />}</TableHead>
+          <TableHead className={TABLE_HEAD}>{<__LocalizedText id="caseApplications_submittedOn" />}</TableHead>
+          <TableHead className={TABLE_HEAD}>{<__LocalizedText id="caseApplications_action" />}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -1600,7 +1601,7 @@ function ApplicationsTable({
               className={cn(TABLE_CELL, "font-medium whitespace-normal")}
             >
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span>{item.typeLabel}</span>
+                <span>{__t(item.typeLabel)}</span>
                 {/* Others names no ask; the filer's own title does. One
                     line, so the row keeps its height; the detail view's
                     heading has it whole. */}
@@ -1609,9 +1610,9 @@ function ApplicationsTable({
                     /* w-0 + min-w-full: fills the column without
                        widening it, so the other columns keep their room. */
                     className="w-0 min-w-full truncate text-caption font-normal text-muted-foreground"
-                    title={item.ownTitle}
+                    title={__t(item.ownTitle)}
                   >
-                    {item.ownTitle}
+                    {__t(item.ownTitle)}
                   </span>
                 ) : null}
                 {objectionTarget(item) ? (
@@ -1628,9 +1629,9 @@ function ApplicationsTable({
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>
               <span className="flex flex-col items-start gap-0.5">
-                <Badge variant={item.statusVariant}>{item.statusLabel}</Badge>
+                <Badge variant={item.statusVariant}>{__t(item.statusLabel)}</Badge>
                 {note ? (
-                  <span className={noteClass(!item.waitingOn)}>{note}</span>
+                  <span className={noteClass(!item.waitingOn)}>{__t(note)}</span>
                 ) : null}
               </span>
             </TableCell>
@@ -1649,7 +1650,7 @@ function ApplicationsTable({
                 ) : null}
                 {item.draftedBy ? (
                   <span className={noteClass()}>
-                    {`Drafted by ${item.draftedBy}`}
+                    {__t("caseApplications_draftedByValue0_1c47e574", {value0: String(item.draftedBy)})}
                   </span>
                 ) : null}
               </span>
@@ -1658,7 +1659,7 @@ function ApplicationsTable({
               {item.createdShort}
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
-              {item.submittedShort ?? <Dash label="Not submitted" />}
+              {item.submittedShort ?? <Dash label={__t("caseApplications_notSubmitted")} />}
             </TableCell>
             <TableCell className={TABLE_CELL}>
               {/* View on every row: the table is for finding and opening. The
@@ -1680,12 +1681,13 @@ function ApplicationsTable({
 }
 
 function Dash({ label }: { label: string }) {
+  const __t = __useTranslations();
   return (
     <>
       <span aria-hidden className="text-muted-foreground">
         —
       </span>
-      <span className="sr-only">{label}</span>
+      <span className="sr-only">{__t(label)}</span>
     </>
   );
 }

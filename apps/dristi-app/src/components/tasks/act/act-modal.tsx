@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 /**
  * The act modal: pay and file complete right here — a `Dialog` over the table from `md`
@@ -73,6 +74,7 @@ export function TaskActModal({
   /** Called with the task to flash once a step lands — the created re-filing task, or this one. */
   onFinished?: (taskId: TaskId) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const { user, people, online } = useTasks();
 
@@ -126,7 +128,7 @@ export function TaskActModal({
           {/* Inside the dialog's accessible description — a copy control here would be
               announced as part of the description and could take the dialog's first focus,
               so the face is restored without the affordance. */}
-          <Identifier value={kase.stNumber} label="case number" copyable={false} />
+          <Identifier value={kase.stNumber} label={__t("actModal_caseNumber")} copyable={false} />
         </>
       ) : (
         " · Not yet numbered"
@@ -144,7 +146,7 @@ export function TaskActModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FlowDialogContent className={`max-h-[85svh] w-full overflow-y-auto ${WIDTH[mode]}`}>
         <DialogHeader className="pr-8 text-left">
-          <DialogTitle className="text-title-s font-semibold text-balance">{task.title}</DialogTitle>
+          <DialogTitle className="text-title-s font-semibold text-balance">{__t(task.title)}</DialogTitle>
           <DialogDescription className="text-caption text-muted-foreground">{caseLine}</DialogDescription>
         </DialogHeader>
         <p className="text-caption text-muted-foreground">{SANDBOX[mode]}</p>

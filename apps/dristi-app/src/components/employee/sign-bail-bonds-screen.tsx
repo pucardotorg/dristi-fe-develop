@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FileSignatureIcon, SearchXIcon } from "lucide-react";
@@ -109,6 +111,7 @@ function plural(count: number, one: string, many: string): string {
  * demo queue — see `lib/employee/sign-bail-bonds.ts`.
  */
 export function SignBailBondsScreen() {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   /* The queue is state because signing and rejecting change it. One list, so the table,
      the count in the header and the footer can never disagree about what is still
@@ -241,14 +244,13 @@ export function SignBailBondsScreen() {
       <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 pb-0 md:p-8 md:pb-0">
         <header className="flex flex-col gap-2">
           <h1 className="text-title text-balance font-semibold">
-            Sign bail bonds
-          </h1>
+            {<__LocalizedText id="signBailBondsScreen_signBailBonds" />}{" "}</h1>
           {/* The count is the whole point of the queue, so the supporting line carries it
               rather than restating the title. Singular is spelled out because "1 bail
               bonds" is the kind of thing a court notices. */}
           <p className="text-body text-muted-foreground">
             {pending.length === 1
-              ? "1 bail bond is waiting for your signature."
+              ? __t("signBailBondsScreen_1BailBondIsWaitingForYour")
               : `${pending.length} bail bonds are waiting for your signature.`}
           </p>
         </header>
@@ -349,7 +351,7 @@ export function SignBailBondsScreen() {
             aria-live="polite"
           >
             {selectedIds.size === 0
-              ? "Select the bail bonds to sign them together."
+              ? __t("signBailBondsScreen_selectTheBailBondsToSignThem")
               : `${selectedIds.size} ${plural(selectedIds.size, "bail bond", "bail bonds")} selected.`}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -360,8 +362,7 @@ export function SignBailBondsScreen() {
                 className="w-full sm:w-fit"
                 onClick={() => setPicked(new Set())}
               >
-                Clear selection
-              </Button>
+                {<__LocalizedText id="signBailBondsScreen_clearSelection" />}{" "}</Button>
             ) : null}
             {/* The count rides the label once there is one, the way every signing
                 queue's bar does — the button the bench presses says the same number the
@@ -374,8 +375,8 @@ export function SignBailBondsScreen() {
               onClick={() => setBulkOpen(true)}
             >
               {selectedIds.size > 0
-                ? `Sign ${selectedIds.size} ${plural(selectedIds.size, "bail bond", "bail bonds")}`
-                : "Sign selected bail bonds"}
+                ? __t("signBailBondsScreen_signValue0Value1", {value0: String(selectedIds.size), value1: String(plural(selectedIds.size, "bail bond", "bail bonds"))})
+                : __t("signBailBondsScreen_signSelectedBailBonds")}
             </Button>
           </div>
         </div>
@@ -436,13 +437,14 @@ function SignBailBondSearch({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: __t("signBailBondsScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or litigant",
+        placeholder: __t("signBailBondsScreen_caseNameNumberOrLitigant"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -467,6 +469,7 @@ function SignBailBondsEmpty({
   isSearched: boolean;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -478,19 +481,18 @@ function SignBailBondsEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isSearched ? "No bail bond matches this search" : "Nothing to sign"}
+          {isSearched ? __t("signBailBondsScreen_noBailBondMatchesThisSearch") : __t("signBailBondsScreen_nothingToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isSearched
-            ? "No bail bond in this queue matches the case name, number or litigant you asked for."
-            : "No bail bond is waiting for your signature."}
+            ? __t("signBailBondsScreen_noBailBondInThisQueueMatches")
+            : __t("signBailBondsScreen_noBailBondIsWaitingForYour")}
         </EmptyDescription>
       </EmptyHeader>
       {isSearched ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
-          </Button>
+            {<__LocalizedText id="signBailBondsScreen_clearSearch" />}{" "}</Button>
         </EmptyContent>
       ) : null}
     </Empty>
@@ -517,6 +519,7 @@ function SignBailBondsItemList({
   onToggle: (bond: SignBailBond) => void;
   onOpen: (bond: SignBailBond) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   return (
     <ul className="flex flex-col gap-3">
@@ -532,7 +535,7 @@ function SignBailBondsItemList({
             <Checkbox
               checked={selectedIds.has(bond.id)}
               onCheckedChange={() => onToggle(bond)}
-              aria-label={`Select the bail bond of ${bond.litigant} in ${courtText(bond.caseNumber)}`}
+              aria-label={__t("signBailBondsScreen_selectTheBailBondOfValue0In", {value0: String(bond.litigant), value1: String(courtText(bond.caseNumber))})}
             />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -543,16 +546,16 @@ function SignBailBondsItemList({
                 className={rowOpenerClass}
             >
               <span className="sr-only">
-                {`Read the bail bond of ${bond.litigant} in `}
+                {__t("signBailBondsScreen_readTheBailBondOfValue0In", {value0: String(bond.litigant)})}
               </span>
               {causeTitle(bond)}
             </button>
             <p className="min-w-0 text-body-compact">
-              Litigant: {bond.litigant}
+              {<__LocalizedText id="signBailBondsScreen_litigant" />}{" "}{bond.litigant}
             </p>
             <Identifier
               value={bond.caseNumber}
-              label="case number"
+              label={__t("signBailBondsScreen_caseNumber")}
               className="self-start text-caption text-muted-foreground"
             />
           </div>

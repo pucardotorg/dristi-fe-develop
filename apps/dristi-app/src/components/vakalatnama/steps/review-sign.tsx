@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * S6 — Review & sign, combined into one screen (like the e-filing sign step): the
@@ -48,6 +50,7 @@ function nextStatus(signers: Signer[]): VakStatus {
 }
 
 export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
+  const __t = __useTranslations();
   const board = reconcileSigners(vak);
   const signed = board.filter((s) => s.state === "signed").length;
   const pct = board.length ? Math.round((signed / board.length) * 100) : 0;
@@ -107,25 +110,22 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
       {allSigned ? (
         <Alert variant="success">
           <CheckCircle2Icon aria-hidden />
-          <AlertTitle>All signatures collected</AlertTitle>
+          <AlertTitle>{<__LocalizedText id="reviewSign_allSignaturesCollected" />}</AlertTitle>
           <AlertDescription>
-            Every party has signed. Continue to pay the fees and complete the vakalatnama.
-          </AlertDescription>
+            {<__LocalizedText id="reviewSign_everyPartyHasSignedContinueToPay" />}{" "}</AlertDescription>
         </Alert>
       ) : null}
 
       {/* Signatures panel */}
-      <FormCard title="Signatures" contentClassName="gap-5">
+      <FormCard title={__t("reviewSign_signatures")} contentClassName="gap-5">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-2">
             <span className="text-caption font-medium text-muted-foreground tabular-nums">
-              {signed} of {board.length} signed
-            </span>
+              {signed} {<__LocalizedText id="reviewSign_of" />}{" "}{board.length} {<__LocalizedText id="reviewSign_signed" />}{" "}</span>
             {!allSigned && nextSigner ? (
               <Button type="button" size="sm" onClick={() => setModal("choose")}>
                 <SignatureIcon aria-hidden />
-                Continue to sign
-              </Button>
+                {<__LocalizedText id="reviewSign_continueToSign" />}{" "}</Button>
             ) : null}
           </div>
           <Progress value={pct} aria-label={`${signed} of ${board.length} signed`} className="h-1.5" />
@@ -152,11 +152,11 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
                   {isSigned ? <CheckIcon className="size-3.5" /> : i + 1}
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="text-body-compact font-semibold">{s.label}</span>
+                  <span className="text-body-compact font-semibold">{__t(s.label)}</span>
                   <span className="text-caption text-muted-foreground">{s.certifies}</span>
                   {isSigned ? (
                     <span className="text-caption text-muted-foreground tabular-nums">
-                      {s.method === "upload" ? "Uploaded" : "eSign"}
+                      {s.method === "upload" ? __t("reviewSign_uploaded") : __t("reviewSign_esign")}
                       {s.signedAt ? ` · ${new Date(s.signedAt).toLocaleString("en-IN")}` : ""}
                     </span>
                   ) : null}
@@ -165,12 +165,11 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
                   {isSigned ? (
                     <Badge variant="success">
                       <CheckIcon aria-hidden />
-                      Signed
-                    </Badge>
+                      {<__LocalizedText id="reviewSign_signed_318057da" />}{" "}</Badge>
                   ) : isNext ? (
-                    <Badge variant="secondary">Up next</Badge>
+                    <Badge variant="secondary">{<__LocalizedText id="reviewSign_upNext" />}</Badge>
                   ) : (
-                    <Badge variant="secondary">Waiting</Badge>
+                    <Badge variant="secondary">{<__LocalizedText id="reviewSign_waiting" />}</Badge>
                   )}
                 </span>
               </li>
@@ -179,8 +178,7 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
         </ul>
 
         <p className="text-caption text-muted-foreground">
-          Non-Aadhaar eSign. Every signature is recorded with who, how and when.
-        </p>
+          {<__LocalizedText id="reviewSign_nonAadhaarEsignEverySignatureIsRecorded" />}{" "}</p>
       </FormCard>
 
       {/* The instrument */}
@@ -190,11 +188,11 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
       <Dialog open={modal === "choose"} onOpenChange={(open) => !open && setModal(null)}>
         <ChromeDialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>How will {nextSigner?.label} sign?</DialogTitle>
+            <DialogTitle>{<__LocalizedText id="reviewSign_howWill" />}{" "}{__t(nextSigner?.label)} {<__LocalizedText id="reviewSign_sign" />}</DialogTitle>
             <DialogDescription>
               {remaining > 1
                 ? `${remaining} signatures still to collect.`
-                : "The last signature to collect."}
+                : __t("reviewSign_theLastSignatureToCollect")}
             </DialogDescription>
           </DialogHeader>
 
@@ -214,10 +212,9 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
                 <SignatureIcon className="size-5" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-body font-semibold text-foreground">eSign with OTP</span>
+                <span className="text-body font-semibold text-foreground">{<__LocalizedText id="reviewSign_esignWithOtp" />}</span>
                 <span className="text-body-compact text-muted-foreground">
-                  A one-time code is sent to the signer’s mobile.
-                </span>
+                  {<__LocalizedText id="reviewSign_aOneTimeCodeIsSentTo" />}{" "}</span>
               </span>
               <ChevronRightIcon
                 aria-hidden
@@ -238,10 +235,9 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="text-body font-semibold text-foreground">
-                  Upload a signed copy
-                </span>
+                  {<__LocalizedText id="reviewSign_uploadASignedCopy" />}{" "}</span>
                 <span className="text-body-compact text-muted-foreground">
-                  A copy that already carries {remaining > 1 ? "every remaining signature" : "the signature"}.
+                  {<__LocalizedText id="reviewSign_aCopyThatAlreadyCarries" />}{" "}{remaining > 1 ? __t("reviewSign_everyRemainingSignature") : __t("reviewSign_theSignature")}.
                 </span>
               </span>
               <ChevronRightIcon
@@ -257,11 +253,11 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
       <Dialog open={modal === "esign"} onOpenChange={(open) => !open && setModal(null)}>
         <ChromeDialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Enter the OTP</DialogTitle>
+            <DialogTitle>{<__LocalizedText id="reviewSign_enterTheOtp" />}</DialogTitle>
             <DialogDescription>
               {mobileTail ? (
                 <>
-                  Sent to the mobile ending{" "}
+                  {<__LocalizedText id="reviewSign_sentToTheMobileEnding" />}{" "}
                   <strong className="font-semibold text-foreground tabular-nums">
                     {mobileTail}
                   </strong>
@@ -278,7 +274,7 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
               maxLength={6}
               value={otp}
               onChange={setOtp}
-              aria-label="One-time password"
+              aria-label={__t("reviewSign_oneTimePassword")}
               containerClassName="gap-2"
               autoFocus
             >
@@ -295,11 +291,9 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
           </div>
 
           <Button type="button" size="lg" className="w-full" disabled={otp.length < 6} onClick={verifyEsign}>
-            Verify and sign
-          </Button>
+            {<__LocalizedText id="reviewSign_verifyAndSign" />}{" "}</Button>
           <p className="text-center text-caption text-muted-foreground">
-            Sandbox — any six digits work.
-          </p>
+            {<__LocalizedText id="reviewSign_sandboxAnySixDigitsWork" />}{" "}</p>
         </ChromeDialogContent>
       </Dialog>
 
@@ -308,7 +302,7 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
         <ChromeDialogContent className="sm:max-w-xs" showCloseButton={false}>
           <div className="flex flex-col items-center gap-3 py-4">
             <Spinner className="size-6" />
-            <p className="text-body-compact text-muted-foreground">Recording the signature…</p>
+            <p className="text-body-compact text-muted-foreground">{<__LocalizedText id="reviewSign_recordingTheSignature" />}</p>
           </div>
         </ChromeDialogContent>
       </Dialog>

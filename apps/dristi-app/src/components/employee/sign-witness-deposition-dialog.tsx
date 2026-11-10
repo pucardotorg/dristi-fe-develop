@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -82,6 +84,7 @@ function SignWitnessDepositionBody({
   onSign: (deposition: WitnessDeposition) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const document = React.useMemo(
     () => buildWitnessDepositionDocument(deposition),
     [deposition],
@@ -94,18 +97,18 @@ function SignWitnessDepositionBody({
          takes all of it. No floor: `md:h-[85dvh]` already holds the frame still. */
       className="sm:max-w-4xl md:h-[85dvh]"
       /* The reference's own title: the paper, and which witness's it is. */
-      title={title}
+      title={__t(title)}
       /* The sheet's state — waiting for this bench's signature — in the DS's sentence
          case rather than the reference's shouted status. `warning` is the variant the
          sibling overlays already spend on a pending paper, so the court side reports a
          pending state one way. */
-      titleAside={<Badge variant="warning">Pending signature</Badge>}
+      titleAside={<Badge variant="warning">{<__LocalizedText id="signWitnessDepositionDialog_pendingSignature" />}</Badge>}
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(deposition)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={deposition.caseNumber} label="case number" copyable={false} />{" "}
-          · Recorded{" "}
+          <Identifier value={deposition.caseNumber} label={__t("signWitnessDepositionDialog_caseNumber")} copyable={false} />{" "}
+          {<__LocalizedText id="signWitnessDepositionDialog_recorded" />}{" "}
           {formatDepositionDate(deposition.depositionOn)}
         </DialogDescription>
       }
@@ -120,9 +123,7 @@ function SignWitnessDepositionBody({
           {/* What the act means, and what this build does not do — said at the moment of
               the act rather than left for the bench to discover. */}
           <p className="text-caption text-muted-foreground sm:mr-auto sm:text-left">
-            Signing publishes this deposition and cannot be reversed. Not part of
-            this build — nothing is signed, published or sent.
-          </p>
+            {<__LocalizedText id="signWitnessDepositionDialog_signingPublishesThisDepositionAndCannotBe" />}{" "}</p>
           {/* `sm:self-center` because the frame owns the footer's own classes and this
               row pairs a caption that wraps to two lines with a 40px control: without it
               the button hangs from the top of the tallest child. */}
@@ -131,8 +132,7 @@ function SignWitnessDepositionBody({
             className="sm:self-center"
             onClick={() => onSign(deposition)}
           >
-            Sign and publish
-          </Button>
+            {<__LocalizedText id="signWitnessDepositionDialog_signAndPublish" />}{" "}</Button>
         </>
       }
       onCloseAutoFocus={(event) => {
@@ -149,14 +149,14 @@ function SignWitnessDepositionBody({
         surface="card"
         className="min-h-96 shadow-raised md:min-h-0"
         height="fill"
-        title={title}
+        title={__t(title)}
         source={{
           kind: "composed",
           content: <DepositionFacsimile document={document} />,
         }}
         download={{
           onDownload: () => downloadWitnessDepositionDocument(deposition),
-          label: `Download the ${title.toLowerCase()}`,
+          label: __t("signWitnessDepositionDialog_downloadTheValue0", {value0: String(title.toLowerCase())}),
         }}
       />
     </StagedOverlay>
@@ -180,18 +180,19 @@ function DepositionFacsimile({
 }: {
   document: WitnessDepositionDocument;
 }) {
+  const __t = __useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
-        <h3 className="text-body font-semibold">{document.title}</h3>
+        <h3 className="text-body font-semibold">{__t(document.title)}</h3>
         <p className="text-body-compact text-paper-muted-foreground">
           ({document.citation})
         </p>
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body">{document.jurisdiction}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {<__LocalizedText id="signWitnessDepositionDialog_caseNo" />}{" "}{document.caseNumber}
         </p>
         <p className="text-body">{document.matter}</p>
       </header>
@@ -202,7 +203,7 @@ function DepositionFacsimile({
           {document.particulars.map(({ label, value }) => (
             <div key={label} className="flex flex-wrap gap-1">
               <dt className="text-body text-paper-muted-foreground">
-                {label}:
+                {__t(label)}:
               </dt>
               <dd className="text-body">{value}</dd>
             </div>
@@ -211,7 +212,7 @@ function DepositionFacsimile({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h4 className="text-body font-semibold">Examination-in-chief</h4>
+        <h4 className="text-body font-semibold">{<__LocalizedText id="signWitnessDepositionDialog_examinationInChief" />}</h4>
         <ol className="flex list-decimal flex-col gap-3 ps-6">
           {document.chief.map((paragraph, index) => (
             <li key={index} className="text-body">
@@ -222,7 +223,7 @@ function DepositionFacsimile({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h4 className="text-body font-semibold">Cross-examination</h4>
+        <h4 className="text-body font-semibold">{<__LocalizedText id="signWitnessDepositionDialog_crossExamination" />}</h4>
         {document.cross.length > 0 ? (
           <ol className="flex list-decimal flex-col gap-3 ps-6">
             {document.cross.map((paragraph, index) => (

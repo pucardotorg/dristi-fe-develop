@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -47,6 +49,7 @@ export function CasesListScreen({
   initialBookmarks: string[];
   now: number;
 }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const { search, effective, go, onSearchChange } = useCasesNavigation(query);
   const [bookmarks, setBookmarks] = React.useState<ReadonlySet<string>>(
@@ -93,18 +96,18 @@ export function CasesListScreen({
   return (
     <div className="flex flex-1 flex-col gap-8 p-6 md:p-8">
       {/* Cases › the folder. Publishing the crumb is what links the root back. */}
-      <Breadcrumbs crumbs={[{ label: title }]} />
+      <Breadcrumbs crumbs={[{ label: __t(title) }]} />
       <div>
         <Button variant="ghost" className="w-fit" asChild>
           <Link href={backHref}>
             <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-            {backLabel}
+            {__t(backLabel)}
           </Link>
         </Button>
       </div>
 
       <header className="flex flex-col gap-2">
-        <h1 className="text-title-l font-semibold">{title}</h1>
+        <h1 className="text-title-l font-semibold">{__t(title)}</h1>
       </header>
 
       <CasePeekProvider now={now}>
@@ -114,8 +117,7 @@ export function CasesListScreen({
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">
           <div className="w-full min-w-0 sm:w-72">
             <Label htmlFor="cases-search" className="sr-only">
-              Search cases
-            </Label>
+              {<__LocalizedText id="casesListScreen_searchCases" />}{" "}</Label>
             <InputGroup>
               <InputGroupAddon>
                 <SearchIcon aria-hidden />
@@ -126,7 +128,7 @@ export function CasesListScreen({
                 autoComplete="off"
                 value={search}
                 onChange={(event) => onSearchChange(event.target.value)}
-                placeholder="Search by case name or number"
+                placeholder={__t("casesListScreen_searchByCaseNameOrNumber")}
               />
             </InputGroup>
           </div>
@@ -138,9 +140,9 @@ export function CasesListScreen({
             <Button
               variant="outline"
               onClick={() => onSearchChange("")}
-              aria-label={`Remove Search: ${search}`}
+              aria-label={__t("casesListScreen_removeSearchValue0", {value0: String(search)})}
             >
-              Search: {search}
+              {<__LocalizedText id="casesListScreen_search" />}{" "}{search}
               <XIcon data-icon="inline-end" aria-hidden />
             </Button>
           </div>
@@ -153,22 +155,20 @@ export function CasesListScreen({
                 <FileSearchIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="text-title-s font-semibold">
-                No cases match these filters
-              </EmptyTitle>
+                {<__LocalizedText id="casesListScreen_noCasesMatchTheseFilters" />}{" "}</EmptyTitle>
               <EmptyDescription className="text-body">
                 {search
-                  ? `Nothing here matches this search. Try another case name or number, or go back to ${backLabel.toLowerCase()}.`
-                  : "Nothing here matches. Go back and try another folder."}
+                  ? __t("casesListScreen_nothingHereMatchesThisSearchTryAnother", {value0: String(backLabel.toLowerCase())})
+                  : __t("casesListScreen_nothingHereMatchesGoBackAndTry")}
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               {search ? (
                 <Button variant="outline" onClick={() => onSearchChange("")}>
-                  Clear search
-                </Button>
+                  {<__LocalizedText id="casesListScreen_clearSearch" />}{" "}</Button>
               ) : (
                 <Button variant="outline" asChild>
-                  <Link href={backHref}>{backLabel}</Link>
+                  <Link href={backHref}>{__t(backLabel)}</Link>
                 </Button>
               )}
             </EmptyContent>

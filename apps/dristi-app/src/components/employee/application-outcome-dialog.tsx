@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -61,6 +63,7 @@ export function ApplicationOutcomeDialog({
   onOpenChange: (open: boolean) => void;
   onSave: (outcome: ApplicationOutcome) => void;
 }) {
+  const __t = __useTranslations();
   const [answers, setAnswers] = React.useState(outcome);
   /* Opened afresh: start from what the order data holds. */
   const [wasOpen, setWasOpen] = React.useState(open);
@@ -78,26 +81,24 @@ export function ApplicationOutcomeDialog({
       <DialogContent className="flex max-h-[90dvh] flex-col gap-4 sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            Application · {subject.label}
+            {<__LocalizedText id="applicationOutcomeDialog_application" />}{" "}{__t(subject.label)}
           </DialogTitle>
           <DialogDescription>
-            Recorded in this order&rsquo;s data. The order data cannot be marked
-            complete until this is answered.
-          </DialogDescription>
+            {<__LocalizedText id="applicationOutcomeDialog_recordedInThisOrderSDataThe" />}{" "}</DialogDescription>
         </DialogHeader>
         {/* `-mx-1 px-1`: room for the fields' focus rings inside the scroll. */}
         <div className="-mx-1 flex min-h-0 flex-col gap-6 overflow-y-auto px-1 pb-1">
           <YesNoQuestion
             id={`${id}-onboard`}
-            label="Onboard the application?"
-            note={subject.onboarded ? "Already onboarded." : undefined}
+            label={__t("applicationOutcomeDialog_onboardTheApplication")}
+            note={subject.onboarded ? __t("applicationOutcomeDialog_alreadyOnboarded") : undefined}
             value={answers.onboard}
             disabled={subject.onboarded}
             onChange={(onboard) => change({ onboard })}
           />
           <YesNoQuestion
             id={`${id}-decided`}
-            label="Was a decision passed on the application?"
+            label={__t("applicationOutcomeDialog_wasADecisionPassedOnTheApplication")}
             value={answers.decided}
             onChange={(decided) => change({ decided })}
           />
@@ -109,8 +110,7 @@ export function ApplicationOutcomeDialog({
                   id={`${id}-decision`}
                   className="text-body-compact font-medium"
                 >
-                  What was decided?
-                </span>
+                  {<__LocalizedText id="applicationOutcomeDialog_whatWasDecided" />}{" "}</span>
                 <Select
                   value={answers.decision || undefined}
                   onValueChange={(decision) =>
@@ -123,16 +123,16 @@ export function ApplicationOutcomeDialog({
                     aria-labelledby={`${id}-decision`}
                     className="w-full"
                   >
-                    <SelectValue placeholder="Choose one">
-                      {APPLICATION_DECISIONS.find(
+                    <SelectValue placeholder={__t("applicationOutcomeDialog_chooseOne")}>
+                      {__t(APPLICATION_DECISIONS.find(
                         (entry) => entry.id === answers.decision,
-                      )?.label ?? null}
+                      )?.label) ?? null}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {APPLICATION_DECISIONS.map((entry) => (
                       <SelectItem key={entry.id} value={entry.id}>
-                        {entry.label}
+                        {__t(entry.label)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -141,7 +141,7 @@ export function ApplicationOutcomeDialog({
               {subject.workflow ? (
                 <YesNoQuestion
                   id={`${id}-workflow`}
-                  label="Was the workflow for this application triggered?"
+                  label={__t("applicationOutcomeDialog_wasTheWorkflowForThisApplicationTriggered")}
                   note={subject.workflow}
                   value={answers.workflowTriggered}
                   onChange={(workflowTriggered) =>
@@ -156,7 +156,7 @@ export function ApplicationOutcomeDialog({
             <>
               <YesNoQuestion
                 id={`${id}-respond`}
-                label="Does the other party need to respond?"
+                label={__t("applicationOutcomeDialog_doesTheOtherPartyNeedToRespond")}
                 value={answers.responseNeeded}
                 onChange={(responseNeeded) => change({ responseNeeded })}
               />
@@ -168,8 +168,7 @@ export function ApplicationOutcomeDialog({
                       id={`${id}-respond-by-label`}
                       className="text-body-compact font-medium"
                     >
-                      Respond by
-                    </span>
+                      {<__LocalizedText id="applicationOutcomeDialog_respondBy" />}{" "}</span>
                   }
                   value={answers.respondBy}
                   today={today}
@@ -184,8 +183,7 @@ export function ApplicationOutcomeDialog({
                     id={`${id}-forward-label`}
                     className="text-body-compact font-medium"
                   >
-                    Bring the application forward again on
-                  </span>
+                    {<__LocalizedText id="applicationOutcomeDialog_bringTheApplicationForwardAgainOn" />}{" "}</span>
                 }
                 value={answers.bringForwardOn}
                 today={today}
@@ -202,23 +200,20 @@ export function ApplicationOutcomeDialog({
             className="w-full sm:w-auto"
             onClick={() => onOpenChange(false)}
           >
-            Cancel
-          </Button>
+            {<__LocalizedText id="applicationOutcomeDialog_cancel" />}{" "}</Button>
           <Button
             type="button"
             className="w-full sm:w-auto"
             disabled={gaps.length > 0}
             onClick={() => onSave(answers)}
           >
-            Save
-          </Button>
+            {<__LocalizedText id="applicationOutcomeDialog_save" />}{" "}</Button>
           {gaps.length > 0 ? (
             <Badge
               variant="warning"
               className="self-start tabular-nums sm:order-first sm:mr-auto sm:self-auto"
             >
-              {gaps.length} to fill
-            </Badge>
+              {gaps.length} {<__LocalizedText id="applicationOutcomeDialog_toFill" />}{" "}</Badge>
           ) : null}
         </DialogFooter>
       </DialogContent>
@@ -243,12 +238,13 @@ function YesNoQuestion({
   disabled?: boolean;
   onChange: (value: YesNo) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <span id={id} className="flex flex-col gap-0.5">
-        <span className="text-body-compact font-medium">{label}</span>
+        <span className="text-body-compact font-medium">{__t(label)}</span>
         {note ? (
-          <span className="text-caption text-muted-foreground">{note}</span>
+          <span className="text-caption text-muted-foreground">{__t(note)}</span>
         ) : null}
       </span>
       <SegmentedControl
@@ -263,11 +259,9 @@ function YesNoQuestion({
         className="w-full"
       >
         <SegmentedControlItem value="yes" className="flex-1">
-          Yes
-        </SegmentedControlItem>
+          {<__LocalizedText id="applicationOutcomeDialog_yes" />}{" "}</SegmentedControlItem>
         <SegmentedControlItem value="no" className="flex-1">
-          No
-        </SegmentedControlItem>
+          {<__LocalizedText id="applicationOutcomeDialog_no" />}{" "}</SegmentedControlItem>
       </SegmentedControl>
     </div>
   );

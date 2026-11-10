@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -92,6 +94,7 @@ function SignADiaryBody({
   onSave: (entry: ADiaryEntry, business: string) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const document = React.useMemo(() => buildADiaryDocument(entry), [entry]);
   /* The draft. It starts as what is recorded and is compared against the entry rather
@@ -126,14 +129,14 @@ function SignADiaryBody({
          is for. A photograph does not do that, which is why `ApproveRegistrationsDialog`
          can split earlier than this one can. */
       className="sm:max-w-5xl lg:h-[85dvh]"
-      title="A-Diary entry"
+      title={__t("signADiaryDialog_aDiaryEntry")}
       titleRef={titleRef}
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(entry)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={entry.caseNumber} label="case number" copyable={false} />{" "}
-          · Dated{" "}
+          <Identifier value={entry.caseNumber} label={__t("signADiaryDialog_caseNumber")} copyable={false} />{" "}
+          {<__LocalizedText id="signADiaryDialog_dated" />}{" "}
           <span className="tabular-nums">{formatADiaryDate(entry.dated)}</span>
         </DialogDescription>
       }
@@ -156,7 +159,7 @@ function SignADiaryBody({
             aria-live="polite"
           >
             {saved ||
-              "Saving changes this entry and the A-Diary text of the order it came from. The order text does not change."}
+              __t("signADiaryDialog_savingChangesThisEntryAndTheA")}
           </p>
           {/* `sm:self-center` because the frame owns the footer's own classes and this
               row pairs a caption that wraps with a 40px control. */}
@@ -166,8 +169,7 @@ function SignADiaryBody({
             disabled={blank || !dirty}
             onClick={save}
           >
-            Save
-          </Button>
+            {<__LocalizedText id="signADiaryDialog_save" />}{" "}</Button>
         </>
       }
       /* Radix focuses the first tabbable thing it finds, and side by side that is the
@@ -207,7 +209,7 @@ function SignADiaryBody({
         <Card className="min-w-0 border-hairline shadow-raised lg:min-h-0">
           <CardContent className="flex flex-col gap-4 lg:min-h-0 lg:flex-1">
             <Field data-invalid={blank} className="lg:min-h-0 lg:flex-1">
-              <FieldLabel className="text-body">Business of the day</FieldLabel>
+              <FieldLabel className="text-body">{<__LocalizedText id="signADiaryDialog_businessOfTheDay" />}</FieldLabel>
               {/* Stacked it grows with what is typed, from a four-line floor. Beside the
                   document it takes the panel's remaining height instead and scrolls
                   inside it — `field-sizing-fixed`, or the field's own content sizing
@@ -222,10 +224,7 @@ function SignADiaryBody({
                 }}
               />
               <FieldDescription className="text-body-compact">
-                What this court did on {formatADiaryDate(entry.dated)}, in the
-                court&apos;s own words. It can be corrected until the day&apos;s
-                A-Diary is signed.
-              </FieldDescription>
+                {<__LocalizedText id="signADiaryDialog_whatThisCourtDidOn" />}{" "}{formatADiaryDate(entry.dated)}{<__LocalizedText id="signADiaryDialog_inTheCourtSOwnWordsIt" />}{" "}</FieldDescription>
               {/* A day the court sat is a day with business. Emptying the record is the
                   one edit this field refuses, and it says so where the error belongs
                   rather than by disabling Save with no reason given.
@@ -236,8 +235,7 @@ function SignADiaryBody({
                   upstream DS quirk, logged in the build report. */}
               {blank ? (
                 <FieldError className="text-body-compact">
-                  The day&apos;s business cannot be left blank.
-                </FieldError>
+                  {<__LocalizedText id="signADiaryDialog_theDaySBusinessCannotBeLeft" />}{" "}</FieldError>
               ) : null}
             </Field>
 
@@ -254,14 +252,14 @@ function SignADiaryBody({
           surface="card"
           className="min-h-96 shadow-raised lg:min-h-0"
           height="fill"
-          title={document.title}
+          title={__t(document.title)}
           source={{
             kind: "composed",
             content: <ADiaryOrderFacsimile document={document} />,
           }}
           download={{
             onDownload: () => downloadADiaryDocument(entry),
-            label: `Download the order passed on ${formatADiaryDate(entry.dated)} in ${courtText(entry.caseNumber)}`,
+            label: __t("signADiaryDialog_downloadTheOrderPassedOnValue0In", {value0: String(formatADiaryDate(entry.dated)), value1: String(courtText(entry.caseNumber))}),
           }}
         />
       </div>
@@ -298,18 +296,19 @@ function SignADiaryBody({
  *   rather than the DS `Table` — the same treatment `SignOrderDialog` gives its order.
  */
 function ADiaryOrderFacsimile({ document: storedDocument }: { document: ADiaryDocument }) {
+  const __t = __useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {<__LocalizedText id="signADiaryDialog_caseNo" />}{" "}{document.caseNumber}
         </p>
         <p className="text-body font-semibold">
-          In the matter of {document.matter}
+          {<__LocalizedText id="signADiaryDialog_inTheMatterOf" />}{" "}{document.matter}
         </p>
-        <p className="text-body font-semibold">Dated {document.dated}</p>
+        <p className="text-body font-semibold">{<__LocalizedText id="signADiaryDialog_dated_1b9fa66d" />}{" "}{document.dated}</p>
         {/* The offence, held back to the paper's quiet ink: an order sheet prints it
             above the operative part, and it is standing furniture — true of every case
             on this platform — rather than anything this order decided. */}
@@ -320,7 +319,7 @@ function ADiaryOrderFacsimile({ document: storedDocument }: { document: ADiaryDo
 
       {/* Which order this is. Centred over the operative part, the way the order
           composer's own page heads it and the way `SignOrderDialog` heads its order. */}
-      <h3 className="text-center text-body font-semibold">{document.title}</h3>
+      <h3 className="text-center text-body font-semibold">{__t(document.title)}</h3>
 
       {/* Who was before the court: the table that names them, then the recital that says
           who of them actually turned up and what the matter was called for. One block,
@@ -330,16 +329,16 @@ function ADiaryOrderFacsimile({ document: storedDocument }: { document: ADiaryDo
       <section className="flex flex-col gap-4">
         <table className="w-full border-collapse text-left">
           <caption className="sr-only">
-            Appearances before this court in {document.caseNumber}
+            {<__LocalizedText id="signADiaryDialog_appearancesBeforeThisCourtIn" />}{" "}{document.caseNumber}
           </caption>
           <tbody>
             {document.appearances.map(({ label, value }, index) => (
-              <tr key={`${label}-${index}`}>
+              <tr key={`${__t(label)}-${index}`}>
                 <th
                   scope="row"
                   className="w-2/5 border border-paper-border px-4 py-3 align-top text-body font-normal"
                 >
-                  {label}
+                  {__t(label)}
                 </th>
                 <td className="border border-paper-border px-4 py-3 align-top text-body">
                   {value}

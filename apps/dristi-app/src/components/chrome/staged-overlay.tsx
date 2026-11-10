@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -155,6 +156,7 @@ export function StagedOverlay({
   surface?: "canvas" | "card";
   footer?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   /* The frame's own handle on the title, so the landing place below works whether or not
      the caller keeps one. A single-stage overlay has no `useStagedFlow` and therefore no
      `titleRef` to pass, and those were exactly the two that went on opening on their
@@ -226,19 +228,19 @@ export function StagedOverlay({
       >
         {titleAside ? (
           <div className="flex flex-wrap items-center gap-2">
-            <StageTitle ref={setTitle}>{title}</StageTitle>
+            <StageTitle ref={setTitle}>{__t(title)}</StageTitle>
             {titleAside}
           </div>
         ) : (
-          <StageTitle ref={setTitle}>{title}</StageTitle>
+          <StageTitle ref={setTitle}>{__t(title)}</StageTitle>
         )}
         {description === undefined || description === null ? null : typeof
             description === "string" ? (
           <DialogDescription className="text-body-compact text-muted-foreground">
-            {description}
+            {__t(description)}
           </DialogDescription>
         ) : (
-          description
+          __t(description)
         )}
       </DialogHeader>
 

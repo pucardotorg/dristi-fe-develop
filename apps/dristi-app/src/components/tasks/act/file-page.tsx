@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * File — the documents the court asked for, one slot each with a real file picker (PDF
@@ -63,10 +65,9 @@ function Documents({
   return (
     <section className="flex flex-col gap-2">
       <div className="flex flex-col gap-1">
-        <h3 className="text-body font-semibold">Documents needed</h3>
+        <h3 className="text-body font-semibold">{<__LocalizedText id="filePage_documentsNeeded" />}</h3>
         <p className="text-body-compact text-muted-foreground tabular-nums">
-          {filled} of {slots.length} attached
-          {task.deadlineNote
+          {filled} {<__LocalizedText id="filePage_of" />}{" "}{slots.length} {<__LocalizedText id="filePage_attached" />}{" "}{task.deadlineNote
             ? ` · ${task.deadlineNote}`
             : task.dueAt
               ? ` · ${dueCueOf(task).primary.toLowerCase()}`
@@ -88,7 +89,7 @@ function Documents({
           ) : (
             <li key={slot} className="flex flex-col gap-2 py-3">
               <p className="text-body-compact font-medium">{slot}</p>
-              {f ? <FileChip file={f} /> : <p className="text-caption text-muted-foreground">Not attached</p>}
+              {f ? <FileChip file={f} /> : <p className="text-caption text-muted-foreground">{<__LocalizedText id="filePage_notAttached" />}</p>}
             </li>
           );
         })}
@@ -104,41 +105,38 @@ function Documents({
 
 /** A signatory's rail: file with the court, or save what is attached for later. */
 function FileCard({ ctx, files, complete }: { ctx: ActContext; files: StoredFileRef[]; complete: boolean }) {
+  const __t = __useTranslations();
   const { task, online, finish } = ctx;
   const { act, busy } = useTaskActions();
   const [confirm, setConfirm] = React.useState(false);
   const n = files.length;
   return (
-    <RailCard title="File with the court" description={signatoryLine(ctx, "Filing")}>
+    <RailCard title={__t("filePage_fileWithTheCourt")} description={signatoryLine(ctx, "Filing")}>
       <PreparedNote ctx={ctx} />
       <div className="flex flex-col gap-2">
         <Button size="lg" disabled={!online || !!busy || !complete} onClick={() => setConfirm(true)}>
           <SendIcon data-icon="inline-start" aria-hidden />
-          File with the court
-        </Button>
+          {<__LocalizedText id="filePage_fileWithTheCourt" />}{" "}</Button>
         {!complete ? (
-          <p className="text-caption text-muted-foreground">Attach every document before filing.</p>
+          <p className="text-caption text-muted-foreground">{<__LocalizedText id="filePage_attachEveryDocumentBeforeFiling" />}</p>
         ) : null}
         <Button
           variant="ghost"
           disabled={!online || !!busy}
           onClick={() => void act(task.id, (t, c) => saveDraft(t, c, undefined, files), "Saved as a draft")}
         >
-          Save for later
-        </Button>
+          {<__LocalizedText id="filePage_saveForLater" />}{" "}</Button>
       </div>
-      <p className="text-caption text-muted-foreground">Sandbox — nothing reaches the registry.</p>
+      <p className="text-caption text-muted-foreground">{<__LocalizedText id="filePage_sandboxNothingReachesTheRegistry" />}</p>
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>File with the court?</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="filePage_fileWithTheCourt_70a1a3cb" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              {n === 1 ? "1 document goes" : `${n} documents go`} to the registry for scrutiny. In the live
-              service this cannot be recalled; defects come back as a new task.
-            </AlertDialogDescription>
+              {n === 1 ? __t("filePage_1DocumentGoes") : `${n} documents go`} {<__LocalizedText id="filePage_toTheRegistryForScrutinyInThe" />}{" "}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="filePage_cancel" />}</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 setConfirm(false);
@@ -146,8 +144,7 @@ function FileCard({ ctx, files, complete }: { ctx: ActContext; files: StoredFile
                 if (t) finish("Filed — awaiting scrutiny");
               }}
             >
-              File
-            </AlertDialogAction>
+              {<__LocalizedText id="filePage_file" />}{" "}</AlertDialogAction>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
       </AlertDialog>

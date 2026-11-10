@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { type ReactNode } from "react";
 import { DownloadIcon, FileTextIcon, Maximize2Icon } from "lucide-react";
@@ -183,6 +185,7 @@ export function DocumentPreview({
   surface?: WellSurface;
   className?: string;
 }) {
+  const __t = __useTranslations();
   if (variant === "quiet" && surface === "card") {
     /*
       A framed well: a title strip with the two actions in it, a hairline, and the
@@ -199,7 +202,7 @@ export function DocumentPreview({
     */
     return (
       <section
-        aria-label={title}
+        aria-label={__t(title)}
         className={cn(
           "flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-hairline bg-card",
           className
@@ -216,12 +219,12 @@ export function DocumentPreview({
         >
           {header ?? (
             <h3 className="min-w-0 truncate text-caption font-semibold text-muted-foreground">
-              {title}
+              {__t(title)}
             </h3>
           )}
           <DocumentPreviewActions
             iconOnly
-            title={title}
+            title={__t(title)}
             source={source}
             download={download}
             className={header ? "self-center" : undefined}
@@ -230,7 +233,7 @@ export function DocumentPreview({
           </DocumentPreviewActions>
         </div>
         <DocumentWell
-          title={title}
+          title={__t(title)}
           source={source}
           surface="bare"
           scrolls={height !== "auto"}
@@ -247,11 +250,11 @@ export function DocumentPreview({
         and the well and the image beneath it name themselves too.
       */
       <section
-        aria-label={title}
+        aria-label={__t(title)}
         className={cn("flex min-h-0 min-w-0 flex-col", className)}
       >
         <DocumentWell
-          title={title}
+          title={__t(title)}
           source={source}
           surface={surface}
           /*
@@ -268,7 +271,7 @@ export function DocumentPreview({
           toolbar={
             <DocumentPreviewActions
               iconOnly
-              title={title}
+              title={__t(title)}
               source={source}
               download={download}
             >
@@ -301,16 +304,16 @@ export function DocumentPreview({
         */}
         <div className="flex min-w-0 flex-col gap-1">
           <h3 className="text-body font-medium break-words text-foreground">
-            {title}
+            {__t(title)}
           </h3>
           {description ? (
             <p className="text-body-compact text-muted-foreground">
-              {description}
+              {__t(description)}
             </p>
           ) : null}
         </div>
         <DocumentPreviewActions
-          title={title}
+          title={__t(title)}
           source={source}
           download={download}
           className="shrink-0"
@@ -319,7 +322,7 @@ export function DocumentPreview({
         </DocumentPreviewActions>
       </div>
       <DocumentWell
-        title={title}
+        title={__t(title)}
         source={source}
         surface={surface}
         scrolls={height !== "auto"}
@@ -353,17 +356,18 @@ export function DocumentPreviewActions({
   className?: string;
   children?: ReactNode;
 }) {
+  const __t = __useTranslations();
   const resolved = resolveDownload(source, download);
 
   const cluster = (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       {children}
       {resolved ? (
-        <DownloadAction title={title} download={resolved} iconOnly={iconOnly} />
+        <DownloadAction title={__t(title)} download={resolved} iconOnly={iconOnly} />
       ) : null}
       {canExpand(source) ? (
         <FullViewDialog
-          title={title}
+          title={__t(title)}
           source={source}
           download={resolved}
           iconOnly={iconOnly}
@@ -391,10 +395,11 @@ function IconAction({
   label: string;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
+      <TooltipContent>{__t(label)}</TooltipContent>
     </Tooltip>
   );
 }
@@ -418,7 +423,8 @@ function DownloadAction({
   download: DocumentDownload;
   iconOnly?: boolean;
 }) {
-  const label = download.label ?? `Download ${title}`;
+  const __t = __useTranslations();
+  const label = download.label ?? __t("documentPreview_downloadValue0", {value0: String(__t(title))});
 
   if ("href" in download) {
     const anchor = (
@@ -431,9 +437,9 @@ function DownloadAction({
         <a
           href={download.href}
           download={download.filename ?? true}
-          aria-label={label}
+          aria-label={__t(label)}
         >
-          {iconOnly ? null : "Download"}
+          {iconOnly ? null : __t("documentPreview_download")}
           <DownloadIcon
             data-icon={iconOnly ? undefined : "inline-end"}
             aria-hidden
@@ -441,7 +447,7 @@ function DownloadAction({
         </a>
       </Button>
     );
-    return iconOnly ? <IconAction label={label}>{anchor}</IconAction> : anchor;
+    return iconOnly ? <IconAction label={__t(label)}>{anchor}</IconAction> : anchor;
   }
 
   const button = (
@@ -450,17 +456,17 @@ function DownloadAction({
       variant="ghost"
       size={iconOnly ? "icon" : "default"}
       className="shrink-0"
-      aria-label={label}
+      aria-label={__t(label)}
       onClick={download.onDownload}
     >
-      {iconOnly ? null : "Download"}
+      {iconOnly ? null : __t("documentPreview_download")}
       <DownloadIcon
         data-icon={iconOnly ? undefined : "inline-end"}
         aria-hidden
       />
     </Button>
   );
-  return iconOnly ? <IconAction label={label}>{button}</IconAction> : button;
+  return iconOnly ? <IconAction label={__t(label)}>{button}</IconAction> : button;
 }
 
 /**
@@ -486,7 +492,8 @@ function FullViewDialog({
   download: DocumentDownload | undefined;
   iconOnly?: boolean;
 }) {
-  const label = `Full view of ${title}`;
+  const __t = __useTranslations();
+  const label = __t("documentPreview_fullViewOfValue0", {value0: String(__t(title))});
   const trigger = (
     <DialogTrigger asChild>
       <Button
@@ -494,9 +501,9 @@ function FullViewDialog({
         variant="ghost"
         size={iconOnly ? "icon" : "default"}
         className="shrink-0"
-        aria-label={label}
+        aria-label={__t(label)}
       >
-        {iconOnly ? null : "Full view"}
+        {iconOnly ? null : __t("documentPreview_fullView")}
         <Maximize2Icon
           data-icon={iconOnly ? undefined : "inline-end"}
           aria-hidden
@@ -507,7 +514,7 @@ function FullViewDialog({
 
   return (
     <Dialog>
-      {iconOnly ? <IconAction label={label}>{trigger}</IconAction> : trigger}
+      {iconOnly ? <IconAction label={__t(label)}>{trigger}</IconAction> : trigger}
       {/* The primitive parks its close button 8px from the corner, which left
           the title row hard against the top edge. Here it moves in to 16px and
           the row follows it (owner, Sept 18). */}
@@ -520,20 +527,19 @@ function FullViewDialog({
         <div className="-mt-2.5 -mb-1.5 flex min-h-10 shrink-0 items-center justify-between gap-2 pr-8">
           <DialogHeader className="min-w-0">
             <DialogTitle className="text-title-s font-semibold break-words">
-              {title}
+              {__t(title)}
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Full view. Close to go back.
-            </DialogDescription>
+              {<__LocalizedText id="documentPreview_fullViewCloseToGoBack" />}{" "}</DialogDescription>
           </DialogHeader>
           {download ? (
-            <DownloadAction title={title} download={download} iconOnly />
+            <DownloadAction title={__t(title)} download={download} iconOnly />
           ) : null}
         </div>
         {/* Near window size the page is mostly white, so it takes the darker
             document ground wherever it opens from. */}
         <DocumentWell
-          title={title}
+          title={__t(title)}
           source={source}
           surface="ground"
           className="min-h-0 flex-1"
@@ -565,12 +571,13 @@ const wellSurface: Record<WellSurface, { well: string; strip: string }> = {
 };
 
 function DocumentPdf({ src, title }: { src: string; title: string }) {
+  const __t = __useTranslations();
   const { url, page } = parsePdfSrc(src);
   return (
     <PdfViewer
       key={src}
       src={url}
-      title={title}
+      title={__t(title)}
       initialPage={page}
       className="absolute inset-0 rounded-none bg-transparent"
     />
@@ -599,6 +606,7 @@ function DocumentWell({
   toolbar?: ReactNode;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const fill = wellSurface[surface];
 
   if (source.kind === "src") {
@@ -613,23 +621,23 @@ function DocumentWell({
         {/* Keyed on the src so switching documents rebuilds the viewer
             rather than leaving the previous one's scroll position behind. */}
         {isPdfSrc(source.src) ? (
-          <DocumentPdf src={source.src} title={title} />
+          <DocumentPdf src={source.src} title={__t(title)} />
         ) : isImageSrc(source.src) ? (
           /* A scan reads in the PDF viewer's own frame — same well, zoom buttons and
              pinch — as the application record shows one (owner, Sept 24: one preview
              pattern), not the browser's bare image in an iframe. */
           <ComposedDocumentViewer
             key={source.src}
-            title={title}
+            title={__t(title)}
             className="absolute inset-0 rounded-none bg-transparent"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- a served scan */}
-            <img src={source.src} alt={title} className="block w-full" />
+            <img src={source.src} alt={__t(title)} className="block w-full" />
           </ComposedDocumentViewer>
         ) : (
           <iframe
             key={source.src}
-            title={title}
+            title={__t(title)}
             src={source.src}
             className="absolute inset-0 size-full border-0 bg-paper"
           />
@@ -656,7 +664,7 @@ function DocumentWell({
     return (
       <div
         tabIndex={scrolls ? 0 : undefined}
-        aria-label={scrolls ? `Preview of ${title}` : undefined}
+        aria-label={scrolls ? __t("documentPreview_previewOfValue0", {value0: String(__t(title))}) : undefined}
         className={cn(scrollableWell, "flex-col")}
       >
         {toolbar ? (
@@ -685,7 +693,7 @@ function DocumentWell({
   return (
     <div
       tabIndex={scrolls ? 0 : undefined}
-      aria-label={scrolls ? `Preview of ${title}` : undefined}
+      aria-label={scrolls ? __t("documentPreview_previewOfValue0", {value0: String(__t(title))}) : undefined}
       className={scrollableWell}
     >
       {toolbar ? (
@@ -716,8 +724,7 @@ function DocumentWell({
           <FileTextIcon className="size-10 text-muted-foreground" aria-hidden />
           <p className="text-body font-medium">{file.name}</p>
           <p className="text-body-compact text-muted-foreground">
-            {formatFileSize(file.size)} · PDF pages are not previewed here.
-          </p>
+            {formatFileSize(file.size)} {<__LocalizedText id="documentPreview_pdfPagesAreNotPreviewedHere" />}{" "}</p>
         </div>
       )}
     </div>

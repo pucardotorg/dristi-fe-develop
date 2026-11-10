@@ -1,3 +1,4 @@
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
@@ -8,11 +9,10 @@ export function CasesSkeleton() {
   return (
     <main className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8" aria-busy>
       <span className="sr-only" role="status">
-        Loading cases
-      </span>
+        {<__LocalizedText id="casesSkeleton_loadingCases" />}{" "}</span>
 
       <header className="flex flex-col gap-2">
-        <h1 className="text-title-l font-semibold">Cases</h1>
+        <h1 className="text-title-l font-semibold">{<__LocalizedText id="casesSkeleton_cases" />}</h1>
         <Skeleton className="h-5 w-full max-w-xl" />
       </header>
 

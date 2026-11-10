@@ -137,7 +137,7 @@ export function shareableCaseIds(): string[] {
 }
 
 export function AccessProvider({ children }: { children: React.ReactNode }) {
-  // A person on All cases is not told about each new case (OFC-25, §6), so only
+    // A person on All cases is not told about each new case (OFC-25, §6), so only
   // the share and add flows write here.
   const [notices, setNotices] = React.useState<OfficeNotice[]>([]);
   const noticeSeq = React.useRef(0);

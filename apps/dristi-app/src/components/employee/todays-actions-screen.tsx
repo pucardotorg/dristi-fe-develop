@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -35,6 +37,7 @@ const readToday = () => isoDay(new Date());
  * is an index over `COURT_NAV_GROUPS`, not a second copy of what any of them holds.
  */
 export function TodaysActionsScreen() {
+  const __t = __useTranslations();
   const today = React.useSyncExternalStore(NEVER_CHANGES, readToday, readToday);
   const { court } = useCourt();
   const seat = useCourtRole();
@@ -45,17 +48,15 @@ export function TodaysActionsScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Today’s actions
-        </h1>
+          {<__LocalizedText id="todaysActionsScreen_todaySActions" />}{" "}</h1>
         <p className="text-body text-muted-foreground tabular-nums">
-          Today, {formatCourtDay(today)} ·{" "}
-          {total === 1 ? "1 waiting" : `${total} waiting`} across{" "}
-          {items.length} queues
-        </p>
+          {<__LocalizedText id="todaysActionsScreen_today" />}{" "}{formatCourtDay(today)} ·{" "}
+          {total === 1 ? __t("todaysActionsScreen_1Waiting") : `${total} waiting`} {<__LocalizedText id="todaysActionsScreen_across" />}{" "}
+          {items.length} {<__LocalizedText id="todaysActionsScreen_queues" />}{" "}</p>
       </header>
 
       <section
-        aria-label="Today's actions"
+        aria-label={__t("todaysActionsScreen_todaySActions_cce26cdf")}
         className="flex min-w-0 flex-col gap-4 rounded-xl border border-hairline bg-card shadow-raised p-6"
       >
         <ItemGroup className="gap-3">
@@ -75,13 +76,14 @@ export function TodaysActionsScreen() {
  * `TodaysScheduleScreen`, whose flat list below the hearings block is this same row.
  */
 export function CourtActionRow({ item }: { item: CourtNavItem }) {
+  const __t = __useTranslations();
   const count = item.count ?? 0;
   return (
     <Item asChild variant="muted" className="px-4 py-3">
       <Link href={item.href!}>
         <ItemContent>
           <ItemTitle className="text-body font-medium">
-            {item.label}
+            {__t(item.label)}
           </ItemTitle>
         </ItemContent>
         <ItemActions className="gap-3">
@@ -91,13 +93,11 @@ export function CourtActionRow({ item }: { item: CourtNavItem }) {
                 {count}
               </span>
               <span className="text-caption text-muted-foreground">
-                waiting
-              </span>
+                {<__LocalizedText id="todaysActionsScreen_waiting" />}{" "}</span>
             </span>
           ) : (
             <span className="text-caption text-muted-foreground">
-              Nothing waiting
-            </span>
+              {<__LocalizedText id="todaysActionsScreen_nothingWaiting" />}{" "}</span>
           )}
           <ChevronRightIcon aria-hidden className="size-4 text-muted-foreground" />
         </ItemActions>

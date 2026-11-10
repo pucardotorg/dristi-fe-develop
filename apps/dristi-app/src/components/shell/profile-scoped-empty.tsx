@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { InboxIcon } from "lucide-react";
@@ -30,6 +31,7 @@ export function ProfileScopedEmpty({
   icon?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const { profileRole } = useProfile();
   if (profileRole !== "litigant") return <>{children}</>;
 
@@ -38,8 +40,8 @@ export function ProfileScopedEmpty({
       <Empty className="flex-1 py-12">
         <EmptyHeader>
           <EmptyMedia variant="icon">{icon ?? <InboxIcon aria-hidden />}</EmptyMedia>
-          <EmptyTitle>{title}</EmptyTitle>
-          <EmptyDescription>{description}</EmptyDescription>
+          <EmptyTitle>{__t(title)}</EmptyTitle>
+          <EmptyDescription>{__t(description)}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     </div>

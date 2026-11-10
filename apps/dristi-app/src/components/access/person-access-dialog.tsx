@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -258,6 +259,7 @@ export function PersonAccessDialog({
    */
   adding?: boolean;
 }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const {
     office,
@@ -1009,7 +1011,7 @@ export function PersonAccessDialog({
                           {pick(peopleCopy.barIdLabel, locale)}
                           <Identifier
                             value={barId}
-                            label="bar id"
+                            label={__t("personAccessDialog_barId")}
                             className="tabular-nums"
                           />
                         </span>
@@ -1567,7 +1569,7 @@ export function PersonAccessDialog({
                 filter is hiding: context, not a change, so not a point. */}
             <div className={CONFIRM_HEAD_BLOCK}>
               <AlertDialogTitle className="text-body font-semibold text-pretty">
-                {confirmTitle}
+                {__t(confirmTitle)}
               </AlertDialogTitle>
               {/* Whenever a filter is on at save, not only when it hides a
                   change: the advocate picked from a narrowed list, so it is
@@ -1602,7 +1604,7 @@ export function PersonAccessDialog({
                     >
                       {point.sign ?? "•"}
                     </span>
-                    <span>{point.text}</span>
+                    <span>{__t(point.text)}</span>
                   </li>
                 ))}
               </ul>
@@ -1616,7 +1618,7 @@ export function PersonAccessDialog({
               variant={confirmTakesAway ? "destructive" : "default"}
               onClick={apply}
             >
-              {saveLabel}
+              {__t(saveLabel)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
@@ -1633,7 +1635,7 @@ export function PersonAccessDialog({
           <AlertDialogHeader className={CONFIRM_HEADER}>
             <div className={CONFIRM_HEAD_BLOCK}>
               <AlertDialogTitle className="text-body font-semibold text-pretty">
-                {actTitle}
+                {__t(actTitle)}
               </AlertDialogTitle>
               {/* The save's filter warning, kept for Remove / Give access:
                   ticks outlive a filter change, so the selection can hold
@@ -1663,7 +1665,7 @@ export function PersonAccessDialog({
                     >
                       {point.sign ?? "•"}
                     </span>
-                    <span>{point.text}</span>
+                    <span>{__t(point.text)}</span>
                   </li>
                 ))}
               </ul>
@@ -1681,7 +1683,7 @@ export function PersonAccessDialog({
               }
               onClick={doAct}
             >
-              {actLabel}
+              {__t(actLabel)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
@@ -1808,6 +1810,7 @@ function CaseTableRow({
   onCheck: (on: boolean) => void;
   onOpen: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <TableRow
       className={cn(tableRowClass({ hover: !readOnly }), !readOnly && "cursor-pointer")}
@@ -1841,7 +1844,7 @@ function CaseTableRow({
       </TableCell>
       <TableCell className={cn(TABLE_CELL, "min-w-64 whitespace-normal")}>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="font-medium text-pretty">{entry.title}</span>
+          <span className="font-medium text-pretty">{__t(entry.title)}</span>
           <PendingBadge locale={locale} checked={checked} held={held} />
         </div>
       </TableCell>
@@ -1904,6 +1907,7 @@ function OpenCaseButton({
   /** Under a finger: the 40px button, the DS touch floor. */
   touch?: boolean;
 }) {
+  const __t = __useTranslations();
   // The tooltip says the act; the row already says which case. Screen
   // readers get the case too, since they do not see the row around it.
   const act = pick(entry.draft ? copy.openDraft : peopleCopy.openCase, locale);
@@ -1916,7 +1920,7 @@ function OpenCaseButton({
             type="button"
             variant="ghost"
             size={touch ? "icon" : "icon-sm"}
-            aria-label={label}
+            aria-label={__t(label)}
             onClick={onOpen}
             className={cn(
               "border border-transparent hover:border-hairline hover:bg-card",
@@ -1942,12 +1946,13 @@ function CaseMeta({
   locale: Locale;
   className?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <span className={className}>
       {entry.draft ? (
         pick(copy.notFiled, locale)
       ) : (
-        <Identifier value={entry.caseNumber} label="case number" />
+        <Identifier value={entry.caseNumber} label={__t("personAccessDialog_caseNumber")} />
       )}
     </span>
   );
@@ -1979,6 +1984,7 @@ function CaseRow({
   onCheck: (on: boolean) => void;
   onOpen: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <div
       className={cn(
@@ -2009,7 +2015,7 @@ function CaseRow({
       <div className="flex min-w-0 flex-1 flex-col gap-1.5 @lg/access:flex-row @lg/access:items-start @lg/access:gap-6">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="text-body-compact font-medium text-pretty">
-            {entry.title}
+            {__t(entry.title)}
           </span>
           <span className="flex flex-wrap items-center gap-x-2 text-caption text-muted-foreground">
             <CaseMeta entry={entry} locale={locale} />

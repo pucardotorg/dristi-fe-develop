@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -199,10 +201,7 @@ export function SignInBlock({
   onSignedIn,
   onRegistered,
   summoned = false,
-  toSign = false,
 }: {
-  /** Arrived from a signing link — registration ends by sending them to sign. */
-  toSign?: boolean;
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
   onSeekHelp: () => void;
@@ -217,6 +216,7 @@ export function SignInBlock({
    *  outright. Everyone else gets the neutral headline — same destination either way. */
   summoned?: boolean;
 }) {
+  const __t = __useTranslations();
   const [registrationOpen, setRegistrationOpen] = React.useState(false);
   /* Set when a sign-in succeeds for an account that never finished registering: the
      backend answers `next: "profile"`, and registration resumes with this number
@@ -508,7 +508,7 @@ export function SignInBlock({
                 key={l.value}
                 value={l.value}
               >
-                {l.label}
+                {__t(l.label)}
               </SegmentedControlItem>
             ))}
           </SegmentedControl>
@@ -533,7 +533,6 @@ export function SignInBlock({
             <RegistrationFlow
               locale={locale}
               summoned={summoned}
-              toSign={toSign}
               initialMobile={mobile}
               verifiedMobile={resumeMobile ?? undefined}
               onFinish={onRegistered}
@@ -933,12 +932,13 @@ function PrototypeNotice({
   mobile: string;
   method: Method;
 }) {
+  const __t = __useTranslations();
   if (!show) return null;
   return (
     <Alert variant="info">
-      <AlertTitle>Prototype: no next screen yet</AlertTitle>
+      <AlertTitle>{<__LocalizedText id="signInBlock_prototypeNoNextScreenYet" />}</AlertTitle>
       <AlertDescription>
-        {`Would sign in +91 ${mobile}, verified by ${method === "password" ? "password" : "one-time code"}.`}
+        {__t("signInBlock_wouldSignIn91Value0VerifiedBy", {value0: String(mobile), value1: String(method === "password" ? __t("signInBlock_password") : __t("signInBlock_oneTimeCode"))})}
       </AlertDescription>
     </Alert>
   );

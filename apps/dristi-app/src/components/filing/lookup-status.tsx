@@ -32,7 +32,7 @@ export function LookupStatus({
   className?: string;
   id?: string;
 }) {
-  const empty = children === null || children === undefined || children === false;
+    const empty = children === null || children === undefined || children === false;
   const { ink, Icon } = TONES[tone];
 
   return (

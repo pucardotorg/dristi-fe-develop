@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -84,6 +86,7 @@ export function CaseWorkbench({
   /** Without AI the workbench still works; it just stops asserting readings (`AiMode`). */
   ai?: AiMode;
 }) {
+  const __t = __useTranslations();
   const aiOn = ai === "on";
   const arrival = useArrival();
 
@@ -251,7 +254,7 @@ export function CaseWorkbench({
               The advocate is in the fields and on the queue row; it does not need a third
               home in the eyebrow. */}
           <p className="text-body-compact font-medium text-muted-foreground">
-            <Identifier value={filingNo} label="filing number" />
+            <Identifier value={filingNo} label={__t("caseWorkbench_filingNumber")} />
             {` · ${party.submitted}`}
           </p>
           {editingTitle ? (
@@ -267,20 +270,20 @@ export function CaseWorkbench({
             /* `items-start` and a `shrink-0` button: on a long cause the title wraps to
                two lines and a centred pencil floated in the middle of them. */
             <div className="flex items-start gap-1">
-              <h1 className="text-title font-semibold">{title}</h1>
+              <h1 className="text-title font-semibold">{__t(title)}</h1>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="shrink-0 text-muted-foreground"
-                    aria-label="Edit case title"
+                    aria-label={__t("caseWorkbench_editCaseTitle")}
                     onClick={() => setEditingTitle(true)}
                   >
                     <PencilIcon />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Edit case title</TooltipContent>
+                <TooltipContent>{<__LocalizedText id="caseWorkbench_editCaseTitle" />}</TooltipContent>
               </Tooltip>
             </div>
           )}
@@ -300,7 +303,7 @@ export function CaseWorkbench({
                 spacing={0}
                 variant="outline"
                 className="bg-surface-sunken"
-                aria-label="What to read"
+                aria-label={__t("caseWorkbench_whatToRead")}
               >
                 {/* These only exist at the widths a tablet is held at, so they take the
                     touch floor rather than the toggle's own 32px. */}
@@ -308,25 +311,22 @@ export function CaseWorkbench({
                   value="fields"
                   className="[@media(pointer:coarse)]:h-10"
                 >
-                  Fields
-                </ToggleGroupItem>
+                  {<__LocalizedText id="caseWorkbench_fields" />}{" "}</ToggleGroupItem>
                 <ToggleGroupItem
                   value="bundle"
                   className="[@media(pointer:coarse)]:h-10"
                 >
-                  Bundle
-                </ToggleGroupItem>
+                  {<__LocalizedText id="caseWorkbench_bundle" />}{" "}</ToggleGroupItem>
               </ToggleGroup>
               <Button variant="outline" onClick={() => setIndexOpen(true)}>
                 <FilesIcon />
-                Documents
-              </Button>
+                {<__LocalizedText id="caseWorkbench_documents" />}{" "}</Button>
             </>
           )}
           {/* The round count does triage work at rest; the button opens the detour. */}
           <Button variant="outline" onClick={() => setHistoryOpen(true)}>
             <ClockIcon />
-            Case history · round {historyRound}
+            {<__LocalizedText id="caseWorkbench_caseHistoryRound" />}{" "}{historyRound}
           </Button>
           <ChecksPopover />
         </div>
@@ -337,9 +337,7 @@ export function CaseWorkbench({
         <Banner variant="warning">
           <TriangleAlertIcon />
           <div className="min-w-0 flex-1 leading-snug">
-            AI assistance unavailable — no document readings or consistency checks
-            on this file.
-          </div>
+            {<__LocalizedText id="caseWorkbench_aiAssistanceUnavailableNoDocumentReadingsOr" />}{" "}</div>
         </Banner>
       ) : null}
 
@@ -415,26 +413,24 @@ export function CaseWorkbench({
                   <b className="font-semibold text-destructive-ink">{t}</b>
                 </React.Fragment>
               ))}
-              {` for ${party.advocate}`}
+              {__t("caseWorkbench_forValue0", {value0: String(party.advocate)})}
             </>
           ) : null}
         </span>
         <span className="flex-1" />
         {raised > 0 ? (
           <Button variant="outline" onClick={() => setDecision("send-back")}>
-            Send back to advocate
-          </Button>
+            {<__LocalizedText id="caseWorkbench_sendBackToAdvocate" />}{" "}</Button>
         ) : null}
         {/* Someone holding both the Scrutiny officer and Case registerer roles here
             registers the case; forwarding would only send it to themselves. Anyone
             holding Scrutiny officer alone forwards it to Registration (`SCR-06`,
             `SCR-11`). */}
         {canRegister ? (
-          <Button onClick={() => setDecision("register")}>Register case</Button>
+          <Button onClick={() => setDecision("register")}>{<__LocalizedText id="caseWorkbench_registerCase" />}</Button>
         ) : (
           <Button onClick={() => setDecision("forward")}>
-            Forward for registration
-          </Button>
+            {<__LocalizedText id="caseWorkbench_forwardForRegistration" />}{" "}</Button>
         )}
       </div>
 
@@ -485,6 +481,7 @@ function TitleEditor({
   onSave: (next: string) => void;
   onCancel: () => void;
 }) {
+  const __t = __useTranslations();
   const [draft, setDraft] = React.useState(value);
   const inputRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
@@ -512,16 +509,15 @@ function TitleEditor({
     <div className="flex w-full flex-wrap items-center gap-2">
       <Input
         ref={inputRef}
-        aria-label="Case title"
+        aria-label={__t("caseWorkbench_caseTitle")}
         className="min-w-0 flex-1 basis-80"
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         onKeyDown={onKeyDown}
       />
-      <Button onClick={commit}>Save title</Button>
+      <Button onClick={commit}>{<__LocalizedText id="caseWorkbench_saveTitle" />}</Button>
       <Button variant="ghost" onClick={onCancel}>
-        Cancel
-      </Button>
+        {<__LocalizedText id="caseWorkbench_cancel" />}{" "}</Button>
     </div>
   );
 }

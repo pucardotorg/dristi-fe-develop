@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * S4 — the witness (#4). A witness is optional. If added, it is a registered notary
@@ -20,6 +22,7 @@ import type { Address, Attestation, Vakalatnama, WitnessKind } from "@/lib/vakal
 import { Identifier } from "@/components/chrome/identifier";
 
 export function AttestationStep({ vak }: { vak: Vakalatnama }) {
+  const __t = __useTranslations();
   const a = vak.attestation;
   const set = (patch: Partial<Attestation>) =>
     updateVak(vak.id, (p) => ({ ...p, attestation: { ...p.attestation, ...patch } }));
@@ -30,17 +33,17 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
   return (
     <div className="flex flex-col gap-6">
       <FormCard
-        title="Add a witness?"
-        description="A witness confirms the signing. It’s optional."
+        title={__t("attestation_addAWitness")}
+        description={__t("attestation_aWitnessConfirmsTheSigningItS")}
       >
-        <FormField label="Witness" asGroup>
+        <FormField label={__t("attestation_witness")} asGroup>
           <Segmented
             size="compact"
             value={a.hasWitness ? "yes" : "no"}
             onValueChange={(v) => set({ hasWitness: v === "yes" })}
             options={[
-              { value: "no", label: "No witness" },
-              { value: "yes", label: "Add a witness" },
+              { value: "no", label: __t("attestation_noWitness") },
+              { value: "yes", label: __t("attestation_addAWitness_9e6967c2") },
             ]}
             ariaLabel="Add a witness"
           />
@@ -48,15 +51,15 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
       </FormCard>
 
       {a.hasWitness ? (
-        <FormCard title="Witness details">
-          <FormField label="Type of witness" asGroup>
+        <FormCard title={__t("attestation_witnessDetails")}>
+          <FormField label={__t("attestation_typeOfWitness")} asGroup>
             <Segmented
               size="compact"
               value={a.kind}
               onValueChange={(v) => set({ kind: v as WitnessKind })}
               options={[
-                { value: "notary", label: "Registered notary" },
-                { value: "other", label: "Other" },
+                { value: "notary", label: __t("attestation_registeredNotary") },
+                { value: "other", label: __t("attestation_other") },
               ]}
               ariaLabel="Type of witness"
             />
@@ -65,7 +68,7 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
           {a.kind === "notary" ? (
             <>
               <FormField
-                label="Find the notary"
+                label={__t("attestation_findTheNotary")}
                 asGroup
                 help="Search the registered notaries."
               >
@@ -84,7 +87,7 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
                           {/* A combobox row is an option — no control nested inside it. */}
                           <Identifier
                             value={nt.registration}
-                            label="registration number"
+                            label={__t("attestation_registrationNumber")}
                             copyable={false}
                           />
                           <span aria-hidden> · </span>
@@ -98,8 +101,8 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
                     set({ name: nt.name, registration: nt.registration });
                     setNotaryQuery(nt.name);
                   }}
-                  placeholder="Search by name or registration number"
-                  emptyLabel="No matching notary found."
+                  placeholder={__t("attestation_searchByNameOrRegistrationNumber")}
+                  emptyLabel={__t("attestation_noMatchingNotaryFound")}
                   ariaLabel="Search registered notaries"
                 />
               </FormField>
@@ -111,7 +114,7 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
                     <span className="text-body-compact">{a.name}</span>
                     <Identifier
                       value={a.registration}
-                      label="registration number"
+                      label={__t("attestation_registrationNumber")}
                       className="self-start text-caption text-muted-foreground"
                     />
                   </div>
@@ -121,41 +124,41 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
           ) : (
             <>
               <FormRow>
-                <FormField label="Name" required>
+                <FormField label={__t("attestation_name")} required>
                   <TextField
                     value={a.name}
                     onChange={(v) => set({ name: v })}
-                    placeholder="Witness’s full name"
+                    placeholder={__t("attestation_witnessSFullName")}
                     autoComplete="name"
                   />
                 </FormField>
-                <FormField label="Relation" required help="How they know the party.">
+                <FormField label={__t("attestation_relation")} required help="How they know the party.">
                   <TextField
                     value={a.relation}
                     onChange={(v) => set({ relation: v })}
-                    placeholder="e.g. colleague, neighbour"
+                    placeholder={__t("attestation_eGColleagueNeighbour")}
                   />
                 </FormField>
               </FormRow>
 
-              <FormField label="Mobile number" required>
+              <FormField label={__t("attestation_mobileNumber")} required>
                 <PrefixInput
                   prefix="+91"
                   value={a.mobile}
                   onChange={(v) => set({ mobile: v.replace(/\D/g, "").slice(0, 10) })}
-                  placeholder="10-digit mobile"
+                  placeholder={__t("attestation_10DigitMobile")}
                   inputMode="numeric"
                   autoComplete="tel-national"
                   className="max-w-xs"
                 />
               </FormField>
 
-              <FormField label="ID card" required help="Proof of the witness’s identity.">
+              <FormField label={__t("attestation_idCard")} required help="Proof of the witness’s identity.">
                 <IdUpload value={a.idDoc} onChange={(v) => set({ idDoc: v })} />
               </FormField>
 
               <div className="flex flex-col gap-2">
-                <span className="text-body-compact font-medium">Address</span>
+                <span className="text-body-compact font-medium">{<__LocalizedText id="attestation_address" />}</span>
                 <AddressFields value={a.address} onChange={setAddress} idPrefix="vak-witness" />
               </div>
             </>

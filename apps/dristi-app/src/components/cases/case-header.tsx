@@ -1,3 +1,5 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 import type { ReactNode } from "react";
 
 import { PAGE_BACK_ROW } from "@/components/shell/page-back-button";
@@ -67,6 +69,7 @@ export function CaseHeader({
    *  header doesn't need to repeat it. */
   hideLongPendingFlag?: boolean;
 }) {
+  const __t = __useTranslations();
   const numberHistory = caseNumberHistory(record);
   const hasParties =
     record.parties.complainant.length > 0 && record.parties.accused.length > 0;
@@ -88,7 +91,7 @@ export function CaseHeader({
           <CaseBackButton />
           <div className="flex min-w-0 flex-col gap-1">
             <span className="flex flex-wrap items-center gap-2">
-              <h1 className="text-title font-semibold">{title}</h1>
+              <h1 className="text-title font-semibold">{__t(title)}</h1>
               {hideLongPendingFlag ? null : <CaseFlags record={record} />}
             </span>
             {/* Without parties the title already *is* the number. Only the latest
@@ -102,8 +105,7 @@ export function CaseHeader({
               </div>
             ) : (
               <p className="text-body-compact text-muted-foreground">
-                Parties not yet recorded
-              </p>
+                {<__LocalizedText id="caseHeader_partiesNotYetRecorded" />}{" "}</p>
             )}
           </div>
         </div>
@@ -132,7 +134,7 @@ export function CaseHeader({
           the owner's middle ground (Sept 18). */}
       <dl className="flex min-w-0 flex-col divide-y divide-hairline border-y border-hairline md:pointer-fine:divide-y-0 md:landscape:divide-y-0 md:pointer-fine:border-y-0 md:landscape:border-y-0 md:pointer-fine:gap-x-8 md:landscape:gap-x-8 md:pointer-fine:grid md:landscape:grid md:pointer-fine:auto-cols-[minmax(0,16rem)] md:landscape:auto-cols-[minmax(0,16rem)] md:pointer-fine:grid-flow-col md:landscape:grid-flow-col md:pointer-fine:justify-start md:landscape:justify-start">
         {hasParties ? null : (
-          <HeaderFact label="Case number">
+          <HeaderFact label={__t("caseHeader_caseNumber")}>
             <CaseNumberLine
               caseNumber={record.caseNumber}
               history={numberHistory}
@@ -140,7 +142,7 @@ export function CaseHeader({
             />
           </HeaderFact>
         )}
-        <HeaderFact label="Stage">
+        <HeaderFact label={__t("caseHeader_stage")}>
           <CaseStageBadges
             stage={<CaseStage record={record} detail={false} />}
             subStages={secondaryStages(record).map(secondaryStageLabel)}
@@ -149,7 +151,7 @@ export function CaseHeader({
         {/* A live case has its date on Overview; a disposed one has no
             date left, and the day it ended is identity. */}
         {record.disposal ? (
-          <HeaderFact label="Disposed">
+          <HeaderFact label={__t("caseHeader_disposed")}>
             <span className="tabular-nums">
               {formatCaseDate(record.disposal.on)}
             </span>
@@ -170,7 +172,7 @@ export function CaseHeader({
               className="font-medium"
             />
           ) : (
-            <span className="text-muted-foreground">Party in person</span>
+            <span className="text-muted-foreground">{<__LocalizedText id="caseHeader_partyInPerson" />}</span>
           )}
         </HeaderFact>
         <HeaderFact label={COUNSEL_LABEL.accused}>
@@ -182,7 +184,7 @@ export function CaseHeader({
               className="font-medium"
             />
           ) : (
-            <span className="text-muted-foreground">None on record</span>
+            <span className="text-muted-foreground">{<__LocalizedText id="caseHeader_noneOnRecord" />}</span>
           )}
         </HeaderFact>
       </dl>
@@ -198,13 +200,14 @@ function HeaderFact({
   label: string;
   children: ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     /* Below `md`: a row, label left and value right, ruled off from its
        neighbours. Wrapped as loose label-over-value pairs, two landed on one
        line and the third alone, and the block read as jumbled (owner, Sept 21). */
     <div className="flex min-w-0 items-center justify-between gap-4 py-2 md:pointer-fine:flex-col md:landscape:flex-col md:pointer-fine:items-stretch md:landscape:items-stretch md:pointer-fine:justify-start md:landscape:justify-start md:pointer-fine:gap-1 md:landscape:gap-1 md:pointer-fine:py-0 md:landscape:py-0">
       <dt className="shrink-0 text-caption font-medium text-muted-foreground">
-        {label}
+        {__t(label)}
       </dt>
       {/* min-h-6 keeps every value on one baseline; the counsel +N chip
           reaches its 40px target through its own `after:` inset. */}

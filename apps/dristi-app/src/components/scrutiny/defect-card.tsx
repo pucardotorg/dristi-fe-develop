@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * One defect, worked on in the panel (brief v3.2).
@@ -87,13 +89,14 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
  * nothing the label does not.
  */
 function WhyFlagged({ defect }: { defect: Defect }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col gap-4">
       {defect.note.trim() ? (
         <div className="flex flex-col gap-1.5">
-          <Eyebrow>Scrutiny officer&apos;s comment</Eyebrow>
+          <Eyebrow>{<__LocalizedText id="defectCard_scrutinyOfficerSComment" />}</Eyebrow>
           <p className="rounded-md bg-surface-sunken p-3 text-body-compact text-foreground">
-            {defect.note}
+            {__t(defect.note)}
           </p>
         </div>
       ) : null}
@@ -115,6 +118,7 @@ function OwnValue({
   onChange: (value: string) => void;
   focusTarget: boolean;
 }) {
+  const __t = __useTranslations();
   const id = `own-${defect.n}`;
   const kind = targetControlKind(defect.target);
   const mark = focusTarget ? "" : undefined;
@@ -123,7 +127,7 @@ function OwnValue({
       {/* Labelled with the field's own name. "Your value" named nothing — this is the
           only control here, and the thing it holds is the cheque's date. */}
       <FieldLabel htmlFor={id} className="text-body-compact">
-        {defect.target.label}
+        {__t(defect.target.label)}
       </FieldLabel>
       {kind === "date" ? (
         <DateField id={id} value={value} onChange={onChange} />
@@ -169,6 +173,7 @@ export function DefectCard({
   onBlurCapture?: (event: React.FocusEvent<HTMLElement>) => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const resolved = defectState(defect, value) === "resolved";
   const isDoc = defect.target.kind === "doc";
 
@@ -325,12 +330,12 @@ export function DefectCard({
           <CircleCheckIcon className="mt-0.5 size-4 shrink-0 text-success-ink" aria-hidden />
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <p className="text-body-compact font-semibold text-foreground">
-              {defect.target.label}
+              {__t(defect.target.label)}
             </p>
             {/* The line is held open before the record catches up (it can lag the save by a
                 beat), so the settled card does not grow a line after it has eased shut. */}
             <p className="min-h-5 text-body-compact text-success-ink">
-              {resolutionLabel(defect, value) || (isDoc ? "Document replaced" : "Corrected")}
+              {resolutionLabel(defect, value) || (isDoc ? __t("defectCard_documentReplaced") : __t("defectCard_corrected"))}
             </p>
             {/* Which file now stands in for the flagged one, so the replacement is
                 visibly done (owner, 2026-10-12). */}
@@ -349,8 +354,7 @@ export function DefectCard({
               className="-my-1 shrink-0 text-muted-foreground"
             >
               <Undo2Icon data-icon="inline-start" aria-hidden />
-              Undo
-            </Button>
+              {<__LocalizedText id="defectCard_undo" />}{" "}</Button>
           ) : null}
         </div>
       </div>
@@ -371,15 +375,15 @@ export function DefectCard({
       <div className={cn("flex items-start gap-2.5 px-4 pt-4", RESOLVE_IN_PLACE)}>
         <CircleDashedIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h3 className="text-body font-semibold text-foreground">{defect.target.label}</h3>
+          <h3 className="text-body font-semibold text-foreground">{__t(defect.target.label)}</h3>
           <p className="text-body-compact text-muted-foreground">
             {defect.target.kind === "field" && defect.target.instanceLabel
-              ? defect.target.instanceLabel
-              : defect.target.sectionLabel}
+              ? __t(defect.target.instanceLabel)
+              : __t(defect.target.sectionLabel)}
           </p>
         </div>
         <span className="shrink-0 text-body-compact tabular-nums text-muted-foreground">
-          {index} of {total}
+          {index} {<__LocalizedText id="defectCard_of" />}{" "}{total}
         </span>
       </div>
 
@@ -390,15 +394,15 @@ export function DefectCard({
           {isDoc && uploading ? (
             <div role="status" className="flex flex-col gap-2">
               <p className="truncate text-body-compact text-muted-foreground">
-                Uploading <span className="font-medium text-foreground">{file?.name}</span>…
+                {<__LocalizedText id="defectCard_uploading" />}{" "}<span className="font-medium text-foreground">{file?.name}</span>…
               </p>
-              <Progress value={uploadPct} aria-label="Upload progress" />
+              <Progress value={uploadPct} aria-label={__t("defectCard_uploadProgress")} />
             </div>
           ) : isDoc ? (
             <>
               {file ? (
                 <p className="text-body-compact text-muted-foreground">
-                  On file: <span className="text-foreground">{file.name}</span>
+                  {<__LocalizedText id="defectCard_onFile" />}{" "}<span className="text-foreground">{file.name}</span>
                 </p>
               ) : null}
               <Button
@@ -409,11 +413,9 @@ export function DefectCard({
                 className="w-fit"
               >
                 <RefreshCwIcon data-icon="inline-start" aria-hidden />
-                Replace this document
-              </Button>
+                {<__LocalizedText id="defectCard_replaceThisDocument" />}{" "}</Button>
               <p className="text-body-compact text-muted-foreground">
-                Replacing the scan does not re-read it — no other field changes.
-              </p>
+                {<__LocalizedText id="defectCard_replacingTheScanDoesNotReRead" />}{" "}</p>
             </>
           ) : (
             <>
@@ -432,8 +434,7 @@ export function DefectCard({
                   disabled={!dirty || atReturn}
                   className="flex-1"
                 >
-                  Save correction
-                </Button>
+                  {<__LocalizedText id="defectCard_saveCorrection" />}{" "}</Button>
                 {/* Never forced to edit a value the advocate believes is right. Only
                     offered while the value is still the one scrutiny saw. */}
                 {!atReturn ? null : (
@@ -448,8 +449,7 @@ export function DefectCard({
                     }}
                     className="shrink-0 text-muted-foreground"
                   >
-                    Keep as filed
-                  </Button>
+                    {<__LocalizedText id="defectCard_keepAsFiled" />}{" "}</Button>
                 )}
               </div>
             </>

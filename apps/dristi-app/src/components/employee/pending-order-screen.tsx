@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { seatHolds } from "@/lib/employee/seat-roles";
 import * as React from "react";
@@ -186,6 +188,7 @@ function WorkflowDoorScreen({ door }: { door: OrderDoor }) {
 }
 
 function WorkflowDoorBody({ door }: { door: OrderDoor }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const courtText = useCourtText();
   const seat = useCourtRole();
@@ -236,7 +239,7 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
       ).length > 0
     ) {
       toast(
-        `Application · ${door.applicationItem.label} has questions still to answer. Use its pencil to answer them.`,
+        `Application · ${__t(door.applicationItem.label)} has questions still to answer. Use its pencil to answer them.`,
       );
       return;
     }
@@ -246,7 +249,7 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
     );
     if (unfilled && unfilled.kind === "item") {
       toast(
-        `${orderTemplate(unfilled.type).label} has mandatory details still to fill. Use its pencil to fill them.`,
+        `${__t(orderTemplate(unfilled.type).label)} has mandatory details still to fill. Use its pencil to fill them.`,
       );
       return;
     }
@@ -255,7 +258,7 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <OrderEditorHeader heading={door.heading} facts={door.facts} />
+      <OrderEditorHeader heading={__t(door.heading)} facts={door.facts} />
 
       <div className="flex min-w-0 flex-1 flex-col gap-4 bg-muted p-6 md:p-8 dark:bg-background">
         <OrderProgress stage={stage} workflowComplete={complete} />
@@ -318,8 +321,7 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
                   if (entry) router.push(entry.orderHref);
                 }}
               >
-                Move back to draft
-              </Button>
+                {<__LocalizedText id="pendingOrderScreen_moveBackToDraft" />}{" "}</Button>
             ) : null}
             {canReopen ? (
               <Button
@@ -330,8 +332,7 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
                   setOrderWorkflowComplete(door.draftKey, false, signing)
                 }
               >
-                Reopen order data
-              </Button>
+                {<__LocalizedText id="pendingOrderScreen_reopenOrderData" />}{" "}</Button>
             ) : null}
             {canSign ? (
               <Button
@@ -339,16 +340,14 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
                 className="w-full sm:w-fit"
                 onClick={() => setAsk("sign")}
               >
-                Sign order
-              </Button>
+                {<__LocalizedText id="pendingOrderScreen_signOrder" />}{" "}</Button>
             ) : canComplete ? (
               <Button
                 type="button"
                 className="w-full sm:w-fit"
                 onClick={askComplete}
               >
-                Mark order data complete
-              </Button>
+                {<__LocalizedText id="pendingOrderScreen_markOrderDataComplete" />}{" "}</Button>
             ) : null}
           </div>
         </div>
@@ -364,16 +363,15 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
           {ask === "sign" ? (
             <>
               <AlertDialogHeader>
-                <AlertDialogTitle>Sign this order?</AlertDialogTitle>
+                <AlertDialogTitle>{<__LocalizedText id="pendingOrderScreen_signThisOrder" />}</AlertDialogTitle>
                 <AlertDialogDescription>
                   {complete
-                    ? "Your signature issues the order, and its order data is triggered at once: it has been completed."
-                    : "Your signature issues the order. Its order data is triggered once it has been completed."}{" "}
-                  This cannot be reversed.
-                </AlertDialogDescription>
+                    ? __t("pendingOrderScreen_yourSignatureIssuesTheOrderAndIts")
+                    : __t("pendingOrderScreen_yourSignatureIssuesTheOrderItsOrder")}{" "}
+                  {<__LocalizedText id="pendingOrderScreen_thisCannotBeReversed" />}{" "}</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Back</AlertDialogCancel>
+                <AlertDialogCancel>{<__LocalizedText id="pendingOrderScreen_back" />}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
                     markOrdersSigned([door.draftKey]);
@@ -384,8 +382,7 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
                     );
                   }}
                 >
-                  Sign
-                </AlertDialogAction>
+                  {<__LocalizedText id="pendingOrderScreen_sign" />}{" "}</AlertDialogAction>
               </AlertDialogFooter>
             </>
           ) : (
@@ -393,25 +390,25 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
               <AlertDialogHeader>
                 <AlertDialogTitle>
                   {signed
-                    ? "Complete and trigger this order data?"
-                    : "Mark this order data complete?"}
+                    ? __t("pendingOrderScreen_completeAndTriggerThisOrderData")
+                    : __t("pendingOrderScreen_markThisOrderDataComplete")}
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   {signed
-                    ? "The order is signed, so this is what goes out now. It can no longer change after."
-                    : "This is what goes out when the magistrate signs. It can be reopened until then."}
+                    ? __t("pendingOrderScreen_theOrderIsSignedSoThisIs")
+                    : __t("pendingOrderScreen_thisIsWhatGoesOutWhenThe")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <ul className="flex flex-col gap-2 text-body-compact">
                 {summary.map((line, index) => (
                   <li key={index} className="flex flex-col gap-0.5">
-                    <span className="text-muted-foreground">{line.label}</span>
+                    <span className="text-muted-foreground">{__t(line.label)}</span>
                     <span>{line.value}</span>
                   </li>
                 ))}
               </ul>
               <AlertDialogFooter>
-                <AlertDialogCancel>Back</AlertDialogCancel>
+                <AlertDialogCancel>{<__LocalizedText id="pendingOrderScreen_back" />}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
                     setOrderWorkflowComplete(door.draftKey, true, signing);
@@ -423,7 +420,7 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
                     router.push("/employee/pending-orders");
                   }}
                 >
-                  {signed ? "Complete and trigger" : "Mark complete"}
+                  {signed ? __t("pendingOrderScreen_completeAndTrigger") : __t("pendingOrderScreen_markComplete")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </>

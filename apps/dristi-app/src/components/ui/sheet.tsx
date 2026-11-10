@@ -1,4 +1,5 @@
 "use client"
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react"
 import { Dialog as SheetPrimitive } from "radix-ui"
@@ -77,7 +78,7 @@ function SheetContent({
             >
               <XIcon
               />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{<__LocalizedText id="sheet_close" />}</span>
             </Button>
           </SheetPrimitive.Close>
         )}

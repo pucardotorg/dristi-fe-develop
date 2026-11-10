@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { ChevronDownIcon } from "lucide-react";
@@ -57,6 +58,7 @@ export function RegisterTrayCard({
   className?: string;
   cardRef?: React.Ref<HTMLDivElement>;
 }) {
+  const __t = __useTranslations();
   return (
     <Collapsible open={open} onOpenChange={onOpenChange} className="min-w-0">
       <div
@@ -79,7 +81,7 @@ export function RegisterTrayCard({
                 data-tray-title
                 className="cursor-pointer rounded-sm p-0 text-left text-body-compact font-semibold break-words text-foreground outline-none after:absolute after:inset-0 after:rounded-xl"
               >
-                {title}
+                {__t(title)}
               </button>
             </CollapsibleTrigger>
           </div>

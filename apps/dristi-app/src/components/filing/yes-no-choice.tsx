@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -36,6 +37,7 @@ export function YesNoChoice({
   name: string;
   disabled?: boolean;
 }) {
+  const __t = __useTranslations();
   const isDisabled = useLockedDisabled(disabled);
   const readOnly = useFieldReadOnly();
 
@@ -53,7 +55,7 @@ export function YesNoChoice({
     <RadioGroup
       value={value || undefined}
       onValueChange={(v) => onValueChange(v as YesNo)}
-      aria-label={ariaLabel}
+      aria-label={__t(ariaLabel)}
       disabled={isDisabled}
       className="flex h-10 w-fit flex-row items-center gap-6"
     >
@@ -61,7 +63,7 @@ export function YesNoChoice({
         <div key={option} className="flex items-center gap-2">
           <RadioGroupItem id={`${name}-${option}`} value={option} />
           <Label htmlFor={`${name}-${option}`} className="cursor-pointer font-normal">
-            {option === "yes" ? "Yes" : "No"}
+            {option === "yes" ? __t("yesNoChoice_yes_8bf47661") : __t("yesNoChoice_no")}
           </Label>
         </div>
       ))}

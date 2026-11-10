@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CircleCheckIcon } from "lucide-react";
@@ -147,6 +149,7 @@ function RecordReturnsBody({
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   const flow = useStagedFlow({ order: ORDER, scene: SCENE });
   const done = flow.stage === "done";
   const [tally, setTally] = React.useState({ served: 0, total: 0 });
@@ -216,7 +219,7 @@ function RecordReturnsBody({
       className="sm:max-w-2xl"
       title={done ? ACT.done(subject) : ACT.question(subject)}
       titleRef={flow.titleRef}
-      description={`Across ${cases} ${plural(cases, "case", "cases")}`}
+      description={__t("recordReturnsDialog_acrossValue0Value1", {value0: String(cases), value1: String(plural(cases, "case", "cases"))})}
       sceneKey={flow.sceneKey}
       motion={flow.motion}
       floor
@@ -232,8 +235,7 @@ function RecordReturnsBody({
       footer={
         done ? (
           <Button type="button" onClick={onClose}>
-            Done
-          </Button>
+            {<__LocalizedText id="recordReturnsDialog_done" />}{" "}</Button>
         ) : (
           <>
             {/* Why Record is not ready yet, said where the button is and read out as it
@@ -245,10 +247,9 @@ function RecordReturnsBody({
               {left > 0 ? `${left} still to mark` : ""}
             </p>
             <Button type="button" variant="outline" onClick={onClose}>
-              Back
-            </Button>
+              {<__LocalizedText id="recordReturnsDialog_back" />}{" "}</Button>
             <Button type="button" disabled={!ready} onClick={record}>
-              {ACT.confirm}
+              {__t(ACT.confirm)}
             </Button>
           </>
         )
@@ -267,21 +268,19 @@ function RecordReturnsBody({
           >
             <CircleCheckIcon aria-hidden className="mt-0.5 size-5 shrink-0" />
             <span>
-              {tally.served} served, {tally.total - tally.served} not served.{" "}
-              {tally.total === 1 ? "It is" : "They are"} now in Completed in Service.
-            </span>
+              {tally.served} {<__LocalizedText id="recordReturnsDialog_served" />}{" "}{tally.total - tally.served} {<__LocalizedText id="recordReturnsDialog_notServed" />}{" "}
+              {tally.total === 1 ? __t("recordReturnsDialog_itIs") : __t("recordReturnsDialog_theyAre")} {<__LocalizedText id="recordReturnsDialog_nowInCompletedInService" />}{" "}</span>
           </p>
         </div>
       ) : (
         <div className="flex w-full flex-col gap-6">
           <DialogDescription className="text-body text-muted-foreground">
-            Mark what each cover came back as. The date applies to all of them.
-          </DialogDescription>
+            {<__LocalizedText id="recordReturnsDialog_markWhatEachCoverCameBackAs" />}{" "}</DialogDescription>
 
           <div className="flex flex-wrap items-end justify-between gap-4">
             <ReturnedOnField value={returnedOn} onChange={setReturnedOn} />
             <Button type="button" variant="ghost" onClick={markAllServed}>
-              Mark all {allWord}
+              {<__LocalizedText id="recordReturnsDialog_markAll" />}{" "}{allWord}
             </Button>
           </div>
 
@@ -317,7 +316,7 @@ export function ReturnedOnField({
   const labelId = React.useId();
   return (
     <Field className="w-full sm:w-fit">
-      <FieldLabel id={labelId}>Returned on</FieldLabel>
+      <FieldLabel id={labelId}>{<__LocalizedText id="recordReturnsDialog_returnedOn" />}</FieldLabel>
       <div role="group" aria-labelledby={labelId}>
         <DatePicker
           value={value}
@@ -346,6 +345,7 @@ export function ReturnRow({
   mark: ReturnMark | undefined;
   onMark: (next: ReturnMark) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const { court } = useCourt();
   const inline = courtProcessTypeInline(process.type);
@@ -366,7 +366,7 @@ export function ReturnRow({
             </span>
             <Identifier
               value={process.caseNumber}
-              label="case number"
+              label={__t("recordReturnsDialog_caseNumber")}
               copyable={false}
             />
           </p>
@@ -382,7 +382,7 @@ export function ReturnRow({
             if (next === "served") onMark({ served: true, reason: undefined });
             if (next === "unserved") onMark({ served: false });
           }}
-          aria-label={`What the ${inline} in ${courtText(process.caseNumber)} came back as`}
+          aria-label={__t("recordReturnsDialog_whatTheValue0InValue1CameBack", {value0: String(inline), value1: String(courtText(process.caseNumber))})}
           className="flex flex-wrap gap-x-6 gap-y-1"
         >
           {(["served", "unserved"] as const).map((option) => (
@@ -398,7 +398,7 @@ export function ReturnRow({
 
       {mark?.served === false ? (
         <Field>
-          <FieldLabel htmlFor={reasonId}>Reason</FieldLabel>
+          <FieldLabel htmlFor={reasonId}>{<__LocalizedText id="recordReturnsDialog_reason" />}</FieldLabel>
           <Select
             value={mark.reason ?? ""}
             onValueChange={(reason) =>
@@ -406,7 +406,7 @@ export function ReturnRow({
             }
           >
             <SelectTrigger id={reasonId} className="w-full sm:w-72">
-              <SelectValue placeholder="Choose a reason" />
+              <SelectValue placeholder={__t("recordReturnsDialog_chooseAReason")} />
             </SelectTrigger>
             <SelectContent>
               {nonServiceReasonsFor(court).map((reason) => (
@@ -423,8 +423,7 @@ export function ReturnRow({
         <>
           <Field>
             <FieldLabel htmlFor={commentId}>
-              Comment
-              <span className="font-normal text-muted-foreground"> (optional)</span>
+              {<__LocalizedText id="recordReturnsDialog_comment" />}{" "}<span className="font-normal text-muted-foreground"> {<__LocalizedText id="recordReturnsDialog_optional" />}</span>
             </FieldLabel>
             <Textarea
               id={commentId}
@@ -434,7 +433,7 @@ export function ReturnRow({
             />
           </Field>
           <UploadedDocField
-            label="Supporting file"
+            label={__t("recordReturnsDialog_supportingFile")}
             file={mark.file ?? null}
             onFileChange={(file) => onMark({ file })}
           />

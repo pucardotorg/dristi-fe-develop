@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 /**
  * The app's ONE address grammar, extracted Sept 3: the profile settings'
@@ -85,6 +86,7 @@ export function StructuredAddressFields({
   /** Keeps ids unique when two of these grids share a page. */
   idPrefix: string;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {FIELDS.map((field) => (
@@ -93,7 +95,7 @@ export function StructuredAddressFields({
           className={field.wide ? "sm:col-span-2" : undefined}
         >
           <FieldLabel htmlFor={`${idPrefix}-${field.key}`}>
-            {field.label} {field.required ? REQUIRED_MARK : null}
+            {__t(field.label)} {field.required ? REQUIRED_MARK : null}
           </FieldLabel>
           <Input
             id={`${idPrefix}-${field.key}`}

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -62,6 +64,7 @@ export function PanelHeader({
   /** A control at the top right: a date picker. */
   children?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <div className="flex min-w-0 flex-wrap items-start justify-between gap-x-6 gap-y-3">
@@ -69,13 +72,13 @@ export function PanelHeader({
             rather than pushing it onto a row of its own. */}
         <div className="flex min-w-0 flex-1 basis-80 flex-col gap-1">
           <h2 id={id} className="text-title-s font-semibold">
-            {title}
+            {__t(title)}
           </h2>
           {line ? <p className="text-body tabular-nums">{line}</p> : null}
         </div>
         {children}
       </div>
-      {note ? <p className="text-body-compact text-muted-foreground">{note}</p> : null}
+      {note ? <p className="text-body-compact text-muted-foreground">{__t(note)}</p> : null}
     </div>
   );
 }
@@ -103,6 +106,7 @@ export function CountButton({
   onOpen: (trigger: HTMLElement) => void;
   className?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <button
       type="button"
@@ -114,8 +118,7 @@ export function CountButton({
       {children}
       <span className="sr-only">
         {" "}
-        {name}, {expanded ? "hide" : "show"} the cases
-      </span>
+        {name}, {expanded ? __t("courtDashboardAttention_hide") : __t("courtDashboardAttention_show")} {<__LocalizedText id="courtDashboardAttention_theCases" />}{" "}</span>
     </button>
   );
 }
@@ -160,8 +163,9 @@ export function SegmentBar({
   /** Marks the segments to grow in from their start. */
   grow?: boolean;
 }) {
+  const __t = __useTranslations();
   return (
-    <div role="group" aria-label={label} className={cn("flex min-w-0 gap-0.5", className)} style={style}>
+    <div role="group" aria-label={__t(label)} className={cn("flex min-w-0 gap-0.5", className)} style={style}>
       {segments
         .filter((s) => s.value > 0)
         .map((s) => {
@@ -184,7 +188,7 @@ export function SegmentBar({
                 {s.onOpen ? (
                   <button
                     type="button"
-                    aria-label={`${s.tip}, ${s.expanded ? "hide" : "show"} the cases`}
+                    aria-label={`${s.tip}, ${s.expanded ? __t("courtDashboardAttention_hide") : __t("courtDashboardAttention_show")} the cases`}
                     aria-expanded={s.expanded ?? false}
                     aria-controls={controls}
                     onClick={(event) => s.onOpen!(event.currentTarget)}
@@ -258,6 +262,7 @@ export function CaseListBox({
   daysHeader: string;
   onClose: () => void;
 }) {
+  const __t = __useTranslations();
   return (
     <section
       aria-labelledby={`${id}-title`}
@@ -266,10 +271,10 @@ export function CaseListBox({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">
           <h3 id={`${id}-title`} className="text-body font-semibold">
-            {title}
+            {__t(title)}
           </h3>
           <p aria-live="polite" className="text-body-compact text-muted-foreground tabular-nums">
-            {summary}
+            {__t(summary)}
           </p>
           {details?.map((line) => (
             <p key={line} className="text-body-compact text-muted-foreground tabular-nums">
@@ -278,10 +283,9 @@ export function CaseListBox({
           ))}
         </div>
         <Button type="button" variant="outline" onClick={onClose}>
-          Close
-        </Button>
+          {<__LocalizedText id="courtDashboardAttention_close" />}{" "}</Button>
       </div>
-      <DocketCaseList id={`${id}-list`} caption={title} rows={rows} daysHeader={daysHeader} />
+      <DocketCaseList id={`${id}-list`} caption={__t(title)} rows={rows} daysHeader={daysHeader} />
     </section>
   );
 }
@@ -301,6 +305,7 @@ type AttentionList = AttentionCheckId | `${AttentionCheckId}-${number}`;
 const count = (n: number) => formatCount(Math.round(n));
 
 export function NeedsAttention({ docket }: { docket: CourtDocket }) {
+  const __t = __useTranslations();
   const today = { from: docket.today, to: docket.today };
   const [picked, setPicked] = React.useState<Period | null>(null);
   const selection = picked ?? today;
@@ -316,8 +321,7 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
 
   const showToday = (
     <Button type="button" variant="link" className="h-auto px-0 py-0 text-body-compact" onClick={() => setPicked(null)}>
-      Show today
-    </Button>
+      {<__LocalizedText id="courtDashboardAttention_showToday" />}{" "}</Button>
   );
 
   const opened = (() => {
@@ -330,8 +334,8 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
     return {
       check,
       rows,
-      title: b ? `${check.label} · ${b.label}` : check.label,
-      summary: `${plural(rows.length, "case", "cases")} · ${check.id === "soon" ? "soonest" : "longest"} first${reading.live ? "" : ` · on ${day}`}`,
+      title: b ? `${__t(check.label)} · ${__t(b.label)}` : __t(check.label),
+      summary: `${plural(rows.length, "case", "cases")} · ${check.id === "soon" ? __t("courtDashboardAttention_soonest") : __t("courtDashboardAttention_longest")} first${reading.live ? "" : ` · on ${day}`}`,
     };
   })();
 
@@ -341,7 +345,7 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
     <section aria-labelledby="dash-attention" className={PANEL}>
       <PanelHeader
         id="dash-attention"
-        title="Needs attention"
+        title={__t("courtDashboardAttention_needsAttention")}
         line={`Cases missing a hearing date or waiting on process${
           range ? ` · counted on ${day}, compared with ${formatDayShort(reading.start!)}` : ""
         }`}
@@ -363,13 +367,13 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
 
       <p aria-live="polite" className="text-body-compact tabular-nums">
         {checks.every((c) => c.available && !c.rows.length) ? (
-          <span className="text-success-ink">No cases need attention on {day}.</span>
+          <span className="text-success-ink">{<__LocalizedText id="courtDashboardAttention_noCasesNeedAttentionOn" />}{" "}{day}.</span>
         ) : (
           <>
             <strong className="font-semibold">{formatCount(reading.distinct)}</strong>{" "}
             {anyMissing
-              ? `${reading.distinct === 1 ? "case has" : "cases have"} a process issue. Hearing dates can only be checked for today.`
-              : `${reading.distinct === 1 ? "case needs" : "cases need"} attention. Some appear in more than one row.`}
+              ? `${reading.distinct === 1 ? __t("courtDashboardAttention_caseHas") : __t("courtDashboardAttention_casesHave")} a process issue. Hearing dates can only be checked for today.`
+              : `${reading.distinct === 1 ? __t("courtDashboardAttention_caseNeeds") : __t("courtDashboardAttention_casesNeed")} attention. Some appear in more than one row.`}
           </>
         )}
       </p>
@@ -377,23 +381,21 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
       <div ref={table} className={cn(BOX, "relative overflow-x-auto")}>
         <table className="w-full min-w-2xl border-collapse text-body-compact">
           <caption className="sr-only">
-            Needs attention, counted on {formatDay(reading.day)}
-            {range ? `, compared with ${formatDay(reading.start!)}` : ""}
+            {<__LocalizedText id="courtDashboardAttention_needsAttentionCountedOn" />}{" "}{formatDay(reading.day)}
+            {range ? __t("courtDashboardAttention_comparedWithValue0", {value0: String(formatDay(reading.start!))}) : ""}
           </caption>
           <thead>
             <tr className="bg-surface-sunken text-muted-foreground">
               <th scope="col" className="px-4 py-2.5 text-left font-normal">
-                Issue
-              </th>
+                {<__LocalizedText id="courtDashboardAttention_issue" />}{" "}</th>
               <th scope="col" className="px-4 py-2.5 text-right font-normal">
-                Cases
-              </th>
+                {<__LocalizedText id="courtDashboardAttention_cases" />}{" "}</th>
               <th scope="col" className="px-4 py-2.5 text-left font-normal">
-                How long they have waited <span className="max-sm:sr-only">· select a bar to see those cases</span>
+                {<__LocalizedText id="courtDashboardAttention_howLongTheyHaveWaited" />}{" "}<span className="max-sm:sr-only">{<__LocalizedText id="courtDashboardAttention_selectABarToSeeThoseCases" />}</span>
               </th>
               {range ? (
                 <th scope="col" className="px-4 py-2.5 text-left font-normal">
-                  Since {formatDayShort(reading.start!)}
+                  {<__LocalizedText id="courtDashboardAttention_since" />}{" "}{formatDayShort(reading.start!)}
                 </th>
               ) : null}
             </tr>
@@ -406,13 +408,13 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
                   scope="rowgroup"
                   className="border-t border-hairline bg-muted px-4 py-2 text-left font-semibold"
                 >
-                  {group.label}
+                  {__t(group.label)}
                 </th>
               </tr>
               {group.checks.every((c) => !c.available) ? (
                 <tr>
                   <td colSpan={columns} className="border-t border-hairline px-4 py-3 text-muted-foreground">
-                    Hearing dates are only kept for today, so these can’t be shown for {day}. {showToday}
+                    {<__LocalizedText id="courtDashboardAttention_hearingDatesAreOnlyKeptForToday" />}{" "}{day}. {showToday}
                   </td>
                 </tr>
               ) : (
@@ -432,15 +434,15 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
           ))}
         </table>
       </div>
-      <p className="text-body-compact text-muted-foreground">Select a number or a bar to see the cases.</p>
+      <p className="text-body-compact text-muted-foreground">{<__LocalizedText id="courtDashboardAttention_selectANumberOrABarTo" />}</p>
 
       <div id={listId} className="min-w-0 empty:hidden">
         {opened && list.open ? (
           <CaseListBox
             key={list.open}
             id={`dash-attention-${list.open}`}
-            title={opened.title}
-            summary={opened.summary}
+            title={__t(opened.title)}
+            summary={__t(opened.summary)}
             rows={opened.rows}
             daysHeader={DAYS_HEADER[opened.check.id]}
             onClose={list.close}
@@ -466,10 +468,11 @@ function AttentionRow({
   controls: string;
   showToday: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const label = (
     <th scope="row" className="w-2/5 border-t border-hairline px-4 py-3 text-left align-top font-normal">
       <span className={cn("block font-semibold", !check.available || !check.rows.length ? "font-normal text-muted-foreground" : "")}>
-        {check.label}
+        {__t(check.label)}
       </span>
       <span className="block text-caption text-muted-foreground">{check.rule}</span>
     </th>
@@ -477,9 +480,9 @@ function AttentionRow({
   if (!check.available) {
     return (
       <tr>
-        {label}
+        {__t(label)}
         <td colSpan={range ? 3 : 2} className="border-t border-hairline px-4 py-3 align-top text-muted-foreground">
-          Only available for today. {showToday}
+          {<__LocalizedText id="courtDashboardAttention_onlyAvailableForToday" />}{" "}{showToday}
         </td>
       </tr>
     );
@@ -489,7 +492,7 @@ function AttentionRow({
       <td className="border-t border-hairline px-4 py-3 align-top whitespace-nowrap">
         {check.latestOnly || check.atStart === null ? (
           <span className="text-muted-foreground">
-            {check.latestOnly ? "Not tracked before today" : `No data for ${formatDayShort(start!)}`}
+            {check.latestOnly ? __t("courtDashboardAttention_notTrackedBeforeToday") : __t("courtDashboardAttention_noDataForValue0", {value0: String(formatDayShort(start!))})}
           </span>
         ) : (
           <SinceCell now={check.rows.length} was={check.atStart} />
@@ -499,8 +502,8 @@ function AttentionRow({
   if (!check.rows.length) {
     return (
       <tr>
-        {label}
-        <td className="border-t border-hairline px-4 py-3 text-right align-top text-success-ink">None</td>
+        {__t(label)}
+        <td className="border-t border-hairline px-4 py-3 text-right align-top text-success-ink">{<__LocalizedText id="courtDashboardAttention_none" />}</td>
         <td className="border-t border-hairline px-4 py-3" />
         {since}
       </tr>
@@ -509,7 +512,7 @@ function AttentionRow({
   const most = Math.max(1, ...check.bins.map((b) => b.rows.length));
   return (
     <tr className="hover:bg-muted">
-      {label}
+      {__t(label)}
       <td className="w-px border-t border-hairline px-4 py-2 text-right align-top">
         <CountButton
           name={check.label.toLowerCase()}
@@ -523,19 +526,19 @@ function AttentionRow({
       </td>
       <td className="border-t border-hairline px-4 py-3 align-top">
         <div className="flex w-full max-w-xs flex-col gap-1">
-          <div role="group" aria-label={`${check.label}, by how long they have waited`} className="flex h-10 items-end gap-0.5 border-b border-border">
+          <div role="group" aria-label={`${__t(check.label)}, by how long they have waited`} className="flex h-10 items-end gap-0.5 border-b border-border">
             {check.bins.map((bin, i) => {
               const key = `${check.id}-${i}` as AttentionList;
               const n = bin.rows.length;
               if (!n) return <span key={i} aria-hidden className="flex-1" />;
-              const tip = `${plural(n, "case", "cases")} · ${bin.label}`;
+              const tip = `${plural(n, "case", "cases")} · ${__t(bin.label)}`;
               return (
                 <Tooltip key={i}>
                   <TooltipTrigger asChild>
                     <button
                       type="button"
                       data-grow="y"
-                      aria-label={`${tip}, ${list.open === key ? "hide" : "show"} the cases`}
+                      aria-label={`${tip}, ${list.open === key ? __t("courtDashboardAttention_hide") : __t("courtDashboardAttention_show")} the cases`}
                       aria-expanded={list.open === key}
                       aria-controls={controls}
                       onClick={(event) => list.toggle(key, event.currentTarget)}
@@ -550,7 +553,7 @@ function AttentionRow({
           </div>
           <div aria-hidden className="flex justify-between gap-2 text-caption text-muted-foreground tabular-nums">
             <span>{check.axis.low}</span>
-            <span className="truncate">{check.axis.title}</span>
+            <span className="truncate">{__t(check.axis.title)}</span>
             <span>{check.axis.high}</span>
           </div>
           {check.fact ? <p className="text-body-compact tabular-nums">{check.fact}</p> : null}
@@ -562,6 +565,7 @@ function AttentionRow({
 }
 
 function SinceCell({ now, was }: { now: number; was: number }) {
+  const __t = __useTranslations();
   const diff = now - was;
   return (
     <span className="tabular-nums">
@@ -571,9 +575,9 @@ function SinceCell({ now, was }: { now: number; was: number }) {
           diff > 0 ? "text-destructive-ink" : diff < 0 ? "text-success-ink" : "text-muted-foreground",
         )}
       >
-        {diff ? `${diff > 0 ? "Up" : "Down"} ${formatCount(Math.abs(diff))}` : "No change"}
+        {diff ? `${diff > 0 ? __t("courtDashboardAttention_up") : __t("courtDashboardAttention_down")} ${formatCount(Math.abs(diff))}` : __t("courtDashboardAttention_noChange")}
       </span>{" "}
-      <span className="text-muted-foreground">from {formatCount(was)}</span>
+      <span className="text-muted-foreground">{<__LocalizedText id="courtDashboardAttention_from" />}{" "}{formatCount(was)}</span>
     </span>
   );
 }

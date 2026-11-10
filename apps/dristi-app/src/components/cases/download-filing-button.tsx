@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import type { MouseEvent } from "react";
 import { DownloadIcon } from "lucide-react";
@@ -37,6 +39,7 @@ export function DownloadFilingButton({
   tooltip: string;
   href: string | undefined;
 }) {
+  const __t = __useTranslations();
   const stop = (event: MouseEvent<HTMLElement>) => event.stopPropagation();
 
   if (!href) {
@@ -50,15 +53,14 @@ export function DownloadFilingButton({
               variant="ghost"
               size="icon-sm"
               disabled
-              aria-label={label}
+              aria-label={__t(label)}
             >
               <DownloadIcon aria-hidden />
             </Button>
           </span>
         </TooltipTrigger>
         <TooltipContent className="text-body">
-          No file to download yet
-        </TooltipContent>
+          {<__LocalizedText id="downloadFilingButton_noFileToDownloadYet" />}{" "}</TooltipContent>
       </Tooltip>
     );
   }
@@ -70,7 +72,7 @@ export function DownloadFilingButton({
           variant="ghost"
           size="icon-sm"
           asChild
-          aria-label={label}
+          aria-label={__t(label)}
           onClick={stop}
         >
           <a href={href} target="_blank" rel="noreferrer" download>
@@ -78,7 +80,7 @@ export function DownloadFilingButton({
           </a>
         </Button>
       </TooltipTrigger>
-      <TooltipContent className="text-body">{tooltip}</TooltipContent>
+      <TooltipContent className="text-body">{__t(tooltip)}</TooltipContent>
     </Tooltip>
   );
 }

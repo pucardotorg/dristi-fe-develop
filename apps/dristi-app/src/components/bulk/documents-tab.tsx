@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -59,6 +61,7 @@ export function Slot({
   /** Keep the file as it is: skips the warning. */
   onKeep?: () => void;
 }) {
+  const __t = __useTranslations();
   const input = React.useRef<HTMLInputElement>(null);
   const [over, setOver] = React.useState(false);
   const filled = !!doc.file;
@@ -106,12 +109,12 @@ export function Slot({
           ) : poor ? (
             <TriangleAlertIcon
               className="size-4 shrink-0 text-warning-ink"
-              aria-label="Uploaded, hard to read"
+              aria-label={__t("documentsTab_uploadedHardToRead")}
             />
           ) : (
             <CircleCheckIcon
               className="size-4 shrink-0 text-success-ink"
-              aria-label="Uploaded"
+              aria-label={__t("documentsTab_uploaded")}
             />
           )}
           {name}
@@ -120,12 +123,11 @@ export function Slot({
             variant="ghost"
             size="xs"
             className={SMALL_BTN}
-            aria-label={`View ${doc.name}: ${fileLine}`}
+            aria-label={__t("documentsTab_viewValue0Value1", {value0: String(doc.name), value1: String(fileLine)})}
             title={fileLine}
           >
             <a href={href ?? undefined} target="_blank" rel="noreferrer">
-              View
-            </a>
+              {<__LocalizedText id="documentsTab_view" />}{" "}</a>
           </Button>
           {canUpload ? (
             <Button
@@ -134,10 +136,9 @@ export function Slot({
               className={SMALL_BTN}
               disabled={busy}
               onClick={choose}
-              aria-label={`Replace ${doc.name}`}
+              aria-label={__t("documentsTab_replaceValue0", {value0: String(doc.name)})}
             >
-              Replace
-            </Button>
+              {<__LocalizedText id="documentsTab_replace" />}{" "}</Button>
           ) : null}
         </div>
       ) : (
@@ -145,8 +146,8 @@ export function Slot({
           type="button"
           onClick={choose}
           disabled={!canUpload || busy}
-          title={canUpload ? "Drop a file here, or click to choose" : undefined}
-          aria-label={`Upload ${doc.name}${doc.required ? ", required" : ", optional"}`}
+          title={canUpload ? __t("documentsTab_dropAFileHereOrClickTo") : undefined}
+          aria-label={__t("documentsTab_uploadValue0Value1", {value0: String(doc.name), value1: String(doc.required ? __t("documentsTab_required_ec04d18d") : __t("documentsTab_optional"))})}
           className={cn(
             "flex h-10 w-full items-center gap-2 rounded-lg border border-dashed px-3 text-left transition-colors focus-visible:ring-3 focus-visible:ring-focus-ring focus-visible:outline-none",
             doc.required ? "border-input" : "border-hairline",
@@ -169,13 +170,13 @@ export function Slot({
               doc.required ? "text-destructive-ink" : "text-muted-foreground",
             )}
           >
-            {doc.required ? "Required" : "Optional"}
+            {doc.required ? __t("documentsTab_required_45421591") : __t("documentsTab_optional_93cd4443")}
           </span>
         </button>
       )}
       {filled && poor ? (
         <p className="mt-1 flex flex-wrap items-baseline gap-x-2 px-3 text-caption text-warning-ink">
-          <span>{poor.message}</span>
+          <span>{__t(poor.message)}</span>
           {onKeep && canUpload ? (
             <button
               type="button"
@@ -183,8 +184,7 @@ export function Slot({
               disabled={busy}
               onClick={onKeep}
             >
-              Keep this file
-            </button>
+              {<__LocalizedText id="documentsTab_keepThisFile" />}{" "}</button>
           ) : null}
         </p>
       ) : null}
@@ -211,6 +211,7 @@ export function Slot({
  * and filed cases are locked, so they are not listed here.
  */
 export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
+  const __t = __useTranslations();
   const [busy, setBusy] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const closed = !!batch.clubbedInto;
@@ -248,7 +249,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
       const poor = (await readability(file)) === "bad";
       setBatch(await bulkApi.attach(batch.id, c.id, d.slotKey, file, poor));
     } catch (e) {
-      setError(`${file.name}: ${(e as Error).message}`);
+      setError(`${file.name}: ${__t((e as Error).message)}`);
     } finally {
       setBusy(null);
     }
@@ -300,42 +301,37 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
             onClick={() => void fillDemo(incomplete)}
           >
             <WandSparklesIcon data-icon="inline-start" aria-hidden />
-            Fill all with demo files
-          </Button>
+            {<__LocalizedText id="documentsTab_fillAllWithDemoFiles" />}{" "}</Button>
         ) : null}
         {missing ? (
           <span className="flex items-center gap-2">
             <CircleAlertIcon className="size-4 text-warning-ink" aria-hidden />
             <span className="tabular-nums">
-              {missing} required document{missing === 1 ? "" : "s"} missing
-              across {incomplete.length} case
-              {incomplete.length === 1 ? "" : "s"}
+              {missing} {<__LocalizedText id="documentsTab_requiredDocument" />}{missing === 1 ? "" : "s"} {<__LocalizedText id="documentsTab_missingAcross" />}{" "}{incomplete.length} {<__LocalizedText id="documentsTab_case" />}{" "}{incomplete.length === 1 ? "" : "s"}
             </span>
           </span>
         ) : open.length ? (
           <span className="flex items-center gap-2">
             <CheckCircle2Icon className="size-4 text-success-ink" aria-hidden />
-            Every required document is in
-          </span>
+            {<__LocalizedText id="documentsTab_everyRequiredDocumentIsIn" />}{" "}</span>
         ) : null}
         {scans ? (
           <span className="flex items-center gap-2">
             <TriangleAlertIcon className="size-4 text-warning-ink" aria-hidden />
             <span className="tabular-nums">
-              {scans} scan{scans === 1 ? "" : "s"} hard to read
-            </span>
+              {scans} {<__LocalizedText id="documentsTab_scan" />}{scans === 1 ? "" : "s"} {<__LocalizedText id="documentsTab_hardToRead" />}{" "}</span>
           </span>
         ) : null}
         {locked ? (
           <span className="text-muted-foreground tabular-nums">
-            {locked} case{locked === 1 ? " is" : "s are"} signed or filed, so{" "}
-            {locked === 1 ? "its" : "their"} documents cannot change.{" "}
+            {locked} {<__LocalizedText id="documentsTab_case" />}{locked === 1 ? __t("documentsTab_is") : __t("documentsTab_sAre")} {<__LocalizedText id="documentsTab_signedOrFiledSo" />}{" "}
+            {locked === 1 ? __t("documentsTab_its") : __t("documentsTab_their")} {<__LocalizedText id="documentsTab_documentsCannotChange" />}{" "}
             <button
               type="button"
               className="underline"
               onClick={() => go(batch.counts.filed ? "filed" : "pay")}
             >
-              {batch.counts.filed ? "See filed cases" : "Go to payment"}
+              {batch.counts.filed ? __t("documentsTab_seeFiledCases") : __t("documentsTab_goToPayment")}
             </button>
           </span>
         ) : null}
@@ -343,15 +339,14 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
 
       {error ? (
         <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{__t(error)}</AlertDescription>
         </Alert>
       ) : null}
 
       {open.length === 0 ? (
         <Card className={PANEL_CLASS}>
           <CardContent className="text-body-compact text-muted-foreground">
-            All documents are in.
-          </CardContent>
+            {<__LocalizedText id="documentsTab_allDocumentsAreIn" />}{" "}</CardContent>
         </Card>
       ) : (
         <ul className="flex flex-col gap-3">
@@ -365,7 +360,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
                     <div className="flex min-w-0 flex-col gap-3">
                       <div className="flex min-w-0 flex-col">
                         <CardTitle className="truncate text-body font-semibold">
-                          {c.accused || c.title}
+                          {c.accused || __t(c.title)}
                         </CardTitle>
                         <span className="truncate text-body-compact text-muted-foreground tabular-nums">
                           {c.reference}
@@ -374,7 +369,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
                       <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-caption">
                         {c.facts.map((f, k) => (
                           <React.Fragment key={k}>
-                            <dt className="text-muted-foreground">{f.label}</dt>
+                            <dt className="text-muted-foreground">{__t(f.label)}</dt>
                             <dd className="min-w-0 break-words tabular-nums">
                               {f.value}
                             </dd>
@@ -398,15 +393,13 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
                             data-icon="inline-start"
                             aria-hidden
                           />
-                          Fill with demo files
-                        </Button>
+                          {<__LocalizedText id="documentsTab_fillWithDemoFiles" />}{" "}</Button>
                       ) : null}
                       <Badge
                         variant={complete ? "success" : "warning"}
                         className="w-fit tabular-nums"
                       >
-                        {c.docs.have} of {c.docs.need} required
-                      </Badge>
+                        {c.docs.have} {<__LocalizedText id="documentsTab_of" />}{" "}{c.docs.need} {<__LocalizedText id="documentsTab_required" />}{" "}</Badge>
                     </div>
                     <ul className="grid grid-cols-1 content-start gap-2 lg:grid-cols-2">
                       {c.documents.map((d) => {

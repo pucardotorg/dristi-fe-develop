@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -41,18 +43,17 @@ export function CourtFeeSummary() {
   return (
     <div className="flex flex-col gap-4">
       <Banner variant="info">
-        Please visit the Nyay Mitra to make this payment offline.
-      </Banner>
+        {<__LocalizedText id="submissionPaymentDialog_pleaseVisitTheNyayMitraToMake" />}{" "}</Banner>
 
       {/* The View Case payment dialog's sheet: white, hairline, 14px, figures
           tabular. The dialog around it supplies the well. */}
       <dl className="flex flex-col rounded-lg border border-hairline bg-card px-4 py-1 text-body-compact">
         <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5">
-          <dt className="min-w-0 text-muted-foreground">Court fees</dt>
+          <dt className="min-w-0 text-muted-foreground">{<__LocalizedText id="submissionPaymentDialog_courtFees" />}</dt>
           <dd className="shrink-0 tabular-nums">{COURT_FEE}</dd>
         </div>
         <div className="flex items-baseline justify-between gap-4 py-2.5 font-semibold">
-          <dt>Total</dt>
+          <dt>{<__LocalizedText id="submissionPaymentDialog_total" />}</dt>
           <dd className="shrink-0 tabular-nums">{COURT_FEE}</dd>
         </div>
       </dl>
@@ -109,6 +110,7 @@ function PaymentBody({
   onPaid: (submissionId: string) => void;
   onClose: () => void;
 }) {
+  const __t = __useTranslations();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [paid, setPaid] = useState(false);
 
@@ -135,39 +137,35 @@ function PaymentBody({
             tabIndex={-1}
             className="text-title-s font-semibold outline-none"
           >
-            Payment
-          </DialogTitle>
+            {<__LocalizedText id="submissionPaymentDialog_payment" />}{" "}</DialogTitle>
           <Badge
             variant={paid ? "success" : filingStatusVariant(submission.status)}
           >
-            {paid ? "Paid" : filingStatusLabel(submission.status)}
+            {paid ? __t("submissionPaymentDialog_paid_ad709a29") : filingStatusLabel(submission.status)}
           </Badge>
         </div>
         <DialogDescription className="text-body-compact">
-          {submission.title}
+          {__t(submission.title)}
         </DialogDescription>
       </DialogHeader>
 
       {paid ? (
         <div className="flex flex-col gap-4">
-          <Banner variant="success">Court fee of {COURT_FEE} paid.</Banner>
+          <Banner variant="success">{<__LocalizedText id="submissionPaymentDialog_courtFeeOf" />}{" "}{COURT_FEE} {<__LocalizedText id="submissionPaymentDialog_paid" />}</Banner>
 
           <DescriptionList className="rounded-lg bg-surface-sunken px-4 py-1">
             <DescriptionRow className="grid-cols-[1fr_auto] items-center">
               <DescriptionTerm className="text-body">
-                Payment date
-              </DescriptionTerm>
+                {<__LocalizedText id="submissionPaymentDialog_paymentDate" />}{" "}</DescriptionTerm>
               <DescriptionDetails className="text-body">
                 {formatCaseDate(new Date().toISOString())}
               </DescriptionDetails>
             </DescriptionRow>
             <DescriptionRow className="grid-cols-[1fr_auto] items-center">
               <DescriptionTerm className="text-body">
-                Filing status
-              </DescriptionTerm>
+                {<__LocalizedText id="submissionPaymentDialog_filingStatus" />}{" "}</DescriptionTerm>
               <DescriptionDetails className="text-body font-medium">
-                Completed
-              </DescriptionDetails>
+                {<__LocalizedText id="submissionPaymentDialog_completed" />}{" "}</DescriptionDetails>
             </DescriptionRow>
           </DescriptionList>
         </div>
@@ -178,18 +176,15 @@ function PaymentBody({
       <DialogFooter>
         {paid ? (
           <Button type="button" onClick={finish}>
-            Done
-          </Button>
+            {<__LocalizedText id="submissionPaymentDialog_done" />}{" "}</Button>
         ) : (
           <>
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Cancel
-              </Button>
+                {<__LocalizedText id="submissionPaymentDialog_cancel" />}{" "}</Button>
             </DialogClose>
             <Button type="button" onClick={() => setPaid(true)}>
-              Make payment
-            </Button>
+              {<__LocalizedText id="submissionPaymentDialog_makePayment" />}{" "}</Button>
           </>
         )}
       </DialogFooter>

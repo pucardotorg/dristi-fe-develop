@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * One panel of document rows — a cheque, a party, or the supporting documents.
@@ -71,6 +73,7 @@ export function DocumentCard({
   /** Rendered at the end of the optional group — e.g. "Add other documents". */
   optionalFooter?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   const headingId = React.useId();
 
   const inCorrection = useInCorrection();
@@ -123,8 +126,8 @@ export function DocumentCard({
   const optionalLabel = open
     ? "Hide optional documents"
     : optionalHasFile
-      ? `Show optional documents (${optional.length})`
-      : `Add optional documents (${optional.length})`;
+      ? __t("documentCard_showOptionalDocumentsValue0", {value0: String(optional.length)})
+      : __t("documentCard_addOptionalDocumentsValue0", {value0: String(optional.length)});
 
   return (
     <Card
@@ -145,7 +148,7 @@ export function DocumentCard({
             <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-surface-sunken text-muted-foreground">
               <Icon className="size-5" aria-hidden />
             </span>
-            {title}
+            {__t(title)}
           </h3>
         </CardTitle>
         {onRemove ? (
@@ -154,11 +157,10 @@ export function DocumentCard({
               type="button"
               variant="ghost"
               onClick={onRemove}
-              aria-label={removeLabel ?? `Remove ${title}`}
+              aria-label={__t(removeLabel) ?? __t("documentCard_removeValue0", {value0: String(__t(title))})}
               className="text-muted-foreground hover:text-destructive"
             >
-              Remove
-            </Button>
+              {<__LocalizedText id="documentCard_remove" />}{" "}</Button>
           </CardAction>
         ) : null}
       </CardHeader>
@@ -182,7 +184,7 @@ export function DocumentCard({
                   aria-hidden
                   className="transition-transform group-data-[state=open]/disclosure:rotate-180"
                 />
-                {optionalLabel}
+                {__t(optionalLabel)}
               </Button>
             </CollapsibleTrigger>
             {/* Radix hides the closed content with `hidden`; a display utility on the

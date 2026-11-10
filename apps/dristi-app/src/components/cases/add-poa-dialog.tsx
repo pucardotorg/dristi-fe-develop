@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Add a Power of Attorney holder — scenarios 5 and 8 of the party-actions
@@ -124,6 +126,7 @@ export function AddPoaDialog({
   /** How the paper names the case. */
   caseRef: CaseRef;
 }) {
+  const __t = __useTranslations();
   const [step, setStep] = useState<PoaStep>(1);
   const [partyId, setPartyId] = useState("");
   const [holderMode, setHolderMode] = useState<HolderMode>("new");
@@ -191,21 +194,21 @@ export function AddPoaDialog({
   const applicationDoc = {
     matter: "Application for the appointment of a PoA-holder",
     facts: [
-      { term: "Granting party", value: grantingParty?.name ?? "" },
+      { term: __t("addPoaDialog_grantingParty"), value: grantingParty?.name ?? "" },
       {
-        term: "PoA-holder",
+        term: __t("addPoaDialog_poaHolder"),
         value:
           holderMode === "existing"
             ? `${holderDisplayName} (already on this case)`
             : holderDisplayName,
       },
       ...(holderMode === "new" && holderPhone
-        ? [{ term: "Mobile number", value: holderPhone }]
+        ? [{ term: __t("addPoaDialog_mobileNumber"), value: holderPhone }]
         : []),
-      ...(deedFile ? [{ term: "Annexure", value: deedFile.name }] : []),
+      ...(deedFile ? [{ term: __t("addPoaDialog_annexure"), value: deedFile.name }] : []),
     ],
     prayer: [
-      `The applicant, counsel on record in the above matter, prays that ${holderDisplayName || "the person named above"} be recognised as the Power of Attorney holder of ${grantingParty?.name ?? "the party"} under the deed annexed.`,
+      `The applicant, counsel on record in the above matter, prays that ${holderDisplayName || __t("addPoaDialog_thePersonNamedAbove")} be recognised as the Power of Attorney holder of ${grantingParty?.name ?? __t("addPoaDialog_theParty")} under the deed annexed.`,
       `Grounds: ${reason.trim()}`,
       "It is prayed that this Hon'ble Court may allow this application and pass such orders as are deemed fit.",
     ],
@@ -258,15 +261,15 @@ export function AddPoaDialog({
             <FlowStepper
               steps={STEPS}
               current={step}
-              label="Add Power of Attorney holder progress"
+              label={__t("addPoaDialog_addPowerOfAttorneyHolderProgress")}
             />
           </div>
           <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
             <DialogTitle className="text-title-s font-semibold text-balance">
-              {current.title}
+              {__t(current.title)}
             </DialogTitle>
             <DialogDescription className="text-pretty">
-              {current.description}
+              {__t(current.description)}
             </DialogDescription>
           </DialogHeader>
 
@@ -283,11 +286,9 @@ export function AddPoaDialog({
                       application goes to the magistrate (owner, Sept 1). */}
                   <Field data-invalid={Boolean(errors.party)}>
                     <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                      Who is granting the Power of Attorney?
-                    </FieldLabel>
+                      {<__LocalizedText id="addPoaDialog_whoIsGrantingThePowerOfAttorney" />}{" "}</FieldLabel>
                     <FieldDescription>
-                      A party can have at most one PoA-holder.
-                    </FieldDescription>
+                      {<__LocalizedText id="addPoaDialog_aPartyCanHaveAtMostOne" />}{" "}</FieldDescription>
                     <RadioGroup
                       value={partyId}
                       onValueChange={(value) => {
@@ -330,9 +331,7 @@ export function AddPoaDialog({
                               </div>
                               {taken ? (
                                 <p className="-mt-2 pb-2 text-caption text-muted-foreground">
-                                  Already has a PoA-holder ({party.poaHolder}).
-                                  Replace them instead of adding a second.
-                                </p>
+                                  {<__LocalizedText id="addPoaDialog_alreadyHasAPoaHolder" />}{party.poaHolder}{<__LocalizedText id="addPoaDialog_replaceThemInsteadOfAddingASecond" />}{" "}</p>
                               ) : null}
                             </div>
                           </div>
@@ -344,8 +343,7 @@ export function AddPoaDialog({
 
                   <Field>
                     <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                      Who will hold it?
-                    </FieldLabel>
+                      {<__LocalizedText id="addPoaDialog_whoWillHoldIt" />}{" "}</FieldLabel>
                     <RadioGroup
                       value={holderMode}
                       onValueChange={(value) => {
@@ -361,7 +359,7 @@ export function AddPoaDialog({
                     >
                       <div className="flex min-h-10 items-center gap-2">
                         <RadioGroupItem id="poa-holder-new" value="new" />
-                        <Label htmlFor="poa-holder-new">Someone new</Label>
+                        <Label htmlFor="poa-holder-new">{<__LocalizedText id="addPoaDialog_someoneNew" />}</Label>
                       </div>
                       <div className="flex min-h-10 items-center gap-2">
                         <RadioGroupItem
@@ -369,8 +367,7 @@ export function AddPoaDialog({
                           value="existing"
                         />
                         <Label htmlFor="poa-holder-existing">
-                          Someone already on this case
-                        </Label>
+                          {<__LocalizedText id="addPoaDialog_someoneAlreadyOnThisCase" />}{" "}</Label>
                       </div>
                     </RadioGroup>
                   </Field>
@@ -379,8 +376,7 @@ export function AddPoaDialog({
                     <>
                       <Field data-invalid={Boolean(errors.holderName)}>
                         <FieldLabel htmlFor="poa-holder-name">
-                          Full name
-                        </FieldLabel>
+                          {<__LocalizedText id="addPoaDialog_fullName" />}{" "}</FieldLabel>
                         <Input
                           id="poa-holder-name"
                           autoComplete="off"
@@ -394,8 +390,7 @@ export function AddPoaDialog({
                       </Field>
                       <Field data-invalid={Boolean(errors.holderPhone)}>
                         <FieldLabel htmlFor="poa-holder-phone">
-                          Mobile number
-                        </FieldLabel>
+                          {<__LocalizedText id="addPoaDialog_mobileNumber" />}{" "}</FieldLabel>
                         <Input
                           id="poa-holder-phone"
                           type="tel"
@@ -416,12 +411,9 @@ export function AddPoaDialog({
                   ) : (
                     <Field data-invalid={Boolean(errors.existing)}>
                       <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                        Who takes on the role?
-                      </FieldLabel>
+                        {<__LocalizedText id="addPoaDialog_whoTakesOnTheRole" />}{" "}</FieldLabel>
                       <FieldDescription>
-                        No new person joins the case. They take on the PoA role
-                        alongside what they already are.
-                      </FieldDescription>
+                        {<__LocalizedText id="addPoaDialog_noNewPersonJoinsTheCaseThey" />}{" "}</FieldDescription>
                       <RadioGroup
                         value={existingKey}
                         onValueChange={(value) => {
@@ -461,12 +453,9 @@ export function AddPoaDialog({
                       className="block w-full text-body font-semibold leading-snug"
                       htmlFor="poa-reason"
                     >
-                      Why does {grantingParty?.name ?? "the party"} need a
-                      PoA-holder?
-                    </FieldLabel>
+                      {<__LocalizedText id="addPoaDialog_whyDoes" />}{" "}{grantingParty?.name ?? __t("addPoaDialog_theParty")} {<__LocalizedText id="addPoaDialog_needAPoaHolder" />}{" "}</FieldLabel>
                     <FieldDescription>
-                      The magistrate reads this to decide the application.
-                    </FieldDescription>
+                      {<__LocalizedText id="addPoaDialog_theMagistrateReadsThisToDecideThe" />}{" "}</FieldDescription>
                     <Textarea
                       id="poa-reason"
                       className="min-h-24"
@@ -486,14 +475,13 @@ export function AddPoaDialog({
 
                   <Field data-invalid={Boolean(errors.deed)}>
                     <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                      Power of Attorney deed
-                    </FieldLabel>
+                      {<__LocalizedText id="addPoaDialog_powerOfAttorneyDeed" />}{" "}</FieldLabel>
                     <FieldDescription>
-                      The executed deed naming {holderDisplayName || "the holder"}{" "}
-                      for {grantingParty?.name ?? "the party"}.
+                      {<__LocalizedText id="addPoaDialog_theExecutedDeedNaming" />}{" "}{holderDisplayName || __t("addPoaDialog_theHolder")}{" "}
+                      {<__LocalizedText id="addPoaDialog_for" />}{" "}{grantingParty?.name ?? __t("addPoaDialog_theParty")}.
                     </FieldDescription>
                     <UploadedDocField
-                      label="Power of Attorney deed"
+                      label={__t("addPoaDialog_powerOfAttorneyDeed")}
                       required
                       file={deedFile}
                       onFileChange={(file) => {
@@ -521,19 +509,16 @@ export function AddPoaDialog({
                 variant="outline"
                 onClick={() => setStep((s) => (s - 1) as PoaStep)}
               >
-                Back
-              </Button>
+                {<__LocalizedText id="addPoaDialog_back" />}{" "}</Button>
             ) : (
               <span aria-hidden className="hidden sm:block" />
             )}
             {step < 3 ? (
               <Button type="submit" form="add-poa-form">
-                Continue
-              </Button>
+                {<__LocalizedText id="addPoaDialog_continue" />}{" "}</Button>
             ) : (
               <Button type="button" onClick={() => setSignOpen(true)}>
-                Continue to sign
-              </Button>
+                {<__LocalizedText id="addPoaDialog_continueToSign" />}{" "}</Button>
             )}
           </footer>
             </>
@@ -554,8 +539,8 @@ export function AddPoaDialog({
           closeClean();
         }}
         confirmation={{
-          title: "Application sent to the magistrate",
-          description: `${holderDisplayName || "The holder"} is added as ${grantingParty?.name ?? "the party"}'s PoA-holder once the order is passed.`,
+          title: __t("addPoaDialog_applicationSentToTheMagistrate"),
+          description: `${holderDisplayName || __t("addPoaDialog_theHolder_170abd87")} is added as ${grantingParty?.name ?? __t("addPoaDialog_theParty")}'s PoA-holder once the order is passed.`,
         }}
       />
 
@@ -565,16 +550,14 @@ export function AddPoaDialog({
       >
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard this application?</AlertDialogTitle>
+            <AlertDialogTitle>{<__LocalizedText id="addPoaDialog_discardThisApplication" />}</AlertDialogTitle>
             <AlertDialogDescription>
-              The details entered here will be lost if you discard this draft.
-            </AlertDialogDescription>
+              {<__LocalizedText id="addPoaDialog_theDetailsEnteredHereWillBeLost" />}{" "}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogCancel>{<__LocalizedText id="addPoaDialog_keepEditing" />}</AlertDialogCancel>
             <AlertDialogAction variant="destructive-solid" onClick={closeClean}>
-              Discard draft
-            </AlertDialogAction>
+              {<__LocalizedText id="addPoaDialog_discardDraft" />}{" "}</AlertDialogAction>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
       </AlertDialog>

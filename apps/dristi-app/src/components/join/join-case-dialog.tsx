@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { SUMMONS_FACTS } from "@/lib/summons/content";
 import * as React from "react";
@@ -141,7 +142,7 @@ export function JoinCaseDialog({
   locale: Locale;
   onJoined: (result: JoinResult) => void;
 }) {
-  /* From the summons the case is known but the code is still asked, as on every other
+    /* From the summons the case is known but the code is still asked, as on every other
      way in: a link alone is not proof of holding the summons (owner, 2026-10-14). */
   const initialStage: Stage =
     mode === "summons" ? "code" : mode === "handoff" ? "identity" : "lookup";
@@ -645,7 +646,7 @@ export function JoinCaseDialog({
                           <Button asChild variant="link" size="sm" className="h-auto px-1">
                             <a href={joinDialog.findAdvocateHref} target="_blank" rel="noreferrer">
                               {pick(joinDialog.openBarCouncil, locale)}
-                              <span className="sr-only"> (opens in a new tab)</span>
+                              <span className="sr-only"> {<__LocalizedText id="joinCaseDialog_opensInANewTab" />}</span>
                               <ExternalLinkIcon data-icon="inline-end" aria-hidden />
                             </a>
                           </Button>

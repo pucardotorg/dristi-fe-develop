@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -69,6 +71,7 @@ function SignADiaryDayBody({
   onSign: (day: string) => void;
   onReturnFocus: () => void;
 }) {
+  const __t = __useTranslations();
   /* Built once, when the dialog opens: this is the document being signed, and it must
      not shift under the signer while they read it. */
   const [document] = React.useState(() => buildADiaryDayDocument(day, register));
@@ -78,12 +81,12 @@ function SignADiaryDayBody({
   return (
     <StagedOverlay
       className="sm:max-w-5xl lg:h-[85dvh]"
-      title="Sign the A-Diary"
+      title={__t("signADiaryDayDialog_signTheADiary")}
       titleRef={titleRef}
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           <span className="tabular-nums">{formatADiaryDate(day)}</span> ·{" "}
-          {count === 1 ? "1 entry" : `${count} entries`}
+          {count === 1 ? __t("signADiaryDayDialog_1Entry") : `${count} entries`}
         </DialogDescription>
       }
       sceneKey="day"
@@ -92,16 +95,13 @@ function SignADiaryDayBody({
       footer={
         <>
           <p className="text-caption text-muted-foreground sm:mr-auto sm:text-left">
-            You sign the whole day as one document. Once signed, no entry in it can be
-            changed, and signing cannot be undone.
-          </p>
+            {<__LocalizedText id="signADiaryDayDialog_youSignTheWholeDayAsOne" />}{" "}</p>
           <Button
             type="button"
             className="sm:self-center"
             onClick={() => onSign(day)}
           >
-            Sign the A-Diary
-          </Button>
+            {<__LocalizedText id="signADiaryDayDialog_signTheADiary" />}{" "}</Button>
         </>
       }
       /* The title takes focus rather than the first control in the document frame: it
@@ -121,14 +121,14 @@ function SignADiaryDayBody({
           surface="card"
           className="min-h-96 shadow-raised lg:min-h-0 lg:flex-1"
           height="fill"
-          title={`A-Diary, ${formatADiaryDate(day)}`}
+          title={__t("signADiaryDayDialog_aDiaryValue0", {value0: String(formatADiaryDate(day))})}
           source={{
             kind: "composed",
             content: <ADiaryDayFacsimile document={document} />,
           }}
           download={{
             onDownload: () => downloadADiaryDayDocument(day, register),
-            label: `Download the A-Diary for ${formatADiaryDate(day)}`,
+            label: __t("signADiaryDayDialog_downloadTheADiaryForValue0", {value0: String(formatADiaryDate(day))}),
           }}
         />
       </div>
@@ -153,19 +153,19 @@ function ADiaryDayFacsimile({
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
-        <h3 className="text-body font-semibold">A-Diary</h3>
-        <p className="text-body font-semibold">Dated {document.dated}</p>
+        <h3 className="text-body font-semibold">{<__LocalizedText id="signADiaryDayDialog_aDiary" />}</h3>
+        <p className="text-body font-semibold">{<__LocalizedText id="signADiaryDayDialog_dated" />}{" "}{document.dated}</p>
       </header>
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-xl border-collapse text-left">
-          <caption className="sr-only">A-Diary dated {document.dated}</caption>
+          <caption className="sr-only">{<__LocalizedText id="signADiaryDayDialog_aDiaryDated" />}{" "}{document.dated}</caption>
           <thead>
             <tr>
-              <th scope="col" className={cn(cell, "font-semibold")}>Case</th>
-              <th scope="col" className={cn(cell, "font-semibold")}>Hearing</th>
-              <th scope="col" className={cn(cell, "font-semibold")}>Proceedings</th>
-              <th scope="col" className={cn(cell, "font-semibold")}>Next hearing</th>
+              <th scope="col" className={cn(cell, "font-semibold")}>{<__LocalizedText id="signADiaryDayDialog_case" />}</th>
+              <th scope="col" className={cn(cell, "font-semibold")}>{<__LocalizedText id="signADiaryDayDialog_hearing" />}</th>
+              <th scope="col" className={cn(cell, "font-semibold")}>{<__LocalizedText id="signADiaryDayDialog_proceedings" />}</th>
+              <th scope="col" className={cn(cell, "font-semibold")}>{<__LocalizedText id="signADiaryDayDialog_nextHearing" />}</th>
             </tr>
           </thead>
           <tbody>
@@ -178,7 +178,7 @@ function ADiaryDayFacsimile({
                 </td>
                 <td className={cn(cell, "w-1/6")}>
                   {entry.hearing ?? (
-                    <span className="sr-only">Passed outside a hearing</span>
+                    <span className="sr-only">{<__LocalizedText id="signADiaryDayDialog_passedOutsideAHearing" />}</span>
                   )}
                 </td>
                 <td className={cell}>

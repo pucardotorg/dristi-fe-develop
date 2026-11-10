@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -149,6 +151,7 @@ export function SignProcessScreen() {
 }
 
 function SignProcessLine({ scope }: { scope: ProcessScope }) {
+  const __t = __useTranslations();
   /* One list, so the tabs, the pills, the rail count and the bar can never disagree
      about where a row is. The seat sees its scope of it (`processScopeFor`); every act
      runs over the whole list, so nothing outside the scope is lost. */
@@ -420,7 +423,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
       <header className="flex flex-col gap-2">
         {/* No supporting line (owner, 2026-10-06): the tab counts and the pills already
             say how much is standing where, and a sentence restating them was noise. */}
-        <h1 className="text-title text-balance font-semibold">Sign process</h1>
+        <h1 className="text-title text-balance font-semibold">{<__LocalizedText id="signProcessScreen_signProcess" />}</h1>
       </header>
 
       <Tabs
@@ -434,7 +437,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
         <div className="overflow-x-auto border-b border-hairline [scrollbar-width:none]">
           <TabsList
             variant="line"
-            aria-label="Process line"
+            aria-label={__t("signProcessScreen_processLine")}
             className="h-10 w-max min-w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-10"
           >
             {scope.tabs.map((entry) => {
@@ -445,7 +448,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
                   value={entry.id}
                   className="h-10 flex-none gap-2 px-3 text-body-compact group-data-horizontal/tabs:after:-bottom-px"
                 >
-                  {entry.label}
+                  {__t(entry.label)}
                   {/* Counts mean work: Service carries none — see `ProcessTab.counted`. */}
                   {count === null ? null : (
                     <span className="font-normal tabular-nums">{count}</span>
@@ -656,6 +659,7 @@ function ProcessPills({
   view: ProcessView;
   onChange: (view: ProcessView) => void;
 }) {
+  const __t = __useTranslations();
   return (
     /* One provider for the row, so moving along the pills hands the tooltip straight
        from one to the next instead of waiting out the delay on each. */
@@ -668,13 +672,13 @@ function ProcessPills({
         onValueChange={(next) => {
           if (next) onChange(next as ProcessView);
         }}
-        aria-label="Status"
+        aria-label={__t("signProcessScreen_status")}
         className={PILL_ROW}
       >
         <Pill
           value="all"
-          label="All"
-          hint={tab.allHint}
+          label={__t("signProcessScreen_all")}
+          hint={__t(tab.allHint)}
           /* All counts only where every status in it is work (Issuance); on Service it
              would be a total of mostly finished things. */
           count={allCounted(tab) ? processesIn(line, tab, "all").length : null}
@@ -686,8 +690,8 @@ function ProcessPills({
             <Pill
               key={id}
               value={id}
-              label={status.label}
-              hint={status.hint}
+              label={__t(status.label)}
+              hint={__t(status.hint)}
               count={status.counted ? count : null}
               /* An empty status cannot narrow anything — the pending-tasks rule — but
                  the pill you are standing on stays pressable. */
@@ -719,6 +723,7 @@ function Pill({
   count: number | null;
   disabled?: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <Tooltip>
       {/* The trigger is a wrapper, not the pill: Radix writes the tooltip's own
@@ -729,10 +734,10 @@ function Pill({
           <ToggleGroupItem
             value={value}
             disabled={disabled}
-            aria-label={count === null ? label : `${label}, ${count}`}
+            aria-label={count === null ? __t(label) : `${__t(label)}, ${count}`}
             className={PILL_ITEM}
           >
-            <span>{label}</span>
+            <span>{__t(label)}</span>
             {count === null ? null : (
               <span aria-hidden className={PILL_COUNT}>
                 {count}
@@ -741,7 +746,7 @@ function Pill({
           </ToggleGroupItem>
         </span>
       </TooltipTrigger>
-      <TooltipContent side="bottom">{hint}</TooltipContent>
+      <TooltipContent side="bottom">{__t(hint)}</TooltipContent>
     </Tooltip>
   );
 }
@@ -783,17 +788,18 @@ function ProcessFiltersForm({
   /** Enter in the box. Where the view is paper in hand it is the pile's fast path. */
   onSubmit: () => void;
 }) {
+  const __t = __useTranslations();
   const { court } = useCourt();
   const fields: CourtFilterField[] = [
     {
       id: "sign-process-type",
-      label: "Process type",
+      label: __t("signProcessScreen_processType"),
       value: filters.type,
       all: "all",
       allLabel: "All process types",
       options: COURT_PROCESS_TYPES.map((type) => ({
         value: type.id,
-        label: type.label,
+        label: __t(type.label),
       })),
       onApply: (value) =>
         onChange({ type: value as ProcessFilters["type"] }),
@@ -802,13 +808,13 @@ function ProcessFiltersForm({
   if (tab.onlyChannel === undefined) {
     fields.push({
       id: "sign-process-channel",
-      label: "Delivery channel",
+      label: __t("signProcessScreen_deliveryChannel"),
       value: filters.channel,
       all: "all",
       allLabel: "All channels",
       options: PROCESS_CHANNELS.map((channel) => ({
         value: channel.id,
-        label: channel.label,
+        label: __t(channel.label),
       })),
       onApply: (value) =>
         onChange({ channel: value as ProcessFilters["channel"] }),
@@ -819,13 +825,13 @@ function ProcessFiltersForm({
     fields.push(
       {
         id: "sign-process-outcome",
-        label: "Outcome",
+        label: __t("signProcessScreen_outcome"),
         value: filters.outcome,
         all: "all",
         allLabel: "All outcomes",
         options: OUTCOME_FILTERS.map((outcome) => ({
           value: outcome.id,
-          label: outcome.label,
+          label: __t(outcome.label),
         })),
         onApply: (value) =>
           onChange({
@@ -836,7 +842,7 @@ function ProcessFiltersForm({
       },
       {
         id: "sign-process-reason",
-        label: "Reason not served",
+        label: __t("signProcessScreen_reasonNotServed"),
         value: filters.reason,
         all: "all",
         allLabel: "All reasons",
@@ -858,14 +864,14 @@ function ProcessFiltersForm({
     <CourtFilters
       leading={leading}
       search={{
-        label: "Search cases",
+        label: __t("signProcessScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ query }),
         /* Says the gesture where there is one: on a pile view, Enter is what puts the
            cover in hand onto the pile. */
         placeholder: pile
-          ? "Case number, then Enter"
-          : "Search by case number",
+          ? __t("signProcessScreen_caseNumberThenEnter")
+          : __t("signProcessScreen_searchByCaseNumber"),
         onSubmit,
       }}
       searchRef={searchRef}
@@ -906,13 +912,14 @@ function ProcessSelectionTray({
   onRemoveCase: (caseNumber: string) => void;
   onClearSelection: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   return (
     /* The chips and the one control that puts them all down, on one line: no count
        sentence above them (owner, 2026-10-06) — the chips are the count, and the bar
        already says how many processes are selected. */
     <section
-      aria-label={`The pile: ${pile.noun}`}
+      aria-label={__t("signProcessScreen_thePileValue0", {value0: String(pile.noun)})}
       className="flex items-start gap-3 rounded-lg bg-surface-sunken p-3"
     >
       <ul className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
@@ -923,7 +930,7 @@ function ProcessSelectionTray({
             <span className="flex h-10 items-center gap-1.5 rounded-md bg-card pl-2.5 pr-1 text-caption md:h-8">
               <Identifier
                 value={entry.caseNumber}
-                label="case number"
+                label={__t("signProcessScreen_caseNumber")}
                 copyable={false}
               />
               <span className="tabular-nums text-muted-foreground">
@@ -934,7 +941,7 @@ function ProcessSelectionTray({
                 variant="ghost"
                 size="icon-xs"
                 className="max-md:size-10"
-                aria-label={`Take ${courtText(entry.caseNumber)} out of the selection`}
+                aria-label={__t("signProcessScreen_takeValue0OutOfTheSelection", {value0: String(courtText(entry.caseNumber))})}
                 onClick={() => onRemoveCase(entry.caseNumber)}
               >
                 <XIcon aria-hidden />
@@ -952,8 +959,7 @@ function ProcessSelectionTray({
         className="shrink-0 md:h-8"
         onClick={onClearSelection}
       >
-        Clear selection
-      </Button>
+        {<__LocalizedText id="signProcessScreen_clearSelection" />}{" "}</Button>
     </section>
   );
 }
@@ -992,6 +998,7 @@ function ProcessBar({
   /** Opens the act's confirmation. The button is handed over for focus to return to. */
   onRequestAct: (act: ProcessActId, button: HTMLButtonElement) => void;
 }) {
+  const __t = __useTranslations();
   /* What the bar offers before anything is picked: the view's own act, or under All the
      first one the tab has. */
   const idleActId =
@@ -1028,7 +1035,7 @@ function ProcessBar({
           className="mr-auto text-body-compact text-muted-foreground tabular-nums"
           aria-live="polite"
         >
-          {summary}
+          {__t(summary)}
         </p>
 
         <Button
@@ -1039,8 +1046,8 @@ function ProcessBar({
           onClick={onDownload}
         >
           {count > 0
-            ? `Download ${count} ${plural(count, "document", "documents")}`
-            : "Download selected documents"}
+            ? __t("signProcessScreen_downloadValue0Value1", {value0: String(count), value1: String(plural(count, "document", "documents"))})
+            : __t("signProcessScreen_downloadSelectedDocuments")}
         </Button>
 
         {groups.length > 0 ? (
@@ -1091,6 +1098,7 @@ function ProcessEmpty({
   onClear: () => void;
   onGoTo: (status: ProcessStatus) => void;
 }) {
+  const __t = __useTranslations();
   const found = isFiltered && elsewhere.length > 0;
   const total = elsewhere.reduce((sum, entry) => sum + entry.count, 0);
 
@@ -1108,17 +1116,17 @@ function ProcessEmpty({
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {found
-            ? "Elsewhere in the line"
+            ? __t("signProcessScreen_elsewhereInTheLine")
             : isFiltered
-              ? "No process matches these filters"
-              : empty.title}
+              ? __t("signProcessScreen_noProcessMatchesTheseFilters")
+              : __t(empty.title)}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {found
-            ? `Nothing here matches, but ${total === 1 ? "1 process does" : `${total} processes do`} under another status. A process moves on as the court works it.`
+            ? __t("signProcessScreen_nothingHereMatchesButValue0UnderAnother", {value0: String(total === 1 ? __t("signProcessScreen_1ProcessDoes") : `${total} processes do`)})
             : isFiltered
-              ? "No process anywhere in this line matches the type, channel, date or search you asked for."
-              : empty.description}
+              ? __t("signProcessScreen_noProcessAnywhereInThisLineMatches")
+              : __t(empty.description)}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
@@ -1131,13 +1139,12 @@ function ProcessEmpty({
                 onClick={() => onGoTo(entry.status)}
               >
                 <span className="tabular-nums">
-                  {entry.count} in {entry.status.label}
+                  {entry.count} {<__LocalizedText id="signProcessScreen_in" />}{" "}{__t(entry.status.label)}
                 </span>
               </Button>
             ))}
             <Button variant={found ? "ghost" : "outline"} onClick={onClear}>
-              Clear filters
-            </Button>
+              {<__LocalizedText id="signProcessScreen_clearFilters" />}{" "}</Button>
           </div>
         </EmptyContent>
       ) : null}
@@ -1168,6 +1175,7 @@ function ProcessItemList({
   onToggle: (process: CourtProcess) => void;
   onOpen: (process: CourtProcess) => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const bands: { status: ProcessStatus | null; rows: CourtProcess[] }[] = banded
     ? bandByStatus(rows, tab)
@@ -1179,12 +1187,12 @@ function ProcessItemList({
       {bands.map((band) => (
         <section
           key={band.status?.id ?? "rows"}
-          aria-label={band.status?.label}
+          aria-label={__t(band.status?.label)}
           className="flex flex-col gap-3"
         >
           {band.status ? (
             <h3 className="flex items-baseline gap-2 text-body-compact font-semibold">
-              {band.status.label}
+              {__t(band.status.label)}
               <span className="tabular-nums font-normal text-muted-foreground">
                 {band.rows.length}
               </span>
@@ -1199,7 +1207,7 @@ function ProcessItemList({
                     <Checkbox
                       checked={selectedIds.has(process.id)}
                       onCheckedChange={() => onToggle(process)}
-                      aria-label={`Select the ${inline} in ${courtText(process.caseNumber)}`}
+                      aria-label={__t("signProcessScreen_selectTheValue0InValue1", {value0: String(inline), value1: String(courtText(process.caseNumber))})}
                     />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -1209,7 +1217,7 @@ function ProcessItemList({
                       {...rowOpener}
                       className={rowOpenerClass}
                     >
-                      <span className="sr-only">Read the {inline} in </span>
+                      <span className="sr-only">{<__LocalizedText id="signProcessScreen_readThe" />}{" "}{inline} {<__LocalizedText id="signProcessScreen_in" />}{" "}</span>
                       {causeTitle(process)}
                     </button>
                     <p className="min-w-0 text-body-compact">
@@ -1224,7 +1232,7 @@ function ProcessItemList({
                     <p className="text-caption text-muted-foreground">
                       <Identifier
                         value={process.caseNumber}
-                        label="case number"
+                        label={__t("signProcessScreen_caseNumber")}
                       />
                       {statusLine ? null : (
                         <>
@@ -1234,7 +1242,7 @@ function ProcessItemList({
                           </span>
                         </>
                       )}
-                      {" · Hearing "}
+                      {__t("signProcessScreen_hearing")}
                       <span className="tabular-nums">
                         {formatProcessDate(process.hearingDate)}
                       </span>

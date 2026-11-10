@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { FlagIcon } from "lucide-react";
@@ -32,6 +34,7 @@ import { cn } from "@/lib/utils";
  * With no listing (an order outside a hearing) or no past hearing, it says so.
  */
 export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
+  const __t = __useTranslations();
   const history = React.useMemo(
     () => (hearing ? attendanceHistory(hearing) : undefined),
     [hearing],
@@ -46,11 +49,9 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
             <FlagIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body-compact font-semibold tracking-normal">
-            No attendance history yet
-          </EmptyTitle>
+            {<__LocalizedText id="orderDataFlags_noAttendanceHistoryYet" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            Attendance at this case&rsquo;s past hearings will appear here.
-          </EmptyDescription>
+            {<__LocalizedText id="orderDataFlags_attendanceAtThisCaseSPastHearings" />}{" "}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -60,15 +61,13 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
     <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-col gap-0.5">
         <h3 id={headingId} className="text-body-compact font-semibold">
-          Attendance history
-        </h3>
+          {<__LocalizedText id="orderDataFlags_attendanceHistory" />}{" "}</h3>
         <p className="text-caption text-muted-foreground">
           {history.total === 1
-            ? "1 past hearing."
+            ? __t("orderDataFlags_1PastHearing")
             : `${history.total} past hearings.`}{" "}
-          The last {history.recent.length === 1 ? "one" : history.recent.length}{" "}
-          shown, latest on the right.
-        </p>
+          {<__LocalizedText id="orderDataFlags_theLast" />}{" "}{history.recent.length === 1 ? __t("orderDataFlags_one") : history.recent.length}{" "}
+          {<__LocalizedText id="orderDataFlags_shownLatestOnTheRight" />}{" "}</p>
       </div>
 
       <div className="flex min-w-0 flex-col">
@@ -78,7 +77,7 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
           aria-hidden
           className="flex items-end gap-3 border-b border-hairline pb-2 text-caption text-muted-foreground"
         >
-          <span className="min-w-0 flex-1">Person</span>
+          <span className="min-w-0 flex-1">{<__LocalizedText id="orderDataFlags_person" />}</span>
           <span className="flex shrink-0 gap-1">
             {history.recent.map((sitting) => (
               <span
@@ -90,7 +89,7 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
               </span>
             ))}
           </span>
-          <span className="w-14 shrink-0 text-right">Attended</span>
+          <span className="w-14 shrink-0 text-right">{<__LocalizedText id="orderDataFlags_attended" />}</span>
         </div>
         <ul className="flex flex-col">
           {history.rows.map((row) => (
@@ -126,6 +125,7 @@ function AttendanceLine({
   row: AttendanceRow;
   sittings: readonly AttendanceSitting[];
 }) {
+  const __t = __useTranslations();
   const { appearance } = row;
   /* A side's counsel is one line for the side; the advocates on record name it. */
   const name =
@@ -146,7 +146,7 @@ function AttendanceLine({
         ) : null}
       </div>
       <ol
-        aria-label={`Last ${sittings.length === 1 ? "hearing" : `${sittings.length} hearings`}, oldest first`}
+        aria-label={__t("orderDataFlags_lastValue0OldestFirst", {value0: String(sittings.length === 1 ? __t("orderDataFlags_hearing") : `${sittings.length} hearings`)})}
         className="flex shrink-0 gap-1"
       >
         {row.recent.map((mark, index) => (
@@ -163,7 +163,7 @@ function AttendanceLine({
           {row.percent === undefined ? "—" : `${row.percent}%`}
         </span>
         <span className="text-caption text-muted-foreground tabular-nums">
-          {row.present} of {row.required}
+          {row.present} {<__LocalizedText id="orderDataFlags_of" />}{" "}{row.required}
         </span>
       </div>
     </li>

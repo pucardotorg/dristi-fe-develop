@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -90,6 +92,7 @@ export function BulkRescheduleTable({
    */
   caption?: string;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const selectedHere = selection
     ? rows.filter((row) => selection.selected.has(row.id)).length
@@ -113,7 +116,7 @@ export function BulkRescheduleTable({
 
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
-      {caption ? <caption className="sr-only">{caption}</caption> : null}
+      {caption ? <caption className="sr-only">{__t(caption)}</caption> : null}
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           {selection ? (
@@ -125,26 +128,22 @@ export function BulkRescheduleTable({
                 onCheckedChange={(next) => selection.onToggleAll(next === true)}
                 aria-label={
                   allChecked
-                    ? "Clear the selection"
-                    : "Select every matter in this range"
+                    ? __t("bulkRescheduleTable_clearTheSelection")
+                    : __t("bulkRescheduleTable_selectEveryMatterInThisRange")
                 }
               />
             </TableHead>
           ) : null}
           <TableHead className={cn(TABLE_HEAD, title, "whitespace-normal")}>
-            Case title
-          </TableHead>
+            {<__LocalizedText id="bulkRescheduleTable_caseTitle" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="bulkRescheduleTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
-          </TableHead>
+            {<__LocalizedText id="bulkRescheduleTable_stage" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, purpose, "whitespace-normal")}>
-            Hearing type
-          </TableHead>
+            {<__LocalizedText id="bulkRescheduleTable_hearingType" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            {selection ? "Hearing date" : "Previous hearing date"}
+            {selection ? __t("bulkRescheduleTable_hearingDate") : __t("bulkRescheduleTable_previousHearingDate")}
           </TableHead>
           {newDate ? (
             /* **`py-1`, and the arithmetic is the whole of it.** `TABLE_HEAD` is a 40px
@@ -209,7 +208,7 @@ export function BulkRescheduleTable({
                     onCheckedChange={(next) =>
                       selection.onToggle(row.id, next === true)
                     }
-                    aria-label={`Select ${row.title}, ${courtText(row.caseNumber)}`}
+                    aria-label={__t("bulkRescheduleTable_selectValue0Value1", {value0: String(__t(row.title)), value1: String(courtText(row.caseNumber))})}
                   />
                 </TableCell>
               ) : null}
@@ -218,10 +217,10 @@ export function BulkRescheduleTable({
               <TableCell
                 className={cn(TABLE_CELL, title, "font-medium whitespace-normal")}
               >
-                {row.title}
+                {__t(row.title)}
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                <Identifier value={row.caseNumber} label="case number" />
+                <Identifier value={row.caseNumber} label={__t("bulkRescheduleTable_caseNumber_fce44949")} />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
                 {courtCaseStageLabel(row.stage)}

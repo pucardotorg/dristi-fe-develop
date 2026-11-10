@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -37,6 +38,7 @@ export function Segmented<T extends string>({
   disabled?: boolean;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const isDisabled = useLockedDisabled(disabled);
   const readOnly = useFieldReadOnly();
   /* Flagged by scrutiny: the chosen answer reads as a value — a toggle group cannot be
@@ -56,13 +58,13 @@ export function Segmented<T extends string>({
         onValueChange={(v) => {
           if (v) onValueChange(v as T);
         }}
-        aria-label={ariaLabel}
+        aria-label={__t(ariaLabel)}
         disabled={isDisabled}
         className={cn("w-fit", className)}
       >
         {options.map((o) => (
           <SegmentedControlItem key={o.value} value={o.value}>
-            {o.label}
+            {__t(o.label)}
           </SegmentedControlItem>
         ))}
       </SegmentedControl>

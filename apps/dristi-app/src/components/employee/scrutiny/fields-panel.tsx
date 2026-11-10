@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -47,6 +48,7 @@ export function FieldsPanel({
   onGoToItem: (fieldId: string) => void;
   ref?: React.Ref<FieldsPanelHandle>;
 }) {
+  const __t = __useTranslations();
   const { sections, fieldById } = useScrutinyCase();
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [active, setActive] = React.useState(sections[0].id);
@@ -134,7 +136,7 @@ export function FieldsPanel({
       /* `h-full`, like the bundle beside it: the pane is what bounds the height, and the
          scroller below only scrolls once something above it says how tall it may be. */
       className="flex h-full min-h-0 flex-col bg-surface-sunken"
-      aria-label="Filed information"
+      aria-label={__t("fieldsPanel_filedInformation")}
     >
       {/* Chrome: white, hairline seam — never `border-border`. The line-tabs shape the
           court screens already use: the rule and the horizontal scroll sit on the band,
@@ -142,7 +144,7 @@ export function FieldsPanel({
           floating above it as a second horizontal line (ui-craft §2). The old pill track
           fought the primitive for the same effect and clipped its own labels to "ails". */}
       <div className="flex h-14 shrink-0 items-stretch overflow-x-auto border-b border-hairline bg-card px-4">
-        <nav aria-label="Sections" className="flex items-stretch gap-1">
+        <nav aria-label={__t("fieldsPanel_sections")} className="flex items-stretch gap-1">
           {sections.map((section) => {
             const current = active === section.id;
             return (
@@ -160,7 +162,7 @@ export function FieldsPanel({
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                {section.num}. {section.title}
+                {section.num}. {__t(section.title)}
               </button>
             );
           })}
@@ -184,7 +186,7 @@ export function FieldsPanel({
                 `px-4` sets the label on the card's own content edge, so "Party Details"
                 and "Complainant Details" share one left margin (owner, 2026-09-15). */}
             <h2 className="flex items-center gap-3 px-4 py-2 text-caption font-medium text-muted-foreground after:h-px after:flex-1 after:bg-hairline after:content-['']">
-              <span>{section.title}</span>
+              <span>{__t(section.title)}</span>
             </h2>
             <div className="flex flex-col gap-4">
               {section.groups.map((group) => {
@@ -202,7 +204,7 @@ export function FieldsPanel({
                         hairline. */}
                     <div className="flex items-center justify-between gap-4 bg-surface-sunken px-4 py-3">
                       <h3 className="min-w-0 truncate text-body-compact font-semibold">
-                        {group.title}
+                        {__t(group.title)}
                       </h3>
                       <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-hairline bg-card text-muted-foreground">
                         <Icon className="size-5" />
@@ -210,7 +212,7 @@ export function FieldsPanel({
                     </div>
                     <DescriptionList
                       role="listbox"
-                      aria-label={group.title}
+                      aria-label={__t(group.title)}
                       className="border-t border-hairline px-4 py-1"
                     >
                       {/*

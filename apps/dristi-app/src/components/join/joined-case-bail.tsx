@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import { RaiseApplicationForm } from "@/components/cases/raise-application-form";
 import { useProfile } from "@/components/shell/profile";
@@ -64,6 +65,7 @@ export function JoinedCaseBail({
   /** Where the filing ends: the case just joined, when it has a page. */
   onViewCase?: () => void;
 }) {
+  const __t = __useTranslations();
   const { accountName } = useProfile();
   const advocate =
     as === "advocate"
@@ -90,7 +92,7 @@ export function JoinedCaseBail({
       filer={filer}
       inPlace={{
         onClose,
-        done: onViewCase ? { label: "View case", onClick: onViewCase } : undefined,
+        done: onViewCase ? { label: __t("joinedCaseBail_viewCase"), onClick: onViewCase } : undefined,
       }}
     />
   );

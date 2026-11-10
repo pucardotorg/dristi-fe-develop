@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { isApplicationTask } from "@/components/tasks/act/task-flows";
 import { TaskViewDialog } from "@/components/tasks/act/task-view-dialog";
@@ -78,6 +80,7 @@ function useNow(): Date {
  * carries its own bulk verb into the batch dialog.
  */
 export function TasksScreen() {
+  const __t = __useTranslations();
   const store = useTasks();
   const { state, error, people, cases, tasks, user, online, reload, requestHighlight } = store;
   const { act, busy } = useTaskActions();
@@ -278,14 +281,14 @@ export function TasksScreen() {
   const markAllDone = async (batch: Task[]) => {
     let ok = 0;
     for (const t of batch) if (await act(t.id, markDone)) ok += 1;
-    if (ok) toast.success(`Marked done ${ok} task${ok === 1 ? "" : "s"}`);
+    if (ok) toast.success(__t("tasksScreen_markedDoneValue0TaskValue1", {value0: String(ok), value1: String(ok === 1 ? "" : "s")}));
     setSelected(new Set());
   };
 
   const archiveAll = async () => {
     let ok = 0;
     for (const t of selectedTasks) if (await act(t.id, archive)) ok += 1;
-    if (ok) toast.success(`Archived ${ok} task${ok === 1 ? "" : "s"}`);
+    if (ok) toast.success(__t("tasksScreen_archivedValue0TaskValue1", {value0: String(ok), value1: String(ok === 1 ? "" : "s")}));
     setSelected(new Set());
   };
 
@@ -304,8 +307,8 @@ export function TasksScreen() {
           <h1 className="text-title-s font-semibold text-foreground">{headerDate(now)}</h1>
           <p className="text-body-compact text-muted-foreground tabular-nums">
             {state === "ready"
-              ? `${summary.action} need action · ${summary.waiting} waiting on others · ${summary.overdue} overdue`
-              : "Loading…"}
+              ? `${__t(summary.action)} need action · ${summary.waiting} waiting on others · ${summary.overdue} overdue`
+              : __t("tasksScreen_loading")}
           </p>
         </header>
 
@@ -322,7 +325,7 @@ export function TasksScreen() {
           {/* Four views do not fit a phone, and a row that scrolls sideways hides
               the ones off its edge. The ones that fit stay; the rest sit under More. */}
           <OverflowTabsList
-            aria-label="Task views"
+            aria-label={__t("tasksScreen_taskViews")}
             value={filters.view}
             onSelect={(v) => setView(v as TaskView)}
             className="w-full justify-start gap-4 border-b border-hairline p-0 pb-0 group-data-horizontal/tabs:h-auto sm:gap-6"
@@ -338,7 +341,7 @@ export function TasksScreen() {
                 measure: count,
                 label: (
                   <>
-                    {VIEW_LABELS[v]}
+                    {__t(VIEW_LABELS[v])}
                     <span className="text-caption tabular-nums text-muted-foreground">{count}</span>
                   </>
                 ),
@@ -381,9 +384,7 @@ export function TasksScreen() {
 
         {!online ? (
           <Banner variant="warning">
-            You are offline. The table is read-only until the connection returns — nothing is
-            queued, so payments and signatures are never sent twice.
-          </Banner>
+            {<__LocalizedText id="tasksScreen_youAreOfflineTheTableIsRead" />}{" "}</Banner>
         ) : null}
 
         {state === "error" ? (
@@ -391,11 +392,10 @@ export function TasksScreen() {
             variant="error"
             action={
               <Button variant="outline" onClick={() => void reload()}>
-                Retry
-              </Button>
+                {<__LocalizedText id="tasksScreen_retry" />}{" "}</Button>
             }
           >
-            Tasks could not be loaded{error ? ` — ${error}` : ""}.
+            {<__LocalizedText id="tasksScreen_tasksCouldNotBeLoaded" />}{error ? ` — ${__t(error)}` : ""}.
           </Banner>
         ) : null}
 
@@ -405,7 +405,7 @@ export function TasksScreen() {
             only what the bar does not — that acting is now possible. */}
         <p aria-live="polite" className="sr-only">
           {selectedTasks.length && batchKind
-            ? `${batchKind === "sign" ? "Sign" : "Pay"} is available for the selection.`
+            ? `${batchKind === "sign" ? __t("tasksScreen_sign_6c0299b9") : __t("tasksScreen_pay")} is available for the selection.`
             : ""}
         </p>
 
@@ -530,9 +530,9 @@ export function TasksScreen() {
       <ConfirmDialog
         open={!!flowNotice}
         onOpenChange={(open) => !open && setFlowNotice(null)}
-        title={flowNotice ? FLOW_DIALOG[flowNotice.flow].title : ""}
-        description={flowNotice ? FLOW_DIALOG[flowNotice.flow].description : undefined}
-        confirmLabel="Continue"
+        title={flowNotice ? __t(FLOW_DIALOG[flowNotice.flow].title) : ""}
+        description={flowNotice ? __t(FLOW_DIALOG[flowNotice.flow].description) : undefined}
+        confirmLabel={__t("tasksScreen_continue")}
         destructive={false}
         onConfirm={() => {
           const notice = flowNotice;
@@ -544,17 +544,17 @@ export function TasksScreen() {
       <ConfirmDialog
         open={!!confirmDone}
         onOpenChange={(open) => !open && setConfirmDone(null)}
-        title="Mark as done?"
+        title={__t("tasksScreen_markAsDone")}
         description={
           confirmDone
             ? `${
                 confirmDone.length === 1
-                  ? `“${confirmDone[0].title}”`
+                  ? `“${__t(confirmDone[0].title)}”`
                   : `${confirmDone.length} tasks`
               } — this records that it was completed outside DRISTI. Nothing is sent to the court.`
             : undefined
         }
-        confirmLabel="Mark as done"
+        confirmLabel={__t("tasksScreen_markAsDone_154615eb")}
         destructive={false}
         onConfirm={() => {
           const batch = confirmDone;
@@ -601,10 +601,11 @@ function SelectionBar({
   onArchive: () => void;
   onClear: () => void;
 }) {
+  const __t = __useTranslations();
   const label = batch
     ? batch.kind === "sign"
-      ? `Sign ${batch.tasks.length} document${batch.tasks.length === 1 ? "" : "s"}`
-      : `Pay ${rupees(batch.tasks.reduce((sum, t) => sum + (t.amountPaise ?? 0), 0))}`
+      ? __t("tasksScreen_signValue0DocumentValue1", {value0: String(batch.tasks.length), value1: String(batch.tasks.length === 1 ? "" : "s")})
+      : __t("tasksScreen_payValue0", {value0: String(rupees(batch.tasks.reduce((sum, t) => sum + (t.amountPaise ?? 0), 0)))})
     : null;
   /* One line of prose does both jobs: how many are ticked, and — when the set is mixed —
      why there is no Pay or Sign among the acts to the right. */
@@ -619,7 +620,7 @@ function SelectionBar({
   return (
     <div
       role="region"
-      aria-label="Selected tasks"
+      aria-label={__t("tasksScreen_selectedTasks")}
       /* `top-14` clears the chrome bar exactly, with none of the page air the
          `--chrome-sticky-top` offset adds — a toolbar sits against the chrome. Opaque,
          because rows sliding under a translucent bar would decide the contrast of a
@@ -633,28 +634,25 @@ function SelectionBar({
     >
       <div className="flex flex-col gap-3 @3xl:flex-row @3xl:items-center">
       <p className="flex min-w-0 flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground @3xl:mr-auto" aria-live="polite">
-        <span className="tabular-nums">{summary}</span>
+        <span className="tabular-nums">{__t(summary)}</span>
         {count ? (
           <Button variant="link" className="h-auto p-0 font-normal underline" onClick={onClear}>
-            Clear
-          </Button>
+            {<__LocalizedText id="tasksScreen_clear" />}{" "}</Button>
         ) : null}
       </p>
 
       <div className="flex flex-wrap gap-2 @3xl:flex-nowrap @3xl:justify-end [&>button]:flex-1 @3xl:[&>button]:flex-none">
       <Button variant="outline" disabled={disabled || count === 0} onClick={onArchive}>
-        Archive
-      </Button>
+        {<__LocalizedText id="tasksScreen_archive" />}{" "}</Button>
       <Button variant="outline" disabled={disabled || !canMarkDone} onClick={onMarkDone}>
-        Mark as done
-      </Button>
+        {<__LocalizedText id="tasksScreen_markAsDone_154615eb" />}{" "}</Button>
       {batch && label ? (
         <Button disabled={disabled} onClick={() => onBatch(batch)} className="tabular-nums">
-          {label}
+          {__t(label)}
         </Button>
       ) : count === 0 ? (
         /* The primary act, named before there is anything for it to act on. */
-        <Button disabled>Pay or sign selected</Button>
+        <Button disabled>{<__LocalizedText id="tasksScreen_payOrSignSelected" />}</Button>
       ) : null}
       </div>
       </div>
@@ -670,7 +668,7 @@ export function TasksScreenFallback() {
       <div className={cn("flex min-w-0 flex-1 flex-col gap-6 px-4 py-6 md:px-6 lg:px-8")}>
         <header className="flex flex-col gap-1">
           <h1 className="text-title-s font-semibold text-foreground">{headerDate(new Date())}</h1>
-          <p className="text-body-compact text-muted-foreground">Loading…</p>
+          <p className="text-body-compact text-muted-foreground">{<__LocalizedText id="tasksScreen_loading" />}</p>
         </header>
         <TasksTableSkeleton />
       </div>

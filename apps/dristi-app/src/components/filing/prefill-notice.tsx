@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { SectionNotice } from "@/components/filing/notices";
 
@@ -13,8 +14,6 @@ export function PrefillNotice({ show }: { show: boolean }) {
   if (!show) return null;
   return (
     <SectionNotice variant="info">
-      Highlighted fields were read from your documents. Use the source button beside a
-      field to see where it came from.
-    </SectionNotice>
+      {<__LocalizedText id="prefillNotice_highlightedFieldsWereReadFromYourDocuments" />}{" "}</SectionNotice>
   );
 }

@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 
@@ -41,6 +42,7 @@ export function PageBackButton({
   label: string;
   className?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <TooltipProvider>
       <Tooltip>
@@ -56,7 +58,7 @@ export function PageBackButton({
               className
             )}
           >
-            <Link href={href} aria-label={label}>
+            <Link href={href} aria-label={__t(label)}>
               {/* Sized on the icon: the Button's own `svg:not([class*=size-])` rule
                   outranks a size set from the parent, which is how the old
                   arrow stayed 12px whatever the wrapper asked for. */}
@@ -67,7 +69,7 @@ export function PageBackButton({
             </Link>
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom">{label}</TooltipContent>
+        <TooltipContent side="bottom">{__t(label)}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

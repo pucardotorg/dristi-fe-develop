@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useCourt } from "@/components/court/court-provider";
 import * as React from "react";
@@ -278,14 +279,12 @@ function NextHearingFields({ hearing }: { hearing: CourtHearing }) {
     <div className="grid min-w-0 gap-4 sm:grid-cols-2">
       <div className="flex min-w-0 flex-col gap-2">
         <span id={`${id}-date`} className="text-body-compact font-medium">
-          Date
-        </span>
+          {<__LocalizedText id="hearingOverviewDialog_date" />}{" "}</span>
         <NextDateField hearing={hearing} labelledBy={`${id}-date`} />
       </div>
       <div className="flex min-w-0 flex-col gap-2">
         <span id={`${id}-purpose`} className="text-body-compact font-medium">
-          Purpose
-        </span>
+          {<__LocalizedText id="hearingOverviewDialog_purpose" />}{" "}</span>
         <NextPurposeField hearing={hearing} labelledBy={`${id}-purpose`} />
       </div>
     </div>

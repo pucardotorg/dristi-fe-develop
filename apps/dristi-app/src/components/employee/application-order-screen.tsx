@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -129,6 +131,7 @@ export function useApplicationOrderDoor(
     orderKey?: string;
   } = {},
 ): OrderDoor {
+  const __t = __useTranslations();
   const today = useCourtToday();
   const courtText = useCourtText();
   const matter = partiesLabel(record);
@@ -147,35 +150,35 @@ export function useApplicationOrderDoor(
   );
   const applicationItem = React.useMemo(
     () => ({
-      label: application.typeLabel,
+      label: __t(application.typeLabel),
       onboarded: application.status !== "pending-review",
       workflow: applicationWorkflow(application.type),
     }),
-    [application],
+    [application, __t],
   );
   const draftKey = orderKey ?? nextApplicationOrderKey(application);
 
   return {
     applicationItem,
     draftKey,
-    origin: `Application · ${application.typeLabel}`,
+    origin: `Application · ${__t(application.typeLabel)}`,
     initial,
     fixedIds: [],
     heading: matter,
     facts: [
-      { label: "Application", value: application.typeLabel },
-      { label: "Case", value: record.caseNumber, identifier: true },
+      { label: __t("applicationOrderScreen_application"), value: application.typeLabel },
+      { label: __t("applicationOrderScreen_case"), value: record.caseNumber, identifier: true },
       ...(application.applicationNumber
-        ? [{ label: "Number", value: application.applicationNumber, identifier: true }]
+        ? [{ label: __t("applicationOrderScreen_number"), value: application.applicationNumber, identifier: true }]
         : application.temporaryId
-          ? [{ label: "Temporary ID", value: application.temporaryId, identifier: true }]
+          ? [{ label: __t("applicationOrderScreen_temporaryId"), value: application.temporaryId, identifier: true }]
           : []),
     ],
     courtLine: courtText(`Before the ${CURRENT_STAFF.court}`),
     subLine: `${record.caseNumber} · ${matter} · ${formatOrderDate(today)}`,
     navAction: (
       <Button asChild variant="outline" className="w-full shrink-0 sm:w-fit">
-        <Link href={back.href}>{back.label}</Link>
+        <Link href={back.href}>{__t(back.label)}</Link>
       </Button>
     ),
     context,
@@ -193,16 +196,13 @@ function OrderMissing() {
             <FileQuestionIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            This application is not in this browser
-          </EmptyTitle>
+            {<__LocalizedText id="applicationOrderScreen_thisApplicationIsNotInThisBrowser" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
-            Applications are kept in the browser they were filed from. Open the order
-            from the application in the queue.
-          </EmptyDescription>
+            {<__LocalizedText id="applicationOrderScreen_applicationsAreKeptInTheBrowserThey" />}{" "}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href={APPLICATIONS}>Back to applications</Link>
+            <Link href={APPLICATIONS}>{<__LocalizedText id="applicationOrderScreen_backToApplications" />}</Link>
           </Button>
         </EmptyContent>
       </Empty>

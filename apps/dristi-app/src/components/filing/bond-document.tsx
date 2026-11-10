@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { DownloadIcon, Maximize2Icon } from "lucide-react";
@@ -39,6 +40,7 @@ export function BondDocument({
   onExpand?: () => void;
   onDownload?: () => void;
 }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   return (
     <div
@@ -99,7 +101,7 @@ export function BondDocument({
           {fillCopy(bailDialog.draftCaseLine, locale, { caseNumber: accessCase.caseNumber })}
         </p>
         <p className="text-center text-body-compact text-pretty">
-          {fillCopy(bailDialog.draftMatterLine, locale, { title: accessCase.title })}
+          {fillCopy(bailDialog.draftMatterLine, locale, { title: __t(accessCase.title) })}
         </p>
         <p className="text-body-compact text-pretty text-muted-foreground">
           {fillCopy(bondCopy.bondBody1, locale, {

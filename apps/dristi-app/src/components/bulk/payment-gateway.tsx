@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -49,6 +51,7 @@ export function PaymentGateway({
   onPaid: (mode: PayMode) => void;
   onCancel: () => void;
 }) {
+  const __t = __useTranslations();
   const [mode, setMode] = React.useState<PayMode>("upi");
   const [stage, setStage] = React.useState<Stage>("choose");
   // The sandbox's own test details, filled in so a demo runs without typing.
@@ -121,10 +124,9 @@ export function PaymentGateway({
       <div className="flex items-start justify-between gap-4 border-b border-hairline bg-surface-sunken px-6 py-4 pr-12">
         <div className="flex flex-col gap-0.5">
           <DialogTitle className="text-body font-semibold">
-            Pay court fees
-          </DialogTitle>
+            {<__LocalizedText id="paymentGateway_payCourtFees" />}{" "}</DialogTitle>
           <DialogDescription className="text-caption tabular-nums">
-            SARAS Court, Ahmedabad · {cases} case{cases === 1 ? "" : "s"} · Ref{" "}
+            {<__LocalizedText id="paymentGateway_sarasCourtAhmedabad" />}{" "}{cases} {<__LocalizedText id="paymentGateway_case" />}{cases === 1 ? "" : "s"} {<__LocalizedText id="paymentGateway_ref" />}{" "}
             {reference}
           </DialogDescription>
         </div>
@@ -134,8 +136,7 @@ export function PaymentGateway({
           </span>
           <span className="flex items-center gap-1 text-caption text-muted-foreground">
             <LockIcon className="size-3" aria-hidden />
-            Sandbox gateway
-          </span>
+            {<__LocalizedText id="paymentGateway_sandboxGateway" />}{" "}</span>
         </div>
       </div>
 
@@ -152,16 +153,13 @@ export function PaymentGateway({
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="upi">
                   <SmartphoneIcon aria-hidden />
-                  UPI
-                </TabsTrigger>
+                  {<__LocalizedText id="paymentGateway_upi" />}{" "}</TabsTrigger>
                 <TabsTrigger value="card">
                   <CreditCardIcon aria-hidden />
-                  Card
-                </TabsTrigger>
+                  {<__LocalizedText id="paymentGateway_card" />}{" "}</TabsTrigger>
                 <TabsTrigger value="neft">
                   <BuildingIcon aria-hidden />
-                  NEFT
-                </TabsTrigger>
+                  {<__LocalizedText id="paymentGateway_neft" />}{" "}</TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -171,7 +169,7 @@ export function PaymentGateway({
                   className="col-span-2 gap-1.5"
                   data-invalid={tried && !!cardErrors.number}
                 >
-                  <FieldLabel htmlFor="gw-card">Card number</FieldLabel>
+                  <FieldLabel htmlFor="gw-card">{<__LocalizedText id="paymentGateway_cardNumber" />}</FieldLabel>
                   <Input
                     id="gw-card"
                     inputMode="numeric"
@@ -189,10 +187,10 @@ export function PaymentGateway({
                   className="gap-1.5"
                   data-invalid={tried && !!cardErrors.expiry}
                 >
-                  <FieldLabel htmlFor="gw-exp">Expiry</FieldLabel>
+                  <FieldLabel htmlFor="gw-exp">{<__LocalizedText id="paymentGateway_expiry" />}</FieldLabel>
                   <Input
                     id="gw-exp"
-                    placeholder="MM/YY"
+                    placeholder={__t("paymentGateway_mmYy")}
                     value={card.expiry}
                     onChange={(e) =>
                       setCard({ ...card, expiry: e.target.value.slice(0, 5) })
@@ -206,7 +204,7 @@ export function PaymentGateway({
                   className="gap-1.5"
                   data-invalid={tried && !!cardErrors.cvv}
                 >
-                  <FieldLabel htmlFor="gw-cvv">CVV</FieldLabel>
+                  <FieldLabel htmlFor="gw-cvv">{<__LocalizedText id="paymentGateway_cvv" />}</FieldLabel>
                   <Input
                     id="gw-cvv"
                     type="password"
@@ -228,7 +226,7 @@ export function PaymentGateway({
                   className="col-span-2 gap-1.5"
                   data-invalid={tried && !!cardErrors.name}
                 >
-                  <FieldLabel htmlFor="gw-name">Name on card</FieldLabel>
+                  <FieldLabel htmlFor="gw-name">{<__LocalizedText id="paymentGateway_nameOnCard" />}</FieldLabel>
                   <Input
                     id="gw-name"
                     value={card.name}
@@ -239,12 +237,11 @@ export function PaymentGateway({
                   ) : null}
                 </Field>
                 <span className="col-span-2 text-caption text-muted-foreground">
-                  Sandbox test card. Nothing is charged.
-                </span>
+                  {<__LocalizedText id="paymentGateway_sandboxTestCardNothingIsCharged" />}{" "}</span>
               </div>
             ) : mode === "upi" ? (
               <Field className="gap-1.5" data-invalid={tried && !!upiError}>
-                <FieldLabel htmlFor="gw-upi">UPI ID</FieldLabel>
+                <FieldLabel htmlFor="gw-upi">{<__LocalizedText id="paymentGateway_upiId" />}</FieldLabel>
                 <Input
                   id="gw-upi"
                   autoComplete="off"
@@ -253,40 +250,33 @@ export function PaymentGateway({
                 />
                 {tried && upiError ? <FieldError>{upiError}</FieldError> : null}
                 <span className="text-caption text-muted-foreground">
-                  A payment request goes to this UPI ID. Sandbox: it approves
-                  itself.
-                </span>
+                  {<__LocalizedText id="paymentGateway_aPaymentRequestGoesToThisUpi" />}{" "}</span>
               </Field>
             ) : (
               <div className="flex flex-col gap-3">
                 <p className="text-body-compact">
-                  Transfer exactly {money(amount)} by NEFT or RTGS to the
-                  court&apos;s account for this payment:
-                </p>
+                  {<__LocalizedText id="paymentGateway_transferExactly" />}{" "}{money(amount)} {<__LocalizedText id="paymentGateway_byNeftOrRtgsToTheCourt" />}{" "}</p>
                 <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 rounded-lg bg-surface-sunken p-4 text-body-compact">
-                  <dt className="text-muted-foreground">Account name</dt>
-                  <dd>Registrar, SARAS Court Ahmedabad</dd>
-                  <dt className="text-muted-foreground">Account number</dt>
+                  <dt className="text-muted-foreground">{<__LocalizedText id="paymentGateway_accountName" />}</dt>
+                  <dd>{<__LocalizedText id="paymentGateway_registrarSarasCourtAhmedabad" />}</dd>
+                  <dt className="text-muted-foreground">{<__LocalizedText id="paymentGateway_accountNumber" />}</dt>
                   <dd className="font-mono tabular-nums">
-                    SARAS{reference.slice(5)}
+                    {<__LocalizedText id="paymentGateway_saras" />}{reference.slice(5)}
                   </dd>
-                  <dt className="text-muted-foreground">IFSC</dt>
-                  <dd className="font-mono">SBIN0000301</dd>
-                  <dt className="text-muted-foreground">Amount</dt>
+                  <dt className="text-muted-foreground">{<__LocalizedText id="paymentGateway_ifsc" />}</dt>
+                  <dd className="font-mono">{<__LocalizedText id="paymentGateway_sbin0000301" />}</dd>
+                  <dt className="text-muted-foreground">{<__LocalizedText id="paymentGateway_amount" />}</dt>
                   <dd className="tabular-nums">{money(amount)}</dd>
                 </dl>
                 <span className="text-caption text-muted-foreground">
-                  This account is only for this payment. Sandbox: no transfer is
-                  needed.
-                </span>
+                  {<__LocalizedText id="paymentGateway_thisAccountIsOnlyForThisPayment" />}{" "}</span>
               </div>
             )}
           </>
         ) : stage === "card-otp" ? (
           <Field className="gap-2">
             <FieldLabel>
-              Enter the OTP your bank sent to the mobile on this card
-            </FieldLabel>
+              {<__LocalizedText id="paymentGateway_enterTheOtpYourBankSentTo" />}{" "}</FieldLabel>
             <InputOTP maxLength={6} value={otp} onChange={setOtp}>
               <InputOTPGroup>
                 {Array.from({ length: 6 }, (_, i) => (
@@ -295,8 +285,7 @@ export function PaymentGateway({
               </InputOTPGroup>
             </InputOTP>
             <span className="text-caption text-muted-foreground">
-              Card ending {card.number.slice(-4)}. Sandbox: any 6 digits.
-            </span>
+              {<__LocalizedText id="paymentGateway_cardEnding" />}{" "}{card.number.slice(-4)}{<__LocalizedText id="paymentGateway_sandboxAny6Digits" />}{" "}</span>
           </Field>
         ) : (
           <div
@@ -306,17 +295,17 @@ export function PaymentGateway({
             <Spinner className="size-8 text-primary" />
             <p className="text-body font-medium">
               {stage === "upi-wait"
-                ? "Approve the request in your UPI app"
+                ? __t("paymentGateway_approveTheRequestInYourUpiApp")
                 : stage === "neft-wait"
-                  ? "Checking for your transfer"
-                  : "Confirming your payment"}
+                  ? __t("paymentGateway_checkingForYourTransfer")
+                  : __t("paymentGateway_confirmingYourPayment")}
             </p>
             <p className="text-caption text-muted-foreground">
               {stage === "upi-wait"
-                ? `Sent to ${upi}. Sandbox: approves in ${left}s.`
+                ? __t("paymentGateway_sentToValue0SandboxApprovesInValue1", {value0: String(upi), value1: String(left)})
                 : stage === "neft-wait"
-                  ? `Sandbox: found in ${left}s.`
-                  : "Please don't close this window."}
+                  ? __t("paymentGateway_sandboxFoundInValue0S", {value0: String(left)})
+                  : __t("paymentGateway_pleaseDonTCloseThisWindow")}
             </p>
           </div>
         )}
@@ -329,18 +318,16 @@ export function PaymentGateway({
         )}
       >
         <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
+          {<__LocalizedText id="paymentGateway_cancel" />}{" "}</Button>
         {stage === "choose" ? (
           <Button onClick={start}>
             {mode === "neft"
-              ? "I have made the transfer"
-              : `Pay ${money(amount)}`}
+              ? __t("paymentGateway_iHaveMadeTheTransfer")
+              : __t("paymentGateway_payValue0", {value0: String(money(amount))})}
           </Button>
         ) : stage === "card-otp" ? (
           <Button disabled={otp.length < 6} onClick={() => setStage("paying")}>
-            Confirm payment
-          </Button>
+            {<__LocalizedText id="paymentGateway_confirmPayment" />}{" "}</Button>
         ) : null}
       </div>
     </div>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -144,6 +146,7 @@ export function ApplicationDecisionPanel({
   /** An order passed from the quick order: say so, and move on to the next. */
   onDone: (message: string) => void;
 }) {
+  const __t = __useTranslations();
   const router = useRouter();
   const seat = useCourtRole() as CourtSeat;
   const mayAct = canTakeSystemAction(seat);
@@ -237,8 +240,7 @@ export function ApplicationDecisionPanel({
      it is. Last in the footer, under the one primary. */
   const differentOrder = mayDraft ? (
     <Button type="button" variant="ghost" className="w-full" onClick={() => openOrder()}>
-      Pass a different order instead
-    </Button>
+      {<__LocalizedText id="applicationDecisionPanel_passADifferentOrderInstead" />}{" "}</Button>
   ) : null;
 
   let body: React.ReactNode = null;
@@ -252,8 +254,8 @@ export function ApplicationDecisionPanel({
         <PanelHeading
           title={
             canSignOrder(seat)
-              ? "Order awaiting your signature"
-              : "Awaiting the Magistrate’s signature"
+              ? __t("applicationDecisionPanel_orderAwaitingYourSignature")
+              : __t("applicationDecisionPanel_awaitingTheMagistrateSSignature")
           }
           lead={`Drafted on ${formatCaseDate(app.pendingOrder.draftedOn)}.`}
         />
@@ -272,13 +274,12 @@ export function ApplicationDecisionPanel({
               run(
                 applyStep(app.id, (current) => signOrder(current, seat, orderId, on)),
                 `Order ${orderId} signed. The application is ${
-                  kind === "accept" ? "accepted" : kind === "reject" ? "rejected" : "dismissed"
+                  kind === "accept" ? __t("applicationDecisionPanel_accepted") : kind === "reject" ? __t("applicationDecisionPanel_rejected") : __t("applicationDecisionPanel_dismissed")
                 }.`,
               );
             }}
           >
-            Sign order
-          </Button>
+            {<__LocalizedText id="applicationDecisionPanel_signOrder" />}{" "}</Button>
         ) : null}
         <Button
           type="button"
@@ -288,8 +289,7 @@ export function ApplicationDecisionPanel({
             run(applyStep(app.id, (current) => discardOrder(current, on)), "Draft discarded.")
           }
         >
-          Discard draft
-        </Button>
+          {<__LocalizedText id="applicationDecisionPanel_discardDraft" />}{" "}</Button>
       </>
     );
   } else if (started && stage && stage !== "triggered") {
@@ -300,7 +300,7 @@ export function ApplicationDecisionPanel({
     body = (
       <div className="flex flex-col gap-4">
         <PanelHeading
-          title="Order in progress"
+          title={__t("applicationDecisionPanel_orderInProgress")}
           lead={`${pendingOrderStageLabel(stage)}. The application moves once the order is signed.`}
         />
         <Button
@@ -310,8 +310,7 @@ export function ApplicationDecisionPanel({
             router.push(stage === "drafting" ? started.orderHref : pendingOrderHref(orderKey))
           }
         >
-          Open the order
-        </Button>
+          {<__LocalizedText id="applicationDecisionPanel_openTheOrder" />}{" "}</Button>
       </div>
     );
   } else if (app.status === "pending-review" && app.review) {
@@ -327,7 +326,7 @@ export function ApplicationDecisionPanel({
       <>
         <div className="flex flex-col gap-4">
           <PanelHeading
-            title="Action on the application"
+            title={__t("applicationDecisionPanel_actionOnTheApplication")}
             lead={later ? `Review deferred to ${formatCaseDate(app.review.dueOn)}.` : undefined}
           />
           {/* A choice of one is no choice: a seat that can only dismiss is not shown a
@@ -340,7 +339,7 @@ export function ApplicationDecisionPanel({
         {choice === "onboard" ? (
           <>
             <Field>
-              <FieldLabel id={`${app.id}-when`}>When will it be decided?</FieldLabel>
+              <FieldLabel id={`${app.id}-when`}>{<__LocalizedText id="applicationDecisionPanel_whenWillItBeDecided" />}</FieldLabel>
               <SegmentedControl
                 type="single"
                 size="compact"
@@ -352,16 +351,13 @@ export function ApplicationDecisionPanel({
                 className="w-full [&>*]:flex-1 [&>*>span]:w-full"
               >
                 <SegmentedControlItem value="date" className="flex-1">
-                  On a date
-                </SegmentedControlItem>
+                  {<__LocalizedText id="applicationDecisionPanel_onADate" />}{" "}</SegmentedControlItem>
                 <SegmentedControlItem value="now" className="flex-1">
-                  Today
-                </SegmentedControlItem>
+                  {<__LocalizedText id="applicationDecisionPanel_today" />}{" "}</SegmentedControlItem>
               </SegmentedControl>
               {panel.when === "now" ? (
                 <FieldDescription>
-                  It is numbered now, and you accept or reject it next.
-                </FieldDescription>
+                  {<__LocalizedText id="applicationDecisionPanel_itIsNumberedNowAndYouAccept" />}{" "}</FieldDescription>
               ) : null}
             </Field>
             {panel.when === "date" ? (
@@ -382,12 +378,11 @@ export function ApplicationDecisionPanel({
           <>
             {deferredBefore ? (
               <Banner variant="warning">
-                Review of this application has already been deferred once.
-              </Banner>
+                {<__LocalizedText id="applicationDecisionPanel_reviewOfThisApplicationHasAlreadyBeen" />}{" "}</Banner>
             ) : null}
             <ListingDateField
               id={`${app.id}-defer`}
-              label="Defer review to"
+              label={__t("applicationDecisionPanel_deferReviewTo")}
               value={panel.defer}
               on={on}
               hearing={hearing}
@@ -412,17 +407,17 @@ export function ApplicationDecisionPanel({
             panel.when === "now"
               ? toOrder({ onboard: "yes" })
               : order({
-                  title: "Onboard and list",
+                  title: __t("applicationDecisionPanel_onboardAndList"),
                   text: listingWords(listedOn, panel.invite, `${named} is taken on file.`),
                   answers: { onboard: "yes", ...listed(listedOn, panel.invite) },
                 })
           }
         >
           {panel.when === "now"
-            ? "Onboard and decide now"
+            ? __t("applicationDecisionPanel_onboardAndDecideNow")
             : listedOn
-              ? `Onboard and list on ${shortDate(listedOn)}`
-              : "Onboard"}
+              ? __t("applicationDecisionPanel_onboardAndListOnValue0", {value0: String(shortDate(listedOn))})
+              : __t("applicationDecisionPanel_onboard_98494531")}
         </Button>
       );
     } else if (choice === "defer") {
@@ -434,8 +429,8 @@ export function ApplicationDecisionPanel({
           disabled={!deferOn || deferOn <= on}
           onClick={() =>
             order({
-              title: "Defer review",
-              text: `Review of ${named.charAt(0).toLowerCase()}${named.slice(1)} is deferred to ${formatCaseDate(deferOn)}.`,
+              title: __t("applicationDecisionPanel_deferReview"),
+              text: __t("applicationDecisionPanel_reviewOfValue0Value1IsDeferredTo", {value0: String(named.charAt(0).toLowerCase()), value1: String(named.slice(1)), value2: String(formatCaseDate(deferOn))}),
               answers: {
                 onboard: "no",
                 decided: "no",
@@ -445,7 +440,7 @@ export function ApplicationDecisionPanel({
             })
           }
         >
-          {deferOn ? `Defer review to ${shortDate(deferOn)}` : "Defer review"}
+          {deferOn ? __t("applicationDecisionPanel_deferReviewToValue0", {value0: String(shortDate(deferOn))}) : __t("applicationDecisionPanel_deferReview")}
         </Button>
       );
     } else if (choice === "dismiss") {
@@ -455,15 +450,14 @@ export function ApplicationDecisionPanel({
           className="w-full"
           onClick={() =>
             order({
-              title: "Dismiss application",
+              title: __t("applicationDecisionPanel_dismissApplication"),
               text: dismissalText(app, formatCaseDate(app.submittedOn ?? app.createdOn)),
               /* [DERIVED] Disposed: the decision list has no Dismissed. */
               answers: { onboard: "no", decided: "yes", decision: "disposed" },
             })
           }
         >
-          Draft dismissal order
-        </Button>
+          {<__LocalizedText id="applicationDecisionPanel_draftDismissalOrder" />}{" "}</Button>
       );
     }
     footer = (
@@ -481,21 +475,21 @@ export function ApplicationDecisionPanel({
       body = (
         <>
           <PanelHeading
-            title={`Listed for ${formatCaseDate(app.decide.dueOn)}`}
+            title={__t("applicationDecisionPanel_listedForValue0", {value0: String(formatCaseDate(app.decide.dueOn))})}
             lead={`Orders may be passed on or after that date${
-              app.objectionsInvited ? ", once the time for objections has expired" : ""
+              app.objectionsInvited ? __t("applicationDecisionPanel_onceTheTimeForObjectionsHasExpired") : ""
             }.`}
           />
           {mayAct ? (
             <ListingDateField
               id={`${app.id}-relist`}
-              label="Relist on"
+              label={__t("applicationDecisionPanel_relistOn")}
               value={panel.relist}
               on={on}
               hearing={hearing}
               hint={
                 app.objectionsInvited
-                  ? "The time for objections moves to the day before."
+                  ? __t("applicationDecisionPanel_theTimeForObjectionsMovesToThe")
                   : undefined
               }
               onChange={(relist) => set({ relist })}
@@ -511,13 +505,13 @@ export function ApplicationDecisionPanel({
           disabled={!relistOn || relistOn <= on}
           onClick={() =>
             order({
-              title: "Relist",
+              title: __t("applicationDecisionPanel_relist"),
               text: `${named} is relisted on ${formatCaseDate(relistOn)}.`,
               answers: { decided: "no", responseNeeded: "no", bringForwardOn: relistOn },
             })
           }
         >
-          {relistOn ? `Relist on ${shortDate(relistOn)}` : "Relist"}
+          {relistOn ? __t("applicationDecisionPanel_relistOnValue0", {value0: String(shortDate(relistOn))}) : __t("applicationDecisionPanel_relist")}
         </Button>
       ) : null;
     } else {
@@ -532,13 +526,13 @@ export function ApplicationDecisionPanel({
         <>
           <div className="flex flex-col gap-4">
             <PanelHeading
-              title="Action on the application"
+              title={__t("applicationDecisionPanel_actionOnTheApplication")}
               lead={
                 takenNow ? (
                   <>
-                    Onboarded today as{" "}
+                    {<__LocalizedText id="applicationDecisionPanel_onboardedTodayAs" />}{" "}
                     {app.applicationNumber ? (
-                      <Identifier value={app.applicationNumber} label="application number" />
+                      <Identifier value={app.applicationNumber} label={__t("applicationDecisionPanel_applicationNumber")} />
                     ) : null}
                   </>
                 ) : undefined
@@ -552,13 +546,13 @@ export function ApplicationDecisionPanel({
           {choice === "move" ? (
             <ListingDateField
               id={`${app.id}-move`}
-              label="Decide it on"
+              label={__t("applicationDecisionPanel_decideItOn")}
               value={panel.relist}
               on={on}
               hearing={hearing}
               hint={
                 app.objectionsInvited
-                  ? "The time for objections moves to the day before."
+                  ? __t("applicationDecisionPanel_theTimeForObjectionsMovesToThe")
                   : undefined
               }
               onChange={(relist) => set({ relist })}
@@ -587,7 +581,7 @@ export function ApplicationDecisionPanel({
             className="w-full"
             onClick={() =>
               order({
-                title: choice === "accept" ? "Accept application" : "Reject application",
+                title: choice === "accept" ? __t("applicationDecisionPanel_acceptApplication") : __t("applicationDecisionPanel_rejectApplication"),
                 text: decisionText(app, choice),
                 answers: {
                   decided: "yes",
@@ -599,7 +593,7 @@ export function ApplicationDecisionPanel({
               })
             }
           >
-            {choice === "accept" ? "Draft acceptance order" : "Draft rejection order"}
+            {choice === "accept" ? __t("applicationDecisionPanel_draftAcceptanceOrder") : __t("applicationDecisionPanel_draftRejectionOrder")}
           </Button>
         );
       } else if (choice === "move") {
@@ -611,13 +605,13 @@ export function ApplicationDecisionPanel({
             disabled={!moveOn || moveOn <= on}
             onClick={() =>
               order({
-                title: "Move the date",
+                title: __t("applicationDecisionPanel_moveTheDate"),
                 text: `${named} is to be decided on ${formatCaseDate(moveOn)}.`,
                 answers: { decided: "no", responseNeeded: "no", bringForwardOn: moveOn },
               })
             }
           >
-            {moveOn ? `Move to ${shortDate(moveOn)}` : "Move the date"}
+            {moveOn ? __t("applicationDecisionPanel_moveToValue0", {value0: String(shortDate(moveOn))}) : __t("applicationDecisionPanel_moveTheDate")}
           </Button>
         );
       } else if (choice === "list") {
@@ -629,13 +623,13 @@ export function ApplicationDecisionPanel({
             disabled={!listedOn || listedOn <= on}
             onClick={() =>
               order({
-                title: "List for a date",
+                title: __t("applicationDecisionPanel_listForADate"),
                 text: listingWords(listedOn, panel.invite, `${named} is not taken up today.`),
                 answers: listed(listedOn, panel.invite),
               })
             }
           >
-            {listedOn ? `List on ${shortDate(listedOn)}` : "List for a date"}
+            {listedOn ? __t("applicationDecisionPanel_listOnValue0", {value0: String(shortDate(listedOn))}) : __t("applicationDecisionPanel_listForADate")}
           </Button>
         );
       }
@@ -650,12 +644,12 @@ export function ApplicationDecisionPanel({
 
   return (
     <aside
-      aria-label="Action on the application"
+      aria-label={__t("applicationDecisionPanel_actionOnTheApplication")}
       className="flex min-h-0 flex-col border-t border-hairline bg-card lg:border-t-0 lg:border-l"
     >
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
-        {body}
-        {error ? <Banner variant="error">{error}</Banner> : null}
+        {__t(body)}
+        {error ? <Banner variant="error">{__t(error)}</Banner> : null}
       </div>
       {footer ? (
         <div className="flex shrink-0 flex-col gap-2 border-t border-hairline px-6 py-4">
@@ -694,6 +688,7 @@ function Choices({
   choices: Choice[];
   onChange: (choice: Choice) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <SegmentedControl
       type="single"
@@ -702,7 +697,7 @@ function Choices({
       onValueChange={(next) => {
         if (next) onChange(next as Choice);
       }}
-      aria-label="Action on the application"
+      aria-label={__t("applicationDecisionPanel_actionOnTheApplication")}
       className="w-full [&>*]:flex-1 [&>*>span]:w-full"
     >
       {choices.map((choice) => (
@@ -715,11 +710,12 @@ function Choices({
 }
 
 function PanelHeading({ title, lead }: { title: string; lead?: React.ReactNode }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col gap-1">
       {/* A 40px band, so the panel's first line sits level with the title and the back
           link in the columns beside it. */}
-      <h2 className="flex min-h-10 items-center text-body font-semibold">{title}</h2>
+      <h2 className="flex min-h-10 items-center text-body font-semibold">{__t(title)}</h2>
       {lead ? <p className="text-body-compact text-muted-foreground">{lead}</p> : null}
     </div>
   );
@@ -743,12 +739,13 @@ function ListingFields({
   onDate: (date: Date | undefined) => void;
   onInvite: (invite: boolean) => void;
 }) {
+  const __t = __useTranslations();
   const day = dayOfDate(date);
   return (
     <>
       <ListingDateField
         id={`${idPrefix}-date`}
-        label="Listing date"
+        label={__t("applicationDecisionPanel_listingDate")}
         value={date}
         on={on}
         hearing={hearing}
@@ -759,8 +756,7 @@ function ListingFields({
       <div className="rounded-lg border border-hairline bg-surface-sunken p-4">
         <Field>
           <FieldLabel id={`${idPrefix}-objection`}>
-            Call for objections?
-          </FieldLabel>
+            {<__LocalizedText id="applicationDecisionPanel_callForObjections" />}{" "}</FieldLabel>
           <SegmentedControl
             type="single"
             size="compact"
@@ -773,18 +769,16 @@ function ListingFields({
             className="w-full [&>*]:flex-1 [&>*>span]:w-full"
           >
             <SegmentedControlItem value="yes" className="flex-1">
-              Yes
-            </SegmentedControlItem>
+              {<__LocalizedText id="applicationDecisionPanel_yes" />}{" "}</SegmentedControlItem>
             <SegmentedControlItem value="no" className="flex-1">
-              No
-            </SegmentedControlItem>
+              {<__LocalizedText id="applicationDecisionPanel_no" />}{" "}</SegmentedControlItem>
           </SegmentedControl>
           <FieldDescription id={`${idPrefix}-objection-note`}>
             {invite
               ? day
-                ? `The opposite party may file objections by ${formatCaseDate(objectionDeadline(day))}.`
-                : "Objections, if any, to be filed by the day before the listing."
-              : "Objections are not called for. The opposite party may still view the application once onboarded."}
+                ? __t("applicationDecisionPanel_theOppositePartyMayFileObjectionsBy", {value0: String(formatCaseDate(objectionDeadline(day)))})
+                : __t("applicationDecisionPanel_objectionsIfAnyToBeFiledBy")
+              : __t("applicationDecisionPanel_objectionsAreNotCalledForTheOpposite")}
           </FieldDescription>
         </Field>
       </div>
@@ -794,22 +788,24 @@ function ListingFields({
 
 /** An order's opening words: the one awaiting signature, or the one that closed it. */
 function OrderCard({ text }: { text: string }) {
+  const __t = __useTranslations();
   return (
     <section className="flex flex-col gap-2 rounded-lg border border-hairline bg-surface-sunken p-4">
-      <h3 className="text-body-compact font-medium">Order</h3>
-      <p className="line-clamp-4 text-body-compact">{text}</p>
+      <h3 className="text-body-compact font-medium">{<__LocalizedText id="applicationDecisionPanel_order" />}</h3>
+      <p className="line-clamp-4 text-body-compact">{__t(text)}</p>
     </section>
   );
 }
 
 function ClosedRecord({ app }: { app: LifecycleApplication }) {
+  const __t = __useTranslations();
   return (
     <>
       <PanelHeading
         title={
           app.linkedOrder
-            ? `${app.status === "accepted" ? "Accepted" : app.status === "rejected" ? "Rejected" : "Dismissed"} on ${formatCaseDate(app.linkedOrder.signedOn)}`
-            : "Closed"
+            ? `${app.status === "accepted" ? __t("applicationDecisionPanel_accepted_ac3df38a") : app.status === "rejected" ? __t("applicationDecisionPanel_rejected_5036f47e") : __t("applicationDecisionPanel_dismissed_2276b0d3")} on ${formatCaseDate(app.linkedOrder.signedOn)}`
+            : __t("applicationDecisionPanel_closed")
         }
         lead={
           app.linkedOrder
@@ -819,14 +815,14 @@ function ClosedRecord({ app }: { app: LifecycleApplication }) {
       />
       {app.linkedOrder ? <OrderCard text={app.linkedOrder.text} /> : null}
       <section className="flex flex-col gap-4">
-        <h3 className="text-body font-semibold">History</h3>
+        <h3 className="text-body font-semibold">{<__LocalizedText id="applicationDecisionPanel_history" />}</h3>
         <ol className="flex flex-col gap-2">
           {app.history.map((event, index) => (
             <li key={index} className="grid grid-cols-[6rem_1fr] gap-3 text-body-compact">
               <span className="tabular-nums text-muted-foreground">
                 {shortDate(event.on)}
               </span>
-              <span>{event.text}</span>
+              <span>{__t(event.text)}</span>
             </li>
           ))}
         </ol>

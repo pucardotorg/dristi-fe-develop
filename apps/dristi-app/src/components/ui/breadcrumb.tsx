@@ -1,3 +1,5 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 import * as React from "react"
 import { Slot } from "radix-ui"
 
@@ -5,9 +7,10 @@ import { cn } from "@/lib/utils"
 import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
+  const __t = __useTranslations();
   return (
     <nav
-      aria-label="breadcrumb"
+      aria-label={__t("breadcrumb_breadcrumb")}
       data-slot="breadcrumb"
       className={cn(className)}
       {...props}
@@ -106,7 +109,7 @@ function BreadcrumbEllipsis({
     >
       <MoreHorizontalIcon
       />
-      <span className="sr-only">More</span>
+      <span className="sr-only">{<__LocalizedText id="breadcrumb_more" />}</span>
     </span>
   )
 }

@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -45,6 +46,7 @@ export function AddressFields({
    */
   name?: string;
 }) {
+  const __t = __useTranslations();
   const key = (k: keyof Address) => (name ? `${name}.${k}` : undefined);
   const set = (k: keyof Address) => (v: string) => onChange({ ...value, [k]: v });
   const pf = (key: keyof Address) => prefilled && !!value[key] && (prefilledFields?.[key] ?? !prefilledFields);
@@ -115,12 +117,12 @@ export function AddressFields({
 
   return (
     <div className="flex flex-col gap-4">
-      <FormField label="Address line" name={key("line1")} required>
+      <FormField label={__t("addressFields_addressLine")} name={key("line1")} required>
         <TextField
           id={idPrefix ? `${idPrefix}-line1` : undefined}
           value={value.line1}
           onChange={set("line1")}
-          placeholder="House / building, street, area"
+          placeholder={__t("addressFields_houseBuildingStreetArea")}
           prefilled={pf("line1")}
                 onViewSource={src("line1")}
           autoComplete="address-line1"
@@ -129,11 +131,11 @@ export function AddressFields({
       {/* PIN first: it is the field that fills the two below it, so it comes before the
           ones it answers rather than after them. */}
       <FormRow>
-        <FormField label="Pincode" name={key("pin")} required>
+        <FormField label={__t("addressFields_pincode")} name={key("pin")} required>
           <TextField
             value={value.pin}
             onChange={set("pin")}
-            placeholder="6-digit"
+            placeholder={__t("addressFields_6Digit")}
             inputMode="numeric"
             maxLength={6}
             prefilled={pf("pin")}
@@ -141,11 +143,11 @@ export function AddressFields({
             autoComplete="postal-code"
           />
         </FormField>
-        <FormField label="City / town" name={key("city")} required>
+        <FormField label={__t("addressFields_cityTown")} name={key("city")} required>
           <TextField
             value={value.city}
             onChange={set("city")}
-            placeholder="City or town"
+            placeholder={__t("addressFields_cityOrTown")}
             prefilled={pf("city")}
                 onViewSource={src("city")}
             autoComplete="address-level2"
@@ -154,21 +156,21 @@ export function AddressFields({
       </FormRow>
       <div className="flex flex-col gap-2">
         <FormRow>
-          <FormField label="District" name={key("district")} required>
+          <FormField label={__t("addressFields_district")} name={key("district")} required>
             <TextField
               value={value.district}
               onChange={setDistrict}
-              placeholder="District"
+              placeholder={__t("addressFields_district")}
               prefilled={pf("district")}
                 onViewSource={src("district")}
             />
           </FormField>
-          <FormField label="State / UT" name={key("state")} required>
+          <FormField label={__t("addressFields_stateUt")} name={key("state")} required>
             <OptionSelect
               value={value.state}
               onValueChange={setState}
               options={STATES}
-              placeholder="Select state"
+              placeholder={__t("addressFields_selectState")}
               prefilled={pf("state")}
                 onViewSource={src("state")}
             />
@@ -177,7 +179,7 @@ export function AddressFields({
         {/* Mounted whether or not it has anything to say, so the fill is announced. */}
         <LookupStatus>
           {filledLabel && shownFill
-            ? `${filledLabel} filled from PIN ${shownFill.pin}`
+            ? `${__t(filledLabel)} filled from PIN ${shownFill.pin}`
             : null}
         </LookupStatus>
       </div>

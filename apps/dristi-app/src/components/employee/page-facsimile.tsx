@@ -16,7 +16,7 @@ import type { ZoneRect } from "@/lib/employee/document-zones";
  * do.
  */
 export function PageFacsimile({ kind }: { kind: CaseDocumentKind }) {
-  return (
+    return (
     <svg
       viewBox="0 0 60 80"
       className="size-full"
@@ -349,7 +349,7 @@ export const SHEET_BOX: Record<CaseDocumentKind, ZoneRect> = {
  * sitting in the top of an A4 sheet.
  */
 export function PageSheet({ kind }: { kind: CaseDocumentKind }) {
-  const box = SHEET_BOX[kind];
+    const box = SHEET_BOX[kind];
   return (
     <svg
       viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`}

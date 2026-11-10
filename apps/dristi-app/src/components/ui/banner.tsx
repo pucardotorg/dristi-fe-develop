@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import {
@@ -48,6 +49,7 @@ function Banner({
   VariantProps<typeof bannerVariants> & {
     action?: React.ReactNode
   }) {
+  const __t = __useTranslations();
   const Icon = bannerIcons[variant ?? "info"]
 
   return (
@@ -62,7 +64,7 @@ function Banner({
       <div className="min-w-0 flex-1 leading-snug">{children}</div>
       {action ? (
         <div data-slot="banner-action" className="shrink-0">
-          {action}
+          {__t(action)}
         </div>
       ) : null}
     </div>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -37,6 +39,7 @@ function CaseTypeRow({
   title: string;
   caption: string;
 }) {
+  const __t = __useTranslations();
   return (
     <li>
       <Link
@@ -50,9 +53,9 @@ function CaseTypeRow({
           <Icon className="size-5" />
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="text-body-compact font-medium">{title}</span>
+          <span className="text-body-compact font-medium">{__t(title)}</span>
           <span className="text-body-compact text-muted-foreground">
-            {caption}
+            {__t(caption)}
           </span>
         </span>
         <ChevronRightIcon
@@ -66,6 +69,7 @@ function CaseTypeRow({
 
 /** The case types a filing can start from: cheque bounce, and the PSS Act, whose row opens a placeholder until its flow is built. */
 export function StartFilingCard() {
+  const __t = __useTranslations();
   const titleId = React.useId();
   return (
     <Card className={cn(PANEL_CLASS, "gap-0")}>
@@ -78,11 +82,9 @@ export function StartFilingCard() {
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">
           <CardTitle id={titleId} className="text-body font-semibold">
-            Start a new filing
-          </CardTitle>
+            {<__LocalizedText id="startFilingCard_startANewFiling" />}{" "}</CardTitle>
           <CardDescription className="text-body-compact">
-            Step by step: parties, documents, then the court fee.
-          </CardDescription>
+            {<__LocalizedText id="startFilingCard_stepByStepPartiesDocumentsThenThe" />}{" "}</CardDescription>
         </div>
       </CardHeader>
 
@@ -91,14 +93,14 @@ export function StartFilingCard() {
           <CaseTypeRow
             href={NEW_FILING}
             icon={CreditCardIcon}
-            title={CASE_TYPE.title}
-            caption="Dishonoured cheques · about 40 minutes"
+            title={__t(CASE_TYPE.title)}
+            caption={__t("startFilingCard_dishonouredChequesAbout40Minutes")}
           />
           <CaseTypeRow
             href={NEW_PSS_FILING}
             icon={ArrowLeftRightIcon}
-            title={PSS_CASE_TYPE.title}
-            caption="Coming soon"
+            title={__t(PSS_CASE_TYPE.title)}
+            caption={__t("startFilingCard_comingSoon")}
           />
         </ul>
       </CardContent>

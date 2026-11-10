@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { IdCardIcon, PhoneIcon } from "lucide-react";
@@ -169,6 +170,7 @@ export function PeopleInviteField({
   /** The id of the message that explains the error. */
   describedBy?: string;
 }) {
+  const __t = __useTranslations();
   const copy = { ...inviteFieldCopy, ...copyOverride };
   /* Searched as shown: names and Bar IDs in the selected court's terms, so typing what
      is on screen ("G/2048/2015" in Gujarat) finds it. */
@@ -263,7 +265,7 @@ export function PeopleInviteField({
               ))}
               <ComboboxChipsInput
                 id={id}
-                aria-label={label}
+                aria-label={__t(label)}
                 aria-invalid={invalid || undefined}
                 aria-describedby={describedBy}
                 autoComplete="off"

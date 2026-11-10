@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -41,6 +42,7 @@ function TimelineItem({
     title?: React.ReactNode
     description?: React.ReactNode
   }) {
+  const __t = __useTranslations();
   return (
     <li
       data-slot="timeline-item"
@@ -70,11 +72,11 @@ function TimelineItem({
               status === "future" ? "text-muted-foreground" : "text-foreground"
             )}
           >
-            {title}
+            {__t(title)}
           </p>
         ) : null}
         {description ? (
-          <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{__t(description)}</p>
         ) : null}
         {children}
       </div>

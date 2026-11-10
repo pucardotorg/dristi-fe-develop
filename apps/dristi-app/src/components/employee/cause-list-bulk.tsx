@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { CalendarDaysIcon } from "lucide-react";
@@ -120,6 +122,7 @@ export function CauseListBulkBar({
   pending: PendingOrders;
   signing: OrderSigning;
 }) {
+  const __t = __useTranslations();
   const [open, setOpenState] = React.useState<"actions" | "text" | null>(null);
   /* A count of openings, so the pop-up opens fresh each time. */
   const [opening, setOpening] = React.useState(0);
@@ -148,7 +151,7 @@ export function CauseListBulkBar({
           className="mr-auto text-body-compact text-muted-foreground tabular-nums"
           aria-live="polite"
         >
-          {summary}
+          {__t(summary)}
         </p>
         {roles.text ? (
           <Button
@@ -159,8 +162,8 @@ export function CauseListBulkBar({
             onClick={() => setOpen("text")}
           >
             {count > 0
-              ? `Add text to ${count} ${plural(count, "order", "orders")}`
-              : "Add text to orders"}
+              ? __t("causeListBulk_addTextToValue0Value1", {value0: String(count), value1: String(plural(count, "order", "orders"))})
+              : __t("causeListBulk_addTextToOrders")}
           </Button>
         ) : null}
         {actions ? (
@@ -170,8 +173,7 @@ export function CauseListBulkBar({
             className="w-full sm:w-fit"
             onClick={() => setOpen("actions")}
           >
-            Bulk actions
-          </Button>
+            {<__LocalizedText id="causeListBulk_bulkActions" />}{" "}</Button>
         ) : null}
       </div>
 
@@ -240,6 +242,7 @@ function BulkActionsDialog({
   onOpenChange: (open: boolean) => void;
   onConfirm: (message: string) => void;
 }) {
+  const __t = __useTranslations();
   const [outcome, setOutcome] = React.useState<Outcome>("keep");
   const [date, setDate] = React.useState<string | null>(null);
   const [notListed, setNotListed] = React.useState(false);
@@ -292,20 +295,16 @@ function BulkActionsDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            Bulk actions
-          </DialogTitle>
+            {<__LocalizedText id="causeListBulk_bulkActions" />}{" "}</DialogTitle>
           <DialogDescription className="text-body-compact">
-            For {selected.length} selected{" "}
-            {plural(selected.length, "hearing", "hearings")}. What you leave as it is
-            stays as each hearing has it.
-          </DialogDescription>
+            {<__LocalizedText id="causeListBulk_for" />}{" "}{selected.length} {<__LocalizedText id="causeListBulk_selected" />}{" "}
+            {plural(selected.length, "hearing", "hearings")}{<__LocalizedText id="causeListBulk_whatYouLeaveAsItIsStays" />}{" "}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-6">
           {roles.hearing ? (
             <div className="flex flex-col gap-3">
               <span id="bulk-outcome-label" className="text-body-compact font-medium">
-                Hearing
-              </span>
+                {<__LocalizedText id="causeListBulk_hearing" />}{" "}</span>
               <RadioGroup
                 aria-labelledby="bulk-outcome-label"
                 value={outcome}
@@ -324,23 +323,21 @@ function BulkActionsDialog({
                     className="flex min-h-10 cursor-pointer items-center gap-2 text-body-compact"
                   >
                     <RadioGroupItem value={value} />
-                    {label}
+                    {__t(label)}
                   </label>
                 ))}
               </RadioGroup>
               {outcome === "complete" &&
                 marking.some((hearing) => hearing.status === "scheduled") ? (
                 <p className="text-caption text-muted-foreground">
-                  A Scheduled hearing is started and ended with this press.
-                </p>
+                  {<__LocalizedText id="causeListBulk_aScheduledHearingIsStartedAndEnded" />}{" "}</p>
               ) : null}
               {outcome !== "keep" && leaving.length > 0 ? (
                 <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-4">
                   <p className="text-body-compact font-medium">
-                    {leaving.length} selected{" "}
-                    {plural(leaving.length, "hearing is", "hearings are")} left as{" "}
-                    {plural(leaving.length, "it is", "they are")} — only a Scheduled or
-                    Ongoing hearing can be {outcomeWord}
+                    {leaving.length} {<__LocalizedText id="causeListBulk_selected" />}{" "}
+                    {plural(leaving.length, "hearing is", "hearings are")} {<__LocalizedText id="causeListBulk_leftAs" />}{" "}
+                    {plural(leaving.length, "it is", "they are")} {<__LocalizedText id="causeListBulk_onlyAScheduledOrOngoingHearingCan" />}{" "}{outcomeWord}
                   </p>
                   <ul className="flex flex-col gap-1 text-body-compact text-muted-foreground">
                     {leaving.map((hearing) => (
@@ -352,8 +349,7 @@ function BulkActionsDialog({
                   </ul>
                   {roles.next ? (
                     <p className="text-caption text-muted-foreground">
-                      The next date and purpose still apply to them.
-                    </p>
+                      {<__LocalizedText id="causeListBulk_theNextDateAndPurposeStillApply" />}{" "}</p>
                   ) : null}
                 </div>
               ) : null}
@@ -369,12 +365,12 @@ function BulkActionsDialog({
                 count={selected.length}
               />
               <div className="flex flex-col gap-2">
-                <Label id="bulk-set-purpose-label">Next hearing purpose</Label>
+                <Label id="bulk-set-purpose-label">{<__LocalizedText id="causeListBulk_nextHearingPurpose" />}</Label>
                 <PurposeField
                   value={notListed ? null : purpose}
                   disabled={notListed}
                   onChange={setPurpose}
-                  placeholder={notListed ? "Not listed" : "Leave as it is"}
+                  placeholder={notListed ? __t("causeListBulk_notListed") : __t("causeListBulk_leaveAsItIs")}
                   labelledBy="bulk-set-purpose-label"
                 />
                 {purpose && !notListed ? (
@@ -384,8 +380,7 @@ function BulkActionsDialog({
                     className="h-auto w-fit p-0"
                     onClick={() => setPurpose(null)}
                   >
-                    Leave each purpose as it is
-                  </Button>
+                    {<__LocalizedText id="causeListBulk_leaveEachPurposeAsItIs" />}{" "}</Button>
                 ) : null}
               </div>
             </>
@@ -394,11 +389,10 @@ function BulkActionsDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
-            </Button>
+              {<__LocalizedText id="causeListBulk_cancel" />}{" "}</Button>
           </DialogClose>
           <Button type="button" disabled={!changes} onClick={confirm}>
-            Apply to {selected.length}{" "}
+            {<__LocalizedText id="causeListBulk_applyTo" />}{" "}{selected.length}{" "}
             {plural(selected.length, "hearing", "hearings")}
           </Button>
         </DialogFooter>
@@ -439,7 +433,7 @@ function BulkDateField({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label id="bulk-set-date-label">Next hearing date</Label>
+      <Label id="bulk-set-date-label">{<__LocalizedText id="causeListBulk_nextHearingDate" />}</Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -487,15 +481,13 @@ function BulkDateField({
                   htmlFor="bulk-set-not-listed"
                   className="cursor-pointer text-body-compact font-normal"
                 >
-                  Not listed again
-                </Label>
+                  {<__LocalizedText id="causeListBulk_notListedAgain" />}{" "}</Label>
                 <Button
                   type="button"
                   className="ml-auto"
                   onClick={() => setOpen(false)}
                 >
-                  Done
-                </Button>
+                  {<__LocalizedText id="causeListBulk_done" />}{" "}</Button>
               </div>
             </div>
           ) : null}
@@ -503,8 +495,7 @@ function BulkDateField({
       </Popover>
       {date && !notListed ? (
         <p className="text-caption text-muted-foreground tabular-nums">
-          Adds {count} {plural(count, "hearing", "hearings")} to that day.
-        </p>
+          {<__LocalizedText id="causeListBulk_adds" />}{" "}{count} {plural(count, "hearing", "hearings")} {<__LocalizedText id="causeListBulk_toThatDay" />}{" "}</p>
       ) : null}
     </div>
   );
@@ -559,6 +550,7 @@ function OrderTextDialog({
   onOpenChange: (open: boolean) => void;
   onConfirm: (message: string) => void;
 }) {
+  const __t = __useTranslations();
   const today = useCourtToday();
   const [text, setText] = React.useState("");
 
@@ -584,7 +576,7 @@ function OrderTextDialog({
             ...current,
             body: {
               html: had ? `${body.html}${html}` : html,
-              text: had ? `${body.text}\n${plain}` : plain,
+              text: had ? `${__t(body.text)}\n${plain}` : plain,
             },
           };
         },
@@ -609,38 +601,35 @@ function OrderTextDialog({
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            Add the same text to {taking.length}{" "}
+            {<__LocalizedText id="causeListBulk_addTheSameTextTo" />}{" "}{taking.length}{" "}
             {plural(taking.length, "order", "orders")}
           </DialogTitle>
           <DialogDescription className="text-body-compact">
-            It goes at the end of each order&rsquo;s text. Each order can still be
-            edited on its own.
-          </DialogDescription>
+            {<__LocalizedText id="causeListBulk_itGoesAtTheEndOfEach" />}{" "}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="bulk-order-text">Text</Label>
+          <Label htmlFor="bulk-order-text">{<__LocalizedText id="causeListBulk_text" />}</Label>
           <Textarea
             id="bulk-order-text"
             value={text}
             onChange={(event) => setText(event.target.value)}
             rows={6}
-            placeholder="For example: Accused absent. Issue bailable warrant."
+            placeholder={__t("causeListBulk_forExampleAccusedAbsentIssueBailableWarrant")}
           />
         </div>
         {leaving.length > 0 ? (
           <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-4">
             <p className="text-body-compact font-medium">
-              {leaving.length} selected{" "}
-              {plural(leaving.length, "order is", "orders are")} left out
-            </p>
+              {leaving.length} {<__LocalizedText id="causeListBulk_selected" />}{" "}
+              {plural(leaving.length, "order is", "orders are")} {<__LocalizedText id="causeListBulk_leftOut" />}{" "}</p>
             <ul className="flex flex-col gap-1 text-body-compact text-muted-foreground">
               {leaving.map((hearing) => (
                 <li key={hearing.id}>
                   <span className="tabular-nums">{hearing.item}.</span>{" "}
                   {causeTitle(hearing)} —{" "}
                   {signing[hearing.id] === "signed"
-                    ? "already signed"
-                    : "sent for signing"}
+                    ? __t("causeListBulk_alreadySigned")
+                    : __t("causeListBulk_sentForSigning")}
                 </li>
               ))}
             </ul>
@@ -649,15 +638,14 @@ function OrderTextDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
-            </Button>
+              {<__LocalizedText id="causeListBulk_cancel" />}{" "}</Button>
           </DialogClose>
           <Button
             type="button"
             disabled={empty || taking.length === 0}
             onClick={confirm}
           >
-            Add to {taking.length} {plural(taking.length, "order", "orders")}
+            {<__LocalizedText id="causeListBulk_addTo" />}{" "}{taking.length} {plural(taking.length, "order", "orders")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useMemo, useState, type ReactNode } from "react";
 import { CaseLink as Link } from "@/components/cases/case-reader";
@@ -137,6 +139,7 @@ function RecordBody({
   onReplaceFile?: (application: ApplicationRecord, file: File) => void;
   onObject?: (applicationId: string) => void;
 }) {
+  const __t = __useTranslations();
   /* A draft reopens over this page (onAct); only without one does it go to
      its own page. */
   const draftHref = onAct ? null : resumeDraftHref(caseId, application.source);
@@ -155,7 +158,7 @@ function RecordBody({
   const showingComposed = openSrc === COMPOSED && composed !== null;
   const documents =
     composed && application.documents.length === 0
-      ? [{ label: composed.label }]
+      ? [{ label: __t(composed.label) }]
       : application.documents;
   /* A replaced file comes in under a new src: show it, not the old one. */
   const open = viewable.find((doc) => doc.src === openSrc) ?? viewable[0];
@@ -171,11 +174,10 @@ function RecordBody({
             {application.name}
           </DialogTitle>
           <Badge variant={application.statusVariant}>
-            {application.statusLabel}
+            {__t(application.statusLabel)}
           </Badge>
           <DialogDescription className="sr-only">
-            Application record, documents and linked order
-          </DialogDescription>
+            {<__LocalizedText id="applicationRecordDialog_applicationRecordDocumentsAndLinkedOrder" />}{" "}</DialogDescription>
         </div>
         {/* Download whenever a document is open: a filed PDF, or the
             application set out from its details, which downloads the same
@@ -186,7 +188,7 @@ function RecordBody({
               <TooltipTrigger asChild>
                 {pdf ? (
                   <Button variant="ghost" size="icon-sm" asChild>
-                    <a href={pdf.url} download aria-label="Download">
+                    <a href={pdf.url} download aria-label={__t("applicationRecordDialog_download")}>
                       <DownloadIcon aria-hidden />
                     </a>
                   </Button>
@@ -195,7 +197,7 @@ function RecordBody({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Download"
+                    aria-label={__t("applicationRecordDialog_download")}
                     onClick={() =>
                       composed &&
                       downloadApplicationText(composed.document, record)
@@ -205,14 +207,14 @@ function RecordBody({
                   </Button>
                 )}
               </TooltipTrigger>
-              <TooltipContent side="bottom">Download</TooltipContent>
+              <TooltipContent side="bottom">{<__LocalizedText id="applicationRecordDialog_download" />}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : null}
         <DialogClose asChild>
           <Button type="button" variant="ghost" size="icon-sm">
             <XIcon aria-hidden />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{<__LocalizedText id="applicationRecordDialog_close" />}</span>
           </Button>
         </DialogClose>
       </div>
@@ -240,8 +242,7 @@ function RecordBody({
                       <Link
                         href={orderHref(caseId, application.linkedOrder.id)}
                       >
-                        View order
-                      </Link>
+                        {<__LocalizedText id="applicationRecordDialog_viewOrder" />}{" "}</Link>
                     </Button>
                   </>
                 ) : null}
@@ -252,7 +253,7 @@ function RecordBody({
             <FactGroup>
               {application.source.kind === "document" ||
               application.source.type === "objection" ? null : (
-                <Fact label="Application number">
+                <Fact label={__t("applicationRecordDialog_applicationNumber")}>
                   {application.applicationNumber ? (
                     <span className="font-mono">
                       {application.applicationNumber}
@@ -260,8 +261,8 @@ function RecordBody({
                   ) : (
                     <Muted>
                       {application.status === "dismissed"
-                        ? "Not allotted. Dismissed before the court took it up"
-                        : "Allotted when the court takes it up"}
+                        ? __t("applicationRecordDialog_notAllottedDismissedBeforeTheCourtTook")
+                        : __t("applicationRecordDialog_allottedWhenTheCourtTakesItUp")}
                     </Muted>
                   )}
                 </Fact>
@@ -273,8 +274,8 @@ function RecordBody({
                 <Fact
                   label={
                     <>
-                      Filing ID{" "}
-                      <span className="font-normal">(temporary)</span>
+                      {<__LocalizedText id="applicationRecordDialog_filingId" />}{" "}
+                      <span className="font-normal">{<__LocalizedText id="applicationRecordDialog_temporary" />}</span>
                     </>
                   }
                 >
@@ -285,27 +286,27 @@ function RecordBody({
             ) : null}
 
             <FactGroup columns={2}>
-              <Fact label="Created on">
+              <Fact label={__t("applicationRecordDialog_createdOn")}>
                 <span className="tabular-nums">{application.createdShort}</span>
               </Fact>
-              <Fact label="Submitted on">
+              <Fact label={__t("applicationRecordDialog_submittedOn")}>
                 {application.submittedShort ? (
                   <span className="tabular-nums">
                     {application.submittedShort}
                   </span>
                 ) : (
-                  <Muted>Not yet</Muted>
+                  <Muted>{<__LocalizedText id="applicationRecordDialog_notYet" />}</Muted>
                 )}
               </Fact>
               {application.onboardedShort ? (
-                <Fact label="Taken up on">
+                <Fact label={__t("applicationRecordDialog_takenUpOn")}>
                   <span className="tabular-nums">
                     {application.onboardedShort}
                   </span>
                 </Fact>
               ) : null}
               {application.expiresShort ? (
-                <Fact label="Expires on">
+                <Fact label={__t("applicationRecordDialog_expiresOn")}>
                   <span className="tabular-nums">
                     {application.expiresShort}
                   </span>
@@ -313,7 +314,7 @@ function RecordBody({
               ) : null}
               {application.decisionShort &&
               application.status === "pending-decision" ? (
-                <Fact label="Decision on">
+                <Fact label={__t("applicationRecordDialog_decisionOn")}>
                   <span className="tabular-nums">
                     {application.decisionShort}
                   </span>
@@ -322,13 +323,13 @@ function RecordBody({
             </FactGroup>
 
             <FactGroup columns={2}>
-              <Fact label="Raised by">{application.filedBy}</Fact>
-              <Fact label="Side">{applicationSideLabel(application.side)}</Fact>
+              <Fact label={__t("applicationRecordDialog_raisedBy")}>{application.filedBy}</Fact>
+              <Fact label={__t("applicationRecordDialog_side")}>{applicationSideLabel(application.side)}</Fact>
               {application.onBehalfOf ? (
-                <Fact label="On behalf of">{application.onBehalfOf}</Fact>
+                <Fact label={__t("applicationRecordDialog_onBehalfOf")}>{application.onBehalfOf}</Fact>
               ) : null}
               {application.draftedBy ? (
-                <Fact label="Drafted by">{application.draftedBy}</Fact>
+                <Fact label={__t("applicationRecordDialog_draftedBy")}>{application.draftedBy}</Fact>
               ) : null}
             </FactGroup>
 
@@ -337,18 +338,18 @@ function RecordBody({
             application.objectionTo ? (
               <FactGroup>
                 {application.objectionsInvited !== undefined ? (
-                  <Fact label="Objections">
+                  <Fact label={__t("applicationRecordDialog_objections")}>
                     <span className="font-normal tabular-nums">
                       {application.objectionsInvited
                         ? application.objectionDue
-                          ? `Invited. Due by the end of ${application.objectionDue}`
-                          : "Invited"
-                        : "Not invited"}
+                          ? __t("applicationRecordDialog_invitedDueByTheEndOfValue0", {value0: String(application.objectionDue)})
+                          : __t("applicationRecordDialog_invited")
+                        : __t("applicationRecordDialog_notInvited")}
                     </span>
                   </Fact>
                 ) : null}
                 {application.objection ? (
-                  <Fact label="Objection filed">
+                  <Fact label={__t("applicationRecordDialog_objectionFiled")}>
                     <LinkedRecord
                       linked={application.objection}
                       onOpen={onOpenLinked}
@@ -356,7 +357,7 @@ function RecordBody({
                   </Fact>
                 ) : null}
                 {application.objectionTo ? (
-                  <Fact label="Objection to">
+                  <Fact label={__t("applicationRecordDialog_objectionTo")}>
                     <LinkedRecord
                       linked={application.objectionTo}
                       onOpen={onOpenLinked}
@@ -367,7 +368,7 @@ function RecordBody({
             ) : null}
 
             <FactGroup>
-              <Fact label="Linked order">
+              <Fact label={__t("applicationRecordDialog_linkedOrder")}>
                 {application.linkedOrder ? (
                   <Button
                     variant="link"
@@ -375,14 +376,14 @@ function RecordBody({
                     className="h-auto justify-start px-0 text-left whitespace-normal"
                   >
                     <Link href={orderHref(caseId, application.linkedOrder.id)}>
-                      {application.linkedOrder.label}
+                      {__t(application.linkedOrder.label)}
                     </Link>
                   </Button>
                 ) : (
                   <Muted>
                     {isDecided(application.status)
-                      ? "Order not on file yet"
-                      : "No order yet"}
+                      ? __t("applicationRecordDialog_orderNotOnFileYet")
+                      : __t("applicationRecordDialog_noOrderYet")}
                   </Muted>
                 )}
               </Fact>
@@ -391,10 +392,9 @@ function RecordBody({
 
           <div className="flex flex-col gap-1.5 border-t border-hairline pt-3">
             <h3 className="text-caption font-medium text-muted-foreground">
-              Documents
-            </h3>
+              {<__LocalizedText id="applicationRecordDialog_documents" />}{" "}</h3>
             {documents.length === 0 ? (
-              <Muted>None attached</Muted>
+              <Muted>{<__LocalizedText id="applicationRecordDialog_noneAttached" />}</Muted>
             ) : (
               <ul className="-mx-2 flex flex-col gap-0.5">
                 {documents.map((doc, index) => {
@@ -422,15 +422,14 @@ function RecordBody({
                           aria-hidden
                           className="size-4 shrink-0 text-muted-foreground"
                         />
-                        <span className="min-w-0">{doc.label}</span>
+                        <span className="min-w-0">{__t(doc.label)}</span>
                       </button>
                     ) : (
                       <span className="flex min-h-10 items-center gap-2 px-2 text-body-compact text-muted-foreground">
                         <FileTextIcon aria-hidden className="size-4 shrink-0" />
-                        <span className="min-w-0">{doc.label}</span>
+                        <span className="min-w-0">{__t(doc.label)}</span>
                         <span className="ml-auto shrink-0 text-caption font-medium">
-                          Not on file
-                        </span>
+                          {<__LocalizedText id="applicationRecordDialog_notOnFile" />}{" "}</span>
                       </span>
                     )}
                   </li>
@@ -447,7 +446,7 @@ function RecordBody({
              Sept 24: one preview pattern). */
           <ComposedDocumentViewer
             key={application.id}
-            title={composed.document.title}
+            title={__t(composed.document.title)}
             className="min-h-64 min-w-0 flex-1 rounded-none"
           >
             <GeneratedApplicationDocument
@@ -459,17 +458,17 @@ function RecordBody({
         ) : image && open ? (
           <ComposedDocumentViewer
             key={open.src}
-            title={open.label}
+            title={__t(open.label)}
             className="min-h-64 min-w-0 flex-1 rounded-none"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- a local file's object URL */}
-            <img src={image} alt={open.label} className="block w-full" />
+            <img src={image} alt={__t(open.label)} className="block w-full" />
           </ComposedDocumentViewer>
         ) : pdf && open ? (
           <PdfViewer
             key={open.src}
             src={pdf.url}
-            title={open.label}
+            title={__t(open.label)}
             pages={pdf.page ? { from: pdf.page, to: pdf.page } : undefined}
             className="min-h-64 flex-1 rounded-none"
           />
@@ -485,13 +484,13 @@ function RecordBody({
                 </EmptyMedia>
                 <EmptyTitle className="text-body font-semibold">
                   {application.documents.length === 0
-                    ? "No documents with this application"
-                    : "These documents are not on file yet"}
+                    ? __t("applicationRecordDialog_noDocumentsWithThisApplication")
+                    : __t("applicationRecordDialog_theseDocumentsAreNotOnFileYet")}
                 </EmptyTitle>
                 <EmptyDescription>
                   {application.documents.length === 0
-                    ? "Nothing is attached to it. The details of the application are alongside."
-                    : "They are listed alongside, and open here once the files are uploaded."}
+                    ? __t("applicationRecordDialog_nothingIsAttachedToItTheDetails")
+                    : __t("applicationRecordDialog_theyAreListedAlongsideAndOpenHere")}
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -509,8 +508,8 @@ function RecordBody({
         <footer className="flex shrink-0 flex-col gap-3 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-body-compact text-muted-foreground tabular-nums">
             {application.objectionInvite.canFile
-              ? "You can object to this until the end of"
-              : "Your advocate can object to this until the end of"}{" "}
+              ? __t("applicationRecordDialog_youCanObjectToThisUntilThe")
+              : __t("applicationRecordDialog_yourAdvocateCanObjectToThisUntil")}{" "}
             {application.objectionInvite.due}.
           </p>
           {application.objectionInvite.canFile ? (
@@ -520,13 +519,11 @@ function RecordBody({
                 className="w-full sm:w-auto"
                 onClick={() => onObject(application.id)}
               >
-                File objection
-              </Button>
+                {<__LocalizedText id="applicationRecordDialog_fileObjection" />}{" "}</Button>
             ) : (
               <Button asChild className="w-full sm:w-auto">
                 <Link href={objectionHref(caseId, application.id)}>
-                  File objection
-                </Link>
+                  {<__LocalizedText id="applicationRecordDialog_fileObjection" />}{" "}</Link>
               </Button>
             )
           ) : null}
@@ -538,7 +535,7 @@ function RecordBody({
         <footer className="flex shrink-0 flex-col border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:justify-end">
           {application.step === "continue" && draftHref ? (
             <Button asChild className="w-full sm:w-auto">
-              <Link href={draftHref}>Continue draft</Link>
+              <Link href={draftHref}>{<__LocalizedText id="applicationRecordDialog_continueDraft" />}</Link>
             </Button>
           ) : application.step === "sign" &&
             application.source.kind === "document" &&
@@ -556,8 +553,7 @@ function RecordBody({
                 className="w-full sm:w-auto"
                 onClick={() => onAct(application)}
               >
-                Add signature
-              </Button>
+                {<__LocalizedText id="applicationRecordDialog_addSignature" />}{" "}</Button>
             </div>
           ) : application.step === "sign" &&
             application.source.kind === "application" &&
@@ -573,15 +569,13 @@ function RecordBody({
                 className="w-full sm:w-auto"
                 onClick={() => onEdit(application)}
               >
-                Edit
-              </Button>
+                {<__LocalizedText id="applicationRecordDialog_edit" />}{" "}</Button>
               <Button
                 type="button"
                 className="w-full sm:w-auto"
                 onClick={() => onAct(application)}
               >
-                Add signature
-              </Button>
+                {<__LocalizedText id="applicationRecordDialog_addSignature" />}{" "}</Button>
             </div>
           ) : onAct ? (
             <Button
@@ -590,10 +584,10 @@ function RecordBody({
               onClick={() => onAct(application)}
             >
               {application.step === "continue"
-                ? "Continue draft"
+                ? __t("applicationRecordDialog_continueDraft")
                 : application.step === "sign"
-                  ? "Add signature"
-                  : "Complete payment"}
+                  ? __t("applicationRecordDialog_addSignature")
+                  : __t("applicationRecordDialog_completePayment")}
             </Button>
           ) : null}
         </footer>
@@ -693,8 +687,9 @@ function LinkedRecord({
   linked: LinkedApplication;
   onOpen?: (id: string) => void;
 }) {
+  const __t = __useTranslations();
   const label = linked.number
-    ? `${linked.typeLabel} · ${linked.number}`
+    ? `${__t(linked.typeLabel)} · ${linked.number}`
     : linked.typeLabel;
   return (
     <span className="flex flex-col items-start gap-1">
@@ -705,12 +700,12 @@ function LinkedRecord({
           className="h-auto justify-start px-0 text-left whitespace-normal"
           onClick={() => onOpen(linked.id)}
         >
-          {label}
+          {__t(label)}
         </Button>
       ) : (
-        <span>{label}</span>
+        <span>{__t(label)}</span>
       )}
-      <Badge variant={linked.statusVariant}>{linked.statusLabel}</Badge>
+      <Badge variant={linked.statusVariant}>{__t(linked.statusLabel)}</Badge>
     </span>
   );
 }
@@ -736,10 +731,11 @@ export function FactGroup({
 }
 
 export function Fact({ label, children }: { label: ReactNode; children: ReactNode }) {
+  const __t = __useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-0.5">
       <dt className="text-caption font-medium text-muted-foreground">
-        {label}
+        {__t(label)}
       </dt>
       <dd className="min-w-0 text-body-compact font-medium text-foreground">
         {children}

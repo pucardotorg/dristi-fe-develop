@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import type { CSSProperties } from "react";
@@ -67,6 +68,7 @@ export function HearingFiltersSheet({
   onApply: (next: { scope: PeopleScope; hidden: PersonId[] }) => void;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const [draft, setDraft] = React.useState<Draft>({ kinds: kindsOf(scope), hidden: [...hidden] });
   // Re-seed from what is applied each time the sheet opens, as the Cases sheet does.
   const [seededFor, setSeededFor] = React.useState(open);
@@ -204,10 +206,10 @@ export function HearingFiltersSheet({
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
           <DrawerHeader className="text-left">
-            <DrawerTitle className="text-title-s font-semibold">{title}</DrawerTitle>
-            <DrawerDescription>{subtitle}</DrawerDescription>
+            <DrawerTitle className="text-title-s font-semibold">{__t(title)}</DrawerTitle>
+            <DrawerDescription>{__t(subtitle)}</DrawerDescription>
           </DrawerHeader>
-          {body}
+          {__t(body)}
           <DrawerFooter className="flex-row items-center justify-between border-t border-hairline">{actions}</DrawerFooter>
         </DrawerContent>
       </Drawer>
@@ -230,10 +232,10 @@ export function HearingFiltersSheet({
         }
       >
         <SheetHeader>
-          <SheetTitle className="text-title-s font-semibold">{title}</SheetTitle>
-          <SheetDescription>{subtitle}</SheetDescription>
+          <SheetTitle className="text-title-s font-semibold">{__t(title)}</SheetTitle>
+          <SheetDescription>{__t(subtitle)}</SheetDescription>
         </SheetHeader>
-        {body}
+        {__t(body)}
         <SheetFooter className="flex-row items-center justify-between border-t border-hairline">{actions}</SheetFooter>
       </SheetContent>
     </Sheet>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 
@@ -40,6 +42,7 @@ export function ProfileDialog({
 }
 
 function ProfileForm({ onClose }: { onClose: () => void }) {
+  const __t = __useTranslations();
   const { profile, save } = useProfile();
   const [form, setForm] = React.useState<UserProfile>(profile ?? EMPTY_PROFILE);
   const [saving, setSaving] = React.useState(false);
@@ -66,44 +69,42 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
   return (
     <form onSubmit={submit} className="flex flex-col gap-6">
       <DialogHeader>
-        <DialogTitle>Your details</DialogTitle>
+        <DialogTitle>{<__LocalizedText id="profileDialog_yourDetails" />}</DialogTitle>
         <DialogDescription>
-          Used to greet you, mark your signature and prefill your advocate details on new
-          filings. Kept in this browser until sign-in is connected.
-        </DialogDescription>
+          {<__LocalizedText id="profileDialog_usedToGreetYouMarkYourSignature" />}{" "}</DialogDescription>
       </DialogHeader>
 
       <div className="flex flex-col gap-4">
-        <FormField label="Full name" required>
+        <FormField label={__t("profileDialog_fullName")} required>
           <TextField
             value={form.name}
             onChange={(v) => set("name", v)}
-            placeholder="As on your bar enrolment"
+            placeholder={__t("profileDialog_asOnYourBarEnrolment")}
             autoComplete="name"
             required
           />
         </FormField>
-        <FormField label="Mobile number">
+        <FormField label={__t("profileDialog_mobileNumber")}>
           <PrefixInput
             prefix="+91"
             value={form.mobile}
             onChange={(v) => set("mobile", v.replace(/\D/g, "").slice(0, 10))}
             inputMode="numeric"
             autoComplete="tel-national"
-            placeholder="10-digit number"
+            placeholder={__t("profileDialog_10DigitNumber")}
           />
         </FormField>
-        <FormField label="Email" optional>
+        <FormField label={__t("profileDialog_email")} optional>
           <TextField
             type="email"
             value={form.email}
             onChange={(v) => set("email", v)}
             autoComplete="email"
-            placeholder="you@example.com"
+            placeholder={__t("profileDialog_youExampleCom")}
           />
         </FormField>
         <FormField
-          label="Bar registration number"
+          label={__t("profileDialog_barRegistrationNumber")}
           optional
           help="Leave empty if you file as a party in person."
         >
@@ -118,11 +119,9 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
+          {<__LocalizedText id="profileDialog_cancel" />}{" "}</Button>
         <Button type="submit" disabled={saving || !form.name.trim()}>
-          Save details
-        </Button>
+          {<__LocalizedText id="profileDialog_saveDetails" />}{" "}</Button>
       </DialogFooter>
     </form>
   );

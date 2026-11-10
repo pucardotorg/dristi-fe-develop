@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import "./cause-list.css";
@@ -140,6 +141,7 @@ function CourtMultiFilter({
   onChange: (next: string[]) => void;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const labelOf = (c: string) =>
     courts.find((o) => o.court === c)?.label ?? c;
   const toggle = (c: string) =>
@@ -185,7 +187,7 @@ function CourtMultiFilter({
             onCheckedChange={() => toggle(option.court)}
             className="cause-touch-control text-caption"
           >
-            {option.label}
+            {__t(option.label)}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>
@@ -227,6 +229,7 @@ export function CauseListDialog({
   onJoin: (row: CauseListRow) => void;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   // Sort-by lives here, above the body, so it survives close/reopen within the
   // page session (this wrapper stays mounted while the dialog toggles). Opening the
   // list from a hearing's "view on the cause list" jump then keeps the order the
@@ -246,7 +249,7 @@ export function CauseListDialog({
           board's day without an effect resetting them; sort-by is held above. */}
       <DialogContent showCloseButton={false} className="cause-list-dialog flex h-dvh w-full max-w-full flex-col gap-0 overflow-hidden rounded-none p-0 sm:max-w-full md:h-[calc(100svh-4rem)] md:max-w-[calc(100%-4rem)] md:rounded-xl">
         <DialogClose asChild>
-          <Button variant="ghost" size="icon" className="cause-list-close absolute top-2 right-2 z-10" aria-label={locale === "ml" ? "അടയ്ക്കുക" : "Close"}>
+          <Button variant="ghost" size="icon" className="cause-list-close absolute top-2 right-2 z-10" aria-label={locale === "ml" ? "അടയ്ക്കുക" : __t("causeListDialog_close")}>
             <X aria-hidden="true" />
           </Button>
         </DialogClose>
@@ -291,6 +294,7 @@ function CauseListBody({
   onJoin: (row: CauseListRow) => void;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const intl = locale === "ml" ? "ml-IN" : "en-IN";
   const isMobile = useIsMobile();
   // The docket reads as cards wherever the table would have to scroll sideways:
@@ -505,7 +509,7 @@ function CauseListBody({
             className="cause-touch-control max-w-full rounded-full border border-hairline bg-card shadow-raised"
             aria-label={copy(`Jump to another ${groupLabels[groupBy].toLowerCase()} group`, "മറ്റൊരു ഗ്രൂപ്പിലേക്ക് പോകുക")}
           >
-            <span className="truncate" title={group.label}>{group.label}</span>
+            <span className="truncate" title={__t(group.label)}>{__t(group.label)}</span>
             <span className="tabular-nums text-muted-foreground">({group.rows.length})</span>
             <ChevronDown aria-hidden="true" className="shrink-0" />
           </Button>
@@ -514,7 +518,7 @@ function CauseListBody({
           <DropdownMenuLabel className="text-caption text-muted-foreground">{copy("Jump to…", "ഇതിലേക്ക് പോകുക…")}</DropdownMenuLabel>
           {groups.map((target) => (
             <DropdownMenuItem key={target.key} className="cause-touch-control text-caption" onSelect={() => jump(target.key)}>
-              <span className="min-w-0 flex-1 truncate">{target.label}</span>
+              <span className="min-w-0 flex-1 truncate">{__t(target.label)}</span>
               <span className="tabular-nums text-muted-foreground">{target.rows.length}</span>
             </DropdownMenuItem>
           ))}
@@ -637,7 +641,7 @@ function CauseListBody({
               {singleCourt || courtsLabel
                 ? fillCopy(advHome.causeListScopeCourt, locale, { court: singleCourt ?? courtsLabel ?? "" })
                 : pick(advHome.causeListScope, locale)}{" "}
-              · {dateLabel}
+              · {__t(dateLabel)}
             </DialogDescription>
           </div>
           {/* On desktop the date and download live in the title row; on a phone or
@@ -775,6 +779,7 @@ function CauseListBody({
 /** Own matters use the resting warm-neutral fill; the label preserves meaning
  * without relying on colour. Only this row's right-hand content makes room. */
 function CauseRow({ row, showCourt, locale, onJoin }: { row: CauseListRow; showCourt: boolean; locale: Locale; onJoin: (row: CauseListRow) => void }) {
+  const __t = __useTranslations();
   const cell = cn(TABLE_CELL, "align-middle");
   const canHover = useCanHover();
   const joinLabel = locale === "ml" ? "ഹിയറിംഗിൽ ചേരുക" : "Join hearing";
@@ -801,13 +806,13 @@ function CauseRow({ row, showCourt, locale, onJoin }: { row: CauseListRow; showC
       </td>
       {showCourt ? (
         <>
-          <td className={cell}><span className="block truncate" title={row.courtLabel}>{row.courtLabel}</span></td>
+          <td className={cell}><span className="block truncate" title={__t(row.courtLabel)}>{__t(row.courtLabel)}</span></td>
           <td className={cn(cell, "tabular-nums")}>{row.courtNumber ?? "N/A"}</td>
         </>
       ) : null}
       <td className={cn(cell, "text-muted-foreground")}><span className="block truncate" title={row.advocates}>{row.advocates}</span></td>
       {/* Never truncated: the column is sized to hold a full CNR. */}
-      <td className={cn(cell, "whitespace-nowrap text-muted-foreground")}><Identifier value={row.caseNumber} label="case number" copyable={canHover} /></td>
+      <td className={cn(cell, "whitespace-nowrap text-muted-foreground")}><Identifier value={row.caseNumber} label={__t("causeListDialog_caseNumber")} copyable={canHover} /></td>
       <td className={cell}><span className="block truncate" title={row.hearingType}>{row.hearingType}</span></td>
       {/* The status tag is left-aligned like the other columns' content. Only an
           ongoing hearing can be joined: on hover its chip fades and a green Join
@@ -827,9 +832,9 @@ function CauseRow({ row, showCourt, locale, onJoin }: { row: CauseListRow; showC
                 size="sm"
                 className="cause-touch-control"
                 onClick={() => onJoin(row)}
-                aria-label={`${joinLabel}: ${row.parties}, ${row.courtLabel}, ${row.courtNumber ?? "N/A"}`}
+                aria-label={`${__t(joinLabel)}: ${row.parties}, ${__t(row.courtLabel)}, ${row.courtNumber ?? "N/A"}`}
               >
-                <Video aria-hidden="true" /><span className="cause-join-label">{joinLabel}</span>
+                <Video aria-hidden="true" /><span className="cause-join-label">{__t(joinLabel)}</span>
               </Button>
             </span>
           ) : null}
@@ -873,6 +878,7 @@ function glideTo(container: HTMLElement, to: number) {
 
 /** Mobile cause-list cards share the home identity block and disclose live actions. */
 function CauseCard({ row, showCourt, locale, onJoin }: { row: CauseListRow; showCourt: boolean; locale: Locale; onJoin: (row: CauseListRow) => void }) {
+  const __t = __useTranslations();
   const [open, setOpen] = React.useState(false);
   const [pointerMotion, setPointerMotion] = React.useState(true);
   const ongoing = row.status === "now";
@@ -897,7 +903,7 @@ function CauseCard({ row, showCourt, locale, onJoin }: { row: CauseListRow; show
           <ItemChip item={row.item} size="lg" surface={row.mine ? "sunken" : "card"} />
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h3 className={cn("text-body-compact font-semibold wrap-anywhere", ongoing ? "text-primary" : "text-foreground")}>{row.parties}</h3>
-            <p className="text-body-compact wrap-anywhere text-muted-foreground"><Identifier value={row.caseNumber} label="case number" copyable={false} /></p>
+            <p className="text-body-compact wrap-anywhere text-muted-foreground"><Identifier value={row.caseNumber} label={__t("causeListDialog_caseNumber")} copyable={false} /></p>
           </div>
           {/* A live matter says so with the pulsing dot alone, no tag to spend a row on. */}
           {ongoing ? <span className="flex size-4 shrink-0 items-center justify-center md:col-start-4 md:row-start-1 md:justify-self-end md:w-9 md:self-start">
@@ -909,7 +915,7 @@ function CauseCard({ row, showCourt, locale, onJoin }: { row: CauseListRow; show
           {showCourt ? (
             <div className="contents md:col-start-3 md:row-start-1 md:flex md:min-w-0 md:flex-col md:gap-0.5">
               <dt className="text-muted-foreground md:text-caption">{pick(advHome.colCourt, locale)}</dt>
-              <dd className="wrap-anywhere">{row.courtLabel} ·{"\u00a0"}{row.courtNumber ?? "N/A"}</dd>
+              <dd className="wrap-anywhere">{__t(row.courtLabel)} ·{"\u00a0"}{row.courtNumber ?? "N/A"}</dd>
             </div>
           ) : null}
           <div className="contents md:col-span-2 md:col-start-1 md:row-start-2 md:flex md:min-w-0 md:items-baseline md:gap-2">
@@ -927,15 +933,15 @@ function CauseCard({ row, showCourt, locale, onJoin }: { row: CauseListRow; show
           </span> : null}
           {ongoing ? <CollapsibleTrigger
             onPointerDown={() => setPointerMotion(true)} onKeyDown={() => setPointerMotion(false)}
-            aria-label={`${joinLabel}: ${row.parties}`}
+            aria-label={`${__t(joinLabel)}: ${row.parties}`}
             className={cn("group ml-auto size-9 shrink-0 rounded-full text-muted-foreground after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring", row.mine ? "-my-2" : "-mt-12 -mb-2")}
           ><ChevronDown aria-hidden="true" className="mx-auto size-4 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none" /></CollapsibleTrigger> : null}
         </div> : null}
       </article>
       {ongoing ? <CollapsibleContent className="hearing-reveal mx-3 overflow-hidden">
         <div className="hearing-actions rounded-b-xl border border-t-0 border-hairline bg-card p-3 shadow-raised">
-          <Button className="w-full" onClick={() => onJoin(row)} aria-label={`${joinLabel}: ${row.parties}, ${row.courtLabel}, ${row.courtNumber ?? "N/A"}`}>
-            <Video aria-hidden="true" />{joinLabel}
+          <Button className="w-full" onClick={() => onJoin(row)} aria-label={`${__t(joinLabel)}: ${row.parties}, ${__t(row.courtLabel)}, ${row.courtNumber ?? "N/A"}`}>
+            <Video aria-hidden="true" />{__t(joinLabel)}
           </Button>
         </div>
       </CollapsibleContent> : null}

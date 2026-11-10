@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useMemo, useState, type MouseEvent, type ReactNode } from "react";
 import {
@@ -207,8 +209,7 @@ export function DocumentsLoading() {
       switcher={<Skeleton className="h-10 w-64 rounded-lg" />}
     >
       <span className="sr-only" role="status">
-        Loading documents
-      </span>
+        {<__LocalizedText id="caseDocuments_loadingDocuments" />}{" "}</span>
       <div className={filterBarClass}>
         <Skeleton className={cn("h-10 w-full", filterFieldClass)} />
         <Skeleton className={cn("h-10 w-full", filterFieldClass)} />
@@ -229,11 +230,9 @@ function DocumentsError() {
       <Alert variant="destructive">
         <CircleAlertIcon aria-hidden />
         <AlertTitle>
-          Documents could not be loaded
-        </AlertTitle>
+          {<__LocalizedText id="caseDocuments_documentsCouldNotBeLoaded" />}{" "}</AlertTitle>
         <AlertDescription>
-          Refresh the page to try again.
-        </AlertDescription>
+          {<__LocalizedText id="caseDocuments_refreshThePageToTryAgain" />}{" "}</AlertDescription>
       </Alert>
     </DocumentsPanel>
   );
@@ -256,6 +255,7 @@ function DocumentsReady({
   /** What a member of the court submitted (DSB-04). */
   fromCourt: { documents: CaseDocument[]; people: DocumentPerson[] };
 }) {
+  const __t = __useTranslations();
   const [kind, setKind] = useState<DocumentKind>("documents");
   const [typeIds, setTypeIds] = useState<string[]>([]);
   const [submitterIds, setSubmitterIds] = useState<string[]>([]);
@@ -376,7 +376,7 @@ function DocumentsReady({
 
   const typeOptions = DOCUMENT_FILTER_TYPES.map((item) => ({
     value: item.id,
-    label: item.label,
+    label: __t(item.label),
   }));
 
   const selection = selectDocuments({
@@ -443,7 +443,7 @@ function DocumentsReady({
      does not already cover. */
   const search = (
     <RegisterSearch
-      label="Search by title or ID"
+      label={__t("caseDocuments_searchByTitleOrId")}
       value={filingQuery}
       onChange={(next) => {
         setFilingQuery(next);
@@ -486,7 +486,7 @@ function DocumentsReady({
         >
           {showTypeFilter ? (
             <RegisterFilter
-              label="Type"
+              label={__t("caseDocuments_type")}
               values={typeIds}
               onChange={(next) => {
                 setTypeIds(next);
@@ -496,7 +496,7 @@ function DocumentsReady({
             />
           ) : null}
           <RegisterFilter
-            label="Submitted by"
+            label={__t("caseDocuments_submittedBy")}
             values={submitterIds}
             onChange={(next) => {
               setSubmitterIds(next);
@@ -511,8 +511,7 @@ function DocumentsReady({
               size="sm"
               onClick={clearFilters}
             >
-              Clear filters
-            </Button>
+              {<__LocalizedText id="caseDocuments_clearFilters" />}{" "}</Button>
           ) : null}
           <div className={REGISTER_ROW_SEARCH}>{search}</div>
         </div>
@@ -564,8 +563,7 @@ function DocumentsReady({
                 className={cn("w-full", REGISTER_CARDS_ONLY)}
                 onClick={() => setVisible((count) => count + SHOW_MORE_STEP)}
               >
-                Show more
-                <ChevronDownIcon data-icon="inline-end" aria-hidden />
+                {<__LocalizedText id="caseDocuments_showMore" />}{" "}<ChevronDownIcon data-icon="inline-end" aria-hidden />
               </Button>
             ) : null}
 
@@ -579,7 +577,7 @@ function DocumentsReady({
               <div className="flex flex-wrap items-center gap-4">
                 {selection.pageCount > 1 ? (
                   <p className="text-body-compact text-muted-foreground">
-                    Showing {selection.from}–{selection.to}
+                    {<__LocalizedText id="caseDocuments_showing" />}{" "}{selection.from}–{selection.to}
                   </p>
                 ) : null}
                 <DocumentsPageSizeSelect
@@ -611,7 +609,7 @@ function DocumentsReady({
                           <PaginationLink
                             {...pageLink(entry)}
                             isActive={entry === selection.page}
-                            aria-label={`Go to page ${entry}`}
+                            aria-label={__t("caseDocuments_goToPageValue0", {value0: String(entry)})}
                           >
                             {entry}
                           </PaginationLink>
@@ -684,7 +682,7 @@ function DocumentsReady({
           caseId={record.id}
           caseLine={
             <>
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={__t("caseDocuments_caseNumber")} />
               <span aria-hidden> · </span>
               {partiesLabel(record)}
             </>
@@ -790,7 +788,7 @@ function DocumentsPanel({
       <Card className={cn(PANEL_CLASS, "gap-4 hover:bg-card")}>
         <CardHeader>
           <div className="flex flex-col gap-3">
-            <h2 className="text-body font-semibold">Documents</h2>
+            <h2 className="text-body font-semibold">{<__LocalizedText id="caseDocuments_documents" />}</h2>
             {search ? (
               <div className="flex flex-col gap-3 md:pointer-fine:flex-row md:pointer-fine:items-center md:pointer-fine:justify-between md:landscape:flex-row md:landscape:items-center md:landscape:justify-between">
                 {switcher}
@@ -818,6 +816,7 @@ function KindTabs({
   bailBondsCount: number;
   onKindChange: (kind: DocumentKind) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <SegmentedControl
       type="single"
@@ -827,28 +826,26 @@ function KindTabs({
       onValueChange={(next) => {
         if (isDocumentKind(next)) onKindChange(next);
       }}
-      aria-label="Document group"
+      aria-label={__t("caseDocuments_documentGroup")}
     >
       {/* The count is part of the label, in plain muted text, rather than a
           badge inside a control. */}
       <SegmentedControlItem
         value="documents"
-        aria-label={`Documents, ${documentsCount}`}
+        aria-label={__t("caseDocuments_documentsValue0", {value0: String(documentsCount)})}
       >
         <span className="flex items-center gap-1.5">
-          Documents
-          <span className="font-normal tabular-nums text-muted-foreground">
+          {<__LocalizedText id="caseDocuments_documents" />}{" "}<span className="font-normal tabular-nums text-muted-foreground">
             {documentsCount}
           </span>
         </span>
       </SegmentedControlItem>
       <SegmentedControlItem
         value="bail-bonds"
-        aria-label={`Bail bonds, ${bailBondsCount}`}
+        aria-label={__t("caseDocuments_bailBondsValue0", {value0: String(bailBondsCount)})}
       >
         <span className="flex items-center gap-1.5">
-          Bail bonds
-          <span className="font-normal tabular-nums text-muted-foreground">
+          {<__LocalizedText id="caseDocuments_bailBonds" />}{" "}<span className="font-normal tabular-nums text-muted-foreground">
             {bailBondsCount}
           </span>
         </span>
@@ -870,8 +867,7 @@ function DocumentsPageSizeSelect({
         htmlFor="documents-page-size"
         className="text-body-compact font-normal text-muted-foreground"
       >
-        Per page
-      </Label>
+        {<__LocalizedText id="caseDocuments_perPage" />}{" "}</Label>
       <Select
         value={String(value)}
         onValueChange={(next) => {
@@ -908,21 +904,20 @@ function DocumentsTable({
   /** Set for an evidence marker: marks a document not yet marked. */
   onMark?: (document: CaseDocument) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <Table>
-      <TableCaption className="sr-only">{caption}</TableCaption>
+      <TableCaption className="sr-only">{__t(caption)}</TableCaption>
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={cn(headClass, "min-w-56")}>Document</TableHead>
+          <TableHead className={cn(headClass, "min-w-56")}>{<__LocalizedText id="caseDocuments_document" />}</TableHead>
           <TableHead className={cn(headClass, "min-w-40")}>
-            Document type
-          </TableHead>
-          <TableHead className={cn(headClass, "w-40")}>Submitted by</TableHead>
-          <TableHead className={cn(headClass, "w-36")}>Submitted on</TableHead>
+            {<__LocalizedText id="caseDocuments_documentType" />}{" "}</TableHead>
+          <TableHead className={cn(headClass, "w-40")}>{<__LocalizedText id="caseDocuments_submittedBy" />}</TableHead>
+          <TableHead className={cn(headClass, "w-36")}>{<__LocalizedText id="caseDocuments_submittedOn" />}</TableHead>
           <TableHead className={cn(headClass, "w-36")}>
-            Evidence number
-          </TableHead>
-          <TableHead className={cn(headClass, "w-32")}>Actions</TableHead>
+            {<__LocalizedText id="caseDocuments_evidenceNumber" />}{" "}</TableHead>
+          <TableHead className={cn(headClass, "w-32")}>{<__LocalizedText id="caseDocuments_actions" />}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -933,7 +928,7 @@ function DocumentsTable({
             onClick={() => onOpenRecord(document)}
           >
             <TableCell className={cn(cellClass, "min-w-0 whitespace-normal")}>
-              <p className="font-medium text-foreground">{document.title}</p>
+              <p className="font-medium text-foreground">{__t(document.title)}</p>
               {/* The source, a step below the title at a note's weight, and
                   nothing else: no identifier under the title (DSB-08, DSB-22). */}
               <p className="mt-1 text-caption font-normal text-muted-foreground">
@@ -959,8 +954,8 @@ function DocumentsTable({
                   Download). */}
               <div className="flex items-center gap-1">
                 <DownloadFilingButton
-                  label={`Download filing: ${document.title}`}
-                  tooltip="Download filing"
+                  label={__t("caseDocuments_downloadFilingValue0", {value0: String(__t(document.title))})}
+                  tooltip={__t("caseDocuments_downloadFiling")}
                   href={documentSrc(document)}
                 />
                 {onMark && !document.evidenceNumber ? (
@@ -968,14 +963,13 @@ function DocumentsTable({
                     type="button"
                     variant="outline"
                     size="sm"
-                    aria-label={`Mark as evidence: ${document.title}`}
+                    aria-label={__t("caseDocuments_markAsEvidenceValue0", {value0: String(__t(document.title))})}
                     onClick={(event) => {
                       event.stopPropagation();
                       onMark(document);
                     }}
                   >
-                    Mark
-                  </Button>
+                    {<__LocalizedText id="caseDocuments_mark" />}{" "}</Button>
                 ) : null}
               </div>
             </TableCell>
@@ -990,7 +984,7 @@ function DocumentsTable({
  *  or pay for, that it has not gone in. */
 function SubmittedOn({ document }: { document: CaseDocument }) {
   return documentNotSubmitted(document) ? (
-    <span className="text-muted-foreground">Not submitted</span>
+    <span className="text-muted-foreground">{<__LocalizedText id="caseDocuments_notSubmitted" />}</span>
   ) : (
     <>{formatCaseDate(document.submittedOn)}</>
   );
@@ -1041,25 +1035,24 @@ function DocumentsItemList({
   onOpenRecord: (document: CaseDocument) => void;
   onMark?: (document: CaseDocument) => void;
 }) {
+  const __t = __useTranslations();
   const tray = useOneOpen<string>();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((document) => (
         <li key={document.id}>
           <RegisterTrayCard
-            title={document.title}
+            title={__t(document.title)}
             open={tray.isOpen(document.id)}
             onOpenChange={tray.toggle(document.id)}
             actions={
               <>
                 {onMark && !document.evidenceNumber ? (
                   <Button type="button" variant="outline" onClick={() => onMark(document)}>
-                    Mark as evidence
-                  </Button>
+                    {<__LocalizedText id="caseDocuments_markAsEvidence" />}{" "}</Button>
                 ) : null}
                 <Button type="button" onClick={() => onOpenRecord(document)}>
-                  View document
-                </Button>
+                  {<__LocalizedText id="caseDocuments_viewDocument" />}{" "}</Button>
               </>
             }
           >
@@ -1087,8 +1080,7 @@ function DocumentsItemList({
               {/* The Evidence number column, as the card's last fact. */}
               {evidenceNumberShown(document) ? (
                 <p className="mt-1.5 flex items-center gap-1.5 text-caption text-muted-foreground">
-                  Evidence number
-                  <EvidenceNumber document={document} copyable={false} />
+                  {<__LocalizedText id="caseDocuments_evidenceNumber" />}{" "}<EvidenceNumber document={document} copyable={false} />
                 </p>
               ) : null}
             </div>
@@ -1111,15 +1103,16 @@ function EvidenceNumber({
   document: CaseDocument;
   copyable?: boolean;
 }) {
+  const __t = __useTranslations();
   if (document.evidenceNumber) {
     return (
       <Badge
         variant="secondary"
-        aria-label={`Marked as evidence, ${document.evidenceNumber}`}
+        aria-label={__t("caseDocuments_markedAsEvidenceValue0", {value0: String(document.evidenceNumber)})}
       >
         <Identifier
           value={document.evidenceNumber}
-          label="evidence number"
+          label={__t("caseDocuments_evidenceNumber_16a9e8fc")}
           copyable={false}
         />
       </Badge>
@@ -1131,7 +1124,7 @@ function EvidenceNumber({
   return (
     <Identifier
       value={document.provisionalId}
-      label="document ID"
+      label={__t("caseDocuments_documentId")}
       copyable={copyable}
     />
   );
@@ -1146,15 +1139,16 @@ function DocumentsEmpty({
   title: string;
   description?: string;
 }) {
+  const __t = __useTranslations();
   return (
     <Empty className="border border-dashed border-border">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Icon aria-hidden />
         </EmptyMedia>
-        <EmptyTitle className="text-body font-semibold">{title}</EmptyTitle>
+        <EmptyTitle className="text-body font-semibold">{__t(title)}</EmptyTitle>
         {description ? (
-          <EmptyDescription>{description}</EmptyDescription>
+          <EmptyDescription>{__t(description)}</EmptyDescription>
         ) : null}
       </EmptyHeader>
     </Empty>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import {
   TABLE_CELL,
@@ -86,6 +88,7 @@ export function ApproveCopyApplicationTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (application: CopyApplication) => void;
 }) {
+  const __t = __useTranslations();
   const selectedOnPage = rows.filter((row) => selectedIds.has(row.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
   const someSelected = selectedOnPage > 0 && !allSelected;
@@ -105,27 +108,22 @@ export function ApproveCopyApplicationTable({
                  once the list is paged. */
               aria-label={
                 allSelected
-                  ? "Clear the applications on this page"
-                  : "Select the applications on this page"
+                  ? __t("approveCopyApplicationTable_clearTheApplicationsOnThisPage")
+                  : __t("approveCopyApplicationTable_selectTheApplicationsOnThisPage")
               }
               onCheckedChange={(next) => onToggleAll(next === true)}
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Application number
-          </TableHead>
+            {<__LocalizedText id="approveCopyApplicationTable_applicationNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
-          </TableHead>
+            {<__LocalizedText id="approveCopyApplicationTable_caseNumber" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Petitioner
-          </TableHead>
+            {<__LocalizedText id="approveCopyApplicationTable_petitioner" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Date raised
-          </TableHead>
+            {<__LocalizedText id="approveCopyApplicationTable_dateRaised" />}{" "}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Copy sought
-          </TableHead>
+            {<__LocalizedText id="approveCopyApplicationTable_copySought" />}{" "}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass({ selectable: true })}>
@@ -148,7 +146,7 @@ export function ApproveCopyApplicationTable({
                 <Checkbox
                   checked={selected}
                   onCheckedChange={() => onToggle(application)}
-                  aria-label={`Select ${application.applicationNumber}, ${application.applicant.name}`}
+                  aria-label={__t("approveCopyApplicationTable_selectValue0Value1", {value0: String(application.applicationNumber), value1: String(application.applicant.name)})}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -166,15 +164,15 @@ export function ApproveCopyApplicationTable({
                   {...rowOpener}
                 className={rowOpenerClass}
                 >
-                  <span className="sr-only">Review </span>
+                  <span className="sr-only">{<__LocalizedText id="approveCopyApplicationTable_review" />}{" "}</span>
                   {/* The number is the row's opener — the face without a second control. */}
-                  <Identifier value={application.applicationNumber} label="application number" copyable={false} />
+                  <Identifier value={application.applicationNumber} label={__t("approveCopyApplicationTable_applicationNumber_6062cb83")} copyable={false} />
                 </button>
               </TableCell>
               <TableCell
                 className={cn(TABLE_CELL, "whitespace-nowrap")}
               >
-                <Identifier value={application.caseNumber} label="case number" />
+                <Identifier value={application.caseNumber} label={__t("approveCopyApplicationTable_caseNumber_f6a9436f")} />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
                 {application.applicant.name}
@@ -187,7 +185,7 @@ export function ApproveCopyApplicationTable({
               {/* Plain text, not a chip. It is a sentence, not a state, and thirty tinted
                   cells down a column would be decoration (ui-craft §4). */}
               <TableCell className={cn(TABLE_CELL, "min-w-64 whitespace-normal")}>
-                {application.record.description}
+                {__t(application.record.description)}
               </TableCell>
             </TableRow>
           );

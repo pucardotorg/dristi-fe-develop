@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { shortDocName } from "@/lib/employee/scrutiny/bundle";
 import { cn } from "@/lib/utils";
@@ -43,15 +45,16 @@ export function IndexRail({
   aiOn: boolean;
   onGoToDoc: (docId: string) => void;
 }) {
+  const __t = __useTranslations();
   return (
     <aside
       className="flex h-full flex-col overflow-hidden bg-card"
-      aria-label="Document index"
+      aria-label={__t("indexRail_documentIndex")}
     >
       {/* The same chrome bar the bundle and fields panels carry — `h-14`, a hairline
           seam below it — so all three pane headers line up across the workbench. */}
       <div className="flex h-14 shrink-0 items-center border-b border-hairline px-4">
-        <b className="text-body-compact font-semibold">Index</b>
+        <b className="text-body-compact font-semibold">{<__LocalizedText id="indexRail_index" />}</b>
       </div>
       {/* The row content sits on the 16px line — aligned with the "Index" header above and
           the fields panel's own 16px margin — while the row fill is a gentler 8px pill, so
@@ -92,11 +95,9 @@ export function IndexSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="data-[side=right]:sm:max-w-100">
         <SheetHeader>
-          <SheetTitle>Documents</SheetTitle>
+          <SheetTitle>{<__LocalizedText id="indexRail_documents" />}</SheetTitle>
           <SheetDescription>
-            {bundle.length} documents in this bundle. Picking one opens it in the
-            bundle.
-          </SheetDescription>
+            {bundle.length} {<__LocalizedText id="indexRail_documentsInThisBundlePickingOneOpens" />}{" "}</SheetDescription>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 pb-4">
@@ -124,6 +125,7 @@ function IndexRows({
   aiOn: boolean;
   onGoToDoc: (docId: string) => void;
 }) {
+  const __t = __useTranslations();
   const { bundle } = useScrutinyCase();
   return (
     <>
@@ -148,7 +150,7 @@ function IndexRows({
                 box pushed the numeral toward the middle and read as "too inset" (owner,
                 2026-09-15). Left-aligned, the numeral sits on the same line as the header. */}
             <span className="w-4 shrink-0 text-caption text-muted-foreground tabular-nums">
-              {doc.no}
+              {__t(doc.no)}
             </span>
             {/* The row shows the short name because the rail is narrow; a screen reader
                 gets the whole one, which is where the "— Complainant" half lives. */}
@@ -167,12 +169,11 @@ function IndexRows({
                 <TooltipTrigger asChild>
                   <Badge variant="warning" className="shrink-0">
                     <span aria-hidden="true">!</span>
-                    <span className="sr-only">poor scan</span>
+                    <span className="sr-only">{<__LocalizedText id="indexRail_poorScan" />}</span>
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Poor scan — may be blurred or missing pages
-                </TooltipContent>
+                  {<__LocalizedText id="indexRail_poorScanMayBeBlurredOrMissing" />}{" "}</TooltipContent>
               </Tooltip>
             ) : null}
           </Button>

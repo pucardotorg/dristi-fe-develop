@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * List of documents — the evidence checklist the court receives.
@@ -99,6 +101,7 @@ function dropFile(ref: StoredFileRef | null | undefined) {
  * with nothing to show says so rather than pretending to be a preview.
  */
 function FilePreviewWell({ file }: { file: StoredFileRef | null }) {
+  const __t = __useTranslations();
   const preview = useFilePreview(file);
   const imageUrl = preview.status === "ready" ? preview.imageUrl : null;
 
@@ -112,7 +115,7 @@ function FilePreviewWell({ file }: { file: StoredFileRef | null }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
-          alt={`Page 1 of ${file.name}`}
+          alt={__t("documentsSection_page1OfValue0", {value0: String(file.name)})}
           className="max-h-full max-w-full object-contain"
         />
       </div>
@@ -124,14 +127,15 @@ function FilePreviewWell({ file }: { file: StoredFileRef | null }) {
       <p className="text-body-compact break-all">{file.name}</p>
       <p className="text-caption">
         {preview.status === "missing"
-          ? "This file is no longer stored in this browser"
-          : "No preview for this file type"}
+          ? __t("documentsSection_thisFileIsNoLongerStoredIn")
+          : __t("documentsSection_noPreviewForThisFileType")}
       </p>
     </div>
   );
 }
 
 export function DocumentsSection() {
+  const __t = __useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const router = useRouter();
   const showGroup = useFieldPolicy()?.documentGroups;
@@ -305,8 +309,8 @@ export function DocumentsSection() {
               d.name = e.target.value;
             })
           }
-          placeholder="Document name"
-          aria-label={`Document name, row ${index + 1} of ${group.title}`}
+          placeholder={__t("documentsSection_documentName")}
+          aria-label={__t("documentsSection_documentNameRowValue0OfValue1", {value0: String(index + 1), value1: String(__t(group.title))})}
         />
       ) : (
         <div className="flex min-h-10 flex-col justify-center gap-0.5">
@@ -321,8 +325,7 @@ export function DocumentsSection() {
           </span>
           {doc.intakeKey && doc.file ? (
             <span className="text-caption text-muted-foreground">
-              Provided at case intake
-            </span>
+              {<__LocalizedText id="documentsSection_providedAtCaseIntake" />}{" "}</span>
           ) : null}
         </div>
       )}
@@ -336,7 +339,7 @@ export function DocumentsSection() {
           variant="link"
           className="h-auto min-h-10 max-w-full justify-start px-0 py-1"
           onClick={() => setPreviewId(doc.id)}
-          aria-label={`Preview ${doc.file.name}`}
+          aria-label={__t("documentsSection_previewValue0", {value0: String(doc.file.name)})}
         >
           <FileTextIcon data-icon="inline-start" aria-hidden />
           <span className="flex min-w-0 flex-col items-start">
@@ -352,14 +355,12 @@ export function DocumentsSection() {
             type="button"
             variant="outline"
             onClick={() => uploadDoc(doc.id)}
-            aria-label={`Upload ${doc.name || `row ${index + 1}`}`}
+            aria-label={__t("documentsSection_uploadValue0", {value0: String(doc.name || `row ${index + 1}`)})}
           >
             <UploadIcon data-icon="inline-start" aria-hidden />
-            Upload
-          </Button>
+            {<__LocalizedText id="documentsSection_upload" />}{" "}</Button>
           <span className="text-caption text-muted-foreground">
-            No file chosen
-          </span>
+            {<__LocalizedText id="documentsSection_noFileChosen" />}{" "}</span>
         </div>
       )}
       </>
@@ -374,9 +375,7 @@ export function DocumentsSection() {
               d.digital = checked === true;
             })
           }
-          aria-label={`Natively digital: ${
-            doc.name || `row ${index + 1}`
-          }`}
+          aria-label={__t("documentsSection_nativelyDigitalValue0", {value0: String(doc.name || `row ${index + 1}`)})}
         />
       </span>
       </>
@@ -391,7 +390,7 @@ export function DocumentsSection() {
               variant="ghost"
               size="icon"
               onClick={() => uploadDoc(doc.id)}
-              aria-label={`Re-upload ${doc.name || `row ${index + 1}`}`}
+              aria-label={__t("documentsSection_reUploadValue0", {value0: String(doc.name || `row ${index + 1}`)})}
               className="text-muted-foreground hover:text-foreground"
             >
               <RefreshCwIcon aria-hidden />
@@ -401,7 +400,7 @@ export function DocumentsSection() {
               variant="ghost"
               size="icon"
               onClick={() => askRemoveDoc(doc.id)}
-              aria-label={`Delete ${doc.name || `row ${index + 1}`}`}
+              aria-label={__t("documentsSection_deleteValue0", {value0: String(doc.name || `row ${index + 1}`)})}
               className="text-muted-foreground hover:text-destructive"
             >
               <Trash2Icon aria-hidden />
@@ -413,7 +412,7 @@ export function DocumentsSection() {
             variant="ghost"
             size="icon"
             onClick={() => askRemoveDoc(doc.id)}
-            aria-label={`Remove row ${index + 1}`}
+            aria-label={__t("documentsSection_removeRowValue0", {value0: String(index + 1)})}
             className="text-muted-foreground hover:text-foreground"
           >
             <XIcon aria-hidden />
@@ -432,18 +431,16 @@ export function DocumentsSection() {
       {input}
       <FilingMain width="wide">
         <FilingPageHeader
-          title="List of documents"
-          description="Check each one is the right way up and readable. The affidavit and delay-condonation application are not needed here."
+          title={__t("documentsSection_listOfDocuments")}
+          description={__t("documentsSection_checkEachOneIsTheRightWay")}
         />
 
         <SectionNotice variant="neutral">
-          Tick <strong className="font-semibold">Natively digital</strong> for an
-          original digital file, such as an e-signed PDF, not a scan of a paper copy.
-        </SectionNotice>
+          {<__LocalizedText id="documentsSection_tick" />}{" "}<strong className="font-semibold">{<__LocalizedText id="documentsSection_nativelyDigital" />}</strong> {<__LocalizedText id="documentsSection_forAnOriginalDigitalFileSuchAs" />}{" "}</SectionNotice>
 
         {groups.map((group) => (
           <section key={group.id} className="flex flex-col gap-3">
-            <h2 className="text-title-s font-semibold">{group.title}</h2>
+            <h2 className="text-title-s font-semibold">{__t(group.title)}</h2>
 
             <div className={cn(PANEL_CLASS, "rounded-xl border bg-card")}>
               {/* Phone and upright tablet: a list. The table's fixed columns need about
@@ -485,17 +482,15 @@ export function DocumentsSection() {
                           // right-hand column, the same width a filed document takes.
                           className="w-full sm:order-last sm:w-64 sm:shrink-0"
                           onClick={() => uploadDoc(doc.id)}
-                          aria-label={`Upload ${doc.name || `row ${index + 1}`}`}
+                          aria-label={__t("documentsSection_uploadValue0", {value0: String(doc.name || `row ${index + 1}`)})}
                         >
                           <UploadIcon data-icon="inline-start" aria-hidden />
-                          Upload
-                        </Button>
+                          {<__LocalizedText id="documentsSection_upload" />}{" "}</Button>
                       )}
 
                       <label className="flex shrink-0 items-center gap-2 text-body-compact text-muted-foreground">
                         {cells.digital}
-                        Natively digital
-                      </label>
+                        {<__LocalizedText id="documentsSection_nativelyDigital" />}{" "}</label>
                     </li>
                   );
                 })}
@@ -513,19 +508,16 @@ export function DocumentsSection() {
                   </colgroup>
                   <TableHeader>
                     <TableRow className="border-hairline">
-                      <TableHead className="px-4">Sl. no</TableHead>
-                      <TableHead>Document name</TableHead>
-                      <TableHead>File</TableHead>
+                      <TableHead className="px-4">{<__LocalizedText id="documentsSection_slNo" />}</TableHead>
+                      <TableHead>{<__LocalizedText id="documentsSection_documentName" />}</TableHead>
+                      <TableHead>{<__LocalizedText id="documentsSection_file" />}</TableHead>
                       <TableHead className="text-center">
                         <span className="inline-flex items-center gap-1">
-                          Natively digital
-                          <LabelTip>
-                            Tick only for original digital files, not scans of physical
-                            documents.
-                          </LabelTip>
+                          {<__LocalizedText id="documentsSection_nativelyDigital" />}{" "}<LabelTip>
+                            {<__LocalizedText id="documentsSection_tickOnlyForOriginalDigitalFilesNot" />}{" "}</LabelTip>
                         </span>
                       </TableHead>
-                      <TableHead className="px-4 text-right">Actions</TableHead>
+                      <TableHead className="px-4 text-right">{<__LocalizedText id="documentsSection_actions" />}</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -567,8 +559,7 @@ export function DocumentsSection() {
                   onClick={() => addOtherDoc(group.id)}
                 >
                   <PlusIcon data-icon="inline-start" aria-hidden />
-                  Add other document
-                </Button>
+                  {<__LocalizedText id="documentsSection_addOtherDocument" />}{" "}</Button>
               </div>
             </div>
           </section>
@@ -585,12 +576,12 @@ export function DocumentsSection() {
           allDone ? (
             <span className="inline-flex items-center gap-2 text-body-compact text-success-ink">
               <CheckIcon className="size-4 shrink-0" aria-hidden />
-              {statusText}
+              {__t(statusText)}
             </span>
           ) : (
             <span className="inline-flex items-center gap-2 text-body-compact text-muted-foreground">
               <TriangleAlertIcon className="size-4 shrink-0" aria-hidden />
-              {statusText}
+              {__t(statusText)}
             </span>
           )
         }
@@ -627,7 +618,7 @@ export function DocumentsSection() {
               </span>
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Preview of the file attached to {previewDoc?.name || "this document"}.
+              {<__LocalizedText id="documentsSection_previewOfTheFileAttachedTo" />}{" "}{previewDoc?.name || __t("documentsSection_thisDocument")}.
             </DialogDescription>
           </DialogHeader>
 
@@ -637,15 +628,13 @@ export function DocumentsSection() {
             <Alert variant="warning">
               <TriangleAlertIcon aria-hidden />
               <AlertDescription>
-                This scan looks blurry or cropped. Please re-upload a clearer copy so the
-                court can read it.
-              </AlertDescription>
+                {<__LocalizedText id="documentsSection_thisScanLooksBlurryOrCroppedPlease" />}{" "}</AlertDescription>
             </Alert>
           ) : null}
           {previewDoc?.quality === "good" ? (
             <Alert variant="success">
               <CheckIcon aria-hidden />
-              <AlertDescription>This document is clear and readable.</AlertDescription>
+              <AlertDescription>{<__LocalizedText id="documentsSection_thisDocumentIsClearAndReadable" />}</AlertDescription>
             </Alert>
           ) : null}
 
@@ -657,8 +646,7 @@ export function DocumentsSection() {
                 if (previewId) askRemoveDoc(previewId);
               }}
             >
-              Delete
-            </Button>
+              {<__LocalizedText id="documentsSection_delete" />}{" "}</Button>
             <div className="flex flex-col-reverse gap-2 sm:flex-row">
               <Button
                 type="button"
@@ -667,11 +655,9 @@ export function DocumentsSection() {
                   if (previewId) uploadDoc(previewId);
                 }}
               >
-                Replace file
-              </Button>
+                {<__LocalizedText id="documentsSection_replaceFile" />}{" "}</Button>
               <Button type="button" onClick={() => setPreviewId(null)}>
-                Done
-              </Button>
+                {<__LocalizedText id="documentsSection_done" />}{" "}</Button>
             </div>
           </DialogFooter>
         </ChromeDialogContent>
@@ -680,13 +666,13 @@ export function DocumentsSection() {
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title={`Remove ${deleteTarget?.name || "this document"}`}
+        title={__t("documentsSection_removeValue0", {value0: String(deleteTarget?.name || __t("documentsSection_thisDocument"))})}
         description={
           deleteTarget?.hasFile
-            ? "Are you sure you want to remove this document and the file attached to it? This cannot be undone."
-            : "Are you sure you want to remove this row and the details typed in it? This cannot be undone."
+            ? __t("documentsSection_areYouSureYouWantToRemove")
+            : __t("documentsSection_areYouSureYouWantToRemove_76706bd1")
         }
-        confirmLabel="Yes, remove"
+        confirmLabel={__t("documentsSection_yesRemove")}
         onConfirm={() => {
           setDeleteOpen(false);
           if (deleteTarget) removeDoc(deleteTarget.id);

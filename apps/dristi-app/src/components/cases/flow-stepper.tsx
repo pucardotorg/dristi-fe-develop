@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 /**
  * The stepper band the Add-people dialogs share, composed the way the
@@ -29,14 +30,15 @@ export function FlowStepper({
   current: number;
   label: string;
 }) {
+  const __t = __useTranslations();
   return (
-    <nav aria-label={label}>
+    <nav aria-label={__t(label)}>
       <Stepper className={ATTACHED_CONNECTORS}>
         {steps.map((item) => (
           <StepperItem
             key={item.step}
             step={item.step}
-            title={item.title}
+            title={__t(item.title)}
             status={
               item.step < current
                 ? "complete"

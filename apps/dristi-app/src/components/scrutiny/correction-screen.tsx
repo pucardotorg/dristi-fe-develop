@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * Scrutiny return — the correction round.
@@ -191,6 +193,7 @@ function focusTheAction(scope: HTMLElement): void {
 }
 
 export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
+  const __t = __useTranslations();
   const courtText = useCourtText();
   const { court } = useCourt();
   const router = useRouter();
@@ -695,8 +698,8 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
     setReminded(true);
     toast.success(
       othersWaiting.length === 1
-        ? `Reminder sent to ${othersWaiting[0].name}`
-        : `Reminder sent to ${othersWaiting.length} people`,
+        ? __t("correctionScreen_reminderSentToValue0", {value0: String(othersWaiting[0].name)})
+        : __t("correctionScreen_reminderSentToValue0People", {value0: String(othersWaiting.length)}),
     );
   };
 
@@ -739,17 +742,14 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   /* The window's own close stays for staying here; the one act is the way out. */
   const statusActions = sent ? (
     <Button type="button" onClick={() => router.push(back)}>
-      Back to dashboard
-    </Button>
+      {<__LocalizedText id="correctionScreen_backToDashboard" />}{" "}</Button>
   ) : signaturesComplete ? (
     <>
       <Button type="button" variant="ghost" className="sm:mr-auto" onClick={() => setSignOpen(false)}>
-        Not yet
-      </Button>
+        {<__LocalizedText id="correctionScreen_notYet" />}{" "}</Button>
       <Button ref={sendRef} type="button" disabled={!online || !!busy} onClick={() => void sendBack()}>
         <SendIcon data-icon="inline-start" aria-hidden />
-        Send to scrutiny
-      </Button>
+        {<__LocalizedText id="correctionScreen_sendToScrutiny" />}{" "}</Button>
     </>
   ) : (
     <>
@@ -764,32 +764,31 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  aria-label="Sandbox: mark the other signatures"
+                  aria-label={__t("correctionScreen_sandboxMarkTheOtherSignatures")}
                   className="text-muted-foreground"
                 >
                   <FlaskConicalIcon aria-hidden />
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent>Sandbox: mark the other signatures</TooltipContent>
+            <TooltipContent>{<__LocalizedText id="correctionScreen_sandboxMarkTheOtherSignatures" />}</TooltipContent>
           </Tooltip>
           <DropdownMenuContent align="start" className="w-64">
-            <DropdownMenuLabel>No link is sent in the sandbox</DropdownMenuLabel>
+            <DropdownMenuLabel>{<__LocalizedText id="correctionScreen_noLinkIsSentInTheSandbox" />}</DropdownMenuLabel>
             <DropdownMenuItem onSelect={sandboxEveryoneDone}>
-              {signingRules().oath ? "Mark everyone as signed and sworn" : "Mark everyone as signed"}
+              {signingRules().oath ? __t("correctionScreen_markEveryoneAsSignedAndSworn") : __t("correctionScreen_markEveryoneAsSigned")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         {othersWaiting.length ? (
           <Button type="button" variant="outline" disabled={reminded} onClick={remindOthers}>
             <BellIcon data-icon="inline-start" aria-hidden />
-            {reminded ? "Reminder sent" : "Send a reminder"}
+            {reminded ? __t("correctionScreen_reminderSent") : __t("correctionScreen_sendAReminder")}
           </Button>
         ) : null}
       </div>
       <Button type="button" onClick={() => setSignOpen(false)}>
-        Done
-      </Button>
+        {<__LocalizedText id="correctionScreen_done" />}{" "}</Button>
     </>
   );
 
@@ -800,13 +799,11 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   const submitLabel = isSent ? (
     <>
       <CircleCheckIcon data-icon="inline-start" aria-hidden />
-      Sent to scrutiny
-    </>
+      {<__LocalizedText id="correctionScreen_sentToScrutiny" />}{" "}</>
   ) : (
     <>
       <SendIcon data-icon="inline-start" aria-hidden />
-      Send corrections back
-    </>
+      {<__LocalizedText id="correctionScreen_sendCorrectionsBack" />}{" "}</>
   );
 
   /*
@@ -839,7 +836,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
       {complete ? (
         <p className="flex items-center gap-2 rounded-lg bg-success-muted px-4 py-3 text-body-compact font-medium text-success-muted-foreground">
           <CircleCheckIcon className="size-4 shrink-0" aria-hidden />
-          {`All ${total} corrected.`}
+          {__t("correctionScreen_allValue0Corrected", {value0: String(total)})}
         </p>
       ) : null}
     </div>
@@ -887,7 +884,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
         disabled={!complete || !online || !!busy || isSent}
         onClick={() => void submit()}
       >
-        {submitLabel}
+        {__t(submitLabel)}
       </Button>
       {complete ? null : <p className="text-caption text-muted-foreground">{reason}</p>}
     </div>
@@ -915,14 +912,13 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   <header className="z-30 flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-hairline bg-card px-4 py-3 sm:px-6">
     <div className="flex min-w-0 flex-col gap-0.5">
       <h1 className="text-title-s font-semibold tracking-tight text-foreground">
-        Scrutiny return
-      </h1>
+        {<__LocalizedText id="correctionScreen_scrutinyReturn" />}{" "}</h1>
       <p className="text-caption text-muted-foreground">
         {kase.parties}
         {kase.stNumber ? (
           <>
             {" · "}
-            <Identifier value={kase.stNumber} label="case number" />
+            <Identifier value={kase.stNumber} label={__t("correctionScreen_caseNumber")} />
           </>
         ) : (
           " · Not yet numbered"
@@ -931,7 +927,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
         {courtText(kase.court)}
         {" · "}
         <span className="tabular-nums">
-          Returned {task.returned ? longDate(task.returned.at) : "—"}
+          {<__LocalizedText id="correctionScreen_returned" />}{" "}{task.returned ? longDate(task.returned.at) : "—"}
         </span>
       </p>
     </div>
@@ -964,8 +960,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
           htmlFor="show-full-filing"
           className="text-caption font-medium text-muted-foreground"
         >
-          Show full filing
-        </Label>
+          {<__LocalizedText id="correctionScreen_showFullFiling" />}{" "}</Label>
       </div>
       {railColumn ? null : (
         <Button
@@ -976,8 +971,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
           className="shrink-0"
         >
           <PanelLeftIcon data-icon="inline-start" aria-hidden />
-          Sections
-        </Button>
+          {<__LocalizedText id="correctionScreen_sections" />}{" "}</Button>
       )}
     </div>
   </header>
@@ -996,8 +990,8 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
         root={origin}
         crumbs={
           origin
-            ? [{ label: "Scrutiny return" }]
-            : [{ label: task.title, href: back }, { label: "Scrutiny return" }]
+            ? [{ label: __t("correctionScreen_scrutinyReturn") }]
+            : [{ label: __t(task.title), href: back }, { label: __t("correctionScreen_scrutinyReturn") }]
         }
       />
       {/*
@@ -1022,7 +1016,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
               for one; the same list in a sheet where there is not. */}
           {railColumn ? (
             <aside
-              aria-label="Sections"
+              aria-label={__t("correctionScreen_sections")}
               style={{ width: RAIL_W }}
               className="flex shrink-0 flex-col overflow-y-auto border-r border-hairline bg-sidebar py-4"
             >
@@ -1115,8 +1109,8 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
                   <p className="flex items-start gap-2 text-caption text-muted-foreground">
                     <LockIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
                     {showAll
-                      ? "The filing as scrutiny received it."
-                      : "The flagged parts of the filing, as scrutiny received them."}
+                      ? __t("correctionScreen_theFilingAsScrutinyReceivedIt")
+                      : __t("correctionScreen_theFlaggedPartsOfTheFilingAs")}
                   </p>
                   {/* With only the flagged fields shown, the groups whose fields are all
                       hidden are left empty, and each still took the form's gap — the
@@ -1134,7 +1128,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
               <>
                 <ResizableHandle
                   withHandle
-                  aria-label="Resize the record and the corrections panel"
+                  aria-label={__t("correctionScreen_resizeTheRecordAndTheCorrectionsPanel")}
                   className="bg-hairline"
                 />
                 <ResizablePanel
@@ -1143,11 +1137,11 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
                   minSize="26"
                   className="flex h-full min-w-0 flex-col overflow-hidden bg-sidebar"
                 >
-                  <section aria-label="Corrections" className="flex min-h-0 flex-1 flex-col">
+                  <section aria-label={__t("correctionScreen_corrections")} className="flex min-h-0 flex-1 flex-col">
                     {/* The head is pinned; only the run scrolls. One scroller per pane is
                         the whole scroll model of this screen — see the layout comment. */}
                     <div className="flex shrink-0 flex-col gap-3 p-5 pb-4">
-                      <h2 className="text-title-s font-semibold text-foreground">Corrections</h2>
+                      <h2 className="text-title-s font-semibold text-foreground">{<__LocalizedText id="correctionScreen_corrections" />}</h2>
                       {queueHead}
                     </div>
                     <ScrollArea className="min-h-0 flex-1">
@@ -1173,8 +1167,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
             <QueueProgress resolved={resolved} total={total} className="min-w-0 flex-1" />
             <Button type="button" variant="outline" onClick={() => setQueueOpen(true)}>
               <ListChecksIcon data-icon="inline-start" aria-hidden />
-              Corrections
-            </Button>
+              {<__LocalizedText id="correctionScreen_corrections" />}{" "}</Button>
           </div>
           <Button
             type="button"
@@ -1183,7 +1176,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
             disabled={!complete || !online || !!busy || isSent}
             onClick={() => void submit()}
           >
-            {submitLabel}
+            {__t(submitLabel)}
           </Button>
           <p className="text-caption text-muted-foreground">{reason}</p>
         </div>
@@ -1192,11 +1185,11 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
       <Sheet open={railOpen} onOpenChange={setRailOpen}>
         <SheetContent side="left" className="w-full overflow-y-auto sm:max-w-sm">
           <SheetHeader>
-            <SheetTitle className="text-title-s font-semibold">Sections</SheetTitle>
+            <SheetTitle className="text-title-s font-semibold">{<__LocalizedText id="correctionScreen_sections" />}</SheetTitle>
             <SheetDescription className="text-body-compact">
               {showAll
-                ? "Every part of this filing. The count shows what scrutiny flagged there."
-                : "The parts of the filing scrutiny flagged, and how many corrections each carries."}
+                ? __t("correctionScreen_everyPartOfThisFilingTheCount")
+                : __t("correctionScreen_thePartsOfTheFilingScrutinyFlagged")}
             </SheetDescription>
           </SheetHeader>
           <div className="pb-6">
@@ -1216,12 +1209,11 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
       <Drawer open={queueOpen} onOpenChange={setQueueOpen}>
         <DrawerContent className="max-h-[85svh]">
           <DrawerHeader>
-            <DrawerTitle className="text-title-s font-semibold">Corrections</DrawerTitle>
+            <DrawerTitle className="text-title-s font-semibold">{<__LocalizedText id="correctionScreen_corrections" />}</DrawerTitle>
             {/* The progress line below is the count; §6 cut the second counter that can
                 disagree with the first, so this says what to do, not how many. */}
             <DrawerDescription className="text-body-compact">
-              Open one to see what scrutiny asked for.
-            </DrawerDescription>
+              {<__LocalizedText id="correctionScreen_openOneToSeeWhatScrutinyAsked" />}{" "}</DrawerDescription>
           </DrawerHeader>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
             <div className="flex flex-col gap-4">
@@ -1236,10 +1228,10 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
       <ConfirmDialog
         open={confirmSignOpen}
         onOpenChange={setConfirmSignOpen}
-        title="Sign the corrected complaint?"
-        description="Corrections change the complaint, so its signatures are taken off. It is signed again here before it goes back to scrutiny."
-        confirmLabel="Continue to sign"
-        cancelLabel="Not yet"
+        title={__t("correctionScreen_signTheCorrectedComplaint")}
+        description={__t("correctionScreen_correctionsChangeTheComplaintSoItsSignatures")}
+        confirmLabel={__t("correctionScreen_continueToSign")}
+        cancelLabel={__t("correctionScreen_notYet")}
         destructive={false}
         onConfirm={() => {
           setConfirmSignOpen(false);
@@ -1257,7 +1249,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
         outcome={
           sent
             ? {
-                title: "Sent to scrutiny",
+                title: __t("correctionScreen_sentToScrutiny"),
                 headline: "Corrections sent",
                 footnote: "The scrutiny officer reviews the corrected complaint next.",
               }

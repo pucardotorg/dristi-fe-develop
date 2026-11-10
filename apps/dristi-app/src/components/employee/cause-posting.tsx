@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 
@@ -19,11 +20,12 @@ export function useFromCauseList(): boolean {
 
 /** The line under a disabled Next hearing that says where it is set. */
 export function CausePostingNote({ set }: { set: boolean }) {
+  const __t = __useTranslations();
   return (
     <p className="text-body-compact text-muted-foreground">
       {set
-        ? "Set on the cause list."
-        : "Not set yet. It is set on the cause list, in the Next hearing column."}
+        ? __t("causePosting_setOnTheCauseList")
+        : __t("causePosting_notSetYetItIsSetOn")}
     </p>
   );
 }

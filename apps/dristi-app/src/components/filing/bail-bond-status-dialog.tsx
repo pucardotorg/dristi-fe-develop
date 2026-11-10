@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { PencilIcon } from "lucide-react";
@@ -51,6 +52,7 @@ export function BailBondStatusDialog({
   suretyNames: string[];
   onEdit: () => void;
 }) {
+  const __t = __useTranslations();
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -65,16 +67,16 @@ export function BailBondStatusDialog({
             {/* The title is the dialog's accessible name — the face, not a control. */}
             <Identifier
               value={BOND_ID}
-              label="bond number"
+              label={__t("bailBondStatusDialog_bondNumber")}
               className="text-body-compact font-normal text-muted-foreground"
               copyable={false}
             />
           </DialogTitle>
           <DialogDescription className="text-pretty">
             {/* No copy control inside the dialog's accessible description. */}
-            <Identifier value={accessCase.caseNumber} label="case number" copyable={false} />
+            <Identifier value={accessCase.caseNumber} label={__t("bailBondStatusDialog_caseNumber")} copyable={false} />
             <span aria-hidden> · </span>
-            {accessCase.title}
+            {__t(accessCase.title)}
           </DialogDescription>
         </DialogHeader>
 

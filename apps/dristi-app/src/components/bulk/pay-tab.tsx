@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
@@ -60,24 +62,23 @@ function Receipts({
   /** The per-case fee. Off in the payment window, which states the total above. */
   fees?: boolean;
 }) {
+  const __t = __useTranslations();
   const cases = batch.cases.filter((c) => payment.caseIds.includes(c.id));
   return (
     <div className="overflow-x-auto">
       <Table
         className="border-separate border-spacing-0"
-        aria-label={`Receipts for ${payment.ref}`}
+        aria-label={__t("payTab_receiptsForValue0", {value0: String(payment.ref)})}
       >
         <TableHeader>
           <TableRow className={TABLE_HEAD_ROW}>
-            <TableHead className={cn(TABLE_HEAD, "pl-4")}>Reference</TableHead>
-            <TableHead className={TABLE_HEAD}>Receipt</TableHead>
+            <TableHead className={cn(TABLE_HEAD, "pl-4")}>{<__LocalizedText id="payTab_reference" />}</TableHead>
+            <TableHead className={TABLE_HEAD}>{<__LocalizedText id="payTab_receipt" />}</TableHead>
             <TableHead className={cn(TABLE_HEAD, !fees && "pr-4")}>
-              Case file number
-            </TableHead>
+              {<__LocalizedText id="payTab_caseFileNumber" />}{" "}</TableHead>
             {fees ? (
               <TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
-                Paid
-              </TableHead>
+                {<__LocalizedText id="payTab_paid" />}{" "}</TableHead>
             ) : null}
           </TableRow>
         </TableHeader>
@@ -118,6 +119,7 @@ function Receipts({
  * exactly as it does for a single filing.
  */
 export function PayTab({ batch, setBatch, go }: BatchCtx) {
+  const __t = __useTranslations();
   const due = batch.cases.filter((c) => c.stage === "signed");
   // Arriving from signing, only the cases just signed are ticked; otherwise every one due.
   const asked = useSearchParams().get("case")?.split(",").filter(Boolean) ?? [];
@@ -180,30 +182,27 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
     <div className="flex flex-col gap-6">
       {error ? (
         <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{__t(error)}</AlertDescription>
         </Alert>
       ) : null}
 
       {due.length === 0 ? (
         <Card className={PANEL_CLASS}>
           <CardContent className="text-body-compact text-muted-foreground">
-            Nothing to pay yet. Sign the cases first.
-          </CardContent>
+            {<__LocalizedText id="payTab_nothingToPayYetSignTheCases" />}{" "}</CardContent>
         </Card>
       ) : (
         <Card className={cn(PANEL_CLASS, "gap-0 py-0")}>
           <CardHeader className="px-6 py-4">
             <CardTitle className="text-body font-semibold">
-              Signed, waiting for payment
-            </CardTitle>
+              {<__LocalizedText id="payTab_signedWaitingForPayment" />}{" "}</CardTitle>
             <CardDescription>
-              Fees for each case. One payment covers every case you tick.
-            </CardDescription>
+              {<__LocalizedText id="payTab_feesForEachCaseOnePaymentCovers" />}{" "}</CardDescription>
           </CardHeader>
           <div className="overflow-x-auto px-2">
             <Table
               className="border-separate border-spacing-0"
-              aria-label="Cases to pay for"
+              aria-label={__t("payTab_casesToPayFor")}
             >
               <TableHeader>
                 <TableRow className={TABLE_HEAD_ROW}>
@@ -223,14 +222,13 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                             : new Set(),
                         )
                       }
-                      aria-label="Select every case"
+                      aria-label={__t("payTab_selectEveryCase")}
                     />
                   </TableHead>
-                  <TableHead className={TABLE_HEAD}>Reference</TableHead>
-                  <TableHead className={TABLE_HEAD}>Parties</TableHead>
+                  <TableHead className={TABLE_HEAD}>{<__LocalizedText id="payTab_reference" />}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{<__LocalizedText id="payTab_parties" />}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
-                    Fees
-                  </TableHead>
+                    {<__LocalizedText id="payTab_fees" />}{" "}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className={tableBodyClass({ selectable: true })}>
@@ -251,7 +249,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                             return next;
                           })
                         }
-                        aria-label={`Select ${c.reference}`}
+                        aria-label={__t("payTab_selectValue0", {value0: String(c.reference)})}
                       />
                     </TableCell>
                     <TableCell
@@ -260,7 +258,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                       {c.reference}
                     </TableCell>
                     <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>
-                      {c.title}
+                      {__t(c.title)}
                     </TableCell>
                     <TableCell
                       className={cn(TABLE_CELL, "pr-4 text-right tabular-nums")}
@@ -275,9 +273,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
           <div className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center">
             <div className="flex flex-col">
               <span className="text-caption text-muted-foreground">
-                <span className="tabular-nums">{chosen.length}</span> case
-                {chosen.length === 1 ? "" : "s"}, one transaction
-              </span>
+                <span className="tabular-nums">{chosen.length}</span> {<__LocalizedText id="payTab_case" />}{" "}{chosen.length === 1 ? "" : "s"}{<__LocalizedText id="payTab_oneTransaction" />}{" "}</span>
               <span className="text-title-s font-semibold tabular-nums">
                 {money(total)}
               </span>
@@ -289,7 +285,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
               onClick={() => setDialog("confirm")}
             >
               <WalletIcon data-icon="inline-start" aria-hidden />
-              Pay {money(total)}
+              {<__LocalizedText id="payTab_pay" />}{" "}{money(total)}
             </Button>
           </div>
         </Card>
@@ -297,15 +293,13 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
 
       {batch.counts.filed ? (
         <p className="text-body-compact text-muted-foreground">
-          <span className="tabular-nums">{batch.counts.filed}</span> already
-          paid and filed.{" "}
+          <span className="tabular-nums">{batch.counts.filed}</span> {<__LocalizedText id="payTab_alreadyPaidAndFiled" />}{" "}
           <button
             type="button"
             className="underline"
             onClick={() => go("filed")}
           >
-            See them under Filed
-          </button>
+            {<__LocalizedText id="payTab_seeThemUnderFiled" />}{" "}</button>
         </p>
       ) : null}
 
@@ -329,32 +323,29 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                   <CheckIcon className="size-6" aria-hidden />
                 </span>
                 <DialogTitle className="text-title-s font-semibold">
-                  Payment successful
-                </DialogTitle>
+                  {<__LocalizedText id="payTab_paymentSuccessful" />}{" "}</DialogTitle>
                 <DialogDescription className="text-body-compact text-success-foreground">
                   <span className="tabular-nums">{last.caseIds.length}</span>{" "}
-                  case file{last.caseIds.length === 1 ? " is" : "s are"}{" "}
-                  complete.
-                </DialogDescription>
+                  {<__LocalizedText id="payTab_caseFile" />}{last.caseIds.length === 1 ? __t("payTab_is") : __t("payTab_sAre")}{" "}
+                  {<__LocalizedText id="payTab_complete" />}{" "}</DialogDescription>
               </div>
 
               <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
                 <div className="flex items-center justify-between gap-4 text-body-compact">
-                  <span className="text-muted-foreground">Amount paid</span>
+                  <span className="text-muted-foreground">{<__LocalizedText id="payTab_amountPaid" />}</span>
                   <span className="font-semibold text-foreground tabular-nums">
                     {money(last.amount)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4 text-body-compact">
                   <span className="text-muted-foreground">
-                    Payment reference
-                  </span>
+                    {<__LocalizedText id="payTab_paymentReference" />}{" "}</span>
                   <span className="text-foreground">
-                    <Identifier value={last.ref} label="payment reference" />
+                    <Identifier value={last.ref} label={__t("payTab_paymentReference_f8c8746d")} />
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4 text-body-compact">
-                  <span className="text-muted-foreground">Filed on</span>
+                  <span className="text-muted-foreground">{<__LocalizedText id="payTab_filedOn" />}</span>
                   <span className="text-foreground tabular-nums">
                     {ist(last.at)}
                   </span>
@@ -364,14 +355,14 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                 <Tabs defaultValue="filed" className="gap-3">
                   <TabsList variant="line">
                     <TabsTrigger value="filed">
-                      Filed{" "}
+                      {<__LocalizedText id="payTab_filed" />}{" "}
                       <span className="tabular-nums">
                         {last.caseIds.length}
                       </span>
                     </TabsTrigger>
                     {pendingAfter.length ? (
                       <TabsTrigger value="pending">
-                        Still pending{" "}
+                        {<__LocalizedText id="payTab_stillPending" />}{" "}
                         <span className="tabular-nums">
                           {pendingAfter.length}
                         </span>
@@ -413,17 +404,16 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                                       )}
                                       aria-label={
                                         f.level === "hold"
-                                          ? "Needs fixing"
-                                          : "To check"
+                                          ? __t("payTab_needsFixing")
+                                          : __t("payTab_toCheck")
                                       }
                                     />
-                                    {f.message}
+                                    {__t(f.message)}
                                   </span>
                                 ))}
                                 {c.flags.length > 2 ? (
                                   <span className="text-caption text-muted-foreground tabular-nums">
-                                    and {c.flags.length - 2} more
-                                  </span>
+                                    {<__LocalizedText id="payTab_and" />}{" "}{c.flags.length - 2} {<__LocalizedText id="payTab_more" />}{" "}</span>
                                 ) : null}
                               </span>
                               <ChevronRightIcon
@@ -457,8 +447,8 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                         );
                       }}
                     >
-                      Finish the pending{" "}
-                      {pendingAfter.length === 1 ? "case" : "cases"}
+                      {<__LocalizedText id="payTab_finishThePending" />}{" "}
+                      {pendingAfter.length === 1 ? __t("payTab_case") : __t("payTab_cases")}
                     </Button>
                   ) : null}
                   <Button
@@ -470,8 +460,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                       go("filed");
                     }}
                   >
-                    See filed cases
-                  </Button>
+                    {<__LocalizedText id="payTab_seeFiledCases" />}{" "}</Button>
                 </div>
               </div>
             </>

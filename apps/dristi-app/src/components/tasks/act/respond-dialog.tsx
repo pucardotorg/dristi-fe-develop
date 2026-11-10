@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * The respond dialog: a review task's one act. The addressee reads what is being
@@ -40,6 +42,7 @@ export function TaskRespondDialog({
   /** Called with the task id once the decision lands — the row flashes. */
   onFinished?: (taskId: string) => void;
 }) {
+  const __t = __useTranslations();
   const { act, busy } = useTaskActions();
   const [note, setNote] = React.useState("");
 
@@ -74,14 +77,14 @@ export function TaskRespondDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FlowDialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Review the request</DialogTitle>
+          <DialogTitle>{<__LocalizedText id="respondDialog_reviewTheRequest" />}</DialogTitle>
           <DialogDescription>
             {kase ? (
               <>
                 {kase.parties}
                 <span aria-hidden> · </span>
                 {/* No copy control inside the dialog's accessible description. */}
-                <Identifier value={kase.stNumber} label="case number" copyable={false} />
+                <Identifier value={kase.stNumber} label={__t("respondDialog_caseNumber")} copyable={false} />
               </>
             ) : null}
           </DialogDescription>
@@ -95,12 +98,12 @@ export function TaskRespondDialog({
             </div>
             <p className="text-body-compact text-muted-foreground">{task.whatToDo}</p>
             <div className="space-y-2">
-              <Label htmlFor="respond-note">Note (optional)</Label>
+              <Label htmlFor="respond-note">{<__LocalizedText id="respondDialog_noteOptional" />}</Label>
               <Textarea
                 id="respond-note"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Goes back with your answer"
+                placeholder={__t("respondDialog_goesBackWithYourAnswer")}
                 rows={2}
               />
             </div>
@@ -116,11 +119,9 @@ export function TaskRespondDialog({
             disabled={!!busy}
             onClick={() => void decide(false)}
           >
-            Decline
-          </Button>
+            {<__LocalizedText id="respondDialog_decline" />}{" "}</Button>
           <Button type="button" disabled={!!busy} onClick={() => void decide(true)}>
-            Accept
-          </Button>
+            {<__LocalizedText id="respondDialog_accept" />}{" "}</Button>
         </DialogFooter>
       </FlowDialogContent>
     </Dialog>

@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { CircleCheckIcon } from "lucide-react";
 
@@ -96,24 +97,24 @@ export function CourtDocument({
     <Card className={cn(PANEL_CLASS, "gap-0 p-6 md:p-10", className)}>
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 text-body">
         <header className="flex flex-col items-center gap-1 text-center">
-          <p className="text-caption font-semibold text-paper-muted-foreground">Before the</p>
+          <p className="text-caption font-semibold text-paper-muted-foreground">{<__LocalizedText id="courtDocument_beforeThe" />}</p>
           <p className="text-body font-semibold">{kase.court}</p>
           {kase.stNumber || kase.cnr ? (
             <p className="font-mono text-caption tabular-nums text-paper-muted-foreground">
               {[kase.stNumber, kase.cnr].filter(Boolean).join(" · ")}
             </p>
           ) : (
-            <p className="text-caption text-paper-muted-foreground">Not yet numbered</p>
+            <p className="text-caption text-paper-muted-foreground">{<__LocalizedText id="courtDocument_notYetNumbered" />}</p>
           )}
         </header>
 
         <div className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-2 text-body-compact">
           <p className="font-medium">{complainant ?? kase.parties}</p>
-          <p className="text-paper-muted-foreground">Complainant</p>
+          <p className="text-paper-muted-foreground">{<__LocalizedText id="courtDocument_complainant_c98926f3" />}</p>
           <p className="text-paper-muted-foreground">v.</p>
           <p />
           <p className="font-medium">{accused ?? "—"}</p>
-          <p className="text-paper-muted-foreground">Accused</p>
+          <p className="text-paper-muted-foreground">{<__LocalizedText id="courtDocument_accused_b2ab40fb" />}</p>
         </div>
 
         <h2 className="text-center text-title-s font-semibold text-balance">{documentTitleOf(task)}</h2>
@@ -123,7 +124,7 @@ export function CourtDocument({
           <p>{task.whatToDo}</p>
           {task.documentsNeeded?.length ? (
             <p>
-              Documents relied on:{" "}
+              {<__LocalizedText id="courtDocument_documentsReliedOn" />}{" "}
               {task.documentsNeeded.map((d, i) => (
                 <span key={d}>
                   {i ? "; " : ""}
@@ -138,9 +139,9 @@ export function CourtDocument({
 
         <div className="grid grid-cols-1 gap-6 border-t border-hairline pt-6 text-body-compact sm:grid-cols-2">
           <div className="flex flex-col gap-1">
-            <p className="text-caption font-semibold text-paper-muted-foreground">Place · date</p>
+            <p className="text-caption font-semibold text-paper-muted-foreground">{<__LocalizedText id="courtDocument_placeDate" />}</p>
             <p>
-              Sample District · <span className="tabular-nums">{longDate(task.completion?.at ?? new Date().toISOString())}</span>
+              {<__LocalizedText id="courtDocument_sampleDistrict" />}{" "}<span className="tabular-nums">{longDate(task.completion?.at ?? new Date().toISOString())}</span>
             </p>
           </div>
           <div className="flex flex-col gap-1">
@@ -149,7 +150,7 @@ export function CourtDocument({
               <p className="flex items-start gap-1.5 text-success-ink">
                 <CircleCheckIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
                 <span>
-                  Digitally signed by {signedBy.name}
+                  {<__LocalizedText id="courtDocument_digitallySignedBy" />}{" "}{signedBy.name}
                   <span className="block font-mono text-caption tabular-nums">
                     {dateTime(task.completion!.at)} · {task.completion?.receipt}
                   </span>
@@ -158,7 +159,7 @@ export function CourtDocument({
             ) : (
               <p className="text-paper-muted-foreground">
                 {signatories.map((s) => s.name).join(" / ") || "—"}
-                <span className="block text-caption">Signature pending</span>
+                <span className="block text-caption">{<__LocalizedText id="courtDocument_signaturePending" />}</span>
               </p>
             )}
           </div>

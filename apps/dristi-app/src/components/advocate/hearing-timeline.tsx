@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import {
@@ -329,6 +330,7 @@ function CourtFilter({
   onChange: (next: string[]) => void;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const labelOf = React.useCallback(
     (court: string) => courts.find((c) => c.court === court)?.label ?? court,
     [courts]
@@ -389,7 +391,7 @@ function CourtFilter({
           >
             <BranchElbow last={i === courts.length - 1} />
             <MenuBox checked={isOn(option.court)} />
-            <span className="flex-1 truncate">{option.label}</span>
+            <span className="flex-1 truncate">{__t(option.label)}</span>
             <span className="ml-auto tabular-nums text-muted-foreground">
               {option.count}
             </span>
@@ -533,9 +535,10 @@ function MenuBox({ checked }: { checked: boolean }) {
 
 /** An option's name, with its one-line meaning written beneath it on touch screens. */
 function OptionLabel({ label, tip }: { label: string; tip: string }) {
+  const __t = __useTranslations();
   return (
     <span className="flex min-w-0 flex-1 flex-col py-0.5">
-      <span>{label}</span>
+      <span>{__t(label)}</span>
       <span className="hidden text-caption text-muted-foreground pointer-coarse:block">{tip}</span>
     </span>
   );
@@ -543,12 +546,13 @@ function OptionLabel({ label, tip }: { label: string; tip: string }) {
 
 /** An option's one-line meaning on an info mark, opening to the right of the menu. */
 function InfoTip({ text }: { text: string }) {
+  const __t = __useTranslations();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <span
           role="img"
-          aria-label={text}
+          aria-label={__t(text)}
           // Touch has no hover: there the line shows under the label instead.
           className="ml-2 flex size-5 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground pointer-coarse:hidden"
         >
@@ -557,7 +561,7 @@ function InfoTip({ text }: { text: string }) {
       </TooltipTrigger>
       {/* Always to the right, so it never covers the option's own label. */}
       <TooltipContent side="right" sideOffset={12} avoidCollisions={false} className="max-w-44">
-        {text}
+        {__t(text)}
       </TooltipContent>
     </Tooltip>
   );
@@ -615,6 +619,7 @@ function AccessMenu({
   onAdvanced: () => void;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const on = { mine: scope !== "office", office: scope !== "mine" };
   const custom = hidden.length > 0;
   const setKind = (kind: "mine" | "office") => {
@@ -643,7 +648,7 @@ function AccessMenu({
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className={cn(FILTER_TRIGGER, (custom || scope !== "all") && FILTER_ON)}>
           <Users aria-hidden="true" className="text-muted-foreground" />
-          {label}
+          {__t(label)}
           <ChevronDown aria-hidden="true" className="text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
@@ -739,17 +744,9 @@ type RailTone = "neutral" | "conflict" | "now" | "concluded";
 
 /** The keyframes for the "now" dot's pulse — scoped here, off under reduced motion. */
 function RailStyles() {
+  const __t = __useTranslations();
   return (
-    <style>{`
-      .now-dot { box-shadow: 0 0 0 3px var(--halo); }
-      @keyframes pucar-now-pulse {
-        0%, 100% { box-shadow: 0 0 0 2px var(--halo); }
-        50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--halo) 45%, transparent); }
-      }
-      @media (prefers-reduced-motion: no-preference) {
-        .now-dot { animation: pucar-now-pulse 2.5s ease-in-out infinite; }
-      }
-    `}</style>
+    <style>{__t("hearingTimeline_nowDotBoxShadow000")}</style>
   );
 }
 
@@ -783,6 +780,7 @@ function PhaseRow({
   railHeight?: "h-10" | "h-12" | "h-14" | "h-16";
   children?: React.ReactNode;
 }) {
+  const __t = __useTranslations();
   return (
     <div className={cn("lg:grid", HOME_RAIL_COLS)}>
       <div className="relative hidden lg:block">
@@ -819,7 +817,7 @@ function PhaseRow({
               tone === "concluded" && "text-muted-foreground"
             )}
           >
-            {label}
+            {__t(label)}
             {sub ? (
               <span className="absolute top-full left-0 mt-0.5 text-caption font-normal whitespace-nowrap text-muted-foreground">
                 {sub}
@@ -852,6 +850,7 @@ function PendingChip({
   taskIds: string[];
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const onOpenTasks = React.useContext(OpenTasksContext);
   if (count <= 0) return null;
   const label = fillCopy(
@@ -864,7 +863,7 @@ function PendingChip({
     return (
       <Badge variant="warning" className="gap-1">
         <TriangleAlert aria-hidden="true" />
-        {label}
+        {__t(label)}
       </Badge>
     );
   }
@@ -875,14 +874,14 @@ function PendingChip({
     <Badge asChild variant="warning" className="relative z-10 gap-1 rounded-md border-transparent hover:bg-warning-muted-hover pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-2">
       <button
         type="button"
-        aria-label={`${label}: ${pick(advHome.pendingOpen, locale)}`}
+        aria-label={`${__t(label)}: ${pick(advHome.pendingOpen, locale)}`}
         onClick={(event) => {
           event.stopPropagation();
           onOpenTasks(caseId, taskIds);
         }}
       >
         <TriangleAlert aria-hidden="true" className="size-3.5" />
-        {label}
+        {__t(label)}
         <ChevronRight aria-hidden="true" className="size-3.5" />
       </button>
     </Badge>
@@ -961,6 +960,7 @@ function HearingRow({
   boxSurface?: AvatarSurface;
   className?: string;
 }) {
+  const __t = __useTranslations();
   const showTimes = useShowTimes();
   const singleCourt = React.useContext(SingleCourtContext);
   const isMobile = useCompactBoard();
@@ -1017,7 +1017,7 @@ function HearingRow({
           <span aria-hidden="true" className="shrink-0 whitespace-pre"> · </span>
           <Identifier
             value={hearing.kase.stNumber || hearing.kase.cnr}
-            label="case number"
+            label={__t("hearingTimeline_caseNumber")}
             copyable={canHover}
             className="relative z-10 shrink-0 whitespace-nowrap"
           />
@@ -1044,7 +1044,7 @@ function HearingRow({
           // Holds the court's line so the icons stay on the detail line.
           <span aria-hidden="true" className="hidden lg:block lg:h-6" />
         ) : (
-          <CourtLabel court={hearing.court} label={hearing.courtLabel} number={hearing.kase.courtNumber} className="relative z-10 font-medium text-muted-foreground lg:leading-6" />
+          <CourtLabel court={hearing.court} label={__t(hearing.courtLabel)} number={hearing.kase.courtNumber} className="relative z-10 font-medium text-muted-foreground lg:leading-6" />
         )}
         <div className="flex items-center gap-2">
           {/* Access, then the queue, then the cause-list jump (owner, Oct 8). */}
@@ -1090,6 +1090,7 @@ function HearingBody({
 
 /** A small status tag — "Conflict" (amber) — on white so it reads on any tint. */
 function StatusTag({ label, className }: { label: string; className?: string }) {
+  const __t = __useTranslations();
   return (
     <span
       className={cn(
@@ -1098,7 +1099,7 @@ function StatusTag({ label, className }: { label: string; className?: string }) 
       )}
     >
       <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />
-      {label}
+      {__t(label)}
     </span>
   );
 }
@@ -1478,10 +1479,11 @@ function ConcludedBlock({
 /** The heading that opens the scheduled zone on a phone — a quiet rule extending
  *  right, with a count. A desktop names the zone on its rail instead. */
 function ScheduledSeparator({ label, count }: { label: string; count: number }) {
+  const __t = __useTranslations();
   return (
     <div className="flex items-center gap-2.5 pt-2 pb-1 lg:hidden">
       <span className="text-caption font-semibold text-muted-foreground">
-        {label}
+        {__t(label)}
       </span>
       <Badge variant="secondary" className="tabular-nums">{count}</Badge>
       <span aria-hidden="true" className="h-px flex-1 bg-hairline" />
@@ -1511,11 +1513,12 @@ function Board({
   onOpenCase: (caseId: string) => void;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   const { concluded, now, upcoming } = slot.board;
   const count = (slots: TimeSlot[]) => slots.reduce((n, s) => n + s.hearings.length, 0);
   return (
     <div className="flex flex-col gap-2 lg:gap-0">
-      <PhaseRow marker="ring" edge="start" railHeight="h-10" label={slot.startLabel}>
+      <PhaseRow marker="ring" edge="start" railHeight="h-10" label={__t(slot.startLabel)}>
         <div className="lg:py-0.5">{filters}</div>
       </PhaseRow>
 
@@ -1589,7 +1592,7 @@ function Board({
       ) : null}
 
       <div className="hidden lg:block">
-        <PhaseRow marker="ring" edge="end" railHeight="h-10" label={slot.endLabel} />
+        <PhaseRow marker="ring" edge="end" railHeight="h-10" label={__t(slot.endLabel)} />
       </div>
     </div>
   );
@@ -1840,6 +1843,7 @@ function SlotTabs({
   filterVariant: FilterVariant;
   locale: Locale;
 }) {
+  const __t = __useTranslations();
   // Which sitting's advanced-filters sheet is open, if any.
   const [advancedFor, setAdvancedFor] = React.useState<string | null>(null);
   const singleCourt = React.useContext(SingleCourtContext);
@@ -1915,7 +1919,7 @@ function SlotTabs({
               {/* Each tab reserves 16px a side for the open tab's 20px side (a
                   12px top corner, a near-upright lean, a 9px foot), so a
                   neighbour's hover fill stops about 4px short of it. */}
-              <SlotTabTip label={slot.label} enabled={!isActive}>
+              <SlotTabTip label={__t(slot.label)} enabled={!isActive}>
               <span className={cn(
                 "relative mr-4 flex h-full min-w-0 flex-1 items-center justify-center gap-2 border-t border-transparent px-3",
                 i > 0 && "ml-4",
@@ -1928,7 +1932,7 @@ function SlotTabs({
               <SlotClock live={slot.live} ended={slot.ended} locale={locale} />
               {/* Short on a tablet, where three full ranges cannot share the row. */}
               <span className="min-w-0 truncate tabular-nums lg:hidden">{shortSitting(slot.window)}</span>
-              <span className="hidden min-w-0 truncate tabular-nums lg:inline">{slot.label}</span>
+              <span className="hidden min-w-0 truncate tabular-nums lg:inline">{__t(slot.label)}</span>
               {isActive ? (
                 <>
                   {/* The first tab's left edge runs into the panel's edge. */}
@@ -2087,11 +2091,12 @@ function shortSitting(window: { start: string; end: string }): string {
  * face, not the trigger, so it never overwrites the trigger's own data-state.
  */
 function SlotTabTip({ label, enabled, children }: { label: string; enabled: boolean; children: React.ReactElement }) {
+  const __t = __useTranslations();
   if (!enabled) return children;
   return (
     <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side="top">{label}</TooltipContent>
+      <TooltipContent side="top">{__t(label)}</TooltipContent>
     </Tooltip>
   );
 }

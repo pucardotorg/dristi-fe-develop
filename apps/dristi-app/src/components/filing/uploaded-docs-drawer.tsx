@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -36,6 +38,7 @@ function DrawerRow({
   slot: IntakeSlot;
   onOpen: (src: string, alt: string) => void;
 }) {
+  const __t = __useTranslations();
   const preview = useFilePreview(slot.file);
   /* Same mapping as the upload row — the drawer takes its compact form. A low-confidence
      scan that still filled fields reads as a read here too, never as "poor scan". */
@@ -54,12 +57,12 @@ function DrawerRow({
           <img src={img} alt="" />
         ) : (
           <span className="text-caption font-semibold text-muted-foreground">
-            {slot.file?.ext ?? "FILE"}
+            {slot.file?.ext ?? __t("uploadedDocsDrawer_file")}
           </span>
         )}
       </ItemMedia>
       <ItemContent className="min-w-0">
-        <ItemTitle className="w-full">{slot.label}</ItemTitle>
+        <ItemTitle className="w-full">{__t(slot.label)}</ItemTitle>
         <ItemDescription className="truncate">{slot.file?.name}</ItemDescription>
         {outcome ? (
           <ItemDescription className={readToneClass(outcome.tone)}>
@@ -75,11 +78,11 @@ function DrawerRow({
         type="button"
         onClick={() => onOpen(img, `Uploaded ${slot.label.toLowerCase()}`)}
       >
-        {body}
+        {__t(body)}
       </button>
     </Item>
   ) : (
-    <Item className="bg-surface-sunken">{body}</Item>
+    <Item className="bg-surface-sunken">{__t(body)}</Item>
   );
 }
 
@@ -103,15 +106,14 @@ export function UploadedDocsDrawer({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="right" className="w-full data-[side=right]:w-full sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>Uploaded documents</SheetTitle>
-            <SheetDescription>Read in your browser to pre-fill your form</SheetDescription>
+            <SheetTitle>{<__LocalizedText id="uploadedDocsDrawer_uploadedDocuments" />}</SheetTitle>
+            <SheetDescription>{<__LocalizedText id="uploadedDocsDrawer_readInYourBrowserToPreFill" />}</SheetDescription>
           </SheetHeader>
 
           <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-4">
             {files.length === 0 ? (
               <p className="text-body-compact text-muted-foreground">
-                Nothing uploaded yet.
-              </p>
+                {<__LocalizedText id="uploadedDocsDrawer_nothingUploadedYet" />}{" "}</p>
             ) : (
               files.map((slot) => (
                 <DrawerRow
@@ -127,14 +129,12 @@ export function UploadedDocsDrawer({
             <Button asChild className="w-full">
               <Link href={hrefFor("upload")}>
                 <UploadIcon data-icon="inline-start" aria-hidden />
-                Upload more documents
-              </Link>
+                {<__LocalizedText id="uploadedDocsDrawer_uploadMoreDocuments" />}{" "}</Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
               <Link href={hrefFor("upload")}>
                 <FileTextIcon data-icon="inline-start" aria-hidden />
-                Manage documents
-              </Link>
+                {<__LocalizedText id="uploadedDocsDrawer_manageDocuments" />}{" "}</Link>
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -156,7 +156,7 @@ export function UploadedCountBadge() {
   return (
     <Badge variant="secondary" className="tabular-nums">
       {n}
-      <span className="sr-only">uploaded</span>
+      <span className="sr-only">{<__LocalizedText id="uploadedDocsDrawer_uploaded" />}</span>
     </Badge>
   );
 }

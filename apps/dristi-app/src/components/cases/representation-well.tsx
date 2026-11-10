@@ -1,4 +1,5 @@
 "use client";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 /**
  * An advocate's well in the Parties detail pane, with the removal entry
@@ -61,8 +62,7 @@ export function RepresentationWell({
             className="shrink-0"
             onClick={() => setOpen(true)}
           >
-            Remove
-          </Button>
+            {<__LocalizedText id="representationWell_remove" />}{" "}</Button>
         ) : null}
       </div>
       <RemoveAdvocateDialog

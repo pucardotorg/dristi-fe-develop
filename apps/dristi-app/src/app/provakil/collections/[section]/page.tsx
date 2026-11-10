@@ -1,3 +1,4 @@
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 import { NotInDemo } from "@/provakil/components/shell";
 
 const TITLES: Record<string, string> = {
@@ -12,6 +13,7 @@ const TITLES: Record<string, string> = {
 };
 
 export default async function Page({ params }: { params: Promise<{ section: string }> }) {
+  const __t = __useTranslations();
   const { section } = await params;
-  return <NotInDemo title={TITLES[section] ?? "Not found"} />;
+  return <NotInDemo title={__t(TITLES[section]) ?? __t("sectionPage_notFound")} />;
 }

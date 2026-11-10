@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useId, useMemo, useState } from "react";
 import Link from "next/link";
@@ -82,6 +84,7 @@ export function RaiseApplicationCaseChooser({
   /** Server-stable "now" for the peek's due dates. */
   now: number;
 }) {
+  const __t = __useTranslations();
   // Search matches the number as shown, in the selected state's terms.
   const { court } = useCourt();
   const headingId = useId();
@@ -125,9 +128,9 @@ export function RaiseApplicationCaseChooser({
             {/* Keyed to the column, not the viewport; see FilingFrame's header. */}
             <header className={cn("@container", PEEK_PUSH_CLASS)}>
               <div className="flex flex-col gap-4 @2xl:flex-row @2xl:items-center @2xl:justify-between @2xl:gap-8">
-                <h1 className={PAGE_TITLE}>Raise application</h1>
+                <h1 className={PAGE_TITLE}>{<__LocalizedText id="raiseApplicationCaseChooser_raiseApplication" />}</h1>
                 <RegisterSearch
-                  label="Search your cases"
+                  label={__t("raiseApplicationCaseChooser_searchYourCases")}
                   value={query}
                   onChange={(value) => {
                     setQuery(value);
@@ -147,8 +150,7 @@ export function RaiseApplicationCaseChooser({
               className={cn("flex flex-col gap-4", PEEK_PUSH_CLASS)}
             >
               <h2 id={headingId} className="text-body font-semibold">
-                Choose the case
-              </h2>
+                {<__LocalizedText id="raiseApplicationCaseChooser_chooseTheCase" />}{" "}</h2>
               <p aria-live="polite" className="sr-only">
                 {typed
                   ? `${shown.length} of ${ordered.length} cases match.`
@@ -175,8 +177,8 @@ export function RaiseApplicationCaseChooser({
                     className="text-body-compact text-muted-foreground tabular-nums"
                     aria-live="polite"
                   >
-                    Showing {rows.length} of {shown.length}{" "}
-                    {shown.length === 1 ? "case" : "cases"}
+                    {<__LocalizedText id="raiseApplicationCaseChooser_showing" />}{" "}{rows.length} {<__LocalizedText id="raiseApplicationCaseChooser_of" />}{" "}{shown.length}{" "}
+                    {shown.length === 1 ? __t("raiseApplicationCaseChooser_case") : __t("raiseApplicationCaseChooser_cases")}
                   </p>
                   {remaining > 0 ? (
                     <Button
@@ -185,8 +187,7 @@ export function RaiseApplicationCaseChooser({
                       className="w-full"
                       onClick={() => setVisible((count) => count + LOAD_STEP)}
                     >
-                      Show more
-                      <ChevronDownIcon data-icon="inline-end" aria-hidden />
+                      {<__LocalizedText id="raiseApplicationCaseChooser_showMore" />}{" "}<ChevronDownIcon data-icon="inline-end" aria-hidden />
                     </Button>
                   ) : null}
                 </div>
@@ -196,10 +197,9 @@ export function RaiseApplicationCaseChooser({
                     <EmptyMedia variant="icon">
                       <SearchIcon aria-hidden />
                     </EmptyMedia>
-                    <EmptyTitle>No case matches that</EmptyTitle>
+                    <EmptyTitle>{<__LocalizedText id="raiseApplicationCaseChooser_noCaseMatchesThat" />}</EmptyTitle>
                     <EmptyDescription>
-                      Try the case number, or a name from either side.
-                    </EmptyDescription>
+                      {<__LocalizedText id="raiseApplicationCaseChooser_tryTheCaseNumberOrAName" />}{" "}</EmptyDescription>
                   </EmptyHeader>
                 </Empty>
               )}
@@ -276,6 +276,7 @@ function CaseFacts({ record }: { record: CaseRecord }) {
  * by Tailwind; reduced motion gets the switch without the travel.
  */
 function PointerCaseRow({ record }: { record: CaseRecord }) {
+  const __t = __useTranslations();
   const { open, record: peeked } = useCasePeek();
   const peeking = peeked?.id === record.id;
   const parties = partiesLabel(record);
@@ -306,7 +307,7 @@ function PointerCaseRow({ record }: { record: CaseRecord }) {
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                aria-label={`Preview case, ${parties}`}
+                aria-label={__t("raiseApplicationCaseChooser_previewCaseValue0", {value0: String(parties)})}
                 aria-expanded={peeking}
                 aria-controls={peeking ? CASE_PEEK_ID : undefined}
                 data-state={peeking ? "open" : undefined}
@@ -319,7 +320,7 @@ function PointerCaseRow({ record }: { record: CaseRecord }) {
                 <EyeIcon aria-hidden />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Preview case</TooltipContent>
+            <TooltipContent side="bottom">{<__LocalizedText id="raiseApplicationCaseChooser_previewCase" />}</TooltipContent>
           </Tooltip>
         </div>
         <CaseFacts record={record} />
@@ -337,8 +338,7 @@ function PointerCaseRow({ record }: { record: CaseRecord }) {
         >
           <Button asChild size="sm" className="whitespace-nowrap">
             <span>
-              Select this case
-              <ArrowRightIcon data-icon="inline-end" aria-hidden />
+              {<__LocalizedText id="raiseApplicationCaseChooser_selectThisCase" />}{" "}<ArrowRightIcon data-icon="inline-end" aria-hidden />
             </span>
           </Button>
         </span>
@@ -410,12 +410,10 @@ function TouchCaseRow({
             className="flex-1"
             onClick={() => open(record)}
           >
-            Preview
-          </Button>
+            {<__LocalizedText id="raiseApplicationCaseChooser_preview" />}{" "}</Button>
           <Button asChild className="flex-1">
             <Link href={selectHref(record)}>
-              Select case
-              <ArrowRightIcon data-icon="inline-end" aria-hidden />
+              {<__LocalizedText id="raiseApplicationCaseChooser_selectCase" />}{" "}<ArrowRightIcon data-icon="inline-end" aria-hidden />
             </Link>
           </Button>
         </div>

@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import Link from "next/link";
@@ -121,6 +123,7 @@ export function ReviewDialog({
   /** A record you can act on: closes the dialog and lands on the item. */
   onGoToItem: (fieldId: string) => void;
 }) {
+  const __t = __useTranslations();
   const { party, allFields, fieldById } = useScrutinyCase();
   const [ack, setAck] = React.useState(false);
   /* The registration type (`SCR-13`), by its index in the state's list. Nothing is
@@ -165,25 +168,21 @@ export function ReviewDialog({
   const head =
     decision === "send-back"
       ? {
-          title: "Send back to advocate",
-          body: `Goes to ${party.advocate}.`,
+          title: __t("reviewDialog_sendBackToAdvocate"),
+          body: __t("reviewDialog_goesToValue0", {value0: String(party.advocate)}),
         }
       : decision === "forward"
       ? {
-          title: "Forward for registration",
+          title: __t("reviewDialog_forwardForRegistration"),
           body: total
-            ? `The case moves to Register cases. ${total} open item${
-                total > 1 ? "s travel" : " travels"
-              } with it — forwarding does not clear ${total > 1 ? "them" : "it"}.`
-            : "Every field was checked against the bundle. The case moves to Register cases.",
+            ? __t("reviewDialog_theCaseMovesToRegisterCasesValue0", {value0: String(total), value1: String(total > 1 ? __t("reviewDialog_sTravel") : __t("reviewDialog_travels")), value2: String(total > 1 ? __t("reviewDialog_them") : __t("reviewDialog_it"))})
+            : __t("reviewDialog_everyFieldWasCheckedAgainstTheBundle"),
         }
       : {
-          title: "Register case",
+          title: __t("reviewDialog_registerCase"),
           body: total
-            ? `The case moves to the Magistrate's list for cognizance. ${total} open item${
-                total > 1 ? "s travel" : " travels"
-              } with it — registering does not clear ${total > 1 ? "them" : "it"}.`
-            : "Every field was checked against the bundle. The case moves to the Magistrate's list for cognizance.",
+            ? __t("reviewDialog_theCaseMovesToTheMagistrateS", {value0: String(total), value1: String(total > 1 ? __t("reviewDialog_sTravel") : __t("reviewDialog_travels")), value2: String(total > 1 ? __t("reviewDialog_them") : __t("reviewDialog_it"))})
+            : __t("reviewDialog_everyFieldWasCheckedAgainstTheBundle_b2b1a9ba"),
         };
 
   /*
@@ -203,7 +202,7 @@ export function ReviewDialog({
   const settled =
     decision === "send-back"
       ? {
-          title: `Sent back to ${party.advocate}`,
+          title: __t("reviewDialog_sentBackToValue0", {value0: String(party.advocate)}),
           state: "Sent back",
           /* One short line. The long version explained that the file comes back and
              that nothing more is needed — reassurance for a first-timer, and this is a
@@ -228,26 +227,22 @@ export function ReviewDialog({
         }
       : decision === "forward"
       ? {
-          title: "Forwarded for registration",
+          title: __t("reviewDialog_forwardedForRegistration"),
           state: "Forwarded",
           body: total
-            ? `On Register cases${chosenLine}, with ${total} open item${
-                total > 1 ? "s" : ""
-              } attached.`
-            : `On Register cases${chosenLine}.`,
+            ? __t("reviewDialog_onRegisterCasesValue0WithValue1Open", {value0: String(chosenLine), value1: String(total), value2: String(total > 1 ? "s" : "")})
+            : __t("reviewDialog_onRegisterCasesValue0", {value0: String(chosenLine)}),
           /* Scrutiny is done with the file, which is this desk's good outcome, so it
              wears the same mark as registering. */
           tone: "bg-success-muted text-success-muted-foreground",
           Icon: CheckIcon,
         }
       : {
-          title: "Case registered",
+          title: __t("reviewDialog_caseRegistered"),
           state: chosen ? `Registered${chosenLine}` : "Registered",
           body: total
-            ? `On the Magistrate's list, with ${total} open item${
-                total > 1 ? "s" : ""
-              } attached.`
-            : "On the Magistrate's list for cognizance.",
+            ? __t("reviewDialog_onTheMagistrateSListWithValue0", {value0: String(total), value1: String(total > 1 ? "s" : "")})
+            : __t("reviewDialog_onTheMagistrateSListForCognizance"),
           /* Registering *is* a terminal good outcome, so this one keeps the success
              muted and the tick. */
           tone: "bg-success-muted text-success-muted-foreground",
@@ -282,21 +277,20 @@ export function ReviewDialog({
            centres itself while the list does not. */
         surface={done || (!total && !choosing) ? "card" : "canvas"}
         padded={false}
-        title={done ? settled.title : head.title}
+        title={done ? __t(settled.title) : __t(head.title)}
         titleRef={flow.titleRef}
         /* No line under the settled title: the sentence is on the stage with the mark it
            belongs to, and printing it here as well said the same thing twice at two
            sizes. The definite height is what makes that affordable — the header loses two
            rows and the stage absorbs them, so the panel does not move. */
-        description={done ? undefined : head.body}
+        description={done ? undefined : __t(head.body)}
         sceneKey={flow.sceneKey}
         motion={flow.motion}
         footer={
           done ? (
             <>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Stay here
-              </Button>
+                {<__LocalizedText id="reviewDialog_stayHere" />}{" "}</Button>
               {/*
                * **Next file opens the next file, not the list.** It used to push back to
                * the queue, which made the officer re-find their place in it for every one
@@ -316,32 +310,29 @@ export function ReviewDialog({
                     href={`/employee/scrutiny/${encodeURIComponent(nextFiling.no)}`}
                     onClick={() => markArrival("next")}
                   >
-                    Next file
-                  </Link>
+                    {<__LocalizedText id="reviewDialog_nextFile" />}{" "}</Link>
                 ) : (
                   <Link
                     href="/employee/scrutiny"
                     onClick={() => markArrival("back")}
                   >
-                    Back to scrutiny
-                  </Link>
+                    {<__LocalizedText id="reviewDialog_backToScrutiny" />}{" "}</Link>
                 )}
               </Button>
             </>
           ) : (
             <>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Keep reviewing
-              </Button>
+                {<__LocalizedText id="reviewDialog_keepReviewing" />}{" "}</Button>
               <Button
                 disabled={(needsAck && !ack) || (choosing && !chosen)}
                 onClick={() => flow.go("done")}
               >
                 {decision === "send-back"
-                  ? "Send back"
+                  ? __t("reviewDialog_sendBack_ae2d9eec")
                   : decision === "forward"
-                    ? "Forward for registration"
-                    : "Register case"}
+                    ? __t("reviewDialog_forwardForRegistration")
+                    : __t("reviewDialog_registerCase")}
               </Button>
               {/* The gate on the primary, beside the button it gates. It had its own
                   region above the footer before the frame, which has two regions and not
@@ -364,8 +355,8 @@ export function ReviewDialog({
                     onCheckedChange={(value) => setAck(value === true)}
                   />
                   <FieldLabel htmlFor="ack" className="font-normal">
-                    I have seen the open flags and choose to{" "}
-                    {decision === "forward" ? "forward" : "register"}.
+                    {<__LocalizedText id="reviewDialog_iHaveSeenTheOpenFlagsAnd" />}{" "}
+                    {decision === "forward" ? __t("reviewDialog_forward") : __t("reviewDialog_register")}.
                   </FieldLabel>
                 </Field>
               ) : null}
@@ -401,7 +392,7 @@ export function ReviewDialog({
             <div role="status" className="flex max-w-sm flex-col gap-1">
               <p className="text-body font-semibold">{settled.state}</p>
               <p className="text-body-compact text-muted-foreground">
-                {settled.body}
+                {__t(settled.body)}
               </p>
             </div>
           </div>
@@ -474,8 +465,7 @@ export function ReviewDialog({
           <Empty className="my-auto border-0 p-6">
             <EmptyHeader>
               <EmptyTitle className="text-title-s font-semibold">
-                Nothing raised
-              </EmptyTitle>
+                {<__LocalizedText id="reviewDialog_nothingRaised" />}{" "}</EmptyTitle>
             </EmptyHeader>
           </Empty>
         )}
@@ -511,6 +501,7 @@ function SummaryItem({
   item: Item;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const __t = __useTranslations();
   const { field, flag } = item;
   /* Labelled, so the officer's words read as theirs (owner, 2026-10-09). */
   const said = [
@@ -531,14 +522,14 @@ function SummaryItem({
       >
         <span className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:gap-6">
           <span className="text-body-compact font-medium break-words sm:w-48 sm:shrink-0">
-            {field.label}
+            {__t(field.label)}
           </span>
           {said.length || also ? (
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
               {said.map(([label, text]) => (
                 <span key={label} className="text-body-compact break-words">
-                  <span className="text-muted-foreground">{label}: </span>
-                  {text}
+                  <span className="text-muted-foreground">{__t(label)}: </span>
+                  {__t(text)}
                 </span>
               ))}
               {also ? (
@@ -554,7 +545,7 @@ function SummaryItem({
           className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
         />
         <span className="sr-only">
-          {field.docrow ? "Go to the document" : "Go to the field"}
+          {field.docrow ? __t("reviewDialog_goToTheDocument") : __t("reviewDialog_goToTheField")}
         </span>
       </button>
     </li>
@@ -582,11 +573,11 @@ function TypeChoice({
   onChange: (value: string) => void;
   final: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <section aria-labelledby="rv-type" className="flex flex-col gap-2">
       <h3 id="rv-type" className="text-caption font-semibold text-muted-foreground">
-        Register as
-      </h3>
+        {<__LocalizedText id="reviewDialog_registerAs" />}{" "}</h3>
       <Card size="sm" className="gap-0 border-hairline py-0 shadow-raised">
         <RadioGroup
           value={value}
@@ -610,8 +601,8 @@ function TypeChoice({
       </Card>
       <p id="rv-type-hint" className="text-body-compact text-muted-foreground">
         {final
-          ? "Final once registered. Each type has its own number series."
-          : "The Case registerer can change it before registering."}
+          ? __t("reviewDialog_finalOnceRegisteredEachTypeHasIts")
+          : __t("reviewDialog_theCaseRegistererCanChangeItBefore")}
       </p>
     </section>
   );

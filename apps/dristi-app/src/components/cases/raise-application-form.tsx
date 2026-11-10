@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { bailDialog } from "@/lib/filing/content";
 import { pick } from "@/lib/onboarding/content";
@@ -172,6 +174,7 @@ export function RaiseApplicationForm({
    */
   filer?: ApplicationViewer;
 }) {
+  const __t = __useTranslations();
   const formRef = useRef<HTMLFormElement>(null);
   const formId = useId();
   const router = useRouter();
@@ -417,7 +420,7 @@ export function RaiseApplicationForm({
   function saveDraft() {
     if (recordFiling({ status: "draft" })) {
       toast("Saved as a draft", {
-        description: "Finish it later from Applications.",
+        description: __t("raiseApplicationForm_finishItLaterFromApplications"),
       });
     }
     closeForm();
@@ -465,7 +468,7 @@ export function RaiseApplicationForm({
         submittedOn: paid ? new Date().toISOString().slice(0, 10) : undefined,
         temporaryId: paid && "temporaryId" in stop ? stop.temporaryId : undefined,
         attachments: applicationAttachments(draft, personName).map((item) => ({
-          label: item.label,
+          label: __t(item.label),
           files: item.files.map((file) => ({
             label: file.name,
             href: localFileSrc(file),
@@ -525,10 +528,10 @@ export function RaiseApplicationForm({
       ? "Other application"
       : /application$/i.test(chosen.label)
         ? chosen.label
-        : `${chosen.label} application`;
+        : `${__t(chosen.label)} application`;
   const formDescription = objecting
     ? objectionTarget?.due
-      ? `Object to the other side's ${objectionTarget.inSentence}. File it by the end of ${objectionTarget.due}.`
+      ? __t("raiseApplicationForm_objectToTheOtherSideSValue0", {value0: String(objectionTarget.inSentence), value1: String(objectionTarget.due)})
       : "Object to the other side's application."
     : chosen.description;
 
@@ -539,15 +542,14 @@ export function RaiseApplicationForm({
           <div className={PAGE_BACK_COLUMN}>
             <PageBackButton
               href={backHref ?? caseHref}
-              label={backHref ? "Back to cases list" : "Back to case"}
+              label={backHref ? __t("raiseApplicationForm_backToCasesList") : __t("raiseApplicationForm_backToCase")}
             />
           </div>
           <div className="flex min-w-0 flex-col gap-1">
             <h1 className={cn(PAGE_TITLE, "flex min-h-8 items-center")}>
-              Raise application
-            </h1>
+              {<__LocalizedText id="raiseApplicationForm_raiseApplication" />}{" "}</h1>
             <p className="text-body-compact text-muted-foreground">
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={__t("raiseApplicationForm_caseNumber")} />
               <span aria-hidden> · </span>
               {partiesLabel(record)}
             </p>
@@ -562,16 +564,13 @@ export function RaiseApplicationForm({
               <FilePenLineIcon className="size-7" aria-hidden />
             </EmptyMedia>
             <EmptyTitle className="text-title-s font-semibold text-foreground">
-              Your advocate raises applications for you
-            </EmptyTitle>
+              {<__LocalizedText id="raiseApplicationForm_yourAdvocateRaisesApplicationsForYou" />}{" "}</EmptyTitle>
             <EmptyDescription className="text-body-compact">
-              When one is filed on your behalf, you can pay its court fee from
-              the case&apos;s Applications tab.
-            </EmptyDescription>
+              {<__LocalizedText id="raiseApplicationForm_whenOneIsFiledOnYourBehalf" />}{" "}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button variant="outline" asChild>
-              <Link href={caseHref}>Go to Applications</Link>
+              <Link href={caseHref}>{<__LocalizedText id="raiseApplicationForm_goToApplications" />}</Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -594,19 +593,18 @@ export function RaiseApplicationForm({
               <div className={PAGE_BACK_COLUMN}>
                 <PageBackButton
                   href={backHref ?? caseHref}
-                  label={backHref ? "Back to cases list" : "Back to case"}
+                  label={backHref ? __t("raiseApplicationForm_backToCasesList") : __t("raiseApplicationForm_backToCase")}
                 />
               </div>
               <div className="flex min-w-0 flex-col gap-1">
                 {/* Not "Raise application" again: reached from the rail, the page
                     before this one already carries that name (owner, Sept 21). */}
                 <h1 className={cn(PAGE_TITLE, "flex min-h-8 items-center")}>
-                  Choose application type
-                </h1>
+                  {<__LocalizedText id="raiseApplicationForm_chooseApplicationType" />}{" "}</h1>
                 {/* Which case this files into. Reached from the rail, nothing
                     else on the screen says so. */}
                 <p className="text-body-compact text-muted-foreground">
-                  <Identifier value={record.caseNumber} label="case number" />
+                  <Identifier value={record.caseNumber} label={__t("raiseApplicationForm_caseNumber")} />
                   <span aria-hidden> · </span>
                   {partiesLabel(record)}
                 </p>
@@ -654,7 +652,7 @@ export function RaiseApplicationForm({
           <DialogHeader className="shrink-0 border-b border-hairline px-6 py-4 pr-12 text-left">
             <div className="flex flex-wrap items-center gap-2">
               <DialogTitle className="text-title-s font-semibold text-balance">
-                {formTitle}
+                {__t(formTitle)}
               </DialogTitle>
               {/* The same status chip the register uses, so the row you clicked
                   and the dialog you landed in are recognisably one filing: a
@@ -666,7 +664,7 @@ export function RaiseApplicationForm({
               ) : null}
             </div>
             <DialogDescription className="text-pretty">
-              {formDescription}
+              {__t(formDescription)}
             </DialogDescription>
             {/* The terms are already on the summons (owner, 2026-10-14). */}
             {chosen.id === "bail" && !objecting ? (
@@ -675,10 +673,10 @@ export function RaiseApplicationForm({
               </p>
             ) : null}
             <p className="text-caption text-muted-foreground">
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={__t("raiseApplicationForm_caseNumber")} />
               <span aria-hidden> · </span>
               {partiesLabel(record)}
-              {resume ? ` · Started ${formatCaseDate(resume.addedOn)}` : null}
+              {resume ? __t("raiseApplicationForm_startedValue0", {value0: String(formatCaseDate(resume.addedOn))}) : null}
             </p>
           </DialogHeader>
 
@@ -701,10 +699,9 @@ export function RaiseApplicationForm({
 
           <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             <Button type="button" variant="outline" onClick={requestCloseForm}>
-              Cancel
-            </Button>
+              {<__LocalizedText id="raiseApplicationForm_cancel" />}{" "}</Button>
             <Button type="submit" form={formId}>
-              {objecting ? "Generate objection" : "Generate application"}
+              {objecting ? __t("raiseApplicationForm_generateObjection") : __t("raiseApplicationForm_generateApplication")}
             </Button>
           </footer>
         </FlowDialogContent>

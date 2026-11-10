@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import * as React from "react";
 import {
@@ -77,10 +79,11 @@ const RESEND_SECONDS = 30;
 const NEEDS_VERIFICATION = new Set<AccountRole>(["advocate", "advocateClerk"]);
 
 function Heading({ title, body }: { title: string; body: string }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col items-center gap-2 text-center">
-      <h1 className="text-title text-balance font-semibold">{title}</h1>
-      <p className="text-body text-pretty text-muted-foreground">{body}</p>
+      <h1 className="text-title text-balance font-semibold">{__t(title)}</h1>
+      <p className="text-body text-pretty text-muted-foreground">{__t(body)}</p>
     </div>
   );
 }
@@ -92,6 +95,7 @@ function Actions({ locale, onBack, submitLabel, pending = false }: {
   /** A submission is in flight: both buttons hold still and the primary shows progress. */
   pending?: boolean;
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
       <Button type="button" variant="outline" onClick={onBack} disabled={pending}>
@@ -102,7 +106,7 @@ function Actions({ locale, onBack, submitLabel, pending = false }: {
           form's submit handler ignores repeat presses. */}
       <Button type="submit" className="sm:min-w-40" aria-disabled={pending || undefined}>
         {pending ? <Spinner data-icon="inline-start" aria-hidden /> : null}
-        {submitLabel ?? pick(registrationUi.continue, locale)}
+        {__t(submitLabel) ?? pick(registrationUi.continue, locale)}
       </Button>
     </div>
   );
@@ -117,6 +121,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
   verifiedMobile?: string;
   onFinish?: (result: RegistrationResult) => void;
 }) {
+  const __t = __useTranslations();
   const [step, setStep] = React.useState<Step>("role");
   const [role, setRole] = React.useState<AccountRole>("");
   const [fullName, setFullName] = React.useState("");
@@ -349,10 +354,26 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
           <CheckCircle2Icon className="size-7" aria-hidden />
         </span>
         <Heading title={pick(successStep.title, locale)} body={pick(successStep.body, locale)} />
-        <Button size="lg" onClick={() => onFinish ? onFinish({ idSkipped: true, profileIncomplete: true }) : setDestinationNotice(true)}>
+        <Button
+          size="lg"
+          onClick={() => {
+            if (!onFinish) {
+              setDestinationNotice(true);
+              return;
+            }
+            if (!role) return;
+            onFinish({
+              idSkipped: true,
+              profileIncomplete: true,
+              name: fullName,
+              role,
+              mobile,
+            });
+          }}
+        >
           {pick(summoned ? successStep.summonedAction : successStep.generalAction, locale)}
         </Button>
-        {destinationNotice ? <Alert variant="info" className="text-left"><AlertTitle>Prototype: destination not connected</AlertTitle><AlertDescription>This action will open your portal home.</AlertDescription></Alert> : null}
+        {destinationNotice ? <Alert variant="info" className="text-left"><AlertTitle>{<__LocalizedText id="registrationFlow_prototypeDestinationNotConnected" />}</AlertTitle><AlertDescription>{<__LocalizedText id="registrationFlow_thisActionWillOpenYourPortalHome" />}</AlertDescription></Alert> : null}
       </div>
     );
   }
@@ -366,7 +387,7 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
           <DescriptionRow><DescriptionTerm>{pick(applicationView.mobile, locale)}</DescriptionTerm><DescriptionDetails>+91 {mobile}</DescriptionDetails></DescriptionRow>
           {email ? <DescriptionRow><DescriptionTerm>{pick(applicationView.email, locale)}</DescriptionTerm><DescriptionDetails>{email}</DescriptionDetails></DescriptionRow> : null}
           <DescriptionRow><DescriptionTerm>{pick(applicationView.role, locale)}</DescriptionTerm><DescriptionDetails>{pick(role === "advocateClerk" ? roleStep.advocateClerk : roleStep.advocate, locale)}</DescriptionDetails></DescriptionRow>
-          <DescriptionRow><DescriptionTerm>{pick(verification.numberLabel, locale)}</DescriptionTerm><DescriptionDetails><Identifier value={regNumber} label="registration number" /></DescriptionDetails></DescriptionRow>
+          <DescriptionRow><DescriptionTerm>{pick(verification.numberLabel, locale)}</DescriptionTerm><DescriptionDetails><Identifier value={regNumber} label={__t("registrationFlow_registrationNumber")} /></DescriptionDetails></DescriptionRow>
           {idFile ? <DescriptionRow className="items-center"><DescriptionTerm>{pick(verification.uploadLabel, locale)}</DescriptionTerm><DescriptionDetails><DocumentRowValue file={idFile} locale={locale} /></DescriptionDetails></DescriptionRow> : null}
         </DescriptionList>
       </div>
@@ -625,8 +646,8 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
                 litigant registration is connected to the backend so far. */}
             {submitError === "notSupported" ? (
               <Alert variant="info">
-                <AlertTitle>Not connected yet</AlertTitle>
-                <AlertDescription>Registration for this account type is not connected to the server yet. Only litigant registration works for now.</AlertDescription>
+                <AlertTitle>{<__LocalizedText id="registrationFlow_notConnectedYet" />}</AlertTitle>
+                <AlertDescription>{<__LocalizedText id="registrationFlow_registrationForThisAccountTypeIsNot" />}</AlertDescription>
               </Alert>
             ) : null}
             <Actions locale={locale} onBack={() => { setTouched(false); setSubmitError(null); setStep(needsVerification ? "verification" : "password"); }} submitLabel={pick(termsStep.submit, locale)} pending={pending === "submit"} />

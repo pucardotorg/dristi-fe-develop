@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -58,6 +60,7 @@ function PaymentBody({
   onPaid: (ids: string[]) => void;
   onClose: () => void;
 }) {
+  const __t = __useTranslations();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [paid, setPaid] = useState(false);
   const count = applications.length;
@@ -76,11 +79,11 @@ function PaymentBody({
           tabIndex={-1}
           className="text-body font-semibold outline-none"
         >
-          {paid ? "Payment complete" : "Pay court fee"}
+          {paid ? __t("applicationPaymentDialog_paymentComplete") : __t("applicationPaymentDialog_payCourtFee")}
         </DialogTitle>
         <DialogDescription className="text-caption font-medium text-muted-foreground">
           {count === 1
-            ? applications[0].typeLabel
+            ? __t(applications[0].typeLabel)
             : `${count} ${filingNoun(applications)}, one payment`}
         </DialogDescription>
       </DialogHeader>
@@ -91,15 +94,14 @@ function PaymentBody({
       <div className="flex min-h-0 flex-col gap-4 overflow-y-auto bg-surface-sunken px-6 py-4">
         {paid ? (
           <Banner variant="success">
-            Court fee of {total} paid.{" "}
+            {<__LocalizedText id="applicationPaymentDialog_courtFeeOf" />}{" "}{total} {<__LocalizedText id="applicationPaymentDialog_paid" />}{" "}
             {count === 1
-              ? `The ${filingNoun(applications)} is submitted.`
-              : `All ${count} ${filingNoun(applications)} are submitted.`}
+              ? __t("applicationPaymentDialog_theValue0IsSubmitted", {value0: String(filingNoun(applications))})
+              : __t("applicationPaymentDialog_allValue0Value1AreSubmitted", {value0: String(count), value1: String(filingNoun(applications))})}
           </Banner>
         ) : (
           <Banner variant="info">
-            Please visit the Nyay Mitra to make this payment offline.
-          </Banner>
+            {<__LocalizedText id="applicationPaymentDialog_pleaseVisitTheNyayMitraToMake" />}{" "}</Banner>
         )}
 
         <dl className="flex flex-col rounded-lg border border-hairline bg-card px-4 py-1 text-body-compact">
@@ -109,13 +111,13 @@ function PaymentBody({
               className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5"
             >
               <dt className="min-w-0 text-muted-foreground">
-                {item.typeLabel}
+                {__t(item.typeLabel)}
               </dt>
               <dd className="shrink-0 tabular-nums">{rupees(FEE_RUPEES)}</dd>
             </div>
           ))}
           <div className="flex items-baseline justify-between gap-4 py-2.5 font-semibold">
-            <dt>{paid ? "Total paid" : "Total"}</dt>
+            <dt>{paid ? __t("applicationPaymentDialog_totalPaid") : __t("applicationPaymentDialog_total")}</dt>
             <dd className="shrink-0 tabular-nums">{total}</dd>
           </div>
         </dl>
@@ -130,17 +132,15 @@ function PaymentBody({
               onClose();
             }}
           >
-            Done
-          </Button>
+            {<__LocalizedText id="applicationPaymentDialog_done" />}{" "}</Button>
         ) : (
           <>
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Cancel
-              </Button>
+                {<__LocalizedText id="applicationPaymentDialog_cancel" />}{" "}</Button>
             </DialogClose>
             <Button type="button" onClick={() => setPaid(true)}>
-              Pay {total}
+              {<__LocalizedText id="applicationPaymentDialog_pay" />}{" "}{total}
             </Button>
           </>
         )}

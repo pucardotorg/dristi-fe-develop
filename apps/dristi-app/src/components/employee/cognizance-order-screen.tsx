@@ -1,4 +1,6 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
+import {LocalizedText as __LocalizedText} from "@/components/localized-text";
 
 import { CaseHistoryList } from "@/components/employee/grouped-case-history";
 import { cognizanceHistory } from "@/lib/employee/grouped-case-history";
@@ -106,6 +108,7 @@ export function useCognizanceOrderDoor(
   matter: CognizanceCase,
   act: CognizanceAct,
 ): OrderDoor {
+  const __t = __useTranslations();
   const today = useCourtToday();
   const courtText = useCourtText();
   const { court } = useCourt();
@@ -148,7 +151,7 @@ export function useCognizanceOrderDoor(
             markCognizanceTab(tabFor(matter, court));
           }}
         >
-          {back.label}
+          {__t(back.label)}
         </Link>
       </Button>
     ),
@@ -177,16 +180,13 @@ export function OrderMissing() {
             <FileQuestionIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            This complaint is not waiting for cognizance
-          </EmptyTitle>
+            {<__LocalizedText id="cognizanceOrderScreen_thisComplaintIsNotWaitingForCognizance" />}{" "}</EmptyTitle>
           <EmptyDescription className="text-body">
-            An order is drawn up from a complaint on the list of those waiting
-            for cognizance. This one is not on it.
-          </EmptyDescription>
+            {<__LocalizedText id="cognizanceOrderScreen_anOrderIsDrawnUpFromA" />}{" "}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href={COGNIZANCE_PATH}>Back to take cognizance</Link>
+            <Link href={COGNIZANCE_PATH}>{<__LocalizedText id="cognizanceOrderScreen_backToTakeCognizance" />}</Link>
           </Button>
         </EmptyContent>
       </Empty>

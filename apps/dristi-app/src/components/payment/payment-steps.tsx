@@ -1,4 +1,5 @@
 "use client";
+import {useTranslations as __useTranslations} from "@/i18n/use-translations";
 
 import * as React from "react";
 import { CheckIcon } from "lucide-react";
@@ -31,10 +32,11 @@ export const GATEWAY_MS = 2600;
 
 /** The gateway round trip: a spinner, and the sandbox said in place. */
 export function PaymentProcessing({ note = "Sandbox payment. No money moves." }: { note?: string }) {
+  const __t = __useTranslations();
   return (
     <div role="status" className="flex min-h-32 flex-col items-center justify-center gap-3 text-center">
       <Spinner className="size-8 text-primary" />
-      <p className="text-body-compact text-muted-foreground">{note}</p>
+      <p className="text-body-compact text-muted-foreground">{__t(note)}</p>
     </div>
   );
 }
@@ -47,6 +49,7 @@ export function PaymentReceipt({
   amount: string;
   rows: { label: string; value: React.ReactNode }[];
 }) {
+  const __t = __useTranslations();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col items-center gap-2 text-center">
@@ -58,7 +61,7 @@ export function PaymentReceipt({
       <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
         {rows.map((row) => (
           <DescriptionRow key={row.label} className="border-hairline">
-            <DescriptionTerm>{row.label}</DescriptionTerm>
+            <DescriptionTerm>{__t(row.label)}</DescriptionTerm>
             <DescriptionDetails>{row.value}</DescriptionDetails>
           </DescriptionRow>
         ))}

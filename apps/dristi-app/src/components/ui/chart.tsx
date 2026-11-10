@@ -1,4 +1,5 @@
 "use client"
+import {useTranslations as __useTranslations} from "@/i18n/server-translations";
 
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
@@ -144,6 +145,7 @@ function ChartTooltipContent({
     >,
     "accessibilityLayer"
   >) {
+  const __t = __useTranslations();
   const { config } = useChart()
 
   const tooltipLabel = React.useMemo(() => {
@@ -195,7 +197,7 @@ function ChartTooltipContent({
         className
       )}
     >
-      {!nestLabel ? tooltipLabel : null}
+      {!nestLabel ? __t(tooltipLabel) : null}
       <div className="grid gap-1.5">
         {payload
           .filter((item) => item.type !== "none")
@@ -247,9 +249,9 @@ function ChartTooltipContent({
                       )}
                     >
                       <div className="grid gap-1.5">
-                        {nestLabel ? tooltipLabel : null}
+                        {nestLabel ? __t(tooltipLabel) : null}
                         <span className="text-muted-foreground">
-                          {itemConfig?.label ?? item.name}
+                          {__t(itemConfig?.label) ?? item.name}
                         </span>
                       </div>
                       {item.value != null && (
@@ -282,6 +284,7 @@ function ChartLegendContent({
   hideIcon?: boolean
   nameKey?: string
 } & RechartsPrimitive.DefaultLegendContentProps) {
+  const __t = __useTranslations();
   const { config } = useChart()
 
   if (!payload?.length) {
@@ -319,7 +322,7 @@ function ChartLegendContent({
                   }}
                 />
               )}
-              {itemConfig?.label}
+              {__t(itemConfig?.label)}
             </div>
           )
         })}

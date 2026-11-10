@@ -42,8 +42,8 @@ export const METHOD_ORDER: Method[] = ["password", "otp"];
  * judiciary before this ships. `attribution` deliberately claims nothing specific.
  */
 export const brand = {
-  wordmark: t("ON Courts"),
-  headline: t("File and follow your case, from anywhere, anytime."),
+  wordmark: t("signIn_onCourts"),
+  headline: t("signIn_fileAndFollowYourCaseFromAnywhere"),
 } satisfies Record<string, Copy>;
 
 /* -------------------------------------------------------------------- help entry */
@@ -71,76 +71,76 @@ export const brand = {
  */
 export const help = {
   summoned: {
-    title: t("Got a summons about a cheque that bounced?"),
-    body: t("Find out what your summons means, what to do next, and where to seek legal help."),
+    title: t("signIn_gotASummonsAboutAChequeThat"),
+    body: t("signIn_findOutWhatYourSummonsMeansWhat"),
     /* Names the object being explained. "Seek help" is too broad, while "See what
        happens next" hides that the destination explains the summons itself. */
-    action: t("Understand your summons"),
+    action: t("signIn_understandYourSummons"),
   },
   /* Reads as an offer, not a diagnosis — so an advocate scanning the page skips it
      without being told what they already know, and a worried litigant still finds it. */
   general: {
-    title: t("New to cheque bounce cases?"),
-    body: t("How a cheque bounce case runs, what each side can do, and where to get free legal help."),
-    action: t("See how a case works"),
+    title: t("signIn_newToChequeBounceCases"),
+    body: t("signIn_howAChequeBounceCaseRunsWhat"),
+    action: t("signIn_seeHowACaseWorks"),
   },
   /** Sits under the button, so it stays to the one fact that removes the hesitation. */
-  meta: t("No sign-in needed."),
+  meta: t("signIn_noSignInNeeded"),
 };
 
 /* -------------------------------------------------------------------------- form */
 
 export const form = {
-  title: t("Sign in to your account"),
-  subtitle: t("Use the mobile number you gave the court."),
+  title: t("signIn_signInToYourAccount"),
+  subtitle: t("signIn_useTheMobileNumberYouGaveThe"),
 
   /** Legend for the role tabs. Screen readers hear this before the two choices. */
-  roleLegend: t("I am signing in as"),
+  roleLegend: t("signIn_iAmSigningInAs"),
 
-  mobileLabel: t("Mobile number"),
-  mobilePlaceholder: t("10-digit mobile number"),
-  mobileError: t("Enter the 10 digits of your mobile number"),
+  mobileLabel: t("signIn_mobileNumber"),
+  mobilePlaceholder: t("signIn_10DigitMobileNumber"),
+  mobileError: t("signIn_enterThe10DigitsOfYourMobile"),
   /** The number step's one action. It checks the number's format only — the backend
    *  does not reveal which numbers have accounts (owner, Oct 15). */
-  continue: t("Continue"),
+  continue: t("signIn_continue"),
   /* "Couldn't find an account for this number" lived here until Oct 15: the backend will
      not say whether a number is registered (so nobody can probe which ones are), and the
      owner chose a format-only number step. A wrong number now fails at the credential
      step with `noMatch`, which names neither part. */
-  mobileInvalid: t("Enter a valid Indian mobile number"),
+  mobileInvalid: t("signIn_enterAValidIndianMobileNumber"),
 
   /* The second step keeps the same headline as the first. A "Welcome back" to someone
      with a case on them reads as odd, not warm (owner, Sept 9). */
-  changeNumber: t("Change number"),
+  changeNumber: t("signIn_changeNumber"),
 
-  methodLegend: t("Sign in with"),
+  methodLegend: t("signIn_signInWith"),
 
-  passwordLabel: t("Password"),
-  passwordPlaceholder: t("Enter your password"),
-  passwordError: t("Enter your password"),
-  passwordShow: t("Show password"),
-  passwordHide: t("Hide password"),
-  forgot: t("Forgot password?"),
+  passwordLabel: t("signIn_password"),
+  passwordPlaceholder: t("signIn_enterYourPassword"),
+  passwordError: t("signIn_enterYourPassword"),
+  passwordShow: t("signIn_showPassword"),
+  passwordHide: t("signIn_hidePassword"),
+  forgot: t("signIn_forgotPassword"),
 
-  otpHint: t("We will send a one-time code to this number."),
+  otpHint: t("signIn_weWillSendAOneTimeCode"),
 
   /* Backend answers (integration, Oct 15). */
-  noMatch: t("Those details didn't match. Check the number and try again"),
-  unavailable: t("Couldn't reach the server. Check your connection and try again"),
+  noMatch: t("signIn_thoseDetailsDidnTMatchCheckThe"),
+  unavailable: t("signIn_couldnTReachTheServerCheckYour"),
 
   /* After a code was accepted but sign-in still failed: the code is spent. */
-  codeUsed: t("Sign-in didn't finish, and that code can't be used again. Request a new code"),
+  codeUsed: t("signIn_signInDidnTFinishAndThat"),
 
-  submitPassword: t("Sign in"),
-  submitOtp: t("Send one-time code"),
+  submitPassword: t("signIn_signIn"),
+  submitOtp: t("signIn_sendOneTimeCode"),
 
-  registerPrompt: t("New here?"),
-  registerAction: t("Create an account"),
+  registerPrompt: t("signIn_newHere"),
+  registerAction: t("signIn_createAnAccount"),
 
   /* Kept in the file but no longer rendered — the footer collapsed to one line and the
      consent hook moved onto the Terms link. If legal wants an explicit "by continuing"
      statement back, this is the string. */
-  terms: t("By continuing you agree to the terms of use. Your information stays with the court."),
+  terms: t("signIn_byContinuingYouAgreeToTheTerms"),
 } satisfies Record<string, Copy>;
 
 /** Tab labels stay short — five characters of Malayalam more and they wrap at 320px. */
@@ -149,24 +149,24 @@ export const roles: Record<
   { tab: Copy; helper: Copy; describes: Copy }
 > = {
   litigant: {
-    tab: t("Litigant"),
+    tab: t("signIn_litigant"),
     /* Names the two ways a person ends up here without using "accused", which is the
        word that makes someone close the tab. */
-    helper: t("The case is about you. You filed it, or someone filed it against you."),
-    describes: t("Sign in as a litigant"),
+    helper: t("signIn_theCaseIsAboutYouYouFiled"),
+    describes: t("signIn_signInAsALitigant"),
   },
   advocate: {
-    tab: t("Advocate or clerk"),
+    tab: t("signIn_advocateOrClerk"),
     /* Answers the clerk's real question — "is there a place for me here, or do I use my
        advocate's login?" — which is the whole reason the third option existed. */
-    helper: t("Advocates and their clerks both sign in here."),
-    describes: t("Sign in as an advocate or clerk"),
+    helper: t("signIn_advocatesAndTheirClerksBothSignIn"),
+    describes: t("signIn_signInAsAnAdvocateOrClerk"),
   },
 };
 
 export const methods: Record<Method, Copy> = {
-  password: t("Password"),
-  otp: t("OTP"),
+  password: t("signIn_password"),
+  otp: t("signIn_otp"),
 };
 
 /* ------------------------------------------------------------------- otp step */
@@ -178,20 +178,20 @@ export const methods: Record<Method, Copy> = {
  * two screens ago and have no way back.
  */
 export const otp = {
-  title: t("Enter the code we sent you"),
+  title: t("signIn_enterTheCodeWeSentYou"),
   /** `{number}` is replaced with the number the code went to — shown, never assumed. */
-  subtitle: t("We sent a 6-digit code to +91 {number}."),
-  label: t("6-digit code"),
-  error: t("Enter all 6 digits"),
-  show: t("Show the code"),
-  hide: t("Hide the code"),
-  verify: t("Verify and sign in"),
-  resend: t("Send the code again"),
+  subtitle: t("signIn_weSentA6DigitCodeTo"),
+  label: t("signIn_6DigitCode"),
+  error: t("signIn_enterAll6Digits"),
+  show: t("signIn_showTheCode"),
+  hide: t("signIn_hideTheCode"),
+  verify: t("signIn_verifyAndSignIn"),
+  resend: t("signIn_sendTheCodeAgain"),
   /** `{seconds}` counts down. Saying when beats greying a button out silently. Short
    *  on purpose: it shares a slot with the resend link that replaces it, so the two
    *  must be about one width or the line hops when the timer ends. */
-  resendIn: t("Send again in {seconds}s"),
-  changeNumber: t("Use a different number"),
+  resendIn: t("signIn_sendAgainInSecondsS"),
+  changeNumber: t("signIn_useADifferentNumber"),
 } satisfies Record<string, Copy>;
 
 /* ---------------------------------------------------------------- role mismatch */
@@ -205,24 +205,24 @@ export const otp = {
 export const mismatch: Record<Role, { title: Copy; body: Copy; action: Copy }> = {
   /* Shown on the litigant tab when the number is only registered as an advocate. */
   litigant: {
-    title: t("This number is registered as an advocate"),
-    body: t("Sign in as an advocate, or use the number you gave the court as a litigant."),
-    action: t("Sign in as an advocate"),
+    title: t("signIn_thisNumberIsRegisteredAsAnAdvocate"),
+    body: t("signIn_signInAsAnAdvocateOrUse"),
+    action: t("signIn_signInAsAnAdvocate"),
   },
   /* Shown on the advocate tab when the number is only registered as a litigant. */
   advocate: {
-    title: t("This number is registered as a litigant"),
-    body: t("Sign in as a litigant, or register separately with your Bar Council number."),
-    action: t("Sign in as a litigant"),
+    title: t("signIn_thisNumberIsRegisteredAsALitigant"),
+    body: t("signIn_signInAsALitigantOrRegister"),
+    action: t("signIn_signInAsALitigant"),
   },
 };
 
 /* ------------------------------------------------------------------------ footer */
 
-export const footerNavLabel = t("About this site");
+export const footerNavLabel = t("signIn_aboutThisSite");
 
 export const footer: { label: Copy; href: string }[] = [
-  { label: t("Terms of use"), href: "/terms" },
-  { label: t("Privacy"), href: "/privacy" },
-  { label: t("Support"), href: "/support" },
+  { label: t("signIn_termsOfUse"), href: "/terms" },
+  { label: t("signIn_privacy"), href: "/privacy" },
+  { label: t("signIn_support"), href: "/support" },
 ];

@@ -40,7 +40,11 @@ import { useSourceRailSlot } from "@/components/filing/filing-shell";
 import { useInCorrection } from "@/components/filing/posture";
 import { Lightbox } from "@/components/filing/lightbox";
 
-export type SourceChip = { label: string; active: boolean; onClick: () => void };
+/**
+ * A document to show in the panel. `id` names its upload slot: the label is the file's
+ * name, and one file uploaded into two slots would give two chips the same label.
+ */
+export type SourceChip = { id: string; label: string; active: boolean; onClick: () => void };
 
 export type SourcePanelProps = {
   open: boolean;
@@ -251,7 +255,7 @@ function SourcePanelBody(p: SourcePanelProps) {
             <div className="flex flex-wrap gap-2">
               {p.chips.map((c) => (
                 <Button
-                  key={c.label}
+                  key={c.id}
                   type="button"
                   size="sm"
                   variant={c.active ? "default" : "outline"}

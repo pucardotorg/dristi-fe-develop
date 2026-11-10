@@ -434,6 +434,7 @@ export function ChequeSection() {
           (sourceDoc === "front" ? "Cheque (front side)" : "Cheque return memo")
         }
         chips={sourceDocs.map((d) => ({
+          id: d.key,
           label: d.slot?.file?.name ?? d.slot?.label ?? d.fallbackLabel,
           active: d.key === sourceDoc,
           onClick: () => setSourceDoc(d.key),

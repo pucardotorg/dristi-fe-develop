@@ -7,10 +7,14 @@
  * once the form counts it complete, and only when it changed since the last save; one
  * the backend would still refuse is held back with a note naming what to add. A party
  * removed from the form is taken off the case at once.
+ *
+ * Opening the complainant or accused step first reads its parties from the case, so the
+ * screen shows the case's record rather than this browser's (see `case-read.ts`).
  */
 
 import * as React from "react";
 
+import { accusedFromCase, complainantsFromCase } from "./case-read";
 import { caseFilingApi, caseFilingErrorMessage, type PartyRole } from "./data/cases-api";
 import {
   accusedBodies,
@@ -36,6 +40,7 @@ import type {
   FilingDraft,
   SavedParty,
   SavedPoaHolder,
+  UserProfile,
   Witness,
 } from "./types";
 import { syncAdvocates } from "./use-case-advocates";
@@ -76,7 +81,8 @@ function complete(party: Party, kind: PartyKind): boolean {
   return witnessComplete(party as Witness);
 }
 
-type Saved = Required<Pick<SavedParty, "caseParticipantIds" | "savedBodies">>;
+type Saved = Required<Pick<SavedParty, "caseParticipantIds" | "savedBodies">> &
+  Pick<SavedParty, "institutionId">;
 
 /**
  * The last save of each party, by party id. A save can finish after its step has closed,
@@ -114,9 +120,60 @@ export function removePartyFromCase(party: Party) {
   }
 }
 
+/**
+ * Read the case and put its copy of every saved complainant or accused on the form (see
+ * `case-read.ts`). Returns the parties whose copy was replaced: the save that follows reads
+ * the draft through `latest()`, which may not show the replacement yet, and must not send
+ * the old copy back over the case's.
+ */
+async function loadFromCase(
+  kind: "complainant" | "accused",
+  caseId: string,
+  latest: () => FilingDraft,
+  update: (recipe: (d: FilingDraft) => void) => void,
+  profile: UserProfile | null
+): Promise<Set<string>> {
+  const read = await caseFilingApi.getCase(caseId);
+  const caughtUp = (d: FilingDraft) => {
+    // A save the draft has not caught up with yet is what the case is compared against.
+    for (const p of partiesOf(d, kind)) {
+      const saved = lastSaved.get(p.id);
+      if (saved) Object.assign(p, saved);
+      if ("poaHolder" in p && lastPoa.has(p.id)) p.savedPoaHolder = lastPoa.get(p.id);
+    }
+  };
+  const apply = (d: FilingDraft) => {
+    caughtUp(d);
+    if (kind === "complainant") {
+      const result = complainantsFromCase(read, d.complainants, profile);
+      d.complainants = result.parties;
+      return result.replaced;
+    }
+    const result = accusedFromCase(read, d.accused);
+    d.accused = result.parties;
+    return result.replaced;
+  };
+
+  const snapshot = structuredClone(latest());
+  const replaced = apply(snapshot);
+  for (const p of partiesOf(snapshot, kind)) {
+    lastSaved.set(p.id, {
+      caseParticipantIds: p.caseParticipantIds ?? [],
+      savedBodies: p.savedBodies ?? [],
+      institutionId: p.institutionId,
+    });
+    if ("poaHolder" in p) lastPoa.set(p.id, p.savedPoaHolder);
+  }
+  // Run again on the draft as it is when this lands, so a field typed meanwhile is kept.
+  update((d) => void apply(d));
+  return new Set(replaced);
+}
+
 export function useCaseParties<K extends PartyKind>(kind: K) {
   const { draft, update } = useFiling();
   const { profile, ready } = useProfile();
+  // Read from the case once per visit to the step, before its first save.
+  const loaded = React.useRef(false);
 
   const record = React.useCallback(
     (id: string, patch: (party: SavedParty) => void) =>
@@ -138,16 +195,29 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
   const sync = useStepSync(kind, async (latest, caseId) => {
     // Who "you" are decides how a complainant is added; wait for it rather than add one twice.
     if (kind === "complainant" && !ready) return;
+    let fromCase = new Set<string>();
+    if (!loaded.current && kind !== "witness") {
+      try {
+        fromCase = await loadFromCase(kind, caseId, latest, update, profile);
+        loaded.current = true;
+      } catch (error) {
+        // The browser's copy is still there; the next save tries the case again.
+        console.warn("[filing] couldn't read the parties from the case", error);
+      }
+    }
     const selfId =
       kind === "complainant" ? selfComplainantId(latest().complainants, profile) : undefined;
     let reAdded = false;
     for (const party of partiesOf(latest(), kind)) {
+      // Just read from the case: there is nothing of it to send.
+      if (fromCase.has(party.id)) continue;
       const saved = savedOf(party);
       // A save the draft has not caught up with (its step closed first) is written now.
       if (saved !== party && !sameList(saved.savedBodies, party.savedBodies)) {
         record(party.id, (p) => {
           p.caseParticipantIds = saved.caseParticipantIds;
           p.savedBodies = saved.savedBodies;
+          p.institutionId = saved.institutionId;
         });
       }
 
@@ -171,6 +241,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
       lastSaved.set(party.id, {
         caseParticipantIds: result.caseParticipantIds,
         savedBodies: result.savedBodies,
+        institutionId: result.institutionId,
       });
       if (!partiesOf(latest(), kind).some((p) => p.id === party.id)) {
         // Removed from the form while it was being saved.
@@ -180,6 +251,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
       record(party.id, (p) => {
         p.caseParticipantIds = result.caseParticipantIds;
         p.savedBodies = result.savedBodies;
+        p.institutionId = result.institutionId;
         p.syncError = result.error ? caseFilingErrorMessage(result.error) : undefined;
       });
     }
@@ -196,6 +268,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
     if (reAdded) await runStepSave(caseId, "advocate", () => syncAdvocates(latest, caseId, update));
 
     for (const c of latest().complainants) {
+      if (fromCase.has(c.id)) continue;
       const holderIsSelf = c.id !== selfId && isAccountMobile(c.poaHolder.mobile, profile);
       const body = poaHolderBody(c, holderIsSelf);
       const saved = lastPoa.has(c.id) ? lastPoa.get(c.id) : c.savedPoaHolder;
@@ -223,6 +296,12 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
       });
     }
   });
+
+  // The complainant step waits for the profile before its first save (above); read the
+  // case once it arrives rather than on the step's close.
+  React.useEffect(() => {
+    if (kind === "complainant" && ready && !loaded.current) void sync();
+  }, [kind, ready, sync]);
 
   const unsaved = (
     draft.caseId

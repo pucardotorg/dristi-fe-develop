@@ -14,6 +14,8 @@
  *   searchAdvocates     GET    /advocates?search=           → approved advocates, with their id
  *   addAdvocate         POST   /cases/{id}/advocates        { advocate_id, client_participant_ids }
  *   endRepresentation   DELETE /representations/{representation_id}
+ *   getCase             GET    /cases/{id}                  → participants, representations,
+ *                                                            poa_mandates
  *
  * The backend creates the case lazily, on the first save, and gives it the draft
  * session's id — so the id `startDraft` returns is the case id for the life of the
@@ -25,9 +27,11 @@
 
 import { api, isApiError, type ApiClient, type Page } from "@/lib/api";
 
+import { caseFilingCopy as copy } from "../content";
 import type { EvidenceType } from "../evidence";
 import type { IntakeDocType } from "../types";
 import type { ValidationError, ValidationResult } from "../validation";
+import { partyFieldMessage } from "./party-field-errors";
 
 /** Registered case-filing error codes this file branches on (spec §7). */
 const E_CASE_SUBMITTED = "E07001";
@@ -140,14 +144,24 @@ export type AddressInput = {
 
 export type PersonInput = {
   name: string;
-  phone_number?: string;
-  email_address?: string;
   age?: number;
   gender?: "MALE" | "FEMALE" | "OTHER";
   disability_status?: boolean;
 };
 
-export type InstitutionInput = {
+/**
+ * Someone's mobile numbers, emails and addresses on this case; the first of each is the
+ * primary. A person's mobiles are E.164 (`+91…`); an institution's may be landlines. A
+ * list may not hold the same value twice (emails compared ignoring case). On PATCH, a list
+ * sent replaces the whole list and a list left out is kept.
+ */
+export type ContactLists = {
+  mobile_numbers?: string[];
+  email_addresses?: string[];
+  addresses?: Partial<AddressInput>[];
+};
+
+export type InstitutionInput = ContactLists & {
   entity_type?: string;
   entity_name: string;
   pan?: string;
@@ -157,12 +171,14 @@ export type InstitutionInput = {
    * PAN, a CIN or this, or the backend refuses it (400).
    */
   pan_cin_skip_declared?: true;
-  contact_number?: string;
-  email_address?: string;
 };
 
-/** A complainant or an accused: a person, an institution, or a person for an institution. */
-export type PartyInput = {
+/**
+ * A complainant or an accused: a person, an institution, or a person for an institution.
+ * The contact lists are the individual's; an institution's own go inside `institution`,
+ * and one with nobody acting for it sends none outside it.
+ */
+export type PartyInput = ContactLists & {
   /**
    * The filer themselves: the backend uses their own person, linked to their account and
    * `VERIFIED`, and refuses `person` alongside it. Only for a complainant.
@@ -170,10 +186,14 @@ export type PartyInput = {
   self?: true;
   person?: PersonInput;
   institution?: InstitutionInput;
+  /**
+   * Accused only, in place of `institution`: another person summoned for a company already
+   * accused on the case, which keeps its details and contacts. Needs `person`.
+   */
+  institution_id?: string;
   /** The person's capacity for the institution; only with both. */
   designation?: string;
-  address: Partial<AddressInput>;
-  /** An individual complainant's, only when it differs from `address`. */
+  /** An individual complainant's, only when it differs from their first address. */
   permanent_address?: Partial<AddressInput>;
   is_party_in_person: boolean;
   /** Accused only: does the accused reside within this court's jurisdiction. */
@@ -183,22 +203,26 @@ export type PartyInput = {
    * email and cannot locate them with reasonable effort. Sent only while there is none.
    */
   contact_details_unknown_declared?: true;
+  /** Complainants appearing in person only; rich-text editor output with visible text. */
+  party_in_person_affidavit?: string;
   additional_details: Record<string, unknown>;
 };
 
 /**
- * A PoA holder: always a person (or the filer, as `self`), with a full address. One
+ * A PoA holder: always a person (or the filer, as `self`), with at least one address. One
  * mandate is granted for each party in `represented_participant_ids`.
  */
-export type PoaHolderInput = {
+export type PoaHolderInput = ContactLists & {
   self?: true;
   person?: PersonInput;
-  address: Partial<AddressInput>;
-  /** Only when it differs from `address`. */
+  /** Only when it differs from their first address. */
   permanent_address?: Partial<AddressInput>;
   represented_participant_ids: string[];
   additional_details: Record<string, unknown>;
 };
+
+/** A party just added: its participant, and the institution it is (`null` for a person). */
+export type AddedParty = { participantId: string; institutionId: string | null };
 
 /** A PoA holder on the case, and the mandates they were granted. */
 export type AddedPoaHolder = { participantId: string; mandateIds: string[] };
@@ -206,12 +230,14 @@ export type AddedPoaHolder = { participantId: string; mandateIds: string[] };
 /** Whose witness: the side that calls them. */
 export type WitnessSide = "COMPLAINANT" | "ACCUSED";
 
-/** A witness: always a person. The address is required and needs a police station. */
-export type WitnessInput = {
+/**
+ * A witness: always a person, with at least one address, each with a police station. The
+ * mobile number is optional.
+ */
+export type WitnessInput = ContactLists & {
   person: PersonInput;
   /** Their job title ("Branch manager"), kept on the case's copy. */
   designation?: string;
-  address?: Partial<AddressInput>;
   side: WitnessSide;
   what_will_witness_prove?: string;
   additional_details: Record<string, unknown>;
@@ -219,15 +245,25 @@ export type WitnessInput = {
 
 export type PartyRole = "complainants" | "accused" | "witnesses";
 
-/** What PATCH may change: the case's copy of the details, never who the party is. */
-export type ParticipantPatch = {
+/**
+ * What PATCH may change: the case's copy of the details, never who the party is. The
+ * contact lists are sent whole, since each one sent replaces the list.
+ */
+export type ParticipantPatch = ContactLists & {
   name_at_filing: string;
-  phone_number_at_filing: string | null;
   gender_at_filing: PersonInput["gender"] | null;
   age_at_filing: number | null;
   designation_at_filing?: string | null;
-  address?: Partial<AddressInput>;
-  /** Individual complainants and PoA holders only; `null` clears it (same as `address`). */
+  /** People only; `null` means not answered. */
+  disability_status?: boolean | null;
+  /**
+   * Institution participants only: re-links the participant to the institution its PAN or
+   * CIN names, creating one when there is none. Sent only when the company itself changed.
+   */
+  institution?: Omit<InstitutionInput, keyof ContactLists>;
+  /** Institution participants only: the company's own contact lists, without re-linking it. */
+  institution_contacts?: Required<ContactLists>;
+  /** Individual complainants and PoA holders only; `null` makes it the first address. */
   permanent_address?: Partial<AddressInput> | null;
   /** Complainants and accused only. */
   is_party_in_person?: boolean;
@@ -235,6 +271,8 @@ export type ParticipantPatch = {
   resides_within_jurisdiction?: boolean;
   /** Accused only. */
   contact_details_unknown_declared?: boolean;
+  /** Complainants only; `null` clears it. */
+  party_in_person_affidavit?: string | null;
   additional_details: Record<string, unknown>;
   /** Witnesses only. */
   side?: WitnessSide;
@@ -247,13 +285,87 @@ export const ADVOCATE_SEARCH_MIN_LENGTH = 2;
 /** An approved advocate, as the search returns them. `id` is what a case is given. */
 export type FoundAdvocate = { id: string; name: string; barNumber: string };
 
-type DraftSessionBody = { draft_session_id?: unknown };
-type CaseDocumentBody = {
-  case_id?: unknown;
-  case_document_id?: unknown;
-  document_type?: unknown;
+/* What `GET /cases/{id}` returns of the parties: the case's own copies of them. */
+
+export type AddressRead = {
+  address_id?: string;
+  line1: string | null;
+  city: string | null;
+  district: string | null;
+  state: string | null;
+  pincode: string | null;
+  police_station: string | null;
 };
-type ParticipantBody = { case_participant_id?: unknown };
+
+/** Someone's contacts on this case, each list primary first. */
+export type ContactListsRead = {
+  mobile_numbers: string[];
+  email_addresses: string[];
+  addresses: AddressRead[];
+};
+
+/**
+ * The institution's row, with its own contacts on this case. PAN, CIN and the skip
+ * declaration are `null` but for a complainant.
+ */
+export type InstitutionRead = ContactListsRead & {
+  entity_name: string;
+  entity_type: string;
+  pan: string | null;
+  cin: string | null;
+  pan_cin_skip_declared: boolean | null;
+};
+
+export type ParticipantRole = "COMPLAINANT" | "ACCUSED" | "WITNESS" | "POA_HOLDER";
+
+/** A participant. The contact lists are the person's (empty for an institution alone). */
+export type ParticipantRead = ContactListsRead & {
+  case_participant_id: string;
+  person_id: string | null;
+  institution_id: string | null;
+  role: ParticipantRole;
+  ordinal: number;
+  name_at_filing: string | null;
+  gender_at_filing: string | null;
+  age_at_filing: number | null;
+  designation_at_filing: string | null;
+  institution: InstitutionRead | null;
+  /** `null` when not answered, or for an institution alone. */
+  disability_status: boolean | null;
+  /** Only when it differs from the first address. */
+  permanent_address: AddressRead | null;
+  is_party_in_person: boolean;
+  resides_within_jurisdiction: boolean | null;
+  contact_details_unknown_declared: boolean;
+  party_in_person_affidavit: string | null;
+  additional_details: Record<string, unknown>;
+  updated_at: string;
+};
+
+export type RepresentationRead = {
+  representation_id: string;
+  advocate_id: string;
+  advocate_name: string;
+  bar_registration_id: string;
+  client_participant_id: string;
+};
+
+export type PoaMandateRead = {
+  poa_mandate_id: string;
+  poa_participant_id: string;
+  represented_participant_id: string;
+};
+
+/** The active parties, advocates and mandates on a case, as the case recorded them. */
+export type CaseRead = {
+  participants: ParticipantRead[];
+  representations: RepresentationRead[];
+  poa_mandates: PoaMandateRead[];
+};
+
+type DraftSessionBody = { draft_session_id?: unknown };
+type CaseDocumentBody = { case_id?: unknown; case_document_id?: unknown; document_type?: unknown };
+type ParticipantBody = { case_participant_id?: unknown; institution_id?: unknown };
 type AdvocateCreatedBody = { representation_ids?: unknown };
 type PoaHolderCreatedBody = {
   case_participant_id?: unknown;
@@ -295,35 +407,20 @@ function toSavedEvidence(body: CaseEvidenceBody | null): SavedEvidence {
  * the status, then the backend's own message.
  */
 export function caseFilingErrorMessage(error: unknown): string {
-  if (!isApiError(error)) return "Something went wrong. Please try again.";
-  if (error.kind === "network" || error.kind === "timeout") {
-    return "We couldn't reach the court's server. Check your connection and try again.";
-  }
-  if (error.kind !== "http") return "Something went wrong. Please try again.";
-  if (error.hasCode(E_CASE_SUBMITTED)) {
-    return "This case has been submitted, so it can no longer be changed.";
-  }
-  if (error.hasCode(E_TYPE_NOT_ACCEPTED)) {
-    return "The court doesn't accept this kind of document for this case.";
-  }
-  if (error.hasCode(E_WITNESS_EXISTS)) {
-    return "This person is already a witness for this side.";
-  }
-  if (error.hasCode(E_EVIDENCE_NOT_ON_CASE)) {
-    return "The demand notice this belongs to is no longer on the case. Save the demand notice step again, then try again.";
-  }
+  if (!isApiError(error)) return copy.generic;
+  if (error.kind === "network" || error.kind === "timeout") return copy.unreachable;
+  if (error.kind !== "http") return copy.generic;
+  if (error.hasCode(E_CASE_SUBMITTED)) return copy.submitted;
+  if (error.hasCode(E_TYPE_NOT_ACCEPTED)) return copy.documentTypeNotAccepted;
+  if (error.hasCode(E_WITNESS_EXISTS)) return copy.witnessExists;
+  if (error.hasCode(E_EVIDENCE_NOT_ON_CASE)) return copy.noticeNotOnCase;
   if (error.hasCode(E_NOT_A_NOTICE) || error.hasCode(E_EVIDENCE_LINK_NOT_ALLOWED)) {
-    return "This document couldn't be attached to its demand notice. Please try again.";
+    return copy.noticeLinkFailed;
   }
-  if (error.status === 401 || error.status === 403) {
-    return "Your session has ended. Sign in again to keep saving this filing.";
-  }
-  if (error.status === 404) {
-    return "This draft is no longer on the court's server. Start a new filing to save it.";
-  }
-  if (error.status === 413)
-    return "This file is too large. Upload a file of up to 10 MB.";
-  return error.fieldError("file") ?? error.message;
+  if (error.status === 401 || error.status === 403) return copy.sessionEnded;
+  if (error.status === 404) return copy.draftGone;
+  if (error.status === 413) return copy.fileTooLarge;
+  return partyFieldMessage(error) ?? error.fieldError("file") ?? error.message;
 }
 
 export function createCaseFilingApi(client: ApiClient = api) {
@@ -401,15 +498,17 @@ export function createCaseFilingApi(client: ApiClient = api) {
     async addParty(
       caseId: string,
       role: PartyRole,
-      party: PartyInput | WitnessInput,
-    ): Promise<string> {
+      party: PartyInput | WitnessInput
+    ): Promise<AddedParty> {
       const body = await client.post<ParticipantBody>(
         `cases/${encodeURIComponent(caseId)}/${role}`,
         party,
       );
-      if (typeof body?.case_participant_id !== "string")
-        throw unexpected("participant");
-      return body.case_participant_id;
+      if (typeof body?.case_participant_id !== "string") throw unexpected("participant");
+      return {
+        participantId: body.case_participant_id,
+        institutionId: typeof body.institution_id === "string" ? body.institution_id : null,
+      };
     },
 
     async updateParticipant(
@@ -601,6 +700,23 @@ export function createCaseFilingApi(client: ApiClient = api) {
           )
         : [];
       return { isValid: body?.is_valid === true, errors };
+    },
+
+    /** The parties, advocates and PoA mandates on the case, as the backend holds them. */
+    async getCase(caseId: string): Promise<CaseRead> {
+      const body = await client.get<Partial<CaseRead>>(`cases/${encodeURIComponent(caseId)}`);
+      if (
+        !Array.isArray(body?.participants) ||
+        !Array.isArray(body.representations) ||
+        !Array.isArray(body.poa_mandates)
+      ) {
+        throw unexpected("case");
+      }
+      return {
+        participants: body.participants,
+        representations: body.representations,
+        poa_mandates: body.poa_mandates,
+      };
     },
   };
 }

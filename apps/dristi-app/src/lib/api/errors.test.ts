@@ -14,6 +14,7 @@ describe("parseErrorBody", () => {
       code: null,
       codes: [],
       fieldErrors: {},
+      fieldCodes: {},
     });
   });
 
@@ -76,6 +77,19 @@ describe("parseErrorBody — the standard errors[] shape", () => {
     });
     // No request-level message: the first field's message stands in.
     assert.equal(parsed.message, "This field is required.");
+  });
+
+  it("keeps each field's own codes, so a form can tell a repeat from a bad value", () => {
+    const parsed = parseErrorBody({
+      errors: [
+        { code: "E00001", message: "Enter a valid number.", field: "mobile_numbers[0]" },
+        { code: "E07033", message: "Given more than once.", field: "mobile_numbers[1]" },
+      ],
+    });
+    assert.deepEqual(parsed.fieldCodes, {
+      "mobile_numbers.0": ["E00001"],
+      "mobile_numbers.1": ["E07033"],
+    });
   });
 
   it("survives malformed items", () => {

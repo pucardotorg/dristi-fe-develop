@@ -211,7 +211,7 @@ describe("deleteDocument", () => {
 describe("parties", () => {
   const party = {
     person: { name: "Asha" },
-    address: { line1: "12 MG Road" },
+    addresses: [{ line1: "12 MG Road" }],
     is_party_in_person: false,
     additional_details: {},
   };
@@ -219,11 +219,14 @@ describe("parties", () => {
   it("adds a complainant or an accused on the role's own path", async () => {
     const { cases, calls } = setup(() =>
       Response.json(
-        { case_participant_id: "p1", role: "ACCUSED", meta: META },
-        { status: 201 },
-      ),
+        { case_participant_id: "p1", institution_id: "i1", role: "ACCUSED", meta: META },
+        { status: 201 }
+      )
     );
-    assert.equal(await cases.addParty("c0ffee", "accused", party), "p1");
+    assert.deepEqual(await cases.addParty("c0ffee", "accused", party), {
+      participantId: "p1",
+      institutionId: "i1",
+    });
     assert.equal(calls[0].url, "/api/v1/cases/c0ffee/accused");
     assert.equal(calls[0].method, "POST");
     assert.deepEqual(calls[0].body, party);
@@ -244,10 +247,10 @@ describe("parties", () => {
     );
     await cases.updateParticipant("p1", {
       name_at_filing: "Asha",
-      phone_number_at_filing: null,
       gender_at_filing: null,
       age_at_filing: null,
-      address: {},
+      mobile_numbers: [],
+      addresses: [],
       is_party_in_person: false,
       additional_details: {},
     });
@@ -387,6 +390,10 @@ describe("caseFilingErrorMessage", () => {
       caseFilingErrorMessage(httpError(404, [])),
       /no longer on the court's server/,
     );
+  });
+
+  it("names the 15 MB limit the upload screens check for a file too large", () => {
+    assert.match(caseFilingErrorMessage(httpError(413, [])), /up to 15 MB/);
   });
 
   it("reads 401 and 403 as an ended session", () => {

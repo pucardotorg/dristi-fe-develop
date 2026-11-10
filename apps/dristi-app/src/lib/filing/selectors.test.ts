@@ -28,7 +28,7 @@ function institution(): Complainant {
 }
 
 describe("witnessComplete", () => {
-  it("counts a witness with a name (or designation), a mobile and an address with a police station", () => {
+  it("counts a witness with a name (or designation) and an address with a police station", () => {
     assert.equal(witnessComplete(fullWitness()), true);
     const byDesignation = fullWitness();
     byDesignation.fullName = "";
@@ -36,14 +36,14 @@ describe("witnessComplete", () => {
     assert.equal(witnessComplete(byDesignation), true);
   });
 
-  it("holds back a witness missing a name/designation, a mobile, or the address", () => {
+  it("holds back a witness missing a name/designation or the address", () => {
     const noName = fullWitness();
     noName.fullName = "";
     assert.equal(witnessComplete(noName), false);
 
     const noMobile = fullWitness();
     noMobile.contacts = [{ mobile: "", email: "" }];
-    assert.equal(witnessComplete(noMobile), false);
+    assert.equal(witnessComplete(noMobile), true, "the mobile number is optional");
 
     const noPolice = fullWitness();
     noPolice.addresses = [{ ...noPolice.addresses[0], police: "" }];

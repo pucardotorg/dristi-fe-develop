@@ -157,6 +157,11 @@ export type SavedParty = {
   caseParticipantIds?: string[];
   /** Each saved body as JSON — unchanged parties are not sent again. */
   savedBodies?: string[];
+  /**
+   * The institution an accused company is on the case: each further person summoned for
+   * it is added to this one rather than to a new institution.
+   */
+  institutionId?: string;
   /** Saving to the backend case failed; the details are still in this browser. */
   syncError?: string;
 };

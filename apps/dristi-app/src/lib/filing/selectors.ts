@@ -277,10 +277,10 @@ export function noticeComplete(n: DemandNotice): boolean {
 
 export function witnessComplete(w: Witness): boolean {
   const named = !!(w.fullName.trim() || w.designation.trim());
-  const hasMobile = w.contacts.some((c) => c.mobile.trim());
   // A witness now needs an address for service, with a police station (dristi-be spec 0020 §4.2).
+  // Their mobile number is optional.
   const hasAddress = w.addresses.some((b) => b.addr.line1.trim() && b.police.trim());
-  return named && hasMobile && hasAddress;
+  return named && hasAddress;
 }
 
 /** Sum of cheque amounts typed so far (digits only), or 0. */

@@ -56,20 +56,18 @@ function accused() {
 describe("complainantBodies", () => {
   it("sends an individual as a person, with a +91 mobile and the residence address", () => {
     const [body] = complainantBodies(complainant());
-    assert.deepEqual(body.person, {
-      name: "Asha Menon",
-      phone_number: "+919876543210",
-      email_address: "asha@example.com",
-      age: 42,
-      gender: "FEMALE",
-    });
-    assert.deepEqual(body.address, {
-      line1: "12 MG Road",
-      city: "Kollam",
-      pincode: "691001",
-      district: "Kollam",
-      state: "Kerala",
-    });
+    assert.deepEqual(body.person, { name: "Asha Menon", age: 42, gender: "FEMALE" });
+    assert.deepEqual(body.mobile_numbers, ["+919876543210"]);
+    assert.deepEqual(body.email_addresses, ["asha@example.com"]);
+    assert.deepEqual(body.addresses, [
+      {
+        line1: "12 MG Road",
+        city: "Kollam",
+        pincode: "691001",
+        district: "Kollam",
+        state: "Kerala",
+      },
+    ]);
     assert.equal(body.is_party_in_person, false);
     assert.equal(body.institution, undefined);
   });
@@ -116,6 +114,41 @@ describe("complainantBodies", () => {
     assert.equal(complainantBodies(c)[0].is_party_in_person, true);
   });
 
+  it("sends the party-in-person affidavit only when appearing in person", () => {
+    const c = complainant();
+    c.affidavit = "<p>I, Asha Menon, wish to appear in person.</p>";
+    c.pip = "no";
+    const [withAdvocate] = complainantBodies(c);
+    assert.equal("party_in_person_affidavit" in withAdvocate, false);
+    assert.equal(patchFor(withAdvocate).party_in_person_affidavit, null);
+
+    c.pip = "yes";
+    const [inPerson] = complainantBodies(c);
+    assert.equal(inPerson.party_in_person_affidavit, c.affidavit);
+    assert.equal(patchFor(inPerson).party_in_person_affidavit, c.affidavit);
+  });
+
+  it("sends an institution's affidavit too", () => {
+    const c = complainant();
+    c.type = "institution";
+    c.pip = "yes";
+    c.affidavit = "<p>The company appears in person.</p>";
+    assert.equal(complainantBodies(c)[0].party_in_person_affidavit, c.affidavit);
+  });
+
+  it("sends no affidavit the editor left empty, since the backend refuses it", () => {
+    const c = complainant();
+    c.pip = "yes";
+    for (const empty of ["", "<p><br></p>", "<p>&nbsp;</p>", "<p> </p>"]) {
+      c.affidavit = empty;
+      assert.equal("party_in_person_affidavit" in complainantBodies(c)[0], false, empty);
+    }
+  });
+
+  it("never sends an accused's patch an affidavit", () => {
+    assert.equal("party_in_person_affidavit" in patchFor(accusedBodies(accused())[0]), false);
+  });
+
   it("sends an institution with its PAN, and its representative as the person", () => {
     const c = blankComplainant();
     c.type = "institution";
@@ -125,13 +158,15 @@ describe("complainantBodies", () => {
     c.entAddr = { ...addr };
     c.rep = { ...blankRepresentative(), name: "Meera Nair", designation: "Director", mobile: "9000000001" };
     const [body] = complainantBodies(c);
-    assert.deepEqual(body.institution, {
-      entity_type: "PRIVATE_LIMITED_COMPANY",
-      entity_name: "Kollam Traders Pvt Ltd",
-      pan: "ABCDE1234F",
-    });
+    assert.equal(body.institution?.entity_type, "PRIVATE_LIMITED_COMPANY");
+    assert.equal(body.institution?.entity_name, "Kollam Traders Pvt Ltd");
+    assert.equal(body.institution?.pan, "ABCDE1234F");
+    assert.equal(body.institution?.addresses?.[0].line1, "12 MG Road");
     assert.equal(body.person?.name, "Meera Nair");
     assert.equal(body.designation, "Director");
+    // The representative's own number, outside the institution.
+    assert.deepEqual(body.mobile_numbers, ["+919000000001"]);
+    assert.equal(body.institution?.mobile_numbers, undefined);
   });
 
   /** An institution complainant with everything the backend needs except its CIN/PAN. */
@@ -172,10 +207,12 @@ describe("complainantBodies", () => {
 });
 
 describe("accusedBodies", () => {
-  it("sends an individual with the first contact and the address's police station", () => {
+  it("sends an individual with their contacts and the address's police station", () => {
     const [body] = accusedBodies(accused());
-    assert.deepEqual(body.person, { name: "Ravi Kumar", phone_number: "+919123456780" });
-    assert.equal(body.address.police_station, "Kollam East");
+    assert.deepEqual(body.person, { name: "Ravi Kumar" });
+    assert.deepEqual(body.mobile_numbers, ["+919123456780"]);
+    assert.equal("email_addresses" in body, false);
+    assert.equal(body.addresses?.[0].police_station, "Kollam East");
     assert.equal(body.resides_within_jurisdiction, true);
     assert.deepEqual(body.additional_details, {});
   });
@@ -227,17 +264,34 @@ describe("accusedBodies", () => {
     assert.ok(bodies.every((b) => b.contact_details_unknown_declared === true));
   });
 
-  it("keeps further contacts and addresses in additional details", () => {
+  it("leaves the declaration off a person summoned who gives their own phone", () => {
     const a = accused();
-    a.contacts.push({ mobile: "", email: "ravi@example.com" });
+    a.type = "institution";
+    a.contacts = [{ mobile: "", email: "" }];
+    a.reps = [
+      { ...blankRepresentative(), name: "A", designation: "Director", mobile: "9000000001" },
+      { ...blankRepresentative(), name: "B", designation: "Manager" },
+    ];
+    a.contactUnknownDeclaredAt = "2026-11-03T10:00:00.000Z";
+    const [withPhone, without] = accusedBodies(a);
+    // The backend refuses the declaration alongside any phone or email.
+    assert.equal("contact_details_unknown_declared" in withPhone, false);
+    assert.equal(patchFor(withPhone).contact_details_unknown_declared, false);
+    assert.equal(without.contact_details_unknown_declared, true);
+  });
+
+  it("sends every contact and address in the lists, in the form's order", () => {
+    const a = accused();
+    a.contacts.push({ mobile: "9123456781", email: "ravi@example.com" });
     a.addresses.push({ addr: { ...addr, line1: "Shop 3, Main Bazaar" }, police: "Kollam West" });
     const [body] = accusedBodies(a);
-    assert.deepEqual(body.additional_details.other_contacts, [{ email_address: "ravi@example.com" }]);
-    assert.equal(
-      (body.additional_details.other_addresses as Array<{ police_station: string }>)[0]
-        .police_station,
-      "Kollam West"
+    assert.deepEqual(body.mobile_numbers, ["+919123456780", "+919123456781"]);
+    assert.deepEqual(body.email_addresses, ["ravi@example.com"]);
+    assert.deepEqual(
+      body.addresses?.map((x) => x.police_station),
+      ["Kollam East", "Kollam West"]
     );
+    assert.deepEqual(body.additional_details, {});
   });
 
   it("skips empty contact rows and blank address blocks", () => {
@@ -245,9 +299,58 @@ describe("accusedBodies", () => {
     a.contacts.unshift(blankContact());
     a.addresses.unshift(blankAddressBlock());
     const [body] = accusedBodies(a);
-    assert.equal(body.person?.phone_number, "+919123456780");
-    assert.equal(body.address.line1, "12 MG Road");
-    assert.equal(body.additional_details.other_addresses, undefined);
+    assert.deepEqual(body.mobile_numbers, ["+919123456780"]);
+    assert.deepEqual(body.addresses?.map((x) => x.line1), ["12 MG Road"]);
+  });
+
+  it("sends a number or email typed twice once, since the backend refuses repeats", () => {
+    const a = accused();
+    a.contacts = [
+      { mobile: "9123456780", email: "Ravi@Example.com" },
+      { mobile: "+91 91234 56780", email: "ravi@example.com" },
+    ];
+    const [body] = accusedBodies(a);
+    assert.deepEqual(body.mobile_numbers, ["+919123456780"]);
+    assert.deepEqual(body.email_addresses, ["Ravi@Example.com"]);
+  });
+
+  it("puts an institution's contacts inside it, and the people summoned's own outside", () => {
+    const a = accused();
+    a.type = "institution";
+    a.entType = "llp";
+    a.name = "Ravi & Sons LLP";
+    a.contacts = [{ mobile: "0474 2233445", email: "legal@ravisons.in" }];
+    a.reps = [
+      {
+        ...blankRepresentative(),
+        name: "Ravi Kumar",
+        designation: "Partner",
+        mobile: "9123456780",
+        addr: { ...addr },
+      },
+    ];
+    const [body] = accusedBodies(a);
+    assert.deepEqual(body.institution?.mobile_numbers, ["0474 2233445"]);
+    assert.deepEqual(body.institution?.email_addresses, ["legal@ravisons.in"]);
+    assert.equal(body.institution?.addresses?.[0].police_station, "Kollam East");
+    assert.deepEqual(body.mobile_numbers, ["+919123456780"]);
+    // Their address has no police station, which an accused's needs, so it is not sent.
+    assert.equal("addresses" in body, false);
+    assert.equal(
+      (body.additional_details.representative_address as { line1: string }).line1,
+      "12 MG Road"
+    );
+  });
+
+  it("sends no contacts outside an institution with nobody summoned for it", () => {
+    const a = accused();
+    a.type = "institution";
+    a.entType = "llp";
+    a.reps = [];
+    const [body] = accusedBodies(a);
+    assert.equal("mobile_numbers" in body, false);
+    assert.equal("addresses" in body, false);
+    assert.deepEqual(body.institution?.mobile_numbers, ["9123456780"]);
   });
 
   it("saves an institution once per person summoned for it (S-141)", () => {
@@ -297,43 +400,46 @@ describe("witnessBodies", () => {
 
   it("sends the witness as the complainant's, with their designation", () => {
     const [body] = witnessBodies(witness());
-    assert.deepEqual(body.person, {
-      name: "Suresh Pillai",
-      phone_number: "+919000000002",
-      age: 51,
-    });
+    assert.deepEqual(body.person, { name: "Suresh Pillai", age: 51 });
+    assert.deepEqual(body.mobile_numbers, ["+919000000002"]);
     assert.equal(body.side, "COMPLAINANT");
     assert.equal(body.designation, "Branch manager");
     assert.equal(body.what_will_witness_prove, "The cheque was presented and returned unpaid.");
-    assert.equal(body.address?.police_station, "Kollam East");
+    assert.equal(body.addresses?.[0].police_station, "Kollam East");
     assert.deepEqual(body.additional_details, {});
   });
 
-  it("names a witness known only by designation, but still requires their address", () => {
+  it("names a witness known only by designation", () => {
     const w = witness();
     w.fullName = "";
-    w.addresses = [blankAddressBlock()];
     const [body] = witnessBodies(w);
     assert.equal(body.person.name, "Branch manager");
-    assert.equal("address" in body, false);
-    // The designation stands in for the name, but a witness now needs an address for service.
-    assert.deepEqual(missingFields(body, "witnesses"), [
-      "address",
-      "city",
-      "pincode",
-      "district",
-      "state",
-      "police station",
-    ]);
+    assert.deepEqual(missingFields(body, "witnesses"), []);
   });
 
-  it("asks a witness with neither a name nor a designation for one, and for a mobile number", () => {
+  it("asks a witness with neither a name nor a designation for one", () => {
     const w = witness();
     w.fullName = "";
     w.designation = "";
+    const [body] = witnessBodies(w);
+    assert.deepEqual(missingFields(body, "witnesses"), ["name or designation"]);
+  });
+
+  it("asks for a witness's address, which the backend now requires", () => {
+    const w = witness();
+    w.addresses = [blankAddressBlock()];
+    const [body] = witnessBodies(w);
+    assert.equal("addresses" in body, false);
+    assert.deepEqual(missingFields(body, "witnesses"), ["address"]);
+  });
+
+  it("saves a witness with no mobile number", () => {
+    const w = witness();
     w.contacts = [blankContact()];
     const [body] = witnessBodies(w);
-    assert.deepEqual(missingFields(body, "witnesses"), ["name or designation", "mobile number"]);
+    assert.equal("mobile_numbers" in body, false);
+    assert.deepEqual(missingFields(body, "witnesses"), []);
+    assert.deepEqual(patchFor(body).mobile_numbers, []);
   });
 
   it("saves a witness without what they will prove, still as the complainant's", () => {
@@ -414,29 +520,83 @@ describe("phone numbers", () => {
   it("sends a mobile typed with its country code and spaces in E.164", () => {
     const c = complainant();
     c.mobile = "+91 98765 43210";
-    assert.equal(complainantBodies(c)[0].person?.phone_number, "+919876543210");
+    assert.deepEqual(complainantBodies(c)[0].mobile_numbers, ["+919876543210"]);
   });
 
-  it("sends a landline as typed, for the backend to judge", () => {
+  it("sends an institution's landline as typed, for the backend to judge", () => {
     const a = accused();
     a.type = "institution";
     a.entType = "llp";
+    a.reps = [];
     a.contacts = [{ mobile: "0474 2233445", email: "" }];
-    assert.equal(accusedBodies(a)[0].institution?.contact_number, "0474 2233445");
+    assert.deepEqual(accusedBodies(a)[0].institution?.mobile_numbers, ["0474 2233445"]);
   });
 });
 
 describe("patchFor", () => {
-  it("names an institution alone by its entity name, without a designation", () => {
-    const patch = patchFor({
-      institution: { entity_name: "Kollam Traders", contact_number: "0474 2233445" },
-      address: {},
-      is_party_in_person: false,
-      additional_details: {},
-    });
+  const company = {
+    institution: {
+      entity_type: "LLP",
+      entity_name: "Kollam Traders",
+      mobile_numbers: ["0474 2233445"],
+      addresses: [{ line1: "12 MG Road" }],
+    },
+    is_party_in_person: false,
+    additional_details: {},
+  };
+
+  it("names an institution alone by its entity name, with its contacts on their own", () => {
+    const patch = patchFor(company);
     assert.equal(patch.name_at_filing, "Kollam Traders");
-    assert.equal(patch.phone_number_at_filing, "0474 2233445");
     assert.equal("designation_at_filing" in patch, false);
+    assert.equal("mobile_numbers" in patch, false);
+    assert.deepEqual(patch.institution_contacts?.mobile_numbers, ["0474 2233445"]);
+    assert.deepEqual(patch.institution_contacts?.email_addresses, []);
+    // Never the same list in both, which the backend refuses.
+    assert.equal(patch.institution && "mobile_numbers" in patch.institution, false);
+  });
+
+  it("changes a company's contacts without re-linking it", () => {
+    const moved = {
+      ...company,
+      institution: { ...company.institution, addresses: [{ line1: "4 Beach Road" }] },
+    };
+    const patch = patchFor(moved, company);
+    assert.equal("institution" in patch, false);
+    assert.deepEqual(patch.institution_contacts?.addresses, [{ line1: "4 Beach Road" }]);
+  });
+
+  it("sends the institution only when the company itself changed", () => {
+    const renamed = {
+      ...company,
+      institution: { ...company.institution, entity_name: "Kollam Traders LLP" },
+    };
+    assert.deepEqual(patchFor(renamed, company).institution, {
+      entity_type: "LLP",
+      entity_name: "Kollam Traders LLP",
+    });
+  });
+
+  it("sends each contact list whole, and an emptied one as empty", () => {
+    const c = complainant();
+    const [before] = complainantBodies(c);
+    c.email = "";
+    const patch = patchFor(complainantBodies(c)[0], before);
+    assert.deepEqual(patch.mobile_numbers, ["+919876543210"]);
+    assert.deepEqual(patch.email_addresses, []);
+    assert.equal(patch.addresses?.length, 1);
+  });
+
+  it("sends disability and the permanent address only when they changed", () => {
+    const c = complainant();
+    const [before] = complainantBodies(c);
+    const unchanged = patchFor(before, before);
+    assert.equal("disability_status" in unchanged, false);
+    assert.equal("permanent_address" in unchanged, false);
+    c.differentlyAbled = "no";
+    const patch = patchFor(complainantBodies(c)[0], before);
+    assert.equal(patch.disability_status, false);
+    assert.equal("permanent_address" in patch, false);
   });
 });
 
@@ -456,7 +616,10 @@ function fakeApi(failOn?: Call["op"]) {
       async addParty(_caseId: string, role: PartyRole, body: PartyInput | WitnessInput) {
         calls.push({ op: "add", role, body });
         if (failOn === "add") throw new Error("refused");
-        return `p${++next}`;
+        // A new institution is `i1`; one joined keeps its own id.
+        const joined = "institution_id" in body ? body.institution_id : undefined;
+        const institution = "institution" in body && body.institution ? "i1" : null;
+        return { participantId: `p${++next}`, institutionId: joined ?? institution };
       },
       async updateParticipant(id: string, patch: ParticipantPatch) {
         calls.push({ op: "update", id, patch });
@@ -552,7 +715,20 @@ describe("saveParty", () => {
     assert.deepEqual(result.caseParticipantIds, ["p9"]);
   });
 
-  it("replaces the participant when who the party is changed", async () => {
+  it("replaces the participant when an individual becomes an institution", async () => {
+    const { api, calls } = fakeApi();
+    const c = complainant();
+    const saved = {
+      caseParticipantIds: ["p9"],
+      savedBodies: complainantBodies(c).map((b) => JSON.stringify(b)),
+    };
+    c.type = "institution";
+    const result = await saveParty(api, "case-1", "complainants", complainantBodies(c), saved);
+    assert.deepEqual(calls.map((x) => x.op), ["remove", "add"]);
+    assert.deepEqual(result.caseParticipantIds, ["p1"]);
+  });
+
+  it("patches a changed email or disability answer, which now live on the case", async () => {
     const { api, calls } = fakeApi();
     const c = complainant();
     const saved = {
@@ -560,21 +736,12 @@ describe("saveParty", () => {
       savedBodies: complainantBodies(c).map((b) => JSON.stringify(b)),
     };
     c.email = "asha.menon@example.com";
-    const result = await saveParty(api, "case-1", "complainants", complainantBodies(c), saved);
-    assert.deepEqual(calls.map((x) => x.op), ["remove", "add"]);
-    assert.deepEqual(result.caseParticipantIds, ["p1"]);
-  });
-
-  it("replaces the participant when the disability answer changed, as PATCH cannot", async () => {
-    const { api, calls } = fakeApi();
-    const c = complainant();
-    const saved = {
-      caseParticipantIds: ["p9"],
-      savedBodies: complainantBodies(c).map((b) => JSON.stringify(b)),
-    };
     c.differentlyAbled = "yes";
     await saveParty(api, "case-1", "complainants", complainantBodies(c), saved);
-    assert.deepEqual(calls.map((x) => x.op), ["remove", "add"]);
+    assert.deepEqual(calls.map((x) => x.op), ["update"]);
+    const { patch } = calls[0] as { patch: ParticipantPatch };
+    assert.deepEqual(patch.email_addresses, ["asha.menon@example.com"]);
+    assert.equal(patch.disability_status, true);
   });
 
   it("removes participants for people no longer summoned", async () => {
@@ -623,7 +790,7 @@ describe("saveParty", () => {
       caseParticipantIds: ["p9"],
       savedBodies: complainantBodies(c).map((b) => JSON.stringify(b)),
     };
-    c.email = "new@example.com";
+    c.type = "institution";
     const result = await saveParty(api, "case-1", "complainants", complainantBodies(c), saved);
     assert.ok(result.error);
     // p9 was removed before the add failed, so it is no longer on record.
@@ -690,11 +857,8 @@ describe("PoA holder", () => {
   it("is sent only for a complainant who named one, and not when appearing in person", () => {
     assert.equal(poaHolderBody(complainant()), null);
     const c = withHolder();
-    assert.deepEqual(poaHolderBody(c)?.person, {
-      name: "Suresh Patel",
-      phone_number: "+919000000003",
-      age: 60,
-    });
+    assert.deepEqual(poaHolderBody(c)?.person, { name: "Suresh Patel", age: 60 });
+    assert.deepEqual(poaHolderBody(c)?.mobile_numbers, ["+919000000003"]);
     c.pip = "yes";
     assert.equal(poaHolderBody(c), null);
   });
@@ -744,7 +908,9 @@ describe("PoA holder", () => {
     const patch = (calls[1] as { patch: ParticipantPatch }).patch;
     assert.equal(patch.age_at_filing, 61);
     assert.equal("is_party_in_person" in patch, false);
-    assert.equal(patch.permanent_address, null);
+    // Unchanged, so not sent: the backend refuses it for a person another account created.
+    assert.equal("permanent_address" in patch, false);
+    assert.deepEqual(patch.mobile_numbers, ["+919000000003"]);
   });
 
   it("revokes the mandate when the complainant no longer has a holder", async () => {
@@ -813,6 +979,65 @@ describe("saveParty — matching by who, not by position", () => {
     return a;
   }
 
+  it("adds the company once, and joins everyone after the first to it", async () => {
+    const { api, calls } = fakeApi();
+    const result = await saveParty(
+      api,
+      "case-1",
+      "accused",
+      accusedBodies(institutionAccused(["A", "B"])),
+      {}
+    );
+    const [first, second] = calls.map((x) => (x as { body: PartyInput }).body);
+    assert.ok(first.institution);
+    assert.equal(second.institution, undefined);
+    assert.equal(second.institution_id, "i1");
+    assert.equal(second.person?.name, "B");
+    assert.equal(second.designation, "Director");
+    assert.equal(result.institutionId, "i1");
+  });
+
+  it("joins a person newly summoned to the company already on the case", async () => {
+    const { api, calls } = fakeApi();
+    const before = accusedBodies(institutionAccused(["A"]));
+    const saved = {
+      caseParticipantIds: ["pA"],
+      savedBodies: before.map((b) => JSON.stringify(b)),
+      institutionId: "i9",
+    };
+    const bodies = accusedBodies(institutionAccused(["A", "B"]));
+    await saveParty(api, "case-1", "accused", bodies, saved);
+    assert.deepEqual(calls.map((x) => x.op), ["add"]);
+    assert.equal((calls[0] as { body: PartyInput }).body.institution_id, "i9");
+  });
+
+  it("adds a new company when nobody summoned for the old one is left", async () => {
+    const { api, calls } = fakeApi();
+    const saved = { caseParticipantIds: [], savedBodies: [], institutionId: "i9" };
+    const bodies = accusedBodies(institutionAccused(["A"]));
+    await saveParty(api, "case-1", "accused", bodies, saved);
+    assert.ok((calls[0] as { body: PartyInput }).body.institution);
+  });
+
+  it("sends a company's new details and contacts on one PATCH, for all its people", async () => {
+    const { api, calls } = fakeApi();
+    const before = accusedBodies(institutionAccused(["A", "B"]));
+    const saved = {
+      caseParticipantIds: ["pA", "pB"],
+      savedBodies: before.map((b) => JSON.stringify(b)),
+      institutionId: "i1",
+    };
+    const changed = institutionAccused(["A", "B"]);
+    changed.name = "Ravi Kumar & Co";
+    changed.contacts = [{ mobile: "0474 2233445", email: "" }];
+    await saveParty(api, "case-1", "accused", accusedBodies(changed), saved);
+    const [first, second] = calls.map((x) => (x as { patch: ParticipantPatch }).patch);
+    assert.equal(first.institution?.entity_name, "Ravi Kumar & Co");
+    assert.deepEqual(first.institution_contacts?.mobile_numbers, ["0474 2233445"]);
+    assert.equal(second.institution, undefined);
+    assert.equal(second.institution_contacts, undefined);
+  });
+
   it("keeps the people still summoned when one before them is removed", async () => {
     const { api, calls } = fakeApi();
     const before = accusedBodies(institutionAccused(["A", "B", "C"]));
@@ -837,9 +1062,8 @@ describe("saveParty — matching by who, not by position", () => {
       caseParticipantIds: ["pA", "pB", "pC"],
       savedBodies: before.map((b) => JSON.stringify(b)),
     };
-    const changed = institutionAccused(["A", "B", "C"]);
-    changed.reps[0].email = "a@example.com";
-    const bodies = accusedBodies(changed);
+    // A different first person: told apart by name, so A comes off and D is added.
+    const bodies = accusedBodies(institutionAccused(["D", "B", "C"]));
 
     const failing = fakeApi("add");
     const first = await saveParty(failing.api, "case-1", "accused", bodies, saved);
@@ -858,7 +1082,7 @@ describe("saveParty — matching by who, not by position", () => {
     const api = {
       async addParty() {
         calls.push("add");
-        return "p1";
+        return { participantId: "p1", institutionId: null };
       },
       async updateParticipant() {
         calls.push("update");

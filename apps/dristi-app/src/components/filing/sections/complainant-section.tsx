@@ -715,6 +715,7 @@ export function ComplainantSection() {
         onOpenChange={setSourceOpen}
         title={sourceDocLabel}
         chips={uploadedDocs.map(({ doc, slot }) => ({
+          id: doc,
           label: slot?.file?.name ?? slot?.label ?? PARTY_DOC_LABELS[doc],
           active: doc === shownDoc,
           onClick: () => setSourceDoc(doc),

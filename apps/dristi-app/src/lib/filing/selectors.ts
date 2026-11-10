@@ -1,6 +1,8 @@
 /** Derived reads over the draft — pure functions so screens and the shell agree. */
 
+import { isIndianMobile, toNationalMobile } from "@/lib/auth/mobile";
 import { signingRules } from "./config";
+import { mobileFieldCopy } from "./content";
 import { addDays, addMonths, addressToString, daysBetween, nameList, toLongDate, todayIso } from "./format";
 import { CHEQUE_NUMBER_PATTERN } from "./lookups";
 import { KERALA_FEES, type FeeSchedule } from "@/lib/court/fees";
@@ -269,6 +271,16 @@ export function chequeNumberIssue(c: ChequeDetails): string | undefined {
   if (!number) return undefined;
   if (!CHEQUE_NUMBER_PATTERN.test(number)) return "Enter the six-digit cheque number (digits only).";
   return undefined;
+}
+
+/**
+ * What is wrong with a typed mobile number, if anything: the backend refuses anything but
+ * 10 digits starting 6–9. An empty field is "incomplete", not a format error.
+ */
+export function mobileIssue(value: string): string | undefined {
+  const national = toNationalMobile(value);
+  if (!national) return undefined;
+  return isIndianMobile(national) ? undefined : mobileFieldCopy.invalid;
 }
 
 export function noticeComplete(n: DemandNotice): boolean {
@@ -770,8 +782,8 @@ export type FeeBill = {
  * warning can never disagree.
  */
 export function isDelayed(draft: FilingDraft): boolean {
-  const { elapsed } = limitationView(draft);
-  return elapsed !== null && elapsed > LIMITATION_DAYS;
+  const { elapsed, withinLimit } = limitationView(draft);
+  return elapsed !== null && !withinLimit;
 }
 
 /** One address of one accused, as the choosing screen and the bill both need it. */
@@ -988,8 +1000,15 @@ export function feeBill(
 
 /** Days the drawer has to pay after the demand notice reaches them. */
 export const PAYMENT_WINDOW_DAYS = 15;
-/** Days from the cause of action within which the complaint must be filed. */
-export const LIMITATION_DAYS = 30;
+/**
+ * The last day to file without condonation: one calendar month after the cause of action
+ * (NI Act §142(1)(b)) — the same date next month, or that month's last day when it is
+ * shorter (31 January gives 28 or 29 February). The backend applies the same rule
+ * (dristi-be `limitation_deadline`) and refuses a later filing without a reason.
+ */
+export function limitationDeadline(causeDate: ISODate): ISODate {
+  return addMonths(causeDate, 1);
+}
 /** Days from the cheque's return within which the demand notice must be sent. */
 export const NOTICE_WINDOW_DAYS = 30;
 
@@ -1108,12 +1127,13 @@ export function limitationView(draft: FilingDraft): LimitationView {
       : undefined;
   // With either date wrong there is no delay to count; the error says what is wrong.
   const elapsed = filingIssue || causeIssue ? null : daysBetween(causeDate, filingDate);
+  const overBy = elapsed === null ? null : daysBetween(limitationDeadline(causeDate), filingDate);
   return {
     causeDate,
     filingDate,
     elapsed,
-    withinLimit: elapsed !== null && elapsed <= LIMITATION_DAYS,
-    overBy: elapsed === null ? 0 : Math.max(0, elapsed - LIMITATION_DAYS),
+    withinLimit: overBy !== null && overBy <= 0,
+    overBy: overBy === null ? 0 : Math.max(0, overBy),
     causeDerived: !draft.jurisdiction.causeDate && !!causeDate,
     derivedCause,
     causeIssue,

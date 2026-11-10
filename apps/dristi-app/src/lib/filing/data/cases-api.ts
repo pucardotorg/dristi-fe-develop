@@ -339,7 +339,25 @@ export type ParticipantRead = ContactListsRead & {
   contact_details_unknown_declared: boolean;
   party_in_person_affidavit: string | null;
   additional_details: Record<string, unknown>;
+  /** What only a witness has; `null` for every other role. */
+  witness?: WitnessRead | null;
   updated_at: string;
+};
+
+export type WitnessRead = {
+  side: WitnessSide;
+  what_will_witness_prove: string | null;
+  additional_details: Record<string, unknown>;
+};
+
+/** A cheque, return memo or demand notice; `evidence_info` comes back exactly as saved. */
+export type EvidenceRead = {
+  case_evidence_id: string;
+  case_document_id: string | null;
+  evidence_type: string;
+  /** The row's place within its type, 1-based; it never changes while the row exists. */
+  ordinal: number;
+  evidence_info: Record<string, unknown>;
 };
 
 export type RepresentationRead = {
@@ -361,6 +379,11 @@ export type CaseRead = {
   participants: ParticipantRead[];
   representations: RepresentationRead[];
   poa_mandates: PoaMandateRead[];
+  evidence: EvidenceRead[];
+  /** One object per details section saved (`jurisdiction_limitation`, `adr_other_prayer`). */
+  details: Record<string, Record<string, unknown>>;
+  /** `null` before it is first saved. */
+  affidavit: string | null;
 };
 
 type DraftSessionBody = { draft_session_id?: unknown };
@@ -379,6 +402,18 @@ type AdvocateSearchRow = {
 
 function unexpected(what: string): Error {
   return new Error(`Unexpected ${what} response from the case service.`);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** The details sections saved on a case, leaving out anything that is not a section object. */
+function detailSections(value: unknown): Record<string, Record<string, unknown>> {
+  if (!isRecord(value)) return {};
+  const sections: Record<string, Record<string, unknown>> = {};
+  for (const [name, data] of Object.entries(value)) if (isRecord(data)) sections[name] = data;
+  return sections;
 }
 
 /** An `evidence_info` body; its keys and value types are the backend's per-type schema. */
@@ -716,6 +751,10 @@ export function createCaseFilingApi(client: ApiClient = api) {
         participants: body.participants,
         representations: body.representations,
         poa_mandates: body.poa_mandates,
+        // Read leniently: a missing list is nothing saved, not a broken case.
+        evidence: Array.isArray(body.evidence) ? body.evidence : [],
+        details: detailSections(body.details),
+        affidavit: typeof body.affidavit === "string" ? body.affidavit : null,
       };
     },
   };

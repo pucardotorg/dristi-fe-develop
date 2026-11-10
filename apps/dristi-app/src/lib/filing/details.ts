@@ -40,11 +40,18 @@ export function richTextHasContent(html: string): boolean {
 /**
  * Whether the jurisdiction & limitation section has every field the backend requires.
  * `causeDate` is the effective cause-of-action date (typed, or derived from the notice
- * service date — see `limitationView`), not the raw `jurisdiction.causeDate`.
+ * service date — see `limitationView`), not the raw `jurisdiction.causeDate`. `late` is a
+ * filing past the one-month limit, which the backend refuses without a condonation reason.
  */
-export function jurisdictionReady(j: Jurisdiction, causeDate: string, filingDate: string): boolean {
+export function jurisdictionReady(
+  j: Jurisdiction,
+  causeDate: string,
+  filingDate: string,
+  late = false,
+): boolean {
   // Both the cause-of-action and complaint filing dates are required by the section.
   if (!causeDate || !filingDate) return false;
+  if (late && !j.condonationReason.trim()) return false;
   // When another complaint is pending, the backend requires at least one with a court and
   // case number, so every listed complaint must be filled in before the section can save.
   if (j.otherPending === "yes" && otherComplaintsBody(j).length !== j.otherCases.length) return false;
@@ -80,7 +87,7 @@ export function jurisdictionSectionBody(
   filingDate: string,
   late: boolean,
 ): DetailsSectionBody | null {
-  if (!jurisdictionReady(j, causeDate, filingDate)) return null;
+  if (!jurisdictionReady(j, causeDate, filingDate, late)) return null;
   const deposited = j.deposited === "yes";
   const pending = j.otherPending === "yes";
   const body: DetailsSectionBody = {

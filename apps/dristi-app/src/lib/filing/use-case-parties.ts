@@ -8,13 +8,13 @@
  * the backend would still refuse is held back with a note naming what to add. A party
  * removed from the form is taken off the case at once.
  *
- * Opening the complainant or accused step first reads its parties from the case, so the
+ * Opening the complainant, accused or witness step first reads its parties from the case, so the
  * screen shows the case's record rather than this browser's (see `case-read.ts`).
  */
 
 import * as React from "react";
 
-import { accusedFromCase, complainantsFromCase } from "./case-read";
+import { accusedFromCase, complainantsFromCase, witnessesFromCase } from "./case-read";
 import { caseFilingApi, caseFilingErrorMessage, type PartyRole } from "./data/cases-api";
 import {
   accusedBodies,
@@ -121,13 +121,13 @@ export function removePartyFromCase(party: Party) {
 }
 
 /**
- * Read the case and put its copy of every saved complainant or accused on the form (see
+ * Read the case and put its copy of every saved complainant, accused or witness on the form (see
  * `case-read.ts`). Returns the parties whose copy was replaced: the save that follows reads
  * the draft through `latest()`, which may not show the replacement yet, and must not send
  * the old copy back over the case's.
  */
 async function loadFromCase(
-  kind: "complainant" | "accused",
+  kind: PartyKind,
   caseId: string,
   latest: () => FilingDraft,
   update: (recipe: (d: FilingDraft) => void) => void,
@@ -147,6 +147,11 @@ async function loadFromCase(
     if (kind === "complainant") {
       const result = complainantsFromCase(read, d.complainants, profile);
       d.complainants = result.parties;
+      return result.replaced;
+    }
+    if (kind === "witness") {
+      const result = witnessesFromCase(read, d.witnesses);
+      d.witnesses = result.parties;
       return result.replaced;
     }
     const result = accusedFromCase(read, d.accused);
@@ -196,7 +201,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
     // Who "you" are decides how a complainant is added; wait for it rather than add one twice.
     if (kind === "complainant" && !ready) return;
     let fromCase = new Set<string>();
-    if (!loaded.current && kind !== "witness") {
+    if (!loaded.current) {
       try {
         fromCase = await loadFromCase(kind, caseId, latest, update, profile);
         loaded.current = true;

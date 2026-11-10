@@ -7,18 +7,20 @@
  * its whole section object, which replaces what was stored, so saving is idempotent and
  * there is no per-row id to track. `build` returns the section body, or `null` when the
  * section is not complete enough for the backend to accept — then nothing is sent and the
- * draft stays the working copy. Nothing is read back yet, so clearing this browser still
- * loses the draft.
+ * draft stays the working copy. Opening the step reads the section back from the case
+ * (`case-details-read.ts`).
  *
  * A draft without a `caseId` (sample and batch drafts, older drafts) is never sent anywhere.
  */
 
 import * as React from "react";
 
+import { ADR_SECTION, adrFromCase, jurisdictionFromCase } from "./case-details-read";
 import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
 import type { DetailsSectionBody } from "./details";
 import { useFiling } from "./store";
 import type { FilingDraft } from "./types";
+import { useLoadFromCase } from "./use-load-from-case";
 
 export type SaveResult = { ok: boolean; error?: string };
 
@@ -28,6 +30,7 @@ export function useDetailsSection(
 ) {
   const { draft } = useFiling();
   const [saving, setSaving] = React.useState(false);
+  useLoadFromCase(section === ADR_SECTION ? adrFromCase : jurisdictionFromCase);
   const [error, setError] = React.useState<string | null>(null);
 
   /** PUT the section if it is complete. `ok` is false on a failure. */

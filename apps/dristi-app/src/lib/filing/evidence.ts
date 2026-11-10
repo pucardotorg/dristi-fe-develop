@@ -222,3 +222,66 @@ export function demandNoticeReady(notice: DemandNotice): boolean {
   if (notice.paymentStatus === "part" && chequeAmount(notice.partAmount) === null) return false;
   return true;
 }
+
+/* ─────────────────────────────── Reading back from the case ─────────────────────── */
+
+/** The local code whose backend value is `value`, or "" when none maps to it. */
+function codeFor(map: Record<string, string>, value: unknown): string {
+  return Object.keys(map).find((code) => map[code] === value) ?? "";
+}
+
+function text(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+/** A backend number as the form types it; "" when it is not one. */
+function amountText(value: unknown): string {
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  // A decimal field may come back as a string ("50000.00").
+  return typeof value === "string" && value.trim() ? String(Number(value)) : "";
+}
+
+/** The cheque fields a `CHEQUE` evidence_info holds. */
+export function chequeFromEvidence(
+  info: Record<string, unknown>,
+): Pick<ChequeDetails, "dateOnCheque" | "amount" | "chequeNumber" | "ifsc" | "bankName" | "bankBranch"> {
+  return {
+    dateOnCheque: text(info.cheque_date),
+    amount: amountText(info.amount),
+    chequeNumber: text(info.cheque_number),
+    ifsc: text(info.ifsc_code),
+    bankName: text(info.bank_name),
+    bankBranch: text(info.bank_branch),
+  };
+}
+
+/** The cheque fields a `RETURN_MEMO` evidence_info holds. */
+export function returnMemoFromEvidence(
+  info: Record<string, unknown>,
+): Pick<ChequeDetails, "presentDate" | "returnDate" | "returnReason"> {
+  return {
+    presentDate: text(info.presentation_date),
+    returnDate: text(info.return_date),
+    returnReason: codeFor(RETURN_REASON_VALUE, info.return_reason),
+  };
+}
+
+/** The demand-notice fields a `LEGAL_DEMAND_NOTICE` evidence_info holds. */
+export function noticeFromEvidence(
+  info: Record<string, unknown>,
+): Omit<DemandNotice, "id" | "noticeEvidenceId"> {
+  const paymentStatus = codeFor(PAYMENT_STATUS_VALUE, info.payment_status);
+  return {
+    natureDebt: codeFor(NATURE_OF_DEBT_VALUE, info.nature_of_debt),
+    dispatchDate: text(info.dispatch_date),
+    modeService: codeFor(MODE_OF_SERVICE_VALUE, info.mode_of_service),
+    tracking: text(info.tracking_number),
+    delivered: info.is_delivered === false ? "no" : "yes",
+    deliveryDate: text(info.delivery_date),
+    replied: info.accused_replied === true ? "yes" : "no",
+    returnDate: text(info.return_date),
+    nonDeliveryReason: codeFor(NON_DELIVERY_REASON_CODES, info.non_delivery_reason),
+    paymentStatus: paymentStatus === "none" || paymentStatus === "part" ? paymentStatus : "",
+    partAmount: amountText(info.part_payment_amount),
+  };
+}

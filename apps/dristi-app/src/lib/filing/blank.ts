@@ -64,6 +64,7 @@ export const blankRepresentative = (): Representative => ({
   designation: "",
   email: "",
   addr: blankAddress(),
+  police: "",
   gender: "",
   differentlyAbled: "",
 });
@@ -635,7 +636,7 @@ type SettlementShaped = {
 };
 
 /** The ADR block as it stands when nothing on disk has one. */
-const blankAdr = (): AdrPrayer => ({
+export const blankAdr = (): AdrPrayer => ({
   adr: "yes",
   otherDetails: "",
   interimRelief: INTERIM_RELIEF_TEMPLATE,

@@ -32,6 +32,12 @@ describe("jurisdictionReady", () => {
     assert.equal(jurisdictionReady(filledJurisdiction(), "", FILING), false);
     assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE, ""), false);
     assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE, FILING), true);
+    // A late filing needs its reason, which the backend refuses the section without.
+    assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE, FILING, true), false);
+    assert.equal(
+      jurisdictionReady(filledJurisdiction({ condonationReason: "Abroad." }), CAUSE, FILING, true),
+      true
+    );
   });
 
   it("needs the payee bank block and police station when the payee deposited", () => {

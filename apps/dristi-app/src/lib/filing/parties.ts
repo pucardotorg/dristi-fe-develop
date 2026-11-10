@@ -34,6 +34,7 @@ import type {
   PoaHolderInput,
   WitnessInput,
 } from "./data/cases-api";
+import { mobileFieldCopy } from "./content";
 import { ENTITY_TYPE_CODES, GENDER_CODES } from "./options";
 import { accusedContactUnknownDeclared, isCinOrPan, normaliseCinPan } from "./selectors";
 import type {
@@ -240,9 +241,9 @@ export function complainantBodies(c: Complainant, isSelf = false): PartyInput[] 
 
 /**
  * The accused's contacts are the individual's, or the institution's own. The people
- * summoned for an institution send their own mobile and email; their address stays in
- * `additional_details`, since the form asks no police station for it and the backend
- * refuses an accused's address without one.
+ * summoned for an institution send their own mobile, email and address — saved as their
+ * case contacts — the address with the police station the backend requires on an
+ * accused's.
  */
 export function accusedBodies(a: Accused): PartyInput[] {
   const emails = a.contacts.map((x) => x.email.trim());
@@ -276,16 +277,17 @@ export function accusedBodies(a: Accused): PartyInput[] {
   if (reps.length === 0) return [{ ...base(institution), institution }];
 
   return reps.map((rep) => {
-    const own = contactLists([phone(rep.mobile)], [rep.email.trim()], []);
+    const own = contactLists(
+      [phone(rep.mobile)],
+      [rep.email.trim()],
+      hasAddress(rep.addr) ? [address(rep.addr, rep.police)] : []
+    );
     return compact({
       ...base(institution, own),
       institution,
       person: representative(rep),
       designation: rep.designation.trim(),
       ...own,
-      additional_details: compact({
-        representative_address: hasAddress(rep.addr) ? address(rep.addr) : undefined,
-      }),
     });
   });
 }
@@ -318,6 +320,9 @@ export function witnessBodies(w: Witness): WitnessInput[] {
 }
 
 /* ─────────────────────────── What the backend requires ──────────────────────────── */
+
+/** A mobile number as the backend accepts a person's: `+91` and ten digits starting 6–9. */
+const BACKEND_MOBILE = /^\+91[6-9]\d{9}$/;
 
 const ADDRESS_FIELDS: Array<[keyof AddressInput, string]> = [
   ["line1", "address"],
@@ -353,6 +358,11 @@ export function missingFields(body: AnyPartyInput, role: PartyRole): string[] {
     if (body.addresses?.length) checkAddresses(body.addresses, "representative's ");
   } else {
     checkAddresses(body.addresses);
+  }
+  // A person's number that `phone` could not read as an Indian mobile went as typed, and
+  // the backend would refuse it. An institution's may be a landline, so it is not checked.
+  if (body.mobile_numbers?.some((m) => !BACKEND_MOBILE.test(m))) {
+    missing.add(mobileFieldCopy.missingLabel);
   }
 
   if (role === "witnesses") {

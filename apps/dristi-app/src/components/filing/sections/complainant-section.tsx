@@ -66,6 +66,7 @@ import {
   useInCorrection,
 } from "@/components/filing/posture";
 import { MobileInput, OptionSelect, TextField } from "@/components/filing/inputs";
+import { MobileField } from "@/components/filing/mobile-field";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { RichTextEditor } from "@/components/filing/rich-text-editor";
 import { SectionTabs } from "@/components/filing/section-tabs";
@@ -361,9 +362,13 @@ export function ComplainantSection() {
               {/* Email sat under Basic details, two cards from the number it belongs
                   beside. Both are how this person is reached; they are asked together. */}
               <FormRow>
-                <FormField label="Mobile number" name="mobile" required>
-                  <MobileInput value={c.mobile} onChange={setMobile} />
-                </FormField>
+                <MobileField
+                  label="Mobile number"
+                  name="mobile"
+                  required
+                  value={c.mobile}
+                  onChange={setMobile}
+                />
                 <FormField label="Email address" name="email" optional>
                   <TextField
                     type="email"
@@ -476,12 +481,12 @@ export function ComplainantSection() {
                   <FormDivider />
                   <FormSubhead>PoA holder details</FormSubhead>
                   <HalfWidth>
-                    <FormField label="PoA holder mobile number" required>
-                      <MobileInput
-                        value={c.poaHolder.mobile}
-                        onChange={(v) => setPoa("mobile", v)}
-                      />
-                    </FormField>
+                    <MobileField
+                      label="PoA holder mobile number"
+                      required
+                      value={c.poaHolder.mobile}
+                      onChange={(v) => setPoa("mobile", v)}
+                    />
                   </HalfWidth>
                   <FormRow>
                     <FormField label="PoA holder full name" required>
@@ -625,9 +630,13 @@ export function ComplainantSection() {
               description="The person authorised to act for the institution in this case."
             >
               <HalfWidth>
-                <FormField label="Mobile number" name="rep.mobile" required>
-                  <MobileInput value={c.rep.mobile} onChange={(v) => setRep("mobile", v)} />
-                </FormField>
+                <MobileField
+                  label="Mobile number"
+                  name="rep.mobile"
+                  required
+                  value={c.rep.mobile}
+                  onChange={(v) => setRep("mobile", v)}
+                />
               </HalfWidth>
               <FormRow>
                 <FormField label="Full name" name="rep.name" required>

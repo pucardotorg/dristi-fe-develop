@@ -197,6 +197,11 @@ export type Representative = {
   designation: string;
   email: string;
   addr: Address;
+  /**
+   * The police station `addr` falls under. Asked only of a person summoned for an accused
+   * entity, whose address the summons is served at; absent on older drafts.
+   */
+  police?: string;
   /** Optional. */
   gender: Gender;
   /** Optional. */

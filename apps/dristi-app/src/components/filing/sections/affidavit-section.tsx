@@ -39,13 +39,15 @@ export function AffidavitSection() {
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("affidavit");
   const router = useRouter();
-  const { save, saving, error } = useAffidavit();
+  const { save, saving, error } = useAffidavit(affidavitHtml);
   const [resetOpen, setResetOpen] = React.useState(false);
 
   // "Touched" tells an untouched affidavit (show the standard text, still tracking the
   // case) apart from one the filer has made their own — including one they have cleared,
   // which must stay empty rather than snap back to the standard text.
-  const [touched, setTouched] = React.useState(() => richTextHasContent(draft.affidavit));
+  // An affidavit read from the case after the step opened counts as the filer's own too.
+  const [edited, setEdited] = React.useState(() => richTextHasContent(draft.affidavit));
+  const touched = edited || richTextHasContent(draft.affidavit);
 
   const standard = affidavitHtml(draft);
   const value = touched ? draft.affidavit : standard;
@@ -63,7 +65,7 @@ export function AffidavitSection() {
     update((d) => {
       d.affidavit = "";
     });
-    setTouched(false);
+    setEdited(false);
     setResetOpen(false);
   };
 
@@ -105,7 +107,7 @@ export function AffidavitSection() {
           <RichTextEditor
             value={value}
             onChange={(html) => {
-              setTouched(true);
+              setEdited(true);
               update((d) => {
                 d.affidavit = html;
               });

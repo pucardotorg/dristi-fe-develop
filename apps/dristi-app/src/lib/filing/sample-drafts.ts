@@ -18,7 +18,7 @@
 
 import { blankCheque, blankComplainant, createBlankDraft } from "./blank";
 import { getRepository } from "./data";
-import { addDays } from "./format";
+import { addDays, addMonths } from "./format";
 import { PSS_CASE_TYPE } from "./options";
 import { signatories } from "./selectors";
 import type { FilingDraft } from "./types";
@@ -50,10 +50,11 @@ const OATH_DEMO_SEEDED_KEY = "dristi.filing.sampleDrafts.oathDemo.v1";
 /**
  * The demand notice's service date, worked back from how many days the person should
  * have left: the drawer's 15 days after service start the cause of action, and the
- * complaint is due 30 days after that (`selectors.ts`). Negative days = window closed.
+ * complaint is due one calendar month after that (`limitationDeadline`). Negative days =
+ * window closed.
  */
 function servedFor(today: string, daysLeft: number): string {
-  return addDays(today, -(15 + 30 - daysLeft));
+  return addDays(addMonths(addDays(today, daysLeft), -1), -15);
 }
 
 type Sample = {

@@ -9,10 +9,12 @@
  * typed from memory, and an unlisted one is still accepted.
  */
 
+import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PlusIcon } from "lucide-react";
 
+import { jurisdictionCopy } from "@/lib/filing/content";
 import { jurisdictionDetails } from "@/lib/filing/details";
 import { toLongDate } from "@/lib/filing/format";
 import { useCourt } from "@/components/court/court-provider";
@@ -73,10 +75,19 @@ export function JurisdictionSection() {
     .filter(Boolean)
     .sort()[0] ?? "";
 
+  // A late filing cannot be saved without a reason (the backend refuses it), so Continue
+  // stops here and says so under the field rather than moving on with nothing saved.
+  const needsReason = delay !== null && !withinLimit && !j.condonationReason.trim();
+  const [reasonAsked, setReasonAsked] = React.useState(false);
+
   /* Save the section to the case, then move on. A save failure keeps the filer here with
      the reason, so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = async () => {
+    if (needsReason) {
+      setReasonAsked(true);
+      return;
+    }
     const result = await save();
     if (result.ok && continueHref) router.push(continueHref);
   };
@@ -347,7 +358,12 @@ export function JurisdictionSection() {
 
           {/* Only asked for when there is a delay to condone. */}
           {withinLimit || delay === null ? null : (
-            <FormField label="Reason for condonation of delay" name="condonationReason" required>
+            <FormField
+              label="Reason for condonation of delay"
+              name="condonationReason"
+              required
+              error={reasonAsked && needsReason ? jurisdictionCopy.condonationMissing : undefined}
+            >
               <Textarea
                 value={j.condonationReason}
                 onChange={(e) => set("condonationReason", e.target.value)}

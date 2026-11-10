@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { blankAccused, blankAdvocate, blankComplainant } from "./blank";
-import { accusedFromCase, advocatesFromCase, complainantsFromCase } from "./case-read";
+import { blankAccused, blankAdvocate, blankComplainant, blankWitness } from "./blank";
+import { accusedFromCase, advocatesFromCase, complainantsFromCase, witnessesFromCase } from "./case-read";
 import type {
   AddressRead,
   CaseRead,
@@ -63,7 +63,15 @@ function participant(overrides: Partial<ParticipantRead>): ParticipantRead {
 }
 
 function caseOf(read: Partial<CaseRead>): CaseRead {
-  return { participants: [], representations: [], poa_mandates: [], ...read };
+  return {
+    participants: [],
+    representations: [],
+    poa_mandates: [],
+    evidence: [],
+    details: {},
+    affidavit: null,
+    ...read,
+  };
 }
 
 /** A complainant as this browser last saved it, as participant `p1`. */
@@ -240,6 +248,47 @@ describe("complainantsFromCase", () => {
     assert.deepEqual(c.savedPoaHolder?.mandateIds, ["m1"]);
     assert.equal(c.savedPoaHolder?.forParticipantId, "p1");
     assert.equal(c.savedPoaHolder?.body, JSON.stringify(poaHolderBody(c)));
+  });
+});
+
+describe("witnessesFromCase", () => {
+  const witnessRead = (overrides: Partial<ParticipantRead> = {}) =>
+    participant({
+      case_participant_id: "w1",
+      role: "WITNESS",
+      name_at_filing: "Suresh Pillai",
+      designation_at_filing: "Branch manager",
+      age_at_filing: 51,
+      mobile_numbers: ["+919000000002"],
+      email_addresses: [],
+      addresses: [{ ...ADDRESS, police_station: "Kollam East" }],
+      witness: { side: "COMPLAINANT", what_will_witness_prove: "The cheque bounced.", additional_details: {} },
+      ...overrides,
+    });
+
+  it("reads a witness from the case in place of the blank row a new draft starts with", () => {
+    const { parties } = witnessesFromCase(caseOf({ participants: [witnessRead()] }), [blankWitness()]);
+    assert.equal(parties.length, 1);
+    const [w] = parties;
+    assert.equal(w.fullName, "Suresh Pillai");
+    assert.equal(w.designation, "Branch manager");
+    assert.equal(w.age, "51");
+    assert.equal(w.prove, "The cheque bounced.");
+    assert.deepEqual(w.contacts, [{ mobile: "9000000002", email: "" }]);
+    assert.deepEqual(w.addresses, [{ addr: FORM_ADDRESS, police: "Kollam East" }]);
+    assert.deepEqual(w.caseParticipantIds, ["w1"]);
+  });
+
+  it("reads a witness known only by designation with no name", () => {
+    const read = caseOf({ participants: [witnessRead({ name_at_filing: "Branch manager" })] });
+    const [w] = witnessesFromCase(read, []).parties;
+    assert.equal(w.fullName, "");
+    assert.equal(w.designation, "Branch manager");
+  });
+
+  it("reads a witness with no mobile number with one empty contact row", () => {
+    const read = caseOf({ participants: [witnessRead({ mobile_numbers: [] })] });
+    assert.deepEqual(witnessesFromCase(read, []).parties[0].contacts, [{ mobile: "", email: "" }]);
   });
 });
 

@@ -327,6 +327,7 @@ describe("accusedBodies", () => {
         designation: "Partner",
         mobile: "9123456780",
         addr: { ...addr },
+        police: "Kollam West",
       },
     ];
     const [body] = accusedBodies(a);
@@ -334,12 +335,20 @@ describe("accusedBodies", () => {
     assert.deepEqual(body.institution?.email_addresses, ["legal@ravisons.in"]);
     assert.equal(body.institution?.addresses?.[0].police_station, "Kollam East");
     assert.deepEqual(body.mobile_numbers, ["+919123456780"]);
-    // Their address has no police station, which an accused's needs, so it is not sent.
-    assert.equal("addresses" in body, false);
-    assert.equal(
-      (body.additional_details.representative_address as { line1: string }).line1,
-      "12 MG Road"
-    );
+    // Their address is their own case contact, with its police station.
+    assert.equal(body.addresses?.[0].line1, "12 MG Road");
+    assert.equal(body.addresses?.[0].police_station, "Kollam West");
+    assert.deepEqual(body.additional_details, {});
+  });
+
+  it("holds back a person summoned whose address has no police station", () => {
+    const a = accused();
+    a.type = "institution";
+    a.entType = "llp";
+    a.name = "Ravi & Sons LLP";
+    a.reps = [{ ...blankRepresentative(), name: "Ravi Kumar", designation: "Partner", addr: { ...addr } }];
+    const [body] = accusedBodies(a);
+    assert.deepEqual(missingFields(body, "accused"), ["representative's police station"]);
   });
 
   it("sends no contacts outside an institution with nobody summoned for it", () => {
@@ -431,6 +440,17 @@ describe("witnessBodies", () => {
     const [body] = witnessBodies(w);
     assert.equal("addresses" in body, false);
     assert.deepEqual(missingFields(body, "witnesses"), ["address"]);
+  });
+
+  it("holds back a party whose mobile number cannot be an Indian mobile", () => {
+    const a = accused();
+    a.contacts = [{ mobile: "5123456789", email: "" }];
+    const [body] = accusedBodies(a);
+    assert.deepEqual(missingFields(body, "accused"), ["10-digit mobile number"]);
+
+    const w = witness();
+    w.contacts = [{ mobile: "98765", email: "" }];
+    assert.deepEqual(missingFields(witnessBodies(w)[0], "witnesses"), ["10-digit mobile number"]);
   });
 
   it("saves a witness with no mobile number", () => {

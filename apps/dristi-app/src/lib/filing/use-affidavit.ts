@@ -7,20 +7,25 @@
  * details section. Whatever the editor holds is sent as-is — including an affidavit the
  * filer has cleared: the backend is the one gate on emptiness (it refuses text that renders
  * as nothing), and its error is surfaced to the filer rather than the save being skipped
- * here. Nothing is read back yet, so clearing this browser still loses the draft.
+ * here. Opening the step reads the case's affidavit back (`affidavitFromCase`).
  *
  * A draft without a `caseId` (sample and batch drafts, older drafts) is never sent anywhere.
  */
 
 import * as React from "react";
 
+import { affidavitFromCase } from "./case-details-read";
 import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
 import { useFiling } from "./store";
+import type { FilingDraft } from "./types";
+import { useLoadFromCase } from "./use-load-from-case";
 
 export type SaveResult = { ok: boolean; error?: string };
 
-export function useAffidavit() {
+/** `standardOf` composes the standard affidavit text for a draft (`affidavitHtml`). */
+export function useAffidavit(standardOf: (draft: FilingDraft) => string) {
   const { draft } = useFiling();
+  useLoadFromCase((read, d) => affidavitFromCase(read, d, standardOf(d)));
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 

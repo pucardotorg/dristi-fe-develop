@@ -7,14 +7,15 @@
  * matched to the cheque by the order they are created. A row is sent only once it is
  * complete (`evidence.ts`), because the backend rejects a half-filled one; the draft stays
  * the browser's working copy until then. The id each row is given is kept on the cheque, so
- * clicking Continue again updates the row instead of adding a second one. Nothing is read
- * back from the backend yet — clearing this browser still loses the draft.
+ * clicking Continue again updates the row instead of adding a second one. Opening the step
+ * reads the case's cheques back (`chequesFromCase`).
  *
  * A draft without a `caseId` (sample and batch drafts, older drafts) is never sent anywhere.
  */
 
 import * as React from "react";
 
+import { chequesFromCase } from "./case-details-read";
 import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
 import {
   chequeEvidenceInfo,
@@ -25,6 +26,7 @@ import {
 import { chequeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
 import type { ChequeDetails, FilingDraft } from "./types";
+import { useLoadFromCase } from "./use-load-from-case";
 
 export type SaveResult = { ok: boolean; error?: string };
 
@@ -84,6 +86,9 @@ export function removeChequeEvidence(cheque: Pick<ChequeDetails, "chequeEvidence
 export function useChequeEvidence() {
   const { draft, update, flush } = useFiling();
   const [saving, setSaving] = React.useState(false);
+  useLoadFromCase((read, d) => {
+    d.cheques = chequesFromCase(read, d.cheques);
+  });
   const [error, setError] = React.useState<string | null>(null);
 
   /** Push every complete cheque and return memo to the case. `ok` is false on a failure. */

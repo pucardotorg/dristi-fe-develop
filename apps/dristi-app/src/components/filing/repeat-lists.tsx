@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { AddressFields } from "@/components/filing/address-fields";
 import { FormRow, FormSubhead, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
-import { ComboField, MobileInput, TextField } from "@/components/filing/inputs";
+import { ComboField, TextField } from "@/components/filing/inputs";
+import { MobileField } from "@/components/filing/mobile-field";
 
 /** Icon-only remove control at the 40px floor. */
 export function RemoveButton({
@@ -68,13 +69,14 @@ export function ContactList({
       {contacts.map((c, i) => (
         <div key={i} className="flex items-end gap-3">
           <FormRow className="flex-1">
-            <FormField label="Mobile number" name={`contacts.${i}.mobile`} optional={optional}>
-              <MobileInput
-                value={c.mobile}
-                onChange={(v) => setAt(i, { mobile: v })}
-                placeholder={mobilePlaceholder}
-              />
-            </FormField>
+            <MobileField
+              label="Mobile number"
+              name={`contacts.${i}.mobile`}
+              optional={optional}
+              value={c.mobile}
+              onChange={(v) => setAt(i, { mobile: v })}
+              placeholder={mobilePlaceholder}
+            />
             <FormField label={emailLabel} name={`contacts.${i}.email`} optional={optional}>
               <TextField
                 type="email"
@@ -198,6 +200,7 @@ export function RepresentativeList({
   onChange: (next: Representative[]) => void;
   addLabel?: string;
 }) {
+  const { court } = useCourt();
   const setAt = (i: number, patch: Partial<Representative>) =>
     onChange(reps.map((r, k) => (k === i ? { ...r, ...patch } : r)));
 
@@ -233,9 +236,13 @@ export function RepresentativeList({
             </FormField>
           </FormRow>
           <FormRow>
-            <FormField label="Mobile number" name={`reps.${i}.mobile`} optional>
-              <MobileInput value={r.mobile} onChange={(v) => setAt(i, { mobile: v })} />
-            </FormField>
+            <MobileField
+              label="Mobile number"
+              name={`reps.${i}.mobile`}
+              optional
+              value={r.mobile}
+              onChange={(v) => setAt(i, { mobile: v })}
+            />
             <FormField label="Email address" name={`reps.${i}.email`} optional>
               <TextField
                 type="email"
@@ -248,6 +255,25 @@ export function RepresentativeList({
           </FormRow>
           <FormSubhead>Address for service</FormSubhead>
           <AddressFields value={r.addr} onChange={(addr) => setAt(i, { addr })} name={`reps.${i}.addr`} />
+          <HalfWidth>
+            {/* The summons is served at this address, so it is saved with its station like
+                the entity's own addresses are. */}
+            <FormField
+              label="Police station"
+              name={`reps.${i}.police`}
+              required
+              help="The station this address falls under."
+            >
+              <ComboField
+                value={r.police ?? ""}
+                onChange={(v: string) => setAt(i, { police: v })}
+                items={policeStationsFor(court)}
+                placeholder="Search stations"
+                emptyLabel="No station by that name."
+                ariaLabel="Police station"
+              />
+            </FormField>
+          </HalfWidth>
         </div>
       ))}
       <Button

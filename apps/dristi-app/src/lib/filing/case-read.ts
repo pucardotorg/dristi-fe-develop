@@ -26,6 +26,7 @@ import {
   blankAccused,
   blankContact,
   blankRepresentative,
+  blankWitness,
 } from "./blank";
 import type {
   AddressRead,
@@ -42,6 +43,7 @@ import {
   partyChanged,
   poaHolderBody,
   selfComplainantId,
+  witnessBodies,
   type AnyPartyInput,
 } from "./parties";
 import type {
@@ -56,6 +58,7 @@ import type {
   Representative,
   SavedParty,
   UserProfile,
+  Witness,
 } from "./types";
 
 /** The parties after reading the case, and which of them now hold the case's copy. */
@@ -146,18 +149,19 @@ function formContacts(
 
 /**
  * A person named for an institution: a complainant's representative or someone summoned.
- * An accused's people keep their address in `additional_details` (see `accusedBodies`).
+ * Their address is their own case contact; an accused's people saved before that kept it
+ * in `additional_details`, which is still read.
  */
 function formRepresentative(p: ParticipantRead): Representative {
+  const address = p.addresses[0] ?? readAddress(p.additional_details.representative_address);
   return {
     mobile: formMobile(p.mobile_numbers[0] ?? null),
     name: p.name_at_filing ?? "",
     age: formAge(p.age_at_filing),
     designation: p.designation_at_filing ?? "",
     email: p.email_addresses[0] ?? "",
-    addr: formAddress(
-      p.addresses[0] ?? readAddress(p.additional_details.representative_address)
-    ),
+    addr: formAddress(address),
+    police: address?.police_station ?? "",
     gender: formGender(p.gender_at_filing),
     differentlyAbled: formDisability(p.disability_status),
   };
@@ -413,6 +417,47 @@ export function accusedFromCase(read: CaseRead, local: Accused[]): FromCase<Accu
       return { ...a, savedBodies: savedBodiesOf(accusedBodies(a)) };
     }
   );
+  return result;
+}
+
+/* ─────────────────────────────────── Witnesses ──────────────────────────────────── */
+
+function witnessFrom(p: ParticipantRead, base: Witness): Witness {
+  const designation = p.designation_at_filing ?? "";
+  const name = p.name_at_filing ?? "";
+  const contacts = formContacts(p, formMobile);
+  const addresses = p.addresses.map(formBlock);
+  const w: Witness = {
+    ...base,
+    caseParticipantIds: [p.case_participant_id],
+    syncError: undefined,
+    // A witness known only by designation is sent with it as their name (`witnessBodies`).
+    fullName: name === designation ? "" : name,
+    designation,
+    age: formAge(p.age_at_filing),
+    prove: p.witness?.what_will_witness_prove ?? "",
+    contacts: contacts.length ? contacts : [blankContact()],
+    addresses: addresses.length ? addresses : [blankAddressBlock()],
+  };
+  return { ...w, savedBodies: savedBodiesOf(witnessBodies(w)) };
+}
+
+/** A witness row nobody has typed into: the blank one a new draft starts with. */
+function untouchedWitness(w: Witness): boolean {
+  return !w.caseParticipantIds?.length &&
+    JSON.stringify({ ...w, id: "" }) === JSON.stringify({ ...blankWitness(), id: "" });
+}
+
+export function witnessesFromCase(read: CaseRead, local: Witness[]): FromCase<Witness> {
+  const groups = byOrdinal(read, "WITNESS").map((p) => [p]);
+  const result = merge(
+    local,
+    groups,
+    (w) => !!w.syncError || partyChanged(witnessBodies(w), w),
+    ([p], base) => witnessFrom(p, base ?? { ...blankWitness(), id: `wit-${p.case_participant_id}` })
+  );
+  // The case's witnesses take the place of the blank row a new draft starts with.
+  if (groups.length > 0) result.parties = result.parties.filter((w) => !untouchedWitness(w));
   return result;
 }
 

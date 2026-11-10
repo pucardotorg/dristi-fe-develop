@@ -8,20 +8,22 @@
  * (`evidence.ts`), since the backend rejects a half-filled one; the id it is given is kept
  * on the notice, so Continue again updates it instead of adding a second. The notice's scan
  * is linked from the row (`case_document_id`); its proof of dispatch, proof of delivery and
- * reply are linked to the row (`case_evidence_id`) once it is saved. Nothing is read
- * back yet, so clearing this browser still loses the draft.
+ * reply are linked to the row (`case_evidence_id`) once it is saved. Opening the step reads
+ * the case's notices back (`noticesFromCase`).
  *
  * A draft without a `caseId` (sample and batch drafts, older drafts) is never sent anywhere.
  */
 
 import * as React from "react";
 
+import { noticesFromCase } from "./case-details-read";
 import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
 import { demandNoticeEvidenceInfo, demandNoticeReady } from "./evidence";
 import { noticeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
 import { linkSavedDocuments } from "./use-case-documents";
 import type { DemandNotice, FilingDraft } from "./types";
+import { useLoadFromCase } from "./use-load-from-case";
 
 export type SaveResult = { ok: boolean; error?: string };
 
@@ -71,6 +73,9 @@ export function removeNoticeEvidence(notice: Pick<DemandNotice, "noticeEvidenceI
 export function useDemandNoticeEvidence() {
   const { draft, update, latest, flush } = useFiling();
   const [saving, setSaving] = React.useState(false);
+  useLoadFromCase((read, d) => {
+    d.notices = noticesFromCase(read, d.notices);
+  });
   const [error, setError] = React.useState<string | null>(null);
 
   /** Push every complete demand notice to the case. `ok` is false on a failure. */

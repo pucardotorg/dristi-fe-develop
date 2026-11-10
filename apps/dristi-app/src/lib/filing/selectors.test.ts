@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { blankCheque, blankComplainant, blankWitness } from "./blank";
-import { chequeNumberIssue, complainantComplete, witnessComplete } from "./selectors";
+import { chequeNumberIssue, complainantComplete, mobileIssue, witnessComplete } from "./selectors";
 import type { Complainant, Witness } from "./types";
 
 function fullWitness(): Witness {
@@ -26,6 +26,19 @@ function institution(): Complainant {
   c.rep.mobile = "9876543210";
   return c;
 }
+
+describe("mobileIssue", () => {
+  it("says nothing of an empty field or a number that can be an Indian mobile", () => {
+    assert.equal(mobileIssue(""), undefined);
+    assert.equal(mobileIssue("9876543210"), undefined);
+    assert.equal(mobileIssue("+91 98765 43210"), undefined);
+  });
+
+  it("flags a number too short or starting with a digit no mobile starts with", () => {
+    assert.ok(mobileIssue("98765"));
+    assert.ok(mobileIssue("5123456789"));
+  });
+});
 
 describe("witnessComplete", () => {
   it("counts a witness with a name (or designation) and an address with a police station", () => {

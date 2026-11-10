@@ -20,6 +20,20 @@ export const caseFilingCopy = {
   fileTooLarge: "This file is too large. Upload a file of up to 15 MB.",
 } as const;
 
+/** The jurisdiction & limitation step. */
+export const jurisdictionCopy = {
+  /** Under the reason field, when Continue is pressed on a late filing without one. */
+  condonationMissing:
+    "Give a reason for the delay. The complaint is filed after the one-month limit, so the court needs it.",
+} as const;
+
+/** Under a mobile number field whose value cannot be an Indian mobile (`mobileIssue`). */
+export const mobileFieldCopy = {
+  invalid: "Enter a 10-digit mobile number starting with 6, 7, 8 or 9.",
+  /** Read into "Add the … to save this to your case." when a party is held back for it. */
+  missingLabel: "10-digit mobile number",
+} as const;
+
 /** The parts of an address, as the form labels them, by the backend's field name. */
 const ADDRESS_PARTS: Record<string, string> = {
   line1: "address line",

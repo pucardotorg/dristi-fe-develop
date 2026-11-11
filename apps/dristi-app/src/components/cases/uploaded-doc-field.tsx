@@ -30,7 +30,7 @@ import {
   DocumentThumbnailButton,
   useObjectUrl,
 } from "@/components/document-preview";
-import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
+import { isAcceptedDocument, MAX_FILE_SIZE } from "@/lib/uploads/accepted-document";
 
 export const UPLOAD_HELP = "Upload a JPG, JPEG, PNG or PDF up to 10 MB.";
 

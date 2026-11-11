@@ -52,8 +52,8 @@ import { cn } from "@/lib/utils";
 
 import { MaskedOtp, OTP_LENGTH } from "./masked-otp";
 import { Identifier } from "@/components/chrome/identifier";
-import { AwaitingApproval } from "./awaiting-approval";
 import { SubmitErrorAlert } from "./submit-error-alert";
+import { PageOutcome } from "@/components/feedback";
 
 type Step = "role" | "name" | "contact" | "password" | "verification" | "terms" | "success" | "application";
 type AccountRole = "litigant" | "advocate" | "advocateClerk" | "poa" | "";
@@ -108,9 +108,10 @@ function Actions({ locale, onBack, submitLabel, pending = false }: {
   );
 }
 
-export function RegistrationFlow({ locale, summoned, initialMobile = "", verifiedMobile, onFinish }: {
+export function RegistrationFlow({ locale, summoned, toSign = false, initialMobile = "", verifiedMobile, onFinish }: {
   locale: Locale;
   summoned: boolean;
+  toSign?: boolean;
   initialMobile?: string;
   /** Set when a signed-in account has not finished registering: the number is already
    *  proven by that sign-in, so the contact step opens verified. */
@@ -332,26 +333,35 @@ export function RegistrationFlow({ locale, summoned, initialMobile = "", verifie
   if (step === "success") {
     if (needsVerification) {
       return (
-        <AwaitingApproval
-          title={pick(approvalStep.title, locale)}
-          body={
-            applicationNumber
-              ? pick(approvalStep.body, locale).replace("{id}", applicationNumber)
-              : pick(approvalStep.bodyNoNumber, locale)
-          }
-          action={{ label: pick(approvalStep.action, locale), onClick: () => setStep("application") }}
-        />
+              /* Submitted, waiting on the court's approval: sent, not decided (the hourglass). */
+        <div className="mx-auto flex min-h-[60vh] w-full max-w-lg flex-col justify-center">
+          <PageOutcome
+            tone="info"
+            title={pick(approvalStep.title, locale)}
+            body={
+              applicationNumber
+                ? pick(approvalStep.body, locale).replace("{id}", applicationNumber)
+                : pick(approvalStep.bodyNoNumber, locale)
+            }
+            action={<Button size="lg" onClick={() => setStep("application")}>{pick(approvalStep.action, locale)}</Button>}
+          />
+        </div>
       );
     }
     return (
+      /* The account is ready: the whole page is the outcome (skill `feedback-states`). */
       <div className="mx-auto flex min-h-[60vh] w-full max-w-lg flex-col items-center justify-center gap-6 text-center">
-        <span className="flex size-14 items-center justify-center rounded-full bg-success-muted text-success-muted-foreground">
-          <CheckCircle2Icon className="size-7" aria-hidden />
-        </span>
-        <Heading title={pick(successStep.title, locale)} body={pick(successStep.body, locale)} />
-        <Button size="lg" onClick={() => onFinish ? onFinish({ idSkipped: true, profileIncomplete: true }) : setDestinationNotice(true)}>
-          {pick(summoned ? successStep.summonedAction : successStep.generalAction, locale)}
-        </Button>
+        <PageOutcome
+          tone="success"
+          scale="hero"
+          title={pick(successStep.title, locale)}
+          body={pick(toSign ? successStep.signBody : successStep.body, locale)}
+          action={
+            <Button size="lg" onClick={() => onFinish && role ? onFinish({ idSkipped: true, profileIncomplete: true, name: fullName.trim(), role, mobile }) : setDestinationNotice(true)}>
+              {pick(toSign ? successStep.signAction : summoned ? successStep.summonedAction : successStep.generalAction, locale)}
+            </Button>
+          }
+        />
         {destinationNotice ? <Alert variant="info" className="text-left"><AlertTitle>Prototype: destination not connected</AlertTitle><AlertDescription>This action will open your portal home.</AlertDescription></Alert> : null}
       </div>
     );

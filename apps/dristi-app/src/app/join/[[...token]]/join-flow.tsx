@@ -2,7 +2,6 @@
 
 import { NEW_ADVOCATE_NAME, setNewAdvocateShell } from "@/lib/advocate/new-account";
 import { setNewAccountShell, setSignedInMobile } from "@/lib/filing/linked-complaints";
-import { isNewAccount } from "@/lib/sign-in/demo-accounts";
 import * as React from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 

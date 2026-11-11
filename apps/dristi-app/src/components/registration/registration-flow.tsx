@@ -357,7 +357,7 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
           title={pick(successStep.title, locale)}
           body={pick(toSign ? successStep.signBody : successStep.body, locale)}
           action={
-            <Button size="lg" onClick={() => onFinish ? onFinish({ idSkipped: true, profileIncomplete: true }) : setDestinationNotice(true)}>
+            <Button size="lg" onClick={() => onFinish && role ? onFinish({ idSkipped: true, profileIncomplete: true, name: fullName.trim(), role, mobile }) : setDestinationNotice(true)}>
               {pick(toSign ? successStep.signAction : summoned ? successStep.summonedAction : successStep.generalAction, locale)}
             </Button>
           }

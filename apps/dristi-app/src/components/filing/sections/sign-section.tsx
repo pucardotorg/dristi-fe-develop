@@ -49,6 +49,7 @@ import {
   LockIcon,
 } from "lucide-react";
 
+import {appUrl} from "@/lib/config";
 import { signingRules } from "@/lib/filing/config";
 import { getRepository, newCaseFileNumber, newPaymentRef } from "@/lib/filing/data";
 import { forgetFile } from "@/lib/filing/files";
@@ -122,6 +123,7 @@ import { SectionNotice } from "@/components/filing/notices";
 import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain, useSourceRailSlot } from "@/components/filing/filing-shell";
+import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { useLeaveGuard } from "@/components/filing/leave-guard";
 import { useTaskActions } from "@/components/tasks/use-task-actions";
 import {
@@ -132,8 +134,7 @@ import { CourtDocument } from "@/components/filing/sections/preview/court-docume
 import { useFilePicker } from "@/components/filing/use-file-picker";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Identifier } from "@/components/chrome/identifier";
-==== BASE ====
-==== BASE ====
+
 
 type ModalKey =
   | "esign"

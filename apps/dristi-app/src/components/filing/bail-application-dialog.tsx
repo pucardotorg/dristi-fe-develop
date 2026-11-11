@@ -97,7 +97,15 @@ import { UploadedDocField as SharedUploadedDocField } from "@/components/cases/u
  * tasks, the same decision the join flow made for the vakalatnama fee.
  */
 
-type Stage = "details" | "sureties" | "review" | "sign" | "payment" | "done";
+type Stage =
+  | "details"
+  | "sureties"
+  | "review"
+  | "sign"
+  | "payment"
+  | "processing"
+  | "paid"
+  | "done";
 type YesNo = "yes" | "no";
 
 export type BailApplicationResult = {
@@ -418,7 +426,11 @@ export function BailApplicationDialog({
   const generateTimerRef = React.useRef<number | null>(null);
   const [reviewFullscreen, setReviewFullscreen] = React.useState(false);
 
-  const [signTab, setSignTab] = React.useState<"esign" | "upload">("esign");
+  // Office access never e-signs (OFC-06): the upload tab is the way.
+  const officeAccess = accessCase.viewerAccess === "office";
+  const [signTab, setSignTab] = React.useState<"esign" | "upload">(
+    officeAccess ? "upload" : "esign",
+  );
   const [signedFile, setSignedFile] = React.useState<File | null>(null);
   const [esigned, setEsigned] = React.useState(false);
   const [signTouched, setSignTouched] = React.useState(false);
@@ -457,7 +469,7 @@ export function BailApplicationDialog({
     setReviewFullscreen(false);
     if (generateTimerRef.current !== null) window.clearTimeout(generateTimerRef.current);
     generateTimerRef.current = null;
-    setSignTab("esign");
+    setSignTab(officeAccess ? "upload" : "esign");
     setSignedFile(null);
     setEsigned(false);
     setSignTouched(false);

@@ -21,8 +21,14 @@ apps/dristi-app/public/vendor
 **/*.pem
 
 # Editor tooling and docs (not needed to build the app)
+.agents
 .claude
+.codex
+.cursor
 docs
+
+# The design system a designer cloned with `npm run setup:ds`; the app never builds from it
+vendor/pucar-design-system
 
 # IDEs
 .idea

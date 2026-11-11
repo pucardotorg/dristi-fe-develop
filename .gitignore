@@ -25,3 +25,12 @@ next-env.d.ts
 
 # generated browser runtime assets (pdf.js + tesseract), copied by apps/dristi-app/scripts/copy-runtime-assets.mjs
 apps/dristi-app/public/vendor/
+
+# the pinned design system, cloned on demand by `npm run setup:ds` (see ds.lock.json)
+vendor/pucar-design-system/
+
+# graphify (local knowledge-graph output and agent integrations)
+graphify-out/
+.codex/skills/graphify/
+.opencode/skills/graphify/
+.opencode/plugins/graphify.js

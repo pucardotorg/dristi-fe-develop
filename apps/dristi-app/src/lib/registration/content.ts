@@ -221,6 +221,8 @@ export const successStep = {
   body: t("You can add your address and official ID from your profile after entering the portal."),
   summonedAction: t("Continue to your case"),
   generalAction: t("Go to your home page"),
+  signBody: t("Next, sign your complaint."),
+  signAction: t("Take me to sign"),
 } as const;
 
 /** Advocates and clerks do not get access on submission — the court approves first. */

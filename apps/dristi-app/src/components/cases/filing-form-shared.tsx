@@ -7,8 +7,7 @@ import {
   FileTextIcon,
   PlusIcon,
   Trash2Icon,
-  UserRoundIcon,
-} from "lucide-react";
+  UserRoundIcon, FileXIcon } from "lucide-react";
 
 import { ChromeAlertDialogContent } from "@/components/chrome/app-chrome";
 
@@ -31,7 +30,6 @@ import {
   AttachmentMedia,
   AttachmentTitle,
 } from "@/components/ui/attachment";
-import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -54,6 +52,7 @@ import { RequiredMark } from "@/components/filing/form-field";
 import { cn } from "@/lib/utils";
 import { isAcceptedType, MAX_FILE_SIZE } from "@/lib/uploads/accepted-document";
 import { Identifier } from "@/components/chrome/identifier";
+import { ConfirmMark } from "@/components/feedback";
 
 const PREVIEWABLE_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png"];
 const ACCEPTED_FILE_TYPES =
@@ -153,7 +152,6 @@ export function FilingFrame({
   caseNumber,
   complainantName,
   onExit,
-  showPrototypeBanner = true,
   showCaseContext = true,
   /** "wide" gives a two-column body room; single-column forms stay default. */
   contentWidth = "default",
@@ -164,7 +162,6 @@ export function FilingFrame({
   caseNumber?: string;
   complainantName?: string;
   onExit: () => void;
-  showPrototypeBanner?: boolean;
   showCaseContext?: boolean;
   contentWidth?: "default" | "wide";
   children: ReactNode;
@@ -189,13 +186,6 @@ export function FilingFrame({
           {description}
         </p>
       </header>
-
-      {showPrototypeBanner ? (
-        <Banner variant="neutral">
-          Prototype only — filing details and selected files will not be saved
-          or sent.
-        </Banner>
-      ) : null}
 
       {showCaseContext && caseNumber ? (
         <Card size="sm" className="hover:bg-card">
@@ -671,6 +661,7 @@ export function DiscardFilingDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <ChromeAlertDialogContent>
         <AlertDialogHeader>
+          <ConfirmMark danger icon={FileXIcon} />
           <AlertDialogTitle>Discard this {noun}?</AlertDialogTitle>
           <AlertDialogDescription>
             Anything you entered will be lost.
@@ -678,7 +669,7 @@ export function DiscardFilingDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Keep editing</AlertDialogCancel>
-          <AlertDialogAction variant="destructive-solid" onClick={onDiscard}>
+          <AlertDialogAction variant="destructive" onClick={onDiscard}>
             Discard
           </AlertDialogAction>
         </AlertDialogFooter>

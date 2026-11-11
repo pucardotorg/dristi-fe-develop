@@ -20,9 +20,18 @@
 /apps/dristi-app/scripts/                           @pucardotorg/design
 /.agents/                                           @pucardotorg/design
 /.claude/                                           @pucardotorg/design
+/.claude/launch.json                                @pucardotorg/frontend @pucardotorg/design
 /.cursor/                                           @pucardotorg/design
 /.codex/                                            @pucardotorg/design
 /ds.lock.json                                       @pucardotorg/design
+/scripts/lib/agent-rails.mjs                        @pucardotorg/design
+/scripts/agent-rails.test.mjs                       @pucardotorg/design
+/scripts/sync-rails.mjs                             @pucardotorg/design
+/scripts/check-rails.mjs                            @pucardotorg/design
+/scripts/verify-agent-work.mjs                      @pucardotorg/design
+/scripts/ensure-ds.mjs                              @pucardotorg/design
+/scripts/bump-ds.mjs                                @pucardotorg/design
+/vendor/                                            @pucardotorg/design
 /netlify.toml                                       @pucardotorg/design
 
 # Engineering: the backend connection, the data-source switch, build, CI and Docker.

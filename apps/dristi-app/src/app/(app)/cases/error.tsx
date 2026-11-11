@@ -5,12 +5,17 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "
 import { PAGE_GUTTER } from "@/components/shell/page-frame";
 import { CASES_LOAD_ERROR } from "@/lib/cases/content";
 
+type CasesErrorProps = {
+  error: Error & { digest?: string };
+  reset: () => void;
+};
+
 /**
- * The cases list failed to load: a backend error, or (with the data source set to
+ * A page under /cases failed to load: a backend error, or (with the data source set to
  * `api`) a cases method engineering has not connected yet. Production hides server
  * error details, so the message stays general.
  */
-export default function CasesError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function CasesError({ reset }: CasesErrorProps) {
   return (
     <div className={PAGE_GUTTER}>
       <Empty role="alert">

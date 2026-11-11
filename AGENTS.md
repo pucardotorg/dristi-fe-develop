@@ -67,7 +67,9 @@ A contract method that `http.ts` does not implement yet rejects with `NotIntegra
 
 - Screens get data only from the feature's store or hook, or `getRepository()`. They never
   import fixtures, sandbox code, `http.ts` or `@/lib/api`, or use browser storage for data
-  (UI preferences use `useLocalStorageValue`). `npm run lint` enforces this.
+  (UI preferences use `useLocalStorageValue`). `npm run lint` catches imports of
+  `fixtures`, `data/indexeddb`, `data/sandbox`, `data/http`, `lib/api` and `lib/server`, and
+  browser storage; other demo modules (such as `party-cases`, `*-dummy.json`) are on you.
 - Engineering connects a feature by adding methods to its `http.ts`, never by editing a
   screen. When the backend behaves differently from the sandbox, update the sandbox too.
 - Design adds data by extending the contract and the sandbox, never `http.ts`.

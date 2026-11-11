@@ -11,12 +11,13 @@ const SCREENS = ["src/components/**/*.{ts,tsx}", "src/app/**/*.{ts,tsx}"];
 // Route handlers are the demo server (bulk, provakil) and the backend proxy, not screens.
 const NOT_SCREENS = ["src/app/api/**", "src/app/provakil/api/**"];
 
+// `**/lib/…` matches the `@/lib/…` alias and relative paths (`../../lib/…`) alike.
 const BACKEND_IMPORTS = {
-  group: ["@/lib/api", "@/lib/api/*", "@/lib/server", "@/lib/server/*", "@/lib/**/data/http"],
+  group: ["**/lib/api", "**/lib/api/*", "**/lib/server", "**/lib/server/*", "**/lib/**/data/http"],
   message: "Screens get data from the feature's repository or store, not the API. See AGENTS.md, Data.",
 };
 const SANDBOX_IMPORTS = {
-  group: ["@/lib/**/fixtures", "@/lib/**/data/indexeddb", "@/lib/**/data/sandbox"],
+  group: ["**/lib/**/fixtures", "**/lib/**/data/indexeddb", "**/lib/**/data/sandbox"],
   message:
     "Fixtures and sandbox code belong behind the feature's repository. Use getRepository() or the feature's store/hook. See AGENTS.md, Data.",
 };
@@ -26,11 +27,13 @@ const STORAGE_GLOBALS = ["localStorage", "sessionStorage", "indexedDB"].map((nam
   name,
   message: STORAGE_MESSAGE,
 }));
-const STORAGE_PROPERTIES = ["localStorage", "sessionStorage", "indexedDB"].map((property) => ({
-  object: "window",
-  property,
-  message: STORAGE_MESSAGE,
-}));
+const STORAGE_PROPERTIES = ["window", "globalThis", "self"].flatMap((object) =>
+  ["localStorage", "sessionStorage", "indexedDB"].map((property) => ({
+    object,
+    property,
+    message: STORAGE_MESSAGE,
+  }))
+);
 
 /*
  * Screens that broke the rule before it existed. Each is excused only from the rule it

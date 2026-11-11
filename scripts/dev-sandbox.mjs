@@ -23,10 +23,17 @@ const child = npmPath
   ? spawn(process.execPath, [npmPath, ...args], { env, stdio: "inherit" })
   : spawn("npm", args, { env, stdio: "inherit", shell: process.platform === "win32" });
 
-for (const signal of ["SIGINT", "SIGTERM"]) {
+const SIGNALS = ["SIGINT", "SIGTERM"];
+for (const signal of SIGNALS) {
   process.on(signal, () => child.kill(signal));
 }
 child.on("exit", (code, signal) => {
-  if (signal) process.kill(process.pid, signal);
-  else process.exit(code ?? 1);
+  if (signal) {
+    // Our own handlers would swallow the re-raised signal; drop them so the process
+    // ends the way the dev server did (and reports a non-zero status).
+    for (const s of SIGNALS) process.removeAllListeners(s);
+    process.kill(process.pid, signal);
+  } else {
+    process.exit(code ?? 1);
+  }
 });

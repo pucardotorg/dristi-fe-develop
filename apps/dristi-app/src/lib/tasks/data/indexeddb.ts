@@ -34,7 +34,8 @@ const SEED_KEY = "dristi-tasks:seed";
  * seed stamp changes, as before).
  */
 const RESEED_ON_PAGE_LOAD = true;
-let reseededThisPage = false;
+/** The page's first pass (fresh-page and stale-stamp check) has completed. */
+let firstPassDone = false;
 
 interface TasksDB extends DBSchema {
   people: { key: string; value: Person };
@@ -107,27 +108,38 @@ let checking: Promise<void> | null = null;
 
 /**
  * Before a read: start the demo over, seed an empty sandbox, or keep it (`seedAction`).
+ * Only the page's first pass starts over (a fresh page, or data from an older stamp);
+ * after it, a read only seeds a sandbox that is empty (just reset), so nothing done in
+ * this page is wiped mid-session, say by the read after a task change past midnight.
  * The reads the store makes together (people, cases, tasks, current person) share one
- * pass, so the current person is read after any wipe. A failed pass is not remembered;
- * the next read tries again.
+ * pass, so the current person is read after any wipe. A failed pass changes nothing it
+ * has not finished, and the next read tries again.
  */
 function prepareRead(): Promise<void> {
   checking ??= (async () => {
-    const freshPage = RESEED_ON_PAGE_LOAD && !reseededThisPage;
-    reseededThisPage = true;
+    const first = !firstPassDone;
     const hasPeople = (await (await db()).count("people")) > 0;
-    const action = seedAction({ freshPage, hasPeople, stampIsCurrent: stampIsCurrent() });
-    if (action === "keep") return;
+    const action = seedAction({
+      freshPage: first && RESEED_ON_PAGE_LOAD,
+      hasPeople,
+      stampIsCurrent: first ? stampIsCurrent() : true,
+    });
     if (action === "wipe-and-seed") await wipeAll();
-    await Promise.all([putAll("people", PEOPLE), putAll("cases", CASES), putAll("tasks", buildTasks())]);
-    rememberSeed();
+    if (action !== "keep") {
+      await Promise.all([putAll("people", PEOPLE), putAll("cases", CASES), putAll("tasks", buildTasks())]);
+      rememberSeed();
+    }
+    firstPassDone = true;
   })().finally(() => {
     checking = null;
   });
   return checking;
 }
 
-/** Writes never start a pass (it could wipe mid-change); they wait for one running. */
+/**
+ * Writes never start a pass (it could wipe mid-change); they wait for one running. The
+ * store always reads before it writes, so a page's first pass has run by then.
+ */
 async function afterPass(): Promise<void> {
   if (checking) await checking;
 }

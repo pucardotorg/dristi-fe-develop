@@ -5,10 +5,10 @@
  *
  * Loads people, cases and tasks from the repository (the sandbox seeds itself; see
  * `data/indexeddb.ts`), knows who the current person is, and applies transitions through
- * `dispatch`. Every
- * change is written through the repository and announced on a `BroadcastChannel`, so
- * a second tab — signed in as someone else — sees it at once. `online` mirrors the
- * browser; when it is false the screens disable every verb and nothing is optimistic.
+ * `dispatch`. Every change is written through the repository and announced on a
+ * `BroadcastChannel`, so a second tab — signed in as someone else — sees it at once.
+ * `online` mirrors the browser; when it is false the screens disable every verb and
+ * nothing is optimistic.
  */
 
 import * as React from "react";

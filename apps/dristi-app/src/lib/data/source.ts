@@ -50,7 +50,8 @@ export class NotIntegratedError extends Error {
   readonly operation: string;
 
   constructor(operation: string) {
-    super(`${operation} is not connected to the backend yet.`);
+    // No closing full stop: screens put the message inside their own sentence.
+    super(`${operation} is not connected to the backend yet`);
     this.name = "NotIntegratedError";
     this.operation = operation;
   }
@@ -101,24 +102,26 @@ export function selectRepository<T extends object>(
 ): T {
   if (source === "sandbox") return make.sandbox();
   const http = make.http();
-  // One function per name, so a method reads the same on every access.
-  const resolved = new Map<string, unknown>();
+  // One function per method name, so a method reads the same on every access.
+  const methods = new Map<string, unknown>();
   const proxy = new Proxy(http, {
     get(target, key) {
       if (typeof key === "symbol") return Reflect.get(target, key);
-      if (resolved.has(key)) return resolved.get(key);
-      let value: unknown;
       if (key in target) {
         const member: unknown = Reflect.get(target, key);
-        // Bound to the real object, so private fields work when called through the proxy.
-        value = typeof member === "function" ? member.bind(target) : member;
-      } else if (NOT_METHODS.has(key)) {
-        value = undefined;
-      } else {
-        value = () => Promise.reject(new NotIntegratedError(`${feature}.${key}`));
+        // Data is read fresh each time; only methods are bound and kept.
+        if (typeof member !== "function") return member;
+        if (!methods.has(key)) {
+          // Bound to the real object, so private fields work when called through the proxy.
+          methods.set(key, member.bind(target));
+        }
+        return methods.get(key);
       }
-      resolved.set(key, value);
-      return value;
+      if (NOT_METHODS.has(key)) return undefined;
+      if (!methods.has(key)) {
+        methods.set(key, () => Promise.reject(new NotIntegratedError(`${feature}.${key}`)));
+      }
+      return methods.get(key);
     },
   });
   // Safe: every property read returns either the http implementation's own member

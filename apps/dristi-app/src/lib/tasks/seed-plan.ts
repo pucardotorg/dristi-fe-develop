@@ -33,6 +33,8 @@ export type SeedAction = "keep" | "seed" | "wipe-and-seed";
  * - an empty sandbox (first run, or just reset) is seeded;
  * - data seeded from an older stamp (new day, new version, new fixtures) starts over;
  * - otherwise the sandbox keeps what was done in it.
+ * The repository asks about the stamp only on a page's first read, so a page left open
+ * past midnight keeps its work until it is reloaded.
  */
 export function seedAction(state: { freshPage: boolean; hasPeople: boolean; stampIsCurrent: boolean }): SeedAction {
   if (!state.hasPeople) return "seed";

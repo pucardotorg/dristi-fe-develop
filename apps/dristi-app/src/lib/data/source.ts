@@ -92,7 +92,7 @@ const NOT_METHODS = new Set(["then", "toJSON", "$$typeof"]);
  * The repository for a source: the sandbox as it is, or the backend implementation
  * standing in for the whole contract. A method `http.ts` does not have yet is a function
  * that rejects with `NotIntegratedError` ("tasks.listPeople is not connected to the
- * backend yet."), so the screen shows its error state instead of crashing on
+ * backend yet"), so the screen shows its error state instead of crashing on
  * "undefined is not a function". Pure: tests pass the source in.
  */
 export function selectRepository<T extends object>(

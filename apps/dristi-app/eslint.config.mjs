@@ -11,13 +11,16 @@ const SCREENS = ["src/components/**/*.{ts,tsx}", "src/app/**/*.{ts,tsx}"];
 // Route handlers are the demo server (bulk, provakil) and the backend proxy, not screens.
 const NOT_SCREENS = ["src/app/api/**", "src/app/provakil/api/**"];
 
-// `**/lib/…` matches the `@/lib/…` alias and relative paths (`../../lib/…`) alike.
+// The app's own `lib/` through the `@/lib/…` alias or a relative path (`../../lib/…`);
+// a package's deep path (`somepkg/lib/api`) is left alone.
+const appLib = (...paths) => paths.flatMap((path) => [`@/lib/${path}`, `.*/**/lib/${path}`]);
+
 const BACKEND_IMPORTS = {
-  group: ["**/lib/api", "**/lib/api/*", "**/lib/server", "**/lib/server/*", "**/lib/**/data/http"],
+  group: appLib("api", "api/*", "server", "server/*", "**/data/http"),
   message: "Screens get data from the feature's repository or store, not the API. See AGENTS.md, Data.",
 };
 const SANDBOX_IMPORTS = {
-  group: ["**/lib/**/fixtures", "**/lib/**/data/indexeddb", "**/lib/**/data/sandbox"],
+  group: appLib("**/fixtures", "**/data/indexeddb", "**/data/sandbox"),
   message:
     "Fixtures and sandbox code belong behind the feature's repository. Use getRepository() or the feature's store/hook. See AGENTS.md, Data.",
 };

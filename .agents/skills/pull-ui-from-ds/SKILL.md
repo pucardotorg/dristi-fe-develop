@@ -17,14 +17,16 @@ description: "Build or change Dristi UI using the pinned Pucar DS: inspect relev
    references only for the surfaces or interactions being changed.
 3. Sync only missing or drifting controls with `npm run sync:ui -- <component>`.
    Coordinate shared sync operations. Never hand-write or modify a synced primitive.
-4. Compose the agreed behavior in assigned app files. Include relevant loading, empty,
+4. Get data through the feature's store, hook or `getRepository()`; add new data in the
+   contract and the sandbox per `.agents/policies/data-seam.md`, never in the screen.
+5. Compose the agreed behavior in assigned app files. Include relevant loading, empty,
    errors, partial data, language/long-label, responsive, keyboard, and recovery states.
    Trace displayed facts to current product sources or real fields; do not invent
    system actions or user roles. Historical proposals are not required inputs.
    Match each important region's DS text role to the finalized design or direct
    request, including rendered size and line-height; token validity alone does not
    establish correct hierarchy. Explain a choice when the DS role is ambiguous.
-5. Verify using `.agents/policies/verification.md` and the craft render checklist.
+6. Verify using `.agents/policies/verification.md` and the craft render checklist.
    Return changed files, acceptance results, commands/evidence, necessary deviations,
    and remaining issues. The coordinator performs a separate review pass or invokes a
    tagged reviewer, then records decisions/results through `document-ui-feature`.

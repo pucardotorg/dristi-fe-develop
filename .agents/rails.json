@@ -54,6 +54,11 @@
       "name": "dev-server",
       "description": "Protect the owner\u2019s running server and other checkouts; use localhost only for the verified checkout.",
       "source": ".agents/policies/dev-server.md"
+    },
+    {
+      "name": "data-seam",
+      "description": "Before adding or changing any data a screen reads or writes, follow the sandbox/API data rules.",
+      "source": ".agents/policies/data-seam.md"
     }
   ],
   "requiredSkills": [

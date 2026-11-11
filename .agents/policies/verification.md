@@ -7,6 +7,8 @@ the repository root; no profile starts a server or installs dependencies.
 |---|---|
 | Agent policies, roles, skills, generator or checker | `npm run verify:agents` |
 | UI implementation | `npm run verify:ui` plus affected behavior/render checks |
+| Data (types, contract, sandbox) | `npm run typecheck` and `npm run test:app` |
+| Any screen change | Checked in the browser on `npm run dev:sandbox` |
 | Application behavior | Relevant tests; `npm run test:app` runs the existing app suite |
 | Build-sensitive changes | `npm run build` in an isolated checkout when needed |
 

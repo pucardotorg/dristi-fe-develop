@@ -9,6 +9,11 @@ Inspect the real code and render evidence rather than relying on the builder's v
 Check interactions, action scope, meaningful states, labels, keyboard and focus behavior,
 responsive usability, and consistency with affected sibling surfaces. Product-copy errors
 that misrepresent legal or system behavior outrank cosmetic concerns.
+Check the data rules in `.agents/policies/data-seam.md`: no screen imports fixtures,
+seeds, sandbox code, `data/http` or `@/lib/api`, or uses browser storage for data
+(`npm run lint` reports these); every contract change is additive, and anything else is
+listed under "Contract changes"; new and changed screens handle loading, empty, error and
+"not connected yet".
 For DS governance, compare each important region's intended role in the owner-finalized
 agreement or direct request and pinned DS with its implemented token/class and rendered
 computed style.

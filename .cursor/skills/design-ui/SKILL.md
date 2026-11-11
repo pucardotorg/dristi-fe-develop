@@ -19,10 +19,12 @@ document-writing stage. Follow `.agents/policies/orchestration.md`.
    Inspect relevant primitives and existing sibling patterns. Prefer a supported
    composition over new controls; flag an upstream gap only when existing APIs cannot
    meet the requirement.
-4. Recommend a direction, explain its main tradeoff, and name observable acceptance
+4. Work out the data this screen needs and follow `.agents/policies/data-seam.md`: name
+   the contract methods it reads or writes, and which already exist.
+5. Recommend a direction, explain its main tradeoff, and name observable acceptance
    criteria. Include relevant error/recovery states, responsive and language constraints,
    and action scope. Label judgment as judgment; do not present taste as a DS rule.
-5. Return proposed behavior and criteria to the coordinator for the owner to finalize.
+6. Return proposed behavior and criteria to the coordinator for the owner to finalize.
    Mark what the owner has already decided. The coordinator records meaningful decisions
    using `document-ui-feature`; it does not start a build from this UX handoff alone.
    After an explicit owner build request, pass the finalized agreement to the builder.

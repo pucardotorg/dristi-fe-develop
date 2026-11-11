@@ -25,7 +25,12 @@ verification evidence. Never require an archived proposal or its attributes tabl
    exists, report a governance gap rather than a fabricated violation. If owner intent
    conflicts with a pinned DS rule, report the conflict for resolution. Never infer an
    expected size from taste or a past example.
-4. Follow `.agents/policies/verification.md` for check evidence and render coverage.
+4. Check the data rules (`.agents/policies/data-seam.md`):
+   - no screen imports fixtures, seeds, sandbox code, `data/http` or `@/lib/api`, or uses
+     browser storage for data (`npm run lint` reports these);
+   - every contract change is additive; anything else is listed under "Contract changes";
+   - new and changed screens handle loading, empty, error and "not connected yet".
+5. Follow `.agents/policies/verification.md` for check evidence and render coverage.
    Reuse valid checks for the exact state, but inspect independently. If read-only
    browser/screenshot tools are available, capture the assigned screens yourself from
    the checked checkout. Otherwise inspect the coordinator's labeled screenshot

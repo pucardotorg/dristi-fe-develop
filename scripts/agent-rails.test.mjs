@@ -30,6 +30,13 @@ function fixture(t) {
     "apps/dristi-app/scripts/resolve-ds.mjs", "apps/dristi-app/src/components/chrome/table-plate.ts",
     "apps/dristi-app/src/components/chrome/motion.ts", "apps/dristi-app/src/components/filing/form-card.tsx",
     "apps/dristi-app/src/app/globals.css",
+    // Cited by the data rules (data-seam.md, ui-designer.md).
+    "apps/dristi-app/eslint.config.mjs", "apps/dristi-app/src/hooks/use-local-storage-value.ts",
+    "apps/dristi-app/src/app/api/bulk/route.ts", "apps/dristi-app/src/app/api/v1/route.ts",
+    "apps/dristi-app/src/lib/api/index.ts", "apps/dristi-app/src/lib/server/env.ts",
+    "apps/dristi-app/src/lib/data/source.ts", "apps/dristi-app/src/lib/auth/http.ts",
+    "apps/dristi-app/src/lib/tasks/data/index.ts", "apps/dristi-app/src/lib/filing/data/index.ts",
+    "apps/dristi-app/src/lib/cases/data/index.ts",
   ]) write(directory, path, "fixture\n");
   assert.deepEqual(inspectRails(directory).problems, [], "Every mutation starts from a valid fixture");
   return directory;

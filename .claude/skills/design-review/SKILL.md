@@ -13,7 +13,7 @@ back as its own reviewed change; do not copy it in from another branch.
 ## Starting a review
 
 1. **Server**: check the app responds. If not, ask the user to run
-   `npm run dev` in their own terminal (never start it yourself — see
+   `npm run dev:sandbox` in their own terminal (never start it yourself — see
    `.agents/policies/dev-server.md`). Confirm the running server serves this checkout
    before relying on it.
 2. **Locate the screen**: the route the user named, else the screen under discussion,

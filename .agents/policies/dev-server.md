@@ -10,7 +10,8 @@ In an isolated worktree, an app served from another checkout cannot verify your 
   `.next`. Use an isolated worktree for build verification when required.
 - If the server is unavailable, report that visual verification is pending and continue
   source review and safe checks. If a render is required, ask the owner to start the
-  correct checkout in their persistent terminal with `npm run dev`.
+  correct checkout in their persistent terminal with `npm run dev:sandbox` (design work,
+  no backend) or `npm run dev` (sandbox data, sign-in against the backend).
 - Before diagnosing an application bug from an inert page, confirm the origin is
   `localhost` and check whether the expected Next process is alive. A stopped server
   or failed hydration must not be mistaken for a product defect.

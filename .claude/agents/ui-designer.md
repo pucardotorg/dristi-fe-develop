@@ -42,6 +42,25 @@ changed files, criteria met, commands and results, examined widths/themes/states
 unverified items. The coordinator performs a separate review pass or invokes a reviewer
 only when the owner tagged that role.
 
+## You own
+
+Screens (`apps/dristi-app/src/components/`, and `apps/dristi-app/src/app/` except
+`apps/dristi-app/src/app/api/v1/`), copy (each feature's `content.ts`), the sandbox (each
+feature's `data/indexeddb.ts` or `data/sandbox.ts`, fixtures, seeds, and demo-server
+routes such as `apps/dristi-app/src/app/api/bulk/`) and the agent layer (`.agents/`).
+
+## You don't edit
+
+`apps/dristi-app/src/lib/api/`, `apps/dristi-app/src/lib/server/`,
+`apps/dristi-app/src/lib/data/`, `apps/dristi-app/src/app/api/v1/`, any `data/http.ts`,
+`apps/dristi-app/src/lib/auth/http.ts`, `docker/` and `.github/`. If the work seems to
+need them, stop and say so in your report.
+
+## Data
+
+Follow `.agents/policies/data-seam.md`. New data means the type, then the contract
+method, then the sandbox answer, then the screen. Contracts only grow.
+
 Fix required review findings and rerun affected checks; do not expand into unrelated
 polish. Return decision changes and implementation status for the owner's history, which
 the coordinator updates through `document-ui-feature`. Follow

@@ -20,7 +20,7 @@ commit, so it can never disagree with the intake).
 
 | Seam | Today | Replace with |
 | --- | --- | --- |
-| `data/repository.ts` → `data/indexeddb.ts` | IndexedDB (`dristi-efiling`: `drafts`, `files`, `profile`) | HTTP repository against the case service; `getRepository()` in `data/index.ts` is the single choice point |
+| `data/repository.ts` → `data/indexeddb.ts` / `data/http.ts` | The sandbox: IndexedDB (`dristi-efiling`: `drafts`, `files`, `profile`); sample and scrutiny-return drafts are seeded only in sandbox mode | Methods added to `data/http.ts` as the case service arrives. `getRepository()` in `data/index.ts` picks one by `NEXT_PUBLIC_DATA_SOURCE` (`lib/data/source.ts`) |
 | `profile.tsx` — `useProfile()` | Local profile edited from the header avatar | The product session (name, mobile, email, bar number) |
 | `ocr/index.ts` — `extractDocument(blob, ref, docType)` → `{ extract, poor }` | Tesseract.js in the browser; parsers in `ocr/parse-*.ts`; field keys in `ocr/fields.ts` | Server-side IDP returning the same `DocExtract` (fields + boxes). `ocr/apply.ts` (fields → draft with review markers) stays |
 | `lookups.ts` — `lookupIfsc`, `lookupPin` | `ifsc.razorpay.com`, `api.postalpincode.in` | Court/registry services |

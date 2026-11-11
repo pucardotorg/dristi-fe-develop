@@ -61,8 +61,8 @@ remembers the state it left).
 
 | Seam | Today | Replace with |
 | --- | --- | --- |
-| `data/repository.ts` → `data/indexeddb.ts` | IndexedDB (`dristi-tasks`: `people`, `cases`, `tasks`, `files`) + `sessionStorage` for the current person | HTTP repository against the tasks/case services; `getRepository()` in `data/index.ts` is the single choice point |
-| `store.tsx` — `useTasks()` | Loads, seeds `sandbox.ts` on first run (re-seeds when `SEED_VERSION` moves), `dispatch(taskId, transition)` applies a pure transition and writes it | The same provider over the HTTP repository; the session replaces `setUser` |
+| `data/repository.ts` → `data/indexeddb.ts` / `data/http.ts` | The sandbox: IndexedDB (`dristi-tasks`: `people`, `cases`, `tasks`, `files`) + `sessionStorage` for the current person; it seeds itself from `sandbox.ts` (fresh on each page load, again when the seed stamp in `seed-plan.ts` moves) | Methods added to `data/http.ts` as the tasks/case services arrive. `getRepository()` in `data/index.ts` picks one by `NEXT_PUBLIC_DATA_SOURCE` (`lib/data/source.ts`) |
+| `store.tsx` — `useTasks()` | Loads through the repository, `dispatch(taskId, transition)` applies a pure transition and writes it | The same provider over the HTTP repository; the session replaces `setUser` |
 | `sandbox.ts` | Five advocates, 19 cases, ~38 tasks, dates relative to today | Nothing — delete once the services answer |
 | Pay / sign / court (`components/tasks/act/*`) | Sandbox outcome controls: gateway result, any 6-digit OTP, "Court: accept / return with defects" | Payment gateway, eSign provider, registry scrutiny events driving the same transitions |
 | Cross-tab sync | `BroadcastChannel("dristi-tasks")` | Server push / polling |

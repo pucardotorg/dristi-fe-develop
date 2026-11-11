@@ -2,12 +2,14 @@
 
 The citizen sign-in (`components/sign-in-block.tsx`) and registration
 (`components/registration/registration-flow.tsx`) talk to one interface, `AuthService`.
-`getAuthService()` (`index.ts`) is the single place that picks who answers:
+`getAuthService()` (`index.ts`) is the single place that picks who answers, from
+`AUTH_SOURCE` in `lib/data/source.ts`: `NEXT_PUBLIC_AUTH_SOURCE` when it is set, otherwise
+the app's data source (`NEXT_PUBLIC_DATA_SOURCE`, default `api`).
 
-| `NEXT_PUBLIC_AUTH_SOURCE` | Implementation | Use |
+| Sign-in source | Implementation | Use |
 | --- | --- | --- |
-| `api` (default) | `http.ts` — the DRISTI backend through the `/api/v1` proxy | Development against a backend, and production |
-| `sandbox` | `sandbox.ts` — in the browser, nothing persists | Demos and design review without a backend (`netlify.toml`) |
+| `api` | `http.ts` — the DRISTI backend through the `/api/v1` proxy | `npm run dev` (`.env.development`), the published image, production |
+| `sandbox` | `sandbox.ts` — in the browser, nothing persists | `npm run dev:sandbox` and the design-review site (`netlify.toml`) |
 
 Both answer the same way — the sandbox refuses unknown numbers at sign-in and taken
 numbers at registration — so the screens behave identically in either mode.

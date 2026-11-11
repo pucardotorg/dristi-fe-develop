@@ -44,8 +44,11 @@ try {
 ## Rules
 
 - **Screens never import `api`.** They call a repository or store; the repository maps
-  backend shapes to the app's types (`lib/<feature>/types.ts`). That keeps today's
-  local repositories and tomorrow's HTTP ones interchangeable.
+  backend shapes to the app's types (`lib/<feature>/types.ts`). That keeps the sandbox
+  repositories and the HTTP ones interchangeable: each feature's `data/index.ts` picks one
+  with `chooseRepository` from `lib/data/source.ts`, by `NEXT_PUBLIC_DATA_SOURCE`. Connect
+  a feature by adding methods to its `data/http.ts`; a method not added yet rejects with
+  `NotIntegratedError`. `npm run lint` keeps `api` out of screens.
 - **Paths are relative and slash-agnostic.** `"locations"` and `"/locations/"` are the
   same call. The proxy adds the trailing slash Django needs. Encode interpolated ids.
 - **Show `error.message`, not `error.body`.** Messages are written for people; bodies are

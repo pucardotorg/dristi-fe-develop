@@ -3,9 +3,13 @@
  *
  * Everything the screens store goes through this interface: drafts (the whole
  * `FilingDraft`), uploaded files (bytes + metadata), and the current person's profile.
- * The only implementation today is IndexedDB in the browser (`./indexeddb.ts`) — enough
- * for the flow to behave like a real app on one machine. The backend team replaces it
- * with an HTTP implementation of the same interface; screens do not change.
+ * Two implementations answer it: the sandbox in the browser (`./indexeddb.ts`, design;
+ * enough for the flow to behave like a real app on one machine) and the backend
+ * (`./http.ts`, engineering, filled in as endpoints arrive); `./index.ts` picks one by
+ * `NEXT_PUBLIC_DATA_SOURCE`, and screens do not change.
+ *
+ * Shared by both teams and only grows: add methods, never rename or remove one that
+ * `http.ts` already implements (the type check fails if you do).
  */
 
 import type { FilingDraft, StoredFileRef, UserProfile } from "../types";

@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
@@ -93,8 +94,12 @@ export function expectedRails(root) {
       }
     }
   }
+  // The app's lint script is plain eslint, so the design-system checks it used to chain
+  // are guarded here instead: the ui profile must keep running every one of them.
   for (const [profile, required] of Object.entries({
-    agents: ["check:rails", "test:rails"], ui: ["check:ds-fresh", "lint", "check:rails"],
+    agents: ["check:rails", "test:rails"],
+    ui: ["check:ds-fresh", "lint", "check:tokens", "check:typography", "check:ui-sync", "check:spacing",
+      "check:table-rows", "check:ds-retired", "typecheck", "check:rails"],
   })) {
     if (required.some((command) => !profiles[profile].includes(command))) {
       fail(`Required verification coverage missing from ${profile}`);
@@ -103,8 +108,8 @@ export function expectedRails(root) {
   const output = new Map();
   assertSource(root, manifest.project, ".agents/policies/");
   const project = read(root, manifest.project);
-  output.set("AGENTS.md", banner(manifest.project) + project);
-  output.set("CLAUDE.md", banner(manifest.project) + project);
+  // Root AGENTS.md and CLAUDE.md are shared with engineering and edited by PR, so they
+  // are not generated; AGENTS.md points design work at the project policy.
   output.set(".cursor/rules/project.mdc", `---\ndescription: "Dristi task routing, sources, ownership, and completion policy"\nalwaysApply: true\n---\n\n${banner(manifest.project)}${project}`);
 
   const names = new Set();
@@ -182,6 +187,14 @@ export function expectedRails(root) {
   return { output, roles: names.size, skills: skills.size, rules: ruleNames.size };
 }
 
+// A personal tool installed under a legacy path (e.g. a local skill the team's .gitignore
+// already excludes) is not a rails problem: no clone or CI run ever sees it. Anything
+// git would track, or a checkout where git cannot answer, still counts.
+function whollyGitIgnored(root, path) {
+  const listed = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", path], { cwd: root });
+  return listed.status === 0 && listed.stdout.length === 0;
+}
+
 export const managedDirectories = [".codex/agents", ".claude/agents", ".claude/rules", ".claude/skills", ".cursor/rules", ".cursor/skills"];
 
 export function inspectRails(root) {
@@ -202,6 +215,7 @@ export function inspectRails(root) {
   for (const legacy of [".Codex", ".codex/skills", ".codex/rules"]) {
     if (!existsSync(join(root, legacy))) continue;
     if (legacy === ".Codex" && lstatSync(join(root, legacy)).ino === lstatSync(join(root, ".codex")).ino) continue;
+    if (whollyGitIgnored(root, legacy)) continue;
     problems.push(`Unexpected legacy Codex path: ${legacy}`);
   }
   return { ...result, problems };

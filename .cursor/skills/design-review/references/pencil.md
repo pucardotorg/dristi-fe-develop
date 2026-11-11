@@ -1,12 +1,12 @@
 # Pencil import and review
 
 
-The overlay above is the light lane (comments, copy, quick tweaks). When the
+Written feedback is the light lane (comments, copy, quick tweaks). When the
 owner wants to redesign — move things, restyle broadly, add/remove elements —
 import the screen into the Pencil desktop app and audit the edits back.
-Everything made in Pencil is a **review artifact, never the design of record**
-(the `docs/design/explorations/` rule applies; artifacts live untracked in
-`docs/design/explorations/pencil/<route-slug>-<date>/`).
+Everything made in Pencil is a **review artifact, never the design of record**:
+artifacts live untracked (git-ignored) in
+`docs/design/explorations/pencil/<route-slug>-<date>/`.
 
 ### Import ("import this screen to pencil")
 

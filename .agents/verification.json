@@ -1,4 +1,4 @@
 {
   "agents": ["check:rails", "test:rails"],
-  "ui": ["check:ds-fresh", "lint", "check:rails"]
+  "ui": ["check:ds-fresh", "lint", "check:tokens", "check:typography", "check:ui-sync", "check:spacing", "check:table-rows", "check:ds-retired", "typecheck", "check:rails"]
 }

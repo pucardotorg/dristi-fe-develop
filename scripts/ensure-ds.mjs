@@ -2,8 +2,9 @@
 /**
  * ensure-ds — fetch the authoritative design system into this repo.
  *
- * Runs on `npm install` (postinstall). Developers only need:
- *   git clone <dristi> && cd <dristi> && npm install && npm run dev
+ * Opt-in: run `npm run setup:ds` before design-system work (designers, UI checks). The
+ * app builds without it, so `npm ci`, CI and Docker never fetch it. Designers need:
+ *   git clone <dristi> && cd <dristi> && npm install && npm run setup:ds && npm run dev:sandbox
  *
  * Always installs to vendor/pucar-design-system (gitignored) so every machine
  * has the same in-repo path. Verifies org/remote; refuses wrong-org trees.
@@ -34,13 +35,13 @@ function vendorReady() {
 /**
  * Put the vendor tree on the pinned commit.
  *
- * Cloning-only was the original bug: once vendor/ existed, `npm install` never touched
+ * Cloning-only was the original bug: once vendor/ existed, the setup step never touched
  * it again. Tracking `main` was the second one — it made your DS version a function of
  * when you happened to install, which is how four branches ended up on three versions.
  * The pin removes both: there is one commit, recorded in the repo, and this puts you on
  * it.
  *
- * Best-effort by design — a failed sync must never fail an install, so every step is
+ * Best-effort by design — a failed sync must never block work, so every step is
  * allowed to fall through to "use what we have", loudly.
  */
 function syncVendorToPin(pin) {
@@ -98,7 +99,7 @@ if (process.env.PUCAR_DS_ROOT) {
     `PUCAR_DS_ROOT is set to "${root}" but it is not an authoritative DS.`
   );
   console.error(
-    `Fix that path (or unset it) so origin contains ${EXPECTED_DS_REMOTE}, then re-run npm install.`
+    `Fix that path (or unset it) so origin contains ${EXPECTED_DS_REMOTE}, then re-run npm run setup:ds.`
   );
   process.exit(1);
 }
@@ -107,7 +108,7 @@ if (existsSync(VENDOR_DS_PATH)) {
   console.error(
     `vendor/pucar-design-system exists but is not a valid ${EXPECTED_DS_REMOTE} tree.`
   );
-  console.error("Remove or rename it, then re-run npm install:");
+  console.error("Remove or rename it, then re-run npm run setup:ds:");
   console.error(`  mv "${VENDOR_DS_PATH}" "${VENDOR_DS_PATH}-STALE"`);
   process.exit(1);
 }

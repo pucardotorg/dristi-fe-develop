@@ -22,7 +22,7 @@ never invent a lighter grey). All headings require `font-semibold` (gate-enforce
 **Scale discipline (measured 2026-08-17):** the shipped stack (`"Helvetica Neue"`) has no
 600 face on macOS, so every `font-semibold` renders as **Bold**; on Windows it falls to
 Arial (400/700). Big semibold headings therefore read heavier than the Figma/Inter
-intent. Until the DS retunes the stack (see `docs/design/ds-diagnosis.md`), keep form
+intent. Until the DS retunes the stack, keep form
 screens at the demo's scale — page title `text-title` (24), card titles `text-body`
 600 (16), labels 14/500 — and do **not** step titles up to compensate for weak
 hierarchy; fix hierarchy with colour and spacing.

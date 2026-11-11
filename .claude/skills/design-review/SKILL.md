@@ -1,31 +1,27 @@
 ---
 name: design-review
-description: "Start an in-app Dristi annotation session or apply the owner's design feedback. For explicit Pencil requests, import and compare editable artboards before applying authorized changes."
+description: "Apply the owner's design feedback (written notes, screenshots, or a pasted design report). For explicit Pencil requests, import and compare editable artboards before applying authorized changes."
 ---
 
-# Design review — point, edit, comment, then implement the agreed changes
+# Design review — read the feedback, then implement the agreed changes
 
-The overlay is `apps/dristi-app/public/design-mode.js` (invoke-only review
-tooling, zero deps, never bundled); `src/components/design-mode-loader.tsx`
-loads it in dev when the URL carries `?design=1`. Full usage:
-`docs/design-mode.md` (repository root).
+This repository has no in-app annotation overlay (the old design-mode tool was removed).
+Feedback arrives as written notes, screenshots, or a design report pasted from an earlier
+session. If the owner asks for the overlay, say it is not here and propose bringing it
+back as its own reviewed change; do not copy it in from another branch.
 
-## Starting a session
+## Starting a review
 
-1. **Server**: check `http://localhost:3000` responds. If not, ask the user to
-   run `npm run dev` in their own terminal (never start it yourself — see
-   `.agents/policies/dev-server.md`).
-2. **Tool present on this branch?** Check the design-mode script and loader wiring.
-   Do not overwrite files from another branch to start a review. If missing, use the
-   documented console fallback where available, or propose a scoped tooling change in
-   this checkout. Confirm the running server serves this checkout before relying on it.
-3. **Hand over the link**: `http://localhost:3000/<route>?design=1` — the route
-   the user named, else the screen under discussion, else `/advocate`. Tell
-   them: annotate (Select to tweak/delete/duplicate/auto-layout, double-click
-   to edit copy, Comment to pin notes), then **Copy for Claude** and paste the
-   report here. Off = the panel's Close button or `?design=0`.
+1. **Server**: check the app responds. If not, ask the user to run
+   `npm run dev` in their own terminal (never start it yourself — see
+   `.agents/policies/dev-server.md`). Confirm the running server serves this checkout
+   before relying on it.
+2. **Locate the screen**: the route the user named, else the screen under discussion,
+   else `/advocate`. Read the current render before acting on any note about it.
 
-## Implementing a pasted DESIGN MODE REPORT
+## Implementing the feedback
+
+Entries in the formats below come from pasted design reports; treat plain notes the same way.
 
 The report is owner intent, not literal CSS. Apply only changes the user authorized. Before editing, load
 `pull-ui-from-ds` and `ui-craft` (mandatory), and run `npm run check:ds-fresh`.
@@ -78,4 +74,4 @@ why. Offer another round.
 ## Pencil work
 
 For an explicit Pencil import or review request, read the skill-relative
-[Pencil workflow](references/pencil.md). Do not load it for an ordinary overlay session.
+[Pencil workflow](references/pencil.md). Do not load it for an ordinary feedback round.

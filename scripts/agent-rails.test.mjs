@@ -17,19 +17,19 @@ function write(root, path, body) {
 function fixture(t) {
   const directory = mkdtempSync(join(tmpdir(), "dristi-agent-rails-"));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
-  for (const path of [".agents", ".codex", ".claude", ".cursor", "scripts", "package.json", "AGENTS.md", "CLAUDE.md"]) {
+  // Only the managed part of .codex: a local tool installed elsewhere under .codex is not
+  // part of the rails and must not leak into fixtures.
+  for (const path of [".agents", ".codex/agents", ".claude", ".cursor", "scripts", "package.json"]) {
     cpSync(join(root, path), join(directory, path), { recursive: true });
   }
   // Only existence is relevant to local-reference checks: fixtures need no app code,
   // dependencies, running server, or historical document contents.
   for (const path of [
     "docs/README.md", "docs/product/README.md", "docs/product/open-questions.md",
-    "docs/design/design-system.md", "docs/design/ds-diagnosis.md", "docs/design/ds-requests.md",
-    "docs/design/features/README.md", "docs/design/proposals/README.md",
-    "docs/design/explorations/README.md", "docs/design-mode.md",
+    "docs/design/ds-requests.md", "docs/design/features/README.md", "docs/design/proposals/README.md",
     "apps/dristi-app/scripts/resolve-ds.mjs", "apps/dristi-app/src/components/chrome/table-plate.ts",
     "apps/dristi-app/src/components/chrome/motion.ts", "apps/dristi-app/src/components/filing/form-card.tsx",
-    "apps/dristi-app/src/app/globals.css", "apps/dristi-app/public/design-mode.js",
+    "apps/dristi-app/src/app/globals.css",
   ]) write(directory, path, "fixture\n");
   assert.deepEqual(inspectRails(directory).problems, [], "Every mutation starts from a valid fixture");
   return directory;
@@ -50,7 +50,7 @@ for (const path of [
   ".agents/skills/pull-ui-from-ds/SKILL.md",
   ".cursor/skills/design-ui/references/staff-ux-thinking.md",
   ".claude/skills/ui-craft/references/surfaces.md",
-  "AGENTS.md",
+  ".cursor/rules/project.mdc",
 ]) {
   test(`detects drift in ${path}`, (t) => {
     const directory = fixture(t);
@@ -58,6 +58,26 @@ for (const path of [
     assert.ok(inspectRails(directory).problems.some((problem) => /differs/.test(problem)));
   });
 }
+
+test("root AGENTS.md and CLAUDE.md are shared, hand-written files, never generated", (t) => {
+  const directory = fixture(t);
+  const { output } = expectedRails(directory);
+  assert.equal(output.has("AGENTS.md"), false);
+  assert.equal(output.has("CLAUDE.md"), false);
+  write(directory, "AGENTS.md", "# Hand-written for both teams\n");
+  write(directory, "CLAUDE.md", "@AGENTS.md\n");
+  assert.deepEqual(inspectRails(directory).problems, []);
+});
+
+test("a git-ignored local tool under a legacy Codex path is not a problem; a tracked one is", (t) => {
+  const directory = fixture(t);
+  assert.equal(spawnSync("git", ["init", "-q"], { cwd: directory }).status, 0);
+  write(directory, ".codex/skills/local-tool/SKILL.md", "personal tool\n");
+  write(directory, ".gitignore", ".codex/skills/local-tool/\n");
+  assert.deepEqual(inspectRails(directory).problems, []);
+  write(directory, ".gitignore", "\n");
+  assert.ok(inspectRails(directory).problems.includes("Unexpected legacy Codex path: .codex/skills"));
+});
 
 test("detects a missing Codex role", (t) => {
   const directory = fixture(t);

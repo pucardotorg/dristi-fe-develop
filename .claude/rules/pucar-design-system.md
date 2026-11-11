@@ -8,7 +8,8 @@ in `apps/dristi-app`; UI rules and primitive source belong to the DS.
 ## Resolve and verify before relying on the DS
 
 Use the repo resolver, `apps/dristi-app/scripts/resolve-ds.mjs`, rather than searching
-the disk. Normal source: `vendor/pucar-design-system`, created by `npm install`.
+the disk. Normal source: `vendor/pucar-design-system`, created by `npm run setup:ds`
+(opt-in: the app builds without it, so a fresh `npm install` does not fetch it).
 `PUCAR_DS_ROOT` is an explicit local-testing override, never an automatic workaround.
 The resolver also accepts an authoritative legacy sibling; prefer the vendored checkout.
 The accepted origin/marker is `pucardotorg/dristi-design-system`.
@@ -18,8 +19,9 @@ the pin, DS checkout, or override changes. A pass saying OFF PIN or verification
 is not evidence of a pinned build. Do not commit UI based on an override or an unverifiable
 DS. Other gates compare against local DS files and cannot establish their version.
 
-If the DS is missing, use the existing setup procedure in an isolated checkout when
-authorized; otherwise report the blocker. Do not run installation in a checkout another
+If the DS is missing, run `npm run setup:ds` when authorized (in an isolated checkout if
+another tool is building in this one); otherwise report the blocker. Work that does not
+touch UI (data, tooling, backend wiring) does not need the DS. Do not run installation in a checkout another
 tool is building in. Do not broaden disk searches, substitute another DS, or invent UI.
 Continue work that does not depend on the missing DS.
 
@@ -68,5 +70,4 @@ already read in this task; do not reload all foundations on each small iteration
 bump during unrelated feature work. Read the DS changelog for the adopted range, sync
 affected files, and verify the rendered impact.
 
-For completion use `.agents/policies/verification.md`; for a human-readable overview
-see `docs/design/design-system.md`.
+For completion use `.agents/policies/verification.md`.

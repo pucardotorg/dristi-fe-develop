@@ -90,7 +90,7 @@ if (head !== lock.commit) {
       "you to whatever is here.",
       "",
       "Fix:",
-      "  npm install        # checks out the pinned version",
+      "  npm run setup:ds   # checks out the pinned version",
       "  npm run check:ui-sync   # then sync whatever it reports as drifting",
     ].join("\n")
   );

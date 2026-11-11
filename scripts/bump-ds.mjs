@@ -134,7 +134,7 @@ git("checkout", "--quiet", "--detach", to);
 /* 2. rewrite the pin */
 const next = {
   _comment:
-    "The one design-system version this repo builds against. Everyone gets this exact commit; npm install checks it out. Change it only via `npm run ds:bump`, on a dedicated upgrade branch into `main`, never by hand on a feature branch.",
+    "The one design-system version this repo builds against. Everyone gets this exact commit; npm run setup:ds checks it out. Change it only via `npm run ds:bump`, on a dedicated upgrade branch into `main`, never by hand on a feature branch.",
   remote: lock?.remote ?? "pucardotorg/dristi-design-system",
   commit: to,
   bumpedOn: new Date().toISOString().slice(0, 10),
@@ -164,7 +164,7 @@ console.log(
     "  2. look at the screens       the checks cannot judge a layout",
     "  3. commit ds.lock.json with the synced files on an upgrade branch from origin/main, and open a PR into main",
     "",
-    "Then tell the others. They pick it up on their next pull — the pin means",
-    "nobody is dragged onto it mid-feature.",
+    "Then tell the others. They pick it up with npm run setup:ds after their next",
+    "pull — the pin means nobody is dragged onto it mid-feature.",
   ].join("\n")
 );

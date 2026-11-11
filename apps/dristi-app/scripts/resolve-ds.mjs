@@ -2,7 +2,7 @@
 /**
  * Resolve the local pucar-design-system root for sync/check scripts.
  *
- * Canonical location (auto-cloned by npm install): vendor/pucar-design-system
+ * Canonical location (cloned by `npm run setup:ds`): vendor/pucar-design-system
  * Optional override: PUCAR_DS_ROOT
  * Legacy fallback: sibling ../pucar-design-system
  *
@@ -21,7 +21,7 @@ export const EXPECTED_DS_REMOTE = "pucardotorg/dristi-design-system";
 
 const MARKER_FILE = ".pucar-ds-id";
 
-/** In-repo install path — populated automatically by `npm install` / ensure-ds. */
+/** In-repo install path — populated by `npm run setup:ds` (ensure-ds). */
 export const VENDOR_DS_PATH = resolve(REPO_ROOT, "vendor/pucar-design-system");
 
 /** Legacy sibling path (still accepted if already present and authoritative). */
@@ -111,8 +111,7 @@ export function isLocalDsOverride(root) {
 export function dsResolveHint() {
   return [
     `Could not resolve authoritative pucar-design-system (${EXPECTED_DS_REMOTE}).`,
-    "From this repo root run:  npm install   (fetches DS into vendor/pucar-design-system)",
-    "Or:  npm run setup:ds",
+    "From this repo root run:  npm run setup:ds   (fetches DS into vendor/pucar-design-system)",
     `Expected path: ${VENDOR_DS_PATH}`,
   ].join("\n");
 }

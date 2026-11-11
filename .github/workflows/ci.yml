@@ -1,0 +1,47 @@
+name: CI
+
+# Required checks for every pull request into main (set them as required in branch
+# protection): lint, types, tests, agent rails and a production build.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test:app
+
+      - name: Agent rails
+        run: npm run verify:agents
+
+      # Nothing set: data and sign-in default to the backend, as a production build does.
+      - name: Build
+        run: npm run build

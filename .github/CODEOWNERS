@@ -1,0 +1,39 @@
+# Who reviews what. GitHub requests a review from the owners of every file a PR touches;
+# the last matching line wins. Both teams must exist in the pucardotorg organisation.
+# Ownership follows AGENTS.md ("Data") and .agents/policies/data-seam.md.
+
+# Shared by default: either team can approve. This covers the contracts
+# (lib/**/data/repository.ts, lib/**/types.ts), stores, data/index.ts choosers,
+# root AGENTS.md / CLAUDE.md, package.json and the lockfile.
+*                                                   @pucardotorg/frontend @pucardotorg/design
+
+# Design: screens, copy, the sandbox and its demo data, the demo-server routes and the
+# agent layer.
+/apps/dristi-app/src/components/                    @pucardotorg/design
+/apps/dristi-app/src/app/                           @pucardotorg/design
+/apps/dristi-app/src/provakil/                      @pucardotorg/design
+/apps/dristi-app/src/lib/**/content.ts              @pucardotorg/design
+/apps/dristi-app/src/lib/**/data/indexeddb.ts       @pucardotorg/design
+/apps/dristi-app/src/lib/**/sandbox.ts              @pucardotorg/design
+/apps/dristi-app/src/lib/**/fixtures.ts             @pucardotorg/design
+/apps/dristi-app/src/lib/**/*-dummy.json            @pucardotorg/design
+/apps/dristi-app/scripts/                           @pucardotorg/design
+/.agents/                                           @pucardotorg/design
+/.claude/                                           @pucardotorg/design
+/.cursor/                                           @pucardotorg/design
+/.codex/                                            @pucardotorg/design
+/ds.lock.json                                       @pucardotorg/design
+/netlify.toml                                       @pucardotorg/design
+
+# Engineering: the backend connection, the data-source switch, build, CI and Docker.
+/apps/dristi-app/src/app/api/v1/                    @pucardotorg/frontend
+/apps/dristi-app/src/lib/api/                       @pucardotorg/frontend
+/apps/dristi-app/src/lib/server/                    @pucardotorg/frontend
+/apps/dristi-app/src/lib/data/                      @pucardotorg/frontend
+/apps/dristi-app/src/lib/**/data/http.ts            @pucardotorg/frontend
+/apps/dristi-app/src/lib/auth/http.ts               @pucardotorg/frontend
+/apps/dristi-app/scripts/copy-runtime-assets.mjs    @pucardotorg/frontend
+/apps/dristi-app/eslint.config.mjs                  @pucardotorg/frontend
+/apps/dristi-app/next.config.ts                     @pucardotorg/frontend
+/docker/                                            @pucardotorg/frontend
+/.github/                                           @pucardotorg/frontend

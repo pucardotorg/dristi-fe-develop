@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { ProfileCases } from "@/components/cases/profile-cases";
-import { CASES, FIXTURE_TODAY } from "@/lib/cases/fixtures";
-import { PARTY_CASES } from "@/lib/cases/party-cases";
+import { getCasesRepository } from "@/lib/cases/data";
 import { buildCasesHref, parseCasesQuery } from "@/lib/cases/query";
 
 export const metadata: Metadata = {
@@ -16,15 +15,21 @@ export default async function CasesPage(props: PageProps<"/cases">) {
     redirect(buildCasesHref(query));
   }
 
-  const cases = query.demo === "empty" ? [] : CASES;
-  const partyCases = query.demo === "empty" ? [] : PARTY_CASES;
+  // Demo data or the court's, whichever this build's data source serves.
+  const repo = getCasesRepository();
+  const empty = query.demo === "empty";
+  const [cases, partyCases, today] = await Promise.all([
+    empty ? [] : repo.listOfficeCases(),
+    empty ? [] : repo.listPartyCases(),
+    repo.today(),
+  ]);
 
   return (
     <ProfileCases
       query={query}
       officeCases={cases}
       partyCases={partyCases}
-      now={new Date(FIXTURE_TODAY).getTime()}
+      now={new Date(today).getTime()}
     />
   );
 }

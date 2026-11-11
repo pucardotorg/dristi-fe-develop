@@ -1,8 +1,13 @@
 /**
  * Repository access for the filing screens. `getRepository()` is the one place that
- * chooses the implementation — swap it for an HTTP-backed one when the backend lands.
+ * chooses the implementation, from `NEXT_PUBLIC_DATA_SOURCE` (`lib/data/source.ts`): the
+ * in-browser sandbox (`indexeddb.ts`) or the backend (`http.ts`). Server code imports
+ * this module for its helpers (`newId`), so the choice is made lazily, on first use.
  */
 
+import { chooseRepository, type OnlyContract } from "@/lib/data/source";
+
+import { HttpFilingRepository } from "./http";
 import { IndexedDbFilingRepository } from "./indexeddb";
 import type { FilingRepository, StoredFile } from "./repository";
 import type { FilingDraft, StoredFileRef } from "../types";
@@ -14,10 +19,15 @@ let active: FilingRepository | null = null;
 
 export function getRepository(): FilingRepository {
   if (active) return active;
-  if (typeof window === "undefined") {
-    throw new Error("The filing repository is browser-only (IndexedDB).");
-  }
-  if (!instance) instance = new IndexedDbFilingRepository();
+  instance ??= chooseRepository<FilingRepository>("filing", {
+    sandbox: () => {
+      if (typeof window === "undefined") {
+        throw new Error("The filing sandbox is browser-only (IndexedDB).");
+      }
+      return new IndexedDbFilingRepository();
+    },
+    http: () => new HttpFilingRepository() satisfies OnlyContract<HttpFilingRepository, FilingRepository>,
+  });
   return instance;
 }
 

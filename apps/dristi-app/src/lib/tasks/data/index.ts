@@ -1,9 +1,13 @@
 /**
  * Repository access for the task screens. `getRepository()` is the one place that
- * chooses the implementation — swap it for an HTTP-backed one when the backend lands.
+ * chooses the implementation, from `NEXT_PUBLIC_DATA_SOURCE` (`lib/data/source.ts`): the
+ * in-browser sandbox (`indexeddb.ts`) or the backend (`http.ts`).
  */
 
+import { chooseRepository, type OnlyContract } from "@/lib/data/source";
+
 import type { StoredFileRef } from "../types";
+import { HttpTasksRepository } from "./http";
 import { IndexedDbTasksRepository } from "./indexeddb";
 import type { StoredFile, TasksRepository } from "./repository";
 
@@ -12,10 +16,15 @@ export type { StoredFile, TasksRepository } from "./repository";
 let instance: TasksRepository | null = null;
 
 export function getRepository(): TasksRepository {
-  if (typeof window === "undefined") {
-    throw new Error("The tasks repository is browser-only (IndexedDB).");
-  }
-  if (!instance) instance = new IndexedDbTasksRepository();
+  instance ??= chooseRepository<TasksRepository>("tasks", {
+    sandbox: () => {
+      if (typeof window === "undefined") {
+        throw new Error("The tasks sandbox is browser-only (IndexedDB).");
+      }
+      return new IndexedDbTasksRepository();
+    },
+    http: () => new HttpTasksRepository() satisfies OnlyContract<HttpTasksRepository, TasksRepository>,
+  });
   return instance;
 }
 

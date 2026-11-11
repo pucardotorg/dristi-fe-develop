@@ -25,6 +25,7 @@ import {
 import { TASKS_HOME } from "@/lib/tasks/routes";
 import { summaryOf } from "@/lib/tasks/selectors";
 import { resetBulk } from "@/components/bulk/api";
+import { DATA_SOURCE } from "@/lib/data/source";
 import { resetSampleDrafts } from "@/lib/filing/sample-drafts";
 import { useTasks } from "@/lib/tasks/store";
 import { BrandGlyph } from "@/components/brand-lockup";
@@ -594,75 +595,78 @@ function ProfileFooter() {
                 {/* The sandbox's own controls, kept with the identity they act on rather
                     than behind a second account avatar in the top bar. They are scaffolding
                     for a build with no session yet, so they read as a separate, quieter
-                    register below the rule. */}
-                <div className="mt-1 border-t border-hairline pt-1">
-                  <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">
-                    Viewing as
-                  </p>
-                  {people.map((p, index) => (
-                    <React.Fragment key={p.id}>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start font-normal"
-                        disabled={state !== "ready"}
-                        onClick={() => {
-                          // Everyone in the sandbox is an advocate; picking one
-                          // leaves the clerk's seat.
-                          if (profileRole === "clerk") setProfileRole("advocate");
-                          void setUser(p.id);
-                        }}
-                      >
-                        <span className="flex-1 truncate text-left">
-                          {p.name}
-                        </span>
-                        {profileRole !== "clerk" && p.id === user.id ? (
-                          <CheckIcon aria-hidden />
-                        ) : null}
-                      </Button>
-                      {/* The signed-in advocate's clerk, right under the
-                          advocate: a different person, so here among the
-                          people to view as, not among the account's own
-                          profiles (owner, Sept 24). Acting as him shows the
-                          clerk's side of Applications: drafts and pays,
-                          never signs. */}
-                      {index === 0 ? (
+                    register below the rule. Sandbox only: against the backend there are
+                    no demo people to view as and nothing to reset. */}
+                {DATA_SOURCE === "sandbox" ? (
+                  <div className="mt-1 border-t border-hairline pt-1">
+                    <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">
+                      Viewing as
+                    </p>
+                    {people.map((p, index) => (
+                      <React.Fragment key={p.id}>
                         <Button
                           variant="ghost"
                           className="w-full justify-start font-normal"
-                          onClick={() => setProfileRole("clerk")}
+                          disabled={state !== "ready"}
+                          onClick={() => {
+                            // Everyone in the sandbox is an advocate; picking one
+                            // leaves the clerk's seat.
+                            if (profileRole === "clerk") setProfileRole("advocate");
+                            void setUser(p.id);
+                          }}
                         >
                           <span className="flex-1 truncate text-left">
-                            {VIEWER_CLERK_NAME}
+                            {p.name}
                           </span>
-                          <span className="text-caption text-muted-foreground">
-                            Clerk
-                          </span>
-                          {profileRole === "clerk" ? (
+                          {profileRole !== "clerk" && p.id === user.id ? (
                             <CheckIcon aria-hidden />
                           ) : null}
                         </Button>
-                      ) : null}
-                    </React.Fragment>
-                  ))}
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-normal text-muted-foreground"
-                    onClick={onResetSandbox}
-                  >
-                    <RotateCcwIcon aria-hidden />
-                    <span className="flex-1 text-left">Reset sandbox data</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-normal text-muted-foreground"
-                    onClick={() => router.push("/join/demo")}
-                  >
-                    <ScrollTextIcon aria-hidden />
-                    <span className="flex-1 text-left">
-                      Join a Case from Summons
-                    </span>
-                  </Button>
-                </div>
+                        {/* The signed-in advocate's clerk, right under the
+                            advocate: a different person, so here among the
+                            people to view as, not among the account's own
+                            profiles (owner, Sept 24). Acting as him shows the
+                            clerk's side of Applications: drafts and pays,
+                            never signs. */}
+                        {index === 0 ? (
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start font-normal"
+                            onClick={() => setProfileRole("clerk")}
+                          >
+                            <span className="flex-1 truncate text-left">
+                              {VIEWER_CLERK_NAME}
+                            </span>
+                            <span className="text-caption text-muted-foreground">
+                              Clerk
+                            </span>
+                            {profileRole === "clerk" ? (
+                              <CheckIcon aria-hidden />
+                            ) : null}
+                          </Button>
+                        ) : null}
+                      </React.Fragment>
+                    ))}
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start font-normal text-muted-foreground"
+                      onClick={onResetSandbox}
+                    >
+                      <RotateCcwIcon aria-hidden />
+                      <span className="flex-1 text-left">Reset sandbox data</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start font-normal text-muted-foreground"
+                      onClick={() => router.push("/join/demo")}
+                    >
+                      <ScrollTextIcon aria-hidden />
+                      <span className="flex-1 text-left">
+                        Join a Case from Summons
+                      </span>
+                    </Button>
+                  </div>
+                ) : null}
 
                 <RailThemePicker />
 
@@ -709,21 +713,23 @@ function ProfileFooter() {
         </SidebarMenuItem>
       </SidebarMenu>
 
-      <ConfirmDialog
-        open={confirmReset}
-        onOpenChange={setConfirmReset}
-        title="Reset the sandbox?"
-        description="Every task, upload, decision, sample filing and bulk batch is reset and the seed data is loaded again. Other open tabs reload too."
-        confirmLabel="Reset sandbox"
-        onConfirm={() => {
-          setConfirmReset(false);
-          // Sample filings too, so a signature or oath can be walked again from the start;
-          // and every bulk batch, so the bulk flow opens empty.
-          void Promise.all([resetSandbox(), resetSampleDrafts(), resetBulk()]).then(() =>
-            window.location.reload(),
-          );
-        }}
-      />
+      {DATA_SOURCE === "sandbox" ? (
+        <ConfirmDialog
+          open={confirmReset}
+          onOpenChange={setConfirmReset}
+          title="Reset the sandbox?"
+          description="Every task, upload, decision, sample filing and bulk batch is reset and the seed data is loaded again. Other open tabs reload too."
+          confirmLabel="Reset sandbox"
+          onConfirm={() => {
+            setConfirmReset(false);
+            // Sample filings too, so a signature or oath can be walked again from the start;
+            // and every bulk batch, so the bulk flow opens empty.
+            void Promise.all([resetSandbox(), resetSampleDrafts(), resetBulk()]).then(() =>
+              window.location.reload(),
+            );
+          }}
+        />
+      ) : null}
     </SidebarFooter>
   );
 }

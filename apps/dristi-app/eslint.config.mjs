@@ -26,12 +26,10 @@ const SANDBOX_IMPORTS = {
 };
 const STORAGE_MESSAGE =
   "Screens don't keep data in browser storage: data goes through a repository, UI preferences through useLocalStorageValue (@/hooks/use-local-storage-value).";
-const STORAGE_GLOBALS = ["localStorage", "sessionStorage", "indexedDB"].map((name) => ({
-  name,
-  message: STORAGE_MESSAGE,
-}));
+const STORAGE_APIS = ["localStorage", "sessionStorage", "indexedDB"];
+const STORAGE_GLOBALS = STORAGE_APIS.map((name) => ({ name, message: STORAGE_MESSAGE }));
 const STORAGE_PROPERTIES = ["window", "globalThis", "self"].flatMap((object) =>
-  ["localStorage", "sessionStorage", "indexedDB"].map((property) => ({
+  STORAGE_APIS.map((property) => ({
     object,
     property,
     message: STORAGE_MESSAGE,

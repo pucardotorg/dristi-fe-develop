@@ -3,8 +3,8 @@
  *
  * `NEXT_PUBLIC_DATA_SOURCE` picks `sandbox` (data lives in this browser: IndexedDB,
  * fixtures, demo seeding, for design work and demos) or `api` (the DRISTI backend
- * through `lib/api`). Each feature's `lib/<feature>/data/index.ts` asks
- * `chooseRepository` for its implementation, so a screen is the same file in both modes.
+ * through `lib/api`). Each feature's `lib/<feature>/data/index.ts` builds its
+ * `getRepository()` with `repositoryFor`, so a screen is the same file in both modes.
  *
  * Both settings are read with their full literal names: Next copies `NEXT_PUBLIC_*` into
  * the bundle when it builds or starts the dev server, so a change needs a restart or a
@@ -45,6 +45,12 @@ export const DATA_SOURCE: DataSource = parseDataSource(
 
 export const AUTH_SOURCE: DataSource = parseAuthSource(process.env.NEXT_PUBLIC_AUTH_SOURCE, DATA_SOURCE);
 
+/**
+ * This build serves sandbox data. Gates demo-only behaviour: seeding, "Reset sandbox
+ * data", "Viewing as" personas.
+ */
+export const IS_SANDBOX = DATA_SOURCE === "sandbox";
+
 /** A contract method the backend implementation (`http.ts`) does not have yet. */
 export class NotIntegratedError extends Error {
   readonly operation: string;
@@ -55,15 +61,6 @@ export class NotIntegratedError extends Error {
     this.name = "NotIntegratedError";
     this.operation = operation;
   }
-}
-
-/**
- * True for a `NotIntegratedError`, checked by name so it also holds for an error that
- * lost its class on the way from server to client (in development; production replaces
- * server errors with a generic one before they reach the browser).
- */
-export function isNotIntegratedError(error: unknown): boolean {
-  return error instanceof Error && error.name === "NotIntegratedError";
 }
 
 type ExtraKeys<Impl, Contract> = Exclude<keyof Impl, keyof Contract>;
@@ -130,7 +127,27 @@ export function selectRepository<T extends object>(
   return proxy as T;
 }
 
-/** The repository for this build's `DATA_SOURCE`. Call it lazily, from `getRepository()`. */
-export function chooseRepository<T extends object>(feature: string, make: RepositoryFactories<T>): T {
-  return selectRepository(DATA_SOURCE, feature, make);
+/**
+ * A feature's `getRepository()`: picks the implementation for this build's `DATA_SOURCE`
+ * on first call (never at import, so server code can import the feature's data module for
+ * its helpers) and keeps that one instance.
+ *
+ *   export const getRepository = repositoryFor<TasksRepository>("tasks", {
+ *     sandbox: browserOnly("tasks", () => new IndexedDbTasksRepository()),
+ *     http: () => new HttpTasksRepository() satisfies OnlyContract<HttpTasksRepository, TasksRepository>,
+ *   });
+ */
+export function repositoryFor<T extends object>(feature: string, make: RepositoryFactories<T>): () => T {
+  let instance: T | null = null;
+  return () => (instance ??= selectRepository(DATA_SOURCE, feature, make));
+}
+
+/** A sandbox factory that needs the browser (IndexedDB): a clear error if called on the server. */
+export function browserOnly<T>(feature: string, make: () => T): () => T {
+  return () => {
+    if (typeof window === "undefined") {
+      throw new Error(`The ${feature} sandbox is browser-only (IndexedDB).`);
+    }
+    return make();
+  };
 }

@@ -5,7 +5,7 @@
  * this module for its helpers (`newId`), so the choice is made lazily, on first use.
  */
 
-import { chooseRepository, type OnlyContract } from "@/lib/data/source";
+import { browserOnly, repositoryFor, type OnlyContract } from "@/lib/data/source";
 
 import { HttpFilingRepository } from "./http";
 import { IndexedDbFilingRepository } from "./indexeddb";
@@ -14,21 +14,14 @@ import type { FilingDraft, StoredFileRef } from "../types";
 
 export type { FilingRepository, StoredFile } from "./repository";
 
-let instance: FilingRepository | null = null;
+const chosen = repositoryFor<FilingRepository>("filing", {
+  sandbox: browserOnly("filing", () => new IndexedDbFilingRepository()),
+  http: () => new HttpFilingRepository() satisfies OnlyContract<HttpFilingRepository, FilingRepository>,
+});
 let active: FilingRepository | null = null;
 
 export function getRepository(): FilingRepository {
-  if (active) return active;
-  instance ??= chooseRepository<FilingRepository>("filing", {
-    sandbox: () => {
-      if (typeof window === "undefined") {
-        throw new Error("The filing sandbox is browser-only (IndexedDB).");
-      }
-      return new IndexedDbFilingRepository();
-    },
-    http: () => new HttpFilingRepository() satisfies OnlyContract<HttpFilingRepository, FilingRepository>,
-  });
-  return instance;
+  return active ?? chosen();
 }
 
 /**

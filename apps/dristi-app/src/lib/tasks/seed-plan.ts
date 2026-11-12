@@ -27,18 +27,28 @@ export function seedStamp(seed: { version: number; day: string; people: number; 
 
 export type SeedAction = "keep" | "seed" | "wipe-and-seed";
 
+export type SeedState = {
+  /** This is the page's first read since it loaded. */
+  firstPass: boolean;
+  /** The demo starts over on every page load (`RESEED_ON_PAGE_LOAD`). */
+  reseedOnLoad: boolean;
+  hasPeople: boolean;
+  /** The browser's data was seeded from the current stamp. */
+  stampIsCurrent: boolean;
+};
+
 /**
  * What a read finds and what it does about it:
- * - the first read on a fresh page load starts the demo over (wipe, then seed);
  * - an empty sandbox (first run, or just reset) is seeded;
- * - data seeded from an older stamp (new day, new version, new fixtures) starts over;
- * - otherwise the sandbox keeps what was done in it.
- * The repository asks about the stamp only on a page's first read, so a page left open
- * past midnight keeps its work until it is reloaded.
+ * - only on a page's first read, the demo starts over (wipe, then seed) when it is set to
+ *   start over on every load, or when the data came from an older stamp (new day, new
+ *   version, new fixtures);
+ * - otherwise the sandbox keeps what was done in it, so a page left open past midnight
+ *   keeps its work until it is reloaded.
  */
-export function seedAction(state: { freshPage: boolean; hasPeople: boolean; stampIsCurrent: boolean }): SeedAction {
+export function seedAction(state: SeedState): SeedAction {
   if (!state.hasPeople) return "seed";
-  if (state.freshPage || !state.stampIsCurrent) return "wipe-and-seed";
+  if (state.firstPass && (state.reseedOnLoad || !state.stampIsCurrent)) return "wipe-and-seed";
   return "keep";
 }
 

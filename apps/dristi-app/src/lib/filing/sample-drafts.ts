@@ -16,7 +16,7 @@
  * discarded. Nothing here has been sent to a real court.
  */
 
-import { DATA_SOURCE } from "@/lib/data/source";
+import { IS_SANDBOX } from "@/lib/data/source";
 
 import { blankCheque, blankComplainant, createBlankDraft } from "./blank";
 import { getRepository } from "./data";
@@ -299,7 +299,7 @@ async function reseedPayOnce(today: string): Promise<void> {
  */
 export async function resetSampleDrafts(): Promise<void> {
   // Sample filings are sandbox data: against the backend there is nothing to put back.
-  if (DATA_SOURCE !== "sandbox") return;
+  if (!IS_SANDBOX) return;
   const repo = getRepository();
   const today = new Date().toISOString().slice(0, 10);
   const batches: [Sample[], FilingDraft["caseType"]][] = [
@@ -321,7 +321,7 @@ export function ensureSampleDrafts(): Promise<void> {
   seeding = (async () => {
     try {
       // Only the sandbox is seeded; the backend holds real filings.
-      if (typeof window === "undefined" || DATA_SOURCE !== "sandbox") return;
+      if (typeof window === "undefined" || !IS_SANDBOX) return;
       const today = new Date().toISOString().slice(0, 10);
       await seedOnce(SEEDED_KEY, SAMPLES, today);
       await seedOnce(SIGN_SEEDED_KEY, SIGN_SAMPLES, today);

@@ -61,7 +61,7 @@ build (`lib/data/source.ts`):
 
 Each feature keeps its data in `lib/<feature>/data/`: `repository.ts` (the contract,
 shared, only grows), the sandbox (`indexeddb.ts` or `sandbox.ts`, owned by design),
-`http.ts` (owned by engineering) and `index.ts`, which picks one with `chooseRepository`.
+`http.ts` (owned by engineering) and `index.ts`, which picks one with `repositoryFor`.
 A contract method that `http.ts` does not implement yet rejects with `NotIntegratedError`
 ("tasks.listPeople is not connected to the backend yet").
 
@@ -75,7 +75,7 @@ A contract method that `http.ts` does not implement yet rejects with `NotIntegra
 - Design adds data by extending the contract and the sandbox, never `http.ts`.
 - Contracts only grow: add methods and optional fields; renaming, removing or retyping
   needs both teams in one PR, listed under "Contract changes".
-- Demo-only controls (reset, "Viewing as") render only when `DATA_SOURCE === "sandbox"`.
+- Demo-only controls (reset, "Viewing as") render only when `IS_SANDBOX` (from `@/lib/data/source`) is true.
 - Full rules: `.agents/policies/data-seam.md`. Reviewers: `.github/CODEOWNERS`.
 
 ## Layout

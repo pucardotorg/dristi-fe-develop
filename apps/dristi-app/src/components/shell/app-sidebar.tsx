@@ -25,7 +25,7 @@ import {
 import { TASKS_HOME } from "@/lib/tasks/routes";
 import { summaryOf } from "@/lib/tasks/selectors";
 import { resetBulk } from "@/components/bulk/api";
-import { DATA_SOURCE } from "@/lib/data/source";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { resetSampleDrafts } from "@/lib/filing/sample-drafts";
 import { useTasks } from "@/lib/tasks/store";
 import { BrandGlyph } from "@/components/brand-lockup";
@@ -597,7 +597,7 @@ function ProfileFooter() {
                     for a build with no session yet, so they read as a separate, quieter
                     register below the rule. Sandbox only: against the backend there are
                     no demo people to view as and nothing to reset. */}
-                {DATA_SOURCE === "sandbox" ? (
+                {IS_SANDBOX ? (
                   <div className="mt-1 border-t border-hairline pt-1">
                     <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">
                       Viewing as
@@ -713,7 +713,7 @@ function ProfileFooter() {
         </SidebarMenuItem>
       </SidebarMenu>
 
-      {DATA_SOURCE === "sandbox" ? (
+      {IS_SANDBOX ? (
         <ConfirmDialog
           open={confirmReset}
           onOpenChange={setConfirmReset}

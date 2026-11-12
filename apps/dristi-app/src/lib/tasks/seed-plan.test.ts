@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { orderBySeed, seedAction, seedStamp, todayKey } from "./seed-plan";
+import { orderBySeed, seedAction, seedStamp, todayKey, type SeedState } from "./seed-plan";
 import type { Person } from "./types";
 
 describe("todayKey", () => {
@@ -30,17 +30,19 @@ describe("seedStamp", () => {
 });
 
 describe("seedAction", () => {
-  const cases: Array<[{ freshPage: boolean; hasPeople: boolean; stampIsCurrent: boolean }, string]> = [
-    [{ freshPage: true, hasPeople: true, stampIsCurrent: true }, "wipe-and-seed"],
-    [{ freshPage: true, hasPeople: false, stampIsCurrent: true }, "seed"],
-    [{ freshPage: false, hasPeople: true, stampIsCurrent: true }, "keep"],
-    [{ freshPage: false, hasPeople: true, stampIsCurrent: false }, "wipe-and-seed"],
-    [{ freshPage: false, hasPeople: false, stampIsCurrent: true }, "seed"],
-    [{ freshPage: false, hasPeople: false, stampIsCurrent: false }, "seed"],
+  const base: SeedState = { firstPass: true, reseedOnLoad: true, hasPeople: true, stampIsCurrent: true };
+  const cases: Array<[string, Partial<SeedState>, string]> = [
+    ["first read on a fresh page starts the demo over", {}, "wipe-and-seed"],
+    ["an empty sandbox is seeded", { hasPeople: false }, "seed"],
+    ["an empty sandbox is seeded on a later read too (after a reset)", { firstPass: false, hasPeople: false }, "seed"],
+    ["later reads keep what was done in the page", { firstPass: false }, "keep"],
+    ["later reads keep it even when the stamp went stale (past midnight)", { firstPass: false, stampIsCurrent: false }, "keep"],
+    ["without reseed-on-load, a current stamp keeps the data", { reseedOnLoad: false }, "keep"],
+    ["without reseed-on-load, a stale stamp starts over", { reseedOnLoad: false, stampIsCurrent: false }, "wipe-and-seed"],
   ];
-  for (const [state, expected] of cases) {
-    it(`${JSON.stringify(state)} → ${expected}`, () => {
-      assert.equal(seedAction(state), expected);
+  for (const [name, change, expected] of cases) {
+    it(`${name} → ${expected}`, () => {
+      assert.equal(seedAction({ ...base, ...change }), expected);
     });
   }
 });

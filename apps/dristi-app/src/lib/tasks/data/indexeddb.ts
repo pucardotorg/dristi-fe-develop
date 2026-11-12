@@ -44,41 +44,34 @@ interface TasksDB extends DBSchema {
   files: { key: string; value: StoredFile };
 }
 
-let dbPromise: Promise<IDBPDatabase<TasksDB>> | null = null;
+const STORES = ["people", "cases", "tasks", "files"] as const;
 
-function db(): Promise<IDBPDatabase<TasksDB>> {
-  if (!dbPromise) {
-    dbPromise = openDB<TasksDB>(DB_NAME, DB_VERSION, {
-      upgrade(database) {
-        database.createObjectStore("people", { keyPath: "id" });
-        database.createObjectStore("cases", { keyPath: "id" });
-        database.createObjectStore("tasks", { keyPath: "id" });
-        database.createObjectStore("files", { keyPath: "id" });
-      },
-    });
-  }
+type Db = IDBPDatabase<TasksDB>;
+
+let dbPromise: Promise<Db> | null = null;
+
+function db(): Promise<Db> {
+  dbPromise ??= openDB<TasksDB>(DB_NAME, DB_VERSION, {
+    upgrade(database) {
+      for (const store of STORES) database.createObjectStore(store, { keyPath: "id" });
+    },
+  });
   return dbPromise;
 }
 
 async function putAll<S extends "people" | "cases" | "tasks">(
+  d: Db,
   store: S,
   rows: TasksDB[S]["value"][]
 ): Promise<void> {
-  const tx = (await db()).transaction(store, "readwrite");
+  const tx = d.transaction(store, "readwrite");
   await Promise.all([...rows.map((row) => tx.store.put(row)), tx.done]);
 }
 
 /** Empty every store and forget who this browser was viewing as. */
-async function wipeAll(): Promise<void> {
-  const d = await db();
-  const tx = d.transaction(["people", "cases", "tasks", "files"], "readwrite");
-  await Promise.all([
-    tx.objectStore("people").clear(),
-    tx.objectStore("cases").clear(),
-    tx.objectStore("tasks").clear(),
-    tx.objectStore("files").clear(),
-    tx.done,
-  ]);
+async function wipeAll(d: Db): Promise<void> {
+  const tx = d.transaction([...STORES], "readwrite");
+  await Promise.all([...STORES.map((store) => tx.objectStore(store).clear()), tx.done]);
   sessionStorage.removeItem(USER_KEY);
   localStorage.removeItem(USER_KEY);
 }
@@ -108,25 +101,22 @@ let checking: Promise<void> | null = null;
 
 /**
  * Before a read: start the demo over, seed an empty sandbox, or keep it (`seedAction`).
- * Only the page's first pass starts over (a fresh page, or data from an older stamp);
- * after it, a read only seeds a sandbox that is empty (just reset), so nothing done in
- * this page is wiped mid-session, say by the read after a task change past midnight.
  * The reads the store makes together (people, cases, tasks, current person) share one
  * pass, so the current person is read after any wipe. A failed pass changes nothing it
  * has not finished, and the next read tries again.
  */
 function prepareRead(): Promise<void> {
   checking ??= (async () => {
-    const first = !firstPassDone;
-    const hasPeople = (await (await db()).count("people")) > 0;
+    const d = await db();
     const action = seedAction({
-      freshPage: first && RESEED_ON_PAGE_LOAD,
-      hasPeople,
-      stampIsCurrent: first ? stampIsCurrent() : true,
+      firstPass: !firstPassDone,
+      reseedOnLoad: RESEED_ON_PAGE_LOAD,
+      hasPeople: (await d.count("people")) > 0,
+      stampIsCurrent: stampIsCurrent(),
     });
-    if (action === "wipe-and-seed") await wipeAll();
+    if (action === "wipe-and-seed") await wipeAll(d);
     if (action !== "keep") {
-      await Promise.all([putAll("people", PEOPLE), putAll("cases", CASES), putAll("tasks", buildTasks())]);
+      await Promise.all([putAll(d, "people", PEOPLE), putAll(d, "cases", CASES), putAll(d, "tasks", buildTasks())]);
       rememberSeed();
     }
     firstPassDone = true;
@@ -136,72 +126,59 @@ function prepareRead(): Promise<void> {
   return checking;
 }
 
+/** The database for a read, once the sandbox is seeded. */
+async function readyDb(): Promise<Db> {
+  await prepareRead();
+  return db();
+}
+
 /**
- * Writes never start a pass (it could wipe mid-change); they wait for one running. The
- * store always reads before it writes, so a page's first pass has run by then.
+ * The database for a write. Writes never start a pass (it could wipe mid-change); they
+ * wait for one running. The store always reads before it writes, so a page's first pass
+ * has run by then.
  */
-async function afterPass(): Promise<void> {
+async function settledDb(): Promise<Db> {
   if (checking) await checking;
+  return db();
 }
 
 export class IndexedDbTasksRepository implements TasksRepository {
   async listPeople(): Promise<Person[]> {
-    await prepareRead();
-    return orderBySeed(await (await db()).getAll("people"), PEOPLE);
+    return orderBySeed(await (await readyDb()).getAll("people"), PEOPLE);
   }
-  async putPeople(people: Person[]): Promise<void> {
-    await afterPass();
-    await putAll("people", people);
-  }
-
   async listCases(): Promise<Case[]> {
-    await prepareRead();
-    return (await db()).getAll("cases");
-  }
-  async putCases(cases: Case[]): Promise<void> {
-    await afterPass();
-    await putAll("cases", cases);
+    return (await readyDb()).getAll("cases");
   }
 
   async listTasks(): Promise<Task[]> {
-    await prepareRead();
-    return (await db()).getAll("tasks");
-  }
-  async putTask(task: Task): Promise<void> {
-    await afterPass();
-    await (await db()).put("tasks", task);
+    return (await readyDb()).getAll("tasks");
   }
   async putTasks(tasks: Task[]): Promise<void> {
-    await afterPass();
-    await putAll("tasks", tasks);
+    await putAll(await settledDb(), "tasks", tasks);
   }
 
   async getCurrentUserId(): Promise<PersonId | null> {
-    await prepareRead();
+    await readyDb();
     return sessionStorage.getItem(USER_KEY) ?? localStorage.getItem(USER_KEY) ?? DEFAULT_USER_ID;
   }
   async putCurrentUserId(id: PersonId): Promise<void> {
-    await afterPass();
+    await settledDb();
     sessionStorage.setItem(USER_KEY, id);
     localStorage.setItem(USER_KEY, id);
   }
 
   async putFile(file: StoredFile): Promise<void> {
-    await afterPass();
-    await (await db()).put("files", file);
+    await (await settledDb()).put("files", file);
   }
   async getFile(id: string): Promise<StoredFile | null> {
-    await afterPass();
-    return (await (await db()).get("files", id)) ?? null;
+    return (await (await settledDb()).get("files", id)) ?? null;
   }
   async deleteFile(id: string): Promise<void> {
-    await afterPass();
-    await (await db()).delete("files", id);
+    await (await settledDb()).delete("files", id);
   }
 
   /** Wipe everything; the next read seeds the demo again ("Reset sandbox data"). */
   async clear(): Promise<void> {
-    await afterPass();
-    await wipeAll();
+    await wipeAll(await settledDb());
   }
 }

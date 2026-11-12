@@ -4,7 +4,7 @@
  * in-browser sandbox (`indexeddb.ts`) or the backend (`http.ts`).
  */
 
-import { chooseRepository, type OnlyContract } from "@/lib/data/source";
+import { browserOnly, repositoryFor, type OnlyContract } from "@/lib/data/source";
 
 import type { StoredFileRef } from "../types";
 import { HttpTasksRepository } from "./http";
@@ -13,20 +13,10 @@ import type { StoredFile, TasksRepository } from "./repository";
 
 export type { StoredFile, TasksRepository } from "./repository";
 
-let instance: TasksRepository | null = null;
-
-export function getRepository(): TasksRepository {
-  instance ??= chooseRepository<TasksRepository>("tasks", {
-    sandbox: () => {
-      if (typeof window === "undefined") {
-        throw new Error("The tasks sandbox is browser-only (IndexedDB).");
-      }
-      return new IndexedDbTasksRepository();
-    },
-    http: () => new HttpTasksRepository() satisfies OnlyContract<HttpTasksRepository, TasksRepository>,
-  });
-  return instance;
-}
+export const getRepository = repositoryFor<TasksRepository>("tasks", {
+  sandbox: browserOnly("tasks", () => new IndexedDbTasksRepository()),
+  http: () => new HttpTasksRepository() satisfies OnlyContract<HttpTasksRepository, TasksRepository>,
+});
 
 /** Short, URL-safe id for files and rows. */
 export function newId(prefix = ""): string {

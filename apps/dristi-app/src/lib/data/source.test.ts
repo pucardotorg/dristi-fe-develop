@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
-  isNotIntegratedError,
+  browserOnly,
   NotIntegratedError,
   parseAuthSource,
   parseDataSource,
+  repositoryFor,
   selectRepository,
   type OnlyContract,
 } from "./source";
@@ -147,20 +148,50 @@ describe("selectRepository", () => {
   });
 });
 
+describe("repositoryFor", () => {
+  it("builds nothing until first called, then keeps the one instance", () => {
+    let built = 0;
+    const factory = () => {
+      built += 1;
+      return new Sandbox();
+    };
+    // Tests run with nothing set, so the build's source is `api` and the http factory runs.
+    const getRepository = repositoryFor<Contract>("tasks", { sandbox: factory, http: () => { built += 1; return new Http(); } });
+    assert.equal(built, 0);
+    const first = getRepository();
+    assert.equal(getRepository(), first);
+    assert.equal(built, 1);
+  });
+});
+
+describe("browserOnly", () => {
+  const g = globalThis as { window?: unknown };
+
+  it("throws a clear error on the server, without building", () => {
+    let built = false;
+    const make = browserOnly("tasks", () => {
+      built = true;
+      return new Sandbox();
+    });
+    assert.throws(() => make(), /The tasks sandbox is browser-only/);
+    assert.equal(built, false);
+  });
+
+  it("builds in the browser", () => {
+    g.window = {};
+    try {
+      assert.ok(browserOnly("tasks", () => new Sandbox())() instanceof Sandbox);
+    } finally {
+      delete g.window;
+    }
+  });
+});
+
 describe("NotIntegratedError", () => {
   it("is an Error with its own name", () => {
     const error = new NotIntegratedError("filing.listDrafts");
     assert.ok(error instanceof Error);
     assert.equal(error.name, "NotIntegratedError");
-  });
-
-  it("isNotIntegratedError checks the name, so it survives a lost class", () => {
-    const crossed = Object.assign(new Error("tasks.x is not connected to the backend yet."), {
-      name: "NotIntegratedError",
-    });
-    assert.equal(isNotIntegratedError(crossed), true);
-    assert.equal(isNotIntegratedError(new Error("network down")), false);
-    assert.equal(isNotIntegratedError("NotIntegratedError"), false);
   });
 });
 

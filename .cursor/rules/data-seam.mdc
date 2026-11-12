@@ -25,7 +25,7 @@ Each feature keeps its data under `apps/dristi-app/src/lib/<feature>/`:
 | `data/repository.ts` | The contract: every read and write a screen may do | shared, only grows |
 | `data/indexeddb.ts` or `data/sandbox.ts` | The sandbox: IndexedDB, localStorage, fixtures, seeding, reset. Answers every contract method | design (yours) |
 | `data/http.ts` | The backend implementation | engineering; never edit |
-| `data/index.ts` | Picks one by the data source (`chooseRepository`) | shared; don't edit once it exists |
+| `data/index.ts` | Picks one by the data source (`repositoryFor`) | shared; don't edit once it exists |
 
 Tasks (`apps/dristi-app/src/lib/tasks/data/`), e-filing
 (`apps/dristi-app/src/lib/filing/data/`) and the cases list
@@ -61,7 +61,7 @@ for a feature whose data people change, and the cases folder for read-only demo 
    changed something engineering relies on: undo it, or ask engineering in the PR.
 4. Demo behaviour stays in the sandbox: seeding, reseeding on page load, "Reset sandbox
    data", "Viewing as" personas and demo accounts. Show sandbox-only controls only when
-   `DATA_SOURCE === "sandbox"` (from `@/lib/data/source`).
+   `IS_SANDBOX` is true (from `@/lib/data/source`).
 5. Make the sandbox behave like a server: every method is async, can fail, and validates
    the way the backend will. Every screen shows loading, empty, error and "not connected
    yet" states.

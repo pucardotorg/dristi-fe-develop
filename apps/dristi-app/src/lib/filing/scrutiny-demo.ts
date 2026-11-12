@@ -15,7 +15,7 @@
  * in it. Nothing here has been sent to a real court.
  */
 
-import { DATA_SOURCE } from "@/lib/data/source";
+import { IS_SANDBOX } from "@/lib/data/source";
 
 import {
   blankCheque,
@@ -375,6 +375,11 @@ const BUILDERS: Record<string, () => FilingDraft> = {
   ...Object.fromEntries(EXTRA_RETURNS.map((extra) => [extra.draftId, buildExtra(extra)])),
 };
 
+/** The demo builder for a sandbox return; none for a real draft, or outside the sandbox. */
+function demoBuilder(draftId: string): (() => FilingDraft) | undefined {
+  return IS_SANDBOX ? BUILDERS[draftId] : undefined;
+}
+
 const seeding = new Map<string, Promise<FilingDraft | null>>();
 
 /**
@@ -382,9 +387,8 @@ const seeding = new Map<string, Promise<FilingDraft | null>>();
  * existing draft is never overwritten, so corrections made in a previous sitting survive.
  */
 export function ensureScrutinyDraft(draftId: string): Promise<FilingDraft | null> {
-  const build = BUILDERS[draftId];
-  // Demo returns exist only in the sandbox; anything else is read as it is.
-  if (!build || DATA_SOURCE !== "sandbox") return getRepository().getDraft(draftId);
+  const build = demoBuilder(draftId);
+  if (!build) return getRepository().getDraft(draftId);
   let pending = seeding.get(draftId);
   if (!pending) {
     pending = (async () => {
@@ -409,7 +413,7 @@ export function ensureScrutinyDraft(draftId: string): Promise<FilingDraft | null
 
 /** Is this one of the sandbox's returned filings (Sainaba, Lakshmi, Rafi)? */
 export function isScrutinyDemoDraft(draftId: string): boolean {
-  return draftId in BUILDERS;
+  return demoBuilder(draftId) !== undefined;
 }
 
 /**
@@ -418,8 +422,8 @@ export function isScrutinyDemoDraft(draftId: string): boolean {
  * resetting the sandbox (owner, 2026-10-12). Mock data only: never for a real draft.
  */
 export async function reseedScrutinyDraft(draftId: string): Promise<FilingDraft | null> {
-  const build = BUILDERS[draftId];
-  if (!build || DATA_SOURCE !== "sandbox") return getRepository().getDraft(draftId);
+  const build = demoBuilder(draftId);
+  if (!build) return getRepository().getDraft(draftId);
   try {
     await Promise.all(Object.values(SCRUTINY_FILES).map(ensureFile));
     const draft = build();
@@ -441,7 +445,7 @@ export async function reseedScrutinyDraft(draftId: string): Promise<FilingDraft 
  * off Drafts without each having to be opened first. Only drafts already in the browser.
  */
 export async function markScrutinyReturns(): Promise<void> {
-  if (DATA_SOURCE !== "sandbox") return;
+  if (!IS_SANDBOX) return;
   const repo = getRepository();
   for (const id of Object.keys(BUILDERS)) {
     const existing = await repo.getDraft(id);

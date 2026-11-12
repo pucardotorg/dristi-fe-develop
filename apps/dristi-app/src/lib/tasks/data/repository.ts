@@ -22,13 +22,10 @@ export type StoredFile = StoredFileRef & {
 export interface TasksRepository {
   /* Reference data */
   listPeople(): Promise<Person[]>;
-  putPeople(people: Person[]): Promise<void>;
   listCases(): Promise<Case[]>;
-  putCases(cases: Case[]): Promise<void>;
 
   /* Tasks */
   listTasks(): Promise<Task[]>;
-  putTask(task: Task): Promise<void>;
   putTasks(tasks: Task[]): Promise<void>;
 
   /* The current person — per tab, so two tabs can be two people. */
@@ -40,6 +37,9 @@ export interface TasksRepository {
   getFile(id: string): Promise<StoredFile | null>;
   deleteFile(id: string): Promise<void>;
 
-  /** Wipe everything so the sandbox can re-seed. */
+  /**
+   * Wipe everything so the sandbox can re-seed ("Reset sandbox data", shown only in the
+   * sandbox). Sandbox-only: `http.ts` need not implement it.
+   */
   clear(): Promise<void>;
 }

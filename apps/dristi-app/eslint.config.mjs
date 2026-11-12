@@ -37,6 +37,44 @@ const STORAGE_PROPERTIES = ["window", "globalThis", "self"].flatMap((object) =>
 );
 
 /*
+ * In lib/, browser storage and IndexedDB belong only in a feature's sandbox, behind its
+ * repository, so data never bypasses the data switch. UI preferences use
+ * useLocalStorageValue from @/hooks, which is outside lib/.
+ */
+const LIB = ["src/lib/**/*.{ts,tsx}"];
+const LIB_SANDBOXES = ["src/lib/**/data/indexeddb.ts", "src/lib/**/data/sandbox.ts", "src/lib/**/*.test.ts"];
+const LIB_STORAGE_MESSAGE =
+  "In lib/, keep data in the feature's sandbox (lib/<feature>/data/indexeddb.ts; start one with npm run new:data) and reach it through getRepository(). UI preferences use useLocalStorageValue.";
+const LIB_STORAGE_GLOBALS = STORAGE_APIS.map((name) => ({ name, message: LIB_STORAGE_MESSAGE }));
+const LIB_STORAGE_PROPERTIES = STORAGE_PROPERTIES.map((rule) => ({ ...rule, message: LIB_STORAGE_MESSAGE }));
+const LIB_IDB = { paths: [{ name: "idb", message: LIB_STORAGE_MESSAGE }] };
+// lib/ modules that kept data or UI state in browser storage before the rule existed: demo
+// stores and UI preferences. Each comes off when its feature moves behind a repository
+// (npm run new:data) or its preference moves to useLocalStorageValue.
+const LIB_STILL_USE_STORAGE = [
+  "src/lib/advocate/new-account.ts",
+  "src/lib/applications/store.ts",
+  "src/lib/bulk/setup-repository.ts",
+  "src/lib/employee/browser-record.ts",
+  "src/lib/employee/cognizance-layout.ts",
+  "src/lib/employee/demo-seed.ts",
+  "src/lib/employee/deposition-shortcuts.ts",
+  "src/lib/employee/nav-layout.ts",
+  "src/lib/employee/nav-shown.ts",
+  "src/lib/employee/next-hearing-entry.ts",
+  "src/lib/employee/order-shortcuts.ts",
+  "src/lib/employee/session.ts",
+  "src/lib/filing/details-formats.ts",
+  "src/lib/filing/linked-complaints.ts",
+  "src/lib/filing/profile.tsx",
+  "src/lib/filing/sample-drafts.ts",
+  "src/lib/filing/scrutiny-demo.ts",
+  "src/lib/vakalatnama/store.ts",
+];
+// Bulk filing's browser store: a sandbox-only demo (lib/filing/data/http.ts says so).
+const LIB_STILL_IMPORT_IDB = ["src/lib/bulk/store.browser.ts"];
+
+/*
  * Screens that broke the rule before it existed. Each is excused only from the rule it
  * breaks, and comes off its list when it moves behind a repository; new code is checked
  * in full. Bracketed route folders are written with `*`, because brackets are glob syntax.
@@ -83,6 +121,23 @@ const eslintConfig = defineConfig([
   {
     files: STILL_USE_STORAGE,
     rules: { "no-restricted-globals": "off", "no-restricted-properties": "off" },
+  },
+  {
+    files: LIB,
+    ignores: LIB_SANDBOXES,
+    rules: {
+      "no-restricted-imports": ["error", LIB_IDB],
+      "no-restricted-globals": ["error", ...LIB_STORAGE_GLOBALS],
+      "no-restricted-properties": ["error", ...LIB_STORAGE_PROPERTIES],
+    },
+  },
+  {
+    files: LIB_STILL_USE_STORAGE,
+    rules: { "no-restricted-globals": "off", "no-restricted-properties": "off" },
+  },
+  {
+    files: LIB_STILL_IMPORT_IDB,
+    rules: { "no-restricted-imports": "off" },
   },
 ]);
 

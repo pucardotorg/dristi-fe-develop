@@ -1,3 +1,7 @@
+<!-- Moving an older feature's data out of browser storage? Use the data-move template:
+add ?template=data-move.md to the compare URL, or follow the link that
+npm run new:data -- <feature> --move prints. -->
+
 ## Issue
 
 Closes #PLEASE_TYPE_ISSUE_NUMBER

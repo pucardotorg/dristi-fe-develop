@@ -63,6 +63,16 @@ export class NotIntegratedError extends Error {
   }
 }
 
+/**
+ * The error means "not connected to the backend yet", not "something failed": show it
+ * as such (no "Try again"), including when the method belongs to another feature this
+ * screen reads from. Checks the name, so it also holds for an error passed on by a
+ * store or rebuilt from a message.
+ */
+export function isNotIntegratedError(error: unknown): error is NotIntegratedError {
+  return error instanceof Error && error.name === "NotIntegratedError";
+}
+
 type ExtraKeys<Impl, Contract> = Exclude<keyof Impl, keyof Contract>;
 
 /**

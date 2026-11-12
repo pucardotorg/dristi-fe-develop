@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   browserOnly,
+  isNotIntegratedError,
   NotIntegratedError,
   parseAuthSource,
   parseDataSource,
@@ -192,6 +193,17 @@ describe("NotIntegratedError", () => {
     const error = new NotIntegratedError("filing.listDrafts");
     assert.ok(error instanceof Error);
     assert.equal(error.name, "NotIntegratedError");
+  });
+
+  it("isNotIntegratedError tells it apart from a failure", () => {
+    assert.equal(isNotIntegratedError(new NotIntegratedError("tasks.listTasks")), true);
+    const passedOn = Object.assign(new Error("tasks.listTasks is not connected to the backend yet"), {
+      name: "NotIntegratedError",
+    });
+    assert.equal(isNotIntegratedError(passedOn), true);
+    assert.equal(isNotIntegratedError(new Error("Network error")), false);
+    assert.equal(isNotIntegratedError("NotIntegratedError"), false);
+    assert.equal(isNotIntegratedError(undefined), false);
   });
 });
 

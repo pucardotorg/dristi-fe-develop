@@ -136,8 +136,8 @@ git checkout -b docs/readme-setup origin/main
 
 5. **Add tests** for bug fixes and new logic:
    - Put them next to the code as `*.test.ts` under `apps/dristi-app/src/lib/`
-   - If you add a new folder, add its pattern to the `test` script in
-     [apps/dristi-app/package.json](apps/dristi-app/package.json)
+   - `npm run test:app` finds every `*.test.ts` under `apps/dristi-app/src/lib/`, so a
+     new folder needs no change to the `test` script
 
 ### 6. Verify Application Functionality
 

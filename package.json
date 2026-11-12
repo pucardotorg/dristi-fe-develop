@@ -26,6 +26,7 @@
     "sync:rails": "node scripts/sync-rails.mjs",
     "test:rails": "node --test \"scripts/*.test.mjs\"",
     "new:data": "node scripts/new-data.mjs",
+    "check:lint-exceptions": "node scripts/check-lint-exceptions.mjs",
     "verify:agents": "node scripts/verify-agent-work.mjs agents",
     "verify:ui": "node scripts/verify-agent-work.mjs ui"
   }

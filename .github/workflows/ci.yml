@@ -33,6 +33,15 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Files excused from the data lint rules come off their lists; none is added.
+      - name: Lint exceptions only shrink
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          npm run check:lint-exceptions -- FETCH_HEAD
+        env:
+          BASE_REF: ${{ github.base_ref }}
+
       - name: Type check
         run: npm run typecheck
 

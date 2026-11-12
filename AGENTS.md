@@ -42,6 +42,7 @@ npm run lint           # ESLint (next/core-web-vitals + next/typescript + data r
 npm run typecheck      # next typegen + tsc --noEmit
 npm run test:app       # unit tests
 npm run verify:agents  # agent rails: after changing .agents/ (then npm run sync:rails)
+npm run new:data -- <feature>  # start a feature's data layer (lib/<feature>/data/)
 ```
 
 Before finishing a change, run `npm run lint`, `npm run typecheck` and `npm run test:app`.
@@ -76,6 +77,15 @@ A contract method that `http.ts` does not implement yet rejects with `NotIntegra
 - Engineering connects a feature by adding methods to its `http.ts`, never by editing a
   screen. When the backend behaves differently from the sandbox, update the sandbox too.
 - Design adds data by extending the contract and the sandbox, never `http.ts`.
+- Every feature gets the same data layer: start it with `npm run new:data -- <feature>`.
+  A feature that has no `data/` folder yet (vakalatnama, applications, employee …) gets
+  one, in its own commit, before any new data is added; never add data to its old
+  browser-storage store. A new feature reaches its repository through a hook in
+  `lib/<feature>/`; a store comes only when several screens or tabs share live state.
+  Lint rejects browser storage in `lib/` outside a sandbox.
+- Data is anything the backend will keep or someone else should see; it goes through a
+  repository. A UI preference only changes this browser's view and uses
+  `useLocalStorageValue`.
 - Data a feature's store already holds (for tasks: tasks, people, cases) changes only
   through the store, which saves it, updates other tabs and respects `online`. Data the
   store doesn't hold can have its own hook in `lib/<feature>/` that calls
@@ -140,6 +150,9 @@ reuse or extend what's there; if the same logic appears in 2+ places, extract it
   `typeof window === "undefined"` and wrap storage access in `try/catch`.
 - Data access goes through the feature's repository in `lib/<feature>/data/` (see
   `lib/tasks/data/`), so a real API can replace the sandbox without touching screens.
+- A screen (the page or its `*-screen.tsx`) gets data from the feature's store, hook or
+  `getRepository()`; the components it renders take data and callbacks as props, and a
+  component used by more than one screen always does.
 - Components: named exports (`export function CaseCard()`), one main component per file,
   props typed with a `type …Props`. Default exports only where Next requires them (pages,
   layouts).

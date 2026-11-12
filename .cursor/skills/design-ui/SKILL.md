@@ -20,7 +20,9 @@ document-writing stage. Follow `.agents/policies/orchestration.md`.
    composition over new controls; flag an upstream gap only when existing APIs cannot
    meet the requirement.
 4. Work out the data this screen needs and follow `.agents/policies/data-seam.md`: name
-   the contract methods it reads or writes, and which already exist.
+   the contract methods it reads or writes, and which already exist. Sort each piece into
+   data or a UI preference. If the feature has no `lib/<feature>/data/` yet, the plan
+   starts with `npm run new:data -- <feature>`.
 5. Recommend a direction, explain its main tradeoff, and name observable acceptance
    criteria. Include relevant error/recovery states, responsive and language constraints,
    and action scope. Label judgment as judgment; do not present taste as a DS rule.

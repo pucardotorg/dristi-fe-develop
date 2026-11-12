@@ -41,19 +41,24 @@ feature's `data/indexeddb.ts` or `data/sandbox.ts`, fixtures, seeds, and demo-se
 routes such as `apps/dristi-app/src/app/api/bulk/`) and the agent layer (`.agents/`).
 The rest of a feature's `lib/` folder (domain logic, hooks, `content.ts`, tests) is shared
 with engineering: add what your screen needs, and keep changes to existing logic in their
-own commit.
+own commit. You may start a feature's data layer with `npm run new:data -- <feature>`,
+and take a file you fixed off an exception list in `apps/dristi-app/eslint.config.mjs`
+(nothing else in that file).
 
 ## You don't edit
 
 `apps/dristi-app/src/lib/api/`, `apps/dristi-app/src/lib/server/`,
-`apps/dristi-app/src/lib/data/`, `apps/dristi-app/src/app/api/v1/`, any `data/http.ts`,
+`apps/dristi-app/src/lib/data/`, `apps/dristi-app/src/app/api/v1/`, any `data/http.ts`
+(beyond the empty one `npm run new:data` creates),
 `apps/dristi-app/src/lib/auth/http.ts`, `docker/` and `.github/`. If the work seems to
 need them, stop and say so in your report.
 
 ## Data
 
 Follow `.agents/policies/data-seam.md`. New data means the type, then the contract
-method, then the sandbox answer, then the screen. Contracts only grow.
+method, then the sandbox answer, then the screen. Contracts only grow. A new feature, or
+an older one with no `lib/<feature>/data/`, starts with `npm run new:data -- <feature>`
+in its own commit; never add data to an old browser-storage store.
 
 Fix required review findings and rerun affected checks; do not expand into unrelated
 polish. Return decision changes and implementation status for the owner's history, which

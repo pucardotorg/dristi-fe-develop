@@ -18,7 +18,9 @@ description: "Build or change Dristi UI using the pinned Pucar DS: inspect relev
 3. Sync only missing or drifting controls with `npm run sync:ui -- <component>`.
    Coordinate shared sync operations. Never hand-write or modify a synced primitive.
 4. Get data through the feature's store, hook or `getRepository()`; add new data in the
-   contract and the sandbox per `.agents/policies/data-seam.md`, never in the screen.
+   contract and the sandbox per `.agents/policies/data-seam.md`, never in the screen. A
+   feature with no `lib/<feature>/data/` gets one first (`npm run new:data -- <feature>`,
+   its own commit). Components below the screen take data and callbacks as props.
 5. Compose the agreed behavior in assigned app files. Include relevant loading, empty,
    errors, partial data, language/long-label, responsive, keyboard, and recovery states.
    Trace displayed facts to current product sources or real fields; do not invent

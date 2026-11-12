@@ -26,6 +26,7 @@ Each feature keeps its data under `apps/dristi-app/src/lib/<feature>/`:
 | `data/indexeddb.ts` or `data/sandbox.ts` | The sandbox: IndexedDB, localStorage, fixtures, seeding, reset. Answers every contract method | design (yours) |
 | `data/http.ts` | The backend implementation | engineering; never edit |
 | `data/index.ts` | Picks one by the data source (`repositoryFor`) | shared; don't edit once it exists |
+| Everything else in `lib/<feature>/` | Domain logic, the store, hooks, `content.ts`, tests, README | shared: either team adds; changes to someone else's logic go in their own commit |
 
 Tasks (`apps/dristi-app/src/lib/tasks/data/`), e-filing
 (`apps/dristi-app/src/lib/filing/data/`) and the cases list
@@ -49,7 +50,13 @@ for a feature whose data people change, and the cases folder for read-only demo 
    a. add or extend the type in `types.ts`;
    b. add a method to `data/repository.ts`, with a one-line comment on what it returns;
    c. answer it in the sandbox, from fixtures or IndexedDB;
-   d. call it from the screen through the store, hook or `getRepository()`.
+   d. call it from the screen through the store, hook or `getRepository()`. Data the
+      feature's store already holds (for tasks: tasks, people, cases) changes only through
+      the store, which saves it, updates other tabs and respects `online`. Data the store
+      doesn't hold may get its own hook in `lib/<feature>/`; say in the PR whether other
+      tabs need to see it.
+   A new optional field stays empty against the backend until engineering maps it in
+   `http.ts`: list it in the PR under "Contract changes" so they can.
    Do not touch `http.ts`. Against the backend the new method answers "not connected
    to the backend yet" until engineering builds it. That is expected.
 3. Contracts only grow. You may add methods, optional fields and new values in a union.
@@ -60,11 +67,15 @@ for a feature whose data people change, and the cases folder for read-only demo 
    no longer has" (reported in the feature's `data/index.ts`, naming the method), you
    changed something engineering relies on: undo it, or ask engineering in the PR.
 4. Demo behaviour stays in the sandbox: seeding, reseeding on page load, "Reset sandbox
-   data", "Viewing as" personas and demo accounts. Show sandbox-only controls only when
-   `IS_SANDBOX` is true (from `@/lib/data/source`).
+   data", "Viewing as" personas and demo accounts. Show sandbox-only controls (including
+   "Sandbox: …" gateway and signing shortcuts) only when `IS_SANDBOX` is true (from
+   `@/lib/data/source`).
 5. Make the sandbox behave like a server: every method is async, can fail, and validates
    the way the backend will. Every screen shows loading, empty, error and "not connected
-   yet" states.
+   yet" states. If new data needs a product rule nobody has decided (who can see it, a
+   limit, how long it is kept), choose the smallest reasonable one, say so in the PR and
+   add it to `docs/product/open-questions.md`. Copy never promises privacy, security or a
+   system action the backend does not provide yet.
 6. Leave these to engineering, and open an issue if you need a change there:
    `apps/dristi-app/src/lib/api/`, `apps/dristi-app/src/lib/server/`,
    `apps/dristi-app/src/lib/data/`, `apps/dristi-app/src/app/api/v1/`, any

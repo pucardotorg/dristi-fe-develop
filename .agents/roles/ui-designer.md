@@ -39,6 +39,9 @@ Screens (`apps/dristi-app/src/components/`, and `apps/dristi-app/src/app/` excep
 `apps/dristi-app/src/app/api/v1/`), copy (each feature's `content.ts`), the sandbox (each
 feature's `data/indexeddb.ts` or `data/sandbox.ts`, fixtures, seeds, and demo-server
 routes such as `apps/dristi-app/src/app/api/bulk/`) and the agent layer (`.agents/`).
+The rest of a feature's `lib/` folder (domain logic, hooks, `content.ts`, tests) is shared
+with engineering: add what your screen needs, and keep changes to existing logic in their
+own commit.
 
 ## You don't edit
 

@@ -8,7 +8,10 @@ connected. See "Data" below.
 
 Product meaning comes from `docs/product/` and the current request. Never invent users,
 legal rules, or system capabilities; check `docs/product/open-questions.md` when a fact is
-missing.
+missing. If a request needs a product rule nobody has decided (who can see something, a
+limit, how long it is kept), make the smallest reasonable choice, say so in the PR, and add
+it to `open-questions.md`. Copy never promises privacy, security or a system action that
+the backend does not provide yet.
 
 This file is shared by both teams and written by hand; change it by PR. `CLAUDE.md`
 includes it.
@@ -73,9 +76,16 @@ A contract method that `http.ts` does not implement yet rejects with `NotIntegra
 - Engineering connects a feature by adding methods to its `http.ts`, never by editing a
   screen. When the backend behaves differently from the sandbox, update the sandbox too.
 - Design adds data by extending the contract and the sandbox, never `http.ts`.
+- Data a feature's store already holds (for tasks: tasks, people, cases) changes only
+  through the store, which saves it, updates other tabs and respects `online`. Data the
+  store doesn't hold can have its own hook in `lib/<feature>/` that calls
+  `getRepository()`; say in the PR whether other tabs need to see it.
+- The rest of `lib/<feature>/` (domain logic, hooks, `content.ts`, tests, README) is shared:
+  either team adds to it, and changes to someone else's logic go in their own commit.
 - Contracts only grow: add methods and optional fields; renaming, removing or retyping
   needs both teams in one PR, listed under "Contract changes".
-- Demo-only controls (reset, "Viewing as") render only when `IS_SANDBOX` (from `@/lib/data/source`) is true.
+- Demo-only controls (reset, "Viewing as", a "Sandbox: …" gateway or signing shortcut)
+  render only when `IS_SANDBOX` (from `@/lib/data/source`) is true.
 - Full rules: `.agents/policies/data-seam.md`. Reviewers: `.github/CODEOWNERS`.
 
 ## Layout
@@ -166,13 +176,16 @@ reuse or extend what's there; if the same logic appears in 2+ places, extract it
 - Comments explain *why*, not *what*. Match the comment density of the surrounding code.
 - Don't leave unused imports, variables, or commented-out code.
 - User-facing copy lives in the feature's `content.ts` / copy module, not scattered in JSX.
+  If the feature has none, create `lib/<feature>/content.ts` for the new copy; move
+  existing inline copy only when you change it.
 
 ## Tests
 
 - Put tests next to the code: `lib/<feature>/<name>.test.ts`, using `node:test` and
   `node:assert/strict`.
 - Add a test with every bug fix and every new piece of domain logic.
-- A new test folder must be added to the `test` script in `apps/dristi-app/package.json`.
+- `npm run test:app` runs every `src/lib/**/*.test.ts`, so a new folder needs no script
+  change.
 
 ## Git
 

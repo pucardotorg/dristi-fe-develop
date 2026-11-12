@@ -19,7 +19,10 @@ Before submitting a pull request, please make sure you've completed these tasks.
 
 ## Contract changes
 
-Data contracts (`lib/<feature>/data/repository.ts`, `lib/<feature>/types.ts`) only grow. List any method or field this PR renames, removes, retypes or makes required, and tag engineering; write "None" otherwise.
+Data contracts (`lib/<feature>/data/repository.ts`, `lib/<feature>/types.ts`) only grow. Write "None" if this PR doesn't touch them. Otherwise list:
+
+- **Added:** new methods and fields, so engineering can implement or map them in `http.ts`.
+- **Breaking:** any method or field renamed, removed, retyped or made required. Tag engineering.
 
 ## Notes
 

@@ -48,6 +48,11 @@ export type CurrentAccount = {
   /** Always one of the four: a response without a known role is refused, not defaulted. */
   role: BackendRole;
   name: string | null;
+  /** National digits, e.g. "9876543210". */
+  mobile: string;
+  email: string | null;
+  /** The advocate profile's Bar registration number; null for every other role. */
+  barNumber: string | null;
   /** False when updated terms are waiting to be accepted. */
   hasCurrentTerms: boolean;
 };

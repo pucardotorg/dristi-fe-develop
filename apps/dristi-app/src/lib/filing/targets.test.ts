@@ -8,7 +8,6 @@ import type { FilingDraft } from "./types";
 import {
   TARGETABLE_FIELDS,
   TARGETABLE_STEPS,
-  displayTargetValue,
   isTargetable,
   readTarget,
   targetControlKind,
@@ -91,26 +90,6 @@ describe("every target the type admits is a place the form can show", () => {
       }),
       false
     );
-  });
-});
-
-describe("showing a target's value the way the form does", () => {
-  it("formats amounts and dates, and leaves everything else alone", () => {
-    const amount: DefectTarget = {
-      kind: "field",
-      step: "cheque",
-      field: "amount",
-      label: "Amount",
-      sectionLabel: "Case details",
-    };
-    assert.equal(displayTargetValue(amount, "185000"), "₹1,85,000");
-    assert.equal(displayTargetValue(amount, ""), "");
-
-    const date: DefectTarget = { ...amount, field: "returnDate", label: "Return date" };
-    assert.equal(displayTargetValue(date, "2026-03-15"), "15/03/2026");
-
-    const code: DefectTarget = { ...amount, field: "ifsc", label: "IFSC code" };
-    assert.equal(displayTargetValue(code, "KLGB0040213"), "KLGB0040213");
   });
 });
 

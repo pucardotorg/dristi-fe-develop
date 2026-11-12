@@ -230,7 +230,7 @@ export function ReplaceFileButton({
         accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
         onChange={(event) => {
           const next = event.target.files?.[0];
-          if (next && next.size <= MAX_FILE_SIZE) onFile(next);
+          if (next && isAcceptedDocument(next)) onFile(next);
           event.target.value = "";
         }}
       />

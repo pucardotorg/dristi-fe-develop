@@ -33,7 +33,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { DocumentSlot } from "@/components/ui/document-slot";
 import {
   Field,
   FieldDescription,
@@ -59,11 +58,6 @@ import {
   RichTextValueView,
   type RichTextValue,
 } from "@/components/cases/rich-text-field";
-import {
-  DocumentPreviewDialog,
-  DocumentThumbnailButton,
-  useObjectUrl,
-} from "@/components/document-preview";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import { joinDialog } from "@/lib/join/content";
 import type { AccessCase } from "@/lib/access/content";
@@ -81,7 +75,6 @@ import { newPaymentRef } from "@/lib/filing/data";
 import { GATEWAY_MS, PaymentFacts, PaymentProcessing } from "@/components/payment/payment-steps";
 import { OutcomeAmount, OutcomeHeader, StatusLine } from "@/components/feedback";
 import { cn } from "@/lib/utils";
-import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
 import { UploadedDocField as SharedUploadedDocField } from "@/components/cases/uploaded-doc-field";
@@ -106,6 +99,15 @@ type Stage =
   | "processing"
   | "paid"
   | "done";
+type Stage =
+  | "details"
+  | "sureties"
+  | "review"
+  | "sign"
+  | "payment"
+  | "processing"
+  | "paid"
+  | "done";
 type YesNo = "yes" | "no";
 
 export type BailApplicationResult = {
@@ -114,16 +116,10 @@ export type BailApplicationResult = {
   paid: boolean;
 };
 
-function fileSize(bytes: number) {
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 /**
- * Upload slot with the app's standard uploaded-document affordances (the Add-ID
- * pattern): thumbnail that opens the large preview, plus change and remove
- * links. Local copy of the join dialogs' helper. The copy it speaks is this
- * flow's own. Exported for the bail bond dialog, which shares the pattern.
+ * The app's one upload row (`cases/uploaded-doc-field`): the empty slot, then the filled
+ * row with its thumbnail preview and Change file / Remove. This wrapper only speaks the
+ * dialog's language. Exported for the bail bond dialog.
  */
 export function UploadedDocField({
   label,
@@ -138,69 +134,23 @@ export function UploadedDocField({
   onFileChange: (file: File | null) => void;
   locale: Locale;
 }) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const [previewOpen, setPreviewOpen] = React.useState(false);
-  const url = useObjectUrl(file);
-  const previewCopy = {
-    title: pick(bailDialog.docPreviewTitle, locale),
-    description: pick(bailDialog.docPreviewBody, locale),
-    alt: pick(bailDialog.docPreviewAlt, locale),
-  };
-
   return (
-    <>
-      <input
-        ref={inputRef}
-        type="file"
-        className="hidden"
-        tabIndex={-1}
-        aria-hidden="true"
-        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-        onChange={(event) => {
-          const next = event.target.files?.[0];
-          if (next && isAcceptedDocument(next)) onFileChange(next);
-          // The same file can be picked again after a remove.
-          event.target.value = "";
-        }}
-      />
-      <DocumentSlot
-        status={file ? "filled" : "empty"}
-        media={file ? "thumbnail" : "icon"}
-        label={label}
-        required={required}
-        filename={file?.name}
-        meta={file ? fileSize(file.size) : undefined}
-        thumbnail={
-          file ? (
-            <DocumentThumbnailButton
-              file={file}
-              url={url}
-              locale={locale}
-              onOpen={() => setPreviewOpen(true)}
-              className="size-full rounded-md"
-            />
-          ) : undefined
-        }
-        onChooseFile={() => inputRef.current?.click()}
-        // C3 (see Integration feedback log): filled-state Change/Remove buttons
-        // need an `actions` slot on the DS document-slot, which does not exist yet.
-        // Pending a DS change (Mohit to raise). Using the standard box for now —
-        // buttons temporarily omitted rather than hand-editing the DS primitive.
-        copy={{
-          optional: pick(bailDialog.optional, locale),
-          noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : "No file chosen yet",
-          chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : "Choose file",
-        }}
-      />
-      <DocumentPreviewDialog
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        file={file}
-        url={url}
-        locale={locale}
-        copy={previewCopy}
-      />
-    </>
+    <SharedUploadedDocField
+      label={label}
+      required={required}
+      file={file}
+      onFileChange={onFileChange}
+      locale={locale}
+      copy={{
+        changeFile: pick(bailDialog.changeFile, locale),
+        remove: pick(bailDialog.removeFile, locale),
+        optional: pick(bailDialog.optional, locale),
+        noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : "No file chosen yet",
+        chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : "Choose file",
+        previewDescription: pick(bailDialog.docPreviewBody, locale),
+        previewAlt: pick(bailDialog.docPreviewAlt, locale),
+      }}
+    />
   );
 }
 
@@ -431,6 +381,11 @@ export function BailApplicationDialog({
   const [signTab, setSignTab] = React.useState<"esign" | "upload">(
     officeAccess ? "upload" : "esign",
   );
+  // Office access never e-signs (OFC-06): the upload tab is the way.
+  const officeAccess = accessCase.viewerAccess === "office";
+  const [signTab, setSignTab] = React.useState<"esign" | "upload">(
+    officeAccess ? "upload" : "esign",
+  );
   const [signedFile, setSignedFile] = React.useState<File | null>(null);
   const [esigned, setEsigned] = React.useState(false);
   const [signTouched, setSignTouched] = React.useState(false);
@@ -469,6 +424,7 @@ export function BailApplicationDialog({
     setReviewFullscreen(false);
     if (generateTimerRef.current !== null) window.clearTimeout(generateTimerRef.current);
     generateTimerRef.current = null;
+    setSignTab(officeAccess ? "upload" : "esign");
     setSignTab(officeAccess ? "upload" : "esign");
     setSignedFile(null);
     setEsigned(false);

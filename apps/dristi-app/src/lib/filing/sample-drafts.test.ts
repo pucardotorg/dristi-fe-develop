@@ -86,7 +86,13 @@ describe("a litigant's home", () => {
 
 describe("the signed-in litigant in File a case", () => {
   const draft = buildSampleDraft(OATH_DEMO_SAMPLES[0], "2026-10-19");
-  const stored = { name: "Anjali Nair", mobile: "", email: "", barNumber: "K/1188/2011" };
+  const stored = {
+    role: "ADVOCATE" as const,
+    name: "Anjali Nair",
+    mobile: "",
+    email: "",
+    barNumber: "K/1188/2011",
+  };
 
   it("sits in their complainant seat, not the advocate's", () => {
     const { complainants, advocates } = signatories(draft, asSignedIn(stored, "9000000001"), true, true);

@@ -1,21 +1,20 @@
 /**
  * IndexedDB implementation of the filing repository.
  *
- * One database, three stores: `drafts` (whole drafts, indexed by `updatedAt`), `files`
- * (upload bytes + metadata) and `profile` (a single record under the key "me"). Blobs are
- * stored as-is — IndexedDB keeps binary data natively, so uploads survive reloads and
- * are never base64-inflated.
+ * One database, two stores: `drafts` (whole drafts, indexed by `updatedAt`) and `files`
+ * (upload bytes + metadata). Blobs are stored as-is — IndexedDB keeps binary data
+ * natively, so uploads survive reloads and are never base64-inflated. Databases created
+ * before the profile moved to the signed-in account still hold an unused `profile` store.
  */
 
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
-import type { FilingDraft, UserProfile } from "../types";
+import type { FilingDraft } from "../types";
 import type { FilingRepository, StoredFile } from "./repository";
 import { migrateDraft } from "../blank";
 
 const DB_NAME = "dristi-efiling";
 const DB_VERSION = 1;
-const PROFILE_KEY = "me";
 
 interface FilingDB extends DBSchema {
   drafts: {
@@ -26,10 +25,6 @@ interface FilingDB extends DBSchema {
   files: {
     key: string;
     value: StoredFile;
-  };
-  profile: {
-    key: string;
-    value: UserProfile;
   };
 }
 
@@ -42,7 +37,6 @@ function db(): Promise<IDBPDatabase<FilingDB>> {
         const drafts = database.createObjectStore("drafts", { keyPath: "id" });
         drafts.createIndex("updatedAt", "updatedAt");
         database.createObjectStore("files", { keyPath: "id" });
-        database.createObjectStore("profile");
       },
     });
   }
@@ -107,13 +101,5 @@ export class IndexedDbFilingRepository implements FilingRepository {
     if (ids.length === 0) return;
     const tx = (await db()).transaction("files", "readwrite");
     await Promise.all([...ids.map((id) => tx.store.delete(id)), tx.done]);
-  }
-
-  async getProfile(): Promise<UserProfile | null> {
-    return (await (await db()).get("profile", PROFILE_KEY)) ?? null;
-  }
-
-  async putProfile(profile: UserProfile): Promise<void> {
-    await (await db()).put("profile", profile, PROFILE_KEY);
   }
 }

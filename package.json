@@ -24,7 +24,8 @@
     "sync:ui": "npm run sync:ui -w @pucar/dristi-app --",
     "check:rails": "node scripts/check-rails.mjs",
     "sync:rails": "node scripts/sync-rails.mjs",
-    "test:rails": "node --test scripts/agent-rails.test.mjs",
+    "test:rails": "node --test \"scripts/*.test.mjs\"",
+    "new:data": "node scripts/new-data.mjs",
     "verify:agents": "node scripts/verify-agent-work.mjs agents",
     "verify:ui": "node scripts/verify-agent-work.mjs ui"
   }

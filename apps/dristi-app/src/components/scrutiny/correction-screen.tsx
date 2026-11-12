@@ -70,6 +70,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Case, Defect, Resolution, Task } from "@/lib/tasks/types";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -767,30 +768,32 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
       <div className="flex items-center gap-2 sm:mr-auto">
         {/* Not modal: a modal menu inside the dialog left the page pointer-locked after
             its item was chosen, so the next click went nowhere. */}
-        <DropdownMenu modal={false}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Sandbox: mark the other signatures"
-                  className="text-muted-foreground"
-                >
-                  <FlaskConicalIcon aria-hidden />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>Sandbox: mark the other signatures</TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent align="start" className="w-64">
-            <DropdownMenuLabel>No link is sent in the sandbox</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={sandboxEveryoneDone}>
-              {signingRules().oath ? "Mark everyone as signed and sworn" : "Mark everyone as signed"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {IS_SANDBOX ? (
+          <DropdownMenu modal={false}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Sandbox: mark the other signatures"
+                    className="text-muted-foreground"
+                  >
+                    <FlaskConicalIcon aria-hidden />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Sandbox: mark the other signatures</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuLabel>No link is sent in the sandbox</DropdownMenuLabel>
+              <DropdownMenuItem onSelect={sandboxEveryoneDone}>
+                {signingRules().oath ? "Mark everyone as signed and sworn" : "Mark everyone as signed"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
         {othersWaiting.length ? (
           <Button type="button" variant="outline" disabled={reminded} onClick={remindOthers}>
             <BellIcon data-icon="inline-start" aria-hidden />

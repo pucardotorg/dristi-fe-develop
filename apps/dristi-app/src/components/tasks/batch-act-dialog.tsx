@@ -31,6 +31,7 @@ import { rupees } from "@/lib/tasks/format";
 import { useTasks } from "@/lib/tasks/store";
 import { recordPayment, sign, TransitionError } from "@/lib/tasks/transitions";
 import type { Case, PaymentResult, Person, Task, TaskId } from "@/lib/tasks/types";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { cn } from "@/lib/utils";
 
 /**
@@ -400,6 +401,7 @@ function GatewayMenu({
   value: PaymentResult;
   onChange: (value: PaymentResult) => void;
 }) {
+  if (!IS_SANDBOX) return null;
   return (
     <TooltipProvider>
       <DropdownMenu>

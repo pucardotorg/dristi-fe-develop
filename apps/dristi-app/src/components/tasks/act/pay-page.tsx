@@ -17,6 +17,7 @@ import { dateTime, dueCueOf, longDate, rupees } from "@/lib/tasks/format";
 import { signatoriesOf, TERMINAL } from "@/lib/tasks/permissions";
 import { confirmPayment, recordPayment } from "@/lib/tasks/transitions";
 import type { PaymentResult } from "@/lib/tasks/types";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -122,23 +123,25 @@ function PayCard({ ctx }: { ctx: ActContext }) {
           </SectionNotice>
         </div>
       ) : null}
-      <Field>
-        <FieldLabel>Sandbox gateway result</FieldLabel>
-        <RadioGroup value={outcome} onValueChange={(v) => setOutcome(v as PaymentResult)} className="gap-1">
-          {OUTCOMES.map((o) => (
-            <label
-              key={o.value}
-              className="flex cursor-pointer items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-accent has-data-checked:bg-card"
-            >
-              <RadioGroupItem value={o.value} id={`outcome-${o.value}`} className="mt-0.5" />
-              <span className="flex flex-col">
-                <span className="text-body-compact font-medium">{o.label}</span>
-                <span className="text-caption text-muted-foreground">{o.hint}</span>
-              </span>
-            </label>
-          ))}
-        </RadioGroup>
-      </Field>
+      {IS_SANDBOX ? (
+        <Field>
+          <FieldLabel>Sandbox gateway result</FieldLabel>
+          <RadioGroup value={outcome} onValueChange={(v) => setOutcome(v as PaymentResult)} className="gap-1">
+            {OUTCOMES.map((o) => (
+              <label
+                key={o.value}
+                className="flex cursor-pointer items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-accent has-data-checked:bg-card"
+              >
+                <RadioGroupItem value={o.value} id={`outcome-${o.value}`} className="mt-0.5" />
+                <span className="flex flex-col">
+                  <span className="text-body-compact font-medium">{o.label}</span>
+                  <span className="text-caption text-muted-foreground">{o.hint}</span>
+                </span>
+              </label>
+            ))}
+          </RadioGroup>
+        </Field>
+      ) : null}
       <div className="flex flex-col gap-2">
         <Button
           size="lg"

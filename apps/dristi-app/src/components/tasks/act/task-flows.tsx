@@ -55,6 +55,7 @@ import { formatCaseDate, type CaseRecord } from "@/lib/cases/types";
 import { rupees } from "@/lib/tasks/format";
 import { file, recordPayment } from "@/lib/tasks/transitions";
 import type { Case, PaymentResult, Task } from "@/lib/tasks/types";
+import { IS_SANDBOX } from "@/lib/data/source";
 
 /**
  * **A Take action task opens the product's own window for the act** (owner,
@@ -325,39 +326,41 @@ export function TaskPaymentDialog({
               Pay later
             </Button>
             <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <DropdownMenu>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Sandbox: choose the gateway result"
-                          className="text-muted-foreground"
-                        >
-                          <FlaskConicalIcon aria-hidden />
-                        </Button>
-                      </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Sandbox: choose the gateway result</TooltipContent>
-                  </Tooltip>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>Sandbox gateway result</DropdownMenuLabel>
-                    <DropdownMenuRadioGroup
-                      value={outcome}
-                      onValueChange={(value) => setOutcome(value as PaymentResult)}
-                    >
-                      {OUTCOMES.map((option) => (
-                        <DropdownMenuRadioItem key={option.value} value={option.value}>
-                          {option.label}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TooltipProvider>
+              {IS_SANDBOX ? (
+                <TooltipProvider>
+                  <DropdownMenu>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Sandbox: choose the gateway result"
+                            className="text-muted-foreground"
+                          >
+                            <FlaskConicalIcon aria-hidden />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Sandbox: choose the gateway result</TooltipContent>
+                    </Tooltip>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>Sandbox gateway result</DropdownMenuLabel>
+                      <DropdownMenuRadioGroup
+                        value={outcome}
+                        onValueChange={(value) => setOutcome(value as PaymentResult)}
+                      >
+                        {OUTCOMES.map((option) => (
+                          <DropdownMenuRadioItem key={option.value} value={option.value}>
+                            {option.label}
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TooltipProvider>
+              ) : null}
               <Button
                 type="button"
                 disabled={!online || Boolean(busy)}

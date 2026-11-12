@@ -79,6 +79,7 @@ import { useFiling } from "@/lib/filing/store";
 import { useTasks } from "@/lib/tasks/store";
 import { refile } from "@/lib/tasks/transitions";
 import type { Signatory } from "@/lib/filing/types";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { cn } from "@/lib/utils";
 import {
   Accordion,
@@ -863,7 +864,7 @@ export function SignSection() {
    * their side, or everyone else can be marked done in one go.
    */
   const sandboxLinks =
-    othersOutstanding.length > 0 ? (
+    IS_SANDBOX && othersOutstanding.length > 0 ? (
       <DropdownMenu>
         <Tooltip>
           <TooltipTrigger asChild>

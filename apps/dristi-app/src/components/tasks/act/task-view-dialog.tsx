@@ -28,6 +28,7 @@ import { canComplete } from "@/lib/tasks/permissions";
 import { useTasks } from "@/lib/tasks/store";
 import { confirmPayment } from "@/lib/tasks/transitions";
 import type { Case, Task } from "@/lib/tasks/types";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { StatusLine } from "@/components/feedback";
 
 /**
@@ -184,7 +185,7 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
       </div>
 
       <DialogFooter className="mx-0 mb-0 shrink-0 border-hairline bg-surface-sunken px-6 py-4">
-        {task.status === "payment-confirming" && canComplete(user, kase) ? (
+        {IS_SANDBOX && task.status === "payment-confirming" && canComplete(user, kase) ? (
           <Button
             type="button"
             variant="outline"

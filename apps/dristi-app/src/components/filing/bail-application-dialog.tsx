@@ -69,7 +69,7 @@ import {
   BAIL_SUBMISSION_ID,
   bailDialog,
   fillCopy,
-} from "@/lib/filing/content";
+} from "@/lib/bail/content";
 import { ADVOCATE_PROFILE_NAME, advDialog } from "@/lib/advocate/content";
 import { newPaymentRef } from "@/lib/filing/data";
 import { GATEWAY_MS, PaymentFacts, PaymentProcessing } from "@/components/payment/payment-steps";
@@ -90,15 +90,6 @@ import { UploadedDocField as SharedUploadedDocField } from "@/components/cases/u
  * tasks, the same decision the join flow made for the vakalatnama fee.
  */
 
-type Stage =
-  | "details"
-  | "sureties"
-  | "review"
-  | "sign"
-  | "payment"
-  | "processing"
-  | "paid"
-  | "done";
 type Stage =
   | "details"
   | "sureties"
@@ -376,11 +367,6 @@ export function BailApplicationDialog({
   const generateTimerRef = React.useRef<number | null>(null);
   const [reviewFullscreen, setReviewFullscreen] = React.useState(false);
 
-  // Office access never e-signs (OFC-06): the upload tab is the way.
-  const officeAccess = accessCase.viewerAccess === "office";
-  const [signTab, setSignTab] = React.useState<"esign" | "upload">(
-    officeAccess ? "upload" : "esign",
-  );
   // Office access never e-signs (OFC-06): the upload tab is the way.
   const officeAccess = accessCase.viewerAccess === "office";
   const [signTab, setSignTab] = React.useState<"esign" | "upload">(

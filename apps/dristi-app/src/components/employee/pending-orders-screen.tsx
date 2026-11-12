@@ -542,7 +542,7 @@ export function PendingOrdersScreen({
             <DialogDescription>
               {reading?.caseNumber} · from its order
               {reading?.title ? ` “${reading.title}”` : ""}, signed and triggered.
-              Signing it doesn't trigger workflows.
+              Signing it doesn&apos;t trigger workflows.
             </DialogDescription>
           </DialogHeader>
           {/* Editable until it is signed, by the order data filler or the order signer

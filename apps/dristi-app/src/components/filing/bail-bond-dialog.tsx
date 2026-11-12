@@ -91,7 +91,7 @@ import {
   bondCopy,
   fillCopy,
   type BondSurety,
-} from "@/lib/filing/content";
+} from "@/lib/bail/content";
 import { pick } from "@/lib/onboarding/content";
 import { cn } from "@/lib/utils";
 import { OutcomeHeader, OutcomeSummary, StatusLine, notify } from "@/components/feedback";

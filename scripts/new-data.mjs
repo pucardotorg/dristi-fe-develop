@@ -13,7 +13,7 @@
  *
  * Designers may run it for a new feature, or for an existing feature whose data has no
  * repository yet. After that, `http.ts` belongs to engineering. It refuses to overwrite
- * a file that already exists.
+ * a file that already exists, or to run while an old `lib/<feature>/data.ts` is in the way.
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -78,20 +78,21 @@ export interface ${contract} {
  * reseed or reset on reload instead, say so here (see \`lib/tasks/data/indexeddb.ts\`).
  */
 
-import { openDB, type IDBPDatabase } from "idb";
+import { deleteDB, openDB, type IDBPDatabase } from "idb";
 
 import type { ${contract} } from "./repository";
 
 const DB_NAME = "dristi-${feature}";
 // Raise this when you add a store, and create stores only if they're missing, so a
-// browser on an older version upgrades cleanly. Add a DBSchema type with the first
-// store (see lib/filing/data/indexeddb.ts).
+// browser on an older version upgrades cleanly. A browser on a newer version (from
+// another branch) is reset, below. Add a DBSchema type with the first store (see
+// lib/filing/data/indexeddb.ts).
 const DB_VERSION = 1;
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
-function db(): Promise<IDBPDatabase> {
-  dbPromise ??= openDB(DB_NAME, DB_VERSION, {
+function openDatabase(): Promise<IDBPDatabase> {
+  return openDB(DB_NAME, DB_VERSION, {
     upgrade() {
       // Create stores here, e.g. if (!database.objectStoreNames.contains("items"))
       // database.createObjectStore("items", { keyPath: "id" });
@@ -101,6 +102,25 @@ function db(): Promise<IDBPDatabase> {
       void dbPromise?.then((database) => database.close());
       dbPromise = null;
     },
+  });
+}
+
+async function openOrReset(): Promise<IDBPDatabase> {
+  try {
+    return await openDatabase();
+  } catch (error) {
+    // This browser has a newer version, left by another branch. It holds only demo
+    // data, so start it over instead of failing every call.
+    if (!(error instanceof DOMException && error.name === "VersionError")) throw error;
+    await deleteDB(DB_NAME);
+    return openDatabase();
+  }
+}
+
+function db(): Promise<IDBPDatabase> {
+  dbPromise ??= openOrReset().catch((error: unknown) => {
+    dbPromise = null; // let the next call try again
+    throw error;
   });
   return dbPromise;
 }
@@ -154,10 +174,30 @@ export const getRepository = repositoryFor<${contract}>("${feature}", {
   };
 }
 
-/** Write the files under `root`; throws, writing nothing, if the name is bad or any file exists. */
+/**
+ * A `lib/<feature>/data.ts` (or `.tsx`) beside the new `data/` folder would win the import
+ * `@/lib/<feature>/data`, so screens would keep reaching the old file. Returns its path.
+ */
+export function collidingDataModule(root, feature) {
+  return ["data.ts", "data.tsx"]
+    .map((file) => join(LIB_DIR, feature, file))
+    .find((path) => existsSync(join(root, path)));
+}
+
+/**
+ * Write the files under `root`. Throws, writing nothing, if the name is bad, an old
+ * `data.ts` is in the way, or any file exists.
+ */
 export function writeDataFiles(root, feature) {
   const problem = invalidFeatureName(feature);
   if (problem) throw new Error(problem);
+  const colliding = collidingDataModule(root, feature);
+  if (colliding) {
+    throw new Error(
+      `${colliding} would hide the new data/ folder (both are imported as @/lib/${feature}/data). ` +
+        `Rename it in its own commit (for example to registries.ts, after what it holds), then run this again.`
+    );
+  }
   const dir = join(root, LIB_DIR, feature, "data");
   const files = renderDataFiles(feature);
   const taken = Object.keys(files).filter((file) => existsSync(join(dir, file)));
@@ -184,7 +224,7 @@ Next, per .agents/policies/data-seam.md:
   3. Answer it in data/indexeddb.ts (a store per kind of record).
   4. Reach it from screens through a hook in lib/${feature}/ (or the feature's store).
 Leave data/http.ts to engineering, and list the new methods under "Contract changes"
-in the PR.`);
+in the PR. For an older feature, move its data in a PR of its own, before feature work.`);
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

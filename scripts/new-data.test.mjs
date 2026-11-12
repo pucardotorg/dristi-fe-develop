@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 
-import { invalidFeatureName, LIB_DIR, pascalCase, renderDataFiles, writeDataFiles } from "./new-data.mjs";
+import { collidingDataModule, invalidFeatureName, LIB_DIR, pascalCase, renderDataFiles, writeDataFiles } from "./new-data.mjs";
 
 describe("new-data", () => {
   it("names the classes after the feature", () => {
@@ -14,6 +14,9 @@ describe("new-data", () => {
     assert.match(files["repository.ts"], /export interface HearingRemindersRepository \{/);
     assert.match(files["http.ts"], /class HttpHearingRemindersRepository implements Partial<HearingRemindersRepository> \{\}/);
     assert.match(files["indexeddb.ts"], /const DB_NAME = "dristi-hearing-reminders";/);
+    // A newer version left by another branch resets the demo database instead of failing.
+    assert.match(files["indexeddb.ts"], /error\.name === "VersionError"/);
+    assert.match(files["indexeddb.ts"], /await deleteDB\(DB_NAME\)/);
     assert.match(files["index.ts"], /repositoryFor<HearingRemindersRepository>\("hearing-reminders"/);
     assert.match(files["index.ts"], /satisfies OnlyContract</);
   });
@@ -46,6 +49,21 @@ describe("new-data", () => {
       assert.throws(() => writeDataFiles(root, "tasks"), /already has repository\.ts/);
       assert.equal(readFileSync(join(dir, "repository.ts"), "utf8"), "// mine");
       assert.equal(existsSync(join(dir, "http.ts")), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuses while an old lib/<feature>/data.ts would hide data/, and writes nothing", () => {
+    const root = mkdtempSync(join(tmpdir(), "new-data-"));
+    try {
+      const feature = join(root, LIB_DIR, "vakalatnama");
+      mkdirSync(feature, { recursive: true });
+      writeFileSync(join(feature, "data.ts"), "export const REGISTRIES = [];");
+      assert.equal(collidingDataModule(root, "vakalatnama"), join(LIB_DIR, "vakalatnama", "data.ts"));
+      assert.throws(() => writeDataFiles(root, "vakalatnama"), /data\.ts would hide the new data\/ folder/);
+      assert.equal(existsSync(join(feature, "data")), false);
+      assert.equal(collidingDataModule(root, "tasks"), undefined);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

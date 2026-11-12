@@ -32,7 +32,10 @@ verification evidence. Never require an archived proposal or its attributes tabl
    - every contract change is additive; anything else is listed under "Contract changes";
    - new data goes through the feature's repository: a feature that had no `data/` folder
      gained one from `npm run new:data`, nothing new was added to an old browser-storage
-     store, and lint reports no browser storage in `lib/` outside a sandbox;
+     store (`npm run check:data-moves`), and lint reports no browser storage in `lib/`
+     outside a sandbox;
+   - a data move (from `new:data --move`) adds no fields and no visual change, only
+     loading and error states, per its PR template;
    - contract methods take no signed-in person's id;
    - components used by more than one screen take data as props;
    - new and changed screens handle loading, empty, error and "not connected yet", and

@@ -71,7 +71,8 @@ Follow `.agents/policies/data-seam.md`. New data means the type, then the contra
 method, then the sandbox answer, then the screen. Contracts only grow, and never take the
 signed-in person's id. A new feature starts with `npm run new:data -- <feature>` in its
 own commit; an older one with no `lib/<feature>/data/` moves its data in a PR of its own
-first. Never add data to an old browser-storage store. Show "not connected yet" as
+first (`npm run new:data -- <feature> --move`, the data-move PR template). Never add data
+to an old browser-storage store: `npm run check:data-moves` fails if you do. Show "not connected yet" as
 itself (`isNotIntegratedError`), also when it comes from another feature you read.
 
 Fix required review findings and rerun affected checks; do not expand into unrelated

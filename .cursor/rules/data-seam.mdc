@@ -66,10 +66,14 @@ Two words used below:
    0. if the feature has no `data/` folder yet (most older features, such as vakalatnama,
       applications and employee, keep data in a store that writes to browser storage),
       first move its data in a PR of its own, merged before the feature work that needs
-      it. Run `npm run new:data -- <feature>` (if an old `lib/<feature>/data.ts` exists,
-      it asks you to rename that file first, in its own commit), and move behind the
-      contract only the records the coming change touches (a new field on a record moves
-      that whole record). The old store then reads and writes through `getRepository()`,
+      it. Start it with `npm run new:data -- <feature> --move` (add `--record <Type>` for
+      the standard list, put and delete): it starts a branch of its own from `main`,
+      writes the data layer, and takes the old `store.ts` off the lint exception list, so
+      lint shows what's left. If an old `lib/<feature>/data.ts` exists, it asks you to
+      rename that file first, in its own commit. Move behind the contract only the
+      records the coming change touches (a new field on a record moves that whole
+      record), and open the PR with the data-move template
+      (`.github/PULL_REQUEST_TEMPLATE/data-move.md`). The old store then reads and writes through `getRepository()`,
       keeping the API its screens already use: a synchronous store loads from the
       repository into memory, shows loading until then, and writes through in the
       background. That adds loading, load-failed and save-failed states to the feature's
@@ -77,7 +81,10 @@ Two words used below:
       edits collide with other people's screen changes. Old sandbox data in browser
       storage needn't be migrated; starting fresh is fine. In API mode the moved records
       then answer "not connected yet", as expected. Never add new data to an old
-      browser-storage store;
+      browser-storage store. CI holds both (`npm run check:data-moves`): while a
+      feature's `data/` isn't on `main`, its record types gain no fields or values, and an
+      old store on the exception list gains no lines except in its move. A genuine fix
+      that adds no data asks engineering for the `old-store-fix` label;
    a. add or extend the type in `types.ts`;
    b. add a method to `data/repository.ts`, with a one-line comment on what it returns.
       A method never takes the signed-in person's id: the backend knows who is asking,

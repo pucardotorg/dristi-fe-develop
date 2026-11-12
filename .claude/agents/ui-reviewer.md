@@ -22,7 +22,8 @@ Check the data rules in `.agents/policies/data-seam.md`: no screen imports fixtu
 seeds, sandbox code, `data/http` or `@/lib/api`, or uses browser storage for data
 (`npm run lint` reports these); every contract change is additive, and anything else is
 listed under "Contract changes"; new data goes through the feature's repository (a feature
-without `data/` gained one from `npm run new:data`, and no old browser-storage store grew);
+without `data/` gained one from `npm run new:data`, and no old browser-storage store grew:
+`npm run check:data-moves`); a data move changes nothing else (its PR template's checklist);
 contract methods take no signed-in person's id; shared components take data as props; new
 and changed screens handle loading, empty, error and "not connected yet", showing the last
 as itself, not as a failure to retry. A visual-only request added no new information.

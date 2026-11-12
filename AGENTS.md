@@ -84,7 +84,10 @@ A contract method that `http.ts` does not implement yet rejects with `NotIntegra
 - Every feature gets the same data layer: start it with `npm run new:data -- <feature>`.
   A feature that has no `data/` folder yet (vakalatnama, applications, employee …) moves
   its data in a PR of its own, merged before any new data is added: the move adds loading
-  and error states to its screens. Never add data to an old browser-storage store. A new
+  and error states to its screens. Start it with `npm run new:data -- <feature> --move`
+  and open it with the data-move PR template. Never add data to an old browser-storage
+  store. CI checks both (`npm run check:data-moves`); a genuine fix that adds no data gets
+  the `old-store-fix` label from engineering. A new
   feature reaches its repository through a hook in `lib/<feature>/`; a store comes only
   when several screens or tabs share live state. Lint rejects browser storage in `lib/`
   outside a sandbox; files that broke a lint rule before it existed are listed in

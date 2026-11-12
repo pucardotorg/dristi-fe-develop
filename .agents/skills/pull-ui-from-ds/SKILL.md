@@ -20,7 +20,8 @@ description: "Build or change Dristi UI using the pinned Pucar DS: inspect relev
 4. Get data through the feature's store, hook or `getRepository()`; add new data in the
    contract and the sandbox per `.agents/policies/data-seam.md`, never in the screen. A
    new feature starts with `npm run new:data -- <feature>` (its own commit); an older
-   feature with no `lib/<feature>/data/` moves its data in a PR of its own first.
+   feature with no `lib/<feature>/data/` moves its data in a PR of its own first
+   (`npm run new:data -- <feature> --move`; stop and report if that move isn't merged).
    Contract methods never take the signed-in person's id. Components below the screen
    take data and callbacks as props.
 5. Compose the agreed behavior in assigned app files. Include relevant loading, empty,

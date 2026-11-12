@@ -19,10 +19,15 @@ description: "Build or change Dristi UI using the pinned Pucar DS: inspect relev
    Coordinate shared sync operations. Never hand-write or modify a synced primitive.
 4. Get data through the feature's store, hook or `getRepository()`; add new data in the
    contract and the sandbox per `.agents/policies/data-seam.md`, never in the screen. A
-   feature with no `lib/<feature>/data/` gets one first (`npm run new:data -- <feature>`,
-   its own commit). Components below the screen take data and callbacks as props.
+   new feature starts with `npm run new:data -- <feature>` (its own commit); an older
+   feature with no `lib/<feature>/data/` moves its data in a PR of its own first.
+   Contract methods never take the signed-in person's id. Components below the screen
+   take data and callbacks as props.
 5. Compose the agreed behavior in assigned app files. Include relevant loading, empty,
-   errors, partial data, language/long-label, responsive, keyboard, and recovery states.
+   errors, "not connected yet" (shown as itself, `isNotIntegratedError`, also from
+   another feature the screen reads), partial data, language/long-label, responsive,
+   keyboard, and recovery states. A visual-only request adds no new information; suggest
+   additions instead.
    Trace displayed facts to current product sources or real fields; do not invent
    system actions or user roles. Historical proposals are not required inputs.
    Match each important region's DS text role to the finalized design or direct

@@ -13,6 +13,7 @@ verification evidence. Never require an archived proposal or its attributes tabl
    affected primitives. Reuse material already read for this state.
 2. Map acceptance criteria to the actual implementation. Look for missing behavior,
    incorrect action scope, unsupported system claims, and relevant failure/recovery states.
+   A visual-only request adds no new information.
 3. Review semantic tokens, typography, composition, labels, focus, keyboard access, touch,
    language/long-label behavior, and affected sibling consistency. Load the compact
    `ui-craft` checklist; select detailed references only when their subject applies.
@@ -32,8 +33,11 @@ verification evidence. Never require an archived proposal or its attributes tabl
    - new data goes through the feature's repository: a feature that had no `data/` folder
      gained one from `npm run new:data`, nothing new was added to an old browser-storage
      store, and lint reports no browser storage in `lib/` outside a sandbox;
+   - contract methods take no signed-in person's id;
    - components used by more than one screen take data as props;
-   - new and changed screens handle loading, empty, error and "not connected yet".
+   - new and changed screens handle loading, empty, error and "not connected yet", and
+     show the last as itself (not a failure to retry), also when it comes from another
+     feature the screen reads.
 5. Follow `.agents/policies/verification.md` for check evidence and render coverage.
    Reuse valid checks for the exact state, but inspect independently. If read-only
    browser/screenshot tools are available, capture the assigned screens yourself from

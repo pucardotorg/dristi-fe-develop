@@ -18,8 +18,8 @@ Each feature keeps its data under `apps/dristi-app/src/lib/<feature>/`:
 | --- | --- | --- |
 | `types.ts` | What screens show: app shapes, not backend shapes | shared |
 | `data/repository.ts` | The contract: every read and write a screen may do | shared, only grows |
-| `data/indexeddb.ts` or `data/sandbox.ts` | The sandbox: IndexedDB, localStorage, fixtures, seeding, reset. Answers every contract method | design (yours) |
-| `data/http.ts` | The backend implementation | engineering; never edit |
+| `data/indexeddb.ts` or `data/sandbox.ts` | The sandbox: IndexedDB, localStorage, fixtures, seeding, reset. Answers every contract method | design (yours); when engineering adds a contract method, it answers it here in the same PR and you review that part |
+| `data/http.ts` | The backend implementation: only methods whose endpoint exists | engineering; never edit |
 | `data/index.ts` | Picks one by the data source (`repositoryFor`) | shared; don't edit once it exists |
 | Everything else in `lib/<feature>/` | Domain logic, the store, hooks, `content.ts`, tests, README | shared: either team adds; changes to someone else's logic go in their own commit |
 
@@ -52,23 +52,32 @@ Two words used below:
    `*-dummy.json`, `demo-*`) are on you. In `lib/`, lint also rejects browser storage and
    `idb` outside a feature's `data/indexeddb.ts` or `data/sandbox.ts`. Files that broke
    these rules before they existed are listed in `apps/dristi-app/eslint.config.mjs` and
-   come off the list when they are fixed.
+   come off the list when they are fixed. The lists only shrink: CI fails a PR that adds
+   a file to one (`npm run check:lint-exceptions`).
    Prefer that a screen (a route's page or its `*-screen.tsx`) reads the store, hook or
    `getRepository()`, and that the components it renders take data and callbacks as
    props: a component used by more than one screen must, so it works with any source.
 2. When a screen needs data that does not exist yet:
    0. if the feature has no `data/` folder yet (most older features, such as vakalatnama,
       applications and employee, keep data in a store that writes to browser storage),
-      first run `npm run new:data -- <feature>` in its own commit, and move behind the
-      contract only the records your change touches (a new field on a record moves that
-      whole record). The old store then reads and writes through `getRepository()`,
+      first move its data in a PR of its own, merged before the feature work that needs
+      it. Run `npm run new:data -- <feature>` (if an old `lib/<feature>/data.ts` exists,
+      it asks you to rename that file first, in its own commit), and move behind the
+      contract only the records the coming change touches (a new field on a record moves
+      that whole record). The old store then reads and writes through `getRepository()`,
       keeping the API its screens already use: a synchronous store loads from the
       repository into memory, shows loading until then, and writes through in the
-      background. Old sandbox data in browser storage needn't be migrated; starting
-      fresh is fine. In API mode the moved records then answer "not connected yet", as
-      expected. Never add new data to an old browser-storage store;
+      background. That adds loading, load-failed and save-failed states to the feature's
+      screens, which is why the move goes first and alone: mixed into feature work, those
+      edits collide with other people's screen changes. Old sandbox data in browser
+      storage needn't be migrated; starting fresh is fine. In API mode the moved records
+      then answer "not connected yet", as expected. Never add new data to an old
+      browser-storage store;
    a. add or extend the type in `types.ts`;
-   b. add a method to `data/repository.ts`, with a one-line comment on what it returns;
+   b. add a method to `data/repository.ts`, with a one-line comment on what it returns.
+      A method never takes the signed-in person's id: the backend knows who is asking,
+      and the sandbox reads its own current user (as tasks' `getCurrentUserId` does).
+      Pass a person's id only when it names someone else;
    c. answer it in the sandbox, from fixtures or IndexedDB;
    d. call it from the screen through the store, hook or `getRepository()`. Data the
       feature's store already holds (for tasks: tasks, people, cases) changes only through
@@ -94,8 +103,14 @@ Two words used below:
    `@/lib/data/source`).
 5. Make the sandbox behave like a server: every method is async, can fail, and validates
    the way the backend will. Every screen shows loading, empty, error and "not connected
-   yet" states. The sandbox file's header says whether its data survives a reload (the
-   default from `npm run new:data`) or reseeds (tasks does, on every page load). If new data needs a product rule nobody has decided (who can see it, a
+   yet" states. Show "not connected yet" as itself, never as a failure with "Try
+   again": `isNotIntegratedError(error)` from `@/lib/data/source` tells them apart. That
+   holds when the method belongs to another feature the screen reads from (hearing
+   reminders read hearings from tasks); the feature's `README.md` lists the features it
+   reads from. The sandbox file's header says whether its data survives a reload (the
+   default from `npm run new:data`, which also starts over if another branch left a newer
+   database version) or reseeds (tasks does, on every page load). If new data needs a
+   product rule nobody has decided (who can see it, a
    limit, how long it is kept), choose the smallest reasonable one, say so in the PR and
    add it to `docs/product/open-questions.md`. Copy never promises privacy, security or a
    system action the backend does not provide yet.
@@ -104,3 +119,8 @@ Two words used below:
    `apps/dristi-app/src/lib/data/`, `apps/dristi-app/src/app/api/v1/`, any
    `data/http.ts` (beyond the empty one `npm run new:data` creates),
    `apps/dristi-app/src/lib/auth/http.ts`, `docker/` and `.github/`.
+7. What engineering does, so you know what to expect in review: it implements a method in
+   `http.ts` only against an endpoint the backend has, never a guessed one, and never
+   turns a missing endpoint into an empty answer, so the screen keeps saying "not
+   connected yet". When it adds a contract method, it answers it in the sandbox in the
+   same PR (the type check requires it), and you review that part.

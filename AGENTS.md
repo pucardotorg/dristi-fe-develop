@@ -75,14 +75,25 @@ A contract method that `http.ts` does not implement yet rejects with `NotIntegra
   `fixtures`, `data/indexeddb`, `data/sandbox`, `data/http`, `lib/api` and `lib/server`, and
   browser storage; other demo modules (such as `party-cases`, `*-dummy.json`) are on you.
 - Engineering connects a feature by adding methods to its `http.ts`, never by editing a
-  screen. When the backend behaves differently from the sandbox, update the sandbox too.
+  screen, and only against an endpoint the backend has. Until then the method stays out,
+  so it answers "not connected yet": never a guessed URL, and never a missing endpoint
+  turned into an empty result. A contract method engineering adds gets its sandbox answer
+  in the same PR, which design reviews. When the backend behaves differently from the
+  sandbox, update the sandbox too.
 - Design adds data by extending the contract and the sandbox, never `http.ts`.
 - Every feature gets the same data layer: start it with `npm run new:data -- <feature>`.
-  A feature that has no `data/` folder yet (vakalatnama, applications, employee …) gets
-  one, in its own commit, before any new data is added; never add data to its old
-  browser-storage store. A new feature reaches its repository through a hook in
-  `lib/<feature>/`; a store comes only when several screens or tabs share live state.
-  Lint rejects browser storage in `lib/` outside a sandbox.
+  A feature that has no `data/` folder yet (vakalatnama, applications, employee …) moves
+  its data in a PR of its own, merged before any new data is added: the move adds loading
+  and error states to its screens. Never add data to an old browser-storage store. A new
+  feature reaches its repository through a hook in `lib/<feature>/`; a store comes only
+  when several screens or tabs share live state. Lint rejects browser storage in `lib/`
+  outside a sandbox; files that broke a lint rule before it existed are listed in
+  `eslint.config.mjs`, and CI fails a PR that adds one (the lists only shrink).
+- A contract method never takes the signed-in person's id: the backend knows who is
+  asking. Pass an id only for someone else.
+- Screens show "not connected yet" as itself, never as a failure to retry
+  (`isNotIntegratedError` from `@/lib/data/source`), including when it comes from another
+  feature they read from; a feature's README lists the features it reads from.
 - Data is anything the backend will keep or someone else should see; it goes through a
   repository. A UI preference only changes this browser's view and uses
   `useLocalStorageValue`.

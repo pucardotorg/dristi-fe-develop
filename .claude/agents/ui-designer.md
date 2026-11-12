@@ -32,6 +32,9 @@ Implement the interactions and relevant states, not just the happy-path appearan
 loading, empty, errors, partial data, long labels/local languages, keyboard operation,
 responsive layouts, and recovery from consequential actions. Match established patterns.
 Copy must not imply a notice was sent or a legal/system action occurred without support.
+A visual-only request (layout, spacing, hierarchy, how something reads) changes how the
+existing information appears; it adds no new fields, lines or data. Suggest additions in
+your report instead.
 
 Make routine implementation choices independently. If agreed behavior cannot be expressed
 with the DS or conflicts with a real API, recommend the smallest supported adjustment
@@ -65,9 +68,11 @@ need them, stop and say so in your report.
 ## Data
 
 Follow `.agents/policies/data-seam.md`. New data means the type, then the contract
-method, then the sandbox answer, then the screen. Contracts only grow. A new feature, or
-an older one with no `lib/<feature>/data/`, starts with `npm run new:data -- <feature>`
-in its own commit; never add data to an old browser-storage store.
+method, then the sandbox answer, then the screen. Contracts only grow, and never take the
+signed-in person's id. A new feature starts with `npm run new:data -- <feature>` in its
+own commit; an older one with no `lib/<feature>/data/` moves its data in a PR of its own
+first. Never add data to an old browser-storage store. Show "not connected yet" as
+itself (`isNotIntegratedError`), also when it comes from another feature you read.
 
 Fix required review findings and rerun affected checks; do not expand into unrelated
 polish. Return decision changes and implementation status for the owner's history, which

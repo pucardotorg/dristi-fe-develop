@@ -8,7 +8,8 @@
 *                                                   @pucardotorg/frontend @pucardotorg/design
 
 # Design: screens, copy, the sandbox and its demo data, the demo-server routes and the
-# agent layer.
+# agent layer. When engineering adds a contract method, it answers it in the sandbox in
+# the same PR, so design reviews that part.
 /apps/dristi-app/src/components/                    @pucardotorg/design
 /apps/dristi-app/src/app/                           @pucardotorg/design
 /apps/dristi-app/src/provakil/                      @pucardotorg/design
@@ -39,10 +40,11 @@
 /apps/dristi-app/src/lib/api/                       @pucardotorg/frontend
 /apps/dristi-app/src/lib/server/                    @pucardotorg/frontend
 /apps/dristi-app/src/lib/data/                      @pucardotorg/frontend
-/apps/dristi-app/src/lib/**/data/http.ts            @pucardotorg/frontend
-/apps/dristi-app/src/lib/auth/http.ts               @pucardotorg/frontend
+/apps/dristi-app/src/lib/**/data/http*.ts           @pucardotorg/frontend
+/apps/dristi-app/src/lib/auth/http*.ts              @pucardotorg/frontend
 /apps/dristi-app/scripts/copy-runtime-assets.mjs    @pucardotorg/frontend
 /apps/dristi-app/eslint.config.mjs                  @pucardotorg/frontend
+/scripts/check-lint-exceptions*.mjs                 @pucardotorg/frontend
 /apps/dristi-app/next.config.ts                     @pucardotorg/frontend
 /docker/                                            @pucardotorg/frontend
 /.github/                                           @pucardotorg/frontend

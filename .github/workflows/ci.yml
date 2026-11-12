@@ -1,7 +1,8 @@
 name: CI
 
 # Required checks for every pull request into main (set them as required in branch
-# protection): lint, types, tests, agent rails and a production build.
+# protection): lint, types, tests, agent rails and a production build. The checks
+# against the base branch's data rules run in data-rules.yml.
 on:
   pull_request:
   push:
@@ -32,15 +33,6 @@ jobs:
 
       - name: Lint
         run: npm run lint
-
-      # Files excused from the data lint rules come off their lists; none is added.
-      - name: Lint exceptions only shrink
-        if: github.event_name == 'pull_request'
-        run: |
-          git fetch --no-tags --depth=1 origin "$BASE_REF"
-          npm run check:lint-exceptions -- FETCH_HEAD
-        env:
-          BASE_REF: ${{ github.base_ref }}
 
       - name: Type check
         run: npm run typecheck

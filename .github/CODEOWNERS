@@ -45,6 +45,7 @@
 /apps/dristi-app/scripts/copy-runtime-assets.mjs    @pucardotorg/frontend
 /apps/dristi-app/eslint.config.mjs                  @pucardotorg/frontend
 /scripts/check-lint-exceptions*.mjs                 @pucardotorg/frontend
+/scripts/check-data-moves*.mjs                      @pucardotorg/frontend
 /apps/dristi-app/next.config.ts                     @pucardotorg/frontend
 /docker/                                            @pucardotorg/frontend
 /.github/                                           @pucardotorg/frontend

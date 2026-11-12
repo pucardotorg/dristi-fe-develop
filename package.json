@@ -27,6 +27,7 @@
     "test:rails": "node --test \"scripts/*.test.mjs\"",
     "new:data": "node scripts/new-data.mjs",
     "check:lint-exceptions": "node scripts/check-lint-exceptions.mjs",
+    "check:data-moves": "node scripts/check-data-moves.mjs",
     "verify:agents": "node scripts/verify-agent-work.mjs agents",
     "verify:ui": "node scripts/verify-agent-work.mjs ui"
   }

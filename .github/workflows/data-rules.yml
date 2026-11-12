@@ -1,0 +1,46 @@
+name: Data rules
+
+# Checks a pull request against the base branch's data rules. It reruns when labels
+# change, because the "old-store-fix" label lets a genuine fix through check:data-moves.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-rules-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  data-rules:
+    runs-on: ubuntu-latest
+    env:
+      BASE_REF: ${{ github.base_ref }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # check:data-moves reads type shapes with TypeScript.
+      - name: Install
+        run: npm ci
+
+      - name: Fetch the base branch
+        run: git fetch --no-tags --depth=1 origin "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF"
+
+      # Files excused from the data lint rules come off their lists; none is added.
+      - name: Lint exceptions only shrink
+        run: npm run check:lint-exceptions -- "origin/$BASE_REF"
+
+      # An older feature moves its data first, in a PR of its own (data-seam.md rule 2.0).
+      - name: Data moves come first
+        run: npm run check:data-moves -- "origin/$BASE_REF"
+        env:
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}

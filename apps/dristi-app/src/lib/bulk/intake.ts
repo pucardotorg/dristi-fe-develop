@@ -176,6 +176,8 @@ async function buildDraft(
             ? await Promise.all((a.personsResponsible ?? []).map(representative))
             : [],
         jurisdiction: inside ? "yes" : "no",
+        // Bulk keeps this declaration on the batch case (`noContactDeclared`).
+        contactUnknownDeclaredAt: null,
       };
     })
   );
@@ -199,8 +201,6 @@ async function buildDraft(
         presentDate: trim(q.presentedOn),
         returnDate: trim(q.returnedOn),
         returnReason: trim(q.returnReason),
-        prefilled: {},
-        edited: {},
         ifscFetched: !!bank,
       };
     })
@@ -228,8 +228,6 @@ async function buildDraft(
       nonDeliveryReason: delivered === "no" ? trim(n.nonDeliveryReason) : "",
       paymentStatus: n.payment.status,
       partAmount: n.payment.status === "part" ? rupees(n.payment.amount) : "",
-      prefilled: {},
-      edited: {},
     };
   });
 

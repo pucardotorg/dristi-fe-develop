@@ -1,0 +1,4 @@
+node_modules
+.next
+apps/dristi-app/public/vendor
+package-lock.json

@@ -111,7 +111,14 @@ export class SandboxAuthService implements AuthService {
   async getCurrentAccount(): Promise<CurrentAccount> {
     const account = this.sessionMobile ? DEMO_ACCOUNTS[this.sessionMobile] : undefined;
     if (!account) throw new AuthError("session-expired");
-    return { role: account.role, name: account.name, hasCurrentTerms: true };
+    return {
+      role: account.role,
+      name: account.name,
+      mobile: this.sessionMobile ?? "",
+      email: null,
+      barNumber: null,
+      hasCurrentTerms: true,
+    };
   }
 
   async completeRegistration(

@@ -1,7 +1,10 @@
 /** Derived reads over the draft — pure functions so screens and the shell agree. */
 
+import { isIndianMobile, toNationalMobile } from "@/lib/auth/mobile";
 import { signingRules } from "./config";
+import { mobileFieldCopy } from "./content";
 import { addDays, addMonths, addressToString, daysBetween, nameList, toLongDate, todayIso } from "./format";
+import { CHEQUE_NUMBER_PATTERN } from "./lookups";
 import { KERALA_FEES, type FeeSchedule } from "@/lib/court/fees";
 import {
   CHANNEL_FEE,
@@ -13,6 +16,7 @@ import { WALK_ORDER } from "./steps";
 import type {
   Accused,
   Advocate,
+  CaseDocument,
   ChequeDetails,
   Complainant,
   DemandNotice,
@@ -20,6 +24,7 @@ import type {
   DocumentGroup,
   FilingDraft,
   Intake,
+  IntakeGroup,
   IntakeSlot,
   PhoneConfirmer,
   SignInstrument,
@@ -44,6 +49,45 @@ export function findIntakeSlot(intake: Intake, key: string): IntakeSlot | undefi
   return intakeSlots(intake).find((s) => s.key === key);
 }
 
+/** The slot a list-of-documents row mirrors. Keys gain a "-2" suffix after a remove/add. */
+export function resolveIntakeSlot(intake: Intake, key: string): IntakeSlot | undefined {
+  const slots = intakeSlots(intake);
+  return slots.find((s) => s.key === key) ?? slots.find((s) => s.key.startsWith(`${key}-`));
+}
+
+export function findDocumentRow(groups: DocumentGroup[], id: string): CaseDocument | undefined {
+  for (const group of groups) {
+    const row = group.docs.find((d) => d.id === id);
+    if (row) return row;
+  }
+  return undefined;
+}
+
+/**
+ * The list-of-documents row that mirrors an intake slot, if the list shows that slot.
+ * Exact: rows carry their slot's own key, and a prefix would read `c2f`'s row for `c2f-2`.
+ */
+export function rowForSlot(groups: DocumentGroup[], slotKey: string): CaseDocument | undefined {
+  for (const group of groups) {
+    const row = group.docs.find((d) => d.intakeKey === slotKey);
+    if (row) return row;
+  }
+  return undefined;
+}
+
+/**
+ * The list-of-documents group that holds a party's rows, found by the party's slot keys.
+ * Those stay with the party when one before it is removed; the group's id is its
+ * position (`complainant-2`), which does not.
+ */
+export function documentGroupForParty(
+  groups: DocumentGroup[],
+  party: IntakeGroup
+): DocumentGroup | undefined {
+  const keys = new Set(party.slots.map((s) => s.key));
+  return groups.find((g) => g.docs.some((d) => !!d.intakeKey && keys.has(d.intakeKey)));
+}
+
 /** Required-document progress for the intake step (supporting docs are optional). */
 export function intakeProgress(intake: Intake) {
   const required = [
@@ -61,11 +105,6 @@ export function intakeProgress(intake: Intake) {
 /** Files already uploaded at intake — feeds the sidebar count and the documents drawer. */
 export function uploadedIntakeSlots(intake: Intake): IntakeSlot[] {
   return intakeSlots(intake).filter((s) => !!s.file);
-}
-
-/** How many fields document reading filled from this slot. */
-export function extractedFieldCount(slot: IntakeSlot): number {
-  return slot.extract ? Object.keys(slot.extract.fields).length : 0;
 }
 
 /* ───────────────────────────── Parties ─────────────────────────────── */
@@ -154,10 +193,18 @@ export function accusedHasContact(a: Accused): boolean {
   return a.contacts.some((c) => c.mobile.trim() || c.email.trim());
 }
 
+/** The filer's no-contact declaration, which lapses once a phone or email is added. */
+export function accusedContactUnknownDeclared(a: Accused): boolean {
+  return !!a.contactUnknownDeclaredAt && !accusedHasContact(a);
+}
+
 export function complainantComplete(c: Complainant): boolean {
-  const named = c.type === "institution" ? !!c.entName.trim() : !!c.name.trim();
-  const addr = c.type === "institution" ? c.entAddr : c.res;
-  return named && !!c.mobile.trim() && !!addr.line1.trim() && cinPanAnswered(c);
+  const institution = c.type === "institution";
+  const named = institution ? !!c.entName.trim() : !!c.name.trim();
+  // An institution is reached through its representative; the form asks for no `mobile`.
+  const mobile = institution ? c.rep.mobile : c.mobile;
+  const addr = institution ? c.entAddr : c.res;
+  return named && !!mobile.trim() && !!addr.line1.trim() && cinPanAnswered(c);
 }
 
 /* ───────────────────────────── Case details ────────────────────────── */
@@ -214,12 +261,38 @@ export function chequeReturnIssue(c: ChequeDetails): string | undefined {
   return "Cannot be before the date of presentation.";
 }
 
+/**
+ * What is wrong with the cheque number, if anything: it must be exactly six digits (the
+ * backend enforces the same, so a longer or non-numeric value silently fails to save). An
+ * empty field is "incomplete", not a format error, so it reports nothing.
+ */
+export function chequeNumberIssue(c: ChequeDetails): string | undefined {
+  const number = c.chequeNumber.trim();
+  if (!number) return undefined;
+  if (!CHEQUE_NUMBER_PATTERN.test(number)) return "Enter the six-digit cheque number (digits only).";
+  return undefined;
+}
+
+/**
+ * What is wrong with a typed mobile number, if anything: the backend refuses anything but
+ * 10 digits starting 6–9. An empty field is "incomplete", not a format error.
+ */
+export function mobileIssue(value: string): string | undefined {
+  const national = toNationalMobile(value);
+  if (!national) return undefined;
+  return isIndianMobile(national) ? undefined : mobileFieldCopy.invalid;
+}
+
 export function noticeComplete(n: DemandNotice): boolean {
   return !!(n.natureDebt && n.dispatchDate && n.modeService);
 }
 
 export function witnessComplete(w: Witness): boolean {
-  return !!(w.fullName.trim() || w.designation.trim());
+  const named = !!(w.fullName.trim() || w.designation.trim());
+  // A witness now needs an address for service, with a police station (dristi-be spec 0020 §4.2).
+  // Their mobile number is optional.
+  const hasAddress = w.addresses.some((b) => b.addr.line1.trim() && b.police.trim());
+  return named && hasAddress;
 }
 
 /** Sum of cheque amounts typed so far (digits only), or 0. */
@@ -544,7 +617,8 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
     case "advocate":
       return (
         draft.complainants.every((c) => c.pip === "yes") ||
-        draft.advocates.some((a) => a.barNumber.trim() && a.name.trim())
+        // Found through the search: only that gives the id that puts them on the case.
+        draft.advocates.some((a) => a.advocateId && a.barNumber.trim() && a.name.trim())
       );
     case "accused":
       return draft.accused.length > 0 && draft.accused.every(accusedComplete);
@@ -571,9 +645,14 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
     case "adr-prayer":
       return !!draft.adr.finalRelief.trim();
     case "witnesses":
-      return true; // optional
+      // Optional — zero witnesses is fine — but any witness added must be complete.
+      return draft.witnesses.every(witnessComplete);
     case "documents":
       return documentsProgress(draft.documents).remaining === 0;
+    case "affidavit":
+      // Always composed from the case (the filer may edit it), so it is complete by
+      // default; `sectionState` still holds the tick back until the step has been opened.
+      return true;
     case "preview":
       return WALK_ORDER.filter((s) => s !== "preview" && s !== "sign").every((s) =>
         sectionComplete(draft, s)
@@ -663,24 +742,6 @@ export function partySourceSlot(
   return draft.intake.parties[index]?.slots.find((s) => s.docType === docType);
 }
 
-/**
- * Which field the source panel should land on for a document: the first one, in the
- * screen's own order, that reading actually found a value for.
- *
- * Landing on a fixed field instead means the panel can open on something nothing was read
- * for — an empty "value used in this field" box beside a document with no region marked,
- * which reads as a broken panel rather than as "we didn't find this one".
- */
-export function firstReadField<T extends string>(
-  slot: IntakeSlot | undefined,
-  order: readonly T[],
-  fallback: T
-): T {
-  const fields = slot?.extract?.fields;
-  if (!fields) return fallback;
-  return order.find((key) => fields[key]?.value) ?? fallback;
-}
-
 /* ───────────────────────────── Court fees ──────────────────────────── */
 
 export type BilledLine = {
@@ -721,8 +782,8 @@ export type FeeBill = {
  * warning can never disagree.
  */
 export function isDelayed(draft: FilingDraft): boolean {
-  const { elapsed } = limitationView(draft);
-  return elapsed !== null && elapsed > LIMITATION_DAYS;
+  const { elapsed, withinLimit } = limitationView(draft);
+  return elapsed !== null && !withinLimit;
 }
 
 /** One address of one accused, as the choosing screen and the bill both need it. */
@@ -939,8 +1000,15 @@ export function feeBill(
 
 /** Days the drawer has to pay after the demand notice reaches them. */
 export const PAYMENT_WINDOW_DAYS = 15;
-/** Days from the cause of action within which the complaint must be filed. */
-export const LIMITATION_DAYS = 30;
+/**
+ * The last day to file without condonation: one calendar month after the cause of action
+ * (NI Act §142(1)(b)) — the same date next month, or that month's last day when it is
+ * shorter (31 January gives 28 or 29 February). The backend applies the same rule
+ * (dristi-be `limitation_deadline`) and refuses a later filing without a reason.
+ */
+export function limitationDeadline(causeDate: ISODate): ISODate {
+  return addMonths(causeDate, 1);
+}
 /** Days from the cheque's return within which the demand notice must be sent. */
 export const NOTICE_WINDOW_DAYS = 30;
 
@@ -1059,12 +1127,13 @@ export function limitationView(draft: FilingDraft): LimitationView {
       : undefined;
   // With either date wrong there is no delay to count; the error says what is wrong.
   const elapsed = filingIssue || causeIssue ? null : daysBetween(causeDate, filingDate);
+  const overBy = elapsed === null ? null : daysBetween(limitationDeadline(causeDate), filingDate);
   return {
     causeDate,
     filingDate,
     elapsed,
-    withinLimit: elapsed !== null && elapsed <= LIMITATION_DAYS,
-    overBy: elapsed === null ? 0 : Math.max(0, elapsed - LIMITATION_DAYS),
+    withinLimit: overBy !== null && overBy <= 0,
+    overBy: overBy === null ? 0 : Math.max(0, overBy),
     causeDerived: !draft.jurisdiction.causeDate && !!causeDate,
     derivedCause,
     causeIssue,

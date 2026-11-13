@@ -49,6 +49,14 @@ export function missingDocs(m: Matter): string[] {
   return REQUIRED_TAGS.filter((t) => !m.documents.some((d) => d.tag === t));
 }
 
+type MattersResponse = { matters: Row[]; courtReachable: boolean; courtUrl: string };
+
+async function fetchMatters(): Promise<MattersResponse> {
+  const res = await provakilFetch("/api/matters", { cache: "no-store" });
+  if (!res.ok) throw new Error(`Matters failed to load (${res.status}).`);
+  return res.json();
+}
+
 export function CasesScreen() {
   const [rows, setRows] = React.useState<Row[] | null>(null);
   const [reachable, setReachable] = React.useState(true);
@@ -65,19 +73,45 @@ export function CasesScreen() {
   const [page, setPage] = React.useState(0);
   const PAGE = 50;
 
-  const load = React.useCallback(async () => {
-    const res = await provakilFetch("/api/matters", { cache: "no-store" });
-    const json = await res.json();
+  const [loadFailed, setLoadFailed] = React.useState(false);
+
+  const show = React.useCallback((json: MattersResponse) => {
     setRows(json.matters);
     setReachable(json.courtReachable);
     setCourtUrl(json.courtUrl);
+    setLoadFailed(false);
   }, []);
 
-  React.useEffect(() => {
-    void load();
-  }, [load]);
+  const fail = React.useCallback((error: unknown) => {
+    console.warn("[provakil] couldn't load matters", error);
+    setLoadFailed(true);
+  }, []);
 
-  const all = rows ?? [];
+  const load = React.useCallback(async () => {
+    try {
+      show(await fetchMatters());
+    } catch (error) {
+      fail(error);
+    }
+  }, [show, fail]);
+
+  React.useEffect(() => {
+    // A response that lands after the screen has gone is dropped.
+    let live = true;
+    fetchMatters().then(
+      (json) => {
+        if (live) show(json);
+      },
+      (error: unknown) => {
+        if (live) fail(error);
+      }
+    );
+    return () => {
+      live = false;
+    };
+  }, [show, fail]);
+
+  const all = React.useMemo(() => rows ?? [], [rows]);
   const counts = React.useMemo(() => {
     const c: Record<string, number> = { All: all.length };
     for (const r of all) c[r.stage] = (c[r.stage] ?? 0) + 1;
@@ -290,7 +324,16 @@ export function CasesScreen() {
               </tr>
             </thead>
             <tbody>
-              {rows === null ? (
+              {rows === null && loadFailed ? (
+                <tr>
+                  <td colSpan={12} className="px-3 py-10 text-center text-(--pv-muted)" role="alert">
+                    Cases couldn&apos;t be loaded.{" "}
+                    <button type="button" className="text-(--pv-blue) underline" onClick={() => void load()}>
+                      Try again
+                    </button>
+                  </td>
+                </tr>
+              ) : rows === null ? (
                 <tr>
                   <td colSpan={12} className="px-3 py-10 text-center text-(--pv-muted)">
                     Loading cases…
@@ -431,7 +474,7 @@ export function CasesScreen() {
         </div>
       ) : null}
 
-      <MatterDrawer row={open} onClose={() => setOpen(null)} />
+      <MatterDrawer key={open?.id} row={open} onClose={() => setOpen(null)} />
       <AssignDialog
         open={assigning}
         rows={chosen}

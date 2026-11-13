@@ -20,12 +20,12 @@ import type { CaseRecord } from "@/lib/cases/types";
 import type { Case as TaskCase, Task } from "@/lib/tasks/types";
 import { fixHref } from "@/lib/tasks/routes";
 
-import { addDays, daysBetween, money, toDisplayDate } from "./format";
+import { daysBetween, money, toDisplayDate } from "./format";
 import {
   draftTitle,
   feeBill,
+  limitationDeadline,
   limitationView,
-  LIMITATION_DAYS,
   isOutstanding,
   signatories,
   signingComplete,
@@ -240,7 +240,7 @@ export function draftClock(draft: FilingDraft): {
     return { lead: NO_DEADLINE, sub: "Notice dates not entered yet", tone: "default", dueOn: "" };
   }
 
-  const dueOn = addDays(lim.causeDate, LIMITATION_DAYS);
+  const dueOn = limitationDeadline(lim.causeDate);
   const left = daysBetween(lim.filingDate, dueOn);
   if (left === null) {
     return { lead: NO_DEADLINE, sub: "Notice dates not entered yet", tone: "default", dueOn: "" };

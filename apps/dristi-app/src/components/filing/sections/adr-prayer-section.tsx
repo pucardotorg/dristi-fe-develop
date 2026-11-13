@@ -13,9 +13,12 @@
  */
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 
+import { adrPrayerDetails } from "@/lib/filing/details";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
+import { useDetailsSection } from "@/lib/filing/use-details-section";
 import type { AdrPrayer } from "@/lib/filing/types";
 import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
@@ -38,17 +41,31 @@ const ADR_QUESTION =
 const OTHER_DETAILS_QUESTION =
   "Would you like to add any additional details to the complaint?";
 
-const RELIEF_HELP = "Please edit this where required as per the details of the case.";
+const RELIEF_HELP =
+  "Please edit this where required as per the details of the case.";
 
 export function AdrPrayerSection() {
   const { draft, update, hrefFor } = useFiling();
   const adr = draft.adr;
   const { prev, next } = neighbours("adr-prayer");
+  const router = useRouter();
+  const { save, saving, error } = useDetailsSection(
+    "adr_other_prayer",
+    adrPrayerDetails,
+  );
 
   const set = <K extends keyof AdrPrayer>(key: K, value: AdrPrayer[K]) =>
     update((d) => {
       d.adr[key] = value;
     });
+
+  /* Save the section to the case, then move on. A save failure keeps the filer here with
+     the reason, so the data loss is visible. */
+  const continueHref = next ? hrefFor(next) : undefined;
+  const handleContinue = async () => {
+    const result = await save();
+    if (result.ok && continueHref) router.push(continueHref);
+  };
 
   return (
     <>
@@ -99,14 +116,25 @@ export function AdrPrayerSection() {
           title="Prayer / relief sought"
           description="The standard S-138 prayer. Edit to fit the case."
         >
-          <FormField asGroup label="Interim relief" optional helpPlacement="above" help={RELIEF_HELP}>
+          <FormField
+            asGroup
+            label="Interim relief"
+            optional
+            helpPlacement="above"
+            help={RELIEF_HELP}
+          >
             <RichTextEditor
               value={adr.interimRelief}
               onChange={(html) => set("interimRelief", html)}
               ariaLabel="Interim relief"
             />
           </FormField>
-          <FormField asGroup label="Final relief" helpPlacement="above" help={RELIEF_HELP}>
+          <FormField
+            asGroup
+            label="Final relief"
+            helpPlacement="above"
+            help={RELIEF_HELP}
+          >
             <RichTextEditor
               value={adr.finalRelief}
               onChange={(html) => set("finalRelief", html)}
@@ -118,7 +146,9 @@ export function AdrPrayerSection() {
 
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        continueHref={next ? hrefFor(next) : undefined}
+        onContinue={continueHref ? handleContinue : undefined}
+        continueDisabled={saving}
+        continueLabel={saving ? "Saving…" : "Continue"}
       />
     </>
   );

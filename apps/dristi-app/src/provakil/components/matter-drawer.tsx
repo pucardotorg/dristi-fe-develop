@@ -19,10 +19,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-/** One matter, as the case workspace shows it. */
+/** One matter, as the case workspace shows it. Keyed by matter, so each opens on Overview. */
 export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () => void }) {
   const [tab, setTab] = React.useState<(typeof TABS)[number]>("Overview");
-  React.useEffect(() => setTab("Overview"), [row?.id]);
   if (!row) return null;
   const m = row;
   const b = m.borrower;

@@ -138,7 +138,7 @@ import {
 import { useSessionValue } from "@/lib/cases/demo-session";
 import { useOptionalCaseBail } from "@/components/cases/case-bail-flow";
 import { useCaseReader } from "@/components/cases/case-reader";
-import { BOND_ID, BOND_LITIGANT, BOND_SUBMITTED_ON } from "@/lib/filing/content";
+import { BOND_ID, BOND_LITIGANT, BOND_SUBMITTED_ON } from "@/lib/bail/content";
 import { localFileSrc } from "@/components/cases/pdf-viewer";
 import {
   groupActions,

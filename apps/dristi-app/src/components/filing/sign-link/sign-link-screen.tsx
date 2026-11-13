@@ -294,7 +294,6 @@ function SignLinkBody({
         }}
         onSignedIn={finishSignIn}
         onRegistered={finishSignIn}
-        toSign
       />
     );
   }

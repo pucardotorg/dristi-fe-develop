@@ -15,7 +15,7 @@
 import type { FilingRepository, StoredFile } from "@/lib/filing/data";
 import { IndexedDbFilingRepository } from "@/lib/filing/data/indexeddb";
 import { bulkFetch } from "@/components/bulk/api";
-import type { FilingDraft, UserProfile } from "@/lib/filing/types";
+import type { FilingDraft } from "@/lib/filing/types";
 
 /** Window event after a case is saved; `detail` is the case id. */
 export const BULK_CASE_SAVED = "bulk-case-saved";
@@ -92,14 +92,4 @@ export class BulkCaseRepository implements FilingRepository {
   async deleteFile(): Promise<void> {}
 
   async deleteFiles(): Promise<void> {}
-
-  /* Profile: the person at the keyboard, as everywhere else. */
-
-  getProfile(): Promise<UserProfile | null> {
-    return this.local.getProfile();
-  }
-
-  putProfile(profile: UserProfile): Promise<void> {
-    return this.local.putProfile(profile);
-  }
 }

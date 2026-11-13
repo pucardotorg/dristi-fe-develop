@@ -8,6 +8,7 @@ import {
   chequePresentedLate,
   chequeValidUntil,
   isDelayed,
+  limitationDeadline,
   limitationView,
   noticeDispatchIssue,
   noticeDispatchLate,
@@ -79,12 +80,13 @@ describe("the limitation chain — return, notice, service, cause of action, fil
     assert.equal(lim.elapsed, null);
   });
 
-  it("asks for condonation past 30 days, and the fee follows the derived dates", () => {
+  it("asks for condonation past one calendar month, and the fee follows the derived dates", () => {
     const d = dated();
     d.jurisdiction.deposited = "no";
+    // Cause of action 29 Aug → due 29 Sep.
     d.jurisdiction.filingDate = "2026-10-09";
     const lim = limitationView(d);
-    assert.equal(lim.overBy, 11);
+    assert.equal(lim.overBy, 10);
     assert.equal(isDelayed(d), true);
     assert.equal(sectionComplete(d, "jurisdiction"), false);
     d.jurisdiction.condonationReason = "The complainant was abroad.";
@@ -135,5 +137,35 @@ describe("the cheque's own validity — the first link of the chain", () => {
     const c = createBlankDraft("draft-validity-end").cheques[0];
     c.dateOnCheque = "2026-11-30";
     assert.equal(chequeValidUntil(c), "2027-02-27");
+  });
+});
+
+describe("limitationDeadline — one calendar month, as the backend counts it", () => {
+  it("is the same date next month", () => {
+    assert.equal(limitationDeadline("2026-08-29"), "2026-09-29");
+    assert.equal(limitationDeadline("2026-01-01"), "2026-02-01");
+  });
+
+  it("is the last day of a shorter month", () => {
+    assert.equal(limitationDeadline("2026-01-31"), "2026-02-28");
+    assert.equal(limitationDeadline("2028-01-31"), "2028-02-29");
+  });
+
+  it("keeps a filing on the last day in time, and a month of 31 days is not cut to 30", () => {
+    const d = createBlankDraft("d1");
+    d.jurisdiction.causeDate = "2026-01-01";
+    d.jurisdiction.filingDate = "2026-02-01";
+    assert.equal(limitationView(d).withinLimit, true);
+    assert.equal(isDelayed(d), false);
+  });
+
+  it("counts a filing after a short month's last day as late", () => {
+    const d = createBlankDraft("d1");
+    d.jurisdiction.causeDate = "2026-01-31";
+    d.jurisdiction.filingDate = "2026-03-02";
+    const lim = limitationView(d);
+    assert.equal(lim.withinLimit, false);
+    assert.equal(lim.overBy, 2);
+    assert.equal(isDelayed(d), true);
   });
 });

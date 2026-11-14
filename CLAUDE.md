@@ -119,7 +119,9 @@ reuse or extend what's there; if the same logic appears in 2+ places, extract it
   test.
 - Comments explain *why*, not *what*. Match the comment density of the surrounding code.
 - Don't leave unused imports, variables, or commented-out code.
-- User-facing copy lives in the feature's `content.ts` / copy module, not scattered in JSX.
+- User-facing text lives in `messages/en.json` as keys, never as English in JSX or
+  constants; follow `docs/localization.md`. Malayalam stays in `content.ts` `Copy`
+  objects until it moves to `messages/ml.json`.
 
 ## Tests
 

@@ -73,7 +73,6 @@ import type {
   SignInstrument,
   Signatory,
 } from "@/lib/filing/types";
-import type { Locale } from "@/lib/onboarding/content";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -91,6 +90,7 @@ import {
 } from "@/components/filing/sign-stages";
 import { useCourtText } from "@/components/court/court-provider";
 import { Breadcrumbs } from "@/components/shell/chrome";
+import { useLocale } from "@/components/shell/locale";
 import {
   ACCOUNT_NAME_KEY,
   ADVOCATE_AVAILABLE_KEY,
@@ -186,7 +186,8 @@ function SignLinkBody({
   const courtText = useCourtText();
   const router = useRouter();
   const { draft, update } = useFiling();
-  const [locale, setLocale] = React.useState<Locale>("en");
+  // The app-wide language, so a choice made here is kept in the cookie.
+  const { locale, setLocale } = useLocale();
   const accountName = useLocalStorageValue(ACCOUNT_NAME_KEY);
 
   const me: Signatory | undefined = React.useMemo(() => {

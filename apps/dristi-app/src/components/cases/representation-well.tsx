@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { CaseRef } from "@/components/cases/party-application";
 import { RemoveAdvocateDialog } from "@/components/cases/remove-advocate-dialog";
+import { useTranslations } from "next-intl";
 
 const PENDING_LINE = {
   consent: "Removal requested · awaiting consent",
@@ -35,6 +36,7 @@ export function RepresentationWell({
   partyName: string;
   caseRef: CaseRef;
 }) {
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<keyof typeof PENDING_LINE | null>(null);
 
@@ -61,7 +63,7 @@ export function RepresentationWell({
             className="shrink-0"
             onClick={() => setOpen(true)}
           >
-            Remove
+            {t("representationWell_remove")}
           </Button>
         ) : null}
       </div>

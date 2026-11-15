@@ -7,6 +7,7 @@ import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 import { HERO_START, StatusMark, type MarkTone } from "@/components/ui/status-mark";
+import { useTranslations } from "next-intl";
 
 /**
  * Outcomes: what an act came to, said at the weight the act deserves.
@@ -224,6 +225,7 @@ export function OutcomeTally({
   failedTone?: "warning" | "error";
   still?: boolean;
 }) {
+  const t = useTranslations();
   const total = done + failed;
   const fill = failedTone === "warning" ? "var(--warning)" : "var(--destructive)";
   const stripes = `repeating-linear-gradient(45deg, ${fill} 0 3px, color-mix(in oklab, ${fill} 40%, var(--card)) 3px 5px)`;
@@ -243,7 +245,7 @@ export function OutcomeTally({
       still={still}
       aside={
         <span className="text-body-compact tabular-nums text-muted-foreground">
-          {done} of {total}
+          {t("outcome_doneOfTotal", { done: String(done), total: String(total) })}
         </span>
       }
     >

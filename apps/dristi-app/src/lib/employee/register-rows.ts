@@ -146,10 +146,10 @@ function caseHaystack(c: DocketCase): string {
 export type RegisterPeriod = "all" | "month" | "quarter" | "fy";
 
 export const REGISTER_PERIODS: { id: RegisterPeriod; label: string }[] = [
-  { id: "all", label: "All dates" },
-  { id: "month", label: "This month" },
-  { id: "quarter", label: "Last 3 months" },
-  { id: "fy", label: "This financial year" },
+  { id: "all", label: "registerRows_allDates" },
+  { id: "month", label: "registerRows_thisMonth" },
+  { id: "quarter", label: "registerRows_last3Months" },
+  { id: "fy", label: "registerRows_thisFinancialYear" },
 ];
 
 /** The first day a period covers, or `null` for all dates. */

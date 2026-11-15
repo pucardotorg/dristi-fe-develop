@@ -33,6 +33,7 @@ import { AddPoaDialog } from "@/components/cases/add-poa-dialog";
 import { AddWitnessDialog } from "@/components/cases/add-witness-form";
 import type { CaseRef } from "@/components/cases/party-application";
 import type { PartyOption } from "@/lib/cases/party-actions";
+import { useTranslations } from "next-intl";
 
 type OpenDialog = "advocate" | "witness" | "poa" | null;
 
@@ -47,6 +48,7 @@ export function CaseAddPeople({
   /** Everyone attached to the case — the PoA flow's takeover pool. */
   casePeople: { key: string; name: string; detail: string }[];
 }) {
+  const t = useTranslations();
   const [dialog, setDialog] = useState<OpenDialog>(null);
 
   function closerFor(name: Exclude<OpenDialog, null>) {
@@ -58,7 +60,7 @@ export function CaseAddPeople({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type="button" className="w-full shrink-0 sm:w-auto">
-            Add people
+            {t("caseAddPeople_addPeople")}
             <ChevronDownIcon data-icon="inline-end" aria-hidden />
           </Button>
         </DropdownMenuTrigger>
@@ -66,13 +68,13 @@ export function CaseAddPeople({
             not a paragraph. */}
         <DropdownMenuContent align="end" className="min-w-60">
           <DropdownMenuItem onSelect={() => setDialog("advocate")}>
-            Add an advocate
+            {t("caseAddPeople_addAnAdvocate")}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setDialog("witness")}>
-            Add a witness
+            {t("caseAddPeople_addAWitness")}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setDialog("poa")}>
-            Add a Power of Attorney holder
+            {t("caseAddPeople_addAPowerOfAttorneyHolder")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

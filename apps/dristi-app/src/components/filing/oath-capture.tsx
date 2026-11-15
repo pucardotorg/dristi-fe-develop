@@ -33,6 +33,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SectionNotice } from "@/components/filing/notices";
 import { OathRecorderPanel } from "@/components/filing/oath-recorder";
 import { ChoiceCard } from "@/components/filing/sign-stages";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * The words read on camera. The handover's placeholder affirmation (§18.2): the exact
@@ -49,12 +51,13 @@ export const OATH_MAX_SECONDS = 120;
 
 /** How to be on camera — what the court needs to see in the recording. */
 const ON_CAMERA = [
-  { icon: ScanFaceIcon, text: "Keep your face clearly visible, in good light." },
-  { icon: UserIcon, text: "Be the only person in the frame." },
-  { icon: IdCardIcon, text: "Hold up your ID card to the camera as you begin." },
+  { icon: ScanFaceIcon, text: "oathCapture_keepYourFaceClearlyVisibleIn" },
+  { icon: UserIcon, text: "oathCapture_beTheOnlyPersonInThe" },
+  { icon: IdCardIcon, text: "oathCapture_holdUpYourIdCardTo" },
 ] as const;
 
 function OathVideoPlayer({ file }: { file: StoredFileRef }) {
+  const t = useTranslations();
   const [url, setUrl] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -72,7 +75,7 @@ function OathVideoPlayer({ file }: { file: StoredFileRef }) {
     <video
       src={url}
       controls
-      aria-label="Your recorded oath"
+      aria-label={t("oathCapture_yourRecordedOath")}
       className="aspect-video w-full rounded-lg bg-surface-sunken object-contain"
     />
   );
@@ -93,6 +96,7 @@ export function OathCapture({
   /** A new clip has been stored. The previous one is released here, not by the caller. */
   onChange: (next: OathVideo) => void;
 }) {
+  const t = useTranslations();
   const [recording, setRecording] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -103,7 +107,7 @@ export function OathCapture({
     try {
       ref = await storeUpload(file);
     } catch {
-      setError("We couldn't save the recording in this browser. Please record it again.");
+      setError(t("oathCapture_weCouldntSaveTheRecordingIn"));
       setBusy(false);
       return;
     }
@@ -140,13 +144,13 @@ export function OathCapture({
         className="flex flex-col gap-3 rounded-lg border border-hairline bg-card p-4"
       >
         <h3 id="oath-on-camera" className="text-body font-semibold">
-          Before you record
+          {t("oathCapture_beforeYouRecord")}
         </h3>
         <ul className="flex flex-col gap-2">
           {ON_CAMERA.map(({ icon: Icon, text }) => (
             <li key={text} className="flex items-start gap-3 text-body-compact">
               <Icon aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-              {text}
+              {translateText(t, text)}
             </li>
           ))}
         </ul>
@@ -154,7 +158,7 @@ export function OathCapture({
 
       <section aria-labelledby="oath-words" className="flex flex-col gap-3">
         <h3 id="oath-words" className="text-body font-semibold">
-          Say these words
+          {t("oathCapture_sayTheseWords")}
         </h3>
         {name.trim() ? (
           <p className="text-body-compact text-muted-foreground">
@@ -176,7 +180,7 @@ export function OathCapture({
       {value ? (
         <section aria-labelledby="oath-recorded" className="flex flex-col gap-3">
           <h3 id="oath-recorded" className="text-body font-semibold">
-            Your oath
+            {t("oathCapture_yourOath")}
           </h3>
           <OathVideoPlayer file={value.file} />
           {value.durationSeconds !== null ? (
@@ -190,7 +194,7 @@ export function OathCapture({
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" onClick={record} disabled={busy}>
                 <RefreshCwIcon data-icon="inline-start" aria-hidden />
-                Record again
+                {t("oathCapture_recordAgain")}
               </Button>
             </div>
           )}
@@ -200,19 +204,19 @@ export function OathCapture({
       ) : (
         <section aria-labelledby="oath-how" className="flex flex-col gap-3">
           <h3 id="oath-how" className="text-body font-semibold">
-            Record your oath
+            {t("oathCapture_recordYourOath")}
           </h3>
           <ChoiceCard
-            title="Record with your camera"
+            title={t("oathCapture_recordWithYourCamera")}
             tone="bg-brand-muted text-brand-muted-foreground"
             icon={<VideoIcon className="size-5" />}
             onClick={record}
           >
-            Opens your camera here. Recording stops at {formatDuration(OATH_MAX_SECONDS)}.
+            {t("oathCapture_opensYourCameraHereRecordingStops", { formatDuration: formatDuration(OATH_MAX_SECONDS) })}
           </ChoiceCard>
           {busy ? (
             <p role="status" className="text-body-compact text-muted-foreground">
-              Saving your recording&hellip;
+              {t("oathCapture_savingYourRecording")}
             </p>
           ) : null}
         </section>

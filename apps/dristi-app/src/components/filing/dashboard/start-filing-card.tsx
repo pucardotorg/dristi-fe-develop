@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 
 /**
  * One case type as a row that is itself the button (owner, 2026-10-09: "keep it as a row
@@ -64,6 +65,7 @@ function CaseTypeRow({
 
 /** The case types a filing can start from: cheque bounce, and the PSS Act, whose row opens a placeholder until its flow is built. */
 export function StartFilingCard() {
+  const t = useTranslations();
   const titleId = React.useId();
   return (
     <Card variant="raised" className="gap-0">
@@ -76,10 +78,10 @@ export function StartFilingCard() {
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">
           <CardTitle id={titleId} className="text-body font-semibold">
-            Start a new filing
+            {t("startFilingCard_startANewFiling")}
           </CardTitle>
           <CardDescription className="text-body-compact">
-            Step by step: parties, documents, then the court fee.
+            {t("startFilingCard_stepByStepPartiesDocumentsThen")}
           </CardDescription>
         </div>
       </CardHeader>
@@ -90,13 +92,13 @@ export function StartFilingCard() {
             href={NEW_FILING}
             icon={CreditCardIcon}
             title={CASE_TYPE.title}
-            caption="Dishonoured cheques · about 40 minutes"
+            caption={t("startFilingCard_dishonouredChequesAbout40Minutes")}
           />
           <CaseTypeRow
             href={NEW_PSS_FILING}
             icon={ArrowLeftRightIcon}
             title={PSS_CASE_TYPE.title}
-            caption="Coming soon"
+            caption={t("startFilingCard_comingSoon")}
           />
         </ul>
       </CardContent>

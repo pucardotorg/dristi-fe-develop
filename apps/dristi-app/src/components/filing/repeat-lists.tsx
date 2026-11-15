@@ -17,6 +17,8 @@ import { FormRow, FormSubhead, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
 import { ComboField, TextField } from "@/components/filing/inputs";
 import { MobileField } from "@/components/filing/mobile-field";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** Icon-only remove control at the 40px floor. */
 export function RemoveButton({
@@ -46,8 +48,8 @@ export function RemoveButton({
 export function ContactList({
   contacts,
   onChange,
-  addLabel = "Add another contact",
-  emailLabel = "Email address",
+  addLabel = "repeatLists_addAnotherContact",
+  emailLabel = "repeatLists_emailAddress",
   mobilePlaceholder = "10-digit number",
   emailPlaceholder = "name@example.com",
   optional = false,
@@ -65,6 +67,7 @@ export function ContactList({
   /** False hides the add-row control; a single contact row is enough. */
   allowAdd?: boolean;
 }) {
+  const t = useTranslations();
   const setAt = (i: number, patch: Partial<Contact>) =>
     onChange(contacts.map((c, k) => (k === i ? { ...c, ...patch } : c)));
   return (
@@ -73,14 +76,14 @@ export function ContactList({
         <div key={i} className="flex items-end gap-3">
           <FormRow className="flex-1">
             <MobileField
-              label="Mobile number"
+              label={t("repeatLists_mobileNumber")}
               name={`contacts.${i}.mobile`}
               optional={optional}
               value={c.mobile}
               onChange={(v) => setAt(i, { mobile: v })}
               placeholder={mobilePlaceholder}
             />
-            <FormField label={emailLabel} name={`contacts.${i}.email`} optional={optional}>
+            <FormField label={translateText(t, emailLabel)} name={`contacts.${i}.email`} optional={optional}>
               <TextField
                 type="email"
                 value={c.email}
@@ -92,7 +95,7 @@ export function ContactList({
           </FormRow>
           {contacts.length > 1 ? (
             <RemoveButton
-              label={`Remove contact ${i + 1}`}
+              label={t("repeatLists_removeContactValue", { value: String(i + 1) })}
               onClick={() => onChange(contacts.filter((_, k) => k !== i))}
             />
           ) : null}
@@ -106,7 +109,7 @@ export function ContactList({
           onClick={() => onChange([...contacts, blankContact()])}
         >
           <PlusIcon data-icon="inline-start" aria-hidden />
-          {addLabel}
+          {translateText(t, addLabel)}
         </Button>
       ) : null}
     </div>
@@ -123,7 +126,7 @@ export function ContactList({
 export function AddressBlockList({
   blocks,
   onChange,
-  addLabel = "Add another address",
+  addLabel = "repeatLists_addAnotherAddress",
   optional = false,
 }: {
   blocks: AddressBlock[];
@@ -133,6 +136,7 @@ export function AddressBlockList({
       required (a started address still has to be complete; the host says so). */
   optional?: boolean;
 }) {
+  const t = useTranslations();
   const { court } = useCourt();
   const setAt = (i: number, patch: Partial<AddressBlock>) =>
     onChange(blocks.map((b, k) => (k === i ? { ...b, ...patch } : b)));
@@ -145,10 +149,10 @@ export function AddressBlockList({
           className="flex flex-col gap-4 rounded-lg bg-surface-sunken p-4"
         >
           <div className="flex items-center justify-between gap-3">
-            <FormSubhead>Address {i + 1}</FormSubhead>
+            <FormSubhead>{t("repeatLists_addressValue", { value: String(i + 1) })}</FormSubhead>
             {blocks.length > 1 || optional ? (
               <RemoveButton
-                label={`Remove address ${i + 1}`}
+                label={t("repeatLists_removeAddressValue", { value: String(i + 1) })}
                 onClick={() => onChange(blocks.filter((_, k) => k !== i))}
               />
             ) : null}
@@ -164,18 +168,18 @@ export function AddressBlockList({
                 stays open — our copy of the directory is not the last word on which
                 stations exist. */}
             <FormField
-              label="Police station"
+              label={t("repeatLists_policeStation")}
               name={`addresses.${i}.police`}
               required={!optional}
-              help="The station this address falls under."
+              help={t("repeatLists_theStationThisAddressFallsUnder")}
             >
               <ComboField
                 value={b.police}
                 onChange={(v: string) => setAt(i, { police: v })}
                 items={policeStationsFor(court)}
-                placeholder="Search stations"
-                emptyLabel="No station by that name."
-                ariaLabel="Police station"
+                placeholder={t("repeatLists_searchStations")}
+                emptyLabel={t("repeatLists_noStationByThatName")}
+                ariaLabel={t("repeatLists_policeStation")}
               />
             </FormField>
           </HalfWidth>
@@ -188,7 +192,7 @@ export function AddressBlockList({
         onClick={() => onChange([...blocks, blankAddressBlock()])}
       >
         <PlusIcon data-icon="inline-start" aria-hidden />
-        {addLabel}
+        {translateText(t, addLabel)}
       </Button>
     </div>
   );
@@ -204,12 +208,13 @@ export function AddressBlockList({
 export function RepresentativeList({
   reps,
   onChange,
-  addLabel = "Add another person",
+  addLabel = "repeatLists_addAnotherPerson",
 }: {
   reps: Representative[];
   onChange: (next: Representative[]) => void;
   addLabel?: string;
 }) {
+  const t = useTranslations();
   const { court } = useCourt();
   const setAt = (i: number, patch: Partial<Representative>) =>
     onChange(reps.map((r, k) => (k === i ? { ...r, ...patch } : r)));
@@ -219,41 +224,41 @@ export function RepresentativeList({
       {reps.map((r, i) => (
         <div key={i} className="flex flex-col gap-4 rounded-lg bg-surface-sunken p-4">
           <div className="flex items-center justify-between gap-3">
-            <FormSubhead>Person {i + 1}</FormSubhead>
+            <FormSubhead>{t("repeatLists_personValue", { value: String(i + 1) })}</FormSubhead>
             {reps.length > 1 ? (
               <RemoveButton
-                label={`Remove person ${i + 1}`}
+                label={t("repeatLists_removePersonValue", { value: String(i + 1) })}
                 onClick={() => onChange(reps.filter((_, k) => k !== i))}
               />
             ) : null}
           </div>
           <FormRow>
-            <FormField label="Full name" name={`reps.${i}.name`} required>
+            <FormField label={t("repeatLists_fullName")} name={`reps.${i}.name`} required>
               <TextField
                 value={r.name}
                 onChange={(v) => setAt(i, { name: v })}
-                placeholder="As it should appear on the summons"
+                placeholder={t("repeatLists_asItShouldAppearOnThe")}
                 autoComplete="off"
               />
             </FormField>
-            <FormField label="Designation" name={`reps.${i}.designation`} required>
+            <FormField label={t("repeatLists_designation")} name={`reps.${i}.designation`} required>
               <TextField
                 value={r.designation}
                 onChange={(v) => setAt(i, { designation: v })}
-                placeholder="e.g. Managing Director"
+                placeholder={t("repeatLists_eGManagingDirector")}
                 autoComplete="off"
               />
             </FormField>
           </FormRow>
           <FormRow>
             <MobileField
-              label="Mobile number"
+              label={t("repeatLists_mobileNumber")}
               name={`reps.${i}.mobile`}
               optional
               value={r.mobile}
               onChange={(v) => setAt(i, { mobile: v })}
             />
-            <FormField label="Email address" name={`reps.${i}.email`} optional>
+            <FormField label={t("repeatLists_emailAddress")} name={`reps.${i}.email`} optional>
               <TextField
                 type="email"
                 value={r.email}
@@ -263,24 +268,24 @@ export function RepresentativeList({
               />
             </FormField>
           </FormRow>
-          <FormSubhead>Address for service</FormSubhead>
+          <FormSubhead>{t("repeatLists_addressForService")}</FormSubhead>
           <AddressFields value={r.addr} onChange={(addr) => setAt(i, { addr })} name={`reps.${i}.addr`} />
           <HalfWidth>
             {/* The summons is served at this address, so it is saved with its station like
                 the entity's own addresses are. */}
             <FormField
-              label="Police station"
+              label={t("repeatLists_policeStation")}
               name={`reps.${i}.police`}
               required
-              help="The station this address falls under."
+              help={t("repeatLists_theStationThisAddressFallsUnder")}
             >
               <ComboField
                 value={r.police ?? ""}
                 onChange={(v: string) => setAt(i, { police: v })}
                 items={policeStationsFor(court)}
-                placeholder="Search stations"
-                emptyLabel="No station by that name."
-                ariaLabel="Police station"
+                placeholder={t("repeatLists_searchStations")}
+                emptyLabel={t("repeatLists_noStationByThatName")}
+                ariaLabel={t("repeatLists_policeStation")}
               />
             </FormField>
           </HalfWidth>
@@ -293,7 +298,7 @@ export function RepresentativeList({
         onClick={() => onChange([...reps, blankRepresentative()])}
       >
         <PlusIcon data-icon="inline-start" aria-hidden />
-        {addLabel}
+        {translateText(t, addLabel)}
       </Button>
     </div>
   );

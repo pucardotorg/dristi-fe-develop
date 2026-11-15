@@ -25,6 +25,7 @@ import { causeTitle, counselFor } from "@/lib/employee/hearings";
 import { caseStageLabel, type SchedulingCase } from "@/lib/employee/schedule";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * The scheduling queue as a table: the cause, its number, where the case has reached, and
@@ -59,21 +60,22 @@ export function ScheduleTable({
   rows: SchedulingCase[];
   onOpen: (matter: SchedulingCase) => void;
 }) {
+  const t = useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
+            {t("scheduleTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("scheduleTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
+            {t("scheduleTable_stage")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Advocates
+            {t("scheduleTable_advocates")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -99,12 +101,12 @@ export function ScheduleTable({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Open </span>
+                <span className="sr-only">{t("scheduleTable_open")} </span>
                 {causeTitle(matter)}
               </button>
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              <Identifier value={matter.caseNumber} label="case number" />
+              <Identifier value={matter.caseNumber} label={t("scheduleTable_caseNumberLabel")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
               {caseStageLabel(matter.stage)}

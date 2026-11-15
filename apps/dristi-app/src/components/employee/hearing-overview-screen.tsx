@@ -46,6 +46,7 @@ import {
   hearingCaseExtras,
   type HearingCaseExtras,
 } from "@/lib/employee/hearing-overview";
+import { useTranslations } from "next-intl";
 
 /**
  * The two surfaces this overview is read on.
@@ -140,6 +141,7 @@ export function HearingOverviewScreen({ hearingId }: { hearingId: string }) {
  * is the same miss arriving by the same route.
  */
 function HearingMissing() {
+  const t = useTranslations();
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <Empty className="border-0 p-0">
@@ -148,17 +150,16 @@ function HearingMissing() {
             <CalendarX2Icon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            This listing is not on the board
+            {t("hearingOverviewScreen_thisListingIsNotOnThe")}
           </EmptyTitle>
           <EmptyDescription className="text-body">
-            A case overview opens a matter from today&rsquo;s cause list. This
-            one is not there.
+            {t("hearingOverviewScreen_aCaseOverviewOpensAMatter")}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
             <Link href="/employee/hearings">
-              Back to today&rsquo;s hearings
+              {t("hearingOverviewScreen_backToTodaysHearings")}
             </Link>
           </Button>
         </EmptyContent>
@@ -235,14 +236,14 @@ function HearingOverview({ hearing }: { hearing: CourtHearing }) {
  * here would put a paragraph inside the dialog's own.
  */
 export function HearingOverviewCaption({ hearing }: { hearing: CourtHearing }) {
+  const t = useTranslations();
   return (
     <>
       {/* The item is a *position* in today's board and keeps plain figures; the case
           number is an identifier and takes the treatment. The rule is by kind of fact,
           which is why these two sit side by side wearing different faces. */}
-      Item <span className="tabular-nums">{hearing.item}</span>
-      {" · "}
-      <Identifier value={hearing.caseNumber} label="case number" />
+      {t.rich("hearingOverviewScreen_itemItem", { item: String(hearing.item), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+      <Identifier value={hearing.caseNumber} label={t("hearingOverviewScreen_caseNumber")} />
       {" · "}
       {courtHearingPurposeLabel(hearing.purpose)}
     </>
@@ -276,6 +277,7 @@ export function HearingOverviewSections({
    */
   nextHearing?: ReactNode;
 }) {
+  const t = useTranslations();
   const extras = hearingCaseExtras(hearing.id);
 
   return (
@@ -289,30 +291,29 @@ export function HearingOverviewSections({
       >
         <TabsList
           variant="line"
-          aria-label="About this case"
+          aria-label={t("hearingOverviewScreen_aboutThisCase")}
           className={`justify-start rounded-none ${TAB_LIST[surface]}`}
         >
           {nextHearing ? (
             <TabsTrigger value="next-hearing" className={TAB_TRIGGER}>
-              Next hearing
+              {t("hearingOverviewScreen_nextHearing")}
             </TabsTrigger>
           ) : null}
           <TabsTrigger value="history" className={TAB_TRIGGER}>
-            Case history
+            {t("hearingOverviewScreen_caseHistory")}
           </TabsTrigger>
           <TabsTrigger value="details" className={TAB_TRIGGER}>
-            Case details
+            {t("hearingOverviewScreen_caseDetails")}
           </TabsTrigger>
           <TabsTrigger value="data-flags" className={TAB_TRIGGER}>
-            Data flags
+            {t("hearingOverviewScreen_dataFlags")}
           </TabsTrigger>
         </TabsList>
         {/* Every order on the case, in the case's own Orders tab — a browser tab of its
             own, as View case opens, so the overview stays where the bench left it. */}
         <Button asChild variant="link" size="sm" className="h-auto shrink-0 px-0">
           <a href={HEARING_DEMO_CASE_ORDERS_HREF} target="_blank" rel="noopener">
-            View all orders
-            <span className="sr-only"> (opens in a new tab)</span>
+            {t.rich("hearingOverviewScreen_viewAllOrdersOpensInA", { span: (chunks) => <span className="sr-only">{chunks}</span> })}
             <ExternalLinkIcon data-icon="inline-end" aria-hidden />
           </a>
         </Button>
@@ -411,11 +412,11 @@ export function ViewCaseAction({
   /** `outline` where a real act shares the band — see above. */
   variant?: "default" | "outline";
 }) {
+  const t = useTranslations();
   return (
     <Button asChild variant={variant} className="w-fit shrink-0">
       <a href={HEARING_DEMO_CASE_HREF} target="_blank" rel="noopener">
-        View case
-        <span className="sr-only"> (opens in a new tab)</span>
+        {t.rich("hearingOverviewScreen_viewCaseOpensInANew", { span: (chunks) => <span className="sr-only">{chunks}</span> })}
         <ExternalLinkIcon data-icon="inline-end" aria-hidden />
       </a>
     </Button>
@@ -442,6 +443,7 @@ function CaseFactsPanel({
   surface: HearingOverviewSurface;
   className?: string;
 }) {
+  const t = useTranslations();
   const complainantCounsel = counselFor(hearing, "complainant").map(
     (entry) => entry.name,
   );
@@ -456,36 +458,36 @@ function CaseFactsPanel({
       aria-labelledby="case-facts"
     >
       <h2 id="case-facts" className="sr-only">
-        Case details
+        {t("hearingOverviewScreen_caseDetails")}
       </h2>
       <DescriptionList>
-        <FactRow surface={surface} term="Stage">
+        <FactRow surface={surface} term={t("hearingOverviewScreen_stage")}>
           {courtCaseStageLabel(hearing.stage)}
         </FactRow>
-        <FactRow surface={surface} term="This sitting">
+        <FactRow surface={surface} term={t("hearingOverviewScreen_thisSitting")}>
           {courtHearingPurposeLabel(hearing.purpose)}
         </FactRow>
         <PartyRow
           surface={surface}
-          term="Complainant"
+          term={t("hearingOverviewScreen_complainant")}
           name={hearing.parties.complainant}
           counsel={complainantCounsel}
         />
         <PartyRow
           surface={surface}
-          term="Accused"
+          term={t("hearingOverviewScreen_accused")}
           name={hearing.parties.accused}
           counsel={accusedCounsel}
         />
         {extras.chequeAmount ? (
-          <FactRow surface={surface} term="Cheque amount">
+          <FactRow surface={surface} term={t("hearingOverviewScreen_chequeAmount")}>
             <span className="tabular-nums">
               {formatChequeAmount(extras.chequeAmount)}
             </span>
           </FactRow>
         ) : null}
         {extras.filedOn ? (
-          <FactRow surface={surface} term="Filed">
+          <FactRow surface={surface} term={t("hearingOverviewScreen_filed")}>
             <span className="tabular-nums">
               {formatCaseDate(extras.filedOn)}
             </span>
@@ -543,6 +545,7 @@ function PartyRow({
   name: string;
   counsel: string[];
 }) {
+  const t = useTranslations();
   return (
     <DescriptionRow className={FACT_ROW_CLASS}>
       <DescriptionTerm className={BODY[surface]}>{term}</DescriptionTerm>
@@ -552,7 +555,7 @@ function PartyRow({
         <span className="font-medium">{name}</span>
         {counsel.length > 0 ? (
           <span className="text-body-compact text-muted-foreground">
-            Counsel: {formatCounselList(counsel)}
+            {t("hearingOverviewScreen_counselFormatCounselList", { formatCounselList: formatCounselList(counsel) })}
           </span>
         ) : null}
       </DescriptionDetails>

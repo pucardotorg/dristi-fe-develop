@@ -28,6 +28,10 @@ import {
 } from "./case-review";
 import { formatCaseDate } from "./hearing-overview";
 import { REGISTER_QUEUE, registerCaseById } from "./register-cases";
+import { translateMessage } from "@/i18n/messages";
+
+/** A message key read back as its English, so expectations read the way the screen does. */
+const inEnglish = (text: string) => translateMessage("en", text);
 
 /* A fixed day, so a test asserting on dates is not a test about when it ran. */
 const TODAY = "2026-09-09";
@@ -649,7 +653,8 @@ describe("the states a file can be in", () => {
   it("keeps the consequence of an absence out of the absence", () => {
     /* The reason is the file's and the clause is the product's voice, so an empty head
        can be counted and translated without re-authoring the sentence around it. */
-    assert.deepEqual(groupById("r-1490", "advocates")?.empty, {
+    const empty = groupById("r-1490", "advocates")?.empty;
+    assert.deepEqual(empty && { ...empty, explanation: inEnglish(empty.explanation ?? "") }, {
       reason: "none-on-record",
       explanation: "The complainant appears in person.",
     });
@@ -850,7 +855,7 @@ describe("the states a file can be in", () => {
        same absence must not disagree. */
     assert.equal(registerCaseById("r-1490")?.counsel.length, 0);
     assert.match(
-      groupById("r-1490", "advocates")?.empty?.explanation ?? "",
+      inEnglish(groupById("r-1490", "advocates")?.empty?.explanation ?? ""),
       /appears in person/,
     );
     assert.equal(groupById("r-1588", "advocates")?.records?.length, 2);

@@ -6,6 +6,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { FILER_ROLES, type FilerRole } from "@/lib/applications/lifecycle";
 import { setSandboxSeat, useSandboxSeat } from "@/lib/applications/store";
+import { useTranslations } from "next-intl";
 
 /**
  * Sandbox: who the applications flow is being worked as.
@@ -17,18 +18,19 @@ import { setSandboxSeat, useSandboxSeat } from "@/lib/applications/store";
  * on the screen so it is never mistaken for a product control.
  */
 export function SandboxSeatControl() {
+  const t = useTranslations();
   const seat = useSandboxSeat();
   const roleId = useId();
   const sideId = useId();
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-hairline bg-surface-sunken p-3">
       <p className="text-caption font-semibold text-muted-foreground">
-        Sandbox · acting as
+        {t("sandboxSeatControl_sandboxActingAs")}
       </p>
       <div className="flex flex-wrap gap-3">
         <Field className="w-auto min-w-48 gap-1.5">
           <FieldLabel htmlFor={roleId} className="text-caption">
-            Role
+            {t("sandboxSeatControl_role")}
           </FieldLabel>
           <NativeSelect
             id={roleId}
@@ -46,7 +48,7 @@ export function SandboxSeatControl() {
         </Field>
         <Field className="w-auto min-w-48 gap-1.5">
           <FieldLabel htmlFor={sideId} className="text-caption">
-            Side
+            {t("sandboxSeatControl_side")}
           </FieldLabel>
           <NativeSelect
             id={sideId}
@@ -55,8 +57,8 @@ export function SandboxSeatControl() {
               setSandboxSeat({ ...seat, opposing: event.target.value === "opposing" })
             }
           >
-            <NativeSelectOption value="own">Your side of the case</NativeSelectOption>
-            <NativeSelectOption value="opposing">The other side</NativeSelectOption>
+            <NativeSelectOption value="own">{t("sandboxSeatControl_yourSideOfTheCase")}</NativeSelectOption>
+            <NativeSelectOption value="opposing">{t("sandboxSeatControl_theOtherSide")}</NativeSelectOption>
           </NativeSelect>
         </Field>
       </div>

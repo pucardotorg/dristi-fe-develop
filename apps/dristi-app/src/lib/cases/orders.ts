@@ -376,8 +376,8 @@ export const ORDER_STATUSES: { id: OrderStatus; label: string }[] = [
 export type OrderKindFilter = OrderKind;
 
 export const ORDER_KIND_FILTERS: { id: OrderKindFilter; label: string }[] = [
-  { id: "order", label: "Orders" },
-  { id: "notification", label: "Notifications" },
+  { id: "order", label: "orders_orders" },
+  { id: "notification", label: "orders_notifications" },
 ];
 
 /** The kind the register opens on, and what "Clear filters" returns to. */

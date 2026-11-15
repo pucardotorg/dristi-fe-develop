@@ -54,6 +54,7 @@ import {
 import { displayName } from "@/lib/cases/names";
 import { formatCaseDate } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * One filed document, in the application record's frame (owner, Oct 8: the
@@ -122,6 +123,7 @@ function DocumentBody({
   peopleById: Map<string, DocumentPerson>;
   onEntered: (entered: boolean) => void;
 }) {
+  const t = useTranslations();
   /* A document filed with several files lists them; the one picked shows. */
   const files = document.files ?? [];
   const [openSrc, setOpenSrc] = useState(files[0]?.src);
@@ -144,12 +146,12 @@ function DocumentBody({
           {/* The status is held, not shown (DSB-05); only the two that change
               what the reader does with it are said. */}
           {document.evidenceNumber ? (
-            <Badge variant="secondary">Marked as evidence</Badge>
+            <Badge variant="secondary">{t("documentRecordDialog_markedAsEvidence")}</Badge>
           ) : pendingReview ? (
-            <Badge variant="warning">Pending review</Badge>
+            <Badge variant="warning">{t("documentRecordDialog_pendingReview")}</Badge>
           ) : null}
           <DialogDescription className="sr-only">
-            {documentTypeLabel(document.type)} filed on {file.caseNumber}
+            {t("documentRecordDialog_documentTypeLabelFiledOnCase", { documentTypeLabel: documentTypeLabel(document.type), caseNumber: file.caseNumber })}
           </DialogDescription>
         </div>
         {src ? (
@@ -162,22 +164,22 @@ function DocumentBody({
                     download={downloadName(document) ?? true}
                     aria-label={
                       pendingReview
-                        ? `Download ${document.title}, not yet signed by the magistrate`
-                        : `Download ${document.title}`
+                        ? t("documentRecordDialog_downloadTitleNotYetSignedBy", { title: document.title })
+                        : t("documentRecordDialog_downloadTitle", { title: document.title })
                     }
                   >
                     <DownloadIcon aria-hidden />
                   </a>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Download</TooltipContent>
+              <TooltipContent side="bottom">{t("documentRecordDialog_download")}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : null}
         <DialogClose asChild>
           <Button type="button" variant="ghost" size="icon-sm">
             <XIcon aria-hidden />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t("common_close")}</span>
           </Button>
         </DialogClose>
       </div>
@@ -188,35 +190,35 @@ function DocumentBody({
             <div className="flex flex-col divide-y divide-hairline">
               {pendingReview ? (
                 <p className="pb-3 text-body-compact text-foreground">
-                  Signed by the parties. Waiting for the magistrate to sign.
+                  {t("documentRecordDialog_signedByThePartiesWaitingFor")}
                 </p>
               ) : null}
 
               <FactGroup>
-                <Fact label="ID">
+                <Fact label={t("documentRecordDialog_id")}>
                   {document.provisionalId ? (
                     /* Copyable like every other identifier here (owner,
                        Oct 8), and only as wide as itself. */
                     <span className="flex">
-                      <Identifier value={document.provisionalId} label="document ID" />
+                      <Identifier value={document.provisionalId} label={t("documentRecordDialog_documentId")} />
                     </span>
                   ) : (
-                    <Muted>Given when submitted</Muted>
+                    <Muted>{t("documentRecordDialog_givenWhenSubmitted")}</Muted>
                   )}
                 </Fact>
               </FactGroup>
 
               <FactGroup columns={2}>
-                <Fact label="Document type">
+                <Fact label={t("documentRecordDialog_documentType")}>
                   {documentTypeLabel(document.type)}
                 </Fact>
-                <Fact label="Source">{documentSourceLabel(document.source)}</Fact>
-                <Fact label="Submitted on">
+                <Fact label={t("documentRecordDialog_source")}>{documentSourceLabel(document.source)}</Fact>
+                <Fact label={t("documentRecordDialog_submittedOn")}>
                   <span className="tabular-nums">
                     {formatCaseDate(document.submittedOn)}
                   </span>
                 </Fact>
-                <Fact label="Submitted by">
+                <Fact label={t("documentRecordDialog_submittedBy")}>
                   <span className="flex flex-col gap-0.5">
                     <span>{displayName(submittedByName(document, peopleById))}</span>
                     {role ? (
@@ -230,9 +232,9 @@ function DocumentBody({
 
               {document.evidenceNumber ? (
                 <FactGroup>
-                  <Fact label="Evidence number">
+                  <Fact label={t("documentRecordDialog_evidenceNumber")}>
                     <span className="flex">
-                      <Identifier value={document.evidenceNumber} label="evidence number" />
+                      <Identifier value={document.evidenceNumber} label={t("documentRecordDialog_evidenceNumberLabel")} />
                     </span>
                   </Fact>
                 </FactGroup>
@@ -241,11 +243,11 @@ function DocumentBody({
               {document.linkedApplication || document.linkedHearing ? (
                 <FactGroup>
                   {document.linkedApplication ? (
-                    <Fact label="Filed with">
+                    <Fact label={t("documentRecordDialog_filedWith")}>
                       <span className="flex flex-col items-start gap-0.5">
                         <Identifier
                           value={document.linkedApplication.id}
-                          label="application id"
+                          label={t("documentRecordDialog_applicationId")}
                         />
                         <span className="text-caption font-normal text-muted-foreground">
                           {document.linkedApplication.label}
@@ -254,11 +256,11 @@ function DocumentBody({
                     </Fact>
                   ) : null}
                   {document.linkedHearing ? (
-                    <Fact label="Hearing">
+                    <Fact label={t("documentRecordDialog_hearing")}>
                       <span className="flex flex-col items-start gap-0.5">
                         <Identifier
                           value={document.linkedHearing.id}
-                          label="hearing id"
+                          label={t("documentRecordDialog_hearingId")}
                         />
                         <span className="text-caption font-normal text-muted-foreground">
                           {document.linkedHearing.label}
@@ -273,7 +275,7 @@ function DocumentBody({
             {files.length > 1 ? (
               <div className="flex flex-col gap-1.5 border-t border-hairline pt-3">
                 <h3 className="text-caption font-medium text-muted-foreground">
-                  Files
+                  {t("documentRecordDialog_files")}
                 </h3>
                 <ul className="-mx-2 flex flex-col gap-0.5">
                   {files.map((item) => (
@@ -327,10 +329,10 @@ function DocumentBody({
                     <FileXIcon aria-hidden />
                   </EmptyMedia>
                   <EmptyTitle className="text-body font-semibold">
-                    No file attached
+                    {t("documentRecordDialog_noFileAttached")}
                   </EmptyTitle>
                   <EmptyDescription>
-                    This record has no file on it yet.
+                    {t("documentRecordDialog_thisRecordHasNoFileOn")}
                   </EmptyDescription>
                 </EmptyHeader>
               </Empty>
@@ -354,6 +356,7 @@ function Comments({
   fieldId: string;
   onEntered: (entered: boolean) => void;
 }) {
+  const t = useTranslations();
   const [comments, setComments] = useState<{ id: string; body: string }[]>([]);
   const [draft, setDraft] = useState("");
   const scopeId = `${fieldId}-scope`;
@@ -376,10 +379,10 @@ function Comments({
           htmlFor={fieldId}
           className="text-body-compact font-semibold text-foreground"
         >
-          Comments
+          {t("documentRecordDialog_comments")}
         </FieldLabel>
         <p id={scopeId} className="text-caption text-muted-foreground">
-          On this file only. Not a filing.
+          {t("documentRecordDialog_onThisFileOnlyNotA")}
         </p>
       </div>
       {comments.length > 0 ? (
@@ -397,7 +400,7 @@ function Comments({
       <Field>
         <Textarea
           id={fieldId}
-          placeholder="Write a comment"
+          placeholder={t("documentRecordDialog_writeAComment")}
           rows={2}
           value={draft}
           onChange={(event) => {
@@ -415,7 +418,7 @@ function Comments({
         disabled={!draft.trim()}
         onClick={post}
       >
-        Post
+        {t("documentRecordDialog_post")}
       </Button>
     </section>
   );

@@ -53,6 +53,7 @@ import { cn } from "@/lib/utils";
 import { isAcceptedType, MAX_FILE_SIZE } from "@/lib/uploads/accepted-document";
 import { Identifier } from "@/components/chrome/identifier";
 import { ConfirmMark } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 const PREVIEWABLE_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png"];
 const ACCEPTED_FILE_TYPES =
@@ -166,6 +167,7 @@ export function FilingFrame({
   contentWidth?: "default" | "wide";
   children: ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <div
       className={cn(
@@ -176,7 +178,7 @@ export function FilingFrame({
       <div>
         <Button type="button" variant="ghost" onClick={onExit}>
           <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-          Back to case
+          {t("filingFormShared_backToCase")}
         </Button>
       </div>
 
@@ -193,10 +195,10 @@ export function FilingFrame({
             <UserRoundIcon className="mt-0.5 size-5 shrink-0" aria-hidden />
             <div>
               <p className="text-body-compact text-muted-foreground">
-                Case <Identifier value={caseNumber} label="case number" />
+                {t("filingFormShared_case")} <Identifier value={caseNumber} label={t("filingFormShared_caseNumber")} />
               </p>
               <p className="text-body font-medium">
-                Filing for Complainant · {complainantName}
+                {t("filingFormShared_filingForComplainantComplainantName", { complainantName: (complainantName) ?? "" })}
               </p>
             </div>
           </CardContent>
@@ -237,12 +239,12 @@ export function FileField({
   onFilesChange: (files: File[]) => void;
   onErrorChange: (error: string | undefined) => void;
 }) {
+  const t = useTranslations();
   const inputRef = useRef<HTMLInputElement>(null);
   const attached = files.length > 0;
   const hint = (
     <FieldDescription className="text-body-compact">
-      {description ? `${description} ` : ""}PDF, JPG, JPEG or PNG; maximum 10
-      MB per file.
+      {t("filingFormShared_valuePdfJpgJpegOrPng", { value: description ? `${description} ` : "" })}
     </FieldDescription>
   );
 
@@ -256,7 +258,7 @@ export function FileField({
     const existing = new Set(files.map(fileKey));
     const unique = selected.filter((file) => !existing.has(fileKey(file)));
     if (unique.length !== selected.length) {
-      onErrorChange("A selected file has already been added.");
+      onErrorChange(t("filingFormShared_aSelectedFileHasAlreadyBeen"));
       return;
     }
 
@@ -292,7 +294,7 @@ export function FileField({
                   <AttachmentContent>
                     <AttachmentTitle>{file.name}</AttachmentTitle>
                     <AttachmentDescription>
-                      {formatFileSize(file.size)} · selected locally
+                      {t("filingFormShared_formatFileSizeSelectedLocally", { formatFileSize: formatFileSize(file.size) })}
                     </AttachmentDescription>
                   </AttachmentContent>
                   <AttachmentActions>
@@ -300,7 +302,7 @@ export function FileField({
                       type="button"
                       variant="destructive-ghost"
                       size="icon"
-                      aria-label={`Remove ${file.name}`}
+                      aria-label={t("filingFormShared_removeName", { name: file.name })}
                       onClick={() =>
                         onFilesChange(
                           files.filter((item) => fileKey(item) !== fileKey(file))
@@ -322,7 +324,7 @@ export function FileField({
                 onClick={() => inputRef.current?.click()}
               >
                 <PlusIcon data-icon="inline-start" aria-hidden />
-                Add more
+                {t("filingFormShared_addMore")}
               </Button>
             </div>
           </div>
@@ -334,7 +336,7 @@ export function FileField({
           label={label}
           required={required}
           optional={!required}
-          copy={{ optional: "optional", noFile: "No documents added yet" }}
+          copy={{ optional: "optional", noFile: t("filingFormShared_noDocumentsAddedYet") }}
           onChooseFile={() => inputRef.current?.click()}
         />
       )}
@@ -551,6 +553,7 @@ export function PrototypeActions({
   onBack?: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
@@ -560,7 +563,7 @@ export function PrototypeActions({
           className="w-full sm:w-auto"
           onClick={onCancel}
         >
-          Cancel
+          {t("common_cancel")}
         </Button>
         {review ? (
           <Button
@@ -569,7 +572,7 @@ export function PrototypeActions({
             className="w-full sm:w-auto"
             onClick={onBack}
           >
-            Back
+            {t("common_back")}
           </Button>
         ) : null}
       </div>
@@ -588,7 +591,7 @@ export function PrototypeActions({
             id="filing-submit-unavailable"
             className="text-body-compact text-muted-foreground sm:text-right"
           >
-            Saving, signing and payment are not connected yet.
+            {t("filingFormShared_savingSigningAndPaymentAreNot")}
           </p>
         </div>
       ) : (
@@ -599,7 +602,7 @@ export function PrototypeActions({
             disabled
             className="w-full sm:w-auto"
           >
-            Save draft
+            {t("filingFormShared_saveDraft")}
           </Button>
           <Button type="submit" className="w-full sm:w-auto">
             {reviewLabel}
@@ -634,22 +637,23 @@ export function DiscardFilingDialog({
   /** The case tab the draft waits on. */
   finishIn?: string;
 }) {
+  const t = useTranslations();
   if (onSaveDraft) {
     return (
       <AlertDialog open={open} onOpenChange={onOpenChange}>
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Save this {noun} as a draft?</AlertDialogTitle>
+            <AlertDialogTitle>{t("filingFormShared_saveThisNounAsADraft", { noun })}</AlertDialogTitle>
             <AlertDialogDescription>
-              Finish it later from {finishIn}.
+              {t("filingFormShared_finishItLaterFromFinishIn", { finishIn })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button type="button" variant="outline" onClick={onDiscard}>
-              Discard
+              {t("filingFormShared_discard")}
             </Button>
             <Button type="button" onClick={onSaveDraft}>
-              Save as draft
+              {t("filingFormShared_saveAsDraft")}
             </Button>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
@@ -662,15 +666,15 @@ export function DiscardFilingDialog({
       <ChromeAlertDialogContent>
         <AlertDialogHeader>
           <ConfirmMark danger icon={FileXIcon} />
-          <AlertDialogTitle>Discard this {noun}?</AlertDialogTitle>
+          <AlertDialogTitle>{t("filingFormShared_discardThisNoun", { noun })}</AlertDialogTitle>
           <AlertDialogDescription>
-            Anything you entered will be lost.
+            {t("filingFormShared_anythingYouEnteredWillBeLost")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep editing</AlertDialogCancel>
+          <AlertDialogCancel>{t("filingFormShared_keepEditing")}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onDiscard}>
-            Discard
+            {t("filingFormShared_discard")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </ChromeAlertDialogContent>

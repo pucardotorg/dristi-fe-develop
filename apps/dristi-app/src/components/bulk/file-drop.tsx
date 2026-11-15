@@ -5,6 +5,7 @@ import { FileSpreadsheetIcon, UploadIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 function sizeOf(bytes: number): string {
   return bytes >= 1_000_000 ? `${(bytes / 1_000_000).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1000))} KB`;
@@ -36,6 +37,7 @@ export function FileDrop({
   hint: string;
   disabled?: boolean;
 }) {
+  const t = useTranslations();
   const input = React.useRef<HTMLInputElement>(null);
   const [over, setOver] = React.useState(false);
   const chosen = files.length > 0;
@@ -72,11 +74,11 @@ export function FileDrop({
               </span>
             ))}
             {files.length > 3 ? (
-              <span className="text-caption text-muted-foreground tabular-nums">and {files.length - 3} more</span>
+              <span className="text-caption text-muted-foreground tabular-nums">{t("fileDrop_andValueMore", { value: String(files.length - 3) })}</span>
             ) : null}
           </div>
           <Button type="button" variant="outline" size="sm" onClick={choose} disabled={disabled}>
-            Change
+            {t("fileDrop_change")}
           </Button>
         </>
       ) : (

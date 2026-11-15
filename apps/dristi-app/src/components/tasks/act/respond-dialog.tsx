@@ -27,6 +27,7 @@ import { useTaskActions } from "@/components/tasks/use-task-actions";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { Identifier } from "@/components/chrome/identifier";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 export function TaskRespondDialog({
   task,
@@ -42,6 +43,7 @@ export function TaskRespondDialog({
   /** Called with the task id once the decision lands — the row flashes. */
   onFinished?: (taskId: string) => void;
 }) {
+  const tr = useTranslations();
   const { act, busy, error } = useTaskActions({ inDialog: true });
   const [note, setNote] = React.useState("");
 
@@ -66,7 +68,7 @@ export function TaskRespondDialog({
     const done = await act(
       task.id,
       (t, ctx) => respond(t, ctx, accepted, note),
-      accepted ? "Request accepted" : "Request declined"
+      accepted ? tr("respondDialog_requestAccepted") : tr("respondDialog_requestDeclined")
     );
     if (done) {
       onOpenChange(false);
@@ -78,14 +80,14 @@ export function TaskRespondDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FlowDialogContent className="sm:max-w-lg" {...guard.contentProps} {...guard.outsideProps}>
         <DialogHeader>
-          <DialogTitle>Review the request</DialogTitle>
+          <DialogTitle>{tr("respondDialog_reviewTheRequest")}</DialogTitle>
           <DialogDescription>
             {kase ? (
               <>
                 {kase.parties}
                 <span aria-hidden> · </span>
                 {/* No copy control inside the dialog's accessible description. */}
-                <Identifier value={kase.stNumber} label="case number" copyable={false} />
+                <Identifier value={kase.stNumber} label={tr("respondDialog_caseNumber")} copyable={false} />
               </>
             ) : null}
           </DialogDescription>
@@ -99,12 +101,12 @@ export function TaskRespondDialog({
             </div>
             <p className="text-body-compact text-muted-foreground">{task.whatToDo}</p>
             <div className="space-y-2">
-              <Label htmlFor="respond-note">Note (optional)</Label>
+              <Label htmlFor="respond-note">{tr("respondDialog_noteOptional")}</Label>
               <Textarea
                 id="respond-note"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Goes back with your answer"
+                placeholder={tr("respondDialog_goesBackWithYourAnswer")}
                 rows={2}
               />
             </div>
@@ -121,10 +123,10 @@ export function TaskRespondDialog({
             disabled={!!busy}
             onClick={() => void decide(false)}
           >
-            Decline
+            {tr("respondDialog_decline")}
           </Button>
           <Button type="button" disabled={!!busy} onClick={() => void decide(true)}>
-            Accept
+            {tr("respondDialog_accept")}
           </Button>
         </DialogFooter>
         <DiscardQuestion guard={guard} />

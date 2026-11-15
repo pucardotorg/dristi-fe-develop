@@ -57,6 +57,8 @@ import {
   REGISTER_TABLE_ONLY,
 } from "@/components/cases/register-layout";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 const ORDER_PARAM = "order";
 
@@ -67,6 +69,7 @@ const ORDER_PARAM = "order";
  * case update can link straight to it.
  */
 export function CaseOrders({ record }: { record: CaseRecord }) {
+  const t = useTranslations();
   const orders = useMemo(() => {
     try {
       return ordersFile(record)
@@ -94,8 +97,8 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
   if (!orders) {
     return (
       <OrdersPanel>
-        <StatusLine tone="error" still title="Orders and notifications could not be loaded">
-          Refresh the page to try again.
+        <StatusLine tone="error" still title={t("caseOrders_ordersAndNotificationsCouldNotBe")}>
+          {t("caseOrders_refreshThePageToTryAgain")}
         </StatusLine>
       </OrdersPanel>
     );
@@ -125,11 +128,11 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
           onValueChange={(next) => {
             if (isOrderKindFilter(next)) setKind(next);
           }}
-          aria-label="Show orders or notifications"
+          aria-label={t("caseOrders_showOrdersOrNotifications")}
         >
           {ORDER_KIND_FILTERS.map((item) => (
             <SegmentedControlItem key={item.id} value={item.id}>
-              {item.label}
+              {translateText(t, item.label)}
             </SegmentedControlItem>
           ))}
         </SegmentedControl>
@@ -143,13 +146,13 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
               {kind === "notification"
-                ? "No notifications yet"
-                : "No orders yet"}
+                ? t("caseOrders_noNotificationsYet")
+                : t("caseOrders_noOrdersYet")}
             </EmptyTitle>
             <EmptyDescription>
               {kind === "notification"
-                ? "Notices from the court about listings appear here."
-                : "Orders appear here once the court publishes them."}
+                ? t("caseOrders_noticesFromTheCourtAboutListings")
+                : t("caseOrders_ordersAppearHereOnceTheCourt")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -169,7 +172,7 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
                 className={cn(recentId === order.id && RECENT_ROW)}
                 actions={
                   <Button type="button" onClick={() => setOpenOrder(order)}>
-                    View order
+                    {t("caseOrders_viewOrder")}
                   </Button>
                 }
               >
@@ -192,10 +195,10 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
         <Table>
           <TableHeader>
             <TableRow className={TABLE_HEAD_ROW}>
-              <TableHead className={cn(TABLE_HEAD, "w-36")}>Date</TableHead>
-              <TableHead className={cn(TABLE_HEAD, "w-1/3")}>Title</TableHead>
-              <TableHead className={TABLE_HEAD}>BoTD</TableHead>
-              <TableHead className={cn(TABLE_HEAD, "w-24")}>Action</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "w-36")}>{t("caseOrders_date")}</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "w-1/3")}>{t("caseOrders_title")}</TableHead>
+              <TableHead className={TABLE_HEAD}>{t("caseOrders_boTd")}</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "w-24")}>{t("caseOrders_action")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className={tableBodyClass({ marksOpenRow: true })}>
@@ -237,7 +240,7 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
                   ) : (
                     <>
                       <span aria-hidden>—</span>
-                      <span className="sr-only">Not recorded</span>
+                      <span className="sr-only">{t("caseOrders_notRecorded")}</span>
                     </>
                   )}
                 </TableCell>
@@ -269,10 +272,11 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
 }
 
 export function OrdersLoading() {
+  const t = useTranslations();
   return (
     <OrdersPanel busy>
       <span className="sr-only" role="status">
-        Loading orders and notifications
+        {t("caseOrders_loadingOrdersAndNotifications")}
       </span>
       <div className="flex flex-col gap-2">
         {Array.from({ length: 5 }, (_, index) => (
@@ -292,12 +296,13 @@ function OrdersPanel({
   busy?: boolean;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <RestingCard>
       <CardContent className="flex flex-col gap-4" aria-busy={busy}>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <h2 className="w-full text-body font-semibold text-foreground md:pointer-fine:w-auto md:landscape:w-auto">
-            Orders & Notifications
+            {t("caseOrders_ordersNotifications")}
           </h2>
           {action}
         </div>

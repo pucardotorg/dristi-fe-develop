@@ -256,7 +256,7 @@ export function sampleApplications(
       updatedOn: filedOn,
       form: encodeDraft(draft),
       documents: [],
-      history: [{ on: filedOn, text: "Draft started" }],
+      history: [{ on: filedOn, text: "seed_draftStarted" }],
     };
     app = proceedToSign(app, filedOn);
     app = sign(app, seat, advocate, filedOn);
@@ -297,7 +297,7 @@ export function sampleApplications(
           {
             key: `sample:${app.id}`,
             id: `ORD-${counters.order}`,
-            title: "Onboarding of application",
+            title: "seed_onboardingOfApplication",
             text: [
               `The application for ${typeLabel.toLowerCase()} filed on behalf of the ${sample.side} is taken on file as ${app.applicationNumber}.`,
               decideOn
@@ -339,7 +339,7 @@ export function sampleApplications(
             applicationDetails: applicationDetailsFromPlain(sample.onboard.objection),
           }),
           documents: [],
-          history: [{ on, text: "Draft started" }],
+          history: [{ on, text: "seed_draftStarted" }],
         };
         objection = proceedToSign(objection, on);
         objection = sign(objection, objectionSeat, objectionAdvocate, on);
@@ -354,7 +354,7 @@ export function sampleApplications(
         app = {
           ...app,
           objectionId: objection.id,
-          history: [...app.history, { on, text: "Objection filed" }],
+          history: [...app.history, { on, text: "seed_objectionFiled" }],
         };
       }
     }

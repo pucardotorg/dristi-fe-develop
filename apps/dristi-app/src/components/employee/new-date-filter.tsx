@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatCourtDay, formatListingDate } from "@/lib/employee/hearings";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /** How many hearings, said the way every count on this screen is said. */
 function hearings(count: number): string {
@@ -92,7 +93,8 @@ export function NewDateFilter({
   value: string | null;
   onChange: (day: string | null) => void;
 }) {
-  if (days.length < 2) return <>New hearing date</>;
+  const t = useTranslations();
+  if (days.length < 2) return <>{t("newDateFilter_newHearingDate")}</>;
 
   const total = days.reduce((sum, entry) => sum + entry.count, 0);
   const showing = value === null ? null : days.find((d) => d.day === value);
@@ -132,11 +134,11 @@ export function NewDateFilter({
              the count line: what is being filtered, and what it is filtered to. */
           aria-label={
             showing
-              ? `New hearing date, showing ${formatCourtDay(showing.day)} only. Change which date is showing`
-              : `New hearing date, showing all ${days.length} dates. Filter by date`
+              ? t("newDateFilter_newHearingDateShowingFormatCourt", { formatCourtDay: formatCourtDay(showing.day) })
+              : t("newDateFilter_newHearingDateShowingAllLength", { length: String(days.length) })
           }
         >
-          New hearing date
+          {t("newDateFilter_newHearingDate")}
           {/* Sized by the button scale rather than overridden: the compact step draws its
               glyphs at 12px, which is the chevron a 32px control wants. */}
           <ChevronDownIcon aria-hidden />
@@ -148,10 +150,7 @@ export function NewDateFilter({
           onValueChange={(next) => onChange(next === "all" ? null : next)}
         >
           <DropdownMenuRadioItem value="all">
-            All dates
-            <span className="ml-auto pl-4 text-caption tabular-nums text-muted-foreground">
-              {hearings(total)}
-            </span>
+            {t.rich("newDateFilter_allDatesHearings", { hearings: hearings(total), span: (chunks) => <span className="ml-auto pl-4 text-caption tabular-nums text-muted-foreground">{chunks}</span> })}
           </DropdownMenuRadioItem>
           {days.map((entry) => (
             <DropdownMenuRadioItem key={entry.day} value={entry.day}>
@@ -186,6 +185,7 @@ export function NewDateFilterField({
   value: string | null;
   onChange: (day: string | null) => void;
 }) {
+  const t = useTranslations();
   if (days.length < 2) return null;
 
   const showing = value === null ? null : days.find((d) => d.day === value);
@@ -206,7 +206,7 @@ export function NewDateFilterField({
               well reads as a count of something else. The per-date tallies are in the
               menu, where they are what decides the choice. */}
           <span className="truncate">
-            {showing ? formatListingDate(showing.day) : "All dates"}
+            {showing ? formatListingDate(showing.day) : t("newDateFilter_allDates")}
           </span>
           <ChevronDownIcon aria-hidden className="size-4 text-muted-foreground" />
         </Button>
@@ -216,7 +216,7 @@ export function NewDateFilterField({
           value={value ?? "all"}
           onValueChange={(next) => onChange(next === "all" ? null : next)}
         >
-          <DropdownMenuRadioItem value="all">All dates</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="all">{t("newDateFilter_allDates")}</DropdownMenuRadioItem>
           {days.map((entry) => (
             <DropdownMenuRadioItem key={entry.day} value={entry.day}>
               <span className="tabular-nums">{formatCourtDay(entry.day)}</span>

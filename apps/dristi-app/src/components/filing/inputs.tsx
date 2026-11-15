@@ -31,6 +31,8 @@ import {
   useFieldReadOnlyHint,
   useLockedDisabled,
 } from "@/components/filing/posture";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * A flagged field's value, shown but not editable — for the controls that have no
@@ -226,8 +228,8 @@ export function ComboField({
   onChange,
   items,
   onSelect,
-  placeholder = "Search or type",
-  emptyLabel = "No match. What you typed is kept.",
+  placeholder = "inputs_searchOrType",
+  emptyLabel = "inputs_noMatchWhatYouTypedIs",
   renderItem,
   itemKey = (item) => String(item),
   itemLabel = (item) => String(item),
@@ -259,6 +261,7 @@ export function ComboField({
   ariaLabel?: string;
   id?: string;
 }) {
+  const t = useTranslations();
   const locked = useLockedDisabled(disabled);
   const readOnly = useFieldReadOnly();
   if (readOnly) {
@@ -281,7 +284,7 @@ export function ComboField({
       <ComboboxInput
         id={id}
         aria-label={ariaLabel}
-        placeholder={placeholder}
+        placeholder={translateText(t, placeholder)}
         className="w-full"
         autoComplete="off"
       />
@@ -291,7 +294,7 @@ export function ComboField({
           advocate join dialog's combobox carries. No effect on the filing
           pages, which have no modal. */}
       <ComboboxContent className="pointer-events-auto">
-        <ComboboxEmpty>{emptyLabel}</ComboboxEmpty>
+        <ComboboxEmpty>{translateText(t, emptyLabel)}</ComboboxEmpty>
         <ComboboxList>
           {(item: unknown) => (
             <ComboboxItem key={itemKey(item)} value={item}>

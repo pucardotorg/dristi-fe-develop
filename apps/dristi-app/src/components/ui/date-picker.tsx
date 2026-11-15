@@ -13,6 +13,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 type DatePickerProps = {
   value?: Date
@@ -36,10 +38,11 @@ function DatePicker({
   value,
   defaultValue,
   onValueChange,
-  placeholder = "Pick a date",
+  placeholder = "datePicker_pickADate",
   disabled,
   className,
 }: DatePickerProps) {
+  const t = useTranslations();
   const [internalValue, setInternalValue] = React.useState<Date | undefined>(
     defaultValue
   )
@@ -64,7 +67,7 @@ function DatePicker({
         >
           <CalendarDaysIcon data-icon="inline-start" aria-hidden />
           <span className="truncate">
-            {selected ? format(selected, "PPP") : placeholder}
+            {selected ? format(selected, "PPP") : translateText(t, placeholder)}
           </span>
         </Button>
       </PopoverTrigger>

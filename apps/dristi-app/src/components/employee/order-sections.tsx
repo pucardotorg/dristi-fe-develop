@@ -32,6 +32,7 @@ import type {
   NextListingChoice,
 } from "@/lib/employee/order-draft";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /*
  * The order screen's hearing sections — Attendance, Applications and Next hearing — and
@@ -114,6 +115,7 @@ export function AttendanceSection({
   attendance: ComposerAttendance;
   disabled: boolean;
 }) {
+  const t = useTranslations();
   return (
     <section
       id="order-attendance"
@@ -126,7 +128,7 @@ export function AttendanceSection({
           id="order-attendance-heading"
           className="text-body-compact font-semibold"
         >
-          Attendance
+          {t("orderSections_attendance")}
         </h2>
         {disabled ? null : (
           <Button
@@ -135,7 +137,7 @@ export function AttendanceSection({
             className="-mr-3 text-body-compact"
             onClick={attendance.onMarkAllPresent}
           >
-            Mark all present
+            {t("orderSections_markAllPresent")}
           </Button>
         )}
       </div>
@@ -164,7 +166,7 @@ export function AttendanceSection({
                   className="grid shrink-0 grid-cols-3 gap-1 @min-[24rem]:w-72"
                 >
                   <MarkButton
-                    label="Present"
+                    label={t("orderSections_present")}
                     checked={mark === "present"}
                     tone="present"
                     disabled={disabled}
@@ -176,7 +178,7 @@ export function AttendanceSection({
                     }
                   />
                   <MarkButton
-                    label="Absent"
+                    label={t("orderSections_absent")}
                     checked={mark === "absent"}
                     tone="absent"
                     disabled={disabled}
@@ -188,7 +190,7 @@ export function AttendanceSection({
                     }
                   />
                   <MarkButton
-                    label="Skip"
+                    label={t("orderSections_skip")}
                     checked={mark === "not-required"}
                     tone="not-required"
                     disabled={disabled}
@@ -209,7 +211,7 @@ export function AttendanceSection({
           still follows from leaving someone unmarked — so the roll is never incomplete,
           and attendance never holds up sending for signing (`ATT-04`). */}
       <p className="text-caption text-muted-foreground">
-        Skipped and unmarked people are not printed on the order.
+        {t("orderSections_skippedAndUnmarkedPeopleAreNot")}
       </p>
     </section>
   );
@@ -268,6 +270,7 @@ export function ApplicationsSection({
   /** Standing as its own card, with a head band (the order data). */
   framed?: boolean;
 }) {
+  const t = useTranslations();
   return (
     <section
       id="order-applications"
@@ -283,7 +286,7 @@ export function ApplicationsSection({
           id="order-applications-heading"
           className="text-body-compact font-semibold"
         >
-          Applications
+          {t("orderSections_applications")}
         </h2>
       </div>
       <div className="min-w-0">
@@ -313,11 +316,11 @@ export function ApplicationsSection({
                   type="button"
                   variant="ghost"
                   className="-my-2 -mr-2 shrink-0 text-body-compact @min-[36rem]:my-0 @min-[36rem]:mr-0"
-                  aria-label={`View ${application.type} ${application.number}`}
+                  aria-label={t("orderSections_viewTypeNumber", { type: application.type, number: application.number })}
                   onClick={() => applications.onOpen(application.id)}
                 >
                   <EyeIcon data-icon="inline-start" aria-hidden />
-                  View
+                  {t("orderSections_view")}
                 </Button>
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -331,8 +334,8 @@ export function ApplicationsSection({
                       }
                     >
                       {application.decision === "allowed"
-                        ? "Accepted"
-                        : "Rejected"}
+                        ? t("orderSections_accepted")
+                        : t("orderSections_rejected")}
                     </Badge>
                     {disabled ? null : (
                       <Button
@@ -343,7 +346,7 @@ export function ApplicationsSection({
                           applications.onDecide(application.id, null)
                         }
                       >
-                        Undo
+                        {t("orderSections_undo")}
                       </Button>
                     )}
                   </>
@@ -357,7 +360,7 @@ export function ApplicationsSection({
                         applications.onDecide(application.id, "dismissed")
                       }
                     >
-                      Reject
+                      {t("orderSections_reject")}
                     </Button>
                     <Button
                       type="button"
@@ -366,7 +369,7 @@ export function ApplicationsSection({
                         applications.onDecide(application.id, "allowed")
                       }
                     >
-                      Accept
+                      {t("orderSections_accept")}
                     </Button>
                   </>
                 )}
@@ -388,6 +391,7 @@ export function NextHearingSection({
   today: string;
   disabled: boolean;
 }) {
+  const t = useTranslations();
   const id = "order-next";
   const listed = nextHearing.next !== "none";
   /* A hearing's order shows the posting the cause list set and does not take one
@@ -409,7 +413,7 @@ export function NextHearingSection({
     >
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         <h2 id={`${id}-heading`} className="text-body-compact font-semibold">
-          Next hearing
+          {t("orderSections_nextHearing")}
         </h2>
         {fromCauseList ? null : (
         <div className="flex min-h-10 items-center gap-2">
@@ -425,7 +429,7 @@ export function NextHearingSection({
             htmlFor={`${id}-none`}
             className="cursor-pointer text-body-compact font-normal"
           >
-            Not listed again
+            {t("orderSections_notListedAgain")}
           </Label>
         </div>
         )}
@@ -449,7 +453,7 @@ export function NextHearingSection({
                 id={`${id}-date-label`}
                 className="text-body-compact font-medium"
               >
-                Date
+                {t("orderSections_date")}
               </span>
             }
             value={nextHearing.date ?? ""}
@@ -462,7 +466,7 @@ export function NextHearingSection({
               id={`${id}-purpose-label`}
               className="text-body-compact font-medium"
             >
-              Purpose
+              {t("orderSections_purpose")}
             </span>
             <PurposeField
               value={nextHearing.purpose}
@@ -495,12 +499,13 @@ function CausePostingValues({
   date: string | null;
   purpose: CourtHearingPurposeId | "";
 }) {
+  const t = useTranslations();
   const listed = next !== "none";
   return (
     <div className="grid min-w-0 gap-4 sm:grid-cols-2">
       <div className="flex min-w-0 flex-col gap-2">
         <Label htmlFor={`${id}-date`} className="text-body-compact font-medium">
-          Date
+          {t("orderSections_date")}
         </Label>
         <Input
           id={`${id}-date`}
@@ -508,7 +513,7 @@ function CausePostingValues({
           value={
             !listed ? "Not listed again" : date ? formatListingDate(date) : ""
           }
-          placeholder="Not set"
+          placeholder={t("orderSections_notSet")}
           className="tabular-nums"
         />
       </div>
@@ -517,13 +522,13 @@ function CausePostingValues({
           htmlFor={`${id}-purpose`}
           className="text-body-compact font-medium"
         >
-          Purpose
+          {t("orderSections_purpose")}
         </Label>
         <Input
           id={`${id}-purpose`}
           readOnly
           value={listed && purpose ? courtHearingPurposeLabel(purpose) : ""}
-          placeholder={listed ? "Not set" : "Not listed"}
+          placeholder={listed ? t("orderSections_notSet") : t("orderSections_notListed")}
         />
       </div>
     </div>

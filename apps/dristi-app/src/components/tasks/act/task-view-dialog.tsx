@@ -29,6 +29,7 @@ import { useTasks } from "@/lib/tasks/store";
 import { confirmPayment } from "@/lib/tasks/transitions";
 import type { Case, Task } from "@/lib/tasks/types";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * **A task to look at, not to act on — in a window over the list** (owner, 2026-10-14).
@@ -65,6 +66,7 @@ export function TaskViewDialog({
 }
 
 function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: () => void }) {
+  const tr = useTranslations();
   const { people, user, online } = useTasks();
   const { act, busy, error } = useTaskActions({ inDialog: true });
   const closed = ["done", "expired", "obsolete", "archived"].includes(task.status) || Boolean(task.archived);
@@ -95,7 +97,7 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
       <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
         {task.dueAt ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Due</DescriptionTerm>
+            <DescriptionTerm>{tr("taskViewDialog_due")}</DescriptionTerm>
             <DescriptionDetails className="tabular-nums">
               {longDate(task.dueAt)}
               {task.deadlineNote ? (
@@ -106,19 +108,19 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
         ) : null}
         {task.feeHead ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Fee</DescriptionTerm>
+            <DescriptionTerm>{tr("taskViewDialog_fee")}</DescriptionTerm>
             <DescriptionDetails>{task.feeHead}</DescriptionDetails>
           </DescriptionRow>
         ) : null}
         {task.amountPaise !== undefined ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Amount</DescriptionTerm>
+            <DescriptionTerm>{tr("taskViewDialog_amount")}</DescriptionTerm>
             <DescriptionDetails className="font-semibold tabular-nums">{rupees(task.amountPaise)}</DescriptionDetails>
           </DescriptionRow>
         ) : null}
         {task.documentsNeeded?.length ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Documents</DescriptionTerm>
+            <DescriptionTerm>{tr("taskViewDialog_documents")}</DescriptionTerm>
             <DescriptionDetails>
               <ul className="flex flex-col gap-1">
                 {task.documentsNeeded.map((name) => {
@@ -129,7 +131,7 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
                       {/* Attaching is a filing's part; a signature is on the document itself. */}
                       {uploads || files.length ? (
                         <span className="text-body-compact text-muted-foreground">
-                          {files.length ? files.map((f) => f.name).join(", ") : "Not attached"}
+                          {files.length ? files.map((f) => f.name).join(", ") : tr("taskViewDialog_notAttached")}
                         </span>
                       ) : null}
                     </li>
@@ -141,21 +143,21 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
         ) : null}
         {loose.length ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Files</DescriptionTerm>
+            <DescriptionTerm>{tr("taskViewDialog_files")}</DescriptionTerm>
             <DescriptionDetails>{loose.map((f) => f.name).join(", ")}</DescriptionDetails>
           </DescriptionRow>
         ) : null}
         {reference ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>{task.completion?.receipt ? "Receipt" : "Gateway reference"}</DescriptionTerm>
+            <DescriptionTerm>{task.completion?.receipt ? tr("taskViewDialog_receipt") : tr("taskViewDialog_gatewayReference")}</DescriptionTerm>
             <DescriptionDetails>
-              <Identifier value={reference} label="reference" />
+              <Identifier value={reference} label={tr("taskViewDialog_reference")} />
             </DescriptionDetails>
           </DescriptionRow>
         ) : null}
         {task.completion ? (
           <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Completed</DescriptionTerm>
+            <DescriptionTerm>{tr("taskViewDialog_completed")}</DescriptionTerm>
             <DescriptionDetails className="tabular-nums">
               {dateTime(task.completion.at)}
               {by ? ` · ${by.name}` : ""}
@@ -167,7 +169,7 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
       {task.history.length ? (
         <section aria-labelledby={`history-${task.id}`} className="flex flex-col gap-2">
           <h3 id={`history-${task.id}`} className="text-body-compact font-semibold">
-            History
+            {tr("taskViewDialog_history")}
           </h3>
           <ol className="flex flex-col border-l border-hairline pl-4">
             {[...task.history].reverse().map((entry, index) => (
@@ -195,11 +197,11 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
               })
             }
           >
-            Sandbox: the gateway confirms
+            {tr("taskViewDialog_sandboxTheGatewayConfirms")}
           </Button>
         ) : null}
         <DialogClose asChild>
-          <Button type="button">Close</Button>
+          <Button type="button">{tr("common_close")}</Button>
         </DialogClose>
       </DialogFooter>
     </FlowDialogContent>

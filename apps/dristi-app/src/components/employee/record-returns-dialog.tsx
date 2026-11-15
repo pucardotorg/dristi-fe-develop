@@ -37,6 +37,8 @@ import {
 } from "@/lib/employee/sign-process";
 import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { OutcomeHeader } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** The covers being marked, then what was recorded — one scene, settling in place. */
 type Stage = "record" | "done";
@@ -145,6 +147,7 @@ function RecordReturnsBody({
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const flow = useStagedFlow({ order: ORDER, scene: SCENE });
   const done = flow.stage === "done";
   const [tally, setTally] = React.useState({ served: 0, total: 0 });
@@ -167,7 +170,7 @@ function RecordReturnsBody({
   const ready = left === 0 && returnedOn !== undefined;
   const cases = new Set(rows.map((process) => process.caseNumber)).size;
   const subject =
-    rows.length === 1 ? "1 return" : `${rows.length} returns`;
+    rows.length === 1 ? t("recordReturnsDialog_1Return") : `${rows.length} returns`;
 
   function mark(id: string, next: ReturnMark) {
     setMarks((current) => ({ ...current, [id]: { ...current[id], ...next } }));
@@ -235,7 +238,7 @@ function RecordReturnsBody({
       footer={
         done ? (
           <Button type="button" onClick={onClose}>
-            Done
+            {t("recordReturnsDialog_done")}
           </Button>
         ) : (
           <>
@@ -245,13 +248,13 @@ function RecordReturnsBody({
               className="mr-auto self-center text-body-compact text-muted-foreground tabular-nums"
               aria-live="polite"
             >
-              {left > 0 ? `${left} still to mark` : ""}
+              {left > 0 ? t("recordReturnsDialog_leftStillToMark", { left: String(left) }) : ""}
             </p>
             <Button type="button" variant="outline" onClick={guard.close}>
-              Back
+              {t("common_back")}
             </Button>
             <Button type="button" disabled={!ready} onClick={record}>
-              {ACT.confirm}
+              {translateText(t, ACT.confirm)}
             </Button>
           </>
         )
@@ -279,13 +282,13 @@ function RecordReturnsBody({
       ) : (
         <div className="flex w-full flex-col gap-6">
           <DialogDescription className="text-body text-muted-foreground">
-            Mark what each cover came back as. The date applies to all of them.
+            {t("recordReturnsDialog_markWhatEachCoverCameBack")}
           </DialogDescription>
 
           <div className="flex flex-wrap items-end justify-between gap-4">
             <ReturnedOnField value={returnedOn} onChange={setReturnedOn} />
             <Button type="button" variant="ghost" onClick={markAllServed}>
-              Mark all {allWord}
+              {t("recordReturnsDialog_markAllAllWord", { allWord })}
             </Button>
           </div>
 
@@ -319,10 +322,11 @@ export function ReturnedOnField({
   value: Date | undefined;
   onChange: (value: Date | undefined) => void;
 }) {
+  const t = useTranslations();
   const labelId = React.useId();
   return (
     <Field className="w-full sm:w-fit">
-      <FieldLabel id={labelId}>Returned on</FieldLabel>
+      <FieldLabel id={labelId}>{t("recordReturnsDialog_returnedOn")}</FieldLabel>
       <div role="group" aria-labelledby={labelId}>
         <DatePicker
           value={value}
@@ -351,6 +355,7 @@ export function ReturnRow({
   mark: ReturnMark | undefined;
   onMark: (next: ReturnMark) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const { court } = useCourt();
   const inline = courtProcessTypeInline(process.type);
@@ -371,7 +376,7 @@ export function ReturnRow({
             </span>
             <Identifier
               value={process.caseNumber}
-              label="case number"
+              label={t("recordReturnsDialog_caseNumber")}
               copyable={false}
             />
           </p>
@@ -387,7 +392,7 @@ export function ReturnRow({
             if (next === "served") onMark({ served: true, reason: undefined });
             if (next === "unserved") onMark({ served: false });
           }}
-          aria-label={`What the ${inline} in ${courtText(process.caseNumber)} came back as`}
+          aria-label={t("recordReturnsDialog_whatTheInlineInCourtText", { inline, courtText: courtText(process.caseNumber) })}
           className="flex flex-wrap gap-x-6 gap-y-1"
         >
           {(["served", "unserved"] as const).map((option) => (
@@ -403,7 +408,7 @@ export function ReturnRow({
 
       {mark?.served === false ? (
         <Field>
-          <FieldLabel htmlFor={reasonId}>Reason</FieldLabel>
+          <FieldLabel htmlFor={reasonId}>{t("recordReturnsDialog_reason")}</FieldLabel>
           <Select
             value={mark.reason ?? ""}
             onValueChange={(reason) =>
@@ -411,7 +416,7 @@ export function ReturnRow({
             }
           >
             <SelectTrigger id={reasonId} className="w-full sm:w-72">
-              <SelectValue placeholder="Choose a reason" />
+              <SelectValue placeholder={t("recordReturnsDialog_chooseAReason")} />
             </SelectTrigger>
             <SelectContent>
               {nonServiceReasonsFor(court).map((reason) => (
@@ -428,8 +433,7 @@ export function ReturnRow({
         <>
           <Field>
             <FieldLabel htmlFor={commentId}>
-              Comment
-              <span className="font-normal text-muted-foreground"> (optional)</span>
+              {t.rich("recordReturnsDialog_commentOptional", { span: (chunks) => <span className="font-normal text-muted-foreground">{chunks}</span> })}
             </FieldLabel>
             <Textarea
               id={commentId}
@@ -439,7 +443,7 @@ export function ReturnRow({
             />
           </Field>
           <UploadedDocField
-            label="Supporting file"
+            label={t("recordReturnsDialog_supportingFile")}
             file={mark.file ?? null}
             onFileChange={(file) => onMark({ file })}
           />

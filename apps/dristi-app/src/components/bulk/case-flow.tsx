@@ -65,6 +65,8 @@ import { OriginalDoc } from "./original-doc";
 import { FlagLine } from "./scrutiny-tab";
 import { CaseBadge } from "./stage";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** Where the batch is, on one of its tabs. */
 function batchHref(batchId: string, tab: string, ai: string | null, caseId?: string): string {
@@ -103,6 +105,7 @@ export function BulkCaseFlow({
   caseId: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const ready = useGujarat();
   const { profile } = useCourt();
   const aiParam = useSearchParams().get("ai");
@@ -185,7 +188,7 @@ export function BulkCaseFlow({
     const status = (
       <span className="inline-flex items-center gap-2 text-body-compact text-success-ink">
         <CheckIcon className="size-4" aria-hidden />
-        {editable(c) ? "This case is ready" : "Nothing to change here"}
+        {editable(c) ? t("caseFlow_thisCaseIsReady") : t("caseFlow_nothingToChangeHere")}
         {left ? (
           <span className="text-muted-foreground tabular-nums">
             · {left} more {left === 1 ? "case needs" : "cases need"} you
@@ -195,12 +198,12 @@ export function BulkCaseFlow({
     );
     return toFix
       ? {
-          label: "Next case to fix",
+          label: t("caseFlow_nextCaseToFix"),
           href: caseFlowHref(batchId, toFix, firstFlaggedStep(toFix.flags), aiParam),
           status,
         }
-      : { label: "Back to all cases", href: batchHref(batchId, "scrutiny", aiParam, c.id), status };
-  }, [batch, c, step, batchId, aiParam, courtText]);
+      : { label: t("caseFlow_backToAllCases"), href: batchHref(batchId, "scrutiny", aiParam, c.id), status };
+  }, [batch, c, step, batchId, aiParam, courtText, t]);
 
   const policy = React.useMemo<FieldPolicy>(() => {
     const flags = c?.flags ?? [];
@@ -238,7 +241,7 @@ export function BulkCaseFlow({
           className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
         >
           <Spinner className="mr-2 size-4" />
-          Opening the case…
+          {t("caseFlow_openingTheCase")}
         </div>
       }
       notFound={
@@ -248,16 +251,16 @@ export function BulkCaseFlow({
               <EmptyMedia variant="icon">
                 <FileQuestionIcon aria-hidden />
               </EmptyMedia>
-              <EmptyTitle className="text-body font-semibold">This case isn&apos;t in the batch</EmptyTitle>
+              <EmptyTitle className="text-body font-semibold">{t("caseFlow_thisCaseIsntInTheBatch")}</EmptyTitle>
               <EmptyDescription className="text-body">
-                It may have been clubbed into another batch, or the link is old.
+                {t("caseFlow_itMayHaveBeenClubbedInto")}
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button asChild>
                 <Link href={batchHref(batchId, "scrutiny", aiParam)}>
                   <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-                  Back to the batch
+                  {t("caseFlow_backToTheBatch")}
                 </Link>
               </Button>
             </EmptyContent>
@@ -315,6 +318,7 @@ function CaseBar({
   setBatch: (b: BatchView) => void;
   onBatchFixed: () => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const { flush, update } = useFiling();
   const [busy, setBusy] = React.useState(false);
@@ -370,7 +374,7 @@ function CaseBar({
         <Button asChild variant="ghost" className="-ml-2">
           <Link href={batchHref(batchId, "scrutiny", aiParam, c.id)}>
             <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-            All cases
+            {t("caseFlow_allCases")}
           </Link>
         </Button>
         <div className="flex min-w-0 flex-1 flex-col">
@@ -380,10 +384,10 @@ function CaseBar({
           </span>
           <span className="flex flex-wrap gap-x-2 text-caption text-muted-foreground tabular-nums">
             <span>
-              Case {at + 1} of {cases.length} in {batch.number}
+              {t("caseFlow_caseValueOfLengthInNumber", { value: String(at + 1), length: String(cases.length), number: batch.number })}
             </span>
             <span>· {c.reference}</span>
-            {c.cheque ? <span>· Cheque {c.cheque}</span> : null}
+            {c.cheque ? <span>{t("caseFlow_chequeCheque", { cheque: c.cheque })}</span> : null}
           </span>
           {c.original ? (
             <span className="mt-1">
@@ -391,19 +395,19 @@ function CaseBar({
             </span>
           ) : null}
         </div>
-        <nav aria-label="Cases in this batch" className="flex flex-wrap items-center gap-2">
+        <nav aria-label={t("caseFlow_casesInThisBatch")} className="flex flex-wrap items-center gap-2">
           {prev ? (
             <Button asChild variant="outline">
               <Link href={sameStep(prev)}>
                 <ChevronLeftIcon data-icon="inline-start" aria-hidden />
-                Previous
+                {t("caseFlow_previous")}
               </Link>
             </Button>
           ) : null}
           {next ? (
             <Button asChild variant="outline">
               <Link href={sameStep(next)}>
-                Next
+                {t("common_next")}
                 <ChevronRightIcon data-icon="inline-end" aria-hidden />
               </Link>
             </Button>
@@ -411,7 +415,7 @@ function CaseBar({
           {toFix ? (
             <Button asChild variant="outline">
               <Link href={caseFlowHref(batchId, toFix, firstFlaggedStep(toFix.flags), aiParam)}>
-                Next case to fix
+                {t("caseFlow_nextCaseToFix")}
                 <ChevronRightIcon data-icon="inline-end" aria-hidden />
               </Link>
             </Button>
@@ -435,12 +439,12 @@ function CaseBar({
           ) : c.flags.length ? (
             <p className="flex items-center gap-2 text-body-compact text-muted-foreground">
               <CheckIcon aria-hidden className="size-4 text-success-ink" />
-              Nothing to fix or check in this section.
+              {t("caseFlow_nothingToFixOrCheckIn")}
             </p>
           ) : (
             <p className="flex items-center gap-2 text-body-compact text-muted-foreground">
               <CheckIcon aria-hidden className="size-4 text-success-ink" />
-              Nothing to fix or check in this case.
+              {t("caseFlow_nothingToFixOrCheckInThis")}
             </p>
           )}
           {elsewhere.length ? (
@@ -470,7 +474,7 @@ function CaseBar({
             onClick={() => update(demoFill)}
           >
             <WandSparklesIcon data-icon="inline-start" aria-hidden />
-            Fill with demo values
+            {t("caseFlow_fillWithDemoValues")}
           </Button>
         </div>
       ) : null}
@@ -490,6 +494,7 @@ function FlagRow({
   busy: boolean;
   act: (body: Record<string, unknown>, batchWide?: boolean) => Promise<void>;
 }) {
+  const t = useTranslations();
   const fix = f.fix;
   const valueFix = fix && (fix.kind === "text" || fix.kind === "date" || fix.kind === "select") ? fix : null;
   return (
@@ -505,7 +510,7 @@ function FlagRow({
             disabled={busy}
             onClick={() => void act({ action: "declare-no-contact", caseId, accusedId: fix.accusedId })}
           >
-            Declare neither is known
+            {t("caseFlow_declareNeitherIsKnown")}
           </Button>
         ) : null}
         {f.level === "soft" ? (
@@ -515,7 +520,7 @@ function FlagRow({
             disabled={busy}
             onClick={() => void act({ action: "skip", caseId, flagId: f.id })}
           >
-            Skip
+            {t("caseFlow_skip")}
           </Button>
         ) : null}
       </div>
@@ -545,20 +550,21 @@ function BatchFix({
   busy: boolean;
   onApply: (value: string) => Promise<void>;
 }) {
+  const t = useTranslations();
   const id = React.useId();
   const [value, setValue] = React.useState(fix.value ?? "");
   return (
     <div className="ml-8 flex max-w-md flex-col gap-2">
       <Field className="gap-1.5">
         <FieldLabel htmlFor={id} className="text-body-compact">
-          {fix.label}
+          {translateText(t, fix.label)}
         </FieldLabel>
         {fix.kind === "select" ? (
           <NativeSelect id={id} value={value} onChange={(e) => setValue(e.target.value)} className="w-full">
-            <NativeSelectOption value="">Select</NativeSelectOption>
+            <NativeSelectOption value="">{t("caseFlow_select")}</NativeSelectOption>
             {fix.options.map((o) => (
               <NativeSelectOption key={o.value} value={o.value}>
-                {o.label}
+                {translateText(t, o.label)}
               </NativeSelectOption>
             ))}
           </NativeSelect>
@@ -571,7 +577,7 @@ function BatchFix({
             onChange={(e) => setValue(e.target.value)}
           />
         )}
-        <FieldDescription>Applies to every case in the batch that is not signed yet.</FieldDescription>
+        <FieldDescription>{t("caseFlow_appliesToEveryCaseInThe")}</FieldDescription>
       </Field>
       <Button
         variant="outline"
@@ -579,7 +585,7 @@ function BatchFix({
         disabled={busy || !value.trim()}
         onClick={() => void onApply(value)}
       >
-        Apply to every case
+        {t("caseFlow_applyToEveryCase")}
       </Button>
     </div>
   );

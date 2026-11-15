@@ -12,6 +12,8 @@ import {
   COURT_HEARING_PURPOSES,
   type CourtHearingPurposeId,
 } from "@/lib/employee/hearings";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 type Purpose = (typeof COURT_HEARING_PURPOSES)[number];
 
@@ -26,7 +28,7 @@ export function PurposeField({
   value,
   onChange,
   disabled,
-  placeholder = "Choose a purpose",
+  placeholder = "purposeField_chooseAPurpose",
   id,
   ariaLabel,
   labelledBy,
@@ -39,6 +41,7 @@ export function PurposeField({
   ariaLabel?: string;
   labelledBy?: string;
 }) {
+  const t = useTranslations();
   const selected = COURT_HEARING_PURPOSES.find((entry) => entry.id === value) ?? null;
   return (
     <Combobox
@@ -55,7 +58,7 @@ export function PurposeField({
         id={id}
         aria-label={labelledBy ? undefined : ariaLabel}
         aria-labelledby={labelledBy}
-        placeholder={placeholder}
+        placeholder={translateText(t, placeholder)}
         disabled={disabled}
         className="w-full"
         autoComplete="off"
@@ -63,7 +66,7 @@ export function PurposeField({
       {/* pointer-events-auto: a Radix modal dialog sets pointer-events:none on the body,
           which would swallow this portalled popup inside the hearing dialog. */}
       <ComboboxContent className="pointer-events-auto">
-        <ComboboxEmpty>No purpose matches.</ComboboxEmpty>
+        <ComboboxEmpty>{t("purposeField_noPurposeMatches")}</ComboboxEmpty>
         <ComboboxList>
           {(item: Purpose) => (
             <ComboboxItem key={item.id} value={item}>

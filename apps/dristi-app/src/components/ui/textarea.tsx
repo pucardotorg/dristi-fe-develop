@@ -4,8 +4,9 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { useFieldControlProps } from "@/components/ui/field"
+import { useTranslations } from "next-intl";
 
-const PREFILLED_HINT = "Machine filled, not yet verified"
+const PREFILLED_HINT = "textarea_machineFilledNotYetVerified"
 
 function Textarea({
   className,
@@ -18,6 +19,7 @@ function Textarea({
   /** Machine-read, human-unverified value — amber fill + dashed border; never colour alone. */
   prefilled?: boolean
 }) {
+  const t = useTranslations();
   const fieldProps = useFieldControlProps({
     id,
     "aria-describedby": ariaDescribedBy,
@@ -46,7 +48,7 @@ function Textarea({
       />
       {prefilled ? (
         <span id={prefilledId} className="sr-only">
-          {PREFILLED_HINT}
+          {t(PREFILLED_HINT)}
         </span>
       ) : null}
     </span>

@@ -30,6 +30,8 @@ import {
 } from "@/lib/employee/court-flow";
 import { formatCount } from "@/lib/employee/register-rows";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * The dashboard's one date control, ported from the owner's mockup: a day or a range,
@@ -98,10 +100,10 @@ function LatestDayButton({ children, ...props }: React.ComponentProps<typeof Day
 type Draft = { a: number | null; b: number | null };
 
 const COMPARE_OPTIONS: { value: CompareMode; label: string | null; description: string }[] = [
-  { value: "prev", label: null, description: "The period just before" },
-  { value: "year", label: "Same period last year", description: "Removes seasonal swings" },
-  { value: "avg", label: "Average of last 6", description: "The steadiest baseline" },
-  { value: "none", label: "No comparison", description: "Show the numbers only" },
+  { value: "prev", label: null, description: "dashboardDatePicker_thePeriodJustBefore" },
+  { value: "year", label: "dashboardDatePicker_samePeriodLastYear", description: "dashboardDatePicker_removesSeasonalSwings" },
+  { value: "avg", label: "dashboardDatePicker_averageOfLast6", description: "dashboardDatePicker_theSteadiestBaseline" },
+  { value: "none", label: "dashboardDatePicker_noComparison", description: "dashboardDatePicker_showTheNumbersOnly" },
 ];
 
 export function DashboardDatePicker({
@@ -109,7 +111,7 @@ export function DashboardDatePicker({
   value,
   compare,
   defaultValue,
-  defaultLabel = "This month",
+  defaultLabel = "dashboardDatePicker_thisMonth",
   defaultCompare = "prev",
   presets: presetList,
   idPrefix = "dash-picker",
@@ -139,6 +141,7 @@ export function DashboardDatePicker({
   rangeNote?: (period: Period) => string;
   onChange: (next: Period, compare: CompareMode) => void;
 }) {
+  const tr = useTranslations();
   const latest = docket.today;
   const first = docket.start;
   const [open, setOpen] = React.useState(false);
@@ -189,12 +192,11 @@ export function DashboardDatePicker({
 
   let status: React.ReactNode;
   if (a === null || lo === null || hi === null) {
-    status = "Pick a day, or a start and an end day.";
+    status = tr("dashboardDatePicker_pickADayOrAStart");
   } else if (b === null) {
     status = (
       <>
-        Starts <strong className="font-semibold text-foreground">{formatDay(a)}</strong>. Pick an end
-        day, or apply to see this day alone.
+        {tr.rich("dashboardDatePicker_startsFormatDayPickAnEnd", { formatDay: formatDay(a), strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong> })}
       </>
     );
   } else if (lo === hi) {
@@ -206,9 +208,7 @@ export function DashboardDatePicker({
   } else {
     status = (
       <>
-        <strong className="font-semibold text-foreground">{formatSpanFull(lo, hi)}</strong> ·{" "}
-        {formatCount(daysBetween(lo, hi) + 1)} days{daysNote ? ` ${daysNote}` : ""}
-        {rangeNote ? ` · ${rangeNote({ from: lo, to: hi })}` : ""}
+        {tr.rich("dashboardDatePicker_formatSpanFullFormatCountDays", { formatSpanFull: formatSpanFull(lo, hi), formatCount: formatCount(daysBetween(lo, hi) + 1), value: daysNote ? ` ${daysNote}` : "", value2: rangeNote ? ` · ${rangeNote({ from: lo, to: hi })}` : "", strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong> })}
       </>
     );
   }
@@ -237,11 +237,11 @@ export function DashboardDatePicker({
             )}{" "}
             {isLatest || isDefault ? (
               <Badge variant="secondary" className="bg-brand-muted text-brand-muted-foreground">
-                {isDefault ? defaultLabel : "Latest"}
+                {isDefault ? translateText(tr, defaultLabel) : tr("dashboardDatePicker_latest")}
               </Badge>
             ) : single ? null : (
               <span className="text-muted-foreground">
-                {formatCount(daysBetween(value.from, value.to) + 1)} days
+                {tr("dashboardDatePicker_formatCountDays", { formatCount: formatCount(daysBetween(value.from, value.to) + 1) })}
               </span>
             )}
             {versus ? (
@@ -251,13 +251,13 @@ export function DashboardDatePicker({
               </>
             ) : null}
             <span className="sr-only">
-              {compare === undefined ? ", change the period" : ", change the period or the comparison"}
+              {compare === undefined ? tr("dashboardDatePicker_changeThePeriod") : tr("dashboardDatePicker_changeThePeriodOrTheComparison")}
             </span>
           </Button>
         </PopoverTrigger>
         <PopoverContent
           role="dialog"
-          aria-label="Choose a date or a date range"
+          aria-label={tr("dashboardDatePicker_chooseADateOrADate")}
           align="end"
           sideOffset={8}
           collisionPadding={16}
@@ -279,7 +279,7 @@ export function DashboardDatePicker({
               className="flex flex-row flex-wrap gap-2 border-b border-hairline p-3 sm:w-44 sm:flex-col sm:flex-nowrap sm:gap-0.5 sm:border-r sm:border-b-0"
             >
               <p id={`${idPrefix}-quick`} className="w-full px-2 pb-1 text-body-compact text-muted-foreground max-sm:sr-only">
-                Quick pick
+                {tr("dashboardDatePicker_quickPick")}
               </p>
               {presets.map((preset) => {
                 const pressed =
@@ -308,14 +308,14 @@ export function DashboardDatePicker({
                   type="button"
                   variant="outline"
                   size="icon"
-                  aria-label="Previous month"
+                  aria-label={tr("dashboardDatePicker_previousMonth")}
                   disabled={month <= firstMonth}
                   onClick={() => setMonth((m) => Math.max(firstMonth, m - 1))}
                 >
                   <ChevronLeftIcon aria-hidden />
                 </Button>
                 <Select value={String(month)} onValueChange={(next) => setMonth(Number(next))}>
-                  <SelectTrigger aria-label="Month" className="h-10 min-w-0 flex-1 font-semibold">
+                  <SelectTrigger aria-label={tr("dashboardDatePicker_month")} className="h-10 min-w-0 flex-1 font-semibold">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -330,7 +330,7 @@ export function DashboardDatePicker({
                   type="button"
                   variant="outline"
                   size="icon"
-                  aria-label="Next month"
+                  aria-label={tr("dashboardDatePicker_nextMonth")}
                   disabled={month >= lastMonth}
                   onClick={() => setMonth((m) => Math.min(lastMonth, m + 1))}
                 >
@@ -375,7 +375,7 @@ export function DashboardDatePicker({
 
               {compare === undefined ? null : (
                 <fieldset className="flex flex-col gap-2 border-t border-hairline pt-3 sm:w-72">
-                  <legend className="float-left mb-1 w-full text-body-compact text-muted-foreground">Compare with</legend>
+                  <legend className="float-left mb-1 w-full text-body-compact text-muted-foreground">{tr("dashboardDatePicker_compareWith")}</legend>
                   <RadioGroup
                     value={draftCompare}
                     onValueChange={(next) => setDraftCompare(next as CompareMode)}
@@ -389,8 +389,8 @@ export function DashboardDatePicker({
                         <div key={option.value} className="flex items-start gap-3 rounded-md px-2 py-1.5 hover:bg-accent">
                           <RadioGroupItem id={id} value={option.value} className="mt-0.5" />
                           <Label htmlFor={id} className="flex cursor-pointer flex-col items-start gap-0 font-normal">
-                            <span className="text-body-compact font-medium">{option.label ?? previousName(range)}</span>
-                            <span className="text-caption text-muted-foreground">{option.description}</span>
+                            <span className="text-body-compact font-medium">{translateText(tr, option.label) ?? previousName(range)}</span>
+                            <span className="text-caption text-muted-foreground">{translateText(tr, option.description)}</span>
                           </Label>
                         </div>
                       );
@@ -419,13 +419,13 @@ export function DashboardDatePicker({
                       if (compare !== undefined) setDraftCompare(defaultCompare);
                     }}
                   >
-                    Reset<span className="sr-only"> to {defaultLabel.toLowerCase()}</span>
+                    {tr.rich("dashboardDatePicker_resetToToLowerCase", { toLowerCase: defaultLabel.toLowerCase(), span: (chunks) => <span className="sr-only">{chunks}</span> })}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                    Cancel
+                    {tr("common_cancel")}
                   </Button>
                   <Button type="button" disabled={a === null} onClick={apply}>
-                    Apply
+                    {tr("dashboardDatePicker_apply")}
                   </Button>
                 </div>
               </div>

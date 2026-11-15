@@ -49,6 +49,7 @@ import {
   REGISTER_CARDS_ONLY,
   REGISTER_TABLE_ONLY,
 } from "@/components/cases/register-layout";
+import { useTranslations } from "next-intl";
 
 /**
  * The hearings list (§5.4.1): Date, Hearing purpose, Status, Action, newest
@@ -67,6 +68,7 @@ export function HearingsList({
   recentId?: string | null;
   recentRowRef?: (node: HTMLTableRowElement | null) => void;
 }) {
+  const t = useTranslations();
   const tray = useOneOpen<string>();
   if (hearings.length === 0) {
     return (
@@ -76,10 +78,10 @@ export function HearingsList({
             <CalendarOffIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body font-semibold">
-            No hearings yet
+            {t("hearingsRegister_noHearingsYet")}
           </EmptyTitle>
           <EmptyDescription>
-            Hearings appear here once the court lists this case.
+            {t("hearingsRegister_hearingsAppearHereOnceTheCourt")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -100,7 +102,7 @@ export function HearingsList({
             className={cn(recentId === hearing.id && RECENT_ROW)}
             actions={
               <Button type="button" onClick={() => onOpen(hearing)}>
-                View hearing
+                {t("hearingsRegister_viewHearing")}
               </Button>
             }
           >
@@ -123,11 +125,11 @@ export function HearingsList({
     <Table>
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={cn(TABLE_HEAD, "w-36")}>Date</TableHead>
-          <TableHead className={TABLE_HEAD}>Hearing purpose</TableHead>
-          <TableHead className={cn(TABLE_HEAD, "w-32")}>Status</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "w-36")}>{t("hearingsRegister_date")}</TableHead>
+          <TableHead className={TABLE_HEAD}>{t("hearingsRegister_hearingPurpose")}</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "w-32")}>{t("hearingsRegister_status")}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "w-24")}>
-            Action
+            {t("hearingsRegister_action")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -190,6 +192,7 @@ export function HearingDetail({
   /** Absent inside the pop-up, where the way back is the dialog's footer. */
   onBack?: () => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex min-w-0 flex-col items-start gap-2">
@@ -202,7 +205,7 @@ export function HearingDetail({
             onClick={onBack}
           >
             <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-            All hearings
+            {t("hearingsRegister_allHearings")}
           </Button>
         ) : null}
         <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -218,12 +221,12 @@ export function HearingDetail({
       </div>
 
       <DescriptionList>
-        <Row term="Date">
+        <Row term={t("hearingsRegister_date")}>
           <time dateTime={hearing.on} className="tabular-nums">
             {hearing.date}
           </time>
         </Row>
-        <Row term="Start time">
+        <Row term={t("hearingsRegister_startTime")}>
           {hearing.startTime ? (
             <span className="tabular-nums">
               {formatHearingClock(hearing.startTime)}
@@ -232,7 +235,7 @@ export function HearingDetail({
             NOT_RECORDED
           )}
         </Row>
-        <Row term="End time">
+        <Row term={t("hearingsRegister_endTime")}>
           {hearing.endTime ? (
             <span className="tabular-nums">
               {formatHearingClock(hearing.endTime)}
@@ -241,33 +244,33 @@ export function HearingDetail({
             NOT_RECORDED
           )}
         </Row>
-        <Row term="Attendance">{hearing.attendance ?? NOT_RECORDED}</Row>
-        <Row term="Next hearing purpose">
+        <Row term={t("hearingsRegister_attendance")}>{hearing.attendance ?? NOT_RECORDED}</Row>
+        <Row term={t("hearingsRegister_nextHearingPurpose")}>
           {hearing.nextPurpose ?? NOT_RECORDED}
         </Row>
-        <Row term="Next hearing date">
+        <Row term={t("hearingsRegister_nextHearingDate")}>
           {hearing.nextDate ? (
             <span className="tabular-nums">{hearing.nextDate}</span>
           ) : (
             NOT_RECORDED
           )}
         </Row>
-        <Row term="Hearing summary">
+        <Row term={t("hearingsRegister_hearingSummary")}>
           {hearing.summary ? (
             <span className="font-normal">{hearing.summary}</span>
           ) : (
             <span className="text-muted-foreground">
-              No order has been passed for this hearing yet.
+              {t("hearingsRegister_noOrderHasBeenPassedFor")}
             </span>
           )}
         </Row>
-        <Row term="Order">
+        <Row term={t("hearingsRegister_order")}>
           {hearing.order && orderHref ? (
             <Button variant="link" asChild className="h-auto px-0 text-left">
               <Link href={orderHref}>{hearing.order.title}</Link>
             </Button>
           ) : (
-            <span className="text-muted-foreground">No order yet</span>
+            <span className="text-muted-foreground">{t("hearingsRegister_noOrderYet")}</span>
           )}
         </Row>
       </DescriptionList>
@@ -297,12 +300,13 @@ export function CaseHearingsSection({
   caseId: string;
   hearings: HearingRecord[];
 }) {
+  const t = useTranslations();
   const [openId, setOpenId] = useState<string | null>(null);
   const openHearing = hearings.find((item) => item.id === openId) ?? null;
   return (
     <RestingCard>
       <CardContent className="flex flex-col gap-4">
-        <h2 className="text-body font-semibold text-foreground">Hearings</h2>
+        <h2 className="text-body font-semibold text-foreground">{t("hearingsRegister_hearings")}</h2>
         {openHearing ? (
           <HearingDetail
             hearing={openHearing}

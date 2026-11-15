@@ -8,6 +8,7 @@ import { findCaseRecord } from "@/lib/cases/party-cases";
 import { partiesLabel } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
 import { serverCourtText } from "@/lib/court/server";
+import { getTranslations } from "next-intl/server";
 
 function findCase(caseId: string) {
   return findCaseRecord(caseId);
@@ -31,6 +32,7 @@ export default async function SubmitDocumentsPage({
 }: {
   params: Promise<{ caseId: string }>;
 }) {
+  const t = await getTranslations();
   const { caseId } = await params;
   const record = findCase(caseId);
   if (!record) notFound();
@@ -41,7 +43,7 @@ export default async function SubmitDocumentsPage({
       <CaseBreadcrumbs
         caseId={record.id}
         caseNumber={record.caseNumber}
-        trail={[{ label: "Submit documents" }]}
+        trail={[{ label: t("casesFilingsDocumentsPage_submitDocuments") }]}
       />
       <SubmitDocumentsForm
         caseId={record.id}

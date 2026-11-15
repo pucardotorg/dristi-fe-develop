@@ -22,8 +22,9 @@ import {
   type CaseSection,
 } from "@/lib/cases/sections";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
-const STRIP_LABEL = "Case file sections";
+const STRIP_LABEL = "caseSectionTabs_caseFileSections";
 
 /** The scrolling gutter the row sits in, and the rule under it. Exported so
  *  a tab row inside a section (Notice/Process Status's people) is this row. */
@@ -92,6 +93,7 @@ export function CaseSectionTabs({
   section: CaseSection;
   children: ReactNode;
 }) {
+  const t = useTranslations();
   const router = useCaseRouter();
 
   if (!isNavSection(section)) {
@@ -101,7 +103,7 @@ export function CaseSectionTabs({
           {/* `gap-1` and the transparent fill are the line TabsList's own
               metrics, so both rows land on the same grid. */}
           <nav
-            aria-label={STRIP_LABEL}
+            aria-label={t(STRIP_LABEL)}
             className="inline-flex h-10 w-max min-w-full items-center justify-start gap-1"
           >
             {CASE_NAV_SECTIONS.map((item) => (
@@ -133,7 +135,7 @@ export function CaseSectionTabs({
         {/* The sections that fit stay in the row; the rest fold under More
             (owner, Sept 21), so nine destinations never scroll sideways. */}
         <OverflowTabsList
-          aria-label={STRIP_LABEL}
+          aria-label={t(STRIP_LABEL)}
           value={section}
           onSelect={(value) => {
             if (!isCaseSection(value)) return;
@@ -164,6 +166,7 @@ export function CaseSectionTabs({
 }
 
 export function SectionPending({ label }: { label: string }) {
+  const t = useTranslations();
   return (
     <Empty className="border border-dashed border-border">
       <EmptyHeader>
@@ -171,11 +174,10 @@ export function SectionPending({ label }: { label: string }) {
           <HourglassIcon aria-hidden />
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {label} is not designed yet
+          {t("caseSectionTabs_labelIsNotDesignedYet", { label })}
         </EmptyTitle>
         <EmptyDescription>
-          The case header is in place. This section of the file still needs to
-          be built.
+          {t("caseSectionTabs_theCaseHeaderIsInPlace")}
         </EmptyDescription>
       </EmptyHeader>
     </Empty>

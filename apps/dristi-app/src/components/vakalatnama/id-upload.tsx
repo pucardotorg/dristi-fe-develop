@@ -9,16 +9,19 @@ import * as React from "react";
 import { FileCheck2Icon, UploadIcon, XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 export function IdUpload({
   value,
   onChange,
-  label = "Upload ID card",
+  label = "idUpload_uploadIdCard",
 }: {
   value: string;
   onChange: (filename: string) => void;
   label?: string;
 }) {
+  const t = useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   if (value) {
@@ -30,7 +33,7 @@ export function IdUpload({
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="Remove ID"
+          aria-label={t("idUpload_removeId")}
           onClick={() => onChange("")}
           className="text-muted-foreground"
         >
@@ -60,7 +63,7 @@ export function IdUpload({
         className="w-fit"
       >
         <UploadIcon aria-hidden />
-        {label}
+        {translateText(t, label)}
       </Button>
     </>
   );

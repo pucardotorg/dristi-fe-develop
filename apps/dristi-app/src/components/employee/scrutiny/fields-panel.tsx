@@ -16,6 +16,7 @@ import {
   SegmentedControl,
   SegmentedControlItem,
 } from "@/components/ui/segmented-control";
+import { useTranslations } from "next-intl";
 
 
 export interface FieldsPanelHandle {
@@ -62,6 +63,7 @@ export function FieldsPanel({
   onShowItem: (fieldId: string) => void;
   ref?: React.Ref<FieldsPanelHandle>;
 }) {
+  const t = useTranslations();
   const { sections, fieldById, returned } = useScrutinyCase();
   const changes = !!returned && view === "changes";
 
@@ -162,7 +164,7 @@ export function FieldsPanel({
       /* `h-full`, like the bundle beside it: the pane is what bounds the height, and the
          scroller below only scrolls once something above it says how tall it may be. */
       className="flex h-full min-h-0 flex-col bg-surface-sunken"
-      aria-label="Filed information"
+      aria-label={t("fieldsPanel_filedInformation")}
     >
       {/* On a resubmission the pane opens on what came back — the advocate's own
           correction screen opens on the flagged parts the same way — and the full filing
@@ -178,16 +180,13 @@ export function FieldsPanel({
             type="single"
             value={view}
             onValueChange={(value) => value && onViewChange(value as FieldsView)}
-            aria-label="What to show"
+            aria-label={t("fieldsPanel_whatToShow")}
             className="shrink-0"
           >
             <SegmentedControlItem value="changes">
-              Changes
-              <span className="ms-1.5 tabular-nums text-muted-foreground">
-                {returned.items.length}
-              </span>
+              {t.rich("fieldsPanel_changesLength", { length: String(returned.items.length), span: (chunks) => <span className="ms-1.5 tabular-nums text-muted-foreground">{chunks}</span> })}
             </SegmentedControlItem>
-            <SegmentedControlItem value="full">Full filing</SegmentedControlItem>
+            <SegmentedControlItem value="full">{t("fieldsPanel_fullFiling")}</SegmentedControlItem>
           </SegmentedControl>
         </div>
       ) : null}
@@ -209,7 +208,7 @@ export function FieldsPanel({
           (`chrome/pill-plate.ts`). */}
       {changes ? null : (
       <div className="flex h-14 shrink-0 items-stretch overflow-x-auto overflow-y-hidden border-b border-hairline bg-card px-4 [scrollbar-width:none]">
-        <nav aria-label="Sections" className="flex items-stretch gap-1">
+        <nav aria-label={t("fieldsPanel_sections")} className="flex items-stretch gap-1">
           {sections.map((section) => {
             const current = active === section.id;
             return (

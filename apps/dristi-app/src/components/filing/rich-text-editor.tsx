@@ -11,15 +11,17 @@ import {
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 type Command = "bold" | "italic" | "insertOrderedList" | "insertUnorderedList" | "justifyLeft";
 
 const TOOLS: { cmd: Command; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { cmd: "bold", label: "Bold", icon: BoldIcon },
-  { cmd: "italic", label: "Italic", icon: ItalicIcon },
-  { cmd: "insertOrderedList", label: "Numbered list", icon: ListOrderedIcon },
-  { cmd: "insertUnorderedList", label: "Bulleted list", icon: ListIcon },
-  { cmd: "justifyLeft", label: "Align left", icon: AlignLeftIcon },
+  { cmd: "bold", label: "richTextEditor_bold", icon: BoldIcon },
+  { cmd: "italic", label: "richTextEditor_italic", icon: ItalicIcon },
+  { cmd: "insertOrderedList", label: "richTextEditor_numberedList", icon: ListOrderedIcon },
+  { cmd: "insertUnorderedList", label: "richTextEditor_bulletedList", icon: ListIcon },
+  { cmd: "justifyLeft", label: "richTextEditor_alignLeft", icon: AlignLeftIcon },
 ];
 
 /** What a caller can do to the text from outside it — a picker that is not in the box. */
@@ -35,7 +37,7 @@ export type RichTextEditorHandle = {
 export function RichTextEditor({
   value,
   onChange,
-  placeholder = "Write here",
+  placeholder = "richTextEditor_writeHere",
   ariaLabel,
   minHeightClassName = "min-h-40",
   className,
@@ -54,6 +56,7 @@ export function RichTextEditor({
   toolbarEnd?: React.ReactNode;
   handleRef?: React.Ref<RichTextEditorHandle>;
 }) {
+  const tr = useTranslations();
   const ref = React.useRef<HTMLDivElement>(null);
   const lastValue = React.useRef<string>("");
   // The caret, kept while focus is away in a picker so an insert lands where it was.
@@ -131,7 +134,7 @@ export function RichTextEditor({
           meet rather than overlap. */}
       <div
         role="toolbar"
-        aria-label="Text formatting"
+        aria-label={tr("richTextEditor_textFormatting")}
         className="flex flex-wrap items-center gap-2 border-b border-hairline bg-surface-sunken px-2 py-1"
       >
         {TOOLS.map((t) => (
@@ -140,7 +143,7 @@ export function RichTextEditor({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label={t.label}
+            aria-label={translateText(tr, t.label)}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => run(t.cmd)}
             className="relative after:absolute after:-inset-1"
@@ -158,7 +161,7 @@ export function RichTextEditor({
             aria-hidden
             className="pointer-events-none absolute left-4 top-3 text-body-compact text-muted-foreground"
           >
-            {placeholder}
+            {translateText(tr, placeholder)}
           </span>
         ) : null}
         <div

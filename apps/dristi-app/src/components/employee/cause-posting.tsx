@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 
 /**
  * Whether the order on screen takes its next hearing from the cause list (owner,
@@ -19,11 +20,12 @@ export function useFromCauseList(): boolean {
 
 /** The line under a disabled Next hearing that says where it is set. */
 export function CausePostingNote({ set }: { set: boolean }) {
+  const t = useTranslations();
   return (
     <p className="text-body-compact text-muted-foreground">
       {set
-        ? "Set on the cause list."
-        : "Not set yet. It is set on the cause list, in the Next hearing column."}
+        ? t("causePosting_setOnTheCauseList")
+        : t("causePosting_notSetYetItIsSet")}
     </p>
   );
 }

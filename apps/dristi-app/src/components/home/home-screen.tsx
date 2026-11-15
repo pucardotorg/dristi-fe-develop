@@ -32,6 +32,7 @@ import {
   LinkedComplaintCard,
   useLinkedComplaints,
 } from "@/components/home/linked-complaint-cards";
+import { useTranslations } from "next-intl";
 
 type HomeCase = { joinCase: JoinCase; status: "joined" };
 type VisibleHomeCase = HomeCase | { joinCase: JoinCase; status: "summons" };
@@ -67,6 +68,7 @@ export function HomeScreen({
   pendingLink?: boolean;
   initialLocale?: Locale;
 }) {
+  const t = useTranslations();
   const { locale } = useLocale();
   const { displayName } = useProfile();
   const [dialogOpen, setDialogOpen] = React.useState(openManualJoin || Boolean(joinHandoff));
@@ -148,7 +150,7 @@ export function HomeScreen({
                       <p>
                         <span className="font-medium text-foreground">{pick(home.caseNumberLabel, locale)}</span>
                         <br />
-                        <Identifier value={entry.joinCase.caseNumber} label="case number" />
+                        <Identifier value={entry.joinCase.caseNumber} label={t("homeScreen_caseNumber")} />
                       </p>
                       <p>
                         <span className="font-medium text-foreground">{pick(home.hearingLabel, locale)}</span>
@@ -169,7 +171,7 @@ export function HomeScreen({
               ))}
             </div>
           ) : (
-            <p className="text-body-compact text-muted-foreground">Cases you join or file will appear here.</p>
+            <p className="text-body-compact text-muted-foreground">{t("homeScreen_casesYouJoinOrFileWill")}</p>
           )}
         </section>
 

@@ -24,6 +24,7 @@ import {
   CaseNumberLine,
   CaseStageBadges,
 } from "./case-header-parts";
+import { useTranslations } from "next-intl";
 
 const COUNSEL_LABEL: Record<CounselSide, string> = {
   complainant: "Complainant advocates",
@@ -67,6 +68,7 @@ export function CaseHeader({
    *  header doesn't need to repeat it. */
   hideLongPendingFlag?: boolean;
 }) {
+  const t = useTranslations();
   const numberHistory = caseNumberHistory(record);
   const hasParties =
     record.parties.complainant.length > 0 && record.parties.accused.length > 0;
@@ -102,7 +104,7 @@ export function CaseHeader({
               </div>
             ) : (
               <p className="text-body-compact text-muted-foreground">
-                Parties not yet recorded
+                {t("caseHeader_partiesNotYetRecorded")}
               </p>
             )}
           </div>
@@ -132,7 +134,7 @@ export function CaseHeader({
           the owner's middle ground (Sept 18). */}
       <dl className="flex min-w-0 flex-col divide-y divide-hairline border-y border-hairline md:pointer-fine:divide-y-0 md:landscape:divide-y-0 md:pointer-fine:border-y-0 md:landscape:border-y-0 md:pointer-fine:gap-x-8 md:landscape:gap-x-8 md:pointer-fine:grid md:landscape:grid md:pointer-fine:auto-cols-[minmax(0,16rem)] md:landscape:auto-cols-[minmax(0,16rem)] md:pointer-fine:grid-flow-col md:landscape:grid-flow-col md:pointer-fine:justify-start md:landscape:justify-start">
         {hasParties ? null : (
-          <HeaderFact label="Case number">
+          <HeaderFact label={t("caseHeader_caseNumber")}>
             <CaseNumberLine
               caseNumber={record.caseNumber}
               history={numberHistory}
@@ -140,7 +142,7 @@ export function CaseHeader({
             />
           </HeaderFact>
         )}
-        <HeaderFact label="Stage">
+        <HeaderFact label={t("caseHeader_stage")}>
           <CaseStageBadges
             stage={<CaseStage record={record} detail={false} />}
             subStages={secondaryStages(record).map(secondaryStageLabel)}
@@ -149,7 +151,7 @@ export function CaseHeader({
         {/* A live case has its date on Overview; a disposed one has no
             date left, and the day it ended is identity. */}
         {record.disposal ? (
-          <HeaderFact label="Disposed">
+          <HeaderFact label={t("caseHeader_disposed")}>
             <span className="tabular-nums">
               {formatCaseDate(record.disposal.on)}
             </span>
@@ -170,7 +172,7 @@ export function CaseHeader({
               className="font-medium"
             />
           ) : (
-            <span className="text-muted-foreground">Party in person</span>
+            <span className="text-muted-foreground">{t("caseHeader_partyInPerson")}</span>
           )}
         </HeaderFact>
         <HeaderFact label={COUNSEL_LABEL.accused}>
@@ -182,7 +184,7 @@ export function CaseHeader({
               className="font-medium"
             />
           ) : (
-            <span className="text-muted-foreground">None on record</span>
+            <span className="text-muted-foreground">{t("caseHeader_noneOnRecord")}</span>
           )}
         </HeaderFact>
       </dl>

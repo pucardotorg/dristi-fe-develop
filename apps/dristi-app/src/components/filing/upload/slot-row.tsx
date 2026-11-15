@@ -29,6 +29,7 @@ import {
   useDropTarget,
   type DroppedFiles,
 } from "@/components/filing/upload/use-drop-target";
+import { useTranslations } from "next-intl";
 
 /** The DS status variant. */
 function slotStatus(slot: IntakeSlot): "filled" | "empty" | "empty-optional" {
@@ -67,6 +68,7 @@ export function IntakeSlotRow({
   onFiles: (dropped: DroppedFiles) => void;
   onOverChange?: (over: boolean) => void;
 }) {
+  const t = useTranslations();
   const ids = React.useId();
   const titleId = `${ids}-title`;
   const { isOver, dropProps } = useDropTarget({ onFiles, onOverChange });
@@ -123,7 +125,7 @@ export function IntakeSlotRow({
                 {/* Phone: "optional" as the form fields say it, a quiet word after the
                     name. The DS badge wrapped under the guidance and split the block. */}
                 {!slot.required && !slot.file ? (
-                  <span className="font-normal text-muted-foreground sm:hidden"> optional</span>
+                  <span className="font-normal text-muted-foreground sm:hidden"> {t("slotRow_optional")}</span>
                 ) : null}
               </span>
               {showGuidance ? (
@@ -171,7 +173,7 @@ export function IntakeSlotRow({
                 variant="ghost"
                 size="icon"
                 onClick={onDelete}
-                aria-label={`Remove the file added for ${slot.label}`}
+                aria-label={t("slotRow_removeTheFileAddedForLabel", { label: slot.label })}
                 className="text-muted-foreground hover:text-destructive"
               >
                 <Trash2Icon aria-hidden />

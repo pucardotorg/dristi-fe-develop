@@ -183,6 +183,8 @@ const strictCandidates = new Map<TS.Node, TS.VariableDeclaration>();
 const convertedLiterals = new Set<TS.Node>();
 /** Converted declarations whose text also builds other text (an order sentence): kept English. */
 const unsafeDeclarations = new Set<TS.Node>();
+/** Converted declarations the script found being read somewhere. */
+const readersSeen = new Set<TS.Node>();
 /** Nodes another rule already handled, so nothing is converted twice. */
 const claimed = new Set<TS.Node>();
 /** Where each English text appears, for the shared-candidates list. */
@@ -1110,6 +1112,13 @@ function isCopyHelper(call: TS.CallExpression): boolean {
 
 /** Inside a component: the string becomes `t("key")` right where it is. */
 function convertInline(state: FileState, node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression, text: string, role: string, isAttribute: boolean) {
+  // A template that cannot become one message is reported before a translator is asked
+  // for, so no component gets a translator it never uses.
+  const tm = ts.isTemplateExpression(node) ? templateMessage(state, node) : undefined;
+  if (ts.isTemplateExpression(node) && !tm) {
+    report(state, node, "Complex split sentence", text, "Write it as one message with placeholders.");
+    return;
+  }
   const translator = translatorFor(state, node);
   if (!translator) {
     if (isLibFile(state.rel)) report(state, node, "Sentence built in lib/", text, "Return a key and values, or take the translator as a parameter.");
@@ -1117,12 +1126,7 @@ function convertInline(state: FileState, node: TS.StringLiteral | TS.NoSubstitut
     return;
   }
   let call: string;
-  if (ts.isTemplateExpression(node)) {
-    const tm = templateMessage(state, node);
-    if (!tm) {
-      report(state, node, "Complex split sentence", text, "Write it as one message with placeholders.");
-      return;
-    }
+  if (tm) {
     const key = keyFor(state, tm.message, role, text);
     call = messageCall(translator, key, tm.values);
     claimSubtree(node);
@@ -1160,7 +1164,7 @@ function convertConstant(state: FileState, node: TS.StringLiteral | TS.NoSubstit
     return;
   }
   if (isUnsafeHolder(holder)) {
-    report(state, node, "English used as a value", text, "Its text is also used to build other text (an order sentence, a message in lib/). Translate where it is shown instead.");
+    report(state, node, "English used as a value", text, "Its text is used beyond showing it (built into other text, compared, or passed on where the script cannot follow). Translate where it is shown instead.");
     return;
   }
   // Module level or inside a plain function: the value is a key either way, and the
@@ -1314,6 +1318,10 @@ function trackedFor(node: TS.Node): Tracked | undefined {
   } else symbol = checker.getSymbolAtLocation(node);
   if (!symbol) return undefined;
   if (symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
+  // const { label } = item: the name now holds what item.label held, a key.
+  for (const d of symbol.declarations ?? []) {
+    if (ts.isBindingElement(d) && ts.isObjectBindingPattern(d.parent) && destructuredDeclarations(d).length) return { strict: false };
+  }
   for (const d of symbol.declarations ?? []) {
     const info = trackedDeclarations.get(d);
     if (info) {
@@ -1380,6 +1388,7 @@ function scanUnsafe(state: FileState) {
     }
     if (isReader && !isPartOfLongerAccess(node)) {
       const decls = readerDeclarations(node);
+      for (const d of decls) readersSeen.add(d);
       if (decls.length && buildsText(state, node)) for (const d of decls) unsafeDeclarations.add(d);
       // A whole map of converted strings handed on (`addressParts: ADDRESS_PARTS`): its
       // values are then read under another name the script cannot follow.
@@ -1389,9 +1398,68 @@ function scanUnsafe(state: FileState) {
         for (const d of symbol?.declarations ?? []) for (const h of convertedStringsIn(d)) unsafeDeclarations.add(h);
       }
     }
+    // { label }: a converted value handed on in shorthand, under a property the script cannot follow.
+    if (ts.isShorthandPropertyAssignment(node)) {
+      const value = checker.getShorthandAssignmentValueSymbol(node);
+      for (const d of value?.declarations ?? []) {
+        if (trackedDeclarations.has(d)) unsafeDeclarations.add(d);
+        if (ts.isBindingElement(d) && ts.isObjectBindingPattern(d.parent)) for (const c of destructuredDeclarations(d)) unsafeDeclarations.add(c);
+      }
+    }
+    // ({ label, value }) => `${label}: ${value}`: a converted property read by destructuring.
+    if (ts.isBindingElement(node) && ts.isObjectBindingPattern(node.parent)) {
+      const decls = destructuredDeclarations(node);
+      for (const d of decls) readersSeen.add(d);
+      if (decls.length && !bindingOnlyShown(node)) for (const d of decls) unsafeDeclarations.add(d);
+    }
     ts.forEachChild(node, visit);
   };
   visit(state.sf);
+}
+
+/**
+ * A converted value the script never saw being read cannot be shown to be safe: it may
+ * reach the screen through a type the script cannot link (`row.info.sub` declared apart
+ * from the object that fills it). It stays English and goes in the report.
+ */
+function markUnread() {
+  for (const [d] of trackedDeclarations) {
+    const holder = ts.isPropertyAssignment(d) || ts.isVariableDeclaration(d) || ts.isFunctionDeclaration(d) || ts.isBindingElement(d) || ts.isParameter(d);
+    if (!holder) continue;
+    const seen = readersSeen.has(d) || (ts.isPropertyAssignment(d) && contextualDeclarations(d).some((c) => readersSeen.has(c)));
+    if (!seen) unsafeDeclarations.add(d);
+  }
+}
+
+/** The converted declarations a destructured property comes from. */
+function destructuredDeclarations(element: TS.BindingElement): TS.Node[] {
+  const nameNode = element.propertyName ?? element.name;
+  const name = ts.isIdentifier(nameNode) || ts.isStringLiteral(nameNode) ? nameNode.text : undefined;
+  if (!name) return [];
+  const type = checker.getTypeAtLocation(element.parent);
+  const out: TS.Node[] = [];
+  for (const t of type.isUnion() ? type.types : [type]) {
+    for (const d of t.getProperty(name)?.declarations ?? []) if (trackedDeclarations.has(d)) out.push(d);
+  }
+  return out;
+}
+
+/** Whether every use of a destructured name puts it straight on screen. */
+function bindingOnlyShown(element: TS.BindingElement): boolean {
+  if (!ts.isIdentifier(element.name)) return false;
+  const symbol = checker.getSymbolAtLocation(element.name);
+  let scope: TS.Node = element;
+  while (scope.parent && !isFunctionLike(scope) && !ts.isSourceFile(scope)) scope = scope.parent;
+  let shownOnly = true;
+  const visit = (n: TS.Node) => {
+    if (!shownOnly) return;
+    if (ts.isIdentifier(n) && n !== element.name && checker.getSymbolAtLocation(n) === symbol && !isShown(n)) shownOnly = false;
+    // { id, label }: shorthand passes the value on, and resolves to the new property.
+    if (ts.isShorthandPropertyAssignment(n) && checker.getShorthandAssignmentValueSymbol(n) === symbol) shownOnly = false;
+    ts.forEachChild(n, visit);
+  };
+  visit(scope);
+  return shownOnly;
 }
 
 /** Converted string properties inside a constant or property that holds an object. */
@@ -1733,6 +1801,7 @@ for (const sf of sourceFiles) {
  */
 for (const state of files.values()) analyse(state);
 for (const state of files.values()) scanUnsafe(state);
+markUnread();
 resetPass();
 for (const state of files.values()) analyse(state);
 confirmStrictRecords();

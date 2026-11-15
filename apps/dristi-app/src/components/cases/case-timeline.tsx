@@ -39,6 +39,8 @@ import {
 import { FIXTURE_TODAY } from "@/lib/cases/fixtures";
 import { type CaseRecord } from "@/lib/cases/types";
 import { BotdText } from "@/components/cases/botd-text";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * What each event is, for the filter: the event catalogue's categories, as the case
@@ -68,6 +70,7 @@ const TYPE_OPTIONS: TypeOption[] = [
 ];
 
 export function CaseTimeline({ record }: { record: CaseRecord }) {
+  const t = useTranslations();
   const model = caseTimelineModel(
     record,
     new Date(`${FIXTURE_TODAY}T23:59:59`).getTime()
@@ -112,11 +115,10 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
               id="case-history-empty-heading"
               className="text-body font-semibold"
             >
-              No case history yet
+              {t("caseTimeline_noCaseHistoryYet")}
             </EmptyTitle>
             <EmptyDescription>
-              Events that have already taken place on this case will appear
-              here.
+              {t("caseTimeline_eventsThatHaveAlreadyTakenPlace")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -128,10 +130,10 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
                 id="all-case-events-heading"
                 className="text-body font-semibold"
               >
-                All case events
+                {t("caseTimeline_allCaseEvents")}
               </h3>
               <p className="text-caption font-medium tabular-nums text-muted-foreground">
-                {model.firstDateLabel} to {model.latestDateLabel}
+                {t("caseTimeline_firstDateLabelToLatestDate", { firstDateLabel: translateText(t, model.firstDateLabel), latestDateLabel: translateText(t, model.latestDateLabel) })}
               </p>
             </div>
           </CardHeader>
@@ -144,10 +146,10 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
             />
             {days.length === 0 ? (
               <p className="text-body-compact text-muted-foreground">
-                Nothing of these types on this case.
+                {t("caseTimeline_nothingOfTheseTypesOnThis")}
               </p>
             ) : (
-              <Timeline aria-label="Case History, newest first">
+              <Timeline aria-label={t("caseTimeline_caseHistoryNewestFirst")}>
                 {days.map((day) => (
                   <TimelineItem
                     key={day.on}
@@ -190,12 +192,13 @@ function TimelineEvent({
   caseId: string;
   event: CaseTimelineEvent;
 }) {
+  const t = useTranslations();
   /* line-clamp-none: the label is the whole event, and a Malayalam or Gujarati
      translation of it will wrap rather than fit the DS one-line default. */
   const title = (
     <ItemContent className="min-w-0">
       <ItemTitle className="line-clamp-none font-normal">
-        {event.label}
+        {translateText(t, event.label)}
       </ItemTitle>
     </ItemContent>
   );
@@ -232,7 +235,7 @@ function TimelineEvent({
         <Link
           href={caseSectionHref(caseId, event.ref)}
           role="listitem"
-          aria-label={`${event.label}, open ${sectionLabel(event.ref)}`}
+          aria-label={t("caseTimeline_labelOpenSectionLabel", { label: translateText(t, event.label), sectionLabel: sectionLabel(event.ref) })}
         >
           {title}
           <ItemActions aria-hidden>

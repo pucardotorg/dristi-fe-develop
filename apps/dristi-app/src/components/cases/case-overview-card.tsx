@@ -35,6 +35,7 @@ import {
   REGISTER_CARDS_ONLY,
   REGISTER_TABLE_ONLY,
 } from "@/components/cases/register-layout";
+import { useTranslations } from "next-intl";
 
 /**
  * The card shell every Overview region is built from. Shared rather than
@@ -143,6 +144,7 @@ export function PendingTaskRow({
   /** The lines under the title: deadline, owner, note. */
   children?: ReactNode;
 }) {
+  const t = useTranslations();
   const [trayOpen, setTrayOpen] = useState(false);
   return (
     <>
@@ -161,16 +163,16 @@ export function PendingTaskRow({
               {onArchive ? (
                 <Button type="button" variant="outline" onClick={onArchive}>
                   <ArchiveIcon data-icon="inline-start" aria-hidden />
-                  Archive
+                  {t("caseOverviewCard_archive")}
                 </Button>
               ) : null}
               {"href" in respond ? (
                 <Button asChild>
-                  <Link href={respond.href}>Respond</Link>
+                  <Link href={respond.href}>{t("caseOverviewCard_respond")}</Link>
                 </Button>
               ) : (
                 <Button type="button" onClick={respond.onClick}>
-                  Respond
+                  {t("caseOverviewCard_respond")}
                 </Button>
               )}
             </>
@@ -203,7 +205,7 @@ export function PendingTaskRow({
             asChild
           >
             <Link href={respond.href}>
-              Respond<span className="sr-only">: {title}</span>
+              {t.rich("caseOverviewCard_respondTitle", { title, span: (chunks) => <span className="sr-only">{chunks}</span> })}
             </Link>
           </Button>
         ) : (
@@ -214,7 +216,7 @@ export function PendingTaskRow({
             className="max-sm:h-10 max-sm:flex-1"
             onClick={respond.onClick}
           >
-            Respond<span className="sr-only">: {title}</span>
+            {t.rich("caseOverviewCard_respondTitle", { title, span: (chunks) => <span className="sr-only">{chunks}</span> })}
           </Button>
         )}
         {onArchive ? (
@@ -225,13 +227,13 @@ export function PendingTaskRow({
                 variant="ghost"
                 size="icon-sm"
                 className="text-muted-foreground max-sm:size-10"
-                aria-label={`Archive task: ${title}`}
+                aria-label={t("caseOverviewCard_archiveTaskTitle", { title })}
                 onClick={onArchive}
               >
                 <ArchiveIcon aria-hidden />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Archive</TooltipContent>
+            <TooltipContent side="bottom">{t("caseOverviewCard_archive")}</TooltipContent>
           </Tooltip>
         ) : null}
       </ItemActions>

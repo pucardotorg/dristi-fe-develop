@@ -638,12 +638,12 @@ function buildPanes(): Record<string, ComplaintPane> {
         ? empty("Application", "Not filed")
         : field("Application", "Filed"),
     ],
-    blocks: [{ title: "As filed", body: delayGroup.displayState }],
+    blocks: [{ title: "complaint_asFiled", body: delayGroup.displayState }],
   };
 
   panes.additionalInformation = {
     title: "Additional information",
-    blocks: [{ title: "As filed", body: extraGroup.value }],
+    blocks: [{ title: "complaint_asFiled", body: extraGroup.value }],
   };
 
   panes.witnessDetails = {
@@ -659,10 +659,10 @@ function buildPanes(): Record<string, ComplaintPane> {
   panes.complaintNarrative = {
     title: "Complaint",
     blocks: [
-      { title: "Synopsis", body: complaintGroup.synopsis },
-      { title: "Complaint", body: complaintGroup.complaint },
-      { title: "Prayer", body: complaintGroup.prayer },
-      { title: "Additional details", body: complaintGroup.additionalDetails },
+      { title: "complaint_synopsis", body: complaintGroup.synopsis },
+      { title: "complaint_complaint", body: complaintGroup.complaint },
+      { title: "complaint_prayer", body: complaintGroup.prayer },
+      { title: "complaint_additionalDetails", body: complaintGroup.additionalDetails },
     ],
     documents: packDocs([
       ...complaintGroup.documents,

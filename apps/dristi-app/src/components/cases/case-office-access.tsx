@@ -28,4 +28,4 @@ export function useCaseOfficeAccess(): boolean {
 
 /** Said wherever e-signing is withheld for office access. */
 export const OFFICE_NO_ESIGN =
-  "You hold office access on this case, so you cannot e-sign. Upload a copy signed by an advocate on the vakalatnama.";
+  "caseOfficeAccess_youHoldOfficeAccessOnThis";

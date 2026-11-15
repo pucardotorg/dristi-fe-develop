@@ -48,6 +48,8 @@ import {
   type OrderSubject,
 } from "@/lib/employee/order-subject";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * The order one cognizance act draws up — the composer's **outside-a-hearing** door
@@ -106,6 +108,7 @@ export function useCognizanceOrderDoor(
   matter: CognizanceCase,
   act: CognizanceAct,
 ): OrderDoor {
+  const t = useTranslations();
   const today = useCourtToday();
   const courtText = useCourtText();
   const { court } = useCourt();
@@ -132,7 +135,7 @@ export function useCognizanceOrderDoor(
     fixedIds: [],
     heading: subjectCauseTitle(subject),
     facts: subjectFacts(subject),
-    courtLine: courtText(`Before the ${CURRENT_STAFF.court}`),
+    courtLine: courtText(t("cognizanceOrderScreen_beforeTheCourt", { court: CURRENT_STAFF.court })),
     subLine: `${matter.caseNumber} · ${subjectCauseTitle(subject)} · ${formatOrderDate(today)}`,
     notice: (
       <p className="text-body-compact text-muted-foreground">
@@ -148,7 +151,7 @@ export function useCognizanceOrderDoor(
             markCognizanceTab(tabFor(matter, court));
           }}
         >
-          {back.label}
+          {translateText(t, back.label)}
         </Link>
       </Button>
     ),
@@ -169,6 +172,7 @@ export function cognizanceDraftKey(matter: CognizanceCase, act: CognizanceAct) {
 }
 
 export function OrderMissing() {
+  const t = useTranslations();
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <Empty className="border-0 p-0">
@@ -177,16 +181,15 @@ export function OrderMissing() {
             <FileQuestionIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            This complaint is not waiting for cognizance
+            {t("cognizanceOrderScreen_thisComplaintIsNotWaitingFor")}
           </EmptyTitle>
           <EmptyDescription className="text-body">
-            An order is drawn up from a complaint on the list of those waiting
-            for cognizance. This one is not on it.
+            {t("cognizanceOrderScreen_anOrderIsDrawnUpFrom")}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href={COGNIZANCE_PATH}>Back to take cognizance</Link>
+            <Link href={COGNIZANCE_PATH}>{t("cognizanceOrderScreen_backToTakeCognizance")}</Link>
           </Button>
         </EmptyContent>
       </Empty>

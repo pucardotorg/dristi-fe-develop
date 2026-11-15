@@ -58,6 +58,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** The court identity at the page origin. */
 export const COURT = { brand: "DRISTI" };
@@ -122,22 +124,22 @@ type NavItem = { id: string; label: string; icon: LucideIcon; href?: string };
 /* Labels are sentence case (DS Law) and match the breadcrumb root for the same area,
    so the rail, the trail and the page title never call one place three things. */
 const GO: NavItem[] = [
-  { id: "search", label: "Search", icon: SearchIcon },
-  { id: "home", label: "Home", icon: HouseIcon, href: "/home" },
-  { id: "cases", label: "Cases", icon: FolderClosedIcon, href: "/cases" },
+  { id: "search", label: "appSidebar_search", icon: SearchIcon },
+  { id: "home", label: "appSidebar_home", icon: HouseIcon, href: "/home" },
+  { id: "cases", label: "appSidebar_cases", icon: FolderClosedIcon, href: "/cases" },
   {
     id: "tasks",
-    label: "Take action",
+    label: "appSidebar_takeAction",
     icon: ListChecksIcon,
     href: TASKS_HOME,
   },
-  { id: "calendar", label: "Calendar", icon: CalendarDaysIcon },
+  { id: "calendar", label: "appSidebar_calendar", icon: CalendarDaysIcon },
 ];
 
 const START: NavItem[] = [
   {
     id: "file-case",
-    label: "File a case",
+    label: "appSidebar_fileACase",
     icon: FilePlusIcon,
     href: "/filings",
   },
@@ -145,13 +147,13 @@ const START: NavItem[] = [
   // from there it is the same flow a case's Make filings menu opens.
   {
     id: "raise-application",
-    label: "Raise application",
+    label: "appSidebar_raiseApplication",
     icon: FileTextIcon,
     href: "/raise-application",
   },
   {
     id: "vakalatnama",
-    label: "Vakalatnama",
+    label: "appSidebar_vakalatnama",
     icon: ScrollTextIcon,
     href: "/vakalatnama",
   },
@@ -159,13 +161,13 @@ const START: NavItem[] = [
   // dialog on the Cases page; the rail opens that same dialog there.
   {
     id: "join-case",
-    label: "Join a case",
+    label: "appSidebar_joinACase",
     icon: UserPlusIcon,
     href: "/cases?join=1",
   },
 ];
 
-const WITH: NavItem[] = [{ id: "people", label: "People", icon: UsersIcon, href: "/people" }];
+const WITH: NavItem[] = [{ id: "people", label: "appSidebar_people", icon: UsersIcon, href: "/people" }];
 
 /**
  * The row's label. It has to leave the layout on collapse, not merely be clipped by the
@@ -240,13 +242,14 @@ function TasksCount() {
 
 /** What the count says out loud. The marks themselves are bare numerals. */
 function TasksCountLabel() {
+  const tr = useTranslations();
   const { state, people, cases, tasks, user } = useTasks();
   const { profileRole } = useProfile();
   if (state !== "ready") return null;
   if (profileRole === "litigant") return null;
   const { action } = summaryOf({ people, cases, tasks, user, now: new Date() });
   if (!action) return null;
-  return <span className="sr-only">, {action} need action</span>;
+  return <span className="sr-only">{tr("appSidebar_actionNeedAction", { action: String(action) })}</span>;
 }
 
 /**
@@ -262,6 +265,7 @@ function SearchShortcut() {
 }
 
 function NavRow({ item, onAction }: { item: NavItem; onAction?: () => void }) {
+  const tr = useTranslations();
   const pathname = usePathname();
   const { crumbRoot } = useChrome();
   // On a phone the rail is a sheet over the page. Choosing where to go is the
@@ -277,7 +281,7 @@ function NavRow({ item, onAction }: { item: NavItem; onAction?: () => void }) {
     return (
       <SidebarMenuItem>
         <SidebarMenuButton
-          tooltip={label}
+          tooltip={translateText(tr, label)}
           className={ROW}
           onClick={() => {
             closeSheet();
@@ -285,7 +289,7 @@ function NavRow({ item, onAction }: { item: NavItem; onAction?: () => void }) {
           }}
         >
           <Icon aria-hidden />
-          <span className={LABEL}>{label}</span>
+          <span className={LABEL}>{translateText(tr, label)}</span>
           {id === "search" ? <SearchShortcut /> : null}
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -305,11 +309,11 @@ function NavRow({ item, onAction }: { item: NavItem; onAction?: () => void }) {
               className={`${ROW} ${MUTED} aria-disabled:pointer-events-auto aria-disabled:opacity-100`}
             >
               <Icon aria-hidden />
-              <span className={LABEL}>{label}</span>
+              <span className={LABEL}>{translateText(tr, label)}</span>
             </SidebarMenuButton>
           </TooltipTrigger>
           <TooltipContent side="right">
-            {`${label} — ${UNBUILT_NOTE}`}
+            {`${translateText(tr, label)} — ${UNBUILT_NOTE}`}
           </TooltipContent>
         </Tooltip>
       </SidebarMenuItem>
@@ -328,7 +332,7 @@ function NavRow({ item, onAction }: { item: NavItem; onAction?: () => void }) {
       <SidebarMenuButton
         asChild
         isActive={inArea}
-        tooltip={label}
+        tooltip={translateText(tr, label)}
         className={ROW}
       >
         <Link
@@ -337,7 +341,7 @@ function NavRow({ item, onAction }: { item: NavItem; onAction?: () => void }) {
           onClick={closeSheet}
         >
           <Icon aria-hidden />
-          <span className={LABEL}>{label}</span>
+          <span className={LABEL}>{translateText(tr, label)}</span>
           {id === "tasks" ? (
             <>
               <TasksCountLabel />
@@ -404,13 +408,14 @@ function NavGroup({
  * ordinary light-scope DS; only the swatches carry the plates.
  */
 function RailThemePicker() {
+  const tr = useTranslations();
   const { theme, setThemeId } = useRailTheme();
   return (
     <div className="mt-1 border-t border-hairline pt-1">
       <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">
-        Rail plate — experiment
+        {tr("appSidebar_railPlateExperiment")}
       </p>
-      <div role="radiogroup" aria-label="Rail plate">
+      <div role="radiogroup" aria-label={tr("appSidebar_railPlate")}>
         {RAIL_THEMES.map((t) => (
           <Button
             key={t.id}
@@ -425,7 +430,7 @@ function RailThemePicker() {
               className="size-4 rounded-full border border-hairline"
               style={{ background: t.swatch }}
             />
-            <span className="flex-1 text-left">{t.label}</span>
+            <span className="flex-1 text-left">{translateText(tr, t.label)}</span>
             {t.id === theme.id ? <CheckIcon aria-hidden /> : null}
           </Button>
         ))}
@@ -455,6 +460,7 @@ const PROFILE_HOME: Record<ProfileRole, string> = {
  * it is an identity mark with nothing beside it to be distinguished from.
  */
 function ProfileFooter() {
+  const tr = useTranslations();
   const { state, people, user, setUser, resetSandbox } = useTasks();
   const {
     profileRole,
@@ -501,7 +507,7 @@ function ProfileFooter() {
                 <SidebarMenuButton
                   className={`${ROW} h-12 group-data-[collapsible=icon]:size-10!`}
                   tooltip={`${displayName} · ${roleLabel}`}
-                  aria-label={`${displayName} · ${roleLabel} · Account menu`}
+                  aria-label={tr("appSidebar_displayNameRoleLabelAccountMenu", { displayName, roleLabel })}
                 >
                   <span className="relative shrink-0">
                     <span
@@ -550,7 +556,7 @@ function ProfileFooter() {
                 {advocateProfileAvailable ? (
                   <>
                     <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">
-                      Switch profile
+                      {tr("appSidebar_switchProfile")}
                     </p>
                     <Button
                       variant="ghost"
@@ -561,9 +567,9 @@ function ProfileFooter() {
                         aria-hidden
                         className="flex size-6 items-center justify-center rounded-full bg-surface-sunken text-caption font-semibold"
                       >
-                        L
+                        {tr("appSidebar_l")}
                       </span>
-                      <span className="flex-1 text-left">Litigant</span>
+                      <span className="flex-1 text-left">{tr("appSidebar_litigant")}</span>
                       {profileRole === "litigant" ? (
                         <CheckIcon aria-hidden />
                       ) : null}
@@ -577,9 +583,9 @@ function ProfileFooter() {
                         aria-hidden
                         className="flex size-6 items-center justify-center rounded-full bg-surface-sunken text-caption font-semibold"
                       >
-                        A
+                        {tr("appSidebar_a")}
                       </span>
-                      <span className="flex-1 text-left">Advocate</span>
+                      <span className="flex-1 text-left">{tr("appSidebar_advocate")}</span>
                       {profileRole === "advocate" ? (
                         <CheckIcon aria-hidden />
                       ) : null}
@@ -593,7 +599,7 @@ function ProfileFooter() {
                     register below the rule. */}
                 <div className="mt-1 border-t border-hairline pt-1">
                   <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">
-                    Viewing as
+                    {tr("appSidebar_viewingAs")}
                   </p>
                   {people.map((p, index) => (
                     <React.Fragment key={p.id}>
@@ -631,7 +637,7 @@ function ProfileFooter() {
                             {VIEWER_CLERK_NAME}
                           </span>
                           <span className="text-caption text-muted-foreground">
-                            Clerk
+                            {tr("appSidebar_clerk")}
                           </span>
                           {profileRole === "clerk" ? (
                             <CheckIcon aria-hidden />
@@ -646,7 +652,7 @@ function ProfileFooter() {
                     onClick={onResetSandbox}
                   >
                     <RotateCcwIcon aria-hidden />
-                    <span className="flex-1 text-left">Reset sandbox data</span>
+                    <span className="flex-1 text-left">{tr("appSidebar_resetSandboxData")}</span>
                   </Button>
                   <Button
                     variant="ghost"
@@ -655,7 +661,7 @@ function ProfileFooter() {
                   >
                     <ScrollTextIcon aria-hidden />
                     <span className="flex-1 text-left">
-                      Join a Case from Summons
+                      {tr("appSidebar_joinACaseFromSummons")}
                     </span>
                   </Button>
                 </div>
@@ -676,7 +682,7 @@ function ProfileFooter() {
                     onClick={onSignOut}
                   >
                     <LogOutIcon aria-hidden />
-                    <span className="flex-1 text-left">Sign out</span>
+                    <span className="flex-1 text-left">{tr("appSidebar_signOut")}</span>
                   </Button>
                 </div>
               </PopoverContent>
@@ -692,7 +698,7 @@ function ProfileFooter() {
                 asChild
                 variant="ghost"
                 size="icon"
-                aria-label="Profile settings"
+                aria-label={tr("appSidebar_profileSettings")}
                 className={`size-10 shrink-0 [&_svg]:size-5 group-data-[collapsible=icon]:hidden ${MUTED} hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
               >
                 <Link href="/settings">
@@ -700,7 +706,7 @@ function ProfileFooter() {
                 </Link>
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top">Settings</TooltipContent>
+            <TooltipContent side="top">{tr("appSidebar_settings")}</TooltipContent>
           </Tooltip>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -708,9 +714,9 @@ function ProfileFooter() {
       <ConfirmDialog
         open={confirmReset}
         onOpenChange={setConfirmReset}
-        title="Reset the sandbox?"
-        description="Every task, upload, decision, sample filing and bulk batch is reset and the seed data is loaded again. Other open tabs reload too."
-        confirmLabel="Reset sandbox"
+        title={tr("appSidebar_resetTheSandbox")}
+        description={tr("appSidebar_everyTaskUploadDecisionSampleFiling")}
+        confirmLabel={tr("appSidebar_resetSandbox")}
         onConfirm={() => {
           setConfirmReset(false);
           // Sample filings too, so a signature or oath can be walked again from the start;
@@ -745,6 +751,7 @@ function RailPlate({ vars, children }: { vars: React.CSSProperties; children: Re
 
 /** Main navigation for the whole app. Icon rail from `md`, sheet below it. */
 export function AppSidebar() {
+  const tr = useTranslations();
   const { theme } = useRailTheme();
   const { profileRole } = useProfile();
   const { open: openSearch } = useAppSearch();
@@ -805,15 +812,15 @@ export function AppSidebar() {
           wordmarkClassName="group-data-[collapsible=icon]:hidden"
         />
         <SidebarTrigger
-          aria-label="Collapse main navigation"
+          aria-label={tr("appSidebar_collapseMainNavigation")}
           className={`size-8 shrink-0 group-data-[collapsible=icon]:hidden [&_svg]:size-5 ${MUTED} hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
         />
       </SidebarHeader>
 
       <SidebarContent>
-        <NavGroup items={mainItems} label="Main" actions={{ search: openSearch }} />
-        <NavGroup items={START} label="Start something" separated />
-        <NavGroup items={WITH} label="People" separated />
+        <NavGroup items={mainItems} label={tr("appSidebar_main")} actions={{ search: openSearch }} />
+        <NavGroup items={START} label={tr("appSidebar_startSomething")} separated />
+        <NavGroup items={WITH} label={tr("appSidebar_people")} separated />
       </SidebarContent>
 
       <ProfileFooter />

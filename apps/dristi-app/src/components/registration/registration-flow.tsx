@@ -54,6 +54,7 @@ import { MaskedOtp, OTP_LENGTH } from "./masked-otp";
 import { Identifier } from "@/components/chrome/identifier";
 import { SubmitErrorAlert } from "./submit-error-alert";
 import { PageOutcome } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 type Step = "role" | "name" | "contact" | "password" | "verification" | "terms" | "success" | "application";
 type AccountRole = "litigant" | "advocate" | "advocateClerk" | "poa" | "";
@@ -118,6 +119,7 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
   verifiedMobile?: string;
   onFinish?: (result: RegistrationResult) => void;
 }) {
+  const t = useTranslations();
   const [step, setStep] = React.useState<Step>("role");
   const [role, setRole] = React.useState<AccountRole>("");
   const [fullName, setFullName] = React.useState("");
@@ -362,7 +364,7 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
             </Button>
           }
         />
-        {destinationNotice ? <Alert variant="info" className="text-left"><AlertTitle>Prototype: destination not connected</AlertTitle><AlertDescription>This action will open your portal home.</AlertDescription></Alert> : null}
+        {destinationNotice ? <Alert variant="info" className="text-left"><AlertTitle>{t("registrationFlow_prototypeDestinationNotConnected")}</AlertTitle><AlertDescription>{t("registrationFlow_thisActionWillOpenYourPortal")}</AlertDescription></Alert> : null}
       </div>
     );
   }
@@ -376,7 +378,7 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
           <DescriptionRow><DescriptionTerm>{pick(applicationView.mobile, locale)}</DescriptionTerm><DescriptionDetails>+91 {mobile}</DescriptionDetails></DescriptionRow>
           {email ? <DescriptionRow><DescriptionTerm>{pick(applicationView.email, locale)}</DescriptionTerm><DescriptionDetails>{email}</DescriptionDetails></DescriptionRow> : null}
           <DescriptionRow><DescriptionTerm>{pick(applicationView.role, locale)}</DescriptionTerm><DescriptionDetails>{pick(role === "advocateClerk" ? roleStep.advocateClerk : roleStep.advocate, locale)}</DescriptionDetails></DescriptionRow>
-          <DescriptionRow><DescriptionTerm>{pick(verification.numberLabel, locale)}</DescriptionTerm><DescriptionDetails><Identifier value={regNumber} label="registration number" /></DescriptionDetails></DescriptionRow>
+          <DescriptionRow><DescriptionTerm>{pick(verification.numberLabel, locale)}</DescriptionTerm><DescriptionDetails><Identifier value={regNumber} label={t("registrationFlow_registrationNumber")} /></DescriptionDetails></DescriptionRow>
           {idFile ? <DescriptionRow className="items-center"><DescriptionTerm>{pick(verification.uploadLabel, locale)}</DescriptionTerm><DescriptionDetails><DocumentRowValue file={idFile} locale={locale} /></DescriptionDetails></DescriptionRow> : null}
         </DescriptionList>
       </div>
@@ -635,8 +637,8 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                 litigant registration is connected to the backend so far. */}
             {submitError === "notSupported" ? (
               <Alert variant="info">
-                <AlertTitle>Not connected yet</AlertTitle>
-                <AlertDescription>Registration for this account type is not connected to the server yet. Only litigant registration works for now.</AlertDescription>
+                <AlertTitle>{t("registrationFlow_notConnectedYet")}</AlertTitle>
+                <AlertDescription>{t("registrationFlow_registrationForThisAccountTypeIs")}</AlertDescription>
               </Alert>
             ) : null}
             <Actions locale={locale} onBack={() => { setTouched(false); setSubmitError(null); setStep(needsVerification ? "verification" : "password"); }} submitLabel={pick(termsStep.submit, locale)} pending={pending === "submit"} />

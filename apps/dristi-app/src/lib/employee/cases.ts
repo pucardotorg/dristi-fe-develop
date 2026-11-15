@@ -44,6 +44,7 @@ import {
   type CourtCaseStage,
 } from "./hearings";
 import { caseSearchKey } from "@/lib/court/localize";
+import type { MessageKey } from "@/i18n/messages";
 
 /**
  * A priority a case carries as a fact about the matter, not as a stage it has reached.
@@ -108,11 +109,11 @@ export type CourtPriorityId =
   | "process-pending";
 
 /** Flag order and wording, for the register's own Priority column. */
-export const COURT_CASE_FLAG_LABEL: Record<CourtCaseFlag, string> = {
-  utp: "In custody",
-  stayed: "Stayed",
-  "time-bound": "Time-bound",
-  "appellate-pending": "Appeal or revision",
+export const COURT_CASE_FLAG_LABEL: Record<CourtCaseFlag, MessageKey> = {
+  utp: "cases_inCustody",
+  stayed: "cases_stayed",
+  "time-bound": "cases_timeBound",
+  "appellate-pending": "cases_appealOrRevision",
 };
 
 function carries(flag: CourtCaseFlag) {
@@ -127,47 +128,47 @@ export const COURT_PRIORITIES: CourtPriority[] = [
   {
     id: "pending-cognizance",
     tile: "Pending cognizance",
-    title: "Newly filed, pending cognizance",
+    title: "cases_newlyFiledPendingCognizance",
     meaning:
-      "Cleared registry scrutiny and waiting for the order that issues summons.",
+      "cases_clearedRegistryScrutinyAndWaitingFor",
     matches: (record) => record.stage === "cognizance",
   },
   {
     id: "utp",
     tile: "Accused in custody",
-    title: "Under-trial prisoner matters",
+    title: "cases_underTrialPrisonerMatters",
     meaning:
-      "The accused is in custody, so the matter takes statutory hearing priority.",
+      "cases_theAccusedIsInCustodySo",
     matches: carries("utp"),
   },
   {
     id: "stayed",
     tile: "Stayed",
-    title: "Stayed by a higher court",
+    title: "cases_stayedByAHigherCourt",
     meaning:
-      "Proceedings are stayed by the High Court or the Supreme Court.",
+      "cases_proceedingsAreStayedByTheHigh",
     matches: carries("stayed"),
   },
   {
     id: "time-bound",
     tile: "Time-bound",
-    title: "Time-bound by a higher court's direction",
-    meaning: "A higher court has fixed a date by which this case must be disposed.",
+    title: "cases_timeBoundByAHigherCourts",
+    meaning: "cases_aHigherCourtHasFixedA",
     matches: carries("time-bound"),
   },
   {
     id: "appellate-pending",
     tile: "Appeal or revision",
-    title: "Revision or appeal pending above",
-    meaning: "A revision or appeal out of this case is live in an appellate court.",
+    title: "cases_revisionOrAppealPendingAbove",
+    meaning: "cases_aRevisionOrAppealOutOf",
     matches: carries("appellate-pending"),
   },
   {
     id: "process-pending",
     tile: "Process awaited",
-    title: "Process issued, report awaited",
+    title: "cases_processIssuedReportAwaited",
     meaning:
-      "Summons or warrant has gone out and the serving report has not come back.",
+      "cases_summonsOrWarrantHasGoneOut",
     matches: (record) => record.stage === "process",
   },
 ];

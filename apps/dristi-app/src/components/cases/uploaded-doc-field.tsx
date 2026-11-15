@@ -31,8 +31,10 @@ import {
   useObjectUrl,
 } from "@/components/document-preview";
 import { isAcceptedDocument, MAX_FILE_SIZE } from "@/lib/uploads/accepted-document";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
-export const UPLOAD_HELP = "Upload a JPG, JPEG, PNG or PDF up to 10 MB.";
+export const UPLOAD_HELP = "uploadedDocField_uploadAJpgJpegPngOr";
 
 function fileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -45,6 +47,7 @@ function fileSize(bytes: number) {
  * no way back to what was attached).
  */
 export function ReviewDocValue({ file }: { file: File | null }) {
+  const t = useTranslations();
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const url = useObjectUrl(file);
   if (!file) return null;
@@ -56,7 +59,7 @@ export function ReviewDocValue({ file }: { file: File | null }) {
         variant="ghost"
         size="icon-sm"
         className="shrink-0 text-muted-foreground"
-        aria-label={`View ${file.name}`}
+        aria-label={t("uploadedDocField_viewName", { name: file.name })}
         onClick={() => setPreviewOpen(true)}
       >
         <Maximize2Icon aria-hidden />
@@ -69,7 +72,7 @@ export function ReviewDocValue({ file }: { file: File | null }) {
         locale="en"
         copy={{
           title: file.name,
-          description: "Check the document is readable before continuing.",
+          description: t("uploadedDocField_checkTheDocumentIsReadableBefore"),
           alt: file.name,
         }}
       />
@@ -107,6 +110,7 @@ export function UploadedDocField({
   /** The preview's language, for a host that speaks the viewer's. */
   locale?: Locale;
 }) {
+  const t = useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const url = useObjectUrl(file);
@@ -157,7 +161,7 @@ export function UploadedDocField({
               className="h-auto p-0"
               onClick={() => inputRef.current?.click()}
             >
-              {copy?.changeFile ?? "Change file"}
+              {copy?.changeFile ?? t("uploadedDocField_changeFile")}
             </Button>
             <Button
               type="button"
@@ -165,7 +169,7 @@ export function UploadedDocField({
               className="h-auto p-0 text-destructive-ink"
               onClick={() => onFileChange(null)}
             >
-              {copy?.remove ?? "Remove"}
+              {copy?.remove ?? t("uploadedDocField_remove")}
             </Button>
           </AttachmentActions>
         </Attachment>
@@ -197,7 +201,7 @@ export function UploadedDocField({
           title: label,
           description:
             copy?.previewDescription ??
-            "Check the document is readable before continuing.",
+            t("uploadedDocField_checkTheDocumentIsReadableBefore"),
           alt: copy?.previewAlt ?? label,
         }}
       />
@@ -211,13 +215,14 @@ export function UploadedDocField({
  */
 export function ReplaceFileButton({
   onFile,
-  label = "Replace file",
+  label = "uploadedDocField_replaceFile",
   className,
 }: {
   onFile: (file: File) => void;
   label?: string;
   className?: string;
 }) {
+  const t = useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   return (
     <>
@@ -240,7 +245,7 @@ export function ReplaceFileButton({
         className={className}
         onClick={() => inputRef.current?.click()}
       >
-        {label}
+        {translateText(t, label)}
       </Button>
     </>
   );

@@ -23,8 +23,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 function FilePreview({ file }: { file: StoredFileRef }) {
+  const t = useTranslations();
   const preview = useFilePreview(file);
   if (preview.status === "loading") return <Skeleton className="h-64 w-full rounded-lg" />;
   if (preview.status === "ready" && preview.imageUrl) {
@@ -33,7 +35,7 @@ function FilePreview({ file }: { file: StoredFileRef }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={preview.imageUrl}
-          alt={`Page 1 of ${file.name}`}
+          alt={t("filePreviewDialog_page1OfName", { name: file.name })}
           className="max-h-[60vh] w-full object-contain"
         />
       </div>
@@ -45,8 +47,8 @@ function FilePreview({ file }: { file: StoredFileRef }) {
       <p className="text-body-compact break-all">{file.name}</p>
       <p className="text-caption">
         {preview.status === "missing"
-          ? "This file is no longer stored in this browser"
-          : "No preview for this file type"}
+          ? t("filePreviewDialog_thisFileIsNoLongerStored")
+          : t("filePreviewDialog_noPreviewForThisFileType")}
       </p>
     </div>
   );
@@ -73,6 +75,7 @@ export function FilePreviewDialog({
   onDelete,
   children,
 }: FilePreviewDialogProps) {
+  const t = useTranslations();
   return (
     <Dialog
       open={!!file}
@@ -87,7 +90,7 @@ export function FilePreviewDialog({
             <span className="min-w-0 break-all">{file?.name}</span>
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Preview of the file added for {label}.
+            {t("filePreviewDialog_previewOfTheFileAddedFor", { label })}
           </DialogDescription>
         </DialogHeader>
 
@@ -97,15 +100,15 @@ export function FilePreviewDialog({
         <DialogFooter className="sm:justify-between">
           {onDelete ? (
             <Button type="button" variant="destructive-ghost" onClick={onDelete}>
-              Delete
+              {t("filePreviewDialog_delete")}
             </Button>
           ) : null}
           <div className="flex flex-col-reverse gap-2 sm:ml-auto sm:flex-row">
             <Button type="button" variant="outline" onClick={onReplace}>
-              Replace file
+              {t("filePreviewDialog_replaceFile")}
             </Button>
             <Button type="button" onClick={onClose}>
-              Done
+              {t("filePreviewDialog_done")}
             </Button>
           </div>
         </DialogFooter>

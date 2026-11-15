@@ -19,6 +19,8 @@ import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
 import type { ProfileRole } from "@/components/shell/profile";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import type { MessageKey } from "@/i18n/messages";
 
 const REQUIRED_MARK = <span className="text-destructive">*</span>;
 
@@ -27,10 +29,10 @@ export type AdvocateRequestDetails = {
   idFile: File;
 };
 
-const ACCOUNT_LABEL: Record<ProfileRole, string> = {
-  advocate: "Advocate account",
-  litigant: "Litigant account",
-  clerk: "Clerk account",
+const ACCOUNT_LABEL: Record<ProfileRole, MessageKey> = {
+  advocate: "profileSettings_advocateAccount",
+  litigant: "profileSettings_litigantAccount",
+  clerk: "profileSettings_clerkAccount",
 };
 
 export function ProfileSettings({ locale, profileName, idSubmitted, submittedId, advocateRequest, profileRole, advocateProfileAvailable, onIdSubmitted, onProfileCompleted, onAdvocateRequest, onSwitchProfile }: {
@@ -46,6 +48,7 @@ export function ProfileSettings({ locale, profileName, idSubmitted, submittedId,
   onAdvocateRequest: (details: AdvocateRequestDetails) => void;
   onSwitchProfile: (role: ProfileRole) => void;
 }) {
+  const t = useTranslations();
   const [addressSaved, setAddressSaved] = React.useState(false);
   const [addressOpen, setAddressOpen] = React.useState(false);
   const [idOpen, setIdOpen] = React.useState(false);
@@ -84,22 +87,22 @@ export function ProfileSettings({ locale, profileName, idSubmitted, submittedId,
             )}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" aria-label="Switch profile">
-                  {ACCOUNT_LABEL[profileRole]}
+                <Button variant="outline" size="sm" aria-label={t("profileSettings_switchProfile")}>
+                  {t(ACCOUNT_LABEL[profileRole])}
                   <ChevronsUpDownIcon data-icon="inline-end" aria-hidden />
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="center" className="w-64 p-2">
-                <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">Switch profile</p>
+                <p className="px-2 py-1.5 text-caption font-semibold text-muted-foreground">{t("profileSettings_switchProfile")}</p>
                 <Button variant="ghost" className="w-full justify-start" onClick={() => onSwitchProfile("litigant")}>
-                  <Avatar size="sm"><AvatarFallback>L</AvatarFallback></Avatar>
-                  <span className="flex-1 text-left">Litigant</span>
+                  <Avatar size="sm"><AvatarFallback>{t("profileSettings_l")}</AvatarFallback></Avatar>
+                  <span className="flex-1 text-left">{t("profileSettings_litigant")}</span>
                   {profileRole === "litigant" ? <CheckIcon aria-hidden /> : null}
                 </Button>
                 {advocateProfileAvailable ? (
                   <Button variant="ghost" className="w-full justify-start" onClick={() => onSwitchProfile("advocate")}>
-                    <Avatar size="sm"><AvatarFallback>A</AvatarFallback></Avatar>
-                    <span className="flex-1 text-left">Advocate</span>
+                    <Avatar size="sm"><AvatarFallback>{t("profileSettings_a")}</AvatarFallback></Avatar>
+                    <span className="flex-1 text-left">{t("profileSettings_advocate")}</span>
                     {profileRole === "advocate" ? <CheckIcon aria-hidden /> : null}
                   </Button>
                 ) : null}
@@ -111,24 +114,24 @@ export function ProfileSettings({ locale, profileName, idSubmitted, submittedId,
 
       <section className="flex flex-col gap-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h2 className="text-title-s font-semibold">Address</h2><p className="text-body-compact text-muted-foreground">Add the address the court should use for records and communications.</p></div>
+          <div><h2 className="text-title-s font-semibold">{t("profileSettings_address")}</h2><p className="text-body-compact text-muted-foreground">{t("profileSettings_addTheAddressTheCourtShould")}</p></div>
           <div className="flex items-center gap-2">
-            {addressSaved ? <Badge variant="success">Address added</Badge> : null}
-            {!addressOpen ? <Button variant="outline" onClick={() => setAddressOpen(true)}>{!addressSaved ? <PlusIcon data-icon="inline-start" aria-hidden /> : null}{addressSaved ? "Edit address" : "Add address"}</Button> : null}
+            {addressSaved ? <Badge variant="success">{t("profileSettings_addressAdded")}</Badge> : null}
+            {!addressOpen ? <Button variant="outline" onClick={() => setAddressOpen(true)}>{!addressSaved ? <PlusIcon data-icon="inline-start" aria-hidden /> : null}{addressSaved ? t("profileSettings_editAddress") : t("profileSettings_addAddress")}</Button> : null}
           </div>
         </div>
         {addressOpen || addressSaved ? (
           <form className={addressOpen ? "grid grid-cols-1 gap-4 sm:grid-cols-2" : "hidden"} onSubmit={(event) => { event.preventDefault(); setAddressSaved(true); setAddressOpen(false); onProfileCompleted(); }}>
-            <Field><FieldLabel>PIN code {REQUIRED_MARK}</FieldLabel><Input required inputMode="numeric" maxLength={6} /></Field>
-            <Field><FieldLabel>State {REQUIRED_MARK}</FieldLabel><Input required /></Field>
-            <Field><FieldLabel>District {REQUIRED_MARK}</FieldLabel><Input required /></Field>
-            <Field><FieldLabel>City or town {REQUIRED_MARK}</FieldLabel><Input required /></Field>
-            <Field className="sm:col-span-2"><FieldLabel>Locality, street or area {REQUIRED_MARK}</FieldLabel><Input required /></Field>
-            <Field><FieldLabel>Building name (optional)</FieldLabel><Input /></Field>
-            <Field><FieldLabel>Door or house number {REQUIRED_MARK}</FieldLabel><Input required /></Field>
+            <Field><FieldLabel>{t("profileSettings_pinCode")} {REQUIRED_MARK}</FieldLabel><Input required inputMode="numeric" maxLength={6} /></Field>
+            <Field><FieldLabel>{t("profileSettings_state")} {REQUIRED_MARK}</FieldLabel><Input required /></Field>
+            <Field><FieldLabel>{t("profileSettings_district")} {REQUIRED_MARK}</FieldLabel><Input required /></Field>
+            <Field><FieldLabel>{t("profileSettings_cityOrTown")} {REQUIRED_MARK}</FieldLabel><Input required /></Field>
+            <Field className="sm:col-span-2"><FieldLabel>{t("profileSettings_localityStreetOrArea")} {REQUIRED_MARK}</FieldLabel><Input required /></Field>
+            <Field><FieldLabel>{t("profileSettings_buildingNameOptional")}</FieldLabel><Input /></Field>
+            <Field><FieldLabel>{t("profileSettings_doorOrHouseNumber")} {REQUIRED_MARK}</FieldLabel><Input required /></Field>
             <div className="flex justify-end gap-2 pt-2 sm:col-span-2">
-              <Button type="button" variant="ghost" onClick={() => setAddressOpen(false)}>Cancel</Button>
-              <Button type="submit">Save address</Button>
+              <Button type="button" variant="ghost" onClick={() => setAddressOpen(false)}>{t("common_cancel")}</Button>
+              <Button type="submit">{t("profileSettings_saveAddress")}</Button>
             </div>
           </form>
         ) : null}
@@ -136,8 +139,8 @@ export function ProfileSettings({ locale, profileName, idSubmitted, submittedId,
 
       <section className="flex flex-col gap-5 border-t border-border pt-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h2 className="text-title-s font-semibold">Official ID</h2><p className="text-body-compact text-muted-foreground">Add one official ID to your profile.</p></div>
-          {idSubmitted ? <Badge variant="success">ID submitted</Badge> : !idOpen ? <Button variant="outline" onClick={() => setIdOpen(true)}><PlusIcon data-icon="inline-start" aria-hidden /> Add ID</Button> : null}
+          <div><h2 className="text-title-s font-semibold">{t("profileSettings_officialId")}</h2><p className="text-body-compact text-muted-foreground">{t("profileSettings_addOneOfficialIdToYour")}</p></div>
+          {idSubmitted ? <Badge variant="success">{t("profileSettings_idSubmitted")}</Badge> : !idOpen ? <Button variant="outline" onClick={() => setIdOpen(true)}><PlusIcon data-icon="inline-start" aria-hidden /> {t("profileSettings_addId")}</Button> : null}
         </div>
         {submittedId ? <SubmittedIdSummary submission={submittedId} locale={locale} /> : idOpen ? <AddIdForm locale={locale} onCancel={() => setIdOpen(false)} onSubmitted={(submission) => { setIdOpen(false); onIdSubmitted(submission); }} /> : null}
       </section>
@@ -146,54 +149,54 @@ export function ProfileSettings({ locale, profileName, idSubmitted, submittedId,
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-title-s font-semibold">
-              {advocateProfileAvailable ? "Advocate details" : "Request an advocate profile"}
+              {advocateProfileAvailable ? t("profileSettings_advocateDetails") : t("profileSettings_requestAnAdvocateProfile")}
             </h2>
             <p className="text-body-compact text-muted-foreground">
               {advocateProfileAvailable
-                ? "Your advocate enrolment details on file."
-                : "Request an advocate profile along with your current litigant access."}
+                ? t("profileSettings_yourAdvocateEnrolmentDetailsOnFile")
+                : t("profileSettings_requestAnAdvocateProfileAlongWith")}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {advocateProfileAvailable ? <Badge variant="success"><CheckIcon data-icon="inline-start" aria-hidden /> Approved</Badge> : null}
+            {advocateProfileAvailable ? <Badge variant="success"><CheckIcon data-icon="inline-start" aria-hidden /> {t("profileSettings_approved")}</Badge> : null}
             {advocateRequest ? (
               <Button variant="outline" onClick={() => setUpgradeDetailsOpen((current) => !current)}>
                 {advocateProfileAvailable
-                  ? (upgradeDetailsOpen ? "Hide details" : "Edit advocate details")
-                  : (upgradeDetailsOpen ? "Hide submitted information" : "View submitted information")}
+                  ? (upgradeDetailsOpen ? t("profileSettings_hideDetails") : t("profileSettings_editAdvocateDetails"))
+                  : (upgradeDetailsOpen ? t("profileSettings_hideSubmittedInformation") : t("profileSettings_viewSubmittedInformation"))}
               </Button>
             ) : advocateProfileAvailable ? (
-              <Button variant="outline" onClick={() => setUpgradeOpen(true)}>Edit advocate details</Button>
+              <Button variant="outline" onClick={() => setUpgradeOpen(true)}>{t("profileSettings_editAdvocateDetails")}</Button>
             ) : !upgradeOpen ? (
-              <Button variant="outline" onClick={() => setUpgradeOpen(true)}>Request advocate profile</Button>
+              <Button variant="outline" onClick={() => setUpgradeOpen(true)}>{t("profileSettings_requestAdvocateProfile")}</Button>
             ) : null}
           </div>
         </div>
-        {advocateRequest && !advocateProfileAvailable ? <StatusLine tone="info" still title="Your request has been submitted">We will notify you when your advocate profile is approved. Your litigant profile remains active.</StatusLine> : null}
+        {advocateRequest && !advocateProfileAvailable ? <StatusLine tone="info" still title={t("profileSettings_yourRequestHasBeenSubmitted")}>{t("profileSettings_weWillNotifyYouWhenYour")}</StatusLine> : null}
         {upgradeDetailsOpen && advocateRequest ? (
           <DescriptionList className="rounded-lg bg-muted px-4">
-            <DescriptionRow><DescriptionTerm>Bar registration number</DescriptionTerm><DescriptionDetails><Identifier value={advocateRequest.barNumber} label="bar registration number" /></DescriptionDetails></DescriptionRow>
-            <DescriptionRow className="items-center"><DescriptionTerm>Bar Council ID</DescriptionTerm><DescriptionDetails><DocumentRowValue file={advocateRequest.idFile} locale={locale} /></DescriptionDetails></DescriptionRow>
+            <DescriptionRow><DescriptionTerm>{t("profileSettings_barRegistrationNumber")}</DescriptionTerm><DescriptionDetails><Identifier value={advocateRequest.barNumber} label={t("profileSettings_barRegistrationNumberLabel")} /></DescriptionDetails></DescriptionRow>
+            <DescriptionRow className="items-center"><DescriptionTerm>{t("profileSettings_barCouncilId")}</DescriptionTerm><DescriptionDetails><DocumentRowValue file={advocateRequest.idFile} locale={locale} /></DescriptionDetails></DescriptionRow>
           </DescriptionList>
         ) : null}
         {upgradeOpen && !advocateRequest ? (
           <form className="flex flex-col gap-4 rounded-lg bg-muted p-6" noValidate onSubmit={submitUpgrade}>
-            <p className="text-body-compact text-muted-foreground">These details let the court verify your enrolment.</p>
+            <p className="text-body-compact text-muted-foreground">{t("profileSettings_theseDetailsLetTheCourtVerify")}</p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field data-invalid={upgradeTouched && !barNumber.trim()}>
-                <FieldLabel>Bar registration number {REQUIRED_MARK}</FieldLabel>
-                <Input value={barNumber} onChange={(event) => { setBarNumber(event.target.value); setUpgradeTouched(false); }} placeholder="For example K/1234/2020" />
-                <FieldError>{upgradeTouched && !barNumber.trim() ? "Enter your Bar registration number." : null}</FieldError>
+                <FieldLabel>{t("profileSettings_barRegistrationNumber")} {REQUIRED_MARK}</FieldLabel>
+                <Input value={barNumber} onChange={(event) => { setBarNumber(event.target.value); setUpgradeTouched(false); }} placeholder={t("profileSettings_forExampleK12342020")} />
+                <FieldError>{upgradeTouched && !barNumber.trim() ? t("profileSettings_enterYourBarRegistrationNumber") : null}</FieldError>
               </Field>
             </div>
             <Field data-invalid={upgradeTouched && !barId}>
-              <FieldLabel>Bar Council ID {REQUIRED_MARK}</FieldLabel>
+              <FieldLabel>{t("profileSettings_barCouncilId")} {REQUIRED_MARK}</FieldLabel>
               <input ref={barIdInputRef} type="file" className="hidden" tabIndex={-1} aria-hidden="true" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" onChange={(event) => { setBarId(event.target.files?.[0] ?? null); setUpgradeTouched(false); }} />
-              <DocumentSlot status={barId ? "filled" : "empty"} media={barId && barIdUrl ? "thumbnail" : "icon"} label="Bar Council ID" required filename={barId?.name} thumbnail={barId && barIdUrl ? <DocumentThumbnailButton file={barId} url={barIdUrl} locale={locale} onOpen={() => setBarIdPreviewOpen(true)} className="size-full" /> : <FileTextIcon className="size-5" aria-hidden />} onChooseFile={() => barIdInputRef.current?.click()} copy={{ noFile: "No file chosen yet", chooseFile: "Choose file" }} />
-              <div className="flex items-start justify-between gap-4"><FieldDescription>Ensure the registration number is clearly visible. JPG, JPEG, PNG or PDF · up to 10 MB.</FieldDescription>{barId ? <Button type="button" variant="link" className="h-auto shrink-0 p-0" onClick={() => barIdInputRef.current?.click()}>Change file</Button> : null}</div>
-              <FieldError>{upgradeTouched && !barId ? "Upload your Bar Council ID." : null}</FieldError>
+              <DocumentSlot status={barId ? "filled" : "empty"} media={barId && barIdUrl ? "thumbnail" : "icon"} label={t("profileSettings_barCouncilId")} required filename={barId?.name} thumbnail={barId && barIdUrl ? <DocumentThumbnailButton file={barId} url={barIdUrl} locale={locale} onOpen={() => setBarIdPreviewOpen(true)} className="size-full" /> : <FileTextIcon className="size-5" aria-hidden />} onChooseFile={() => barIdInputRef.current?.click()} copy={{ noFile: t("profileSettings_noFileChosenYet"), chooseFile: t("profileSettings_chooseFile") }} />
+              <div className="flex items-start justify-between gap-4"><FieldDescription>{t("profileSettings_ensureTheRegistrationNumberIsClearly")}</FieldDescription>{barId ? <Button type="button" variant="link" className="h-auto shrink-0 p-0" onClick={() => barIdInputRef.current?.click()}>{t("profileSettings_changeFile")}</Button> : null}</div>
+              <FieldError>{upgradeTouched && !barId ? t("profileSettings_uploadYourBarCouncilId") : null}</FieldError>
             </Field>
-            <div className="flex justify-end gap-2"><Button type="button" variant="ghost" onClick={() => { setUpgradeOpen(false); setUpgradeTouched(false); }}>Cancel</Button><Button type="submit">Send request</Button></div>
+            <div className="flex justify-end gap-2"><Button type="button" variant="ghost" onClick={() => { setUpgradeOpen(false); setUpgradeTouched(false); }}>{t("common_cancel")}</Button><Button type="submit">{t("profileSettings_sendRequest")}</Button></div>
             <DocumentPreviewDialog open={barIdPreviewOpen} onOpenChange={setBarIdPreviewOpen} file={barId} url={barIdUrl} locale={locale} />
           </form>
         ) : null}
@@ -203,10 +206,10 @@ export function ProfileSettings({ locale, profileName, idSubmitted, submittedId,
       <section className="flex flex-col gap-5 border-t border-border pt-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-title-s font-semibold">Password</h2>
-            <p className="text-body-compact text-muted-foreground">Set or change the password you use to sign in.</p>
+            <h2 className="text-title-s font-semibold">{t("profileSettings_password")}</h2>
+            <p className="text-body-compact text-muted-foreground">{t("profileSettings_setOrChangeThePasswordYou")}</p>
           </div>
-          <Button variant="outline">Set password</Button>
+          <Button variant="outline">{t("profileSettings_setPassword")}</Button>
         </div>
       </section>
 
@@ -214,12 +217,12 @@ export function ProfileSettings({ locale, profileName, idSubmitted, submittedId,
       <section className="flex flex-col gap-5 border-t border-border pt-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-title-s font-semibold">Provakil (demo)</h2>
-            <p className="text-body-compact text-muted-foreground">A stand-in for a lender&apos;s legal case software, which files cases here through the Bulk Filing API.</p>
+            <h2 className="text-title-s font-semibold">{t("profileSettings_provakilDemo")}</h2>
+            <p className="text-body-compact text-muted-foreground">{t("profileSettings_aStandInForALenders")}</p>
           </div>
           <Button variant="outline" asChild>
             <a href="/provakil" target="_blank" rel="noreferrer">
-              Open Provakil
+              {t("profileSettings_openProvakil")}
               <ExternalLinkIcon data-icon="inline-end" aria-hidden />
             </a>
           </Button>
@@ -237,6 +240,7 @@ export function ProfileSettings({ locale, profileName, idSubmitted, submittedId,
  * Advocates' names come from the Bar Council register and must not be changed here.
  */
 function EditableName({ value }: { value: string }) {
+  const t = useTranslations();
   const [editing, setEditing] = React.useState(false);
   // The field opens on the name as the heading shows it (Settings' court switch).
   const courtText = useCourtText();
@@ -253,7 +257,7 @@ function EditableName({ value }: { value: string }) {
         type="button"
         className="group flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:bg-muted"
         onClick={() => setEditing(true)}
-        aria-label="Edit name"
+        aria-label={t("profileSettings_editName")}
       >
         <h1 className="text-title-l font-semibold">{name || value}</h1>
         <PencilIcon className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
@@ -272,7 +276,7 @@ function EditableName({ value }: { value: string }) {
         onChange={(e) => setName(e.target.value)}
         className="text-title-l font-semibold text-center"
         onBlur={() => setEditing(false)}
-        aria-label="Full name"
+        aria-label={t("profileSettings_fullName")}
       />
     </form>
   );

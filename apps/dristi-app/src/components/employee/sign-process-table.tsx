@@ -36,6 +36,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** Seven columns on every tab — the checkbox and the reference's six. */
 const COLUMNS = 7;
@@ -57,13 +59,14 @@ export function ProcessStatusText({
   /** Run into a sentence — the overlay's supporting line — rather than stacked in a cell. */
   inline?: boolean;
 }) {
+  const t = useTranslations();
   const line = processStatusLine(process);
   const detail = line.day ? formatProcessDate(line.day) : line.reason;
   if (inline) {
     return (
       <span>
         <span className={line.warn ? "text-warning-ink" : undefined}>
-          {line.word}
+          {translateText(t, line.word)}
         </span>
         {detail ? ` ${line.day ? "" : "· "}${detail}` : null}
       </span>
@@ -81,7 +84,7 @@ export function ProcessStatusText({
           line.warn ? "text-warning-ink" : "text-foreground",
         )}
       >
-        {line.word}
+        {translateText(t, line.word)}
       </span>
       {detail ? (
         <span
@@ -133,6 +136,7 @@ export function SignProcessTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (process: CourtProcess) => void;
 }) {
+  const t = useTranslations();
   const selectedOnPage = rows.filter((row) => selectedIds.has(row.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
   const someSelected = selectedOnPage > 0 && !allSelected;
@@ -166,19 +170,19 @@ export function SignProcessTable({
               /* Every row in view — the list is not paged. */
               aria-label={
                 allSelected
-                  ? "Clear every process shown"
-                  : "Select every process shown"
+                  ? t("signProcessTable_clearEveryProcessShown")
+                  : t("signProcessTable_selectEveryProcessShown")
               }
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Case name
+            {t("signProcessTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("signProcessTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-36 whitespace-normal")}>
-            Process type
+            {t("signProcessTable_processType")}
           </TableHead>
           <TableHead
             className={cn(
@@ -189,10 +193,10 @@ export function SignProcessTable({
             {tab.dateColumn}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Delivery channel
+            {t("signProcessTable_deliveryChannel")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Hearing date
+            {t("signProcessTable_hearingDate")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -261,6 +265,7 @@ function ProcessRow({
   onToggle: (process: CourtProcess) => void;
   onOpen: (process: CourtProcess) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const type = courtProcessTypeLabel(process.type);
   const inline = courtProcessTypeInline(process.type);
@@ -273,7 +278,7 @@ function ProcessRow({
         <Checkbox
           checked={selected}
           onCheckedChange={() => onToggle(process)}
-          aria-label={`Select the ${inline} in ${courtText(process.caseNumber)}`}
+          aria-label={t("signProcessTable_selectTheInlineInCourtText", { inline, courtText: courtText(process.caseNumber) })}
         />
       </TableCell>
       {/* The row's opener. Quiet `text-foreground` rather than a teal underline: the teal
@@ -287,12 +292,12 @@ function ProcessRow({
           {...rowOpener}
           className={rowOpenerClass}
         >
-          <span className="sr-only">Read the {inline} in </span>
+          <span className="sr-only">{t("signProcessTable_readTheInlineIn", { inline })} </span>
           {causeTitle(process)}
         </button>
       </TableCell>
       <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-        <Identifier value={process.caseNumber} label="case number" />
+        <Identifier value={process.caseNumber} label={t("signProcessTable_caseNumberLabel")} />
       </TableCell>
       {/* Which instrument this is — the fact that tells three rows of one case apart. */}
       <TableCell className={cn(TABLE_CELL, "min-w-36 whitespace-normal")}>

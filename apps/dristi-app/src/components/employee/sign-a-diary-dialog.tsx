@@ -22,6 +22,7 @@ import {
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtLocalized } from "@/components/court/court-provider";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * One day's entry, read and corrected.
@@ -96,6 +97,7 @@ function SignADiaryBody({
   onReturnFocus: () => void;
   onClose: () => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const document = React.useMemo(() => buildADiaryDocument(entry), [entry]);
   /* The draft. It starts as what is recorded and is compared against the entry rather
@@ -113,7 +115,7 @@ function SignADiaryBody({
   function save() {
     if (blank || !dirty) return;
     onSave(entry, text);
-    setSaved("Business of the day saved on this screen. Nothing was filed.");
+    setSaved(t("signADiaryDialog_businessOfTheDaySavedOn"));
   }
 
   return (
@@ -133,15 +135,13 @@ function SignADiaryBody({
       className="sm:max-w-5xl lg:h-[85dvh]"
       {...guard.contentProps}
       {...guard.outsideProps}
-      title="A-Diary entry"
+      title={t("signADiaryDialog_aDiaryEntry")}
       titleRef={titleRef}
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(entry)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={entry.caseNumber} label="case number" copyable={false} />{" "}
-          · Dated{" "}
-          <span className="tabular-nums">{formatADiaryDate(entry.dated)}</span>
+          <Identifier value={entry.caseNumber} label={t("signADiaryDialog_caseNumber")} copyable={false} />{t.rich("signADiaryDialog_datedFormatAdiaryDate", { formatADiaryDate: formatADiaryDate(entry.dated), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
         </DialogDescription>
       }
       /* One stage: reading the day's record, correcting it and signing it all happen in
@@ -163,7 +163,7 @@ function SignADiaryBody({
             aria-live="polite"
           >
             {saved ||
-              "Saving changes this entry and the A-Diary text of the order it came from. The order text does not change."}
+              t("signADiaryDialog_savingChangesThisEntryAndThe")}
           </p>
           {/* `sm:self-center` because the frame owns the footer's own classes and this
               row pairs a caption that wraps with a 40px control. */}
@@ -173,7 +173,7 @@ function SignADiaryBody({
             disabled={blank || !dirty}
             onClick={save}
           >
-            Save
+            {t("common_save")}
           </Button>
         </>
       }
@@ -214,7 +214,7 @@ function SignADiaryBody({
         <Card variant="raised" className="min-w-0 lg:min-h-0">
           <CardContent className="flex flex-col gap-4 lg:min-h-0 lg:flex-1">
             <Field data-invalid={blank} className="lg:min-h-0 lg:flex-1">
-              <FieldLabel className="text-body">Business of the day</FieldLabel>
+              <FieldLabel className="text-body">{t("signADiaryDialog_businessOfTheDay")}</FieldLabel>
               {/* Stacked it grows with what is typed, from a four-line floor. Beside the
                   document it takes the panel's remaining height instead and scrolls
                   inside it — `field-sizing-fixed`, or the field's own content sizing
@@ -229,9 +229,7 @@ function SignADiaryBody({
                 }}
               />
               <FieldDescription className="text-body-compact">
-                What this court did on {formatADiaryDate(entry.dated)}, in the
-                court&apos;s own words. It can be corrected until the day&apos;s
-                A-Diary is signed.
+                {t("signADiaryDialog_whatThisCourtDidOnFormat", { formatADiaryDate: formatADiaryDate(entry.dated) })}
               </FieldDescription>
               {/* A day the court sat is a day with business. Emptying the record is the
                   one edit this field refuses, and it says so where the error belongs
@@ -243,7 +241,7 @@ function SignADiaryBody({
                   upstream DS quirk, logged in the build report. */}
               {blank ? (
                 <FieldError className="text-body-compact">
-                  The day&apos;s business cannot be left blank.
+                  {t("signADiaryDialog_theDaysBusinessCannotBeLeft")}
                 </FieldError>
               ) : null}
             </Field>
@@ -306,18 +304,19 @@ function SignADiaryBody({
  *   rather than the DS `Table` — the same treatment `SignOrderDialog` gives its order.
  */
 function ADiaryOrderFacsimile({ document: storedDocument }: { document: ADiaryDocument }) {
+  const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {t("signADiaryDialog_caseNoCaseNumber", { caseNumber: document.caseNumber })}
         </p>
         <p className="text-body font-semibold">
-          In the matter of {document.matter}
+          {t("signADiaryDialog_inTheMatterOfMatter", { matter: document.matter })}
         </p>
-        <p className="text-body font-semibold">Dated {document.dated}</p>
+        <p className="text-body font-semibold">{t("signADiaryDialog_datedDated", { dated: document.dated })}</p>
         {/* The offence, held back to the paper's quiet ink: an order sheet prints it
             above the operative part, and it is standing furniture — true of every case
             on this platform — rather than anything this order decided. */}
@@ -338,7 +337,7 @@ function ADiaryOrderFacsimile({ document: storedDocument }: { document: ADiaryDo
       <section className="flex flex-col gap-4">
         <table className="w-full border-collapse text-left">
           <caption className="sr-only">
-            Appearances before this court in {document.caseNumber}
+            {t("signADiaryDialog_appearancesBeforeThisCourtInCase", { caseNumber: document.caseNumber })}
           </caption>
           <tbody>
             {document.appearances.map(({ label, value }, index) => (

@@ -9,6 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 /**
  * The one action a register row offers: download the filed artefact.
@@ -37,6 +38,7 @@ export function DownloadFilingButton({
   tooltip: string;
   href: string | undefined;
 }) {
+  const t = useTranslations();
   const stop = (event: MouseEvent<HTMLElement>) => event.stopPropagation();
 
   if (!href) {
@@ -57,7 +59,7 @@ export function DownloadFilingButton({
           </span>
         </TooltipTrigger>
         <TooltipContent className="text-body">
-          No file to download yet
+          {t("downloadFilingButton_noFileToDownloadYet")}
         </TooltipContent>
       </Tooltip>
     );

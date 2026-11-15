@@ -13,21 +13,23 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CASE_FILE_TREE } from "@/lib/cases/case-file";
 import { buildCaseFileBundle } from "@/lib/cases/case-file-bundle";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 type Format = "pdf" | "zip" | "sections";
 
 const FORMATS: { value: Format; label: string }[] = [
   {
     value: "pdf",
-    label: "Full case file, one PDF",
+    label: "downloadCaseFileDialog_fullCaseFileOnePdf",
   },
   {
     value: "zip",
-    label: "Full case file, separate files",
+    label: "downloadCaseFileDialog_fullCaseFileSeparateFiles",
   },
   {
     value: "sections",
-    label: "Only some sections",
+    label: "downloadCaseFileDialog_onlySomeSections",
   },
 ];
 
@@ -50,6 +52,7 @@ export function DownloadCaseFileDialog({
   title: string;
   court: string;
 }) {
+  const t = useTranslations();
   const [format, setFormat] = React.useState<Format>("pdf");
   const [sections, setSections] = React.useState<string[]>([]);
   const [preparing, setPreparing] = React.useState(false);
@@ -81,7 +84,7 @@ export function DownloadCaseFileDialog({
 
   async function download() {
     if (format === "zip") {
-      notify.success("Preparing your download", {
+      notify.success(t("downloadCaseFileDialog_preparingYourDownload"), {
         description: `${caseNumber}. It will start in a moment.`,
       });
       onOpenChange(false);
@@ -127,7 +130,7 @@ export function DownloadCaseFileDialog({
       >
         <DialogHeader className="gap-1 border-b border-hairline px-6 py-4 text-left">
           <DialogTitle className="text-title-s font-semibold">
-            Download case file
+            {t("downloadCaseFileDialog_downloadCaseFile")}
           </DialogTitle>
           <p className="font-mono text-caption font-medium text-muted-foreground">
             {caseNumber}
@@ -141,7 +144,7 @@ export function DownloadCaseFileDialog({
               setFormat(value as Format);
               setFailed(false);
             }}
-            aria-label="What to download"
+            aria-label={t("downloadCaseFileDialog_whatToDownload")}
             className="flex flex-col gap-1"
           >
             {FORMATS.map((item) => (
@@ -150,14 +153,14 @@ export function DownloadCaseFileDialog({
                   value={item.value}
                   id={`download-${item.value}`}
                 />
-                <Label htmlFor={`download-${item.value}`}>{item.label}</Label>
+                <Label htmlFor={`download-${item.value}`}>{translateText(t, item.label)}</Label>
               </div>
             ))}
           </RadioGroup>
 
           {format === "sections" ? (
             <fieldset className="flex flex-col gap-1 rounded-lg bg-surface-sunken p-3">
-              <legend className="sr-only">Sections to include</legend>
+              <legend className="sr-only">{t("downloadCaseFileDialog_sectionsToInclude")}</legend>
               {CASE_FILE_TREE.map((node) => (
                 <div key={node.id} className="flex min-h-8 items-center gap-2">
                   <Checkbox
@@ -179,8 +182,8 @@ export function DownloadCaseFileDialog({
           ) : null}
 
           {failed ? (
-            <StatusLine tone="error" title="The case file could not be prepared">
-              Try again. Nothing was downloaded.
+            <StatusLine tone="error" title={t("downloadCaseFileDialog_theCaseFileCouldNotBe")}>
+              {t("downloadCaseFileDialog_tryAgainNothingWasDownloaded")}
             </StatusLine>
           ) : null}
         </div>
@@ -191,10 +194,10 @@ export function DownloadCaseFileDialog({
             variant="outline"
             onClick={guard.close}
           >
-            Cancel
+            {t("common_cancel")}
           </Button>
           <Button type="button" disabled={blocked} onClick={download}>
-            {preparing ? "Preparing…" : "Download"}
+            {preparing ? t("downloadCaseFileDialog_preparing") : t("downloadCaseFileDialog_download")}
           </Button>
         </div>
         <DiscardQuestion guard={guard} />

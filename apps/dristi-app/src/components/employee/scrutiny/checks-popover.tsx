@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
+import { useTranslations } from "next-intl";
 
 /**
  * The officer's standing checks. Visible in the case bar, never hover-gated, with
@@ -24,6 +25,7 @@ import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-co
  * replace, so it cannot be hidden behind a menu.
  */
 export function ChecksPopover() {
+  const t = useTranslations();
   const { checks } = useScrutinyCase();
   const [checked, setChecked] = React.useState<Set<number>>(() => new Set());
 
@@ -45,12 +47,12 @@ export function ChecksPopover() {
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" aria-label="What to check">
+            <Button variant="outline" size="icon" aria-label={t("checksPopover_whatToCheck")}>
               <CircleHelpIcon />
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent>What to check</TooltipContent>
+        <TooltipContent>{t("checksPopover_whatToCheck")}</TooltipContent>
       </Tooltip>
       <PopoverContent align="end" className="w-72">
         <FieldGroup data-slot="checkbox-group" className="gap-2.5">

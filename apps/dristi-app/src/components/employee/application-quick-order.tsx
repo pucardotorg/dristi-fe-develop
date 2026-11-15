@@ -43,6 +43,7 @@ import {
   sendOrderForSigning,
   setOrderWorkflowComplete,
 } from "@/lib/employee/pending-orders";
+import { useTranslations } from "next-intl";
 
 /** What the panel asked for, as the quick order passes it. */
 export type QuickOrderRequest = {
@@ -155,6 +156,7 @@ function QuickOrderContent({
   onClose: () => void;
   onDone: (message: string) => void;
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const textId = React.useId();
   const dateId = React.useId();
@@ -217,10 +219,10 @@ function QuickOrderContent({
     if (canSign) {
       quietTrigger(key);
       markOrdersSigned([key]);
-      onDone("Order signed.");
+      onDone(t("applicationQuickOrder_orderSigned"));
       return;
     }
-    onDone("Sent to the Magistrate for signing.");
+    onDone(t("applicationQuickOrder_sentToTheMagistrateForSigning"));
   }
 
   function openInOrderScreen() {
@@ -246,7 +248,7 @@ function QuickOrderContent({
 
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-6 pb-6">
         <Field>
-          <FieldLabel htmlFor={textId}>Order</FieldLabel>
+          <FieldLabel htmlFor={textId}>{t("applicationQuickOrder_order")}</FieldLabel>
           <Textarea
             id={textId}
             value={text}
@@ -258,7 +260,7 @@ function QuickOrderContent({
         {request.needsHearingDate ? (
           <ListingDateField
             id={dateId}
-            label="Next hearing"
+            label={t("applicationQuickOrder_nextHearing")}
             value={nextHearing}
             on={on}
             hearing={hearing}
@@ -269,10 +271,10 @@ function QuickOrderContent({
 
       <DialogFooter className="mx-0 mb-0 shrink-0 sm:items-center sm:justify-between">
         <Button type="button" variant="outline" onClick={openInOrderScreen}>
-          Open in order screen
+          {t("applicationQuickOrder_openInOrderScreen")}
         </Button>
         <Button type="button" disabled={!ready} onClick={pass}>
-          {canSign ? "Sign order" : "Send for signing"}
+          {canSign ? t("applicationQuickOrder_signOrder") : t("applicationQuickOrder_sendForSigning")}
         </Button>
       </DialogFooter>
       <DiscardQuestion guard={guard} />

@@ -146,6 +146,7 @@ import {
   type ApplicationRecord,
 } from "@/lib/cases/application-record";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 type SubmitterOption = {
   value: string;
@@ -228,13 +229,14 @@ function bondDocument(record: CaseRecord, people: DocumentPerson[]): CaseDocumen
 }
 
 export function DocumentsLoading() {
+  const t = useTranslations();
   return (
     <DocumentsPanel
       busy
       switcher={<Skeleton className="h-10 w-64 rounded-lg" />}
     >
       <span className="sr-only" role="status">
-        Loading documents
+        {t("casesCaseDocuments_loadingDocuments")}
       </span>
       <div className={filterBarClass}>
         <Skeleton className={cn("h-10 w-full", filterFieldClass)} />
@@ -251,10 +253,11 @@ export function DocumentsLoading() {
 }
 
 function DocumentsError() {
+  const t = useTranslations();
   return (
     <DocumentsPanel>
-      <StatusLine tone="error" still title="Documents could not be loaded">
-        Refresh the page to try again.
+      <StatusLine tone="error" still title={t("casesCaseDocuments_documentsCouldNotBeLoaded")}>
+        {t("casesCaseDocuments_refreshThePageToTryAgain")}
       </StatusLine>
     </DocumentsPanel>
   );
@@ -277,6 +280,7 @@ function DocumentsReady({
   /** What a member of the court submitted (DSB-04). */
   fromCourt: { documents: CaseDocument[]; people: DocumentPerson[] };
 }) {
+  const t = useTranslations();
   const [kind, setKind] = useState<DocumentKind>("documents");
   const [typeIds, setTypeIds] = useState<string[]>([]);
   const [submitterIds, setSubmitterIds] = useState<string[]>([]);
@@ -482,7 +486,7 @@ function DocumentsReady({
      does not already cover. */
   const search = (
     <RegisterSearch
-      label="Search by title or ID"
+      label={t("casesCaseDocuments_searchByTitleOrId")}
       value={filingQuery}
       onChange={(next) => {
         setFilingQuery(next);
@@ -525,7 +529,7 @@ function DocumentsReady({
         >
           {showTypeFilter ? (
             <RegisterFilter
-              label="Type"
+              label={t("casesCaseDocuments_type")}
               values={typeIds}
               onChange={(next) => {
                 setTypeIds(next);
@@ -535,7 +539,7 @@ function DocumentsReady({
             />
           ) : null}
           <RegisterFilter
-            label="Submitted by"
+            label={t("casesCaseDocuments_submittedBy")}
             values={submitterIds}
             onChange={(next) => {
               setSubmitterIds(next);
@@ -550,7 +554,7 @@ function DocumentsReady({
               size="sm"
               onClick={clearFilters}
             >
-              Clear filters
+              {t("casesCaseDocuments_clearFilters")}
             </Button>
           ) : null}
           <div className={REGISTER_ROW_SEARCH}>{search}</div>
@@ -603,7 +607,7 @@ function DocumentsReady({
                 className={cn("w-full", REGISTER_CARDS_ONLY)}
                 onClick={() => setVisible((count) => count + SHOW_MORE_STEP)}
               >
-                Show more
+                {t("casesCaseDocuments_showMore")}
                 <ChevronDownIcon data-icon="inline-end" aria-hidden />
               </Button>
             ) : null}
@@ -618,7 +622,7 @@ function DocumentsReady({
               <div className="flex flex-wrap items-center gap-4">
                 {selection.pageCount > 1 ? (
                   <p className="text-body-compact text-muted-foreground">
-                    Showing {selection.from}–{selection.to}
+                    {t("casesCaseDocuments_showingFromTo", { from: String(selection.from), to: String(selection.to) })}
                   </p>
                 ) : null}
                 <DocumentsPageSizeSelect
@@ -650,7 +654,7 @@ function DocumentsReady({
                           <PaginationLink
                             {...pageLink(entry)}
                             isActive={entry === selection.page}
-                            aria-label={`Go to page ${entry}`}
+                            aria-label={t("casesCaseDocuments_goToPageEntry", { entry: String(entry) })}
                           >
                             {entry}
                           </PaginationLink>
@@ -723,7 +727,7 @@ function DocumentsReady({
           caseId={record.id}
           caseLine={
             <>
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={t("casesCaseDocuments_caseNumber")} />
               <span aria-hidden> · </span>
               {partiesLabel(record)}
             </>
@@ -824,12 +828,13 @@ function DocumentsPanel({
   search?: ReactNode;
   busy?: boolean;
 }) {
+  const t = useTranslations();
   return (
     <section className="min-w-0" aria-busy={busy || undefined}>
       <Card variant="raised" className="gap-4 hover:bg-card">
         <CardHeader>
           <div className="flex flex-col gap-3">
-            <h2 className="text-body font-semibold">Documents</h2>
+            <h2 className="text-body font-semibold">{t("casesCaseDocuments_documents")}</h2>
             {search ? (
               <div className="flex flex-col gap-3 md:pointer-fine:flex-row md:pointer-fine:items-center md:pointer-fine:justify-between md:landscape:flex-row md:landscape:items-center md:landscape:justify-between">
                 {switcher}
@@ -857,6 +862,7 @@ function KindTabs({
   bailBondsCount: number;
   onKindChange: (kind: DocumentKind) => void;
 }) {
+  const t = useTranslations();
   return (
     <SegmentedControl
       type="single"
@@ -866,30 +872,24 @@ function KindTabs({
       onValueChange={(next) => {
         if (isDocumentKind(next)) onKindChange(next);
       }}
-      aria-label="Document group"
+      aria-label={t("casesCaseDocuments_documentGroup")}
     >
       {/* The count is part of the label, in plain muted text, rather than a
           badge inside a control. */}
       <SegmentedControlItem
         value="documents"
-        aria-label={`Documents, ${documentsCount}`}
+        aria-label={t("casesCaseDocuments_documentsDocumentsCount", { documentsCount: String(documentsCount) })}
       >
         <span className="flex items-center gap-1.5">
-          Documents
-          <span className="font-normal tabular-nums text-muted-foreground">
-            {documentsCount}
-          </span>
+          {t.rich("casesCaseDocuments_documentsDocumentsCount2", { documentsCount: String(documentsCount), span: (chunks) => <span className="font-normal tabular-nums text-muted-foreground">{chunks}</span> })}
         </span>
       </SegmentedControlItem>
       <SegmentedControlItem
         value="bail-bonds"
-        aria-label={`Bail bonds, ${bailBondsCount}`}
+        aria-label={t("casesCaseDocuments_bailBondsBailBondsCount", { bailBondsCount: String(bailBondsCount) })}
       >
         <span className="flex items-center gap-1.5">
-          Bail bonds
-          <span className="font-normal tabular-nums text-muted-foreground">
-            {bailBondsCount}
-          </span>
+          {t.rich("casesCaseDocuments_bailBondsBailBondsCount2", { bailBondsCount: String(bailBondsCount), span: (chunks) => <span className="font-normal tabular-nums text-muted-foreground">{chunks}</span> })}
         </span>
       </SegmentedControlItem>
     </SegmentedControl>
@@ -903,13 +903,14 @@ function DocumentsPageSizeSelect({
   value: DocumentsPageSize;
   onChange: (pageSize: DocumentsPageSize) => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex items-center gap-2">
       <Label
         htmlFor="documents-page-size"
         className="text-body-compact font-normal text-muted-foreground"
       >
-        Per page
+        {t("casesCaseDocuments_perPage")}
       </Label>
       <Select
         value={String(value)}
@@ -947,21 +948,22 @@ function DocumentsTable({
   /** Set for an evidence marker: marks a document not yet marked. */
   onMark?: (document: CaseDocument) => void;
 }) {
+  const t = useTranslations();
   return (
     <Table>
       <TableCaption className="sr-only">{caption}</TableCaption>
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={cn(headClass, "min-w-56")}>Document</TableHead>
+          <TableHead className={cn(headClass, "min-w-56")}>{t("casesCaseDocuments_document")}</TableHead>
           <TableHead className={cn(headClass, "min-w-40")}>
-            Document type
+            {t("casesCaseDocuments_documentType")}
           </TableHead>
-          <TableHead className={cn(headClass, "w-40")}>Submitted by</TableHead>
-          <TableHead className={cn(headClass, "w-36")}>Submitted on</TableHead>
+          <TableHead className={cn(headClass, "w-40")}>{t("casesCaseDocuments_submittedBy")}</TableHead>
+          <TableHead className={cn(headClass, "w-36")}>{t("casesCaseDocuments_submittedOn")}</TableHead>
           <TableHead className={cn(headClass, "w-36")}>
-            Evidence number
+            {t("casesCaseDocuments_evidenceNumber")}
           </TableHead>
-          <TableHead className={cn(headClass, "w-32")}>Actions</TableHead>
+          <TableHead className={cn(headClass, "w-32")}>{t("casesCaseDocuments_actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -998,8 +1000,8 @@ function DocumentsTable({
                   Download). */}
               <div className="flex items-center gap-1">
                 <DownloadFilingButton
-                  label={`Download filing: ${document.title}`}
-                  tooltip="Download filing"
+                  label={t("casesCaseDocuments_downloadFilingTitle", { title: document.title })}
+                  tooltip={t("casesCaseDocuments_downloadFiling")}
                   href={documentSrc(document)}
                 />
                 {onMark && !document.evidenceNumber ? (
@@ -1007,13 +1009,13 @@ function DocumentsTable({
                     type="button"
                     variant="outline"
                     size="sm"
-                    aria-label={`Mark as evidence: ${document.title}`}
+                    aria-label={t("casesCaseDocuments_markAsEvidenceTitle", { title: document.title })}
                     onClick={(event) => {
                       event.stopPropagation();
                       onMark(document);
                     }}
                   >
-                    Mark
+                    {t("casesCaseDocuments_mark")}
                   </Button>
                 ) : null}
               </div>
@@ -1028,8 +1030,9 @@ function DocumentsTable({
 /** The filing date, or, for a memo or affidavit the filer has yet to sign
  *  or pay for, that it has not gone in. */
 function SubmittedOn({ document }: { document: CaseDocument }) {
+  const t = useTranslations();
   return documentNotSubmitted(document) ? (
-    <span className="text-muted-foreground">Not submitted</span>
+    <span className="text-muted-foreground">{t("casesCaseDocuments_notSubmitted")}</span>
   ) : (
     <>{formatCaseDate(document.submittedOn)}</>
   );
@@ -1080,6 +1083,7 @@ function DocumentsItemList({
   onOpenRecord: (document: CaseDocument) => void;
   onMark?: (document: CaseDocument) => void;
 }) {
+  const t = useTranslations();
   const tray = useOneOpen<string>();
   return (
     <ul className="flex flex-col gap-3">
@@ -1093,12 +1097,12 @@ function DocumentsItemList({
               <>
                 {onMark && !document.evidenceNumber ? (
                   <Button type="button" variant="outline" onClick={() => onMark(document)}>
-                    Mark as evidence
+                    {t("casesCaseDocuments_markAsEvidence")}
                   </Button>
                 ) : null}
                 {/* The bond's row opens its status, not a document record. */}
                 <Button type="button" onClick={() => onOpenRecord(document)}>
-                  {document.id === BOND_ROW_ID ? "View bond status" : "View document"}
+                  {document.id === BOND_ROW_ID ? t("casesCaseDocuments_viewBondStatus") : t("casesCaseDocuments_viewDocument")}
                 </Button>
               </>
             }
@@ -1127,7 +1131,7 @@ function DocumentsItemList({
               {/* The Evidence number column, as the card's last fact. */}
               {evidenceNumberShown(document) ? (
                 <p className="mt-1.5 flex items-center gap-1.5 text-caption text-muted-foreground">
-                  Evidence number
+                  {t("casesCaseDocuments_evidenceNumber")}
                   <EvidenceNumber document={document} copyable={false} />
                 </p>
               ) : null}
@@ -1151,15 +1155,16 @@ function EvidenceNumber({
   document: CaseDocument;
   copyable?: boolean;
 }) {
+  const t = useTranslations();
   if (document.evidenceNumber) {
     return (
       <Badge
         variant="secondary"
-        aria-label={`Marked as evidence, ${document.evidenceNumber}`}
+        aria-label={t("casesCaseDocuments_markedAsEvidenceEvidenceNumber", { evidenceNumber: document.evidenceNumber })}
       >
         <Identifier
           value={document.evidenceNumber}
-          label="evidence number"
+          label={t("casesCaseDocuments_evidenceNumberLabel")}
           copyable={false}
         />
       </Badge>
@@ -1171,7 +1176,7 @@ function EvidenceNumber({
   return (
     <Identifier
       value={document.provisionalId}
-      label="document ID"
+      label={t("casesCaseDocuments_documentId")}
       copyable={copyable}
     />
   );

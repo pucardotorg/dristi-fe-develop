@@ -10,6 +10,7 @@ import { FormField } from "@/components/filing/form-field";
 import { TextField } from "@/components/filing/inputs";
 import { LookupStatus } from "@/components/filing/lookup-status";
 import { useFieldLock, useFieldReadOnly } from "@/components/filing/posture";
+import { useTranslations } from "next-intl";
 
 /**
  * Its own component so it can read the correction lock, which `FormField` provides
@@ -25,6 +26,7 @@ function FetchDetailsButton({
   canFetch: boolean;
   busy: boolean;
 }) {
+  const t = useTranslations();
   /* A flagged IFSC is answered in its inset, and the fetch it would otherwise run writes
      the bank name and branch — fields this round did not flag (brief D3, §15.2). */
   const inCorrectionLock = useFieldLock();
@@ -45,7 +47,7 @@ function FetchDetailsButton({
       ) : (
         <RefreshCwIcon data-icon="inline-start" aria-hidden />
       )}
-      Fetch details
+      {t("ifscField_fetchDetails")}
     </Button>
   );
 }
@@ -81,6 +83,7 @@ export function IfscField({
   tip?: React.ReactNode;
   placeholder?: string;
 }) {
+  const t = useTranslations();
   const [status, setStatus] = React.useState<IfscStatus>("idle");
   const statusId = React.useId();
 
@@ -88,7 +91,7 @@ export function IfscField({
   const canFetch = IFSC_PATTERN.test(code);
   // A non-empty code that is not a well-formed IFSC is flagged so it can't sit there and
   // silently fail to save at Continue. An empty field is "incomplete", not a format error.
-  const formatError = code.length > 0 && !canFetch ? "Enter a valid IFSC, e.g. SBIN0001234 (11 characters)." : undefined;
+  const formatError = code.length > 0 && !canFetch ? t("ifscField_enterAValidIfscEG") : undefined;
 
   // The value can also change from outside — a scrutiny correction writes the same field —
   // so the reset lives here rather than in the change handler.
@@ -129,22 +132,22 @@ export function IfscField({
     status === "not-found"
       ? {
           tone: "warning" as const,
-          text: "We couldn't find this IFSC. Check the code, or type the bank details",
+          text: t("ifscField_weCouldntFindThisIfscCheck"),
         }
       : status === "error"
         ? {
             tone: "warning" as const,
-            text: "Couldn't reach the IFSC registry. Type the bank details below",
+            text: t("ifscField_couldntReachTheIfscRegistryType"),
           }
         : fetched && status === "idle"
           ? {
               tone: "success" as const,
-              text: "Bank name and branch filled from the IFSC registry",
+              text: t("ifscField_bankNameAndBranchFilledFrom"),
             }
           : null;
 
   return (
-    <FormField label="IFSC code" name="ifsc" required tip={tip} error={formatError}>
+    <FormField label={t("ifscField_ifscCode")} name="ifsc" required tip={tip} error={formatError}>
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-2">
           <TextField

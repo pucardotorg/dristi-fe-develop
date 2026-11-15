@@ -113,6 +113,7 @@ import { COLLAPSE_MOTION } from "@/components/cases/motion";
 import { Identifier } from "@/components/chrome/identifier";
 import { SignReviewDialog } from "@/components/cases/sign-review-dialog";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * Applications (§9). One kind of thing, many types. What the viewer still has
@@ -124,6 +125,7 @@ import { StatusLine } from "@/components/feedback";
  * side's applications appear only once the court has onboarded them.
  */
 export function CaseApplications({ record }: { record: CaseRecord }) {
+  const t = useTranslations();
   const { viewer, register } = useFilingsRegister(record);
   const [types, setTypes] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
@@ -162,8 +164,8 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
   if (!register) {
     return (
       <ApplicationsPanel>
-        <StatusLine tone="error" still title="Applications could not be loaded">
-          Refresh the page to try again.
+        <StatusLine tone="error" still title={t("caseApplications_applicationsCouldNotBeLoaded")}>
+          {t("caseApplications_refreshThePageToTryAgain")}
         </StatusLine>
       </ApplicationsPanel>
     );
@@ -178,11 +180,10 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
               <FileTextIcon aria-hidden />
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
-              You are not a party to this case
+              {t("caseApplications_youAreNotAPartyTo")}
             </EmptyTitle>
             <EmptyDescription>
-              Applications show here for the parties to a case and their
-              advocates.
+              {t("caseApplications_applicationsShowHereForTheParties")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -269,13 +270,13 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
         )}
       >
         <RegisterFilter
-          label="Type"
+          label={t("caseApplications_type")}
           values={types}
           onChange={setTypes}
           options={APPLICATION_TYPE_OPTIONS}
         />
         <RegisterFilter
-          label="Status"
+          label={t("caseApplications_status")}
           values={statuses}
           onChange={setStatuses}
           options={FILING_STATUSES.map((item) => ({
@@ -284,7 +285,7 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
           }))}
         />
         <RegisterFilter
-          label="Filed by"
+          label={t("caseApplications_filedBy")}
           values={filers}
           onChange={setFilers}
           options={register.people.map((person) => ({
@@ -304,13 +305,13 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
               setQuery("");
             }}
           >
-            Clear filters
+            {t("caseApplications_clearFilters")}
           </Button>
         ) : null}
         {/* On a phone the search leads and the filters follow it (owner, Sept 21). */}
         <div className={REGISTER_ROW_SEARCH}>
           <RegisterSearch
-            label="Search by application number"
+            label={t("caseApplications_searchByApplicationNumber")}
             value={query}
             onChange={setQuery}
           />
@@ -326,11 +327,11 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
         >
           {filtered
             ? rows.length === 1
-              ? "1 application matches the filters"
-              : `${rows.length} applications match the filters`
+              ? t("caseApplications_1ApplicationMatchesTheFilters")
+              : t("caseApplications_lengthApplicationsMatchTheFilters", { length: String(rows.length) })
             : rows.length === 1
-              ? "1 application"
-              : `${rows.length} applications`}
+              ? t("caseApplications_1Application")
+              : t("caseApplications_lengthApplications", { length: String(rows.length) })}
         </p>
       ) : null}
 
@@ -345,14 +346,14 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
               )}
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
-              {filtered ? "No applications match" : "No applications yet"}
+              {filtered ? t("caseApplications_noApplicationsMatch") : t("caseApplications_noApplicationsYet")}
             </EmptyTitle>
             <EmptyDescription>
               {filtered
-                ? "Try a different filter or clear them."
+                ? t("caseApplications_tryADifferentFilterOrClear")
                 : canDraft
-                  ? "Use Make filings to raise an application."
-                  : "Applications filed on your behalf show here."}
+                  ? t("caseApplications_useMakeFilingsToRaiseAn")
+                  : t("caseApplications_applicationsFiledOnYourBehalfShow")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -519,6 +520,7 @@ export function SignAndPayDialogs({
    *  Back closed everything). */
   onBack?: (batch: ApplicationRecord[]) => void;
 }) {
+  const t = useTranslations();
   /* What is being signed, kept past the close: the dialog's wording
      otherwise flips to "Application signed" as it animates out. */
   const [signed, setSigned] = useState<ApplicationRecord[]>(signing);
@@ -584,17 +586,17 @@ export function SignAndPayDialogs({
         }}
         chooseTitle={
           count > 1
-            ? `How are these ${count} ${noun} signed?`
-            : `How is this ${noun} signed?`
+            ? t("caseApplications_howAreTheseCountNounSigned", { count: String(count), noun })
+            : t("caseApplications_howIsThisNounSigned", { noun })
         }
         noun={filingNoun(signed, 1)}
-        submitLabel="Submit signed copy"
+        submitLabel={t("caseApplications_submitSignedCopy")}
         /* Signed goes on to the fee, as it does from the Raise application
            form; only an advocate or party in person signs, and both may pay
            (owner, Sept 24: signing stopped short of payment here). */
         proceed={{
-          label: "Proceed to payment",
-          laterLabel: "Pay later",
+          label: t("caseApplications_proceedToPayment"),
+          laterLabel: t("caseApplications_payLater"),
           onClick: () => {
             const batch = signing;
             move(
@@ -609,11 +611,11 @@ export function SignAndPayDialogs({
           count > 1
             ? {
                 title: `${count} ${noun} signed`,
-                description: "Pay the court fee to submit them to the court.",
+                description: t("caseApplications_payTheCourtFeeToSubmit"),
               }
             : {
                 title: `${noun.charAt(0).toUpperCase()}${noun.slice(1)} signed`,
-                description: "Pay the court fee to submit it to the court.",
+                description: t("caseApplications_payTheCourtFeeToSubmitIt"),
               }
         }
       />
@@ -643,10 +645,11 @@ function submittedStatusFor(item: ApplicationRecord): FilingStatus {
 }
 
 export function ApplicationsLoading() {
+  const t = useTranslations();
   return (
     <ApplicationsPanel busy>
       <span className="sr-only" role="status">
-        Loading applications
+        {t("caseApplications_loadingApplications")}
       </span>
       <div className="flex flex-col gap-2">
         {Array.from({ length: 5 }, (_, index) => (
@@ -666,12 +669,13 @@ function ApplicationsPanel({
   busy?: boolean;
   children: ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <RestingCard>
       <CardContent className="flex flex-col gap-4" aria-busy={busy}>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <h2 className="text-body font-semibold text-foreground">
-            Applications
+            {t("caseApplications_applications")}
           </h2>
           {search}
         </div>
@@ -700,6 +704,7 @@ export function NeedsAction({
   onObject?: (applicationId: string) => void;
   onOpen: (id: string) => void;
 }) {
+  const t = useTranslations();
   const count = entries.reduce(
     (sum, entry) =>
       sum + (entry.kind === "group" ? entry.applications.length : 1),
@@ -716,7 +721,7 @@ export function NeedsAction({
           id="applications-needs-action"
           className="text-body-compact font-semibold text-foreground"
         >
-          Needs attention
+          {t("caseApplications_needsAttention")}
         </h3>
         <Badge variant="secondary" className="tabular-nums">
           {count}
@@ -891,6 +896,7 @@ function TouchActionCard({
   onOpen: (id: string) => void;
   nested?: boolean;
 }) {
+  const t = useTranslations();
   return (
     <RegisterTrayCard
       title={
@@ -914,7 +920,7 @@ function TouchActionCard({
             variant="outline"
             onClick={() => onOpen(application.id)}
           >
-            View
+            {t("caseApplications_view")}
           </Button>
           <StepAction caseId={caseId} application={application} onAct={onAct} />
         </>
@@ -926,7 +932,7 @@ function TouchActionCard({
       <div className="-mt-1 flex flex-col gap-1 text-caption font-normal text-muted-foreground">
         <span>{filedLine(application)}</span>
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1 tabular-nums">
-          <span>Created {application.createdShort}</span>
+          <span>{t("caseApplications_createdCreatedShort", { createdShort: application.createdShort })}</span>
           {expiryText(application) ? (
             <ExpiryNote text={expiryText(application)!} />
           ) : null}
@@ -967,6 +973,7 @@ function TouchActionGroup({
   onAct: (applications: ApplicationRecord[]) => void;
   onOpen: (id: string) => void;
 }) {
+  const t = useTranslations();
   const [lead] = entry.applications;
   const count = entry.applications.length;
   const signing = entry.step === "sign";
@@ -1012,7 +1019,7 @@ function TouchActionGroup({
               className="w-full"
               onClick={() => onAct(entry.applications)}
             >
-              {signing ? `Sign all ${count}` : `Pay all ${count}`}
+              {signing ? t("caseApplications_signAllCount", { count: String(count) }) : t("caseApplications_payAllCount", { count: String(count) })}
             </Button>
           ) : null}
         </>
@@ -1032,6 +1039,7 @@ function GroupMemberCard({
   onAct: (applications: ApplicationRecord[]) => void;
   onOpen: (id: string) => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-hairline bg-card p-3">
       <div className="flex flex-col gap-1">
@@ -1041,7 +1049,7 @@ function GroupMemberCard({
         <div className="flex flex-col gap-1 text-caption font-normal text-muted-foreground">
           <span>{filedLine(application)}</span>
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1 tabular-nums">
-            <span>Created {application.createdShort}</span>
+            <span>{t("caseApplications_createdCreatedShort", { createdShort: application.createdShort })}</span>
             {expiryText(application) ? (
               <ExpiryNote text={expiryText(application)!} />
             ) : null}
@@ -1054,7 +1062,7 @@ function GroupMemberCard({
           variant="outline"
           onClick={() => onOpen(application.id)}
         >
-          View<span className="sr-only">: {application.typeLabel}</span>
+          {t.rich("caseApplications_viewTypeLabel", { typeLabel: application.typeLabel, span: (chunks) => <span className="sr-only">{chunks}</span> })}
         </Button>
         {application.step && application.step !== "continue" ? (
           <Button
@@ -1084,6 +1092,7 @@ function ActionRow({
   /** Inside a group the status is already said once, on the group. */
   nested?: boolean;
 }) {
+  const t = useTranslations();
   const step = application.step ? STEP_COPY[application.step] : null;
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5">
@@ -1106,7 +1115,7 @@ function ActionRow({
             (owner, Oct 8). */}
         <p className="flex flex-wrap items-center gap-x-1 gap-y-1 text-caption font-normal text-muted-foreground">
           <span>{`${filedLine(application)} ·`}</span>
-          <span className="tabular-nums">Created {application.created}</span>
+          <span className="tabular-nums">{t("caseApplications_createdCreated", { created: application.created })}</span>
           {expiryText(application) ? (
             <>
               <span aria-hidden>·</span>
@@ -1144,6 +1153,7 @@ function ActionGroup({
   onAct: (applications: ApplicationRecord[]) => void;
   onOpen: (id: string) => void;
 }) {
+  const t = useTranslations();
   const [lead] = entry.applications;
   const signing = entry.step === "sign";
   /* Bulk signing is only for a filer with the tool set up; everyone else signs
@@ -1171,9 +1181,9 @@ function ActionGroup({
             size="sm"
             className="group/expand max-sm:h-10"
           >
-            <span className="group-aria-expanded/expand:hidden">Show all</span>
+            <span className="group-aria-expanded/expand:hidden">{t("caseApplications_showAll")}</span>
             <span className="hidden group-aria-expanded/expand:inline">
-              Hide
+              {t("caseApplications_hide")}
             </span>
             <ChevronDownIcon
               data-icon="inline-end"
@@ -1190,7 +1200,7 @@ function ActionGroup({
             className="max-sm:h-10"
             onClick={() => onAct(entry.applications)}
           >
-            {signing ? "Sign all" : "Pay all"}
+            {signing ? t("caseApplications_signAll") : t("caseApplications_payAll")}
           </Button>
         ) : null}
       </div>
@@ -1285,6 +1295,7 @@ function ObjectionRow({
   onOpen: (id: string) => void;
   onObject: (applicationId: string) => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5">
       <div className="flex min-w-0 flex-1 flex-col gap-1 max-sm:basis-full">
@@ -1310,8 +1321,7 @@ function ObjectionRow({
           className="max-sm:h-10"
           onClick={() => onObject(task.application.id)}
         >
-          File objection
-          <span className="sr-only">: {task.application.typeLabel}</span>
+          {t.rich("caseApplications_fileObjectionTypeLabel", { typeLabel: task.application.typeLabel, span: (chunks) => <span className="sr-only">{chunks}</span> })}
         </Button>
       ) : (
         <Button
@@ -1321,8 +1331,7 @@ function ObjectionRow({
           className="max-sm:h-10"
           onClick={() => onOpen(task.application.id)}
         >
-          View
-          <span className="sr-only">: {task.application.typeLabel}</span>
+          {t.rich("caseApplications_viewTypeLabel", { typeLabel: task.application.typeLabel, span: (chunks) => <span className="sr-only">{chunks}</span> })}
         </Button>
       )}
     </div>
@@ -1342,6 +1351,7 @@ function TouchObjectionCard({
   onOpen: (id: string) => void;
   onObject: (applicationId: string) => void;
 }) {
+  const t = useTranslations();
   return (
     <RegisterTrayCard
       title={objectionTitle(task)}
@@ -1354,14 +1364,14 @@ function TouchObjectionCard({
             variant="outline"
             onClick={() => onOpen(task.application.id)}
           >
-            View
+            {t("caseApplications_view")}
           </Button>
           {task.canFile ? (
             <Button
               type="button"
               onClick={() => onObject(task.application.id)}
             >
-              File objection
+              {t("caseApplications_fileObjection")}
             </Button>
           ) : null}
         </>
@@ -1447,11 +1457,12 @@ function ApplicationNumber({
   item: ApplicationRecord;
   copyable?: boolean;
 }) {
+  const t = useTranslations();
   if (item.applicationNumber) {
     return (
       <Identifier
         value={item.applicationNumber}
-        label="application number"
+        label={t("caseApplications_applicationNumber")}
         copyable={copyable}
       />
     );
@@ -1463,16 +1474,16 @@ function ApplicationNumber({
       <span className="flex flex-col gap-0.5">
         <Identifier
           value={item.temporaryId}
-          label="temporary ID"
+          label={t("caseApplications_temporaryId")}
           copyable={copyable}
         />
-        <span className="font-normal text-muted-foreground">Temporary</span>
+        <span className="font-normal text-muted-foreground">{t("caseApplications_temporary")}</span>
       </span>
     ) : (
-      <Identifier value={item.temporaryId} label="ID" copyable={copyable} />
+      <Identifier value={item.temporaryId} label={t("caseApplications_id")} copyable={copyable} />
     );
   }
-  return <Dash label="Not allotted" />;
+  return <Dash label={t("caseApplications_notAllotted")} />;
 }
 
 function ApplicationsTable({
@@ -1486,6 +1497,7 @@ function ApplicationsTable({
   recentId: string | null;
   recentRowRef: (node: HTMLTableRowElement | null) => void;
 }) {
+  const t = useTranslations();
   const tray = useOneOpen<string>();
   return (
     <>
@@ -1508,7 +1520,7 @@ function ApplicationsTable({
             className={cn(recentId === item.id && RECENT_ROW)}
             actions={
               <Button type="button" onClick={() => onOpen(item.id)}>
-                View application
+                {t("caseApplications_viewApplication")}
               </Button>
             }
           >
@@ -1516,22 +1528,22 @@ function ApplicationsTable({
               {item.applicationNumber ? (
                 <Identifier
                   value={item.applicationNumber}
-                  label="application number"
+                  label={t("caseApplications_applicationNumber")}
                   copyable={false}
                 />
               ) : item.temporaryId ? (
                 <>
                   <Identifier
                     value={item.temporaryId}
-                    label="temporary ID"
+                    label={t("caseApplications_temporaryId")}
                     copyable={false}
                   />
-                  {awaitingNumber(item) ? " · Temporary" : null}
+                  {awaitingNumber(item) ? t("caseApplications_temporary2") : null}
                 </>
               ) : objectionTarget(item) ? null : (
                 /* An objection never gets a court number; its line says what
                    it objects to instead. */
-                "Number not allotted yet"
+                t("caseApplications_numberNotAllottedYet")
               )}
               {objectionTarget(item)
                 ? `${item.temporaryId ? " · " : ""}${objectionTarget(item)}`
@@ -1552,7 +1564,7 @@ function ApplicationsTable({
                 ) : null}
                 {item.draftedBy ? (
                   <span className="text-caption text-muted-foreground">
-                    {` · Drafted by ${item.draftedBy}`}
+                    {t("caseApplications_draftedByDraftedBy", { draftedBy: item.draftedBy })}
                   </span>
                 ) : null}
               </p>
@@ -1570,13 +1582,13 @@ function ApplicationsTable({
     <Table>
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={TABLE_HEAD}>Type</TableHead>
-          <TableHead className={TABLE_HEAD}>Number</TableHead>
-          <TableHead className={TABLE_HEAD}>Status</TableHead>
-          <TableHead className={TABLE_HEAD}>Filed by</TableHead>
-          <TableHead className={TABLE_HEAD}>Created on</TableHead>
-          <TableHead className={TABLE_HEAD}>Submitted on</TableHead>
-          <TableHead className={TABLE_HEAD}>Action</TableHead>
+          <TableHead className={TABLE_HEAD}>{t("caseApplications_type")}</TableHead>
+          <TableHead className={TABLE_HEAD}>{t("caseApplications_number")}</TableHead>
+          <TableHead className={TABLE_HEAD}>{t("caseApplications_status")}</TableHead>
+          <TableHead className={TABLE_HEAD}>{t("caseApplications_filedBy")}</TableHead>
+          <TableHead className={TABLE_HEAD}>{t("caseApplications_createdOn")}</TableHead>
+          <TableHead className={TABLE_HEAD}>{t("caseApplications_submittedOn")}</TableHead>
+          <TableHead className={TABLE_HEAD}>{t("caseApplications_action")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className={tableBodyClass()}>
@@ -1646,7 +1658,7 @@ function ApplicationsTable({
                 ) : null}
                 {item.draftedBy ? (
                   <span className={noteClass()}>
-                    {`Drafted by ${item.draftedBy}`}
+                    {t("caseApplications_draftedByDraftedBy2", { draftedBy: item.draftedBy })}
                   </span>
                 ) : null}
               </span>
@@ -1655,7 +1667,7 @@ function ApplicationsTable({
               {item.createdShort}
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
-              {item.submittedShort ?? <Dash label="Not submitted" />}
+              {item.submittedShort ?? <Dash label={t("caseApplications_notSubmitted")} />}
             </TableCell>
             <TableCell className={TABLE_CELL}>
               {/* View on every row: the table is for finding and opening. The

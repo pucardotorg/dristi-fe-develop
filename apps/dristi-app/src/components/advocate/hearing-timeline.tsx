@@ -86,6 +86,7 @@ import type { AvatarSurface } from "@/components/tasks/person-avatar";
 import { courtIdentity, courtNumberFor } from "@/lib/advocate/courts";
 import { passedOverLabel } from "@/lib/advocate/passed-over";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * Clicking a hearing's pending flag opens the tasks rail and traces its tasks.
@@ -738,17 +739,9 @@ type RailTone = "neutral" | "conflict" | "now" | "concluded";
 
 /** The keyframes for the "now" dot's pulse — scoped here, off under reduced motion. */
 function RailStyles() {
+  const t = useTranslations();
   return (
-    <style>{`
-      .now-dot { box-shadow: 0 0 0 3px var(--halo); }
-      @keyframes pucar-now-pulse {
-        0%, 100% { box-shadow: 0 0 0 2px var(--halo); }
-        50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--halo) 45%, transparent); }
-      }
-      @media (prefers-reduced-motion: no-preference) {
-        .now-dot { animation: pucar-now-pulse 2.5s ease-in-out infinite; }
-      }
-    `}</style>
+    <style>{t("hearingTimeline_nowDotBoxShadow00")}</style>
   );
 }
 
@@ -960,6 +953,7 @@ function HearingRow({
   boxSurface?: AvatarSurface;
   className?: string;
 }) {
+  const t = useTranslations();
   const showTimes = useShowTimes();
   const singleCourt = React.useContext(SingleCourtContext);
   const isMobile = useCompactBoard();
@@ -1016,7 +1010,7 @@ function HearingRow({
           <span aria-hidden="true" className="shrink-0 whitespace-pre"> · </span>
           <Identifier
             value={hearing.kase.stNumber || hearing.kase.cnr}
-            label="case number"
+            label={t("hearingTimeline_caseNumber")}
             copyable={canHover}
             className="relative z-10 shrink-0 whitespace-nowrap"
           />

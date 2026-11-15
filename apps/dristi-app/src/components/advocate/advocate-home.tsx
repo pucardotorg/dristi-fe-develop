@@ -57,6 +57,7 @@ import { HOME_FRAME } from "@/components/advocate/home-layout";
 import { CauseListDialog } from "@/components/advocate/cause-list-dialog";
 import { JoinHearingDialog } from "@/components/advocate/join-hearing-dialog";
 import { notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /** The shell top bar is `h-14`; the sticky rail hangs below it. */
 const TOP_BAR = "3.5rem";
@@ -192,6 +193,7 @@ function HomeBody({
   config?: AdvocateHomeConfig;
   filterVariant?: FilterVariant;
 }) {
+  const t = useTranslations();
   const isMobile = useIsMobile();
   const store = useTasks();
   const { state, people, cases, tasks, user, reload } = store;
@@ -206,10 +208,10 @@ function HomeBody({
       void runTaskAction(
         task.id,
         archive,
-        "Archived — find it under the Archived tab"
+        t("advocateHome_archivedFindItUnderTheArchived")
       );
     },
-    [runTaskAction]
+    [runTaskAction, t]
   );
   const peek = useCasePeek();
 
@@ -292,7 +294,7 @@ function HomeBody({
   const onJoinCourt = React.useCallback(() => setJoinOpen(true), []);
   const announceJoin = React.useCallback(
     (parties: string, courtLabel: string, courtNumber: string | null) => {
-      notify.neutral(pick({ en: "Hearing link unavailable", ml: "വിചാരണ ലിങ്ക് ലഭ്യമല്ല" }, locale), {
+      notify.neutral(pick({ en: "advocateHome_hearingLinkUnavailable", ml: "വിചാരണ ലിങ്ക് ലഭ്യമല്ല" }, locale), {
         icon: VideoOffIcon,
         description: `${parties} · ${courtLabel}${courtNumber ? ` · ${courtNumber}` : ""}`,
       });

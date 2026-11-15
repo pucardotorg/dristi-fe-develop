@@ -38,8 +38,8 @@ export const AADHAAR_DOCS_PER_OTP = 5;
 
 /** The rule above, for the hint that links to it. */
 export const AADHAAR_LIMIT_SOURCE = {
-  title: "eSign API Specifications v3.3, §3.3.1.1",
-  publisher: "Controller of Certifying Authorities, MeitY",
+  title: "bulkTypes_eSignApiSpecificationsV33",
+  publisher: "bulkTypes_controllerOfCertifyingAuthoritiesMeitY",
   url: "https://cca.gov.in/sites/files/pdf/esign/eSign-APIv3.3.pdf#page=14",
   quote: "Maximum 5",
 } as const;

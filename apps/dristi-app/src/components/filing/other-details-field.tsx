@@ -51,6 +51,7 @@ import {
   RichTextEditor,
   type RichTextEditorHandle,
 } from "@/components/filing/rich-text-editor";
+import { useTranslations } from "next-intl";
 
 /** Where the formats this box starts from are set up. */
 const FORMATS_HREF = "/filings/formats";
@@ -66,18 +67,19 @@ function FormatMenu({
   current: DetailsFormat | undefined;
   onChoose: (format: DetailsFormat) => void;
 }) {
+  const t = useTranslations();
   if (!formats.length) return null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button type="button" variant="ghost" size="sm" className="max-w-56">
           <FileTextIcon data-icon="inline-start" aria-hidden />
-          <span className="truncate">{current ? current.name : "Choose a format"}</span>
+          <span className="truncate">{current ? current.name : t("otherDetailsField_chooseAFormat")}</span>
           <ChevronDownIcon data-icon="inline-end" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
-        <DropdownMenuLabel>Generate from a format</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("otherDetailsField_generateFromAFormat")}</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={current?.id ?? ""}
           onValueChange={(id) => {
@@ -87,7 +89,7 @@ function FormatMenu({
         >
           {formats.map((format) => (
             <DropdownMenuRadioItem key={format.id} value={format.id}>
-              {format.name || "Untitled"}
+              {format.name || t("otherDetailsField_untitled")}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
@@ -110,6 +112,7 @@ export function OtherDetailsField({
   onGenerate: (formatId: string, html: string) => void;
   ariaLabel: string;
 }) {
+  const t = useTranslations();
   const { draft } = useFiling();
   const courtText = useCourtText();
   const editor = React.useRef<RichTextEditorHandle>(null);
@@ -146,7 +149,7 @@ export function OtherDetailsField({
       <RichTextEditor
         value={value}
         onChange={onChange}
-        placeholder="Write here, or choose a format"
+        placeholder={t("otherDetailsField_writeHereOrChooseAFormat")}
         ariaLabel={ariaLabel}
         minHeightClassName="min-h-64"
         handleRef={editor}
@@ -156,31 +159,30 @@ export function OtherDetailsField({
             {current ? (
               <Button type="button" variant="ghost" size="sm" onClick={() => ask(current)}>
                 <RefreshCwIcon data-icon="inline-start" aria-hidden />
-                Refresh
+                {t("otherDetailsField_refresh")}
               </Button>
             ) : null}
             <DetailFieldMenu
               onPick={(field) =>
                 editor.current?.insertText(courtText(field.resolve(draft)) || `[${field.name}]`)
               }
-              describe={(field) => courtText(field.resolve(draft)) || "Not entered yet"}
+              describe={(field) => courtText(field.resolve(draft)) || t("otherDetailsField_notEnteredYet")}
             />
           </>
         }
       />
 
       <p className="text-caption text-muted-foreground">
-        A format writes its text here with the details from the form filled in. Refresh
-        writes it again after you change the form.{" "}
+        {t("otherDetailsField_aFormatWritesItsTextHere")}
         <Link
           href={FORMATS_HREF}
           target="_blank"
           rel="noopener"
           className="inline-flex items-center gap-1 text-foreground underline underline-offset-3"
         >
-          Edit formats
+          {t("otherDetailsField_editFormats")}
           <ExternalLinkIcon aria-hidden className="size-3" />
-          <span className="sr-only">(opens in a new tab)</span>
+          <span className="sr-only">{t("otherDetailsField_opensInANewTab")}</span>
         </Link>
       </p>
 
@@ -189,22 +191,22 @@ export function OtherDetailsField({
           <AlertDialogHeader>
             <AlertDialogTitle>
               {pending?.id === current?.id
-                ? "Write the text again with the form's current details?"
-                : <>Replace the text with &ldquo;{pending?.name}&rdquo;?</>}
+                ? t("otherDetailsField_writeTheTextAgainWithThe")
+                : <>{t("otherDetailsField_replaceTheTextWithName", { name: (pending?.name) ?? "" })}</>}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              What is in the box now, including any changes you made, will be replaced.
+              {t("otherDetailsField_whatIsInTheBoxNow")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep my text</AlertDialogCancel>
+            <AlertDialogCancel>{t("otherDetailsField_keepMyText")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (pending) generate(pending);
                 setPending(null);
               }}
             >
-              Replace
+              {t("otherDetailsField_replace")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

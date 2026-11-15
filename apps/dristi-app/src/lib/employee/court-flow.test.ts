@@ -53,6 +53,10 @@ import {
   pendingSets,
   trendDetail,
 } from "./court-flow";
+import { translateMessage } from "@/i18n/messages";
+
+/** A message key read back as its English, so expectations read the way the screen does. */
+const inEnglish = (text: string) => translateMessage("en", text);
 
 const DAY = "2026-10-19";
 const docket = courtDocket(DAY);
@@ -446,7 +450,7 @@ describe("the v4 dashboard", () => {
     const [pending, clearance] = monthlyTrends(docket, docket.today);
     const point = pending.points[0];
     const rows = trendBreakdown(docket, "pending", point);
-    assert.deepEqual(rows.map((r) => r.label), ["Filed in the month", "Disposed in the month", "Moved to long pending"]);
+    assert.deepEqual(rows.map((r) => inEnglish(r.label)), ["Filed in the month", "Disposed in the month", "Moved to long pending"]);
     const c = trendBreakdown(docket, "clearance", clearance.points[0]);
     const disposed = Number(c[0].value.replace(/,/g, ""));
     const filed = Number(c[1].value.replace(/,/g, ""));

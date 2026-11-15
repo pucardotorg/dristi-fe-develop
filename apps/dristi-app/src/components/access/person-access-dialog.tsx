@@ -116,6 +116,7 @@ import { ACTIVE_STAGES, stageLabel, type CounselSide } from "@/lib/cases/types";
 import { stepHref } from "@/lib/filing/steps";
 import { pick, type Copy, type Locale } from "@/lib/onboarding/content";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * One person in the office, opened over the People list in a near full-screen
@@ -258,6 +259,7 @@ export function PersonAccessDialog({
    */
   adding?: boolean;
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const {
     office,
@@ -1009,7 +1011,7 @@ export function PersonAccessDialog({
                           {pick(peopleCopy.barIdLabel, locale)}
                           <Identifier
                             value={barId}
-                            label="bar id"
+                            label={t("personAccessDialog_barId")}
                             className="tabular-nums"
                           />
                         </span>
@@ -1942,12 +1944,13 @@ function CaseMeta({
   locale: Locale;
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <span className={className}>
       {entry.draft ? (
         pick(copy.notFiled, locale)
       ) : (
-        <Identifier value={entry.caseNumber} label="case number" />
+        <Identifier value={entry.caseNumber} label={t("personAccessDialog_caseNumber")} />
       )}
     </span>
   );

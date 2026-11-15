@@ -4,9 +4,11 @@ import * as React from "react";
 
 import { deleteDraftWithFiles, getRepository } from "./data";
 import type { FilingDraft } from "./types";
+import { useTranslations } from "next-intl";
 
 /** All drafts and filed cases in this browser, newest first; `ready` once read. */
 export function useDrafts() {
+  const tr = useTranslations();
   const [drafts, setDrafts] = React.useState<FilingDraft[]>([]);
   const [ready, setReady] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -24,7 +26,7 @@ export function useDrafts() {
         setError(null);
       } catch {
         if (cancelled) return;
-        setError("We couldn't read your drafts from this browser's storage.");
+        setError(tr("useDrafts_weCouldntReadYourDraftsFrom"));
       }
       if (cancelled) return;
       setReadAt(Date.now());
@@ -33,7 +35,7 @@ export function useDrafts() {
     return () => {
       cancelled = true;
     };
-  }, [reloadTick]);
+  }, [reloadTick, tr]);
 
   const reload = React.useCallback(() => setReloadTick((t) => t + 1), []);
 

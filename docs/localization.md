@@ -64,7 +64,7 @@ Every string a user sees is a key in `en.json`, rendered through the translator.
 ## Rule 2 — Constants hold keys, not English
 
 Status labels, option lists, table headers, default props: anything defined outside a
-component stores the **key**. The component translates it.
+component stores the **key**. There are two ways to show it.
 
 ```ts
 // ✗ wrong — English in a constant
@@ -73,8 +73,12 @@ const STATUS_LABEL = {
   approved: "Approved",
   declined: "Declined",
 };
+```
 
-// ✓ right — keys, typed so a typo fails to compile
+**A constant with its own type** — type it `MessageKey` and show it with `t()`. A typo in
+a key fails the build.
+
+```ts
 import type { MessageKey } from "@/i18n/messages";
 
 const STATUS_LABEL: Record<Status, MessageKey> = {
@@ -83,11 +87,26 @@ const STATUS_LABEL: Record<Status, MessageKey> = {
   declined: "vakalatnama_statusDeclined",
 };
 
-// component
 <span>{t(STATUS_LABEL[status])}</span>
 ```
 
+**A constant using a shared type that also holds data** — `Option.label` holds keys from
+fixed lists and names from people. Keep `string` and show it with `translateText`: a key
+is translated, anything else is shown as it is. A typo fails `npm run test:app`.
+
+```ts
+import { translateText } from "@/i18n/translate-text";
+
+const GENDER_OPTIONS: Option[] = [{ value: "male", label: "options_male" }];
+
+<SelectItem>{translateText(t, option.label)}</SelectItem>
+```
+
 The same applies to default props: `text = "pagination_previous"`, not `text = "Previous"`.
+
+**Text used as a value is not a message.** If code compares it, stores it, sends it to the
+back end or builds a sentence from it, keep the value and turn it into a key only where
+it is shown.
 
 **Why:** the app never looks a key up from its English text. That lookup silently fails
 once a real translation exists (the Hindi catalog has no "Draft" to match), and it

@@ -58,6 +58,7 @@ import {
   type DroppedFiles,
 } from "@/components/filing/upload/use-drop-target";
 import { pickErrorMessage, useFilePicker } from "@/components/filing/use-file-picker";
+import { useTranslations } from "next-intl";
 
 /* ───────────────────────────── Draft helpers ───────────────────────────── */
 
@@ -78,6 +79,7 @@ type Pending =
 /* ───────────────────────────────── Screen ──────────────────────────────── */
 
 export function UploadSection() {
+  const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const intake = draft.intake;
   /* In a correction round the bundle itself is fixed: a flagged document is *replaced*,
@@ -117,11 +119,11 @@ export function UploadSection() {
         }
         if (!file) return;
         const label = findIntakeSlot(intake, key)?.label ?? "this document";
-        announce(`${file.name} added for ${label}.`);
+        announce(t("uploadSection_nameAddedForLabel", { name: file.name, label }));
         void receiveFile(key, file);
       });
     },
-    [pick, intake, receiveFile, announce]
+    [pick, intake, receiveFile, announce, t]
   );
 
   /** Dropped files fill `keys` in order — empty required slots first. */
@@ -136,14 +138,14 @@ export function UploadSection() {
       if (used > 0) {
         announce(
           used === 1
-            ? `${dropped.files[0].name} added.`
-            : `${used} files added to the next empty slots.`
+            ? t("uploadSection_nameAdded", { name: dropped.files[0].name })
+            : t("uploadSection_usedFilesAddedToTheNext", { used: String(used) })
         );
       } else if (problem) {
-        announce("Nothing was added from that drop.");
+        announce(t("uploadSection_nothingWasAddedFromThatDrop"));
       }
     },
-    [receiveFile, announce]
+    [receiveFile, announce, t]
   );
 
   const deleteFile = (key: string) => {
@@ -163,7 +165,7 @@ export function UploadSection() {
   /* A card is its form record — a cheque, a notice, or (every party) a complainant — so
      the record goes with it, and the two stay the same in number. */
   const removeCard = (kind: CaseRecordKind, index: number, name: string) => {
-    if (removeRecord(kind, index)) announce(`${name} removed.`);
+    if (removeRecord(kind, index)) announce(t("uploadSection_nameRemoved", { name }));
   };
 
   const addNotice = () =>
@@ -215,7 +217,7 @@ export function UploadSection() {
         name: slot?.label ?? "This document",
         title: `Remove ${slot?.label ?? "this document"}?`,
         description:
-          "The file is removed from this filing. You can add it again later.",
+          t("uploadSection_theFileIsRemovedFromThis"),
       };
     }
     const group =
@@ -243,9 +245,9 @@ export function UploadSection() {
           ? `This removes complainant ${group?.n}, their details and ${documents} from this filing.`
           : files > 0
             ? `This removes the ${files} document${files === 1 ? "" : "s"} added for it from this filing.`
-            : "This removes it, and its document slots, from this filing.",
+            : t("uploadSection_thisRemovesItAndItsDocument"),
     };
-  }, [pending, intake]);
+  }, [pending, intake, t]);
 
   const runPending = () => {
     if (!pending) return;
@@ -278,12 +280,12 @@ export function UploadSection() {
             above it, not a section of its own. */}
         <div className="flex flex-col gap-2">
         <FilingPageHeader
-          eyebrow="Documents"
-          title={inCorrection ? "Case documents" : "Add your case documents"}
+          eyebrow={t("uploadSection_documents")}
+          title={inCorrection ? t("uploadSection_caseDocuments") : t("uploadSection_addYourCaseDocuments")}
           description={
             inCorrection
-              ? "The documents filed with the complaint, as scrutiny received them."
-              : "Add the papers you already have: the cheque, the bank's memo, the notice you sent. You can also continue without them and add them later."
+              ? t("uploadSection_theDocumentsFiledWithTheComplaint")
+              : t("uploadSection_addThePapersYouAlreadyHave")
           }
         />
 
@@ -298,7 +300,7 @@ export function UploadSection() {
          */}
         {inCorrection ? null : (
           <p className="text-body-compact text-muted-foreground pointer-coarse:hidden">
-            Drag files onto a card or a row, or choose them one at a time.
+            {t("uploadSection_dragFilesOntoACardOr")}
           </p>
         )}
         </div>
@@ -307,7 +309,7 @@ export function UploadSection() {
           <SectionNotice
             variant="destructive"
             announce="assertive"
-            title="That file wasn’t added"
+            title={t("uploadSection_thatFileWasntAdded")}
             onDismiss={() => setPickError(null)}
           >
             {pickError}
@@ -327,20 +329,20 @@ export function UploadSection() {
           {/* ── The cheques ── */}
           {intake.cheques.length > 0 ? (
             <section className="flex flex-col gap-4">
-              <h2 className="text-caption font-semibold text-muted-foreground">The cheques</h2>
+              <h2 className="text-caption font-semibold text-muted-foreground">{t("uploadSection_theCheques")}</h2>
 
               {intake.cheques.map((cheque, index) => (
                 <DocumentCard
                   key={cheque.slots[0]?.key ?? `cheque-${index}`}
                   icon={CreditCardIcon}
-                  title={`Cheque ${cheque.n}`}
+                  title={t("uploadSection_chequeN", { n: String(cheque.n) })}
                   slots={cheque.slots}
                   onRemove={
                     intake.cheques.length > 1 && !inCorrection
                       ? () => setPending({ kind: "cheque", index })
                       : undefined
                   }
-                  removeLabel={`Remove cheque ${cheque.n}`}
+                  removeLabel={t("uploadSection_removeChequeN", { n: String(cheque.n) })}
                   onChoose={chooseFile}
                   onPreview={setPreviewKey}
                   onDelete={(key) => setPending({ kind: "slot", key })}
@@ -351,7 +353,7 @@ export function UploadSection() {
               {inCorrection ? null : (
                 <Button type="button" variant="outline" className="w-fit" onClick={addCheque}>
                   <PlusIcon data-icon="inline-start" aria-hidden />
-                  Add another cheque
+                  {t("uploadSection_addAnotherCheque")}
                 </Button>
               )}
             </section>
@@ -362,21 +364,21 @@ export function UploadSection() {
           {intake.notices.length > 0 ? (
             <section className="flex flex-col gap-4">
               <h2 className="text-caption font-semibold text-muted-foreground">
-                The demand notices
+                {t("uploadSection_theDemandNotices")}
               </h2>
 
               {intake.notices.map((notice, index) => (
                 <DocumentCard
                   key={notice.slots[0]?.key ?? `notice-${index}`}
                   icon={MailIcon}
-                  title={`Demand notice ${notice.n}`}
+                  title={t("uploadSection_demandNoticeN", { n: String(notice.n) })}
                   slots={notice.slots}
                   onRemove={
                     intake.notices.length > 1 && !inCorrection
                       ? () => setPending({ kind: "notice", index })
                       : undefined
                   }
-                  removeLabel={`Remove demand notice ${notice.n}`}
+                  removeLabel={t("uploadSection_removeDemandNoticeN", { n: String(notice.n) })}
                   onChoose={chooseFile}
                   onPreview={setPreviewKey}
                   onDelete={(key) => setPending({ kind: "slot", key })}
@@ -387,7 +389,7 @@ export function UploadSection() {
               {inCorrection ? null : (
                 <Button type="button" variant="outline" className="w-fit" onClick={addNotice}>
                   <PlusIcon data-icon="inline-start" aria-hidden />
-                  Add another demand notice
+                  {t("uploadSection_addAnotherDemandNotice")}
                 </Button>
               )}
             </section>
@@ -396,20 +398,20 @@ export function UploadSection() {
           {/* ── The parties ── */}
           {intake.parties.length > 0 ? (
             <section className="flex flex-col gap-4">
-              <h2 className="text-caption font-semibold text-muted-foreground">The parties</h2>
+              <h2 className="text-caption font-semibold text-muted-foreground">{t("uploadSection_theParties")}</h2>
 
               {intake.parties.map((party, index) => (
                 <DocumentCard
                   key={party.slots[0]?.key ?? `party-${index}`}
                   icon={UserIcon}
-                  title={`Party ${party.n} details`}
+                  title={t("uploadSection_partyNDetails", { n: String(party.n) })}
                   slots={party.slots}
                   onRemove={
                     intake.parties.length > 1 && !inCorrection
                       ? () => setPending({ kind: "party", index })
                       : undefined
                   }
-                  removeLabel={`Remove party ${party.n}`}
+                  removeLabel={t("uploadSection_removePartyN", { n: String(party.n) })}
                   onChoose={chooseFile}
                   onPreview={setPreviewKey}
                   onDelete={(key) => setPending({ kind: "slot", key })}
@@ -422,7 +424,7 @@ export function UploadSection() {
                       onClick={() => addPartyDoc(index)}
                     >
                       <PlusIcon data-icon="inline-start" aria-hidden />
-                      Add other documents
+                      {t("uploadSection_addOtherDocuments")}
                     </Button>
                   }
                 />
@@ -431,7 +433,7 @@ export function UploadSection() {
               {inCorrection ? null : (
                 <Button type="button" variant="outline" className="w-fit" onClick={addParty}>
                   <PlusIcon data-icon="inline-start" aria-hidden />
-                  Add another party
+                  {t("uploadSection_addAnotherParty")}
                 </Button>
               )}
             </section>
@@ -441,7 +443,7 @@ export function UploadSection() {
           {intake.supporting.length > 0 ? (
             <section className="flex flex-col gap-4">
               <h2 className="text-caption font-semibold text-muted-foreground">
-                Supporting documents
+                {t("uploadSection_supportingDocuments")}
               </h2>
 
               <Card
@@ -478,14 +480,14 @@ export function UploadSection() {
       {/* Back names where it goes: this is the one step whose Back leaves the filing. */}
       <FilingFooter
         backHref={FILINGS_HOME}
-        backLabel="Back to dashboard"
+        backLabel={t("uploadSection_backToDashboard")}
         continueHref={hrefFor("complainant")}
-        continueLabel="Continue to filing"
+        continueLabel={t("uploadSection_continueToFiling")}
       />
 
       <FilePreviewDialog
         file={previewFile}
-        label={previewSlot?.label ?? "this document"}
+        label={previewSlot?.label ?? t("uploadSection_thisDocument")}
         onClose={() => setPreviewKey(null)}
         onReplace={() => {
           if (previewKey) chooseFile(previewKey);

@@ -12,10 +12,10 @@ import type { CourtId } from "./profiles";
 export type BrandHue = "navy" | "royal" | "ink" | "teal";
 
 export const BRAND_HUES: { id: BrandHue; label: string; swatch: string }[] = [
-  { id: "navy", label: "Navy", swatch: "#1f3a68" },
-  { id: "royal", label: "Royal blue", swatch: "#23449a" },
-  { id: "ink", label: "Ink blue", swatch: "#182c4f" },
-  { id: "teal", label: "Teal (DS default)", swatch: "#007e7e" },
+  { id: "navy", label: "brandHue_navy", swatch: "#1f3a68" },
+  { id: "royal", label: "brandHue_royalBlue", swatch: "#23449a" },
+  { id: "ink", label: "brandHue_inkBlue", swatch: "#182c4f" },
+  { id: "teal", label: "brandHue_tealDsDefault", swatch: "#007e7e" },
 ];
 
 export const BRAND_HUE_COOKIE = "dristi-brand-hue";

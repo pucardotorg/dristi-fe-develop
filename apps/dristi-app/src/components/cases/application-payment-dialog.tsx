@@ -15,6 +15,7 @@ import {
 import { filingNoun, type ApplicationRecord } from "@/lib/cases/application-record";
 import { OutcomeHeader } from "@/components/feedback";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /** Dummy court fee per application, from the legacy portal's payment screen. */
 const FEE_RUPEES = 20;
@@ -60,6 +61,7 @@ function PaymentBody({
   onPaid: (ids: string[]) => void;
   onClose: () => void;
 }) {
+  const t = useTranslations();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [paid, setPaid] = useState(false);
   const count = applications.length;
@@ -78,7 +80,7 @@ function PaymentBody({
           compact
           titleFrom="dialog"
           focusTitle
-          title="Payment complete"
+          title={t("applicationPaymentDialog_paymentComplete")}
           body={
             <>
               Court fee of {total} paid.{" "}
@@ -91,7 +93,7 @@ function PaymentBody({
           <span className="text-caption font-medium text-muted-foreground">
             {count === 1
               ? applications[0].typeLabel
-              : `${count} ${filingNoun(applications)}, one payment`}
+              : t("applicationPaymentDialog_countFilingNounOnePayment", { count: String(count), filingNoun: filingNoun(applications) })}
           </span>
         </OutcomeHeader>
       ) : (
@@ -101,12 +103,12 @@ function PaymentBody({
           tabIndex={-1}
           className="text-body font-semibold outline-none"
         >
-          {paid ? "Payment complete" : "Pay court fee"}
+          {paid ? t("applicationPaymentDialog_paymentComplete") : t("applicationPaymentDialog_payCourtFee")}
         </DialogTitle>
         <DialogDescription className="text-caption font-medium text-muted-foreground">
           {count === 1
             ? applications[0].typeLabel
-            : `${count} ${filingNoun(applications)}, one payment`}
+            : t("applicationPaymentDialog_countFilingNounOnePayment", { count: String(count), filingNoun: filingNoun(applications) })}
         </DialogDescription>
       </DialogHeader>
       )}
@@ -117,7 +119,7 @@ function PaymentBody({
       <div className="flex min-h-0 flex-col gap-4 overflow-y-auto bg-surface-sunken px-6 py-4">
         {paid ? null : (
           <Banner variant="info">
-            Please visit the Nyay Mitra to make this payment offline.
+            {t("applicationPaymentDialog_pleaseVisitTheNyayMitraTo")}
           </Banner>
         )}
 
@@ -134,7 +136,7 @@ function PaymentBody({
             </div>
           ))}
           <div className="flex items-baseline justify-between gap-4 py-2.5 font-semibold">
-            <dt>{paid ? "Total paid" : "Total"}</dt>
+            <dt>{paid ? t("applicationPaymentDialog_totalPaid") : t("applicationPaymentDialog_total")}</dt>
             <dd className="shrink-0 tabular-nums">{total}</dd>
           </div>
         </dl>
@@ -149,17 +151,17 @@ function PaymentBody({
               onClose();
             }}
           >
-            Done
+            {t("applicationPaymentDialog_done")}
           </Button>
         ) : (
           <>
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Cancel
+                {t("common_cancel")}
               </Button>
             </DialogClose>
             <Button type="button" onClick={() => setPaid(true)}>
-              Pay {total}
+              {t("applicationPaymentDialog_payTotal", { total })}
             </Button>
           </>
         )}

@@ -82,6 +82,8 @@ import {
   type DropSide,
 } from "@/lib/employee/cause-list-columns";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Start hearing and End hearing live in the Action column, as one labelled outline
@@ -211,6 +213,7 @@ export function HearingCaseButton({
   onOpen: (hearing: CourtHearing) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <button
       type="button"
@@ -221,7 +224,7 @@ export function HearingCaseButton({
       {/* The cause title alone is the whole of what a sighted reader needs under a
           column headed "Case name"; out of that column it is a control named after two
           parties and nothing else. */}
-      <span className="sr-only">Open case overview for </span>
+      <span className="sr-only">{t("hearingsTable_openCaseOverviewFor")} </span>
       {causeTitle(hearing)}
     </button>
   );
@@ -255,6 +258,7 @@ export function HearingSessionButton({
   onPassOver: (hearing: CourtHearing) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   const { court } = useCourt();
   /* One ref for whichever of Start and End is showing, so focus can land on the control
      after Pass over takes the chevron away (`PassOverMenu`). */
@@ -328,7 +332,7 @@ export function HearingSessionButton({
         )}
         onClick={() => onStartHearing(hearing)}
       >
-        Start hearing
+        {t("hearingsTable_startHearing")}
       </Button>
     );
   } else if (canEndHearing(hearing.status)) {
@@ -362,7 +366,7 @@ export function HearingSessionButton({
         className={cn(SESSION_SLOT_CLASS, "flex-1", split && "border-r-0")}
         onClick={() => onEndHearing(hearing)}
       >
-        End hearing
+        {t("hearingsTable_endHearing")}
       </Button>
     );
   }
@@ -374,7 +378,7 @@ export function HearingSessionButton({
        to land. */
     const dress = canEndHearing(hearing.status) ? "destructive" : variant;
     return (
-      <ButtonGroup aria-label={`Hearing, item ${hearing.item}`} className={className}>
+      <ButtonGroup aria-label={t("hearingsTable_hearingItemItem", { item: String(hearing.item) })} className={className}>
         {session}
         {split ? (
           <PassOverMenu
@@ -406,7 +410,7 @@ export function HearingSessionButton({
       variant="outline"
       className={cn(SESSION_SLOT_CLASS, className)}
     >
-      Hearing ended
+      {t("hearingsTable_hearingEnded")}
     </Button>
   );
 }
@@ -469,6 +473,7 @@ function PassOverMenu({
   /** The session control beside the chevron — focus's place when the row stays put. */
   sessionRef: React.RefObject<HTMLButtonElement | null>;
 }) {
+  const t = useTranslations();
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   /* Where the row stood when Pass over was chosen; `undefined` while the menu closes
      any other way, and Radix's own return to the trigger is left alone. */
@@ -481,7 +486,7 @@ function PassOverMenu({
           type="button"
           variant={dress}
           size="icon"
-          aria-label={`Pass over item ${hearing.item}, ${causeTitle(hearing)}`}
+          aria-label={t("hearingsTable_passOverItemItemCauseTitle", { item: String(hearing.item), causeTitle: causeTitle(hearing) })}
           className={cn(
             "relative before:absolute before:top-1/2 before:left-0 before:h-4 before:w-px before:-translate-y-1/2",
             dress === "outline" &&
@@ -519,7 +524,7 @@ function PassOverMenu({
           }}
         >
           <UserRoundXIcon aria-hidden />
-          Pass over
+          {t("hearingsTable_passOver")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -682,10 +687,11 @@ export function HearingOrdersButton({
   onOpen?: (hearing: CourtHearing) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   const { court } = useCourt();
   const label = drafted
-    ? `Resume draft order for item ${hearing.item}, ${causeTitle(hearing)}`
-    : `Order for item ${hearing.item}, ${causeTitle(hearing)}`;
+    ? t("hearingsTable_resumeDraftOrderForItemItem", { item: String(hearing.item), causeTitle: causeTitle(hearing) })
+    : t("hearingsTable_orderForItemItemCauseTitle", { item: String(hearing.item), causeTitle: causeTitle(hearing) });
   /* One column, two preconditions — see above — and neither of them is asked about an
      order that has already been drawn up. */
   const open =
@@ -739,9 +745,9 @@ export function HearingOrdersButton({
       );
   const content = named ? (
     drafted ? (
-      "Resume draft"
+      t("hearingsTable_resumeDraft")
     ) : (
-      "Open order"
+      t("hearingsTable_openOrder")
     )
   ) : drafted ? (
     <FilePenLineIcon aria-hidden />
@@ -787,7 +793,7 @@ export function HearingOrdersButton({
            colour is never allowed to be the only carrier (`ACCESSIBILITY.md` — status
            without colour-alone). The tick is the third carrier: it survives greyscale
            and every form of colour blindness, which the green on its own does not. */
-        aria-label={recorded ? `${label} (order recorded)` : label}
+        aria-label={recorded ? t("hearingsTable_labelOrderRecorded", { label }) : label}
         onClick={() => onOpen?.(hearing)}
       >
         {content}
@@ -821,7 +827,7 @@ export function HearingOrdersButton({
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>{control}</TooltipTrigger>
-        <TooltipContent>Draft</TooltipContent>
+        <TooltipContent>{t("hearingsTable_draft")}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -969,6 +975,7 @@ export function HearingsTable({
   onPassOver: (hearing: CourtHearing) => void;
   onOpenOrder?: (hearing: CourtHearing) => void;
 }) {
+  const t = useTranslations();
   const drafts = useOrderDrafts();
   const [dragging, setDragging] = React.useState<CauseListColumnId | null>(null);
   const [over, setOver] = React.useState<{
@@ -1065,7 +1072,7 @@ export function HearingsTable({
       case "caseNumber":
         /* The product's one identifier treatment; it stops its own click from reaching
            the row opener. */
-        return <Identifier value={hearing.caseNumber} label="case number" />;
+        return <Identifier value={hearing.caseNumber} label={t("hearingsTable_caseNumber")} />;
       case "advocates":
         return (
           <CounselCell
@@ -1124,9 +1131,7 @@ export function HearingsTable({
   return (
     <>
       <p id={COLUMNS_HINT_ID} className="sr-only">
-        Drag a column heading to change its order. With a heading focused, press Alt
-        and Left arrow or Alt and Right arrow to move it. Show, hide or reset columns
-        from Edit columns.
+        {t("hearingsTable_dragAColumnHeadingToChange")}
       </p>
       <Table
         className="w-full border-separate border-spacing-0 text-body-compact"
@@ -1144,8 +1149,8 @@ export function HearingsTable({
                   onCheckedChange={(next) => selection.onToggleAll(next === true)}
                   aria-label={
                     selection.all === true
-                      ? "Clear the selection"
-                      : "Select every hearing in this list"
+                      ? t("hearingsTable_clearTheSelection")
+                      : t("hearingsTable_selectEveryHearingInThisList")
                   }
                 />
               </TableHead>
@@ -1189,7 +1194,7 @@ export function HearingsTable({
                     aria-hidden
                     className="absolute top-1/2 left-0.5 size-3.5 -translate-y-1/2 text-muted-foreground"
                   />
-                  {column.label}
+                  {translateText(t, column.label)}
                 </TableHead>
               );
             })}
@@ -1220,7 +1225,7 @@ export function HearingsTable({
                     checked={selection.selected.has(hearing.id)}
                     onCheckedChange={() => selection.onToggle(hearing.id)}
                     onClick={(event) => event.stopPropagation()}
-                    aria-label={`Select item ${hearing.item}, ${causeTitle(hearing)}`}
+                    aria-label={t("hearingsTable_selectItemItemCauseTitle", { item: String(hearing.item), causeTitle: causeTitle(hearing) })}
                   />
                 </TableCell>
               ) : null}

@@ -52,6 +52,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 /**
  * The court side's one filter surface — search inline, everything else behind a Filters
@@ -155,6 +156,7 @@ export function CourtSortSelect<T extends string>({
    */
   iconOnly?: boolean;
 }) {
+  const t = useTranslations();
   if (iconOnly) {
     const current = options.find((option) => option.id === value)?.label ?? "";
     return (
@@ -168,18 +170,18 @@ export function CourtSortSelect<T extends string>({
                   type="button"
                   variant="outline"
                   size="icon"
-                  aria-label={`Sort by, ${current}`}
+                  aria-label={t("courtFilters_sortByCurrent", { current })}
                   className="shrink-0"
                 >
                   <ArrowDownUpIcon aria-hidden />
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Sort: {current}</TooltipContent>
+            <TooltipContent side="bottom">{t("courtFilters_sortCurrent", { current })}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <DropdownMenuContent align="end" className="min-w-52">
-          <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("courtFilters_sortBy")}</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={value}
             onValueChange={(next) => onChange(next as T)}
@@ -197,7 +199,7 @@ export function CourtSortSelect<T extends string>({
   return (
     <div className="flex min-w-0 flex-col max-sm:w-full">
       <Label htmlFor={id} className="sr-only">
-        Sort by
+        {t("courtFilters_sortBy")}
       </Label>
       <Select value={value} onValueChange={(next) => onChange(next as T)}>
         <SelectTrigger
@@ -279,6 +281,7 @@ export function CourtFilters({
   /** Reset every filter (fields, date and the search) back to the screen's default. */
   onClearAll: () => void;
 }) {
+  const t = useTranslations();
   const labelHidden = search.labelHidden ?? true;
   const appliedFields = fields.filter((field) => field.value !== field.all);
   const appliedMulti = multi.filter((field) => field.values.length > 0);
@@ -381,7 +384,7 @@ export function CourtFilters({
         {trailing}
         {applied > 0 || search.value !== "" ? (
           <Button type="button" variant="ghost" onClick={onClearAll}>
-            Clear filters
+            {t("courtFilters_clearFilters")}
           </Button>
         ) : null}
         {end ? <div className="ml-auto flex items-end gap-3">{end}</div> : null}
@@ -426,7 +429,7 @@ export function CourtFilters({
       {applied > 0 ? (
         <div
           className="flex flex-wrap items-center gap-2"
-          aria-label="Applied filters"
+          aria-label={t("courtFilters_appliedFilters")}
         >
           {appliedFields.map((field) => (
             <AppliedChip
@@ -465,7 +468,7 @@ export function CourtFilters({
             className="text-muted-foreground"
           >
             <XIcon data-icon="inline-start" aria-hidden />
-            Clear all
+            {t("courtFilters_clearAll")}
           </Button>
         </div>
       ) : null}
@@ -484,6 +487,7 @@ function CourtFiltersSheet({
   date?: CourtFilterDate;
   applied: number;
 }) {
+  const t = useTranslations();
   const seed = React.useCallback(
     () => ({
       fields: Object.fromEntries(fields.map((field) => [field.id, field.value])),
@@ -541,7 +545,7 @@ function CourtFiltersSheet({
           aria-label={`Filters${applied ? `, ${applied} applied` : ""}`}
         >
           <SlidersHorizontalIcon data-icon="inline-start" aria-hidden />
-          Filters
+          {t("courtFilters_filters")}
           {applied ? (
             <span className="ms-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-caption font-medium tabular-nums text-primary-foreground">
               {applied}
@@ -555,7 +559,7 @@ function CourtFiltersSheet({
         className="w-full sm:max-w-sm"
       >
         <SheetHeader>
-          <SheetTitle className="text-title-s font-semibold">Filters</SheetTitle>
+          <SheetTitle className="text-title-s font-semibold">{t("courtFilters_filters")}</SheetTitle>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
@@ -629,14 +633,14 @@ function CourtFiltersSheet({
         <SheetFooter className="flex-row items-center justify-between border-t border-hairline">
           {draftCount ? (
             <Button type="button" variant="ghost" onClick={clearDraft}>
-              Clear filters
+              {t("courtFilters_clearFilters")}
             </Button>
           ) : (
             <span />
           )}
           <SheetClose asChild>
             <Button type="button" onClick={apply}>
-              Apply filters
+              {t("courtFilters_applyFilters")}
             </Button>
           </SheetClose>
         </SheetFooter>
@@ -655,6 +659,7 @@ function MultiSelectField({
   value: readonly string[];
   onChange: (next: string[]) => void;
 }) {
+  const t = useTranslations();
   const anchor = useComboboxAnchor();
   const labelId = `${field.id}-label`;
   const picked = field.options.filter((option) => value.includes(option.value));
@@ -693,7 +698,7 @@ function MultiSelectField({
         {/* The sheet is modal and freezes the body's pointer events; the list, portalled
             there, re-enables its own. */}
         <ComboboxContent anchor={anchor} className="pointer-events-auto">
-          <ComboboxEmpty>Nothing matches.</ComboboxEmpty>
+          <ComboboxEmpty>{t("courtFilters_nothingMatches")}</ComboboxEmpty>
           <ComboboxList>
             {(option: CourtFilterOption) => (
               <ComboboxItem key={option.value} value={option}>

@@ -44,6 +44,7 @@ import { ADVOCATE_PROFILE_NAME } from "@/lib/advocate/content";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * Wireframes of the two screens that HOST access management but are not this
@@ -94,6 +95,7 @@ export function CasesWireframe({
   onApplicationSubmitted?: (result: BailApplicationResult) => void;
   onBondSubmitted?: (result: BailBondResult) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const [selected, setSelected] = React.useState<string[]>([]);
   const [shareOpen, setShareOpen] = React.useState(false);
@@ -156,7 +158,7 @@ export function CasesWireframe({
             <div className="flex min-w-0 flex-col gap-1">
               <h1 className="text-title text-balance font-semibold">{openCase.title}</h1>
               <p className="text-caption text-muted-foreground">
-                <Identifier value={openCase.caseNumber} label="case number" />
+                <Identifier value={openCase.caseNumber} label={t("casesWireframe_caseNumber")} />
                 <span aria-hidden> · </span>
                 {courtText(openCase.court)}
               </p>
@@ -261,7 +263,7 @@ export function CasesWireframe({
                     </p>
                     <Identifier
                       value={BOND_ID}
-                      label="bond number"
+                      label={t("casesWireframe_bondNumber")}
                       className="self-start text-caption text-muted-foreground"
                     />
                   </div>
@@ -411,7 +413,7 @@ export function CasesWireframe({
                     {entry.title}
                   </Label>
                   <p className="text-caption text-muted-foreground">
-                    <Identifier value={entry.caseNumber} label="case number" />
+                    <Identifier value={entry.caseNumber} label={t("casesWireframe_caseNumber")} />
                     <span aria-hidden> · </span>
                     {courtText(entry.court)}
                   </p>

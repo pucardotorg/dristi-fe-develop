@@ -46,6 +46,7 @@ import type {
 import { syncAdvocates } from "./use-case-advocates";
 import { linkSavedDocuments } from "./use-case-documents";
 import { runStepSave, useStepSync } from "./use-step-sync";
+import { useTranslations } from "next-intl";
 
 export type PartyKind = "complainant" | "accused" | "witness";
 
@@ -175,6 +176,7 @@ async function loadFromCase(
 }
 
 export function useCaseParties<K extends PartyKind>(kind: K) {
+  const t = useTranslations();
   const { draft, update } = useFiling();
   const { profile, ready } = useProfile();
   // Read from the case once per visit to the step, before its first save.
@@ -283,7 +285,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
 
       const missing = body ? poaHolderMissing(body) : [];
       if (missing.length) {
-        setError(missingFieldsMessage(missing, "PoA holder's"));
+        setError(missingFieldsMessage(missing, t("useCaseParties_poAHolders")));
         continue;
       }
       const forId = savedParticipantIds(c)[0];

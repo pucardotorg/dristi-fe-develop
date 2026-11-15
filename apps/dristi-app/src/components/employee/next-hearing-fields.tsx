@@ -23,6 +23,7 @@ import {
 import { listingLoad, type DayLoad } from "@/lib/employee/listing-load";
 import { NO_CAUSE_POSTING, type CausePosting } from "@/lib/employee/order-draft";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * The next hearing's date and purpose, set on the cause list (owner, 2026-10-15).
@@ -76,6 +77,7 @@ export function NextDateField({
   labelledBy?: string;
   className?: string;
 }) {
+  const t = useTranslations();
   const today = useCourtToday();
   const session = useHearingSession();
   const [posting, change] = useHearingPosting(hearing);
@@ -83,10 +85,10 @@ export function NextDateField({
   const id = React.useId();
   const listed = posting.next === "list";
   const shown = !listed
-    ? "Not listed again"
+    ? t("nextHearingFields_notListedAgain")
     : posting.nextDate
       ? formatListingDate(posting.nextDate)
-      : "Pick a date";
+      : t("nextHearingFields_pickADate");
   /* This listing's own posting is left out, so re-posting it does not count it twice. */
   const load = React.useMemo(
     () => (open ? listingLoad(today, session.postings, hearing.id) : null),
@@ -104,7 +106,7 @@ export function NextDateField({
             aria-label={
               labelledBy
                 ? undefined
-                : `Next hearing date for item ${hearing.item}, ${causeTitle(hearing)}: ${shown}`
+                : t("nextHearingFields_nextHearingDateForItemItem", { item: String(hearing.item), causeTitle: causeTitle(hearing), shown })
             }
             className={cn(
               "w-full justify-start gap-2 text-left font-normal tabular-nums",
@@ -162,14 +164,14 @@ export function NextDateField({
                   htmlFor={`${id}-none`}
                   className="cursor-pointer text-body-compact font-normal"
                 >
-                  Not listed again
+                  {t("nextHearingFields_notListedAgain")}
                 </Label>
                 <Button
                   type="button"
                   className="ml-auto"
                   onClick={() => setOpen(false)}
                 >
-                  Done
+                  {t("nextHearingFields_done")}
                 </Button>
               </div>
             </div>
@@ -190,6 +192,7 @@ export function NextPurposeField({
   labelledBy?: string;
   className?: string;
 }) {
+  const t = useTranslations();
   const [posting, change] = useHearingPosting(hearing);
   const listed = posting.next === "list";
   return (
@@ -198,9 +201,9 @@ export function NextPurposeField({
         value={listed ? posting.nextPurpose : null}
         disabled={!listed}
         onChange={(nextPurpose) => change({ nextPurpose })}
-        placeholder={listed ? "Choose a purpose" : "Not listed"}
+        placeholder={listed ? t("nextHearingFields_chooseAPurpose") : t("nextHearingFields_notListed")}
         labelledBy={labelledBy}
-        ariaLabel={`Next hearing purpose for item ${hearing.item}, ${causeTitle(hearing)}`}
+        ariaLabel={t("nextHearingFields_nextHearingPurposeForItemItem", { item: String(hearing.item), causeTitle: causeTitle(hearing) })}
       />
     </div>
   );
@@ -271,6 +274,7 @@ export function DayBreakdown({
   day: string | null;
   load: DayLoad | undefined;
 }) {
+  const t = useTranslations();
   return (
     <section
       aria-live="polite"
@@ -280,12 +284,12 @@ export function DayBreakdown({
         <>
           <div className="flex flex-col gap-1">
             <h3 className="text-body-compact font-semibold">
-              Already listed on {formatCourtDay(day)}
+              {t("nextHearingFields_alreadyListedOnFormatCourtDay", { formatCourtDay: formatCourtDay(day) })}
             </h3>
             <p className="text-body-compact text-muted-foreground tabular-nums">
               {load
                 ? `${load.total} ${load.total === 1 ? "hearing" : "hearings"}`
-                : "No hearings yet"}
+                : t("nextHearingFields_noHearingsYet")}
             </p>
           </div>
           {load ? (
@@ -306,7 +310,7 @@ export function DayBreakdown({
         </>
       ) : (
         <p className="text-body-compact text-muted-foreground">
-          Pick a date to see what is already listed on it, by purpose.
+          {t("nextHearingFields_pickADateToSeeWhat")}
         </p>
       )}
     </section>

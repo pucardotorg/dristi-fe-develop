@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { StageBar } from "@/components/bulk/stage";
 import type { CaseStage } from "@/lib/bulk/types";
+import { useTranslations } from "next-intl";
 
 /**
  * The latest batch — pushed in from a client's litigation system or uploaded from Excel —
@@ -27,6 +28,7 @@ export type BulkBatch = {
 
 /** Cases a client's system pushed across for filing, as one batch. */
 export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | null; needAction?: number }) {
+  const t = useTranslations();
   return (
     <Card variant="raised" className="gap-0">
       <CardHeader className="flex flex-row items-start gap-3">
@@ -37,9 +39,9 @@ export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | n
           <DownloadIcon className="size-5" />
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <CardTitle className="text-body font-semibold">Bulk filing</CardTitle>
+          <CardTitle className="text-body font-semibold">{t("bulkImportCard_bulkFiling")}</CardTitle>
           <CardDescription className="text-body-compact">
-            Bring in many cases from your client&apos;s system and file them together.
+            {t("bulkImportCard_bringInManyCasesFromYour")}
           </CardDescription>
         </div>
       </CardHeader>
@@ -48,21 +50,21 @@ export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | n
         {batch === null ? (
           <Empty className="items-start gap-0 border-0 p-0 text-left text-wrap">
             <EmptyHeader className="max-w-none items-start">
-              <EmptyTitle className="text-body font-semibold">No imports yet</EmptyTitle>
+              <EmptyTitle className="text-body font-semibold">{t("bulkImportCard_noImportsYet")}</EmptyTitle>
               <EmptyDescription className="text-body-compact text-wrap">
-                Cases a client&apos;s system sends, or an Excel upload, appear here as a batch.
+                {t("bulkImportCard_casesAClientsSystemSendsOr")}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
           <div className="flex flex-col gap-3 rounded-lg bg-surface-sunken p-4">
             <p className="text-caption font-semibold text-muted-foreground uppercase">
-              Most recent import
+              {t("bulkImportCard_mostRecentImport")}
             </p>
             <div>
               <p className="text-body font-semibold">{batch.client}</p>
               <p className="text-caption text-muted-foreground">
-                {batch.what} · received {batch.receivedOn} · via {batch.via}
+                {t("bulkImportCard_whatReceivedReceivedOnViaVia", { what: batch.what, receivedOn: batch.receivedOn, via: batch.via })}
               </p>
             </div>
             <StageBar counts={batch.counts} />
@@ -74,20 +76,20 @@ export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | n
           <Button asChild>
             <Link href={`${FILINGS_HOME}/bulk/upload`}>
               <UploadIcon data-icon="inline-start" aria-hidden />
-              Upload Excel
+              {t("bulkImportCard_uploadExcel")}
             </Link>
           </Button>
           {batch ? (
             <Button asChild variant="outline">
               <Link href={`${FILINGS_HOME}/bulk/${batch.id}`}>
-                Review batch
+                {t("bulkImportCard_reviewBatch")}
                 <ArrowRightIcon data-icon="inline-end" aria-hidden />
               </Link>
             </Button>
           ) : null}
           <Button asChild variant={batch ? "ghost" : "outline"}>
             <Link href={`${FILINGS_HOME}/bulk`}>
-              {batch ? "All batches" : "Open bulk filing"}
+              {batch ? t("bulkImportCard_allBatches") : t("bulkImportCard_openBulkFiling")}
               {needAction ? (
                 <Badge variant="warning" className="tabular-nums">
                   {needAction} need{needAction === 1 ? "s" : ""} action

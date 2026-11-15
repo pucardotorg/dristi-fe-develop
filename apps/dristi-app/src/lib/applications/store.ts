@@ -288,7 +288,7 @@ export function createDraft(
     status: "draft",
     createdOn: on,
     updatedOn: on,
-    history: [{ on, text: "Draft started" }],
+    history: [{ on, text: "applicationsStore_draftStarted" }],
   };
   liveForms.set(id, liveForm);
   commit();
@@ -330,7 +330,7 @@ export function linkObjection(objectionId: string, toId: string): void {
     ...target,
     objectionId,
     updatedOn: today(),
-    history: [...target.history, { on: today(), text: "Objection filed" }],
+    history: [...target.history, { on: today(), text: "applicationsStore_objectionFiled" }],
   };
   commit();
 }

@@ -32,6 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /* The A-Diary's rows run to several lines, and centring strands the short
  * cells against them. */
@@ -62,18 +63,19 @@ export function SignADiaryTable({
   rows: ADiaryEntry[];
   onOpen: (entry: ADiaryEntry) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>Case</TableHead>
-          <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>Hearing</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>{t("signADiaryTable_case")}</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>{t("signADiaryTable_hearing")}</TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-80 whitespace-normal")}>
-            Proceedings
+            {t("signADiaryTable_proceedings")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Next hearing
+            {t("signADiaryTable_nextHearing")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -91,7 +93,7 @@ export function SignADiaryTable({
               <div className="flex flex-col gap-1">
                 <span>{causeTitle(entry)}</span>
                 <span className="text-caption text-muted-foreground">
-                  <Identifier value={entry.caseNumber} label="case number" />
+                  <Identifier value={entry.caseNumber} label={t("signADiaryTable_caseNumber")} />
                 </span>
               </div>
             </TableCell>
@@ -101,7 +103,7 @@ export function SignADiaryTable({
               ) : (
                 /* Blank, as `ADY-03a` asks — said for a screen reader, which would
                    otherwise read nothing and leave the row ambiguous. */
-                <span className="sr-only">Passed outside a hearing</span>
+                <span className="sr-only">{t("signADiaryTable_passedOutsideAHearing")}</span>
               )}
             </TableCell>
             <TableCell className={cn(cellClass, "min-w-80 whitespace-normal")}>
@@ -112,7 +114,7 @@ export function SignADiaryTable({
                 className={rowOpenerClass}
               >
                 <span className="sr-only">
-                  Read and correct the entry in {courtText(entry.caseNumber)}.{" "}
+                  {t("signADiaryTable_readAndCorrectTheEntryIn", { courtText: courtText(entry.caseNumber) })}
                 </span>
                 <span className="line-clamp-2">{entry.business}</span>
               </button>

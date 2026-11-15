@@ -89,6 +89,7 @@ import {
 } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { ConfirmMark, IrreversibleNote, notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 type Tab = PendingOrderStage | "all";
 
@@ -128,6 +129,7 @@ export function PendingOrdersScreen({
   /** `?tab=` — the editor's Sent for signing returns to Drafting, not the seat's move. */
   initialTab?: PendingOrderStage;
 } = {}) {
+  const t = useTranslations();
   const router = useRouter();
   const seat = useCourtRole();
   const { court, profile } = useCourt();
@@ -171,7 +173,7 @@ export function PendingOrdersScreen({
       ...row,
       key: companionKey(row.key),
       companionOf: row.key,
-      typeLabel: rules.companion?.label ?? "Roznama",
+      typeLabel: rules.companion?.label ?? t("pendingOrdersScreen_roznama"),
       stage:
         signing[companionKey(row.key)] === "signed"
           ? "triggered"
@@ -255,7 +257,7 @@ export function PendingOrdersScreen({
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Pending orders
+          {t("pendingOrdersScreen_pendingOrders")}
         </h1>
         <p className="text-body text-muted-foreground">
           {move === "awaiting-signature" && awaitingCompanions > 0
@@ -277,7 +279,7 @@ export function PendingOrdersScreen({
           <div className="overflow-x-auto border-b border-hairline">
             <TabsList
               variant="line"
-              aria-label="Which orders to show"
+              aria-label={t("pendingOrdersScreen_whichOrdersToShow")}
               className="h-10 w-max min-w-full justify-start rounded-none"
             >
               {[
@@ -312,8 +314,8 @@ export function PendingOrdersScreen({
                       <Checkbox
                         aria-label={
                           signer
-                            ? "Select the orders awaiting your signature in this list"
-                            : "Select the orders with order data to fill in this list"
+                            ? t("pendingOrdersScreen_selectTheOrdersAwaitingYourSignature")
+                            : t("pendingOrdersScreen_selectTheOrdersWithOrderData")
                         }
                         disabled={signable.length === 0}
                         checked={
@@ -333,33 +335,33 @@ export function PendingOrdersScreen({
                   <TableHead
                     className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}
                   >
-                    Case name
+                    {t("pendingOrdersScreen_caseName")}
                   </TableHead>
                   <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-                    Case number
+                    {t("pendingOrdersScreen_caseNumber")}
                   </TableHead>
                   <TableHead
                     className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}
                   >
-                    Title
+                    {t("pendingOrdersScreen_title")}
                   </TableHead>
                   {showType ? (
                     <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-                      Type
+                      {t("pendingOrdersScreen_type")}
                     </TableHead>
                   ) : null}
                   {showText ? (
                     <TableHead
                       className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}
                     >
-                      Order
+                      {t("pendingOrdersScreen_order")}
                     </TableHead>
                   ) : null}
                   <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-                    Status
+                    {t("pendingOrdersScreen_status")}
                   </TableHead>
                   <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>
-                    <span className="sr-only">Action</span>
+                    <span className="sr-only">{t("pendingOrdersScreen_action")}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -377,7 +379,7 @@ export function PendingOrdersScreen({
                       <TableCell className={cn(TABLE_CELL, "w-px")}>
                         {pickable(row) ? (
                           <Checkbox
-                            aria-label={`Select ${row.heading}`}
+                            aria-label={t("pendingOrdersScreen_selectHeading", { heading: row.heading })}
                             checked={selected.has(row.key)}
                             onCheckedChange={() => toggle(row.key)}
                           />
@@ -397,14 +399,14 @@ export function PendingOrdersScreen({
                       </button>
                     </TableCell>
                     <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                      <Identifier value={row.caseNumber} label="case number" />
+                      <Identifier value={row.caseNumber} label={t("pendingOrdersScreen_caseNumberLabel")} />
                     </TableCell>
                     <TableCell
                       className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}
                     >
                       {/* The order's title (`PND-03`, `TIT-06`) — where it came from is no
                           longer shown. */}
-                      {row.title ?? "Order"}
+                      {row.title ?? t("pendingOrdersScreen_order")}
                     </TableCell>
                     {showType ? (
                       <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
@@ -420,7 +422,7 @@ export function PendingOrdersScreen({
                       >
                         {orderTextPreview(
                           drafts[editorDraftKey(row.key)]?.body?.text ?? "",
-                        ) || "No text yet"}
+                        ) || t("pendingOrdersScreen_noTextYet")}
                       </TableCell>
                     ) : null}
                     {/* Signature and order data, two pills side by side in one column
@@ -439,10 +441,10 @@ export function PendingOrdersScreen({
                         }
                       >
                         {row.stage === "triggered"
-                          ? "Data triggered"
+                          ? t("pendingOrdersScreen_dataTriggered")
                           : row.workflowComplete
-                            ? "Data complete"
-                            : "Data to fill"}
+                            ? t("pendingOrdersScreen_dataComplete")
+                            : t("pendingOrdersScreen_dataToFill")}
                       </Badge>
                       )}
                       </div>
@@ -460,8 +462,8 @@ export function PendingOrdersScreen({
                       >
                         {row.companionOf
                           ? signer && row.stage === "awaiting-signature"
-                            ? "Read and sign"
-                            : "View"
+                            ? t("pendingOrdersScreen_readAndSign")
+                            : t("pendingOrdersScreen_view")
                           : actionLabel(move, tab, row.stage)}
                       </Button>
                     </TableCell>
@@ -480,8 +482,8 @@ export function PendingOrdersScreen({
             >
               {notice ||
                 (chosen.length
-                  ? `${chosen.length} selected.`
-                  : "Select orders to add the same items to their order data.")}
+                  ? t("pendingOrdersScreen_lengthSelected", { length: String(chosen.length) })
+                  : t("pendingOrdersScreen_selectOrdersToAddTheSame"))}
             </p>
             <Button
               type="button"
@@ -491,7 +493,7 @@ export function PendingOrdersScreen({
                 setAskItems(true);
               }}
             >
-              Add order items
+              {t("pendingOrdersScreen_addOrderItems")}
             </Button>
           </div>
         ) : null}
@@ -500,8 +502,8 @@ export function PendingOrdersScreen({
           <div className="flex flex-col gap-3 border-t border-hairline pt-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-body-compact text-muted-foreground">
               {chosen.length
-                ? `${chosen.length} selected.`
-                : "Select the orders to sign, or open one to read it first."}
+                ? t("pendingOrdersScreen_lengthSelected", { length: String(chosen.length) })
+                : t("pendingOrdersScreen_selectTheOrdersToSignOr")}
             </p>
             <Button
               type="button"
@@ -509,8 +511,8 @@ export function PendingOrdersScreen({
               onClick={() => setAskSign(true)}
             >
               {chosen.length === 0
-                ? "Sign"
-                : `Sign ${chosenWhat}`}
+                ? t("pendingOrdersScreen_sign")
+                : t("pendingOrdersScreen_signChosenWhat", { chosenWhat })}
             </Button>
           </div>
         ) : null}
@@ -540,9 +542,7 @@ export function PendingOrdersScreen({
               {companionName} · {reading?.heading}
             </DialogTitle>
             <DialogDescription>
-              {reading?.caseNumber} · from its order
-              {reading?.title ? ` “${reading.title}”` : ""}, signed and triggered.
-              Signing it doesn&apos;t trigger workflows.
+              {t("pendingOrdersScreen_caseNumberFromItsOrderValue", { caseNumber: (reading?.caseNumber) ?? "", value: reading?.title ? ` “${reading.title}”` : "" })}
             </DialogDescription>
           </DialogHeader>
           {/* Editable until it is signed, by the order data filler or the order signer
@@ -568,12 +568,12 @@ export function PendingOrdersScreen({
                 reading?.companionOf
                   ? drafts[editorDraftKey(reading.companionOf)]
                   : undefined,
-              ) || "No text."}
+              ) || t("pendingOrdersScreen_noText")}
             </div>
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setReading(null)}>
-              Close
+              {t("common_close")}
             </Button>
             {signer && reading?.stage === "awaiting-signature" ? (
               <Button
@@ -582,10 +582,10 @@ export function PendingOrdersScreen({
                   if (!reading) return;
                   markOrdersSigned([reading.key]);
                   setReading(null);
-                  notify.success(`${companionName} signed.`);
+                  notify.success(t("pendingOrdersScreen_companionNameSigned", { companionName }));
                 }}
               >
-                Sign {companionName}
+                {t("pendingOrdersScreen_signCompanionName", { companionName })}
               </Button>
             ) : null}
           </DialogFooter>
@@ -599,9 +599,9 @@ export function PendingOrdersScreen({
             <AlertDialogTitle>
               {chosen.length === 1
                 ? chosenCompanions
-                  ? `Sign this ${companionName}?`
-                  : "Sign this order?"
-                : `Sign ${chosenWhat}?`}
+                  ? t("pendingOrdersScreen_signThisCompanionName", { companionName })
+                  : t("pendingOrdersScreen_signThisOrder")
+                : t("pendingOrdersScreen_signChosenWhatQuestion", { chosenWhat })}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {chosenOrders ? (
@@ -614,23 +614,22 @@ export function PendingOrdersScreen({
               ) : null}
               {chosenCompanions ? (
                 <span className="block">
-                  Each {companionName} is signed on its own, and joins the case
-                  record.
+                  {t("pendingOrdersScreen_eachCompanionNameIsSignedOn", { companionName })}
                 </span>
               ) : null}
-              <IrreversibleNote>This cannot be reversed.</IrreversibleNote>
+              <IrreversibleNote>{t("pendingOrdersScreen_thisCannotBeReversed")}</IrreversibleNote>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogCancel>{t("common_back")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 markOrdersSigned(chosen.map((row) => row.key));
                 setSelected(new Set());
-                notify.success(`Signed: ${chosenWhat}.`);
+                notify.success(t("pendingOrdersScreen_signedChosenWhat", { chosenWhat }));
               }}
             >
-              Sign
+              {t("pendingOrdersScreen_sign")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -653,10 +652,11 @@ function headline(
 }
 
 function SignatureBadge({ stage }: { stage: PendingOrderStage }) {
-  if (stage === "drafting") return <Badge variant="secondary">Not sent</Badge>;
+  const t = useTranslations();
+  if (stage === "drafting") return <Badge variant="secondary">{t("pendingOrdersScreen_notSent")}</Badge>;
   if (stage === "awaiting-signature")
-    return <Badge variant="warning">Awaiting signature</Badge>;
-  return <Badge variant="success">Signed</Badge>;
+    return <Badge variant="warning">{t("pendingOrdersScreen_awaitingSignature")}</Badge>;
+  return <Badge variant="success">{t("pendingOrdersScreen_signed")}</Badge>;
 }
 
 /**
@@ -678,6 +678,7 @@ function actionLabel(
 }
 
 function PendingEmpty({ tab }: { tab: Tab }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -686,21 +687,20 @@ function PendingEmpty({ tab }: { tab: Tab }) {
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {tab === "awaiting-signature"
-            ? "Nothing is awaiting a signature"
+            ? t("pendingOrdersScreen_nothingIsAwaitingASignature")
             : tab === "workflow-to-fill"
-              ? "No order data to fill"
+              ? t("pendingOrdersScreen_noOrderDataToFill")
               : tab === "triggered"
-                ? "No order data triggered yet"
-                : "No orders pending"}
+                ? t("pendingOrdersScreen_noOrderDataTriggeredYet")
+                : t("pendingOrdersScreen_noOrdersPending")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
-          Orders typed on the full-page editor appear here as soon as they are
-          started, and stay until their order data is triggered.
+          {t("pendingOrdersScreen_ordersTypedOnTheFullPage")}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button asChild variant="outline">
-          <Link href="/employee/hearings">Go to today&apos;s hearings</Link>
+          <Link href="/employee/hearings">{t("pendingOrdersScreen_goToTodaysHearings")}</Link>
         </Button>
       </EmptyContent>
     </Empty>

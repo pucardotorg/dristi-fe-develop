@@ -44,6 +44,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { DateField } from "@/components/filing/date-field";
 import { PrefixInput, TextField } from "@/components/filing/inputs";
+import { useTranslations } from "next-intl";
 
 /* ───────────────────────────── Pacing ───────────────────────────── */
 
@@ -89,11 +90,12 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
  * nothing the label does not.
  */
 function WhyFlagged({ defect }: { defect: Defect }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-4">
       {defect.note.trim() ? (
         <div className="flex flex-col gap-1.5">
-          <Eyebrow>Scrutiny officer&apos;s comment</Eyebrow>
+          <Eyebrow>{t("defectCard_scrutinyOfficersComment")}</Eyebrow>
           <p className="rounded-md bg-surface-sunken p-3 text-body-compact text-foreground">
             {defect.note}
           </p>
@@ -171,6 +173,7 @@ export function DefectCard({
   onBlurCapture?: (event: React.FocusEvent<HTMLElement>) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   const resolved = defectState(defect, value) === "resolved";
   const isDoc = defect.target.kind === "doc";
 
@@ -347,7 +350,7 @@ export function DefectCard({
             {/* The line is held open before the record catches up (it can lag the save by a
                 beat), so the settled card does not grow a line after it has eased shut. */}
             <p className="min-h-5 text-body-compact text-success-ink">
-              {resolutionLabel(defect, value) || (isDoc ? "Document replaced" : "Corrected")}
+              {resolutionLabel(defect, value) || (isDoc ? t("defectCard_documentReplaced") : t("defectCard_corrected"))}
             </p>
             {/* What the officer will read with the kept value, so the advocate sees their
                 override as it was recorded. */}
@@ -373,7 +376,7 @@ export function DefectCard({
               className="-my-1 shrink-0 text-muted-foreground"
             >
               <Undo2Icon data-icon="inline-start" aria-hidden />
-              Undo
+              {t("defectCard_undo")}
             </Button>
           ) : null}
         </div>
@@ -403,7 +406,7 @@ export function DefectCard({
           </p>
         </div>
         <span className="shrink-0 text-body-compact tabular-nums text-muted-foreground">
-          {index} of {total}
+          {t("defectCard_indexOfTotal", { index: String(index), total: String(total) })}
         </span>
       </div>
 
@@ -414,15 +417,15 @@ export function DefectCard({
           {isDoc && uploading ? (
             <div role="status" className="flex flex-col gap-2">
               <p className="truncate text-body-compact text-muted-foreground">
-                Uploading <span className="font-medium text-foreground">{file?.name}</span>…
+                {t.rich("defectCard_uploadingName", { name: (file?.name) ?? "", span: (chunks) => <span className="font-medium text-foreground">{chunks}</span> })}
               </p>
-              <Progress value={uploadPct} aria-label="Upload progress" />
+              <Progress value={uploadPct} aria-label={t("defectCard_uploadProgress")} />
             </div>
           ) : isDoc ? (
             <>
               {file ? (
                 <p className="text-body-compact text-muted-foreground">
-                  On file: <span className="text-foreground">{file.name}</span>
+                  {t.rich("defectCard_onFileName", { name: file.name, span: (chunks) => <span className="text-foreground">{chunks}</span> })}
                 </p>
               ) : null}
               <Button
@@ -433,10 +436,10 @@ export function DefectCard({
                 className="w-fit"
               >
                 <RefreshCwIcon data-icon="inline-start" aria-hidden />
-                Replace this document
+                {t("defectCard_replaceThisDocument")}
               </Button>
               <p className="text-body-compact text-muted-foreground">
-                Replacing the scan does not re-read it — no other field changes.
+                {t("defectCard_replacingTheScanDoesNotRe")}
               </p>
             </>
           ) : (
@@ -446,7 +449,7 @@ export function DefectCard({
                 <>
                   <Field className="gap-2">
                     <FieldLabel htmlFor={`why-${defect.n}`} className="text-body-compact">
-                      Why the filed value is right
+                      {t("defectCard_whyTheFiledValueIsRight")}
                     </FieldLabel>
                     <Textarea
                       id={`why-${defect.n}`}
@@ -456,7 +459,7 @@ export function DefectCard({
                       rows={3}
                     />
                     <FieldDescription>
-                      The scrutiny officer reads this beside the value.
+                      {t("defectCard_theScrutinyOfficerReadsThisBeside")}
                     </FieldDescription>
                   </Field>
                   <div className="flex flex-wrap items-center gap-2">
@@ -472,7 +475,7 @@ export function DefectCard({
                       disabled={!reason.trim()}
                       className="flex-1"
                     >
-                      Keep as filed
+                      {t("defectCard_keepAsFiled")}
                     </Button>
                     <Button
                       type="button"
@@ -483,7 +486,7 @@ export function DefectCard({
                       }}
                       className="shrink-0 text-muted-foreground"
                     >
-                      Cancel
+                      {t("common_cancel")}
                     </Button>
                   </div>
                 </>
@@ -502,7 +505,7 @@ export function DefectCard({
                   disabled={!dirty || atReturn}
                   className="flex-1"
                 >
-                  Save correction
+                  {t("defectCard_saveCorrection")}
                 </Button>
                 {/* Never forced to edit a value the advocate believes is right. Only
                     offered while the value is still the one scrutiny saw. */}
@@ -514,7 +517,7 @@ export function DefectCard({
                     onClick={() => setKeeping(true)}
                     className="shrink-0 text-muted-foreground"
                   >
-                    Keep as filed
+                    {t("defectCard_keepAsFiled")}
                   </Button>
                 )}
               </div>

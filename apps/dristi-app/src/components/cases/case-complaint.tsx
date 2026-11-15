@@ -41,6 +41,7 @@ import {
 } from "@/lib/cases/complaint";
 import { type CaseRecord } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * Same region as Case file — numbered index and the selected record share
@@ -62,6 +63,7 @@ export function CaseComplaint({
   record: CaseRecord;
   partId: string;
 }) {
+  const t = useTranslations();
   const router = useCaseRouter();
   const tree = complaintTree(record.id);
   const selected = findNode(tree, partId);
@@ -98,11 +100,10 @@ export function CaseComplaint({
       <Empty className="border border-dashed border-border">
         <EmptyHeader>
           <EmptyTitle className="text-title-s font-semibold">
-            Complaint is not in this fixture
+            {t("caseComplaint_complaintIsNotInThisFixture")}
           </EmptyTitle>
           <EmptyDescription className="text-body">
-            Structured complaint details are filed for the dummy Section 138
-            case. Open Sunil Varghese v. Anand Traders to read them.
+            {t("caseComplaint_structuredComplaintDetailsAreFiledFor")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -138,7 +139,7 @@ export function CaseComplaint({
             variant="outline"
             className="w-full shrink-0 sm:w-auto md:hidden"
           >
-            Browse complaint
+            {t("caseComplaint_browseComplaint")}
           </Button>
         </SheetTrigger>
         <SheetContent
@@ -147,14 +148,14 @@ export function CaseComplaint({
         >
           <SheetHeader>
             <SheetTitle className="text-title-s font-semibold">
-              Complaint
+              {t("caseComplaint_complaint")}
             </SheetTitle>
             <SheetDescription>
-              Choose a record to open.
+              {t("caseComplaint_chooseARecordToOpen")}
             </SheetDescription>
           </SheetHeader>
           <div className="px-4 pb-6">
-            <nav aria-label="Complaint">
+            <nav aria-label={t("caseComplaint_complaint")}>
               <ComplaintIndex {...indexProps} />
             </nav>
           </div>
@@ -163,8 +164,8 @@ export function CaseComplaint({
 
       <Card className="flex min-h-[calc(100svh-theme(spacing.14)-theme(spacing.6))] flex-col overflow-hidden py-0 hover:bg-card md:min-h-[calc(100svh-theme(spacing.14)-theme(spacing.8))] md:flex-row md:items-stretch md:gap-0">
         <div className="hidden w-80 shrink-0 flex-col gap-4 p-6 md:flex">
-          <h2 className="text-title-s font-semibold">Complaint</h2>
-          <nav aria-label="Complaint">
+          <h2 className="text-title-s font-semibold">{t("caseComplaint_complaint")}</h2>
+          <nav aria-label={t("caseComplaint_complaint")}>
             <ComplaintIndex {...indexProps} />
           </nav>
         </div>
@@ -215,6 +216,7 @@ function ComplaintIndex({
   onFolderOpenChange: (id: string, open: boolean) => void;
   depth?: number;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col">
       {nodes.map((node) => (
@@ -263,7 +265,7 @@ function ComplaintIndex({
                       depthPad[Math.min(depth + 1, depthPad.length - 1)]
                     )}
                   >
-                    None in this file yet
+                    {t("caseComplaint_noneInThisFileYet")}
                   </p>
                 )}
               </CollapsibleContent>

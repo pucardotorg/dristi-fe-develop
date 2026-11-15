@@ -42,6 +42,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 /**
  * One filed field = one `DescriptionRow`, made interactive.
@@ -65,6 +66,7 @@ export function FieldRow({
   aiOn: boolean;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const t = useTranslations();
   const { docById, returned } = useScrutinyCase();
   const flag = controller.flags[field.id];
   const selected = controller.selectedId === field.id;
@@ -74,11 +76,11 @@ export function FieldRow({
      behind a grey hint (owner, 2026-10-28). */
   const back = returned?.items.find((item) => item.fieldId === field.id);
   const flagTitle = flag
-    ? "Edit this flag"
+    ? t("fieldRow_editThisFlag")
     : back
-      ? "Raise again"
+      ? t("fieldRow_raiseAgain")
       : field.docrow
-        ? "Flag document"
+        ? t("fieldRow_flagDocument")
         : "Flag";
 
   return (
@@ -161,16 +163,12 @@ export function FieldRow({
                   <span className="inline-flex size-8 shrink-0 items-center justify-center text-muted-foreground">
                     <FileTextIcon className="size-4" aria-hidden="true" />
                     <span className="sr-only">
-                      {`Read from Doc ${docById[field.doc]?.no}, ${docById[field.doc]?.name}${
-                        field.srcnote ? ` — ${field.srcnote}` : ""
-                      }`}
+                      {t("fieldRow_readFromDocNoNameValue", { no: String(docById[field.doc]?.no), name: docById[field.doc]?.name, value: field.srcnote ? ` — ${field.srcnote}` : "" })}
                     </span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {`Read from Doc ${docById[field.doc]?.no}, ${docById[field.doc]?.name}${
-                    field.srcnote ? ` — ${field.srcnote}` : ""
-                  }`}
+                  {t("fieldRow_readFromDocNoNameValue", { no: String(docById[field.doc]?.no), name: docById[field.doc]?.name, value: field.srcnote ? ` — ${field.srcnote}` : "" })}
                 </TooltipContent>
               </Tooltip>
             ) : null}
@@ -231,6 +229,7 @@ const NOT_PROVIDED = "Not provided";
 
 /** The filed value. A raised item never replaces it — the advocate makes the fix. */
 function ValueLines({ field }: { field: FlatField }) {
+  const t = useTranslations();
   /*
    * Prose (the affidavit, the prayer) stops at four lines with Show more. Printed whole,
    * the affidavit alone ran ~1,400px in the one scrolling fields panel and pushed the
@@ -269,7 +268,7 @@ function ValueLines({ field }: { field: FlatField }) {
           aria-expanded={expanded}
           onClick={() => setExpanded((open) => !open)}
         >
-          {expanded ? "Show less" : "Show more"}
+          {expanded ? t("fieldRow_showLess") : t("fieldRow_showMore")}
         </Button>
       ) : null}
     </div>
@@ -296,6 +295,7 @@ function Hints({
   flag?: FlagType;
   aiOn: boolean;
 }) {
+  const t = useTranslations();
   // A returned row says so in its own value and record, so no hint line repeats it.
   const { docById } = useScrutinyCase();
   const lines: React.ReactNode[] = [];
@@ -314,21 +314,21 @@ function Hints({
           alt=""
           className="h-8 w-12 rounded-sm object-cover"
         />
-        <span className="tabular-nums">Doc {thumbDoc.no}</span>
+        <span className="tabular-nums">{t("fieldRow_docNo", { no: String(thumbDoc.no) })}</span>
       </div>,
     );
   }
   if (aiOn && field.docread && !flagged) {
     lines.push(
       <HintLine key="docread" tone="warning" icon={<TriangleAlertIcon />}>
-        Document shows a different value.
+        {t("fieldRow_documentShowsADifferentValue")}
       </HintLine>,
     );
   }
   if (aiOn && field.ocrfail && !flagged) {
     lines.push(
       <HintLine key="ocrfail" tone="warning" icon={<TriangleAlertIcon />}>
-        Couldn&rsquo;t read this in the document.
+        {t("fieldRow_couldntReadThisInTheDocument")}
       </HintLine>,
     );
   }
@@ -398,6 +398,7 @@ function HintLine({
  * the row's flag raises it again.
  */
 function ReturnedRecord({ item }: { item: ReturnedItem }) {
+  const t = useTranslations();
   return (
     /* Paper on the tinted row: a card-white well with a hairline, so the record reads as
        one object on the row rather than a second tint. No buttons in here — selecting
@@ -406,13 +407,13 @@ function ReturnedRecord({ item }: { item: ReturnedItem }) {
        under every ask (owner, 2026-10-28). */
     <div className="col-span-full my-1 rounded-lg border border-hairline bg-card p-3">
       <RecordList>
-        <RecordRow label="You asked">
+        <RecordRow label={t("fieldRow_youAsked")}>
           <span className="break-words">{item.note}</span>
         </RecordRow>
         {/* A corrected value shows its before in the value itself; a document's before
             is a file, so it is said here. Kept as filed has no before. */}
         {item.answer === "replaced" ? (
-          <RecordRow label="Before">
+          <RecordRow label={t("fieldRow_before")}>
             <span className="text-muted-foreground line-through decoration-muted-foreground">
               {item.was}
             </span>
@@ -445,6 +446,7 @@ export function RaisedItem({
   controller: ScrutinyController;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const t = useTranslations();
   const { docById, docRow, fieldById } = useScrutinyCase();
   const partnerId = flag.linkedTo ?? flag.linkedFrom ?? null;
   const partner = partnerId ? fieldById[partnerId] : undefined;
@@ -476,7 +478,7 @@ export function RaisedItem({
     >
       <div className="flex items-center gap-2">
         <Badge variant="destructive">
-          {field.docrow ? "Document issue" : "Flag"}
+          {field.docrow ? t("fieldRow_documentIssue") : t("fieldRow_flag")}
         </Badge>
         <span className="ms-auto -my-1 flex shrink-0 gap-0.5 opacity-0 transition-opacity group-hover/frow:opacity-100 group-focus-within/frow:opacity-100 group-aria-selected/frow:opacity-100 [@media(hover:none)]:opacity-100">
           {/* `xs` is the record's own density — two words inside a well inside a row —
@@ -490,7 +492,7 @@ export function RaisedItem({
               controller.openComposer(field.id);
             }}
           >
-            Edit
+            {t("fieldRow_edit")}
           </Button>
           <Button
             variant="destructive-ghost"
@@ -505,56 +507,55 @@ export function RaisedItem({
                * behind, and offer the second removal rather than performing it.
                */
               notify.neutral(
-                `Flag removed. The document issue on ${docName(
+                t("fieldRow_flagRemovedTheDocumentIssueOn", { docName: docName(
                   fieldById[stranded]?.docrow ?? "",
                   docById,
-                )} stays.`,
+                ) }),
                 {
                   action: {
-                    label: "Remove it too",
+                    label: t("fieldRow_removeItToo"),
                     onClick: () => controller.removeFlag(stranded),
                   },
                 },
               );
             }}
           >
-            Remove
+            {t("fieldRow_remove")}
           </Button>
         </span>
       </div>
 
       <RecordList>
         {field.docrow && flag.reason ? (
-          <RecordRow label="Reason">{flag.reason}</RecordRow>
+          <RecordRow label={t("fieldRow_reason")}>{flag.reason}</RecordRow>
         ) : null}
 
         {flag.comment ? (
-          <RecordRow label="FSO’s comment">
+          <RecordRow label={t("fieldRow_fsosComment")}>
             <span className="break-words">{flag.comment}</span>
           </RecordRow>
         ) : silent ? (
-          <RecordRow label="FSO’s comment">
-            <span className="text-warning-ink">{SILENT_FALLBACK}</span>
+          <RecordRow label={t("fieldRow_fsosComment")}>
+            <span className="text-warning-ink">{t(SILENT_FALLBACK)}</span>
           </RecordRow>
         ) : null}
 
         {reuploadApplies ? (
-          <RecordRow label="Re-upload requested">
+          <RecordRow label={t("fieldRow_reUploadRequested")}>
             {partner ? (
               <RecordLink onClick={() => onGoToItem(partner.id)}>
-                Yes — {docName(partner.docrow ?? "", docById)}
-                {controller.flags[partner.id]?.reason
+                {t("fieldRow_yesDocNameValue", { docName: docName(partner.docrow ?? "", docById), value: controller.flags[partner.id]?.reason
                   ? ` · ${controller.flags[partner.id]?.reason}`
-                  : ""}
+                  : "" })}
               </RecordLink>
             ) : (
-              <span className="text-muted-foreground">No</span>
+              <span className="text-muted-foreground">{t("fieldRow_no")}</span>
             )}
           </RecordRow>
         ) : null}
 
         {field.docrow && partner ? (
-          <RecordRow label="Raised with">
+          <RecordRow label={t("fieldRow_raisedWith")}>
             <RecordLink onClick={() => onGoToItem(partner.id)}>
               {partner.label}
             </RecordLink>
@@ -566,4 +567,4 @@ export function RaisedItem({
 }
 
 /** Defensive only — D1 stops a new item ever reaching it. */
-const SILENT_FALLBACK = "No note — the advocate won't know what to fix.";
+const SILENT_FALLBACK = "fieldRow_noNoteTheAdvocateWontKnow";

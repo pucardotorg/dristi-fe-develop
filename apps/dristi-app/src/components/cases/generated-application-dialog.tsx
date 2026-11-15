@@ -36,6 +36,8 @@ import { type ApplicationDraft } from "@/lib/cases/application-draft";
 import { submissionTypeLabel } from "@/lib/cases/applications";
 import { formatCaseDate, type CaseRecord } from "@/lib/cases/types";
 import { useCourtLocalized } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * What Generate application produces, read before signing. The application
@@ -52,7 +54,7 @@ export function GeneratedApplicationDialog({
   draft,
   record,
   onAddSignature,
-  signLabel = "Add signature",
+  signLabel = "generatedApplicationDialog_addSignature",
   onReturnFocus,
   side,
 }: {
@@ -67,6 +69,7 @@ export function GeneratedApplicationDialog({
   /** The CTA's words. A clerk sends it to be signed rather than signing it. */
   signLabel?: string;
 }) {
+  const t = useTranslations();
   const document = useMemo(
     () => buildGeneratedApplication(draft, record, side),
     [draft, record, side]
@@ -93,10 +96,10 @@ export function GeneratedApplicationDialog({
         <div className="flex shrink-0 items-center gap-2 border-b border-hairline py-3 pr-3 pl-6">
           <div className="min-w-0 flex-1">
             <DialogTitle className="text-body-compact font-semibold text-pretty sm:truncate">
-              {objection ? "Generated objection" : "Generated application"}
+              {objection ? t("generatedApplicationDialog_generatedObjection") : t("generatedApplicationDialog_generatedApplication")}
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Check the generated document before adding a signature.
+              {t("generatedApplicationDialog_checkTheGeneratedDocumentBeforeAdding")}
             </DialogDescription>
           </div>
           {/* The plain-text copy: there is no rendered PDF behind it. */}
@@ -107,19 +110,19 @@ export function GeneratedApplicationDialog({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="Download"
+                  aria-label={t("generatedApplicationDialog_download")}
                   onClick={() => downloadGeneratedApplication(draft, record, side)}
                 >
                   <DownloadIcon aria-hidden />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Download</TooltipContent>
+              <TooltipContent side="bottom">{t("generatedApplicationDialog_download")}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <DialogClose asChild>
             <Button type="button" variant="ghost" size="icon-sm">
               <XIcon aria-hidden />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t("common_close")}</span>
             </Button>
           </DialogClose>
         </div>
@@ -129,18 +132,18 @@ export function GeneratedApplicationDialog({
             <div className="flex max-h-72 shrink-0 flex-col overflow-y-auto border-b border-hairline p-4 @3xl/record:max-h-none @3xl/record:w-80 @3xl/record:border-r @3xl/record:border-b-0">
               <div className="flex flex-col divide-y divide-hairline">
                 <FactGroup>
-                  <Fact label={objection ? "Filing" : "Application type"}>
+                  <Fact label={objection ? t("generatedApplicationDialog_filing") : t("generatedApplicationDialog_applicationType")}>
                     {submissionTypeLabel(draft.type)}
                   </Fact>
                 </FactGroup>
                 <FactGroup columns={2}>
-                  <Fact label="Case">
-                    <Identifier value={record.caseNumber} label="case number" />
+                  <Fact label={t("generatedApplicationDialog_case")}>
+                    <Identifier value={record.caseNumber} label={t("generatedApplicationDialog_caseNumber")} />
                   </Fact>
-                  <Fact label="Generated on">
+                  <Fact label={t("generatedApplicationDialog_generatedOn")}>
                     <span className="tabular-nums">{generatedOn}</span>
                   </Fact>
-                  <Fact label="Filed for">{document.filedFor}</Fact>
+                  <Fact label={t("generatedApplicationDialog_filedFor")}>{document.filedFor}</Fact>
                 </FactGroup>
               </div>
             </div>
@@ -159,7 +162,7 @@ export function GeneratedApplicationDialog({
 
         <footer className="flex shrink-0 flex-col border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:justify-end">
           <Button type="button" className="w-full sm:w-auto" onClick={onAddSignature}>
-            {signLabel}
+            {translateText(t, signLabel)}
           </Button>
         </footer>
       </FlowDialogContent>
@@ -185,6 +188,7 @@ export function GeneratedApplicationDocument({
   /** Who signed it, once it is signed; the slot stays empty until then. */
   signedBy?: string;
 }) {
+  const t = useTranslations();
   // Written in Kerala's terms; re-voiced here for the selected court.
   const document = useCourtLocalized(storedDocument);
   return (
@@ -201,19 +205,19 @@ export function GeneratedApplicationDocument({
         <p className="text-body font-semibold text-balance">{document.court}</p>
         <div className="flex flex-col gap-1">
           <p className="text-body font-semibold">
-            Case No: <span className="tabular-nums">{document.caseNumber}</span>
+            {t.rich("generatedApplicationDialog_caseNoCaseNumber", { caseNumber: document.caseNumber, span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
           </p>
           <p className="text-body font-semibold">
-            In the matter of: {document.matter}
+            {t("generatedApplicationDialog_inTheMatterOfMatter", { matter: document.matter })}
           </p>
           <p className="text-body font-semibold">
-            Date: <span className="tabular-nums">{generatedOn}</span>
+            {t.rich("generatedApplicationDialog_dateGeneratedOn", { generatedOn, span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
           </p>
         </div>
       </header>
 
       <table className="w-full border-collapse text-body">
-        <caption className="sr-only">Parties</caption>
+        <caption className="sr-only">{t("generatedApplicationDialog_parties")}</caption>
         <tbody>
           {document.parties.map((group, groupIndex) => (
             <Fragment key={groupIndex}>
@@ -251,7 +255,7 @@ export function GeneratedApplicationDocument({
           ))}
         </DescriptionList>
       ) : document.details.text.trim() ? null : (
-        <p className="text-body text-paper-muted-foreground">Nothing entered.</p>
+        <p className="text-body text-paper-muted-foreground">{t("generatedApplicationDialog_nothingEntered")}</p>
       )}
 
       {/* Application details is the body of the application, so it reads as
@@ -268,12 +272,12 @@ export function GeneratedApplicationDocument({
           {signedBy ? (
             <div className="mb-2 flex h-16 w-56 max-w-full flex-col items-center justify-center rounded-lg border border-paper-border">
               <p className="text-body-compact font-semibold">{signedBy}</p>
-              <p className="text-caption text-paper-muted-foreground">Signed</p>
+              <p className="text-caption text-paper-muted-foreground">{t("generatedApplicationDialog_signed")}</p>
             </div>
           ) : (
             <div className="mb-2 flex h-16 w-56 max-w-full items-center justify-center rounded-lg border border-dashed border-paper-border">
               <p className="text-body-compact text-paper-muted-foreground">
-                Signature pending
+                {t("generatedApplicationDialog_signaturePending")}
               </p>
             </div>
           )}

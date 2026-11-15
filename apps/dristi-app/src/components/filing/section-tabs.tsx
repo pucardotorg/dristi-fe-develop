@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInCorrection } from "@/components/filing/posture";
+import { useTranslations } from "next-intl";
 
 export type SectionTab = {
   id: string;
@@ -45,6 +46,7 @@ export function SectionTabs({
   addAfterTabs?: boolean;
   className?: string;
 }) {
+  const tr = useTranslations();
   /* Adding a cheque or removing a complainant is an edit, not a correction (brief D3). */
   const inCorrection = useInCorrection();
   const canEditList = !inCorrection;
@@ -119,7 +121,7 @@ export function SectionTabs({
                   )}
                 />
                 <span className="sr-only">
-                  {t.status === "complete" ? "Complete:" : "Needs attention:"}
+                  {t.status === "complete" ? tr("sectionTabs_complete") : tr("sectionTabs_needsAttention")}
                 </span>
                 {t.label}
                 {t.meta ? (
@@ -131,7 +133,7 @@ export function SectionTabs({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  aria-label={`Remove ${t.label}`}
+                  aria-label={tr("sectionTabs_removeLabel", { label: t.label })}
                   className="text-muted-foreground hover:text-destructive"
                   onClick={() => onRemove(t.id)}
                 >

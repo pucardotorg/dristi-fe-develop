@@ -20,6 +20,7 @@ import { hearingRecords } from "@/lib/cases/hearing-record";
 import { orderHref } from "@/lib/cases/sections";
 import type { CaseRecord } from "@/lib/cases/types";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * The hearings pop-up (§5.4), opened from Overview's "View All Hearings". One
@@ -41,6 +42,7 @@ export function CaseHearingsDialog({
   /** Opens straight onto one hearing, for a link that names it. */
   initialHearingId?: string | null;
 }) {
+  const t = useTranslations();
   const hearings = useMemo(() => hearingRecords(record), [record]);
   const [openId, setOpenId] = useState<string | null>(initialHearingId);
   const openHearing = hearings.find((item) => item.id === openId) ?? null;
@@ -93,10 +95,10 @@ export function CaseHearingsDialog({
       >
         <DialogHeader className="gap-1 border-b border-hairline px-6 py-4 text-left">
           <DialogTitle className="text-title-s font-semibold">
-            Hearings
+            {t("caseHearingsDialog_hearings")}
           </DialogTitle>
           <p className="text-caption font-medium text-muted-foreground">
-            <Identifier value={record.caseNumber} label="case number" />
+            <Identifier value={record.caseNumber} label={t("caseHearingsDialog_caseNumber")} />
           </p>
         </DialogHeader>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4">
@@ -124,7 +126,7 @@ export function CaseHearingsDialog({
           <DialogFooter className="mx-0 mb-0 shrink-0 sm:justify-start">
             <Button type="button" variant="outline" onClick={stepBack}>
               <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-              All hearings
+              {t("caseHearingsDialog_allHearings")}
             </Button>
           </DialogFooter>
         ) : null}

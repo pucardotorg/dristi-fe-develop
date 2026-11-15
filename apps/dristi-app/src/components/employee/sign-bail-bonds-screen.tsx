@@ -58,6 +58,7 @@ import {
   type ColumnFilter,
 } from "@/lib/employee/court-column-filters";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /** No column on this queue divides it — every bond is the same act — so no filters. */
 const BAIL_BOND_COLUMN_FILTERS: ColumnFilter<SignBailBond>[] = [];
@@ -109,6 +110,7 @@ function plural(count: number, one: string, many: string): string {
  * demo queue — see `lib/employee/sign-bail-bonds.ts`.
  */
 export function SignBailBondsScreen() {
+  const t = useTranslations();
   const courtText = useCourtText();
   /* The queue is state because signing and rejecting change it. One list, so the table,
      the count in the header and the footer can never disagree about what is still
@@ -228,7 +230,7 @@ export function SignBailBondsScreen() {
     });
     setOpenId(null);
     setAnnouncement(
-      `The bail bond of ${bond.litigant} in ${courtText(bond.caseNumber)} is marked rejected on this screen. Nothing was sent.`,
+      t("signBailBondsScreen_theBailBondOfLitigantIn", { litigant: bond.litigant, courtText: courtText(bond.caseNumber) }),
     );
   }
 
@@ -241,15 +243,15 @@ export function SignBailBondsScreen() {
       <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 pb-0 md:p-8 md:pb-0">
         <header className="flex flex-col gap-2">
           <h1 className="text-title text-balance font-semibold">
-            Sign bail bonds
+            {t("signBailBondsScreen_signBailBonds")}
           </h1>
           {/* The count is the whole point of the queue, so the supporting line carries it
               rather than restating the title. Singular is spelled out because "1 bail
               bonds" is the kind of thing a court notices. */}
           <p className="text-body text-muted-foreground">
             {pending.length === 1
-              ? "1 bail bond is waiting for your signature."
-              : `${pending.length} bail bonds are waiting for your signature.`}
+              ? t("signBailBondsScreen_1BailBondIsWaitingFor")
+              : t("signBailBondsScreen_lengthBailBondsAreWaitingFor", { length: String(pending.length) })}
           </p>
         </header>
 
@@ -349,7 +351,7 @@ export function SignBailBondsScreen() {
             aria-live="polite"
           >
             {selectedIds.size === 0
-              ? "Select the bail bonds to sign them together."
+              ? t("signBailBondsScreen_selectTheBailBondsToSign")
               : `${selectedIds.size} ${plural(selectedIds.size, "bail bond", "bail bonds")} selected.`}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -360,7 +362,7 @@ export function SignBailBondsScreen() {
                 className="w-full sm:w-fit"
                 onClick={() => setPicked(new Set())}
               >
-                Clear selection
+                {t("signBailBondsScreen_clearSelection")}
               </Button>
             ) : null}
             {/* The count rides the label once there is one, the way every signing
@@ -375,7 +377,7 @@ export function SignBailBondsScreen() {
             >
               {selectedIds.size > 0
                 ? `Sign ${selectedIds.size} ${plural(selectedIds.size, "bail bond", "bail bonds")}`
-                : "Sign selected bail bonds"}
+                : t("signBailBondsScreen_signSelectedBailBonds")}
             </Button>
           </div>
         </div>
@@ -436,13 +438,14 @@ function SignBailBondSearch({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("signBailBondsScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or litigant",
+        placeholder: t("signBailBondsScreen_caseNameNumberOrLitigant"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -467,6 +470,7 @@ function SignBailBondsEmpty({
   isSearched: boolean;
   onClear: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -478,18 +482,18 @@ function SignBailBondsEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isSearched ? "No bail bond matches this search" : "Nothing to sign"}
+          {isSearched ? t("signBailBondsScreen_noBailBondMatchesThisSearch") : t("signBailBondsScreen_nothingToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isSearched
-            ? "No bail bond in this queue matches the case name, number or litigant you asked for."
-            : "No bail bond is waiting for your signature."}
+            ? t("signBailBondsScreen_noBailBondInThisQueue")
+            : t("signBailBondsScreen_noBailBondIsWaitingFor")}
         </EmptyDescription>
       </EmptyHeader>
       {isSearched ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
+            {t("signBailBondsScreen_clearSearch")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -517,6 +521,7 @@ function SignBailBondsItemList({
   onToggle: (bond: SignBailBond) => void;
   onOpen: (bond: SignBailBond) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   return (
     <ul className="flex flex-col gap-3">
@@ -532,7 +537,7 @@ function SignBailBondsItemList({
             <Checkbox
               checked={selectedIds.has(bond.id)}
               onCheckedChange={() => onToggle(bond)}
-              aria-label={`Select the bail bond of ${bond.litigant} in ${courtText(bond.caseNumber)}`}
+              aria-label={t("signBailBondsScreen_selectTheBailBondOfLitigant", { litigant: bond.litigant, courtText: courtText(bond.caseNumber) })}
             />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -543,16 +548,16 @@ function SignBailBondsItemList({
                 className={rowOpenerClass}
             >
               <span className="sr-only">
-                {`Read the bail bond of ${bond.litigant} in `}
+                {t("signBailBondsScreen_readTheBailBondOfLitigant", { litigant: bond.litigant })}
               </span>
               {causeTitle(bond)}
             </button>
             <p className="min-w-0 text-body-compact">
-              Litigant: {bond.litigant}
+              {t("signBailBondsScreen_litigantLitigant", { litigant: bond.litigant })}
             </p>
             <Identifier
               value={bond.caseNumber}
-              label="case number"
+              label={t("signBailBondsScreen_caseNumber")}
               className="self-start text-caption text-muted-foreground"
             />
           </div>

@@ -50,6 +50,7 @@ import type { Task, TaskKind } from "@/lib/tasks/types";
 import { cn } from "@/lib/utils";
 import "./mobile-hearing.css";
 import "./companion-rail.css";
+import { useTranslations } from "next-intl";
 
 /**
  * The companion rail — Gmail's model. A persistent icon strip on the far right
@@ -289,8 +290,8 @@ function caseNumberOf(world: World, task: Task | undefined): string | undefined 
 }
 
 function groupLabel(locale: Locale, group: TaskPanelGroup): string {
-  if (group.key === "related") return pick({ en: "Other tasks for this case", ml: "ഈ കേസിന്റെ മറ്റ് ജോലികൾ" }, locale);
-  if (group.key === "hearing") return pick({ en: "For this case", ml: "ഈ കേസിന്" }, locale);
+  if (group.key === "related") return pick({ en: "companionRail_otherTasksForThisCase", ml: "ഈ കേസിന്റെ മറ്റ് ജോലികൾ" }, locale);
+  if (group.key === "hearing") return pick({ en: "companionRail_forThisCase", ml: "ഈ കേസിന്" }, locale);
   if (group.key === "today") return pick(advHome.groupToday, locale);
   return pick(advHome.groupSoon, locale);
 }
@@ -433,6 +434,7 @@ function TaskCard({
   /** When set, this card is being traced — the stroke runs, keyed by the nonce. */
   traceNonce?: number | null;
 }) {
+  const t = useTranslations();
   const Icon = KIND_ICON[task.kind];
   const due = dueCueOf(task, new Date(world.now));
   const dense = RAIL_VARIANT === "B";
@@ -471,7 +473,7 @@ function TaskCard({
             </Button>
             {onArchive ? (
               <Button variant="outline" className="shrink-0 border-transparent bg-card" onClick={() => onArchive(task)}>
-                <Archive aria-hidden="true" />Archive
+                <Archive aria-hidden="true" />{t("companionRail_archive")}
               </Button>
             ) : null}
           </div>
@@ -571,11 +573,12 @@ function ArchiveButton({
   onArchive: (task: Task) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <button
       type="button"
-      aria-label={`Archive: ${task.title}`}
-      title="Archive"
+      aria-label={t("companionRail_archiveTitle", { title: task.title })}
+      title={t("companionRail_archive")}
       onClick={(event) => {
         event.stopPropagation();
         onArchive(task);
@@ -765,7 +768,7 @@ function TasksPanel({
       <TaskTraceStyles />
       <PanelHeader
         title={pick(advHome.railTitle, locale)}
-        caption={related.length ? pick({ en: "Due in the next 3 days and tasks for this case", ml: "അടുത്ത 3 ദിവസത്തെ ജോലികളും ഈ കേസിന്റെ ജോലികളും" }, locale) : pick(advHome.railScope, locale)}
+        caption={related.length ? pick({ en: "companionRail_dueInTheNext3Days", ml: "അടുത്ത 3 ദിവസത്തെ ജോലികളും ഈ കേസിന്റെ ജോലികളും" }, locale) : pick(advHome.railScope, locale)}
         locale={locale}
         onClose={onClose}
       />

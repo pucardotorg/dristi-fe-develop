@@ -271,7 +271,7 @@ export function noticeSummary(n: DemandNotice | undefined) {
       payment && n?.paymentStatus === "part" && partAmount
         ? `${payment}: ${partAmount}`
         : orNot(payment),
-    paidYesNo: n?.paymentStatus === "part" ? "Yes, in part" : "No",
+    paidYesNo: n?.paymentStatus === "part" ? "previewDerive_yesInPart" : "No",
   };
 }
 
@@ -335,7 +335,7 @@ export function jurisdictionSummary(draft: FilingDraft) {
       delay === null
         ? NOT_PROVIDED
         : delay <= 30
-          ? "None. Within limitation"
+          ? "previewDerive_noneWithinLimitation"
           : `${plural(beyond, "day")} beyond the one-month limit`,
     condonationReason: j.condonationReason.trim(),
   };

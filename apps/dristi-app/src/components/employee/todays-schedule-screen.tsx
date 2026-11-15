@@ -16,6 +16,7 @@ import { formatCourtDay, isoDay } from "@/lib/employee/hearings";
 import { courtNavClubbed, courtNavClubbedTotal } from "@/lib/employee/navigation";
 import { useCourt } from "@/components/court/court-provider";
 import { useCourtRole } from "@/components/employee/use-court-role";
+import { useTranslations } from "next-intl";
 
 const NEVER_CHANGES = () => () => {};
 const readToday = () => isoDay(new Date());
@@ -32,6 +33,7 @@ const readToday = () => isoDay(new Date());
  * screen just carves the hearings out of it first.
  */
 export function TodaysScheduleScreen() {
+  const t = useTranslations();
   const today = React.useSyncExternalStore(NEVER_CHANGES, readToday, readToday);
   const { court } = useCourt();
   const seat = useCourtRole();
@@ -44,7 +46,7 @@ export function TodaysScheduleScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Today’s schedule
+          {t("todaysScheduleScreen_todaysSchedule")}
         </h1>
         <p className="text-body text-muted-foreground tabular-nums">
           Today, {formatCourtDay(today)} ·{" "}
@@ -54,14 +56,14 @@ export function TodaysScheduleScreen() {
 
       {hearings?.href ? (
         <section
-          aria-label="Today's hearings"
+          aria-label={t("todaysScheduleScreen_todaysHearings")}
           className="flex min-w-0 flex-col gap-4 rounded-xl border border-hairline bg-card shadow-raised p-6"
         >
           <Item asChild variant="outline" className="px-6 py-4">
             <Link href={hearings.href}>
               <ItemContent>
                 <span className="text-caption font-medium text-muted-foreground">
-                  Conducting today
+                  {t("todaysScheduleScreen_conductingToday")}
                 </span>
                 <ItemTitle className="text-title-s font-semibold">
                   {hearings.label}
@@ -73,7 +75,7 @@ export function TodaysScheduleScreen() {
                     {hearings.count ?? 0}
                   </span>
                   <span className="text-caption text-muted-foreground">
-                    listed
+                    {t("todaysScheduleScreen_listed")}
                   </span>
                 </span>
                 <ChevronRightIcon
@@ -87,11 +89,11 @@ export function TodaysScheduleScreen() {
       ) : null}
 
       <section
-        aria-label="The rest of today's work"
+        aria-label={t("todaysScheduleScreen_theRestOfTodaysWork")}
         className="flex min-w-0 flex-col gap-4 rounded-xl border border-hairline bg-card shadow-raised p-6"
       >
         <h2 className="text-body-compact font-medium text-muted-foreground">
-          Other work today
+          {t("todaysScheduleScreen_otherWorkToday")}
         </h2>
         <ItemGroup className="gap-3">
           {rest

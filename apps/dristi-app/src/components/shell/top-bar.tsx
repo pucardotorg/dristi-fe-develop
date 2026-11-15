@@ -50,6 +50,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * The one breadcrumb in the app. Route-aware: Tasks › the task › the action. The task
@@ -170,6 +171,7 @@ function ChromeBreadcrumb({
   /** A quiet control that belongs to the page the trail names, set just after it. */
   after?: React.ReactNode;
 }) {
+  const tr = useTranslations();
   const { crumbs, root } = useTrail();
   const slotRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -242,7 +244,7 @@ function ChromeBreadcrumb({
                 type="button"
                 aria-expanded={open}
                 aria-controls={TRAIL_ROW_ID}
-                aria-label="Show the full path"
+                aria-label={tr("topBar_showTheFullPath")}
                 onClick={onToggle}
                 className="-mx-2 flex size-10 cursor-pointer items-center justify-center rounded-lg outline-none transition-colors active:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
               >
@@ -276,6 +278,7 @@ const FOLD_BUTTON_WIDTH = 24;
  * rail is open — the DS's own `SidebarTrigger` carries the state in its label instead.
  */
 function NavTrigger() {
+  const tr = useTranslations();
   const { open, isMobile } = useSidebar();
   // An open rail carries its own collapse control, in its header. Repeating it here
   // would put it back at the head of the breadcrumb row — which is what made it read as
@@ -285,7 +288,7 @@ function NavTrigger() {
     <>
       <SidebarTrigger
         size="icon"
-        aria-label="Expand main navigation"
+        aria-label={tr("topBar_expandMainNavigation")}
         className="shrink-0 text-muted-foreground [&_svg]:size-5"
       />
       {/* The trigger belongs to the rail, the crumbs to the page. With the rail collapsed
@@ -388,6 +391,7 @@ function useTaskNotifications() {
  * three show English until translations arrive (`pick` falls back).
  */
 function LanguageToggle() {
+  const tr = useTranslations();
   const { locale, setLocale, secondLanguage, setSecondLanguage } = useLocale();
   const options = [
     { value: "en" as Locale, label: LANGUAGE_NAME.en },
@@ -414,14 +418,14 @@ function LanguageToggle() {
             type="button"
             variant="ghost"
             size="icon-xs"
-            aria-label="Choose the second language"
+            aria-label={tr("topBar_chooseTheSecondLanguage")}
             className="relative after:absolute after:-inset-1"
           >
             <ChevronDownIcon className="size-4" aria-hidden />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto min-w-40">
-          <DropdownMenuLabel>Second language</DropdownMenuLabel>
+          <DropdownMenuLabel>{tr("topBar_secondLanguage")}</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={secondLanguage}
             onValueChange={(next) => {

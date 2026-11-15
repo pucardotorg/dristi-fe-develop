@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useCourt } from "@/components/court/court-provider";
 import { courtProfile } from "@/lib/court/profiles";
+import { useTranslations } from "next-intl";
 
 /**
  * One half of Take cognizance, as its own screen — the "split" reading of
@@ -56,6 +57,7 @@ export function CognizanceTabScreen({ tab }: { tab: CognizanceTab }) {
 }
 
 function SplitQueue({ tab }: { tab: CognizanceTab }) {
+  const t = useTranslations();
   const arrival = useArrival();
   const [filters, setFilters] = React.useState<CognizanceFilters>(
     EMPTY_COGNIZANCE_FILTERS,
@@ -97,12 +99,12 @@ function SplitQueue({ tab }: { tab: CognizanceTab }) {
     >
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Take cognizance — {label}
+          {t("cognizanceTabScreen_takeCognizanceLabel", { label })}
         </h1>
         <p className="text-body text-muted-foreground">
           {total === 1
-            ? "1 complaint is on the register waiting for cognizance."
-            : `${total} complaints are on the register waiting for cognizance.`}
+            ? t("cognizanceTabScreen_1ComplaintIsOnTheRegister")
+            : t("cognizanceTabScreen_totalComplaintsAreOnTheRegister", { total: String(total) })}
         </p>
       </header>
 

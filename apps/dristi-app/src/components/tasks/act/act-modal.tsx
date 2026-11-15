@@ -36,6 +36,7 @@ import {
 } from "@/components/tasks/act/task-flows";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /** The document column reads better with room; pay is a summary and stays narrow. */
 const WIDTH: Record<ActMode, string> = {
@@ -76,6 +77,7 @@ export function TaskActModal({
   /** Called with the task to flash once a step lands — the created re-filing task, or this one. */
   onFinished?: (taskId: TaskId) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const { user, people, online } = useTasks();
 
@@ -152,10 +154,10 @@ export function TaskActModal({
           {/* Inside the dialog's accessible description — a copy control here would be
               announced as part of the description and could take the dialog's first focus,
               so the face is restored without the affordance. */}
-          <Identifier value={kase.stNumber} label="case number" copyable={false} />
+          <Identifier value={kase.stNumber} label={t("actModal_caseNumber")} copyable={false} />
         </>
       ) : (
-        " · Not yet numbered"
+        t("actModal_notYetNumbered")
       )}
       {" · "}
       {courtText(kase.court)}

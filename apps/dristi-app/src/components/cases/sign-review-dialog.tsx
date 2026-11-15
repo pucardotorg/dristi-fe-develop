@@ -34,6 +34,7 @@ import {
 } from "@/lib/cases/application-record";
 import type { CaseRecord } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * Sign all, read first (owner, Oct 8): before one signature covers several
@@ -96,6 +97,7 @@ function ReviewBody({
   onEdit?: (application: ApplicationRecord) => void;
   onReplaceFile?: (application: ApplicationRecord, file: File) => void;
 }) {
+  const t = useTranslations();
   const count = applications.length;
   const [openId, setOpenId] = useState(applications[0].id);
   const open =
@@ -121,16 +123,16 @@ function ReviewBody({
       <div className="flex shrink-0 items-center gap-2 border-b border-hairline py-3 pr-3 pl-6">
         <div className="min-w-0 flex-1">
           <DialogTitle className="text-body-compact font-semibold text-pretty sm:truncate">
-            Sign {count} {filingNoun(applications)}
+            {t("signReviewDialog_signCountFilingNoun", { count: String(count), filingNoun: filingNoun(applications) })}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Read each one, then sign them together.
+            {t("signReviewDialog_readEachOneThenSignThem")}
           </DialogDescription>
         </div>
         <DialogClose asChild>
           <Button type="button" variant="ghost" size="icon-sm">
             <XIcon aria-hidden />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t("common_close")}</span>
           </Button>
         </DialogClose>
       </div>
@@ -140,7 +142,7 @@ function ReviewBody({
         <div className="flex min-h-0 flex-1 flex-col @3xl/review:flex-row">
           <div className="flex max-h-72 shrink-0 flex-col gap-1.5 overflow-y-auto border-b border-hairline p-4 @3xl/review:max-h-none @3xl/review:w-80 @3xl/review:border-r @3xl/review:border-b-0">
             <h3 className="text-caption font-medium text-muted-foreground">
-              {filingNoun(applications) === "documents" ? "Documents" : "Applications"}
+              {filingNoun(applications) === "documents" ? t("signReviewDialog_documents") : t("signReviewDialog_applications")}
             </h3>
             <ul className="-mx-2 flex flex-col gap-0.5">
               {applications.map((item) => (
@@ -217,13 +219,13 @@ function ReviewBody({
                   </EmptyMedia>
                   <EmptyTitle className="text-body font-semibold">
                     {open.documents.length === 0
-                      ? "Nothing to show for this one"
-                      : "Its documents are not on file yet"}
+                      ? t("signReviewDialog_nothingToShowForThisOne")
+                      : t("signReviewDialog_itsDocumentsAreNotOnFile")}
                   </EmptyTitle>
                   <EmptyDescription>
                     {open.documents.length === 0
-                      ? "No file is attached to it."
-                      : "They open here once the files are uploaded."}
+                      ? t("signReviewDialog_noFileIsAttachedToIt")
+                      : t("signReviewDialog_theyOpenHereOnceTheFiles")}
                   </EmptyDescription>
                 </EmptyHeader>
               </Empty>
@@ -243,7 +245,7 @@ function ReviewBody({
               className="w-full sm:w-auto"
               onClick={() => onEdit(open)}
             >
-              Edit<span className="sr-only"> {open.name}</span>
+              {t.rich("signReviewDialog_editName", { name: open.name, span: (chunks) => <span className="sr-only">{chunks}</span> })}
             </Button>
           ) : replaceable ? (
             <ReplaceFileButton
@@ -256,7 +258,7 @@ function ReviewBody({
             className="w-full sm:w-auto"
             onClick={() => onSign(applications)}
           >
-            Sign all {count}
+            {t("signReviewDialog_signAllCount", { count: String(count) })}
           </Button>
         </div>
       </footer>

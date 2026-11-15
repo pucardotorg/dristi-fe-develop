@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { RepresentationWell } from "@/components/cases/representation-well";
 import type { CaseRef } from "@/components/cases/party-application";
 import { displayName } from "@/lib/cases/names";
+import { useTranslations } from "next-intl";
 
 type AddedAdvocates = { names: string[]; partyIds: string[] };
 
@@ -87,6 +88,7 @@ export function WitnessListExtras({
   registeredCount: number;
   authoredPending: string[];
 }) {
+  const t = useTranslations();
   const live = usePartiesLive();
   const pending = [...authoredPending, ...(live?.pendingWitnesses ?? [])];
 
@@ -94,7 +96,7 @@ export function WitnessListExtras({
     return (
       <li>
         <p className="text-body-compact text-muted-foreground">
-          No witness has been listed yet.
+          {t("partiesLive_noWitnessHasBeenListedYet")}
         </p>
       </li>
     );
@@ -111,7 +113,7 @@ export function WitnessListExtras({
               <span className="block max-w-full text-body-compact font-semibold text-muted-foreground">
                 {displayName(name)}
               </span>
-              <Badge variant="warning">Awaiting order</Badge>
+              <Badge variant="warning">{t("partiesLive_awaitingOrder")}</Badge>
             </span>
           </div>
         </li>
@@ -128,6 +130,7 @@ export function WitnessListExtras({
  * until then, so it costs the layout nothing.
  */
 export function LivePoaPendingSection({ partyId }: { partyId: string }) {
+  const t = useTranslations();
   const live = usePartiesLive();
   const holders = (live?.pendingPoa ?? [])
     .filter((entry) => entry.partyId === partyId)
@@ -136,7 +139,7 @@ export function LivePoaPendingSection({ partyId }: { partyId: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <h4 className="text-caption font-semibold text-muted-foreground">
-        Power of attorney
+        {t("partiesLive_powerOfAttorney")}
       </h4>
       <div className="grid min-w-0 items-start gap-2">
         {holders.map((holder) => (
@@ -148,7 +151,7 @@ export function LivePoaPendingSection({ partyId }: { partyId: string }) {
               {holder}
             </span>
             <span className="block truncate text-caption text-muted-foreground">
-              Application sent · awaiting order
+              {t("partiesLive_applicationSentAwaitingOrder")}
             </span>
           </div>
         ))}

@@ -5,6 +5,7 @@ import { useProfile } from "@/components/shell/profile";
 import type { ApplicationViewer } from "@/lib/cases/application-access";
 import type { CaseRecord } from "@/lib/cases/types";
 import type { JoinCase } from "@/lib/join/content";
+import { useTranslations } from "next-intl";
 
 /**
  * The joined case as the application form needs it. Nothing about a case
@@ -64,6 +65,7 @@ export function JoinedCaseBail({
   /** Where the filing ends: the case just joined, when it has a page. */
   onViewCase?: () => void;
 }) {
+  const t = useTranslations();
   const { accountName } = useProfile();
   const advocate =
     as === "advocate"
@@ -90,7 +92,7 @@ export function JoinedCaseBail({
       filer={filer}
       inPlace={{
         onClose,
-        done: onViewCase ? { label: "View case", onClick: onViewCase } : undefined,
+        done: onViewCase ? { label: t("joinedCaseBail_viewCase"), onClick: onViewCase } : undefined,
       }}
     />
   );

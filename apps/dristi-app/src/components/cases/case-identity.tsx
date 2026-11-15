@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 import { CASE_PEEK_ID, useCasePeek } from "./use-case-peek";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * How loudly the registered number reads. `muted` keeps table weight but drops
@@ -41,6 +42,7 @@ export function CasePeekTrigger({
   tone?: IdentityTone;
   hideLongPendingFlag?: boolean;
 }) {
+  const t = useTranslations();
   const { open, record: openRecord } = useCasePeek();
   const label = partiesLabel(record);
   const expanded = openRecord?.id === record.id;
@@ -56,10 +58,10 @@ export function CasePeekTrigger({
         IDENTITY_TONE[tone]
       )}
     >
-      <span className="sr-only">Preview </span>
+      <span className="sr-only">{t("caseIdentity_preview")} </span>
       {/* The number is already this row's preview control, so it takes the face
           without a second control inside it. */}
-      <Identifier value={record.caseNumber} label="case number" copyable={false} />
+      <Identifier value={record.caseNumber} label={t("caseIdentity_caseNumber")} copyable={false} />
       <span className="sr-only">{`, ${label}`}</span>
     </button>
   );
@@ -79,10 +81,11 @@ export function CaseTitle({
 
 /** A Badge is safe here only because the flag is two words and never localised long. */
 export function CaseFlags({ record }: { record: CaseRecord }) {
+  const t = useTranslations();
   if (!record.longPending) return null;
   return (
     <Badge variant="warning" className="shrink-0">
-      Long pending
+      {t("caseIdentity_longPending")}
     </Badge>
   );
 }

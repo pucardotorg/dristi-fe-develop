@@ -6,6 +6,7 @@ import {
 } from "@/components/employee/sign-signature-fields";
 import { Button } from "@/components/ui/button";
 import { IrreversibleNote } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * **Add signature — a stage of the window that was reading the paper, not a second
@@ -124,15 +125,16 @@ export function SignatureActions({
   onBack?: () => void;
   onSubmit: () => void;
 }) {
+  const t = useTranslations();
   return (
     <>
       {onBack ? (
         <Button type="button" variant="outline" onClick={onBack}>
-          Back
+          {t("common_back")}
         </Button>
       ) : null}
       <Button type="button" disabled={!choice.canSubmit} onClick={onSubmit}>
-        Submit
+        {t("common_submit")}
       </Button>
     </>
   );

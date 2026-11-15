@@ -18,6 +18,7 @@ import { CasesItemList } from "./cases-item-list";
 import { CARDS_ONLY, TABLE_ONLY } from "./cases-layout";
 import { CasesPageSizeSelect } from "./cases-page-size";
 import { CasesTable } from "./cases-table";
+import { useTranslations } from "next-intl";
 
 export type PageLink = {
   href: string;
@@ -137,6 +138,7 @@ export function CasesPager({
   onPageSizeChange: (pageSize: CasesPageSize) => void;
   pageLink: (page: number) => PageLink;
 }) {
+  const t = useTranslations();
   // On a phone the count and the page size hold the two ends of one line and
   // the pager centres under them. Left-stacked, the three read as dropped there
   // (owner, Sept 21).
@@ -149,7 +151,7 @@ export function CasesPager({
           className="text-body-compact text-muted-foreground tabular-nums"
           aria-live="polite"
         >
-          Rows {from}–{to} of {total}
+          {t("casesListResults_rowsFromToOfTotal", { from: String(from), to: String(to), total: String(total) })}
         </p>
         <CasesPageSizeSelect
           value={pageSize}
@@ -173,7 +175,7 @@ export function CasesPager({
                     <PaginationLink
                       {...pageLink(entry)}
                       isActive={entry === page}
-                      aria-label={`Go to page ${entry}`}
+                      aria-label={t("casesListResults_goToPageEntry", { entry: String(entry) })}
                     >
                       {entry}
                     </PaginationLink>

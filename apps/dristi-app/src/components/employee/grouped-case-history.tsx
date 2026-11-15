@@ -38,6 +38,8 @@ import type { CourtHearing } from "@/lib/employee/hearings";
 import { HISTORY_TYPES } from "@/lib/employee/order-case-history";
 import { FEATURE_NAME as NOTICE_PROCESS_STATUS } from "@/lib/cases/service";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 type OrderRow = Extract<HistoryRow, { kind: "order" }>;
 type ThreadRow = Extract<HistoryRow, { kind: "thread" }>;
@@ -94,16 +96,17 @@ export function CaseHistoryList({
   /** The type filter above the list. */
   filter?: boolean;
 }) {
+  const t = useTranslations();
 
   const typeOptions = React.useMemo<TypeOption[]>(() => {
     const present = new Set(rows.map((row) => row.type));
     return [
       ...HISTORY_TYPES.filter((type) => present.has(type.value)),
       ...(present.has("other")
-        ? [{ value: "other", label: "Other events" }]
+        ? [{ value: "other", label: t("employeeGroupedCaseHistory_otherEvents") }]
         : []),
     ];
-  }, [rows]);
+  }, [rows, t]);
   const [types, setTypes] = React.useState<string[]>([]);
   const [expanded, setExpanded] = React.useState<Set<string>>(() => new Set());
   const jumpTo = React.useRef<string | null>(null);
@@ -162,10 +165,10 @@ export function CaseHistoryList({
             <HistoryIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body-compact font-semibold tracking-normal">
-            No case history yet
+            {t("employeeGroupedCaseHistory_noCaseHistoryYet")}
           </EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            Events and orders on this case will appear here.
+            {t("employeeGroupedCaseHistory_eventsAndOrdersOnThisCase")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -182,7 +185,7 @@ export function CaseHistoryList({
       className="flex min-w-0 flex-col gap-4"
     >
       <h2 id="grouped-case-history" className="sr-only">
-        Case history
+        {t("employeeGroupedCaseHistory_caseHistory")}
       </h2>
       {filter ? (
         <HistoryTypeFilter
@@ -194,12 +197,12 @@ export function CaseHistoryList({
 
       {shown.length === 0 ? (
         <p className="text-body-compact text-muted-foreground">
-          Nothing of these types on this case.
+          {t("employeeGroupedCaseHistory_nothingOfTheseTypesOnThis")}
         </p>
       ) : (
         <Timeline
           className="text-body-compact"
-          aria-label="Case history, newest first"
+          aria-label={t("employeeGroupedCaseHistory_caseHistoryNewestFirst")}
         >
           {shown.map((row) => (
             <TimelineItem
@@ -256,6 +259,7 @@ function Head({ on, children }: { on: string; children: React.ReactNode }) {
 }
 
 function EventLine({ row }: { row: Extract<HistoryRow, { kind: "event" }> }) {
+  const t = useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <Head on={row.on}>
@@ -267,7 +271,7 @@ function EventLine({ row }: { row: Extract<HistoryRow, { kind: "event" }> }) {
             className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
             {row.label}
-            <span className="sr-only"> (opens in a new tab)</span>
+            <span className="sr-only"> {t("employeeGroupedCaseHistory_opensInANewTab")}</span>
           </a>
         ) : (
           <span>{row.label}</span>
@@ -290,6 +294,7 @@ function OrderLine({
   row: OrderRow;
   onGo: (id: string) => void;
 }) {
+  const t = useTranslations();
   const summaryId = `${row.id}-summary`;
   return (
     <div
@@ -304,13 +309,13 @@ function OrderLine({
       </Head>
       {row.last ? (
         <Badge variant="info" className="mb-1">
-          Last order
+          {t("employeeGroupedCaseHistory_lastOrder")}
         </Badge>
       ) : null}
       <p id={summaryId}>{row.summary}</p>
       <div className="flex min-w-0 flex-wrap items-center gap-x-4">
         <NewTabLink href={row.href} focusTarget describedBy={summaryId}>
-          Open the order
+          {t("employeeGroupedCaseHistory_openTheOrder")}
         </NewTabLink>
         {row.affects.map((thread) => (
           <Button
@@ -321,7 +326,7 @@ function OrderLine({
             className="h-10 w-fit px-0 text-muted-foreground"
             onClick={() => onGo(thread.id)}
           >
-            Go to {thread.label}
+            {t("employeeGroupedCaseHistory_goToLabel", { label: thread.label })}
           </Button>
         ))}
       </div>
@@ -341,6 +346,7 @@ function NewTabLink({
   describedBy?: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <Button asChild variant="link" size="sm" className="h-10 w-fit px-0">
       <a
@@ -351,7 +357,7 @@ function NewTabLink({
         aria-describedby={describedBy}
       >
         {children}
-        <span className="sr-only"> (opens in a new tab)</span>
+        <span className="sr-only"> {t("employeeGroupedCaseHistory_opensInANewTab")}</span>
         <ExternalLinkIcon data-icon="inline-end" aria-hidden />
       </a>
     </Button>
@@ -377,6 +383,7 @@ function ThreadLine({
   onOpenChange: (open: boolean) => void;
   onGo: (id: string) => void;
 }) {
+  const t = useTranslations();
   const updatedOn = threadUpdatedOn(row);
   const count = row.steps.length;
   return (
@@ -406,25 +413,21 @@ function ThreadLine({
             {/* With one step, the day it began is the day on the right. */}
             {count > 1 ? (
               <>
-                started{" "}
-                <time dateTime={row.on} className="tabular-nums">
-                  {formatTimelineDate(row.on)}
-                </time>
-                {" · "}
+                {t.rich("employeeGroupedCaseHistory_startedFormatTimelineDate", { formatTimelineDate: formatTimelineDate(row.on), time: (chunks) => <time dateTime={row.on} className="tabular-nums">{chunks}</time> })}
               </>
             ) : null}
             <span className="tabular-nums">{count}</span>{" "}
-            {STEPS_PLURAL.select(count) === "one" ? "update" : "updates"}
+            {STEPS_PLURAL.select(count) === "one" ? t("employeeGroupedCaseHistory_update") : t("employeeGroupedCaseHistory_updates")}
           </span>
           <NewTabLink href={row.href}>
             {row.entity === "Process"
-              ? `Open in ${NOTICE_PROCESS_STATUS}`
-              : "Open the application"}
+              ? t("employeeGroupedCaseHistory_openInNoticeProcessStatus", { NOTICE_PROCESS_STATUS })
+              : t("employeeGroupedCaseHistory_openTheApplication")}
           </NewTabLink>
         </div>
         <CollapsibleContent>
           <ol
-            aria-label={`${row.label}, newest first`}
+            aria-label={t("employeeGroupedCaseHistory_labelNewestFirst", { label: row.label })}
             className="mt-2 flex flex-col gap-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2"
           >
             {row.steps.toReversed().map((step, index) => (
@@ -439,7 +442,7 @@ function ThreadLine({
                   {formatTimelineDate(step.on)}
                 </time>
                 <span className="min-w-0">
-                  {step.label}
+                  {translateText(t, step.label)}
                   {step.orderId ? (
                     <>
                       {" · "}
@@ -448,7 +451,7 @@ function ThreadLine({
                         className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                         onClick={() => onGo(step.orderId!)}
                       >
-                        See the order
+                        {t("employeeGroupedCaseHistory_seeTheOrder")}
                       </button>
                     </>
                   ) : null}

@@ -17,6 +17,7 @@ import {
   type ReschedulingRequest,
 } from "@/lib/employee/rescheduling-request";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * One rescheduling application, in the shared court-side review overlay, with the
@@ -72,6 +73,7 @@ function RequestBody({
   onReject: (request: ReschedulingRequest) => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const document = useMemo(
     () => buildReschedulingDocument(request),
     [request],
@@ -86,17 +88,17 @@ function RequestBody({
       description={senderLine(request)}
       facts={
         <>
-          <ReviewRow term="Case number">
-            <Identifier value={request.caseNumber} label="case number" />
+          <ReviewRow term={t("reschedulingRequestDialog_caseNumber")}>
+            <Identifier value={request.caseNumber} label={t("reschedulingRequestDialog_caseNumberLabel")} />
           </ReviewRow>
-          <ReviewRow term="Application sent on">
+          <ReviewRow term={t("reschedulingRequestDialog_applicationSentOn")}>
             {formatRequestLongDate(request.appliedOn)}
           </ReviewRow>
-          <ReviewRow term="Current hearing">{currentHearing}</ReviewRow>
-          <ReviewRow term="Proposed hearing date">
+          <ReviewRow term={t("reschedulingRequestDialog_currentHearing")}>{currentHearing}</ReviewRow>
+          <ReviewRow term={t("reschedulingRequestDialog_proposedHearingDate")}>
             {formatProposedDates(request.proposedOn)}
           </ReviewRow>
-          <ReviewRow term="Consent of other parties">
+          <ReviewRow term={t("reschedulingRequestDialog_consentOfOtherParties")}>
             {consentLabel(request.partiesAgreed)}
           </ReviewRow>
         </>

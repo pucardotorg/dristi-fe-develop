@@ -40,6 +40,8 @@ import {
 import { caseSectionHref } from "@/lib/cases/sections";
 import { type CaseRecord } from "@/lib/cases/types";
 import { CAUSE_LIST } from "@/lib/employee/hearings";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 const BOND_TASK_ID = "bond";
 /** The cause list's listing this demo case stands in for (`HEARING_DEMO_CASE`). */
@@ -64,6 +66,7 @@ export function CaseOverview({
   record: CaseRecord;
   now: number;
 }) {
+  const t = useTranslations();
   const court = useCaseReader() === "court";
   const model = caseOverviewModel(record, now);
   const [archived, setArchived] = useState<string[]>([]);
@@ -72,11 +75,11 @@ export function CaseOverview({
      prototype keeps it in memory, so Undo is the way back. */
   function archive(id: string, title: string) {
     setArchived((current) => [...current, id]);
-    notify.neutral("Task archived", {
+    notify.neutral(t("caseOverview_taskArchived"), {
       icon: ArchiveIcon,
       description: `${title}. You can find it under Take action, Archive.`,
       action: {
-        label: "Undo",
+        label: t("caseOverview_undo"),
         onClick: () =>
           setArchived((current) => current.filter((item) => item !== id)),
       },
@@ -94,11 +97,11 @@ export function CaseOverview({
       <BondTaskRow
         nextHearingOn={record.nextHearing?.on ?? null}
         now={now}
-        onArchive={() => archive(BOND_TASK_ID, "Bail bond")}
+        onArchive={() => archive(BOND_TASK_ID, t("caseOverview_bailBond"))}
       />
     ) : null;
   const removalConsent = useRemovalConsentTask(record.id, () =>
-    archive(CONSENT_TASK_ID, "Respond to a removal request")
+    archive(CONSENT_TASK_ID, t("caseOverview_respondToARemovalRequest"))
   );
   const consentTask =
     !court && removalConsent.visible && !archived.includes(CONSENT_TASK_ID)
@@ -206,6 +209,7 @@ function NextHearingBlock({
   next: OverviewNextHearing;
   court: boolean;
 }) {
+  const t = useTranslations();
   const [hearingsOpen, setHearingsOpen] = useState(false);
   const hearingsTriggerRef = useRef<HTMLAnchorElement | null>(null);
   const tile = next.tile;
@@ -217,7 +221,7 @@ function NextHearingBlock({
     >
       <BlockHeader
         id={NEXT_HEARING_HEADING}
-        title="Next hearing"
+        title={t("caseOverview_nextHearing")}
         action={
           /* Not for the court: its Hearings tab is one press away. */
           court ? undefined : (
@@ -242,7 +246,7 @@ function NextHearingBlock({
                   setHearingsOpen(true);
                 }}
               >
-                View All Hearings
+                {t("caseOverview_viewAllHearings")}
               </Link>
             </Button>
           )
@@ -288,7 +292,7 @@ function NextHearingBlock({
             <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
               {tile.today ? (
                 <Badge variant="warning" className={WELL_CHIP_STROKE.warning}>
-                  Today
+                  {t("caseOverview_today")}
                 </Badge>
               ) : null}
               {next.status ? (
@@ -312,12 +316,11 @@ function NextHearingBlock({
       ) : (
         <div className="flex min-w-0 flex-col gap-1 rounded-lg bg-surface-sunken p-4">
           <p className="text-body-compact font-medium text-foreground">
-            {next.on}
+            {translateText(t, next.on)}
           </p>
           {next.last ? (
             <p className="text-caption font-medium text-muted-foreground">
-              Last heard on {next.last.on}
-              {next.last.purpose ? ` · ${next.last.purpose}` : null}
+              {t("caseOverview_lastHeardOnOnValue", { on: next.last.on, value: (next.last.purpose ? ` · ${next.last.purpose}` : null) ?? "" })}
             </p>
           ) : null}
         </div>
@@ -342,6 +345,7 @@ function CaseUpdatesBlock({
   updates: OverviewUpdate[];
   court: boolean;
 }) {
+  const t = useTranslations();
   return (
     <section
       id="case-timeline"
@@ -350,11 +354,11 @@ function CaseUpdatesBlock({
     >
       <BlockHeader
         id={CASE_UPDATES_HEADING}
-        title="Case updates"
+        title={t("caseOverview_caseUpdates")}
         action={
           <Button variant="link" asChild className={BLOCK_LINK}>
             <Link href={caseSectionHref(record.id, "case-history")}>
-              View all updates
+              {t("caseOverview_viewAllUpdates")}
             </Link>
           </Button>
         }
@@ -365,7 +369,7 @@ function CaseUpdatesBlock({
            case stands in for on the cause list. */
         <GroupedCaseHistory hearing={DEMO_LISTING} throughLastOrder />
       ) : (
-        <Timeline aria-label="Case updates, newest first">
+        <Timeline aria-label={t("caseOverview_caseUpdatesNewestFirst")}>
           {updates.map((update) => (
             <TimelineItem key={update.id} status={update.status}>
               {/* The whole row is the link, bled out so the hover fill clears
@@ -405,6 +409,7 @@ function PendingTasksBlock({
   consentTask?: ReactNode;
   onArchive: (id: string, title: string) => void;
 }) {
+  const t = useTranslations();
   const count = tasks.length + (bondTask ? 1 : 0) + (consentTask ? 1 : 0);
   return (
     <section
@@ -413,12 +418,12 @@ function PendingTasksBlock({
     >
       <BlockHeader
         id={PENDING_TASKS_HEADING}
-        title="Take action"
+        title={t("caseOverview_takeAction")}
         count={count}
       />
       {count === 0 ? (
         <p className="pt-2 text-body-compact text-muted-foreground">
-          Nothing is pending on this case.
+          {t("caseOverview_nothingIsPendingOnThisCase")}
         </p>
       ) : (
         <>
@@ -428,7 +433,7 @@ function PendingTasksBlock({
             </p>
           ) : null}
           {/* One divided list, not N stacked panels. */}
-          <ItemGroup aria-label="Take action">
+          <ItemGroup aria-label={t("caseOverview_takeAction")}>
             {consentTask}
             {tasks.map((task, index) => (
               <Fragment key={task.id}>

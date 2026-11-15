@@ -190,7 +190,7 @@ function overviewNextHearing(
 ): OverviewNextHearing {
   if (record.disposal || !record.nextHearing) {
     return {
-      on: "No hearing scheduled",
+      on: "overview_noHearingScheduled",
       last: record.previousHearingOn
         ? {
             on: formatCaseDate(record.previousHearingOn),

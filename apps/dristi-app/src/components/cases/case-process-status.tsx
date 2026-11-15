@@ -59,6 +59,8 @@ import { hearingHref, orderHref } from "@/lib/cases/sections";
 import { type CaseRecord } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
 import { COLLAPSE_MOTION } from "@/components/cases/motion";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Notice/Process Status (§7). A tab per person the court issued process to;
@@ -67,6 +69,7 @@ import { COLLAPSE_MOTION } from "@/components/cases/motion";
  * own destination, status, date and remarks.
  */
 export function CaseProcessStatus({ record }: { record: CaseRecord }) {
+  const t = useTranslations();
   const people = processStatus(record);
 
   if (people.length === 0) {
@@ -79,11 +82,10 @@ export function CaseProcessStatus({ record }: { record: CaseRecord }) {
                 <MailXIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="text-body font-semibold">
-                No process issued yet
+                {t("caseProcessStatus_noProcessIssuedYet")}
               </EmptyTitle>
               <EmptyDescription>
-                Notices, summons and warrants appear here once the court issues
-                them.
+                {t("caseProcessStatus_noticesSummonsAndWarrantsAppearHere")}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -110,6 +112,7 @@ function ProcessPeople({
   caseId: string;
   people: ProcessPerson[];
 }) {
+  const t = useTranslations();
   const [active, setActive] = useState(people[0].id);
   return (
     /* One white frame holds the people's tabs and their rounds, so the row
@@ -123,7 +126,7 @@ function ProcessPeople({
         >
           <div className={STRIP_ROW}>
             <OverflowTabsList
-              aria-label="People process was issued to"
+              aria-label={t("caseProcessStatus_peopleProcessWasIssuedTo")}
               value={active}
               onSelect={setActive}
               className={STRIP_LIST}
@@ -209,6 +212,7 @@ function Round({
   number: number;
   defaultOpen: boolean;
 }) {
+  const t = useTranslations();
   return (
     <Collapsible
       defaultOpen={defaultOpen}
@@ -227,7 +231,7 @@ function Round({
             />
             <span className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-6 gap-y-1">
               <span className="text-body-compact font-semibold text-foreground">
-                Round {number}: {processTitle(round.processes)}
+                {t("caseProcessStatus_roundNumberProcessTitle", { number: String(number), processTitle: processTitle(round.processes) })}
               </span>
               <span className="flex min-w-0 flex-wrap items-center gap-y-1 text-body-compact text-muted-foreground group-data-[state=open]/round:hidden max-sm:flex-col max-sm:items-start">
                 {round.channels.map((channel) => (
@@ -247,7 +251,7 @@ function Round({
                         STATUS_DOT[channel.status],
                       )}
                     />
-                    {channel.type} · {channelStatusView(channel.status).label}
+                    {channel.type} · {translateText(t, channelStatusView(channel.status).label)}
                   </span>
                 ))}
               </span>
@@ -261,7 +265,7 @@ function Round({
               Channel column's width matches the term column, so a round has
               one left edge for its facts and its Destination column. */}
           <DescriptionList className="sm:px-4">
-            <FactRow label="Order issued">
+            <FactRow label={t("caseProcessStatus_orderIssued")}>
               {round.order ? (
                 <>
                   <span className="tabular-nums">{round.order.on}</span>
@@ -271,15 +275,15 @@ function Round({
                       href={orderHref(caseId, round.order.id)}
                       className={FACT_LINK}
                     >
-                      View order
+                      {t("caseProcessStatus_viewOrder")}
                     </Link>
                   ) : null}
                 </>
               ) : (
-                <Muted>None</Muted>
+                <Muted>{t("caseProcessStatus_none")}</Muted>
               )}
             </FactRow>
-            <FactRow label="Linked hearing">
+            <FactRow label={t("caseProcessStatus_linkedHearing")}>
               {round.hearing ? (
                 <>
                   {round.hearing.id ? (
@@ -291,17 +295,17 @@ function Round({
                       )}
                       className={FACT_LINK}
                     >
-                      {round.hearing.purpose}
+                      {translateText(t, round.hearing.purpose)}
                     </Link>
                   ) : (
-                    round.hearing.purpose
+                    translateText(t, round.hearing.purpose)
                   )}
                   <Muted>
                     <span className="tabular-nums">{round.hearing.on}</span>
                   </Muted>
                 </>
               ) : (
-                <Muted>None</Muted>
+                <Muted>{t("caseProcessStatus_none")}</Muted>
               )}
             </FactRow>
           </DescriptionList>
@@ -316,22 +320,22 @@ function Round({
                   className="border-t border-hairline py-4 first:border-t-0 first:pt-0 last:pb-0"
                 >
                   <DescriptionList>
-                    <FactRow label="Sent via">
+                    <FactRow label={t("caseProcessStatus_sentVia")}>
                       <span className="font-medium">{channel.type}</span>
                     </FactRow>
-                    <FactRow label="Destination">
+                    <FactRow label={t("caseProcessStatus_destination")}>
                       <span className="wrap-anywhere">
-                        {channel.destination}
+                        {translateText(t, channel.destination)}
                       </span>
                     </FactRow>
-                    <FactRow label="Status">
+                    <FactRow label={t("caseProcessStatus_status")}>
                       <StatusMark channel={channel} />
                     </FactRow>
-                    <FactRow label="Fee paid on">
+                    <FactRow label={t("caseProcessStatus_feePaidOn")}>
                       <FeePaid on={channel.feePaidOn} />
                     </FactRow>
                     {hasRemarks(channel) ? (
-                      <FactRow label="Remarks">
+                      <FactRow label={t("caseProcessStatus_remarks")}>
                         <ChannelRemarks channel={channel} />
                       </FactRow>
                     ) : null}
@@ -353,17 +357,17 @@ function Round({
               <TableHeader>
                 <TableRow className={TABLE_HEAD_ROW}>
                   <TableHead className={cn(TABLE_HEAD, "w-36 xl:w-44")}>
-                    Channel
+                    {t("caseProcessStatus_channel")}
                   </TableHead>
-                  <TableHead className={TABLE_HEAD}>Destination</TableHead>
+                  <TableHead className={TABLE_HEAD}>{t("caseProcessStatus_destination")}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "w-44")}>
-                    Status
+                    {t("caseProcessStatus_status")}
                   </TableHead>
                   <TableHead className={cn(TABLE_HEAD, "w-36")}>
-                    Fee paid on
+                    {t("caseProcessStatus_feePaidOn")}
                   </TableHead>
                   <TableHead className={cn(TABLE_HEAD, "w-1/5 xl:w-1/4")}>
-                    Remarks
+                    {t("caseProcessStatus_remarks")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -380,7 +384,7 @@ function Round({
                       <TableCell
                         className={cn(CELL, "whitespace-normal wrap-anywhere")}
                       >
-                        {channel.destination}
+                        {translateText(t, channel.destination)}
                       </TableCell>
                       <TableCell className={CELL}>
                         <StatusMark channel={channel} />
@@ -430,6 +434,7 @@ function hasRemarks(channel: ProcessChannel) {
  * rather than leaving three mostly empty ones (owner, Oct 6).
  */
 function ChannelRemarks({ channel }: { channel: ProcessChannel }) {
+  const t = useTranslations();
   /* Most channels carry no remark; an explicit N/A reads as "nothing
      recorded" where a blank cell read as missing (owner, Oct 6). */
   if (!hasRemarks(channel)) return <Muted>N/A</Muted>;
@@ -455,7 +460,7 @@ function ChannelRemarks({ channel }: { channel: ProcessChannel }) {
             download={channel.executionReport.fileName}
           >
             <DownloadIcon data-icon="inline-start" aria-hidden />
-            Execution report
+            {t("caseProcessStatus_executionReport")}
           </a>
         </Button>
       ) : null}
@@ -472,6 +477,7 @@ function ChannelRemarks({ channel }: { channel: ProcessChannel }) {
  * always carries the meaning, never the colour alone.
  */
 function StatusMark({ channel }: { channel: ProcessChannel }) {
+  const t = useTranslations();
   return (
     <span className="grid grid-cols-[auto_1fr] items-center gap-x-2 whitespace-nowrap">
       <span
@@ -479,7 +485,7 @@ function StatusMark({ channel }: { channel: ProcessChannel }) {
         className={cn("size-2 rounded-full", STATUS_DOT[channel.status])}
       />
       <span className="text-foreground">
-        {channelStatusView(channel.status).label}
+        {translateText(t, channelStatusView(channel.status).label)}
       </span>
       <span className="col-start-2 tabular-nums text-muted-foreground">
         {channel.statusOn}
@@ -490,10 +496,11 @@ function StatusMark({ channel }: { channel: ProcessChannel }) {
 
 /** The channel's fee date, or that it is still owed (SVC-09). */
 function FeePaid({ on }: { on?: string }) {
+  const t = useTranslations();
   return on ? (
     <span className="tabular-nums">{on}</span>
   ) : (
-    <Muted>Not paid yet</Muted>
+    <Muted>{t("caseProcessStatus_notPaidYet")}</Muted>
   );
 }
 

@@ -188,7 +188,7 @@ export function formatDueStatus(iso: string, now: number): DueStatus {
     return { relative, on, label: relative, overdue: true };
   }
   if (days === 0) {
-    return { relative: "Due today", on, label: "Due today", overdue: false };
+    return { relative: "Due today", on, label: "peek_dueToday", overdue: false };
   }
   const relative = days === 1 ? "Due tomorrow" : `Due in ${days} days`;
   return { relative, on, label: `${relative} · ${on}`, overdue: false };

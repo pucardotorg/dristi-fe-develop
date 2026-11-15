@@ -36,8 +36,10 @@ import { ComboField, TextField } from "@/components/filing/inputs";
 import { SectionNotice } from "@/components/filing/notices";
 import { RemoveButton } from "@/components/filing/repeat-lists";
 import { YesNoSegmented } from "@/components/filing/segmented";
+import { useTranslations } from "next-intl";
 
 export function JurisdictionSection() {
+  const t = useTranslations();
   const stations = policeStationsFor(useCourt().court);
   const { draft, update, hrefFor } = useFiling();
   const j = draft.jurisdiction;
@@ -65,7 +67,7 @@ export function JurisdictionSection() {
       onClick={() => set("causeDate", "")}
       className="font-medium text-foreground underline underline-offset-2"
     >
-      Use that date
+      {t("jurisdictionSection_useThatDate")}
     </button>
   );
   const { elapsed: delay, withinLimit, overBy } = limitation;
@@ -99,36 +101,35 @@ export function JurisdictionSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="Jurisdiction & limitation"
-          description="Establish which court can hear the case, and confirm the complaint is within time."
+          title={t("jurisdictionSection_jurisdictionLimitation")}
+          description={t("jurisdictionSection_establishWhichCourtCanHearThe")}
         />
 
         {/* Cheque presentation */}
         <FormCard
-          title="Cheque presentation"
-          description="Where the cheque was presented decides which court has jurisdiction."
+          title={t("jurisdictionSection_chequePresentation")}
+          description={t("jurisdictionSection_whereTheChequeWasPresentedDecides")}
         >
           <FormField
             asGroup
             name="deposited"
-            label="Did the payee (complainant) deposit the cheque in their bank account?"
-            tip="If the payee deposited it, jurisdiction follows the payee's collecting bank branch."
+            label={t("jurisdictionSection_didThePayeeComplainantDepositThe")}
+            tip={t("jurisdictionSection_ifThePayeeDepositedItJurisdiction")}
           >
             <YesNoSegmented
               value={j.deposited}
               onValueChange={(v) => set("deposited", v)}
-              ariaLabel="Did the payee deposit the cheque in their bank account?"
+              ariaLabel={t("jurisdictionSection_didThePayeeDepositTheCheque")}
             />
           </FormField>
 
           <SectionNotice variant="info">
-            Jurisdiction follows the branch where the cheque was presented and the
-            complainant holds the account.
+            {t("jurisdictionSection_jurisdictionFollowsTheBranchWhereThe")}
           </SectionNotice>
 
           {j.deposited === "yes" ? (
             <>
-              <FormSubhead>Payee (complainant) bank details</FormSubhead>
+              <FormSubhead>{t("jurisdictionSection_payeeComplainantBankDetails")}</FormSubhead>
               <IfscField
                 value={j.ifsc}
                 onChange={editIfsc}
@@ -141,49 +142,49 @@ export function JurisdictionSection() {
                   })
                 }
                 fetched={j.payeeFetched}
-                tip="The 11-character code of the complainant's collecting branch. Fetch to auto-fill the bank name and branch."
-                placeholder="e.g. HDFC0000512"
+                tip={t("jurisdictionSection_the11CharacterCodeOfThe")}
+                placeholder={t("jurisdictionSection_eGHdfc0000512")}
               />
               {/* Typed, not read-only: a code the registry doesn't know still has to be filed. */}
               <FormRow>
-                <FormField label="Bank name" name="payeeBankName" required>
+                <FormField label={t("jurisdictionSection_bankName")} name="payeeBankName" required>
                   <TextField
                     value={j.payeeBankName}
                     onChange={(v) => set("payeeBankName", v)}
-                    placeholder="Complainant's bank"
+                    placeholder={t("jurisdictionSection_complainantsBank")}
                   />
                 </FormField>
-                <FormField label="Bank branch" name="payeeBankBranch" required>
+                <FormField label={t("jurisdictionSection_bankBranch")} name="payeeBankBranch" required>
                   <TextField
                     value={j.payeeBankBranch}
                     onChange={(v) => set("payeeBankBranch", v)}
-                    placeholder="Branch name"
+                    placeholder={t("jurisdictionSection_branchName")}
                   />
                 </FormField>
               </FormRow>
               <HalfWidth>
-                <FormField label="Police station of bank branch" name="payeePolice" required>
+                <FormField label={t("jurisdictionSection_policeStationOfBankBranch")} name="payeePolice" required>
                   <ComboField
                     value={j.payeePolice}
                     onChange={(v: string) => set("payeePolice", v)}
                     items={stations}
-                    placeholder="Search stations"
-                    emptyLabel="No station by that name."
-                    ariaLabel="Police station of bank branch"
+                    placeholder={t("jurisdictionSection_searchStations")}
+                    emptyLabel={t("jurisdictionSection_noStationByThatName")}
+                    ariaLabel={t("jurisdictionSection_policeStationOfBankBranch")}
                   />
                 </FormField>
               </HalfWidth>
             </>
           ) : (
             <HalfWidth>
-              <FormField label="Police station of drawer (accused) bank branch" name="drawerPolice" required>
+              <FormField label={t("jurisdictionSection_policeStationOfDrawerAccusedBank")} name="drawerPolice" required>
                 <ComboField
                   value={j.drawerPolice}
                   onChange={(v: string) => set("drawerPolice", v)}
                   items={stations}
-                  placeholder="Search stations"
-                  emptyLabel="No station by that name."
-                  ariaLabel="Police station of drawer (accused) bank branch"
+                  placeholder={t("jurisdictionSection_searchStations")}
+                  emptyLabel={t("jurisdictionSection_noStationByThatName")}
+                  ariaLabel={t("jurisdictionSection_policeStationOfDrawerAccusedBank")}
                 />
               </FormField>
             </HalfWidth>
@@ -191,29 +192,29 @@ export function JurisdictionSection() {
         </FormCard>
 
         {/* Other complaints between the same parties */}
-        <FormCard title="Other cheque dishonour complaints between the same parties">
+        <FormCard title={t("jurisdictionSection_otherChequeDishonourComplaintsBetweenThe")}>
           <FormField
             asGroup
             name="otherPending"
-            label="Is there any other cheque dishonour complaint under Section 138 of the Negotiable Instruments Act, 1881 pending between the same parties?"
+            label={t("jurisdictionSection_isThereAnyOtherChequeDishonour")}
           >
             <YesNoSegmented
               value={j.otherPending}
               onValueChange={(v) => set("otherPending", v)}
-              ariaLabel="Any other cheque dishonour complaint pending between the same parties?"
+              ariaLabel={t("jurisdictionSection_anyOtherChequeDishonourComplaintPending")}
             />
           </FormField>
 
           {j.otherPending === "yes" ? (
             <>
               <SectionNotice variant="neutral">
-                List each one: the court and the case number.
+                {t("jurisdictionSection_listEachOneTheCourtAnd")}
               </SectionNotice>
               <div className="flex flex-col gap-4">
                 {j.otherCases.map((oc, i) => (
                   <div key={i} className="flex items-end gap-3">
                     <FormRow className="flex-1">
-                      <FormField label="Court" required>
+                      <FormField label={t("jurisdictionSection_court")} required>
                         <TextField
                           value={oc.court}
                           onChange={(v) =>
@@ -221,10 +222,10 @@ export function JurisdictionSection() {
                               d.jurisdiction.otherCases[i].court = v;
                             })
                           }
-                          placeholder="e.g. JMFC-II"
+                          placeholder={t("jurisdictionSection_eGJmfcIi")}
                         />
                       </FormField>
-                      <FormField label="Case number" required>
+                      <FormField label={t("jurisdictionSection_caseNumber")} required>
                         <TextField
                           value={oc.caseNumber}
                           onChange={(v) =>
@@ -232,13 +233,13 @@ export function JurisdictionSection() {
                               d.jurisdiction.otherCases[i].caseNumber = v;
                             })
                           }
-                          placeholder="e.g. CC/482/2025"
+                          placeholder={t("jurisdictionSection_eGCc4822025")}
                         />
                       </FormField>
                     </FormRow>
                     {j.otherCases.length > 1 ? (
                       <RemoveButton
-                        label={`Remove case ${i + 1}`}
+                        label={t("jurisdictionSection_removeCaseValue", { value: String(i + 1) })}
                         onClick={() =>
                           update((d) => {
                             d.jurisdiction.otherCases.splice(i, 1);
@@ -260,7 +261,7 @@ export function JurisdictionSection() {
                 }
               >
                 <PlusIcon data-icon="inline-start" aria-hidden />
-                Add more
+                {t("jurisdictionSection_addMore")}
               </Button>
             </>
           ) : null}
@@ -268,8 +269,8 @@ export function JurisdictionSection() {
 
         {/* Limitation period */}
         <FormCard
-          title="Limitation period"
-          description="The complaint must be filed within one month of the cause of action arising."
+          title={t("jurisdictionSection_limitationPeriod")}
+          description={t("jurisdictionSection_theComplaintMustBeFiledWithin")}
         >
           {/*
             Neither of these is really a question. The cause of action is fifteen days
@@ -280,7 +281,7 @@ export function JurisdictionSection() {
           */}
           <FormRow>
             <FormField
-              label="Date of cause of action"
+              label={t("jurisdictionSection_dateOfCauseOfAction")}
               name="causeDate"
               required
               error={
@@ -292,14 +293,14 @@ export function JurisdictionSection() {
               }
               help={
                 limitation.causeDerived ? (
-                  `15 days after the demand notice was served on ${toLongDate(serviceDate)}.`
+                  t("jurisdictionSection_15DaysAfterTheDemandNotice", { toLongDate: toLongDate(serviceDate) })
                 ) : limitation.derivedCause &&
                   limitation.derivedCause !== limitation.causeDate &&
                   !limitation.causeIssue ? (
                   // A typed date stops following the notice; say what the notice gives,
                   // and let the filer go back to it in one step.
                   <>
-                    The demand notice gives {toLongDate(limitation.derivedCause)}.{" "}
+                    {t("jurisdictionSection_theDemandNoticeGivesToLong", { toLongDate: toLongDate(limitation.derivedCause) })}
                     {noticeDateButton}
                   </>
                 ) : undefined
@@ -311,10 +312,10 @@ export function JurisdictionSection() {
               />
             </FormField>
             <FormField
-              label="Date of complaint filing"
+              label={t("jurisdictionSection_dateOfComplaintFiling")}
               name="filingDate"
               error={limitation.filingIssue}
-              help={j.filingDate ? undefined : "Today."}
+              help={j.filingDate ? undefined : t("jurisdictionSection_today")}
             >
               <DateField
                 value={limitation.filingDate}
@@ -326,15 +327,10 @@ export function JurisdictionSection() {
           {/* Nothing to derive from yet — said once, where the empty field is. */}
           {limitation.causeDate ? null : (
             <SectionNotice variant="neutral">
-              The cause of action is worked out from the demand notice. Record when it was
-              delivered, or returned unserved, under{" "}
-              <Link
+              {t.rich("jurisdictionSection_theCauseOfActionIsWorked", { link: (chunks) => <Link
                 href={hrefFor("demand-notice")}
                 className="font-medium text-current underline underline-offset-2"
-              >
-                Demand notice &amp; debt
-              </Link>
-              .
+              >{chunks}</Link> })}
             </SectionNotice>
           )}
           {/*
@@ -355,15 +351,14 @@ export function JurisdictionSection() {
               still={verdictStill}
               title={`${overBy} day${overBy === 1 ? "" : "s"} beyond the one-month limit`}
             >
-              The court can still take this on file, but it must be asked to condone the
-              delay.
+              {t("jurisdictionSection_theCourtCanStillTakeThis")}
             </SectionNotice>
           )}
 
           {/* Only asked for when there is a delay to condone. */}
           {withinLimit || delay === null ? null : (
             <FormField
-              label="Reason for condonation of delay"
+              label={t("jurisdictionSection_reasonForCondonationOfDelay")}
               name="condonationReason"
               required
               error={reasonAsked && needsReason ? jurisdictionCopy.condonationMissing : undefined}
@@ -371,7 +366,7 @@ export function JurisdictionSection() {
               <Textarea
                 value={j.condonationReason}
                 onChange={(e) => set("condonationReason", e.target.value)}
-                placeholder="e.g. The complainant was hospitalised between 12 June and 30 July, and the papers could not be settled in that time."
+                placeholder={t("jurisdictionSection_eGTheComplainantWasHospitalised")}
                 rows={4}
               />
             </FormField>
@@ -379,7 +374,7 @@ export function JurisdictionSection() {
         </FormCard>
 
         {error ? (
-          <SectionNotice variant="destructive" title="Couldn't save to the court's server">
+          <SectionNotice variant="destructive" title={t("jurisdictionSection_couldntSaveToTheCourtsServer")}>
             {error}
           </SectionNotice>
         ) : null}
@@ -389,7 +384,7 @@ export function JurisdictionSection() {
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
         continueDisabled={saving}
-        continueLabel={saving ? "Saving…" : "Continue"}
+        continueLabel={saving ? t("jurisdictionSection_saving") : t("jurisdictionSection_continue")}
       />
     </>
   );

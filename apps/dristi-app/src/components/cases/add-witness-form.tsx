@@ -53,6 +53,7 @@ import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { blankWitness } from "@/lib/filing/blank";
 import { witnessComplete } from "@/lib/filing/selectors";
 import type { AddressBlock, Witness } from "@/lib/filing/types";
+import { useTranslations } from "next-intl";
 
 /** The filing witness, plus this flow's optional document uploads. */
 type DialogWitness = Witness & { docs: File[] };
@@ -103,6 +104,7 @@ export function AddWitnessDialog({
   onOpenChange: (open: boolean) => void;
   caseRef: CaseRef;
 }) {
+  const t = useTranslations();
   const [step, setStep] = useState<1 | 2>(1);
   const [witnesses, setWitnesses] = useState<DialogWitness[]>(() => [
     newWitness(),
@@ -197,8 +199,8 @@ export function AddWitnessDialog({
       setActiveId(witnesses[missing].id);
       setError(
         witnessComplete(witnesses[missing])
-          ? `Witness ${missing + 1} needs at least one complete address, police station included.`
-          : `Witness ${missing + 1} needs a name or a designation.`
+          ? t("addWitnessForm_witnessValueNeedsAtLeastOne", { value: String(missing + 1) })
+          : t("addWitnessForm_witnessValueNeedsANameOr", { value: String(missing + 1) })
       );
       // Surface the error where the action is — the notice sits at the top of
       // the scroll region, so bring it into view.
@@ -212,8 +214,8 @@ export function AddWitnessDialog({
   const applicationDoc = {
     matter:
       witnesses.length === 1
-        ? "Application for the addition of a witness"
-        : "Application for the addition of witnesses",
+        ? t("addWitnessForm_applicationForTheAdditionOfA")
+        : t("addWitnessForm_applicationForTheAdditionOfWitnesses"),
     facts: witnesses.map((wit, i) => ({
       term: `Witness ${i + 1}`,
       value: `${witnessIdentity(wit)}${
@@ -240,12 +242,12 @@ export function AddWitnessDialog({
         <FlowDialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
           <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
             <DialogTitle className="text-title-s font-semibold text-balance">
-              Add witnesses
+              {t("addWitnessForm_addWitnesses")}
             </DialogTitle>
             <DialogDescription>
               {step === 1
-                ? "List the witnesses you intend to rely on, and how the court can reach them."
-                : "Review the application, then continue to sign it."}
+                ? t("addWitnessForm_listTheWitnessesYouIntendTo")
+                : t("addWitnessForm_reviewTheApplicationThenContinueTo")}
             </DialogDescription>
           </DialogHeader>
 
@@ -271,40 +273,40 @@ export function AddWitnessDialog({
                   activeId={w.id}
                   onSelect={setActiveId}
                   onRemove={askRemove}
-                  addLabel="Add witness"
+                  addLabel={t("addWitnessForm_addWitness")}
                   onAdd={addWitness}
                 />
 
                 <section className="flex flex-col gap-4">
                   <h3 className="text-body font-semibold leading-snug">
-                    Witness {index + 1}
+                    {t("addWitnessForm_witnessValue", { value: String(index + 1) })}
                   </h3>
                   <FormField
                     asGroup
-                    label="How is this witness identified?"
+                    label={t("addWitnessForm_howIsThisWitnessIdentified")}
                     required
                     // One line on purpose: the DS description balances its
                     // lines, so two-line help breaks mid-phrase.
-                    help="Their full name, or their designation if you only know the office they hold."
+                    help={t("addWitnessForm_theirFullNameOrTheirDesignation")}
                     helpPlacement="above"
                   >
                     <div className="flex flex-col gap-4">
-                      <FormField label="Full name">
+                      <FormField label={t("addWitnessForm_fullName")}>
                         <TextField
                           value={w.fullName}
                           onChange={(v) => setField("fullName", v)}
-                          placeholder="e.g. Ramesh Nair"
+                          placeholder={t("addWitnessForm_eGRameshNair")}
                           autoComplete="off"
                         />
                       </FormField>
 
-                      <FieldSeparator>OR</FieldSeparator>
+                      <FieldSeparator>{t("addWitnessForm_or")}</FieldSeparator>
 
-                      <FormField label="Designation">
+                      <FormField label={t("addWitnessForm_designation")}>
                         <TextField
                           value={w.designation}
                           onChange={(v) => setField("designation", v)}
-                          placeholder="e.g. Bank Manager, SBI Sector 17"
+                          placeholder={t("addWitnessForm_eGBankManagerSbiSector")}
                           autoComplete="off"
                         />
                       </FormField>
@@ -312,21 +314,21 @@ export function AddWitnessDialog({
                   </FormField>
 
                   <HalfWidth>
-                    <FormField label="Age" optional>
+                    <FormField label={t("addWitnessForm_age")} optional>
                       <TextField
                         value={w.age}
                         onChange={(v) => setField("age", v)}
-                        placeholder="e.g. 42"
+                        placeholder={t("addWitnessForm_eG42")}
                         inputMode="numeric"
                       />
                     </FormField>
                   </HalfWidth>
 
-                  <FormField label="What will this witness prove?" optional>
+                  <FormField label={t("addWitnessForm_whatWillThisWitnessProve")} optional>
                     <Textarea
                       value={w.prove}
                       onChange={(e) => setField("prove", e.target.value)}
-                      placeholder="e.g. Confirms the cheque was handed over on 4 March"
+                      placeholder={t("addWitnessForm_eGConfirmsTheChequeWas")}
                     />
                   </FormField>
                 </section>
@@ -336,19 +338,19 @@ export function AddWitnessDialog({
                 <section className="flex flex-col gap-4">
                   <div className="flex flex-col gap-1">
                     <h3 className="text-body font-semibold leading-snug">
-                      Contact details
+                      {t("addWitnessForm_contactDetails")}
                     </h3>
                     <p className="text-body-compact text-muted-foreground">
-                      Where the court can reach this witness.
+                      {t("addWitnessForm_whereTheCourtCanReachThis")}
                     </p>
                   </div>
                   <ContactList
                     contacts={w.contacts}
                     onChange={(contacts) => setField("contacts", contacts)}
-                    addLabel="Add more"
-                    emailLabel="Email ID"
-                    mobilePlaceholder="Enter mobile number"
-                    emailPlaceholder="ex: xyz@gmail.com"
+                    addLabel={t("addWitnessForm_addMore")}
+                    emailLabel={t("addWitnessForm_emailId")}
+                    mobilePlaceholder={t("addWitnessForm_enterMobileNumber")}
+                    emailPlaceholder={t("addWitnessForm_exXyzGmailCom")}
                     optional
                   />
                 </section>
@@ -357,23 +359,23 @@ export function AddWitnessDialog({
 
                 <section className="flex flex-col gap-4">
                   <h3 className="text-body font-semibold leading-snug">
-                    Address details
+                    {t("addWitnessForm_addressDetails")}
                   </h3>
                   <SectionNotice variant="info">
-                    The court tries every address listed here.
+                    {t("addWitnessForm_theCourtTriesEveryAddressListed")}
                   </SectionNotice>
                   <AddressBlockList
                     blocks={w.addresses}
                     onChange={(addresses) => setField("addresses", addresses)}
-                    addLabel="Add address"
+                    addLabel={t("addWitnessForm_addAddress")}
                   />
                 </section>
 
                 <Separator />
 
                 <FileField
-                  label="Documents to be presented"
-                  description="Documents this witness will present to the court."
+                  label={t("addWitnessForm_documentsToBePresented")}
+                  description={t("addWitnessForm_documentsThisWitnessWillPresentTo")}
                   files={w.docs}
                   error={filesErrors[w.id]}
                   onFilesChange={(docs) => setField("docs", docs)}
@@ -397,18 +399,18 @@ export function AddWitnessDialog({
                 variant="outline"
                 onClick={() => setStep(1)}
               >
-                Back
+                {t("common_back")}
               </Button>
             ) : (
               <span aria-hidden className="hidden sm:block" />
             )}
             {step === 1 ? (
               <Button type="button" onClick={continueToReview}>
-                Continue
+                {t("addWitnessForm_continue")}
               </Button>
             ) : (
               <Button type="button" onClick={() => setSignOpen(true)}>
-                Continue to sign
+                {t("addWitnessForm_continueToSign")}
               </Button>
             )}
           </footer>
@@ -429,11 +431,11 @@ export function AddWitnessDialog({
           closeClean();
         }}
         confirmation={{
-          title: "Application sent to the magistrate",
+          title: t("addWitnessForm_applicationSentToTheMagistrate"),
           description:
             witnesses.length === 1
-              ? "The witness is added to the case once the order is passed."
-              : "The witnesses are added to the case once the order is passed.",
+              ? t("addWitnessForm_theWitnessIsAddedToThe")
+              : t("addWitnessForm_theWitnessesAreAddedToThe"),
         }}
       />
 
@@ -442,10 +444,10 @@ export function AddWitnessDialog({
         onOpenChange={(nextOpen) => {
           if (!nextOpen) setRemoveId(null);
         }}
-        title={`Remove witness ${removeNumber}`}
-        description="Are you sure you want to delete this witness and all their details?"
-        note="This cannot be undone."
-        confirmLabel="Yes, remove"
+        title={t("addWitnessForm_removeWitnessRemoveNumber", { removeNumber: String(removeNumber) })}
+        description={t("addWitnessForm_areYouSureYouWantTo")}
+        note={t("addWitnessForm_thisCannotBeUndone")}
+        confirmLabel={t("addWitnessForm_yesRemove")}
         onConfirm={confirmRemove}
       />
     </>

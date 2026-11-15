@@ -82,6 +82,8 @@ import {
   witnessSummaries,
 } from "@/components/filing/sections/preview/derive";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /* ───────────────────────────── Key-value rows ──────────────────────── */
 
@@ -128,6 +130,7 @@ function ReviewButton({
   section: string;
   onClick: () => void;
 }) {
+  const t = useTranslations();
   return (
     <>
       <Button
@@ -137,8 +140,7 @@ function ReviewButton({
         className="max-sm:hidden"
       >
         <PencilLineIcon data-icon="inline-start" aria-hidden />
-        Review
-        <span className="sr-only"> {section}</span>
+        {t.rich("previewSection_reviewSection", { section, span: (chunks) => <span className="sr-only">{chunks}</span> })}
       </Button>
       {/* Phone: the DS small button, so a long section title keeps its line. */}
       <Button
@@ -149,8 +151,7 @@ function ReviewButton({
         className="h-10 sm:hidden"
       >
         <PencilLineIcon data-icon="inline-start" aria-hidden />
-        Review
-        <span className="sr-only"> {section}</span>
+        {t.rich("previewSection_reviewSection", { section, span: (chunks) => <span className="sr-only">{chunks}</span> })}
       </Button>
     </>
   );
@@ -161,15 +162,16 @@ function ReviewButton({
  * unfinished ones take colour — nine green ticks would drown the one status that matters.
  */
 function SectionState({ complete }: { complete: boolean }) {
+  const t = useTranslations();
   return complete ? (
     <span className="flex items-center gap-1 text-caption font-medium text-muted-foreground">
       <CheckIcon className="size-3.5" aria-hidden />
-      Complete
+      {t("previewSection_complete")}
     </span>
   ) : (
     <span className="flex items-center gap-1 text-caption font-medium text-warning-ink">
       <TriangleAlertIcon className="size-3.5" aria-hidden />
-      Incomplete
+      {t("previewSection_incomplete")}
     </span>
   );
 }
@@ -375,6 +377,7 @@ function IncompleteSections({
 }: {
   sections: { key: string; title: string; href: string }[];
 }) {
+  const t = useTranslations();
   const count = sections.length;
   return (
     <Popover>
@@ -388,10 +391,10 @@ function IncompleteSections({
       <PopoverContent side="top" align="end" className="w-80 gap-2 p-2">
         <PopoverHeader className="px-2 pt-2">
           <PopoverTitle className="text-body-compact font-semibold">
-            Still to complete
+            {t("previewSection_stillToComplete")}
           </PopoverTitle>
           <PopoverDescription className="text-caption">
-            Open a section to finish it.
+            {t("previewSection_openASectionToFinishIt")}
           </PopoverDescription>
         </PopoverHeader>
         <ul className="flex flex-col">
@@ -423,6 +426,7 @@ function IncompleteSections({
 /* ───────────────────────────── Screen ──────────────────────────────── */
 
 export function PreviewSection() {
+  const t = useTranslations();
   const courtText = useCourtText();
   const { draft, hrefFor, steps } = useFiling();
   const { prev, next } = neighbours("preview");
@@ -450,7 +454,7 @@ export function PreviewSection() {
   const witnesses = witnessSummaries(draft);
   const documents = documentSummary(draft);
 
-  const panels = buildPanels(draft);
+  const panels = React.useMemo(() => buildPanels(draft), [draft]);
   const panel = editKey ? panels[editKey] : null;
 
   /**
@@ -535,21 +539,19 @@ export function PreviewSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="Preview"
+          title={t("previewSection_preview")}
           description={
             <>
-              Check everything you have filed. Use{" "}
-              <strong className="font-semibold text-foreground">Review</strong>{" "}
-              on any section to open it and change what it holds.
+              {t.rich("previewSection_checkEverythingYouHaveFiledUse", { strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong> })}
             </>
           }
         />
 
         <Tabs value={view} onValueChange={setView} className="gap-6">
           <div className="flex flex-col items-start justify-between gap-2 border-b border-hairline sm:flex-row sm:items-end">
-            <TabsList variant="line" aria-label="Preview format" className="order-2 sm:order-none">
-              <TabsTrigger value="synopsis" className="h-10 px-3">Complaint</TabsTrigger>
-              <TabsTrigger value="document" className="h-10 px-3">Complaint PDF</TabsTrigger>
+            <TabsList variant="line" aria-label={t("previewSection_previewFormat")} className="order-2 sm:order-none">
+              <TabsTrigger value="synopsis" className="h-10 px-3">{t("previewSection_complaint")}</TabsTrigger>
+              <TabsTrigger value="document" className="h-10 px-3">{t("previewSection_complaintPdf")}</TabsTrigger>
             </TabsList>
             <Button
               type="button"
@@ -558,7 +560,7 @@ export function PreviewSection() {
               className="sm:mb-2"
             >
               <PrinterIcon data-icon="inline-start" aria-hidden />
-              Print or save as PDF
+              {t("previewSection_printOrSaveAsPdf")}
             </Button>
           </div>
 
@@ -566,22 +568,22 @@ export function PreviewSection() {
           <TabsContent value="synopsis" className="flex flex-col gap-6">
             {/* No status badge here: the card captions below say it per section, and the
                 footer says it once for the filing. */}
-            <FormCard title="Filing summary">
+            <FormCard title={t("previewSection_filingSummary")}>
               <KeyValues
                 rows={[
-                  { term: "Offence", value: CASE_TYPE.offence },
-                  { term: "Court", value: courtText(COURT.name) },
+                  { term: t("previewSection_offence"), value: CASE_TYPE.offence },
+                  { term: t("previewSection_court"), value: courtText(COURT.name) },
                   {
-                    term: "Total cheque amount",
+                    term: t("previewSection_totalChequeAmount"),
                     value: totalChequeText(draft),
                   },
-                  { term: "Amount claimed", value: amountClaimedText(draft) },
+                  { term: t("previewSection_amountClaimed"), value: amountClaimedText(draft) },
                 ]}
               />
             </FormCard>
 
             <FormCard
-              title="Complainant"
+              title={t("previewSection_complainant")}
               action={
                 <CardActions
                   complete={done("complainant")}
@@ -592,28 +594,28 @@ export function PreviewSection() {
             >
               <KeyValues
                 rows={[
-                  { term: "Name", value: complainant.name },
-                  { term: "Type", value: complainant.type },
+                  { term: t("previewSection_name"), value: complainant.name },
+                  { term: t("previewSection_type"), value: complainant.type },
                   ...(complainant.cinPan
-                    ? [{ term: "CIN or PAN", value: complainant.cinPan }]
+                    ? [{ term: t("previewSection_cinOrPan"), value: complainant.cinPan }]
                     : []),
-                  { term: "Mobile", value: complainant.mobile },
-                  { term: "Email", value: complainant.email },
+                  { term: t("previewSection_mobile"), value: complainant.mobile },
+                  { term: t("previewSection_email"), value: complainant.email },
                   {
-                    term: "Present address",
+                    term: t("previewSection_presentAddress"),
                     value: complainant.presentAddress,
                   },
                   {
-                    term: "Permanent address",
+                    term: t("previewSection_permanentAddress"),
                     value: complainant.permanentAddress,
                   },
-                  { term: "Power of attorney", value: complainant.poa },
+                  { term: t("previewSection_powerOfAttorney"), value: complainant.poa },
                 ]}
               />
             </FormCard>
 
             <FormCard
-              title="Advocates"
+              title={t("previewSection_advocates")}
               action={
                 <CardActions
                   complete={done("advocate")}
@@ -628,22 +630,21 @@ export function PreviewSection() {
                     key={a.key}
                     title={a.label}
                     rows={[
-                      { term: "Name", value: a.name },
-                      { term: "Bar registration", value: a.bar },
-                      { term: "Appearing for", value: a.appearingFor },
+                      { term: t("previewSection_name"), value: a.name },
+                      { term: t("previewSection_barRegistration"), value: a.bar },
+                      { term: t("previewSection_appearingFor"), value: a.appearingFor },
                     ]}
                   />
                 ))
               ) : (
                 <p className="text-body-compact text-muted-foreground">
-                  No advocate added. The complainant appears as a party in
-                  person.
+                  {t("previewSection_noAdvocateAddedTheComplainantAppears")}
                 </p>
               )}
             </FormCard>
 
             <FormCard
-              title="Accused"
+              title={t("previewSection_accused")}
               action={
                 <CardActions
                   complete={done("accused")}
@@ -657,16 +658,16 @@ export function PreviewSection() {
                   key={a.key}
                   title={a.label}
                   rows={[
-                    { term: "Name", value: a.name },
-                    { term: "Type", value: a.type },
-                    { term: "Address", value: a.addressWithPolice },
+                    { term: t("previewSection_name"), value: a.name },
+                    { term: t("previewSection_type"), value: a.type },
+                    { term: t("previewSection_address"), value: a.addressWithPolice },
                   ]}
                 />
               ))}
             </FormCard>
 
             <FormCard
-              title="Cheque & return memo"
+              title={t("previewSection_chequeReturnMemo")}
               action={
                 <CardActions
                   complete={done("cheque")}
@@ -680,17 +681,17 @@ export function PreviewSection() {
                   key={c.key}
                   title={c.label}
                   rows={[
-                    { term: "Amount", value: c.amount },
-                    { term: "Cheque no. / date", value: c.numberAndDate },
-                    { term: "Drawer’s bank", value: c.drawerBank },
-                    { term: "Returned", value: c.returned },
+                    { term: t("previewSection_amount"), value: c.amount },
+                    { term: t("previewSection_chequeNoDate"), value: c.numberAndDate },
+                    { term: t("previewSection_drawersBank"), value: c.drawerBank },
+                    { term: t("previewSection_returned"), value: c.returned },
                   ]}
                 />
               ))}
             </FormCard>
 
             <FormCard
-              title="Demand notice & debt"
+              title={t("previewSection_demandNoticeDebt")}
               action={
                 <CardActions
                   complete={done("demand")}
@@ -701,17 +702,17 @@ export function PreviewSection() {
             >
               <KeyValues
                 rows={[
-                  { term: "Nature of debt", value: notice.nature },
-                  { term: "Notice dispatched", value: notice.dispatched },
-                  { term: "Delivered", value: notice.delivered },
-                  { term: "Reply received", value: notice.replied },
-                  { term: "Payment received", value: notice.payment },
+                  { term: t("previewSection_natureOfDebt"), value: notice.nature },
+                  { term: t("previewSection_noticeDispatched"), value: notice.dispatched },
+                  { term: t("previewSection_delivered"), value: notice.delivered },
+                  { term: t("previewSection_replyReceived"), value: notice.replied },
+                  { term: t("previewSection_paymentReceived"), value: notice.payment },
                 ]}
               />
             </FormCard>
 
             <FormCard
-              title="Jurisdiction & limitation"
+              title={t("previewSection_jurisdictionLimitation")}
               action={
                 <CardActions
                   complete={done("jurisdiction")}
@@ -723,26 +724,26 @@ export function PreviewSection() {
               <KeyValues
                 rows={[
                   {
-                    term: "Cheque presented by",
+                    term: t("previewSection_chequePresentedBy"),
                     value: jurisdiction.presentedBy,
                   },
-                  { term: "Police station", value: jurisdiction.police },
-                  { term: "Cause of action", value: jurisdiction.causeDate },
+                  { term: t("previewSection_policeStation"), value: jurisdiction.police },
+                  { term: t("previewSection_causeOfAction"), value: jurisdiction.causeDate },
                   {
-                    term: "Complaint filing date",
+                    term: t("previewSection_complaintFilingDate"),
                     value: jurisdiction.filingDate,
                   },
                   {
-                    term: "Within limitation",
+                    term: t("previewSection_withinLimitation"),
                     value: jurisdiction.inTime ? (
                       <Badge variant="success">
                         <CheckIcon aria-hidden />
-                        Yes, in time
+                        {t("previewSection_yesInTime")}
                       </Badge>
                     ) : (
                       <Badge variant="warning">
                         <TriangleAlertIcon aria-hidden />
-                        {jurisdiction.delayText}
+                        {translateText(t, jurisdiction.delayText)}
                       </Badge>
                     ),
                   },
@@ -751,7 +752,7 @@ export function PreviewSection() {
             </FormCard>
 
             <FormCard
-              title="ADR, other details & prayer"
+              title={t("previewSection_adrOtherDetailsPrayer")}
               action={
                 <CardActions
                   complete={done("adr")}
@@ -762,15 +763,15 @@ export function PreviewSection() {
             >
               <KeyValues
                 rows={[
-                  { term: "Open to settlement (ADR)", value: adrLabel(draft) },
-                  { term: "Interim relief", value: INTERIM_RELIEF_SUMMARY },
-                  { term: "Final relief", value: finalReliefSummary(draft) },
+                  { term: t("previewSection_openToSettlementAdr"), value: adrLabel(draft) },
+                  { term: t("previewSection_interimRelief"), value: INTERIM_RELIEF_SUMMARY },
+                  { term: t("previewSection_finalRelief"), value: finalReliefSummary(draft) },
                 ]}
               />
             </FormCard>
 
             <FormCard
-              title="Witnesses"
+              title={t("previewSection_witnesses")}
               action={
                 <CardActions
                   complete={done("witnesses")}
@@ -785,14 +786,14 @@ export function PreviewSection() {
                   title={w.label}
                   rows={[
                     { term: w.term, value: w.name },
-                    { term: "Will prove", value: w.prove },
+                    { term: t("previewSection_willProve"), value: w.prove },
                   ]}
                 />
               ))}
             </FormCard>
 
             <FormCard
-              title="Documents"
+              title={t("previewSection_documents")}
               action={
                 <CardActions
                   complete={done("documents")}
@@ -830,7 +831,7 @@ export function PreviewSection() {
               ) : null}
               {!documents.lines.length && !documents.remaining ? (
                 <p className="py-3 text-body-compact text-muted-foreground">
-                  No documents added yet.
+                  {t("previewSection_noDocumentsAddedYet")}
                 </p>
               ) : null}
             </FormCard>
@@ -845,7 +846,7 @@ export function PreviewSection() {
         {validateError ? (
           <SectionNotice
             variant="destructive"
-            title="Couldn't check the filing with the court's server"
+            title={t("previewSection_couldntCheckTheFilingWithThe")}
           >
             {validateError}
           </SectionNotice>
@@ -861,10 +862,9 @@ export function PreviewSection() {
       >
         <ChromeDialogContent mobileSheet className="sm:max-w-md" onInteractOutside={(event) => event.preventDefault()}>
           <DialogHeader>
-            <DialogTitle>Open the {panel?.title ?? ""} section?</DialogTitle>
+            <DialogTitle>{t("previewSection_openTheValueSection", { value: panel?.title ?? "" })}</DialogTitle>
             <DialogDescription>
-              Changes are made in the section itself. You will come back here
-              from its Continue.
+              {t("previewSection_changesAreMadeInTheSection")}
             </DialogDescription>
           </DialogHeader>
 
@@ -875,7 +875,7 @@ export function PreviewSection() {
               onCheckedChange={(checked) => setDontAsk(checked === true)}
             />
             <FieldLabel htmlFor="skip-review-prompt" className="font-normal">
-              Don&rsquo;t ask me again
+              {t("previewSection_dontAskMeAgain")}
             </FieldLabel>
           </Field>
 
@@ -885,10 +885,10 @@ export function PreviewSection() {
               variant="outline"
               onClick={() => setEditKey(null)}
             >
-              Stay here
+              {t("previewSection_stayHere")}
             </Button>
             <Button type="button" onClick={confirmReview}>
-              Open section
+              {t("previewSection_openSection")}
             </Button>
           </DialogFooter>
         </ChromeDialogContent>
@@ -903,10 +903,9 @@ export function PreviewSection() {
       >
         <ChromeDialogContent mobileSheet className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Some details are still needed</DialogTitle>
+            <DialogTitle>{t("previewSection_someDetailsAreStillNeeded")}</DialogTitle>
             <DialogDescription>
-              The court needs these before you can sign and submit. Fix each
-              one, then try Continue to sign again.
+              {t("previewSection_theCourtNeedsTheseBeforeYou")}
             </DialogDescription>
           </DialogHeader>
 
@@ -936,7 +935,7 @@ export function PreviewSection() {
                         router.push(hrefFor(step));
                       }}
                     >
-                      Go to {getStep(step).title}
+                      {t("previewSection_goToTitle", { title: getStep(step).title })}
                     </Button>
                   ) : null}
                 </li>
@@ -950,7 +949,7 @@ export function PreviewSection() {
               variant="outline"
               onClick={() => setProblems(null)}
             >
-              Close
+              {t("common_close")}
             </Button>
           </DialogFooter>
         </ChromeDialogContent>
@@ -962,20 +961,20 @@ export function PreviewSection() {
         continueDisabled={validating}
         continueLabel={
           validating
-            ? "Checking…"
+            ? t("previewSection_checking")
             : // A host that signs elsewhere (bulk filing signs the batch at once) is gone back to.
               !steps.includes("sign")
-              ? "Back to all cases"
+              ? t("previewSection_backToAllCases")
               : yourOathAhead
-                ? "Continue to sign and oath"
-                : "Continue to sign"
+                ? t("previewSection_continueToSignAndOath")
+                : t("previewSection_continueToSign")
         }
         showSaveState={false}
         status={
           readyToSign ? (
             <span className="inline-flex items-center gap-2 text-body-compact text-success-ink">
               <CheckIcon className="size-4" aria-hidden />
-              Reviewed
+              {t("previewSection_reviewed")}
             </span>
           ) : (
             <IncompleteSections

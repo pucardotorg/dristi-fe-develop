@@ -22,6 +22,7 @@ import {
   PAGE_SIZES,
   type HearingsPageSize,
 } from "@/lib/employee/hearings";
+import { useTranslations } from "next-intl";
 
 /**
  * How much of a list is in view, how many rows at a time, and the way through it.
@@ -79,6 +80,7 @@ export function ListFooter({
   pageSize: HearingsPageSize;
   onPageSizeChange: (size: HearingsPageSize) => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex flex-wrap items-center gap-3">
@@ -88,14 +90,14 @@ export function ListFooter({
             the count changes is a live region that says nothing about the change worth
             hearing. */}
         <p className="text-body-compact text-muted-foreground tabular-nums">
-          Showing {from}–{to} of {total}
+          {t("listFooter_showingFromToOfTotal", { from: String(from), to: String(to), total: String(total) })}
         </p>
         <div className="flex items-center gap-2">
           <Label
             htmlFor={id}
             className="text-body-compact font-normal text-muted-foreground"
           >
-            Per page
+            {t("listFooter_perPage")}
           </Label>
           <Select
             value={String(pageSize)}
@@ -142,7 +144,7 @@ export function ListFooter({
                   <PaginationLink
                     href="#"
                     isActive={entry === page}
-                    aria-label={`Go to page ${entry}`}
+                    aria-label={t("listFooter_goToPageEntry", { entry: String(entry) })}
                     onClick={(event) => {
                       event.preventDefault();
                       onPageChange(entry);

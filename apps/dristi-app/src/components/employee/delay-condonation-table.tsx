@@ -28,6 +28,7 @@ import {
 import { causeTitle, counselFor } from "@/lib/employee/hearings";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * The delay-condonation queue as a table: the cause, its number, where the
@@ -53,21 +54,22 @@ export function DelayCondonationTable({
   rows: DelayCondonationCase[];
   onOpen: (matter: DelayCondonationCase) => void;
 }) {
+  const t = useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
+            {t("delayCondonationTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("delayCondonationTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
+            {t("delayCondonationTable_stage")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Advocates
+            {t("delayCondonationTable_advocates")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -99,14 +101,14 @@ export function DelayCondonationTable({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Review </span>
+                <span className="sr-only">{t("delayCondonationTable_review")} </span>
                 {causeTitle(matter)}
               </button>
             </TableCell>
             <TableCell
               className={cn(TABLE_CELL, "whitespace-nowrap")}
             >
-              <Identifier value={matter.caseNumber} label="case number" />
+              <Identifier value={matter.caseNumber} label={t("delayCondonationTable_caseNumberLabel")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
               {delayCondonationStageLabel(matter.stage)}

@@ -66,6 +66,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * One registration request, verified and then approved or rejected — the whole decision,
@@ -266,6 +268,7 @@ function RequestBody({
   onReturnFocus: () => void;
   onClose: () => void;
 }) {
+  const t = useTranslations();
   const [reason, setReason] = React.useState("");
   const [touched, setTouched] = React.useState(false);
   const reasonRef = React.useRef<HTMLTextAreaElement>(null);
@@ -320,7 +323,7 @@ function RequestBody({
          looked at the card. It is the first row of Identity instead. */
       title={STAGE_TITLE[stage](noun)}
       titleRef={flow.titleRef}
-      titleAside={<Badge variant={badge.variant}>{badge.label}</Badge>}
+      titleAside={<Badge variant={badge.variant}>{translateText(t, badge.label)}</Badge>}
       /* No description (owner, 2026-10-07): the application number was the only thing
          here, and it is a backend reference the court never needs to read or quote. */
       /* Keyed on the request so the title, the state and the number fade in with the
@@ -364,20 +367,20 @@ function RequestBody({
               variant="destructive"
               onClick={() => go("reject")}
             >
-              Reject
+              {t("approveRegistrationsDialog_reject")}
             </Button>
             {/* The overlay's one teal button, on every stage that has one: the guarded
                 act. Approval is where a credential is granted — the person can then act
                 as an advocate on real §138 files — which is why there is no bulk path
                 anywhere on this screen and why the photograph is opened one at a time. */}
             <Button type="button" onClick={() => go("approve")}>
-              Approve
+              {t("approveRegistrationsDialog_approve")}
             </Button>
           </>
         ) : stage === "reject" ? (
           <>
             <Button type="button" variant="ghost" onClick={() => go("review")}>
-              Back
+              {t("common_back")}
             </Button>
             {/* "Confirm rejection", not "Reject" again: a second button with the same
                 word as the one that got you here reads as nothing having happened
@@ -391,13 +394,13 @@ function RequestBody({
                 go("rejected");
               }}
             >
-              Confirm rejection
+              {t("approveRegistrationsDialog_confirmRejection")}
             </Button>
           </>
         ) : stage === "approve" ? (
           <>
             <Button type="button" variant="ghost" onClick={() => go("review")}>
-              Back
+              {t("common_back")}
             </Button>
             <Button
               type="button"
@@ -406,7 +409,7 @@ function RequestBody({
                 go("approved");
               }}
             >
-              Confirm approval
+              {t("approveRegistrationsDialog_confirmApproval")}
             </Button>
           </>
         ) : (
@@ -419,17 +422,17 @@ function RequestBody({
                 nothing, and the button already says what pressing it will do. */}
             {next === null ? (
               <p className="text-body-compact text-muted-foreground sm:mr-auto sm:self-center">
-                No more requests are waiting.
+                {t("approveRegistrationsDialog_noMoreRequestsAreWaiting")}
               </p>
             ) : null}
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Close
+                {t("common_close")}
               </Button>
             </DialogClose>
             {next ? (
               <Button type="button" onClick={() => onNext(next)}>
-                View next application
+                {t("approveRegistrationsDialog_viewNextApplication")}
                 <ArrowRightIcon data-icon="inline-end" aria-hidden />
               </Button>
             ) : null}
@@ -485,6 +488,7 @@ function ReviewStage({
   request: RegistrationRequest;
   factsRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const t = useTranslations();
   const rounds = rejectionRows(request);
   const changed = comparisonBlocks(request).find(
     (block) => block.id === "changed",
@@ -498,13 +502,13 @@ function ReviewStage({
         className="flex min-w-0 flex-col gap-6 outline-none md:min-h-0 md:overflow-y-auto"
       >
         {/* Two groups and, on a request that has been sent back, a third. */}
-        <FactGroup label="Request" rows={requestRows(request)} />
+        <FactGroup label={t("approveRegistrationsDialog_request")} rows={requestRows(request)} />
         {/* **Under Request, and open.** On a profile update, what changed is the request —
             the owner's ruling after a round with it folded into a disclosure: *"that's a
             separate thing altogether… I don't think this is too important to see hidden
             away in a drop-down"* (2026-09-11). */}
         {changed ? <ComparisonSection block={changed} /> : null}
-        <FactGroup label="Identity" rows={identityRows(request)} />
+        <FactGroup label={t("approveRegistrationsDialog_identity")} rows={identityRows(request)} />
 
         {rounds.length > 0 ? <EarlierRejections rounds={rounds} /> : null}
       </div>
@@ -526,6 +530,7 @@ function ReviewStage({
  * as the cards beside it, because it is the fifth attribute.
  */
 function EvidenceColumn({ request }: { request: RegistrationRequest }) {
+  const t = useTranslations();
   const noun = registrantNoun(request.registrantKind);
   return (
     <DocumentPreview
@@ -539,7 +544,7 @@ function EvidenceColumn({ request }: { request: RegistrationRequest }) {
         content: (
           <IdCardPhoto
             src={request.photo.src}
-            alt={`Photograph of the ${idCardName(request.registrantKind)} uploaded by ${request.fullName}`}
+            alt={t("approveRegistrationsDialog_photographOfTheIdCardName", { idCardName: idCardName(request.registrantKind), fullName: request.fullName })}
             noun={noun}
           />
         ),
@@ -594,6 +599,7 @@ function DecisionStage({
   reasonRef: React.RefObject<HTMLTextAreaElement | null>;
   onChange: (value: string) => void;
 }) {
+  const t = useTranslations();
   const rejecting = stage === "reject" || stage === "rejected";
   const settled = stage === "approved" || stage === "rejected";
   const empty = reason.trim() === "";
@@ -628,7 +634,7 @@ function DecisionStage({
               belongs to, and the pill above has just said. */}
           <Identifier
             value={request.registrationNumber}
-            label="registration number"
+            label={t("approveRegistrationsDialog_registrationNumber")}
             className="self-start text-body-compact text-muted-foreground"
           />
         </div>
@@ -672,13 +678,13 @@ function DecisionStage({
                     aria-hidden
                     className="size-4 shrink-0 text-destructive-ink"
                   />
-                  Why are you rejecting this?
+                  {t("approveRegistrationsDialog_whyAreYouRejectingThis")}
                 </FieldLabel>
                 <Textarea
                   id={id}
                   ref={reasonRef}
                   className="min-h-32 text-body"
-                  placeholder={`e.g. The name on the ${idCardName(request.registrantKind)} is different from the name you typed. Please check and submit again.`}
+                  placeholder={t("approveRegistrationsDialog_eGTheNameOnThe", { idCardName: idCardName(request.registrantKind) })}
                   value={reason}
                   onChange={(event) => onChange(event.target.value)}
                 />
@@ -686,7 +692,7 @@ function DecisionStage({
                     attempted yet reads as a scolding, and a line stating the rule before
                     it is broken is exposition. */}
                 {touched && empty ? (
-                  <FieldError>Write a reason first.</FieldError>
+                  <FieldError>{t("approveRegistrationsDialog_writeAReasonFirst")}</FieldError>
                 ) : null}
               </Field>
             )}
@@ -720,6 +726,7 @@ function DecisionStage({
  * technology; at this size it is the evidence the stage is built around.
  */
 function CardPhoto({ request }: { request: RegistrationRequest }) {
+  const t = useTranslations();
   const [failed, setFailed] = React.useState(false);
   if (failed) return null;
 
@@ -729,7 +736,7 @@ function CardPhoto({ request }: { request: RegistrationRequest }) {
           not a site asset: it has no build-time dimensions and must not be re-encoded. */}
       <img
         src={request.photo.src}
-        alt={`${idPhotoLabel(request.registrantKind)} uploaded by ${request.fullName}`}
+        alt={t("approveRegistrationsDialog_idPhotoLabelUploadedByFull", { idPhotoLabel: idPhotoLabel(request.registrantKind), fullName: request.fullName })}
         onError={() => setFailed(true)}
         className="mx-auto block h-40 w-auto max-w-full rounded-md object-contain"
       />
@@ -756,6 +763,7 @@ function StatusStrip({
   rejecting: boolean;
   settled: boolean;
 }) {
+  const t = useTranslations();
   if (settled) {
     const approved = stage === "approved";
     return (
@@ -768,7 +776,7 @@ function StatusStrip({
         icon={approved ? undefined : UserXIcon}
         className="rounded-none border-b border-hairline ring-0"
       >
-        {approved ? "Account created" : "Account rejected"}
+        {approved ? t("approveRegistrationsDialog_accountCreated") : t("approveRegistrationsDialog_accountRejected")}
       </StatusLine>
     );
   }
@@ -781,7 +789,7 @@ function StatusStrip({
       className="flex items-center gap-2 border-b border-hairline px-4 py-2.5 text-body-compact text-muted-foreground animate-in fade-in-0 duration-500 motion-reduce:animate-none"
     >
       <span className="font-medium">
-        {rejecting ? "You are rejecting" : "You are approving"}
+        {rejecting ? t("approveRegistrationsDialog_youAreRejecting") : t("approveRegistrationsDialog_youAreApproving")}
       </span>
     </div>
   );
@@ -992,6 +1000,7 @@ function ComparisonSection({ block }: { block: ComparisonBlock }) {
 }
 
 function ComparisonTable({ block }: { block: ComparisonBlock }) {
+  const t = useTranslations();
   const span = block.columns.length + 1;
 
   return (
@@ -1010,7 +1019,7 @@ function ComparisonTable({ block }: { block: ComparisonBlock }) {
                 {/* The corner cell of a comparison table names nothing — the row's own
                     term is the label. Named for a screen reader, which reads a header
                     cell for every column it announces. */}
-                <span className="sr-only">Detail</span>
+                <span className="sr-only">{t("approveRegistrationsDialog_detail")}</span>
               </TableHead>
               {block.columns.map((column) => (
                 <TableHead
@@ -1075,11 +1084,12 @@ function ComparisonTable({ block }: { block: ComparisonBlock }) {
  * carries it.
  */
 function EarlierRejections({ rounds }: { rounds: FactRow[] }) {
+  const t = useTranslations();
   const [newest, ...older] = rounds;
 
   return (
     <section className="flex flex-col gap-2">
-      <GroupHeading label="Earlier rejections" />
+      <GroupHeading label={t("approveRegistrationsDialog_earlierRejections")} />
       <StageCard className="gap-0">
         <DescriptionList>
           <FactRowView row={newest} />
@@ -1092,8 +1102,8 @@ function EarlierRejections({ rounds }: { rounds: FactRow[] }) {
                 on a tablet. */}
             <CollapsibleTrigger className="group/earlier flex min-h-10 w-fit items-center gap-1.5 rounded-lg text-left text-caption text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-focus-ring">
               {older.length === 1
-                ? "1 earlier round"
-                : `${older.length} earlier rounds`}
+                ? t("approveRegistrationsDialog_1EarlierRound")
+                : t("approveRegistrationsDialog_lengthEarlierRounds", { length: String(older.length) })}
               <ChevronDownIcon
                 aria-hidden
                 className="size-4 shrink-0 transition-transform group-data-[state=open]/earlier:rotate-180"
@@ -1134,6 +1144,7 @@ function IdCardPhoto({
   alt: string;
   noun: string;
 }) {
+  const t = useTranslations();
   const [status, setStatus] = React.useState<"loading" | "ready" | "failed">(
     "loading",
   );
@@ -1147,11 +1158,10 @@ function IdCardPhoto({
         <div className="m-auto flex flex-col items-center gap-3 py-8 text-center">
           <ImageOffIcon className="size-10 text-muted-foreground" aria-hidden />
           <p className="text-body font-medium">
-            This photo could not be opened
+            {t("approveRegistrationsDialog_thisPhotoCouldNotBeOpened")}
           </p>
           <p className="text-body-compact text-muted-foreground">
-            Try downloading it. You can still decide this request — or reject it
-            and ask the {noun} to upload the card again.
+            {t("approveRegistrationsDialog_tryDownloadingItYouCanStill", { noun })}
           </p>
         </div>
       ) : null}

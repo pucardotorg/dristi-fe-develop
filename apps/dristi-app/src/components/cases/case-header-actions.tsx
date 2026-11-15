@@ -31,6 +31,7 @@ import { rebaseCaseHref } from "@/lib/cases/case-reader";
 import { caseSectionHref } from "@/lib/cases/sections";
 import { DownloadCaseFileDialog } from "@/components/cases/download-case-file-dialog";
 import type { AccessCase } from "@/lib/access/content";
+import { useTranslations } from "next-intl";
 
 /**
  * Share access was hidden for v1 on Sept 17 and is back on Sept 18: the lead
@@ -81,6 +82,7 @@ export function CaseHeaderActions({
    *  the court has no order screen to open for it yet. */
   orderHref?: string;
 }) {
+  const t = useTranslations();
   const bail = useCaseBail();
   const [shareOpen, setShareOpen] = React.useState(false);
   const [downloadOpen, setDownloadOpen] = React.useState(false);
@@ -112,14 +114,14 @@ export function CaseHeaderActions({
                 variant="outline"
                 size="icon"
                 className={WORDED_ON_TABLET}
-                aria-label="Share access to this case"
+                aria-label={t("caseHeaderActions_shareAccessToThisCase")}
                 onClick={() => setShareOpen(true)}
               >
                 <Share2Icon aria-hidden />
-                <span className={TABLET_WORD}>Share access</span>
+                <span className={TABLET_WORD}>{t("caseHeaderActions_shareAccess")}</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Share access to this case</TooltipContent>
+            <TooltipContent side="bottom">{t("caseHeaderActions_shareAccessToThisCase")}</TooltipContent>
           </Tooltip>
         ) : null}
 
@@ -130,14 +132,14 @@ export function CaseHeaderActions({
               variant="outline"
               size="icon"
               className={WORDED_ON_TABLET}
-              aria-label="Download case file"
+              aria-label={t("caseHeaderActions_downloadCaseFile")}
               onClick={() => setDownloadOpen(true)}
             >
               <DownloadIcon aria-hidden />
-              <span className={TABLET_WORD}>Download</span>
+              <span className={TABLET_WORD}>{t("caseHeaderActions_download")}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Download case file</TooltipContent>
+          <TooltipContent side="bottom">{t("caseHeaderActions_downloadCaseFile")}</TooltipContent>
         </Tooltip>
 
         {court ? (
@@ -149,14 +151,14 @@ export function CaseHeaderActions({
             className="flex-1 md:pointer-fine:flex-none md:landscape:flex-none"
             onClick={() => setSubmitOpen(true)}
           >
-            Submit documents
+            {t("caseHeaderActions_submitDocuments")}
           </Button>
         ) : null}
 
         {court ? (
           orderHref ? (
             <Button asChild className={GENERATE_ORDER}>
-              <Link href={orderHref}>Generate order</Link>
+              <Link href={orderHref}>{t("caseHeaderActions_generateOrder")}</Link>
             </Button>
           ) : (
             <Tooltip>
@@ -166,11 +168,11 @@ export function CaseHeaderActions({
                   aria-disabled
                   className={`${GENERATE_ORDER} aria-disabled:opacity-50 aria-disabled:hover:bg-primary aria-disabled:active:translate-y-0`}
                 >
-                  Generate order
+                  {t("caseHeaderActions_generateOrder")}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" align="end">
-                The order screen is not connected for this case yet
+                {t("caseHeaderActions_theOrderScreenIsNotConnected")}
               </TooltipContent>
             </Tooltip>
           )
@@ -178,14 +180,14 @@ export function CaseHeaderActions({
         <DropdownMenu open={filingsOpen} onOpenChange={setFilingsOpen}>
           <DropdownMenuTrigger asChild>
             <Button type="button" className="order-first flex-1 md:pointer-fine:order-none md:pointer-fine:flex-none md:landscape:order-none md:landscape:flex-none">
-              Make filings
+              {t("caseHeaderActions_makeFilings")}
               <ChevronDownIcon data-icon="inline-end" aria-hidden />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-max min-w-(--radix-dropdown-menu-trigger-width) whitespace-nowrap">
             <DropdownMenuItem asChild>
               <Link href={`/cases/${caseId}/filings/application`}>
-                Raise application
+                {t("caseHeaderActions_raiseApplication")}
               </Link>
             </DropdownMenuItem>
             {/* A dialog over the case, as every filing is; not a page. */}
@@ -196,7 +198,7 @@ export function CaseHeaderActions({
                 setSubmitOpen(true);
               }}
             >
-              Submit documents
+              {t("caseHeaderActions_submitDocuments")}
             </DropdownMenuItem>
             {/* Bail is raised from Raise application, under its own type. */}
             {disposed ? null : (
@@ -207,7 +209,7 @@ export function CaseHeaderActions({
                   bail.openBondDirect();
                 }}
               >
-                Generate bail bond
+                {t("caseHeaderActions_generateBailBond")}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
@@ -230,7 +232,7 @@ export function CaseHeaderActions({
         }
         caseLine={
           <>
-            <Identifier value={accessCase.caseNumber} label="case number" />
+            <Identifier value={accessCase.caseNumber} label={t("caseHeaderActions_caseNumber")} />
             <span aria-hidden> · </span>
             {accessCase.title}
           </>

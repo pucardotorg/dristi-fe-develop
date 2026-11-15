@@ -60,6 +60,7 @@ import {
   type Method,
   type Role,
 } from "@/lib/sign-in/content";
+import { useTranslations } from "next-intl";
 
 /**
  * The page under the onboarding modal.
@@ -929,10 +930,11 @@ function PrototypeNotice({
   mobile: string;
   method: Method;
 }) {
+  const t = useTranslations();
   if (!show) return null;
   return (
     <Alert variant="info">
-      <AlertTitle>Prototype: no next screen yet</AlertTitle>
+      <AlertTitle>{t("signInBlock_prototypeNoNextScreenYet")}</AlertTitle>
       <AlertDescription>
         {`Would sign in +91 ${mobile}, verified by ${method === "password" ? "password" : "one-time code"}.`}
       </AlertDescription>

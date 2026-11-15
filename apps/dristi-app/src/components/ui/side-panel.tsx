@@ -7,6 +7,7 @@ import { XIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "next-intl";
 
 /**
  * A docked panel beside the page, for looking at one record without leaving the list
@@ -161,6 +162,7 @@ function SidePanel({
   children?: React.ReactNode
   className?: string
 }) {
+  const t = useTranslations();
   const drawer = useMediaQuery(drawerWhen)
   const { rendered, closing } = usePresence(open)
   const titleId = React.useId()
@@ -201,7 +203,7 @@ function SidePanel({
         </Title>
         {subtitle}
       </div>
-      <Button variant="ghost" size={closeSize} className="-mt-1 -mr-1 shrink-0 text-muted-foreground" onClick={() => onOpenChange(false)} aria-label="Close">
+      <Button variant="ghost" size={closeSize} className="-mt-1 -mr-1 shrink-0 text-muted-foreground" onClick={() => onOpenChange(false)} aria-label={t("common_close")}>
         <XIcon aria-hidden />
       </Button>
     </div>

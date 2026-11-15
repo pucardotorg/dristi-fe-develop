@@ -24,6 +24,7 @@ import type { Defect } from "@/lib/tasks/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useTranslations } from "next-intl";
 
 export type QueueDefect = {
   defect: Defect;
@@ -50,6 +51,7 @@ export function QueueProgress({
   total: number;
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {total > 0 && total <= MAX_SEGMENTS ? (
@@ -58,7 +60,7 @@ export function QueueProgress({
           aria-valuemin={0}
           aria-valuemax={total}
           aria-valuenow={resolved}
-          aria-label={`${resolved} of ${total} corrections done`}
+          aria-label={t("resolutionQueue_resolvedOfTotalCorrectionsDone", { resolved: String(resolved), total: String(total) })}
           className="flex gap-1"
         >
           {Array.from({ length: total }, (_, i) => (
@@ -74,12 +76,12 @@ export function QueueProgress({
       ) : (
         <Progress
           value={total ? (resolved / total) * 100 : 0}
-          aria-label={`${resolved} of ${total} corrections done`}
+          aria-label={t("resolutionQueue_resolvedOfTotalCorrectionsDone", { resolved: String(resolved), total: String(total) })}
           className="h-1.5"
         />
       )}
       <p className="text-caption text-muted-foreground tabular-nums">
-        {`${resolved} of ${total} done`}
+        {t("resolutionQueue_resolvedOfTotalDone", { resolved: String(resolved), total: String(total) })}
       </p>
     </div>
   );

@@ -10,6 +10,7 @@ import {
   CaseStage,
   CaseTitle,
 } from "./case-identity";
+import { useTranslations } from "next-intl";
 
 /** Shared field body for the table cell and the stacked list. */
 export function CaseField({
@@ -24,6 +25,7 @@ export function CaseField({
   /** Drop the "Long pending" badge — set inside the long pending register. */
   hideLongPendingFlag?: boolean;
 }) {
+  const t = useTranslations();
   const list = presentation === "list";
 
   switch (id) {
@@ -56,7 +58,7 @@ export function CaseField({
       const access = viewerAccess(record);
       return (
         <CasePlain>
-          {access.kind === "vakalatnama" ? "Vakalatnama" : "Office access"}
+          {access.kind === "vakalatnama" ? t("caseField_vakalatnama") : t("caseField_officeAccess")}
         </CasePlain>
       );
     }

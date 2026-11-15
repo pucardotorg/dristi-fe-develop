@@ -8,12 +8,14 @@ import { cn } from "@/lib/utils";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useFieldReadOnly, useLockedDisabled } from "@/components/filing/posture";
 import { ReadOnlyValue } from "@/components/filing/inputs";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** Date control bound to an ISO string, picked with the DS DatePicker. */
 export function DateField({
   value,
   onChange,
-  placeholder = "Pick date",
+  placeholder = "dateField_pickDate",
   ariaLabel,
   className,
   id,
@@ -25,6 +27,7 @@ export function DateField({
   className?: string;
   id?: string;
 }) {
+  const t = useTranslations();
   const disabled = useLockedDisabled();
   const readOnly = useFieldReadOnly();
   /* Flagged by scrutiny: a date picker has no read-only state, so the date reads as a
@@ -44,7 +47,7 @@ export function DateField({
       value={isoToDate(value)}
       onValueChange={(d) => onChange(dateToIso(d))}
       disabled={disabled}
-      placeholder={placeholder}
+      placeholder={translateText(t, placeholder)}
       /* Locked in a correction round: the same quiet sunken fill as every other locked
          control (the correction screen restores full opacity; see its centre pane). */
       className={cn("w-full", disabled && "disabled:bg-surface-sunken", className)}

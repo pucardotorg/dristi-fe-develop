@@ -20,6 +20,7 @@ import { bulkApi, useBulkFileUrl, type CaseView } from "./api";
 import type { BatchCtx } from "./batch-screen";
 import { OriginalDoc } from "./original-doc";
 import { StatusLine, StatusMark } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 type Doc = CaseView["documents"][number];
 type Flag = CaseView["flags"][number];
@@ -55,6 +56,7 @@ export function Slot({
   /** Keep the file as it is: skips the warning. */
   onKeep?: () => void;
 }) {
+  const t = useTranslations();
   const input = React.useRef<HTMLInputElement>(null);
   const [over, setOver] = React.useState(false);
   const filled = !!doc.file;
@@ -100,9 +102,9 @@ export function Slot({
           {busy ? (
             <Spinner className="shrink-0" />
           ) : poor ? (
-            <StatusMark tone="warning" size={16} still label="Uploaded, hard to read" />
+            <StatusMark tone="warning" size={16} still label={t("documentsTab_uploadedHardToRead")} />
           ) : (
-            <StatusMark size={16} still label="Uploaded" />
+            <StatusMark size={16} still label={t("documentsTab_uploaded")} />
           )}
           {name}
           <Button
@@ -110,11 +112,11 @@ export function Slot({
             variant="ghost"
             size="xs"
             className={SMALL_BTN}
-            aria-label={`View ${doc.name}: ${fileLine}`}
+            aria-label={t("documentsTab_viewNameFileLine", { name: doc.name, fileLine })}
             title={fileLine}
           >
             <a href={href ?? undefined} target="_blank" rel="noreferrer">
-              View
+              {t("documentsTab_view")}
             </a>
           </Button>
           {canUpload ? (
@@ -124,9 +126,9 @@ export function Slot({
               className={SMALL_BTN}
               disabled={busy}
               onClick={choose}
-              aria-label={`Replace ${doc.name}`}
+              aria-label={t("documentsTab_replaceName", { name: doc.name })}
             >
-              Replace
+              {t("documentsTab_replace")}
             </Button>
           ) : null}
         </div>
@@ -135,7 +137,7 @@ export function Slot({
           type="button"
           onClick={choose}
           disabled={!canUpload || busy}
-          title={canUpload ? "Drop a file here, or click to choose" : undefined}
+          title={canUpload ? t("documentsTab_dropAFileHereOrClick") : undefined}
           aria-label={`Upload ${doc.name}${doc.required ? ", required" : ", optional"}`}
           className={cn(
             "flex h-10 w-full items-center gap-2 rounded-lg border border-dashed px-3 text-left transition-colors focus-visible:ring-3 focus-visible:ring-focus-ring focus-visible:outline-none",
@@ -159,7 +161,7 @@ export function Slot({
               doc.required ? "text-destructive-ink" : "text-muted-foreground",
             )}
           >
-            {doc.required ? "Required" : "Optional"}
+            {doc.required ? t("documentsTab_required") : t("documentsTab_optional")}
           </span>
         </button>
       )}
@@ -173,7 +175,7 @@ export function Slot({
               disabled={busy}
               onClick={onKeep}
             >
-              Keep this file
+              {t("documentsTab_keepThisFile")}
             </button>
           ) : null}
         </p>
@@ -201,6 +203,7 @@ export function Slot({
  * and filed cases are locked, so they are not listed here.
  */
 export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
+  const t = useTranslations();
   const [busy, setBusy] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const closed = !!batch.clubbedInto;
@@ -290,7 +293,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
             onClick={() => void fillDemo(incomplete)}
           >
             <WandSparklesIcon data-icon="inline-start" aria-hidden />
-            Fill all with demo files
+            {t("documentsTab_fillAllWithDemoFiles")}
           </Button>
         ) : null}
         {missing ? (
@@ -305,7 +308,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
         ) : open.length ? (
           <span className="flex items-center gap-2">
             <StatusMark size={16} still />
-            Every required document is in
+            {t("documentsTab_everyRequiredDocumentIsIn")}
           </span>
         ) : null}
         {scans ? (
@@ -325,7 +328,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
               className="underline"
               onClick={() => go(batch.counts.filed ? "filed" : "pay")}
             >
-              {batch.counts.filed ? "See filed cases" : "Go to payment"}
+              {batch.counts.filed ? t("documentsTab_seeFiledCases") : t("documentsTab_goToPayment")}
             </button>
           </span>
         ) : null}
@@ -338,7 +341,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
       {open.length === 0 ? (
         <Card variant="raised">
           <CardContent className="text-body-compact text-muted-foreground">
-            All documents are in.
+            {t("documentsTab_allDocumentsAreIn")}
           </CardContent>
         </Card>
       ) : (
@@ -386,14 +389,14 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
                             data-icon="inline-start"
                             aria-hidden
                           />
-                          Fill with demo files
+                          {t("documentsTab_fillWithDemoFiles")}
                         </Button>
                       ) : null}
                       <Badge
                         variant={complete ? "success" : "warning"}
                         className="w-fit tabular-nums"
                       >
-                        {c.docs.have} of {c.docs.need} required
+                        {t("documentsTab_haveOfNeedRequired", { have: String(c.docs.have), need: String(c.docs.need) })}
                       </Badge>
                     </div>
                     <ul className="grid grid-cols-1 content-start gap-2 lg:grid-cols-2">

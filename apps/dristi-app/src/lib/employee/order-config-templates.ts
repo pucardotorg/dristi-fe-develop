@@ -83,14 +83,14 @@ export type OrderCategory = (typeof ORDER_CATEGORIES)[number];
 // ---------------------------------------------------------------------------
 
 export const TEMPLATE_GROUPS = [
-  { key: "cognizance", label: "Cognizance" },
-  { key: "case_management", label: "Case Management" },
-  { key: "process", label: "Process Orders" },
-  { key: "bail", label: "Bail" },
-  { key: "resolution", label: "Resolution" },
-  { key: "costs", label: "Costs" },
-  { key: "judgment", label: "Judgment" },
-  { key: "contextual", label: "Contextual Orders" },
+  { key: "cognizance", label: "orderConfigTemplates_cognizance" },
+  { key: "case_management", label: "orderConfigTemplates_caseManagement" },
+  { key: "process", label: "orderConfigTemplates_processOrders" },
+  { key: "bail", label: "orderConfigTemplates_bail" },
+  { key: "resolution", label: "orderConfigTemplates_resolution" },
+  { key: "costs", label: "orderConfigTemplates_costs" },
+  { key: "judgment", label: "orderConfigTemplates_judgment" },
+  { key: "contextual", label: "orderConfigTemplates_contextualOrders" },
 ] as const;
 
 export type TemplateGroup = (typeof TEMPLATE_GROUPS)[number]["key"];

@@ -49,6 +49,7 @@ import {
   sortRows,
   type CourtSortSpec,
 } from "@/lib/employee/court-sort";
+import { useTranslations } from "next-intl";
 
 type OtherApplicationSort = "oldest-applied" | "newest-applied" | "name";
 
@@ -84,6 +85,7 @@ const OTHER_APPLICATION_SORTS: CourtSortSpec<OtherApplication, OtherApplicationS
  * only drop the row from this demo queue; they decide nothing and write no order.
  */
 export function OtherApplicationsScreen() {
+  const t = useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used — every one of them, so the screen has a single rule rather than a live
      one and a deferred one. Every change resets to page one; the old Search button did
@@ -145,15 +147,15 @@ export function OtherApplicationsScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Others
+          {t("otherApplicationsScreen_others")}
         </h1>
         {/* The count is the whole point of the queue, so the supporting line carries it
             rather than restating the title. Singular is spelled out because "1
             applications" is the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 application is waiting for review."
-            : `${remaining.length} applications are waiting for review.`}
+            ? t("otherApplicationsScreen_1ApplicationIsWaitingForReview")
+            : t("otherApplicationsScreen_lengthApplicationsAreWaitingForReview", { length: String(remaining.length) })}
         </p>
       </header>
 
@@ -263,22 +265,23 @@ function OtherApplicationFiltersForm({
   /** The list's sort control (`CourtSortSelect`), at the end of the row. */
   trailing?: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("otherApplicationsScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: t("otherApplicationsScreen_caseNameNumberOrAdvocate"),
       }}
       searchRef={searchRef}
       fields={[
         {
           id: "other-applications-stage",
-          label: "Stage",
+          label: t("otherApplicationsScreen_stage"),
           value: filters.stage,
           all: "all",
-          allLabel: "All stages",
+          allLabel: t("otherApplicationsScreen_allStages"),
           options: OTHER_APPLICATION_STAGES.map((stage) => ({
             value: stage.id,
             label: stage.label,
@@ -290,10 +293,10 @@ function OtherApplicationFiltersForm({
         },
         {
           id: "other-applications-type",
-          label: "Application type",
+          label: t("otherApplicationsScreen_applicationType"),
           value: filters.type,
           all: "all",
-          allLabel: "All application types",
+          allLabel: t("otherApplicationsScreen_allApplicationTypes"),
           options: OTHER_APPLICATION_TYPES.map((type) => ({
             value: type.id,
             label: type.label,
@@ -325,6 +328,7 @@ function OtherApplicationsEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -336,18 +340,18 @@ function OtherApplicationsEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match these filters" : "Nothing waiting"}
+          {isFiltered ? t("otherApplicationsScreen_noMattersMatchTheseFilters") : t("otherApplicationsScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No application matches the stage, type or search you asked for."
-            : "There are no applications waiting for this court."}
+            ? t("otherApplicationsScreen_noApplicationMatchesTheStageType")
+            : t("otherApplicationsScreen_thereAreNoApplicationsWaitingFor")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
+            {t("otherApplicationsScreen_clearFilters")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -374,6 +378,7 @@ function OtherApplicationsItemList({
   rows: OtherApplication[];
   onOpen: (application: OtherApplication) => void;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((application) => (
@@ -387,20 +392,15 @@ function OtherApplicationsItemList({
               {...rowOpener}
                 className={rowOpenerClass}
             >
-              <span className="sr-only">Review </span>
+              <span className="sr-only">{t("otherApplicationsScreen_review")} </span>
               {causeTitle(application)}
             </button>
           <p className="min-w-0 text-body-compact">
             {otherApplicationTypeLabel(application.type)}
           </p>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={application.caseNumber} label="case number" />
-            {" · "}
-            {otherApplicationStageLabel(application.stage)}
-            {" · Applied "}
-            <span className="tabular-nums">
-              {formatOtherApplicationLongDate(application.appliedOn)}
-            </span>
+            <Identifier value={application.caseNumber} label={t("otherApplicationsScreen_caseNumber")} />
+            {t.rich("otherApplicationsScreen_otherApplicationStageLabelAppliedFormat", { otherApplicationStageLabel: otherApplicationStageLabel(application.stage), formatOtherApplicationLongDate: formatOtherApplicationLongDate(application.appliedOn), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
           </p>
           <CounselCell
             complainant={counselFor(application, "complainant").map(

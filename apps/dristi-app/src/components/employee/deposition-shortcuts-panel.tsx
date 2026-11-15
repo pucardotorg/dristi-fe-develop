@@ -16,6 +16,7 @@ import {
   updateDepositionShortcut,
   type DepositionShortcut,
 } from "@/lib/employee/deposition-shortcuts";
+import { useTranslations } from "next-intl";
 
 export function useDepositionShortcuts(): readonly DepositionShortcut[] {
   return React.useSyncExternalStore(
@@ -65,6 +66,7 @@ export function DepositionShortcutsPanel({
   /** Put this one in the text and go back to it. */
   onInsert: (entry: DepositionShortcut) => void;
 }) {
+  const t = useTranslations();
   const shortcuts = useDepositionShortcuts();
   const listed = [...shortcuts].sort(
     (a, b) =>
@@ -84,8 +86,7 @@ export function DepositionShortcutsPanel({
       onInsert={onInsert}
       textHint={
         <>
-          Start a line with Q: for a question and A: for its answer. Square brackets
-          mark a blank to fill, like [answer].
+          {t("depositionShortcutsPanel_startALineWithQFor")}
         </>
       }
     />

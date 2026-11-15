@@ -57,6 +57,7 @@ import {
   hasColumnFilters,
   type ColumnFilter,
 } from "@/lib/employee/court-column-filters";
+import { useTranslations } from "next-intl";
 
 const RESCHEDULING_COLUMN_FILTERS: ColumnFilter<ReschedulingRequest>[] = [
   {
@@ -130,6 +131,7 @@ const RESCHEDULING_SORTS: CourtSortSpec<ReschedulingRequest, ReschedulingSort>[]
  * do not write an order or move the listing.
  */
 export function ReschedulingRequestScreen() {
+  const t = useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used, so there is never a moment where what the bench has asked for and what
      the table is showing disagree. Every change resets to page one — the old Search
@@ -189,12 +191,12 @@ export function ReschedulingRequestScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Rescheduling request
+          {t("reschedulingRequestScreen_reschedulingRequest")}
         </h1>
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 application is waiting for review."
-            : `${remaining.length} applications are waiting for review.`}
+            ? t("reschedulingRequestScreen_1ApplicationIsWaitingForReview")
+            : t("reschedulingRequestScreen_lengthApplicationsAreWaitingForReview", { length: String(remaining.length) })}
         </p>
       </header>
 
@@ -294,13 +296,14 @@ function ReschedulingFiltersRow({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("reschedulingRequestScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: t("reschedulingRequestScreen_caseNameNumberOrAdvocate"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -317,6 +320,7 @@ function ReschedulingEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -328,18 +332,18 @@ function ReschedulingEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match this search" : "Nothing waiting"}
+          {isFiltered ? t("reschedulingRequestScreen_noMattersMatchThisSearch") : t("reschedulingRequestScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No rescheduling request matches the search you asked for."
-            : "Every rescheduling request before this court has been reviewed."}
+            ? t("reschedulingRequestScreen_noReschedulingRequestMatchesTheSearch")
+            : t("reschedulingRequestScreen_everyReschedulingRequestBeforeThisCourt")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
+            {t("reschedulingRequestScreen_clearSearch")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -362,6 +366,7 @@ function ReschedulingRequestItemList({
   rows: ReschedulingRequest[];
   onOpen: (request: ReschedulingRequest) => void;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((request) => (
@@ -380,19 +385,12 @@ function ReschedulingRequestItemList({
             {...rowOpener}
             className={rowOpenerClass}
           >
-            <span className="sr-only">Review </span>
+            <span className="sr-only">{t("reschedulingRequestScreen_review")} </span>
             {causeTitle(request)}
           </button>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={request.caseNumber} label="case number" />
-            {" · Applied "}
-            <span className="tabular-nums">
-              {formatRequestLongDate(request.appliedOn)}
-            </span>
-            {" · Listed "}
-            <span className="tabular-nums">
-              {formatListingDate(request.listedOn)}
-            </span>
+            <Identifier value={request.caseNumber} label={t("reschedulingRequestScreen_caseNumber")} />
+            {t.rich("reschedulingRequestScreen_appliedFormatRequestLongDateListed", { formatRequestLongDate: formatRequestLongDate(request.appliedOn), formatListingDate: formatListingDate(request.listedOn), span: (chunks) => <span className="tabular-nums">{chunks}</span>, span2: (chunks) => <span className="tabular-nums">{chunks}</span> })}
           </p>
         </li>
       ))}

@@ -104,7 +104,22 @@ describe("translateMessage", () => {
   });
 });
 
+/** Every non-test source file under src/. */
+function sourceFiles(directory: string, out: string[] = []): string[] {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) sourceFiles(file, out);
+    else if (/\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)) out.push(file);
+  }
+  return out;
+}
+
 describe("keys referenced in code", () => {
+  const files = sourceFiles(path.join(APP_ROOT, "src")).map((file) => ({
+    file: path.relative(APP_ROOT, file),
+    text: fs.readFileSync(file, "utf8"),
+  }));
+
   /*
    * TypeScript already checks `t("…")` against en.json. This catches what it cannot:
    * keys held in plain strings, such as `Copy.en` read through `pick` / `fillCopy`.
@@ -114,20 +129,30 @@ describe("keys referenced in code", () => {
   it("all exist in en.json", () => {
     const pattern = /\bt(?:\.rich|\.markup)?\(\s*["']([a-z][A-Za-z0-9]*_[A-Za-z0-9_]+)["']/g;
     const missing = new Set<string>();
+    for (const { text } of files) {
+      for (const match of text.matchAll(pattern)) if (!Object.hasOwn(en, match[1])) missing.add(match[1]);
+    }
+    assert.deepEqual([...missing], []);
+  });
 
-    function scan(directory: string) {
-      for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-        const file = path.join(directory, entry.name);
-        if (entry.isDirectory()) scan(file);
-        else if (/\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)) {
-          for (const match of fs.readFileSync(file, "utf8").matchAll(pattern)) {
-            if (!Object.hasOwn(en, match[1])) missing.add(match[1]);
-          }
-        }
+  /*
+   * Constants that hold keys in shared `string` fields (`Option.label`) are shown through
+   * `translateText`, which the compiler cannot check. Any string shaped like a key whose
+   * prefix the catalog uses must be in it, so a typo fails here, not on screen.
+   */
+  it("include every key-shaped string with a catalog prefix", () => {
+    /* Back-end field and cookie names that only look like keys. */
+    const NOT_KEYS = new Set(["sidebar_state", "registration_number", "registration_status", "document_type"]);
+    const prefixes = new Set(Object.keys(en).map((key) => key.split("_")[0]));
+    const literal = /["'`]([a-z][A-Za-z0-9]*_[A-Za-z0-9]+)["'`]/g;
+    const missing: string[] = [];
+    for (const { file, text } of files) {
+      for (const match of text.matchAll(literal)) {
+        const key = match[1];
+        if (NOT_KEYS.has(key)) continue;
+        if (prefixes.has(key.split("_")[0]) && !Object.hasOwn(en, key)) missing.push(`${file}: ${key}`);
       }
     }
-
-    scan(path.join(APP_ROOT, "src"));
-    assert.deepEqual([...missing], []);
+    assert.deepEqual(missing, []);
   });
 });

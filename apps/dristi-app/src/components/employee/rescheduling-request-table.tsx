@@ -27,6 +27,7 @@ import {
 } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * The rescheduling queue as a table: the cause, its number, when the
@@ -60,21 +61,22 @@ export function ReschedulingRequestTable({
   rows: ReschedulingRequest[];
   onOpen: (request: ReschedulingRequest) => void;
 }) {
+  const t = useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
+            {t("reschedulingRequestTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("reschedulingRequestTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Date of application
+            {t("reschedulingRequestTable_dateOfApplication")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Date of next hearing
+            {t("reschedulingRequestTable_dateOfNextHearing")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -93,12 +95,12 @@ export function ReschedulingRequestTable({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Review </span>
+                <span className="sr-only">{t("reschedulingRequestTable_review")} </span>
                 {causeTitle(request)}
               </button>
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              <Identifier value={request.caseNumber} label="case number" />
+              <Identifier value={request.caseNumber} label={t("reschedulingRequestTable_caseNumberLabel")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>
               {formatRequestDate(request.appliedOn)}

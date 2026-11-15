@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 /**
  * Back to the cases list: the product's one page-level back control.
@@ -25,10 +26,11 @@ import {
  * a case in a tab of its own, where there is nothing to go back to.
  */
 export function CaseBackButton() {
+  const t = useTranslations();
   if (useCaseReader() === "court") return null;
   return (
     <div className={PAGE_BACK_COLUMN}>
-      <PageBackButton href="/cases" label="Back to cases" />
+      <PageBackButton href="/cases" label={t("caseHeaderParts_backToCases")} />
     </div>
   );
 }
@@ -50,6 +52,7 @@ export function CaseNumberLine({
   history: PastCaseNumber[];
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <span
       className={cn(
@@ -59,7 +62,7 @@ export function CaseNumberLine({
     >
       <Identifier
         value={caseNumber}
-        label="case number"
+        label={t("caseHeaderParts_caseNumber")}
       />
       <span className="flex">
         <CaseNumberHistory history={history} />
@@ -82,6 +85,7 @@ export function CaseStageBadges({
   stage: ReactNode;
   subStages: string[];
 }) {
+  const t = useTranslations();
   return (
     <TooltipProvider>
       <span className="flex flex-wrap items-center gap-1.5">
@@ -89,14 +93,14 @@ export function CaseStageBadges({
           <TooltipTrigger asChild>
             <span>{stage}</span>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Case stage</TooltipContent>
+          <TooltipContent side="bottom">{t("caseHeaderParts_caseStage")}</TooltipContent>
         </Tooltip>
         {subStages.map((label) => (
           <Tooltip key={label}>
             <TooltipTrigger asChild>
               <Badge variant="outline">{label}</Badge>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Secondary stage</TooltipContent>
+            <TooltipContent side="bottom">{t("caseHeaderParts_secondaryStage")}</TooltipContent>
           </Tooltip>
         ))}
       </span>

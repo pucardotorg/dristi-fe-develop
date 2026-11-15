@@ -46,6 +46,7 @@ import {
   sortRows,
   type CourtSortSpec,
 } from "@/lib/employee/court-sort";
+import { useTranslations } from "next-intl";
 
 type ScheduleSort = "newest" | "oldest" | "name";
 
@@ -72,6 +73,7 @@ const SCHEDULE_SORTS: CourtSortSpec<SchedulingCase, ScheduleSort>[] = (() => {
  * queue gets asked.
  */
 export function ScheduleScreen() {
+  const t = useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used — every one of them, so the screen has a single rule rather than a live
      one and a deferred one. Every change resets to page one; the old Search button did
@@ -109,15 +111,15 @@ export function ScheduleScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Schedule hearing
+          {t("scheduleScreen_scheduleHearing")}
         </h1>
         {/* The count is the whole point of the queue, so the supporting line carries it
             rather than restating the title. Singular is spelled out because "1 matters"
             is the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {SCHEDULING_QUEUE.length === 1
-            ? "1 matter is waiting for a hearing date."
-            : `${SCHEDULING_QUEUE.length} matters are waiting for a hearing date.`}
+            ? t("scheduleScreen_1MatterIsWaitingForA")
+            : t("scheduleScreen_lengthMattersAreWaitingForA", { length: String(SCHEDULING_QUEUE.length) })}
         </p>
       </header>
 
@@ -222,21 +224,22 @@ function ScheduleFiltersRow({
   /** The list's sort control (`CourtSortSelect`), at the end of the row. */
   trailing?: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("scheduleScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: t("scheduleScreen_caseNameNumberOrAdvocate"),
       }}
       fields={[
         {
           id: "schedule-stage",
-          label: "Stage",
+          label: t("scheduleScreen_stage"),
           value: filters.stage,
           all: "all",
-          allLabel: "All stages",
+          allLabel: t("scheduleScreen_allStages"),
           options: CASE_STAGES.map((stage) => ({
             value: stage.id,
             label: stage.label,
@@ -267,6 +270,7 @@ function ScheduleEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -278,18 +282,18 @@ function ScheduleEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match these filters" : "Everything is listed"}
+          {isFiltered ? t("scheduleScreen_noMattersMatchTheseFilters") : t("scheduleScreen_everythingIsListed")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No matter waiting for a date matches the stage or search you asked for."
-            : "Every case before this court already has a hearing date."}
+            ? t("scheduleScreen_noMatterWaitingForADate")
+            : t("scheduleScreen_everyCaseBeforeThisCourtAlready")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
+            {t("scheduleScreen_clearFilters")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -311,6 +315,7 @@ function ScheduleItemList({
   rows: SchedulingCase[];
   onOpen: (matter: SchedulingCase) => void;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((matter) => (
@@ -324,11 +329,11 @@ function ScheduleItemList({
             {...rowOpener}
             className={cn(rowOpenerClass, "min-w-0")}
           >
-            <span className="sr-only">Open </span>
+            <span className="sr-only">{t("scheduleScreen_open")} </span>
             {causeTitle(matter)}
           </button>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={matter.caseNumber} label="case number" /> ·{" "}
+            <Identifier value={matter.caseNumber} label={t("scheduleScreen_caseNumber")} /> ·{" "}
             {caseStageLabel(matter.stage)}
           </p>
           {/* Comfortable, not dense: on a phone the +N chip gets the full 40×40 target,

@@ -28,6 +28,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useTranslations } from "next-intl";
 
 const DUES: DueFilter[] = ["overdue", "today", "week", "before-hearing"];
 
@@ -50,6 +51,7 @@ const KIND_IN_SHEET_ONLY = "md:pointer-fine:hidden";
  * history or jump the page; `/` still focuses it.
  */
 function SearchBox({ query, onChange }: { query: string; onChange: (q: string) => void }) {
+  const tr = useTranslations();
   const ref = React.useRef<HTMLInputElement>(null);
   const [text, setText] = React.useState(query);
   // When the URL changes underneath (Clear, back/forward), follow it.
@@ -86,10 +88,10 @@ function SearchBox({ query, onChange }: { query: string; onChange: (q: string) =
       <InputGroupInput
         ref={ref}
         type="search"
-        aria-label="Search these tasks"
+        aria-label={tr("filterRow_searchTheseTasks")}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Search case or task"
+        placeholder={tr("filterRow_searchCaseOrTask")}
         autoComplete="off"
         enterKeyHint="search"
       />
@@ -135,6 +137,7 @@ export function FilterRow({
   onChange: (patch: Partial<Filters>) => void;
   onClear: () => void;
 }) {
+  const tr = useTranslations();
   /* What the sheet holds. The search lives outside it and shows its own box.
      Kinds count only where the sheet is what holds them; with a mouse the
      pressed pills already say so, one row up. */
@@ -159,7 +162,7 @@ export function FilterRow({
         <SheetTrigger asChild>
           <Button variant="outline" aria-label={`Filters${applied ? `, ${applied} applied` : ""}`}>
             <SlidersHorizontalIcon data-icon="inline-start" aria-hidden />
-            Filters
+            {tr("filterRow_filters")}
             {applied ? (
               <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-caption font-medium tabular-nums text-primary-foreground">
                 {applied}
@@ -169,9 +172,9 @@ export function FilterRow({
         </SheetTrigger>
         <SheetContent side="right" className="w-full sm:max-w-sm">
           <SheetHeader>
-            <SheetTitle className="text-title-s font-semibold">Filters</SheetTitle>
+            <SheetTitle className="text-title-s font-semibold">{tr("filterRow_filters")}</SheetTitle>
             <SheetDescription className="text-body-compact">
-              Narrow the list. Anything you set stays visible on the row behind this.
+              {tr("filterRow_narrowTheListAnythingYouSet")}
             </SheetDescription>
           </SheetHeader>
 
@@ -181,7 +184,7 @@ export function FilterRow({
             <div className={KIND_IN_SHEET_ONLY}>
               <CheckGroup
                 id="tasks-filter-kind"
-                legend="Category"
+                legend={tr("filterRow_category")}
                 options={CATEGORY_ORDER.map((kind) => ({
                   value: kind,
                   label: CATEGORY_LABELS[kind],
@@ -193,21 +196,21 @@ export function FilterRow({
             </div>
             <CheckGroup
               id="tasks-filter-due"
-              legend="Due"
+              legend={tr("filterRow_due")}
               options={DUES.map((due) => ({ value: due, label: DUE_LABELS[due] }))}
               value={filters.dues}
               onChange={(dues) => onChange({ dues })}
             />
             <CheckGroup
               id="tasks-filter-court"
-              legend="Court"
+              legend={tr("filterRow_court")}
               options={courts.map((court) => ({ value: court, label: court }))}
               value={filters.courts}
               onChange={(next) => onChange({ courts: next })}
             />
             <CheckGroup
               id="tasks-filter-advocate"
-              legend="Advocate on the case"
+              legend={tr("filterRow_advocateOnTheCase")}
               options={people.map((person) => ({ value: person.id, label: person.name }))}
               value={filters.advocates}
               onChange={(advocates) => onChange({ advocates })}
@@ -219,11 +222,11 @@ export function FilterRow({
           <SheetFooter>
             {narrowed ? (
               <Button variant="outline" onClick={onClear}>
-                Clear all filters
+                {tr("filterRow_clearAllFilters")}
               </Button>
             ) : null}
             <SheetClose asChild>
-              <Button>Show the tasks</Button>
+              <Button>{tr("filterRow_showTheTasks")}</Button>
             </SheetClose>
           </SheetFooter>
         </SheetContent>
@@ -260,7 +263,7 @@ export function FilterRow({
       {filters.advocates.map((id) => (
         <AppliedChip
           key={id}
-          label={people.find((p) => p.id === id)?.name ?? "Advocate"}
+          label={people.find((p) => p.id === id)?.name ?? tr("filterRow_advocate")}
           onClear={() => onChange({ advocates: without(filters.advocates, id) })}
         />
       ))}
@@ -268,7 +271,7 @@ export function FilterRow({
       {narrowed ? (
         <Button variant="ghost" onClick={onClear} className={cn("text-muted-foreground")}>
           <XIcon data-icon="inline-start" aria-hidden />
-          Clear
+          {tr("filterRow_clear")}
         </Button>
       ) : null}
     </div>

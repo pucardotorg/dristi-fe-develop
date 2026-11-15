@@ -11,12 +11,12 @@
  * in this list. Everything else can be shown, hidden, or reordered.
  */
 export const TABLE_COLUMNS = [
-  { id: "caseNumber", label: "Case number", locked: true, defaultVisible: true },
-  { id: "caseName", label: "Case name", locked: false, defaultVisible: true },
-  { id: "stage", label: "Stage", locked: false, defaultVisible: true },
+  { id: "caseNumber", label: "tableColumns_caseNumber", locked: true, defaultVisible: true },
+  { id: "caseName", label: "tableColumns_caseName", locked: false, defaultVisible: true },
+  { id: "stage", label: "tableColumns_stage", locked: false, defaultVisible: true },
   {
     id: "advocates",
-    label: "Advocates",
+    label: "tableColumns_advocates",
     locked: false,
     defaultVisible: true,
   },
@@ -25,7 +25,7 @@ export const TABLE_COLUMNS = [
      default; enabled from the Columns menu. */
   {
     id: "representation",
-    label: "Representation",
+    label: "tableColumns_representation",
     locked: false,
     defaultVisible: false,
   },
@@ -34,31 +34,31 @@ export const TABLE_COLUMNS = [
      was unanswerable). */
   {
     id: "access",
-    label: "Access",
+    label: "tableColumns_access",
     locked: false,
     defaultVisible: false,
   },
   {
     id: "nextHearing",
-    label: "Next hearing",
+    label: "tableColumns_nextHearing",
     locked: false,
     defaultVisible: true,
   },
   {
     id: "hearingPurpose",
-    label: "Hearing purpose",
+    label: "tableColumns_hearingPurpose",
     locked: false,
     defaultVisible: false,
   },
   {
     id: "previousHearing",
-    label: "Previous hearing",
+    label: "tableColumns_previousHearing",
     locked: false,
     defaultVisible: false,
   },
   {
     id: "latestUpdate",
-    label: "Latest update",
+    label: "tableColumns_latestUpdate",
     locked: false,
     defaultVisible: false,
   },

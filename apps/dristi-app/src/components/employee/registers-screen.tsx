@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatCount, registerIndexCount } from "@/lib/employee/register-rows";
 import { REGISTER_GROUPS, REGISTERS, registerHref } from "@/lib/employee/registers";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * `/employee/registers` — the eighteen registers of the owner's note (section B), in
@@ -18,6 +20,7 @@ import { cn } from "@/lib/utils";
  * their source is still to be confirmed, rather than a count of nothing.
  */
 export function RegistersScreen() {
+  const t = useTranslations();
   const docket = useCourtDocket();
   const courtText = useCourtText();
   const { court } = useCourtSession();
@@ -27,9 +30,9 @@ export function RegistersScreen() {
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-12 p-6 md:p-8">
       <header className="flex flex-col gap-1">
-        <h1 className="text-title text-balance font-semibold">Registers</h1>
+        <h1 className="text-title text-balance font-semibold">{t("registersScreen_registers")}</h1>
         <p className="text-body text-muted-foreground tabular-nums">
-          {courtText(court)} · {kept} registers with entries, {toConfirm} with their source to confirm
+          {t("registersScreen_courtTextKeptRegistersWithEntries", { courtText: courtText(court), kept: String(kept), toConfirm: String(toConfirm) })}
         </p>
       </header>
 
@@ -55,18 +58,18 @@ export function RegistersScreen() {
                     >
                       <span className="flex min-h-6 flex-wrap items-center justify-between gap-x-3 gap-y-1">
                         <span className="text-caption text-muted-foreground tabular-nums">
-                          Register {register.no}
+                          {t("registersScreen_registerNo", { no: String(register.no) })}
                         </span>
                         {count ? (
                           <span className="text-caption text-muted-foreground tabular-nums">
                             {formatCount(count.count)} {count.count === 1 ? count.unit[0] : count.unit[1]}
                           </span>
                         ) : (
-                          <Badge variant="outline">Source to confirm</Badge>
+                          <Badge variant="outline">{t("registersScreen_sourceToConfirm")}</Badge>
                         )}
                       </span>
                       <span className="text-body font-semibold">{register.name}</span>
-                      <span className="text-body-compact text-muted-foreground">{register.description}</span>
+                      <span className="text-body-compact text-muted-foreground">{translateText(t, register.description)}</span>
                     </Link>
                   </li>
                 );

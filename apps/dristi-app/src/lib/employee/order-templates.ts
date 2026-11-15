@@ -203,13 +203,13 @@ export const DUMMY_MASTERS = {
 } satisfies Record<string, readonly OrderFieldOption[]>;
 
 const SIDES: readonly OrderFieldOption[] = [
-  { value: "complainant", label: "Complainant" },
-  { value: "accused", label: "Accused" },
+  { value: "complainant", label: "orderTemplates_complainant" },
+  { value: "accused", label: "orderTemplates_accused" },
 ];
 
 const SIDES_AND_COURT: readonly OrderFieldOption[] = [
   ...SIDES,
-  { value: "court", label: "Court" },
+  { value: "court", label: "orderTemplates_court" },
 ];
 
 /**
@@ -618,8 +618,8 @@ export const ORDER_TEMPLATES: OrderTemplate[] = [
         locked: false,
         required: false,
         options: [
-          { value: "guilty", label: "Guilty" },
-          { value: "not guilty", label: "Not guilty" },
+          { value: "guilty", label: "orderTemplates_guilty" },
+          { value: "not guilty", label: "orderTemplates_notGuilty" },
         ],
       },
     ],

@@ -20,6 +20,8 @@ import {
 } from "@/lib/employee/court-flow";
 import { formatCount } from "@/lib/employee/register-rows";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * "Needs attention" on the magistrate dashboard (Case Flow v4), and the pieces every panel
@@ -258,6 +260,7 @@ export function CaseListBox({
   daysHeader: string;
   onClose: () => void;
 }) {
+  const t = useTranslations();
   return (
     <section
       aria-labelledby={`${id}-title`}
@@ -278,7 +281,7 @@ export function CaseListBox({
           ))}
         </div>
         <Button type="button" variant="outline" onClick={onClose}>
-          Close
+          {t("common_close")}
         </Button>
       </div>
       <DocketCaseList id={`${id}-list`} caption={title} rows={rows} daysHeader={daysHeader} />
@@ -301,6 +304,7 @@ type AttentionList = AttentionCheckId | `${AttentionCheckId}-${number}`;
 const count = (n: number) => formatCount(Math.round(n));
 
 export function NeedsAttention({ docket }: { docket: CourtDocket }) {
+  const t = useTranslations();
   const today = { from: docket.today, to: docket.today };
   const [picked, setPicked] = React.useState<Period | null>(null);
   const selection = picked ?? today;
@@ -316,7 +320,7 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
 
   const showToday = (
     <Button type="button" variant="link" className="h-auto px-0 py-0 text-body-compact" onClick={() => setPicked(null)}>
-      Show today
+      {t("courtDashboardAttention_showToday")}
     </Button>
   );
 
@@ -341,7 +345,7 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
     <section aria-labelledby="dash-attention" className={PANEL}>
       <PanelHeader
         id="dash-attention"
-        title="Needs attention"
+        title={t("courtDashboardAttention_needsAttention")}
         line={`Cases missing a hearing date or waiting on process${
           range ? ` · counted on ${day}, compared with ${formatDayShort(reading.start!)}` : ""
         }`}
@@ -350,7 +354,7 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
           docket={docket}
           value={selection}
           defaultValue={today}
-          defaultLabel="Today"
+          defaultLabel={t("courtDashboardAttention_today")}
           idPrefix="dash-attention-picker"
           dayNote="counted on this day"
           rangeNote={() => "counted on its last day, compared with its first"}
@@ -363,7 +367,7 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
 
       <p aria-live="polite" className="text-body-compact tabular-nums">
         {checks.every((c) => c.available && !c.rows.length) ? (
-          <span className="text-success-ink">No cases need attention on {day}.</span>
+          <span className="text-success-ink">{t("courtDashboardAttention_noCasesNeedAttentionOnDay", { day })}</span>
         ) : (
           <>
             <strong className="font-semibold">{formatCount(reading.distinct)}</strong>{" "}
@@ -383,17 +387,17 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
           <thead>
             <tr className="bg-surface-sunken text-muted-foreground">
               <th scope="col" className="px-4 py-2.5 text-left font-normal">
-                Issue
+                {t("courtDashboardAttention_issue")}
               </th>
               <th scope="col" className="px-4 py-2.5 text-right font-normal">
-                Cases
+                {t("courtDashboardAttention_cases")}
               </th>
               <th scope="col" className="px-4 py-2.5 text-left font-normal">
-                How long they have waited <span className="max-sm:sr-only">· select a bar to see those cases</span>
+                {t.rich("courtDashboardAttention_howLongTheyHaveWaitedSelect", { span: (chunks) => <span className="max-sm:sr-only">{chunks}</span> })}
               </th>
               {range ? (
                 <th scope="col" className="px-4 py-2.5 text-left font-normal">
-                  Since {formatDayShort(reading.start!)}
+                  {t("courtDashboardAttention_sinceFormatDayShort", { formatDayShort: formatDayShort(reading.start!) })}
                 </th>
               ) : null}
             </tr>
@@ -406,13 +410,13 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
                   scope="rowgroup"
                   className="border-t border-hairline bg-muted px-4 py-2 text-left font-semibold"
                 >
-                  {group.label}
+                  {translateText(t, group.label)}
                 </th>
               </tr>
               {group.checks.every((c) => !c.available) ? (
                 <tr>
                   <td colSpan={columns} className="border-t border-hairline px-4 py-3 text-muted-foreground">
-                    Hearing dates are only kept for today, so these can’t be shown for {day}. {showToday}
+                    {t("courtDashboardAttention_hearingDatesAreOnlyKeptFor", { day })} {showToday}
                   </td>
                 </tr>
               ) : (
@@ -432,7 +436,7 @@ export function NeedsAttention({ docket }: { docket: CourtDocket }) {
           ))}
         </table>
       </div>
-      <p className="text-body-compact text-muted-foreground">Select a number or a bar to see the cases.</p>
+      <p className="text-body-compact text-muted-foreground">{t("courtDashboardAttention_selectANumberOrABar")}</p>
 
       <div id={listId} className="min-w-0 empty:hidden">
         {opened && list.open ? (
@@ -466,6 +470,7 @@ function AttentionRow({
   controls: string;
   showToday: React.ReactNode;
 }) {
+  const t = useTranslations();
   const label = (
     <th scope="row" className="w-2/5 border-t border-hairline px-4 py-3 text-left align-top font-normal">
       <span className={cn("block font-semibold", !check.available || !check.rows.length ? "font-normal text-muted-foreground" : "")}>
@@ -479,7 +484,7 @@ function AttentionRow({
       <tr>
         {label}
         <td colSpan={range ? 3 : 2} className="border-t border-hairline px-4 py-3 align-top text-muted-foreground">
-          Only available for today. {showToday}
+          {t("courtDashboardAttention_onlyAvailableForToday")} {showToday}
         </td>
       </tr>
     );
@@ -489,7 +494,7 @@ function AttentionRow({
       <td className="border-t border-hairline px-4 py-3 align-top whitespace-nowrap">
         {check.latestOnly || check.atStart === null ? (
           <span className="text-muted-foreground">
-            {check.latestOnly ? "Not tracked before today" : `No data for ${formatDayShort(start!)}`}
+            {check.latestOnly ? t("courtDashboardAttention_notTrackedBeforeToday") : t("courtDashboardAttention_noDataForFormatDayShort", { formatDayShort: formatDayShort(start!) })}
           </span>
         ) : (
           <SinceCell now={check.rows.length} was={check.atStart} />
@@ -500,7 +505,7 @@ function AttentionRow({
     return (
       <tr>
         {label}
-        <td className="border-t border-hairline px-4 py-3 text-right align-top text-success-ink">None</td>
+        <td className="border-t border-hairline px-4 py-3 text-right align-top text-success-ink">{t("courtDashboardAttention_none")}</td>
         <td className="border-t border-hairline px-4 py-3" />
         {since}
       </tr>
@@ -523,7 +528,7 @@ function AttentionRow({
       </td>
       <td className="border-t border-hairline px-4 py-3 align-top">
         <div className="flex w-full max-w-xs flex-col gap-1">
-          <div role="group" aria-label={`${check.label}, by how long they have waited`} className="flex h-10 items-end gap-0.5 border-b border-border">
+          <div role="group" aria-label={t("courtDashboardAttention_labelByHowLongTheyHave", { label: check.label })} className="flex h-10 items-end gap-0.5 border-b border-border">
             {check.bins.map((bin, i) => {
               const key = `${check.id}-${i}` as AttentionList;
               const n = bin.rows.length;
@@ -551,7 +556,7 @@ function AttentionRow({
           <div aria-hidden className="flex justify-between gap-2 text-caption text-muted-foreground tabular-nums">
             <span>{check.axis.low}</span>
             <span className="truncate">{check.axis.title}</span>
-            <span>{check.axis.high}</span>
+            <span>{translateText(t, check.axis.high)}</span>
           </div>
           {check.fact ? <p className="text-body-compact tabular-nums">{check.fact}</p> : null}
         </div>
@@ -562,6 +567,7 @@ function AttentionRow({
 }
 
 function SinceCell({ now, was }: { now: number; was: number }) {
+  const t = useTranslations();
   const diff = now - was;
   return (
     <span className="tabular-nums">
@@ -571,9 +577,9 @@ function SinceCell({ now, was }: { now: number; was: number }) {
           diff > 0 ? "text-destructive-ink" : diff < 0 ? "text-success-ink" : "text-muted-foreground",
         )}
       >
-        {diff ? `${diff > 0 ? "Up" : "Down"} ${formatCount(Math.abs(diff))}` : "No change"}
+        {diff ? `${diff > 0 ? "Up" : "Down"} ${formatCount(Math.abs(diff))}` : t("courtDashboardAttention_noChange")}
       </span>{" "}
-      <span className="text-muted-foreground">from {formatCount(was)}</span>
+      <span className="text-muted-foreground">{t("courtDashboardAttention_fromFormatCount", { formatCount: formatCount(was) })}</span>
     </span>
   );
 }

@@ -49,6 +49,7 @@ import {
   type OrderTemplateId,
 } from "@/lib/employee/order-templates";
 import type { PendingOrder } from "@/lib/employee/pending-orders";
+import { useTranslations } from "next-intl";
 
 function plural(count: number, one: string, many: string): string {
   return count === 1 ? one : many;
@@ -71,6 +72,7 @@ export function AddOrderItemsDialog({
   onOpenChange: (open: boolean) => void;
   onDone: (message: string) => void;
 }) {
+  const t = useTranslations();
   const today = useCourtToday();
   const anchor = useComboboxAnchor();
   const [picked, setPicked] = React.useState<OrderTemplate[]>([]);
@@ -112,7 +114,7 @@ export function AddOrderItemsDialog({
     }
     onDone(
       `${added} ${plural(added, "item", "items")} added across ${hearingOrders.length} ${plural(hearingOrders.length, "order", "orders")}.` +
-        (skipped.length ? ` ${skipped.length} left out: ${skipped.join("; ")}.` : ""),
+        (skipped.length ? t("pendingOrdersBulk_lengthLeftOutJoin", { length: String(skipped.length), join: skipped.join("; ") }) : ""),
     );
   }
 
@@ -121,7 +123,7 @@ export function AddOrderItemsDialog({
       <DialogContent className="sm:max-w-lg" {...guard.contentProps} {...guard.outsideProps}>
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            Add order items
+            {t("pendingOrdersBulk_addOrderItems")}
           </DialogTitle>
           <DialogDescription className="text-body-compact">
             Added to the order data of {hearingOrders.length} selected{" "}
@@ -130,7 +132,7 @@ export function AddOrderItemsDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2">
-          <Label id="bulk-items-label">Order items</Label>
+          <Label id="bulk-items-label">{t("pendingOrdersBulk_orderItems")}</Label>
           <Combobox
             multiple
             items={options}
@@ -148,14 +150,14 @@ export function AddOrderItemsDialog({
                     ))}
                     <ComboboxChipsInput
                       aria-labelledby="bulk-items-label"
-                      placeholder={chosen.length ? undefined : "Choose items"}
+                      placeholder={chosen.length ? undefined : t("pendingOrdersBulk_chooseItems")}
                     />
                   </>
                 )}
               </ComboboxValue>
             </ComboboxChips>
             <ComboboxContent anchor={anchor} className="pointer-events-auto">
-              <ComboboxEmpty>No item matches.</ComboboxEmpty>
+              <ComboboxEmpty>{t("pendingOrdersBulk_noItemMatches")}</ComboboxEmpty>
               <ComboboxList>
                 {(template: OrderTemplate) => (
                   <ComboboxItem key={template.id} value={template}>
@@ -174,7 +176,7 @@ export function AddOrderItemsDialog({
                 id="bulk-items-likely"
                 className="text-body-compact text-muted-foreground"
               >
-                Likely at these hearings
+                {t("pendingOrdersBulk_likelyAtTheseHearings")}
               </h3>
               <ul className="-mx-2 flex min-w-0 flex-col">
                 {likely.map((template) => (
@@ -188,7 +190,7 @@ export function AddOrderItemsDialog({
                         aria-hidden
                         className="size-4 shrink-0 text-muted-foreground"
                       />
-                      <span className="sr-only">Add </span>
+                      <span className="sr-only">{t("pendingOrdersBulk_add")} </span>
                       {template.label}
                     </button>
                   </li>
@@ -214,7 +216,7 @@ export function AddOrderItemsDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
+              {t("common_cancel")}
             </Button>
           </DialogClose>
           <Button

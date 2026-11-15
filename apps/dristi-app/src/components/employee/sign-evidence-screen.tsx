@@ -62,6 +62,7 @@ import {
   type ColumnFilter,
 } from "@/lib/employee/court-column-filters";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 const EVIDENCE_COLUMN_FILTERS: ColumnFilter<SignEvidence>[] = [
   {
@@ -125,6 +126,7 @@ function plural(count: number, one: string, many: string): string {
  * `lib/employee/sign-evidence.ts`.
  */
 export function SignEvidenceScreen() {
+  const t = useTranslations();
   /* The queue is state because signing empties it and Edit details rewrites rows in it.
      One list, so the table, the bar and the dialog can never disagree about what a
      marking says or whether it is still waiting. */
@@ -234,7 +236,7 @@ export function SignEvidenceScreen() {
     setOpenId(null);
     sign(
       new Set([row.id]),
-      `${evidenceDocumentLabel(row.document)}, ${evidenceNumber(row)}, left the signing queue.`,
+      t("signEvidenceScreen_evidenceDocumentLabelEvidenceNumberLeft", { evidenceDocumentLabel: evidenceDocumentLabel(row.document), evidenceNumber: evidenceNumber(row) }),
     );
   }
 
@@ -247,15 +249,15 @@ export function SignEvidenceScreen() {
       <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 pb-0 md:p-8 md:pb-0">
         <header className="flex flex-col gap-2">
           <h1 className="text-title text-balance font-semibold">
-            Sign evidence
+            {t("signEvidenceScreen_signEvidence")}
           </h1>
           {/* The count is the whole point of the queue, so the supporting line carries it
               rather than restating the title. Singular is spelled out because "1
               documents" is the kind of thing a court notices. */}
           <p className="text-body text-muted-foreground">
             {rows.length === 1
-              ? "1 document marked as evidence is waiting for your signature."
-              : `${rows.length} documents marked as evidence are waiting for your signature.`}
+              ? t("signEvidenceScreen_1DocumentMarkedAsEvidenceIs")
+              : t("signEvidenceScreen_lengthDocumentsMarkedAsEvidenceAre", { length: String(rows.length) })}
           </p>
         </header>
 
@@ -353,7 +355,7 @@ export function SignEvidenceScreen() {
             aria-live="polite"
           >
             {selectedIds.size === 0
-              ? "Select documents to sign them together."
+              ? t("signEvidenceScreen_selectDocumentsToSignThemTogether")
               : `${selectedIds.size} ${plural(selectedIds.size, "document", "documents")} selected.`}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -364,7 +366,7 @@ export function SignEvidenceScreen() {
                 className="w-full sm:w-fit"
                 onClick={() => setPicked(new Set())}
               >
-                Clear selection
+                {t("signEvidenceScreen_clearSelection")}
               </Button>
             ) : null}
             <Button
@@ -373,7 +375,7 @@ export function SignEvidenceScreen() {
               disabled={selectedIds.size === 0}
               onClick={() => setConfirmOpen(true)}
             >
-              Sign selected evidence
+              {t("signEvidenceScreen_signSelectedEvidence")}
             </Button>
           </div>
         </div>
@@ -395,16 +397,16 @@ export function SignEvidenceScreen() {
         destructive={false}
         title={
           selectedIds.size === 1
-            ? "E-sign this exhibit?"
-            : `E-sign ${selectedIds.size} exhibits?`
+            ? t("signEvidenceScreen_eSignThisExhibit")
+            : t("signEvidenceScreen_eSignSizeExhibits", { size: String(selectedIds.size) })
         }
         description={
           selectedIds.size === 1
-            ? "Your signature endorses the marking and cannot be reversed."
-            : `Your signature endorses all ${selectedIds.size} markings selected and cannot be reversed.`
+            ? t("signEvidenceScreen_yourSignatureEndorsesTheMarkingAnd")
+            : t("signEvidenceScreen_yourSignatureEndorsesAllSizeMarkings", { size: String(selectedIds.size) })
         }
-        cancelLabel="Cancel"
-        confirmLabel="Proceed to e-sign"
+        cancelLabel={t("common_cancel")}
+        confirmLabel={t("signEvidenceScreen_proceedToESign")}
         onConfirm={signSelected}
       />
 
@@ -446,13 +448,14 @@ function SignEvidenceFilters({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("signEvidenceScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number, document or exhibit",
+        placeholder: t("signEvidenceScreen_caseNameNumberDocumentOrExhibit"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -477,6 +480,7 @@ function SignEvidenceEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -484,18 +488,18 @@ function SignEvidenceEmpty({
           {isFiltered ? <SearchXIcon aria-hidden /> : <StampIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No evidence matches this search" : "Nothing left to sign"}
+          {isFiltered ? t("signEvidenceScreen_noEvidenceMatchesThisSearch") : t("signEvidenceScreen_nothingLeftToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No document waiting for signature matches the case, document or exhibit number you asked for."
-            : "Every document this court has marked as evidence has been signed."}
+            ? t("signEvidenceScreen_noDocumentWaitingForSignatureMatches")
+            : t("signEvidenceScreen_everyDocumentThisCourtHasMarked")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
+            {t("signEvidenceScreen_clearSearch")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -526,6 +530,7 @@ function SignEvidenceItemList({
   onToggle: (row: SignEvidence) => void;
   onOpen: (row: SignEvidence) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   return (
     <ul className="flex flex-col gap-3">
@@ -543,7 +548,7 @@ function SignEvidenceItemList({
             <Checkbox
               checked={selectedIds.has(row.id)}
               onCheckedChange={() => onToggle(row)}
-              aria-label={`Select ${document}, ${exhibit}, in ${courtText(row.caseNumber)}`}
+              aria-label={t("signEvidenceScreen_selectDocumentExhibitInCourtText", { document, exhibit, courtText: courtText(row.caseNumber) })}
               className="mt-1"
             />
             <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -553,16 +558,16 @@ function SignEvidenceItemList({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Read and sign </span>
+                <span className="sr-only">{t("signEvidenceScreen_readAndSign")} </span>
                 {document}
                 {", "}
                 {/* The mark is inside the row's opener — the face, no second control. */}
-                <Identifier value={exhibit} label="evidence number" copyable={false} />
+                <Identifier value={exhibit} label={t("signEvidenceScreen_evidenceNumber")} copyable={false} />
               </button>
               <p className="min-w-0 text-body-compact">{causeTitle(row)}</p>
               <Identifier
                 value={row.caseNumber}
-                label="case number"
+                label={t("signEvidenceScreen_caseNumber")}
                 className="self-start text-caption text-muted-foreground"
               />
             </div>

@@ -143,16 +143,16 @@ function summonsThread(
   deliveredOn: string | undefined,
 ): ThreadRow {
   const steps: ThreadStep[] = [
-    { on: issuedOn, label: "Summons Issued", orderId: SUMMONS_ORDER_ID },
+    { on: issuedOn, label: "employeeGroupedCaseHistory_summonsIssued", orderId: SUMMONS_ORDER_ID },
     {
       on: at(issuedOn, 2, deliveredOn),
-      label: "Payment for Summons Completed",
+      label: "employeeGroupedCaseHistory_paymentForSummonsCompleted",
     },
     {
       on: at(issuedOn, 3, deliveredOn),
-      label: "RPAD Envelope for Summons Submitted",
+      label: "employeeGroupedCaseHistory_rpadEnvelopeForSummonsSubmitted",
     },
-    { on: at(issuedOn, 4, deliveredOn), label: "Summons Sent" },
+    { on: at(issuedOn, 4, deliveredOn), label: "employeeGroupedCaseHistory_summonsSent" },
   ];
   const base = {
     kind: "thread" as const,
@@ -197,11 +197,11 @@ function bailThread(filedOn: string, onboardedOn: string): ThreadRow {
     tone: "success",
     open: false,
     steps: [
-      { on: filedOn, label: "Application - Bail filed" },
-      { on: onboardedOn, label: "Application - Bail onboarded" },
+      { on: filedOn, label: "employeeGroupedCaseHistory_applicationBailFiled" },
+      { on: onboardedOn, label: "employeeGroupedCaseHistory_applicationBailOnboarded" },
       {
         on: shiftDay(onboardedOn, 1),
-        label: "Application - Bail 1 Accepted",
+        label: "employeeGroupedCaseHistory_applicationBail1Accepted",
         orderId: BAIL_ORDER_ID,
       },
     ],
@@ -224,7 +224,7 @@ const PRODUCTION_THREAD: ThreadRow = {
   tone: "info",
   open: true,
   steps: [
-    { on: "2026-09-08", label: "Application - Production of documents filed" },
+    { on: "2026-09-08", label: "employeeGroupedCaseHistory_applicationProductionOfDocumentsFiled" },
   ],
 };
 
@@ -242,11 +242,11 @@ const EXEMPTION_THREAD: ThreadRow = {
   steps: [
     {
       on: "2026-08-24",
-      label: "Application - Exemption from appearance filed",
+      label: "employeeGroupedCaseHistory_applicationExemptionFromAppearanceFiled",
     },
     {
       on: "2026-08-27",
-      label: "Application - Exemption from appearance onboarded",
+      label: "employeeGroupedCaseHistory_applicationExemptionFromAppearanceOnboarded",
     },
   ],
 };

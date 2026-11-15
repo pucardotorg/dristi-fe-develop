@@ -28,6 +28,7 @@ import {
 import { causeTitle } from "@/lib/employee/hearings";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtLocalized } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * One copy application, read and then allowed or refused — the single-application path
@@ -101,6 +102,7 @@ function ApplicationBody({
   onReject: (application: CopyApplication) => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const document = useMemo(
     () => buildCopyApplicationDocument(application),
     [application],
@@ -117,7 +119,7 @@ function ApplicationBody({
       <DialogHeader className="shrink-0 gap-2 p-6 pr-16">
         <div className="flex flex-wrap items-center gap-2">
           <DialogTitle className="text-title-s font-semibold">
-            Review application
+            {t("approveCopyApplicationDialog_reviewApplication")}
           </DialogTitle>
           {/* The application's own state — waiting on this bench — in the DS's sentence
               case rather than the reference's Title Case. `warning` is the variant the
@@ -125,13 +127,13 @@ function ApplicationBody({
               four report a pending state the same way. This is the one place the state is
               stated: the list behind it is entirely pending, so it says it once, here,
               instead of thirty times down a column. */}
-          <Badge variant="warning">Pending approval</Badge>
+          <Badge variant="warning">{t("approveCopyApplicationDialog_pendingApproval")}</Badge>
         </div>
         <DialogDescription className="text-body-compact text-muted-foreground">
           {/* No copy control inside the dialog's accessible description. */}
           <Identifier
             value={application.applicationNumber}
-            label="application number"
+            label={t("approveCopyApplicationDialog_applicationNumber")}
             copyable={false}
           />
           {" · "}
@@ -158,26 +160,22 @@ function ApplicationBody({
         <div className="xl:min-h-0 xl:overflow-y-auto">
           <div className="rounded-lg bg-surface-sunken p-4">
             <DescriptionList>
-              <ReviewRow term="Application type">Copy application</ReviewRow>
-              <ReviewRow term="Case number">
-                <Identifier value={application.caseNumber} label="case number" />
+              <ReviewRow term={t("approveCopyApplicationDialog_applicationType")}>{t("approveCopyApplicationDialog_copyApplication")}</ReviewRow>
+              <ReviewRow term={t("approveCopyApplicationDialog_caseNumber")}>
+                <Identifier value={application.caseNumber} label={t("approveCopyApplicationDialog_caseNumberLabel")} />
               </ReviewRow>
-              <ReviewRow term="Copy sought">
-                {application.record.description}
-                {", dated "}
-                <span className="tabular-nums">
-                  {formatCopyApplicationLongDate(application.record.dated)}
-                </span>
+              <ReviewRow term={t("approveCopyApplicationDialog_copySought")}>
+                {t.rich("approveCopyApplicationDialog_descriptionDatedFormatCopyApplicationLong", { description: application.record.description, formatCopyApplicationLongDate: formatCopyApplicationLongDate(application.record.dated), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
               </ReviewRow>
-              <ReviewRow term="Copies required">
+              <ReviewRow term={t("approveCopyApplicationDialog_copiesRequired")}>
                 {copiesLine(application)}
               </ReviewRow>
-              <ReviewRow term="Submission date">
+              <ReviewRow term={t("approveCopyApplicationDialog_submissionDate")}>
                 <span className="tabular-nums">
                   {formatCopyApplicationLongDate(application.raisedOn)}
                 </span>
               </ReviewRow>
-              <ReviewRow term="Application filer">
+              <ReviewRow term={t("approveCopyApplicationDialog_applicationFiler")}>
                 {copyApplicationFiler(application)}
               </ReviewRow>
             </DescriptionList>
@@ -203,10 +201,10 @@ function ApplicationBody({
           variant="destructive"
           onClick={() => onReject(application)}
         >
-          Reject
+          {t("approveCopyApplicationDialog_reject")}
         </Button>
         <Button type="button" onClick={() => onAccept(application)}>
-          Accept
+          {t("approveCopyApplicationDialog_accept")}
         </Button>
       </DialogFooter>
     </ChromeDialogContent>
@@ -222,16 +220,17 @@ function ApplicationFacsimile({
 }: {
   document: CopyApplicationDocument;
 }) {
+  const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground [&_[data-slot=description-details]]:text-paper-foreground [&_[data-slot=description-term]]:text-paper-muted-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Copy application no. {document.applicationNumber}
+          {t("approveCopyApplicationDialog_copyApplicationNoApplicationNumber", { applicationNumber: document.applicationNumber })}
         </p>
         <p className="text-body font-semibold">
-          In case no. {document.caseNumber}
+          {t("approveCopyApplicationDialog_inCaseNoCaseNumber", { caseNumber: document.caseNumber })}
         </p>
         <p className="text-body-compact text-paper-muted-foreground">
           {document.matter}
@@ -257,7 +256,7 @@ function ApplicationFacsimile({
       </ol>
 
       <section className="flex flex-col gap-2">
-        <h4 className="text-body font-semibold">Prayer</h4>
+        <h4 className="text-body font-semibold">{t("approveCopyApplicationDialog_prayer")}</h4>
         <p className="text-body whitespace-pre-wrap">{document.prayer}</p>
       </section>
 
@@ -267,10 +266,10 @@ function ApplicationFacsimile({
           {document.applicant.capacity}
         </p>
         <p className="text-body-compact text-paper-muted-foreground">
-          Presented by {document.filedBy}
+          {t("approveCopyApplicationDialog_presentedByFiledBy", { filedBy: document.filedBy })}
         </p>
         <p className="text-body-compact text-paper-muted-foreground">
-          Dated this {document.dated}, at {document.place}
+          {t("approveCopyApplicationDialog_datedThisDatedAtPlace", { dated: document.dated, place: document.place })}
         </p>
       </footer>
     </article>

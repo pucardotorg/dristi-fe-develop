@@ -1132,7 +1132,7 @@ export function courtTrail(
           { label: group.label, href: queueHref },
           { label: item.label, href: queueHref },
           { label: record, mono: true, href: `${item.href}/${nested.segment}${suffix}` },
-          { label: "Order" },
+          { label: "navigation_order" },
         ];
       }
       return [

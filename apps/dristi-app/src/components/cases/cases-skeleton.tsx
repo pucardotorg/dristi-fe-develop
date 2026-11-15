@@ -1,18 +1,20 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 /**
  * Chrome stays, rows are placeholders — the page must not jump when data
  * lands. The default landing is the case list, so that is what this mirrors.
  */
 export function CasesSkeleton() {
+  const t = useTranslations();
   return (
     <main className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8" aria-busy>
       <span className="sr-only" role="status">
-        Loading cases
+        {t("casesSkeleton_loadingCases")}
       </span>
 
       <header className="flex flex-col gap-2">
-        <h1 className="text-title-l font-semibold">Cases</h1>
+        <h1 className="text-title-l font-semibold">{t("casesSkeleton_cases")}</h1>
         <Skeleton className="h-5 w-full max-w-xl" />
       </header>
 

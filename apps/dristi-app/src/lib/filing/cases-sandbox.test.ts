@@ -8,7 +8,7 @@ import { accusedFromCase, complainantsFromCase, witnessesFromCase } from "./case
 import { caseFilingCopy } from "./content";
 import { caseFilingSource } from "./data";
 import { caseFilingErrorMessage } from "./data/cases-api";
-import { SANDBOX_ADVOCATES, SandboxCaseFiling, memoryCaseStore } from "./data/cases-sandbox";
+import { SANDBOX_ADVOCATES, SandboxCaseFiling, memoryCaseStore } from "./data/indexeddb";
 import { accusedBodies, complainantBodies, saveParty, witnessBodies } from "./parties";
 
 const addr = {

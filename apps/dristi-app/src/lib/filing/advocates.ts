@@ -8,7 +8,7 @@
 
 import { isApiError } from "@/lib/api";
 
-import type { CaseFilingRepository } from "./data/cases-repository";
+import type { CaseFilingRepository } from "./data/repository";
 import { representedIndices } from "./selectors";
 import type { Advocate, Complainant, SavedAdvocate } from "./types";
 

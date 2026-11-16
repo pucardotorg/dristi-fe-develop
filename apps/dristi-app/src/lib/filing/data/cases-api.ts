@@ -2,9 +2,9 @@
  * The backend case behind a filing (dristi-be "Case Filing API"): its request and response
  * shapes, the upload type for each slot, and what to tell the person when a call fails.
  *
- * The calls themselves are the contract in `./cases-repository.ts`, answered by the backend
- * (`createCaseFilingApi` in `./http.ts`) or the sandbox (`./cases-sandbox.ts`). Reach them
- * through `getCaseFilingRepository()` from `./index.ts`. Both answer with these shapes and
+ * The calls themselves are `CaseFilingRepository` in `./repository.ts`, answered by the
+ * backend (`createCaseFilingApi` in `./http.ts`) or the sandbox (`SandboxCaseFiling` in
+ * `./indexeddb.ts`). Reach them through `getCaseFilingRepository()` from `./index.ts`. Both answer with these shapes and
  * fail with the same `ApiError`s, so `caseFilingErrorMessage` reads either.
  *
  * The backend creates the case lazily, on the first save, and gives it the draft

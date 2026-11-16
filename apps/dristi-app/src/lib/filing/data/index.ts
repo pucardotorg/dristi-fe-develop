@@ -2,12 +2,12 @@
  * Repository access for the filing screens. Two contracts, each chosen in one place, lazily
  * (server code imports this module for its helpers, such as `newId`):
  *
- *   - `getRepository()`: drafts and file bytes (`repository.ts`), by `NEXT_PUBLIC_DATA_SOURCE`
+ *   - `getRepository()`: drafts and file bytes (`FilingRepository`), by `NEXT_PUBLIC_DATA_SOURCE`
  *     (`lib/data/source.ts`): the in-browser sandbox (`indexeddb.ts`) or the backend
  *     (`http.ts`).
  *   - `getCaseFilingRepository()`: the backend case each step saves to
- *     (`cases-repository.ts`): the sandbox (`cases-sandbox.ts`) or the backend (`http.ts`),
- *     by `caseFilingSource`.
+ *     (`CaseFilingRepository`): the sandbox (`indexeddb.ts`) or the backend (`http.ts`), by
+ *     `caseFilingSource`.
  */
 
 import {
@@ -20,14 +20,12 @@ import {
   type OnlyContract,
 } from "@/lib/data/source";
 
-import type { CaseFilingRepository } from "./cases-repository";
 import { HttpFilingRepository, createCaseFilingApi } from "./http";
 import { IndexedDbCaseFilingRepository, IndexedDbFilingRepository } from "./indexeddb";
-import type { FilingRepository, StoredFile } from "./repository";
+import type { CaseFilingRepository, FilingRepository, StoredFile } from "./repository";
 import type { FilingDraft, StoredFileRef } from "../types";
 
-export type { CaseFilingRepository } from "./cases-repository";
-export type { FilingRepository, StoredFile } from "./repository";
+export type { CaseFilingRepository, FilingRepository, StoredFile } from "./repository";
 
 const chosen = repositoryFor<FilingRepository>("filing", {
   sandbox: browserOnly("filing", () => new IndexedDbFilingRepository()),

@@ -33,7 +33,7 @@ import type {
   PoaHolderInput,
   WitnessInput,
 } from "./data/cases-api";
-import type { CaseFilingRepository } from "./data/cases-repository";
+import type { CaseFilingRepository } from "./data/repository";
 import { mobileFieldCopy } from "./content";
 import { ENTITY_TYPE_CODES, GENDER_CODES } from "./options";
 import { accusedContactUnknownDeclared, isCinOrPan, normaliseCinPan } from "./selectors";

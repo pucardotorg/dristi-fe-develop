@@ -5,9 +5,9 @@
  * through `@/lib/api`, translating backend shapes here so backend naming never reaches a
  * screen. Until a method exists, calling it rejects with `NotIntegratedError`.
  *
- *   - `HttpFilingRepository` (`./repository.ts`): drafts and file bytes. No endpoints yet,
+ *   - `HttpFilingRepository` (`FilingRepository`): drafts and file bytes. No endpoints yet,
  *     none guessed: the browser keeps the working copy of a draft (`./indexeddb.ts`).
- *   - `createCaseFilingApi` (`./cases-repository.ts`): the backend case each step saves to.
+ *   - `createCaseFilingApi` (`CaseFilingRepository`): the backend case each step saves to.
  *
  *   startDraft          POST   /cases                       { case_type }  → draft_session_id
  *   uploadDocument      POST   /cases/{id}/documents        multipart: file, document_type,
@@ -60,8 +60,7 @@ import type {
   WitnessInput,
 } from "./cases-api";
 import { ADVOCATE_SEARCH_MIN_LENGTH } from "./cases-api";
-import type { CaseFilingRepository } from "./cases-repository";
-import type { FilingRepository } from "./repository";
+import type { CaseFilingRepository, FilingRepository } from "./repository";
 
 export class HttpFilingRepository implements Partial<FilingRepository> {}
 

@@ -61,29 +61,23 @@ describe("message catalogs", () => {
     assert.deepEqual(broken, []);
   });
 
-  /*
-   * TEMPORARY — the current requirement is that hi.json is an English copy. Delete this
-   * test when reviewed Hindi translations start landing; the parity tests above stay.
-   */
-  it("keeps Hindi as an exact copy of English for now", () => {
-    assert.deepEqual(hi, en);
-  });
-
-  it("formats every English message without error", () => {
-    const errors: string[] = [];
-    const t = createTranslator({
-      locale: "en",
-      messages: en as Record<string, string>,
-      onError: (error: IntlError) => errors.push(error.message),
+  for (const [locale, catalog] of [["en", en], ["hi", hi]] as const) {
+    it(`formats every ${locale} message without error`, () => {
+      const errors: string[] = [];
+      const t = createTranslator({
+        locale,
+        messages: catalog as Record<string, string>,
+        onError: (error: IntlError) => errors.push(error.message),
+      });
+      for (const [key, message] of Object.entries(catalog)) {
+        const values: Record<string, unknown> = {};
+        for (const name of placeholders(String(message))) values[name] = 1;
+        for (const tag of tags(String(message))) values[tag] = (chunks: string) => chunks;
+        t.markup(key, values as Parameters<typeof t.markup>[1]);
+      }
+      assert.deepEqual(errors, []);
     });
-    for (const [key, message] of Object.entries(en)) {
-      const values: Record<string, unknown> = {};
-      for (const name of placeholders(String(message))) values[name] = 1;
-      for (const tag of tags(String(message))) values[tag] = (chunks: string) => chunks;
-      t.markup(key, values as Parameters<typeof t.markup>[1]);
-    }
-    assert.deepEqual(errors, []);
-  });
+  }
 });
 
 describe("translateMessage", () => {

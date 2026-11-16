@@ -1646,11 +1646,19 @@ function isPageMetadata(node: TS.Node): boolean {
   return false;
 }
 
+/** Elements whose content is code (CSS, JS), never text for people. */
+const CODE_ELEMENTS = new Set(["style", "script"]);
+
+function isCodeElement(node: TS.Node): boolean {
+  return ts.isJsxElement(node) && CODE_ELEMENTS.has(node.openingElement.tagName.getText());
+}
+
 function analyse(state: FileState) {
   const sf = state.sf;
   const demoSeen = new Set<string>();
   let metadataSeen = false;
   const visit = (node: TS.Node) => {
+    if (isCodeElement(node)) return;
     if (ts.isJsxElement(node) || ts.isJsxFragment(node)) visitJsxChildren(state, node);
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateExpression(node)) {
       const demo = isDemoConstant(node);

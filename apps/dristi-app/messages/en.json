@@ -3621,7 +3621,6 @@
   "hearingsTable_selectItemItemCauseTitle": "Select item {item}, {causeTitle}",
   "hearingsTable_startHearing": "Start hearing",
   "hearingTimeline_caseNumber": "case number",
-  "hearingTimeline_nowDotBoxShadow00": ".now-dot '{' box-shadow: 0 0 0 3px var(--halo); '}' @keyframes pucar-now-pulse '{' 0%, 100% '{' box-shadow: 0 0 0 2px var(--halo); '}' 50% '{' box-shadow: 0 0 0 6px color-mix(in srgb, var(--halo) 45%, transparent); '}' '}' @media (prefers-reduced-motion: no-preference) '{' .now-dot '{' animation: pucar-now-pulse 2.5s ease-in-out infinite; '}' '}'",
   "history_13Jul20261ItemContested": "13 Jul 2026 · 1 item contested",
   "history_13Jul2026AdvBijiniRejen": "13 Jul 2026 · Adv. Bijini Rejen · 2 of 3 items answered",
   "history_30Jul20261ItemContested": "30 Jul 2026 · 1 item contested",

@@ -739,9 +739,17 @@ type RailTone = "neutral" | "conflict" | "now" | "concluded";
 
 /** The keyframes for the "now" dot's pulse — scoped here, off under reduced motion. */
 function RailStyles() {
-  const t = useTranslations();
   return (
-    <style>{t("hearingTimeline_nowDotBoxShadow00")}</style>
+    <style>{`
+      .now-dot { box-shadow: 0 0 0 3px var(--halo); }
+      @keyframes pucar-now-pulse {
+        0%, 100% { box-shadow: 0 0 0 2px var(--halo); }
+        50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--halo) 45%, transparent); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .now-dot { animation: pucar-now-pulse 2.5s ease-in-out infinite; }
+      }
+    `}</style>
   );
 }
 

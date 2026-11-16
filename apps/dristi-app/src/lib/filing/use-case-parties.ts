@@ -14,6 +14,8 @@
 
 import * as React from "react";
 
+import { isApiError } from "@/lib/api";
+
 import { accusedFromCase, complainantsFromCase, witnessesFromCase } from "./case-read";
 import { caseFilingApi, caseFilingErrorMessage, type PartyRole } from "./data/cases-api";
 import {
@@ -206,8 +208,14 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
         fromCase = await loadFromCase(kind, caseId, latest, update, profile);
         loaded.current = true;
       } catch (error) {
-        // The browser's copy is still there; the next save tries the case again.
-        console.warn("[filing] couldn't read the parties from the case", error);
+        // A case not saved yet has nothing to read: treat it as an empty case
+        // (nothing from it) and don't read again on the next save.
+        if (isApiError(error) && error.status === 404) {
+          loaded.current = true;
+        } else {
+          // The browser's copy is still there; the next save tries the case again.
+          console.warn("[filing] couldn't read the parties from the case", error);
+        }
       }
     }
     const selfId =

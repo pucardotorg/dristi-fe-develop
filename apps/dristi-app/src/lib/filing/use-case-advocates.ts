@@ -15,6 +15,8 @@
 
 import * as React from "react";
 
+import { isApiError } from "@/lib/api";
+
 import { advocateChanged, advocateClientIds, endAdvocate, saveAdvocate } from "./advocates";
 import { advocatesFromCase } from "./case-read";
 import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
@@ -172,8 +174,14 @@ export function useCaseAdvocates() {
         fromCase = await loadFromCase(caseId, latest, update);
         loaded.current = true;
       } catch (error) {
-        // The browser's copy is still there; the next save tries the case again.
-        console.warn("[filing] couldn't read the advocates from the case", error);
+        // A case not saved yet has nothing to read: treat it as an empty case
+        // (nothing from it) and don't read again on the next save.
+        if (isApiError(error) && error.status === 404) {
+          loaded.current = true;
+        } else {
+          // The browser's copy is still there; the next save tries the case again.
+          console.warn("[filing] couldn't read the advocates from the case", error);
+        }
       }
     }
     await syncAdvocates(latest, caseId, update, fromCase);

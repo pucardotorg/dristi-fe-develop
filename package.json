@@ -11,6 +11,17 @@
     "lint": "npm run lint -w @pucar/dristi-app",
     "test:app": "npm test -w @pucar/dristi-app",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "simple-git-hooks"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*": "prettier --write --ignore-unknown"
+  },
+  "devDependencies": {
+    "lint-staged": "^17.6.1",
+    "simple-git-hooks": "^2.14.0"
   }
 }

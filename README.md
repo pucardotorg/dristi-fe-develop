@@ -86,7 +86,23 @@ npm run dev               # Start the dev server on http://localhost:3000
 npm run build             # Production build of the Dristi App
 npm run start             # Serve the production build
 npm run lint              # ESLint
+npm run format            # Format every file with Prettier
+npm run format:check      # Check formatting without changing files (CI runs this)
 npm run test:app          # Unit tests (node --test via tsx)
+```
+
+### Formatting on commit
+
+A pre-commit hook formats the files you stage with Prettier
+([simple-git-hooks](https://github.com/toplenkov/simple-git-hooks) runs
+[lint-staged](https://github.com/lint-staged/lint-staged)). `npm install` sets it up, so
+there is nothing extra to run after cloning.
+
+If you change the `simple-git-hooks` block in `package.json`, or the hook stops running,
+reinstall it:
+
+```bash
+npx simple-git-hooks
 ```
 
 ## Documentation
@@ -104,7 +120,7 @@ npm run test:app          # Unit tests (node --test via tsx)
 ```
 .
 ├── .github/
-│   ├── workflows/              # docker-publish.yml
+│   ├── workflows/              # ci.yml, docker-publish.yml
 │   ├── ISSUE_TEMPLATE/
 │   └── PULL_REQUEST_TEMPLATE.MD
 ├── apps/
@@ -181,9 +197,10 @@ There's no Compose file. The app has no back-end services to run alongside it ye
 
 ## CI/CD
 
+- [.github/workflows/ci.yml](.github/workflows/ci.yml) runs on every pull request and on
+  pushes to `main`: `npm run format:check`, `npm run lint`, `npm run test:app` and
+  `npm run build`. Run them locally before opening a PR (see
+  [CONTRIBUTING.MD](CONTRIBUTING.MD)).
 - [.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml) builds
   `docker/Dockerfile` and pushes it to GitHub Container Registry on every push to `main`.
   Tags are `main-<sha>` and `latest`.
-
-CI doesn't yet run `npm run lint` or `npm run test:app`. Run them locally before opening
-a PR (see [CONTRIBUTING.MD](CONTRIBUTING.MD)).

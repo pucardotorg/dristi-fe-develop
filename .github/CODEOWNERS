@@ -15,7 +15,7 @@
 /apps/dristi-app/src/provakil/                      @pucardotorg/design
 /apps/dristi-app/src/lib/**/content.ts              @pucardotorg/design
 /apps/dristi-app/src/lib/**/data/indexeddb.ts       @pucardotorg/design
-/apps/dristi-app/src/lib/**/sandbox.ts              @pucardotorg/design
+/apps/dristi-app/src/lib/**/*sandbox.ts             @pucardotorg/design
 /apps/dristi-app/src/lib/**/fixtures.ts             @pucardotorg/design
 /apps/dristi-app/src/lib/**/*-dummy.json            @pucardotorg/design
 /apps/dristi-app/scripts/                           @pucardotorg/design

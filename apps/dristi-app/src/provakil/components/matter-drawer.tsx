@@ -19,16 +19,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-/** One matter, as the case workspace shows it. */
+/** One matter, as the case workspace shows it. Keyed by matter, so each opens on Overview. */
 export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () => void }) {
   const [tab, setTab] = React.useState<(typeof TABS)[number]>("Overview");
-  // Another matter opens on Overview. Reset while rendering, not in an effect, so the
-  // drawer never paints the previous matter's tab first.
-  const [tabFor, setTabFor] = React.useState(row?.id);
-  if (tabFor !== row?.id) {
-    setTabFor(row?.id);
-    setTab("Overview");
-  }
   if (!row) return null;
   const m = row;
   const b = m.borrower;

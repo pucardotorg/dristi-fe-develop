@@ -206,6 +206,7 @@ export function createApiClient(config: ApiClientConfig) {
           code: parsed.code,
           codes: parsed.codes,
           fieldErrors: parsed.fieldErrors,
+          fieldCodes: parsed.fieldCodes,
           retryAfterSeconds: parseRetryAfter(response.headers.get("retry-after")),
           body: errorBody,
         });

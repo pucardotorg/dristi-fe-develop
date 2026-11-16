@@ -25,7 +25,7 @@
 import { api, isApiError, type ApiClient } from "@/lib/api";
 
 import { AuthError, type AuthErrorCode } from "./errors";
-import { toBackendMobile } from "./mobile";
+import { toBackendMobile, toNationalMobile } from "./mobile";
 import type { AuthService } from "./service";
 import type {
   AccountState,
@@ -113,11 +113,6 @@ function toAccountState(body: AccountStateBody, name: string | null = null): Acc
     role: BACKEND_ROLES.includes(body.role as BackendRole) ? (body.role as BackendRole) : null,
     name,
   };
-}
-
-/** `"+919876543210"` → `"9876543210"`: the screens hold national digits. */
-function toNational(mobile: string): string {
-  return mobile.replace(/^\+91/, "");
 }
 
 /**
@@ -230,7 +225,14 @@ export class HttpAuthService implements AuthService {
   }
 
   async getCurrentAccount(): Promise<CurrentAccount> {
-    let body: { role?: unknown; name?: unknown; has_current_terms?: unknown };
+    let body: {
+      role?: unknown;
+      name?: unknown;
+      mobile_number?: unknown;
+      email?: unknown;
+      has_current_terms?: unknown;
+      profile?: { bar_registration_id?: unknown } | null;
+    };
     try {
       body = await this.client.get("users/me");
     } catch (error) {
@@ -244,6 +246,9 @@ export class HttpAuthService implements AuthService {
     return {
       role: body.role as BackendRole,
       name: textOrNull(body.name),
+      mobile: toNationalMobile(text(body.mobile_number)),
+      email: textOrNull(body.email),
+      barNumber: textOrNull(body.profile?.bar_registration_id),
       hasCurrentTerms: body.has_current_terms !== false,
     };
   }
@@ -313,7 +318,7 @@ export class HttpAuthService implements AuthService {
     }
     return {
       role,
-      mobile: toNational(text(body.mobile_number)),
+      mobile: toNationalMobile(text(body.mobile_number)),
       name: text(body.name),
       email: text(body.email),
       registrationNumber: text(body.registration_number),

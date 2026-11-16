@@ -22,6 +22,7 @@ import {
   type Option,
 } from "@/lib/filing/options";
 import {
+  accusedContactUnknownDeclared,
   advocateName,
   chequeSourceSlot,
   noticeSourceSlot,
@@ -485,7 +486,15 @@ function accusedGroups(draft: FilingDraft): FieldGroupDef[] {
         );
       });
     }
-    fields.push(...contactFields(p, a.contacts), ...addressBlockFields(p, a.addresses), {
+    fields.push(...contactFields(p, a.contacts));
+    if (accusedContactUnknownDeclared(a) && a.contactUnknownDeclaredAt) {
+      fields.push({
+        id: `${p}-no-contact`,
+        label: "Contact details",
+        value: `None — the filer declared on ${toLongDate(a.contactUnknownDeclaredAt.slice(0, 10))} that they have no knowledge of them and cannot locate them with reasonable effort`,
+      });
+    }
+    fields.push(...addressBlockFields(p, a.addresses), {
       id: `${p}-juris`,
       label: "Resides within this court's jurisdiction?",
       value: yesNo(a.jurisdiction),

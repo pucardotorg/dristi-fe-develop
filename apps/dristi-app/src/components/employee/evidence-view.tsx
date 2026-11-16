@@ -66,7 +66,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { isValidEmail, normalizeMobileNumber } from "@/lib/cases/witnesses";
+import { toNationalMobile } from "@/lib/auth/mobile";
+import { isValidEmail } from "@/lib/cases/witnesses";
 import type { CasePerson } from "@/lib/employee/case-people";
 import {
   accusedOf,
@@ -1041,7 +1042,7 @@ function EvidenceSignDialog({
                   value={mobile}
                   aria-invalid={Boolean(mobileError)}
                   onChange={(next) => {
-                    setMobile(normalizeMobileNumber(next));
+                    setMobile(toNationalMobile(next));
                     setMobileError(undefined);
                   }}
                 />
@@ -1290,7 +1291,7 @@ function AddWitnessDialog({
                     prefix="+91"
                     value={mobile}
                     onChange={(next) => {
-                      setMobile(normalizeMobileNumber(next));
+                      setMobile(toNationalMobile(next));
                       setError(undefined);
                     }}
                     placeholder="10-digit number"

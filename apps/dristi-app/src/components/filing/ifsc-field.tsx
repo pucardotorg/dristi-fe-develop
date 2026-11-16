@@ -70,8 +70,6 @@ export function IfscField({
   fetched,
   tip,
   placeholder = "e.g. SBIN0001234",
-  prefilled = false,
-  onViewSource,
 }: {
   value: string;
   /** Typing — the caller keeps the value and drops whatever the last lookup filled. */
@@ -82,16 +80,17 @@ export function IfscField({
   fetched: boolean;
   tip?: React.ReactNode;
   placeholder?: string;
-  prefilled?: boolean;
-  onViewSource?: () => void;
 }) {
   const [status, setStatus] = React.useState<IfscStatus>("idle");
   const statusId = React.useId();
 
   const code = value.trim().toUpperCase();
   const canFetch = IFSC_PATTERN.test(code);
+  // A non-empty code that is not a well-formed IFSC is flagged so it can't sit there and
+  // silently fail to save at Continue. An empty field is "incomplete", not a format error.
+  const formatError = code.length > 0 && !canFetch ? "Enter a valid IFSC, e.g. SBIN0001234 (11 characters)." : undefined;
 
-  // The value can also change from outside — the source panel corrects the same field —
+  // The value can also change from outside — a scrutiny correction writes the same field —
   // so the reset lives here rather than in the change handler.
   const [lastValue, setLastValue] = React.useState(value);
   if (lastValue !== value) {
@@ -145,14 +144,12 @@ export function IfscField({
           : null;
 
   return (
-    <FormField label="IFSC code" name="ifsc" required tip={tip}>
+    <FormField label="IFSC code" name="ifsc" required tip={tip} error={formatError}>
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-2">
           <TextField
             value={value}
             onChange={(v) => onChange(v.toUpperCase())}
-            prefilled={prefilled}
-            onViewSource={onViewSource}
             placeholder={placeholder}
             autoComplete="off"
             aria-describedby={result ? statusId : undefined}

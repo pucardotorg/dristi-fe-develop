@@ -17,8 +17,7 @@ const PIN_DEBOUNCE_MS = 400;
 type PinFill = { pin: string; district: boolean; state: boolean };
 
 /**
- * Address line · pincode · city · district · state. When `prefilled`, the address was
- * read from a document: fields carry the amber fill and open the source on click.
+ * Address line · pincode · city · district · state.
  *
  * The pincode is the fast path: once six digits are in, the postal service is asked for
  * the district and state and fills whichever of the two is still blank. Anything the
@@ -27,9 +26,6 @@ type PinFill = { pin: string; district: boolean; state: boolean };
 export function AddressFields({
   value,
   onChange,
-  prefilled = false,
-  onViewSource,
-  prefilledFields,
   idPrefix,
   name,
   required = true,
@@ -37,9 +33,6 @@ export function AddressFields({
 }: {
   value: Address;
   onChange: (next: Address) => void;
-  prefilled?: boolean;
-  onViewSource?: (field: keyof Address) => void;
-  prefilledFields?: Partial<Record<keyof Address, boolean>>;
   idPrefix?: string;
   /**
    * Where this address sits on its record ("res", "addresses.1.addr"), so a check on
@@ -56,8 +49,6 @@ export function AddressFields({
 }) {
   const key = (k: keyof Address) => (name ? `${name}.${k}` : undefined);
   const set = (k: keyof Address) => (v: string) => onChange({ ...value, [k]: v });
-  const pf = (key: keyof Address) => prefilled && !!value[key] && (prefilledFields?.[key] ?? !prefilledFields);
-  const src = (key: keyof Address) => pf(key) && onViewSource ? () => onViewSource(key) : undefined;
 
   const [pinFill, setPinFill] = React.useState<PinFill | null>(null);
 
@@ -130,8 +121,6 @@ export function AddressFields({
         placeholder="6-digit"
         inputMode="numeric"
         maxLength={6}
-        prefilled={pf("pin")}
-        onViewSource={src("pin")}
         autoComplete="postal-code"
       />
     </FormField>
@@ -142,21 +131,13 @@ export function AddressFields({
         value={value.city}
         onChange={set("city")}
         placeholder="City or town"
-        prefilled={pf("city")}
-        onViewSource={src("city")}
         autoComplete="address-level2"
       />
     </FormField>
   );
   const districtField = (
     <FormField label="District" name={key("district")} required={required}>
-      <TextField
-        value={value.district}
-        onChange={setDistrict}
-        placeholder="District"
-        prefilled={pf("district")}
-        onViewSource={src("district")}
-      />
+      <TextField value={value.district} onChange={setDistrict} placeholder="District" />
     </FormField>
   );
   const stateField = (
@@ -166,8 +147,6 @@ export function AddressFields({
         onValueChange={setState}
         options={STATES}
         placeholder="Select state"
-        prefilled={pf("state")}
-        onViewSource={src("state")}
         /* The field's label does not reach a select's button; name it here. */
         ariaLabel="State / UT"
       />
@@ -188,8 +167,6 @@ export function AddressFields({
           value={value.line1}
           onChange={set("line1")}
           placeholder="House / building, street, area"
-          prefilled={pf("line1")}
-                onViewSource={src("line1")}
           autoComplete="address-line1"
         />
       </FormField>

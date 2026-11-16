@@ -1,10 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { FileSearchIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useSourceFieldLabel } from "@/components/filing/form-field";
-
+import { toNationalMobile } from "@/lib/auth/mobile";
 import type { Option } from "@/lib/filing/options";
 import { cn } from "@/lib/utils";
 import {
@@ -32,44 +29,8 @@ import {
 import {
   useFieldReadOnly,
   useFieldReadOnlyHint,
-  useInCorrection,
   useLockedDisabled,
 } from "@/components/filing/posture";
-import { useSourceDock } from "@/hooks/use-min-width";
-
-/**
- * From `xl` the source rail is a permanent column beside the form (`useSourceDock`), so a
- * machine-read field opens the rail on click, as it always has. Below `xl` — phones and
- * tablets, and any correction round where the rail gives up its column — the rail is a
- * slide-in sheet, so the field edits normally and an adjacent button opens the sheet
- * (owner, 2026-09-29). This keeps the desktop untouched and adds the button only where
- * the small screens needed a separate affordance.
- */
-export function useSourceDocked() {
-  const wide = useSourceDock();
-  const inCorrection = useInCorrection();
-  return wide && !inCorrection;
-}
-
-/** Shared filing composition: editing and inspecting provenance are separate actions. */
-export function SourceField({ children, onViewSource, disabled }: {
-  children: React.ReactNode;
-  onViewSource?: () => void;
-  disabled?: boolean;
-}) {
-  const label = useSourceFieldLabel();
-  if (!onViewSource) return children;
-  return (
-    <div className="flex min-w-0 items-start gap-2">
-      <div className="min-w-0 flex-1">{children}</div>
-      <Button type="button" variant="outline" size="icon" disabled={disabled}
-        aria-label={`View source for ${label}`} title={`View source for ${label}`}
-        aria-haspopup="dialog" onClick={onViewSource}>
-        <FileSearchIcon aria-hidden />
-      </Button>
-    </div>
-  );
-}
 
 /**
  * A flagged field's value, shown but not editable — for the controls that have no
@@ -101,47 +62,31 @@ export function ReadOnlyValue({
   );
 }
 
-/**
- * Text input that may carry a machine-read value. When `prefilled`, the DS amber fill
- * shows; an adjacent button opens its source (`onViewSource`). The field edits normally.
- */
+/** Text input for a filing field, aware of a locked or flagged (read-only) posture. */
 export function TextField({
   value,
   onChange,
-  prefilled = false,
-  onViewSource,
   className,
   ...props
 }: Omit<React.ComponentProps<typeof Input>, "value" | "onChange" | "prefilled"> & {
   value: string;
   onChange: (value: string) => void;
-  prefilled?: boolean;
-  onViewSource?: () => void;
 }) {
   const disabled = useLockedDisabled(props.disabled);
   /* Flagged by scrutiny: the value stays legible and focusable, and is corrected in the
      inset beneath the field rather than typed over here (brief §15.2). */
   const readOnly = useFieldReadOnly();
   const hint = useFieldReadOnlyHint();
-  const docked = useSourceDocked();
-  const amber = prefilled && !!value && !readOnly;
-  /* Docked (desktop): the field itself opens the rail, unchanged. Undocked: the field
-     edits and the adjacent SourceField button opens the sheet. */
-  const inlineOpen = amber && !!onViewSource && docked;
   return (
-    <SourceField onViewSource={amber && !docked ? onViewSource : undefined} disabled={disabled}>
     <Input
       value={value}
       onChange={(e) => onChange(e.target.value)}
       aria-describedby={hint}
-      prefilled={amber}
-      onClick={inlineOpen ? onViewSource : undefined}
-      className={cn(inlineOpen && "cursor-pointer", className)}
+      className={className}
       {...props}
       readOnly={readOnly || props.readOnly}
       disabled={disabled}
     />
-    </SourceField>
   );
 }
 
@@ -150,31 +95,20 @@ export function PrefixInput({
   prefix,
   value,
   onChange,
-  prefilled = false,
-  onViewSource,
   className,
   ...props
 }: Omit<React.ComponentProps<"input">, "value" | "onChange" | "prefix"> & {
   prefix: React.ReactNode;
   value: string;
   onChange: (value: string) => void;
-  prefilled?: boolean;
-  onViewSource?: () => void;
 }) {
   const disabled = useLockedDisabled(props.disabled);
   const readOnly = useFieldReadOnly();
   const hint = useFieldReadOnlyHint();
-  const docked = useSourceDocked();
-  const amber = prefilled && !!value && !readOnly;
-  /* Docked (desktop): click the field to open the rail, unchanged. Undocked: edit here,
-     open the sheet from the adjacent button. */
-  const inlineOpen = amber && !!onViewSource && docked;
   return (
-    <SourceField onViewSource={amber && !docked ? onViewSource : undefined} disabled={disabled}>
     <InputGroup
       data-disabled={disabled || undefined}
       className={cn(
-        amber && "border-dashed border-warning-ink bg-prefilled",
         /* Locked: the same quiet sunken fill as every other locked control — the `!`
            outranks the group's own `has-disabled:bg-input/50` (the correction screen
            restores full opacity; see its centre pane). */
@@ -189,30 +123,42 @@ export function PrefixInput({
       <InputGroupInput
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        onClick={inlineOpen ? onViewSource : undefined}
         aria-describedby={hint}
-        aria-description={amber ? "Machine filled, not yet verified" : undefined}
-        className={cn(inlineOpen && "cursor-pointer")}
         {...props}
         readOnly={readOnly || props.readOnly}
         disabled={disabled}
       />
     </InputGroup>
-    </SourceField>
   );
 }
 
 /**
- * Select over an `Option[]` with a placeholder row. `prefilled` applies the amber fill;
- * `onViewSource` opens the source panel from the adjacent source button.
+ * A +91 mobile: digits only, never more than ten. No `maxLength`, which would cut a pasted
+ * "+91 98765 43210" to its first ten characters before the country code is dropped.
  */
+export function MobileInput({
+  placeholder = "10-digit number",
+  onChange,
+  ...props
+}: Omit<React.ComponentProps<typeof PrefixInput>, "prefix">) {
+  return (
+    <PrefixInput
+      prefix="+91"
+      inputMode="numeric"
+      autoComplete="tel-national"
+      placeholder={placeholder}
+      onChange={(v) => onChange(toNationalMobile(v))}
+      {...props}
+    />
+  );
+}
+
+/** Select over an `Option[]` with a placeholder row. */
 export function OptionSelect({
   value,
   onValueChange,
   options,
   placeholder = "Select",
-  prefilled = false,
-  onViewSource,
   disabled,
   ariaLabel,
   className,
@@ -222,8 +168,6 @@ export function OptionSelect({
   onValueChange: (value: string) => void;
   options: Option[] | string[];
   placeholder?: string;
-  prefilled?: boolean;
-  onViewSource?: () => void;
   disabled?: boolean;
   ariaLabel?: string;
   className?: string;
@@ -234,7 +178,6 @@ export function OptionSelect({
   );
   const isDisabled = useLockedDisabled(disabled);
   const readOnly = useFieldReadOnly();
-  const docked = useSourceDocked();
   /* A Select has no read-only state — a flagged one therefore shows its chosen option as
      a read-only value (brief §15.5, "rendered as text where the control type cannot be
      read-only"). Focusable and announced; simply not re-openable. */
@@ -249,20 +192,9 @@ export function OptionSelect({
       />
     );
   }
-  const inlineOpen = prefilled && !!value && !!onViewSource && docked;
   return (
-    <SourceField onViewSource={prefilled && !!value && !docked ? onViewSource : undefined} disabled={isDisabled}>
     <Select value={value || undefined} onValueChange={onValueChange} disabled={isDisabled}>
-      <SelectTrigger
-        id={id}
-        aria-label={ariaLabel}
-        onPointerDown={inlineOpen ? onViewSource : undefined}
-        className={cn(
-          "w-full",
-          prefilled && !!value && "border-dashed border-warning-ink bg-prefilled",
-          className
-        )}
-      >
+      <SelectTrigger id={id} aria-label={ariaLabel} className={cn("w-full", className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       {/*
@@ -278,7 +210,6 @@ export function OptionSelect({
         ))}
       </SelectContent>
     </Select>
-    </SourceField>
   );
 }
 

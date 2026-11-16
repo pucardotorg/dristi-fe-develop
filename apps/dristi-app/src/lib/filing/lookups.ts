@@ -17,6 +17,9 @@ const ifscCache = new Map<string, Promise<IfscResult | null>>();
 
 export const IFSC_PATTERN = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 
+/** A cheque's serial number: exactly six digits (the first MICR set), as the backend requires. */
+export const CHEQUE_NUMBER_PATTERN = /^[0-9]{6}$/;
+
 /** Bank details for an IFSC, `null` when the code is not known. Throws on network error. */
 export function lookupIfsc(code: string): Promise<IfscResult | null> {
   const ifsc = code.trim().toUpperCase();

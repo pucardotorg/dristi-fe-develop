@@ -25,8 +25,8 @@ import {
   VideoIcon,
 } from "lucide-react";
 
-import { getRepository, storeUpload } from "@/lib/filing/data";
-import { forgetFile, formatDuration, getFileUrl } from "@/lib/filing/files";
+import { storeUpload } from "@/lib/filing/data";
+import { discardStoredFile, formatDuration, getFileUrl } from "@/lib/filing/files";
 import type { OathVideo, StoredFileRef } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -109,10 +109,7 @@ export function OathCapture({
     }
     const previous = value;
     onChange({ file: ref, durationSeconds });
-    if (previous) {
-      forgetFile(previous.file.id);
-      void getRepository().deleteFile(previous.file.id);
-    }
+    if (previous) discardStoredFile(previous.file.id);
     setBusy(false);
   };
 

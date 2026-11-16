@@ -45,11 +45,6 @@ export function formatINR(value: string | number): string {
   return grouped;
 }
 
-export function amountToNumber(value: string): number {
-  const n = Number(String(value ?? "").replace(/[^0-9.]/g, ""));
-  return Number.isFinite(n) ? n : 0;
-}
-
 export function rupees(value: string | number): string {
   const f = formatINR(value);
   return f ? `₹${f}` : "";

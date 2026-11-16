@@ -45,15 +45,16 @@ const pushable = (r: Row) => r.stage !== "Filed";
 const exportHref = (format: string, rs: Row[]) =>
   `/provakil/api/export?format=${format}&ids=${encodeURIComponent(rs.map((r) => r.id).join(","))}&adv=${encodeURIComponent(rs.map((r) => r.advocate?.enrolment ?? "").join(","))}`;
 
-type MattersPayload = { matters: Row[]; courtReachable: boolean; courtUrl: string };
-
-async function fetchMatters(): Promise<MattersPayload> {
-  const res = await provakilFetch("/api/matters", { cache: "no-store" });
-  return res.json();
-}
-
 export function missingDocs(m: Matter): string[] {
   return REQUIRED_TAGS.filter((t) => !m.documents.some((d) => d.tag === t));
+}
+
+type MattersResponse = { matters: Row[]; courtReachable: boolean; courtUrl: string };
+
+async function fetchMatters(): Promise<MattersResponse> {
+  const res = await provakilFetch("/api/matters", { cache: "no-store" });
+  if (!res.ok) throw new Error(`Matters failed to load (${res.status}).`);
+  return res.json();
 }
 
 export function CasesScreen() {
@@ -72,26 +73,45 @@ export function CasesScreen() {
   const [page, setPage] = React.useState(0);
   const PAGE = 50;
 
-  const show = React.useCallback((json: MattersPayload) => {
+  const [loadFailed, setLoadFailed] = React.useState(false);
+
+  const show = React.useCallback((json: MattersResponse) => {
     setRows(json.matters);
     setReachable(json.courtReachable);
     setCourtUrl(json.courtUrl);
+    setLoadFailed(false);
   }, []);
 
-  const load = React.useCallback(async () => show(await fetchMatters()), [show]);
+  const fail = React.useCallback((error: unknown) => {
+    console.warn("[provakil] couldn't load matters", error);
+    setLoadFailed(true);
+  }, []);
 
-  // First load: the state is set when the request returns, never during the effect itself.
+  const load = React.useCallback(async () => {
+    try {
+      show(await fetchMatters());
+    } catch (error) {
+      fail(error);
+    }
+  }, [show, fail]);
+
   React.useEffect(() => {
+    // A response that lands after the screen has gone is dropped.
     let live = true;
-    void fetchMatters().then((json) => {
-      if (live) show(json);
-    });
+    fetchMatters().then(
+      (json) => {
+        if (live) show(json);
+      },
+      (error: unknown) => {
+        if (live) fail(error);
+      }
+    );
     return () => {
       live = false;
     };
-  }, [show]);
+  }, [show, fail]);
 
-  const all = rows ?? [];
+  const all = React.useMemo(() => rows ?? [], [rows]);
   const counts = React.useMemo(() => {
     const c: Record<string, number> = { All: all.length };
     for (const r of all) c[r.stage] = (c[r.stage] ?? 0) + 1;
@@ -304,7 +324,16 @@ export function CasesScreen() {
               </tr>
             </thead>
             <tbody>
-              {rows === null ? (
+              {rows === null && loadFailed ? (
+                <tr>
+                  <td colSpan={12} className="px-3 py-10 text-center text-(--pv-muted)" role="alert">
+                    Cases couldn&apos;t be loaded.{" "}
+                    <button type="button" className="text-(--pv-blue) underline" onClick={() => void load()}>
+                      Try again
+                    </button>
+                  </td>
+                </tr>
+              ) : rows === null ? (
                 <tr>
                   <td colSpan={12} className="px-3 py-10 text-center text-(--pv-muted)">
                     Loading cases…
@@ -445,7 +474,7 @@ export function CasesScreen() {
         </div>
       ) : null}
 
-      <MatterDrawer row={open} onClose={() => setOpen(null)} />
+      <MatterDrawer key={open?.id} row={open} onClose={() => setOpen(null)} />
       <AssignDialog
         open={assigning}
         rows={chosen}

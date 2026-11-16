@@ -6,7 +6,7 @@ import * as React from "react";
 
 import { FormCard, FormRow } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
-import { TextField, OptionSelect, PrefixInput } from "@/components/filing/inputs";
+import { TextField, OptionSelect, MobileInput } from "@/components/filing/inputs";
 import { Segmented } from "@/components/filing/segmented";
 import { AddressFields } from "@/components/filing/address-fields";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -131,13 +131,10 @@ export function ExecutantStep({ vak }: { vak: Vakalatnama }) {
             required
             help="The signing OTP is sent to this number."
           >
-            <PrefixInput
-              prefix="+91"
+            <MobileInput
               value={e.mobile}
-              onChange={(v) => set({ mobile: v.replace(/\D/g, "").slice(0, 10) })}
+              onChange={(v) => set({ mobile: v })}
               placeholder="10-digit mobile"
-              inputMode="numeric"
-              autoComplete="tel-national"
             />
           </FormField>
           <FormField label="ID card" required help="Proof of identity for the signer.">

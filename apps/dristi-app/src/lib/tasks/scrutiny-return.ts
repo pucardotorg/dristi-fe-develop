@@ -12,7 +12,7 @@
 
 import type { Defect, StoredFileRef } from "./types";
 
-/** The e-filing draft this return corrects; seeded by `lib/filing/scrutiny-demo.ts`. */
+/** The e-filing draft this return corrects. No draft is seeded for it any more. */
 export const SCRUTINY_DRAFT_ID = "draft-scrutiny-sainaba";
 
 /** Intake slot keys the seeded draft uses — the officer's boxes are drawn on these. */
@@ -149,8 +149,8 @@ export const SCRUTINY_DEFECTS: Defect[] = [
 
 /**
  * Two smaller returns, so there is more than one returned filing to fix and submit.
- * Each has its own seeded draft (`lib/filing/scrutiny-demo.ts`); as above, every
- * `valueAtReturn` must match what that draft holds.
+ * Each names its own draft; as above, every `valueAtReturn` must match what that draft
+ * holds.
  */
 export const SCRUTINY_DRAFT_ID_LAKSHMI = "draft-scrutiny-lakshmi";
 export const SCRUTINY_DRAFT_ID_RAFI = "draft-scrutiny-rafi";

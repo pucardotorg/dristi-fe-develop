@@ -42,6 +42,7 @@ type ApiErrorInit = {
   code?: string | null;
   codes?: readonly string[];
   fieldErrors?: FieldErrors;
+  fieldCodes?: FieldErrors;
   retryAfterSeconds?: number | null;
   body?: unknown;
   cause?: unknown;
@@ -58,6 +59,9 @@ export class ApiError extends Error {
    *  `["E01013"]`. Branch on these rather than on messages, which may change. */
   readonly codes: readonly string[];
   readonly fieldErrors: FieldErrors;
+  /** Field path → the registered codes of its errors (standard shape only), e.g.
+   *  `{ "mobile_numbers.1": ["E07033"] }`: what went wrong with that field. */
+  readonly fieldCodes: FieldErrors;
   /** From `Retry-After` (e.g. the OTP resend cooldown, HTTP 429). */
   readonly retryAfterSeconds: number | null;
   /** The parsed body, for debugging. Not for display. */
@@ -70,6 +74,7 @@ export class ApiError extends Error {
     this.code = init.code ?? null;
     this.codes = init.codes ?? (init.code ? [init.code] : []);
     this.fieldErrors = init.fieldErrors ?? {};
+    this.fieldCodes = init.fieldCodes ?? {};
     this.retryAfterSeconds = init.retryAfterSeconds ?? null;
     this.body = init.body;
   }
@@ -127,6 +132,7 @@ type ParsedErrorBody = {
   code: string | null;
   codes: string[];
   fieldErrors: FieldErrors;
+  fieldCodes: FieldErrors;
 };
 
 /** `documents[0].file` → `documents.0.file`, matching the flattened DRF shape. */
@@ -138,13 +144,17 @@ function dottedField(field: string): string {
 function parseStandardErrors(items: unknown[]): ParsedErrorBody {
   const codes: string[] = [];
   const fieldErrors: FieldErrors = {};
+  const fieldCodes: FieldErrors = {};
   let general: string | undefined;
   for (const item of items) {
     if (!isRecord(item)) continue;
     const message = typeof item.message === "string" ? item.message : "";
-    if (typeof item.code === "string") codes.push(item.code);
+    const code = typeof item.code === "string" ? item.code : undefined;
+    if (code) codes.push(code);
     if (typeof item.field === "string" && item.field) {
-      if (message) (fieldErrors[dottedField(item.field)] ??= []).push(message);
+      const field = dottedField(item.field);
+      if (message) (fieldErrors[field] ??= []).push(message);
+      if (code) (fieldCodes[field] ??= []).push(code);
     } else if (message && general === undefined) {
       general = message;
     }
@@ -152,12 +162,18 @@ function parseStandardErrors(items: unknown[]): ParsedErrorBody {
   // A request-level message reads best; failing that, the first field's.
   const message =
     general ?? Object.values(fieldErrors)[0]?.[0] ?? GENERIC_HTTP_MESSAGE;
-  return { message, code: codes[0] ?? null, codes, fieldErrors };
+  return { message, code: codes[0] ?? null, codes, fieldErrors, fieldCodes };
 }
 
 export function parseErrorBody(body: unknown): ParsedErrorBody {
   if (!isRecord(body)) {
-    return { message: GENERIC_HTTP_MESSAGE, code: null, codes: [], fieldErrors: {} };
+    return {
+      message: GENERIC_HTTP_MESSAGE,
+      code: null,
+      codes: [],
+      fieldErrors: {},
+      fieldCodes: {},
+    };
   }
   if (Array.isArray(body.errors)) return parseStandardErrors(body.errors);
 
@@ -175,7 +191,8 @@ export function parseErrorBody(body: unknown): ParsedErrorBody {
     GENERIC_HTTP_MESSAGE;
 
   const single = typeof code === "string" ? code : null;
-  return { message, code: single, codes: single ? [single] : [], fieldErrors };
+  // DRF's default shape carries no per-field codes.
+  return { message, code: single, codes: single ? [single] : [], fieldErrors, fieldCodes: {} };
 }
 
 /** `Retry-After` as seconds: either delta-seconds or an HTTP date. */

@@ -83,9 +83,9 @@ export function PushDialog({
   const [showJson, setShowJson] = React.useState(false);
   const [list, setList] = React.useState<Row[]>([]);
 
-  // Start over each time the dialog opens. Reset while rendering, not in an effect, so the
-  // first frame never shows the previous run. Rows are captured on open; the list behind
-  // refreshes after a send.
+  // Each opening starts over (the chosen court is kept). Reset while rendering, when
+  // `open` turns on, rather than in an effect that would paint the old step first.
+  // Starts closed, so a dialog mounted open still captures its rows.
   const [wasOpen, setWasOpen] = React.useState(false);
   if (open !== wasOpen) {
     setWasOpen(open);
@@ -98,6 +98,7 @@ export function PushDialog({
       setSent([]);
       setError(null);
       setShowJson(false);
+      // Rows are captured on open; the list behind refreshes after a send.
       setList(rows);
     }
   }

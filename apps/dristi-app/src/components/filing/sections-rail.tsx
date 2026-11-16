@@ -61,7 +61,6 @@ const ROW_PLACEHOLDER = "text-muted-foreground";
 
 /** Where each listed-but-screenless step is really carried out. */
 const PLACEHOLDER_NOTE: Record<string, string> = {
-  affidavit: "composed for you on the preview screen",
   "pay-fees": "paid on the sign screen, after signing",
 };
 

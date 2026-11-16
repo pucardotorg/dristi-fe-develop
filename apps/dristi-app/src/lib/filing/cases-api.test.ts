@@ -1,0 +1,418 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+
+import { ApiError, createApiClient } from "@/lib/api";
+
+import {
+  caseDocumentType,
+  caseFilingErrorMessage,
+  createCaseFilingApi,
+  documentPatch,
+} from "./data/cases-api";
+
+const META = {
+  timestamp: "2026-10-27T10:00:00+05:30",
+  app_version: "abc",
+  spec_version: "1.0",
+};
+
+type Call = { url: string; method: string; body: unknown; raw: unknown };
+
+/** The case-filing API over the real API client, answered by `respond`. */
+function setup(respond: (call: Call) => Response) {
+  const calls: Call[] = [];
+  const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const call = {
+      url: String(input),
+      method: init?.method ?? "GET",
+      body: typeof init?.body === "string" ? JSON.parse(init.body) : undefined,
+      raw: init?.body,
+    };
+    calls.push(call);
+    return respond(call);
+  }) as typeof fetch;
+  const client = createApiClient({
+    baseUrl: "/api/v1",
+    fetchImpl,
+    getCsrfToken: () => "tok",
+  });
+  return { cases: createCaseFilingApi(client), calls };
+}
+
+const httpError = (status: number, codes: string[]) =>
+  new ApiError({ kind: "http", status, message: "x", codes });
+
+describe("caseDocumentType", () => {
+  it("maps each upload slot to the backend's document type", () => {
+    assert.equal(caseDocumentType("cheque-front"), "BOUNCED_CHEQUE");
+    assert.equal(
+      caseDocumentType("delivery-proof"),
+      "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE",
+    );
+    assert.equal(caseDocumentType("poa"), "POA_DOCUMENT");
+    assert.equal(caseDocumentType("other"), "OTHER_SUPPORTING_DOCUMENT");
+    assert.equal(caseDocumentType("id-proof"), "IDENTITY_PROOF");
+    assert.equal(caseDocumentType("supporting"), "PROOF_OF_TRANSACTION");
+  });
+});
+
+describe("startDraft", () => {
+  it("opens a cheque bounce draft and returns its session id as the case id", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        { draft_session_id: "c0ffee", case_type: "CHEQUE_BOUNCE", meta: META },
+        { status: 201 },
+      ),
+    );
+    assert.deepEqual(await cases.startDraft(), { caseId: "c0ffee" });
+    assert.equal(calls[0].url, "/api/v1/cases");
+    assert.equal(calls[0].method, "POST");
+    assert.deepEqual(calls[0].body, { case_type: "CHEQUE_BOUNCE" });
+  });
+
+  it("refuses a response without a draft session id", async () => {
+    const { cases } = setup(() =>
+      Response.json({ meta: META }, { status: 201 }),
+    );
+    await assert.rejects(cases.startDraft());
+  });
+});
+
+describe("uploadDocument", () => {
+  it("posts the file and its type as multipart to the case", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        {
+          case_id: "c0ffee",
+          case_document_id: "doc-1",
+          document_id: "file-1",
+          document_type: "BOUNCED_CHEQUE",
+          meta: META,
+        },
+        { status: 201 },
+      ),
+    );
+    const saved = await cases.uploadDocument(
+      "c0ffee",
+      new Blob(["%PDF"], { type: "application/pdf" }),
+      "cheque.pdf",
+      "BOUNCED_CHEQUE",
+    );
+    assert.deepEqual(saved, {
+      caseId: "c0ffee",
+      caseDocumentId: "doc-1",
+      documentType: "BOUNCED_CHEQUE",
+    });
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/documents");
+    assert.ok(calls[0].raw instanceof FormData);
+    const form = calls[0].raw as FormData;
+    assert.equal(form.get("document_type"), "BOUNCED_CHEQUE");
+    assert.equal((form.get("file") as File).name, "cheque.pdf");
+    assert.equal(form.has("is_digital"), false);
+    assert.equal(form.has("display_name"), false);
+  });
+
+  it("sends whether the file is digital and the filer's name for it", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "x.pdf", "OTHER_SUPPORTING_DOCUMENT", {
+      isDigital: false,
+      displayName: "  Bank statement ",
+    });
+    const form = calls[0].raw as FormData;
+    assert.equal(form.get("is_digital"), "false");
+    assert.equal(form.get("display_name"), "Bank statement");
+  });
+
+  it("leaves out a blank name", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "x.pdf", "OTHER_SUPPORTING_DOCUMENT", {
+      displayName: "   ",
+    });
+    assert.equal((calls[0].raw as FormData).has("display_name"), false);
+  });
+
+  it("encodes the case id in the path", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        { case_id: "a/b", case_document_id: "d", meta: META },
+        { status: 201 },
+      ),
+    );
+    await cases.uploadDocument("a/b", new Blob(["x"]), "x.pdf", "RETURN_MEMO");
+    assert.equal(calls[0].url, "/api/v1/cases/a%2Fb/documents");
+  });
+});
+
+describe("document links", () => {
+  it("uploads a complainant's document already linked to them", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "id.pdf", "IDENTITY_PROOF", {
+      caseParticipantId: "p-1",
+    });
+    assert.equal((calls[0].raw as FormData).get("case_participant_id"), "p-1");
+  });
+
+  it("patches a saved document's link and details", async () => {
+    const { cases, calls } = setup(() => Response.json({ meta: META }));
+    await cases.updateDocument("doc/1", { case_participant_id: "p-1" });
+    assert.equal(calls[0].url, "/api/v1/case-documents/doc%2F1");
+    assert.equal(calls[0].method, "PATCH");
+    assert.deepEqual(calls[0].body, { case_participant_id: "p-1" });
+  });
+
+  it("builds a patch of only what changed, clearing a blank name", () => {
+    assert.deepEqual(documentPatch({ isDigital: true }), { is_digital: true });
+    assert.deepEqual(documentPatch({ displayName: "  " }), { display_name: null });
+    assert.deepEqual(documentPatch({ displayName: " Ledger " }), { display_name: "Ledger" });
+    assert.deepEqual(documentPatch({ caseParticipantId: undefined }), {
+      case_participant_id: null,
+    });
+  });
+
+  it("uploads a notice paper already linked to its notice's evidence", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "ad.pdf", "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE", {
+      caseEvidenceId: "ev-1",
+    });
+    assert.equal((calls[0].raw as FormData).get("case_evidence_id"), "ev-1");
+  });
+
+  it("leaves case_evidence_id off an upload with no notice", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+    );
+    await cases.uploadDocument("c", new Blob(["x"]), "chq.pdf", "BOUNCED_CHEQUE");
+    assert.equal((calls[0].raw as FormData).has("case_evidence_id"), false);
+  });
+
+  it("patches a notice paper's link, and null removes it", () => {
+    assert.deepEqual(documentPatch({ caseEvidenceId: "ev-1" }), { case_evidence_id: "ev-1" });
+    assert.deepEqual(documentPatch({ caseEvidenceId: undefined }), { case_evidence_id: null });
+  });
+});
+
+describe("deleteDocument", () => {
+  it("deletes the case document by its own id", async () => {
+    const { cases, calls } = setup(() => new Response(null, { status: 204 }));
+    await cases.deleteDocument("doc-1");
+    assert.equal(calls[0].url, "/api/v1/case-documents/doc-1");
+    assert.equal(calls[0].method, "DELETE");
+  });
+});
+
+describe("parties", () => {
+  const party = {
+    person: { name: "Asha" },
+    addresses: [{ line1: "12 MG Road" }],
+    is_party_in_person: false,
+    additional_details: {},
+  };
+
+  it("adds a complainant or an accused on the role's own path", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        { case_participant_id: "p1", institution_id: "i1", role: "ACCUSED", meta: META },
+        { status: 201 }
+      )
+    );
+    assert.deepEqual(await cases.addParty("c0ffee", "accused", party), {
+      participantId: "p1",
+      institutionId: "i1",
+    });
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/accused");
+    assert.equal(calls[0].method, "POST");
+    assert.deepEqual(calls[0].body, party);
+  });
+
+  it("refuses a response without a participant id", async () => {
+    const { cases } = setup(() =>
+      Response.json({ meta: META }, { status: 201 }),
+    );
+    await assert.rejects(cases.addParty("c0ffee", "complainants", party));
+  });
+
+  it("patches and removes a participant by its own id", async () => {
+    const { cases, calls } = setup((call) =>
+      call.method === "DELETE"
+        ? new Response(null, { status: 204 })
+        : Response.json({ case_participant_id: "p1", meta: META }),
+    );
+    await cases.updateParticipant("p1", {
+      name_at_filing: "Asha",
+      gender_at_filing: null,
+      age_at_filing: null,
+      mobile_numbers: [],
+      addresses: [],
+      is_party_in_person: false,
+      additional_details: {},
+    });
+    await cases.removeParticipant("p1");
+    assert.equal(calls[0].url, "/api/v1/case-participants/p1");
+    assert.equal(calls[0].method, "PATCH");
+    assert.equal(calls[1].url, "/api/v1/case-participants/p1");
+    assert.equal(calls[1].method, "DELETE");
+  });
+});
+
+describe("advocates", () => {
+  it("searches approved advocates and reads the page of results", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({
+        count: 1,
+        next: null,
+        previous: null,
+        results: [
+          { id: "adv-1", name: "Anitha R", bar_registration_id: "K/0421/2004" },
+        ],
+        meta: META,
+      }),
+    );
+    assert.deepEqual(await cases.searchAdvocates(" K/04 "), [
+      { id: "adv-1", name: "Anitha R", barNumber: "K/0421/2004" },
+    ]);
+    assert.equal(calls[0].url, "/api/v1/advocates?search=K%2F04");
+  });
+
+  it("does not search on fewer than two characters", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ results: [], meta: META }),
+    );
+    assert.deepEqual(await cases.searchAdvocates(" o "), []);
+    assert.equal(calls.length, 0);
+  });
+
+  it("searches on two characters, for a short name", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json({ results: [], meta: META }),
+    );
+    await cases.searchAdvocates("om");
+    assert.equal(calls[0].url, "/api/v1/advocates?search=om");
+  });
+
+  it("adds one advocate for several clients and returns the representations", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        { representation_ids: ["r1", "r2"], advocate_id: "adv-1", meta: META },
+        { status: 201 },
+      ),
+    );
+    assert.deepEqual(await cases.addAdvocate("c0ffee", "adv-1", ["p1", "p2"]), [
+      "r1",
+      "r2",
+    ]);
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/advocates");
+    assert.deepEqual(calls[0].body, {
+      advocate_id: "adv-1",
+      client_participant_ids: ["p1", "p2"],
+    });
+  });
+
+  it("ends a representation by its own id", async () => {
+    const { cases, calls } = setup(() => new Response(null, { status: 204 }));
+    await cases.endRepresentation("r1");
+    assert.equal(calls[0].url, "/api/v1/representations/r1");
+    assert.equal(calls[0].method, "DELETE");
+  });
+});
+
+describe("PoA holders", () => {
+  it("adds a holder for the parties they act for and returns the mandates", async () => {
+    const { cases, calls } = setup(() =>
+      Response.json(
+        {
+          case_participant_id: "h1",
+          poa_mandate_ids: ["m1"],
+          role: "POA_HOLDER",
+          meta: META,
+        },
+        { status: 201 },
+      ),
+    );
+    const holder = {
+      person: { name: "Suresh Patel" },
+      address: { line1: "12 MG Road" },
+      represented_participant_ids: ["p1"],
+      additional_details: {},
+    };
+    assert.deepEqual(await cases.addPoaHolder("c0ffee", holder), {
+      participantId: "h1",
+      mandateIds: ["m1"],
+    });
+    assert.equal(calls[0].url, "/api/v1/cases/c0ffee/poa-holders");
+    assert.deepEqual(calls[0].body, holder);
+  });
+
+  it("revokes a mandate by its own id", async () => {
+    const { cases, calls } = setup(() => new Response(null, { status: 204 }));
+    await cases.revokePoaMandate("m1");
+    assert.equal(calls[0].url, "/api/v1/poa-mandates/m1");
+    assert.equal(calls[0].method, "DELETE");
+  });
+});
+
+describe("caseFilingErrorMessage", () => {
+  it("names a submitted case before anything else", () => {
+    assert.match(
+      caseFilingErrorMessage(httpError(409, ["E07001"])),
+      /submitted/,
+    );
+  });
+
+  it("says a document type is not accepted", () => {
+    assert.match(
+      caseFilingErrorMessage(httpError(400, ["E07002"])),
+      /doesn't accept/,
+    );
+  });
+
+  it("says a witness is already on this side by its current code", () => {
+    assert.match(caseFilingErrorMessage(httpError(409, ["E07032"])), /already a witness/);
+    assert.doesNotMatch(caseFilingErrorMessage(httpError(409, ["E07017"])), /already a witness/);
+  });
+
+  it("explains a notice paper that couldn't be linked to its notice", () => {
+    assert.match(caseFilingErrorMessage(httpError(400, ["E07031"])), /no longer on the case/);
+    for (const code of ["E07029", "E07030"]) {
+      assert.match(caseFilingErrorMessage(httpError(400, [code])), /attached to its demand notice/);
+    }
+  });
+
+  it("reads 404 as an expired or missing draft", () => {
+    assert.match(
+      caseFilingErrorMessage(httpError(404, [])),
+      /no longer on the court's server/,
+    );
+  });
+
+  it("names the 15 MB limit the upload screens check for a file too large", () => {
+    assert.match(caseFilingErrorMessage(httpError(413, [])), /up to 15 MB/);
+  });
+
+  it("reads 401 and 403 as an ended session", () => {
+    assert.match(caseFilingErrorMessage(httpError(401, [])), /Sign in again/);
+    assert.match(caseFilingErrorMessage(httpError(403, [])), /Sign in again/);
+  });
+
+  it("reports no connection for network failures and timeouts", () => {
+    const offline = new ApiError({ kind: "network", message: "x" });
+    assert.match(caseFilingErrorMessage(offline), /couldn't reach/);
+  });
+
+  it("uses the backend's message for the file otherwise", () => {
+    const refused = new ApiError({
+      kind: "http",
+      status: 400,
+      message: "Bad request",
+      fieldErrors: { file: ["Upload a PDF, JPEG or PNG."] },
+    });
+    assert.equal(caseFilingErrorMessage(refused), "Upload a PDF, JPEG or PNG.");
+  });
+});

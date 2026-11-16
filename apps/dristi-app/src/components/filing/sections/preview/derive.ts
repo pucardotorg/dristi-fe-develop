@@ -431,7 +431,7 @@ export function affidavitHtml(draft: FilingDraft): string {
     .join("");
 }
 
-/** What the sheet and the editor both show — the edit when there is one, else the standard text. */
+/** What the sheet shows — the filer's edit when there is one, else the standard text. */
 export function affidavitBody(draft: FilingDraft): string {
   return draft.affidavit.trim() ? draft.affidavit : affidavitHtml(draft);
 }

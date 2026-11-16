@@ -3,7 +3,7 @@ import { after, before, describe, it } from "node:test";
 
 import { createBlankDraft } from "./blank";
 import { setSigningRules } from "./config";
-import { addDays } from "./format";
+import { addDays, addMonths } from "./format";
 import {
   applyQueueFilters,
   defaultSortFor,
@@ -27,13 +27,21 @@ const TODAY = "2026-08-31";
 
 /**
  * A draft whose cause of action is `daysAgo` days before `today`, with the filing date
- * pinned so the clock is deterministic. The complaint is due one month (30 days) after
- * the cause of action — NI Act §142(1)(b).
+ * pinned so the clock is deterministic. The complaint is due one calendar month after the
+ * cause of action — NI Act §142(1)(b).
  */
 function draftAt(daysAgo: number, today = TODAY): FilingDraft {
   const draft = createBlankDraft("d1");
   draft.jurisdiction.causeDate = addDays(today, -daysAgo);
   draft.jurisdiction.filingDate = today;
+  return draft;
+}
+
+/** A draft due `daysLeft` days after `TODAY` (31 Aug): its cause of action a month before. */
+function dueIn(daysLeft: number): FilingDraft {
+  const draft = createBlankDraft("d1");
+  draft.jurisdiction.causeDate = addMonths(addDays(TODAY, daysLeft), -1);
+  draft.jurisdiction.filingDate = TODAY;
   return draft;
 }
 
@@ -49,26 +57,26 @@ describe("draftClock — the File by column", () => {
   });
 
   it("leads with the date and counts down under it while in time", () => {
-    const clock = draftClock(draftAt(10));
+    const clock = draftClock(dueIn(20));
     assert.match(clock.lead, DATE);
     assert.match(clock.sub ?? "", /^20 days left$/);
     assert.equal(clock.tone, "default");
   });
 
   it("stays in plain ink until the last two days", () => {
-    assert.equal(draftClock(draftAt(25)).tone, "default");
-    assert.equal(draftClock(draftAt(27)).tone, "default");
-    const clock = draftClock(draftAt(28));
+    assert.equal(draftClock(dueIn(5)).tone, "default");
+    assert.equal(draftClock(dueIn(3)).tone, "default");
+    const clock = draftClock(dueIn(2));
     assert.match(clock.sub ?? "", /^2 days left$/);
     assert.equal(clock.tone, "warning");
   });
 
   it("singularises the last day", () => {
-    assert.match(draftClock(draftAt(29)).sub ?? "", /^1 day left$/);
+    assert.match(draftClock(dueIn(1)).sub ?? "", /^1 day left$/);
   });
 
   it("on the final day it is due today — still in time, not late", () => {
-    const clock = draftClock(draftAt(30));
+    const clock = draftClock(dueIn(0));
     assert.match(clock.lead, DATE);
     assert.equal(clock.sub, "Due today");
     assert.equal(clock.tone, "warning");
@@ -88,10 +96,10 @@ describe("draftClock — the File by column", () => {
   it("derives the cause date from a served notice when none was typed", () => {
     const draft = createBlankDraft("d1");
     draft.jurisdiction.filingDate = "2026-08-30";
-    // Served 1 Aug → the drawer's 15 days end 16 Aug → due 15 Sep.
+    // Served 1 Aug → the drawer's 15 days end 16 Aug → due a month later, 16 Sep.
     draft.notices[0].delivered = "yes";
     draft.notices[0].deliveryDate = "2026-08-01";
-    assert.equal(draftClock(draft).lead, "15/09/2026");
+    assert.equal(draftClock(draft).lead, "16/09/2026");
   });
 
   it("carries the last-saved date and the case type", () => {

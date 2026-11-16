@@ -199,10 +199,7 @@ export function SignInBlock({
   onSignedIn,
   onRegistered,
   summoned = false,
-  toSign = false,
 }: {
-  /** Arrived from a signing link — registration ends by sending them to sign. */
-  toSign?: boolean;
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
   onSeekHelp: () => void;
@@ -533,7 +530,6 @@ export function SignInBlock({
             <RegistrationFlow
               locale={locale}
               summoned={summoned}
-              toSign={toSign}
               initialMobile={mobile}
               verifiedMobile={resumeMobile ?? undefined}
               onFinish={onRegistered}

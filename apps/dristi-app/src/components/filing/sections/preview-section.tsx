@@ -24,9 +24,14 @@ import { joinDot } from "@/lib/filing/format";
 import { CASE_TYPE, COURT } from "@/lib/filing/options";
 import { useProfile } from "@/lib/filing/profile";
 import { sectionComplete, signatories } from "@/lib/filing/selectors";
-import { neighbours, type StepId } from "@/lib/filing/steps";
+import { caseFilingApi, caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
+import { getStep, neighbours, type StepId } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { FilingDraft } from "@/lib/filing/types";
+import {
+  stepForValidationField,
+  type ValidationError,
+} from "@/lib/filing/validation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,6 +63,7 @@ import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard } from "@/components/filing/form-card";
+import { SectionNotice } from "@/components/filing/notices";
 import { CourtDocument } from "@/components/filing/sections/preview/court-document";
 import {
   INTERIM_RELIEF_SUMMARY,
@@ -115,16 +121,33 @@ function SubBlock({ title, rows }: { title: string; rows: Row[] }) {
 }
 
 /** Opens the read-only panel for a section. Changing anything happens in the section. */
-function ReviewButton({ section, onClick }: { section: string; onClick: () => void }) {
+function ReviewButton({
+  section,
+  onClick,
+}: {
+  section: string;
+  onClick: () => void;
+}) {
   return (
     <>
-      <Button type="button" variant="outline" onClick={onClick} className="max-sm:hidden">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onClick}
+        className="max-sm:hidden"
+      >
         <PencilLineIcon data-icon="inline-start" aria-hidden />
         Review
         <span className="sr-only"> {section}</span>
       </Button>
       {/* Phone: the DS small button, so a long section title keeps its line. */}
-      <Button type="button" variant="outline" size="sm" onClick={onClick} className="h-10 sm:hidden">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={onClick}
+        className="h-10 sm:hidden"
+      >
         <PencilLineIcon data-icon="inline-start" aria-hidden />
         Review
         <span className="sr-only"> {section}</span>
@@ -250,7 +273,7 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
         advocates.flatMap((a) => [
           { label: a.label, value: a.nameWithBar },
           { label: "Appearing for", value: a.appearingFor },
-        ])
+        ]),
       ),
     },
     accused: {
@@ -260,7 +283,7 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
         accused.flatMap((a) => [
           { label: a.label, value: joinDot(a.name, a.type) },
           { label: "Address", value: a.address },
-        ])
+        ]),
       ),
     },
     cheque: {
@@ -271,7 +294,7 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
           { label: c.label, value: joinDot(c.amount, c.number) },
           { label: "Drawer’s bank", value: c.drawerBank },
           { label: "Returned", value: c.returned },
-        ])
+        ]),
       ),
     },
     demand: {
@@ -314,7 +337,7 @@ function buildPanels(draft: FilingDraft): Record<PanelKey, EditPanel> {
         witnesses.flatMap((w) => [
           { label: w.label, value: w.name },
           { label: "Will prove", value: w.prove },
-        ])
+        ]),
       ),
     },
     documents: {
@@ -380,8 +403,13 @@ function IncompleteSections({
                 className="h-10 w-full justify-start gap-2 px-2 font-normal"
               >
                 <Link href={s.href}>
-                  <span className="min-w-0 flex-1 truncate text-left">{s.title}</span>
-                  <ChevronRightIcon aria-hidden className="text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate text-left">
+                    {s.title}
+                  </span>
+                  <ChevronRightIcon
+                    aria-hidden
+                    className="text-muted-foreground"
+                  />
                 </Link>
               </Button>
             </li>
@@ -404,6 +432,14 @@ export function PreviewSection() {
   const [editKey, setEditKey] = React.useState<PanelKey | null>(null);
   /** Ticked in the question itself — remembered for this browser, not this draft. */
   const [dontAsk, setDontAsk] = React.useState(false);
+  /** The backend completeness check runs on "Continue to sign". */
+  const [validating, setValidating] = React.useState(false);
+  /** The missing items the backend reported; `null` while the dialog is closed. */
+  const [problems, setProblems] = React.useState<ValidationError[] | null>(
+    null,
+  );
+  /** The check itself could not run (offline, session ended, draft expired). */
+  const [validateError, setValidateError] = React.useState<string | null>(null);
 
   const complainant = complainantSummary(draft.complainants[0]);
   const advocates = advocateSummaries(draft);
@@ -427,7 +463,7 @@ export function PreviewSection() {
    */
   const goTo = React.useCallback(
     (key: PanelKey) => router.push(hrefFor(panels[key].step)),
-    [router, hrefFor, panels]
+    [router, hrefFor, panels],
   );
 
   const review = (key: PanelKey) => {
@@ -453,13 +489,46 @@ export function PreviewSection() {
   // asks for one (`OTH-3`), so the way there says so. Advocates never take it.
   const { profile } = useProfile();
   const yourOathAhead = signatories(draft, profile).complainants.some(
-    (s) => s.you && s.oathTaken === false
+    (s) => s.you && s.oathTaken === false,
   );
-  const incomplete = (Object.keys(panels) as PanelKey[]).filter((k) => !done(k));
+  const incomplete = (Object.keys(panels) as PanelKey[]).filter(
+    (k) => !done(k),
+  );
 
   /** The browser's print dialog — which is also how a PDF is saved. */
   const printFile = () => {
     if (typeof window !== "undefined") window.print();
+  };
+
+  const signAhead = steps.includes("sign");
+  const continueHref = next ? hrefFor(next) : undefined;
+
+  /**
+   * "Continue to sign" asks the court's server whether the filing is complete before going
+   * on to sign. If it is, the filer continues; if not, the missing items are listed and they
+   * stay here — the backend is the authority on completeness (not the hints above). Bulk
+   * filing (no sign step here) and local-only drafts just continue.
+   */
+  const continueToSign = async () => {
+    const caseId = draft.caseId;
+    if (!signAhead || !caseId) {
+      if (continueHref) router.push(continueHref);
+      return;
+    }
+    setValidating(true);
+    setValidateError(null);
+    try {
+      const { isValid, errors } = await caseFilingApi.validateCase(caseId);
+      if (isValid) {
+        if (continueHref) router.push(continueHref);
+        return;
+      }
+      setProblems(errors);
+    } catch (err) {
+      setValidateError(caseFilingErrorMessage(err));
+    } finally {
+      setValidating(false);
+    }
   };
 
   return (
@@ -470,8 +539,8 @@ export function PreviewSection() {
           description={
             <>
               Check everything you have filed. Use{" "}
-              <strong className="font-semibold text-foreground">Review</strong> on any
-              section to open it and change what it holds.
+              <strong className="font-semibold text-foreground">Review</strong>{" "}
+              on any section to open it and change what it holds.
             </>
           }
         />
@@ -482,7 +551,12 @@ export function PreviewSection() {
               <TabsTrigger value="synopsis" className="h-10 px-3">Complaint</TabsTrigger>
               <TabsTrigger value="document" className="h-10 px-3">Complaint PDF</TabsTrigger>
             </TabsList>
-            <Button type="button" variant="outline" onClick={printFile} className="sm:mb-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={printFile}
+              className="sm:mb-2"
+            >
               <PrinterIcon data-icon="inline-start" aria-hidden />
               Print or save as PDF
             </Button>
@@ -497,7 +571,10 @@ export function PreviewSection() {
                 rows={[
                   { term: "Offence", value: CASE_TYPE.offence },
                   { term: "Court", value: courtText(COURT.name) },
-                  { term: "Total cheque amount", value: totalChequeText(draft) },
+                  {
+                    term: "Total cheque amount",
+                    value: totalChequeText(draft),
+                  },
                   { term: "Amount claimed", value: amountClaimedText(draft) },
                 ]}
               />
@@ -522,8 +599,14 @@ export function PreviewSection() {
                     : []),
                   { term: "Mobile", value: complainant.mobile },
                   { term: "Email", value: complainant.email },
-                  { term: "Present address", value: complainant.presentAddress },
-                  { term: "Permanent address", value: complainant.permanentAddress },
+                  {
+                    term: "Present address",
+                    value: complainant.presentAddress,
+                  },
+                  {
+                    term: "Permanent address",
+                    value: complainant.permanentAddress,
+                  },
                   { term: "Power of attorney", value: complainant.poa },
                 ]}
               />
@@ -553,7 +636,8 @@ export function PreviewSection() {
                 ))
               ) : (
                 <p className="text-body-compact text-muted-foreground">
-                  No advocate added. The complainant appears as a party in person.
+                  No advocate added. The complainant appears as a party in
+                  person.
                 </p>
               )}
             </FormCard>
@@ -638,10 +722,16 @@ export function PreviewSection() {
             >
               <KeyValues
                 rows={[
-                  { term: "Cheque presented by", value: jurisdiction.presentedBy },
+                  {
+                    term: "Cheque presented by",
+                    value: jurisdiction.presentedBy,
+                  },
                   { term: "Police station", value: jurisdiction.police },
                   { term: "Cause of action", value: jurisdiction.causeDate },
-                  { term: "Complaint filing date", value: jurisdiction.filingDate },
+                  {
+                    term: "Complaint filing date",
+                    value: jurisdiction.filingDate,
+                  },
                   {
                     term: "Within limitation",
                     value: jurisdiction.inTime ? (
@@ -718,7 +808,10 @@ export function PreviewSection() {
                   className="flex items-start gap-3 border-b border-hairline py-3 text-body-compact last:border-b-0"
                 >
                   <span className="flex h-5 shrink-0 items-center">
-                    <CheckIcon className="size-4 text-success-ink" aria-hidden />
+                    <CheckIcon
+                      className="size-4 text-success-ink"
+                      aria-hidden
+                    />
                   </span>
                   {line}
                 </p>
@@ -726,7 +819,10 @@ export function PreviewSection() {
               {documents.remaining ? (
                 <p className="flex items-start gap-3 border-t border-hairline py-3 text-body-compact">
                   <span className="flex h-5 shrink-0 items-center">
-                    <TriangleAlertIcon className="size-4 text-warning-ink" aria-hidden />
+                    <TriangleAlertIcon
+                      className="size-4 text-warning-ink"
+                      aria-hidden
+                    />
                   </span>
                   {documents.remaining} required document
                   {documents.remaining === 1 ? "" : "s"} still to upload
@@ -745,6 +841,15 @@ export function PreviewSection() {
             <CourtDocument draft={draft} />
           </TabsContent>
         </Tabs>
+
+        {validateError ? (
+          <SectionNotice
+            variant="destructive"
+            title="Couldn't check the filing with the court's server"
+          >
+            {validateError}
+          </SectionNotice>
+        ) : null}
       </FilingMain>
 
       {/* ── Review takes you to the section ── */}
@@ -758,8 +863,8 @@ export function PreviewSection() {
           <DialogHeader>
             <DialogTitle>Open the {panel?.title ?? ""} section?</DialogTitle>
             <DialogDescription>
-              Changes are made in the section itself. You will come back here from its
-              Continue.
+              Changes are made in the section itself. You will come back here
+              from its Continue.
             </DialogDescription>
           </DialogHeader>
 
@@ -775,7 +880,11 @@ export function PreviewSection() {
           </Field>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setEditKey(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditKey(null)}
+            >
               Stay here
             </Button>
             <Button type="button" onClick={confirmReview}>
@@ -785,16 +894,81 @@ export function PreviewSection() {
         </ChromeDialogContent>
       </Dialog>
 
+      {/* ── Continue to sign was blocked: what the court still needs ── */}
+      <Dialog
+        open={!!problems}
+        onOpenChange={(open) => {
+          if (!open) setProblems(null);
+        }}
+      >
+        <ChromeDialogContent mobileSheet className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Some details are still needed</DialogTitle>
+            <DialogDescription>
+              The court needs these before you can sign and submit. Fix each
+              one, then try Continue to sign again.
+            </DialogDescription>
+          </DialogHeader>
+
+          <ul className="flex flex-col divide-y divide-hairline">
+            {problems?.map((p, i) => {
+              const step = stepForValidationField(p.field, p.message);
+              return (
+                <li
+                  key={`${p.field}-${i}`}
+                  className="flex items-start justify-between gap-3 py-3"
+                >
+                  <span className="flex min-w-0 items-start gap-2 text-body-compact">
+                    <TriangleAlertIcon
+                      className="mt-0.5 size-4 shrink-0 text-warning-ink"
+                      aria-hidden
+                    />
+                    {p.message}
+                  </span>
+                  {step ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      onClick={() => {
+                        setProblems(null);
+                        router.push(hrefFor(step));
+                      }}
+                    >
+                      Go to {getStep(step).title}
+                    </Button>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setProblems(null)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </ChromeDialogContent>
+      </Dialog>
+
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
-        continueHref={next ? hrefFor(next) : undefined}
+        onContinue={continueToSign}
+        continueDisabled={validating}
         continueLabel={
-          // A host that signs elsewhere (bulk filing signs the batch at once) is gone back to.
-          !steps.includes("sign")
-            ? "Back to all cases"
-            : yourOathAhead
-              ? "Continue to sign and oath"
-              : "Continue to sign"
+          validating
+            ? "Checking…"
+            : // A host that signs elsewhere (bulk filing signs the batch at once) is gone back to.
+              !steps.includes("sign")
+              ? "Back to all cases"
+              : yourOathAhead
+                ? "Continue to sign and oath"
+                : "Continue to sign"
         }
         showSaveState={false}
         status={

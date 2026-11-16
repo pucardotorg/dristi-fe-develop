@@ -1,18 +1,19 @@
 /**
  * Persistence contract for the e-filing flow.
  *
- * Everything the screens store goes through this interface: drafts (the whole
- * `FilingDraft`), uploaded files (bytes + metadata), and the current person's profile.
- * Two implementations answer it: the sandbox in the browser (`./indexeddb.ts`, design;
- * enough for the flow to behave like a real app on one machine) and the backend
- * (`./http.ts`, engineering, filled in as endpoints arrive); `./index.ts` picks one by
- * `NEXT_PUBLIC_DATA_SOURCE`, and screens do not change.
+ * Everything the screens keep in this browser goes through this interface: drafts (the
+ * whole `FilingDraft`) and uploaded files (bytes + metadata). It is the working copy of a
+ * draft while sections move to the backend one by one (`./cases-api.ts`); it goes once the
+ * backend holds them all. Two implementations answer it: the sandbox in the browser
+ * (`./indexeddb.ts`, design) and the backend (`./http.ts`, engineering, filled in as
+ * endpoints arrive); `./index.ts` picks one by `NEXT_PUBLIC_DATA_SOURCE`, and screens do
+ * not change.
  *
  * Shared by both teams and only grows: add methods, never rename or remove one that
  * `http.ts` already implements (the type check fails if you do).
  */
 
-import type { FilingDraft, StoredFileRef, UserProfile } from "../types";
+import type { FilingDraft, StoredFileRef } from "../types";
 
 /** A stored upload: the reference the draft holds plus the bytes. */
 export type StoredFile = StoredFileRef & {
@@ -33,8 +34,4 @@ export interface FilingRepository {
   deleteFile(id: string): Promise<void>;
   /** Drop files no draft references any more (called after a draft is deleted). */
   deleteFiles(ids: string[]): Promise<void>;
-
-  /* Profile (the stand-in for the product session) */
-  getProfile(): Promise<UserProfile | null>;
-  putProfile(profile: UserProfile): Promise<void>;
 }

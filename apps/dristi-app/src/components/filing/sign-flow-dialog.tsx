@@ -60,8 +60,8 @@ import {
   useStagedFlow,
 } from "@/components/chrome/staged-overlay";
 import { signingRules } from "@/lib/filing/config";
-import { getRepository, storeUpload } from "@/lib/filing/data";
-import { forgetFile, formatBytes } from "@/lib/filing/files";
+import { storeUpload } from "@/lib/filing/data";
+import { discardStoredFile, formatBytes } from "@/lib/filing/files";
 import { useProfile } from "@/lib/filing/profile";
 import {
   confirmationComplete,
@@ -453,10 +453,7 @@ function SignFlowBody({
     update((d) => {
       d.sign.signedCopy = ref;
     });
-    if (previous) {
-      forgetFile(previous.id);
-      void getRepository().deleteFile(previous.id);
-    }
+    if (previous) discardStoredFile(previous.id);
   };
 
   const chooseSignedCopy = () => {

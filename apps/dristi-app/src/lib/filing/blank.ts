@@ -452,7 +452,15 @@ function docRow(spec: DocSpec, existing: CaseDocument | undefined, slot?: Intake
     required: spec.required,
     // Rows that mirror an intake slot always show that slot's file; others keep their own.
     file: mirrored ? mirrored.file : existing?.file ?? null,
-    quality: mirrored ? (mirrored.file ? "good" : null) : existing?.quality ?? null,
+    // Only bulk filing marks a slot `poor` (its server reads each scan); single filing
+    // never does, so its rows stay "good".
+    quality: mirrored
+      ? mirrored.file
+        ? mirrored.poor
+          ? "bad"
+          : "good"
+        : null
+      : existing?.quality ?? null,
     digital: existing?.digital ?? false,
     intakeKey: spec.intakeKey,
     custom: false,

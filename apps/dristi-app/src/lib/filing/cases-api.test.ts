@@ -8,6 +8,7 @@ import {
   caseFilingErrorMessage,
   createCaseFilingApi,
   documentPatch,
+  isCaseNotYetSaved,
 } from "./data/cases-api";
 
 const META = {
@@ -414,5 +415,28 @@ describe("caseFilingErrorMessage", () => {
       fieldErrors: { file: ["Upload a PDF, JPEG or PNG."] },
     });
     assert.equal(caseFilingErrorMessage(refused), "Upload a PDF, JPEG or PNG.");
+  });
+});
+
+describe("isCaseNotYetSaved", () => {
+  it("is true for a 404: the case has nothing saved on it yet", () => {
+    assert.equal(isCaseNotYetSaved(httpError(404, [])), true);
+  });
+
+  it("is false for other HTTP errors, which are real read failures", () => {
+    assert.equal(isCaseNotYetSaved(httpError(500, [])), false);
+    assert.equal(isCaseNotYetSaved(httpError(403, [])), false);
+  });
+
+  it("is false for a network failure, timeout or aborted read", () => {
+    assert.equal(isCaseNotYetSaved(new ApiError({ kind: "network", message: "x" })), false);
+    assert.equal(isCaseNotYetSaved(new ApiError({ kind: "timeout", message: "x" })), false);
+    assert.equal(isCaseNotYetSaved(new ApiError({ kind: "aborted", message: "x" })), false);
+  });
+
+  it("is false for anything that is not an ApiError", () => {
+    assert.equal(isCaseNotYetSaved(new Error("Case not found.")), false);
+    assert.equal(isCaseNotYetSaved({ status: 404 }), false);
+    assert.equal(isCaseNotYetSaved(null), false);
   });
 });

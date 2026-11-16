@@ -17,6 +17,7 @@ import { getRepository } from "./data";
 import { browserCourt } from "@/lib/court/browser";
 import { DEFAULT_USER_ID, PEOPLE } from "./sandbox";
 import { tasksForCourt } from "./court-tasks";
+import { loadFailure } from "./load-failure";
 import { type Ctx, type Transition, TransitionError } from "./transitions";
 import type { Case, Person, PersonId, Task, TaskId } from "./types";
 
@@ -34,6 +35,8 @@ type Broadcast =
 export type TasksContextValue = {
   state: LoadState;
   error: string | null;
+  /** The load failed because the backend doesn't answer a read yet: no retry helps. */
+  notConnected: boolean;
   people: Person[];
   cases: Case[];
   tasks: Task[];
@@ -74,6 +77,7 @@ function useOnline(): boolean {
 export function TasksProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = React.useState<LoadState>("loading");
   const [error, setError] = React.useState<string | null>(null);
+  const [notConnected, setNotConnected] = React.useState(false);
   const [people, setPeople] = React.useState<Person[]>([]);
   const [cases, setCases] = React.useState<Case[]>([]);
   const [tasks, setTasks] = React.useState<Task[]>([]);
@@ -111,7 +115,9 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       setUserId(uid !== null && ppl.some((p) => p.id === uid) ? uid : DEFAULT_USER_ID);
       setState("ready");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load tasks");
+      const failure = loadFailure(e);
+      setError(failure.message);
+      setNotConnected(failure.notConnected);
       setState("error");
     }
   }, []);
@@ -126,6 +132,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   const reload = React.useCallback(async () => {
     setState("loading");
     setError(null);
+    setNotConnected(false);
     await load();
   }, [load]);
 
@@ -230,6 +237,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     () => ({
       state,
       error,
+      notConnected,
       people,
       cases,
       tasks: courtTasks,
@@ -244,7 +252,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       requestHighlight,
       dismissGhost,
     }),
-    [state, error, people, cases, courtTasks, user, online, ghosts, highlight, reload, setUser, resetSandbox, dispatch, requestHighlight, dismissGhost]
+    [state, error, notConnected, people, cases, courtTasks, user, online, ghosts, highlight, reload, setUser, resetSandbox, dispatch, requestHighlight, dismissGhost]
   );
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;

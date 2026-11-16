@@ -235,7 +235,7 @@ function refused(status: number, message: string, code?: string): ApiError {
   return new ApiError({ kind: "http", status, message, code: code ?? null });
 }
 
-const notFound = (what: string) => refused(404, `No ${what} with that id on this case.`);
+const notFound = (what: string) => refused(404, `No ${what} with that id.`);
 
 /* ────────────────────────────── Backend → read shapes ───────────────────────────── */
 

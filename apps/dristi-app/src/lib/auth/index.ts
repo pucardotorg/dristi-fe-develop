@@ -21,6 +21,7 @@ export function getAuthService(): AuthService {
 export { AuthError, isAuthError, type AuthErrorCode } from "./errors";
 export { isIndianMobile } from "./mobile";
 export type { AuthService } from "./service";
+export { signOutCitizen, type SignOutSteps } from "./sign-out";
 export type {
   AccountState,
   ApprovalStatus,

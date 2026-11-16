@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 import { TASKS_HOME } from "@/lib/tasks/routes";
-import { getAuthService } from "@/lib/auth";
+import { getAuthService, signOutCitizen } from "@/lib/auth";
 import {
   setNewAccountShell,
   setSignedInMobile,
@@ -488,30 +488,25 @@ function ProfileFooter() {
     router.push(PROFILE_HOME[role]);
   }
 
-  // Back to the citizen sign-in, the door this account came in by.
+  // Back to the citizen sign-in, the door this account came in by. The ordered sequence
+  // — end the backend session while its cookie is still present, then clear local state
+  // and leave — is `signOutCitizen` (see its note); here we only wire the steps.
   //
-  // End the backend session first — `getAuthService().signOut()` is DELETE /sessions,
-  // and it has to run while the session cookie is still present to authorise it. Only
-  // then clear the shell's local profile hints (`signOut()` from the profile provider)
-  // and leave. The auth service's `signOut()` is safe to call when already signed out,
-  // so a network error, an already-expired cookie, or sandbox mode with no backend still
-  // logs the person out locally rather than stranding them on an authed screen. `replace`
-  // rather than `push` so Back cannot return to a screen the session no longer backs.
+  // The profile provider's `signOut` clears the `dristi-demo-*` hints (the sign-in hint
+  // the guard reads). The litigant's signed-in mobile and the fresh-shell flag are
+  // session-lite state set at login by the filing side (`linked-complaints.ts`), so they
+  // have to be cleared too — otherwise the previous person's number survives into the next
+  // sign-in on this browser and the home keeps listing complaints that name it.
   async function onSignOut() {
-    try {
-      await getAuthService().signOut();
-    } catch {
-      /* Clear locally regardless — the person asked to leave. */
-    }
-    signOut();
-    // The profile provider's `signOut` only clears the `dristi-demo-*` hints. The
-    // litigant's signed-in mobile and the fresh-shell flag are session-lite state set at
-    // login by the filing side (`linked-complaints.ts`), so they have to be cleared here
-    // too — otherwise the previous person's number survives into the next sign-in on this
-    // browser and the home keeps listing complaints that name it.
-    setSignedInMobile(null);
-    setNewAccountShell(false);
-    router.replace("/citizen");
+    await signOutCitizen({
+      endSession: () => getAuthService().signOut(),
+      clearProfile: signOut,
+      clearFilingSession: () => {
+        setSignedInMobile(null);
+        setNewAccountShell(false);
+      },
+      leave: () => router.replace("/citizen"),
+    });
   }
   const [confirmReset, setConfirmReset] = React.useState(false);
   const onResetSandbox = React.useCallback(() => setConfirmReset(true), []);

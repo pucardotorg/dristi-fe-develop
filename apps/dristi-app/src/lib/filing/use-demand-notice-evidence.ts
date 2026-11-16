@@ -17,7 +17,8 @@
 import * as React from "react";
 
 import { noticesFromCase } from "./case-details-read";
-import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
+import { getCaseFilingRepository } from "./data";
+import { caseFilingErrorMessage } from "./data/cases-api";
 import { demandNoticeEvidenceInfo, demandNoticeReady } from "./evidence";
 import { noticeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
@@ -47,10 +48,13 @@ async function saveOneNotice(
   const caseDocumentId = noticeSourceSlot(draft, index, "demand-notice")?.caseDocumentId ?? null;
 
   if (notice.noticeEvidenceId) {
-    await caseFilingApi.updateEvidence(notice.noticeEvidenceId, { evidenceInfo, caseDocumentId });
+    await getCaseFilingRepository().updateEvidence(notice.noticeEvidenceId, {
+      evidenceInfo,
+      caseDocumentId,
+    });
     return notice.noticeEvidenceId;
   }
-  const saved = await caseFilingApi.addEvidence(caseId, {
+  const saved = await getCaseFilingRepository().addEvidence(caseId, {
     evidenceType: "LEGAL_DEMAND_NOTICE",
     evidenceInfo,
     caseDocumentId,
@@ -65,7 +69,7 @@ async function saveOneNotice(
 /** Take a removed notice's evidence row off the case. A failure leaves it on it. */
 export function removeNoticeEvidence(notice: Pick<DemandNotice, "noticeEvidenceId">) {
   if (!notice.noticeEvidenceId) return;
-  caseFilingApi.deleteEvidence(notice.noticeEvidenceId).catch((error) => {
+  getCaseFilingRepository().deleteEvidence(notice.noticeEvidenceId).catch((error) => {
     console.warn("[filing] couldn't remove demand-notice evidence from the case", notice.noticeEvidenceId, error);
   });
 }

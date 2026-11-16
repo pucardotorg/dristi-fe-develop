@@ -8,11 +8,11 @@
 
 import { isApiError } from "@/lib/api";
 
-import type { CaseFilingApi } from "./data/cases-api";
+import type { CaseFilingRepository } from "./data/cases-repository";
 import { representedIndices } from "./selectors";
 import type { Advocate, Complainant, SavedAdvocate } from "./types";
 
-export type AdvocateApi = Pick<CaseFilingApi, "addAdvocate" | "endRepresentation">;
+export type AdvocateApi = Pick<CaseFilingRepository, "addAdvocate" | "endRepresentation">;
 
 export type AdvocateSaveResult = Required<
   Pick<SavedAdvocate, "savedAdvocateId" | "representations">

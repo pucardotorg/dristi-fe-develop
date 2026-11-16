@@ -15,7 +15,8 @@
 import * as React from "react";
 
 import { affidavitFromCase } from "./case-details-read";
-import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
+import { getCaseFilingRepository } from "./data";
+import { caseFilingErrorMessage } from "./data/cases-api";
 import { useFiling } from "./store";
 import type { FilingDraft } from "./types";
 import { useLoadFromCase } from "./use-load-from-case";
@@ -37,7 +38,7 @@ export function useAffidavit(standardOf: (draft: FilingDraft) => string) {
       setSaving(true);
       setError(null);
       try {
-        await caseFilingApi.saveAffidavit(caseId, affidavit);
+        await getCaseFilingRepository().saveAffidavit(caseId, affidavit);
         return { ok: true };
       } catch (err) {
         const message = caseFilingErrorMessage(err);

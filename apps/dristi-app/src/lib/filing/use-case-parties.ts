@@ -15,7 +15,8 @@
 import * as React from "react";
 
 import { accusedFromCase, complainantsFromCase, witnessesFromCase } from "./case-read";
-import { caseFilingApi, caseFilingErrorMessage, type PartyRole } from "./data/cases-api";
+import { getCaseFilingRepository } from "./data";
+import { caseFilingErrorMessage, type PartyRole } from "./data/cases-api";
 import {
   accusedBodies,
   complainantBodies,
@@ -114,7 +115,7 @@ export function removePartyFromCase(party: Party) {
   // The backend takes a complainant's PoA holder off with them.
   lastPoa.delete(party.id);
   for (const id of ids) {
-    caseFilingApi.removeParticipant(id).catch((error) => {
+    getCaseFilingRepository().removeParticipant(id).catch((error) => {
       console.warn("[filing] couldn't remove a party from the case", id, error);
     });
   }
@@ -133,7 +134,7 @@ async function loadFromCase(
   update: (recipe: (d: FilingDraft) => void) => void,
   profile: UserProfile | null
 ): Promise<Set<string>> {
-  const read = await caseFilingApi.getCase(caseId);
+  const read = await getCaseFilingRepository().getCase(caseId);
   const caughtUp = (d: FilingDraft) => {
     // A save the draft has not caught up with yet is what the case is compared against.
     for (const p of partiesOf(d, kind)) {
@@ -240,7 +241,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
       }
       if (!party.syncError && !partyChanged(bodies, saved)) continue;
 
-      const result = await saveParty(caseFilingApi, caseId, ROLE[kind], bodies, saved);
+      const result = await saveParty(getCaseFilingRepository(), caseId, ROLE[kind], bodies, saved);
       const before = saved.caseParticipantIds?.[0];
       if (before && before !== result.caseParticipantIds[0]) reAdded = true;
       lastSaved.set(party.id, {
@@ -292,7 +293,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
       const json = body ? JSON.stringify(body) : undefined;
       if (!c.poaSyncError && saved?.body === json && saved?.forParticipantId === forId) continue;
 
-      const result = await savePoaHolder(caseFilingApi, caseId, body, forId, saved);
+      const result = await savePoaHolder(getCaseFilingRepository(), caseId, body, forId, saved);
       lastPoa.set(c.id, result.saved);
       if (!latest().complainants.some((p) => p.id === c.id)) continue;
       recordComplainant(c.id, (p) => {

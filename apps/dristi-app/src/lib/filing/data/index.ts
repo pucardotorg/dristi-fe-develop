@@ -1,17 +1,32 @@
 /**
- * Repository access for the filing screens. `getRepository()` is the one place that
- * chooses the implementation, from `NEXT_PUBLIC_DATA_SOURCE` (`lib/data/source.ts`): the
- * in-browser sandbox (`indexeddb.ts`) or the backend (`http.ts`). Server code imports
- * this module for its helpers (`newId`), so the choice is made lazily, on first use.
+ * Repository access for the filing screens. Two contracts, each chosen in one place, lazily
+ * (server code imports this module for its helpers, such as `newId`):
+ *
+ *   - `getRepository()`: drafts and file bytes (`repository.ts`), by `NEXT_PUBLIC_DATA_SOURCE`
+ *     (`lib/data/source.ts`): the in-browser sandbox (`indexeddb.ts`) or the backend
+ *     (`http.ts`).
+ *   - `getCaseFilingRepository()`: the backend case each step saves to
+ *     (`cases-repository.ts`): the sandbox (`cases-sandbox.ts`) or the backend (`http.ts`),
+ *     by `caseFilingSource`.
  */
 
-import { browserOnly, repositoryFor, type OnlyContract } from "@/lib/data/source";
+import {
+  AUTH_SOURCE,
+  DATA_SOURCE,
+  browserOnly,
+  repositoryFor,
+  selectRepository,
+  type DataSource,
+  type OnlyContract,
+} from "@/lib/data/source";
 
-import { HttpFilingRepository } from "./http";
-import { IndexedDbFilingRepository } from "./indexeddb";
+import type { CaseFilingRepository } from "./cases-repository";
+import { HttpFilingRepository, createCaseFilingApi } from "./http";
+import { IndexedDbCaseFilingRepository, IndexedDbFilingRepository } from "./indexeddb";
 import type { FilingRepository, StoredFile } from "./repository";
 import type { FilingDraft, StoredFileRef } from "../types";
 
+export type { CaseFilingRepository } from "./cases-repository";
 export type { FilingRepository, StoredFile } from "./repository";
 
 const chosen = repositoryFor<FilingRepository>("filing", {
@@ -22,6 +37,29 @@ let active: FilingRepository | null = null;
 
 export function getRepository(): FilingRepository {
   return active ?? chosen();
+}
+
+/**
+ * Where the backend case lives. Its calls need a real session, so it is the sandbox only
+ * when sign-in is in the sandbox too (`npm run dev:sandbox`, previews). `npm run dev` and
+ * the staging image keep sandbox drafts with real sign-in, and save cases to the backend.
+ */
+export function caseFilingSource(data: DataSource, auth: DataSource): DataSource {
+  return data === "sandbox" && auth === "sandbox" ? "sandbox" : "api";
+}
+
+let caseFiling: CaseFilingRepository | null = null;
+
+export function getCaseFilingRepository(): CaseFilingRepository {
+  caseFiling ??= selectRepository<CaseFilingRepository>(
+    caseFilingSource(DATA_SOURCE, AUTH_SOURCE),
+    "caseFiling",
+    {
+      sandbox: browserOnly("caseFiling", () => new IndexedDbCaseFilingRepository()),
+      http: () => createCaseFilingApi(),
+    }
+  );
+  return caseFiling;
 }
 
 /**

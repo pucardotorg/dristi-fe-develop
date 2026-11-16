@@ -14,7 +14,8 @@ import * as React from "react";
 
 import { isApiError } from "@/lib/api";
 
-import { caseFilingApi, type CaseRead } from "./data/cases-api";
+import { getCaseFilingRepository } from "./data";
+import type { CaseRead } from "./data/cases-api";
 import { useFiling } from "./store";
 import type { FilingDraft } from "./types";
 
@@ -30,7 +31,7 @@ export function useLoadFromCase(apply: (read: CaseRead, draft: FilingDraft) => v
   React.useEffect(() => {
     if (!caseId) return;
     let cancelled = false;
-    caseFilingApi
+    getCaseFilingRepository()
       .getCase(caseId)
       .then((read) => {
         if (!cancelled) update((d) => applyRef.current(read, d));

@@ -16,7 +16,8 @@
 import * as React from "react";
 
 import { chequesFromCase } from "./case-details-read";
-import { caseFilingApi, caseFilingErrorMessage } from "./data/cases-api";
+import { getCaseFilingRepository } from "./data";
+import { caseFilingErrorMessage } from "./data/cases-api";
 import {
   chequeEvidenceInfo,
   chequeReady,
@@ -40,9 +41,12 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
     const evidenceInfo = chequeEvidenceInfo(draft.cheques, index);
     const caseDocumentId = chequeSourceSlot(draft, index, "cheque-front")?.caseDocumentId ?? null;
     if (cheque.chequeEvidenceId) {
-      await caseFilingApi.updateEvidence(cheque.chequeEvidenceId, { evidenceInfo, caseDocumentId });
+      await getCaseFilingRepository().updateEvidence(cheque.chequeEvidenceId, {
+        evidenceInfo,
+        caseDocumentId,
+      });
     } else {
-      const saved = await caseFilingApi.addEvidence(caseId, {
+      const saved = await getCaseFilingRepository().addEvidence(caseId, {
         evidenceType: "CHEQUE",
         evidenceInfo,
         caseDocumentId,
@@ -58,9 +62,12 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
     const evidenceInfo = returnMemoEvidenceInfo(cheque);
     const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
     if (cheque.returnMemoEvidenceId) {
-      await caseFilingApi.updateEvidence(cheque.returnMemoEvidenceId, { evidenceInfo, caseDocumentId });
+      await getCaseFilingRepository().updateEvidence(cheque.returnMemoEvidenceId, {
+        evidenceInfo,
+        caseDocumentId,
+      });
     } else {
-      const saved = await caseFilingApi.addEvidence(caseId, {
+      const saved = await getCaseFilingRepository().addEvidence(caseId, {
         evidenceType: "RETURN_MEMO",
         evidenceInfo,
         caseDocumentId,
@@ -77,7 +84,7 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
 export function removeChequeEvidence(cheque: Pick<ChequeDetails, "chequeEvidenceId" | "returnMemoEvidenceId">) {
   for (const id of [cheque.chequeEvidenceId, cheque.returnMemoEvidenceId]) {
     if (!id) continue;
-    caseFilingApi.deleteEvidence(id).catch((error) => {
+    getCaseFilingRepository().deleteEvidence(id).catch((error) => {
       console.warn("[filing] couldn't remove cheque evidence from the case", id, error);
     });
   }

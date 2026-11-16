@@ -3,12 +3,8 @@ import { describe, it } from "node:test";
 
 import { ApiError, createApiClient } from "@/lib/api";
 
-import {
-  caseDocumentType,
-  caseFilingErrorMessage,
-  createCaseFilingApi,
-  documentPatch,
-} from "./data/cases-api";
+import { caseDocumentType, caseFilingErrorMessage, documentPatch } from "./data/cases-api";
+import { createCaseFilingApi } from "./data/http";
 
 const META = {
   timestamp: "2026-10-27T10:00:00+05:30",

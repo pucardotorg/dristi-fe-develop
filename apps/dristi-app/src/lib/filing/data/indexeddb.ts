@@ -1,7 +1,7 @@
 /**
- * IndexedDB implementation of the filing repository.
+ * IndexedDB implementation of the filing repository, and the sandbox's backend case.
  *
- * One database, two stores: `drafts` (whole drafts, indexed by `updatedAt`) and `files`
+ * Drafts: one database, two stores: `drafts` (whole drafts, indexed by `updatedAt`) and `files`
  * (upload bytes + metadata). Blobs are stored as-is — IndexedDB keeps binary data
  * natively, so uploads survive reloads and are never base64-inflated. Databases created
  * before the profile moved to the signed-in account still hold an unused `profile` store.
@@ -9,9 +9,17 @@
 
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
+import { getAuthService } from "@/lib/auth";
+
 import type { FilingDraft } from "../types";
 import type { FilingRepository, StoredFile } from "./repository";
 import { migrateDraft } from "../blank";
+import {
+  SandboxCaseFiling,
+  type CaseStore,
+  type SandboxAccount,
+  type SandboxCase,
+} from "./cases-sandbox";
 
 const DB_NAME = "dristi-efiling";
 const DB_VERSION = 1;
@@ -101,5 +109,60 @@ export class IndexedDbFilingRepository implements FilingRepository {
     if (ids.length === 0) return;
     const tx = (await db()).transaction("files", "readwrite");
     await Promise.all([...ids.map((id) => tx.store.delete(id)), tx.done]);
+  }
+}
+
+/* ─────────────────────────────── The backend case ───────────────────────────────── */
+
+/**
+ * The sandbox's copy of each backend case (`./cases-sandbox.ts`). A database of its own, so
+ * adding it left the drafts database at its version: another branch that still opens
+ * `dristi-efiling` at version 1 keeps working.
+ */
+const CASES_DB_NAME = "dristi-efiling-cases";
+const CASES_DB_VERSION = 1;
+
+interface CasesDB extends DBSchema {
+  cases: {
+    key: string;
+    value: SandboxCase;
+  };
+}
+
+let casesDbPromise: Promise<IDBPDatabase<CasesDB>> | null = null;
+
+function casesDb(): Promise<IDBPDatabase<CasesDB>> {
+  if (!casesDbPromise) {
+    casesDbPromise = openDB<CasesDB>(CASES_DB_NAME, CASES_DB_VERSION, {
+      upgrade(database) {
+        database.createObjectStore("cases", { keyPath: "caseId" });
+      },
+    });
+  }
+  return casesDbPromise;
+}
+
+const indexedDbCaseStore: CaseStore = {
+  async get(caseId) {
+    return (await casesDb()).get("cases", caseId);
+  },
+  async put(record) {
+    await (await casesDb()).put("cases", record);
+  },
+  async list() {
+    return (await casesDb()).getAll("cases");
+  },
+};
+
+/** The signed-in person, for a party added as `self`; unknown when the session is not. */
+async function currentAccount(): Promise<SandboxAccount> {
+  const account = await getAuthService().getCurrentAccount();
+  return { name: account.name ?? "", mobile: account.mobile };
+}
+
+/** The backend case, answered in this browser. Cases survive a reload, like their drafts. */
+export class IndexedDbCaseFilingRepository extends SandboxCaseFiling {
+  constructor() {
+    super(indexedDbCaseStore, currentAccount);
   }
 }

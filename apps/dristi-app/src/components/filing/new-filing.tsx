@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
 
 import { createBlankDraft } from "@/lib/filing/blank";
-import { getRepository } from "@/lib/filing/data";
-import { caseFilingApi, caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
+import { getCaseFilingRepository, getRepository } from "@/lib/filing/data";
+import { caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
 import { useProfile } from "@/lib/filing/profile";
 import { FILINGS_HOME, stepHref } from "@/lib/filing/steps";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export function NewFiling() {
     void (async () => {
       let caseId: string;
       try {
-        ({ caseId } = await caseFilingApi.startDraft());
+        ({ caseId } = await getCaseFilingRepository().startDraft());
       } catch (err) {
         setError(caseFilingErrorMessage(err));
         return;

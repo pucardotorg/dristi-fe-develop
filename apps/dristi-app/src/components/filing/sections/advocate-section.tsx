@@ -19,11 +19,8 @@ import Link from "next/link";
 import { CheckIcon, ChevronDownIcon, PlusIcon, UserRoundIcon } from "lucide-react";
 
 import { blankAdvocate } from "@/lib/filing/blank";
-import {
-  ADVOCATE_SEARCH_MIN_LENGTH,
-  caseFilingApi,
-  type FoundAdvocate,
-} from "@/lib/filing/data/cases-api";
+import { getCaseFilingRepository } from "@/lib/filing/data";
+import { ADVOCATE_SEARCH_MIN_LENGTH, type FoundAdvocate } from "@/lib/filing/data/cases-api";
 import { useProfile } from "@/lib/filing/profile";
 import {
   complainantChoices,
@@ -102,7 +99,7 @@ export function AdvocateSection() {
     const controller = new AbortController();
     latestSearch.current = controller;
     try {
-      const rows = await caseFilingApi.searchAdvocates(query, controller.signal);
+      const rows = await getCaseFilingRepository().searchAdvocates(query, controller.signal);
       if (controller.signal.aborted) return [];
       setRegister(rows);
       setSearchFailed(false);
@@ -179,7 +176,7 @@ export function AdvocateSection() {
     const row = draft.advocates.find((a) => !a.advocateId && a.barNumber.trim());
     if (!row) return;
     const barNumber = row.barNumber.trim();
-    caseFilingApi
+    getCaseFilingRepository()
       .searchAdvocates(barNumber)
       .then((rows) => takeBarNumberMatch(row.id, barNumber, rows))
       .catch(() => setQuery(row.id, barNumber));

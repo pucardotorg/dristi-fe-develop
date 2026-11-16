@@ -20,6 +20,7 @@ import { AppSearchProvider } from "@/components/shell/app-search";
 import { FeedbackToaster } from "@/components/ui/feedback-toaster";
 import { ProfileProvider } from "@/components/shell/profile";
 import { RailThemeProvider } from "@/components/shell/rail-theme";
+import { RequireSignIn } from "@/components/shell/require-sign-in";
 import { TopBar } from "@/components/shell/top-bar";
 
 /**
@@ -85,6 +86,7 @@ export function AppShell({
   );
 
   return (
+    <RequireSignIn>
     <TooltipProvider>
       <ProfileProvider>
         <ChromeContext.Provider value={chrome}>
@@ -137,5 +139,6 @@ export function AppShell({
         </ChromeContext.Provider>
       </ProfileProvider>
     </TooltipProvider>
+    </RequireSignIn>
   );
 }

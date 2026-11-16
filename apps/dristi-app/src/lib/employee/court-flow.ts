@@ -1217,15 +1217,15 @@ export function trendBreakdown(docket: CourtDocket, id: TrendId, point: TrendPoi
     const disposed = count((c) => c.disposal !== null && inPeriod(c.disposal.date, period));
     if (id === "clearance") {
       return [
-        { label: "Disposed", value: fmt(disposed) },
-        { label: "Filed", value: fmt(filed) },
-        { label: disposed >= filed ? "Backlog shrank by" : "Backlog grew by", value: fmt(Math.abs(disposed - filed)) },
+        { label: "courtFlow_disposed", value: fmt(disposed) },
+        { label: "courtFlow_filed", value: fmt(filed) },
+        { label: disposed >= filed ? "courtFlow_backlogShrankBy" : "courtFlow_backlogGrewBy", value: fmt(Math.abs(disposed - filed)) },
       ];
     }
     return [
-      { label: "Filed in the month", value: fmt(filed) },
-      { label: "Disposed in the month", value: fmt(disposed) },
-      { label: "Moved to long pending", value: fmt(count((c) => inPeriod(c.longPendingAt, period))) },
+      { label: "courtFlow_filedInTheMonth", value: fmt(filed) },
+      { label: "courtFlow_disposedInTheMonth", value: fmt(disposed) },
+      { label: "courtFlow_movedToLongPending", value: fmt(count((c) => inPeriod(c.longPendingAt, period))) },
     ];
   }
   if (id === "overdue") {
@@ -1242,9 +1242,9 @@ export function trendBreakdown(docket: CourtDocket, id: TrendId, point: TrendPoi
       .map((c) => daysBetween(c.filed, c.disposal!.date));
     if (!days.length) return [];
     return [
-      { label: "Cases disposed", value: fmt(days.length) },
-      { label: "Quickest", value: `${fmt(Math.min(...days))} days` },
-      { label: "Slowest", value: `${fmt(Math.max(...days))} days` },
+      { label: "courtFlow_casesDisposed", value: fmt(days.length) },
+      { label: "courtFlow_quickest", value: `${fmt(Math.min(...days))} days` },
+      { label: "courtFlow_slowest", value: `${fmt(Math.max(...days))} days` },
     ];
   }
   const days = docket.cases
@@ -1253,9 +1253,9 @@ export function trendBreakdown(docket: CourtDocket, id: TrendId, point: TrendPoi
     .map((p) => daysBetween(p.paid!, p.delivered!));
   if (!days.length) return [];
   return [
-    { label: "Summons delivered", value: fmt(days.length) },
-    { label: "Within 14 days", value: `${Math.round((days.filter((d) => d <= 14).length / days.length) * 100)}%` },
-    { label: "Slowest", value: `${fmt(Math.max(...days))} days` },
+    { label: "courtFlow_summonsDelivered", value: fmt(days.length) },
+    { label: "courtFlow_within14Days", value: `${Math.round((days.filter((d) => d <= 14).length / days.length) * 100)}%` },
+    { label: "courtFlow_slowest", value: `${fmt(Math.max(...days))} days` },
   ];
 }
 
@@ -1545,7 +1545,7 @@ export function attentionFor(docket: CourtDocket, selection: Period): AttentionR
       bins,
       axis: {
         low: def.unit(def.low),
-        high: id === "soon" ? "14 days" : last ? def.unit(last.to) : "",
+        high: id === "soon" ? "courtFlow_14Days" : last ? def.unit(last.to) : "",
         title: def.title,
       },
       fact,
@@ -1556,7 +1556,7 @@ export function attentionFor(docket: CourtDocket, selection: Period): AttentionR
   const groups: AttentionReading["groups"] = [
     {
       key: "hearing",
-      label: "Hearing dates",
+      label: "courtFlow_hearingDates",
       source: "Note B",
       checks: [
         make("undated", () => longestFirst(flat(next.undated)), () => null),
@@ -1565,7 +1565,7 @@ export function attentionFor(docket: CourtDocket, selection: Period): AttentionR
     },
     {
       key: "process",
-      label: "Process",
+      label: "courtFlow_process",
       source: "Note D",
       checks: [
         make("soon", () => flat(next.hearingSoon).sort((a, b) => a.days - b.days), () => null),

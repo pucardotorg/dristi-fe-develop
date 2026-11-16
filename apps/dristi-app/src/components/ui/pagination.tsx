@@ -3,12 +3,14 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
+import { useTranslations } from "next-intl";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
+  const t = useTranslations();
   return (
     <nav
       role="navigation"
-      aria-label="pagination"
+      aria-label={t("pagination_pagination")}
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
       {...props}
@@ -66,9 +68,10 @@ function PaginationPrevious({
   text = "Previous",
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
+  const t = useTranslations();
   return (
     <PaginationLink
-      aria-label="Go to previous page"
+      aria-label={t("pagination_goToPreviousPage")}
       size="default"
       className={cn("pl-1.5!", className)}
       {...props}
@@ -84,9 +87,10 @@ function PaginationNext({
   text = "Next",
   ...props
 }: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
+  const t = useTranslations();
   return (
     <PaginationLink
-      aria-label="Go to next page"
+      aria-label={t("pagination_goToNextPage")}
       size="default"
       className={cn("pr-1.5!", className)}
       {...props}
@@ -101,6 +105,7 @@ function PaginationEllipsis({
   className,
   ...props
 }: React.ComponentProps<"span">) {
+  const t = useTranslations();
   return (
     <span
       aria-hidden
@@ -113,7 +118,7 @@ function PaginationEllipsis({
     >
       <MoreHorizontalIcon
       />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">{t("pagination_morePages")}</span>
     </span>
   )
 }

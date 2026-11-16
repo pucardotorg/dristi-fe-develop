@@ -34,6 +34,7 @@ import { bucketLabel, type BucketKey, type CaseRecord } from "@/lib/cases/types"
 import { cn } from "@/lib/utils";
 
 import { CollapsibleLabel } from "./collapsible-label";
+import { useTranslations } from "next-intl";
 
 type FilterPatch = Partial<
   Pick<CasesQuery, "status" | "bookmarked" | "type" | "stage" | "advocates" | "search" | "filed">
@@ -75,6 +76,7 @@ export function CheckGroup<T extends string>({
    *  sheet does not open to a wall of names. Searching overrides the cap. */
   collapseAfter?: number;
 }) {
+  const t = useTranslations();
   const [needle, setNeedle] = React.useState("");
   const [expanded, setExpanded] = React.useState(false);
   const searching = searchable && Boolean(needle.trim());
@@ -113,8 +115,8 @@ export function CheckGroup<T extends string>({
               type="search"
               value={needle}
               onChange={(event) => setNeedle(event.target.value)}
-              placeholder="Find a name"
-              aria-label={`Find in ${legend.toLowerCase()}`}
+              placeholder={t("casesFilters_findAName")}
+              aria-label={t("casesFilters_findInToLowerCase", { toLowerCase: legend.toLowerCase() })}
               autoComplete="off"
               className="h-full text-body-compact"
             />
@@ -123,7 +125,7 @@ export function CheckGroup<T extends string>({
       </div>
       {searchable && shown.length === 0 ? (
         <p className="px-2 py-2 text-body-compact text-muted-foreground">
-          No names match.
+          {t("casesFilters_noNamesMatch")}
         </p>
       ) : null}
       <ul className="flex flex-col">
@@ -167,7 +169,7 @@ export function CheckGroup<T extends string>({
           className="h-auto w-fit px-2 py-1"
           onClick={() => setExpanded((open) => !open)}
         >
-          {collapsed ? `Show all ${filtered.length}` : "Show fewer"}
+          {collapsed ? t("casesFilters_showAllLength", { length: String(filtered.length) }) : t("casesFilters_showFewer")}
           {collapsed ? (
             <span className="text-muted-foreground tabular-nums">
               {" "}
@@ -220,6 +222,7 @@ export function CasesFiltersButton({
    *  used when the case peek squeezes the toolbar. */
   compact?: boolean;
 }) {
+  const t = useTranslations();
   const [draft, setDraft] = React.useState<FilterDraft>(() => draftFrom(query));
 
   function set<K extends keyof FilterDraft>(key: K, next: FilterDraft[K]) {
@@ -245,7 +248,7 @@ export function CasesFiltersButton({
           aria-label={`Filters${applied ? `, ${applied} applied` : ""}`}
         >
           <SlidersHorizontalIcon aria-hidden />
-          <CollapsibleLabel show={!compact}>Filters</CollapsibleLabel>
+          <CollapsibleLabel show={!compact}>{t("casesFilters_filters")}</CollapsibleLabel>
           {applied ? (
             <span className="ms-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-caption font-medium tabular-nums text-primary-foreground">
               {applied}
@@ -261,13 +264,13 @@ export function CasesFiltersButton({
         className="w-full sm:max-w-sm"
       >
         <SheetHeader>
-          <SheetTitle className="text-title-s font-semibold">Filters</SheetTitle>
+          <SheetTitle className="text-title-s font-semibold">{t("casesFilters_filters")}</SheetTitle>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
           <CheckGroup
             id="cases-filter-status"
-            legend="Status"
+            legend={t("casesFilters_status")}
             options={CASE_STATUSES.map((status) => ({
               ...status,
               count: totals[status.value],
@@ -280,14 +283,14 @@ export function CasesFiltersButton({
               a second kind that does not exist yet. */}
           <CheckGroup
             id="cases-filter-type"
-            legend="Case type"
+            legend={t("casesFilters_caseType")}
             options={CASE_TYPES}
             value={draft.type}
             onChange={(type) => set("type", type)}
             locked={CASE_TYPES.length === 1}
             note={
               CASE_TYPES.length === 1
-                ? "The only case type this court files, for now."
+                ? t("casesFilters_theOnlyCaseTypeThisCourt")
                 : undefined
             }
           />
@@ -300,7 +303,7 @@ export function CasesFiltersButton({
           />
           <CheckGroup
             id="cases-filter-advocate"
-            legend="Advocates on the case"
+            legend={t("casesFilters_advocatesOnTheCase")}
             options={advocateOptions(cases).map((name) => ({ value: name, label: name }))}
             value={draft.advocates}
             onChange={(advocates) => set("advocates", advocates)}
@@ -317,13 +320,13 @@ export function CasesFiltersButton({
                 setDraft({ status: [], type: query.type, stage: [], advocates: [] })
               }
             >
-              Clear filters
+              {t("casesFilters_clearFilters")}
             </Button>
           ) : (
             <span />
           )}
           <SheetClose asChild>
-            <Button onClick={() => onApply(draft)}>Show cases</Button>
+            <Button onClick={() => onApply(draft)}>{t("casesFilters_showCases")}</Button>
           </SheetClose>
         </SheetFooter>
       </SheetContent>
@@ -343,6 +346,7 @@ export function CasesAppliedFilters({
   query: CasesQuery;
   onChange: (patch: FilterPatch) => void;
 }) {
+  const t = useTranslations();
   if (!isNarrowed(query)) return null;
   const chips: { key: string; label: string; clear: () => void }[] = [];
 
@@ -384,7 +388,7 @@ export function CasesAppliedFilters({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2" aria-label="Applied filters">
+    <div className="flex flex-wrap items-center gap-2" aria-label={t("casesFilters_appliedFilters")}>
       {chips.map((chip) => (
         <AppliedChip key={chip.key} label={chip.label} onClear={chip.clear} />
       ))}
@@ -394,7 +398,7 @@ export function CasesAppliedFilters({
         className="text-muted-foreground"
       >
         <XIcon data-icon="inline-start" aria-hidden />
-        Clear all
+        {t("casesFilters_clearAll")}
       </Button>
     </div>
   );

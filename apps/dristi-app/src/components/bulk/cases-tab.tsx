@@ -26,8 +26,10 @@ import {
 import type { BatchCtx } from "./batch-screen";
 
 import { CaseBadge } from "./stage";
+import { useTranslations } from "next-intl";
 
 export function CasesTab({ batch, go }: BatchCtx) {
+  const t = useTranslations();
   // Pending cases only; filed ones live under Filed.
   const pending = batch.cases.filter((c) => c.stage !== "filed");
   const filed = batch.cases.length - pending.length;
@@ -52,22 +54,22 @@ export function CasesTab({ batch, go }: BatchCtx) {
           <div className="overflow-x-auto p-2">
             <Table
               className="border-separate border-spacing-0"
-              aria-label="Cases in this batch"
+              aria-label={t("casesTab_casesInThisBatch")}
             >
               <TableHeader>
                 <TableRow className={TABLE_HEAD_ROW}>
                   <TableHead className={cn(TABLE_HEAD, "pl-4")}>
-                    Reference
+                    {t("casesTab_reference")}
                   </TableHead>
-                  <TableHead className={TABLE_HEAD}>Parties</TableHead>
+                  <TableHead className={TABLE_HEAD}>{t("casesTab_parties")}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "text-right")}>
-                    Cheque amount
+                    {t("casesTab_chequeAmount")}
                   </TableHead>
-                  <TableHead className={TABLE_HEAD}>Cause of action</TableHead>
-                  <TableHead className={TABLE_HEAD}>File by</TableHead>
-                  <TableHead className={TABLE_HEAD}>Documents</TableHead>
+                  <TableHead className={TABLE_HEAD}>{t("casesTab_causeOfAction")}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{t("casesTab_fileBy")}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{t("casesTab_documents")}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "pr-4")}>
-                    Status
+                    {t("casesTab_status")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -106,7 +108,7 @@ export function CasesTab({ batch, go }: BatchCtx) {
                       {money(c.amount)}
                     </TableCell>
                     <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
-                      {c.causeDate ? toLongDate(c.causeDate) : "Not yet"}
+                      {c.causeDate ? toLongDate(c.causeDate) : t("casesTab_notYet")}
                     </TableCell>
                     <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
                       {c.fileBy ? toLongDate(c.fileBy) : "—"}
@@ -118,7 +120,7 @@ export function CasesTab({ batch, go }: BatchCtx) {
                         c.docs.have < c.docs.need && "text-warning-ink",
                       )}
                     >
-                      {c.docs.have} of {c.docs.need}
+                      {t("casesTab_haveOfNeed", { have: String(c.docs.have), need: String(c.docs.need) })}
                     </TableCell>
                     <TableCell
                       className={cn(TABLE_CELL, "pr-4 whitespace-normal")}

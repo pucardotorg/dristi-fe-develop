@@ -56,7 +56,7 @@ const comma = (...parts: string[]) => parts.map((p) => p.trim()).filter(Boolean)
 
 export const DETAIL_FIELD_GROUPS: DetailFieldGroup[] = [
   {
-    label: "Complainant",
+    label: "detailFields_complainant",
     fields: [
       {
         name: "Complainant Name",
@@ -84,7 +84,7 @@ export const DETAIL_FIELD_GROUPS: DetailFieldGroup[] = [
     ],
   },
   {
-    label: "Advocate",
+    label: "detailFields_advocate",
     fields: [
       {
         name: "Advocate Name",
@@ -99,7 +99,7 @@ export const DETAIL_FIELD_GROUPS: DetailFieldGroup[] = [
     ],
   },
   {
-    label: "Accused",
+    label: "detailFields_accused",
     fields: [
       { name: "Accused Name", step: "accused", resolve: (d) => each(d.accused, (a) => a.name) },
       {
@@ -115,7 +115,7 @@ export const DETAIL_FIELD_GROUPS: DetailFieldGroup[] = [
     ],
   },
   {
-    label: "Cheque",
+    label: "detailFields_cheque",
     fields: [
       { name: "Cheque Number", step: "cheque", resolve: (d) => each(d.cheques, (c) => c.chequeNumber) },
       {
@@ -156,7 +156,7 @@ export const DETAIL_FIELD_GROUPS: DetailFieldGroup[] = [
     ],
   },
   {
-    label: "Demand notice",
+    label: "detailFields_demandNotice",
     fields: [
       {
         name: "Nature of Debt",
@@ -194,7 +194,7 @@ export const DETAIL_FIELD_GROUPS: DetailFieldGroup[] = [
     ],
   },
   {
-    label: "Jurisdiction & limitation",
+    label: "detailFields_jurisdictionLimitation",
     fields: [
       {
         name: "Complainant Bank",

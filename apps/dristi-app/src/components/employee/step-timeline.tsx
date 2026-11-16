@@ -2,6 +2,7 @@ import type * as React from "react";
 
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * A dated chain of steps, grouped by phase — the court side's one timeline treatment.
@@ -75,6 +76,7 @@ export function Step({
    *  so the screen the bench is on stays where it was. */
   href?: string;
 }) {
+  const t = useTranslations();
   return (
     <TimelineItem status={status} className="pb-0">
       {/* Three columns once the panel is wide: the step, what it means, and the day it
@@ -94,7 +96,7 @@ export function Step({
                 className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
               >
                 {label}
-                <span className="sr-only"> (opens in a new tab)</span>
+                <span className="sr-only"> {t("stepTimeline_opensInANewTab")}</span>
               </a>
             ) : (
               label

@@ -22,6 +22,7 @@ import {
   SidebarProvider,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useTranslations } from "next-intl";
 
 /**
  * The app's chrome frame — the rail, the top bar, and the column between them.
@@ -731,6 +732,7 @@ function ChromeRailSheet({
   description?: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const { openMobile, setOpenMobile } = useSidebar();
   return (
     <Sheet open={openMobile} onOpenChange={setOpenMobile}>
@@ -773,7 +775,7 @@ function ChromeRailSheet({
         ].join(" ")}
       >
         <SheetHeader className="sr-only">
-          <SheetTitle>{title ?? "Navigation"}</SheetTitle>
+          <SheetTitle>{title ?? t("appChrome_navigation")}</SheetTitle>
           {description ? (
             <SheetDescription>{description}</SheetDescription>
           ) : null}

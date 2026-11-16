@@ -23,6 +23,7 @@ import type { PaperFallbackReason } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useTranslations } from "next-intl";
 
 /**
  * The way onto the paper path, under the e-sign route. A link-weight button keeps it
@@ -30,12 +31,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
  * it keeps the control's 40px height, so it is still a full touch target.
  */
 export function PaperFallbackLink({ onClick }: { onClick: () => void }) {
+  const t = useTranslations();
   return (
     <p className="flex flex-wrap items-center gap-x-1 text-body-compact text-muted-foreground">
-      Unable to e-sign?
-      <Button type="button" variant="link" className="px-0 underline" onClick={onClick}>
-        Upload a physically signed copy
-      </Button>
+      {t.rich("paperFallback_unableToESignUploadA", { button: (chunks) => <Button type="button" variant="link" className="px-0 underline" onClick={onClick}>{chunks}</Button> })}
     </p>
   );
 }
@@ -60,12 +59,13 @@ export function PaperFallbackQuestion({
   /** A window with one signer drops "Another party can't e-sign" — there is nobody else. */
   reasons?: readonly { id: PaperFallbackReason; label: string }[];
 }) {
+  const t = useTranslations();
   const questionId = React.useId();
   const optionId = React.useId();
   return (
     <div className="flex flex-col gap-3">
       <h3 id={questionId} className="text-body font-semibold">
-        What went wrong with e-signing?
+        {t("paperFallback_whatWentWrongWithESigning")}
       </h3>
       <RadioGroup
         value={value}

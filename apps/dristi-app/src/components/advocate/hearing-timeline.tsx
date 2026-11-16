@@ -86,6 +86,7 @@ import type { AvatarSurface } from "@/components/tasks/person-avatar";
 import { courtIdentity, courtNumberFor } from "@/lib/advocate/courts";
 import { passedOverLabel } from "@/lib/advocate/passed-over";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * Clicking a hearing's pending flag opens the tasks rail and traces its tasks.
@@ -960,6 +961,7 @@ function HearingRow({
   boxSurface?: AvatarSurface;
   className?: string;
 }) {
+  const t = useTranslations();
   const showTimes = useShowTimes();
   const singleCourt = React.useContext(SingleCourtContext);
   const isMobile = useCompactBoard();
@@ -1016,7 +1018,7 @@ function HearingRow({
           <span aria-hidden="true" className="shrink-0 whitespace-pre"> · </span>
           <Identifier
             value={hearing.kase.stNumber || hearing.kase.cnr}
-            label="case number"
+            label={t("hearingTimeline_caseNumber")}
             copyable={canHover}
             className="relative z-10 shrink-0 whitespace-nowrap"
           />

@@ -35,6 +35,7 @@ import { CasesListResults } from "./cases-list-results";
 import { CasesTableColumnsMenu } from "./cases-table-columns-menu";
 import { useCasesNavigation } from "./use-cases-navigation";
 import { CasePeekProvider } from "./use-case-peek";
+import { useTranslations } from "next-intl";
 
 export function CasesListScreen({
   query,
@@ -47,6 +48,7 @@ export function CasesListScreen({
   initialBookmarks: string[];
   now: number;
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const { search, effective, go, onSearchChange } = useCasesNavigation(query);
   const [bookmarks, setBookmarks] = React.useState<ReadonlySet<string>>(
@@ -59,7 +61,7 @@ export function CasesListScreen({
     now,
     source: cases,
   });
-  const title = query.bucket ? bucketLabel(query.bucket) : "Search results";
+  const title = query.bucket ? bucketLabel(query.bucket) : t("casesListScreen_searchResults");
   const backLabel = allBucketsLabel(query);
   const backHref = buildCasesHref(query, {
     bucket: null,
@@ -114,7 +116,7 @@ export function CasesListScreen({
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">
           <div className="w-full min-w-0 sm:w-72">
             <Label htmlFor="cases-search" className="sr-only">
-              Search cases
+              {t("casesListScreen_searchCases")}
             </Label>
             <InputGroup>
               <InputGroupAddon>
@@ -126,7 +128,7 @@ export function CasesListScreen({
                 autoComplete="off"
                 value={search}
                 onChange={(event) => onSearchChange(event.target.value)}
-                placeholder="Search by case name or number"
+                placeholder={t("casesListScreen_searchByCaseNameOrNumber")}
               />
             </InputGroup>
           </div>
@@ -138,9 +140,9 @@ export function CasesListScreen({
             <Button
               variant="outline"
               onClick={() => onSearchChange("")}
-              aria-label={`Remove Search: ${search}`}
+              aria-label={t("casesListScreen_removeSearchSearch", { search })}
             >
-              Search: {search}
+              {t("casesListScreen_searchSearch", { search })}
               <XIcon data-icon="inline-end" aria-hidden />
             </Button>
           </div>
@@ -153,18 +155,18 @@ export function CasesListScreen({
                 <FileSearchIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="text-title-s font-semibold">
-                No cases match these filters
+                {t("casesListScreen_noCasesMatchTheseFilters")}
               </EmptyTitle>
               <EmptyDescription className="text-body">
                 {search
-                  ? `Nothing here matches this search. Try another case name or number, or go back to ${backLabel.toLowerCase()}.`
-                  : "Nothing here matches. Go back and try another folder."}
+                  ? t("casesListScreen_nothingHereMatchesThisSearchTry", { toLowerCase: backLabel.toLowerCase() })
+                  : t("casesListScreen_nothingHereMatchesGoBackAnd")}
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               {search ? (
                 <Button variant="outline" onClick={() => onSearchChange("")}>
-                  Clear search
+                  {t("casesListScreen_clearSearch")}
                 </Button>
               ) : (
                 <Button variant="outline" asChild>

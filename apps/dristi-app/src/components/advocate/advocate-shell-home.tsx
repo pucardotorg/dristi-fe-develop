@@ -18,6 +18,7 @@ import { advShellHome } from "@/lib/advocate/content";
 import { JOIN_DEMO_CASE_ID } from "@/lib/cases/party-cases";
 import { fill } from "@/lib/join/content";
 import { pick, type Locale } from "@/lib/onboarding/content";
+import { useTranslations } from "next-intl";
 
 /**
  * The home of an advocate who has just registered (owner, 2026-10-14): nothing listed,
@@ -28,6 +29,7 @@ import { pick, type Locale } from "@/lib/onboarding/content";
  * A case joined here appears under Your cases at once, and opens.
  */
 export function AdvocateShellHome({ locale }: { locale: Locale }) {
+  const t = useTranslations();
   const router = useRouter();
   const { displayName, switchProfile } = useProfile();
   const name = displayName.replace(/^Adv\.\s*/, "");
@@ -60,7 +62,7 @@ export function AdvocateShellHome({ locale }: { locale: Locale }) {
                           {pick(advShellHome.caseNumberLabel, locale)}
                         </span>
                         <br />
-                        <Identifier value={entry.joinCase.caseNumber} label="case number" />
+                        <Identifier value={entry.joinCase.caseNumber} label={t("advocateShellHome_caseNumber")} />
                       </p>
                       <p>
                         <span className="font-medium text-foreground">

@@ -35,6 +35,7 @@ import {
   type Appearance,
   type OrderDraft,
 } from "@/lib/employee/order-draft";
+import { useTranslations } from "next-intl";
 
 /**
  * One way into the order screen, described once.
@@ -101,6 +102,7 @@ export function OrderDoorScreen({ door }: { door: OrderDoor }) {
 }
 
 function OrderDoorBody({ door }: { door: OrderDoor }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const { hearing, context, today } = door;
   const appearances = hearing?.appearances;
@@ -168,7 +170,7 @@ function OrderDoorBody({ door }: { door: OrderDoor }) {
       frame={{
         courtLine: door.courtLine,
         subLine: door.subLine,
-        signatory: courtText("Judicial Magistrate of the First Class"),
+        signatory: courtText(t("orderDoorScreen_judicialMagistrateOfTheFirstClass")),
       }}
       today={today}
       draft={draft}

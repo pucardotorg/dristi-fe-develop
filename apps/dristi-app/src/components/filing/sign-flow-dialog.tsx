@@ -104,6 +104,7 @@ import {
   type TrailStep,
 } from "@/components/filing/sign-stages";
 import { pickErrorMessage, useFilePicker } from "@/components/filing/use-file-picker";
+import { useTranslations } from "next-intl";
 
 /** Where the window opens, decided by what has happened to the complaint so far. */
 export type SignFlowStart = "choose" | "sign" | "fallback" | "paper" | "oath" | "status";
@@ -236,6 +237,7 @@ function SignFlowBody({
   unlocks?: string;
   outcome?: { title: string; headline: string; footnote: string };
 }) {
+  const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { profile } = useProfile();
   const router = useRouter();
@@ -291,12 +293,12 @@ function SignFlowBody({
   const onPaperPath = start === "paper" || sign.mode === "upload";
   /** The two acts, named for an advocate before the first one starts. */
   const trail = (current: "sign" | "oath"): TrailStep[] => [
-    { label: onPaperPath ? "Confirm by OTP" : "E-sign", state: current === "sign" ? "current" : "done" },
-    { label: "Oath", state: current === "oath" ? "current" : "next" },
+    { label: onPaperPath ? t("signFlowDialog_confirmByOtp") : t("signFlowDialog_eSign"), state: current === "sign" ? "current" : "done" },
+    { label: t("signFlowDialog_oath"), state: current === "oath" ? "current" : "next" },
   ];
   const otherSigners = Math.max(0, everyone.length - yous.length);
   const others =
-    otherSigners === 1 ? "The other party" : `The other ${otherSigners} parties`;
+    otherSigners === 1 ? t("signFlowDialog_theOtherParty") : t("signFlowDialog_theOtherOtherSignersParties", { otherSigners: String(otherSigners) });
   const have = otherSigners === 1 ? "has" : "have";
 
   /* ── the filer's own signature ─────────────────────────────────────────── */
@@ -447,7 +449,7 @@ function SignFlowBody({
     try {
       ref = await storeUpload(file);
     } catch {
-      setUploadError("We couldn't store that file in this browser. Please try again.");
+      setUploadError(t("signFlowDialog_weCouldntStoreThatFileIn"));
       return;
     }
     update((d) => {
@@ -535,23 +537,23 @@ function SignFlowBody({
   /* ── the window ────────────────────────────────────────────────────────── */
 
   const baseTitle = {
-    choose: "How will this complaint be signed?",
-    sign: "Add your e-signature",
-    otp: "Enter the OTP",
-    dsc: "Sign with your DSC",
+    choose: t("signFlowDialog_howWillThisComplaintBeSigned"),
+    sign: t("signFlowDialog_addYourESignature"),
+    otp: t("signFlowDialog_enterTheOtp"),
+    dsc: t("signFlowDialog_signWithYourDsc"),
     /* Reopened with everyone in, nothing was just added or sent out. */
     done: signedWith
-      ? "Signature added"
+      ? t("signFlowDialog_signatureAdded")
       : outstanding === 0
-        ? "Everyone has signed"
+        ? t("signFlowDialog_everyoneHasSigned")
         : youSigned
-          ? "Signature added"
-          : "Out for signature",
-    fallback: "Unable to e-sign?",
-    paper: "Upload the signed complaint",
-    uploaded: "Signed copy accepted",
-    oath: "Take your oath",
-    sworn: "Oath recorded",
+          ? t("signFlowDialog_signatureAdded")
+          : t("signFlowDialog_outForSignature"),
+    fallback: t("signFlowDialog_unableToESign"),
+    paper: t("signFlowDialog_uploadTheSignedComplaint"),
+    uploaded: t("signFlowDialog_signedCopyAccepted"),
+    oath: t("signFlowDialog_takeYourOath"),
+    sworn: t("signFlowDialog_oathRecorded"),
   }[flow.stage];
   /* Once the host has acted (sent to scrutiny), the roster stages say so. */
   const settledStage = flow.stage === "done" || flow.stage === "sworn";
@@ -562,7 +564,7 @@ function SignFlowBody({
   const signedCount = (
     <Badge variant="success">
       <CheckIcon aria-hidden />
-      {everyone.length - pending} of {everyone.length} signed
+      {t("signFlowDialog_valueOfLengthSigned", { value: String(everyone.length - pending), length: String(everyone.length) })}
     </Badge>
   );
 
@@ -570,18 +572,18 @@ function SignFlowBody({
     choose:
       everyone.length > 1
         ? `All ${everyone.length} signatories sign the same way.`
-        : "Choose how this complaint is signed.",
-    sign: "Either one is your own signature — use whichever you have.",
+        : t("signFlowDialog_chooseHowThisComplaintIsSigned"),
+    sign: t("signFlowDialog_eitherOneIsYourOwnSignature"),
     otp: mobileTail
       ? `Sent to your Aadhaar-linked mobile ending ${mobileTail}.`
-      : "Sent to your Aadhaar-linked mobile.",
-    dsc: "Your certificate has to be plugged in, with the signing utility running on this computer.",
+      : t("signFlowDialog_sentToYourAadhaarLinkedMobile"),
+    dsc: t("signFlowDialog_yourCertificateHasToBePlugged"),
     done: null,
     fallback:
-      "E-signing is quicker for everyone. On paper, every party signs by hand and each complainant confirms by OTP.",
+      t("signFlowDialog_eSigningIsQuickerForEveryone"),
     paper: null,
     uploaded: null,
-    oath: "Record yourself reading the oath. It is kept with the case file.",
+    oath: t("signFlowDialog_recordYourselfReadingTheOathIt"),
     sworn: null,
   }[flow.stage];
 
@@ -589,26 +591,26 @@ function SignFlowBody({
     choose: null,
     sign: (
       <Button type="button" variant="ghost" onClick={onClose}>
-        I&rsquo;ll sign later
+        {t("signFlowDialog_illSignLater")}
       </Button>
     ),
     otp: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.go("sign")}>
-          Back
+          {t("common_back")}
         </Button>
         <Button type="button" disabled={otp.length < 6} onClick={() => signYou("aadhaar")}>
-          Verify and sign
+          {t("signFlowDialog_verifyAndSign")}
         </Button>
       </>
     ),
     dsc: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.go("sign")}>
-          Back
+          {t("common_back")}
         </Button>
         <Button type="button" disabled={!dscFound} onClick={() => signYou("dsc")}>
-          Sign with this certificate
+          {t("signFlowDialog_signWithThisCertificate")}
         </Button>
       </>
     ),
@@ -616,17 +618,17 @@ function SignFlowBody({
       youSigned && oathOwed ? (
         <>
           <Button type="button" variant="ghost" onClick={onClose}>
-            I&rsquo;ll take it later
+            {t("signFlowDialog_illTakeItLater")}
           </Button>
           <Button type="button" onClick={() => flow.go("oath")}>
-            Continue to the oath
+            {t("signFlowDialog_continueToTheOath")}
           </Button>
         </>
       ) : statusActions ? (
         statusActions
       ) : (
         <Button type="button" onClick={onClose}>
-          Done
+          {t("signFlowDialog_done")}
         </Button>
       ),
     fallback: (
@@ -636,46 +638,46 @@ function SignFlowBody({
           variant="outline"
           onClick={() => (start === "fallback" ? onClose() : flow.go("choose"))}
         >
-          Keep e-signing
+          {t("signFlowDialog_keepESigning")}
         </Button>
         <Button type="button" disabled={!fallbackReason} onClick={continueToPaper}>
-          Continue to upload
+          {t("signFlowDialog_continueToUpload")}
         </Button>
       </>
     ),
     paper: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.go("choose")}>
-          Choose another way
+          {t("signFlowDialog_chooseAnotherWay")}
         </Button>
         <Button
           type="button"
           disabled={!sign.signedCopy || !allConfirmed}
           onClick={submitSignedCopy}
         >
-          Submit as fully signed
+          {t("signFlowDialog_submitAsFullySigned")}
         </Button>
       </>
     ),
     uploaded: statusActions ?? (
       <Button type="button" onClick={onClose}>
-        Done
+        {t("signFlowDialog_done")}
       </Button>
     ),
     oath: (
       <>
         <Button type="button" variant="ghost" onClick={onClose}>
-          I&rsquo;ll take it later
+          {t("signFlowDialog_illTakeItLater")}
         </Button>
         <Button type="button" disabled={!yourOath} onClick={afterOath}>
-          Submit oath
+          {t("signFlowDialog_submitOath")}
         </Button>
       </>
     ),
     // The oath settles on the same roster, so the host's controls follow it here too.
     sworn: statusActions ?? (
       <Button type="button" onClick={onClose}>
-        Done
+        {t("signFlowDialog_done")}
       </Button>
     ),
   }[flow.stage];
@@ -699,12 +701,12 @@ function SignFlowBody({
         {flow.stage === "choose" ? (
           <StageColumn>
             <ChoiceCard
-              title="Sign digitally"
+              title={t("signFlowDialog_signDigitally")}
               tone="bg-brand-muted text-brand-muted-foreground"
               icon={<SignatureIcon className="size-5" />}
               onClick={chooseDigital}
             >
-              You sign the complaint with your DSC or Aadhaar e-sign.
+              {t("signFlowDialog_youSignTheComplaintWithYour")}
               {otherSigners > 0 ? (
                 <>
                   {" "}
@@ -721,9 +723,9 @@ function SignFlowBody({
             {/* Said before the act, in the window that does it: other people already
                 hold a request against this complaint, and paper takes it back. */}
             {requested || anySigned ? (
-              <SectionNotice variant="warning" title="This withdraws the e-sign requests">
+              <SectionNotice variant="warning" title={t("signFlowDialog_thisWithdrawsTheESignRequests")}>
                 {otherSigners === 0
-                  ? "Your e-signature is voided. The PDF you upload has to carry your signature by hand instead."
+                  ? t("signFlowDialog_yourESignatureIsVoidedThe")
                   : `${others} ${have} been asked to e-sign. Continuing withdraws ${
                       otherSigners === 1 ? "that request" : "those requests"
                     }${
@@ -743,8 +745,8 @@ function SignFlowBody({
                 straight on this stage, the request went out on an earlier visit and the
                 line would be stale — and could be false, if the other party has signed. */}
             {sentThisOpening && otherSigners > 0 ? (
-              <SectionNotice variant="success" announce="polite" title="Sent for signature">
-                {others} {have} a link on the mobile number given in the complaint.
+              <SectionNotice variant="success" announce="polite" title={t("signFlowDialog_sentForSignature")}>
+                {t("signFlowDialog_othersHaveALinkOnThe", { others, have })}
               </SectionNotice>
             ) : null}
 
@@ -930,10 +932,11 @@ function PaperStage({
   onAddNumber: () => void;
   onPrint: () => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-4">
-      <SectionNotice variant="warning" title="Every party's signature should be on the PDF">
-        Each complainant, and their advocate on record.
+      <SectionNotice variant="warning" title={t("signFlowDialog_everyPartysSignatureShouldBeOn")}>
+        {t("signFlowDialog_eachComplainantAndTheirAdvocateOn")}
       </SectionNotice>
 
       {file ? (
@@ -947,7 +950,7 @@ function PaperStage({
             </p>
           </div>
           <Button type="button" variant="ghost" onClick={onChoose}>
-            Replace
+            {t("signFlowDialog_replace")}
           </Button>
         </div>
       ) : (
@@ -958,10 +961,7 @@ function PaperStage({
         >
           <UploadIcon className="size-8 text-muted-foreground" aria-hidden />
           <span className="text-body-compact text-muted-foreground">
-            Choose the signed file from{" "}
-            <span className="font-medium text-primary underline underline-offset-2">
-              my files
-            </span>
+            {t.rich("signFlowDialog_chooseTheSignedFileFromMy", { span: (chunks) => <span className="font-medium text-primary underline underline-offset-2">{chunks}</span> })}
           </span>
         </button>
       )}
@@ -970,14 +970,14 @@ function PaperStage({
         <SectionNotice
           variant="destructive"
           announce="assertive"
-          title="That file wasn’t added"
+          title={t("signFlowDialog_thatFileWasntAdded")}
         >
           {error}
         </SectionNotice>
       ) : null}
 
       <p className="text-body-compact text-muted-foreground">
-        Upload .jpg, .png, .jpeg, .webp or .pdf. Maximum upload size of 15 MB.
+        {t("signFlowDialog_uploadJpgPngJpegWebpOr")}
       </p>
 
       {/* The rows carry their own dividers, so the header keeps the card's padding and
@@ -986,15 +986,15 @@ function PaperStage({
       <div className="rounded-xl border border-hairline bg-card">
         <div className="flex flex-col gap-1 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-body font-semibold">Confirm each complainant</h3>
+            <h3 className="text-body font-semibold">{t("signFlowDialog_confirmEachComplainant")}</h3>
             <span className="text-body-compact font-medium text-muted-foreground tabular-nums">
-              {confirmedCount} of {rows.length} confirmed
+              {t("signFlowDialog_confirmedCountOfLengthConfirmed", { confirmedCount: String(confirmedCount), length: String(rows.length) })}
             </span>
           </div>
           <p className="text-body-compact text-muted-foreground">
             {oathOn
-              ? "Each one gets a link by SMS, confirms with the OTP on their own device that they signed this copy, and records their oath there."
-              : "Each one gets a link by SMS and confirms with the OTP on their own device that they signed this copy."}
+              ? t("signFlowDialog_eachOneGetsALinkBy")
+              : t("signFlowDialog_eachOneGetsALinkBySms")}
           </p>
         </div>
         <ul className="border-t border-hairline px-4">
@@ -1025,15 +1025,12 @@ function PaperStage({
       </div>
 
       <p className="flex flex-wrap items-center gap-1 text-body-compact">
-        Need the unsigned document to sign on paper?
-        <Button
+        {t.rich("signFlowDialog_needTheUnsignedDocumentToSign", { button: (chunks) => <Button
           type="button"
           variant="link"
           className="h-auto p-0 underline"
           onClick={onPrint}
-        >
-          Print or save as PDF
-        </Button>
+        >{chunks}</Button> })}
       </p>
     </div>
   );
@@ -1095,6 +1092,7 @@ function ConfirmRow({
   onConfirm: () => void;
   onAddNumber: () => void;
 }) {
+  const t = useTranslations();
   const tail = mobileTailOf(person.mobile);
   const otpId = `confirm-otp-${person.id}`;
 
@@ -1118,7 +1116,7 @@ function ConfirmRow({
             {tail ? (
               <span className="tabular-nums">•••• {tail}</span>
             ) : (
-              "No number on file"
+              t("signFlowDialog_noNumberOnFile")
             )}
           </p>
         </div>
@@ -1126,7 +1124,7 @@ function ConfirmRow({
         {confirmed ? (
           <Badge variant="success">
             <CheckIcon aria-hidden />
-            Confirmed
+            {t("signFlowDialog_confirmed")}
           </Badge>
         ) : !tail ? (
           <Button
@@ -1135,21 +1133,21 @@ function ConfirmRow({
             className="h-auto p-0 underline"
             onClick={onAddNumber}
           >
-            Add number
+            {t("signFlowDialog_addNumber")}
           </Button>
         ) : you && otpIn && oathOn ? (
           <Button type="button" variant="outline" size="sm" onClick={onRecordOath}>
-            Record your oath
+            {t("signFlowDialog_recordYourOath")}
           </Button>
         ) : you ? (
           open ? null : (
             <Button type="button" variant="outline" size="sm" onClick={onOpen}>
-              Send OTP
+              {t("signFlowDialog_sendOtp")}
             </Button>
           )
         ) : (
           <Badge variant="secondary">
-            {otpIn && oathOn ? "Oath pending" : "Waiting"}
+            {otpIn && oathOn ? t("signFlowDialog_oathPending") : t("signFlowDialog_waiting")}
           </Badge>
         )}
       </div>
@@ -1167,7 +1165,7 @@ function ConfirmRow({
             className="h-auto p-0 underline"
             onClick={onResendLink}
           >
-            Resend link
+            {t("signFlowDialog_resendLink")}
           </Button>
           <a
             href={linkHref}
@@ -1175,7 +1173,7 @@ function ConfirmRow({
             rel="noreferrer"
             className="text-body-compact font-medium text-primary underline underline-offset-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            Sandbox: open their link
+            {t("signFlowDialog_sandboxOpenTheirLink")}
           </a>
         </div>
       ) : null}
@@ -1194,7 +1192,7 @@ function ConfirmRow({
 
           <div className="flex flex-col gap-2">
             <Label htmlFor={otpId} className="text-body-compact">
-              Enter OTP
+              {t("signFlowDialog_enterOtp")}
             </Label>
             <InputOTP
               id={otpId}
@@ -1225,7 +1223,7 @@ function ConfirmRow({
               className="h-auto p-0 underline"
               onClick={onResend}
             >
-              {resent ? "Sent again" : "Resend OTP"}
+              {resent ? t("signFlowDialog_sentAgain") : t("signFlowDialog_resendOtp")}
             </Button>
             <Button
               type="button"
@@ -1233,7 +1231,7 @@ function ConfirmRow({
               disabled={otp.length < 6}
               onClick={onConfirm}
             >
-              Confirm
+              {t("signFlowDialog_confirm")}
             </Button>
           </div>
         </div>

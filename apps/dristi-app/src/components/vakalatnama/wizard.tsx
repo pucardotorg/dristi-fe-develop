@@ -24,6 +24,8 @@ import { ScopeStep } from "./steps/scope";
 import { AttestationStep } from "./steps/attestation";
 import { ReviewSignStep } from "./steps/review-sign";
 import { FeesStep } from "./steps/fees";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 export type StepProps = { vak: Vakalatnama };
 
@@ -39,13 +41,14 @@ const STEPS: { key: string; title: string; render: (p: StepProps) => React.React
 const LAST = STEPS.length - 1;
 
 export function VakalatnamaWizard({ id }: { id: string }) {
+  const t = useTranslations();
   const router = useRouter();
   const vak = useVak(id);
 
   if (!vak) {
     return (
       <div className="flex flex-1 items-center justify-center p-12 text-body text-muted-foreground">
-        This vakalatnama isn’t in this browser.
+        {t("wizard_thisVakalatnamaIsntInThisBrowser")}
       </div>
     );
   }
@@ -61,20 +64,20 @@ export function VakalatnamaWizard({ id }: { id: string }) {
   const allSigned = signers.length > 0 && signers.every((s) => s.state === "signed");
   const onReviewSign = active.key === "review-sign";
   const continueBlocked = onReviewSign && !allSigned;
-  const continueLabel = onReviewSign ? "Continue to fees" : "Continue";
+  const continueLabel = onReviewSign ? t("wizard_continueToFees") : "Continue";
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       {/* Vakalatnama › New vakalatnama, so the trail links back to the list. The steps
           are views of this one page; the stepper names them, the trail does not. */}
-      <Breadcrumbs crumbs={[{ label: "New vakalatnama" }]} />
+      <Breadcrumbs crumbs={[{ label: t("wizard_newVakalatnama") }]} />
       {/* Content flows; the page body scrolls (the app pattern). */}
       <div className="px-4 pb-8 pt-6 sm:px-6 lg:px-12">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
           <header className="flex flex-col gap-1">
-            <h1 className="text-title font-semibold tracking-tight">New vakalatnama</h1>
+            <h1 className="text-title font-semibold tracking-tight">{t("wizard_newVakalatnama")}</h1>
             <p className="text-body text-muted-foreground">
-              Appoint one or more advocates for a litigant, for one case or all cases.
+              {t("wizard_appointOneOrMoreAdvocatesFor")}
             </p>
           </header>
 
@@ -83,22 +86,20 @@ export function VakalatnamaWizard({ id }: { id: string }) {
           <div>
             <Stepper
               className={CENTRED_STEPPER}
-              aria-label={`Step ${step + 1} of ${STEPS.length}`}
+              aria-label={t("wizard_stepValueOfLength", { value: String(step + 1), length: String(STEPS.length) })}
             >
               {STEPS.map((s, i) => (
                 <StepperItem
                   key={s.key}
                   step={i + 1}
-                  title={s.title}
+                  title={translateText(t, s.title)}
                   status={i < step ? "complete" : i === step ? "current" : "upcoming"}
                   onActivate={i <= step && !executed ? () => go(i) : undefined}
                 />
               ))}
             </Stepper>
             <p className={STEP_CAPTION}>
-              Step {step + 1} of {STEPS.length}
-              {" · "}
-              <span className="font-medium text-foreground">{active.title}</span>
+              {t.rich("wizard_stepValueOfLengthTitle", { value: String(step + 1), length: String(STEPS.length), title: translateText(t, active.title), span: (chunks) => <span className="font-medium text-foreground">{chunks}</span> })}
             </p>
           </div>
 
@@ -116,14 +117,14 @@ export function VakalatnamaWizard({ id }: { id: string }) {
               onClick={() => (step === 0 ? router.push("/vakalatnama") : go(step - 1))}
             >
               <ArrowLeftIcon aria-hidden />
-              {step === 0 ? "Cancel" : "Back"}
+              {step === 0 ? t("common_cancel") : t("common_back")}
             </Button>
 
             {step < LAST ? (
               <div className="flex items-center gap-3">
                 {continueBlocked ? (
                   <span className="text-caption text-muted-foreground">
-                    All parties must sign to continue
+                    {t("wizard_allPartiesMustSignToContinue")}
                   </span>
                 ) : null}
                 <Button
@@ -137,7 +138,7 @@ export function VakalatnamaWizard({ id }: { id: string }) {
               </div>
             ) : (
               <span className="text-body-compact text-muted-foreground">
-                Pay to complete
+                {t("wizard_payToComplete")}
               </span>
             )}
           </div>
@@ -147,7 +148,7 @@ export function VakalatnamaWizard({ id }: { id: string }) {
           <div className="mx-auto flex w-full max-w-4xl items-center justify-end gap-4 px-4 py-4 sm:px-6 lg:px-12">
             <Button type="button" onClick={() => router.push("/vakalatnama")}>
               <CheckIcon aria-hidden />
-              Done
+              {t("wizard_done")}
             </Button>
           </div>
         </footer>

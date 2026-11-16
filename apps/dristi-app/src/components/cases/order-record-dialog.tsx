@@ -20,6 +20,7 @@ import {
 import { type OrderRecord } from "@/lib/cases/orders";
 import { formatCaseDate } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * Opening an order shows the order (ORD-03): a tall dialog, a little short of
@@ -36,6 +37,7 @@ export function OrderRecordDialog({
   order: OrderRecord | null;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations();
   const doc = order?.issuedDocument;
 
   return (
@@ -66,19 +68,19 @@ export function OrderRecordDialog({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="ghost" size="icon-sm" asChild>
-                        <a href={doc.href} download aria-label="Download">
+                        <a href={doc.href} download aria-label={t("orderRecordDialog_download")}>
                           <DownloadIcon aria-hidden />
                         </a>
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">Download</TooltipContent>
+                    <TooltipContent side="bottom">{t("orderRecordDialog_download")}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               ) : null}
               <DialogClose asChild>
                 <Button type="button" variant="ghost" size="icon-sm">
                   <XIcon aria-hidden />
-                  <span className="sr-only">Close</span>
+                  <span className="sr-only">{t("common_close")}</span>
                 </Button>
               </DialogClose>
             </div>

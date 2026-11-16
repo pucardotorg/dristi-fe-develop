@@ -27,6 +27,7 @@ import {
 } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * The copy-application queue as a table: which applications are picked for acceptance,
@@ -86,6 +87,7 @@ export function ApproveCopyApplicationTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (application: CopyApplication) => void;
 }) {
+  const t = useTranslations();
   const selectedOnPage = rows.filter((row) => selectedIds.has(row.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
   const someSelected = selectedOnPage > 0 && !allSelected;
@@ -105,26 +107,26 @@ export function ApproveCopyApplicationTable({
                  once the list is paged. */
               aria-label={
                 allSelected
-                  ? "Clear the applications on this page"
-                  : "Select the applications on this page"
+                  ? t("approveCopyApplicationTable_clearTheApplicationsOnThisPage")
+                  : t("approveCopyApplicationTable_selectTheApplicationsOnThisPage")
               }
               onCheckedChange={(next) => onToggleAll(next === true)}
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Application number
+            {t("approveCopyApplicationTable_applicationNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("approveCopyApplicationTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Petitioner
+            {t("approveCopyApplicationTable_petitioner")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Date raised
+            {t("approveCopyApplicationTable_dateRaised")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Copy sought
+            {t("approveCopyApplicationTable_copySought")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -148,7 +150,7 @@ export function ApproveCopyApplicationTable({
                 <Checkbox
                   checked={selected}
                   onCheckedChange={() => onToggle(application)}
-                  aria-label={`Select ${application.applicationNumber}, ${application.applicant.name}`}
+                  aria-label={t("approveCopyApplicationTable_selectApplicationNumberName", { applicationNumber: application.applicationNumber, name: application.applicant.name })}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -166,15 +168,15 @@ export function ApproveCopyApplicationTable({
                   {...rowOpener}
                 className={rowOpenerClass}
                 >
-                  <span className="sr-only">Review </span>
+                  <span className="sr-only">{t("approveCopyApplicationTable_review")} </span>
                   {/* The number is the row's opener — the face without a second control. */}
-                  <Identifier value={application.applicationNumber} label="application number" copyable={false} />
+                  <Identifier value={application.applicationNumber} label={t("approveCopyApplicationTable_applicationNumberLabel")} copyable={false} />
                 </button>
               </TableCell>
               <TableCell
                 className={cn(TABLE_CELL, "whitespace-nowrap")}
               >
-                <Identifier value={application.caseNumber} label="case number" />
+                <Identifier value={application.caseNumber} label={t("approveCopyApplicationTable_caseNumberLabel")} />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
                 {application.applicant.name}

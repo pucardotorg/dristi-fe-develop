@@ -18,6 +18,7 @@ import { buildTasks, CASES, DEFAULT_USER_ID, PEOPLE, SEED_VERSION } from "./sand
 import { tasksForCourt } from "./court-tasks";
 import { type Ctx, type Transition, TransitionError } from "./transitions";
 import type { Case, Person, PersonId, Task, TaskId } from "./types";
+import { useTranslations } from "next-intl";
 
 const CHANNEL = "dristi-tasks";
 /** Which seed this browser holds; an older one is wiped and re-seeded on load. */
@@ -122,6 +123,7 @@ function useOnline(): boolean {
 }
 
 export function TasksProvider({ children }: { children: React.ReactNode }) {
+  const tr = useTranslations();
   const [state, setState] = React.useState<LoadState>("loading");
   const [error, setError] = React.useState<string | null>(null);
   const [people, setPeople] = React.useState<Person[]>([]);
@@ -178,10 +180,10 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       setUserId(ppl.some((p) => p.id === uid) ? uid : DEFAULT_USER_ID);
       setState("ready");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load tasks");
+      setError(e instanceof Error ? e.message : tr("tasksStore_couldNotLoadTasks"));
       setState("error");
     }
-  }, []);
+  }, [tr]);
 
   React.useEffect(() => {
     // Deferred a tick: the effect only starts the read; every setState happens when

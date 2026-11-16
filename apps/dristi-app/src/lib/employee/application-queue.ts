@@ -73,32 +73,32 @@ export type ApplicationViewEntry = {
 export const APPLICATION_VIEWS: ApplicationViewEntry[] = [
   {
     id: "all",
-    label: "All open",
-    hint: "Every application still open, grouped by where it stands",
+    label: "applicationQueue_allOpen",
+    hint: "applicationQueue_everyApplicationStillOpenGroupedBy",
     counted: false,
   },
   {
     id: "onboard",
-    label: "To onboard",
-    hint: "New applications to onboard, defer or dismiss today. Each arrives the working day after it is filed.",
+    label: "applicationQueue_toOnboard",
+    hint: "applicationQueue_newApplicationsToOnboardDeferOr",
     counted: true,
   },
   {
     id: "decide",
-    label: "To decide",
-    hint: "Onboarded applications listed for today, plus any overdue, waiting for an order accepting or rejecting them",
+    label: "applicationQueue_toDecide",
+    hint: "applicationQueue_onboardedApplicationsListedForTodayPlus",
     counted: true,
   },
   {
     id: "later",
-    label: "Upcoming",
-    hint: "Applications listed for a later day: reviews deferred and applications listed for a future date",
+    label: "applicationQueue_upcoming",
+    hint: "applicationQueue_applicationsListedForALaterDay",
     counted: false,
   },
   {
     id: "closed",
-    label: "Closed",
-    hint: "Accepted, rejected or dismissed in the last 30 days",
+    label: "applicationQueue_closed",
+    hint: "applicationQueue_acceptedRejectedOrDismissedInThe",
     counted: false,
   },
 ];

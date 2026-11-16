@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * "Saved" — the same reassurance `components/filing/saving-indicator.tsx` gives the
@@ -15,6 +16,7 @@ import { CheckIcon } from "lucide-react";
  * nothing typed here is lost while the sitting continues.
  */
 export function OrderSaveIndicator() {
+  const t = useTranslations();
   return (
     <span
       role="status"
@@ -22,7 +24,7 @@ export function OrderSaveIndicator() {
       className="inline-flex items-center gap-1.5 text-body-compact text-muted-foreground"
     >
       <CheckIcon className="size-4 text-success-ink" aria-hidden />
-      <span className="text-success-ink">Saved</span>
+      <span className="text-success-ink">{t("orderSaveIndicator_saved")}</span>
     </span>
   );
 }

@@ -27,6 +27,7 @@ import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-co
 import { useCourt } from "@/components/court/court-provider";
 import type { RegistrationType } from "@/lib/court/profiles";
 import { OutcomeHeader } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * `forward` hands the case to Registration, for a Case registerer; `register` registers it
@@ -123,6 +124,7 @@ export function ReviewDialog({
   /** A record you can act on: closes the dialog and lands on the item. */
   onGoToItem: (fieldId: string) => void;
 }) {
+  const t = useTranslations();
   const { party, allFields, fieldById } = useScrutinyCase();
   const [ack, setAck] = React.useState(false);
   /* The registration type (`SCR-13`), by its index in the state's list. Nothing is
@@ -171,25 +173,25 @@ export function ReviewDialog({
   const head =
     decision === "send-back"
       ? {
-          title: "Send back to advocate",
+          title: t("reviewDialog_sendBackToAdvocate"),
           body: `Goes to ${party.advocate}.`,
         }
       : decision === "forward"
       ? {
-          title: "Forward for registration",
+          title: t("reviewDialog_forwardForRegistration"),
           body: total
             ? `The case moves to Register cases. ${total} open item${
                 total > 1 ? "s travel" : " travels"
               } with it — forwarding does not clear ${total > 1 ? "them" : "it"}.`
-            : "Every field was checked against the bundle. The case moves to Register cases.",
+            : t("reviewDialog_everyFieldWasCheckedAgainstThe"),
         }
       : {
-          title: "Register case",
+          title: t("reviewDialog_registerCase"),
           body: total
             ? `The case moves to the Magistrate's list for cognizance. ${total} open item${
                 total > 1 ? "s travel" : " travels"
               } with it — registering does not clear ${total > 1 ? "them" : "it"}.`
-            : "Every field was checked against the bundle. The case moves to the Magistrate's list for cognizance.",
+            : t("reviewDialog_everyFieldWasCheckedAgainstTheBundle"),
         };
 
   /*
@@ -232,7 +234,7 @@ export function ReviewDialog({
         }
       : decision === "forward"
       ? {
-          title: "Forwarded for registration",
+          title: t("reviewDialog_forwardedForRegistration"),
           state: "Forwarded",
           body: total
             ? `On Register cases${chosenLine}, with ${total} open item${
@@ -241,13 +243,13 @@ export function ReviewDialog({
             : `On Register cases${chosenLine}.`,
         }
       : {
-          title: "Case registered",
+          title: t("reviewDialog_caseRegistered"),
           state: chosen ? `Registered${chosenLine}` : "Registered",
           body: total
             ? `On the Magistrate's list, with ${total} open item${
                 total > 1 ? "s" : ""
               } attached.`
-            : "On the Magistrate's list for cognizance.",
+            : t("reviewDialog_onTheMagistratesListForCognizance"),
         };
 
   const needsAck = decision !== "send-back" && total > 0;
@@ -295,7 +297,7 @@ export function ReviewDialog({
           done ? (
             <>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Stay here
+                {t("reviewDialog_stayHere")}
               </Button>
               {/*
                * **Next file opens the next file, not the list.** It used to push back to
@@ -316,14 +318,14 @@ export function ReviewDialog({
                     href={`/employee/scrutiny/${encodeURIComponent(nextFiling.no)}`}
                     onClick={() => markArrival("next")}
                   >
-                    Next file
+                    {t("reviewDialog_nextFile")}
                   </Link>
                 ) : (
                   <Link
                     href="/employee/scrutiny"
                     onClick={() => markArrival("back")}
                   >
-                    Back to scrutiny
+                    {t("reviewDialog_backToScrutiny")}
                   </Link>
                 )}
               </Button>
@@ -331,17 +333,17 @@ export function ReviewDialog({
           ) : (
             <>
               <Button variant="outline" onClick={guard.close}>
-                Keep reviewing
+                {t("reviewDialog_keepReviewing")}
               </Button>
               <Button
                 disabled={(needsAck && !ack) || (choosing && !chosen)}
                 onClick={() => flow.go("done")}
               >
                 {decision === "send-back"
-                  ? "Send back"
+                  ? t("reviewDialog_sendBack")
                   : decision === "forward"
-                    ? "Forward for registration"
-                    : "Register case"}
+                    ? t("reviewDialog_forwardForRegistration")
+                    : t("reviewDialog_registerCase")}
               </Button>
               {/* The gate on the primary, beside the button it gates. It had its own
                   region above the footer before the frame, which has two regions and not
@@ -470,7 +472,7 @@ export function ReviewDialog({
           <Empty className="my-auto border-0 p-6">
             <EmptyHeader>
               <EmptyTitle className="text-title-s font-semibold">
-                Nothing raised
+                {t("reviewDialog_nothingRaised")}
               </EmptyTitle>
             </EmptyHeader>
           </Empty>
@@ -508,6 +510,7 @@ function SummaryItem({
   item: Item;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const t = useTranslations();
   const { field, flag } = item;
   /* Labelled, so the officer's words read as theirs (owner, 2026-10-09). */
   const said = [
@@ -516,7 +519,7 @@ function SummaryItem({
   ].filter((line): line is [string, string] => line !== null);
   const also =
     field.docrow && item.linked
-      ? `Raised with ${item.linked.group.replace(/ Details$/, "").toLowerCase()} ${item.linked.label.toLowerCase()}`
+      ? t("reviewDialog_raisedWithToLowerCaseTo", { toLowerCase: item.linked.group.replace(/ Details$/, "").toLowerCase(), toLowerCase2: item.linked.label.toLowerCase() })
       : null;
 
   return (
@@ -551,7 +554,7 @@ function SummaryItem({
           className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
         />
         <span className="sr-only">
-          {field.docrow ? "Go to the document" : "Go to the field"}
+          {field.docrow ? t("reviewDialog_goToTheDocument") : t("reviewDialog_goToTheField")}
         </span>
       </button>
     </li>
@@ -579,10 +582,11 @@ function TypeChoice({
   onChange: (value: string) => void;
   final: boolean;
 }) {
+  const t = useTranslations();
   return (
     <section aria-labelledby="rv-type" className="flex flex-col gap-2">
       <h3 id="rv-type" className="text-caption font-semibold text-muted-foreground">
-        Register as
+        {t("reviewDialog_registerAs")}
       </h3>
       <Card variant="raised" size="sm" className="gap-0 py-0">
         <RadioGroup
@@ -607,8 +611,8 @@ function TypeChoice({
       </Card>
       <p id="rv-type-hint" className="text-body-compact text-muted-foreground">
         {final
-          ? "Final once registered. Each type has its own number series."
-          : "The Case registerer can change it before registering."}
+          ? t("reviewDialog_finalOnceRegisteredEachTypeHas")
+          : t("reviewDialog_theCaseRegistererCanChangeIt")}
       </p>
     </section>
   );

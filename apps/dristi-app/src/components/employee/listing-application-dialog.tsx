@@ -18,6 +18,7 @@ import {
   type ListingApplication,
 } from "@/lib/employee/listing-applications";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * An application pending on the matter in front of the bench, read and then answered.
@@ -88,6 +89,7 @@ function ApplicationBody({
   onDismiss: (application: ListingApplication) => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const document = useMemo(
     () => buildListingApplicationDocument(hearing, application),
     [hearing, application],
@@ -101,35 +103,32 @@ function ApplicationBody({
           {/* The overlay renders this as its accessible description. */}
           <Identifier
             value={application.number}
-            label="application number"
+            label={t("listingApplicationDialog_applicationNumber")}
             copyable={false}
           />
-          {" · item "}
-          <span className="tabular-nums">{hearing.item}</span>
-          {" · "}
-          {causeTitle(hearing)}
+          {t.rich("listingApplicationDialog_itemItemCauseTitle", { item: String(hearing.item), causeTitle: causeTitle(hearing), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
         </>
       }
       facts={
         <>
-          <ReviewRow term="Application type">
+          <ReviewRow term={t("listingApplicationDialog_applicationType")}>
             {listingApplicationLabel(application)}
           </ReviewRow>
-          <ReviewRow term="Application number">
-            <Identifier value={application.number} label="application number" />
+          <ReviewRow term={t("listingApplicationDialog_applicationNumberTerm")}>
+            <Identifier value={application.number} label={t("listingApplicationDialog_applicationNumber")} />
           </ReviewRow>
-          <ReviewRow term="Case number">
-            <Identifier value={hearing.caseNumber} label="case number" />
+          <ReviewRow term={t("listingApplicationDialog_caseNumber")}>
+            <Identifier value={hearing.caseNumber} label={t("listingApplicationDialog_caseNumberLabel")} />
           </ReviewRow>
-          <ReviewRow term="Stage">
+          <ReviewRow term={t("listingApplicationDialog_stage")}>
             {courtCaseStageLabel(hearing.stage)}
           </ReviewRow>
-          <ReviewRow term="Date of application">
+          <ReviewRow term={t("listingApplicationDialog_dateOfApplication")}>
             <span className="tabular-nums">
               {formatCourtDay(application.filedOn)}
             </span>
           </ReviewRow>
-          <ReviewRow term="Application filer">
+          <ReviewRow term={t("listingApplicationDialog_applicationFiler")}>
             {listingApplicationFiler(hearing, application)}
           </ReviewRow>
         </>
@@ -137,7 +136,7 @@ function ApplicationBody({
       document={document}
       /* No download, unlike the queues: this build has no court record to hand over,
          and the composer's own preview already refuses to claim one. */
-      approveLabel="Accept"
+      approveLabel={t("listingApplicationDialog_accept")}
       onApprove={() => onAllow(application)}
       onReject={() => onDismiss(application)}
       onReturnFocus={onReturnFocus}

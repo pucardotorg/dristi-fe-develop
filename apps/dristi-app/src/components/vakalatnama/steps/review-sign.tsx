@@ -37,6 +37,7 @@ import { updateVak } from "@/lib/vakalatnama/store";
 import { reconcileSigners } from "@/lib/vakalatnama/signers";
 import type { SignMethod, Signer, Vakalatnama, VakStatus } from "@/lib/vakalatnama/types";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 type ModalKey = "choose" | "esign" | "processing" | null;
 
@@ -49,6 +50,7 @@ function nextStatus(signers: Signer[]): VakStatus {
 }
 
 export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
+  const t = useTranslations();
   const board = reconcileSigners(vak);
   const signed = board.filter((s) => s.state === "signed").length;
   const pct = board.length ? Math.round((signed / board.length) * 100) : 0;
@@ -107,26 +109,26 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
   return (
     <div className="flex flex-col gap-6">
       {allSigned ? (
-        <StatusLine tone="success" title="All signatures collected">
-          Every party has signed. Continue to pay the fees and complete the vakalatnama.
+        <StatusLine tone="success" title={t("reviewSign_allSignaturesCollected")}>
+          {t("reviewSign_everyPartyHasSignedContinueTo")}
         </StatusLine>
       ) : null}
 
       {/* Signatures panel */}
-      <FormCard title="Signatures" contentClassName="gap-5">
+      <FormCard title={t("reviewSign_signatures")} contentClassName="gap-5">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-2">
             <span className="text-caption font-medium text-muted-foreground tabular-nums">
-              {signed} of {board.length} signed
+              {t("reviewSign_signedOfLengthSigned", { signed: String(signed), length: String(board.length) })}
             </span>
             {!allSigned && nextSigner ? (
               <Button type="button" size="sm" onClick={() => setModal("choose")}>
                 <SignatureIcon aria-hidden />
-                Continue to sign
+                {t("reviewSign_continueToSign")}
               </Button>
             ) : null}
           </div>
-          <Progress value={pct} aria-label={`${signed} of ${board.length} signed`} className="h-1.5" />
+          <Progress value={pct} aria-label={t("reviewSign_signedOfLengthSigned", { signed: String(signed), length: String(board.length) })} className="h-1.5" />
         </div>
 
         <ul className="flex flex-col">
@@ -154,7 +156,7 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
                   <span className="text-caption text-muted-foreground">{s.certifies}</span>
                   {isSigned ? (
                     <span className="text-caption text-muted-foreground tabular-nums">
-                      {s.method === "upload" ? "Uploaded" : "eSign"}
+                      {s.method === "upload" ? t("reviewSign_uploaded") : "eSign"}
                       {s.signedAt ? ` · ${new Date(s.signedAt).toLocaleString("en-IN")}` : ""}
                     </span>
                   ) : null}
@@ -163,12 +165,12 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
                   {isSigned ? (
                     <Badge variant="success">
                       <CheckIcon aria-hidden />
-                      Signed
+                      {t("reviewSign_signed")}
                     </Badge>
                   ) : isNext ? (
-                    <Badge variant="secondary">Up next</Badge>
+                    <Badge variant="secondary">{t("reviewSign_upNext")}</Badge>
                   ) : (
-                    <Badge variant="secondary">Waiting</Badge>
+                    <Badge variant="secondary">{t("reviewSign_waiting")}</Badge>
                   )}
                 </span>
               </li>
@@ -177,7 +179,7 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
         </ul>
 
         <p className="text-caption text-muted-foreground">
-          Non-Aadhaar eSign. Every signature is recorded with who, how and when.
+          {t("reviewSign_nonAadhaarESignEverySignature")}
         </p>
       </FormCard>
 
@@ -188,11 +190,11 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
       <Dialog open={modal === "choose"} onOpenChange={(open) => !open && setModal(null)}>
         <ChromeDialogContent className="sm:max-w-lg" onInteractOutside={(event) => event.preventDefault()}>
           <DialogHeader>
-            <DialogTitle>How will {nextSigner?.label} sign?</DialogTitle>
+            <DialogTitle>{t("reviewSign_howWillLabelSign", { label: (nextSigner?.label) ?? "" })}</DialogTitle>
             <DialogDescription>
               {remaining > 1
-                ? `${remaining} signatures still to collect.`
-                : "The last signature to collect."}
+                ? t("reviewSign_remainingSignaturesStillToCollect", { remaining: String(remaining) })
+                : t("reviewSign_theLastSignatureToCollect")}
             </DialogDescription>
           </DialogHeader>
 
@@ -212,9 +214,9 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
                 <SignatureIcon className="size-5" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-body font-semibold text-foreground">eSign with OTP</span>
+                <span className="text-body font-semibold text-foreground">{t("reviewSign_eSignWithOtp")}</span>
                 <span className="text-body-compact text-muted-foreground">
-                  A one-time code is sent to the signer’s mobile.
+                  {t("reviewSign_aOneTimeCodeIsSent")}
                 </span>
               </span>
               <ChevronRightIcon
@@ -236,7 +238,7 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="text-body font-semibold text-foreground">
-                  Upload a signed copy
+                  {t("reviewSign_uploadASignedCopy")}
                 </span>
                 <span className="text-body-compact text-muted-foreground">
                   A copy that already carries {remaining > 1 ? "every remaining signature" : "the signature"}.
@@ -259,18 +261,14 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
           {...otpGuard.outsideProps}
         >
           <DialogHeader>
-            <DialogTitle>Enter the OTP</DialogTitle>
+            <DialogTitle>{t("reviewSign_enterTheOtp")}</DialogTitle>
             <DialogDescription>
               {mobileTail ? (
                 <>
-                  Sent to the mobile ending{" "}
-                  <strong className="font-semibold text-foreground tabular-nums">
-                    {mobileTail}
-                  </strong>
-                  .
+                  {t.rich("reviewSign_sentToTheMobileEndingMobile", { mobileTail, strong: (chunks) => <strong className="font-semibold text-foreground tabular-nums">{chunks}</strong> })}
                 </>
               ) : (
-                "Sent to the signer’s registered mobile."
+                t("reviewSign_sentToTheSignersRegisteredMobile")
               )}
             </DialogDescription>
           </DialogHeader>
@@ -280,7 +278,7 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
               maxLength={6}
               value={otp}
               onChange={setOtp}
-              aria-label="One-time password"
+              aria-label={t("reviewSign_oneTimePassword")}
               containerClassName="gap-2"
               autoFocus
             >
@@ -297,7 +295,7 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
           </div>
 
           <Button type="button" size="lg" className="w-full" disabled={otp.length < 6} onClick={verifyEsign}>
-            Verify and sign
+            {t("reviewSign_verifyAndSign")}
           </Button>
           <DiscardQuestion guard={otpGuard} />
         </ChromeDialogContent>
@@ -308,7 +306,7 @@ export function ReviewSignStep({ vak }: { vak: Vakalatnama }) {
         <ChromeDialogContent className="sm:max-w-xs" showCloseButton={false}>
           <div className="flex flex-col items-center gap-3 py-4">
             <Spinner className="size-6" />
-            <p className="text-body-compact text-muted-foreground">Recording the signature…</p>
+            <p className="text-body-compact text-muted-foreground">{t("reviewSign_recordingTheSignature")}</p>
           </div>
         </ChromeDialogContent>
       </Dialog>

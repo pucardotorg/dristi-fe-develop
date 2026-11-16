@@ -44,6 +44,7 @@ import {
 } from "@/lib/access/content";
 import { Identifier } from "@/components/chrome/identifier";
 import { ConfirmMark, StatusLine, notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * The share-access modal — the single surface behind every entry point.
@@ -90,6 +91,7 @@ export function ShareDialog({
    */
   extraPeople?: AccessPerson[];
 }) {
+  const t = useTranslations();
   const { invite, removeGrant, personsOnCase, office } = useAccess();
 
   const [chips, setChips] = React.useState<Chip[]>([]);
@@ -197,7 +199,7 @@ export function ShareDialog({
               <p className="truncate text-body-compact font-medium">{single.title}</p>
               <Identifier
                 value={single.caseNumber}
-                label="case number"
+                label={t("shareDialog_caseNumber")}
                 className="self-start text-caption text-muted-foreground"
               />
             </div>
@@ -212,7 +214,7 @@ export function ShareDialog({
                 {cases.map((c, i) => (
                   <React.Fragment key={c.id}>
                     {i > 0 ? <span aria-hidden> · </span> : null}
-                    <Identifier value={c.caseNumber} label="case number" />
+                    <Identifier value={c.caseNumber} label={t("shareDialog_caseNumber")} />
                   </React.Fragment>
                 ))}
               </p>

@@ -31,6 +31,7 @@ import {
 import { dueStatusView } from "@/lib/cases/peek";
 import { pick } from "@/lib/onboarding/content";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * The whole bail lifecycle on a case, held in one place so the header's "Make filings"
@@ -184,6 +185,7 @@ export function BondTaskRow({
   now: number;
   onArchive?: () => void;
 }) {
+  const t = useTranslations();
   const { locale } = useLocale();
   const value = React.useContext(CaseBailContext);
   if (!value || value.bondPhase === "none") return null;
@@ -221,7 +223,7 @@ export function BondTaskRow({
         </Badge>
         <Identifier
           value={BOND_ID}
-          label="bond number"
+          label={t("caseBailFlow_bondNumber")}
           className="text-caption text-muted-foreground"
         />
       </div>

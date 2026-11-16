@@ -25,6 +25,7 @@ import {
   updateOrderShortcut,
   type OrderShortcut,
 } from "@/lib/employee/order-shortcuts";
+import { useTranslations } from "next-intl";
 
 export function useOrderShortcuts(): readonly OrderShortcut[] {
   return React.useSyncExternalStore(
@@ -79,6 +80,7 @@ export function OrderShortcutsDialog({
   /** Put this one in the order and go back to it. */
   onInsert: (entry: OrderShortcut) => void;
 }) {
+  const t = useTranslations();
   const shortcuts = useOrderShortcuts();
   /* A shortcut being written or changed and not saved: Escape or ✕ asks first. A click
      outside closes it — the inventory lists Shortcuts as a view (stakeholders, 2–3 Nov
@@ -97,11 +99,9 @@ export function OrderShortcutsDialog({
         {...guard.contentProps}
       >
         <DialogHeader>
-          <DialogTitle>Shortcuts</DialogTitle>
+          <DialogTitle>{t("orderShortcutsDialog_shortcuts")}</DialogTitle>
           <DialogDescription>
-            In the order, type <kbd className="font-mono">/</kbd> to list them
-            and the start of a name to narrow the list, then press Enter to put
-            one in.
+            {t.rich("orderShortcutsDialog_inTheOrderTypeToList", { kbd: (chunks) => <kbd className="font-mono">{chunks}</kbd> })}
           </DialogDescription>
         </DialogHeader>
         <ShortcutsPanel

@@ -93,6 +93,7 @@ import {
 } from "@/lib/cases/party-actions";
 import { Identifier } from "@/components/chrome/identifier";
 import { OutcomeHeader } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 type AdvocateStep = 1 | 2 | 3;
 
@@ -135,6 +136,7 @@ export function AddAdvocateDialog({
   /** The viewer's own clients only; never the opposing side. */
   litigants: PartyOption[];
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const [step, setStep] = useState<AdvocateStep>(1);
   const [phoneInput, setPhoneInput] = useState("");
@@ -218,7 +220,7 @@ export function AddAdvocateDialog({
   function commitInvite() {
     if (!pendingInvite) return;
     if (!inviteName.trim()) {
-      setErrors((c) => ({ ...c, advocates: "Enter the advocate's name." }));
+      setErrors((c) => ({ ...c, advocates: t("addAdvocateDialog_enterTheAdvocatesName") }));
       return;
     }
     stack({ phone: pendingInvite, name: inviteName.trim() });
@@ -233,7 +235,7 @@ export function AddAdvocateDialog({
       // A half-finished invite with a name counts; without one it blocks.
       if (pendingInvite) {
         if (!inviteName.trim()) {
-          setErrors((c) => ({ ...c, advocates: "Enter the advocate's name." }));
+          setErrors((c) => ({ ...c, advocates: t("addAdvocateDialog_enterTheAdvocatesName") }));
           return;
         }
         commitInvite();
@@ -241,10 +243,10 @@ export function AddAdvocateDialog({
       const stacked = pendingInvite && inviteName.trim() ? chips.length + 1 : chips.length;
       const next: Errors = {};
       if (stacked === 0) {
-        next.advocates = "Add at least one advocate by their mobile number.";
+        next.advocates = t("addAdvocateDialog_addAtLeastOneAdvocateBy");
       }
       if (partyIds.length === 0) {
-        next.parties = "Pick at least one party for the advocates to represent.";
+        next.parties = t("addAdvocateDialog_pickAtLeastOnePartyFor");
       }
       setErrors(next);
       if (next.advocates || next.parties) return;
@@ -257,7 +259,7 @@ export function AddAdvocateDialog({
       if (!attached) {
         setErrors((c) => ({
           ...c,
-          vakalatnama: "Attach a vakalatnama to continue.",
+          vakalatnama: t("addAdvocateDialog_attachAVakalatnamaToContinue"),
         }));
         return;
       }
@@ -289,17 +291,16 @@ export function AddAdvocateDialog({
               <OutcomeHeader
                 titleFrom="dialog"
                 focusTitle
-                title={chips.length === 1 ? "Advocate added" : "Advocates added"}
+                title={chips.length === 1 ? t("addAdvocateDialog_advocateAdded") : t("addAdvocateDialog_advocatesAdded")}
                 body={
                   <>
                     <NamesWithOthers
                       names={advocateNames}
-                      othersLabel="Other advocates"
-                    />{" "}
-                    can now act on this case for{" "}
+                      othersLabel={t("addAdvocateDialog_otherAdvocates")}
+                    />{t("addAdvocateDialog_canNowActOnThisCase")}
                     <NamesWithOthers
                       names={chosenParties.map((p) => p.name)}
-                      othersLabel="Other parties"
+                      othersLabel={t("addAdvocateDialog_otherParties")}
                     />
                     .
                   </>
@@ -307,7 +308,7 @@ export function AddAdvocateDialog({
               />
               <footer className="flex shrink-0 justify-end border-t border-hairline bg-surface-sunken px-6 py-4">
                 <Button type="button" onClick={closeClean}>
-                  Done
+                  {t("addAdvocateDialog_done")}
                 </Button>
               </footer>
             </>
@@ -321,7 +322,7 @@ export function AddAdvocateDialog({
             <FlowStepper
               steps={STEPS}
               current={step}
-              label="Add advocates progress"
+              label={t("addAdvocateDialog_addAdvocatesProgress")}
             />
           </div>
           <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
@@ -335,15 +336,14 @@ export function AddAdvocateDialog({
                   stepper, title, section - owner, Sept 1). */}
               {step === 2 ? (
                 <>
-                  Attach the vakalatnama executed by{" "}
+                  {t("addAdvocateDialog_attachTheVakalatnamaExecutedBy")}
                   <NamesWithOthers
                     names={chosenParties.map((p) => p.name)}
-                    othersLabel="Other parties"
-                  />{" "}
-                  in favour of{" "}
+                    othersLabel={t("addAdvocateDialog_otherParties")}
+                  />{t("addAdvocateDialog_inFavourOf")}
                   <NamesWithOthers
                     names={advocateNames}
-                    othersLabel="Other advocates"
+                    othersLabel={t("addAdvocateDialog_otherAdvocates")}
                   />
                   .
                 </>
@@ -367,10 +367,10 @@ export function AddAdvocateDialog({
                       className="block w-full text-body font-semibold leading-snug"
                       htmlFor="advocate-phone"
                     >
-                      Advocates
+                      {t("addAdvocateDialog_advocates")}
                     </FieldLabel>
                     <FieldDescription>
-                      Everyone added here goes on the same vakalatnama.
+                      {t("addAdvocateDialog_everyoneAddedHereGoesOnThe")}
                     </FieldDescription>
 
                     {chips.length ? (
@@ -391,7 +391,7 @@ export function AddAdvocateDialog({
                                 misaligned (owner's call, Sept 1). */}
                             <button
                               type="button"
-                              aria-label={`Remove ${chip.name}`}
+                              aria-label={t("addAdvocateDialog_removeName", { name: chip.name })}
                               className="flex size-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
                               onClick={() =>
                                 setChips((existing) =>
@@ -415,7 +415,7 @@ export function AddAdvocateDialog({
                         <Input
                           readOnly
                           tabIndex={-1}
-                          aria-label="Mobile number"
+                          aria-label={t("addAdvocateDialog_mobileNumber")}
                           className="w-40 shrink-0 text-muted-foreground tabular-nums"
                           value={`+91 ${formatAdvocatePhone(pendingInvite)}`}
                         />
@@ -424,8 +424,8 @@ export function AddAdvocateDialog({
                           autoFocus
                           autoComplete="off"
                           className="min-w-0 flex-1"
-                          placeholder="Advocate's name"
-                          aria-label={`Name for +91 ${formatAdvocatePhone(pendingInvite)}`}
+                          placeholder={t("addAdvocateDialog_advocatesName")}
+                          aria-label={t("addAdvocateDialog_nameFor91FormatAdvocatePhone", { formatAdvocatePhone: formatAdvocatePhone(pendingInvite) })}
                           value={inviteName}
                           onChange={(event) => {
                             setInviteName(event.target.value);
@@ -446,14 +446,14 @@ export function AddAdvocateDialog({
                           variant="outline"
                           onClick={commitInvite}
                         >
-                          Add
+                          {t("addAdvocateDialog_add")}
                         </Button>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
                           className="text-muted-foreground"
-                          aria-label="Cancel this invite"
+                          aria-label={t("addAdvocateDialog_cancelThisInvite")}
                           onClick={() => {
                             setPendingInvite(null);
                             setInviteName("");
@@ -522,19 +522,16 @@ export function AddAdvocateDialog({
                               <span className="truncate text-caption text-muted-foreground">
                                 {lookup ? (
                                   <>
-                                    <span className="tabular-nums">
-                                      {formatAdvocatePhone(phoneInput)}
-                                    </span>
-                                    {" · Bar ID "}
+                                    {t.rich("addAdvocateDialog_formatAdvocatePhoneBarId", { formatAdvocatePhone: formatAdvocatePhone(phoneInput), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
                                     {/* The whole lookup result is the button. */}
                                     <Identifier
                                       value={lookup.barId}
-                                      label="bar id"
+                                      label={t("addAdvocateDialog_barId")}
                                       copyable={false}
                                     />
                                   </>
                                 ) : (
-                                  "Not on DRISTI yet. They'll be asked to register when they join."
+                                  t("addAdvocateDialog_notOnDristiYetTheyllBe")
                                 )}
                               </span>
                             </span>
@@ -546,7 +543,7 @@ export function AddAdvocateDialog({
 
                     {alreadyStacked ? (
                       <FieldDescription>
-                        This advocate is already in the list.
+                        {t("addAdvocateDialog_thisAdvocateIsAlreadyInThe")}
                       </FieldDescription>
                     ) : null}
 
@@ -555,8 +552,8 @@ export function AddAdvocateDialog({
                         the line explains the register-on-join instead. */}
                     <p className="text-caption text-muted-foreground tabular-nums">
                       {pendingInvite
-                        ? "Not on DRISTI yet. They'll be asked to register when they join."
-                        : ADVOCATE_DEMO_NUMBERS}
+                        ? t("addAdvocateDialog_notOnDristiYetTheyllBe")
+                        : t(ADVOCATE_DEMO_NUMBERS)}
                     </p>
                   </Field>
 
@@ -564,11 +561,10 @@ export function AddAdvocateDialog({
 
                   <Field data-invalid={Boolean(errors.parties)}>
                     <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                      Who will they represent?
+                      {t("addAdvocateDialog_whoWillTheyRepresent")}
                     </FieldLabel>
                     <FieldDescription>
-                      Your clients on this case. The vakalatnama must be signed
-                      by every party picked here.
+                      {t("addAdvocateDialog_yourClientsOnThisCaseThe")}
                     </FieldDescription>
                     <div className="flex flex-col gap-1">
                       {litigants.map((party) => (
@@ -593,7 +589,7 @@ export function AddAdvocateDialog({
                             {party.name}
                             <span className="font-normal text-muted-foreground">
                               {" "}
-                              · {PARTY_SIDE_LABEL[party.side]}
+                              · {t(PARTY_SIDE_LABEL[party.side])}
                             </span>
                           </Label>
                         </div>
@@ -617,16 +613,16 @@ export function AddAdvocateDialog({
                     >
                       <TabsList className="w-full border border-hairline bg-surface-sunken">
                         <TabsTrigger value="upload" className="flex-1">
-                          Upload a file
+                          {t("addAdvocateDialog_uploadAFile")}
                         </TabsTrigger>
                         <TabsTrigger value="saved" className="flex-1">
-                          Generated vakalatnamas
+                          {t("addAdvocateDialog_generatedVakalatnamas")}
                         </TabsTrigger>
                       </TabsList>
                       <TabsContent value="upload" className="pt-3">
                         <Field data-invalid={Boolean(errors.vakalatnama)}>
                           <UploadedDocField
-                            label="Signed vakalatnama"
+                            label={t("addAdvocateDialog_signedVakalatnama")}
                             required
                             file={vakalatFile}
                             onFileChange={(file) => {
@@ -637,7 +633,7 @@ export function AddAdvocateDialog({
                               }));
                             }}
                           />
-                          <FieldDescription>{UPLOAD_HELP}</FieldDescription>
+                          <FieldDescription>{t(UPLOAD_HELP)}</FieldDescription>
                           <FieldError>{errors.vakalatnama}</FieldError>
                         </Field>
                       </TabsContent>
@@ -663,7 +659,7 @@ export function AddAdvocateDialog({
 
                   <div className="flex flex-col gap-3 border-t border-hairline pt-5 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-body-compact font-medium">
-                      Don&apos;t have a vakalatnama yet?
+                      {t("addAdvocateDialog_dontHaveAVakalatnamaYet")}
                     </p>
                     {/* Straight into a fresh e-sign draft, the same way the
                         Vakalatnama section's own New button starts one. The
@@ -678,39 +674,38 @@ export function AddAdvocateDialog({
                       }
                     >
                       <FilePlus2Icon aria-hidden />
-                      Generate one in the portal
+                      {t("addAdvocateDialog_generateOneInThePortal")}
                     </Button>
                   </div>
                 </>
               ) : (
                 <DescriptionList>
-                  <ReviewRow term={chips.length === 1 ? "Advocate" : "Advocates"}>
+                  <ReviewRow term={chips.length === 1 ? t("addAdvocateDialog_advocate") : t("addAdvocateDialog_advocates")}>
                     <span className="flex flex-col gap-1">
                       {chips.map((chip) => (
                         <span key={chip.phone}>
                           {chip.name}
                           {chip.barId ? (
                             <span className="text-muted-foreground">
-                              {" · Bar ID "}
-                              <Identifier value={chip.barId} label="bar id" />
+                              {t("addAdvocateDialog_barId2")}
+                              <Identifier value={chip.barId} label={t("addAdvocateDialog_barId")} />
                             </span>
                           ) : (
                             <span className="text-muted-foreground">
-                              {" "}
-                              (not yet registered)
+                              {t("addAdvocateDialog_notYetRegistered")}
                             </span>
                           )}
                         </span>
                       ))}
                     </span>
                   </ReviewRow>
-                  <ReviewRow term="Representing">
+                  <ReviewRow term={t("addAdvocateDialog_representing")}>
                     <NamesWithOthers
                       names={chosenParties.map((p) => p.name)}
-                      othersLabel="Other parties"
+                      othersLabel={t("addAdvocateDialog_otherParties")}
                     />
                   </ReviewRow>
-                  <ReviewRow term="Vakalatnama">
+                  <ReviewRow term={t("addAdvocateDialog_vakalatnama")}>
                     {vkTab === "upload" ? (
                       <ReviewDocValue file={vakalatFile} />
                     ) : (
@@ -729,14 +724,14 @@ export function AddAdvocateDialog({
                 variant="outline"
                 onClick={() => setStep((s) => (s - 1) as AdvocateStep)}
               >
-                Back
+                {t("common_back")}
               </Button>
             ) : (
               <span aria-hidden className="hidden sm:block" />
             )}
             {step < 3 ? (
               <Button type="submit" form="add-advocates-form">
-                Continue
+                {t("addAdvocateDialog_continue")}
               </Button>
             ) : (
               <Button
@@ -748,7 +743,7 @@ export function AddAdvocateDialog({
                   setDone(true);
                 }}
               >
-                {chips.length === 1 ? "Add advocate" : "Add advocates"}
+                {chips.length === 1 ? t("addAdvocateDialog_addAdvocate") : t("addAdvocateDialog_addAdvocates")}
               </Button>
             )}
           </footer>
@@ -798,11 +793,12 @@ function NamesWithOthers({
   names: string[];
   othersLabel: string;
 }) {
+  const t = useTranslations();
   if (names.length <= 2) return <>{formatNames(names)}</>;
   const rest = names.slice(2);
   return (
     <>
-      {names.slice(0, 2).join(", ")} and{" "}
+      {t("addAdvocateDialog_joinAnd", { join: names.slice(0, 2).join(", ") })}
       <Popover>
         <PopoverTrigger asChild>
           <button
@@ -810,7 +806,7 @@ function NamesWithOthers({
             className="inline-flex items-center rounded-sm underline decoration-dotted underline-offset-4 hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             aria-label={othersLabel}
           >
-            {rest.length} more
+            {t("addAdvocateDialog_lengthMore", { length: String(rest.length) })}
           </button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-64">

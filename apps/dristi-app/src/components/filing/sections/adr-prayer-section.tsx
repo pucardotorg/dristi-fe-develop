@@ -28,6 +28,7 @@ import { FormField } from "@/components/filing/form-field";
 import { OtherDetailsField } from "@/components/filing/other-details-field";
 import { RichTextEditor } from "@/components/filing/rich-text-editor";
 import { Segmented, type SegmentedOption } from "@/components/filing/segmented";
+import { useTranslations } from "next-intl";
 
 const ADR_OPTIONS: SegmentedOption<AdrPrayer["adr"]>[] = [
   { value: "yes", label: "Yes" },
@@ -36,15 +37,16 @@ const ADR_OPTIONS: SegmentedOption<AdrPrayer["adr"]>[] = [
 ];
 
 const ADR_QUESTION =
-  "Is the complainant willing to settle the case outside the court through alternative methods of dispute resolution if the other party(s) agrees?";
+  "adrPrayerSection_isTheComplainantWillingToSettle";
 
 const OTHER_DETAILS_QUESTION =
-  "Would you like to add any additional details to the complaint?";
+  "adrPrayerSection_wouldYouLikeToAddAny";
 
 const RELIEF_HELP =
-  "Please edit this where required as per the details of the case.";
+  "adrPrayerSection_pleaseEditThisWhereRequiredAs";
 
 export function AdrPrayerSection() {
+  const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const adr = draft.adr;
   const { prev, next } = neighbours("adr-prayer");
@@ -71,30 +73,30 @@ export function AdrPrayerSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="ADR, other details & prayer"
-          description="Willingness to settle, any additional details for the court, and the relief the complainant is asking for."
+          title={t("adrPrayerSection_adrOtherDetailsPrayer")}
+          description={t("adrPrayerSection_willingnessToSettleAnyAdditionalDetails")}
         />
 
         {/* Alternative dispute resolution */}
-        <FormCard title="Alternative dispute resolution">
-          <FormField asGroup label={ADR_QUESTION}>
+        <FormCard title={t("adrPrayerSection_alternativeDisputeResolution")}>
+          <FormField asGroup label={t(ADR_QUESTION)}>
             <Segmented
               value={adr.adr}
               onValueChange={(v) => set("adr", v)}
               options={ADR_OPTIONS}
-              ariaLabel={ADR_QUESTION}
+              ariaLabel={t(ADR_QUESTION)}
             />
           </FormField>
         </FormCard>
 
         {/* Anything else for the court */}
-        <FormCard title="Other details">
+        <FormCard title={t("adrPrayerSection_otherDetails")}>
           <FormField
             asGroup
-            label={OTHER_DETAILS_QUESTION}
-            tip="Anything the court should know that the form has not already asked for."
+            label={t(OTHER_DETAILS_QUESTION)}
+            tip={t("adrPrayerSection_anythingTheCourtShouldKnowThat")}
             helpPlacement="above"
-            help="No need to repeat anything already entered above. Choose a format to generate the text with the details from the form; then edit it as you like."
+            help={t("adrPrayerSection_noNeedToRepeatAnythingAlready")}
           >
             <OtherDetailsField
               value={adr.otherDetails}
@@ -106,39 +108,39 @@ export function AdrPrayerSection() {
                   d.adr.otherDetails = html;
                 })
               }
-              ariaLabel={OTHER_DETAILS_QUESTION}
+              ariaLabel={t(OTHER_DETAILS_QUESTION)}
             />
           </FormField>
         </FormCard>
 
         {/* Prayer */}
         <FormCard
-          title="Prayer / relief sought"
-          description="The standard S-138 prayer. Edit to fit the case."
+          title={t("adrPrayerSection_prayerReliefSought")}
+          description={t("adrPrayerSection_theStandardS138PrayerEdit")}
         >
           <FormField
             asGroup
-            label="Interim relief"
+            label={t("adrPrayerSection_interimRelief")}
             optional
             helpPlacement="above"
-            help={RELIEF_HELP}
+            help={t(RELIEF_HELP)}
           >
             <RichTextEditor
               value={adr.interimRelief}
               onChange={(html) => set("interimRelief", html)}
-              ariaLabel="Interim relief"
+              ariaLabel={t("adrPrayerSection_interimRelief")}
             />
           </FormField>
           <FormField
             asGroup
-            label="Final relief"
+            label={t("adrPrayerSection_finalRelief")}
             helpPlacement="above"
-            help={RELIEF_HELP}
+            help={t(RELIEF_HELP)}
           >
             <RichTextEditor
               value={adr.finalRelief}
               onChange={(html) => set("finalRelief", html)}
-              ariaLabel="Final relief"
+              ariaLabel={t("adrPrayerSection_finalRelief")}
             />
           </FormField>
         </FormCard>
@@ -148,7 +150,7 @@ export function AdrPrayerSection() {
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
         continueDisabled={saving}
-        continueLabel={saving ? "Saving…" : "Continue"}
+        continueLabel={saving ? t("adrPrayerSection_saving") : t("adrPrayerSection_continue")}
       />
     </>
   );

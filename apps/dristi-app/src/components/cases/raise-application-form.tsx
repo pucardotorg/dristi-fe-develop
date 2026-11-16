@@ -107,6 +107,7 @@ import {
   type CaseRecord,
 } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * Raise application.
@@ -172,6 +173,7 @@ export function RaiseApplicationForm({
    */
   filer?: ApplicationViewer;
 }) {
+  const t = useTranslations();
   const formRef = useRef<HTMLFormElement>(null);
   const formId = useId();
   const router = useRouter();
@@ -416,9 +418,9 @@ export function RaiseApplicationForm({
    */
   function saveDraft() {
     if (recordFiling({ status: "draft" })) {
-      notify.neutral("Saved as a draft", {
+      notify.neutral(t("raiseApplicationForm_savedAsADraft"), {
         icon: SaveIcon,
-        description: "Finish it later from Applications.",
+        description: t("raiseApplicationForm_finishItLaterFromApplications"),
       });
     }
     closeForm();
@@ -523,14 +525,14 @@ export function RaiseApplicationForm({
   const formTitle = objecting
     ? "Objection"
     : draft.type === "application-others"
-      ? "Other application"
+      ? t("raiseApplicationForm_otherApplication")
       : /application$/i.test(chosen.label)
         ? chosen.label
         : `${chosen.label} application`;
   const formDescription = objecting
     ? objectionTarget?.due
-      ? `Object to the other side's ${objectionTarget.inSentence}. File it by the end of ${objectionTarget.due}.`
-      : "Object to the other side's application."
+      ? t("raiseApplicationForm_objectToTheOtherSidesIn", { inSentence: objectionTarget.inSentence, due: objectionTarget.due })
+      : t("raiseApplicationForm_objectToTheOtherSidesApplication")
     : chosen.description;
 
   if (!canRaise) {
@@ -540,15 +542,15 @@ export function RaiseApplicationForm({
           <div className={PAGE_BACK_COLUMN}>
             <PageBackButton
               href={backHref ?? caseHref}
-              label={backHref ? "Back to cases list" : "Back to case"}
+              label={backHref ? t("raiseApplicationForm_backToCasesList") : t("raiseApplicationForm_backToCase")}
             />
           </div>
           <div className="flex min-w-0 flex-col gap-1">
             <h1 className={cn(PAGE_TITLE, "flex min-h-8 items-center")}>
-              Raise application
+              {t("raiseApplicationForm_raiseApplication")}
             </h1>
             <p className="text-body-compact text-muted-foreground">
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={t("raiseApplicationForm_caseNumber")} />
               <span aria-hidden> · </span>
               {partiesLabel(record)}
             </p>
@@ -563,16 +565,15 @@ export function RaiseApplicationForm({
               <FilePenLineIcon className="size-7" aria-hidden />
             </EmptyMedia>
             <EmptyTitle className="text-title-s font-semibold text-foreground">
-              Your advocate raises applications for you
+              {t("raiseApplicationForm_yourAdvocateRaisesApplicationsForYou")}
             </EmptyTitle>
             <EmptyDescription className="text-body-compact">
-              When one is filed on your behalf, you can pay its court fee from
-              the case&apos;s Applications tab.
+              {t("raiseApplicationForm_whenOneIsFiledOnYour")}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button variant="outline" asChild>
-              <Link href={caseHref}>Go to Applications</Link>
+              <Link href={caseHref}>{t("raiseApplicationForm_goToApplications")}</Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -595,19 +596,19 @@ export function RaiseApplicationForm({
               <div className={PAGE_BACK_COLUMN}>
                 <PageBackButton
                   href={backHref ?? caseHref}
-                  label={backHref ? "Back to cases list" : "Back to case"}
+                  label={backHref ? t("raiseApplicationForm_backToCasesList") : t("raiseApplicationForm_backToCase")}
                 />
               </div>
               <div className="flex min-w-0 flex-col gap-1">
                 {/* Not "Raise application" again: reached from the rail, the page
                     before this one already carries that name (owner, Sept 21). */}
                 <h1 className={cn(PAGE_TITLE, "flex min-h-8 items-center")}>
-                  Choose application type
+                  {t("raiseApplicationForm_chooseApplicationType")}
                 </h1>
                 {/* Which case this files into. Reached from the rail, nothing
                     else on the screen says so. */}
                 <p className="text-body-compact text-muted-foreground">
-                  <Identifier value={record.caseNumber} label="case number" />
+                  <Identifier value={record.caseNumber} label={t("raiseApplicationForm_caseNumber")} />
                   <span aria-hidden> · </span>
                   {partiesLabel(record)}
                 </p>
@@ -675,10 +676,10 @@ export function RaiseApplicationForm({
               </p>
             ) : null}
             <p className="text-caption text-muted-foreground">
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={t("raiseApplicationForm_caseNumber")} />
               <span aria-hidden> · </span>
               {partiesLabel(record)}
-              {resume ? ` · Started ${formatCaseDate(resume.addedOn)}` : null}
+              {resume ? t("raiseApplicationForm_startedFormatCaseDate", { formatCaseDate: formatCaseDate(resume.addedOn) }) : null}
             </p>
           </DialogHeader>
 
@@ -701,10 +702,10 @@ export function RaiseApplicationForm({
 
           <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             <Button type="button" variant="outline" onClick={requestCloseForm}>
-              Cancel
+              {t("common_cancel")}
             </Button>
             <Button type="submit" form={formId}>
-              {objecting ? "Generate objection" : "Generate application"}
+              {objecting ? t("raiseApplicationForm_generateObjection") : t("raiseApplicationForm_generateApplication")}
             </Button>
           </footer>
         </FlowDialogContent>
@@ -720,7 +721,7 @@ export function RaiseApplicationForm({
           setSignatureOpen(true);
         }}
         onReturnFocus={returnFocusToGenerate}
-        signLabel={handoffTo ? "Send for signature" : undefined}
+        signLabel={handoffTo ? t("raiseApplicationForm_sendForSignature") : undefined}
       />
 
       <AddSignatureDialog

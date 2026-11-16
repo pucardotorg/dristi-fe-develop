@@ -2303,7 +2303,7 @@ function additionalSection(
           complainantCounsel.length === 0
             ? {
                 reason: "none-on-record" as const,
-                explanation: "The complainant appears in person.",
+                explanation: "caseReview_theComplainantAppearsInPerson",
               }
             : undefined,
         records: complainantCounsel.map((counsel, index) => ({

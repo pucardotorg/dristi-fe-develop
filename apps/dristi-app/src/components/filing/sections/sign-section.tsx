@@ -134,6 +134,8 @@ import { CourtDocument } from "@/components/filing/sections/preview/court-docume
 import { useFilePicker } from "@/components/filing/use-file-picker";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 
 type ModalKey =
@@ -191,6 +193,7 @@ function SignatureGroup({
   rows: Signatory[];
   requested: boolean;
 }) {
+  const tr = useTranslations();
   if (!rows.length) return null;
   const done = rows.filter((s) => !isOutstanding(s)).length;
   return (
@@ -198,7 +201,7 @@ function SignatureGroup({
       <AccordionTrigger className="items-center gap-3 py-3 text-body-compact hover:no-underline">
         <span className="flex-1 font-medium text-foreground">{title}</span>
         <span className="font-normal text-muted-foreground tabular-nums">
-          {done} of {rows.length} done
+          {tr("signSection_doneOfLengthDone", { done: String(done), length: String(rows.length) })}
         </span>
       </AccordionTrigger>
       <AccordionContent className="pb-0">
@@ -215,7 +218,7 @@ function SignatureGroup({
                   </span>
                   {/* "You" is a caption, not a second chip. */}
                   {s.you ? (
-                    <span className="shrink-0 text-body-compact text-muted-foreground">You</span>
+                    <span className="shrink-0 text-body-compact text-muted-foreground">{tr("signSection_you")}</span>
                   ) : null}
                 </span>
                 <span className="truncate text-body-compact text-muted-foreground">{s.role}</span>
@@ -248,9 +251,9 @@ function stateChip(
     return { variant: "success", label: `${signed} of ${all.length} signed` };
   }
   // Every signature is in and an oath is not — not done, and not "signing".
-  if (all.length > 0 && signed === all.length) return { variant: "info", label: "Oath pending" };
-  if (onPaper) return { variant: "secondary", label: "Physical document" };
-  if (!requested) return { variant: "secondary", label: "Not sent" };
+  if (all.length > 0 && signed === all.length) return { variant: "info", label: "signSection_oathPending" };
+  if (onPaper) return { variant: "secondary", label: "signSection_physicalDocument" };
+  if (!requested) return { variant: "secondary", label: "signSection_notSent" };
   return { variant: "info", label: `${signed} of ${all.length} signed` };
 }
 
@@ -270,6 +273,7 @@ function SignatureSummary({
   /** A control beside the state chip — the sandbox's links menu. */
   action?: React.ReactNode;
 }) {
+  const tr = useTranslations();
   const all = [...complainants, ...advocates];
   const chip = stateChip(all, requested, onPaper);
 
@@ -280,11 +284,11 @@ function SignatureSummary({
       <div className="flex flex-col gap-1">
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <h2 id={SIGNATURES_HEADING} className="text-body font-semibold text-foreground">
-            Signatures
+            {tr("signSection_signatures")}
           </h2>
           <span className="flex items-center gap-1">
             <Badge variant={chip.variant} className="tabular-nums">
-              {chip.label}
+              {translateText(tr, chip.label)}
             </Badge>
             {action}
           </span>
@@ -295,8 +299,8 @@ function SignatureSummary({
         {requested || onPaper ? (
           <p className="text-body-compact text-muted-foreground">
             {onPaper
-              ? "One PDF carrying every party's signature"
-              : "Each party e-signs with their own Aadhaar OTP or DSC"}
+              ? tr("signSection_onePdfCarryingEveryPartysSignature")
+              : tr("signSection_eachPartyESignsWithTheir")}
           </p>
         ) : null}
       </div>
@@ -309,13 +313,13 @@ function SignatureSummary({
       >
         <SignatureGroup
           value="complainants"
-          title="Complainants"
+          title={tr("signSection_complainants")}
           rows={complainants}
           requested={requested}
         />
         <SignatureGroup
           value="advocates"
-          title="Advocates"
+          title={tr("signSection_advocates")}
           rows={advocates}
           requested={requested}
         />
@@ -394,6 +398,7 @@ function FeeGroup({
 }
 
 export function SignSection() {
+  const tr = useTranslations();
   const courtText = useCourtText();
   const { draft, update, hrefFor, flush } = useFiling();
   const { profile } = useProfile();
@@ -503,16 +508,16 @@ export function SignSection() {
   /** Everyone the requests go out to — the signatories who are not at this keyboard. */
   const otherSigners = Math.max(0, everyone.length - yous.length);
   const others =
-    otherSigners === 1 ? "The other party" : `The other ${otherSigners} parties`;
+    otherSigners === 1 ? tr("signSection_theOtherParty") : tr("signSection_theOtherOtherSignersParties", { otherSigners: String(otherSigners) });
   const have = otherSigners === 1 ? "has" : "have";
 
   /** What the footer's act waits on — the court fee, or the send back to scrutiny. */
-  const opens = returned ? "Sending back opens" : "The court fee opens";
+  const opens = returned ? tr("signSection_sendingBackOpens") : tr("signSection_theCourtFeeOpens");
   /** Why the court fee is not open yet — said on the button that is shut, not beside it. */
   const payGate = allSigned
     ? `${opens} once ${oathsOwed.length === 1 ? "the last oath is" : "every oath is"} in.`
     : onPaper
-      ? `${opens} once the signed copy is in.`
+      ? tr("signSection_opensOnceTheSignedCopyIs", { opens })
       : requested
         ? `${opens} once ${pending === 1 ? "the last signature is" : `all ${everyone.length} signatures are`} in${signingRules().oath ? ", with every oath" : ""}.`
         : `${opens} once every signature${signingRules().oath ? " and oath is" : " is"} in.`;
@@ -780,44 +785,44 @@ export function SignSection() {
   const filedRecord = () => (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-body font-semibold">Filed</h2>
+        <h2 className="text-body font-semibold">{tr("signSection_filed")}</h2>
         <p className="text-body-compact text-muted-foreground">
-          This complaint has been submitted and paid for.
+          {tr("signSection_thisComplaintHasBeenSubmittedAnd")}
         </p>
       </div>
 
       <dl className="flex flex-col gap-3 rounded-lg bg-surface-sunken p-4">
         <div className="flex flex-col gap-0.5">
           <dt className="text-body-compact font-medium text-muted-foreground">
-            Case file number
+            {tr("signSection_caseFileNumber")}
           </dt>
           <dd className="text-body font-semibold">
             {sign.caseFileNumber ? (
-              <Identifier value={sign.caseFileNumber} label="case file number" />
+              <Identifier value={sign.caseFileNumber} label={tr("signSection_caseFileNumberLabel")} />
             ) : (
               <span className="tabular-nums">—</span>
             )}
           </dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className="text-body-compact font-medium text-muted-foreground">Filed on</dt>
+          <dt className="text-body-compact font-medium text-muted-foreground">{tr("signSection_filedOn")}</dt>
           <dd className="text-body-compact font-medium tabular-nums">
             {draft.filedAt ? toLongDate(draft.filedAt.slice(0, 10)) : "—"}
           </dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className="text-body-compact font-medium text-muted-foreground">Amount paid</dt>
+          <dt className="text-body-compact font-medium text-muted-foreground">{tr("signSection_amountPaid")}</dt>
           <dd className="text-body-compact font-medium tabular-nums">
             {money(sign.paidAmount ?? bill.total)}
           </dd>
         </div>
         <div className="flex flex-col gap-0.5">
           <dt className="text-body-compact font-medium text-muted-foreground">
-            Payment reference
+            {tr("signSection_paymentReference")}
           </dt>
           <dd className="text-body-compact font-medium break-all">
             {sign.paymentRef ? (
-              <Identifier value={sign.paymentRef} label="payment reference" />
+              <Identifier value={sign.paymentRef} label={tr("signSection_paymentReferenceLabel")} />
             ) : (
               "—"
             )}
@@ -828,11 +833,11 @@ export function SignSection() {
       <div className="flex flex-col gap-2">
         <Button type="button" variant="outline" onClick={copyLink}>
           <CopyIcon data-icon="inline-start" aria-hidden />
-          {copied ? "Copied" : "Copy link"}
+          {copied ? tr("signSection_copied") : tr("signSection_copyLink")}
         </Button>
         <Button type="button" variant="ghost" onClick={printFile}>
           <PrinterIcon data-icon="inline-start" aria-hidden />
-          Print or save as PDF
+          {tr("signSection_printOrSaveAsPdf")}
         </Button>
       </div>
     </div>
@@ -863,7 +868,7 @@ export function SignSection() {
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Sandbox: open the signing links"
+                aria-label={tr("signSection_sandboxOpenTheSigningLinks")}
                 // 32px to sit quietly beside the chip; the inset widens the hit area to 40.
                 className="relative text-muted-foreground after:absolute after:-inset-1"
               >
@@ -871,10 +876,10 @@ export function SignSection() {
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent>Sandbox: open the signing links</TooltipContent>
+          <TooltipContent>{tr("signSection_sandboxOpenTheSigningLinks")}</TooltipContent>
         </Tooltip>
         <DropdownMenuContent align="end" className="w-64">
-          <DropdownMenuLabel>No link is sent — open one to see it</DropdownMenuLabel>
+          <DropdownMenuLabel>{tr("signSection_noLinkIsSentOpenOne")}</DropdownMenuLabel>
           {othersOutstanding.map((s) => (
             <DropdownMenuItem key={s.id} asChild>
               <a href={linkFor(s)} target="_blank" rel="noreferrer">
@@ -883,7 +888,7 @@ export function SignSection() {
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={sandboxSignOthers}>Mark the others as done</DropdownMenuItem>
+          <DropdownMenuItem onSelect={sandboxSignOthers}>{tr("signSection_markTheOthersAsDone")}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ) : null;
@@ -891,32 +896,32 @@ export function SignSection() {
   /** Where things stand, in one sentence, while something is still owed. */
   const waitingLine = !youSigned && yous.length > 0
     ? yourOathAhead
-      ? "Your signature and oath are still needed."
-      : "Your signature is still needed."
+      ? tr("signSection_yourSignatureAndOathAreStill")
+      : tr("signSection_yourSignatureIsStillNeeded")
     : yourOathOwed
-      ? "Your signature is in. Take your oath to finish."
+      ? tr("signSection_yourSignatureIsInTakeYour")
       : yous.length === 0 && pending > 0
         ? /*
            * Nobody at this keyboard is a signatory — the clerk. An Aadhaar OTP or a DSC
            * is personal and cannot be used on someone else's behalf, so there is no
            * signing action here (owner's colleague, 2026-09-23).
            */
-          `${others} ${have} the link; nobody here is a signatory.`
+          tr("signSection_othersHaveTheLinkNobodyHere", { others, have })
         : pending > 0
           ? `Waiting on ${pending === 1 ? "one more party" : `${pending} more parties`}.`
           : `Waiting on ${oathsOwed.length === 1 ? "one oath" : `${oathsOwed.length} oaths`}.`;
 
   const signActions = noSignatories ? (
     <p className="text-body-compact text-muted-foreground">
-      Add a complainant or an advocate before sending this for signature.
+      {tr("signSection_addAComplainantOrAnAdvocate")}
     </p>
   ) : complete ? (
     /* ── Every signature and oath is in ── */
     <div className="flex flex-col gap-3">
       <SectionNotice variant="success" announce="polite" still={completeOnOpen}>
-        {onPaper ? "The uploaded copy carries every signature" : "Every party has signed"}
-        {signingRules().oath ? ", and everyone has taken the oath." : "."}{" "}
-        {returned ? "You can send the corrections to scrutiny now." : "You can pay the court fee now."}
+        {onPaper ? tr("signSection_theUploadedCopyCarriesEverySignature") : tr("signSection_everyPartyHasSigned")}
+        {signingRules().oath ? tr("signSection_andEveryoneHasTakenTheOath") : "."}{" "}
+        {returned ? tr("signSection_youCanSendTheCorrectionsTo") : tr("signSection_youCanPayTheCourtFee")}
       </SectionNotice>
       {onPaper ? (
         <Button
@@ -926,7 +931,7 @@ export function SignSection() {
           onClick={() => openFlow("paper")}
         >
           <UploadIcon data-icon="inline-start" aria-hidden />
-          Replace signed copy
+          {tr("signSection_replaceSignedCopy")}
         </Button>
       ) : null}
     </div>
@@ -934,7 +939,7 @@ export function SignSection() {
     /* ── A physical document ── */
     <div className="flex flex-col gap-3">
       <p className="text-body-compact text-muted-foreground">
-        Print it, collect every signature, then upload the PDF.
+        {tr("signSection_printItCollectEverySignatureThen")}
       </p>
       <Button
         type="button"
@@ -942,7 +947,7 @@ export function SignSection() {
         className="w-full"
         onClick={() => openFlow("paper")}
       >
-        Upload signed copy
+        {tr("signSection_uploadSignedCopy")}
       </Button>
       {/* Either mode can be chosen from the other: a filer who picked paper and then
           found everyone can e-sign was stuck with the printer (owner, 2026-09-24). */}
@@ -957,7 +962,7 @@ export function SignSection() {
         }}
       >
         <SignatureIcon data-icon="inline-start" aria-hidden />
-        E-sign instead
+        {tr("signSection_eSignInstead")}
       </Button>
     </div>
   ) : !requested && !onPaper ? (
@@ -968,7 +973,7 @@ export function SignSection() {
       className="w-full"
       onClick={() => openFlow("choose")}
     >
-      {yourOathAhead ? "Sign and take your oath" : "Continue to signing"}
+      {yourOathAhead ? tr("signSection_signAndTakeYourOath") : tr("signSection_continueToSigning")}
     </Button>
   ) : (
     /* ── Asked, and waiting — on a signature, or on an oath ── */
@@ -982,7 +987,7 @@ export function SignSection() {
           className="w-full"
           onClick={() => openFlow("sign")}
         >
-          {yourOathAhead ? "E-sign and take your oath" : "Add your e-signature"}
+          {yourOathAhead ? tr("signSection_eSignAndTakeYourOath") : tr("signSection_addYourESignature")}
         </Button>
       ) : yourOathOwed ? (
         <Button
@@ -991,7 +996,7 @@ export function SignSection() {
           className="w-full"
           onClick={() => openFlow("oath")}
         >
-          Take your oath
+          {tr("signSection_takeYourOath")}
         </Button>
       ) : null}
 
@@ -1005,7 +1010,7 @@ export function SignSection() {
             disabled={reminded}
           >
             <BellIcon data-icon="inline-start" aria-hidden />
-            {reminded ? "Reminder sent" : "Send a reminder"}
+            {reminded ? tr("signSection_reminderSent") : tr("signSection_sendAReminder")}
           </Button>
         ) : null}
         {!onPaper && !allSigned ? (
@@ -1018,7 +1023,7 @@ export function SignSection() {
             onClick={() => openFlow("fallback")}
           >
             <UploadIcon data-icon="inline-start" aria-hidden />
-            Upload a signed copy instead
+            {tr("signSection_uploadASignedCopyInstead")}
           </Button>
         ) : null}
       </div>
@@ -1058,10 +1063,10 @@ export function SignSection() {
   const sendBack = async () => {
     setSendOpen(false);
     if (!returnTask) {
-      notify.error("The scrutiny return for this filing could not be found.");
+      notify.error(tr("signSection_theScrutinyReturnForThisFiling"));
       return;
     }
-    const done = await act(returnTask.id, refile, "Corrections sent to scrutiny");
+    const done = await act(returnTask.id, refile, tr("signSection_correctionsSentToScrutiny"));
     if (!done) return;
     update((d) => {
       d.scrutinyReturn = { resubmittedAt: new Date().toISOString() };
@@ -1077,19 +1082,19 @@ export function SignSection() {
         <FilingPageHeader
           title={
             filed
-              ? "Complaint filed"
+              ? tr("signSection_complaintFiled")
               : returned
-                ? "Sign the corrected complaint"
-                : "Sign the complaint"
+                ? tr("signSection_signTheCorrectedComplaint")
+                : tr("signSection_signTheComplaint")
           }
           description={
             filed
-              ? `Filed in the ${courtText(COURT.name)} under S-138, Negotiable Instruments Act.`
+              ? tr("signSection_filedInTheCourtTextUnder", { courtText: courtText(COURT.name) })
               : resubmitted
-                ? "The corrections have been sent back to scrutiny."
+                ? tr("signSection_theCorrectionsHaveBeenSentBack")
                 : returned
-                  ? "Scrutiny returned this complaint. Everyone signs the corrected version again, the same way as when it was filed, before it goes back."
-                  : `A criminal complaint under S-138, Negotiable Instruments Act in the ${courtText(COURT.name)}.`
+                  ? tr("signSection_scrutinyReturnedThisComplaintEveryoneSigns")
+                  : tr("signSection_aCriminalComplaintUnderS138", { courtText: courtText(COURT.name) })
           }
         />
 
@@ -1102,10 +1107,10 @@ export function SignSection() {
             walk through the filing, and a control for the paper in the column was
             competing with it (owner, 2026-09-24). */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-body font-semibold text-foreground">The complaint</h2>
+          <h2 className="text-body font-semibold text-foreground">{tr("signSection_theComplaint")}</h2>
           <Button type="button" variant="outline" size="sm" onClick={printFile}>
             <PrinterIcon data-icon="inline-start" aria-hidden />
-            Print or save as PDF
+            {tr("signSection_printOrSaveAsPdf")}
           </Button>
         </div>
 
@@ -1114,7 +1119,7 @@ export function SignSection() {
         <div
           tabIndex={0}
           role="region"
-          aria-label="Complaint document"
+          aria-label={tr("signSection_complaintDocument")}
           className="max-h-[calc(100vh-18rem)] overflow-y-auto rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <CourtDocument draft={draft} />
@@ -1125,7 +1130,7 @@ export function SignSection() {
       {docked && slot
         ? createPortal(
             <aside
-              aria-label={filed ? "Filing record" : "Signatures"}
+              aria-label={filed ? tr("signSection_filingRecord") : tr("signSection_signatures")}
               style={{ top: TOP_BAR_HEIGHT, height: `calc(100svh - ${TOP_BAR_HEIGHT})` }}
               className="sticky flex w-80 shrink-0 flex-col self-start overflow-y-auto border-l border-hairline bg-card p-6"
             >
@@ -1139,7 +1144,7 @@ export function SignSection() {
         <FilingFooter
           backHref={backHref}
           continueHref={FILINGS_HOME}
-          continueLabel="Back to dashboard"
+          continueLabel={tr("signSection_backToDashboard")}
           showSaveState={false}
         />
       ) : (
@@ -1147,7 +1152,7 @@ export function SignSection() {
           onBack={() => {
             if (!guardLeaving(backHref)) router.push(backHref);
           }}
-          continueLabel={returned ? "Send corrections to scrutiny" : "Continue to pay fees"}
+          continueLabel={returned ? tr("signSection_sendCorrectionsToScrutiny") : tr("signSection_continueToPayFees")}
           /*
            * Nothing to pay for until the sheet is signed, so the step's one real action
            * stays dead until it is — and then it is the focal teal, as on every other
@@ -1160,7 +1165,7 @@ export function SignSection() {
           showSaveState={false}
           onContinue={() => {
             if (resubmitted) {
-              notify.neutral("These corrections have already been sent to scrutiny.", { icon: SendIcon });
+              notify.neutral(tr("signSection_theseCorrectionsHaveAlreadyBeenSent"), { icon: SendIcon });
               return;
             }
             if (!complete) {
@@ -1200,10 +1205,9 @@ export function SignSection() {
       <Dialog open={modal === "procaddr"} onOpenChange={(open) => !open && closeModal()}>
         <ChromeDialogContent mobileSheet className="grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100svh-2rem)] sm:max-w-2xl" onInteractOutside={(event) => event.preventDefault()}>
           <DialogHeader>
-            <DialogTitle>Change process &amp; address</DialogTitle>
+            <DialogTitle>{tr("signSection_changeProcessAddress")}</DialogTitle>
             <DialogDescription>
-              What the court issues to the accused, how it is delivered, and where it
-              goes. The total moves as you change it.
+              {tr("signSection_whatTheCourtIssuesToThe")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1236,7 +1240,7 @@ export function SignSection() {
                       travels. */}
                   <FieldSet className="gap-3">
                     <FieldLegend className="text-body-compact font-medium">
-                      Where summons is served
+                      {tr("signSection_whereSummonsIsServed")}
                     </FieldLegend>
                     {plan.addresses.length ? (
                       <>
@@ -1266,26 +1270,22 @@ export function SignSection() {
                           );
                         })}
                         <p className="text-caption text-muted-foreground">
-                          Summons is charged for each address selected, every round.
+                          {tr("signSection_summonsIsChargedForEachAddress")}
                         </p>
                       </>
                     ) : (
                       <p className="text-body-compact text-muted-foreground">
-                        Add this accused’s address in the{" "}
-                        <Link
+                        {tr.rich("signSection_addThisAccusedsAddressInThe", { link: (chunks) => <Link
                           href={hrefFor("accused")}
                           className="font-medium text-primary underline underline-offset-2"
-                        >
-                          Accused section
-                        </Link>{" "}
-                        to choose where summons is served.
+                        >{chunks}</Link> })}
                       </p>
                     )}
                   </FieldSet>
 
                   <FieldSet className="gap-3">
                     <FieldLegend className="text-body-compact font-medium">
-                      Process to pay for now
+                      {tr("signSection_processToPayForNow")}
                     </FieldLegend>
                     <div className="flex flex-col divide-y divide-hairline">
                       {PROCESS_OPTIONS.map((option) => {
@@ -1311,13 +1311,12 @@ export function SignSection() {
                                 {option.label}
                                 {option.minRounds > 0 ? (
                                   <span className="text-muted-foreground">
-                                    {" "}
-                                    · required
+                                    {tr("signSection_required")}
                                   </span>
                                 ) : null}
                               </Label>
                               <p className="text-caption text-muted-foreground">
-                                {option.note}
+                                {translateText(tr, option.note)}
                               </p>
                             </div>
                             <div className="flex shrink-0 items-center gap-4">
@@ -1332,10 +1331,10 @@ export function SignSection() {
                                 {choices.map((n) => (
                                   <NativeSelectOption key={n} value={String(n)}>
                                     {n === 0
-                                      ? "Not now"
+                                      ? tr("signSection_notNow")
                                       : n === 1
-                                        ? "1 round"
-                                        : `${n} rounds`}
+                                        ? tr("signSection_1Round")
+                                        : tr("signSection_nRounds", { n: String(n) })}
                                   </NativeSelectOption>
                                 ))}
                               </NativeSelect>
@@ -1360,11 +1359,10 @@ export function SignSection() {
                             className="text-body-compact font-medium"
                           >
                             {CHANNEL_FEE.label}
-                            <span className="text-muted-foreground"> · required</span>
+                            <span className="text-muted-foreground"> {tr("signSection_required")}</span>
                           </Label>
                           <p className="text-caption text-muted-foreground tabular-nums">
-                            {money(CHANNEL_FEE.amount)} for each address, every round,
-                            charged by the post office, not by the court.
+                            {tr("signSection_moneyForEachAddressEveryRound", { money: money(CHANNEL_FEE.amount) })}
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-4">
@@ -1378,7 +1376,7 @@ export function SignSection() {
                           >
                             {deliveryChoices.map((n) => (
                               <NativeSelectOption key={n} value={String(n)}>
-                                {n === 1 ? "1 round" : `${n} rounds`}
+                                {n === 1 ? tr("signSection_1Round") : tr("signSection_nRounds", { n: String(n) })}
                               </NativeSelectOption>
                             ))}
                           </NativeSelect>
@@ -1394,8 +1392,7 @@ export function SignSection() {
             })}
 
             <p className="text-caption text-muted-foreground">
-              Anything you leave out now is paid for later, if and when the court orders
-              it. What you pay for now is issued without a second payment step.
+              {tr("signSection_anythingYouLeaveOutNowIs")}
             </p>
           </div>
 
@@ -1405,7 +1402,7 @@ export function SignSection() {
             footer, which stacks on a narrow screen and would carry it off the bottom.
           */}
           <div className="flex items-baseline justify-between gap-4 border-t border-hairline pt-4">
-            <span className="text-body font-semibold">Payable now</span>
+            <span className="text-body font-semibold">{tr("signSection_payableNow")}</span>
             <span className="text-title-s font-semibold tabular-nums">
               {money(bill.total)}
             </span>
@@ -1413,7 +1410,7 @@ export function SignSection() {
 
           <DialogFooter>
             <Button type="button" onClick={() => setModal("payment")}>
-              Back to fees
+              {tr("signSection_backToFees")}
             </Button>
           </DialogFooter>
         </ChromeDialogContent>
@@ -1432,16 +1429,16 @@ export function SignSection() {
       <Dialog open={modal === "payment"} onOpenChange={(open) => !open && closeModal()}>
         <ChromeDialogContent mobileSheet className="grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100svh-2rem)] sm:max-w-xl" onInteractOutside={(event) => event.preventDefault()}>
           <DialogHeader>
-            <DialogTitle>Pay court fees</DialogTitle>
+            <DialogTitle>{tr("signSection_payCourtFees")}</DialogTitle>
             <DialogDescription>
-              Payable to the {courtText(COURT.name)} for this complaint.
+              {tr("signSection_payableToTheCourtTextFor", { courtText: courtText(COURT.name) })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex min-h-0 flex-col gap-4 overflow-y-auto">
             <FeeGroup
-              title="Court fees"
-              caption="Due before the complaint is registered."
+              title={tr("signSection_courtFees")}
+              caption={tr("signSection_dueBeforeTheComplaintIsRegistered")}
               lines={bill.court}
               total={bill.courtTotal}
             />
@@ -1449,14 +1446,14 @@ export function SignSection() {
             {/* One line, not itemised (owner, 2026-10-08): what was chosen per process is
                 on Change process & address, below, for anyone who wants the detail. */}
             <FeeGroup
-              title="Process fees"
+              title={tr("signSection_processFees")}
               lines={bill.process}
               total={bill.processTotal}
               summary
             />
 
             <FeeGroup
-              title={`Delivery of summons · ${DELIVERY_CHANNEL}`}
+              title={tr("signSection_deliveryOfSummonsDeliveryChannel", { DELIVERY_CHANNEL })}
               lines={bill.delivery}
               total={bill.deliveryTotal}
               summary
@@ -1464,14 +1461,14 @@ export function SignSection() {
           </div>
 
           <div className="flex items-baseline justify-between gap-4 border-t border-hairline pt-4">
-            <span className="text-body font-semibold">Payable now</span>
+            <span className="text-body font-semibold">{tr("signSection_payableNow")}</span>
             <span className="text-title-s font-semibold tabular-nums">
               {money(bill.total)}
             </span>
           </div>
 
           <Button type="button" size="lg" className="w-full" onClick={payNow}>
-            Pay {money(bill.total)} online
+            {tr("signSection_payMoneyOnline", { money: money(bill.total) })}
           </Button>
 
           <DialogFooter>
@@ -1480,7 +1477,7 @@ export function SignSection() {
               variant="outline"
               onClick={() => setModal("procaddr")}
             >
-              Change process &amp; address
+              {tr("signSection_changeProcessAddress")}
             </Button>
           </DialogFooter>
         </ChromeDialogContent>
@@ -1497,10 +1494,10 @@ export function SignSection() {
           <div className="flex flex-col items-center gap-4 py-6 text-center">
             <Spinner className="size-8 text-primary" />
             <DialogTitle className="text-title-s font-semibold">
-              Processing payment…
+              {tr("signSection_processingPayment")}
             </DialogTitle>
             <DialogDescription className="text-body-compact">
-              Please don’t close or refresh this window while we confirm your payment.
+              {tr("signSection_pleaseDontCloseOrRefreshThis")}
             </DialogDescription>
           </div>
         </ChromeDialogContent>
@@ -1516,34 +1513,34 @@ export function SignSection() {
           <OutcomeHeader
             compact
             titleFrom="dialog"
-            title="Payment successful"
-            body="Your case file is complete."
+            title={tr("signSection_paymentSuccessful")}
+            body={tr("signSection_yourCaseFileIsComplete")}
           >
-            <OutcomeAmount label="Amount paid" value={money(sign.paidAmount ?? bill.total)} />
+            <OutcomeAmount label={tr("signSection_amountPaid")} value={money(sign.paidAmount ?? bill.total)} />
           </OutcomeHeader>
 
           <div className="flex flex-col gap-4 p-6">
             <OutcomeSummary>
               <DescriptionList>
                 <DescriptionRow className="items-center border-hairline">
-                  <DescriptionTerm>Case file number</DescriptionTerm>
+                  <DescriptionTerm>{tr("signSection_caseFileNumber")}</DescriptionTerm>
                   <DescriptionDetails className="flex flex-wrap items-center justify-end gap-2">
                     {sign.caseFileNumber ? (
-                      <Identifier value={sign.caseFileNumber} label="case file number" />
+                      <Identifier value={sign.caseFileNumber} label={tr("signSection_caseFileNumberLabel")} />
                     ) : (
                       <span className="tabular-nums">—</span>
                     )}
                     <Button type="button" variant="ghost" onClick={copyLink}>
                       <CopyIcon data-icon="inline-start" aria-hidden />
-                      {copied ? "Copied" : "Copy link"}
+                      {copied ? tr("signSection_copied") : tr("signSection_copyLink")}
                     </Button>
                   </DescriptionDetails>
                 </DescriptionRow>
                 <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>Payment reference</DescriptionTerm>
+                  <DescriptionTerm>{tr("signSection_paymentReference")}</DescriptionTerm>
                   <DescriptionDetails>
                     {sign.paymentRef ? (
-                      <Identifier value={sign.paymentRef} label="payment reference" />
+                      <Identifier value={sign.paymentRef} label={tr("signSection_paymentReferenceLabel")} />
                     ) : (
                       "—"
                     )}
@@ -1557,7 +1554,7 @@ export function SignSection() {
           {/* The warm band every outcome dialog closes on. */}
           <footer className="flex shrink-0 flex-col gap-3 border-t border-hairline bg-surface-sunken px-6 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] sm:flex-row">
             <Button asChild variant="outline" size="lg" className="sm:flex-1">
-              <Link href={FILINGS_HOME}>Back to dashboard</Link>
+              <Link href={FILINGS_HOME}>{tr("signSection_backToDashboard")}</Link>
             </Button>
             <Button
               type="button"
@@ -1567,7 +1564,7 @@ export function SignSection() {
               onClick={printFile}
             >
               <PrinterIcon data-icon="inline-start" aria-hidden />
-              Print or save as PDF
+              {tr("signSection_printOrSaveAsPdf")}
             </Button>
           </footer>
         </ChromeDialogContent>
@@ -1580,21 +1577,21 @@ export function SignSection() {
           if (!open) setLeaveTo(null);
         }}
         title={
-          anySigned ? "Going back voids the signatures" : "Going back recalls the requests"
+          anySigned ? tr("signSection_goingBackVoidsTheSignatures") : tr("signSection_goingBackRecallsTheRequests")
         }
         description={
           onPaper
-            ? "The signed copy you uploaded was signed against this version of the complaint. Editing the case makes it a different document, so the copy is removed and every party has to sign again."
+            ? tr("signSection_theSignedCopyYouUploadedWas")
             : anySigned
               ? `The parties were asked to sign this version of the complaint. Editing the case makes it a different document, so ${
                   everyone.filter((s) => s.status === "signed").length === 1
                     ? "the signature already collected is"
                     : "the signatures already collected are"
                 } discarded, the outstanding requests are withdrawn, and everyone is asked again.`
-              : "The parties have already been asked to sign this version of the complaint. Editing the case makes it a different document, so those requests are withdrawn and everyone is asked again once you come back."
+              : tr("signSection_thePartiesHaveAlreadyBeenAsked")
         }
-        confirmLabel={anySigned ? "Go back and re-sign" : "Go back and recall"}
-        cancelLabel="Stay here"
+        confirmLabel={anySigned ? tr("signSection_goBackAndReSign") : tr("signSection_goBackAndRecall")}
+        cancelLabel={tr("signSection_stayHere")}
         icon={PenOffIcon}
         onConfirm={confirmLeave}
       />
@@ -1603,10 +1600,10 @@ export function SignSection() {
       <ConfirmDialog
         open={sendOpen}
         onOpenChange={setSendOpen}
-        title="Send these corrections to scrutiny?"
-        description="The re-signed complaint goes back to the Registry. A re-submission cannot be recalled, and limitation runs from the Registry's receipt."
-        confirmLabel="Send to scrutiny"
-        cancelLabel="Not yet"
+        title={tr("signSection_sendTheseCorrectionsToScrutiny")}
+        description={tr("signSection_theReSignedComplaintGoesBack")}
+        confirmLabel={tr("signSection_sendToScrutiny")}
+        cancelLabel={tr("signSection_notYet")}
         destructive={false}
         icon={SendIcon}
         onConfirm={() => void sendBack()}
@@ -1616,14 +1613,14 @@ export function SignSection() {
       <ConfirmDialog
         open={digitalSwitchOpen}
         onOpenChange={setDigitalSwitchOpen}
-        title="E-sign instead?"
+        title={tr("signSection_eSignInsteadTitle")}
         description={
           sign.signedCopy
-            ? "The copy you uploaded is removed, and every confirmation taken against it goes with it. Each party e-signs with their own Aadhaar OTP or DSC."
-            : "The signatures collected on the copy are discarded. Each party e-signs with their own Aadhaar OTP or DSC."
+            ? tr("signSection_theCopyYouUploadedIsRemoved")
+            : tr("signSection_theSignaturesCollectedOnTheCopy")
         }
-        confirmLabel="E-sign instead"
-        cancelLabel="Keep the physical document"
+        confirmLabel={tr("signSection_eSignInstead")}
+        cancelLabel={tr("signSection_keepThePhysicalDocument")}
         icon={FileXIcon}
         onConfirm={backToDigital}
       />

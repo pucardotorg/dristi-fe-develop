@@ -32,6 +32,8 @@ import { useTasks } from "@/lib/tasks/store";
 import { recordPayment, sign, TransitionError } from "@/lib/tasks/transitions";
 import type { Case, PaymentResult, Person, Task, TaskId } from "@/lib/tasks/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * **Signing or paying a selected set — the court side's bulk signing, for the
@@ -62,9 +64,9 @@ type Mark = "done" | "confirming" | "failed";
 type Outcome = { task: Task; mark: Mark; note: string };
 
 const GATEWAY: { value: PaymentResult; label: string }[] = [
-  { value: "success", label: "Success" },
-  { value: "pending", label: "Still confirming" },
-  { value: "failed", label: "Failed" },
+  { value: "success", label: "batchActDialog_success" },
+  { value: "pending", label: "batchActDialog_stillConfirming" },
+  { value: "failed", label: "batchActDialog_failed" },
 ];
 
 export function BatchActDialog({
@@ -146,6 +148,7 @@ function BatchBody({
   onClose: () => void;
   onFinished: (closed: TaskId[]) => void;
 }) {
+  const tr = useTranslations();
   const { dispatch, cases } = useTasks();
   const flow = useStageFade<Stage>("confirm", ORDER);
   const titleRef = React.useRef<HTMLHeadingElement>(null);
@@ -231,29 +234,29 @@ function BatchBody({
   const title = {
     confirm: kind === "sign" ? `Sign ${n} ${noun}` : `Pay ${total} for ${n} ${noun}`,
     sign: `Sign ${n} ${noun}`,
-    otp: "Enter the OTP",
-    dsc: "Sign with your DSC",
+    otp: tr("batchActDialog_enterTheOtp"),
+    dsc: tr("batchActDialog_signWithYourDsc"),
     processing: "Processing payment…",
     done:
       kind === "sign"
         ? through.length
           ? `${through.length} ${through.length === 1 ? "document" : "documents"} signed`
-          : "Nothing was signed"
+          : tr("batchActDialog_nothingWasSigned")
         : /* A payment's outcome leads with the amount, as every payment in the product
              does ("₹452 paid"); the count labels the list under it. */
           through.length
           ? `${rupees(through.reduce((sum, o) => sum + (o.task.amountPaise ?? 0), 0))} paid`
-          : "Nothing was paid",
+          : tr("batchActDialog_nothingWasPaid"),
   }[flow.stage];
 
   const description = {
     confirm:
       kind === "sign"
-        ? "One signature goes on every document selected."
-        : "One transaction, with a receipt against each fee.",
-    sign: "Either one is your own signature — use whichever you have.",
-    otp: "Sent to your Aadhaar-linked mobile.",
-    dsc: "Your certificate has to be plugged in, with the signing utility running on this computer.",
+        ? tr("batchActDialog_oneSignatureGoesOnEveryDocument")
+        : tr("batchActDialog_oneTransactionWithAReceiptAgainst"),
+    sign: tr("batchActDialog_eitherOneIsYourOwnSignature"),
+    otp: tr("batchActDialog_sentToYourAadhaarLinkedMobile"),
+    dsc: tr("batchActDialog_yourCertificateHasToBePlugged"),
     processing: null,
     done: null,
   }[flow.stage];
@@ -262,51 +265,51 @@ function BatchBody({
     confirm: (
       <>
         <Button type="button" variant="outline" onClick={onClose}>
-          Back
+          {tr("common_back")}
         </Button>
         {kind === "pay" ? (
           <div className="flex items-center gap-2">
             <GatewayMenu value={gateway} onChange={setGateway} />
             <Button type="button" disabled={running} onClick={() => void run()}>
-              Pay {total}
+              {tr("batchActDialog_payTotal", { total })}
             </Button>
           </div>
         ) : (
           <Button type="button" onClick={() => flow.setStage("sign")}>
-            Sign {n} {noun}
+            {tr("batchActDialog_signNNoun", { n: String(n), noun })}
           </Button>
         )}
       </>
     ),
     sign: (
       <Button type="button" variant="outline" onClick={() => flow.setStage("confirm")}>
-        Back
+        {tr("common_back")}
       </Button>
     ),
     otp: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.setStage("sign")}>
-          Back
+          {tr("common_back")}
         </Button>
         <Button type="button" disabled={otp.length < 6 || running} onClick={() => void run("aadhaar")}>
-          Verify and sign
+          {tr("batchActDialog_verifyAndSign")}
         </Button>
       </>
     ),
     dsc: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.setStage("sign")}>
-          Back
+          {tr("common_back")}
         </Button>
         <Button type="button" disabled={!dscFound || running} onClick={() => void run("dsc")}>
-          Sign with this certificate
+          {tr("batchActDialog_signWithThisCertificate")}
         </Button>
       </>
     ),
     processing: null,
     done: (
       <Button type="button" onClick={onClose}>
-        Done
+        {tr("batchActDialog_done")}
       </Button>
     ),
   }[flow.stage];
@@ -367,8 +370,7 @@ function BatchBody({
                 }}
               />
               <p className="text-body-compact text-muted-foreground">
-                Signing applies to every document selected.
-                <IrreversibleNote>It cannot be reversed.</IrreversibleNote>
+                {tr.rich("batchActDialog_signingAppliesToEveryDocumentSelected", { irreversiblenote: (chunks) => <IrreversibleNote>{chunks}</IrreversibleNote> })}
               </p>
             </>
           ) : flow.stage === "otp" ? (
@@ -400,6 +402,7 @@ function GatewayMenu({
   value: PaymentResult;
   onChange: (value: PaymentResult) => void;
 }) {
+  const tr = useTranslations();
   return (
     <TooltipProvider>
       <DropdownMenu>
@@ -410,21 +413,21 @@ function GatewayMenu({
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Sandbox: choose the gateway result"
+                aria-label={tr("batchActDialog_sandboxChooseTheGatewayResult")}
                 className="text-muted-foreground"
               >
                 <FlaskConicalIcon aria-hidden />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent>Sandbox: choose the gateway result</TooltipContent>
+          <TooltipContent>{tr("batchActDialog_sandboxChooseTheGatewayResult")}</TooltipContent>
         </Tooltip>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Sandbox gateway result</DropdownMenuLabel>
+          <DropdownMenuLabel>{tr("batchActDialog_sandboxGatewayResult")}</DropdownMenuLabel>
           <DropdownMenuRadioGroup value={value} onValueChange={(next) => onChange(next as PaymentResult)}>
             {GATEWAY.map((option) => (
               <DropdownMenuRadioItem key={option.value} value={option.value}>
-                {option.label}
+                {translateText(tr, option.label)}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
@@ -444,6 +447,7 @@ function TaskRow({
   kase: Case | undefined;
   trailing?: React.ReactNode;
 }) {
+  const tr = useTranslations();
   const courtText = useCourtText();
   return (
     <li className="flex min-w-0 items-center gap-3 border-b border-hairline py-3 last:border-b-0">
@@ -455,7 +459,7 @@ function TaskRow({
             {kase.stNumber ? (
               <>
                 <span aria-hidden> · </span>
-                <Identifier value={kase.stNumber} label="case number" copyable={false} />
+                <Identifier value={kase.stNumber} label={tr("batchActDialog_caseNumber")} copyable={false} />
               </>
             ) : null}
             <span aria-hidden> · </span>
@@ -480,9 +484,10 @@ function TaskList({
   pay: boolean;
   total: string;
 }) {
+  const tr = useTranslations();
   return (
     <div className="overflow-hidden rounded-xl border border-hairline bg-card shadow-raised">
-      <ul aria-label="Selected" className="flex flex-col px-4">
+      <ul aria-label={tr("batchActDialog_selected")} className="flex flex-col px-4">
         {tasks.map((task) => (
           <TaskRow
             key={task.id}
@@ -498,7 +503,7 @@ function TaskList({
       </ul>
       {pay ? (
         <p className="flex items-baseline justify-between gap-4 border-t border-hairline px-4 py-3 text-body-compact font-semibold">
-          <span>Total</span>
+          <span>{tr("batchActDialog_total")}</span>
           <span className="tabular-nums">{total}</span>
         </p>
       ) : null}
@@ -523,6 +528,7 @@ function OutcomeCard({
   headline: string;
   ok: boolean;
 }) {
+  const tr = useTranslations();
   /* The window's title says only what fully happened; any that did not go through are
      named in the list under it, in red with why (skill `feedback-states`). */
   const failedCount = outcomes.filter((o) => o.mark === "failed").length;
@@ -583,8 +589,7 @@ function OutcomeCard({
                 {/* A reference never breaks inside itself: the label wraps above it. */}
                 {o.note.startsWith("Receipt ") ? (
                   <>
-                    Receipt{" "}
-                    <span className="whitespace-nowrap">{o.note.slice("Receipt ".length)}</span>
+                    {tr.rich("batchActDialog_receiptSlice", { slice: o.note.slice("Receipt ".length), span: (chunks) => <span className="whitespace-nowrap">{chunks}</span> })}
                   </>
                 ) : (
                   o.note

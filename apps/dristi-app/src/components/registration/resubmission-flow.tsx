@@ -71,6 +71,7 @@ import { Identifier } from "@/components/chrome/identifier";
 import { AwaitingApproval } from "./awaiting-approval";
 import { SubmitErrorAlert } from "./submit-error-alert";
 import { PageOutcome } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 type Step = "name" | "contact" | "verification" | "success" | "application";
 type StepKey = (typeof STEP_KEYS)[number];
@@ -145,6 +146,7 @@ export function ResubmissionFlow({
   locale: Locale;
   rejection: RejectedRegistration;
 }) {
+  const t = useTranslations();
   const [step, setStep] = React.useState<Step>("name");
   const [fullName, setFullName] = React.useState(rejection.name);
   const [email, setEmail] = React.useState(rejection.email);
@@ -286,7 +288,7 @@ export function ResubmissionFlow({
           <DescriptionRow>
             <DescriptionTerm>{pick(verification.numberLabel, locale)}</DescriptionTerm>
             <DescriptionDetails>
-              <Identifier value={regNumber} label="registration number" />
+              <Identifier value={regNumber} label={t("resubmissionFlow_registrationNumber")} />
             </DescriptionDetails>
           </DescriptionRow>
           {idFile ? (

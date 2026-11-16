@@ -36,6 +36,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { PersonAvatar } from "@/components/tasks/person-avatar";
 import { useTaskActions } from "@/components/tasks/use-task-actions";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** Everything an act body needs, built by the act modal. */
 export type ActContext = {
@@ -80,6 +82,7 @@ export function RailCard({
  * informed, not blind.
  */
 export function PreparedNote({ ctx }: { ctx: ActContext }) {
+  const tr = useTranslations();
   const { task, people, user } = ctx;
   const prepared = task.status === "ready" ? task.prepared : null;
   const draft = task.status === "draft" ? task.draft : null;
@@ -95,11 +98,11 @@ export function PreparedNote({ ctx }: { ctx: ActContext }) {
       <div className="flex items-center gap-2">
         {person ? <PersonAvatar person={person} /> : null}
         <p className="text-caption font-semibold text-muted-foreground">
-          {prepared ? "Prepared by" : "Draft by"} {person?.name ?? "someone"}
+          {prepared ? tr("shared_preparedBy") : tr("shared_draftBy")} {person?.name ?? tr("shared_someone")}
           {at ? ` · ${dateTime(at)}` : ""}
         </p>
       </div>
-      <p className="text-body-compact">{note || <span className="text-muted-foreground">No note.</span>}</p>
+      <p className="text-body-compact">{note || <span className="text-muted-foreground">{tr("shared_noNote")}</span>}</p>
       {files?.length ? (
         <ul className="flex flex-col gap-1">
           {files.map((f) => (
@@ -129,6 +132,7 @@ export function FileChip({
   onRemove?: () => void;
   disabled?: boolean;
 }) {
+  const tr = useTranslations();
   const [url, setUrl] = React.useState<string | null>(null);
   React.useEffect(() => {
     let live = true;
@@ -164,7 +168,7 @@ export function FileChip({
         <Button
           variant="ghost"
           size="icon-xs"
-          aria-label={`Remove ${file.name}`}
+          aria-label={tr("shared_removeName", { name: file.name })}
           disabled={disabled}
           onClick={onRemove}
           className="relative after:absolute after:-inset-1"
@@ -198,6 +202,7 @@ export function FileSlot({
   onFile: (ref: StoredFileRef) => void;
   onRemove: () => void;
 }) {
+  const tr = useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [busy, setBusy] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
@@ -228,10 +233,10 @@ export function FileSlot({
         {file ? (
           <span className="inline-flex items-center gap-1.5 text-caption text-success-ink">
             <StatusMark size={14} still />
-            Attached
+            {tr("shared_attached")}
           </span>
         ) : (
-          <span className="text-caption text-muted-foreground">{optional ? "Optional" : "Missing"}</span>
+          <span className="text-caption text-muted-foreground">{optional ? tr("shared_optional") : tr("shared_missing")}</span>
         )}
       </div>
       {file ? (
@@ -249,7 +254,7 @@ export function FileSlot({
           />
           {failed ? (
             <StatusLine tone="error" className="mt-2">
-              That file could not be stored in this browser.
+              {tr("shared_thatFileCouldNotBeStored")}
             </StatusLine>
           ) : null}
         </Field>
@@ -280,35 +285,36 @@ export function PrepareCard({
   complete?: boolean;
   children?: React.ReactNode;
 }) {
+  const tr = useTranslations();
   const { task, people, kase, online, finish } = ctx;
   const { act, busy, error } = useTaskActions({ inDialog: true });
   const [note, setNote] = React.useState<string>(task.draft?.note ?? task.prepared?.note ?? "");
   const signatories = signatoriesOf(kase, people).map((p) => p.name);
-  const who = signatories.length ? signatories.join(" or ") : "A signatory";
+  const who = signatories.length ? signatories.join(" or ") : tr("shared_aSignatory");
   const ready = task.status === "ready";
 
   return (
     <RailCard
-      title={ready ? "Prepared" : task.status === "draft" ? "Continue preparing" : "Prepare"}
+      title={ready ? tr("shared_prepared") : task.status === "draft" ? tr("shared_continuePreparing") : tr("shared_prepare")}
       description={
         ready
           ? `Marked ready${task.prepared ? ` by ${nameOf(people, task.prepared.by)}` : ""}. ${who} will ${what} it. Save again to rework it.`
-          : `${who} must ${what} this. Prepare it here, then mark it ready — they will be asked to ${what} it.`
+          : tr("shared_whoMustWhatThisPrepareIt", { who, what, what2: what })
       }
     >
       {error ? <StatusLine tone="error">{error}</StatusLine> : null}
       {children}
       <Field>
-        <FieldLabel htmlFor="prepare-note">Note to the signatory</FieldLabel>
+        <FieldLabel htmlFor="prepare-note">{tr("shared_noteToTheSignatory")}</FieldLabel>
         <Textarea
           id="prepare-note"
           rows={3}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="What you checked, what they should look at"
+          placeholder={tr("shared_whatYouCheckedWhatTheyShould")}
           disabled={!online || !!busy}
         />
-        <FieldDescription>Optional. Shown with the task when they open it.</FieldDescription>
+        <FieldDescription>{tr("shared_optionalShownWithTheTaskWhen")}</FieldDescription>
       </Field>
       <div className="flex flex-wrap gap-2">
         {!ready ? (
@@ -316,22 +322,22 @@ export function PrepareCard({
             disabled={!online || !!busy || !complete}
             onClick={async () => {
               const t = await act(task.id, (x, c) => markReady(x, c, note, files));
-              if (t) finish(`Marked ready — ${who} will be asked to ${what} it`);
+              if (t) finish(tr("shared_markedReadyWhoWillBeAsked", { who, what }));
             }}
           >
-            Mark ready
+            {tr("shared_markReady")}
           </Button>
         ) : null}
         <Button
           variant={ready ? "outline" : "ghost"}
           disabled={!online || !!busy}
-          onClick={() => void act(task.id, (x, c) => saveDraft(x, c, note, files), { title: "Saved as a draft", icon: SaveIcon })}
+          onClick={() => void act(task.id, (x, c) => saveDraft(x, c, note, files), { title: tr("shared_savedAsADraft"), icon: SaveIcon })}
         >
-          Save as draft
+          {tr("shared_saveAsDraft")}
         </Button>
       </div>
       {!complete && !ready ? (
-        <p className="text-caption text-muted-foreground">Finish the preparation to mark it ready.</p>
+        <p className="text-caption text-muted-foreground">{tr("shared_finishThePreparationToMarkIt")}</p>
       ) : null}
     </RailCard>
   );
@@ -345,7 +351,7 @@ export function OtpDialog({
   onOpenChange,
   signer,
   onSign,
-  title = "E-Sign with Aadhaar",
+  title = "shared_eSignWithAadhaar",
   confirmLabel = "Sign",
 }: {
   open: boolean;
@@ -355,6 +361,7 @@ export function OtpDialog({
   title?: string;
   confirmLabel?: string;
 }) {
+  const tr = useTranslations();
   /* The code lives here rather than in the form, so a close can ask before it throws a
      part-typed code away; it starts empty on every opening. */
   const [otp, setOtp] = React.useState("");
@@ -372,7 +379,7 @@ export function OtpDialog({
           <OtpForm
             signer={signer}
             onSign={onSign}
-            title={title}
+            title={translateText(tr, title)}
             confirmLabel={confirmLabel}
             otp={otp}
             onOtpChange={setOtp}
@@ -399,20 +406,19 @@ function OtpForm({
   otp: string;
   onOtpChange: (otp: string) => void;
 }) {
+  const tr = useTranslations();
   const [resent, setResent] = React.useState(false);
   return (
     <>
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>
-          A 6-digit OTP goes to{" "}
-          <strong className="font-semibold text-foreground">{signer.name}</strong>’s Aadhaar-linked
-          mobile. The signature applied is theirs.
+          {tr.rich("shared_a6DigitOtpGoesTo", { name: signer.name, strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong> })}
         </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-2">
         <Label htmlFor="esign-otp" className="text-body-compact">
-          Enter OTP
+          {tr("shared_enterOtp")}
         </Label>
         <InputOTP id="esign-otp" maxLength={6} value={otp} onChange={setOtp} containerClassName="gap-2">
           <InputOTPGroup className="gap-2">
@@ -423,9 +429,9 @@ function OtpForm({
         </InputOTP>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-body-compact text-muted-foreground">Didn’t get it?</span>
+        <span className="text-body-compact text-muted-foreground">{tr("shared_didntGetIt")}</span>
         <Button type="button" variant="link" className="h-auto p-0 underline" onClick={() => setResent(true)}>
-          {resent ? "Sent again" : "Resend OTP"}
+          {resent ? tr("shared_sentAgain") : tr("shared_resendOtp")}
         </Button>
       </div>
       <Button size="lg" className="w-full" disabled={otp.length < 6} onClick={onSign}>
@@ -443,6 +449,7 @@ function OtpForm({
  * Returning creates the `returned` task and takes you to it.
  */
 export function CourtSandbox({ ctx }: { ctx: ActContext }) {
+  const tr = useTranslations();
   const { task, online, finish } = ctx;
   const { act, busy, error } = useTaskActions({ inDialog: true });
   const [open, setOpen] = React.useState(false);
@@ -451,8 +458,8 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
 
   return (
     <RailCard
-      title="With the court"
-      description="Filed — the registry has it now. These controls stand in for the registry's answer."
+      title={tr("shared_withTheCourt")}
+      description={tr("shared_filedTheRegistryHasItNow")}
     >
       {error ? <StatusLine tone="error">{error}</StatusLine> : null}
       <div className="flex flex-wrap gap-2">
@@ -461,40 +468,40 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
           disabled={!online || !!busy}
           onClick={async () => {
             const t = await act(task.id, courtAccepted);
-            if (t) finish("Accepted by the registry");
+            if (t) finish(tr("shared_acceptedByTheRegistry"));
           }}
         >
-          Court: accept
+          {tr("shared_courtAccept")}
         </Button>
         <Button variant="outline" disabled={!online || !!busy} onClick={() => setOpen(true)}>
-          Court: return with defects
+          {tr("shared_courtReturnWithDefects")}
         </Button>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <FlowDialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Return with defects</DialogTitle>
+            <DialogTitle>{tr("shared_returnWithDefects")}</DialogTitle>
             <DialogDescription>
-              Enter one to three scrutiny remarks. A re-filing task is created with them.
+              {tr("shared_enterOneToThreeScrutinyRemarks")}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3">
             {defects.map((d, i) => (
               <Field key={i}>
-                <FieldLabel htmlFor={`defect-${i}`}>Defect {i + 1}</FieldLabel>
+                <FieldLabel htmlFor={`defect-${i}`}>{tr("shared_defectValue", { value: String(i + 1) })}</FieldLabel>
                 <Input
                   id={`defect-${i}`}
                   value={d}
                   onChange={(e) => setDefects((prev) => prev.map((x, j) => (j === i ? e.target.value : x)))}
-                  placeholder={i === 0 ? "Affidavit not attested by a notary" : "Optional"}
+                  placeholder={i === 0 ? tr("shared_affidavitNotAttestedByANotary") : tr("shared_optional")}
                 />
               </Field>
             ))}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
+              {tr("common_cancel")}
             </Button>
             <Button
               disabled={!filled.length || !!busy}
@@ -509,7 +516,7 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
                 if (t) finish(`Returned — ${filled.length} defect${filled.length === 1 ? "" : "s"} to fix`, createdId);
               }}
             >
-              Return
+              {tr("shared_return")}
             </Button>
           </DialogFooter>
         </FlowDialogContent>
@@ -521,6 +528,7 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
 /* ───────────────────────────── the closed record ───────────────────────────── */
 
 export function RecordCard({ ctx, title }: { ctx: ActContext; title: string }) {
+  const tr = useTranslations();
   const { task, people } = ctx;
   const by = people.find((p) => p.id === task.completion?.by);
   return (
@@ -529,20 +537,20 @@ export function RecordCard({ ctx, title }: { ctx: ActContext; title: string }) {
         {task.completion ? (
           <>
             <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">When</dt>
+              <dt className="text-muted-foreground">{tr("shared_when")}</dt>
               <dd className="tabular-nums">{dateTime(task.completion.at)}</dd>
             </div>
             {by ? (
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">By</dt>
+                <dt className="text-muted-foreground">{tr("shared_by")}</dt>
                 <dd>{by.name}</dd>
               </div>
             ) : null}
             {task.completion.receipt ? (
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Reference</dt>
+                <dt className="text-muted-foreground">{tr("shared_reference")}</dt>
                 <dd>
-                  <Identifier value={task.completion.receipt} label="receipt" />
+                  <Identifier value={task.completion.receipt} label={tr("shared_receipt")} />
                 </dd>
               </div>
             ) : null}

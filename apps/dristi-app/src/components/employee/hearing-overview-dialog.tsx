@@ -25,6 +25,7 @@ import {
   courtHearingStatusVariant,
   type CourtHearing,
 } from "@/lib/employee/hearings";
+import { useTranslations } from "next-intl";
 
 /**
  * A matter from the day's list, read over the list it came from.
@@ -130,6 +131,7 @@ function HearingOverviewBody({
   postsNextHearing: boolean;
   sitting: boolean;
 }) {
+  const t = useTranslations();
   const { court } = useCourt();
   /* Where this listing stood when the sheet opened. A status different from it is an
      act the reader performed *in here*, and that is the only thing that gets to move:
@@ -258,9 +260,9 @@ function HearingOverviewBody({
           three rows; it is `sr-only`, so where it sits changes nothing it does. */}
       <p className="sr-only" aria-live="polite">
         {resolved
-          ? `${causeTitle(hearing)} is now ${courtHearingStatusLabel(
+          ? t("hearingOverviewDialog_causeTitleIsNowToLower", { causeTitle: causeTitle(hearing), toLowerCase: courtHearingStatusLabel(
               hearing.status,
-            ).toLowerCase()}`
+            ).toLowerCase() })
           : null}
       </p>
     </StagedOverlay>
@@ -272,18 +274,19 @@ function HearingOverviewBody({
  * — one store, so the row and this tab cannot disagree. The tab names them, so no heading.
  */
 function NextHearingFields({ hearing }: { hearing: CourtHearing }) {
+  const t = useTranslations();
   const id = React.useId();
   return (
     <div className="grid min-w-0 gap-4 sm:grid-cols-2">
       <div className="flex min-w-0 flex-col gap-2">
         <span id={`${id}-date`} className="text-body-compact font-medium">
-          Date
+          {t("hearingOverviewDialog_date")}
         </span>
         <NextDateField hearing={hearing} labelledBy={`${id}-date`} />
       </div>
       <div className="flex min-w-0 flex-col gap-2">
         <span id={`${id}-purpose`} className="text-body-compact font-medium">
-          Purpose
+          {t("hearingOverviewDialog_purpose")}
         </span>
         <NextPurposeField hearing={hearing} labelledBy={`${id}-purpose`} />
       </div>

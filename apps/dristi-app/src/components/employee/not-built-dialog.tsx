@@ -18,6 +18,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { useTranslations } from "next-intl";
 
 /**
  * The honest end of a row whose next screen is not built yet.
@@ -47,14 +48,15 @@ export function NotBuiltDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <ChromeDialogContent className="sm:max-w-md">
         {/* Radix needs a titled dialog; the visible title lives in the Empty below, so the
             header is spoken only. */}
-        <DialogTitle className="sr-only">Not built yet</DialogTitle>
+        <DialogTitle className="sr-only">{t("notBuiltDialog_notBuiltYet")}</DialogTitle>
         <DialogDescription className="sr-only">
-          {opens} is not built yet.
+          {t("notBuiltDialog_opensIsNotBuiltYet", { opens })}
         </DialogDescription>
         <Empty className="border-0 p-0 py-4">
           <EmptyHeader>
@@ -62,21 +64,20 @@ export function NotBuiltDialog({
               <ConstructionIcon aria-hidden />
             </EmptyMedia>
             <EmptyTitle className="text-title-s font-semibold">
-              Not built yet
+              {t("notBuiltDialog_notBuiltYet")}
             </EmptyTitle>
             <EmptyDescription className="text-body text-pretty">
               {item ? (
                 <>
-                  <span className="font-medium text-foreground">{item}</span>{" "}
-                  would open {opens}.{" "}
+                  {t.rich("notBuiltDialog_itemWouldOpenOpens", { item, opens, span: (chunks) => <span className="font-medium text-foreground">{chunks}</span> })}
                 </>
               ) : null}
-              That screen hasn&rsquo;t been built yet.
+              {t("notBuiltDialog_thatScreenHasntBeenBuiltYet")}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <DialogClose asChild>
-              <Button type="button">Back</Button>
+              <Button type="button">{t("common_back")}</Button>
             </DialogClose>
           </EmptyContent>
         </Empty>

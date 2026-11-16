@@ -83,11 +83,14 @@ import { bulkFetch } from "./api";
 import { setupHref, uploadHref, useReportUploadState, type UploadStep } from "./setup-flow";
 import { StatusMark } from "@/components/feedback";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
+import type { MessageKey } from "@/i18n/messages";
 
 
 /** The demo spreadsheets the upload offers, from `public/samples/` (`scripts/bulk-demo-files.mts`). */
 const SAMPLES = [
-  { key: "tata-capital-bulk-filing-template.xlsx", label: "Sample file 1: template format" },
+  { key: "tata-capital-bulk-filing-template.xlsx", label: "uploadScreen_sampleFile1TemplateFormat" },
   { key: "tata-capital-recovery-mis.xlsx", label: "Sample file 2: custom format" },
 ];
 
@@ -100,6 +103,7 @@ type ReadingRow = {
 
 /** The documents being read, each as it is done, with what was found in it. */
 function ReadingCard({ rows }: { rows: ReadingRow[] }) {
+  const t = useTranslations();
   const done = rows.filter((r) => r.state === "done").length;
   return (
     <Card variant="raised" className="max-w-3xl gap-0 py-0">
@@ -110,10 +114,10 @@ function ReadingCard({ rows }: { rows: ReadingRow[] }) {
         </CardTitle>
         <Progress
           value={(done / rows.length) * 100}
-          aria-label={`${done} of ${rows.length} read`}
+          aria-label={t("uploadScreen_doneOfLengthRead", { done: String(done), length: String(rows.length) })}
         />
         <CardDescription className="tabular-nums" aria-live="polite">
-          {done} of {rows.length} read
+          {t("uploadScreen_doneOfLengthRead", { done: String(done), length: String(rows.length) })}
         </CardDescription>
       </CardHeader>
       <ul className="flex max-h-[50dvh] flex-col divide-y divide-hairline overflow-y-auto border-t border-hairline">
@@ -127,15 +131,15 @@ function ReadingCard({ rows }: { rows: ReadingRow[] }) {
           >
             <span className="flex size-5 shrink-0 items-center justify-center">
               {r.state === "done" ? (
-                <StatusMark size={20} still label="Read" />
+                <StatusMark size={20} still label={t("uploadScreen_read")} />
               ) : r.state === "reading" ? (
-                <Spinner className="size-4 text-primary" aria-label="Reading" />
+                <Spinner className="size-4 text-primary" aria-label={t("uploadScreen_reading")} />
               ) : r.state === "failed" ? (
-                <StatusMark tone="error" size={20} still label="Not read" />
+                <StatusMark tone="error" size={20} still label={t("uploadScreen_notRead")} />
               ) : (
                 <FileTextIcon
                   className="size-4 text-muted-foreground"
-                  aria-label="Waiting"
+                  aria-label={t("uploadScreen_waiting")}
                 />
               )}
             </span>
@@ -168,17 +172,17 @@ function ReadingCard({ rows }: { rows: ReadingRow[] }) {
 /** Case documents, as opposed to a sheet. */
 const DOC = /\.(docx|pdf|txt)$/i;
 
-const LIST_TITLE: Record<ListName, string> = {
-  complainantEntity: "Complainant institution type",
-  gender: "Gender",
-  yesNo: "Yes / No",
-  accusedType: "Accused type",
-  accusedEntity: "Accused institution type",
-  returnReason: "Return reason",
-  natureOfDebt: "Nature of debt",
-  modeOfService: "Mode of service",
-  nonDelivery: "Reason for non-delivery",
-  payment: "Payment after notice",
+const LIST_TITLE: Record<ListName, MessageKey> = {
+  complainantEntity: "uploadScreen_complainantInstitutionType",
+  gender: "uploadScreen_gender",
+  yesNo: "uploadScreen_yesNo",
+  accusedType: "uploadScreen_accusedType",
+  accusedEntity: "uploadScreen_accusedInstitutionType",
+  returnReason: "uploadScreen_returnReason",
+  natureOfDebt: "uploadScreen_natureOfDebt",
+  modeOfService: "uploadScreen_modeOfService",
+  nonDelivery: "uploadScreen_reasonForNonDelivery",
+  payment: "uploadScreen_paymentAfterNotice",
 };
 
 /**
@@ -189,6 +193,7 @@ const LIST_TITLE: Record<ListName, string> = {
  * screen is in the address (`?step=`), so the sections rail can link to each.
  */
 export function UploadScreen() {
+  const t = useTranslations();
   const ready = useGujarat();
   const router = useRouter();
   // The batch's complainants and advocates, set on the setup's sections before the file
@@ -300,7 +305,7 @@ export function UploadScreen() {
       const u = unknownValues(b.cases, m);
       setStep(follows ? (Object.keys(u).length ? "values" : "review") : "map");
     } catch (e) {
-      setError((e as Error).message || "This file could not be read.");
+      setError((e as Error).message || t("uploadScreen_thisFileCouldNotBeRead"));
     } finally {
       setReading(null);
       setBusy(false);
@@ -444,8 +449,8 @@ export function UploadScreen() {
       <>
         <FilingMain>
           <FilingPageHeader
-            title={ai === "on" ? "Excel file or case documents" : "Excel file"}
-            description="One row per case. Each upload becomes its own batch; the cases arrive as drafts and their documents are added after."
+            title={ai === "on" ? t("uploadScreen_excelFileOrCaseDocuments") : t("uploadScreen_excelFile")}
+            description={t("uploadScreen_oneRowPerCaseEachUpload")}
           />
           {errorNotice}
           {reading ? (
@@ -455,7 +460,7 @@ export function UploadScreen() {
               <CardContent className="flex flex-col gap-6">
                 <Field className="gap-1.5">
                   <FieldLabel htmlFor="sheet">
-                    {ai === "on" ? "Excel file, or one document per case" : "Excel file"}
+                    {ai === "on" ? t("uploadScreen_excelFileOrOneDocumentPer") : t("uploadScreen_excelFile")}
                   </FieldLabel>
                   <FileDrop
                     id="sheet"
@@ -463,17 +468,16 @@ export function UploadScreen() {
                     multiple={ai === "on"}
                     files={files}
                     onFiles={setFiles}
-                    prompt={ai === "on" ? "Drag your Excel file or case documents here" : "Drag your Excel file here"}
-                    hint={ai === "on" ? ".xlsx or .csv, or Word and PDF files" : ".xlsx or .csv"}
+                    prompt={ai === "on" ? t("uploadScreen_dragYourExcelFileOrCase") : t("uploadScreen_dragYourExcelFileHere")}
+                    hint={ai === "on" ? t("uploadScreen_xlsxOrCsvOrWordAnd") : t("uploadScreen_xlsxOrCsv")}
                   />
                   <span className="text-caption text-muted-foreground">
-                    The template&apos;s columns go straight in. Any other layout is matched on the
-                    next step.
+                    {t("uploadScreen_theTemplatesColumnsGoStraightIn")}
                   </span>
                 </Field>
                 {/* Demo: the two sample spreadsheets, one click away instead of on disk. */}
                 <div className="flex flex-col gap-2">
-                  <span className="text-body-compact text-muted-foreground">Or try a sample file</span>
+                  <span className="text-body-compact text-muted-foreground">{t("uploadScreen_orTryASampleFile")}</span>
                   <div className="flex flex-wrap gap-2">
                     {SAMPLES.map((x) => (
                       <Button
@@ -487,23 +491,23 @@ export function UploadScreen() {
                         ) : (
                           <FileSpreadsheetIcon data-icon="inline-start" aria-hidden />
                         )}
-                        {x.label}
+                        {translateText(t, x.label)}
                       </Button>
                     ))}
                   </div>
                 </div>
                 <Button variant="outline" className="w-fit" onClick={() => void downloadTemplate()}>
                   <DownloadIcon data-icon="inline-start" aria-hidden />
-                  Download template
+                  {t("uploadScreen_downloadTemplate")}
                 </Button>
               </CardContent>
             </Card>
           )}
           <Card variant="raised">
             <CardHeader>
-              <CardTitle className="text-body font-semibold">The same for every case in the file</CardTitle>
+              <CardTitle className="text-body font-semibold">{t("uploadScreen_theSameForEveryCaseIn")}</CardTitle>
               <CardDescription>
-                Like the complainants and advocates, these are set once here.
+                {t("uploadScreen_likeTheComplainantsAndAdvocatesThese")}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-6">
@@ -516,7 +520,7 @@ export function UploadScreen() {
           backHref={setupHref(setupId, "documents")}
           onContinue={() => void read()}
           continueDisabled={!file || busy}
-          continueLabel={busy ? "Reading…" : "Continue"}
+          continueLabel={busy ? t("uploadScreen_readingContinueLabel") : t("uploadScreen_continue")}
         />
       </>
     );
@@ -526,8 +530,8 @@ export function UploadScreen() {
       <>
         <FilingMain width="wide">
           <FilingPageHeader
-            title="Match columns"
-            description="This file is not laid out like the template. Pick the column that holds each field. Fields already matched were found by name."
+            title={t("uploadScreen_matchColumns")}
+            description={t("uploadScreen_thisFileIsNotLaidOut")}
           />
           {errorNotice}
           <ColumnMapping
@@ -554,14 +558,14 @@ export function UploadScreen() {
       <>
         <FilingMain>
           <FilingPageHeader
-            title="Match values"
-            description="These values in your sheet are not in the court's lists. Choose what each one means; every row using it follows."
+            title={t("uploadScreen_matchValues")}
+            description={t("uploadScreen_theseValuesInYourSheetAre")}
           />
           {errorNotice}
           {unknownLists.map((l) => (
             <Card key={l} variant="raised" >
               <CardHeader>
-                <CardTitle className="text-body font-semibold">{LIST_TITLE[l]}</CardTitle>
+                <CardTitle className="text-body font-semibold">{t(LIST_TITLE[l])}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {unknown[l]!.map((raw) => (
@@ -583,7 +587,7 @@ export function UploadScreen() {
                         }))
                       }
                     >
-                      <NativeSelectOption value="">Choose</NativeSelectOption>
+                      <NativeSelectOption value="">{t("uploadScreen_choose")}</NativeSelectOption>
                       {LISTS[l].map((o) => (
                         <NativeSelectOption key={o.value} value={o.value}>
                           {o.label}
@@ -601,7 +605,7 @@ export function UploadScreen() {
           onBack={() => setStep(template ? "file" : "map")}
           onContinue={() => setStep("review")}
           continueBlocked={!valuesDone}
-          continueHint="Choose what each value means first."
+          continueHint={t("uploadScreen_chooseWhatEachValueMeansFirst")}
         />
       </>
     );
@@ -611,7 +615,7 @@ export function UploadScreen() {
       <>
         <FilingMain width="wide">
           <FilingPageHeader
-            title="Review"
+            title={t("uploadScreen_review")}
             description={
               <>
                 <span className="tabular-nums">{book.cases.rows.length}</span> cases read from {fileName}.{" "}
@@ -643,12 +647,12 @@ export function UploadScreen() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-body font-semibold">
                 <CheckCircle2Icon className="size-5 text-success-ink" aria-hidden />
-                First cases
+                {t("uploadScreen_firstCases")}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="overflow-x-auto">
-                <Table className="border-separate border-spacing-0" aria-label="First rows">
+                <Table className="border-separate border-spacing-0" aria-label={t("uploadScreen_firstRows")}>
                   <TableHeader>
                     <TableRow className={TABLE_HEAD_ROW}>
                       {PREVIEW.map((k) => (
@@ -679,7 +683,7 @@ export function UploadScreen() {
               </div>
               {book.cases.rows.length > 8 ? (
                 <span className="text-caption text-muted-foreground tabular-nums">
-                  and {book.cases.rows.length - 8} more
+                  {t("uploadScreen_andValueMore", { value: String(book.cases.rows.length - 8) })}
                 </span>
               ) : null}
             </CardContent>
@@ -690,7 +694,7 @@ export function UploadScreen() {
           onBack={() => setStep(backFromReview)}
           onContinue={() => void create()}
           continueDisabled={busy}
-          continueLabel={busy ? "Creating batch…" : `Create batch of ${book.cases.rows.length}`}
+          continueLabel={busy ? t("uploadScreen_creatingBatch") : t("uploadScreen_createBatchOfLength", { length: String(book.cases.rows.length) })}
         />
       </>
     );

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { useBulkFileUrl } from "./api";
+import { useTranslations } from "next-intl";
 
 /**
  * The document a case was read from, one click away: a PDF as itself, a Word file as its
@@ -23,6 +24,7 @@ export function OriginalDoc({
 }: {
   original: { file: StoredFileRef; text: string | null };
 }) {
+  const t = useTranslations();
   const [open, setOpen] = React.useState(false);
   const pdf = original.file.type === "application/pdf";
   const href = useBulkFileUrl(open ? original.file.id : null);
@@ -36,7 +38,7 @@ export function OriginalDoc({
         onClick={() => setOpen(true)}
       >
         <FileTextIcon data-icon="inline-start" aria-hidden />
-        Original document
+        {t("originalDoc_originalDocument")}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="flex h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl">
@@ -46,13 +48,13 @@ export function OriginalDoc({
                 {original.file.name}
               </DialogTitle>
               <DialogDescription className="sr-only">
-                The document this case was read from
+                {t("originalDoc_theDocumentThisCaseWasRead")}
               </DialogDescription>
             </div>
             <Button asChild variant="outline" size="sm">
               <a href={href ?? undefined} download={original.file.name}>
                 <DownloadIcon data-icon="inline-start" aria-hidden />
-                Download
+                {t("originalDoc_download")}
               </a>
             </Button>
           </div>
@@ -65,7 +67,7 @@ export function OriginalDoc({
           ) : (
             <div className="min-h-0 flex-1 overflow-y-auto bg-surface-sunken p-4 sm:p-6">
               <div className="mx-auto max-w-2xl rounded-lg border border-hairline bg-card p-6 text-body-compact whitespace-pre-wrap shadow-raised">
-                {original.text?.trim() || "This document has no readable text."}
+                {original.text?.trim() || t("originalDoc_thisDocumentHasNoReadableText")}
               </div>
             </div>
           )}

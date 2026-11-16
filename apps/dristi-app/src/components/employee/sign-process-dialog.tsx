@@ -55,6 +55,8 @@ import {
 } from "@/lib/employee/sign-process";
 import { useCourtLocalized } from "@/components/court/court-provider";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** What the paper is called in the signature stage's copy. */
 const NOUN = "process";
@@ -155,6 +157,7 @@ function SignProcessBody({
   onDownloaded: (process: CourtProcess) => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const flow = useStagedFlow<Stage>({ order: STAGES, scene: SCENES });
   const choice = useSignatureChoice(NOUN);
@@ -204,13 +207,13 @@ function SignProcessBody({
       case "sign":
         return (
           <Button type="button" onClick={() => flow.go("sign")}>
-            Sign this process
+            {t("signProcessDialog_signThisProcess")}
           </Button>
         );
       case "record":
         return (
           <Button type="button" onClick={() => setMode("record")}>
-            Record return
+            {t("signProcessDialog_recordReturn")}
           </Button>
         );
       default:
@@ -222,7 +225,7 @@ function SignProcessBody({
               setMode("act");
             }}
           >
-            {available.confirm}
+            {translateText(t, available.confirm)}
           </Button>
         );
     }
@@ -237,7 +240,7 @@ function SignProcessBody({
         onDownloaded(process);
       }}
     >
-      Download
+      {t("signProcessDialog_download")}
     </Button>
   );
 
@@ -262,7 +265,7 @@ function SignProcessBody({
           {moveLine(asking.id, [process])}
         </p>
         <Button type="button" variant="outline" onClick={() => settle()}>
-          Back
+          {t("common_back")}
         </Button>
         <Button
           type="button"
@@ -271,7 +274,7 @@ function SignProcessBody({
             settle(asking);
           }}
         >
-          {asking.confirm}
+          {translateText(t, asking.confirm)}
         </Button>
       </>
     );
@@ -303,7 +306,7 @@ function SignProcessBody({
         </p>
         {download}
         <Button type="button" onClick={onClose}>
-          Done
+          {t("signProcessDialog_done")}
         </Button>
       </>
     );
@@ -311,10 +314,10 @@ function SignProcessBody({
     footer = (
       <>
         <Button type="button" variant="outline" onClick={() => setMode("read")}>
-          Back
+          {t("common_back")}
         </Button>
         <Button type="button" disabled={!marked || !returnedOn} onClick={runRecord}>
-          Record return
+          {t("signProcessDialog_recordReturn")}
         </Button>
       </>
     );
@@ -329,7 +332,7 @@ function SignProcessBody({
 
   const title =
     stage === "sign"
-      ? "Add signature"
+      ? t("signProcessDialog_addSignature")
       : mode === "act" && asking
         ? asking.question(`this ${asking.noun?.one ?? "process"}`)
         : document.title;
@@ -347,7 +350,7 @@ function SignProcessBody({
           {causeTitle(process)} <span aria-hidden>· </span>
           <Identifier
             value={process.caseNumber}
-            label="case number"
+            label={t("signProcessDialog_caseNumber")}
             copyable={false}
           />
         </DialogDescription>
@@ -375,7 +378,7 @@ function SignProcessBody({
               /* What came back, beside the paper it came back on — above the facts,
                  because while recording it is the task in hand. */
               <section
-                aria-label={`What the ${inline} came back as`}
+                aria-label={t("signProcessDialog_whatTheInlineCameBackAs", { inline })}
                 className="flex flex-col gap-4 rounded-lg border border-hairline bg-card p-4"
               >
                 <ReturnedOnField value={returnedOn} onChange={setReturnedOn} />
@@ -414,9 +417,9 @@ function SignProcessBody({
         <SignatureStage
           noun={NOUN}
           subject={`You are adding your signature to the ${inline} in ${courtText(process.caseNumber)}.`}
-          warning="Signing this process cannot be reversed."
+          warning={t("signProcessDialog_signingThisProcessCannotBeReversed")}
           download={{
-            prompt: "Want to read it again?",
+            prompt: t("signProcessDialog_wantToReadItAgain"),
             onDownload: () => downloadProcessDocument(process),
           }}
           choice={choice}
@@ -433,13 +436,14 @@ function SignProcessBody({
  * A sunken well, the application-review overlays' treatment.
  */
 function ProcessFacts({ process }: { process: CourtProcess }) {
+  const t = useTranslations();
   const rows: [string, React.ReactNode][] = [
     ["Status", <ProcessStatusText key="s" process={process} inline />],
     ["Process type", courtProcessTypeLabel(process.type)],
     ["Delivery channel", processChannelLabel(process.channel)],
     [
       "Case number",
-      <Identifier key="c" value={process.caseNumber} label="case number" />,
+      <Identifier key="c" value={process.caseNumber} label={t("signProcessDialog_caseNumber")} />,
     ],
     ["Hearing date", formatProcessDate(process.hearingDate)],
     ["Payment made", formatProcessDate(process.paidOn)],
@@ -482,13 +486,14 @@ function ProcessFacts({ process }: { process: CourtProcess }) {
  * proclamation is published, not addressed, so it has none.
  */
 function ProcessFacsimile({ document: storedDocument }: { document: ProcessDocument }) {
+  const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {t("signProcessDialog_caseNoCaseNumber", { caseNumber: document.caseNumber })}
         </p>
         <p className="text-body font-semibold">{document.matter}</p>
       </header>
@@ -512,7 +517,7 @@ function ProcessFacsimile({ document: storedDocument }: { document: ProcessDocum
 
       <div className="flex flex-col gap-2">
         <p className="text-body">{document.channel}</p>
-        <p className="text-body">Dated this the {document.dated}.</p>
+        <p className="text-body">{t("signProcessDialog_datedThisTheDated", { dated: document.dated })}</p>
       </div>
 
       <p className="text-body text-paper-muted-foreground">

@@ -66,9 +66,9 @@ export const NOTARY_REGISTRY: Notary[] = [
  */
 export type FiledCase = { caseNumber: string; title: string; court: string };
 export const LITIGANT_CASES: FiledCase[] = [
-  { caseNumber: "KL-000482-2025", title: "Cheque bounce v. M. Raghavan", court: "24×7 ON Court" },
-  { caseNumber: "KL-001139-2024", title: "Cheque bounce v. Sunrise Traders", court: "JMFC Court, Ernakulam" },
-  { caseNumber: "KL-000917-2026", title: "Cheque bounce v. K. Devan", court: "24×7 ON Court" },
+  { caseNumber: "KL-000482-2025", title: "data_chequeBounceVMRaghavan", court: "24×7 ON Court" },
+  { caseNumber: "KL-001139-2024", title: "data_chequeBounceVSunriseTraders", court: "JMFC Court, Ernakulam" },
+  { caseNumber: "KL-000917-2026", title: "data_chequeBounceVKDevan", court: "24×7 ON Court" },
 ];
 
 /** Courts offered in the scope step. Only the 24×7 ON Court is configured; others are stubs. */

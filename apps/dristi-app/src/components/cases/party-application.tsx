@@ -50,6 +50,8 @@ import { useCaseOfficeAccess } from "@/components/cases/case-office-access";
 import { ESignDialog } from "@/components/cases/e-sign-dialog";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtLocalized } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** The case, as the paper names it — passed down from whoever holds it. */
 export type CaseRef = {
@@ -82,6 +84,7 @@ export function PartyApplicationDocument({
   caseRef: CaseRef;
   doc: PartyApplicationDoc;
 }) {
+  const t = useTranslations();
   // The download carries what the sheet shows: the selected state's court and numbers.
   const courtCaseRef = useCourtLocalized(caseRef);
   const courtDoc = useCourtLocalized(doc);
@@ -91,11 +94,11 @@ export function PartyApplicationDocument({
     <div className="flex flex-col gap-4">
       <div className="rounded-lg bg-surface-sunken p-4">
         <DescriptionList>
-          <ReviewRow term="Application">{doc.matter}</ReviewRow>
-          <ReviewRow term="Case">
-            <Identifier value={caseRef.caseNumber} label="case number" />
+          <ReviewRow term={t("partyApplication_application")}>{doc.matter}</ReviewRow>
+          <ReviewRow term={t("partyApplication_case")}>
+            <Identifier value={caseRef.caseNumber} label={t("partyApplication_caseNumber")} />
           </ReviewRow>
-          <ReviewRow term="Generated on">{generatedOn}</ReviewRow>
+          <ReviewRow term={t("partyApplication_generatedOn")}>{generatedOn}</ReviewRow>
         </DescriptionList>
       </div>
 
@@ -108,7 +111,7 @@ export function PartyApplicationDocument({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label={`Download ${doc.matter}`}
+            aria-label={t("partyApplication_downloadMatter", { matter: doc.matter })}
             onClick={() => downloadPartyApplication(courtCaseRef, courtDoc, generatedOn)}
           >
             <DownloadIcon aria-hidden />
@@ -149,6 +152,7 @@ function FullViewButton({
   title: string;
   children: ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -156,7 +160,7 @@ function FullViewButton({
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label={`Full view of ${title}`}
+          aria-label={t("partyApplication_fullViewOfTitle", { title })}
         >
           <Maximize2Icon aria-hidden />
         </Button>
@@ -167,12 +171,12 @@ function FullViewButton({
             {title}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Full view. Close to go back.
+            {t("partyApplication_fullViewCloseToGoBack")}
           </DialogDescription>
         </DialogHeader>
         <div
           tabIndex={0}
-          aria-label={`Preview of ${title}`}
+          aria-label={t("partyApplication_previewOfTitle", { title })}
           className={cn(
             "min-h-0 flex-1 overflow-auto rounded-xl p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
             DOCUMENT_GROUND
@@ -198,16 +202,17 @@ function PartyApplicationPaper({
   doc: PartyApplicationDoc;
   generatedOn: string;
 }) {
+  const t = useTranslations();
   const caseRef = useCourtLocalized(storedCaseRef);
   const doc = useCourtLocalized(storedDoc);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground [&_[data-slot=description-details]]:text-paper-foreground [&_[data-slot=description-term]]:text-paper-muted-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{caseRef.court}</p>
-        <p className="text-body font-semibold">Case no. {caseRef.caseNumber}</p>
+        <p className="text-body font-semibold">{t("partyApplication_caseNoCaseNumber", { caseNumber: caseRef.caseNumber })}</p>
         <p className="text-body font-semibold">{caseRef.title}</p>
         <p className="text-body-compact text-paper-muted-foreground">
-          {doc.matter} · Date: {generatedOn}
+          {t("partyApplication_matterDateGeneratedOn", { matter: doc.matter, generatedOn })}
         </p>
       </header>
 
@@ -230,7 +235,7 @@ function PartyApplicationPaper({
       <div className="flex w-1/2 flex-col gap-1 self-end pt-4">
         <div className="h-px w-full bg-paper-border" aria-hidden />
         <p className="text-caption text-paper-muted-foreground">
-          {SELF.name}, Advocate
+          {t("partyApplication_nameAdvocate", { name: SELF.name })}
         </p>
       </div>
     </article>
@@ -280,8 +285,8 @@ export function PartySignatureDialog({
   onBack,
   onComplete,
   confirmation,
-  submitLabel = "Submit application",
-  chooseTitle = "How is this application signed?",
+  submitLabel = "partyApplication_submitApplication",
+  chooseTitle = "partyApplication_howIsThisApplicationSigned",
   noun = "application",
   proceed,
 }: {
@@ -308,6 +313,7 @@ export function PartySignatureDialog({
    */
   proceed?: { label: string; laterLabel: string; onClick: () => void };
 }) {
+  const t = useTranslations();
   /* The case page cannot tell the profile; a litigant or party in person
      signing their own never holds office access. */
   const { profileRole } = useProfile();
@@ -316,8 +322,8 @@ export function PartySignatureDialog({
     <ESignDialog
       open={open}
       noun={noun}
-      chooseTitle={chooseTitle}
-      submitLabel={submitLabel}
+      chooseTitle={translateText(t, chooseTitle)}
+      submitLabel={translateText(t, submitLabel)}
       officeAccess={officeAccess}
       onBack={onBack ?? onClose}
       onDismiss={onClose}

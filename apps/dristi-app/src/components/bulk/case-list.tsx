@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 import type { CaseView } from "./api";
+import { useTranslations } from "next-intl";
 
 /** Where a case stands, as a small badge: what it needs, or a tick when nothing. */
 export function CaseStateBadge({
@@ -19,6 +20,7 @@ export function CaseStateBadge({
   holds: number;
   checks: number;
 }) {
+  const t = useTranslations();
   if (holds)
     return (
       <Badge variant="destructive" className="shrink-0 tabular-nums">
@@ -28,13 +30,13 @@ export function CaseStateBadge({
   if (checks)
     return (
       <Badge variant="warning" className="shrink-0 tabular-nums">
-        {checks} to check
+        {t("caseList_checksToCheck", { checks: String(checks) })}
       </Badge>
     );
   return (
     <Badge variant="success" className="shrink-0">
       <CheckIcon data-icon="inline-start" aria-hidden />
-      Complete
+      {t("caseList_complete")}
     </Badge>
   );
 }
@@ -55,6 +57,7 @@ export function CaseList({
   onSelect: (id: string) => void;
   stateOf: (c: CaseView) => { holds: number; checks: number };
 }) {
+  const t = useTranslations();
   const scroller = React.useRef<HTMLUListElement>(null);
   const [hidden, setHidden] = React.useState({ above: 0, below: 0 });
 
@@ -103,7 +106,7 @@ export function CaseList({
       className="sticky top-20 hidden gap-0 overflow-hidden py-0 lg:flex"
     >
       <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
-        <span className="text-body-compact font-semibold">Cases</span>
+        <span className="text-body-compact font-semibold">{t("caseList_cases")}</span>
         <span className="text-caption text-muted-foreground tabular-nums">
           {cases.length}
         </span>
@@ -112,7 +115,7 @@ export function CaseList({
         <ul
           ref={scroller}
           onScroll={measure}
-          aria-label="Cases"
+          aria-label={t("caseList_cases")}
           className="flex max-h-[calc(100dvh-16rem)] flex-col gap-1 overflow-y-auto overscroll-contain p-2"
         >
           {cases.map((c) => {
@@ -155,7 +158,7 @@ export function CaseList({
               onClick={() => page(-1)}
             >
               <ArrowUpIcon data-icon="inline-start" aria-hidden />
-              {hidden.above} more above
+              {t("caseList_aboveMoreAbove", { above: String(hidden.above) })}
             </Button>
           </div>
         ) : null}
@@ -168,7 +171,7 @@ export function CaseList({
               onClick={() => page(1)}
             >
               <ArrowDownIcon data-icon="inline-start" aria-hidden />
-              {hidden.below} more below
+              {t("caseList_belowMoreBelow", { below: String(hidden.below) })}
             </Button>
           </div>
         ) : null}

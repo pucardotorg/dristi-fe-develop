@@ -13,6 +13,7 @@ import { Breadcrumbs } from "@/components/shell/chrome";
 import { areaOf, originCrumb, safeOrigin } from "@/lib/nav/origin";
 import { cn } from "@/lib/utils";
 import { serverCourtText } from "@/lib/court/server";
+import { getTranslations } from "next-intl/server";
 
 function findCase(caseId: string) {
   return findCaseRecord(caseId);
@@ -76,6 +77,7 @@ export default async function RaiseApplicationPage({
   params: Promise<{ caseId: string }>;
   searchParams: Promise<{ draft?: string; from?: string; objectTo?: string }>;
 }) {
+  const t = await getTranslations();
   const { caseId } = await params;
   const { draft, from, objectTo } = await searchParams;
   const record = findCase(caseId);
@@ -99,7 +101,7 @@ export default async function RaiseApplicationPage({
         <CaseBreadcrumbs
           caseId={record.id}
           caseNumber={record.caseNumber}
-          trail={[{ label: "Raise application" }]}
+          trail={[{ label: t("applicationPage_raiseApplication") }]}
         />
       )}
       {/* View Case's ground, so this reads as the same place and the white

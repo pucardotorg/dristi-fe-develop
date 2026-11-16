@@ -19,6 +19,7 @@ import {
 import { formatCaseDate } from "@/lib/employee/hearing-overview";
 import { parseIsoDay, type CourtHearing } from "@/lib/employee/hearings";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * Data flags (`ORD-15`). One tab for the order screen and the case overview (`CLS-11`),
@@ -32,6 +33,7 @@ import { cn } from "@/lib/utils";
  * With no listing (an order outside a hearing) or no past hearing, it says so.
  */
 export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
+  const t = useTranslations();
   const history = React.useMemo(
     () => (hearing ? attendanceHistory(hearing) : undefined),
     [hearing],
@@ -46,10 +48,10 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
             <FlagIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body-compact font-semibold tracking-normal">
-            No attendance history yet
+            {t("orderDataFlags_noAttendanceHistoryYet")}
           </EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            Attendance at this case&rsquo;s past hearings will appear here.
+            {t("orderDataFlags_attendanceAtThisCasesPastHearings")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -60,7 +62,7 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
     <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-col gap-0.5">
         <h3 id={headingId} className="text-body-compact font-semibold">
-          Attendance history
+          {t("orderDataFlags_attendanceHistory")}
         </h3>
         <p className="text-caption text-muted-foreground">
           {history.total === 1
@@ -78,7 +80,7 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
           aria-hidden
           className="flex items-end gap-3 border-b border-hairline pb-2 text-caption text-muted-foreground"
         >
-          <span className="min-w-0 flex-1">Person</span>
+          <span className="min-w-0 flex-1">{t("orderDataFlags_person")}</span>
           <span className="flex shrink-0 gap-1">
             {history.recent.map((sitting) => (
               <span
@@ -90,7 +92,7 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
               </span>
             ))}
           </span>
-          <span className="w-14 shrink-0 text-right">Attended</span>
+          <span className="w-14 shrink-0 text-right">{t("orderDataFlags_attended")}</span>
         </div>
         <ul className="flex flex-col">
           {history.rows.map((row) => (
@@ -126,6 +128,7 @@ function AttendanceLine({
   row: AttendanceRow;
   sittings: readonly AttendanceSitting[];
 }) {
+  const t = useTranslations();
   const { appearance } = row;
   /* A side's counsel is one line for the side; the advocates on record name it. */
   const name =
@@ -163,7 +166,7 @@ function AttendanceLine({
           {row.percent === undefined ? "—" : `${row.percent}%`}
         </span>
         <span className="text-caption text-muted-foreground tabular-nums">
-          {row.present} of {row.required}
+          {t("orderDataFlags_presentOfRequired", { present: String(row.present), required: String(row.required) })}
         </span>
       </div>
     </li>

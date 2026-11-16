@@ -14,6 +14,7 @@ import {
 import { formatCourtDay, parseIsoDay } from "@/lib/employee/hearings";
 import { cn } from "@/lib/utils";
 import "./court-date-scrubber.css";
+import { useTranslations } from "next-intl";
 
 const FINE_POINTER = "(hover: hover) and (pointer: fine)";
 function subscribePointer(callback: () => void) {
@@ -63,6 +64,7 @@ export function CourtDateScrubber({
   /** Lets the weekday under the square fade while the strip is out. */
   onRevealChange: (open: boolean, instant: boolean) => void;
 }) {
+  const t = useTranslations();
   const canScrub = React.useSyncExternalStore(subscribePointer, finePointer, () => false);
   const [anchor, setAnchor] = React.useState(day);
   const [preview, setPreview] = React.useState(NEARBY_RADIUS);
@@ -190,8 +192,7 @@ export function CourtDateScrubber({
         {children}
       </Button>
       <span id={helpId} className="sr-only">
-        Move across the date to preview nearby sitting days. Click to choose one. With a
-        keyboard, use Left and Right, then Enter or Space. Escape cancels.
+        {t("courtDateScrubber_moveAcrossTheDateToPreview")}
       </span>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {keyboard && open ? formatCourtDay(previewDay) : ""}

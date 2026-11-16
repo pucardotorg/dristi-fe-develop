@@ -26,6 +26,8 @@ import {
   flowPathOf,
   useTaskActions,
 } from "@/components/tasks/use-task-actions";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Acting on a task from any screen, without leaving it — the same decision
@@ -39,6 +41,7 @@ import {
  * world updates together.
  */
 export function useTaskAct() {
+  const tr = useTranslations();
   const store = useTasks();
   const router = useRouter();
   // Whichever screen is hosting the layer — the flow's way back.
@@ -137,9 +140,9 @@ export function useTaskAct() {
       <ConfirmDialog
         open={!!flowNotice}
         onOpenChange={(open) => !open && setFlowNotice(null)}
-        title={flowNotice ? FLOW_DIALOG[flowNotice.flow].title : ""}
-        description={flowNotice ? FLOW_DIALOG[flowNotice.flow].description : undefined}
-        confirmLabel="Continue"
+        title={flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].title) : ""}
+        description={flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].description) : undefined}
+        confirmLabel={tr("taskActLayer_continue")}
         destructive={false}
         icon={ArrowRightIcon}
         onConfirm={() => {
@@ -152,19 +155,19 @@ export function useTaskAct() {
       <ConfirmDialog
         open={!!confirmDone}
         onOpenChange={(open) => !open && setConfirmDone(null)}
-        title="Mark as done?"
+        title={tr("taskActLayer_markAsDone")}
         description={
           confirmDone
-            ? `“${confirmDone.title}” — this records that it was completed outside DRISTI. Nothing is sent to the court.`
+            ? tr("taskActLayer_titleThisRecordsThatItWas", { title: confirmDone.title })
             : undefined
         }
-        confirmLabel="Mark as done"
+        confirmLabel={tr("taskActLayer_markAsDoneConfirmLabel")}
         destructive={false}
         icon={ListChecksIcon}
         onConfirm={() => {
           const task = confirmDone;
           setConfirmDone(null);
-          if (task) void act(task.id, markDone, "Marked as done");
+          if (task) void act(task.id, markDone, tr("taskActLayer_markedAsDone"));
         }}
       />
     </>

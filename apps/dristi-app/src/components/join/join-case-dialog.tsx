@@ -62,6 +62,7 @@ import {
   type JoinCase,
 } from "@/lib/join/content";
 import { OutcomeHeader, StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * Post-login join-a-case dialog.
@@ -136,6 +137,7 @@ export function JoinCaseDialog({
   locale: Locale;
   onJoined: (result: JoinResult) => void;
 }) {
+  const t = useTranslations();
   /* From the summons the case is known but the code is still asked, as on every other
      way in: a link alone is not proof of holding the summons (owner, 2026-10-14). */
   const initialStage: Stage =
@@ -669,7 +671,7 @@ export function JoinCaseDialog({
                           <Button asChild variant="link" size="sm" className="h-auto px-1">
                             <a href={joinDialog.findAdvocateHref} target="_blank" rel="noreferrer">
                               {pick(joinDialog.openBarCouncil, locale)}
-                              <span className="sr-only"> (opens in a new tab)</span>
+                              <span className="sr-only"> {t("joinJoinCaseDialog_opensInANewTab")}</span>
                               <ExternalLinkIcon data-icon="inline-end" aria-hidden />
                             </a>
                           </Button>
@@ -760,8 +762,8 @@ export function JoinCaseDialog({
                       noFile:
                         locale === "ml"
                           ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല"
-                          : "No file chosen yet",
-                      chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : "Choose file",
+                          : t("joinJoinCaseDialog_noFileChosenYet"),
+                      chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : t("joinJoinCaseDialog_chooseFile"),
                     }}
                   />
                   <FieldDescription>{pick(joinDialog.pipDocHelp, locale)}</FieldDescription>

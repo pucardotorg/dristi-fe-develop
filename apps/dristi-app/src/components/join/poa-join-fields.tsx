@@ -31,6 +31,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import { fill, joinDialog, type CaseParty, type JoinCase } from "@/lib/join/content";
+import { useTranslations } from "next-intl";
 
 /**
  * The PoA holder's part of the join dialog (handover §9b):
@@ -77,6 +78,7 @@ function PartyDocument({
   invalid: boolean;
   locale: Locale;
 }) {
+  const t = useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [sampleNotice, setSampleNotice] = React.useState(false);
   return (
@@ -131,8 +133,8 @@ function PartyDocument({
         onChooseFile={() => inputRef.current?.click()}
         copy={{
           optional: locale === "ml" ? "നിർബന്ധമല്ല" : "Optional",
-          noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : "No file chosen yet",
-          chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : "Choose file",
+          noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : t("poaJoinFields_noFileChosenYet"),
+          chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : t("poaJoinFields_chooseFile"),
         }}
       />
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">

@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * The quiet controls every case register shares: filters, search and the row
@@ -37,6 +38,7 @@ export function RegisterFilter({
   onChange: (values: string[]) => void;
   options: { value: string; label: string }[];
 }) {
+  const t = useTranslations();
   const summary =
     values.length === 0
       ? "All"
@@ -90,7 +92,7 @@ export function RegisterFilter({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => onChange([])}>
-              Clear {label.toLowerCase()}
+              {t("registerControls_clearToLowerCase", { toLowerCase: label.toLowerCase() })}
             </DropdownMenuItem>
           </>
         ) : null}
@@ -148,6 +150,7 @@ export function RowViewButton({
   label: string;
   onClick: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Button
       type="button"
@@ -159,7 +162,7 @@ export function RowViewButton({
         onClick();
       }}
     >
-      View<span className="sr-only">: {label}</span>
+      {t.rich("registerControls_viewLabel", { label, span: (chunks) => <span className="sr-only">{chunks}</span> })}
     </Button>
   );
 }

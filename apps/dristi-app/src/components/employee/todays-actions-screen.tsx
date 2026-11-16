@@ -19,6 +19,7 @@ import {
 } from "@/lib/employee/navigation";
 import { useCourt } from "@/components/court/court-provider";
 import { useCourtRole } from "@/components/employee/use-court-role";
+import { useTranslations } from "next-intl";
 
 const NEVER_CHANGES = () => () => {};
 const readToday = () => isoDay(new Date());
@@ -35,6 +36,7 @@ const readToday = () => isoDay(new Date());
  * is an index over `COURT_NAV_GROUPS`, not a second copy of what any of them holds.
  */
 export function TodaysActionsScreen() {
+  const t = useTranslations();
   const today = React.useSyncExternalStore(NEVER_CHANGES, readToday, readToday);
   const { court } = useCourt();
   const seat = useCourtRole();
@@ -45,7 +47,7 @@ export function TodaysActionsScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Today’s actions
+          {t("todaysActionsScreen_todaysActions")}
         </h1>
         <p className="text-body text-muted-foreground tabular-nums">
           Today, {formatCourtDay(today)} ·{" "}
@@ -55,7 +57,7 @@ export function TodaysActionsScreen() {
       </header>
 
       <section
-        aria-label="Today's actions"
+        aria-label={t("todaysActionsScreen_todaysActionsArialabel")}
         className="flex min-w-0 flex-col gap-4 rounded-xl border border-hairline bg-card shadow-raised p-6"
       >
         <ItemGroup className="gap-3">
@@ -75,6 +77,7 @@ export function TodaysActionsScreen() {
  * `TodaysScheduleScreen`, whose flat list below the hearings block is this same row.
  */
 export function CourtActionRow({ item }: { item: CourtNavItem }) {
+  const t = useTranslations();
   const count = item.count ?? 0;
   return (
     <Item asChild variant="muted" className="px-4 py-3">
@@ -91,12 +94,12 @@ export function CourtActionRow({ item }: { item: CourtNavItem }) {
                 {count}
               </span>
               <span className="text-caption text-muted-foreground">
-                waiting
+                {t("todaysActionsScreen_waiting")}
               </span>
             </span>
           ) : (
             <span className="text-caption text-muted-foreground">
-              Nothing waiting
+              {t("todaysActionsScreen_nothingWaiting")}
             </span>
           )}
           <ChevronRightIcon aria-hidden className="size-4 text-muted-foreground" />

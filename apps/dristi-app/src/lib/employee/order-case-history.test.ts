@@ -6,6 +6,10 @@ import {
   orderCaseHistory,
   orderExcerpt,
 } from "./order-case-history";
+import { translateMessage } from "@/i18n/messages";
+
+/** A message key read back as its English, so expectations read the way the screen does. */
+const inEnglish = (text: string) => translateMessage("en", text);
 
 test("orders and events merge oldest first, and the newest order is the last order", () => {
   const entries = orderCaseHistory(
@@ -33,7 +37,7 @@ test("orders and events merge oldest first, and the newest order is the last ord
   assert.equal(entries.filter((entry) => entry.last).length, 1);
   assert.equal(entries.at(-1)?.last, true);
   assert.equal(entries[0].type, "filing");
-  assert.equal(entries.at(-1)?.label, "Order Issued");
+  assert.equal(inEnglish(entries.at(-1)?.label ?? ""), "Order Issued");
   assert.equal(entries.at(-1)?.type, "orders");
   assert.equal(entries.find((e) => e.id === "cognizance-taken")?.kind, "order");
   assert.equal(

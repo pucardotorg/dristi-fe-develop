@@ -32,6 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * The evidence queue as a table: which sheets are picked for signature, the cause, its
@@ -71,6 +72,7 @@ export function SignWitnessDepositionTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (deposition: WitnessDeposition) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const selectedOnPage = rows.filter((row) => selectedIds.has(row.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
@@ -92,25 +94,25 @@ export function SignWitnessDepositionTable({
                  keep once the list is paged. */
               aria-label={
                 allSelected
-                  ? "Clear the depositions on this page"
-                  : "Select the depositions on this page"
+                  ? t("signWitnessDepositionTable_clearTheDepositionsOnThisPage")
+                  : t("signWitnessDepositionTable_selectTheDepositionsOnThisPage")
               }
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
+            {t("signWitnessDepositionTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("signWitnessDepositionTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
-            Witness name
+            {t("signWitnessDepositionTable_witnessName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Date of deposition
+            {t("signWitnessDepositionTable_dateOfDeposition")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-nowrap")}>
-            Advocates
+            {t("signWitnessDepositionTable_advocates")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -138,7 +140,7 @@ export function SignWitnessDepositionTable({
                   /* The sheet, not the row: one case can put four of these in the list,
                      and a label naming only the cause would read aloud four times
                      identically. */
-                  aria-label={`Select the deposition of ${deposition.witness.name}, ${tag}, in ${courtText(deposition.caseNumber)}`}
+                  aria-label={t("signWitnessDepositionTable_selectTheDepositionOfNameTag", { name: deposition.witness.name, tag, courtText: courtText(deposition.caseNumber) })}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -160,7 +162,7 @@ export function SignWitnessDepositionTable({
                 className={rowOpenerClass}
                 >
                   <span className="sr-only">
-                    Read and sign the deposition of {deposition.witness.name} in{" "}
+                    {t("signWitnessDepositionTable_readAndSignTheDepositionOf", { name: deposition.witness.name })}
                   </span>
                   {causeTitle(deposition)}
                 </button>
@@ -168,7 +170,7 @@ export function SignWitnessDepositionTable({
               <TableCell
                 className={cn(TABLE_CELL, "whitespace-nowrap")}
               >
-                <Identifier value={deposition.caseNumber} label="case number" />
+                <Identifier value={deposition.caseNumber} label={t("signWitnessDepositionTable_caseNumberLabel")} />
               </TableCell>
               {/* The name carries the fact; the tag labels it, so it recedes to muted
                   the way the `(C)` / `(A)` marks do in the advocates cell beside it.

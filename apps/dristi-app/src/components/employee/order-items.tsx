@@ -43,6 +43,7 @@ import {
   type OrderTemplateId,
 } from "@/lib/employee/order-templates";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * **Items** — what is in this order, then the catalogue to add from: the screen's own
@@ -75,12 +76,13 @@ export function ItemsCard({
   onEdit: (block: ItemBlock) => void;
   onRemove: (block: ItemBlock) => void;
 }) {
+  const t = useTranslations();
   return (
     <Card variant="raised" className="min-w-0 gap-0 p-0">
       <div className={FRAMED_HEAD}>
-        <h2 className="text-body-compact font-semibold">Items</h2>
+        <h2 className="text-body-compact font-semibold">{t("orderItems_items")}</h2>
         <span className="text-body-compact tabular-nums text-muted-foreground">
-          {items.length + (pinned ? 1 : 0)} in this order
+          {t("orderItems_valueInThisOrder", { value: String(items.length + (pinned ? 1 : 0)) })}
         </span>
       </div>
       <div className={cn(FRAMED_BODY, "flex min-w-0 flex-col gap-4")}>
@@ -95,7 +97,7 @@ export function ItemsCard({
                   <span className="text-body-compact">{pinned.label}</span>
                   {pinned.gaps > 0 ? (
                     <span className="text-caption text-warning-ink">
-                      {pinned.gaps} mandatory to fill
+                      {t("orderItems_gapsMandatoryToFill", { gaps: String(pinned.gaps) })}
                     </span>
                   ) : null}
                 </span>
@@ -104,7 +106,7 @@ export function ItemsCard({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    aria-label={`Edit ${pinned.label}`}
+                    aria-label={t("orderItems_editLabel", { label: pinned.label })}
                     onClick={pinned.onEdit}
                   >
                     <PencilIcon aria-hidden />
@@ -128,7 +130,7 @@ export function ItemsCard({
                     <span className="text-body-compact">{template.label}</span>
                     {gaps.length > 0 ? (
                       <span className="text-caption text-warning-ink">
-                        {gaps.length} mandatory to fill
+                        {t("orderItems_lengthMandatoryToFill", { length: String(gaps.length) })}
                       </span>
                     ) : null}
                   </span>
@@ -139,7 +141,7 @@ export function ItemsCard({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          aria-label={`Edit ${template.label}`}
+                          aria-label={t("orderItems_editLabel", { label: template.label })}
                           onClick={() => onEdit(block)}
                         >
                           <PencilIcon aria-hidden />
@@ -150,7 +152,7 @@ export function ItemsCard({
                           type="button"
                           variant="destructive-ghost"
                           size="icon"
-                          aria-label={`Remove ${template.label}`}
+                          aria-label={t("orderItems_removeLabel", { label: template.label })}
                           onClick={() => onRemove(block)}
                         >
                           <Trash2Icon aria-hidden />
@@ -200,6 +202,7 @@ function ItemSearch({
   reasonFor: (template: OrderTemplate) => string | null;
   onChoose: (type: OrderTemplateId) => void;
 }) {
+  const t = useTranslations();
   const [query, setQuery] = React.useState("");
   /* Open the moment the field is entered, not only once something is typed (owner,
      2026-10-12): a drafter looks at what is available before knowing what to search. */
@@ -217,7 +220,7 @@ function ItemSearch({
   const groups = [
     {
       id: "likely",
-      label: "Likely at this hearing",
+      label: t("orderItems_likelyAtThisHearing"),
       rows: likely.filter(matches),
     },
     ...ORDER_GROUPS.map((group) => ({
@@ -342,13 +345,13 @@ function ItemSearch({
           >
             <QueueSearchField
               ref={inputRef}
-              label="Add an item"
+              label={t("orderItems_addAnItem")}
               value={query}
               onChange={(value) => {
                 setQuery(value);
                 setOpen(true);
               }}
-              placeholder="Search the catalogue"
+              placeholder={t("orderItems_searchTheCatalogue")}
               className="w-full"
             />
           </div>
@@ -378,7 +381,7 @@ function ItemSearch({
         >
           {/* What the panel holds, so it reads as the catalogue and not as more card. */}
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-hairline px-3 py-2 text-body-compact text-muted-foreground">
-            <span>{needle ? "Matching items" : "Order items"}</span>
+            <span>{needle ? t("orderItems_matchingItems") : t("orderItems_orderItems")}</span>
             <span className="tabular-nums">{count}</span>
           </div>
           <div
@@ -393,7 +396,7 @@ function ItemSearch({
           >
             {groups.length === 0 ? (
               <p className="px-2 py-3 text-body-compact text-muted-foreground">
-                No item matches “{query.trim()}”.
+                {t("orderItems_noItemMatchesTrim", { trim: query.trim() })}
               </p>
             ) : (
               groups.map((group) => (
@@ -440,7 +443,7 @@ function ItemSearch({
             id="catalogue-suggested"
             className="text-body-compact text-muted-foreground"
           >
-            Likely at this hearing
+            {t("orderItems_likelyAtThisHearing")}
           </h3>
           <ul className="-mx-2 flex min-w-0 flex-col">
             {likely.map((template) => (
@@ -519,6 +522,7 @@ export function ItemDialog({
   /** What the dialog says about where the item goes. */
   description?: string;
 }) {
+  const t = useTranslations();
   /* What was last open, kept while the dialog animates out — otherwise its title and
      fields vanish a beat before it does. */
   const [shown, setShown] = React.useState(editing);
@@ -566,7 +570,7 @@ export function ItemDialog({
           </DialogTitle>
           <DialogDescription>
             {description ??
-              "Recorded in this order's data. Nothing is written into the order's text."}
+              t("orderItems_recordedInThisOrdersDataNothing")}
           </DialogDescription>
         </DialogHeader>
         {block ? (
@@ -595,21 +599,21 @@ export function ItemDialog({
             className="w-full sm:w-auto"
             onClick={guard.close}
           >
-            Cancel
+            {t("common_cancel")}
           </Button>
           <Button
             type="button"
             className="w-full sm:w-auto"
             onClick={onConfirm}
           >
-            {shown?.mode === "edit" ? "Save" : "Add to order"}
+            {shown?.mode === "edit" ? t("common_save") : t("orderItems_addToOrder")}
           </Button>
           {gaps.length > 0 ? (
             <Badge
               variant="warning"
               className="self-start tabular-nums sm:order-first sm:mr-auto sm:self-auto"
             >
-              {gaps.length} mandatory to fill
+              {t("orderItems_lengthMandatoryToFill", { length: String(gaps.length) })}
             </Badge>
           ) : null}
         </DialogFooter>

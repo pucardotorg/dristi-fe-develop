@@ -3,6 +3,7 @@
 import { XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 /**
  * One removable chip for an applied filter — shared by every list that folds its
@@ -13,13 +14,14 @@ import { Button } from "@/components/ui/button";
  * 32px visible and expanded to the 40px floor with `after:-inset-1`.
  */
 export function AppliedChip({ label, onClear }: { label: string; onClear: () => void }) {
+  const t = useTranslations();
   return (
     <span className="inline-flex h-10 shrink-0 items-center gap-1 rounded-full bg-surface-sunken pl-4 pr-1 text-body-compact font-medium text-foreground">
       {label}
       <Button
         variant="ghost"
         size="icon-xs"
-        aria-label={`Clear the ${label} filter`}
+        aria-label={t("appliedChip_clearTheLabelFilter", { label })}
         onClick={onClear}
         className="relative rounded-full text-muted-foreground after:absolute after:-inset-1 hover:text-foreground"
       >

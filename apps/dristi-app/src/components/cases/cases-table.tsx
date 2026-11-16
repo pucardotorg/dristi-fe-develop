@@ -33,6 +33,8 @@ import {
   tableRowClass,
 } from "@/components/chrome/table-plate";
 import { useCasesTableColumns } from "./use-cases-table-columns";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /* The header, cell, row and body treatment is the table plate's, shared with every
  * queue (`components/chrome/table-plate.ts`); `check:table-rows` fails a private copy.
@@ -85,6 +87,7 @@ export function CasesTable({
   hideStage?: boolean;
   hideLongPendingFlag?: boolean;
 }) {
+  const t = useTranslations();
   const { isVisible, order, reorder, shift } = useCasesTableColumns();
   const { record: openRecord } = useCasePeek();
   const { selected, toggle, setMany, enabled: selectable } = useCasesSelection();
@@ -196,9 +199,7 @@ export function CasesTable({
   return (
     <>
       <p id={COLUMNS_HINT_ID} className="sr-only">
-        Drag a column header by its handle to change its order. With a header
-        focused, press Alt and Left arrow or Alt and Right arrow to move it. Show,
-        hide, or reset columns from the columns menu.
+        {t("casesTable_dragAColumnHeaderByIts")}
       </p>
       <Table
         className="w-full border-separate border-spacing-0 text-body-compact"
@@ -224,8 +225,8 @@ export function CasesTable({
                     }
                     aria-label={
                       allState === true
-                        ? `Clear the selection of all ${allIds.length} cases`
-                        : `Select all ${allIds.length} cases`
+                        ? t("casesTable_clearTheSelectionOfAllLength", { length: String(allIds.length) })
+                        : t("casesTable_selectAllLengthCases", { length: String(allIds.length) })
                     }
                   />
                 </div>
@@ -274,7 +275,7 @@ export function CasesTable({
                     aria-hidden
                     className="-ml-1 size-3.5 shrink-0 text-muted-foreground"
                   />
-                  {column.label}
+                  {translateText(t, column.label)}
                 </span>
               </TableHead>
               );
@@ -285,7 +286,7 @@ export function CasesTable({
                 "sticky right-0 z-20 w-12 bg-surface-sunken px-1"
               )}
             >
-              <span className="sr-only">Bookmark</span>
+              <span className="sr-only">{t("casesTable_bookmark")}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -334,7 +335,7 @@ export function CasesTable({
                     <Checkbox
                       checked={selected.has(record.id)}
                       onCheckedChange={() => toggle(record.id)}
-                      aria-label={`Select ${partiesLabel(record)}`}
+                      aria-label={t("casesTable_selectPartiesLabel", { partiesLabel: partiesLabel(record) })}
                     />
                   </div>
                 </TableCell>

@@ -29,6 +29,8 @@ import {
   resolveBrandHue,
   type BrandHue,
 } from "@/lib/court/brand-hue";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
@@ -81,6 +83,7 @@ export function CourtSwitch({
   side?: "top" | "bottom";
   align?: "start" | "end";
 }) {
+  const t = useTranslations();
   const { court, setCourt } = useCourt();
   const [hue, setHue] = useBrandHue();
   return (
@@ -92,17 +95,17 @@ export function CourtSwitch({
               type="button"
               variant="ghost"
               size="icon-xs"
-              aria-label="Switch court"
+              aria-label={t("courtSwitch_switchCourt")}
               className={cn("relative after:absolute after:-inset-1", className)}
             >
               <LandmarkIcon className="size-4" aria-hidden />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
-        <TooltipContent side={side}>Switch court</TooltipContent>
+        <TooltipContent side={side}>{t("courtSwitch_switchCourt")}</TooltipContent>
       </Tooltip>
       <DropdownMenuContent side={side} align={align} className="w-auto min-w-48">
-        <DropdownMenuLabel>Court</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("courtSwitch_court")}</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           data-court-raw=""
           value={court}
@@ -119,7 +122,7 @@ export function CourtSwitch({
         {courtHasHue(court) && hue ? (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Brand colour</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("courtSwitch_brandColour")}</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={hue}
               onValueChange={(next) => {
@@ -134,7 +137,7 @@ export function CourtSwitch({
                     // A swatch is the colour itself, shown as data — not a styling choice.
                     style={{ backgroundColor: h.swatch }}
                   />
-                  {h.label}
+                  {translateText(t, h.label)}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>

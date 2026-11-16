@@ -43,6 +43,8 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 // ---------------------------------------------------------------------------
 // Variable insertion menu
@@ -55,6 +57,7 @@ function InsertVariableMenu({
   template: OrderTemplate;
   onInsert: (name: string) => void;
 }) {
+  const tr = useTranslations();
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -82,14 +85,14 @@ function InsertVariableMenu({
         className="gap-1.5 text-caption"
       >
         <PlusIcon aria-hidden className="size-3.5" />
-        Insert variable
+        {tr("configurationsScreen_insertVariable")}
       </Button>
       {open && (
         <div className="absolute top-full left-0 z-50 mt-1 w-80 max-h-96 overflow-y-auto rounded-lg border border-hairline bg-popover shadow-overlay">
           {/* General variables */}
           <div className="border-b border-hairline px-3 py-1.5">
             <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-              General — any template
+              {tr("configurationsScreen_generalAnyTemplate")}
             </span>
           </div>
           {GENERAL_VARIABLES.map((gv) => (
@@ -113,7 +116,7 @@ function InsertVariableMenu({
               <span className="min-w-0 flex-1">{gv.name}</span>
               <span className="text-caption text-muted-foreground">
                 {gv.resolution === "auto-fill"
-                  ? "auto"
+                  ? tr("configurationsScreen_auto")
                   : gv.source || gv.inputType || ""}
               </span>
             </button>
@@ -123,7 +126,7 @@ function InsertVariableMenu({
             <>
               <div className="border-t border-b border-hairline px-3 py-1.5">
                 <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-                  🔒 Locked — this template
+                  {tr("configurationsScreen_lockedThisTemplate")}
                 </span>
               </div>
               {template.lockedVars.map((lv) => (
@@ -149,7 +152,7 @@ function InsertVariableMenu({
                   <span className="min-w-0 flex-1">{lv.name}</span>
                   <span className="text-caption text-muted-foreground">
                     {lv.resolution === "auto-fill"
-                      ? "auto"
+                      ? tr("configurationsScreen_auto")
                       : lv.source || lv.inputType || ""}
                   </span>
                 </button>
@@ -161,7 +164,7 @@ function InsertVariableMenu({
             <>
               <div className="border-t border-b border-hairline px-3 py-1.5">
                 <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-                  Optional — this template
+                  {tr("configurationsScreen_optionalThisTemplate")}
                 </span>
               </div>
               {(template.optionalVars ?? []).map((ov) => (
@@ -201,6 +204,7 @@ function InsertVariableMenu({
 // ---------------------------------------------------------------------------
 
 function VariableList({ template }: { template: OrderTemplate }) {
+  const tr = useTranslations();
   const detected = allDetectedVariables(template);
   // Locked vars not in the text are still shown — they're required by the workflow
   const lockedNotInText = template.lockedVars.filter(
@@ -211,7 +215,7 @@ function VariableList({ template }: { template: OrderTemplate }) {
   if (total === 0 && !template.freeText) {
     return (
       <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4 text-center text-body-compact text-muted-foreground italic">
-        No [variables] in the template text
+        {tr("configurationsScreen_noVariablesInTheTemplateText")}
       </div>
     );
   }
@@ -243,17 +247,17 @@ function VariableList({ template }: { template: OrderTemplate }) {
             <span className="flex-1" />
             {info.scope === "general" && (
               <Badge variant="success" className="h-5 px-1.5 text-caption">
-                general
+                {tr("configurationsScreen_general")}
               </Badge>
             )}
             {info.scope === "locked" && (
               <Badge variant="secondary" className="h-5 px-1.5 text-caption">
-                🔒 locked
+                {tr("configurationsScreen_locked")}
               </Badge>
             )}
             {info.scope === "optional" && (
               <Badge variant="info" className="h-5 px-1.5 text-caption">
-                optional
+                {tr("configurationsScreen_optional")}
               </Badge>
             )}
             {info.scope === "unknown" && (
@@ -261,7 +265,7 @@ function VariableList({ template }: { template: OrderTemplate }) {
                 variant="outline"
                 className="h-5 border-dashed px-1.5 text-caption"
               >
-                not recognised
+                {tr("configurationsScreen_notRecognised")}
               </Badge>
             )}
           </div>
@@ -286,10 +290,10 @@ function VariableList({ template }: { template: OrderTemplate }) {
           </span>
           <span className="flex-1" />
           <Badge variant="secondary" className="h-5 px-1.5 text-caption">
-            🔒 locked
+            {tr("configurationsScreen_locked")}
           </Badge>
           <span className="text-caption text-muted-foreground italic">
-            collected separately
+            {tr("configurationsScreen_collectedSeparately")}
           </span>
         </div>
       ))}
@@ -302,19 +306,20 @@ function VariableList({ template }: { template: OrderTemplate }) {
 // ---------------------------------------------------------------------------
 
 function VariableLegend() {
+  const tr = useTranslations();
   return (
     <div className="flex flex-wrap gap-3 text-caption text-muted-foreground">
       <span className="flex items-center gap-1.5">
         <span className="size-2 rounded-full bg-success-muted-foreground" />
-        Auto-fill
+        {tr("configurationsScreen_autoFill")}
       </span>
       <span className="flex items-center gap-1.5">
         <span className="size-2 rounded-full bg-info-muted-foreground" />
-        Select from list
+        {tr("configurationsScreen_selectFromList")}
       </span>
       <span className="flex items-center gap-1.5">
         <span className="size-2 rounded-full bg-warning-muted-foreground" />
-        Magistrate enters
+        {tr("configurationsScreen_magistrateEnters")}
       </span>
     </div>
   );
@@ -335,6 +340,7 @@ function TemplateSidebar({
   onSelect: (id: string) => void;
   onNew: () => void;
 }) {
+  const tr = useTranslations();
   return (
     <ScrollArea className="h-full">
       <div className="flex flex-col gap-0.5 p-3">
@@ -344,7 +350,7 @@ function TemplateSidebar({
           return (
             <div key={g.key} className="mb-1">
               <div className="px-2 py-1.5 text-caption font-bold uppercase tracking-wider text-muted-foreground">
-                {g.label}
+                {translateText(tr, g.label)}
               </div>
               {items.map((t) => (
                 <button
@@ -374,7 +380,7 @@ function TemplateSidebar({
           className="mx-2 mt-2 gap-1.5"
         >
           <PlusIcon aria-hidden className="size-3.5" />
-          New template
+          {tr("configurationsScreen_newTemplate")}
         </Button>
       </div>
     </ScrollArea>
@@ -396,6 +402,7 @@ function TemplateEditor({
   onDuplicate: () => void;
   onDelete: () => void;
 }) {
+  const tr = useTranslations();
   // Track which textarea is active for variable insertion
   const [activeField, setActiveField] = React.useState<
     "botdText" | "orderText"
@@ -453,14 +460,14 @@ function TemplateEditor({
           value={template.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
           className="text-title font-semibold"
-          aria-label="Template name"
+          aria-label={tr("configurationsScreen_templateName")}
         />
 
         {/* ── Workflow block ── */}
         <div className="rounded-lg border border-hairline bg-surface-sunken p-3">
           <div className="flex items-center gap-2 text-body-compact">
             <span className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-              Workflow
+              {tr("configurationsScreen_workflow")}
             </span>
             <span
               className={cn(
@@ -470,17 +477,17 @@ function TemplateEditor({
                   : "text-muted-foreground italic",
               )}
             >
-              {template.workflow || "None"}
+              {template.workflow || tr("configurationsScreen_none")}
             </span>
             <span className="ml-auto flex items-center gap-1 text-caption text-muted-foreground">
               <LockIcon aria-hidden className="size-3" />
-              Defined in code
+              {tr("configurationsScreen_definedInCode")}
             </span>
           </div>
           {template.lockedVars.length > 0 && (
             <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-hairline pt-2">
               <span className="text-caption font-medium text-muted-foreground">
-                Requires:
+                {tr("configurationsScreen_requires")}
               </span>
               {template.lockedVars.map((lv) => (
                 <span
@@ -508,29 +515,29 @@ function TemplateEditor({
         {/* ── BOTD Text ── */}
         <section className="flex flex-col gap-2">
           <Label className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-            BOTD text
+            {tr("configurationsScreen_botdText")}
           </Label>
           <Textarea
             ref={botdRef}
             value={template.botdText}
             onFocus={() => setActiveField("botdText")}
             onChange={(e) => onUpdate({ botdText: e.target.value })}
-            placeholder="Short board text, e.g. Summons issued to [Party Name]"
+            placeholder={tr("configurationsScreen_shortBoardTextEGSummons")}
             className="min-h-10 resize-y text-body-compact"
           />
           <p className="text-caption text-muted-foreground">
-            Brief entry for the Business of the Day board.
+            {tr("configurationsScreen_briefEntryForTheBusinessOf")}
           </p>
         </section>
 
         {/* ── Order Text ── */}
         <section className="flex flex-col gap-2">
           <Label className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-            Order text
+            {tr("configurationsScreen_orderText")}
           </Label>
           {template.freeText && !template.orderText && (
             <div className="rounded-lg border border-dashed border-muted-foreground/30 p-3 text-body-compact text-muted-foreground italic">
-              Free text — no template. The magistrate writes the full order.
+              {tr("configurationsScreen_freeTextNoTemplateTheMagistrate")}
             </div>
           )}
           <Textarea
@@ -538,12 +545,11 @@ function TemplateEditor({
             value={template.orderText}
             onFocus={() => setActiveField("orderText")}
             onChange={(e) => onUpdate({ orderText: e.target.value })}
-            placeholder="Full order template text. Use [brackets] for variables."
+            placeholder={tr("configurationsScreen_fullOrderTemplateTextUseBrackets")}
             className="min-h-20 resize-y text-body-compact"
           />
           <p className="text-caption text-muted-foreground">
-            Variables in [brackets] are resolved when the magistrate selects
-            this order.
+            {tr("configurationsScreen_variablesInBracketsAreResolvedWhen")}
           </p>
         </section>
 
@@ -553,7 +559,7 @@ function TemplateEditor({
         {/* ── Variables (detected from text) ── */}
         <section className="flex flex-col gap-2">
           <Label className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-            Variables
+            {tr("configurationsScreen_variables")}
           </Label>
           <VariableList template={template} />
           <InsertVariableMenu
@@ -568,7 +574,7 @@ function TemplateEditor({
         {template.inDropdown && (
           <section className="flex flex-col gap-2">
             <Label className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-              Category
+              {tr("configurationsScreen_category")}
             </Label>
             <Select
               value={template.category ?? ""}
@@ -577,11 +583,11 @@ function TemplateEditor({
               }
             >
               <SelectTrigger className="w-full max-w-xs">
-                <SelectValue placeholder="No category" />
+                <SelectValue placeholder={tr("configurationsScreen_noCategory")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>Categories</SelectLabel>
+                  <SelectLabel>{tr("configurationsScreen_categories")}</SelectLabel>
                   {ORDER_CATEGORIES.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}
@@ -591,7 +597,7 @@ function TemplateEditor({
               </SelectContent>
             </Select>
             <p className="text-caption text-muted-foreground">
-              Groups this order on the issuance screen dropdown.
+              {tr("configurationsScreen_groupsThisOrderOnTheIssuance")}
             </p>
           </section>
         )}
@@ -599,11 +605,10 @@ function TemplateEditor({
         {/* ── Hearing purpose associations ── */}
         <section className="flex flex-col gap-2">
           <Label className="text-caption font-bold uppercase tracking-wider text-muted-foreground">
-            Hearing purpose associations
+            {tr("configurationsScreen_hearingPurposeAssociations")}
           </Label>
           <p className="text-caption text-muted-foreground">
-            Hearing purposes where this order is likely to be issued. Generic
-            orders are always available.
+            {tr("configurationsScreen_hearingPurposesWhereThisOrderIs")}
           </p>
           <div className="mt-1 grid gap-1.5 sm:grid-cols-2">
             {HEARING_PURPOSES.map((hp) => {
@@ -622,7 +627,7 @@ function TemplateEditor({
                     checked={checked}
                     onCheckedChange={() => toggleHearingPurpose(hp.id)}
                     className="mt-0.5"
-                    aria-label={`Associate with ${hp.name}`}
+                    aria-label={tr("configurationsScreen_associateWithName", { name: hp.name })}
                   />
                   <span className="min-w-0 flex-1 text-body-compact">{hp.name}</span>
                 </label>
@@ -636,7 +641,7 @@ function TemplateEditor({
         {/* ── Actions ── */}
         <div className="flex items-center gap-2">
           <Button type="button" size="sm">
-            Save
+            {tr("common_save")}
           </Button>
           <Button
             type="button"
@@ -646,7 +651,7 @@ function TemplateEditor({
             className="gap-1.5"
           >
             <CopyIcon aria-hidden className="size-3.5" />
-            Duplicate
+            {tr("configurationsScreen_duplicate")}
           </Button>
           <span className="flex-1" />
           <Button
@@ -657,7 +662,7 @@ function TemplateEditor({
             className="gap-1.5 text-destructive hover:bg-destructive-muted"
           >
             <TrashIcon aria-hidden className="size-3.5" />
-            Delete
+            {tr("configurationsScreen_delete")}
           </Button>
         </div>
       </div>
@@ -670,6 +675,7 @@ function TemplateEditor({
 // ---------------------------------------------------------------------------
 
 export function ConfigurationsScreen() {
+  const tr = useTranslations();
   const [templates, setTemplates] = React.useState<OrderTemplate[]>(
     () => initHearingPurposeIds([...INITIAL_TEMPLATES]),
   );
@@ -730,11 +736,10 @@ export function ConfigurationsScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold sm:text-title-l">
-          Order template configuration
+          {tr("configurationsScreen_orderTemplateConfiguration")}
         </h1>
         <p className="text-body text-muted-foreground">
-          Configure templates, variables, and workflow associations for the{" "}
-          {templates.length} order types.
+          {tr("configurationsScreen_configureTemplatesVariablesAndWorkflowAssociations", { length: String(templates.length) })}
         </p>
       </header>
 
@@ -764,7 +769,7 @@ export function ConfigurationsScreen() {
               />
             ) : (
               <div className="flex min-h-64 items-center justify-center text-body-compact text-muted-foreground">
-                Select a template to edit
+                {tr("configurationsScreen_selectATemplateToEdit")}
               </div>
             )}
           </div>

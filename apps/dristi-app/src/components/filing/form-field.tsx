@@ -25,18 +25,20 @@ import {
 } from "@/components/filing/posture";
 import { useFieldPolicy } from "@/components/filing/field-policy";
 import { defectState } from "@/lib/tasks/defects";
+import { useTranslations } from "next-intl";
 
 /** The `*` / "optional" marker after a label. */
 export function RequiredMark({ optional }: { optional?: boolean }) {
+  const t = useTranslations();
   if (optional) {
-    return <span className="font-normal text-muted-foreground">optional</span>;
+    return <span className="font-normal text-muted-foreground">{t("formField_optional")}</span>;
   }
   return (
     <>
       <span aria-hidden className="text-destructive">
         *
       </span>
-      <span className="sr-only">required</span>
+      <span className="sr-only">{t("formField_required")}</span>
     </>
   );
 }
@@ -47,6 +49,7 @@ export function RequiredMark({ optional }: { optional?: boolean }) {
  * carries a tip is still the height of one that doesn't.
  */
 export function LabelTip({ children }: { children: React.ReactNode }) {
+  const t = useTranslations();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -54,7 +57,7 @@ export function LabelTip({ children }: { children: React.ReactNode }) {
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="More about this field"
+          aria-label={t("formField_moreAboutThisField")}
           className="-my-3 -mr-2.5 -ml-2 align-middle text-muted-foreground"
         >
           <InfoIcon aria-hidden />
@@ -106,6 +109,7 @@ export function FormField({
   className?: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const correction = useCorrection();
   const instance = useCorrectionInstance();
   // A host's check on this field (bulk filing), when the section has nothing of its own to say.
@@ -141,11 +145,11 @@ export function FormField({
         resolved ? "text-success-ink" : "text-muted-foreground"
       )}
     >
-      · {resolved ? "corrected" : "flagged"}
+      · {resolved ? t("formField_corrected") : t("formField_flagged")}
       <span className="sr-only">
         {resolved
-          ? " by scrutiny, and corrected in the corrections panel"
-          : " by scrutiny. Correct it in the corrections panel"}
+          ? t("formField_byScrutinyAndCorrectedInThe")
+          : t("formField_byScrutinyCorrectItInThe")}
       </span>
     </span>
   ) : null;

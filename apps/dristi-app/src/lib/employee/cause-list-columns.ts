@@ -47,18 +47,18 @@ export type CauseListColumn = {
 
 /** The superset, in the board's own order. */
 export const CAUSE_LIST_COLUMNS: readonly CauseListColumn[] = [
-  { id: "item", label: "S. no.", locked: true },
-  { id: "caseName", label: "Case name", locked: true },
-  { id: "caseNumber", label: "Case number", locked: false },
-  { id: "advocates", label: "Advocates", locked: false },
-  { id: "purpose", label: "Purpose", locked: false },
+  { id: "item", label: "causeListColumns_sNo", locked: true },
+  { id: "caseName", label: "causeListColumns_caseName", locked: true },
+  { id: "caseNumber", label: "causeListColumns_caseNumber", locked: false },
+  { id: "advocates", label: "causeListColumns_advocates", locked: false },
+  { id: "purpose", label: "causeListColumns_purpose", locked: false },
   /* The case's stage — on the listing, never shown on the board before. Off by default
      everywhere; offered because it is a fact every row carries. */
-  { id: "stage", label: "Stage", locked: false },
-  { id: "status", label: "Status", locked: false },
-  { id: "orders", label: "Orders", locked: false },
-  { id: "action", label: "Action", locked: false },
-  { id: "nextHearing", label: "Next hearing", locked: false },
+  { id: "stage", label: "causeListColumns_stage", locked: false },
+  { id: "status", label: "causeListColumns_status", locked: false },
+  { id: "orders", label: "causeListColumns_orders", locked: false },
+  { id: "action", label: "causeListColumns_action", locked: false },
+  { id: "nextHearing", label: "causeListColumns_nextHearing", locked: false },
 ];
 
 export type CauseListColumns = {

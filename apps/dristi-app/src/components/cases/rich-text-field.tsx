@@ -51,6 +51,8 @@ import { MENU_GROW } from "@/components/chrome/motion";
 import { InputGroup } from "@/components/ui/input-group";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Formatted long-form input, composed at screen level.
@@ -119,14 +121,14 @@ type ListCommand = "insertUnorderedList" | "insertOrderedList";
 type AlignCommand = "justifyLeft" | "justifyCenter" | "justifyRight";
 
 const MARKS: { command: MarkCommand; label: string; Icon: typeof BoldIcon }[] = [
-  { command: "bold", label: "Bold", Icon: BoldIcon },
-  { command: "italic", label: "Italic", Icon: ItalicIcon },
-  { command: "underline", label: "Underline", Icon: UnderlineIcon },
+  { command: "bold", label: "richTextField_bold", Icon: BoldIcon },
+  { command: "italic", label: "richTextField_italic", Icon: ItalicIcon },
+  { command: "underline", label: "richTextField_underline", Icon: UnderlineIcon },
 ];
 
 const LISTS: { command: ListCommand; label: string; Icon: typeof BoldIcon }[] = [
-  { command: "insertUnorderedList", label: "Bulleted list", Icon: ListIcon },
-  { command: "insertOrderedList", label: "Numbered list", Icon: ListOrderedIcon },
+  { command: "insertUnorderedList", label: "richTextField_bulletedList", Icon: ListIcon },
+  { command: "insertOrderedList", label: "richTextField_numberedList", Icon: ListOrderedIcon },
 ];
 
 const ALIGNMENTS: {
@@ -134,9 +136,9 @@ const ALIGNMENTS: {
   label: string;
   Icon: typeof BoldIcon;
 }[] = [
-  { command: "justifyLeft", label: "Align left", Icon: AlignLeftIcon },
-  { command: "justifyCenter", label: "Align centre", Icon: AlignCenterIcon },
-  { command: "justifyRight", label: "Align right", Icon: AlignRightIcon },
+  { command: "justifyLeft", label: "richTextField_alignLeft", Icon: AlignLeftIcon },
+  { command: "justifyCenter", label: "richTextField_alignCentre", Icon: AlignCenterIcon },
+  { command: "justifyRight", label: "richTextField_alignRight", Icon: AlignRightIcon },
 ];
 
 function commandState(command: string): boolean {
@@ -256,6 +258,7 @@ export function RichTextField({
    */
   tables?: boolean;
 }) {
+  const t = useTranslations();
   const editorRef = useRef<HTMLDivElement>(null);
   const initialHtmlRef = useRef(value.html);
   const fieldProps = useFieldControlProps({});
@@ -1000,7 +1003,7 @@ export function RichTextField({
     <InputGroup className={cn("h-auto flex-col items-stretch", className)}>
       <div
         role="toolbar"
-        aria-label="Formatting"
+        aria-label={t("richTextField_formatting")}
         /* `px-1` against the control's `px-4`: a 40px button centres a 16px icon at
            12px, so 4 + 12 lands the first icon on the same 16px line the text below it
            starts from. The toolbar and the paragraph read as one left edge instead of
@@ -1019,13 +1022,13 @@ export function RichTextField({
           spacing={0}
           value={marks}
           onValueChange={(next: string[]) => run(changedCommands(next, marks))}
-          aria-label="Text style"
+          aria-label={t("richTextField_textStyle")}
         >
           {MARKS.map(({ command, label, Icon }) => (
             <ToggleGroupItem
               key={command}
               value={command}
-              aria-label={label}
+              aria-label={translateText(t, label)}
               className={compact ? "size-8" : "size-10"}
             >
               <Icon aria-hidden />
@@ -1039,13 +1042,13 @@ export function RichTextField({
           spacing={0}
           value={lists}
           onValueChange={(next: string[]) => run(changedCommands(next, lists))}
-          aria-label="Lists"
+          aria-label={t("richTextField_lists")}
         >
           {LISTS.map(({ command, label, Icon }) => (
             <ToggleGroupItem
               key={command}
               value={command}
-              aria-label={label}
+              aria-label={translateText(t, label)}
               className={compact ? "size-8" : "size-10"}
             >
               <Icon aria-hidden />
@@ -1069,13 +1072,13 @@ export function RichTextField({
             const picked = next.find((command) => command !== alignment);
             if (picked) run([picked]);
           }}
-          aria-label="Alignment"
+          aria-label={t("richTextField_alignment")}
         >
           {ALIGNMENTS.map(({ command, label, Icon }) => (
             <ToggleGroupItem
               key={command}
               value={command}
-              aria-label={label}
+              aria-label={translateText(t, label)}
               className={compact ? "size-8" : "size-10"}
             >
               <Icon aria-hidden />
@@ -1084,15 +1087,15 @@ export function RichTextField({
         </ToggleGroup>
 
         {tables ? (
-          <div role="group" aria-label="Table" className="flex items-center">
+          <div role="group" aria-label={t("richTextField_table")} className="flex items-center">
             {/* Ghost is the toolbar treatment the toggles wear: nothing at rest,
                 `accent` on hover. A button, not a toggle — inserting has no "on". */}
             <Button
               type="button"
               variant="ghost"
               size={compact ? "icon-xs" : "icon"}
-              aria-label="Insert table"
-              title="Insert table"
+              aria-label={t("richTextField_insertTable")}
+              title={t("richTextField_insertTable")}
               onClick={insertTable}
             >
               <TableIcon aria-hidden />
@@ -1115,7 +1118,7 @@ export function RichTextField({
                     variant="ghost"
                     size={compact ? "xs" : "default"}
                   >
-                    Table
+                    {t("richTextField_table")}
                     <ChevronDownIcon data-icon="inline-end" aria-hidden />
                   </Button>
                 </DropdownMenuTrigger>
@@ -1125,23 +1128,23 @@ export function RichTextField({
                   onCloseAutoFocus={returnFromTableMenu}
                 >
                   <DropdownMenuItem onSelect={() => editTable(addRowBelow)}>
-                    Add row below
+                    {t("richTextField_addRowBelow")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => editTable(addColumnRight)}>
-                    Add column right
+                    {t("richTextField_addColumnRight")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={() => editTable(deleteRow)}>
-                    Delete row
+                    {t("richTextField_deleteRow")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => editTable(deleteColumn)}>
-                    Delete column
+                    {t("richTextField_deleteColumn")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
                     onSelect={() => editTable(deleteTable)}
                   >
-                    Delete table
+                    {t("richTextField_deleteTable")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -1173,10 +1176,10 @@ export function RichTextField({
         <p aria-live="polite" className="sr-only">
           {menu?.open
             ? menu.answers.length === 0
-              ? "No shortcut matches."
-              : `${shown?.label ?? ""}, ${menu.active + 1} of ${menu.answers.length}. Press Enter to insert.`
+              ? t("richTextField_noShortcutMatches")
+              : t("richTextField_valueValue2OfLengthPressEnter", { value: shown?.label ?? "", value2: String(menu.active + 1), length: String(menu.answers.length) })
             : shown
-              ? `Suggestion: ${shown.label}. Press Tab to accept.`
+              ? t("richTextField_suggestionLabelPressTabToAccept", { label: shown.label })
               : ""}
         </p>
       ) : null}
@@ -1213,7 +1216,7 @@ export function RichTextField({
               id={menuLabelId}
               className="px-2.5 pt-1.5 text-caption font-medium text-muted-foreground"
             >
-              Shortcuts
+              {t("richTextField_shortcuts")}
             </p>
             {menu && menu.answers.length > 0 ? (
               <div className="relative flex min-h-0 flex-col">
@@ -1265,7 +1268,7 @@ export function RichTextField({
               </div>
             ) : (
               <p className="px-2.5 py-2 text-body-compact text-muted-foreground">
-                No shortcut matches “{menu?.query}”.
+                {t("richTextField_noShortcutMatchesQuery", { query: (menu?.query) ?? "" })}
               </p>
             )}
           </PopoverContent>

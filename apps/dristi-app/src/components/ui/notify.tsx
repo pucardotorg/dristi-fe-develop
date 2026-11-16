@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { StatusMark } from "@/components/ui/status-mark";
+import { useTranslations } from "next-intl";
 
 /**
  * The product's toasts, for quick acts where the page stays put. Call these instead of
@@ -182,6 +183,7 @@ function ToastCard({
   persistent: boolean;
   onClose: () => void;
 }) {
+  const tr = useTranslations();
   /* No live-region role here: sonner's list is already the polite live region, and a
      second one inside it makes screen readers announce the toast twice. The list item
      already rises in, so the card does not animate its own entrance. */
@@ -212,7 +214,7 @@ function ToastCard({
         </Button>
       ) : null}
       {persistent ? (
-        <Button size="icon-sm" variant="ghost" className={cn("shrink-0 self-start text-muted-foreground", HIT)} aria-label="Close" onClick={onClose}>
+        <Button size="icon-sm" variant="ghost" className={cn("shrink-0 self-start text-muted-foreground", HIT)} aria-label={tr("common_close")} onClick={onClose}>
           <XIcon aria-hidden />
         </Button>
       ) : (

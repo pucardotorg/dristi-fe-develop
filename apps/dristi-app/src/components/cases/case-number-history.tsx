@@ -13,6 +13,7 @@ import {
 import { Identifier } from "@/components/chrome/identifier";
 import type { PastCaseNumber } from "@/lib/cases/header";
 import { formatCaseDate } from "@/lib/cases/types";
+import { useTranslations } from "next-intl";
 
 /**
  * The older numbers this case has carried (DET-02). Renders nothing when the
@@ -20,6 +21,7 @@ import { formatCaseDate } from "@/lib/cases/types";
  * the `after:` inset gives it the 40px target.
  */
 export function CaseNumberHistory({ history }: { history: PastCaseNumber[] }) {
+  const t = useTranslations();
   if (history.length === 0) return null;
 
   return (
@@ -29,7 +31,7 @@ export function CaseNumberHistory({ history }: { history: PastCaseNumber[] }) {
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Earlier case numbers"
+          aria-label={t("caseNumberHistory_earlierCaseNumbers")}
           className="relative size-6 text-muted-foreground after:absolute after:-inset-2"
         >
           <HistoryIcon aria-hidden />
@@ -38,7 +40,7 @@ export function CaseNumberHistory({ history }: { history: PastCaseNumber[] }) {
       <PopoverContent align="start" className="w-72 text-body-compact">
         <PopoverHeader className="border-b border-hairline pb-2">
           <PopoverTitle className="text-body-compact font-semibold">
-            Earlier case numbers
+            {t("caseNumberHistory_earlierCaseNumbers")}
           </PopoverTitle>
         </PopoverHeader>
         <ul className="flex flex-col gap-3">
@@ -46,12 +48,12 @@ export function CaseNumberHistory({ history }: { history: PastCaseNumber[] }) {
             <li key={entry.number} className="flex flex-col gap-0.5">
               <Identifier
                 value={entry.number}
-                label="earlier case number"
+                label={t("caseNumberHistory_earlierCaseNumber")}
                 className="self-start text-caption font-medium text-foreground"
               />
               {entry.generatedOn ? (
                 <span className="text-caption text-muted-foreground">
-                  Generated on {formatCaseDate(entry.generatedOn)}
+                  {t("caseNumberHistory_generatedOnFormatCaseDate", { formatCaseDate: formatCaseDate(entry.generatedOn) })}
                 </span>
               ) : null}
             </li>

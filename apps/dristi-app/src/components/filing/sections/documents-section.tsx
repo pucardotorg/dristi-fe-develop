@@ -54,8 +54,10 @@ import { LabelTip, RequiredMark } from "@/components/filing/form-field";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { FilePreviewDialog } from "@/components/filing/upload/file-preview-dialog";
 import { pickErrorMessage, useFilePicker } from "@/components/filing/use-file-picker";
+import { useTranslations } from "next-intl";
 
 export function DocumentsSection() {
+  const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const router = useRouter();
   const showGroup = useFieldPolicy()?.documentGroups;
@@ -177,7 +179,7 @@ export function DocumentsSection() {
 
   const allDone = remaining === 0;
   const statusText = allDone
-    ? "All required documents added"
+    ? t("documentsSection_allRequiredDocumentsAdded")
     : `${remaining} required document${remaining > 1 ? "s" : ""} still needed`;
 
   const onContinue = () => {
@@ -213,8 +215,8 @@ export function DocumentsSection() {
               void updateDetails({ kind: "row", id: doc.id }, { displayName: doc.name });
             }
           }}
-          placeholder="Document name"
-          aria-label={`Document name, row ${index + 1} of ${group.title}`}
+          placeholder={t("documentsSection_documentName")}
+          aria-label={t("documentsSection_documentNameRowValueOfTitle", { value: String(index + 1), title: group.title })}
         />
       ) : (
         <div className="flex min-h-10 flex-col justify-center gap-0.5">
@@ -229,7 +231,7 @@ export function DocumentsSection() {
           </span>
           {doc.intakeKey && doc.file ? (
             <span className="text-caption text-muted-foreground">
-              Provided at case intake
+              {t("documentsSection_providedAtCaseIntake")}
             </span>
           ) : null}
         </div>
@@ -244,7 +246,7 @@ export function DocumentsSection() {
           variant="link"
           className="h-auto min-h-10 max-w-full justify-start px-0 py-1"
           onClick={() => setPreviewId(doc.id)}
-          aria-label={`Preview ${doc.file.name}`}
+          aria-label={t("documentsSection_previewName", { name: doc.file.name })}
         >
           <FileTextIcon data-icon="inline-start" aria-hidden />
           <span className="flex min-w-0 flex-col items-start">
@@ -263,10 +265,10 @@ export function DocumentsSection() {
             aria-label={`Upload ${doc.name || `row ${index + 1}`}`}
           >
             <UploadIcon data-icon="inline-start" aria-hidden />
-            Upload
+            {t("documentsSection_upload")}
           </Button>
           <span className="text-caption text-muted-foreground">
-            No file chosen
+            {t("documentsSection_noFileChosen")}
           </span>
         </div>
       )}
@@ -317,7 +319,7 @@ export function DocumentsSection() {
             variant="ghost"
             size="icon"
             onClick={() => askRemoveDoc(doc.id)}
-            aria-label={`Remove row ${index + 1}`}
+            aria-label={t("documentsSection_removeRowValue", { value: String(index + 1) })}
             className="text-muted-foreground hover:text-foreground"
           >
             <XIcon aria-hidden />
@@ -336,13 +338,12 @@ export function DocumentsSection() {
       {input}
       <FilingMain width="wide">
         <FilingPageHeader
-          title="List of documents"
-          description="Check each one is the right way up and readable. The affidavit and delay-condonation application are not needed here."
+          title={t("documentsSection_listOfDocuments")}
+          description={t("documentsSection_checkEachOneIsTheRight")}
         />
 
         <SectionNotice variant="neutral">
-          Tick <strong className="font-semibold">Natively digital</strong> for an
-          original digital file, such as an e-signed PDF, not a scan of a paper copy.
+          {t.rich("documentsSection_tickNativelyDigitalForAnOriginal", { strong: (chunks) => <strong className="font-semibold">{chunks}</strong> })}
         </SectionNotice>
 
         {unsaved.length > 0 ? (
@@ -401,13 +402,13 @@ export function DocumentsSection() {
                           aria-label={`Upload ${doc.name || `row ${index + 1}`}`}
                         >
                           <UploadIcon data-icon="inline-start" aria-hidden />
-                          Upload
+                          {t("documentsSection_upload")}
                         </Button>
                       )}
 
                       <label className="flex shrink-0 items-center gap-2 text-body-compact text-muted-foreground">
                         {cells.digital}
-                        Natively digital
+                        {t("documentsSection_nativelyDigital")}
                       </label>
                     </li>
                   );
@@ -426,19 +427,15 @@ export function DocumentsSection() {
                   </colgroup>
                   <TableHeader>
                     <TableRow className="border-hairline">
-                      <TableHead className="px-4">Sl. no</TableHead>
-                      <TableHead>Document name</TableHead>
-                      <TableHead>File</TableHead>
+                      <TableHead className="px-4">{t("documentsSection_slNo")}</TableHead>
+                      <TableHead>{t("documentsSection_documentName")}</TableHead>
+                      <TableHead>{t("documentsSection_file")}</TableHead>
                       <TableHead className="text-center">
                         <span className="inline-flex items-center gap-1">
-                          Natively digital
-                          <LabelTip>
-                            Tick only for original digital files, not scans of physical
-                            documents.
-                          </LabelTip>
+                          {t.rich("documentsSection_nativelyDigitalTickOnlyForOriginal", { labeltip: (chunks) => <LabelTip>{chunks}</LabelTip> })}
                         </span>
                       </TableHead>
-                      <TableHead className="px-4 text-right">Actions</TableHead>
+                      <TableHead className="px-4 text-right">{t("documentsSection_actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -480,7 +477,7 @@ export function DocumentsSection() {
                   onClick={() => addOtherDoc(group.id)}
                 >
                   <PlusIcon data-icon="inline-start" aria-hidden />
-                  Add other document
+                  {t("documentsSection_addOtherDocument")}
                 </Button>
               </div>
             </div>
@@ -511,7 +508,7 @@ export function DocumentsSection() {
 
       <FilePreviewDialog
         file={previewFile}
-        label={previewDoc?.name || "this document"}
+        label={previewDoc?.name || t("documentsSection_thisDocument")}
         onClose={() => setPreviewId(null)}
         onReplace={() => {
           if (previewId) uploadDoc(previewId);
@@ -524,30 +521,29 @@ export function DocumentsSection() {
           <Alert variant="warning">
             <TriangleAlertIcon aria-hidden />
             <AlertDescription>
-              This scan looks blurry or cropped. Please re-upload a clearer copy so the
-              court can read it.
+              {t("documentsSection_thisScanLooksBlurryOrCropped")}
             </AlertDescription>
           </Alert>
         ) : null}
         {previewDoc?.quality === "good" ? (
           <Alert variant="success">
             <CheckIcon aria-hidden />
-            <AlertDescription>This document is clear and readable.</AlertDescription>
+            <AlertDescription>{t("documentsSection_thisDocumentIsClearAndReadable")}</AlertDescription>
           </Alert>
         ) : null}
       </FilePreviewDialog>
 
       <ConfirmDialog
-        note="This cannot be undone."
+        note={t("documentsSection_thisCannotBeUndone")}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title={`Remove ${deleteTarget?.name || "this document"}`}
         description={
           deleteTarget?.hasFile
-            ? "Are you sure you want to remove this document and the file attached to it?"
-            : "Are you sure you want to remove this row and the details typed in it?"
+            ? t("documentsSection_areYouSureYouWantTo")
+            : t("documentsSection_areYouSureYouWantToRemove")
         }
-        confirmLabel="Yes, remove"
+        confirmLabel={t("documentsSection_yesRemove")}
         onConfirm={() => {
           setDeleteOpen(false);
           if (deleteTarget) removeDoc(deleteTarget.id);

@@ -33,6 +33,7 @@ import {
 import { pick, type Locale } from "@/lib/onboarding/content";
 import { idUpload } from "@/lib/join/content";
 import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
+import { useTranslations } from "next-intl";
 
 /**
  * Add-your-ID is a profile task, not part of registration. The local clarity check
@@ -60,6 +61,7 @@ export function AddIdForm({
   onSubmitted: (submission: SubmittedId) => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations();
   const [idType, setIdType] = React.useState<IdType | "">("");
   const [file, setFile] = React.useState<File | null>(null);
   const [status, setStatus] = React.useState<UploadStatus>("empty");
@@ -219,7 +221,7 @@ export function AddIdForm({
                   copy={{
                     optional: locale === "ml" ? "നിർബന്ധമല്ല" : "Optional",
                     noFile:
-                      locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : "No file chosen yet",
+                      locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : t("addIdDialog_noFileChosenYet"),
                     goodScan: pick(idUpload.goodScan, locale),
                     poorScan: pick(idUpload.poorScan, locale),
                     chooseFile: pick(idUpload.choose, locale),
@@ -257,7 +259,7 @@ export function AddIdForm({
                 </FieldError>
               </Field>
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={onCancel}>{t("common_cancel")}</Button>
           <Button type="submit">{pick(idUpload.submit, locale)}</Button>
         </div>
       </form>
@@ -293,6 +295,7 @@ export function AddIdForm({
 }
 
 export function SubmittedIdSummary({ submission, locale }: { submission: SubmittedId; locale: Locale }) {
+  const t = useTranslations();
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewUrl] = React.useState(() => URL.createObjectURL(submission.file));
 
@@ -315,7 +318,7 @@ export function SubmittedIdSummary({ submission, locale }: { submission: Submitt
         <div className="min-w-0">
           <p className="truncate font-medium">{submission.file.name}</p>
           <p className="text-muted-foreground">{pick(idUpload.idTypes[submission.idType], locale)} · {fileSize(submission.file.size)}</p>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => setPreviewOpen(true)}>View ID</Button>
+          <Button type="button" variant="link" className="h-auto p-0" onClick={() => setPreviewOpen(true)}>{t("addIdDialog_viewId")}</Button>
         </div>
       </div>
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>

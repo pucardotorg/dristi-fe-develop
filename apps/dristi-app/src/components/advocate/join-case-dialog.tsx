@@ -118,6 +118,7 @@ import { JOIN_DEMO_CASE_ID } from "@/lib/cases/party-cases";
 import { useCourt } from "@/components/court/court-provider";
 import { cn } from "@/lib/utils";
 import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
+import { useTranslations } from "next-intl";
 
 /**
  * Advocate join-a-case dialog.
@@ -210,6 +211,7 @@ function UploadedDocField({
   onFileChange: (file: File | null) => void;
   locale: Locale;
 }) {
+  const t = useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const url = useObjectUrl(file);
@@ -256,8 +258,8 @@ function UploadedDocField({
         onChooseFile={() => inputRef.current?.click()}
         copy={{
           optional: locale === "ml" ? "നിർബന്ധമല്ല" : "Optional",
-          noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : "No file chosen yet",
-          chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : "Choose file",
+          noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : t("advocateJoinCaseDialog_noFileChosenYet"),
+          chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : t("advocateJoinCaseDialog_chooseFile"),
         }}
       />
       {file ? (
@@ -311,6 +313,7 @@ export function AdvocateJoinCaseDialog({
   /** The person chose Litigant or PoA holder; continue this case in the litigant flow. */
   onJoinAsLitigant: (kind: "self" | "poa") => void;
 }) {
+  const t = useTranslations();
   /* From the summons the case is known but the code is still asked, as on every other
      way in (owner, 2026-10-14) — the litigant's door does the same. */
   const initialStage: Stage = mode === "summons" ? "code" : "lookup";
@@ -1354,7 +1357,7 @@ export function AdvocateJoinCaseDialog({
                 <DescriptionRow className="border-hairline">
                   <DescriptionTerm>{pick(advDialog.payCase, locale)}</DescriptionTerm>
                   <DescriptionDetails>
-                    <Identifier value={joinCase.caseNumber} label="case number" />
+                    <Identifier value={joinCase.caseNumber} label={t("advocateJoinCaseDialog_caseNumber")} />
                   </DescriptionDetails>
                 </DescriptionRow>
                 {gujaratFee ? (
@@ -1392,11 +1395,11 @@ export function AdvocateJoinCaseDialog({
                   { label: pick(advDialog.payFeeHead, locale), value: pick(advDialog.payFeeName, locale) },
                   {
                     label: pick(advDialog.payCase, locale),
-                    value: <Identifier value={joinCase.caseNumber} label="case number" />,
+                    value: <Identifier value={joinCase.caseNumber} label={t("advocateJoinCaseDialog_caseNumber")} />,
                   },
                   {
                     label: pick(advDialog.paidRef, locale),
-                    value: <Identifier value={paymentRef} label="payment reference" />,
+                    value: <Identifier value={paymentRef} label={t("advocateJoinCaseDialog_paymentReference")} />,
                   },
                 ]}
               />
@@ -1606,7 +1609,7 @@ export function AdvocateJoinCaseDialog({
                   </Button>
                 ) : (
                   <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                    {locale === "ml" ? "ഇപ്പോൾ വേണ്ട" : "Not now"}
+                    {locale === "ml" ? "ഇപ്പോൾ വേണ്ട" : t("advocateJoinCaseDialog_notNow")}
                   </Button>
                 )}
                 {/* Download sits next to the primary action as a compact icon; the label

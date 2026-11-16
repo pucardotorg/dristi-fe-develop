@@ -34,6 +34,7 @@ import {
   isPdfSrc,
   parsePdfSrc,
 } from "./pdf-viewer";
+import { useTranslations } from "next-intl";
 
 /**
  * The one document preview in the product: a well, and the two things anyone
@@ -418,6 +419,7 @@ function DownloadAction({
   download: DocumentDownload;
   iconOnly?: boolean;
 }) {
+  const t = useTranslations();
   const label = download.label ?? `Download ${title}`;
 
   if ("href" in download) {
@@ -433,7 +435,7 @@ function DownloadAction({
           download={download.filename ?? true}
           aria-label={label}
         >
-          {iconOnly ? null : "Download"}
+          {iconOnly ? null : t("casesDocumentPreview_download")}
           <DownloadIcon
             data-icon={iconOnly ? undefined : "inline-end"}
             aria-hidden
@@ -453,7 +455,7 @@ function DownloadAction({
       aria-label={label}
       onClick={download.onDownload}
     >
-      {iconOnly ? null : "Download"}
+      {iconOnly ? null : t("casesDocumentPreview_download")}
       <DownloadIcon
         data-icon={iconOnly ? undefined : "inline-end"}
         aria-hidden
@@ -486,7 +488,8 @@ function FullViewDialog({
   download: DocumentDownload | undefined;
   iconOnly?: boolean;
 }) {
-  const label = `Full view of ${title}`;
+  const t = useTranslations();
+  const label = t("casesDocumentPreview_fullViewOfTitle", { title });
   const trigger = (
     <DialogTrigger asChild>
       <Button
@@ -496,7 +499,7 @@ function FullViewDialog({
         className="shrink-0"
         aria-label={label}
       >
-        {iconOnly ? null : "Full view"}
+        {iconOnly ? null : t("casesDocumentPreview_fullView")}
         <Maximize2Icon
           data-icon={iconOnly ? undefined : "inline-end"}
           aria-hidden
@@ -523,7 +526,7 @@ function FullViewDialog({
               {title}
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Full view. Close to go back.
+              {t("casesDocumentPreview_fullViewCloseToGoBack")}
             </DialogDescription>
           </DialogHeader>
           {download ? (
@@ -599,6 +602,7 @@ function DocumentWell({
   toolbar?: ReactNode;
   className?: string;
 }) {
+  const t = useTranslations();
   const fill = wellSurface[surface];
 
   if (source.kind === "src") {
@@ -656,7 +660,7 @@ function DocumentWell({
     return (
       <div
         tabIndex={scrolls ? 0 : undefined}
-        aria-label={scrolls ? `Preview of ${title}` : undefined}
+        aria-label={scrolls ? t("casesDocumentPreview_previewOfTitle", { title }) : undefined}
         className={cn(scrollableWell, "flex-col")}
       >
         {toolbar ? (
@@ -685,7 +689,7 @@ function DocumentWell({
   return (
     <div
       tabIndex={scrolls ? 0 : undefined}
-      aria-label={scrolls ? `Preview of ${title}` : undefined}
+      aria-label={scrolls ? t("casesDocumentPreview_previewOfTitle", { title }) : undefined}
       className={scrollableWell}
     >
       {toolbar ? (
@@ -716,7 +720,7 @@ function DocumentWell({
           <FileTextIcon className="size-10 text-muted-foreground" aria-hidden />
           <p className="text-body font-medium">{file.name}</p>
           <p className="text-body-compact text-muted-foreground">
-            {formatFileSize(file.size)} · PDF pages are not previewed here.
+            {t("casesDocumentPreview_formatFileSizePdfPagesAre", { formatFileSize: formatFileSize(file.size) })}
           </p>
         </div>
       )}

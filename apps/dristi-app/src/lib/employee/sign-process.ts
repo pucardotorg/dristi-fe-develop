@@ -327,7 +327,7 @@ export type ProcessStatus = {
 export const PROCESS_STATUSES: ProcessStatus[] = [
   {
     id: "awaiting-cover",
-    hint: "Waiting for the advocate to bring the registered-post cover.",
+    hint: "signProcess_waitingForTheAdvocateToBring",
     counted: true,
     tab: "rpad-collection",
     label: "Awaiting cover",
@@ -341,7 +341,7 @@ export const PROCESS_STATUSES: ProcessStatus[] = [
   },
   {
     id: "to-sign",
-    hint: "Issued and waiting for your signature.",
+    hint: "signProcess_issuedAndWaitingForYourSignature",
     counted: true,
     tab: "issuance",
     label: "To sign",
@@ -353,7 +353,7 @@ export const PROCESS_STATUSES: ProcessStatus[] = [
   },
   {
     id: "to-post",
-    hint: "Signed registered-post covers, to be taken to the post office.",
+    hint: "signProcess_signedRegisteredPostCoversToBe",
     counted: true,
     tab: "issuance",
     label: "To post",
@@ -366,7 +366,7 @@ export const PROCESS_STATUSES: ProcessStatus[] = [
   },
   {
     id: "to-hand",
-    hint: "Signed, to be handed over in person. Mark it sent once it has gone.",
+    hint: "signProcess_signedToBeHandedOverIn",
     counted: true,
     tab: "issuance",
     label: "To hand over",
@@ -378,7 +378,7 @@ export const PROCESS_STATUSES: ProcessStatus[] = [
   },
   {
     id: "to-send",
-    hint: "Signed, to be sent by e-Post. Mark it sent once it has gone.",
+    hint: "signProcess_signedToBeSentByE",
     counted: true,
     tab: "issuance",
     label: "To send",
@@ -390,7 +390,7 @@ export const PROCESS_STATUSES: ProcessStatus[] = [
   },
   {
     id: "send-failed",
-    hint: "Signed, but the channel did not accept it. Resend to try again.",
+    hint: "signProcess_signedButTheChannelDidNot",
     counted: true,
     tab: "issuance",
     label: "Errored",
@@ -402,7 +402,7 @@ export const PROCESS_STATUSES: ProcessStatus[] = [
   },
   {
     id: "in-progress",
-    hint: "Sent, and waiting for the channel to report back.",
+    hint: "signProcess_sentAndWaitingForTheChannel",
     counted: true,
     tab: "service",
     label: "In progress",
@@ -415,7 +415,7 @@ export const PROCESS_STATUSES: ProcessStatus[] = [
   },
   {
     id: "completed",
-    hint: "The channel has reported back — served or not.",
+    hint: "signProcess_theChannelHasReportedBackServed",
     counted: false,
     tab: "service",
     label: "Completed",
@@ -460,7 +460,7 @@ export function processOutcomeWord(
 export function processStatusLine(process: CourtProcess): ProcessStatusLine {
   switch (process.status) {
     case "awaiting-cover":
-      return { word: "Fee paid", day: process.paidOn, warn: false };
+      return { word: "signProcess_feePaid", day: process.paidOn, warn: false };
     case "to-sign":
       return { word: "Issued", day: process.issuedOn, warn: false };
     case "to-post":
@@ -545,7 +545,7 @@ export const PROCESS_TABS: ProcessTab[] = [
     countedStatuses: ["awaiting-cover"],
     dateColumn: "Payment made",
     outcomeFilters: false,
-    allHint: "Everything waiting for its cover.",
+    allHint: "signProcess_everythingWaitingForItsCover",
     empty: processStatusEmpty("awaiting-cover"),
   },
   {
@@ -557,7 +557,7 @@ export const PROCESS_TABS: ProcessTab[] = [
     dateColumn: "Status",
     outcomeFilters: false,
     allHint:
-      "Everything still with the court: to sign, to post, to hand over, to send, or to resend.",
+      "signProcess_everythingStillWithTheCourtTo",
     empty: {
       title: "Nothing is waiting on the court",
       description: "Everything this court has issued is signed and on its way.",
@@ -571,7 +571,7 @@ export const PROCESS_TABS: ProcessTab[] = [
     countedStatuses: ["in-progress"],
     dateColumn: "Status",
     outcomeFilters: true,
-    allHint: "Everything the court has sent out, in progress or completed.",
+    allHint: "signProcess_everythingTheCourtHasSentOut",
     empty: {
       title: "Nothing has gone out",
       description: "No process this court has signed has left it yet.",
@@ -722,8 +722,8 @@ export const PROCESS_ACTS: ProcessAct[] = [
     from: "awaiting-cover",
     bar: (count) =>
       `Send ${count} ${plural(count, "process", "processes")} for signature`,
-    idle: "Send selected for signature",
-    confirm: "Send for signature",
+    idle: "signProcess_sendSelectedForSignature",
+    confirm: "signProcess_sendForSignature",
     question: (subject) => `Send ${subject} for signature?`,
     done: (phrase) => `${capitalise(phrase)} sent for signature`,
     notice: (count) =>
@@ -733,7 +733,7 @@ export const PROCESS_ACTS: ProcessAct[] = [
     id: "sign",
     from: "to-sign",
     bar: (count) => `Sign ${count} ${plural(count, "process", "processes")}`,
-    idle: "Sign selected processes",
+    idle: "signProcess_signSelectedProcesses",
     confirm: "Sign",
     question: (subject) => `Sign ${subject}?`,
     done: (phrase) => `${capitalise(phrase)} signed`,
@@ -744,8 +744,8 @@ export const PROCESS_ACTS: ProcessAct[] = [
     id: "post",
     from: "to-post",
     bar: (count) => `Mark ${count} ${plural(count, "cover", "covers")} as posted`,
-    idle: "Mark selected as posted",
-    confirm: "Mark as posted",
+    idle: "signProcess_markSelectedAsPosted",
+    confirm: "signProcess_markAsPosted",
     question: (subject) => `Mark ${subject} as posted?`,
     noun: { one: "cover", many: "covers" },
     done: (phrase) => `${capitalise(phrase)} posted`,
@@ -756,8 +756,8 @@ export const PROCESS_ACTS: ProcessAct[] = [
     id: "hand",
     from: "to-hand",
     bar: (count) => `Mark ${count} as sent`,
-    idle: "Mark selected as sent",
-    confirm: "Mark as sent",
+    idle: "signProcess_markSelectedAsSent",
+    confirm: "signProcess_markAsSent",
     question: (subject) => `Mark ${subject} as sent?`,
     done: (phrase) => `${capitalise(phrase)} sent`,
     notice: (count) =>
@@ -767,8 +767,8 @@ export const PROCESS_ACTS: ProcessAct[] = [
     id: "send",
     from: "to-send",
     bar: (count) => `Mark ${count} as sent`,
-    idle: "Mark selected as sent",
-    confirm: "Mark as sent",
+    idle: "signProcess_markSelectedAsSent",
+    confirm: "signProcess_markAsSent",
     question: (subject) => `Mark ${subject} as sent?`,
     done: (phrase) => `${capitalise(phrase)} sent`,
     notice: (count) =>
@@ -778,7 +778,7 @@ export const PROCESS_ACTS: ProcessAct[] = [
     id: "resend",
     from: "send-failed",
     bar: (count) => `Resend ${count}`,
-    idle: "Resend selected",
+    idle: "signProcess_resendSelected",
     confirm: "Resend",
     question: (subject) => `Resend ${subject}?`,
     done: (phrase) => `${capitalise(phrase)} resent`,
@@ -789,7 +789,7 @@ export const PROCESS_ACTS: ProcessAct[] = [
     id: "record",
     from: "in-progress",
     bar: (count) => `Record ${count} ${plural(count, "return", "returns")}`,
-    idle: "Record returns",
+    idle: "signProcess_recordReturns",
     confirm: "Record",
     question: (subject) => `Record ${subject}`,
     done: (phrase) => `${capitalise(phrase)} recorded`,

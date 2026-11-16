@@ -37,6 +37,7 @@ import {
 import type { BatchCtx } from "./batch-screen";
 import { bulkFetch } from "./api";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 export const ist = (iso: string) =>
   `${new Date(iso).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" })} IST`;
@@ -46,6 +47,7 @@ export const ist = (iso: string) =>
  * grouped by the payment that filed it. From here each case goes to scrutiny on its own.
  */
 export function FiledTab({ batch, go }: BatchCtx) {
+  const t = useTranslations();
   const filed = batch.cases.filter((c) => c.stage === "filed");
   const left = batch.total - filed.length;
   // A filed case opens read-only, as the court will read it.
@@ -71,7 +73,7 @@ export function FiledTab({ batch, go }: BatchCtx) {
     return (
       <Card variant="raised">
         <CardContent className="text-body-compact text-muted-foreground">
-          Nothing filed yet. Cases show here once they are paid for.
+          {t("filedTab_nothingFiledYetCasesShowHere")}
         </CardContent>
       </Card>
     );
@@ -86,19 +88,18 @@ export function FiledTab({ batch, go }: BatchCtx) {
           tone="neutral"
           icon={ListChecksIcon}
           still
-          title={<span className="tabular-nums">{`${filed.length} of ${batch.total} cases filed`}</span>}
+          title={<span className="tabular-nums">{t("filedTab_lengthOfTotalCasesFiled", { length: String(filed.length), total: String(batch.total) })}</span>}
         >
-            Each case now goes to the court on its own for checking.
+            {t("filedTab_eachCaseNowGoesToThe")}
             {left ? (
               <>
-                {" "}
-                <span className="tabular-nums">{left}</span> still to go.{" "}
+                {t.rich("filedTab_leftStillToGo", { left: String(left), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
                 <button
                   type="button"
                   className="underline"
                   onClick={() => go(batch.counts.signed ? "pay" : "scrutiny")}
                 >
-                  {batch.counts.signed ? "Go to payment" : "Open scrutiny"}
+                  {batch.counts.signed ? t("filedTab_goToPayment") : t("filedTab_openScrutiny")}
                 </button>
               </>
             ) : null}
@@ -111,29 +112,29 @@ export function FiledTab({ batch, go }: BatchCtx) {
           <Card key={p.ref} variant="raised" className="gap-0 py-0">
             <CardHeader className="px-6 py-4">
               <CardTitle className="text-body font-semibold tabular-nums">
-                {cases.length} filed at {ist(p.at)}
+                {t("filedTab_lengthFiledAtIst", { length: String(cases.length), ist: ist(p.at) })}
               </CardTitle>
               <CardDescription className="tabular-nums">
-                Transaction {p.ref} · {money(p.amount)}
+                {t("filedTab_transactionRefMoney", { ref: p.ref, money: money(p.amount) })}
               </CardDescription>
             </CardHeader>
             <div className="overflow-x-auto px-2 pb-2">
               <Table
                 className="border-separate border-spacing-0"
-                aria-label={`Cases filed by ${p.ref}`}
+                aria-label={t("filedTab_casesFiledByRef", { ref: p.ref })}
               >
                 <TableHeader>
                   <TableRow className={TABLE_HEAD_ROW}>
                     <TableHead className={cn(TABLE_HEAD, "pl-4")}>
-                      Reference
+                      {t("filedTab_reference")}
                     </TableHead>
-                    <TableHead className={TABLE_HEAD}>Parties</TableHead>
+                    <TableHead className={TABLE_HEAD}>{t("filedTab_parties")}</TableHead>
                     <TableHead className={TABLE_HEAD}>
-                      Case file number
+                      {t("filedTab_caseFileNumber")}
                     </TableHead>
-                    <TableHead className={TABLE_HEAD}>Receipt</TableHead>
+                    <TableHead className={TABLE_HEAD}>{t("filedTab_receipt")}</TableHead>
                     <TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
-                      Paid
+                      {t("filedTab_paid")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -201,8 +202,7 @@ export function FiledTab({ batch, go }: BatchCtx) {
                   {opened.title}
                 </DialogTitle>
                 <DialogDescription className="tabular-nums">
-                  {opened.reference} · Case file {opened.caseFileNumber} ·
-                  Receipt {opened.receiptNumber}
+                  {t("filedTab_referenceCaseFileCaseFileNumber", { reference: opened.reference, caseFileNumber: (opened.caseFileNumber) ?? "", receiptNumber: (opened.receiptNumber) ?? "" })}
                 </DialogDescription>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto bg-surface-sunken p-4 sm:p-6">
@@ -210,7 +210,7 @@ export function FiledTab({ batch, go }: BatchCtx) {
                   <CourtDocument draft={drafts[opened.id]} />
                 ) : drafts ? (
                   <p className="text-body-compact text-muted-foreground">
-                    This case could not be loaded.
+                    {t("filedTab_thisCaseCouldNotBeLoaded")}
                   </p>
                 ) : (
                   <div className="flex justify-center py-12">

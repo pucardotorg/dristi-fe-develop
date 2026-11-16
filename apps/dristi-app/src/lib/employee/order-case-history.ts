@@ -142,7 +142,7 @@ export function orderCaseHistory(
           id: `order-${sitting.on}`,
           on: sitting.on,
           /* The catalogue's event for an order the magistrate passed. */
-          label: "Order Issued",
+          label: "employeeOrderCaseHistory_orderIssued",
           kind: "order",
           type: "orders",
           text: sitting.order,

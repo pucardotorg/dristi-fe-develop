@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { DOCUMENT_GROUND } from "@/components/cases/document-ground";
+import { useTranslations } from "next-intl";
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
@@ -84,6 +85,7 @@ export function PdfViewer({
   thumbnail?: boolean;
   className?: string;
 }) {
+  const t = useTranslations();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   /* Held with the src it came from, so a new src reads as "loading" at once
      without resetting state from inside the effect. */
@@ -197,7 +199,7 @@ export function PdfViewer({
       >
         {failed ? (
           <p className="p-6 text-body-compact text-muted-foreground">
-            This document could not be shown. Try downloading it instead.
+            {t("pdfViewer_thisDocumentCouldNotBeShown")}
           </p>
         ) : !doc ? (
           <div
@@ -205,7 +207,7 @@ export function PdfViewer({
             className="flex h-full items-center justify-center gap-2 text-body-compact text-muted-foreground"
           >
             <Spinner aria-hidden />
-            Loading document
+            {t("pdfViewer_loadingDocument")}
           </div>
         ) : (
           <div
@@ -244,13 +246,14 @@ function ZoomControl({
   zoom: number;
   onZoom: (next: (current: number) => number) => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="absolute right-3 bottom-3 flex items-center gap-0.5 rounded-lg border border-hairline bg-card p-0.5 shadow-raised">
       <Button
         type="button"
         variant="ghost"
         size="icon-xs"
-        aria-label="Zoom out"
+        aria-label={t("pdfViewer_zoomOut")}
         disabled={zoom <= MIN_ZOOM}
         onClick={() => onZoom((current) => clampZoom(current - ZOOM_STEP))}
       >
@@ -261,7 +264,7 @@ function ZoomControl({
         variant="ghost"
         size="xs"
         className="w-12 tabular-nums"
-        aria-label={`Zoom ${Math.round(zoom * 100)} percent. Reset to fit`}
+        aria-label={t("pdfViewer_zoomRoundPercentResetToFit", { round: String(Math.round(zoom * 100)) })}
         onClick={() => onZoom(() => 1)}
       >
         {Math.round(zoom * 100)}%
@@ -270,7 +273,7 @@ function ZoomControl({
         type="button"
         variant="ghost"
         size="icon-xs"
-        aria-label="Zoom in"
+        aria-label={t("pdfViewer_zoomIn")}
         disabled={zoom >= MAX_ZOOM}
         onClick={() => onZoom((current) => clampZoom(current + ZOOM_STEP))}
       >
@@ -371,6 +374,7 @@ function PdfPage({
   aspect: number;
   root: React.RefObject<HTMLDivElement | null>;
 }) {
+  const t = useTranslations();
   const holderRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [near, setNear] = useState(false);
@@ -435,7 +439,7 @@ function PdfPage({
     >
       <canvas
         ref={canvasRef}
-        aria-label={`Page ${number}`}
+        aria-label={t("pdfViewer_pageNumber", { number: String(number) })}
         role="img"
         className="block size-full"
       />

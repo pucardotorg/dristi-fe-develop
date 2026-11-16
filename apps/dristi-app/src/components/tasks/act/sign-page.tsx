@@ -29,22 +29,24 @@ import {
   signatoryLine,
 } from "@/components/tasks/act/shared";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /** The signatory's own signing well. */
 function SignCard({ ctx }: { ctx: ActContext }) {
+  const tr = useTranslations();
   const { task, user, online, finish } = ctx;
   const { act, busy, error } = useTaskActions({ inDialog: true });
   const [otpOpen, setOtpOpen] = React.useState(false);
   return (
-    <RailCard title="Add your signature" description={signatoryLine(ctx, "Signing")}>
+    <RailCard title={tr("actSignPage_addYourSignature")} description={signatoryLine(ctx, "Signing")}>
       {error ? <StatusLine tone="error">{error}</StatusLine> : null}
       <PreparedNote ctx={ctx} />
       <Button size="lg" disabled={!online || !!busy} onClick={() => setOtpOpen(true)}>
         <SignatureIcon data-icon="inline-start" aria-hidden />
-        E-Sign with Aadhaar OTP
+        {tr("actSignPage_eSignWithAadhaarOtp")}
       </Button>
       <p className="text-caption text-muted-foreground">
-        The signed document is attached to the task and the case file.
+        {tr("actSignPage_theSignedDocumentIsAttachedTo")}
       </p>
       <OtpDialog
         open={otpOpen}

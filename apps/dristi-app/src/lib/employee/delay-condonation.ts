@@ -673,7 +673,7 @@ export function delayCondonationFiler(matter: DelayCondonationCase): string {
   return applicationFiler(matter, matter.filedFor);
 }
 
-export const DELAY_CONDONATION_TYPE_LABEL = "Delay condonation";
+export const DELAY_CONDONATION_TYPE_LABEL = "delayCondonation_delayCondonation";
 
 export type DelayCondonationDocument = {
   court: string;

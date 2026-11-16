@@ -28,8 +28,10 @@ import {
   PAGE_TITLE,
 } from "@/components/shell/page-frame";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export default function VakalatnamaListPage() {
+  const t = useTranslations();
   const router = useRouter();
   const list = useVakList();
   const ready = useStoreReady();
@@ -51,20 +53,19 @@ export default function VakalatnamaListPage() {
             (owner, Sept 21): beside a two-line subtitle it crowded the heading. */}
         <header className="flex flex-col gap-4 sm:landscape:flex-row sm:landscape:items-start sm:landscape:justify-between">
           <div className="flex min-w-0 flex-col gap-1">
-            <h1 className={PAGE_TITLE}>Vakalatnama</h1>
+            <h1 className={PAGE_TITLE}>{t("vakalatnamaPage_vakalatnama")}</h1>
             <p className={PAGE_SUBTITLE}>
-              Appoint advocates for a litigant, for one case or all cases. You can start one
-              before a case is filed.
+              {t("vakalatnamaPage_appointAdvocatesForALitigantFor")}
             </p>
           </div>
           <Button type="button" onClick={create} className="shrink-0 self-start max-sm:w-full max-sm:self-stretch">
             <PlusIcon aria-hidden />
-            New vakalatnama
+            {t("vakalatnamaPage_newVakalatnama")}
           </Button>
         </header>
 
         <section className="flex flex-col gap-4">
-          <h2 className="text-body font-semibold">Your vakalatnamas</h2>
+          <h2 className="text-body font-semibold">{t("vakalatnamaPage_yourVakalatnamas")}</h2>
 
           {!ready ? null : list.length === 0 ? (
             <Card variant="raised">
@@ -73,9 +74,9 @@ export default function VakalatnamaListPage() {
                   <EmptyMedia variant="icon">
                     <ScrollTextIcon aria-hidden />
                   </EmptyMedia>
-                  <EmptyTitle>Nothing here yet</EmptyTitle>
+                  <EmptyTitle>{t("vakalatnamaPage_nothingHereYet")}</EmptyTitle>
                   <EmptyDescription>
-                    Create your first vakalatnama to appoint an advocate.
+                    {t("vakalatnamaPage_createYourFirstVakalatnamaToAppoint")}
                   </EmptyDescription>
                 </EmptyHeader>
               </Empty>
@@ -94,6 +95,7 @@ export default function VakalatnamaListPage() {
 }
 
 function VakRow({ vak, onDiscard }: { vak: Vakalatnama; onDiscard: () => void }) {
+  const t = useTranslations();
   const name = executantName(vak.executant);
   const advocates = vak.advocates.length;
 
@@ -110,7 +112,7 @@ function VakRow({ vak, onDiscard }: { vak: Vakalatnama; onDiscard: () => void })
             </span>
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className="truncate text-body font-medium">
-                {name === "the litigant" ? "Untitled vakalatnama" : name}
+                {name === "the litigant" ? t("vakalatnamaPage_untitledVakalatnama") : name}
               </span>
               <span className="truncate text-caption text-muted-foreground">
                 {scopeLabel(vak)} · {advocates} advocate{advocates === 1 ? "" : "s"}
@@ -126,7 +128,7 @@ function VakRow({ vak, onDiscard }: { vak: Vakalatnama; onDiscard: () => void })
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="Discard"
+            aria-label={t("vakalatnamaPage_discard")}
             onClick={onDiscard}
             className="text-muted-foreground"
           >

@@ -35,6 +35,7 @@ import {
 } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /** Plain at rest; the exception gets the ink. See `registrationWaitTone`. */
 export const waitClass: Record<WaitTone, string> = {
@@ -67,23 +68,24 @@ export function RegistrationsTable({
   rows: RegistrationRequest[];
   onOpen: (request: RegistrationRequest) => void;
 }) {
+  const t = useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Full name
+            {t("approveRegistrationsTable_fullName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Account type
+            {t("approveRegistrationsTable_accountType")}
           </TableHead>
           {/* "Registration number", not "Bar registration ID" — the column holds clerks'
               numbers too, and the Account type beside it says which register it is. */}
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Registration number
+            {t("approveRegistrationsTable_registrationNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap text-right")}>
-            Days waiting
+            {t("approveRegistrationsTable_daysWaiting")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -104,7 +106,7 @@ export function RegistrationsTable({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Review </span>
+                <span className="sr-only">{t("approveRegistrationsTable_review")} </span>
                 <span lang={request.fullNameLang}>{request.fullName}</span>
               </button>
             </TableCell>
@@ -118,7 +120,7 @@ export function RegistrationsTable({
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
               <Identifier
                 value={request.registrationNumber}
-                label="registration number"
+                label={t("approveRegistrationsTable_registrationNumberLabel")}
               />
             </TableCell>
             {/* The number is the encoding; the colour only agrees with it (ACCESSIBILITY §3). */}
@@ -150,6 +152,7 @@ export function DecidedRegistrationsTable({
   rows: DecidedRegistration[];
   outcome: RegistrationOutcome;
 }) {
+  const t = useTranslations();
   const rejected = outcome === "rejected";
   const columns = rejected ? 5 : 4;
   /* Widths on the headers so the slack is shared out. Left to auto layout, the reason
@@ -164,20 +167,20 @@ export function DecidedRegistrationsTable({
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, width.name, "min-w-48 whitespace-normal")}>
-            Full name
+            {t("approveRegistrationsTable_fullName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, width.type, "whitespace-nowrap")}>
-            Account type
+            {t("approveRegistrationsTable_accountType")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, width.number, "whitespace-nowrap")}>
-            Registration number
+            {t("approveRegistrationsTable_registrationNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, width.date, "whitespace-nowrap")}>
             {decidedOnLabel(outcome)}
           </TableHead>
           {rejected ? (
             <TableHead className={cn(TABLE_HEAD, "min-w-72 whitespace-normal")}>
-              Reason
+              {t("approveRegistrationsTable_reason")}
             </TableHead>
           ) : null}
         </TableRow>
@@ -202,7 +205,7 @@ export function DecidedRegistrationsTable({
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
               <Identifier
                 value={request.registrationNumber}
-                label="registration number"
+                label={t("approveRegistrationsTable_registrationNumberLabel")}
               />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>

@@ -38,6 +38,7 @@ import { withCausePosting } from "@/lib/employee/order-draft";
 import { editorDraftKey } from "@/lib/employee/order-drafts";
 import { pendingOrderStage } from "@/lib/employee/pending-orders";
 import { notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 const SETTLED: Record<ApplicationOrderKind, string> = {
   accept: "accepted",
@@ -71,6 +72,7 @@ export function quietTrigger(orderKey: string): void {
  * twice. Where the browser has no Web Locks, every tab acts, as before.
  */
 export function ApplicationOrderTriggers() {
+  const t = useTranslations();
   const ready = useApplicationsReady();
   const apps = useLifecycleApplications();
   const orders = usePendingOrders();
@@ -137,10 +139,10 @@ export function ApplicationOrderTriggers() {
         });
         const id = `${order.key}:outcome`;
         if (result.ok && summary) {
-          notify.success(`${owner.typeLabel} application: ${summary}.`);
+          notify.success(t("applicationOrderTriggers_typeLabelApplicationSummary", { typeLabel: owner.typeLabel, summary }));
         } else if (!result.ok && !reported.current.has(id)) {
           reported.current.add(id);
-          notify.error(`${owner.typeLabel} application could not be updated: ${result.error}`);
+          notify.error(t("applicationOrderTriggers_typeLabelApplicationCouldNotBe", { typeLabel: owner.typeLabel, error: result.error }));
         }
       }
       for (const outcome of applicationOrderOutcomes(draft.blocks)) {
@@ -167,15 +169,15 @@ export function ApplicationOrderTriggers() {
         const id = `${order.key}:${application.id}`;
         if (result.ok) {
           if (!told.delete(order.key)) {
-            notify.success(`${label} ${SETTLED[outcome.kind]} by the signed order.`);
+            notify.success(t("applicationOrderTriggers_labelSettledByTheSignedOrder", { label, SETTLED: SETTLED[outcome.kind] }));
           }
         } else if (!reported.current.has(id)) {
           reported.current.add(id);
-          notify.error(`${label} could not be ${SETTLED[outcome.kind]}: ${result.error}`);
+          notify.error(t("applicationOrderTriggers_labelCouldNotBeSettledError", { label, SETTLED: SETTLED[outcome.kind], error: result.error }));
         }
       }
     }
-  }, [ready, leader, apps, orders, signing, drafts, session, readerPosts]);
+  }, [ready, leader, apps, orders, signing, drafts, session, readerPosts, t]);
 
   return null;
 }

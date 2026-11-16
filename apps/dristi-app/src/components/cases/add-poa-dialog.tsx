@@ -59,6 +59,7 @@ import {
   POA_REASON_MAX_LENGTH,
   type PartyOption,
 } from "@/lib/cases/party-actions";
+import { useTranslations } from "next-intl";
 
 type PoaStep = 1 | 2 | 3;
 
@@ -113,6 +114,7 @@ export function AddPoaDialog({
   /** How the paper names the case. */
   caseRef: CaseRef;
 }) {
+  const t = useTranslations();
   const [step, setStep] = useState<PoaStep>(1);
   const [partyId, setPartyId] = useState("");
   const [holderMode, setHolderMode] = useState<HolderMode>("new");
@@ -174,20 +176,20 @@ export function AddPoaDialog({
 
   /** The generated application — the review sheet and the paper that is signed. */
   const applicationDoc = {
-    matter: "Application for the appointment of a PoA-holder",
+    matter: t("addPoaDialog_applicationForTheAppointmentOfA"),
     facts: [
-      { term: "Granting party", value: grantingParty?.name ?? "" },
+      { term: t("addPoaDialog_grantingParty"), value: grantingParty?.name ?? "" },
       {
-        term: "PoA-holder",
+        term: t("addPoaDialog_poAHolder"),
         value:
           holderMode === "existing"
             ? `${holderDisplayName} (already on this case)`
             : holderDisplayName,
       },
       ...(holderMode === "new" && holderPhone
-        ? [{ term: "Mobile number", value: holderPhone }]
+        ? [{ term: t("addPoaDialog_mobileNumber"), value: holderPhone }]
         : []),
-      ...(deedFile ? [{ term: "Annexure", value: deedFile.name }] : []),
+      ...(deedFile ? [{ term: t("addPoaDialog_annexure"), value: deedFile.name }] : []),
     ],
     prayer: [
       `The applicant, counsel on record in the above matter, prays that ${holderDisplayName || "the person named above"} be recognised as the Power of Attorney holder of ${grantingParty?.name ?? "the party"} under the deed annexed.`,
@@ -201,14 +203,14 @@ export function AddPoaDialog({
 
     if (step === 1) {
       const next: Errors = {};
-      if (!partyId) next.party = "Pick the party granting the Power of Attorney.";
+      if (!partyId) next.party = t("addPoaDialog_pickThePartyGrantingThePower");
       if (holderMode === "new") {
-        if (!holderName.trim()) next.holderName = "Enter the holder's name.";
+        if (!holderName.trim()) next.holderName = t("addPoaDialog_enterTheHoldersName");
         if (holderPhone.length !== 10) {
-          next.holderPhone = "Enter the holder's 10-digit mobile number.";
+          next.holderPhone = t("addPoaDialog_enterTheHolders10DigitMobile");
         }
       } else if (!existingKey) {
-        next.existing = "Pick who on the case will take on the role.";
+        next.existing = t("addPoaDialog_pickWhoOnTheCaseWill");
       }
       setErrors(next);
       if (Object.values(next).some(Boolean)) return;
@@ -218,8 +220,8 @@ export function AddPoaDialog({
 
     if (step === 2) {
       const next: Errors = {};
-      if (!reason.trim()) next.reason = "State why the party needs a PoA-holder.";
-      if (!deedFile) next.deed = "Upload the Power of Attorney deed to continue.";
+      if (!reason.trim()) next.reason = t("addPoaDialog_stateWhyThePartyNeedsA");
+      if (!deedFile) next.deed = t("addPoaDialog_uploadThePowerOfAttorneyDeed");
       setErrors(next);
       if (Object.values(next).some(Boolean)) return;
       setStep(3);
@@ -243,7 +245,7 @@ export function AddPoaDialog({
             <FlowStepper
               steps={STEPS}
               current={step}
-              label="Add Power of Attorney holder progress"
+              label={t("addPoaDialog_addPowerOfAttorneyHolderProgress")}
             />
           </div>
           <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
@@ -268,10 +270,10 @@ export function AddPoaDialog({
                       application goes to the magistrate (owner, Sept 1). */}
                   <Field data-invalid={Boolean(errors.party)}>
                     <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                      Who is granting the Power of Attorney?
+                      {t("addPoaDialog_whoIsGrantingThePowerOf")}
                     </FieldLabel>
                     <FieldDescription>
-                      A party can have at most one PoA-holder.
+                      {t("addPoaDialog_aPartyCanHaveAtMost")}
                     </FieldDescription>
                     <RadioGroup
                       value={partyId}
@@ -309,14 +311,13 @@ export function AddPoaDialog({
                                   {party.name}
                                   <span className="font-normal text-muted-foreground">
                                     {" "}
-                                    · {PARTY_SIDE_LABEL[party.side]}
+                                    · {t(PARTY_SIDE_LABEL[party.side])}
                                   </span>
                                 </Label>
                               </div>
                               {taken ? (
                                 <p className="-mt-2 pb-2 text-caption text-muted-foreground">
-                                  Already has a PoA-holder ({party.poaHolder}).
-                                  Replace them instead of adding a second.
+                                  {t("addPoaDialog_alreadyHasAPoAHolder", { poaHolder: (party.poaHolder) ?? "" })}
                                 </p>
                               ) : null}
                             </div>
@@ -329,7 +330,7 @@ export function AddPoaDialog({
 
                   <Field>
                     <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                      Who will hold it?
+                      {t("addPoaDialog_whoWillHoldIt")}
                     </FieldLabel>
                     <RadioGroup
                       value={holderMode}
@@ -346,7 +347,7 @@ export function AddPoaDialog({
                     >
                       <div className="flex min-h-10 items-center gap-2">
                         <RadioGroupItem id="poa-holder-new" value="new" />
-                        <Label htmlFor="poa-holder-new">Someone new</Label>
+                        <Label htmlFor="poa-holder-new">{t("addPoaDialog_someoneNew")}</Label>
                       </div>
                       <div className="flex min-h-10 items-center gap-2">
                         <RadioGroupItem
@@ -354,7 +355,7 @@ export function AddPoaDialog({
                           value="existing"
                         />
                         <Label htmlFor="poa-holder-existing">
-                          Someone already on this case
+                          {t("addPoaDialog_someoneAlreadyOnThisCase")}
                         </Label>
                       </div>
                     </RadioGroup>
@@ -364,7 +365,7 @@ export function AddPoaDialog({
                     <>
                       <Field data-invalid={Boolean(errors.holderName)}>
                         <FieldLabel htmlFor="poa-holder-name">
-                          Full name
+                          {t("addPoaDialog_fullName")}
                         </FieldLabel>
                         <Input
                           id="poa-holder-name"
@@ -379,7 +380,7 @@ export function AddPoaDialog({
                       </Field>
                       <Field data-invalid={Boolean(errors.holderPhone)}>
                         <FieldLabel htmlFor="poa-holder-phone">
-                          Mobile number
+                          {t("addPoaDialog_mobileNumber")}
                         </FieldLabel>
                         <Input
                           id="poa-holder-phone"
@@ -401,11 +402,10 @@ export function AddPoaDialog({
                   ) : (
                     <Field data-invalid={Boolean(errors.existing)}>
                       <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                        Who takes on the role?
+                        {t("addPoaDialog_whoTakesOnTheRole")}
                       </FieldLabel>
                       <FieldDescription>
-                        No new person joins the case. They take on the PoA role
-                        alongside what they already are.
+                        {t("addPoaDialog_noNewPersonJoinsTheCase")}
                       </FieldDescription>
                       <RadioGroup
                         value={existingKey}
@@ -450,7 +450,7 @@ export function AddPoaDialog({
                       PoA-holder?
                     </FieldLabel>
                     <FieldDescription>
-                      The magistrate reads this to decide the application.
+                      {t("addPoaDialog_theMagistrateReadsThisToDecide")}
                     </FieldDescription>
                     <Textarea
                       id="poa-reason"
@@ -471,14 +471,14 @@ export function AddPoaDialog({
 
                   <Field data-invalid={Boolean(errors.deed)}>
                     <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                      Power of Attorney deed
+                      {t("addPoaDialog_powerOfAttorneyDeed")}
                     </FieldLabel>
                     <FieldDescription>
                       The executed deed naming {holderDisplayName || "the holder"}{" "}
                       for {grantingParty?.name ?? "the party"}.
                     </FieldDescription>
                     <UploadedDocField
-                      label="Power of Attorney deed"
+                      label={t("addPoaDialog_powerOfAttorneyDeed")}
                       required
                       file={deedFile}
                       onFileChange={(file) => {
@@ -486,7 +486,7 @@ export function AddPoaDialog({
                         setErrors((c) => ({ ...c, deed: undefined }));
                       }}
                     />
-                    <FieldDescription>{UPLOAD_HELP}</FieldDescription>
+                    <FieldDescription>{t(UPLOAD_HELP)}</FieldDescription>
                     <FieldError>{errors.deed}</FieldError>
                   </Field>
                 </>
@@ -506,18 +506,18 @@ export function AddPoaDialog({
                 variant="outline"
                 onClick={() => setStep((s) => (s - 1) as PoaStep)}
               >
-                Back
+                {t("common_back")}
               </Button>
             ) : (
               <span aria-hidden className="hidden sm:block" />
             )}
             {step < 3 ? (
               <Button type="submit" form="add-poa-form">
-                Continue
+                {t("addPoaDialog_continue")}
               </Button>
             ) : (
               <Button type="button" onClick={() => setSignOpen(true)}>
-                Continue to sign
+                {t("addPoaDialog_continueToSign")}
               </Button>
             )}
           </footer>
@@ -540,7 +540,7 @@ export function AddPoaDialog({
           closeClean();
         }}
         confirmation={{
-          title: "Application sent to the magistrate",
+          title: t("addPoaDialog_applicationSentToTheMagistrate"),
           description: `${holderDisplayName || "The holder"} is added as ${grantingParty?.name ?? "the party"}'s PoA-holder once the order is passed.`,
         }}
       />

@@ -34,6 +34,9 @@ import {
 } from "@/lib/employee/court-flow";
 import { formatCount } from "@/lib/employee/register-rows";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
+import type { MessageKey } from "@/i18n/messages";
 
 /**
  * Trends on the magistrate dashboard (Case Flow v4): one measure at a time, in detail.
@@ -108,20 +111,21 @@ function axisName(p: TrendPoint, i: number): string {
 }
 
 const VERDICT: Record<NonNullable<Trend["verdict"]>, { label: string; variant: "success" | "destructive" | "secondary"; ink: string }> = {
-  better: { label: "Improving", variant: "success", ink: "text-success-ink" },
-  worse: { label: "Worsening", variant: "destructive", ink: "text-destructive-ink" },
-  steady: { label: "Steady", variant: "secondary", ink: "text-muted-foreground" },
+  better: { label: "courtDashboardTrends_improving", variant: "success", ink: "text-success-ink" },
+  worse: { label: "courtDashboardTrends_worsening", variant: "destructive", ink: "text-destructive-ink" },
+  steady: { label: "courtDashboardTrends_steady", variant: "secondary", ink: "text-muted-foreground" },
 };
 
-const NOTE: Record<TrendId, string> = {
-  pending: "Cases still open at the end of each month",
-  clearance: "Cases disposed for every 100 filed. Above 100% the backlog shrinks.",
-  overdue: "Cases past their stage’s review point, all stages together",
-  disposal: "Median days from filing to disposal, for cases disposed that month",
-  serve: "Average days from paying the fee to delivery, for summons delivered that month",
+const NOTE: Record<TrendId, MessageKey> = {
+  pending: "courtDashboardTrends_casesStillOpenAtTheEnd",
+  clearance: "courtDashboardTrends_casesDisposedForEvery100Filed",
+  overdue: "courtDashboardTrends_casesPastTheirStagesReviewPoint",
+  disposal: "courtDashboardTrends_medianDaysFromFilingToDisposal",
+  serve: "courtDashboardTrends_averageDaysFromPayingTheFee",
 };
 
 export function Trends({ docket }: { docket: CourtDocket }) {
+  const tr = useTranslations();
   const opening = trendOpening(docket);
   /* `null` until the reader picks, so the default follows the court's today. */
   const [picked, setPicked] = React.useState<Period | null>(null);
@@ -154,15 +158,15 @@ export function Trends({ docket }: { docket: CourtDocket }) {
     <section aria-labelledby="dash-trends" className={PANEL}>
       <PanelHeader
         id="dash-trends"
-        title="Trends"
+        title={tr("courtDashboardTrends_trends")}
         line={`How the court is moving, month by month · ${toName(range.from)} to ${toName(range.to)}`}
-        note={months < 4 ? "Pick at least 4 months to see whether a measure is improving." : undefined}
+        note={months < 4 ? tr("courtDashboardTrends_pickAtLeast4MonthsTo") : undefined}
       >
         <DashboardDatePicker
           docket={docket}
           value={period}
           defaultValue={opening}
-          defaultLabel="Last 12 months"
+          defaultLabel={tr("courtDashboardTrends_last12Months")}
           presets={trendPresets(docket)}
           idPrefix="dash-trend-picker"
           dayNote="charts show that month, up to that day"
@@ -174,7 +178,7 @@ export function Trends({ docket }: { docket: CourtDocket }) {
       <div className={cn(BOX, "grid items-start gap-4 p-4 sm:gap-6 sm:p-6 lg:grid-cols-[16rem_minmax(0,1fr)]")}>
         <div
           role="tablist"
-          aria-label="Measures"
+          aria-label={tr("courtDashboardTrends_measures")}
           aria-orientation="vertical"
           className="flex min-w-0 self-start overflow-x-auto rounded-lg border border-hairline bg-muted lg:sticky lg:top-6 lg:flex-col lg:overflow-hidden"
         >
@@ -221,7 +225,7 @@ export function Trends({ docket }: { docket: CourtDocket }) {
                   <MiniLine trend={t} on={on} />
                 </span>
                 <span className={cn("text-caption", t.verdict ? VERDICT[t.verdict].ink : "text-muted-foreground")}>
-                  {t.verdict ? VERDICT[t.verdict].label : "Too few months"}
+                  {t.verdict ? translateText(tr, VERDICT[t.verdict].label) : tr("courtDashboardTrends_tooFewMonths")}
                 </span>
               </button>
             );
@@ -288,6 +292,7 @@ type ChartRow = {
 };
 
 function TrendPanel({ docket, trend, months }: { docket: CourtDocket; trend: Trend; months: number }) {
+  const tr = useTranslations();
   const reduced = useReducedMotion();
   const detail = trendDetail(trend);
   const last = trend.last;
@@ -300,7 +305,7 @@ function TrendPanel({ docket, trend, months }: { docket: CourtDocket; trend: Tre
   const pct = (v: number) => `${Math.round(Math.abs(v) * 100)}%`;
   const story =
     !first || !last || first === last
-      ? "Not enough months in this range to show a trend."
+      ? tr("courtDashboardTrends_notEnoughMonthsInThisRange")
       : null;
   const rangeChange =
     first && last && first !== last
@@ -346,9 +351,9 @@ function TrendPanel({ docket, trend, months }: { docket: CourtDocket; trend: Tre
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-0.5">
           <h3 className="text-body font-semibold">{trend.label}</h3>
-          <p className="text-body-compact text-muted-foreground">{NOTE[trend.id]}</p>
+          <p className="text-body-compact text-muted-foreground">{tr(NOTE[trend.id])}</p>
         </div>
-        {trend.verdict ? <Badge variant={VERDICT[trend.verdict].variant}>{VERDICT[trend.verdict].label}</Badge> : null}
+        {trend.verdict ? <Badge variant={VERDICT[trend.verdict].variant}>{translateText(tr, VERDICT[trend.verdict].label)}</Badge> : null}
       </div>
       <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         {last ? <CountUp value={last.value!} format={fmt} className="text-title-l font-semibold tabular-nums" /> : "–"}
@@ -358,7 +363,7 @@ function TrendPanel({ docket, trend, months }: { docket: CourtDocket; trend: Tre
         ) : null}
       </p>
       <p className="max-w-prose text-body-compact">
-        {months < 4 ? "Pick at least 4 months to see whether this is improving. " : ""}
+        {months < 4 ? tr("courtDashboardTrends_pickAtLeast4MonthsToSee") : ""}
         {story ?? (
           <>
             {trend.label} went from <strong className="font-semibold">{fmt(first!.value!)}</strong> in {pointLong(first!)}{" "}
@@ -379,7 +384,7 @@ function TrendPanel({ docket, trend, months }: { docket: CourtDocket; trend: Tre
               accessibilityLayer
               data={rows}
               margin={{ top: 20, right: 16, left: 0, bottom: 0 }}
-              title={`${trend.label} by month. Focus the chart and use the left and right arrow keys to read each month.`}
+              title={tr("courtDashboardTrends_labelByMonthFocusTheChart", { label: trend.label })}
             >
               <CartesianGrid vertical={false} />
               <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} minTickGap={8} />
@@ -484,39 +489,39 @@ function TrendPanel({ docket, trend, months }: { docket: CourtDocket; trend: Tre
             ) : null}
             {trend.base !== null && base.length === 3 ? (
               <KeyItem mark="average">
-                3-month average, {pointShort(base[0])} to {pointShort(base[2])}: {fmt(trend.base)}
+                {tr("courtDashboardTrends_3MonthAveragePointShortTo", { pointShort: pointShort(base[0]), pointShort2: pointShort(base[2]), fmt: fmt(trend.base) })}
               </KeyItem>
             ) : null}
             {detail.best && detail.best !== last ? (
               <KeyItem mark="best">
-                Best: {pointLong(detail.best)}, {fmt(detail.best.value!)}
+                {tr("courtDashboardTrends_bestPointLongFmt", { pointLong: pointLong(detail.best), fmt: fmt(detail.best.value!) })}
               </KeyItem>
             ) : null}
             {detail.worst && detail.worst !== last && detail.worst !== detail.best ? (
               <KeyItem mark="worst">
-                Worst: {pointLong(detail.worst)}, {fmt(detail.worst.value!)}
+                {tr("courtDashboardTrends_worstPointLongFmt", { pointLong: pointLong(detail.worst), fmt: fmt(detail.worst.value!) })}
               </KeyItem>
             ) : null}
             {last?.partial ? <KeyItem mark="partial">{pointLong(last)}: month not over yet</KeyItem> : null}
           </ul>
           <figcaption className="text-caption text-muted-foreground">
-            Move along the chart, tap it, or focus it and use the arrow keys to read each month and what went into it.
+            {tr("courtDashboardTrends_moveAlongTheChartTapIt")}
           </figcaption>
         </figure>
       ) : (
-        <p className="text-body-compact text-muted-foreground">Not enough months in this range to draw a line.</p>
+        <p className="text-body-compact text-muted-foreground">{tr("courtDashboardTrends_notEnoughMonthsInThisRangeTo")}</p>
       )}
 
       {real.length ? (
         <dl className="grid gap-px overflow-hidden rounded-lg border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-4">
           <Stat
-            label="Compared with"
+            label={tr("courtDashboardTrends_comparedWith")}
             value={trend.base !== null ? fmt(trend.base) : "–"}
             sub={trend.base !== null ? "average of the 3 months before" : "needs 4 months"}
           />
-          <Stat label="Best month" value={detail.best ? fmt(detail.best.value!) : "–"} sub={detail.best ? pointLong(detail.best) : ""} />
-          <Stat label="Worst month" value={detail.worst ? fmt(detail.worst.value!) : "–"} sub={detail.worst ? pointLong(detail.worst) : ""} />
-          <Stat label="Change over the range" value={rangeChange} sub={first ? `since ${pointLong(first)}` : ""} />
+          <Stat label={tr("courtDashboardTrends_bestMonth")} value={detail.best ? fmt(detail.best.value!) : "–"} sub={detail.best ? pointLong(detail.best) : ""} />
+          <Stat label={tr("courtDashboardTrends_worstMonth")} value={detail.worst ? fmt(detail.worst.value!) : "–"} sub={detail.worst ? pointLong(detail.worst) : ""} />
+          <Stat label={tr("courtDashboardTrends_changeOverTheRange")} value={rangeChange} sub={first ? `since ${pointLong(first)}` : ""} />
         </dl>
       ) : null}
     </div>
@@ -584,6 +589,7 @@ function ChangeText({
   against: string;
   good: (v: number) => number;
 }) {
+  const tr = useTranslations();
   const tone = change === 0 ? "flat" : good(change) > 0 ? "good" : "bad";
   return (
     <span
@@ -593,8 +599,8 @@ function ChangeText({
       )}
     >
       <span aria-hidden>{change > 0 ? "▲ " : change < 0 ? "▼ " : "■ "}</span>
-      <span className="sr-only">{change > 0 ? "Up " : change < 0 ? "Down " : "No change, "}</span>
-      {change ? trendDiff(trend, Math.abs(change)) : ""} vs {against}
+      <span className="sr-only">{change > 0 ? tr("courtDashboardTrends_up") : change < 0 ? tr("courtDashboardTrends_down") : tr("courtDashboardTrends_noChange")}</span>
+      {tr("courtDashboardTrends_valueVsAgainst", { value: change ? trendDiff(trend, Math.abs(change)) : "", against })}
     </span>
   );
 }
@@ -615,6 +621,7 @@ function MonthTip({
   rows: ChartRow[];
   good: (v: number) => number;
 }) {
+  const tr = useTranslations();
   const row = payload?.[0]?.payload;
   if (!active || !row || row.value === null) return null;
   const index = rows.indexOf(row);
@@ -627,19 +634,19 @@ function MonthTip({
     <div className="flex min-w-48 flex-col gap-1 rounded-lg border border-border bg-popover px-3 py-2.5 text-popover-foreground shadow-overlay">
       <span className="text-caption text-muted-foreground">
         {pointLong(row.point)}
-        {row.point.partial ? " · month not over" : ""}
+        {row.point.partial ? tr("courtDashboardTrends_monthNotOver") : ""}
       </span>
       <span className="text-body font-semibold tabular-nums">{trendValue(trend, row.value)}</span>
       {before ? (
         <ChangeText trend={trend} change={row.value - before.value!} against={pointShort(before.point)} good={good} />
       ) : (
-        <span className="text-caption text-muted-foreground">First month in range</span>
+        <span className="text-caption text-muted-foreground">{tr("courtDashboardTrends_firstMonthInRange")}</span>
       )}
       {parts.length ? (
         <dl className="mt-1 flex flex-col gap-0.5 border-t border-hairline pt-1.5">
           {parts.map((p) => (
             <div key={p.label} className="flex justify-between gap-4 text-caption">
-              <dt className="text-muted-foreground">{p.label}</dt>
+              <dt className="text-muted-foreground">{translateText(tr, p.label)}</dt>
               <dd className="font-semibold tabular-nums">{p.value}</dd>
             </div>
           ))}

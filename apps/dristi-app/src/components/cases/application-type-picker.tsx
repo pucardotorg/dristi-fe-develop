@@ -26,6 +26,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { type ApplicationTypeId } from "@/lib/cases/applications";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * Step one of Raise application: pick what you are asking the court for.
@@ -66,6 +67,7 @@ export function ApplicationTypePicker({
   stageName: string;
   onChoose: (type: ApplicationTypeId) => void;
 }) {
+  const t = useTranslations();
   const results = useMemo(
     () =>
       searchApplicationTypes(query).filter(
@@ -96,15 +98,15 @@ export function ApplicationTypePicker({
       <p aria-live="polite" className="sr-only">
         {typed
           ? ranked
-            ? `${matched.length} of ${results.length} application types match what you typed. ${matched[0].guide.label} is the closest.`
-            : "No application type matches what you typed. All types are listed."
+            ? t("applicationTypePicker_lengthOfLength2ApplicationTypesMatch", { length: String(matched.length), length2: String(results.length), label: matched[0].guide.label })
+            : t("applicationTypePicker_noApplicationTypeMatchesWhatYou")
           : ""}
       </p>
 
       {ranked ? (
         <>
           <TypeSection
-            title={matched.length === 1 ? "Closest match" : "Closest matches"}
+            title={matched.length === 1 ? t("applicationTypePicker_closestMatch") : t("applicationTypePicker_closestMatches")}
             guides={matched.map((result) => result.guide)}
             value={value}
             leadId={matched[0].guide.id}
@@ -112,7 +114,7 @@ export function ApplicationTypePicker({
           />
           {others.length > 0 ? (
             <TypeSection
-              title="More application types"
+              title={t("applicationTypePicker_moreApplicationTypes")}
               guides={others.map((result) => result.guide)}
               value={value}
               onChoose={onChoose}
@@ -123,21 +125,20 @@ export function ApplicationTypePicker({
         <>
           {typed ? (
             <p className="text-body-compact text-muted-foreground">
-              Nothing matched that. Pick a type below. Generic takes anything the
-              rest do not cover.
+              {t("applicationTypePicker_nothingMatchedThatPickAType")}
             </p>
           ) : null}
           {leading.length > 0 ? (
             <>
               <TypeSection
-                title={`Suggested at the ${stageName} stage`}
+                title={t("applicationTypePicker_suggestedAtTheStageNameStage", { stageName })}
                 guides={leading}
                 value={value}
                 onChoose={onChoose}
               />
               <Separator className="bg-hairline" />
               <TypeSection
-                title="More application types"
+                title={t("applicationTypePicker_moreApplicationTypes")}
                 guides={rest}
                 value={value}
                 onChoose={onChoose}
@@ -166,6 +167,7 @@ export function ApplicationTypeSearch({
   query: string;
   onQueryChange: (query: string) => void;
 }) {
+  const t = useTranslations();
   /* Centred, wide and a step taller than a register's search (owner, Oct 8,
      as it was before Sept 21): with eighteen types, searching is how most
      filers will start, so it leads the page like a search engine's box. */
@@ -179,8 +181,8 @@ export function ApplicationTypeSearch({
         type="text"
         role="searchbox"
         enterKeyHint="search"
-        aria-label="Search application types in your own words"
-        placeholder="Search in your own words, like “my client can’t attend”"
+        aria-label={t("applicationTypePicker_searchApplicationTypesInYourOwn")}
+        placeholder={t("applicationTypePicker_searchInYourOwnWordsLike")}
         autoComplete="off"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
@@ -190,7 +192,7 @@ export function ApplicationTypeSearch({
         <InputGroupAddon align="inline-end">
           <InputGroupButton
             size="icon-sm"
-            aria-label="Clear the search"
+            aria-label={t("applicationTypePicker_clearTheSearch")}
             onClick={() => onQueryChange("")}
           >
             <XIcon aria-hidden />
@@ -298,6 +300,7 @@ function TypeCard({
   lead: boolean;
   onChoose: (type: ApplicationTypeId) => void;
 }) {
+  const t = useTranslations();
   const Icon = guide.icon;
 
   return (
@@ -323,9 +326,9 @@ function TypeCard({
         <div className="flex w-full items-center gap-2">
           <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           {chosen ? (
-            <Badge variant="outline">Chosen</Badge>
+            <Badge variant="outline">{t("applicationTypePicker_chosen")}</Badge>
           ) : lead ? (
-            <Badge variant="secondary">Closest match</Badge>
+            <Badge variant="secondary">{t("applicationTypePicker_closestMatch")}</Badge>
           ) : null}
           <ArrowRightIcon
             className="ml-auto size-4 shrink-0 text-muted-foreground"

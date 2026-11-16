@@ -38,6 +38,7 @@ import {
   appearancesFor,
   nextOngoingListing,
 } from "@/lib/employee/order-draft";
+import { useTranslations } from "next-intl";
 
 /** A hearing's order opens with nothing the drafter cannot remove. */
 const NO_FIXED_ITEMS: readonly string[] = [];
@@ -70,6 +71,7 @@ function HearingOrder({ hearing }: { hearing: CourtHearing }) {
  * (`order-demo.ts`); every other one opens empty.
  */
 export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
+  const t = useTranslations();
   const courtText = useCourtText();
   const session = useHearingSession();
   const today = useCourtToday();
@@ -96,20 +98,20 @@ export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
     fixedIds: NO_FIXED_ITEMS,
     heading: causeTitle(hearing),
     facts: [
-      { label: "Item", value: String(hearing.item) },
-      { label: "Case", value: hearing.caseNumber, identifier: true },
-      { label: "Stage", value: courtCaseStageLabel(hearing.stage) },
-      { label: "Purpose", value: courtHearingPurposeLabel(hearing.purpose) },
+      { label: t("orderScreen_item"), value: String(hearing.item) },
+      { label: t("orderScreen_case"), value: hearing.caseNumber, identifier: true },
+      { label: t("orderScreen_stage"), value: courtCaseStageLabel(hearing.stage) },
+      { label: t("orderScreen_purpose"), value: courtHearingPurposeLabel(hearing.purpose) },
     ],
-    courtLine: courtText(`Before the ${CURRENT_STAFF.court}`),
+    courtLine: courtText(t("orderScreen_beforeTheCourt", { court: CURRENT_STAFF.court })),
     subLine: `${hearing.caseNumber} · ${causeTitle(hearing)} · Hearing on ${formatOrderDate(today)}`,
     navAction: upNext ? (
       <Button asChild variant="outline" className="w-full shrink-0 sm:w-fit">
         <Link
           href={`/employee/hearings/${upNext.id}/order`}
-          aria-label={`Next case · Item ${upNext.item}, ${causeTitle(upNext)}`}
+          aria-label={t("orderScreen_nextCaseItemItemCauseTitle", { item: String(upNext.item), causeTitle: causeTitle(upNext) })}
         >
-          Next case · Item {upNext.item}
+          {t("orderScreen_nextCaseItemItem", { item: String(upNext.item) })}
           <ChevronRightIcon data-icon="inline-end" aria-hidden />
         </Link>
       </Button>
@@ -119,9 +121,9 @@ export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
         variant="outline"
         disabled
         className="w-full shrink-0 sm:w-fit"
-        aria-label="Next case (no other hearing is ongoing)"
+        aria-label={t("orderScreen_nextCaseNoOtherHearingIs")}
       >
-        Next case
+        {t("orderScreen_nextCase")}
         <ChevronRightIcon data-icon="inline-end" aria-hidden />
       </Button>
     ),
@@ -133,6 +135,7 @@ export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
 }
 
 export function OrderMissing() {
+  const t = useTranslations();
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <Empty className="border-0 p-0">
@@ -141,17 +144,16 @@ export function OrderMissing() {
             <CalendarX2Icon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            This listing is not on the board
+            {t("orderScreen_thisListingIsNotOnThe")}
           </EmptyTitle>
           <EmptyDescription className="text-body">
-            The order composer opens a matter from today&rsquo;s cause list.
-            This one is not there.
+            {t("orderScreen_theOrderComposerOpensAMatter")}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
             <Link href="/employee/hearings">
-              Back to today&rsquo;s hearings
+              {t("orderScreen_backToTodaysHearings")}
             </Link>
           </Button>
         </EmptyContent>

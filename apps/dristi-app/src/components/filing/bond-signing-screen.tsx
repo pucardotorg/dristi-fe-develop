@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { BrandLockup } from "@/components/brand-lockup";
 import { BondDocument, BondSignerList } from "@/components/filing/bond-document";
 import { buildBondSigners } from "@/components/filing/bail-bond-status-dialog";
+import { useLocale } from "@/components/shell/locale";
 import { LOCALES, pick, ui, type Locale } from "@/lib/onboarding/content";
 import { joinDialog } from "@/lib/join/content";
 import { ACCESS_CASES } from "@/lib/access/content";
@@ -44,17 +45,14 @@ const ALL_SURETIES = [...BOND_SURETIES, BOND_THIRD_SURETY];
 const PARTY_PHONES = [BOND_LITIGANT.phone, ...ALL_SURETIES.map((entry) => entry.phone)];
 
 export function BondSigningScreen() {
-  const [locale, setLocale] = React.useState<Locale>("en");
+  // The app-wide language, so a choice made here is kept in the cookie.
+  const { locale, setLocale } = useLocale();
   const [stage, setStage] = React.useState<"phone" | "status">("phone");
   const [phone, setPhone] = React.useState("");
   const [phoneTouched, setPhoneTouched] = React.useState(false);
   const [phoneUnknown, setPhoneUnknown] = React.useState(false);
   const [matchedPhone, setMatchedPhone] = React.useState<string | null>(null);
   const [signedSelf, setSignedSelf] = React.useState(false);
-
-  React.useEffect(() => {
-    document.documentElement.lang = locale;
-  }, [locale]);
 
   function submitPhone(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

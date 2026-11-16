@@ -17,6 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useTranslations } from "next-intl";
 
 /**
  * One line in the notifications panel.
@@ -83,6 +84,7 @@ export function NotificationsBell({
   onRead: () => void;
   onClearAll: () => void;
 }) {
+  const t = useTranslations();
   const unreadCount = notifications.filter((n) => n.unread).length;
   const hasPersistentAttention = notifications.some((n) => n.persistent);
   const hasClearable = notifications.some((n) => n.stale);
@@ -142,7 +144,7 @@ export function NotificationsBell({
         className="w-88 max-w-[calc(100vw-2rem)] p-0"
       >
         <div className="flex min-h-12 items-center justify-between gap-3 border-b border-hairline px-4 py-2">
-          <p className="text-body-compact font-semibold">Notifications</p>
+          <p className="text-body-compact font-semibold">{t("notifications_notifications")}</p>
           {notifications.length > 0 ? (
             <Button
               variant="ghost"
@@ -150,14 +152,14 @@ export function NotificationsBell({
               disabled={!hasClearable}
               onClick={onClearAll}
             >
-              Clear all
+              {t("notifications_clearAll")}
             </Button>
           ) : null}
         </div>
 
         {notifications.length === 0 ? (
           <p className="px-4 py-6 text-body-compact text-muted-foreground">
-            Nothing needs your attention right now.
+            {t("notifications_nothingNeedsYourAttentionRightNow")}
           </p>
         ) : (
           <ul className="max-h-96 overflow-y-auto">

@@ -27,6 +27,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useCourt } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 type Kind = "sign" | "pay";
 
@@ -57,6 +58,7 @@ export function BatchFilingDialog({
   /** The batch went through (however many rows actually qualified) and can be reread. */
   onFinished: () => void;
 }) {
+  const t = useTranslations();
   const courtFees = useCourt().profile.fees;
   const [step, setStep] = React.useState<"confirm" | "success">("confirm");
   const [running, setRunning] = React.useState(false);
@@ -153,27 +155,27 @@ export function BatchFilingDialog({
               <DialogTitle className="tabular-nums">
                 {kind === "sign"
                   ? one
-                    ? "Sign this document?"
-                    : `Sign ${n} documents?`
+                    ? t("batchFilingDialog_signThisDocument")
+                    : t("batchFilingDialog_signNDocuments", { n: String(n) })
                   : one
-                    ? `Pay ${money(total)}?`
-                    : `Pay ${money(total)} for ${n} filings?`}
+                    ? t("batchFilingDialog_payMoney", { money: money(total) })
+                    : t("batchFilingDialog_payMoneyForNFilings", { money: money(total), n: String(n) })}
               </DialogTitle>
               <DialogDescription>
                 {kind === "sign"
                   ? one
-                    ? "Signed as you, and attached to this filing."
-                    : `One OTP signs all ${n}, as you. Each filing closes on its own signature.`
+                    ? t("batchFilingDialog_signedAsYouAndAttachedTo")
+                    : t("batchFilingDialog_oneOtpSignsAllNAs", { n: String(n) })
                   : one
-                    ? "Charged now, against this filing's own bill."
-                    : `One transaction across ${n} filings, each charged its own bill.`}
+                    ? t("batchFilingDialog_chargedNowAgainstThisFilingsOwn")
+                    : t("batchFilingDialog_oneTransactionAcrossNFilingsEach", { n: String(n) })}
               </DialogDescription>
             </DialogHeader>
 
             {kind === "sign" ? (
               <div className="flex flex-col gap-2">
                 <Label htmlFor="batch-filing-otp" className="text-body-compact font-medium">
-                  Aadhaar OTP
+                  {t("batchFilingDialog_aadhaarOtp")}
                 </Label>
                 <InputOTP
                   id="batch-filing-otp"
@@ -197,7 +199,7 @@ export function BatchFilingDialog({
 
             <DialogFooter>
               <Button type="button" variant="outline" disabled={running} onClick={guard.close}>
-                Cancel
+                {t("common_cancel")}
               </Button>
               <Button
                 type="button"
@@ -209,17 +211,17 @@ export function BatchFilingDialog({
                 {running ? (
                   <>
                     <Spinner data-icon="inline-start" aria-hidden />
-                    {kind === "sign" ? "Signing…" : "Paying…"}
+                    {kind === "sign" ? t("batchFilingDialog_signing") : t("batchFilingDialog_paying")}
                   </>
                 ) : kind === "sign" ? (
                   <>
                     <PenToolIcon data-icon="inline-start" aria-hidden />
-                    {one ? "Sign" : `Sign ${n} documents`}
+                    {one ? t("batchFilingDialog_sign") : t("batchFilingDialog_signNDocuments2", { n: String(n) })}
                   </>
                 ) : (
                   <>
                     <WalletIcon data-icon="inline-start" aria-hidden />
-                    Pay {money(total)}
+                    {t("batchFilingDialog_payMoney2", { money: money(total) })}
                   </>
                 )}
               </Button>
@@ -237,29 +239,29 @@ export function BatchFilingDialog({
               title={
                 kind === "sign"
                   ? acted === 0
-                    ? "Nothing was signed"
+                    ? t("batchFilingDialog_nothingWasSigned")
                     : acted === 1
-                      ? "Document signed"
-                      : `${acted} documents signed`
+                      ? t("batchFilingDialog_documentSigned")
+                      : t("batchFilingDialog_actedDocumentsSigned", { acted: String(acted) })
                   : acted === 0
-                    ? "Nothing was paid"
-                    : `${money(total)} paid`
+                    ? t("batchFilingDialog_nothingWasPaid")
+                    : t("batchFilingDialog_moneyPaid", { money: money(total) })
               }
               body={
                 kind === "sign"
                   ? sworeLater > 0
                     ? acted === 1
-                      ? "Your oath is still to be taken on this filing. Open it from this tab to record it."
+                      ? t("batchFilingDialog_yourOathIsStillToBe")
                       : sworeLater === 1
-                        ? "Your oath is still to be taken on one of them. Open it from this tab to record it."
-                        : `Your oath is still to be taken on ${sworeLater} of them. Open each from this tab to record it.`
-                    : "One OTP covered the set, the same as signing one at a time. A filing still waiting on another party stays on this tab until they sign."
+                        ? t("batchFilingDialog_yourOathIsStillToBeTaken")
+                        : t("batchFilingDialog_yourOathIsStillToBeTakenOn", { sworeLater: String(sworeLater) })
+                    : t("batchFilingDialog_oneOtpCoveredTheSetThe")
                   : undefined
               }
             />
             <DialogFooter className="mx-0 mb-0 border-hairline bg-surface-sunken">
               <Button type="button" onClick={close}>
-                Done
+                {t("batchFilingDialog_done")}
               </Button>
             </DialogFooter>
           </>

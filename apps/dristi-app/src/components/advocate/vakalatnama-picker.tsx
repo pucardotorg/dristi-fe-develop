@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import { advDialog, fillCopy, type Vakalatnama } from "@/lib/advocate/content";
+import { useTranslations } from "next-intl";
 
 /**
  * Saved-vakalatnama chooser for the advocate join flow.
@@ -141,6 +142,7 @@ function VakalatnamaPreviewDialog({
   onOpenChange: (open: boolean) => void;
   locale: Locale;
 }) {
+  const t = useTranslations();
   return (
     <Dialog open={Boolean(item)} onOpenChange={onOpenChange}>
       <ChromeDialogContent lang={locale} className="flex max-h-[90dvh] flex-col gap-4 overflow-hidden sm:max-w-lg">
@@ -155,10 +157,10 @@ function VakalatnamaPreviewDialog({
             <div className="mx-auto flex max-w-sm flex-col gap-5 rounded-md border border-hairline bg-surface px-6 py-8">
               <div className="flex flex-col items-center gap-1 text-center">
                 <p className="text-caption tracking-widest text-muted-foreground uppercase">
-                  Vakalatnama
+                  {t("vakalatnamaPicker_vakalatnama")}
                 </p>
                 <p className="text-caption text-pretty text-muted-foreground">
-                  In the Court of the Judicial First Class Magistrate I
+                  {t("vakalatnamaPicker_inTheCourtOfTheJudicial")}
                 </p>
                 <p className="text-body-compact font-semibold">{item.caseRef}</p>
               </div>
@@ -187,11 +189,11 @@ function VakalatnamaPreviewDialog({
               <div className="flex items-end justify-between gap-6 pt-4">
                 <div className="flex w-full flex-col gap-1">
                   <div className="h-px w-full bg-border" aria-hidden />
-                  <p className="text-caption text-muted-foreground">Signature of party</p>
+                  <p className="text-caption text-muted-foreground">{t("vakalatnamaPicker_signatureOfParty")}</p>
                 </div>
                 <div className="flex w-full flex-col gap-1">
                   <div className="h-px w-full bg-border" aria-hidden />
-                  <p className="text-caption text-muted-foreground">Accepted by advocate</p>
+                  <p className="text-caption text-muted-foreground">{t("vakalatnamaPicker_acceptedByAdvocate")}</p>
                 </div>
               </div>
             </div>

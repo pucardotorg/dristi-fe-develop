@@ -190,10 +190,10 @@ export function subjectReturn(subject: OrderSubject): {
   href: string;
 } {
   if (subject.kind === "hearing") {
-    return { label: "Back to the hearing", href: "/employee/hearings" };
+    return { label: "orderSubject_backToTheHearing", href: "/employee/hearings" };
   }
   return {
-    label: "Back to the complaint",
+    label: "orderSubject_backToTheComplaint",
     href: `/employee/cognizance/${subject.matter.id}`,
   };
 }

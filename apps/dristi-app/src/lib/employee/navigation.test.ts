@@ -13,7 +13,7 @@ import {
   courtNavClubbedTotal,
   courtNavKeptApart,
   courtNavRowsFor,
-  courtTrail,
+  courtTrail as courtTrailKeys,
   courtWaitingGroups,
   isCourtNavActive,
   isCourtNavCombinedActive,
@@ -21,6 +21,14 @@ import {
   seatHasNavRow,
 } from "./navigation";
 import { REGISTERS_PAGE } from "./registers";
+import { translateMessage } from "@/i18n/messages";
+
+/** A message key read back as its English, so expectations read the way the screen does. */
+const inEnglish = (text: string) => translateMessage("en", text);
+
+/** The trail with its labels read back as English, the way the breadcrumb shows them. */
+const courtTrail = (...args: Parameters<typeof courtTrailKeys>) =>
+  courtTrailKeys(...args).map((crumb) => ({ ...crumb, label: inEnglish(crumb.label) }));
 
 /**
  * Two contracts, set a day apart.

@@ -54,6 +54,8 @@ import {
   type ProcessRecipients,
 } from "@/lib/employee/process-variables";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * An order item's fields — the top half of its block (Varun's shape: variables on top,
@@ -172,6 +174,7 @@ function OrderField({
   disabled: boolean;
   onChange: (value: string) => void;
 }) {
+  const t = useTranslations();
   const labelId = `${id}-label`;
 
   if (field.kind === "fixed") {
@@ -184,7 +187,7 @@ function OrderField({
         >
           {value || (
             <span className="text-muted-foreground">
-              None — chosen from the catalogue, not from an application
+              {t("orderItemFields_noneChosenFromTheCatalogueNot")}
             </span>
           )}
         </p>
@@ -215,7 +218,7 @@ function OrderField({
               value={option.value}
               className="flex-1"
             >
-              {option.label}
+              {translateText(t, option.label)}
             </SegmentedControlItem>
           ))}
         </SegmentedControl>
@@ -261,14 +264,14 @@ function OrderField({
           onValueChange={onChange}
         >
           <SelectTrigger aria-labelledby={labelId} className="w-full">
-            <SelectValue placeholder="Choose one">
-              {options.find((entry) => entry.value === value)?.label ?? null}
+            <SelectValue placeholder={t("orderItemFields_chooseOne")}>
+              {translateText(t, options.find((entry) => entry.value === value)?.label) ?? null}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {options.map((entry) => (
               <SelectItem key={entry.value} value={entry.value}>
-                {entry.label}
+                {translateText(t, entry.label)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -286,7 +289,7 @@ function OrderField({
         <FieldName id={labelId} field={field} />
         {witnesses.length === 0 ? (
           <p className="flex min-h-10 items-center text-body-compact text-muted-foreground">
-            No witness is on this case&rsquo;s record yet.
+            {t("orderItemFields_noWitnessIsOnThisCases")}
           </p>
         ) : (
           <Select
@@ -295,7 +298,7 @@ function OrderField({
             onValueChange={onChange}
           >
             <SelectTrigger aria-labelledby={labelId} className="w-full">
-              <SelectValue placeholder="Choose a witness">
+              <SelectValue placeholder={t("orderItemFields_chooseAWitness")}>
                 {witnesses.find((person) => person.id === value)?.name ?? null}
               </SelectValue>
             </SelectTrigger>
@@ -400,6 +403,7 @@ export function OrderDatePicker({
   disabled: boolean;
   onChange: (value: string) => void;
 }) {
+  const t = useTranslations();
   const [open, setOpen] = React.useState(false);
   const chosen = value ? parseIsoDay(value) : undefined;
   return (
@@ -419,7 +423,7 @@ export function OrderDatePicker({
           >
             <CalendarDaysIcon data-icon="inline-start" aria-hidden />
             <span className="truncate">
-              {value ? formatListingDate(value) : "Pick a date"}
+              {value ? formatListingDate(value) : t("orderItemFields_pickADate")}
             </span>
           </Button>
         </PopoverTrigger>
@@ -465,6 +469,7 @@ function RecipientsField({
   disabled: boolean;
   onChange: (recipients: ProcessRecipients) => void;
 }) {
+  const t = useTranslations();
   const { court } = useCourt();
   const recipients: ProcessRecipients = block.recipients ?? {
     person: "",
@@ -495,8 +500,8 @@ function RecipientsField({
     ? [
         {
           id: "postal",
-          label: "Postal addresses",
-          empty: "No postal address on record",
+          label: t("orderItemFields_postalAddresses"),
+          empty: t("orderItemFields_noPostalAddressOnRecord"),
           items: person.addresses.map((entry) => ({
             id: entry.id,
             text: formatStructuredAddress(entry.address),
@@ -505,8 +510,8 @@ function RecipientsField({
         },
         {
           id: "mobile",
-          label: "Mobile numbers",
-          empty: "No mobile number on record",
+          label: t("orderItemFields_mobileNumbers"),
+          empty: t("orderItemFields_noMobileNumberOnRecord"),
           items: person.mobiles.map((entry) => ({
             id: entry.id,
             text: entry.value,
@@ -515,8 +520,8 @@ function RecipientsField({
         },
         {
           id: "email",
-          label: "Email addresses",
-          empty: "No email address on record",
+          label: t("orderItemFields_emailAddresses"),
+          empty: t("orderItemFields_noEmailAddressOnRecord"),
           items: person.emails.map((entry) => ({
             id: entry.id,
             text: entry.value,
@@ -544,7 +549,7 @@ function RecipientsField({
             id={`${id}-person-label`}
             className="text-body-compact font-medium"
           >
-            Addressed to
+            {t("orderItemFields_addressedTo")}
           </span>
           <Select
             value={recipients.person || undefined}
@@ -557,7 +562,7 @@ function RecipientsField({
               aria-labelledby={`${id}-person-label`}
               className="w-full"
             >
-              <SelectValue placeholder="Choose a person">
+              <SelectValue placeholder={t("orderItemFields_chooseAPerson")}>
                 {person ? `${person.name} · ${person.role}` : null}
               </SelectValue>
             </SelectTrigger>
@@ -575,7 +580,7 @@ function RecipientsField({
       {person && asksDestinations ? (
         <fieldset className="flex min-w-0 flex-col gap-3">
           <legend className="mb-2 text-body-compact font-medium">
-            Addresses of {person.name}
+            {t("orderItemFields_addressesOfName", { name: person.name })}
           </legend>
           {groups.map((group) => (
             <div key={group.id} className="flex min-w-0 flex-col gap-2">
@@ -628,7 +633,7 @@ function RecipientsField({
       ) : null}
 
       <fieldset className="flex min-w-0 flex-col gap-2">
-        <legend className="mb-2 text-body-compact font-medium">Channels</legend>
+        <legend className="mb-2 text-body-compact font-medium">{t("orderItemFields_channels")}</legend>
         <div className="flex min-w-0 flex-wrap gap-x-6 gap-y-1">
           {allowed.map((channel) => {
             const inputId = `${id}-channel-${channel.id}`;
@@ -681,10 +686,10 @@ function RecipientsField({
       selectedAddresses(person, recipients).length > 0 ? (
         <fieldset className="flex min-w-0 flex-col gap-3">
           <legend className="mb-2 text-body-compact font-medium">
-            Police station, for each address
+            {t("orderItemFields_policeStationForEachAddress")}
           </legend>
           <p className="-mt-2 text-body-compact text-muted-foreground">
-            Filled in from each address. Change one if it is wrong.
+            {t("orderItemFields_filledInFromEachAddressChange")}
           </p>
           <div className="grid min-w-0 gap-3 @lg:grid-cols-2">
             {person.addresses
@@ -696,11 +701,7 @@ function RecipientsField({
                 return (
                   <div key={entry.id} className="flex min-w-0 flex-col gap-2">
                     <span id={labelId} className="text-body-compact">
-                      Address {entry.index + 1}
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · {entry.address.locality}
-                      </span>
+                      {t.rich("orderItemFields_addressValueLocality", { value: String(entry.index + 1), locality: entry.address.locality, span: (chunks) => <span className="text-muted-foreground">{chunks}</span> })}
                     </span>
                     <Select
                       value={station || undefined}
@@ -719,7 +720,7 @@ function RecipientsField({
                         aria-labelledby={labelId}
                         className="w-full"
                       >
-                        <SelectValue placeholder="Choose a police station">
+                        <SelectValue placeholder={t("orderItemFields_chooseAPoliceStation")}>
                           {station || null}
                         </SelectValue>
                       </SelectTrigger>

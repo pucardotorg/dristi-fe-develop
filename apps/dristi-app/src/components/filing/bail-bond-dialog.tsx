@@ -95,6 +95,7 @@ import {
 import { pick } from "@/lib/onboarding/content";
 import { cn } from "@/lib/utils";
 import { OutcomeHeader, OutcomeSummary, StatusLine, notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * The bail bond, in its three entries:
@@ -167,6 +168,7 @@ export function BailBondDialog({
   mode: BondMode;
   onSubmitted?: (result: BailBondResult) => void;
 }) {
+  const t = useTranslations();
   const formRef = React.useRef<HTMLFormElement>(null);
   const formId = React.useId();
   const [view, setView] = React.useState<View>("form");
@@ -283,12 +285,12 @@ export function BailBondDialog({
     if (mode === "task") Object.assign(found, validateSureties(sureties));
     if (!direct) return found;
 
-    if (!petitionerId) found.petitioner = "Choose the petitioner.";
-    if (!father.trim()) found.father = "Enter the father's name.";
-    if (!bondType) found.bondType = "Choose the type of bail.";
-    if (!amount.replace(/[^\d]/g, "")) found.amount = "Enter the bail amount.";
+    if (!petitionerId) found.petitioner = t("bailBondDialog_chooseThePetitioner");
+    if (!father.trim()) found.father = t("bailBondDialog_enterTheFathersName");
+    if (!bondType) found.bondType = t("bailBondDialog_chooseTheTypeOfBail");
+    if (!amount.replace(/[^\d]/g, "")) found.amount = t("bailBondDialog_enterTheBailAmount");
     if (bondType === "surety") {
-      if (!/^[1-9]\d*$/.test(count.trim())) found.count = "Enter a whole number, 1 or more.";
+      if (!/^[1-9]\d*$/.test(count.trim())) found.count = t("bailBondDialog_enterAWholeNumber1Or");
       Object.assign(found, validateSureties(sureties));
     }
     return found;
@@ -338,7 +340,7 @@ export function BailBondDialog({
         >
           <DialogHeader className="shrink-0 border-b border-hairline px-6 py-4 pr-12 text-left">
             <DialogTitle className="text-title-s font-semibold text-balance">
-              {mode === "edit" ? "Edit bail bond" : "Bail bond"}
+              {mode === "edit" ? t("bailBondDialog_editBailBond") : t("bailBondDialog_bailBond")}
             </DialogTitle>
             <DialogDescription className="text-pretty">{description}</DialogDescription>
             {/* Where the application shows its summons line: the terms are fixed. */}
@@ -348,7 +350,7 @@ export function BailBondDialog({
               </p>
             )}
             <p className="text-caption text-muted-foreground">
-              <Identifier value={accessCase.caseNumber} label="case number" />
+              <Identifier value={accessCase.caseNumber} label={t("bailBondDialog_caseNumber")} />
               <span aria-hidden> · </span>
               {accessCase.title}
             </p>
@@ -365,18 +367,18 @@ export function BailBondDialog({
               {direct ? (
                 <>
                   <SelectField
-                    label="Petitioner"
+                    label={t("bailBondDialog_petitioner")}
                     value={petitionerId}
                     options={BAIL_PETITIONERS.map((entry) => ({
                       value: entry.id,
                       label: entry.name,
                     }))}
-                    placeholder="Choose the litigant"
+                    placeholder={t("bailBondDialog_chooseTheLitigant")}
                     error={errors.petitioner}
                     onChange={choosePetitioner}
                   />
                   <TextField
-                    label="Petitioner's father's name"
+                    label={t("bailBondDialog_petitionersFathersName")}
                     value={father}
                     prefilled={fatherPrefilled}
                     error={errors.father}
@@ -387,10 +389,10 @@ export function BailBondDialog({
                     }}
                   />
                   <SelectField
-                    label="Type of bail"
+                    label={t("bailBondDialog_typeOfBail")}
                     value={bondType}
                     options={BOND_TYPES}
-                    placeholder="Choose surety or personal bond"
+                    placeholder={t("bailBondDialog_chooseSuretyOrPersonalBond")}
                     error={errors.bondType}
                     onChange={(value) => {
                       setBondType(value as "surety" | "personal");
@@ -399,7 +401,7 @@ export function BailBondDialog({
                   />
                   {bondType ? (
                     <TextField
-                      label="Bail amount (Rs.)"
+                      label={t("bailBondDialog_bailAmountRs")}
                       value={amount}
                       inputMode="numeric"
                       error={errors.amount}
@@ -414,7 +416,7 @@ export function BailBondDialog({
                   ) : null}
                   {bondType === "surety" ? (
                     <TextField
-                      label="Number of sureties"
+                      label={t("bailBondDialog_numberOfSureties")}
                       value={count}
                       inputMode="numeric"
                       error={errors.count}
@@ -432,15 +434,15 @@ export function BailBondDialog({
                   {/* Set by the magistrate: grey, read-only, never the
                       yellow "we filled this, change it" tint. */}
                   <div className="grid gap-6 md:grid-cols-2">
-                    <PrefilledField label="Petitioner" value={BOND_LITIGANT.name} />
+                    <PrefilledField label={t("bailBondDialog_petitioner")} value={BOND_LITIGANT.name} />
                     <PrefilledField
-                      label="Petitioner's father's name"
+                      label={t("bailBondDialog_petitionersFathersName")}
                       value={BOND_LITIGANT.father}
                     />
-                    <PrefilledField label="Type of bail" value="Surety" />
-                    <PrefilledField label="Bail amount (Rs.)" value={BOND_AMOUNT} />
+                    <PrefilledField label={t("bailBondDialog_typeOfBail")} value="Surety" />
+                    <PrefilledField label={t("bailBondDialog_bailAmountRs")} value={BOND_AMOUNT} />
                     <PrefilledField
-                      label="Number of sureties"
+                      label={t("bailBondDialog_numberOfSureties")}
                       value={String(BOND_REQUIRED_SURETIES)}
                     />
                   </div>
@@ -453,15 +455,15 @@ export function BailBondDialog({
                     </Banner>
                   ) : null}
                   {lockedSureties.map((surety, index) => (
-                    <RowWell key={surety.name} legend={`Surety ${index + 1}`}>
+                    <RowWell key={surety.name} legend={t("bailBondDialog_suretyValue", { value: String(index + 1) })}>
                       <div className="grid gap-6 md:grid-cols-2">
-                        <PrefilledField label="Surety name" value={surety.name} />
+                        <PrefilledField label={t("bailBondDialog_suretyName")} value={surety.name} />
                         <PrefilledField
-                          label="Father's / mother's name"
+                          label={t("bailBondDialog_fathersMothersName")}
                           value={surety.father}
                         />
                         <TextField
-                          label="Surety phone number"
+                          label={t("bailBondDialog_suretyPhoneNumber")}
                           value={lockedContacts[index]?.phone ?? ""}
                           inputMode="tel"
                           type="tel"
@@ -476,7 +478,7 @@ export function BailBondDialog({
                           }}
                         />
                         <TextField
-                          label="Surety email ID"
+                          label={t("bailBondDialog_suretyEmailId")}
                           optional
                           value={lockedContacts[index]?.email ?? ""}
                           type="email"
@@ -491,7 +493,7 @@ export function BailBondDialog({
                           }}
                         />
                       </div>
-                      <PrefilledField label="Surety address" value={surety.address} />
+                      <PrefilledField label={t("bailBondDialog_suretyAddress")} value={surety.address} />
                     </RowWell>
                   ))}
                 </>
@@ -504,23 +506,23 @@ export function BailBondDialog({
                 ? sureties.map((item, index) => (
                     <RowWell
                       key={item.id}
-                      legend={`Surety ${lockedSureties.length + index + 1}`}
+                      legend={t("bailBondDialog_suretyValue", { value: String(lockedSureties.length + index + 1) })}
                     >
                       <div className="grid gap-6 md:grid-cols-2">
                         <TextField
-                          label="Surety name"
+                          label={t("bailBondDialog_suretyName")}
                           value={item.fullName}
                           error={errors[`${item.id}.fullName`]}
                           onChange={(fullName) => updateSurety(item.id, { fullName })}
                         />
                         <TextField
-                          label="Father's / mother's name"
+                          label={t("bailBondDialog_fathersMothersName")}
                           value={item.parentName}
                           error={errors[`${item.id}.parentName`]}
                           onChange={(parentName) => updateSurety(item.id, { parentName })}
                         />
                         <TextField
-                          label="Surety phone number"
+                          label={t("bailBondDialog_suretyPhoneNumber")}
                           value={item.phone}
                           inputMode="tel"
                           type="tel"
@@ -528,7 +530,7 @@ export function BailBondDialog({
                           onChange={(value) => updateSurety(item.id, { phone: value })}
                         />
                         <TextField
-                          label="Surety email ID"
+                          label={t("bailBondDialog_suretyEmailId")}
                           optional
                           value={item.email}
                           type="email"
@@ -537,14 +539,14 @@ export function BailBondDialog({
                         />
                       </div>
                       <AddressField
-                        label="Surety address"
+                        label={t("bailBondDialog_suretyAddress")}
                         value={item.address}
                         error={errors[`${item.id}.address`]}
                         onChange={(address) => updateSurety(item.id, { address })}
                       />
                       <FileField
                         required
-                        label="Surety ID proof"
+                        label={t("bailBondDialog_suretyIdProof")}
                         files={item.identityProof}
                         error={errors[`${item.id}.identityProof`]}
                         onFilesChange={(identityProof) =>
@@ -559,7 +561,7 @@ export function BailBondDialog({
                       />
                       <FileField
                         required
-                        label="Proof of solvency"
+                        label={t("bailBondDialog_proofOfSolvency")}
                         files={item.solvencyProof}
                         error={errors[`${item.id}.solvencyProof`]}
                         onFilesChange={(solvencyProof) =>
@@ -580,10 +582,10 @@ export function BailBondDialog({
 
           <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             <Button type="button" variant="outline" onClick={requestClose}>
-              Cancel
+              {t("common_cancel")}
             </Button>
             <Button type="submit" form={formId}>
-              Generate bail bond
+              {t("bailBondDialog_generateBailBond")}
             </Button>
           </footer>
         </FlowDialogContent>
@@ -661,6 +663,7 @@ function GeneratedBondDialog({
   onAddSignature: () => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   // Day precision, so recomputing per render never changes the text.
   const generatedOn = formatCaseDate(new Date().toISOString());
   return (
@@ -677,10 +680,10 @@ function GeneratedBondDialog({
         <div className="flex shrink-0 items-center gap-2 border-b border-hairline py-3 pr-3 pl-6">
           <div className="min-w-0 flex-1">
             <DialogTitle className="text-body-compact font-semibold text-pretty sm:truncate">
-              Generated bail bond
+              {t("bailBondDialog_generatedBailBond")}
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Check the generated bail bond before adding a signature.
+              {t("bailBondDialog_checkTheGeneratedBailBondBefore")}
             </DialogDescription>
           </div>
           <TooltipProvider>
@@ -690,19 +693,19 @@ function GeneratedBondDialog({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="Download"
+                  aria-label={t("bailBondDialog_download")}
                   onClick={downloadNotice}
                 >
                   <DownloadIcon aria-hidden />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Download</TooltipContent>
+              <TooltipContent side="bottom">{t("bailBondDialog_download")}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <DialogClose asChild>
             <Button type="button" variant="ghost" size="icon-sm">
               <XIcon aria-hidden />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t("common_close")}</span>
             </Button>
           </DialogClose>
         </div>
@@ -715,23 +718,23 @@ function GeneratedBondDialog({
                   {/* The surety count rides on the filing line, so the facts
                       stay as tall as the application's and leave the bond its
                       room where the halves stack (tablets). */}
-                  <Fact label="Filing">
+                  <Fact label={t("bailBondDialog_filing")}>
                     {terms.personal
-                      ? "Personal bond"
+                      ? t("bailBondDialog_personalBond")
                       : `Surety bond · ${terms.sureties.length} ${
                           terms.sureties.length === 1 ? "surety" : "sureties"
                         }`}
                   </Fact>
                 </FactGroup>
                 <FactGroup columns={2}>
-                  <Fact label="Case">
-                    <Identifier value={accessCase.caseNumber} label="case number" />
+                  <Fact label={t("bailBondDialog_case")}>
+                    <Identifier value={accessCase.caseNumber} label={t("bailBondDialog_caseNumber")} />
                   </Fact>
-                  <Fact label="Generated on">
+                  <Fact label={t("bailBondDialog_generatedOn")}>
                     <span className="tabular-nums">{generatedOn}</span>
                   </Fact>
-                  <Fact label="Filed for">{terms.petitioner}</Fact>
-                  <Fact label="Bail amount">
+                  <Fact label={t("bailBondDialog_filedFor")}>{terms.petitioner}</Fact>
+                  <Fact label={t("bailBondDialog_bailAmount")}>
                     <span className="tabular-nums">{terms.amount}</span>
                   </Fact>
                 </FactGroup>
@@ -739,7 +742,7 @@ function GeneratedBondDialog({
             </div>
 
             <ComposedDocumentViewer
-              title="Bail bond"
+              title={t("bailBondDialog_bailBond")}
               className="min-h-64 min-w-0 flex-1 rounded-none"
             >
               <GeneratedBondDocument
@@ -753,7 +756,7 @@ function GeneratedBondDialog({
 
         <footer className="flex shrink-0 flex-col border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:justify-end">
           <Button type="button" className="w-full sm:w-auto" onClick={onAddSignature}>
-            Add signature
+            {t("bailBondDialog_addSignature")}
           </Button>
         </footer>
       </FlowDialogContent>
@@ -776,6 +779,7 @@ function GeneratedBondDocument({
   terms: BondTerms;
   generatedOn: string;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const signatories = [
     terms.petitioner,
@@ -789,11 +793,11 @@ function GeneratedBondDocument({
         </p>
         <div className="flex flex-col gap-1">
           <p className="text-body font-semibold">
-            Case No: <span className="tabular-nums">{accessCase.caseNumber}</span>
+            {t.rich("bailBondDialog_caseNoCaseNumber", { caseNumber: accessCase.caseNumber, span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
           </p>
-          <p className="text-body font-semibold">In the matter of: {accessCase.title}</p>
+          <p className="text-body font-semibold">{t("bailBondDialog_inTheMatterOfTitle", { title: accessCase.title })}</p>
           <p className="text-body font-semibold">
-            Date: <span className="tabular-nums">{generatedOn}</span>
+            {t.rich("bailBondDialog_dateGeneratedOn", { generatedOn, span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
           </p>
         </div>
       </header>
@@ -828,7 +832,7 @@ function GeneratedBondDocument({
               {/* Dashed = empty target; each slot fills as that person signs. */}
               <div className="mb-2 flex h-16 w-56 max-w-full items-center justify-center rounded-lg border border-dashed border-paper-border">
                 <p className="text-body-compact text-paper-muted-foreground">
-                  Signature pending
+                  {t("bailBondDialog_signaturePending")}
                 </p>
               </div>
               <p className="text-body">{name}</p>
@@ -872,6 +876,7 @@ function BondSignatureDialog({
   onDone: () => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const titleRef = React.useRef<HTMLHeadingElement>(null);
   const [step, setStep] = React.useState<SignStep>("method");
   const [file, setFile] = React.useState<File | null>(null);
@@ -948,26 +953,26 @@ function BondSignatureDialog({
 
   const stepTitle = {
     method: "How is this bail bond signed?",
-    instrument: "Add your e-signature",
-    otp: "Enter the OTP",
-    dsc: "Sign with your DSC",
-    upload: "Upload a signed copy",
-    signed: "Your signature",
+    instrument: t("bailBondDialog_addYourESignature"),
+    otp: t("bailBondDialog_enterTheOtp"),
+    dsc: t("bailBondDialog_signWithYourDsc"),
+    upload: t("bailBondDialog_uploadASignedCopy"),
+    signed: t("bailBondDialog_yourSignature"),
     done: "",
   }[step];
 
   const stepDescription = {
     method: "An unsigned bail bond cannot be submitted to the court.",
-    instrument: "Either one is your own signature. Use whichever you have.",
-    otp: "Sent to your Aadhaar-linked mobile.",
-    dsc: "Your certificate has to be plugged in, with the signing utility running on this computer.",
+    instrument: t("bailBondDialog_eitherOneIsYourOwnSignature"),
+    otp: t("bailBondDialog_sentToYourAadhaarLinkedMobile"),
+    dsc: t("bailBondDialog_yourCertificateHasToBePlugged"),
     upload: pick(bondCopy.uploadBondHint, "en"),
     signed:
       method === "esign"
         ? hasSureties
-          ? "Submitting sends the litigant and each surety a link to add their signatures."
-          : "Submitting sends the litigant a link to add their signature."
-        : "The signed bail bond is ready to file.",
+          ? t("bailBondDialog_submittingSendsTheLitigantAndEach")
+          : t("bailBondDialog_submittingSendsTheLitigantALink")
+        : t("bailBondDialog_theSignedBailBondIsReady"),
     done: "",
   }[step];
 
@@ -999,26 +1004,26 @@ function BondSignatureDialog({
                     ? pick(bondCopy.doneBodyUpload, "en")
                     : hasSureties
                       ? pick(bondCopy.doneBodyEsign, "en")
-                      : "The litigant has been sent a link by SMS, and email, if given, to add their signature."
+                      : t("bailBondDialog_theLitigantHasBeenSentA")
               }
             />
           <div className="flex flex-col gap-4 px-6 py-6">
             <OutcomeSummary>
             <DescriptionList>
               <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-                <DescriptionTerm className="text-body-compact">Submission date</DescriptionTerm>
+                <DescriptionTerm className="text-body-compact">{t("bailBondDialog_submissionDate")}</DescriptionTerm>
                 <DescriptionDetails className="text-body-compact">
                   {formatCaseDate(new Date().toISOString())}
                 </DescriptionDetails>
               </DescriptionRow>
               <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-                <DescriptionTerm className="text-body-compact">Bond ID</DescriptionTerm>
+                <DescriptionTerm className="text-body-compact">{t("bailBondDialog_bondId")}</DescriptionTerm>
                 <DescriptionDetails className="flex items-center gap-2 text-body-compact font-medium">
-                  <Identifier value={BOND_ID} label="bond number" />
+                  <Identifier value={BOND_ID} label={t("bailBondDialog_bondNumber")} />
                 </DescriptionDetails>
               </DescriptionRow>
               <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-                <DescriptionTerm className="text-body-compact">Status</DescriptionTerm>
+                <DescriptionTerm className="text-body-compact">{t("bailBondDialog_status")}</DescriptionTerm>
                 <DescriptionDetails>
                   <Badge variant="warning">
                     {pick(
@@ -1033,7 +1038,7 @@ function BondSignatureDialog({
 
             {method === "esign" ? (
               <div className="flex flex-col gap-2">
-                <p className="text-body-compact font-medium">Signing link</p>
+                <p className="text-body-compact font-medium">{t("bailBondDialog_signingLink")}</p>
                 <div className="flex min-w-0 items-center gap-2">
                   <span className="min-w-0 truncate font-mono text-body-compact">
                     {BOND_SIGN_LINK}
@@ -1042,7 +1047,7 @@ function BondSignatureDialog({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={copied ? "Copied" : "Copy signing link"}
+                    aria-label={copied ? t("bailBondDialog_copied") : t("bailBondDialog_copySigningLink")}
                     onClick={() => {
                       void navigator.clipboard?.writeText(BOND_SIGN_LINK);
                       setCopied(true);
@@ -1078,7 +1083,7 @@ function BondSignatureDialog({
                 >
                   {stepTitle}
                 </DialogTitle>
-                {step === "signed" ? <Badge variant="success">Signed</Badge> : null}
+                {step === "signed" ? <Badge variant="success">{t("bailBondDialog_signed")}</Badge> : null}
               </div>
               <DialogDescription>{stepDescription}</DialogDescription>
             </DialogHeader>
@@ -1093,7 +1098,7 @@ function BondSignatureDialog({
               {step === "method" ? (
                 <>
                   <ChoiceCard
-                    title="Sign digitally"
+                    title={t("bailBondDialog_signDigitally")}
                     tone="bg-brand-muted text-brand-muted-foreground"
                     icon={<SignatureIcon className="size-5" />}
                     onClick={() => setStep("instrument")}
@@ -1141,10 +1146,10 @@ function BondSignatureDialog({
                 <>
                   <Field data-invalid={Boolean(fileError) && !file}>
                     <FieldLabel className="block w-full font-semibold leading-snug">
-                      Signed bail bond
+                      {t("bailBondDialog_signedBailBond")}
                     </FieldLabel>
                     <UploadedDocField
-                      label="Signed bail bond"
+                      label={t("bailBondDialog_signedBailBond")}
                       required
                       file={file}
                       onFileChange={(next) => {
@@ -1152,19 +1157,16 @@ function BondSignatureDialog({
                         setFileError(undefined);
                       }}
                     />
-                    <FieldDescription>{UPLOAD_HELP}</FieldDescription>
+                    <FieldDescription>{t(UPLOAD_HELP)}</FieldDescription>
                   </Field>
                   <FieldError>{fileError}</FieldError>
                   <p className="flex flex-wrap items-center gap-1 text-body-compact">
-                    Need the unsigned bail bond to sign on paper?
-                    <Button
+                    {t.rich("bailBondDialog_needTheUnsignedBailBondTo", { button: (chunks) => <Button
                       type="button"
                       variant="link"
                       className="h-auto p-0 underline"
                       onClick={downloadNotice}
-                    >
-                      Download it
-                    </Button>
+                    >{chunks}</Button> })}
                   </p>
                 </>
               ) : null}
@@ -1172,10 +1174,10 @@ function BondSignatureDialog({
               {step === "signed" ? (
                 <StatusLine tone="success">
                   {signedWith === "aadhaar"
-                    ? "Signed with Aadhaar OTP."
+                    ? t("bailBondDialog_signedWithAadhaarOtp")
                     : signedWith === "dsc"
-                      ? "Signed with a DSC."
-                      : "Signed copy added to this bail bond."}
+                      ? t("bailBondDialog_signedWithADsc")
+                      : t("bailBondDialog_signedCopyAddedToThisBail")}
                 </StatusLine>
               ) : null}
             </div>
@@ -1196,7 +1198,7 @@ function BondSignatureDialog({
                 onBack();
               }}
             >
-              Back
+              {t("common_back")}
             </Button>
           </footer>
         ) : null}
@@ -1204,10 +1206,10 @@ function BondSignatureDialog({
         {step === "otp" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
+              {t("common_back")}
             </Button>
             <Button type="button" disabled={otp.length < 6} onClick={() => signWith("aadhaar")}>
-              Verify and sign
+              {t("bailBondDialog_verifyAndSign")}
             </Button>
           </footer>
         ) : null}
@@ -1215,10 +1217,10 @@ function BondSignatureDialog({
         {step === "dsc" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
+              {t("common_back")}
             </Button>
             <Button type="button" disabled={!dscFound} onClick={() => signWith("dsc")}>
-              Sign with this certificate
+              {t("bailBondDialog_signWithThisCertificate")}
             </Button>
           </footer>
         ) : null}
@@ -1226,19 +1228,19 @@ function BondSignatureDialog({
         {step === "upload" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={backToMethods}>
-              Back
+              {t("common_back")}
             </Button>
             <Button
               type="button"
               onClick={() => {
                 if (!file) {
-                  setFileError("Upload the signed bail bond to continue.");
+                  setFileError(t("bailBondDialog_uploadTheSignedBailBondTo"));
                   return;
                 }
                 signWith("paper");
               }}
             >
-              Submit signature
+              {t("bailBondDialog_submitSignature")}
             </Button>
           </footer>
         ) : null}
@@ -1246,7 +1248,7 @@ function BondSignatureDialog({
         {step === "signed" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={backToMethods}>
-              Back
+              {t("common_back")}
             </Button>
             <Button
               type="button"
@@ -1264,10 +1266,10 @@ function BondSignatureDialog({
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={downloadNotice}>
               <DownloadIcon data-icon="inline-start" aria-hidden />
-              Download bail bond
+              {t("bailBondDialog_downloadBailBond")}
             </Button>
             <Button type="button" onClick={finish}>
-              Done
+              {t("bailBondDialog_done")}
             </Button>
           </footer>
         ) : null}

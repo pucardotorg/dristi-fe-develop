@@ -36,6 +36,7 @@ import {
 } from "@/lib/employee/court-flow";
 import { formatCount } from "@/lib/employee/register-rows";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * "How cases were closed" (Case Flow v4): four figures against the baseline, the outcome
@@ -124,6 +125,7 @@ export function Closures({
   baselineLabel: string | null;
   averaged: boolean;
 }) {
+  const tr = useTranslations();
   const now = outcomesIn(docket, reading.selection);
   const base = averageOver(reading.baseline, (p) => outcomesIn(docket, p));
   const summary = closureSummary(docket, reading.selection);
@@ -151,7 +153,7 @@ export function Closures({
   const delta = (current: number | null, previous: number | null | undefined, unit: (v: number) => string, goodUp: boolean | null) => {
     if (current === null || previous === null || previous === undefined || !baselineLabel) return null;
     const d = current - previous;
-    if (Math.abs(d) < 1e-9) return <span className="text-caption text-muted-foreground">Same as {vs}</span>;
+    if (Math.abs(d) < 1e-9) return <span className="text-caption text-muted-foreground">{tr("courtDashboardClosures_sameAsVs", { vs })}</span>;
     const tone = goodUp === null ? "flat" : d > 0 === goodUp ? "good" : "bad";
     return (
       <span
@@ -161,8 +163,8 @@ export function Closures({
         )}
       >
         <span aria-hidden>{d > 0 ? "▲ " : "▼ "}</span>
-        <span className="sr-only">{d > 0 ? "Up " : "Down "}</span>
-        {unit(Math.abs(d))} vs {vs}
+        <span className="sr-only">{d > 0 ? tr("courtDashboardClosures_up") : tr("courtDashboardClosures_down")}</span>
+        {tr("courtDashboardClosures_unitVsVs", { unit: unit(Math.abs(d)), vs })}
       </span>
     );
   };
@@ -194,7 +196,7 @@ export function Closures({
     <section ref={section} aria-labelledby="dash-closures" className={PANEL}>
       <PanelHeader
         id="dash-closures"
-        title="How cases were closed"
+        title={tr("courtDashboardClosures_howCasesWereClosed")}
         line={`Judgements, settlements, early endings and transfers to the long pending register${
           baselineLabel ? `, compared with ${vs}` : ""
         }`}
@@ -203,7 +205,7 @@ export function Closures({
       </PanelHeader>
 
       <div className="grid min-w-0 gap-px overflow-hidden rounded-xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-4">
-        <Figure label="Cases closed">
+        <Figure label={tr("courtDashboardClosures_casesClosed")}>
           <CountButton name="cases closed" className="text-title font-semibold" {...opener("all")}>
             <CountUp value={summary.total} format={count} />
           </CountButton>
@@ -212,12 +214,12 @@ export function Closures({
             {plural(summary.toLongPending, "of them", "of them")} to the long pending register
           </span>
         </Figure>
-        <Figure label="Decided at trial">
+        <Figure label={tr("courtDashboardClosures_decidedAtTrial")}>
           <span className="text-title font-semibold tabular-nums">{total ? pct(judged / total) : "–"}</span>
           {delta(share(judged, total), baseSummary ? share(baseJudged, baseSummary.total) : null, (v) => `${Math.round(v)} pts`, null)}
           <span className="text-caption text-muted-foreground tabular-nums">{plural(judged, "judgement", "judgements")}</span>
         </Figure>
-        <Figure label="Conviction rate">
+        <Figure label={tr("courtDashboardClosures_convictionRate")}>
           <span className="text-title font-semibold tabular-nums">{judged ? pct(summary.convicted / judged) : "–"}</span>
           {delta(
             share(summary.convicted, judged),
@@ -226,26 +228,26 @@ export function Closures({
             null,
           )}
           <span className="text-caption text-muted-foreground tabular-nums">
-            {judged ? `${formatCount(summary.convicted)} of ${plural(judged, "judgement", "judgements")}` : "No judgements"}
+            {judged ? `${formatCount(summary.convicted)} of ${plural(judged, "judgement", "judgements")}` : tr("courtDashboardClosures_noJudgements")}
           </span>
         </Figure>
-        <Figure label="Median time to close">
+        <Figure label={tr("courtDashboardClosures_medianTimeToClose")}>
           <span className="text-title font-semibold tabular-nums">
             {summary.medianDays === null ? "–" : plural(summary.medianDays, "day", "days")}
           </span>
           {delta(summary.medianDays, baseSummary?.medianDays, (v) => plural(Math.round(v), "day", "days"), false)}
-          <span className="text-caption text-muted-foreground">From filing, disposed cases only</span>
+          <span className="text-caption text-muted-foreground">{tr("courtDashboardClosures_fromFilingDisposedCasesOnly")}</span>
         </Figure>
       </div>
 
       <div className={cn(BOX, "grid min-w-0 items-center gap-x-4 gap-y-1.5 p-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:px-6")}>
         <div className="flex min-w-0 flex-col">
           <span className="text-body-compact font-semibold tabular-nums">{current}</span>
-          <span className="text-caption text-muted-foreground tabular-nums">{formatCount(total)} closed</span>
+          <span className="text-caption text-muted-foreground tabular-nums">{tr("courtDashboardClosures_formatCountClosed", { formatCount: formatCount(total) })}</span>
         </div>
         {total ? (
           <SegmentBar
-            label={`Cases closed, ${period}, by outcome`}
+            label={tr("courtDashboardClosures_casesClosedPeriodByOutcome", { period })}
             controls={listId}
             grow
             className="h-8 [&>*:first-child]:rounded-l-md [&>*:last-child]:rounded-r-md"
@@ -268,7 +270,7 @@ export function Closures({
             })}
           />
         ) : (
-          <span className="text-body-compact text-muted-foreground">No closures</span>
+          <span className="text-body-compact text-muted-foreground">{tr("courtDashboardClosures_noClosures")}</span>
         )}
         {base && baselineLabel ? (
           <>
@@ -280,7 +282,7 @@ export function Closures({
             </div>
             {baseTotal ? (
               <SegmentBar
-                label={`Cases closed, ${baselineLabel}, by outcome`}
+                label={tr("courtDashboardClosures_casesClosedBaselineLabelByOutcome", { baselineLabel })}
                 grow
                 className="h-4 [&>*:first-child]:rounded-l-md [&>*:last-child]:rounded-r-md"
                 segments={OUTCOMES.map((x) => ({
@@ -292,7 +294,7 @@ export function Closures({
                 }))}
               />
             ) : (
-              <span className="text-body-compact text-muted-foreground">No closures</span>
+              <span className="text-body-compact text-muted-foreground">{tr("courtDashboardClosures_noClosures")}</span>
             )}
           </>
         ) : null}
@@ -391,6 +393,7 @@ function OutcomeRow({
   now: Outcomes;
   opener: Opener;
 }) {
+  const tr = useTranslations();
   const share = total ? value / total : 0;
   const change = base !== null && baseTotal && total ? Math.round((share - base / baseTotal) * 100) : null;
   const detail = open ? outcomeDetail(rows) : null;
@@ -438,7 +441,7 @@ function OutcomeRow({
         {change !== null ? (
           <span className="text-right text-caption text-muted-foreground tabular-nums whitespace-nowrap max-sm:hidden">
             <span aria-hidden>{change > 0 ? "▲ " : change < 0 ? "▼ " : ""}</span>
-            {change ? plural(Math.abs(change), "pt", "pts") : "±0 pts"}
+            {change ? plural(Math.abs(change), "pt", "pts") : tr("courtDashboardClosures_0Pts")}
           </span>
         ) : (
           <span className="max-sm:hidden" />
@@ -458,25 +461,25 @@ function OutcomeRow({
           <div className={cn(RESOLVE_IN_PLACE, "flex flex-col gap-4 px-4 pt-1 pb-4 sm:ml-6")}>
             <dl className="flex flex-wrap gap-x-8 gap-y-2">
               <div className="flex flex-col">
-                <dt className="text-caption text-muted-foreground">Median time to close</dt>
+                <dt className="text-caption text-muted-foreground">{tr("courtDashboardClosures_medianTimeToClose")}</dt>
                 <dd className="text-body font-semibold tabular-nums">
                   {detail.medianDays === null ? "–" : plural(detail.medianDays, "day", "days")}
                 </dd>
               </div>
               {x.key !== "toLongPending" ? (
                 <div className="flex flex-col">
-                  <dt className="text-caption text-muted-foreground">Closed before cognizance</dt>
+                  <dt className="text-caption text-muted-foreground">{tr("courtDashboardClosures_closedBeforeCognizance")}</dt>
                   <dd className="text-body font-semibold tabular-nums">
-                    {formatCount(detail.beforeCognizance)} <span className="font-normal text-muted-foreground">of {formatCount(rows.length)}</span>
+                    {formatCount(detail.beforeCognizance)} <span className="font-normal text-muted-foreground">{tr("courtDashboardClosures_ofFormatCount", { formatCount: formatCount(rows.length) })}</span>
                   </dd>
                 </div>
               ) : null}
             </dl>
-            {subs ? <Bands label={`${x.name}, by how`} rows={subs.map(([l, n]) => ({ label: l, value: n }))} of={value} /> : null}
+            {subs ? <Bands label={tr("courtDashboardClosures_nameByHow", { name: x.name })} rows={subs.map(([l, n]) => ({ label: l, value: n }))} of={value} /> : null}
             {rows.length ? (
               <div className="flex max-w-md flex-col gap-1">
-                <span className="text-caption text-muted-foreground">Time from filing</span>
-                <ul aria-label={`${x.name}, time from filing`} className="flex flex-col">
+                <span className="text-caption text-muted-foreground">{tr("courtDashboardClosures_timeFromFiling")}</span>
+                <ul aria-label={tr("courtDashboardClosures_nameTimeFromFiling", { name: x.name })} className="flex flex-col">
                   {detail.ages.map((band, i) => {
                     const most = Math.max(1, ...detail.ages.map((b) => b.rows.length));
                     return (
@@ -555,6 +558,7 @@ function Timeline({
   opener: Opener;
   latest: number;
 }) {
+  const tr = useTranslations();
   const { unit, columns, busiest } = timeline;
   const most = Math.max(1, ...columns.map((c) => c.total));
   const name = (c: TimelineColumn) =>
@@ -563,12 +567,12 @@ function Timeline({
   return (
     <div className={cn(BOX, "flex min-w-0 flex-col gap-2 p-4")}>
       <div className="flex flex-wrap justify-between gap-2">
-        <span className="text-body-compact font-semibold">Closures by {unit}</span>
+        <span className="text-body-compact font-semibold">{tr("courtDashboardClosures_closuresByUnit", { unit })}</span>
         <span className="text-caption text-muted-foreground tabular-nums">
-          Busiest: {name(busiest)}, {formatCount(busiest.total)}
+          {tr("courtDashboardClosures_busiestNameFormatCount", { name: name(busiest), formatCount: formatCount(busiest.total) })}
         </span>
       </div>
-      <div role="group" aria-label={`Closures by ${unit}`} className="flex h-44 items-end gap-0.5 border-b border-border">
+      <div role="group" aria-label={tr("courtDashboardClosures_closuresByUnit", { unit })} className="flex h-44 items-end gap-0.5 border-b border-border">
         {columns.map((c, i) => {
           const parts = OUTCOMES.filter((o) => c.by[o.key]).map((o) => `${o.short} ${c.by[o.key]}`);
           const tip = `${name(c)}: ${plural(c.total, "closure", "closures")}${parts.length ? ` · ${parts.join(", ")}` : ""}${c.weekend ? ` · ${WEEKDAY[new Date(c.from).getUTCDay()]}` : ""}`;
@@ -632,7 +636,7 @@ function Timeline({
         )}
       </div>
       {unit === "day" ? (
-        <p className="text-caption text-muted-foreground">Hatched columns are Saturdays and Sundays.</p>
+        <p className="text-caption text-muted-foreground">{tr("courtDashboardClosures_hatchedColumnsAreSaturdaysAndSundays")}</p>
       ) : null}
     </div>
   );

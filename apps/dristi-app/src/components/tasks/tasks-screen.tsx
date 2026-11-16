@@ -42,6 +42,8 @@ import { useFilters } from "@/components/tasks/filters";
 import { KindPills } from "@/components/tasks/kind-pills";
 import { TasksTable, TasksTableSkeleton } from "@/components/tasks/tasks-table";
 import { type ActMode, type Flow, actModeOf, draftFlowOf, FLOW_DIALOG, flowPathOf, useTaskActions } from "@/components/tasks/use-task-actions";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 const VIEWS: TaskView[] = ["needs-action", "waiting", "completed", "archived"];
 
@@ -78,6 +80,7 @@ function useNow(): Date {
  * carries its own bulk verb into the batch dialog.
  */
 export function TasksScreen() {
+  const tr = useTranslations();
   const store = useTasks();
   const { state, error, people, cases, tasks, user, online, reload, requestHighlight } = store;
   const { act, busy } = useTaskActions();
@@ -184,7 +187,7 @@ export function TasksScreen() {
           setConfirmDone([task]);
           return;
         case "Unarchive":
-          void act(task.id, unarchive, { title: "Restored from the archive", icon: ArchiveRestoreIcon });
+          void act(task.id, unarchive, { title: tr("tasksScreen_restoredFromTheArchive"), icon: ArchiveRestoreIcon });
           return;
         default:
           // "View" — a task waiting on someone else, closed, or held by a vakalatnama
@@ -194,7 +197,7 @@ export function TasksScreen() {
           setViewingId(task.id);
       }
     },
-    [act, openAct]
+    [act, openAct, tr]
   );
 
   const setView = React.useCallback(
@@ -305,8 +308,8 @@ export function TasksScreen() {
           <h1 className="text-title-s font-semibold text-foreground">{headerDate(now)}</h1>
           <p className="text-body-compact text-muted-foreground tabular-nums">
             {state === "ready"
-              ? `${summary.action} need action · ${summary.waiting} waiting on others · ${summary.overdue} overdue`
-              : "Loading…"}
+              ? tr("tasksScreen_actionNeedActionWaitingWaitingOn", { action: String(summary.action), waiting: String(summary.waiting), overdue: String(summary.overdue) })
+              : tr("tasksScreen_loading")}
           </p>
         </header>
 
@@ -323,7 +326,7 @@ export function TasksScreen() {
           {/* Four views do not fit a phone, and a row that scrolls sideways hides
               the ones off its edge. The ones that fit stay; the rest sit under More. */}
           <OverflowTabsList
-            aria-label="Task views"
+            aria-label={tr("tasksScreen_taskViews")}
             value={filters.view}
             onSelect={(v) => setView(v as TaskView)}
             className="w-full justify-start gap-4 border-b border-hairline p-0 pb-0 group-data-horizontal/tabs:h-auto sm:gap-6"
@@ -339,7 +342,7 @@ export function TasksScreen() {
                 measure: count,
                 label: (
                   <>
-                    {VIEW_LABELS[v]}
+                    {tr(VIEW_LABELS[v])}
                     <span className="text-caption tabular-nums text-muted-foreground">{count}</span>
                   </>
                 ),
@@ -382,8 +385,7 @@ export function TasksScreen() {
 
         {!online ? (
           <StatusLine tone="warning">
-            You are offline. The table is read-only until the connection returns — nothing is
-            queued, so payments and signatures are never sent twice.
+            {tr("tasksScreen_youAreOfflineTheTableIs")}
           </StatusLine>
         ) : null}
 
@@ -394,11 +396,11 @@ export function TasksScreen() {
             still={!online}
             action={
               <Button variant="outline" onClick={() => void reload()}>
-                Retry
+                {tr("tasksScreen_retry")}
               </Button>
             }
           >
-            Tasks could not be loaded{error ? ` — ${error}` : ""}.
+            {tr("tasksScreen_tasksCouldNotBeLoadedValue", { value: error ? ` — ${error}` : "" })}
           </StatusLine>
         ) : null}
 
@@ -533,9 +535,9 @@ export function TasksScreen() {
       <ConfirmDialog
         open={!!flowNotice}
         onOpenChange={(open) => !open && setFlowNotice(null)}
-        title={flowNotice ? FLOW_DIALOG[flowNotice.flow].title : ""}
-        description={flowNotice ? FLOW_DIALOG[flowNotice.flow].description : undefined}
-        confirmLabel="Continue"
+        title={flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].title) : ""}
+        description={flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].description) : undefined}
+        confirmLabel={tr("tasksScreen_continue")}
         destructive={false}
         icon={ArrowRightIcon}
         onConfirm={() => {
@@ -548,7 +550,7 @@ export function TasksScreen() {
       <ConfirmDialog
         open={!!confirmDone}
         onOpenChange={(open) => !open && setConfirmDone(null)}
-        title="Mark as done?"
+        title={tr("tasksScreen_markAsDone")}
         description={
           confirmDone
             ? `${
@@ -558,7 +560,7 @@ export function TasksScreen() {
               } — this records that it was completed outside DRISTI. Nothing is sent to the court.`
             : undefined
         }
-        confirmLabel="Mark as done"
+        confirmLabel={tr("tasksScreen_markAsDoneConfirmLabel")}
         destructive={false}
         icon={ListChecksIcon}
         onConfirm={() => {
@@ -606,6 +608,7 @@ function SelectionBar({
   onArchive: () => void;
   onClear: () => void;
 }) {
+  const tr = useTranslations();
   const label = batch
     ? batch.kind === "sign"
       ? `Sign ${batch.tasks.length} document${batch.tasks.length === 1 ? "" : "s"}`
@@ -615,16 +618,16 @@ function SelectionBar({
      why there is no Pay or Sign among the acts to the right. */
   const summary =
     count === 0
-      ? "Select tasks to pay, sign, mark as done or archive several at once."
+      ? tr("tasksScreen_selectTasksToPaySignMark")
       : `${count} task${count === 1 ? "" : "s"} selected.` +
     (!batch && hasPayOrSign && count > 1
-      ? " Paying or signing needs one kind at a time."
+      ? tr("tasksScreen_payingOrSigningNeedsOneKind")
       : "");
 
   return (
     <div
       role="region"
-      aria-label="Selected tasks"
+      aria-label={tr("tasksScreen_selectedTasks")}
       /* `top-14` clears the chrome bar exactly, with none of the page air the
          `--chrome-sticky-top` offset adds — a toolbar sits against the chrome. Opaque,
          because rows sliding under a translucent bar would decide the contrast of a
@@ -641,17 +644,17 @@ function SelectionBar({
         <span className="tabular-nums">{summary}</span>
         {count ? (
           <Button variant="link" className="h-auto p-0 font-normal underline" onClick={onClear}>
-            Clear
+            {tr("tasksScreen_clear")}
           </Button>
         ) : null}
       </p>
 
       <div className="flex flex-wrap gap-2 @3xl:flex-nowrap @3xl:justify-end [&>button]:flex-1 @3xl:[&>button]:flex-none">
       <Button variant="outline" disabled={disabled || count === 0} onClick={onArchive}>
-        Archive
+        {tr("tasksScreen_archive")}
       </Button>
       <Button variant="outline" disabled={disabled || !canMarkDone} onClick={onMarkDone}>
-        Mark as done
+        {tr("tasksScreen_markAsDoneConfirmLabel")}
       </Button>
       {batch && label ? (
         <Button disabled={disabled} onClick={() => onBatch(batch)} className="tabular-nums">
@@ -659,7 +662,7 @@ function SelectionBar({
         </Button>
       ) : count === 0 ? (
         /* The primary act, named before there is anything for it to act on. */
-        <Button disabled>Pay or sign selected</Button>
+        <Button disabled>{tr("tasksScreen_payOrSignSelected")}</Button>
       ) : null}
       </div>
       </div>
@@ -668,6 +671,7 @@ function SelectionBar({
 }
 
 export function TasksScreenFallback() {
+  const tr = useTranslations();
   return (
     /* The warm canvas the product defaults to, with the table and the selection bar
        lifted off it as panels (ui-craft §1.0; owner, 2026-09-16). */
@@ -675,7 +679,7 @@ export function TasksScreenFallback() {
       <div className={cn("flex min-w-0 flex-1 flex-col gap-6 px-4 py-6 md:px-6 lg:px-8")}>
         <header className="flex flex-col gap-1">
           <h1 className="text-title-s font-semibold text-foreground">{headerDate(new Date())}</h1>
-          <p className="text-body-compact text-muted-foreground">Loading…</p>
+          <p className="text-body-compact text-muted-foreground">{tr("tasksScreen_loading")}</p>
         </header>
         <TasksTableSkeleton />
       </div>

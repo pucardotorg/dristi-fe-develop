@@ -103,6 +103,7 @@ import {
   sortRows,
   type CourtSortSpec,
 } from "@/lib/employee/court-sort";
+import { useTranslations } from "next-intl";
 
 type HearingSort = "item" | "name" | "newest";
 
@@ -139,6 +140,7 @@ const HEARING_PILLS: { id: TodaysCauseStatus; label: string }[] = (
  * below them would be the box-in-box the layering model rules out (ui-craft §4).
  */
 export function HearingsScreen() {
+  const t = useTranslations();
   const { court } = useCourt();
   const today = useCourtToday();
   /* Which seat the court side is being worked from. It decides what the rows offer, not
@@ -291,7 +293,7 @@ export function HearingsScreen() {
    */
   function startHearing(hearing: CourtHearing) {
     markHearingOngoing(hearing.id);
-    setLiveMessage(`Hearing started for ${causeTitle(hearing)}`);
+    setLiveMessage(t("hearingsScreen_hearingStartedForCauseTitle", { causeTitle: causeTitle(hearing) }));
   }
 
   /*
@@ -320,12 +322,12 @@ export function HearingsScreen() {
 
   function endHearing(hearing: CourtHearing) {
     markHearingEnded(hearing.id);
-    setLiveMessage(`Hearing ended for ${causeTitle(hearing)}`);
+    setLiveMessage(t("hearingsScreen_hearingEndedForCauseTitle", { causeTitle: causeTitle(hearing) }));
   }
 
   function passOverHearing(hearing: CourtHearing) {
     markHearingPassedOver(hearing.id);
-    setLiveMessage(`Hearing passed over for ${causeTitle(hearing)}`);
+    setLiveMessage(t("hearingsScreen_hearingPassedOverForCauseTitle", { causeTitle: causeTitle(hearing) }));
   }
 
   /* What a bulk act takes: the ticked listings still in the filtered list. A tick hidden
@@ -434,7 +436,7 @@ export function HearingsScreen() {
             <span aria-hidden className="mx-8 hidden h-18 w-px bg-hairline lg:block" />
             <div className="flex min-w-0 flex-col gap-2">
               <h1 className="text-title text-balance font-semibold">
-                {otherDay ? "Hearings" : <>Today&rsquo;s hearings</>}
+                {otherDay ? t("hearingsScreen_hearings") : <>{t("hearingsScreen_todaysHearings")}</>}
               </h1>
               {/* On a desktop the big date already says the day, month and year; the
                   line repeats it only where the week strip stands in for it. */}
@@ -468,7 +470,7 @@ export function HearingsScreen() {
           searchRef={searchRef}
           leading={
             <StatusPills
-                label="Hearing status"
+                label={t("hearingsScreen_hearingStatus")}
                 /* The pills are the quick form of the Status filter: one status, or All.
                    Several statuses picked in the Filters panel light no pill. */
                 value={
@@ -677,6 +679,7 @@ function HearingsFilters({
   /** The sort and columns icons, at the row's far right. */
   end?: React.ReactNode;
 }) {
+  const t = useTranslations();
   /* The pills take a row of their own above the filters: sharing one, the last pill
      was clipped off the end at desktop width once there were five of them. */
   return (
@@ -685,19 +688,19 @@ function HearingsFilters({
       <CourtFilters
         searchRef={searchRef}
         search={{
-          label: "Search cases",
+          label: t("hearingsScreen_searchCases"),
           value: filters.query,
           onChange: (query) => onChange({ query }),
-          placeholder: "Case name or number",
+          placeholder: t("hearingsScreen_caseNameOrNumber"),
         }}
         fields={[]}
         /* Every one takes several values, as a multi-select dropdown (owner, 2026-10-15). */
         multi={[
           {
             id: "hearings-status",
-            label: "Status",
+            label: t("hearingsScreen_status"),
             values: filters.statuses,
-            placeholder: "All statuses",
+            placeholder: t("hearingsScreen_allStatuses"),
             options: CAUSE_LIST_STATUS_ORDER.map((status) => ({
               value: status,
               label: statusWord(status),
@@ -707,17 +710,17 @@ function HearingsFilters({
           },
           {
             id: "hearings-advocate",
-            label: "Advocate",
+            label: t("hearingsScreen_advocate"),
             values: filters.advocates,
             options: advocates.map((name) => ({ value: name, label: name })),
-            placeholder: "All advocates",
+            placeholder: t("hearingsScreen_allAdvocates"),
             onApply: (values) => onChange({ advocates: values }),
           },
           {
             id: "hearings-stage",
-            label: "Case stage",
+            label: t("hearingsScreen_caseStage"),
             values: filters.stages,
-            placeholder: "All stages",
+            placeholder: t("hearingsScreen_allStages"),
             options: COURT_CASE_STAGES.map((stage) => ({
               value: stage.id,
               label: stage.label,
@@ -727,9 +730,9 @@ function HearingsFilters({
           },
           {
             id: "hearings-purpose",
-            label: "Purpose",
+            label: t("hearingsScreen_purpose"),
             values: filters.purposes,
-            placeholder: "All purposes",
+            placeholder: t("hearingsScreen_allPurposes"),
             options: COURT_HEARING_PURPOSES.map((purpose) => ({
               value: purpose.id,
               label: purpose.label,
@@ -739,9 +742,9 @@ function HearingsFilters({
           },
           {
             id: "hearings-orders",
-            label: "Orders",
+            label: t("hearingsScreen_orders"),
             values: filters.orders,
-            placeholder: "All orders",
+            placeholder: t("hearingsScreen_allOrders"),
             options: LISTING_ORDER_MARKS.map((mark) => ({
               value: mark.id,
               label: mark.label,
@@ -753,9 +756,9 @@ function HearingsFilters({
             ? [
                 {
                   id: "hearings-next-hearing",
-                  label: "Next hearing",
+                  label: t("hearingsScreen_nextHearing"),
                   values: filters.nextHearing,
-                  placeholder: "Set or not",
+                  placeholder: t("hearingsScreen_setOrNot"),
                   options: NEXT_HEARING_MARKS.map((mark) => ({
                     value: mark.id,
                     label: mark.label,
@@ -789,16 +792,17 @@ function HearingsFilters({
  * court-level act; the disabled state keeps the promise honest.
  */
 function JoinVideoCourt() {
+  const t = useTranslations();
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button aria-disabled className="w-full shrink-0 sm:w-fit">
             <VideoIcon data-icon="inline-start" aria-hidden />
-            Join VC
+            {t("hearingsScreen_joinVc")}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Not available yet</TooltipContent>
+        <TooltipContent>{t("hearingsScreen_notAvailableYet")}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -820,6 +824,7 @@ function HearingsEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -831,18 +836,18 @@ function HearingsEmpty({
           )}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match these filters" : "Nothing listed"}
+          {isFiltered ? t("hearingsScreen_noMattersMatchTheseFilters") : t("hearingsScreen_nothingListed")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No matter on this day's list matches the filters or search you chose."
-            : `This court has no hearings listed for ${formatCourtDay(day)}.`}
+            ? t("hearingsScreen_noMatterOnThisDaysList")
+            : t("hearingsScreen_thisCourtHasNoHearingsListed", { formatCourtDay: formatCourtDay(day) })}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
+            {t("hearingsScreen_clearFilters")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -883,6 +888,7 @@ function HearingsItemList({
   /** Optional, and unsupplied: see the note where `openOrder` used to be. */
   onOpenOrder?: (hearing: CourtHearing) => void;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((hearing) => {
@@ -904,7 +910,7 @@ function HearingsItemList({
                   className="mr-2 self-center"
                   checked={selection.selected.has(hearing.id)}
                   onCheckedChange={() => selection.onToggle(hearing.id)}
-                  aria-label={`Select item ${hearing.item}, ${causeTitle(hearing)}`}
+                  aria-label={t("hearingsScreen_selectItemItemCauseTitle", { item: String(hearing.item), causeTitle: causeTitle(hearing) })}
                 />
               ) : null}
               <span className="shrink-0 text-muted-foreground tabular-nums">
@@ -923,7 +929,7 @@ function HearingsItemList({
               {courtHearingStatusLabel(hearing.status)}
             </Badge>
             <p className="text-caption text-muted-foreground">
-              <Identifier value={hearing.caseNumber} label="case number" /> ·{" "}
+              <Identifier value={hearing.caseNumber} label={t("hearingsScreen_caseNumber")} /> ·{" "}
               {courtHearingPurposeLabel(hearing.purpose)}
             </p>
             {/* Comfortable, not dense: on a phone the +N chip gets the full 40×40
@@ -969,6 +975,7 @@ function StatusPills({
   total: number;
   options: { value: string; label: string; count: number; hint?: string }[];
 }) {
+  const t = useTranslations();
   return (
     <TooltipProvider delayDuration={300}>
       <ToggleGroup
@@ -982,7 +989,7 @@ function StatusPills({
         aria-label={label}
         className={PILL_ROW}
       >
-        <Pill value="all" label="All" count={total} />
+        <Pill value="all" label={t("hearingsScreen_all")} count={total} />
         {options.map((option) => (
           <Pill
             key={option.value}

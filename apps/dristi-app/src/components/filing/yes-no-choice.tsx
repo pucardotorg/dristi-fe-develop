@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useFieldReadOnly, useLockedDisabled } from "@/components/filing/posture";
 import { ReadOnlyValue } from "@/components/filing/inputs";
+import { useTranslations } from "next-intl";
 
 /**
  * Yes / No where no answer has been given yet.
@@ -36,6 +37,7 @@ export function YesNoChoice({
   name: string;
   disabled?: boolean;
 }) {
+  const t = useTranslations();
   const isDisabled = useLockedDisabled(disabled);
   const readOnly = useFieldReadOnly();
 
@@ -61,7 +63,7 @@ export function YesNoChoice({
         <div key={option} className="flex items-center gap-2">
           <RadioGroupItem id={`${name}-${option}`} value={option} />
           <Label htmlFor={`${name}-${option}`} className="cursor-pointer font-normal">
-            {option === "yes" ? "Yes" : "No"}
+            {option === "yes" ? t("yesNoChoice_yes") : t("yesNoChoice_no")}
           </Label>
         </div>
       ))}

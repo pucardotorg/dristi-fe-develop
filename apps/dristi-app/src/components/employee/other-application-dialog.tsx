@@ -16,6 +16,7 @@ import {
   type OtherApplication,
 } from "@/lib/employee/other-applications";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * One application off the Others queue, read and then allowed or refused.
@@ -75,6 +76,7 @@ function ApplicationBody({
   onReject: (application: OtherApplication) => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const document = useMemo(
     () => buildOtherApplicationDocument(application),
     [application],
@@ -86,28 +88,28 @@ function ApplicationBody({
       description={
         <>
           {/* The overlay renders this as its accessible description. */}
-          <Identifier value={application.caseNumber} label="case number" copyable={false} />
+          <Identifier value={application.caseNumber} label={t("otherApplicationDialog_caseNumber")} copyable={false} />
           {" · "}
           {causeTitle(application)}
         </>
       }
       facts={
         <>
-          <ReviewRow term="Application type">
+          <ReviewRow term={t("otherApplicationDialog_applicationType")}>
             {otherApplicationTypeLabel(application.type)}
           </ReviewRow>
-          <ReviewRow term="Case number">
-            <Identifier value={application.caseNumber} label="case number" />
+          <ReviewRow term={t("otherApplicationDialog_caseNumberTerm")}>
+            <Identifier value={application.caseNumber} label={t("otherApplicationDialog_caseNumber")} />
           </ReviewRow>
-          <ReviewRow term="Stage">
+          <ReviewRow term={t("otherApplicationDialog_stage")}>
             {otherApplicationStageLabel(application.stage)}
           </ReviewRow>
-          <ReviewRow term="Date of application">
+          <ReviewRow term={t("otherApplicationDialog_dateOfApplication")}>
             <span className="tabular-nums">
               {formatOtherApplicationLongDate(application.appliedOn)}
             </span>
           </ReviewRow>
-          <ReviewRow term="Application filer">
+          <ReviewRow term={t("otherApplicationDialog_applicationFiler")}>
             {otherApplicationFiler(application)}
           </ReviewRow>
         </>

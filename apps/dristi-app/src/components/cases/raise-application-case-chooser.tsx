@@ -58,6 +58,7 @@ import { withOrigin } from "@/lib/nav/origin";
 import { cn } from "@/lib/utils";
 import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { localizeCourtText } from "@/lib/court/localize";
+import { useTranslations } from "next-intl";
 
 /**
  * Step one when Raise application is opened from the rail: which case.
@@ -80,6 +81,7 @@ export function RaiseApplicationCaseChooser({
   /** Server-stable "now" for the peek's due dates. */
   now: number;
 }) {
+  const t = useTranslations();
   // Search matches the number as shown, in the selected state's terms.
   const { court } = useCourt();
   const headingId = useId();
@@ -122,9 +124,9 @@ export function RaiseApplicationCaseChooser({
             {/* Keyed to the column, not the viewport; see FilingFrame's header. */}
             <header className={cn("@container", SIDE_PANEL_PUSH)}>
               <div className="flex flex-col gap-4 @2xl:flex-row @2xl:items-center @2xl:justify-between @2xl:gap-8">
-                <h1 className={PAGE_TITLE}>Raise application</h1>
+                <h1 className={PAGE_TITLE}>{t("raiseApplicationCaseChooser_raiseApplication")}</h1>
                 <RegisterSearch
-                  label="Search your cases"
+                  label={t("raiseApplicationCaseChooser_searchYourCases")}
                   value={query}
                   onChange={(value) => {
                     setQuery(value);
@@ -144,11 +146,11 @@ export function RaiseApplicationCaseChooser({
               className={cn("flex flex-col gap-4", SIDE_PANEL_PUSH)}
             >
               <h2 id={headingId} className="text-body font-semibold">
-                Choose the case
+                {t("raiseApplicationCaseChooser_chooseTheCase")}
               </h2>
               <p aria-live="polite" className="sr-only">
                 {typed
-                  ? `${shown.length} of ${ordered.length} cases match.`
+                  ? t("raiseApplicationCaseChooser_lengthOfLength2CasesMatch", { length: String(shown.length), length2: String(ordered.length) })
                   : ""}
               </p>
 
@@ -182,7 +184,7 @@ export function RaiseApplicationCaseChooser({
                       className="w-full"
                       onClick={() => setVisible((count) => count + LOAD_STEP)}
                     >
-                      Show more
+                      {t("raiseApplicationCaseChooser_showMore")}
                       <ChevronDownIcon data-icon="inline-end" aria-hidden />
                     </Button>
                   ) : null}
@@ -193,9 +195,9 @@ export function RaiseApplicationCaseChooser({
                     <EmptyMedia variant="icon">
                       <SearchIcon aria-hidden />
                     </EmptyMedia>
-                    <EmptyTitle>No case matches that</EmptyTitle>
+                    <EmptyTitle>{t("raiseApplicationCaseChooser_noCaseMatchesThat")}</EmptyTitle>
                     <EmptyDescription>
-                      Try the case number, or a name from either side.
+                      {t("raiseApplicationCaseChooser_tryTheCaseNumberOrA")}
                     </EmptyDescription>
                   </EmptyHeader>
                 </Empty>
@@ -273,6 +275,7 @@ function CaseFacts({ record }: { record: CaseRecord }) {
  * by Tailwind; reduced motion gets the switch without the travel.
  */
 function PointerCaseRow({ record }: { record: CaseRecord }) {
+  const t = useTranslations();
   const { open, record: peeked } = useCasePeek();
   const peeking = peeked?.id === record.id;
   const parties = partiesLabel(record);
@@ -303,7 +306,7 @@ function PointerCaseRow({ record }: { record: CaseRecord }) {
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                aria-label={`Preview case, ${parties}`}
+                aria-label={t("raiseApplicationCaseChooser_previewCaseParties", { parties })}
                 aria-expanded={peeking}
                 aria-controls={peeking ? CASE_PEEK_ID : undefined}
                 data-state={peeking ? "open" : undefined}
@@ -316,7 +319,7 @@ function PointerCaseRow({ record }: { record: CaseRecord }) {
                 <EyeIcon aria-hidden />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Preview case</TooltipContent>
+            <TooltipContent side="bottom">{t("raiseApplicationCaseChooser_previewCase")}</TooltipContent>
           </Tooltip>
         </div>
         <CaseFacts record={record} />
@@ -334,7 +337,7 @@ function PointerCaseRow({ record }: { record: CaseRecord }) {
         >
           <Button asChild size="sm" className="whitespace-nowrap">
             <span>
-              Select this case
+              {t("raiseApplicationCaseChooser_selectThisCase")}
               <ArrowRightIcon data-icon="inline-end" aria-hidden />
             </span>
           </Button>
@@ -359,6 +362,7 @@ function TouchCaseRow({
   expanded: boolean;
   onExpandedChange: (open: boolean) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const { open } = useCasePeek();
 
@@ -407,11 +411,11 @@ function TouchCaseRow({
             className="flex-1"
             onClick={() => open(record)}
           >
-            Preview
+            {t("raiseApplicationCaseChooser_preview")}
           </Button>
           <Button asChild className="flex-1">
             <Link href={selectHref(record)}>
-              Select case
+              {t("raiseApplicationCaseChooser_selectCase")}
               <ArrowRightIcon data-icon="inline-end" aria-hidden />
             </Link>
           </Button>

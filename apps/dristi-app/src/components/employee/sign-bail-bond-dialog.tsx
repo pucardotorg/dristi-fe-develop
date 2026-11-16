@@ -31,6 +31,7 @@ import { Identifier } from "@/components/chrome/identifier";
 import { DialogDescription } from "@/components/ui/dialog";
 import { useCourtLocalized } from "@/components/court/court-provider";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /** What the paper is called in the signature stage's copy. */
 const NOUN = "bail bond";
@@ -123,6 +124,7 @@ function SignBailBondBody({
   onReturnFocus: () => void;
   onClose: () => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const flow = useStagedFlow<SignStage>({
     order: SIGN_STAGES,
@@ -145,17 +147,16 @@ function SignBailBondBody({
       className="h-[85dvh] sm:max-w-4xl"
       /* The reference titles this overlay with the cause and the paper — "… vs … - Bail
          Bond" — and that is the right pair: the bond has no name of its own. */
-      title={reading ? `${causeTitle(bond)} — Bail bond` : "Add signature"}
+      title={reading ? t("signBailBondDialog_causeTitleBailBond", { causeTitle: causeTitle(bond) }) : t("signBailBondDialog_addSignature")}
       titleRef={flow.titleRef}
       /* The litigant leads the supporting line rather than the case number, because with
          two bonds to a case the litigant is the only thing that says which of them is
          open. It stands on both stages: it is what the signature is being put to. */
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
-          Executed by {bond.litigant} <span aria-hidden>· </span>
+          {t.rich("signBailBondDialog_executedByLitigant", { litigant: bond.litigant, span: (chunks) => <span aria-hidden>{chunks}</span> })}
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={bond.caseNumber} label="case number" copyable={false} />{" "}
-          · Added {formatSignBailBondDate(bond.addedOn)}
+          <Identifier value={bond.caseNumber} label={t("signBailBondDialog_caseNumber")} copyable={false} />{t("signBailBondDialog_addedFormatSignBailBondDate", { formatSignBailBondDate: formatSignBailBondDate(bond.addedOn) })}
         </DialogDescription>
       }
       sceneKey={flow.sceneKey}
@@ -172,10 +173,10 @@ function SignBailBondBody({
               variant="outline"
               onClick={() => onReject(bond)}
             >
-              Reject
+              {t("signBailBondDialog_reject")}
             </Button>
             <Button type="button" onClick={() => flow.go("sign")}>
-              Proceed to sign
+              {t("signBailBondDialog_proceedToSign")}
             </Button>
           </>
         ) : (
@@ -209,9 +210,9 @@ function SignBailBondBody({
         <SignatureStage
           noun={NOUN}
           subject={courtText(bondSubject(bond))}
-          warning="Signing publishes this bond and cannot be reversed."
+          warning={t("signBailBondDialog_signingPublishesThisBondAndCannot")}
           download={{
-            prompt: "Want to read the bond again?",
+            prompt: t("signBailBondDialog_wantToReadTheBondAgain"),
             onDownload: () => downloadSignBailBondDocument(bond),
           }}
           choice={choice}
@@ -233,12 +234,13 @@ function SignBailBondBody({
  * two weights ui-craft §1.3 allows.
  */
 function BailBondFacsimile({ document: storedDocument }: { document: SignBailBondDocument }) {
+  const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-4">
         <p className="text-center text-body tabular-nums">
-          Case Number: {document.caseNumber}
+          {t("signBailBondDialog_caseNumberCaseNumber", { caseNumber: document.caseNumber })}
         </p>
         <h3 className="text-center text-title-s font-semibold">
           {document.court}
@@ -267,7 +269,7 @@ function BailBondFacsimile({ document: storedDocument }: { document: SignBailBon
         ))}
       </ol>
 
-      <p className="text-body">Dated this the {document.dated}.</p>
+      <p className="text-body">{t("signBailBondDialog_datedThisTheDated", { dated: document.dated })}</p>
 
       {/* Who put their hand to it. A description list rather than prose, because the
           reference's paper signs itself in a block and a bench checking a bond checks the

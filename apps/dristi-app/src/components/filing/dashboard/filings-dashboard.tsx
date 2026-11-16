@@ -34,12 +34,14 @@ import { cn } from "@/lib/utils";
 import { useCourt } from "@/components/court/court-provider";
 import { bulkFetch, type BatchSummary } from "@/components/bulk/api";
 import { toLongDate } from "@/lib/filing/format";
+import { useTranslations } from "next-intl";
 
 /**
  * The most recent bulk batch, read from the batch store (`/api/bulk/batches`) — a client's
  * API push or an Excel upload. Bulk filing is built (docs/design/features/bulk-filing.md).
  */
 function useLatestBatch(): { batch: BulkBatch | null; needAction: number } {
+  const t = useTranslations();
   const [batch, setBatch] = React.useState<BulkBatch | null>(null);
   // Open batches with any case not yet filed: something in them is waiting on the filer.
   const [needAction, setNeedAction] = React.useState(0);
@@ -55,12 +57,12 @@ function useLatestBatch(): { batch: BulkBatch | null; needAction: number } {
           client: b.client,
           what: `${b.total} × cheque bounce (S-138, NI Act)`,
           receivedOn: toLongDate(b.createdAt.slice(0, 10)),
-          via: b.source.kind === "api" ? `${b.source.system} API` : b.source.kind === "excel" ? "Excel upload" : b.source.kind === "documents" ? "case documents" : "clubbing",
+          via: b.source.kind === "api" ? `${b.source.system} API` : b.source.kind === "excel" ? t("filingsDashboard_excelUpload") : b.source.kind === "documents" ? "case documents" : "clubbing",
           counts: b.counts,
         });
       })
       .catch(() => undefined);
-  }, []);
+  }, [t]);
   return { batch, needAction };
 }
 
@@ -74,6 +76,7 @@ function useLatestBatch(): { batch: BulkBatch | null; needAction: number } {
  * the stores that already own them.
  */
 export function FilingsDashboard() {
+  const t = useTranslations();
   // What a pending payment costs follows the selected state's schedule (Settings).
   const courtFees = useCourt().profile.fees;
   const { batch: latestBatch, needAction } = useLatestBatch();
@@ -110,10 +113,10 @@ export function FilingsDashboard() {
     <div className={cn("flex w-full flex-1 flex-col gap-6", PAGE_GROUND, PAGE_GUTTER)}>
       <header className="flex flex-col gap-1">
         <h1 className={cn(PAGE_TITLE, "text-foreground")}>
-          {firstName ? `File a case, ${firstName}` : "File a case"}
+          {firstName ? t("filingsDashboard_fileACaseFirstName", { firstName }) : t("filingsDashboard_fileACase")}
         </h1>
         <p className={PAGE_SUBTITLE}>
-          Start a new filing, import many cases at once, or track what you have filed.
+          {t("filingsDashboard_startANewFilingImportMany")}
         </p>
       </header>
 
@@ -135,23 +138,23 @@ export function FilingsDashboard() {
       />
 
       <ConfirmDialog
-        note="This cannot be undone."
+        note={t("filingsDashboard_thisCannotBeUndone")}
         open={confirmIds.length > 0}
         onOpenChange={(open) => {
           if (!open) setConfirmIds([]);
         }}
         title={
           confirmIds.length === 1
-            ? "Discard this draft?"
-            : `Discard these ${confirmIds.length} drafts?`
+            ? t("filingsDashboard_discardThisDraft")
+            : t("filingsDashboard_discardTheseLengthDrafts", { length: String(confirmIds.length) })
         }
         description={
           confirmIds.length === 1
-            ? "Everything entered and uploaded for this filing will be removed."
-            : `Everything entered and uploaded for these ${confirmIds.length} filings will be removed.`
+            ? t("filingsDashboard_everythingEnteredAndUploadedForThis")
+            : t("filingsDashboard_everythingEnteredAndUploadedForThese", { length: String(confirmIds.length) })
         }
         confirmLabel={
-          confirmIds.length === 1 ? "Discard draft" : `Discard ${confirmIds.length} drafts`
+          confirmIds.length === 1 ? t("filingsDashboard_discardDraft") : t("filingsDashboard_discardLengthDrafts", { length: String(confirmIds.length) })
         }
         onConfirm={() => {
           for (const id of confirmIds) void discard(id);

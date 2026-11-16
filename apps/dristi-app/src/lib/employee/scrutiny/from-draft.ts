@@ -1085,7 +1085,7 @@ export function caseFromDraft(draft: FilingDraft, options: DraftReadOptions): Dr
     party: {
       complainant: names.complainant,
       accused: names.accused,
-      submitted: draft.filedAt ? `Submitted ${toLongDate(draft.filedAt.slice(0, 10))}` : "Not yet submitted",
+      submitted: draft.filedAt ? `Submitted ${toLongDate(draft.filedAt.slice(0, 10))}` : "fromDraft_notYetSubmitted",
       advocate: draft.advocates[0] ? shown(advocateName(draft.advocates[0])) : "Party in person",
     },
     sections,

@@ -38,6 +38,8 @@ import { cn } from "@/lib/utils";
 import { DOCUMENT_GROUND } from "@/components/cases/document-ground";
 
 import { PdfViewer, parsePdfSrc } from "./pdf-viewer";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Structured read of a filed record — DescriptionList, narrative blocks,
@@ -48,23 +50,24 @@ import { PdfViewer, parsePdfSrc } from "./pdf-viewer";
 export function DigitalRecord({
   caseId,
   pane,
-  emptyTitle = "No record selected",
-  emptyDescription = "Choose an item from the complaint to open it here.",
+  emptyTitle = "digitalRecord_noRecordSelected",
+  emptyDescription = "digitalRecord_chooseAnItemFromTheComplaint",
 }: {
   caseId: string;
   pane: ComplaintPane | undefined;
   emptyTitle?: string;
   emptyDescription?: string;
 }) {
+  const t = useTranslations();
   if (!pane) {
     return (
       <Empty className="min-h-0 flex-1 border border-dashed border-border">
         <EmptyHeader>
           <EmptyTitle className="text-body font-semibold">
-            {emptyTitle}
+            {translateText(t, emptyTitle)}
           </EmptyTitle>
           <EmptyDescription>
-            {emptyDescription}
+            {translateText(t, emptyDescription)}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -95,7 +98,7 @@ export function DigitalRecord({
       {pane.blocks?.map((block) => (
         <div key={block.title} className="flex flex-col gap-2">
           <h3 className="text-body-compact font-semibold text-foreground">
-            {block.title}
+            {translateText(t, block.title)}
           </h3>
           <p className="text-body-compact text-muted-foreground">{block.body}</p>
         </div>
@@ -157,10 +160,11 @@ function DocumentStrip({
   caseId: string;
   documents: ComplaintDocument[];
 }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-body-compact font-semibold text-foreground">Documents</h3>
-      <ul aria-label="Documents" className="flex gap-4 overflow-x-auto pb-1">
+      <h3 className="text-body-compact font-semibold text-foreground">{t("digitalRecord_documents")}</h3>
+      <ul aria-label={t("digitalRecord_documents")} className="flex gap-4 overflow-x-auto pb-1">
         {documents.map((doc) => (
           <li key={doc.id} className="w-48 shrink-0">
             <DocumentTile caseId={caseId} document={doc} />
@@ -178,6 +182,7 @@ function DocumentTile({
   caseId: string;
   document: ComplaintDocument;
 }) {
+  const t = useTranslations();
   const src = complaintDocumentSrc(document);
   const href = complaintDocumentHref(caseId, document);
   const preview = (
@@ -192,7 +197,7 @@ function DocumentTile({
           <DocumentThumbnail src={src} />
         ) : (
           <div className="flex size-full items-center justify-center">
-            <p className="text-body-compact text-muted-foreground">Not uploaded</p>
+            <p className="text-body-compact text-muted-foreground">{t("digitalRecord_notUploaded")}</p>
           </div>
         )}
       </AspectRatio>
@@ -220,7 +225,7 @@ function DocumentTile({
         {document.label}
       </span>
       <span className="text-caption font-medium text-muted-foreground">
-        Open in case file
+        {t("digitalRecord_openInCaseFile")}
       </span>
     </Link>
   );

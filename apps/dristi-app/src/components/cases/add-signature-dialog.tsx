@@ -67,6 +67,7 @@ import { applicationsFile } from "@/lib/cases/applications";
 import { formatCaseDate, type CaseRecord } from "@/lib/cases/types";
 import { Identifier } from "@/components/chrome/identifier";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /** Where a filing stopped when the signing chain closed. */
 export type SigningOutcome =
@@ -156,6 +157,7 @@ export function AddSignatureDialog({
    */
   done?: { label: string; onClick: () => void };
 }) {
+  const t = useTranslations();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const firstStep: SignatureStep = handoffTo ? "pending" : "method";
   const [step, setStep] = useState<SignatureStep>(firstStep);
@@ -262,11 +264,11 @@ export function AddSignatureDialog({
 
   const stepTitle = {
     method: `How is this ${noun} signed?`,
-    instrument: "Add your e-signature",
-    otp: "Enter the OTP",
-    dsc: "Sign with your DSC",
-    upload: "Upload a signed copy",
-    signed: "Your signature",
+    instrument: t("addSignatureDialog_addYourESignature"),
+    otp: t("addSignatureDialog_enterTheOtp"),
+    dsc: t("addSignatureDialog_signWithYourDsc"),
+    upload: t("addSignatureDialog_uploadASignedCopy"),
+    signed: t("addSignatureDialog_yourSignature"),
     payment: "Payment",
     processing: PAYMENT_PROCESSING_TITLE,
     receipt: PAYMENT_SUCCESS_TITLE,
@@ -276,9 +278,9 @@ export function AddSignatureDialog({
 
   const stepDescription = {
     method: `An unsigned ${noun} cannot be submitted to the court.`,
-    instrument: "Either one is your own signature — use whichever you have.",
-    otp: "Sent to your Aadhaar-linked mobile.",
-    dsc: "Your certificate has to be plugged in, with the signing utility running on this computer.",
+    instrument: t("addSignatureDialog_eitherOneIsYourOwnSignature"),
+    otp: t("addSignatureDialog_sentToYourAadhaarLinkedMobile"),
+    dsc: t("addSignatureDialog_yourCertificateHasToBePlugged"),
     upload: `The ${noun}, signed by hand on paper.`,
     signed: `The ${noun} is signed and ready to file.`,
     payment: `Court fee for filing this ${noun}.`,
@@ -342,13 +344,13 @@ export function AddSignatureDialog({
               icon={handoffTo ? undefined : ClockIcon}
               title={
                 handoffTo
-                  ? `Saved. Waiting for ${handoffTo} to sign`
-                  : "Saved. Waiting for your signature"
+                  ? t("addSignatureDialog_savedWaitingForHandoffToTo", { handoffTo })
+                  : t("addSignatureDialog_savedWaitingForYourSignature")
               }
               body={
                 handoffTo
-                  ? "Nothing has gone to the court yet. They sign it from the case's Applications tab."
-                  : "Nothing has gone to the court yet. Sign it from the case's Applications tab when you are ready."
+                  ? t("addSignatureDialog_nothingHasGoneToTheCourt")
+                  : t("addSignatureDialog_nothingHasGoneToTheCourtYet")
               }
             />
 
@@ -365,15 +367,15 @@ export function AddSignatureDialog({
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5">
-                <dt className="text-muted-foreground">Case</dt>
+                <dt className="text-muted-foreground">{t("addSignatureDialog_case")}</dt>
                 <dd className="font-medium">
-                  <Identifier value={record.caseNumber} label="case number" />
+                  <Identifier value={record.caseNumber} label={t("addSignatureDialog_caseNumber")} />
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-4 py-2.5">
-                <dt className="text-muted-foreground">Status</dt>
+                <dt className="text-muted-foreground">{t("addSignatureDialog_status")}</dt>
                 <dd>
-                  <Badge variant="warning">Pending signature</Badge>
+                  <Badge variant="warning">{t("addSignatureDialog_pendingSignature")}</Badge>
                 </dd>
               </div>
             </dl>
@@ -384,7 +386,7 @@ export function AddSignatureDialog({
           <>
             {step === "receipt" ? (
               <OutcomeHeader key="receipt" compact titleFrom="dialog" focusTitle title={stepTitle} body={stepDescription}>
-                <OutcomeAmount label="Amount paid" value={COURT_FEE} />
+                <OutcomeAmount label={t("addSignatureDialog_amountPaid")} value={COURT_FEE} />
               </OutcomeHeader>
             ) : (
             <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-4 pr-12 text-left">
@@ -399,7 +401,7 @@ export function AddSignatureDialog({
                   {stepTitle}
                 </DialogTitle>
                 {step === "signed" ? (
-                  <Badge variant="success">Signed</Badge>
+                  <Badge variant="success">{t("addSignatureDialog_signed")}</Badge>
                 ) : null}
               </div>
               <DialogDescription>{stepDescription}</DialogDescription>
@@ -419,12 +421,12 @@ export function AddSignatureDialog({
               {step === "method" ? (
                 <>
                   <ChoiceCard
-                    title="Sign digitally"
+                    title={t("addSignatureDialog_signDigitally")}
                     tone="bg-brand-muted text-brand-muted-foreground"
                     icon={<SignatureIcon className="size-5" />}
                     onClick={() => setStep("instrument")}
                   >
-                    You sign the {noun} with your DSC or Aadhaar e-sign.
+                    {t("addSignatureDialog_youSignTheNounWithYour", { noun })}
                   </ChoiceCard>
                   <PaperFallbackLink
                     onClick={() => {
@@ -464,10 +466,10 @@ export function AddSignatureDialog({
                 <>
                   <Field data-invalid={Boolean(fileError) && !file}>
                     <FieldLabel className="block w-full font-semibold leading-snug">
-                      Signed {noun}
+                      {t("addSignatureDialog_signedNoun", { noun })}
                     </FieldLabel>
                     <UploadedDocField
-                      label={`Signed ${noun}`}
+                      label={t("addSignatureDialog_signedNoun", { noun })}
                       required
                       file={file}
                       onFileChange={(next) => {
@@ -475,21 +477,18 @@ export function AddSignatureDialog({
                         setFileError(undefined);
                       }}
                     />
-                    <FieldDescription>{UPLOAD_HELP}</FieldDescription>
+                    <FieldDescription>{t(UPLOAD_HELP)}</FieldDescription>
                   </Field>
                   <FieldError>{fileError}</FieldError>
                   {/* Where e-filing keeps it: the unsigned copy is only needed to
                       sign on paper, so it is offered on the paper path. */}
                   <p className="flex flex-wrap items-center gap-1 text-body-compact">
-                    Need the unsigned {noun} to sign on paper?
-                    <Button
+                    {t.rich("addSignatureDialog_needTheUnsignedNounToSign", { noun, button: (chunks) => <Button
                       type="button"
                       variant="link"
                       className="h-auto p-0 underline"
                       onClick={() => downloadGeneratedApplication(draft, record)}
-                    >
-                      Download it
-                    </Button>
+                    >{chunks}</Button> })}
                   </p>
                 </>
               ) : null}
@@ -497,10 +496,10 @@ export function AddSignatureDialog({
               {step === "signed" ? (
                 <StatusLine tone="success">
                   {signedWith === "aadhaar"
-                    ? "Signed with Aadhaar OTP."
+                    ? t("addSignatureDialog_signedWithAadhaarOtp")
                     : signedWith === "dsc"
-                      ? "Signed with a DSC."
-                      : `Signed copy added to this ${noun}.`}
+                      ? t("addSignatureDialog_signedWithADsc")
+                      : t("addSignatureDialog_signedCopyAddedToThisNoun", { noun })}
                 </StatusLine>
               ) : null}
 
@@ -513,12 +512,12 @@ export function AddSignatureDialog({
                 <PaymentFacts
                   rows={[
                     {
-                      label: "Case",
-                      value: <Identifier value={record.caseNumber} label="case number" />,
+                      label: t("addSignatureDialog_case"),
+                      value: <Identifier value={record.caseNumber} label={t("addSignatureDialog_caseNumber")} />,
                     },
                     {
-                      label: "Payment reference",
-                      value: <Identifier value={paymentRef} label="payment reference" />,
+                      label: t("addSignatureDialog_paymentReference"),
+                      value: <Identifier value={paymentRef} label={t("addSignatureDialog_paymentReferenceLabel")} />,
                     },
                   ]}
                 />
@@ -543,12 +542,12 @@ export function AddSignatureDialog({
                 onBack();
               }}
             >
-              Back
+              {t("common_back")}
             </Button>
             {/* Sign later stays, as e-filing words it: saved unsigned, waiting in
                 Applications as Pending signature. */}
             <Button type="button" variant="ghost" onClick={() => setStep("pending")}>
-              I&rsquo;ll sign later
+              {t("addSignatureDialog_illSignLater")}
             </Button>
           </footer>
         ) : null}
@@ -556,10 +555,10 @@ export function AddSignatureDialog({
         {step === "otp" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
+              {t("common_back")}
             </Button>
             <Button type="button" disabled={otp.length < 6} onClick={() => signWith("aadhaar")}>
-              Verify and sign
+              {t("addSignatureDialog_verifyAndSign")}
             </Button>
           </footer>
         ) : null}
@@ -567,10 +566,10 @@ export function AddSignatureDialog({
         {step === "dsc" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
+              {t("common_back")}
             </Button>
             <Button type="button" disabled={!dscFound} onClick={() => signWith("dsc")}>
-              Sign with this certificate
+              {t("addSignatureDialog_signWithThisCertificate")}
             </Button>
           </footer>
         ) : null}
@@ -579,7 +578,7 @@ export function AddSignatureDialog({
           <footer className={FOOTER}>
             <span aria-hidden />
             <Button type="button" onClick={() => setStep("success")}>
-              Continue
+              {t("addSignatureDialog_continue")}
             </Button>
           </footer>
         ) : null}
@@ -587,19 +586,19 @@ export function AddSignatureDialog({
         {step === "upload" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={backToMethods}>
-              Back
+              {t("common_back")}
             </Button>
             <Button
               type="button"
               onClick={() => {
                 if (!file) {
-                  setFileError(`Upload the signed ${noun} to continue.`);
+                  setFileError(t("addSignatureDialog_uploadTheSignedNounToContinue", { noun }));
                   return;
                 }
                 signWith("paper");
               }}
             >
-              Submit signature
+              {t("addSignatureDialog_submitSignature")}
             </Button>
           </footer>
         ) : null}
@@ -607,10 +606,10 @@ export function AddSignatureDialog({
         {step === "signed" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={backToMethods}>
-              Back
+              {t("common_back")}
             </Button>
             <Button type="button" onClick={() => setStep("payment")}>
-              Proceed to payment
+              {t("addSignatureDialog_proceedToPayment")}
             </Button>
           </footer>
         ) : null}
@@ -623,7 +622,7 @@ export function AddSignatureDialog({
               <span aria-hidden />
             ) : (
               <Button type="button" variant="outline" onClick={backToMethods}>
-                Sign now
+                {t("addSignatureDialog_signNow")}
               </Button>
             )}
             <Button
@@ -633,7 +632,7 @@ export function AddSignatureDialog({
                 done?.onClick();
               }}
             >
-              {done?.label ?? "Done"}
+              {done?.label ?? t("addSignatureDialog_done")}
             </Button>
           </footer>
         ) : null}
@@ -648,10 +647,10 @@ export function AddSignatureDialog({
                 setStep("success");
               }}
             >
-              Skip
+              {t("addSignatureDialog_skip")}
             </Button>
             <Button type="button" onClick={() => setStep("processing")}>
-              Make payment
+              {t("addSignatureDialog_makePayment")}
             </Button>
           </footer>
         ) : null}
@@ -664,7 +663,7 @@ export function AddSignatureDialog({
               onClick={() => downloadGeneratedApplication(draft, record)}
             >
               <DownloadIcon data-icon="inline-start" aria-hidden />
-              Download submission
+              {t("addSignatureDialog_downloadSubmission")}
             </Button>
             {paid ? (
               <Button
@@ -674,11 +673,11 @@ export function AddSignatureDialog({
                   done?.onClick();
                 }}
               >
-                {done?.label ?? "Done"}
+                {done?.label ?? t("addSignatureDialog_done")}
               </Button>
             ) : (
               <Button type="button" onClick={() => setStep("processing")}>
-                Make payment
+                {t("addSignatureDialog_makePayment")}
               </Button>
             )}
           </footer>
@@ -709,11 +708,12 @@ function SuccessContent({
   noun: string;
   objection?: { target: string; inSentence: string; decision?: string };
 }) {
+  const t = useTranslations();
   const next = objection
     ? `It is read with the other side's ${objection.inSentence} when the court decides it${
         objection.decision ? ` on ${objection.decision}` : ""
       }.`
-    : "It is with the court now. The court takes it up next and gives it an application number.";
+    : t("addSignatureDialog_itIsWithTheCourtNow");
   return (
     <>
       {/* The filing's outcome takes over the window (skill `feedback-states`). Unpaid is
@@ -726,11 +726,11 @@ function SuccessContent({
         focusTitle
         tone={paid ? "success" : "neutral"}
         icon={paid ? undefined : ClockIcon}
-        title={paid ? `${noun} submitted` : "Signed. Waiting for payment"}
+        title={paid ? t("addSignatureDialog_nounSubmitted", { noun }) : t("addSignatureDialog_signedWaitingForPayment")}
         body={
           paid
             ? next
-            : "Nothing reaches the court until the court fee is paid. Pay it here, or later from the case's Applications tab."
+            : t("addSignatureDialog_nothingReachesTheCourtUntilThe")
         }
       />
 
@@ -739,7 +739,7 @@ function SuccessContent({
         <DescriptionList>
           <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
             <DescriptionTerm className="text-body-compact">
-              {paid ? "Submission date" : "Signed on"}
+              {paid ? t("addSignatureDialog_submissionDate") : t("addSignatureDialog_signedOn")}
             </DescriptionTerm>
             <DescriptionDetails className="text-body-compact">
               {formatCaseDate(new Date().toISOString())}
@@ -748,12 +748,12 @@ function SuccessContent({
           {paid ? (
             <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
               <DescriptionTerm className="text-body-compact">
-                {objection ? "Filing ID" : "Temporary ID"}
+                {objection ? t("addSignatureDialog_filingId") : t("addSignatureDialog_temporaryId")}
               </DescriptionTerm>
               {/* The value is its own copy control now, so the icon button beside it
                   went with the conversion — same confirmation, one thing to hit. */}
               <DescriptionDetails className="flex items-center gap-2 text-body-compact font-medium">
-                <Identifier value={temporaryId} label="temporary id" />
+                <Identifier value={temporaryId} label={t("addSignatureDialog_temporaryIdLabel")} />
               </DescriptionDetails>
             </DescriptionRow>
           ) : null}
@@ -761,16 +761,16 @@ function SuccessContent({
             /* One mark on the screen: the fee is a fact here, as on the bail filing's
                outcome, not a second green line. */
             <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-              <DescriptionTerm className="text-body-compact">Court fee</DescriptionTerm>
+              <DescriptionTerm className="text-body-compact">{t("addSignatureDialog_courtFee")}</DescriptionTerm>
               <DescriptionDetails className="text-body-compact tabular-nums">
-                {COURT_FEE} paid
+                {t("addSignatureDialog_courtFeePaid", { COURT_FEE })}
               </DescriptionDetails>
             </DescriptionRow>
           ) : (
             <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-              <DescriptionTerm className="text-body-compact">Status</DescriptionTerm>
+              <DescriptionTerm className="text-body-compact">{t("addSignatureDialog_status")}</DescriptionTerm>
               <DescriptionDetails>
-                <Badge variant="warning">Pending payment</Badge>
+                <Badge variant="warning">{t("addSignatureDialog_pendingPayment")}</Badge>
               </DescriptionDetails>
             </DescriptionRow>
           )}

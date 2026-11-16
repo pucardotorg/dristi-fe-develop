@@ -7,6 +7,7 @@ import { FileTextIcon, LoaderCircleIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from "next-intl";
 
 const documentSlotVariants = cva(
   "flex w-full items-start gap-4 rounded-lg border p-4",
@@ -71,6 +72,7 @@ function DocumentSlot({
       chooseFile?: string
     }
   }) {
+  const t = useTranslations();
   const isEmpty = status === "empty" || status === "empty-optional"
   const showOptional = optional || status === "empty-optional"
   const qualityTone =
@@ -110,7 +112,7 @@ function DocumentSlot({
             </span>
           ) : null}
           {showOptional ? (
-            <Badge variant="secondary">{copy?.optional ?? "Optional"}</Badge>
+            <Badge variant="secondary">{copy?.optional ?? t("documentSlot_optional")}</Badge>
           ) : null}
         </div>
         {(filename || meta) && !isEmpty ? (
@@ -120,17 +122,17 @@ function DocumentSlot({
         ) : null}
         {isEmpty ? (
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {copy?.noFile ?? "No file chosen yet"}
+            {copy?.noFile ?? t("documentSlot_noFileChosenYet")}
           </p>
         ) : null}
         {qualityTone === "good" ? (
           <Badge variant="success" className="mt-2">
-            {copy?.goodScan ?? "Good scan"}
+            {copy?.goodScan ?? t("documentSlot_goodScan")}
           </Badge>
         ) : null}
         {qualityTone === "poor" ? (
           <Badge variant="warning" className="mt-2">
-            {copy?.poorScan ?? "Poor scan"}
+            {copy?.poorScan ?? t("documentSlot_poorScan")}
           </Badge>
         ) : null}
       </div>
@@ -143,7 +145,7 @@ function DocumentSlot({
           disabled={disabled}
           onClick={onChooseFile}
         >
-          {copy?.chooseFile ?? "Choose file"}
+          {copy?.chooseFile ?? t("documentSlot_chooseFile")}
         </Button>
       ) : null}
     </div>

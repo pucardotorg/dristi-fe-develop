@@ -69,6 +69,8 @@ import {
 } from "@/lib/employee/register-cases";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Register cases — one waiting complaint, as the magistrate reads it before taking it on
@@ -234,6 +236,7 @@ function ComplaintHeader({
   returnFocus: Act | null;
   onAct: (act: Act) => void;
 }) {
+  const t = useTranslations();
   return (
     <header
       aria-labelledby="complaint-title"
@@ -248,7 +251,7 @@ function ComplaintHeader({
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <Identifier
           value={complaint.filingNumber}
-          label="filing number"
+          label={t("registerCaseScreen_filingNumber")}
           className="self-start text-body-compact text-muted-foreground"
         />
         <h1
@@ -288,6 +291,7 @@ function HeaderActs({
   returnFocus: Act | null;
   onAct: (act: Act) => void;
 }) {
+  const t = useTranslations();
   const sendBackRef = React.useRef<HTMLButtonElement>(null);
   const registerRef = React.useRef<HTMLButtonElement>(null);
 
@@ -311,10 +315,10 @@ function HeaderActs({
         variant="outline"
         onClick={() => onAct("send-back")}
       >
-        Send back to scrutiny
+        {t("registerCaseScreen_sendBackToScrutiny")}
       </Button>
       <Button ref={registerRef} type="button" onClick={() => onAct("register")}>
-        Register
+        {t("registerCaseScreen_register")}
       </Button>
     </div>
   );
@@ -401,6 +405,7 @@ function ComplaintTabs({
   /** The acts, once the header's own pair has scrolled away — else nothing. */
   acts: React.ReactNode;
 }) {
+  const t = useTranslations();
   /* Where the tab row sits in the page, as opposed to where it has stuck. The ref goes
      on the Tabs root — its own top *is* the row's layout position, and an anchor element
      of its own was a flex child of this stack, buying 32px of gap above the tabs that
@@ -450,10 +455,10 @@ function ComplaintTabs({
             className="w-full justify-start gap-6 rounded-none p-0 group-data-horizontal/tabs:h-11"
           >
             <TabsTrigger value="summary" className={TRIGGER}>
-              Summary
+              {t("registerCaseScreen_summary")}
             </TabsTrigger>
             <TabsTrigger value="file" className={TRIGGER}>
-              Case file
+              {t("registerCaseScreen_caseFile")}
             </TabsTrigger>
           </TabsList>
           {acts ? (
@@ -540,6 +545,7 @@ function Panel({
  * logged (brief §0, D2).
  */
 function SynopsisPanel({ summary }: { summary: CaseSummary }) {
+  const t = useTranslations();
   const { synopsis, cheque } = summary;
 
   return (
@@ -554,7 +560,7 @@ function SynopsisPanel({ summary }: { summary: CaseSummary }) {
                 value identical on every file is not a fact. */}
             <Fact term={SYNOPSIS_FIELDS.accused}>{summary.accused.name}</Fact>
             <Fact term={SYNOPSIS_FIELDS.advocate}>
-              {summary.advocate ?? <Absent>None on record</Absent>}
+              {summary.advocate ?? <Absent>{t("registerCaseScreen_noneOnRecord")}</Absent>}
             </Fact>
           </SynopsisSection>
 
@@ -562,12 +568,12 @@ function SynopsisPanel({ summary }: { summary: CaseSummary }) {
             <Fact
               term={SYNOPSIS_FIELDS.amount}
               format="figure"
-              note={cheque.partPaid ? `${cheque.partPaid} paid before filing` : undefined}
+              note={cheque.partPaid ? t("registerCaseScreen_partPaidPaidBeforeFiling", { partPaid: cheque.partPaid }) : undefined}
             >
               {cheque.amount}
             </Fact>
             <Fact term={SYNOPSIS_FIELDS.chequeNumber}>
-              <Identifier value={cheque.number} label="cheque number" />
+              <Identifier value={cheque.number} label={t("registerCaseScreen_chequeNumber")} />
             </Fact>
             <Fact term={SYNOPSIS_FIELDS.drawnOn} note={synopsis.cheque.drawerBranch}>
               {synopsis.cheque.drawerBank}
@@ -584,10 +590,10 @@ function SynopsisPanel({ summary }: { summary: CaseSummary }) {
           <SynopsisSection label={SUMMARY_TERMS.notice}>
             <Fact term={SYNOPSIS_FIELDS.mode}>{synopsis.notice.mode}</Fact>
             <Fact term={SYNOPSIS_FIELDS.tracking}>
-              <Identifier value={synopsis.notice.tracking} label="tracking number" />
+              <Identifier value={synopsis.notice.tracking} label={t("registerCaseScreen_trackingNumber")} />
             </Fact>
             <Fact term={SYNOPSIS_FIELDS.replied}>
-              {synopsis.notice.replied ? "Received" : <Absent>None</Absent>}
+              {synopsis.notice.replied ? t("registerCaseScreen_received") : <Absent>{t("registerCaseScreen_none")}</Absent>}
             </Fact>
           </SynopsisSection>
 
@@ -601,7 +607,7 @@ function SynopsisPanel({ summary }: { summary: CaseSummary }) {
               term={SYNOPSIS_FIELDS.otherPending}
               tone={synopsis.causeOfAction.otherPending ? "warning" : undefined}
             >
-              {synopsis.causeOfAction.otherPending ? "One pending" : <Absent>None</Absent>}
+              {synopsis.causeOfAction.otherPending ? t("registerCaseScreen_onePending") : <Absent>{t("registerCaseScreen_none")}</Absent>}
             </Fact>
           </SynopsisSection>
 
@@ -723,6 +729,7 @@ function Absent({ children }: { children: React.ReactNode }) {
  * complaint cleared first time has nothing to list, and the round count already says so.
  */
 function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
+  const t = useTranslations();
   const [open, setOpen] = React.useState(false);
 
   if (!scrutiny) {
@@ -730,7 +737,7 @@ function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
       <Panel id="scrutiny-heading" label={SUMMARY_TERMS.scrutiny}>
         <Card variant="raised" className={cn(SHEET, "@container")}>
           <div className="p-6 md:p-8">
-            <p className="text-body-compact text-muted-foreground">Not recorded</p>
+            <p className="text-body-compact text-muted-foreground">{t("registerCaseScreen_notRecorded")}</p>
           </div>
         </Card>
       </Panel>
@@ -770,7 +777,7 @@ function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
                       the owner asked the disclosure to buy (2026-09-12). */}
                   <Timeline className="text-body-compact">
                     <Step
-                      label="Taken up"
+                      label={t("registerCaseScreen_takenUp")}
                       date={
                         <time dateTime={scrutiny.takenUpOn}>
                           {scrutiny.takenUpOnShortLabel}
@@ -780,7 +787,7 @@ function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
                     {scrutiny.returns.map((sendBack) => (
                       <Step
                         key={sendBack.round}
-                        label={`Round ${sendBack.round}`}
+                        label={t("registerCaseScreen_roundRound", { round: String(sendBack.round) })}
                         note={sendBack.label}
                         date={
                           <time dateTime={sendBack.sentBackOn}>
@@ -790,7 +797,7 @@ function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
                       />
                     ))}
                     <Step
-                      label="Cleared"
+                      label={t("registerCaseScreen_cleared")}
                       date={
                         <time dateTime={scrutiny.clearedOn}>
                           {scrutiny.clearedOnShortLabel}
@@ -804,7 +811,7 @@ function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
               <div className="flex justify-center border-t border-hairline p-2">
                 <CollapsibleTrigger asChild>
                   <Button type="button" variant="ghost" className="text-body-compact">
-                    {open ? "Hide rounds" : "Show rounds"}
+                    {open ? t("registerCaseScreen_hideRounds") : t("registerCaseScreen_showRounds")}
                     <ChevronDownIcon
                       aria-hidden
                       className={cn(
@@ -843,6 +850,7 @@ function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
  * a disclosure any more.
  */
 function TimelinePanel({ summary }: { summary: CaseSummary }) {
+  const t = useTranslations();
   const { scrutiny } = summary;
   const beforeFiling = summary.steps.filter((step) => step.id !== "filed");
   const filed = summary.steps.find((step) => step.id === "filed");
@@ -858,7 +866,7 @@ function TimelinePanel({ summary }: { summary: CaseSummary }) {
             phases read in the order they happened, one rail under another, and every row
             has the panel's full width for a label, its note and a date that lines up. */}
         <div className="flex flex-col gap-8 p-6 md:p-8">
-          <StepGroup heading="Before filing">
+          <StepGroup heading={t("registerCaseScreen_beforeFiling")}>
             {beforeFiling.map((step) => (
               <Step
                 key={step.id}
@@ -868,7 +876,7 @@ function TimelinePanel({ summary }: { summary: CaseSummary }) {
               />
             ))}
           </StepGroup>
-          <StepGroup heading="In court">
+          <StepGroup heading={t("registerCaseScreen_inCourt")}>
             {filed ? (
               <Step
                 label={filed.label}
@@ -884,7 +892,7 @@ function TimelinePanel({ summary }: { summary: CaseSummary }) {
                 date={
                   <time dateTime={scrutiny.clearedOn}>{scrutiny.clearedOnShortLabel}</time>
                 }
-                note={`taken up ${scrutiny.takenUpOnShortLabel}`}
+                note={t("registerCaseScreen_takenUpTakenUpOnShort", { takenUpOnShortLabel: scrutiny.takenUpOnShortLabel })}
               />
             ) : null}
             {/* The one step with no date of its own: it is still happening. How long it
@@ -898,8 +906,8 @@ function TimelinePanel({ summary }: { summary: CaseSummary }) {
                 scrutiny === undefined
                   ? undefined
                   : scrutiny.daysWaiting === 0
-                    ? "cleared by scrutiny today"
-                    : `${days(scrutiny.daysWaiting)} since scrutiny cleared it`
+                    ? t("registerCaseScreen_clearedByScrutinyToday")
+                    : t("registerCaseScreen_daysSinceScrutinyClearedIt", { days: days(scrutiny.daysWaiting) })
               }
             />
           </StepGroup>
@@ -1072,10 +1080,10 @@ function ActDialog({
 /** What the header says at each step of each act. */
 const ACT_TITLE: Record<Act, { asking: string; settled: string }> = {
   "send-back": {
-    asking: "Send back to scrutiny?",
-    settled: "Sent back to scrutiny",
+    asking: "registerCaseScreen_sendBackToScrutinyAsking",
+    settled: "registerCaseScreen_sentBackToScrutiny",
   },
-  register: { asking: "Register this complaint?", settled: "Complaint registered" },
+  register: { asking: "registerCaseScreen_registerThisComplaint", settled: "registerCaseScreen_complaintRegistered" },
 };
 
 /**
@@ -1105,6 +1113,7 @@ function ActBody({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const t = useTranslations();
   const { act, settled } = stage;
   const sending = act === "send-back";
   const [reason, setReason] = React.useState("");
@@ -1187,7 +1196,7 @@ function ActBody({
             role={settled ? "status" : undefined}
             className="animate-in fade-in-0 slide-in-from-bottom-1 duration-500 motion-reduce:animate-none"
           >
-            {badge.label}
+            {translateText(t, badge.label)}
           </span>
         </Badge>
         <DialogTitle
@@ -1199,12 +1208,12 @@ function ActBody({
             key={settled ? "settled" : "asking"}
             className="inline-block animate-in fade-in-0 slide-in-from-bottom-1 duration-500 motion-reduce:animate-none"
           >
-            {settled ? ACT_TITLE[act].settled : ACT_TITLE[act].asking}
+            {settled ? translateText(t, ACT_TITLE[act].settled) : translateText(t, ACT_TITLE[act].asking)}
           </span>
         </DialogTitle>
         <DialogDescription className="text-body-compact text-muted-foreground">
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={complaint.filingNumber} label="filing number" copyable={false} />
+          <Identifier value={complaint.filingNumber} label={t("registerCaseScreen_filingNumber")} copyable={false} />
           {" · "}
           {causeTitle(complaint)}
         </DialogDescription>
@@ -1221,27 +1230,27 @@ function ActBody({
           ) : (
             <Field data-invalid={touched && empty}>
               <FieldLabel htmlFor="send-back-reason" className="text-body-compact font-medium">
-                Why are you sending this back?
+                {t("registerCaseScreen_whyAreYouSendingThisBack")}
               </FieldLabel>
               <Textarea
                 id="send-back-reason"
                 ref={reasonRef}
                 className="min-h-32 text-body-compact"
-                placeholder="e.g. The affidavit is not attested. Please ask the advocate to file an attested copy."
+                placeholder={t("registerCaseScreen_eGTheAffidavitIsNot")}
                 value={reason}
                 onChange={(event) => {
                   setReason(event.target.value);
                   setTouched(true);
                 }}
               />
-              {touched && empty ? <FieldError>Write a reason first.</FieldError> : null}
+              {touched && empty ? <FieldError>{t("registerCaseScreen_writeAReasonFirst")}</FieldError> : null}
             </Field>
           )
         ) : (
           <p className="text-body-compact text-pretty">
             {settled
-              ? "The complaint is on the register. It appears in the court's case list from today."
-              : "Registering puts the complaint on the register and gives it a number. Taking cognizance is a separate act, and it comes after. It cannot be undone from this screen."}
+              ? t("registerCaseScreen_theComplaintIsOnTheRegister")
+              : t("registerCaseScreen_registeringPutsTheComplaintOnThe")}
           </p>
         )}
 
@@ -1252,7 +1261,7 @@ function ActBody({
           <>
             <Button asChild variant={next ? "ghost" : "default"}>
               <Link href={QUEUE_HREF} onClick={() => markArrival("back")}>
-                Back to register cases
+                {t("registerCaseScreen_backToRegisterCases")}
               </Link>
             </Button>
             {next ? (
@@ -1261,7 +1270,7 @@ function ActBody({
                   href={`${QUEUE_HREF}/${next.id}`}
                   onClick={() => markArrival("next")}
                 >
-                  Next complaint
+                  {t("registerCaseScreen_nextComplaint")}
                 </Link>
               </Button>
             ) : null}
@@ -1269,10 +1278,10 @@ function ActBody({
         ) : (
           <>
             <Button type="button" variant="ghost" onClick={guard.close}>
-              Cancel
+              {t("common_cancel")}
             </Button>
             <Button type="button" onClick={confirm}>
-              {sending ? "Send back" : "Confirm registration"}
+              {sending ? t("registerCaseScreen_sendBack") : t("registerCaseScreen_confirmRegistration")}
             </Button>
           </>
         )}
@@ -1286,6 +1295,7 @@ function ActBody({
 
 /** An id this queue does not hold — a stale link, a typed URL, a complaint gone. */
 function ComplaintMissing() {
+  const t = useTranslations();
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col p-6 md:p-8">
       <Empty className="border-0 p-0">
@@ -1294,16 +1304,15 @@ function ComplaintMissing() {
             <FileQuestionIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="font-semibold text-title-s">
-            This complaint is not in the register queue
+            {t("registerCaseScreen_thisComplaintIsNotInThe")}
           </EmptyTitle>
           <EmptyDescription className="text-body">
-            A complaint opens from the list of those waiting to be registered. This one
-            is not on it.
+            {t("registerCaseScreen_aComplaintOpensFromTheList")}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href={QUEUE_HREF}>Back to register cases</Link>
+            <Link href={QUEUE_HREF}>{t("registerCaseScreen_backToRegisterCases")}</Link>
           </Button>
         </EmptyContent>
       </Empty>

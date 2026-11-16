@@ -17,6 +17,7 @@ import type { Task } from "@/lib/tasks/types";
 import { dueCueOf } from "@/lib/tasks/format";
 import { cn } from "@/lib/utils";
 import { PersonAvatar, type AvatarSurface } from "@/components/tasks/person-avatar";
+import { useTranslations } from "next-intl";
 
 /**
  * Shared atoms of the advocate home: the team avatars, the cause-list item chip,
@@ -235,6 +236,7 @@ export function ItemChip({
   /** No well: the label and number stand on the row as they are (desktop board). */
   bare?: boolean;
 }) {
+  const t = useTranslations();
   return (
     <span
       aria-hidden="true"
@@ -252,7 +254,7 @@ export function ItemChip({
     >
       {size === "lg" ? (
         <>
-          <span className="text-caption text-muted-foreground">Item</span>
+          <span className="text-caption text-muted-foreground">{t("homeBits_item")}</span>
           <span className="text-title-s font-semibold tabular-nums">{item}</span>
         </>
       ) : (

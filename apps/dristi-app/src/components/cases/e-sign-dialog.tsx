@@ -36,6 +36,8 @@ import {
 } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import { OutcomeHeader } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 type Step = "method" | "instrument" | "otp" | "dsc" | "upload" | "done";
 
@@ -60,7 +62,7 @@ export function ESignDialog({
   open,
   noun,
   chooseTitle,
-  submitLabel = "Submit signature",
+  submitLabel = "eSignDialog_submitSignature",
   officeAccess = false,
   onBack,
   onDismiss,
@@ -97,6 +99,7 @@ export function ESignDialog({
   /** A next step straight from the confirmation, beside leaving it for later. */
   proceed?: { label: string; laterLabel: string; onClick: () => void };
 }) {
+  const t = useTranslations();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [step, setStep] = useState<Step>("method");
   const [otp, setOtp] = useState("");
@@ -139,18 +142,18 @@ export function ESignDialog({
 
   const title = {
     method: chooseTitle,
-    instrument: "Add your e-signature",
-    otp: "Enter the OTP",
-    dsc: "Sign with your DSC",
-    upload: "Upload a signed copy",
+    instrument: t("eSignDialog_addYourESignature"),
+    otp: t("eSignDialog_enterTheOtp"),
+    dsc: t("eSignDialog_signWithYourDsc"),
+    upload: t("eSignDialog_uploadASignedCopy"),
     done: "",
   }[step];
 
   const description = {
     method: `An unsigned ${noun.replace(/^\d+ /, "").replace(/s$/, "")} cannot be submitted to the court.`,
-    instrument: "Either one is your own signature. Use whichever you have.",
-    otp: "Sent to your Aadhaar-linked mobile.",
-    dsc: "Your certificate has to be plugged in, with the signing utility running on this computer.",
+    instrument: t("eSignDialog_eitherOneIsYourOwnSignature"),
+    otp: t("eSignDialog_sentToYourAadhaarLinkedMobile"),
+    dsc: t("eSignDialog_yourCertificateHasToBePlugged"),
     upload: `The ${noun}, signed on paper or with a Digital Signature Certificate.`,
     done: "",
   }[step];
@@ -213,9 +216,9 @@ export function ESignDialog({
             >
               {step === "method" && officeAccess ? (
                 <>
-                  <Banner variant="info">{OFFICE_NO_ESIGN}</Banner>
+                  <Banner variant="info">{t(OFFICE_NO_ESIGN)}</Banner>
                   <ChoiceCard
-                    title="Upload a signed copy"
+                    title={t("eSignDialog_uploadASignedCopy")}
                     tone="bg-warning-muted text-warning-muted-foreground"
                     icon={<UploadIcon className="size-5" />}
                     onClick={() => {
@@ -223,18 +226,18 @@ export function ESignDialog({
                       setStep("upload");
                     }}
                   >
-                    One file signed by an advocate on the vakalatnama.
+                    {t("eSignDialog_oneFileSignedByAnAdvocate")}
                   </ChoiceCard>
                 </>
               ) : step === "method" ? (
                 <>
                   <ChoiceCard
-                    title="Sign digitally"
+                    title={t("eSignDialog_signDigitally")}
                     tone="bg-brand-muted text-brand-muted-foreground"
                     icon={<SignatureIcon className="size-5" />}
                     onClick={() => setStep("instrument")}
                   >
-                    You sign the {noun} with your DSC or Aadhaar e-sign.
+                    {t("eSignDialog_youSignTheNounWithYour", { noun })}
                   </ChoiceCard>
                   <PaperFallbackLink
                     onClick={() => {
@@ -274,10 +277,10 @@ export function ESignDialog({
                 <>
                   <Field data-invalid={Boolean(fileError) && !file}>
                     <FieldLabel className="block w-full font-semibold leading-snug">
-                      Signed {noun}
+                      {t("eSignDialog_signedNoun", { noun })}
                     </FieldLabel>
                     <UploadedDocField
-                      label={`Signed ${noun}`}
+                      label={t("eSignDialog_signedNoun", { noun })}
                       required
                       file={file}
                       onFileChange={(next) => {
@@ -285,7 +288,7 @@ export function ESignDialog({
                         setFileError(undefined);
                       }}
                     />
-                    <FieldDescription>{UPLOAD_HELP}</FieldDescription>
+                    <FieldDescription>{t(UPLOAD_HELP)}</FieldDescription>
                   </Field>
                   <FieldError>{fileError}</FieldError>
                 </>
@@ -301,11 +304,11 @@ export function ESignDialog({
               variant="outline"
               onClick={() => (step === "instrument" ? setStep("method") : onBack())}
             >
-              Back
+              {t("common_back")}
             </Button>
             {onSignLater ? (
               <Button type="button" variant="ghost" onClick={onSignLater}>
-                I&rsquo;ll sign later
+                {t("eSignDialog_illSignLater")}
               </Button>
             ) : null}
           </footer>
@@ -314,10 +317,10 @@ export function ESignDialog({
         {step === "otp" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
+              {t("common_back")}
             </Button>
             <Button type="button" disabled={otp.length < 6} onClick={() => signWith("aadhaar")}>
-              Verify and sign
+              {t("eSignDialog_verifyAndSign")}
             </Button>
           </footer>
         ) : null}
@@ -325,10 +328,10 @@ export function ESignDialog({
         {step === "dsc" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("instrument")}>
-              Back
+              {t("common_back")}
             </Button>
             <Button type="button" disabled={!dscFound} onClick={() => signWith("dsc")}>
-              Sign with this certificate
+              {t("eSignDialog_signWithThisCertificate")}
             </Button>
           </footer>
         ) : null}
@@ -336,19 +339,19 @@ export function ESignDialog({
         {step === "upload" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStep("method")}>
-              Back
+              {t("common_back")}
             </Button>
             <Button
               type="button"
               onClick={() => {
                 if (!file) {
-                  setFileError(`Upload the signed ${noun} to continue.`);
+                  setFileError(t("eSignDialog_uploadTheSignedNounToContinue", { noun }));
                   return;
                 }
                 signWith("paper");
               }}
             >
-              {submitLabel}
+              {translateText(t, submitLabel)}
             </Button>
           </footer>
         ) : null}
@@ -366,7 +369,7 @@ export function ESignDialog({
               </>
             ) : (
               <Button type="button" onClick={onComplete}>
-                Done
+                {t("eSignDialog_done")}
               </Button>
             )}
           </footer>
@@ -392,23 +395,24 @@ export function DocumentSignatureDialog({
   onSignLater?: () => void;
   onComplete: () => void;
 }) {
+  const t = useTranslations();
   const several = count > 1;
   return (
     <ESignDialog
       open={open}
       noun={several ? "documents" : "document"}
       chooseTitle={
-        several ? `How are these ${count} documents signed?` : "How is this document signed?"
+        several ? t("eSignDialog_howAreTheseCountDocumentsSigned", { count: String(count) }) : t("eSignDialog_howIsThisDocumentSigned")
       }
       onBack={onBack}
       onSignLater={onSignLater}
       onComplete={onComplete}
       confirmation={{
         tone: "done",
-        title: several ? `${count} documents submitted` : "Document submitted",
+        title: several ? `${count} documents submitted` : t("eSignDialog_documentSubmitted"),
         description: several
-          ? "They are on the case record now. Everyone on the case can see them."
-          : "It is on the case record now. Everyone on the case can see it.",
+          ? t("eSignDialog_theyAreOnTheCaseRecord")
+          : t("eSignDialog_itIsOnTheCaseRecord"),
       }}
     />
   );

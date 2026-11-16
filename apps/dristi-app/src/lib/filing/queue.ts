@@ -37,12 +37,12 @@ import { caseSearchKey } from "@/lib/court/localize";
 
 /** Tab names say what the filing is waiting on, in the advocate's words (owner, 2026-10-09). */
 export const QUEUE_TABS = [
-  { id: "drafts", label: "Drafts" },
-  { id: "pendingSignature", label: "Pending signature" },
-  { id: "pendingPayment", label: "Pending payment" },
-  { id: "scrutiny", label: "Pending with scrutiny" },
-  { id: "returned", label: "Returned from scrutiny" },
-  { id: "registered", label: "Registered" },
+  { id: "drafts", label: "filingQueue_drafts" },
+  { id: "pendingSignature", label: "filingQueue_pendingSignature" },
+  { id: "pendingPayment", label: "filingQueue_pendingPayment" },
+  { id: "scrutiny", label: "filingQueue_pendingWithScrutiny" },
+  { id: "returned", label: "filingQueue_returnedFromScrutiny" },
+  { id: "registered", label: "filingQueue_registered" },
 ] as const;
 
 export type QueueTab = (typeof QUEUE_TABS)[number]["id"];
@@ -171,28 +171,28 @@ export type SortOption = {
  */
 export const TAB_SORTS: Record<QueueTab, SortOption[]> = {
   drafts: [
-    { value: "deadline", label: "Deadline first", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently saved", key: "recencyAt", dir: "desc" },
+    { value: "deadline", label: "filingQueue_deadlineFirst", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlySaved", key: "recencyAt", dir: "desc" },
   ],
   pendingSignature: [
-    { value: "waiting", label: "Longest waiting", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently sent", key: "recencyAt", dir: "desc" },
+    { value: "waiting", label: "filingQueue_longestWaiting", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlySent", key: "recencyAt", dir: "desc" },
   ],
   pendingPayment: [
-    { value: "waiting", label: "Longest waiting", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently signed", key: "recencyAt", dir: "desc" },
+    { value: "waiting", label: "filingQueue_longestWaiting", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlySigned", key: "recencyAt", dir: "desc" },
   ],
   scrutiny: [
-    { value: "waiting", label: "Longest waiting", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently filed", key: "recencyAt", dir: "desc" },
+    { value: "waiting", label: "filingQueue_longestWaiting", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlyFiled", key: "recencyAt", dir: "desc" },
   ],
   returned: [
-    { value: "cure", label: "Fix-by date first", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently returned", key: "recencyAt", dir: "desc" },
+    { value: "cure", label: "filingQueue_fixByDateFirst", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlyReturned", key: "recencyAt", dir: "desc" },
   ],
   registered: [
-    { value: "hearing", label: "Next hearing first", key: "urgencyAt", dir: "asc" },
-    { value: "updated", label: "Recently updated", key: "recencyAt", dir: "desc" },
+    { value: "hearing", label: "filingQueue_nextHearingFirst", key: "urgencyAt", dir: "asc" },
+    { value: "updated", label: "filingQueue_recentlyUpdated", key: "recencyAt", dir: "desc" },
   ],
 };
 

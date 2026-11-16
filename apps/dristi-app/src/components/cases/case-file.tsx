@@ -88,6 +88,7 @@ import {
 import { DOCUMENT_GROUND } from "./document-ground";
 import { COLLAPSE_MOTION, glideToTop } from "./motion";
 import { PdfViewer, parsePdfSrc } from "./pdf-viewer";
+import { useTranslations } from "next-intl";
 
 /**
  * One Case file region — index and document share a Card so they cannot
@@ -110,6 +111,7 @@ export function CaseFile({
   docId: string;
   view: CaseFileView;
 }) {
+  const t = useTranslations();
   const router = useCaseRouter();
   const selected = findNode(CASE_FILE_TREE, docId);
   const pane = caseFileDigitalPane(record, docId);
@@ -205,7 +207,7 @@ export function CaseFile({
                 from the left, not a page and not a menu (owner, Sept 21). */}
             <span className="flex items-center gap-2">
               <PanelLeftOpenIcon aria-hidden />
-              Browse case file
+              {t("casesCaseFile_browseCaseFile")}
             </span>
             <ChevronRightIcon aria-hidden className="text-muted-foreground" />
           </Button>
@@ -216,12 +218,12 @@ export function CaseFile({
         >
           <SheetHeader>
             <SheetTitle className="text-title-s font-semibold">
-              Case file
+              {t("casesCaseFile_caseFile")}
             </SheetTitle>
-            <SheetDescription>Choose a document to open.</SheetDescription>
+            <SheetDescription>{t("casesCaseFile_chooseADocumentToOpen")}</SheetDescription>
           </SheetHeader>
           <div className="px-4 pb-6">
-            <nav aria-label="Case file">
+            <nav aria-label={t("casesCaseFile_caseFile")}>
               <CaseFileIndex {...indexProps} />
             </nav>
           </div>
@@ -236,10 +238,10 @@ export function CaseFile({
           {/* The row height of the document's title bar beside it, so the two
               headings and the PDF/Digital switch share one centre line. */}
           <h2 className="flex min-h-10 shrink-0 items-center px-2 text-body font-semibold">
-            Case file
+            {t("casesCaseFile_caseFile")}
           </h2>
           <ScrollArea type="always" className="min-h-0 flex-1">
-            <nav aria-label="Case file">
+            <nav aria-label={t("casesCaseFile_caseFile")}>
               <CaseFileIndex {...indexProps} />
             </nav>
           </ScrollArea>
@@ -258,7 +260,7 @@ export function CaseFile({
               <h2 className="min-w-0 text-body font-semibold">
                 {selected && !isCaseFileFolder(selected)
                   ? selected.label
-                  : "Case file"}
+                  : t("casesCaseFile_caseFile")}
               </h2>
               {view === "digital" && pane?.badges && pane.badges.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
@@ -358,6 +360,7 @@ export function CaseFileIndex({
   };
   depth?: number;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col">
       {nodes.map((node) => (
@@ -412,7 +415,7 @@ export function CaseFileIndex({
                       depthPad[Math.min(depth + 1, depthPad.length - 1)]
                     )}
                   >
-                    None in this file yet
+                    {t("casesCaseFile_noneInThisFileYet")}
                   </p>
                 )}
               </CollapsibleContent>
@@ -443,7 +446,7 @@ export function CaseFileIndex({
                         <Badge
                           variant="secondary"
                           className="shrink-0 font-mono"
-                          aria-label={`Marked as evidence, ${evidence.numberFor(node.id)}`}
+                          aria-label={t("casesCaseFile_markedAsEvidenceNumberFor", { numberFor: (evidence.numberFor(node.id)) ?? "" })}
                         >
                           {evidence.numberFor(node.id)}
                         </Badge>
@@ -454,14 +457,14 @@ export function CaseFileIndex({
                     {evidence?.canMark(node.id) ? (
                       <>
                         <ContextMenuItem onSelect={() => evidence.onMark(node.id)}>
-                          Mark as evidence
+                          {t("casesCaseFile_markAsEvidence")}
                         </ContextMenuItem>
                         <ContextMenuSeparator />
                       </>
                     ) : null}
                     <ContextMenuItem asChild>
                       <a href={node.href} download>
-                        Download
+                        {t("casesCaseFile_download")}
                       </a>
                     </ContextMenuItem>
                   </ContextMenuContent>
@@ -473,7 +476,7 @@ export function CaseFileIndex({
                       variant="ghost"
                       size="icon-sm"
                       className="absolute top-1 right-1 text-muted-foreground md:pointer-fine:top-0.5 md:landscape:top-0.5"
-                      aria-label={`Actions for ${node.label}`}
+                      aria-label={t("casesCaseFile_actionsForLabel", { label: node.label })}
                     >
                       <EllipsisVerticalIcon aria-hidden />
                     </Button>
@@ -482,14 +485,14 @@ export function CaseFileIndex({
                     {evidence?.canMark(node.id) ? (
                       <>
                         <DropdownMenuItem onSelect={() => evidence.onMark(node.id)}>
-                          Mark as evidence
+                          {t("casesCaseFile_markAsEvidence")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                       </>
                     ) : null}
                     <DropdownMenuItem asChild>
                       <a href={node.href} download>
-                        Download
+                        {t("casesCaseFile_download")}
                       </a>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -537,6 +540,7 @@ function DocumentViewSwitch({
   view: CaseFileView;
   onViewChange: (view: CaseFileView) => void;
 }) {
+  const t = useTranslations();
   return (
     <SegmentedControl
       type="single"
@@ -546,11 +550,11 @@ function DocumentViewSwitch({
         if (next === "pdf" || next === "digital") onViewChange(next);
       }}
       className="shrink-0"
-      aria-label="Document view"
+      aria-label={t("casesCaseFile_documentView")}
       aria-controls="case-file-document"
     >
-      <SegmentedControlItem value="pdf">PDF</SegmentedControlItem>
-      <SegmentedControlItem value="digital">Digital</SegmentedControlItem>
+      <SegmentedControlItem value="pdf">{t("casesCaseFile_pdf")}</SegmentedControlItem>
+      <SegmentedControlItem value="digital">{t("casesCaseFile_digital")}</SegmentedControlItem>
     </SegmentedControl>
   );
 }
@@ -574,6 +578,7 @@ function DocumentPane({
   pane: ComplaintPane | undefined;
   view: CaseFileView;
 }) {
+  const t = useTranslations();
   const leaf = node && !isCaseFileFolder(node) ? node : undefined;
   const src = leaf ? caseFilePdfSrc(leaf) : undefined;
 
@@ -605,11 +610,10 @@ function DocumentPane({
             <Empty className="min-h-0 flex-1 border border-dashed border-border bg-background">
               <EmptyHeader>
                 <EmptyTitle className="text-body font-semibold">
-                  No digital record
+                  {t("casesCaseFile_noDigitalRecord")}
                 </EmptyTitle>
                 <EmptyDescription>
-                  No digital record is filed for this paper. Open PDF to read
-                  the document.
+                  {t("casesCaseFile_noDigitalRecordIsFiledFor")}
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -635,6 +639,7 @@ function CaseFilePdf({ src, title }: { src: string; title: string }) {
 }
 
 function NoDocumentSelected() {
+  const t = useTranslations();
   return (
     <Empty
       id="case-file-document"
@@ -642,10 +647,10 @@ function NoDocumentSelected() {
     >
       <EmptyHeader>
         <EmptyTitle className="text-body font-semibold">
-          No document selected
+          {t("casesCaseFile_noDocumentSelected")}
         </EmptyTitle>
         <EmptyDescription>
-          Choose an item from the case file to open it here.
+          {t("casesCaseFile_chooseAnItemFromTheCase")}
         </EmptyDescription>
       </EmptyHeader>
     </Empty>

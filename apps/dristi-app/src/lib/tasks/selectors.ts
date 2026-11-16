@@ -21,6 +21,7 @@ import { canView, canViewTask, categoryOf, isBinding, TERMINAL, viewOf } from ".
 import { compareUrgency, consequenceAt, daysUntil, isOverdue } from "./urgency";
 import type { Case, TaskCategory, Person, PersonId, Task, TaskView } from "./types";
 import { caseSearchKey } from "@/lib/court/localize";
+import type { MessageKey } from "@/i18n/messages";
 
 /** Past its date *and* still binding — the one rule the cell, the filter and the band share. */
 export function readsAsOverdue(task: Task, now: Date | string): boolean {
@@ -69,11 +70,11 @@ export const CATEGORY_LABELS: Record<TaskCategory, string> = {
   others: "Others",
 };
 
-export const VIEW_LABELS: Record<TaskView, string> = {
-  "needs-action": "Needs action",
-  waiting: "Waiting on others",
-  completed: "Completed",
-  archived: "Archived",
+export const VIEW_LABELS: Record<TaskView, MessageKey> = {
+  "needs-action": "tasksSelectors_needsAction",
+  waiting: "tasksSelectors_waitingOnOthers",
+  completed: "tasksSelectors_completed",
+  archived: "tasksSelectors_archived",
 };
 
 export const DUE_LABELS: Record<DueFilter, string> = {

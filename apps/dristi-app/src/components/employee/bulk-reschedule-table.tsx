@@ -26,6 +26,7 @@ import { type ReschedulableHearing } from "@/lib/employee/bulk-reschedule";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * The matters in range, and which of them the bench has picked.
@@ -90,6 +91,7 @@ export function BulkRescheduleTable({
    */
   caption?: string;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const selectedHere = selection
     ? rows.filter((row) => selection.selected.has(row.id)).length
@@ -125,26 +127,26 @@ export function BulkRescheduleTable({
                 onCheckedChange={(next) => selection.onToggleAll(next === true)}
                 aria-label={
                   allChecked
-                    ? "Clear the selection"
-                    : "Select every matter in this range"
+                    ? t("bulkRescheduleTable_clearTheSelection")
+                    : t("bulkRescheduleTable_selectEveryMatterInThisRange")
                 }
               />
             </TableHead>
           ) : null}
           <TableHead className={cn(TABLE_HEAD, title, "whitespace-normal")}>
-            Case title
+            {t("bulkRescheduleTable_caseTitle")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("bulkRescheduleTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
+            {t("bulkRescheduleTable_stage")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, purpose, "whitespace-normal")}>
-            Hearing type
+            {t("bulkRescheduleTable_hearingType")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            {selection ? "Hearing date" : "Previous hearing date"}
+            {selection ? t("bulkRescheduleTable_hearingDate") : t("bulkRescheduleTable_previousHearingDate")}
           </TableHead>
           {newDate ? (
             /* **`py-1`, and the arithmetic is the whole of it.** `TABLE_HEAD` is a 40px
@@ -209,7 +211,7 @@ export function BulkRescheduleTable({
                     onCheckedChange={(next) =>
                       selection.onToggle(row.id, next === true)
                     }
-                    aria-label={`Select ${row.title}, ${courtText(row.caseNumber)}`}
+                    aria-label={t("bulkRescheduleTable_selectTitleCourtText", { title: row.title, courtText: courtText(row.caseNumber) })}
                   />
                 </TableCell>
               ) : null}
@@ -221,7 +223,7 @@ export function BulkRescheduleTable({
                 {row.title}
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                <Identifier value={row.caseNumber} label="case number" />
+                <Identifier value={row.caseNumber} label={t("bulkRescheduleTable_caseNumberLabel")} />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
                 {courtCaseStageLabel(row.stage)}

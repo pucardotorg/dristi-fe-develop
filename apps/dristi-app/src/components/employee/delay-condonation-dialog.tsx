@@ -17,6 +17,7 @@ import {
 } from "@/lib/employee/delay-condonation";
 import { causeTitle } from "@/lib/employee/hearings";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * One delay-condonation application, read and then allowed or refused.
@@ -78,6 +79,7 @@ function MatterBody({
   onReject: (matter: DelayCondonationCase) => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const document = useMemo(
     () => buildDelayCondonationDocument(matter),
     [matter],
@@ -85,33 +87,33 @@ function MatterBody({
 
   return (
     <ApplicationReviewOverlay
-      title={DELAY_CONDONATION_TYPE_LABEL}
+      title={t(DELAY_CONDONATION_TYPE_LABEL)}
       description={
         <>
           {/* The overlay renders this as its accessible description. */}
-          <Identifier value={matter.caseNumber} label="case number" copyable={false} />
+          <Identifier value={matter.caseNumber} label={t("delayCondonationDialog_caseNumber")} copyable={false} />
           {" · "}
           {causeTitle(matter)}
         </>
       }
       facts={
         <>
-          <ReviewRow term="Application type">
-            {DELAY_CONDONATION_TYPE_LABEL}
+          <ReviewRow term={t("delayCondonationDialog_applicationType")}>
+            {t(DELAY_CONDONATION_TYPE_LABEL)}
           </ReviewRow>
-          <ReviewRow term="Case number">
-            <Identifier value={matter.caseNumber} label="case number" />
+          <ReviewRow term={t("delayCondonationDialog_caseNumberTerm")}>
+            <Identifier value={matter.caseNumber} label={t("delayCondonationDialog_caseNumber")} />
           </ReviewRow>
-          <ReviewRow term="Stage">
+          <ReviewRow term={t("delayCondonationDialog_stage")}>
             {delayCondonationStageLabel(matter.stage)}
           </ReviewRow>
-          <ReviewRow term="Delay to be condoned">{delayLine(matter)}</ReviewRow>
-          <ReviewRow term="Date of application">
+          <ReviewRow term={t("delayCondonationDialog_delayToBeCondoned")}>{delayLine(matter)}</ReviewRow>
+          <ReviewRow term={t("delayCondonationDialog_dateOfApplication")}>
             <span className="tabular-nums">
               {formatDelayCondonationLongDate(matter.appliedOn)}
             </span>
           </ReviewRow>
-          <ReviewRow term="Application filer">
+          <ReviewRow term={t("delayCondonationDialog_applicationFiler")}>
             {delayCondonationFiler(matter)}
           </ReviewRow>
         </>

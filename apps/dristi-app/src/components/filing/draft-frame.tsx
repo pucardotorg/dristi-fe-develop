@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import { DraftBreadcrumbLabel } from "@/components/filing/chrome";
+import { useTranslations } from "next-intl";
 
 /** Names the loaded draft for the top bar's breadcrumb. */
 function DraftTitle() {
@@ -32,6 +33,7 @@ export function DraftFrame({
   draftId: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <FilingProvider
       draftId={draftId}
@@ -42,7 +44,7 @@ export function DraftFrame({
           className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
         >
           <Spinner className="mr-2 size-4" />
-          Opening your draft…
+          {t("draftFrame_openingYourDraft")}
         </div>
       }
       notFound={
@@ -53,18 +55,17 @@ export function DraftFrame({
                 <FileQuestionIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="text-body font-semibold">
-                This draft isn&apos;t here any more
+                {t("draftFrame_thisDraftIsntHereAnyMore")}
               </EmptyTitle>
               <EmptyDescription className="text-body">
-                It may have been discarded, or the link is from another browser. Your drafts
-                are listed on the dashboard.
+                {t("draftFrame_itMayHaveBeenDiscardedOr")}
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button asChild>
                 <Link href={FILINGS_HOME}>
                   <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-                  Back to dashboard
+                  {t("draftFrame_backToDashboard")}
                 </Link>
               </Button>
             </EmptyContent>

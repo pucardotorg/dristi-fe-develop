@@ -39,6 +39,7 @@ import { useChrome } from "@/components/shell/chrome";
 import { useSourceRailSlot } from "@/components/filing/filing-shell";
 import { useInCorrection } from "@/components/filing/posture";
 import { Lightbox } from "@/components/filing/lightbox";
+import { useTranslations } from "next-intl";
 
 /**
  * A document to show in the panel. `id` names its upload slot: the label is the file's
@@ -104,6 +105,7 @@ export function useSourceOpenState(): [boolean, (open: boolean) => void] {
  * the upload, and no chip, filename or preview is drawn for a file that does not exist.
  */
 export function SourcePanel(props: SourcePanelProps) {
+  const t = useTranslations();
   /*
    * In a correction round the screen already spends its width on three panes (sections,
    * form, resolution queue), so the source rail gives up its column and stays a sheet —
@@ -132,7 +134,7 @@ export function SourcePanel(props: SourcePanelProps) {
     return createPortal(
       <aside
         aria-label={
-          props.field ? `Source for ${props.field}` : `Source document: ${props.title}`
+          props.field ? t("sourcePanel_sourceForField", { field: props.field }) : t("sourcePanel_sourceDocumentTitle", { title: props.title })
         }
         style={{ top: TOP_BAR_HEIGHT, height: `calc(100svh - ${TOP_BAR_HEIGHT})` }}
         className="sticky flex w-(--source-panel-w) shrink-0 flex-col self-start overflow-y-auto border-l border-hairline bg-card"
@@ -150,9 +152,9 @@ export function SourcePanel(props: SourcePanelProps) {
       <SheetContent side="right" className="w-full overflow-y-auto data-[side=right]:w-full sm:max-w-md [&>[data-slot=sheet-close]]:z-20">
         <SheetHeader className="sr-only">
           <SheetTitle>
-            {props.field ? `Source for ${props.field}` : `Source document: ${props.title}`}
+            {props.field ? t("sourcePanel_sourceForField", { field: props.field }) : t("sourcePanel_sourceDocumentTitle", { title: props.title })}
           </SheetTitle>
-          <SheetDescription>The uploaded document this value was read from.</SheetDescription>
+          <SheetDescription>{t("sourcePanel_theUploadedDocumentThisValueWas")}</SheetDescription>
         </SheetHeader>
         <SourcePanelBody {...props} />
       </SheetContent>
@@ -167,6 +169,7 @@ export function SourcePanel(props: SourcePanelProps) {
  * frame standing in for a page that was never uploaded.
  */
 function SourceEmptyState({ uploadHref }: { uploadHref: string }) {
+  const t = useTranslations();
   return (
     <Empty className="px-6 py-10">
       <EmptyHeader>
@@ -176,17 +179,17 @@ function SourceEmptyState({ uploadHref }: { uploadHref: string }) {
           <FileUpIcon aria-hidden />
         </EmptyMedia>
         <EmptyTitle className="text-body font-semibold">
-          Nothing uploaded yet
+          {t("sourcePanel_nothingUploadedYet")}
         </EmptyTitle>
         <EmptyDescription className="text-body-compact">
-          Upload the document and we fill what we can read from it.
+          {t("sourcePanel_uploadTheDocumentAndWeFill")}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button asChild variant="outline">
           <Link href={uploadHref}>
             <UploadIcon data-icon="inline-start" aria-hidden />
-            Add documents
+            {t("sourcePanel_addDocuments")}
           </Link>
         </Button>
 
@@ -196,6 +199,7 @@ function SourceEmptyState({ uploadHref }: { uploadHref: string }) {
 }
 
 function SourcePanelBody(p: SourcePanelProps) {
+  const t = useTranslations();
   const [zoom, setZoom] = React.useState(false);
   const preview = useFilePreview(p.file);
   const imageUrl = preview.status === "ready" ? preview.imageUrl : null;
@@ -223,7 +227,7 @@ function SourcePanelBody(p: SourcePanelProps) {
           */}
           <div className="min-w-0">
             <p className="text-caption text-muted-foreground">
-              {p.field ? "Source for" : (p.eyebrow ?? "Source document")}
+              {p.field ? t("sourcePanel_sourceFor") : (p.eyebrow ?? t("sourcePanel_sourceDocument"))}
             </p>
             <p className="text-body font-semibold text-foreground">
               {p.field ?? p.title}
@@ -239,19 +243,18 @@ function SourcePanelBody(p: SourcePanelProps) {
         {p.field && p.onValueChange !== undefined ? (
           <Field className="gap-2">
             <FieldLabel className="text-caption text-muted-foreground">
-              Value used in this field
+              {t("sourcePanel_valueUsedInThisField")}
             </FieldLabel>
             <Input value={p.value ?? ""} onChange={(e) => p.onValueChange?.(e.target.value)} />
             <FieldDescription>
-              Correct it here if we misread. This updates the form and clears the
-              auto-filled marker.
+              {t("sourcePanel_correctItHereIfWeMisread")}
             </FieldDescription>
           </Field>
         ) : null}
 
         {p.chips && p.chips.length > 0 ? (
           <div className="flex flex-col gap-2">
-            <p className="text-caption text-muted-foreground">Source documents</p>
+            <p className="text-caption text-muted-foreground">{t("sourcePanel_sourceDocuments")}</p>
             <div className="flex flex-wrap gap-2">
               {p.chips.map((c) => (
                 <Button
@@ -283,14 +286,14 @@ function SourcePanelBody(p: SourcePanelProps) {
               className="absolute right-2 top-2 shadow-overlay"
             >
               <MaximizeIcon data-icon="inline-start" aria-hidden />
-              Enlarge
+              {t("sourcePanel_enlarge")}
             </Button>
           </div>
         ) : (
           <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-lg bg-surface-sunken text-muted-foreground">
             <FileTextIcon className="size-8" aria-hidden />
             <p className="text-body-compact">{p.file.name}</p>
-            <p className="text-caption">No preview for this file type</p>
+            <p className="text-caption">{t("sourcePanel_noPreviewForThisFileType")}</p>
           </div>
         )}
 
@@ -301,14 +304,14 @@ function SourcePanelBody(p: SourcePanelProps) {
         <div className="flex flex-col gap-2">
           <Button asChild variant="outline">
             <Link href={p.uploadHref}>
-              Replace
+              {t("sourcePanel_replace")}
               <UploadIcon data-icon="inline-end" aria-hidden />
             </Link>
           </Button>
           {fileUrl ? (
             <Button asChild variant="secondary">
               <a href={fileUrl} target="_blank" rel="noreferrer">
-                Open original source document
+                {t("sourcePanel_openOriginalSourceDocument")}
                 <ArrowUpRightIcon data-icon="inline-end" aria-hidden />
               </a>
             </Button>
@@ -332,6 +335,7 @@ export function ViewSourceButton({
   onClick: () => void;
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <Button
       type="button"
@@ -341,7 +345,7 @@ export function ViewSourceButton({
       className={cn("rounded-full text-primary max-sm:h-10 max-sm:w-full max-sm:rounded-lg max-sm:text-body-compact", className)}
     >
       <FileTextIcon data-icon="inline-start" aria-hidden />
-      View source document
+      {t("sourcePanel_viewSourceDocument")}
     </Button>
   );
 }

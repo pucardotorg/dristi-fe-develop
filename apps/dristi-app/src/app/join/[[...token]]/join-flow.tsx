@@ -5,13 +5,14 @@ import * as React from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 import { OnboardingModal } from "@/components/onboarding/onboarding-modal";
+import { useLocale } from "@/components/shell/locale";
 import {
   ACCOUNT_NAME_KEY,
   ADVOCATE_AVAILABLE_KEY,
   PROFILE_ROLE_KEY,
 } from "@/components/shell/profile";
 import { SignInBlock } from "@/components/sign-in-block";
-import type { CaseSummary, Locale } from "@/lib/onboarding/content";
+import type { CaseSummary } from "@/lib/onboarding/content";
 
 /**
  * `/join/<token>` — the summons URL.
@@ -41,7 +42,9 @@ function JoinFlow() {
   const router = useRouter();
   const token = params?.token?.[0];
 
-  const [locale, setLocale] = React.useState<Locale>("en");
+  // The app-wide language, so a choice made here is kept in the cookie and carries
+  // into the product after sign-in.
+  const { locale, setLocale } = useLocale();
   const [open, setOpen] = React.useState(false);
 
   // Auth succeeded — cross into the product.
@@ -118,12 +121,6 @@ function JoinFlow() {
     if (!token) return undefined;
     return searchParams.get("nocase") === "1" ? undefined : DEMO_CASE;
   }, [token, searchParams]);
-
-  // Keep the document language honest — screen readers pick the voice from it, and the
-  // Malayalam copy read out in an English voice is worse than no audio at all.
-  React.useEffect(() => {
-    document.documentElement.lang = locale;
-  }, [locale]);
 
   React.useEffect(() => {
     if (!token) return;

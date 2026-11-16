@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { type CounselSide } from "@/lib/employee/hearings";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Counsel in a table cell: one name per side, the rest behind a `+N` pill.
@@ -111,6 +113,7 @@ function CounselLine({
   side: CounselSide;
   dense: boolean;
 }) {
+  const t = useTranslations();
   /* Above the early return — hooks run on every render or not at all. */
   const { open, openedByHover, onOpenChange, hoverProps } = useHoverPopover();
   if (names.length === 0) return null;
@@ -154,9 +157,7 @@ function CounselLine({
             >
               <button
                 type="button"
-                aria-label={`${names[0]} and ${extra} more ${
-                  extra === 1 ? copy.one : copy.many
-                }`}
+                aria-label={t("counselCell_namesAndExtraMoreValue", { names: names[0], extra: String(extra), value: extra === 1 ? copy.one : copy.many })}
                 onClick={(event) => event.stopPropagation()}
               >
                 +{extra}
@@ -175,7 +176,7 @@ function CounselLine({
           >
             <PopoverHeader>
               <PopoverTitle className="text-body-compact font-medium">
-                {copy.list}
+                {translateText(t, copy.list)}
               </PopoverTitle>
             </PopoverHeader>
             <ul className="flex max-h-64 flex-col gap-2 overflow-y-auto">

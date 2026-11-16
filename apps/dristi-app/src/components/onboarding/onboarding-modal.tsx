@@ -46,6 +46,7 @@ import {
   type StepId,
 } from "@/lib/onboarding/content";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 const stepHeadings: Record<StepId, (typeof papers)["heading"]> = {
   papers: papers.heading,
@@ -83,6 +84,7 @@ export function OnboardingModal({
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
 }) {
+  const t = useTranslations();
   const [index, setIndex] = React.useState(0);
   const step = STEP_ORDER[index];
   const isFirst = index === 0;
@@ -172,7 +174,7 @@ export function OnboardingModal({
 
           {/* ---------------------------------------------- journey markers */}
           <nav
-            aria-label="Progress"
+            aria-label={t("onboardingModal_progress")}
             className="shrink-0 border-b border-hairline"
           >
             <div className="mx-auto w-full max-w-3xl px-6 py-4 md:max-w-6xl md:px-8 lg:px-12">

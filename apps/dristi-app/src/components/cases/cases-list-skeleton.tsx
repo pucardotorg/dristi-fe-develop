@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 /**
  * Just the table — head strip over six rows, no elevation of its own. Used inside the
@@ -7,13 +8,14 @@ import { Skeleton } from "@/components/ui/skeleton";
  * carries the same block with the panel's `shadow-raised`, since it stands alone.
  */
 export function CasesResultsSkeleton() {
+  const t = useTranslations();
   return (
     <div
       className="overflow-hidden rounded-xl border border-hairline bg-card"
       aria-busy
     >
       <span className="sr-only" role="status">
-        Sorting cases
+        {t("casesListSkeleton_sortingCases")}
       </span>
       <div className="flex h-10 items-center gap-4 bg-surface-sunken px-4">
         <Skeleton className="h-3 w-1/3" />
@@ -37,10 +39,11 @@ export function CasesResultsSkeleton() {
 
 /** Folder and search list pages share this chrome while rows load. */
 export function CasesListSkeleton() {
+  const t = useTranslations();
   return (
     <main className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8" aria-busy>
       <span className="sr-only" role="status">
-        Loading cases
+        {t("casesListSkeleton_loadingCases")}
       </span>
 
       <Skeleton className="h-10 w-36" />

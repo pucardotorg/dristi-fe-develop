@@ -38,6 +38,7 @@ import { ScrutinyTab } from "./scrutiny-tab";
 import { SignTab } from "./sign-tab";
 import { STAGE, STAGE_ORDER, StageBar, StageTip } from "./stage";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * A step's tab. A coloured count is work waiting on this step now. When there is none, the
@@ -113,6 +114,7 @@ export type TabId = (typeof TABS)[number];
 
 /** One batch: its cases, their documents, the checks, then signing and payment in bulk. */
 export function BatchScreen({ batchId }: { batchId: string }) {
+  const t = useTranslations();
   const ready = useGujarat();
   // The batch summary starts folded to one line.
   const [showInfo, setShowInfo] = React.useState(false);
@@ -186,13 +188,13 @@ export function BatchScreen({ batchId }: { batchId: string }) {
           PAGE_GUTTER,
         )}
       >
-        <StatusLine tone="error" still title="This batch could not be opened">
+        <StatusLine tone="error" still title={t("batchScreen_thisBatchCouldNotBeOpened")}>
           {error}
         </StatusLine>
         <Button asChild variant="outline" className="w-fit">
           <Link href="/filings/bulk">
             <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-            Bulk filing
+            {t("batchScreen_bulkFiling")}
           </Link>
         </Button>
       </div>
@@ -256,15 +258,14 @@ export function BatchScreen({ batchId }: { batchId: string }) {
           className="flex w-fit items-center gap-1 text-body-compact text-muted-foreground hover:text-foreground"
         >
           <ArrowLeftIcon className="size-4" aria-hidden />
-          Bulk filing
+          {t("batchScreen_bulkFiling")}
         </Link>
         <div className="flex flex-col gap-1">
           <h1 className={cn(PAGE_TITLE, "text-foreground tabular-nums")}>
-            Batch {batch.number}
+            {t("batchScreen_batchNumber", { number: batch.number })}
           </h1>
           <p className={PAGE_SUBTITLE}>
-            {batch.client} · <span className="tabular-nums">{batch.total}</span>{" "}
-            cases · received {toLongDate(batch.createdAt.slice(0, 10))}
+            {t.rich("batchScreen_clientTotalCasesReceivedToLong", { client: batch.client, total: String(batch.total), toLongDate: toLongDate(batch.createdAt.slice(0, 10)), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
           </p>
         </div>
       </header>
@@ -272,8 +273,7 @@ export function BatchScreen({ batchId }: { batchId: string }) {
       {/* A standing condition, said still (skill `feedback-states`). */}
       {ai === "unavailable" ? (
         <StatusLine tone="warning" still>
-          AI review unavailable. Documents are not compared with the cases;
-          check them manually.
+          {t("batchScreen_aiReviewUnavailableDocumentsAreNot")}
         </StatusLine>
       ) : null}
 
@@ -281,24 +281,20 @@ export function BatchScreen({ batchId }: { batchId: string }) {
         <StatusLine
           tone="success"
           still
-          title={<span className="tabular-nums">Done: all {batch.total} cases filed</span>}
+          title={<span className="tabular-nums">{t("batchScreen_doneAllTotalCasesFiled", { total: String(batch.total) })}</span>}
         >
-          Last payment{" "}
-          {batch.payments.at(-1) ? ist(batch.payments.at(-1)!.at) : ""}.
+          {t("batchScreen_lastPaymentValue", { value: batch.payments.at(-1) ? ist(batch.payments.at(-1)!.at) : "" })}
         </StatusLine>
       ) : null}
 
       {batch.clubbedInto ? (
         <Alert variant="info">
-          <AlertTitle>Clubbed into {batch.clubbedIntoNumber}</AlertTitle>
+          <AlertTitle>{t("batchScreen_clubbedIntoClubbedIntoNumber", { clubbedIntoNumber: (batch.clubbedIntoNumber) ?? "" })}</AlertTitle>
           <AlertDescription>
-            The open cases moved there. This batch is closed.{" "}
-            <Link
+            {t.rich("batchScreen_theOpenCasesMovedThereThis", { clubbedIntoNumber: (batch.clubbedIntoNumber) ?? "", link: (chunks) => <Link
               className="underline"
               href={`/filings/bulk/${batch.clubbedInto}`}
-            >
-              Open {batch.clubbedIntoNumber}
-            </Link>
+            >{chunks}</Link> })}
           </AlertDescription>
         </Alert>
       ) : null}
@@ -315,12 +311,12 @@ export function BatchScreen({ batchId }: { batchId: string }) {
           <span className="min-w-0 truncate text-body-compact">
             <span className="text-muted-foreground">
               {batch.source.kind === "api"
-                ? `${batch.source.system} API`
+                ? t("batchScreen_systemApi", { system: batch.source.system })
                 : batch.source.kind === "excel"
-                  ? "Excel upload"
+                  ? t("batchScreen_excelUpload")
                   : batch.source.kind === "documents"
-                    ? "Case documents"
-                    : "Clubbed"}
+                    ? t("batchScreen_caseDocuments")
+                    : t("batchScreen_clubbed")}
             </span>
             {" · "}
             {batch.client}
@@ -354,11 +350,11 @@ export function BatchScreen({ batchId }: { batchId: string }) {
                 </span>{" "}
               </StageTip>
               <span className="text-caption text-muted-foreground tabular-nums">
-                {batch.counts.filed} of {batch.total} filed
+                {t("batchScreen_filedOfTotalFiled", { filed: String(batch.counts.filed), total: String(batch.total) })}
               </span>
             </span>
             <span className="flex items-center gap-1 text-body-compact font-medium">
-              Details{" "}
+              {t("batchScreen_details")}
               <ChevronDownIcon
                 className={cn("transition-transform", showInfo && "rotate-180")}
                 aria-hidden
@@ -370,19 +366,18 @@ export function BatchScreen({ batchId }: { batchId: string }) {
           <CardContent className="grid grid-cols-1 gap-6 border-t border-hairline p-6 md:grid-cols-2 xl:grid-cols-4">
             <div className="flex flex-col gap-1">
               <span className="text-caption text-muted-foreground">
-                Came in by
+                {t("batchScreen_cameInBy")}
               </span>
               <SourceLabel source={batch.source} />
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-caption text-muted-foreground">
-                Complainant
+                {t("batchScreen_complainant")}
               </span>
               <span className="text-body-compact">{batch.client}</span>
               {batch.representative ? (
                 <span className="text-caption text-muted-foreground">
-                  Through {batch.representative.name},{" "}
-                  {batch.representative.designation}
+                  {t("batchScreen_throughNameDesignation", { name: batch.representative.name, designation: batch.representative.designation })}
                 </span>
               ) : null}
             </div>
@@ -392,7 +387,7 @@ export function BatchScreen({ batchId }: { batchId: string }) {
               </span>
               {batch.advocates.map((a) => (
                 <span key={a.barNumber} className="text-body-compact">
-                  {a.name || "Not found with the Bar Council"}{" "}
+                  {a.name || t("batchScreen_notFoundWithTheBarCouncil")}{" "}
                   <span className="text-caption text-muted-foreground tabular-nums">
                     {a.barNumber}
                   </span>
@@ -401,7 +396,7 @@ export function BatchScreen({ batchId }: { batchId: string }) {
             </div>
             <div className="flex flex-col gap-2">
               <span className="text-caption text-muted-foreground">
-                Where the cases stand
+                {t("batchScreen_whereTheCasesStand")}
               </span>
               <StageBar counts={batch.counts} />
             </div>
@@ -421,7 +416,7 @@ export function BatchScreen({ batchId }: { batchId: string }) {
           <div className="overflow-x-auto">
             <TabsList
               ref={tabsRef}
-              aria-label="Batch steps"
+              aria-label={t("batchScreen_batchSteps")}
               className={cn(
                 "relative w-max",
                 // The sliding highlight below draws the active tab; the tab itself stays clear.
@@ -435,7 +430,7 @@ export function BatchScreen({ batchId }: { batchId: string }) {
               />
               <StepTab
                 value="cases"
-                label="Cases"
+                label={t("batchScreen_cases")}
                 pending={batch.total - batch.counts.filed}
                 tone="secondary"
                 what="not filed yet"
@@ -443,7 +438,7 @@ export function BatchScreen({ batchId }: { batchId: string }) {
               />
               <StepTab
                 value="documents"
-                label="Documents"
+                label={t("batchScreen_documents")}
                 pending={docsMissing}
                 tone="warning"
                 what="cases with documents to add or check"
@@ -451,7 +446,7 @@ export function BatchScreen({ batchId }: { batchId: string }) {
               />
               <StepTab
                 value="scrutiny"
-                label="Case details"
+                label={t("batchScreen_caseDetails")}
                 pending={attention}
                 tone="warning"
                 what="to review"
@@ -460,11 +455,11 @@ export function BatchScreen({ batchId }: { batchId: string }) {
               {/* Reading each case as the court will, before anyone signs it. A place to read,
                 not a step that completes, so it carries no count and no tick. */}
               <TabsTrigger value="review" disabled={workable === 0}>
-                Review
+                {t("batchScreen_review")}
               </TabsTrigger>
               <StepTab
                 value="sign"
-                label="Sign"
+                label={t("batchScreen_sign")}
                 pending={clear}
                 upcoming={workable - clear}
                 tone="info"
@@ -475,7 +470,7 @@ export function BatchScreen({ batchId }: { batchId: string }) {
               />
               <StepTab
                 value="pay"
-                label="Pay"
+                label={t("batchScreen_pay")}
                 pending={batch.counts.signed}
                 upcoming={workable}
                 tone="info"
@@ -486,10 +481,10 @@ export function BatchScreen({ batchId }: { batchId: string }) {
               />
               <TabsTrigger
                 value="filed"
-                aria-label={`Filed, ${batch.counts.filed} of ${batch.total}`}
+                aria-label={t("batchScreen_filedFiledOfTotal", { filed: String(batch.counts.filed), total: String(batch.total) })}
                 disabled={!batch.counts.filed}
               >
-                Filed
+                {t("batchScreen_filed")}
                 {batch.counts.filed ? (
                   <span className={cn(COUNT, COUNT_FILL.success)}>
                     {batch.counts.filed}

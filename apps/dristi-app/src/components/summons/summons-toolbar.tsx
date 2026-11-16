@@ -4,14 +4,16 @@ import * as React from "react";
 import { PrinterIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 /** Above the sheet, on screen only: Print, which also saves as PDF. */
 export function SummonsToolbar() {
+  const t = useTranslations();
   return (
     <div className="summons-toolbar flex w-full max-w-[210mm] justify-end">
       <Button variant="outline" onClick={() => window.print()}>
         <PrinterIcon data-icon="inline-start" aria-hidden />
-        Print or save as PDF
+        {t("summonsToolbar_printOrSaveAsPdf")}
       </Button>
     </div>
   );

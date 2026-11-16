@@ -5,18 +5,8 @@ import { InfoIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-  FieldTitle,
-} from "@/components/ui/field";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Field, FieldDescription, FieldError, FieldLabel, FieldTitle } from "@/components/ui/field";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   FieldLock,
   FieldReadOnly,
@@ -115,16 +105,12 @@ export function FormField({
   // A host's check on this field (bulk filing), when the section has nothing of its own to say.
   const policy = useFieldPolicy();
   const error = ownError ?? (policy && name ? policy.issueAt(instance, name) : null) ?? undefined;
-  const defect =
-    correction && name ? correction.defectAt(correction.step, instance, name) : null;
+  const defect = correction && name ? correction.defectAt(correction.step, instance, name) : null;
   const locked = !!correction && !defect;
 
-  const marker =
-    required || optional ? <RequiredMark optional={optional} /> : null;
+  const marker = required || optional ? <RequiredMark optional={optional} /> : null;
 
-  const resolved = defect
-    ? defectState(defect, correction?.valueOf(defect)) === "resolved"
-    : false;
+  const resolved = defect ? defectState(defect, correction?.valueOf(defect)) === "resolved" : false;
   const active = !!defect && correction?.activeDefect === defect.n;
   const hintId = defect ? `flagged-${defect.n}` : undefined;
 
@@ -142,7 +128,7 @@ export function FormField({
       id={hintId}
       className={cn(
         "shrink-0 self-center text-caption font-normal",
-        resolved ? "text-success-ink" : "text-muted-foreground"
+        resolved ? "text-success-ink" : "text-muted-foreground",
       )}
     >
       · {resolved ? t("formField_corrected") : t("formField_flagged")}
@@ -173,7 +159,10 @@ export function FormField({
   );
 
   const field = (
-    <Field className={cn(asGroup ? "gap-3" : "gap-2", className)} data-invalid={error ? true : undefined}>
+    <Field
+      className={cn(asGroup ? "gap-3" : "gap-2", className)}
+      data-invalid={error ? true : undefined}
+    >
       {asGroup ? (
         <FieldTitle className="text-body-compact">{labelBody}</FieldTitle>
       ) : (
@@ -202,11 +191,7 @@ export function FormField({
         data-defect={defect.n}
         className={cn(
           "scroll-mt-6 border-l-2 pl-3 transition-colors",
-          resolved
-            ? "border-l-success-ink"
-            : active
-              ? "border-l-primary"
-              : "border-l-border"
+          resolved ? "border-l-success-ink" : active ? "border-l-primary" : "border-l-border",
         )}
       >
         <FieldReadOnly readOnly hintId={hintId}>

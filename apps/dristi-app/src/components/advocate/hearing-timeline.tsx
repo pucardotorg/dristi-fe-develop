@@ -27,11 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { HOME_PANEL_PAD, HOME_RAIL_COLS } from "@/components/advocate/home-layout";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -52,17 +48,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Locale } from "@/lib/onboarding/content";
 import { pick } from "@/lib/onboarding/content";
 import { advHome, fillCopy } from "@/lib/advocate/content";
@@ -94,7 +81,7 @@ import { useTranslations } from "next-intl";
  * Null when the screen wires no handler — the flag then renders as a plain tag.
  */
 const OpenTasksContext = React.createContext<((caseId: string, taskIds: string[]) => void) | null>(
-  null
+  null,
 );
 
 /**
@@ -128,7 +115,9 @@ const ViewInCauseListContext = React.createContext<((caseId: string) => void) | 
  */
 const AccessContext = React.createContext<((kase: Case) => HearingAccess) | null>(null);
 /** Where a scheduled matter stands in its court's queue today; null hides the tag. */
-const QueueContext = React.createContext<((hearing: TimelineHearing) => HearingQueue | null) | null>(null);
+const QueueContext = React.createContext<
+  ((hearing: TimelineHearing) => HearingQueue | null) | null
+>(null);
 
 /** A court the filter can offer — its full name, short label, and count. */
 export type CourtOption = { court: string; label: string; count: number };
@@ -137,9 +126,7 @@ export type CourtOption = { court: string; label: string; count: number };
 const SCHEDULED_SHOWN = 3;
 
 function timeOf(at: string): string {
-  return new Intl.DateTimeFormat("en-IN", { timeStyle: "short" }).format(
-    new Date(at)
-  );
+  return new Intl.DateTimeFormat("en-IN", { timeStyle: "short" }).format(new Date(at));
 }
 
 /** "4 hearings" — the count a rail label carries. */
@@ -174,15 +161,18 @@ function HearingTime({
   return (
     <span className={cn("inline-flex items-center gap-1", className)}>
       <span className="tabular-nums">~{timeOf(at)}</span>
-      <span className="font-medium text-muted-foreground">
-        {pick(advHome.approxLabel, locale)}
-      </span>
+      <span className="font-medium text-muted-foreground">{pick(advHome.approxLabel, locale)}</span>
     </span>
   );
 }
 
 /** The court a hearing sits in, as plain words: "24×7 ON Court · 1". */
-function CourtLabel({ court, label, number, className }: {
+function CourtLabel({
+  court,
+  label,
+  number,
+  className,
+}: {
   court: string;
   label: string;
   number?: string;
@@ -191,15 +181,30 @@ function CourtLabel({ court, label, number, className }: {
   const courtText = useCourtText();
   const identity = courtIdentity(court, courtNumberFor(court, number));
   return (
-    <span title={court} className={cn("inline-flex max-w-full items-baseline gap-1 text-body-compact", className)}>
-      <span className="truncate">{courtText(identity.number ? courtIdentity(label, number).name : label)}</span>
+    <span
+      title={court}
+      className={cn("inline-flex max-w-full items-baseline gap-1 text-body-compact", className)}
+    >
+      <span className="truncate">
+        {courtText(identity.number ? courtIdentity(label, number).name : label)}
+      </span>
       <span aria-hidden="true">·</span>
       <span className="shrink-0 tabular-nums">{identity.number ?? "N/A"}</span>
     </span>
   );
 }
 
-function SlotCount({ slot, locale, className, padded = false }: { slot: TimeSlot; locale: Locale; className?: string; padded?: boolean }) {
+function SlotCount({
+  slot,
+  locale,
+  className,
+  padded = false,
+}: {
+  slot: TimeSlot;
+  locale: Locale;
+  className?: string;
+  padded?: boolean;
+}) {
   // Stays one unit ("N hearings across M courts") rather than shrinking to wrap
   // mid-phrase; on a narrow slot header it drops to its own line intact. The
   // nouns are pluralised for the counts so it reads right at one ("1 hearing
@@ -207,19 +212,19 @@ function SlotCount({ slot, locale, className, padded = false }: { slot: TimeSlot
   const singleCourt = React.useContext(SingleCourtContext);
   const n = slot.hearings.length;
   const c = slot.courts.length;
-  return <span className={cn("text-body-compact text-muted-foreground lg:whitespace-nowrap", className)}>
-    {fillCopy(singleCourt ? advHome.phaseCount : advHome.slotAcrossCourts, locale, {
-      n: padded ? String(n).padStart(2, "0") : String(n),
-      hw: pick(n === 1 ? advHome.statHearingOne : advHome.statHearingMany, locale),
-      c: padded ? String(c).padStart(2, "0") : String(c),
-      cw: pick(c === 1 ? advHome.statCourtOne : advHome.statCourtMany, locale),
-    })}
-  </span>;
+  return (
+    <span className={cn("text-body-compact text-muted-foreground lg:whitespace-nowrap", className)}>
+      {fillCopy(singleCourt ? advHome.phaseCount : advHome.slotAcrossCourts, locale, {
+        n: padded ? String(n).padStart(2, "0") : String(n),
+        hw: pick(n === 1 ? advHome.statHearingOne : advHome.statHearingMany, locale),
+        c: padded ? String(c).padStart(2, "0") : String(c),
+        cw: pick(c === 1 ? advHome.statCourtOne : advHome.statCourtMany, locale),
+      })}
+    </span>
+  );
 }
 
 /* ─────────────────────────── summary strip (phone) ─────────────────────────── */
-
-
 
 /* ─────────────────────────── day actions ─────────────────────────── */
 
@@ -246,8 +251,7 @@ const ACTION_FIT = {
  */
 const ACTION_BUTTON =
   "h-auto min-h-10 min-w-0 flex-1 gap-1.5 px-3 py-2 text-body-compact whitespace-normal lg:h-9 lg:min-h-0 lg:flex-none lg:gap-0 lg:px-2.5 lg:py-0 lg:whitespace-nowrap lg:transition-none";
-const ACTION_LABEL =
-  "min-w-0 wrap-anywhere lg:overflow-hidden";
+const ACTION_LABEL = "min-w-0 wrap-anywhere lg:overflow-hidden";
 
 /**
  * The three actions that belong to the whole day, not to one sitting: the full
@@ -287,11 +291,7 @@ export function DayActions({
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            size="sm"
-            onClick={onJoinCourt}
-            className={ACTION_BUTTON}
-          >
+          <Button size="sm" onClick={onJoinCourt} className={ACTION_BUTTON}>
             <Video aria-hidden="true" />
             <span className={cn(ACTION_LABEL, label)}>{pick(advHome.joinCourtroom, locale)}</span>
           </Button>
@@ -331,7 +331,7 @@ function CourtFilter({
 }) {
   const labelOf = React.useCallback(
     (court: string) => courts.find((c) => c.court === court)?.label ?? court,
-    [courts]
+    [courts],
   );
 
   // Empty means every court. A court is ticked while "All courts" is, and the
@@ -348,7 +348,11 @@ function CourtFilter({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className={cn(FILTER_TRIGGER, selected.length > 0 && FILTER_ON)}>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(FILTER_TRIGGER, selected.length > 0 && FILTER_ON)}
+        >
           <ListFilter aria-hidden="true" className="text-muted-foreground" />
           {selected.length === 0 ? (
             pick(advHome.courtFilterAll, locale)
@@ -367,7 +371,11 @@ function CourtFilter({
           <ChevronDown aria-hidden="true" className="text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" collisionPadding={16} className="max-h-80 max-w-[calc(100vw-2rem)] min-w-56 overflow-y-auto">
+      <DropdownMenuContent
+        align="end"
+        collisionPadding={16}
+        className="max-h-80 max-w-[calc(100vw-2rem)] min-w-56 overflow-y-auto"
+      >
         {/* The access menu's shape: "All courts" the parent, each court a branch. */}
         <DropdownMenuCheckboxItem
           checked={all}
@@ -390,9 +398,7 @@ function CourtFilter({
             <BranchElbow last={i === courts.length - 1} />
             <MenuBox checked={isOn(option.court)} />
             <span className="flex-1 truncate">{option.label}</span>
-            <span className="ml-auto tabular-nums text-muted-foreground">
-              {option.count}
-            </span>
+            <span className="ml-auto tabular-nums text-muted-foreground">{option.count}</span>
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>
@@ -437,7 +443,10 @@ function PeopleFilter({
       </DropdownMenuTrigger>
       {/* Names only, every one a checkbox: the whose-cases question lives on the
           switch beside this menu, so nothing here reads as pick-one. */}
-      <DropdownMenuContent align="end" className="max-h-96 max-w-[calc(100vw-2rem)] min-w-64 overflow-y-auto">
+      <DropdownMenuContent
+        align="end"
+        className="max-h-96 max-w-[calc(100vw-2rem)] min-w-64 overflow-y-auto"
+      >
         <DropdownMenuLabel className="text-caption text-muted-foreground">
           {pick(advHome.peopleHeading, locale)}
         </DropdownMenuLabel>
@@ -462,7 +471,10 @@ function PeopleFilter({
         {chosen.length ? (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => onChange([])} className={cn(FILTER_ITEM, "text-muted-foreground")}>
+            <DropdownMenuItem
+              onSelect={() => onChange([])}
+              className={cn(FILTER_ITEM, "text-muted-foreground")}
+            >
               {pick(advHome.clearPeople, locale)}
             </DropdownMenuItem>
           </>
@@ -512,7 +524,11 @@ function BranchElbow({ last }: { last: boolean }) {
         className="pointer-events-none absolute top-0 h-1/2 rounded-bl-md border-b border-l border-border"
       />
       {last ? null : (
-        <span aria-hidden="true" style={{ left: BRANCH_X }} className="pointer-events-none absolute top-1/2 bottom-0 border-l border-border" />
+        <span
+          aria-hidden="true"
+          style={{ left: BRANCH_X }}
+          className="pointer-events-none absolute top-1/2 bottom-0 border-l border-border"
+        />
       )}
     </>
   );
@@ -569,12 +585,23 @@ function InfoTip({ text }: { text: string }) {
  * never jumps. A phone shows the short count ("1 excluded") to stay on one
  * line. Screen readers get both, once.
  */
-function CustomLabel({ custom, excluded, short }: { custom: string; excluded: string; short: string }) {
+function CustomLabel({
+  custom,
+  excluded,
+  short,
+}: {
+  custom: string;
+  excluded: string;
+  short: string;
+}) {
   const faces = [custom, excluded, custom];
   return (
     <>
       <span className="sr-only">{`${custom}: ${excluded}`}</span>
-      <span aria-hidden="true" className="relative inline-grid h-[1lh] overflow-hidden whitespace-nowrap">
+      <span
+        aria-hidden="true"
+        className="relative inline-grid h-[1lh] overflow-hidden whitespace-nowrap"
+      >
         <span className="filter-roll-track col-start-1 row-start-1 flex flex-col items-center">
           {faces.map((face, i) => (
             <span key={i} className="h-[1lh]">
@@ -623,11 +650,17 @@ function AccessMenu({
     const next = { ...on, [kind]: !on[kind] };
     // Never both off: the last tick stays.
     if (!next.mine && !next.office) return;
-    onChange({ scope: next.mine && next.office ? "all" : next.mine ? "mine" : "office", hidden: [...hidden] });
+    onChange({
+      scope: next.mine && next.office ? "all" : next.mine ? "mine" : "office",
+      hidden: [...hidden],
+    });
   };
 
   const n = String(hidden.length);
-  const excluded = hidden.length === 1 ? pick(advHome.excludedOne, locale) : fillCopy(advHome.excludedMany, locale, { n });
+  const excluded =
+    hidden.length === 1
+      ? pick(advHome.excludedOne, locale)
+      : fillCopy(advHome.excludedMany, locale, { n });
   const label = custom ? (
     <CustomLabel
       custom={pick(advHome.customFilter, locale)}
@@ -635,19 +668,34 @@ function AccessMenu({
       short={fillCopy(advHome.excludedShort, locale, { n })}
     />
   ) : (
-    pick(scope === "all" ? advHome.accessAll : scope === "mine" ? advHome.accessMine : advHome.accessOfficeOnly, locale)
+    pick(
+      scope === "all"
+        ? advHome.accessAll
+        : scope === "mine"
+          ? advHome.accessMine
+          : advHome.accessOfficeOnly,
+      locale,
+    )
   );
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className={cn(FILTER_TRIGGER, (custom || scope !== "all") && FILTER_ON)}>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(FILTER_TRIGGER, (custom || scope !== "all") && FILTER_ON)}
+        >
           <Users aria-hidden="true" className="text-muted-foreground" />
           {label}
           <ChevronDown aria-hidden="true" className="text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" collisionPadding={16} className="max-w-[calc(100vw-2rem)] min-w-64">
+      <DropdownMenuContent
+        align="end"
+        collisionPadding={16}
+        className="max-w-[calc(100vw-2rem)] min-w-64"
+      >
         {/* "All hearings" is the parent; a branch runs from under its box. */}
         <DropdownMenuCheckboxItem
           checked={scope === "all" && !custom}
@@ -721,7 +769,9 @@ function ScopeSwitch({
         <SegmentedControlItem key={value} value={value}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="px-2.5">{pick(value === "mine" ? advHome.scopeMine : advHome.scopeAll, locale)}</span>
+              <span className="px-2.5">
+                {pick(value === "mine" ? advHome.scopeMine : advHome.scopeAll, locale)}
+              </span>
             </TooltipTrigger>
             <TooltipContent side="top">
               {pick(value === "mine" ? advHome.scopeMineHint : advHome.scopeAllHint, locale)}
@@ -790,7 +840,7 @@ function PhaseRow({
           aria-hidden="true"
           className={cn(
             "absolute left-1.5 w-0.5 -translate-x-1/2 bg-hairline",
-            edge === "start" ? "top-5 bottom-0" : edge === "end" ? "top-0 h-5" : "inset-y-0"
+            edge === "start" ? "top-5 bottom-0" : edge === "end" ? "top-0 h-5" : "inset-y-0",
           )}
         />
         <div className={cn("relative flex items-center gap-2", railHeight)}>
@@ -803,7 +853,10 @@ function PhaseRow({
                 : tone === "now"
                   ? "now-dot size-3 bg-primary"
                   : // A step smaller than the live dot, still centred on the rail.
-                    cn("mx-px size-2.5", tone === "conflict" ? "bg-warning" : "bg-muted-foreground")
+                    cn(
+                      "mx-px size-2.5",
+                      tone === "conflict" ? "bg-warning" : "bg-muted-foreground",
+                    ),
             )}
           />
           <span
@@ -816,7 +869,7 @@ function PhaseRow({
                 : "text-body-compact font-medium text-foreground",
               tone === "now" && "text-primary",
               // What is behind reads quieter: only "Scheduled next" stays black.
-              tone === "concluded" && "text-muted-foreground"
+              tone === "concluded" && "text-muted-foreground",
             )}
           >
             {label}
@@ -828,7 +881,20 @@ function PhaseRow({
           </span>
         </div>
       </div>
-      <div className={cn("min-w-0", edge === "start" ? "pb-4 lg:pb-6" : edge ? "pb-3 lg:pb-0" : last ? "pb-2 lg:pb-1" : "pb-2 lg:pb-3")}>{children}</div>
+      <div
+        className={cn(
+          "min-w-0",
+          edge === "start"
+            ? "pb-4 lg:pb-6"
+            : edge
+              ? "pb-3 lg:pb-0"
+              : last
+                ? "pb-2 lg:pb-1"
+                : "pb-2 lg:pb-3",
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -854,11 +920,9 @@ function PendingChip({
 }) {
   const onOpenTasks = React.useContext(OpenTasksContext);
   if (count <= 0) return null;
-  const label = fillCopy(
-    count === 1 ? advHome.blockingOne : advHome.blockingMany,
-    locale,
-    { n: String(count) }
-  );
+  const label = fillCopy(count === 1 ? advHome.blockingOne : advHome.blockingMany, locale, {
+    n: String(count),
+  });
 
   if (!onOpenTasks) {
     return (
@@ -872,7 +936,11 @@ function PendingChip({
   // On touch the chip keeps its drawn height; an invisible ::after stretches its
   // tap area to 40px instead of the chip itself growing tall.
   return (
-    <Badge asChild variant="warning" className="relative z-10 gap-1 rounded-md border-transparent hover:bg-warning-muted-hover pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-2">
+    <Badge
+      asChild
+      variant="warning"
+      className="relative z-10 gap-1 rounded-md border-transparent hover:bg-warning-muted-hover pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-2"
+    >
       <button
         type="button"
         aria-label={`${label}: ${pick(advHome.pendingOpen, locale)}`}
@@ -924,10 +992,7 @@ function ViewInCauseListButton({ caseId, locale }: { caseId: string; locale: Loc
             event.stopPropagation();
             onView(caseId);
           }}
-          className={cn(
-            "relative z-10",
-            ROW_ICON
-          )}
+          className={cn("relative z-10", ROW_ICON)}
         >
           <LocateHearingIcon aria-hidden="true" className="size-4" />
         </Button>
@@ -972,7 +1037,25 @@ function HearingRow({
   const access = accessOf ? accessOf(hearing.kase) : null;
   const queueFor = React.useContext(QueueContext);
   const queue = queueFor ? queueFor(hearing) : null;
-  if (isMobile) return <MobileHearingCard hearing={hearing} locale={locale} selected={selected} queue={queue} onOpenCase={onOpenCase} onOpenTasks={onOpenTasks} onViewInCauseList={onViewInCauseList} access={access} showCourt={!singleCourt} time={showTime && showTimes ? <HearingTime at={hearing.at} approx={hearing.approxTime} locale={locale} /> : null} />;
+  if (isMobile)
+    return (
+      <MobileHearingCard
+        hearing={hearing}
+        locale={locale}
+        selected={selected}
+        queue={queue}
+        onOpenCase={onOpenCase}
+        onOpenTasks={onOpenTasks}
+        onViewInCauseList={onViewInCauseList}
+        access={access}
+        showCourt={!singleCourt}
+        time={
+          showTime && showTimes ? (
+            <HearingTime at={hearing.at} approx={hearing.approxTime} locale={locale} />
+          ) : null
+        }
+      />
+    );
   const hasPills = hearing.blockers.length > 0 || hearing.passedOver;
   return (
     <div
@@ -980,7 +1063,7 @@ function HearingRow({
         "group/row relative grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-2 px-4 py-4 transition-colors hover:bg-accent has-focus-visible:bg-accent active:bg-accent-strong lg:grid-cols-[auto_minmax(0,1fr)_auto]",
         // No ring for the case open in the peek: that cue belongs to View case,
         // not Home (owner, Oct 8).
-        className
+        className,
       )}
     >
       <ItemChip item={hearing.item} size="lg" surface={boxSurface} />
@@ -988,34 +1071,39 @@ function HearingRow({
         {/* The matter's flags stand beside its name, wrapping under it only when
             the line runs out. */}
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <button
-          type="button"
-          onClick={() => onOpenCase(hearing.kase.id)}
-          className="text-left text-body font-semibold after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-3 focus-visible:after:ring-inset focus-visible:after:ring-ring/50"
-        >
-          {hearing.kase.parties}
-        </button>
-        {hasPills ? (
-          <>
-            {/* Passed over describes the hearing itself, so it sits next to the
+          <button
+            type="button"
+            onClick={() => onOpenCase(hearing.kase.id)}
+            className="text-left text-body font-semibold after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-3 focus-visible:after:ring-inset focus-visible:after:ring-ring/50"
+          >
+            {hearing.kase.parties}
+          </button>
+          {hasPills ? (
+            <>
+              {/* Passed over describes the hearing itself, so it sits next to the
                 name; the pending-task chip, an action, follows it. */}
-            {hearing.passedOver ? <PassedOverTag locale={locale} /> : null}
-            <PendingChip
-              count={hearing.blockers.length}
-              taskIds={hearing.blockers.map((task) => task.id)}
-              caseId={hearing.kase.id}
-              locale={locale}
-            />
-          </>
-        ) : null}
+              {hearing.passedOver ? <PassedOverTag locale={locale} /> : null}
+              <PendingChip
+                count={hearing.blockers.length}
+                taskIds={hearing.blockers.map((task) => task.id)}
+                caseId={hearing.kase.id}
+                locale={locale}
+              />
+            </>
+          ) : null}
         </span>
         {/* The case number is never cut short: when the line runs out of room it is
             the stage that truncates. The number is an Identifier (mono, and on a
             mouse-driven screen click-to-copy); it sits above the row's full-bleed
             click target so copying it does not open the case. */}
         <span className="flex h-5 min-w-0 items-baseline text-body-compact text-muted-foreground">
-          <span className="min-w-0 truncate" title={hearing.kase.stage}>{hearing.kase.stage}</span>
-          <span aria-hidden="true" className="shrink-0 whitespace-pre"> · </span>
+          <span className="min-w-0 truncate" title={hearing.kase.stage}>
+            {hearing.kase.stage}
+          </span>
+          <span aria-hidden="true" className="shrink-0 whitespace-pre">
+            {" "}
+            ·{" "}
+          </span>
           <Identifier
             value={hearing.kase.stNumber || hearing.kase.cnr}
             label={t("hearingTimeline_caseNumber")}
@@ -1045,7 +1133,12 @@ function HearingRow({
           // Holds the court's line so the icons stay on the detail line.
           <span aria-hidden="true" className="hidden lg:block lg:h-6" />
         ) : (
-          <CourtLabel court={hearing.court} label={hearing.courtLabel} number={hearing.kase.courtNumber} className="relative z-10 font-medium text-muted-foreground lg:leading-6" />
+          <CourtLabel
+            court={hearing.court}
+            label={hearing.courtLabel}
+            number={hearing.kase.courtNumber}
+            className="relative z-10 font-medium text-muted-foreground lg:leading-6"
+          />
         )}
         <div className="flex items-center gap-2">
           {/* Access, then the queue, then the cause-list jump (owner, Oct 8). */}
@@ -1095,7 +1188,7 @@ function StatusTag({ label, className }: { label: string; className?: string }) 
     <span
       className={cn(
         "inline-flex shrink-0 items-center gap-1.5 rounded-full border border-warning bg-card px-2 py-0.5 text-caption font-medium text-warning-ink",
-        className
+        className,
       )}
     >
       <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />
@@ -1125,29 +1218,56 @@ function NowSlot({
   const singleCourt = React.useContext(SingleCourtContext);
   const isMobile = useCompactBoard();
   const [pointerMotion, setPointerMotion] = React.useState(true);
-  if (isMobile) return (
-    <Collapsible defaultOpen data-pointer-motion={pointerMotion} className="relative overflow-hidden rounded-xl bg-brand-muted">
-      <span aria-hidden="true" className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-brand-accent" />
-      <CollapsibleTrigger onPointerDown={() => setPointerMotion(true)} onKeyDown={() => setPointerMotion(false)} className="group/ongoing flex min-h-12 w-full items-center gap-3 px-4 py-3 text-left text-brand-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
-        <span aria-hidden="true" className="now-dot size-2.5 shrink-0 rounded-full bg-primary" />
-        <span className="sr-only">{pick(advHome.ongoingTag, locale)}: </span>
-        {showTimes ? <span className="text-body-compact font-semibold tabular-nums">{timeOf(slot.at)}</span> : null}
-        {/* The desktop band's wording: "Live now across 3 courts". */}
-        <span className="flex-1 text-body-compact font-semibold text-brand-muted-foreground">
-          {singleCourt
-            ? pick(advHome.zoneLive, locale)
-            : fillCopy(advHome.liveAcross, locale, {
-                c: String(slot.courts.length),
-                cw: pick(slot.courts.length === 1 ? advHome.statCourtOne : advHome.statCourtMany, locale),
-              })}
-        </span>
-        <ChevronDown aria-hidden="true" className="size-4 shrink-0 transition-transform duration-200 group-data-[state=closed]/ongoing:-rotate-90 motion-reduce:transition-none" />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="hearing-reveal overflow-hidden">
-        <div className="px-2 pb-2"><HearingBody hearings={slot.hearings} selectedCaseId={selectedCaseId} onOpenCase={onOpenCase} locale={locale} /></div>
-      </CollapsibleContent>
-    </Collapsible>
-  );
+  if (isMobile)
+    return (
+      <Collapsible
+        defaultOpen
+        data-pointer-motion={pointerMotion}
+        className="relative overflow-hidden rounded-xl bg-brand-muted"
+      >
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-3 left-0 w-0.5 rounded-full bg-brand-accent"
+        />
+        <CollapsibleTrigger
+          onPointerDown={() => setPointerMotion(true)}
+          onKeyDown={() => setPointerMotion(false)}
+          className="group/ongoing flex min-h-12 w-full items-center gap-3 px-4 py-3 text-left text-brand-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+        >
+          <span aria-hidden="true" className="now-dot size-2.5 shrink-0 rounded-full bg-primary" />
+          <span className="sr-only">{pick(advHome.ongoingTag, locale)}: </span>
+          {showTimes ? (
+            <span className="text-body-compact font-semibold tabular-nums">{timeOf(slot.at)}</span>
+          ) : null}
+          {/* The desktop band's wording: "Live now across 3 courts". */}
+          <span className="flex-1 text-body-compact font-semibold text-brand-muted-foreground">
+            {singleCourt
+              ? pick(advHome.zoneLive, locale)
+              : fillCopy(advHome.liveAcross, locale, {
+                  c: String(slot.courts.length),
+                  cw: pick(
+                    slot.courts.length === 1 ? advHome.statCourtOne : advHome.statCourtMany,
+                    locale,
+                  ),
+                })}
+          </span>
+          <ChevronDown
+            aria-hidden="true"
+            className="size-4 shrink-0 transition-transform duration-200 group-data-[state=closed]/ongoing:-rotate-90 motion-reduce:transition-none"
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="hearing-reveal overflow-hidden">
+          <div className="px-2 pb-2">
+            <HearingBody
+              hearings={slot.hearings}
+              selectedCaseId={selectedCaseId}
+              onOpenCase={onOpenCase}
+              locale={locale}
+            />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    );
   const c = slot.courts.length;
   return (
     <div className="relative overflow-hidden rounded-lg border border-brand-accent/50">
@@ -1166,7 +1286,10 @@ function NowSlot({
                 cw: pick(c === 1 ? advHome.statCourtOne : advHome.statCourtMany, locale),
               })}
         </span>
-        <span aria-hidden="true" className="now-dot ml-auto size-2 shrink-0 rounded-full bg-primary" />
+        <span
+          aria-hidden="true"
+          className="now-dot ml-auto size-2 shrink-0 rounded-full bg-primary"
+        />
       </div>
       <HearingBody
         hearings={slot.hearings}
@@ -1205,7 +1328,13 @@ function ConflictSlot({
         className="pointer-events-none absolute inset-y-0 left-0 z-10 w-0.5 bg-warning"
       />
       <div className="min-w-0 flex-1">
-        <Collapsible data-pointer-motion={pointerMotion} onPointerDownCapture={() => setPointerMotion(true)} onKeyDownCapture={() => setPointerMotion(false)} open={open} onOpenChange={setOpen}>
+        <Collapsible
+          data-pointer-motion={pointerMotion}
+          onPointerDownCapture={() => setPointerMotion(true)}
+          onKeyDownCapture={() => setPointerMotion(false)}
+          open={open}
+          onOpenChange={setOpen}
+        >
           <CollapsibleTrigger
             aria-label={fillCopy(advHome.slotExpand, locale, { time: slot.key })}
             className="group/collapsible flex min-h-12 w-full flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 text-left transition-colors hover:bg-accent-strong"
@@ -1216,7 +1345,9 @@ function ConflictSlot({
               locale={locale}
               className="shrink-0 text-body-compact font-medium text-foreground"
             />
-            <span aria-hidden="true" className="text-muted-foreground">·</span>
+            <span aria-hidden="true" className="text-muted-foreground">
+              ·
+            </span>
             <SlotCount slot={slot} locale={locale} />
             <StatusTag label={pick(advHome.conflictTag, locale)} className="ml-auto" />
             <ChevronDown
@@ -1253,7 +1384,14 @@ function ScheduledSlot({
   locale: Locale;
 }) {
   if (slot.conflict) {
-    return <ConflictSlot slot={slot} selectedCaseId={selectedCaseId} onOpenCase={onOpenCase} locale={locale} />;
+    return (
+      <ConflictSlot
+        slot={slot}
+        selectedCaseId={selectedCaseId}
+        onOpenCase={onOpenCase}
+        locale={locale}
+      />
+    );
   }
   const hearing = slot.hearings[0];
   return (
@@ -1293,7 +1431,13 @@ function ScheduledList({
   const rest = slots.slice(SCHEDULED_SHOWN);
   const restCount = rest.reduce((n, s) => n + s.hearings.length, 0);
   const item = (slot: TimeSlot) => (
-    <ScheduledSlot key={slot.key} slot={slot} selectedCaseId={selectedCaseId} onOpenCase={onOpenCase} locale={locale} />
+    <ScheduledSlot
+      key={slot.key}
+      slot={slot}
+      selectedCaseId={selectedCaseId}
+      onOpenCase={onOpenCase}
+      locale={locale}
+    />
   );
   return (
     <div className="flex flex-col gap-2 lg:gap-0">
@@ -1314,9 +1458,13 @@ function ScheduledList({
             <span>
               {open
                 ? pick(advHome.showFewer, locale)
-                : fillCopy(restCount === 1 ? advHome.moreScheduledOne : advHome.moreScheduledMany, locale, {
-                    n: String(restCount),
-                  })}
+                : fillCopy(
+                    restCount === 1 ? advHome.moreScheduledOne : advHome.moreScheduledMany,
+                    locale,
+                    {
+                      n: String(restCount),
+                    },
+                  )}
             </span>
             <ChevronDown
               aria-hidden="true"
@@ -1368,10 +1516,21 @@ function ConcludedSlot({
 
   return (
     <div className="relative overflow-hidden rounded-lg border border-hairline bg-card">
-      <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 z-10 w-0.5 bg-input" />
-      <Collapsible data-pointer-motion={pointerMotion} onPointerDownCapture={() => setPointerMotion(true)} onKeyDownCapture={() => setPointerMotion(false)} open={open} onOpenChange={setOpen}>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-0.5 bg-input"
+      />
+      <Collapsible
+        data-pointer-motion={pointerMotion}
+        onPointerDownCapture={() => setPointerMotion(true)}
+        onKeyDownCapture={() => setPointerMotion(false)}
+        open={open}
+        onOpenChange={setOpen}
+      >
         <CollapsibleTrigger className="group/collapsible flex min-h-10 w-full flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 text-left text-muted-foreground transition-colors hover:bg-muted">
-          <span className="w-16 shrink-0 text-caption font-semibold tabular-nums text-foreground">{timeOf(slot.at)}</span>
+          <span className="w-16 shrink-0 text-caption font-semibold tabular-nums text-foreground">
+            {timeOf(slot.at)}
+          </span>
           <span aria-hidden="true">·</span>
           <SlotCount slot={slot} locale={locale} />
           <ChevronDown
@@ -1436,11 +1595,20 @@ function ConcludedBlock({
         concludedPart,
         `${slots.length} ${pick(slots.length === 1 ? advHome.slotOne : advHome.slotMany, locale)}`,
         courtsPart,
-      ].filter(Boolean).join(" · ")
+      ]
+        .filter(Boolean)
+        .join(" · ")
     : [concludedPart, courtsPart].filter(Boolean).join(" · ");
 
   return (
-    <Collapsible data-pointer-motion={pointerMotion} onPointerDownCapture={() => setPointerMotion(true)} onKeyDownCapture={() => setPointerMotion(false)} open={open} onOpenChange={setOpen} className="relative">
+    <Collapsible
+      data-pointer-motion={pointerMotion}
+      onPointerDownCapture={() => setPointerMotion(true)}
+      onKeyDownCapture={() => setPointerMotion(false)}
+      open={open}
+      onOpenChange={setOpen}
+      className="relative"
+    >
       {/* The stacked-card edge says "more behind this" on a phone; the desktop
           rail already says it with its count. */}
       {open ? null : (
@@ -1481,10 +1649,10 @@ function ConcludedBlock({
 function ScheduledSeparator({ label, count }: { label: string; count: number }) {
   return (
     <div className="flex items-center gap-2.5 pt-2 pb-1 lg:hidden">
-      <span className="text-caption font-semibold text-muted-foreground">
-        {label}
-      </span>
-      <Badge variant="secondary" className="tabular-nums">{count}</Badge>
+      <span className="text-caption font-semibold text-muted-foreground">{label}</span>
+      <Badge variant="secondary" className="tabular-nums">
+        {count}
+      </Badge>
       <span aria-hidden="true" className="h-px flex-1 bg-hairline" />
     </div>
   );
@@ -1565,7 +1733,12 @@ function Board({
         // "Nothing is being called" only makes sense in the sitting under way. A
         // past day is wholly concluded and a future day wholly scheduled, so
         // neither carries a live gap to explain.
-        <PhaseRow railHeight="h-12" last={!upcoming.length} label={pick(advHome.zoneLive, locale)} sub={hearingsCount(0, locale)}>
+        <PhaseRow
+          railHeight="h-12"
+          last={!upcoming.length}
+          label={pick(advHome.zoneLive, locale)}
+          sub={hearingsCount(0, locale)}
+        >
           <p className="px-4 py-2 text-body-compact text-muted-foreground lg:flex lg:h-12 lg:items-center lg:py-0">
             {pick(upcoming.length ? advHome.nowEmpty : advHome.noUpcoming, locale)}
           </p>
@@ -1630,7 +1803,10 @@ function SlotClock({ live, ended, locale }: { live: boolean; ended: boolean; loc
       <Clock
         aria-hidden="true"
         // Desktop only: on a tablet the three short ranges need the width.
-        className={cn("hidden size-3.5 shrink-0 text-muted-foreground lg:block", ended && "opacity-60")}
+        className={cn(
+          "hidden size-3.5 shrink-0 text-muted-foreground lg:block",
+          ended && "opacity-60",
+        )}
       />
     );
   }
@@ -1665,12 +1841,19 @@ function TabSide({ side }: { side: "left" | "right" }) {
       style={{ width: 20, height: 40 }}
       className={cn(
         "pointer-events-none absolute bottom-0 overflow-visible",
-        side === "right" ? "left-full" : "right-full -scale-x-100"
+        side === "right" ? "left-full" : "right-full -scale-x-100",
       )}
     >
       {/* A slight lean from the top corner down to a curve into the panel. */}
-      <path d="M0 0 C7 0 10.2 3.6 10.6 12 L11.4 27 C11.8 35.5 14.5 39.5 20 39.5 V40 H0 Z" fill="var(--color-card)" />
-      <path d="M0 0.5 C6.7 0.5 9.7 4 10.1 12.1 L10.9 27.1 C11.3 36 14.1 39.5 20 39.5" fill="none" stroke="var(--color-hairline)" />
+      <path
+        d="M0 0 C7 0 10.2 3.6 10.6 12 L11.4 27 C11.8 35.5 14.5 39.5 20 39.5 V40 H0 Z"
+        fill="var(--color-card)"
+      />
+      <path
+        d="M0 0.5 C6.7 0.5 9.7 4 10.1 12.1 L10.9 27.1 C11.3 36 14.1 39.5 20 39.5"
+        fill="none"
+        stroke="var(--color-hairline)"
+      />
     </svg>
   );
 }
@@ -1686,20 +1869,24 @@ function TabHover({ lean }: { lean: "left" | "right" | null }) {
       aria-hidden="true"
       className={cn(
         "pointer-events-none absolute inset-y-1 -z-10 hidden group-hover/slot:block",
-        lean === "left" ? "-left-4 right-0" : lean === "right" ? "-right-4 left-0" : "inset-x-0"
+        lean === "left" ? "-left-4 right-0" : lean === "right" ? "-right-4 left-0" : "inset-x-0",
       )}
     >
       <span
         className={cn(
           "absolute inset-y-0 bg-accent-strong",
-          lean === "left" ? "right-0 left-3 rounded-r-lg" : lean === "right" ? "right-3 left-0 rounded-l-lg" : "inset-x-0 rounded-lg"
+          lean === "left"
+            ? "right-0 left-3 rounded-r-lg"
+            : lean === "right"
+              ? "right-3 left-0 rounded-l-lg"
+              : "inset-x-0 rounded-lg",
         )}
       />
       {lean ? (
         <span
           className={cn(
             "absolute inset-y-0 w-6 rounded-lg bg-accent-strong",
-            lean === "left" ? "left-0 skew-x-3" : "right-0 -skew-x-3"
+            lean === "left" ? "left-0 skew-x-3" : "right-0 -skew-x-3",
           )}
         />
       ) : null}
@@ -1766,47 +1953,47 @@ export function HearingTimeline({
   return (
     <OpenTasksContext.Provider value={onOpenTasks}>
       <ShowTimesContext.Provider value={showTimes}>
-      <SingleCourtContext.Provider value={singleCourt}>
-      <ViewInCauseListContext.Provider value={onViewInCauseList}>
-      <AccessContext.Provider value={accessOf}>
-      <QueueContext.Provider value={queueOf ?? null}>
-        <div className="flex flex-col gap-4 pb-16 lg:gap-4 lg:pb-8">
-          <RailStyles />
-          {/* The day's own actions, above the tabs on a phone or tablet, full
+        <SingleCourtContext.Provider value={singleCourt}>
+          <ViewInCauseListContext.Provider value={onViewInCauseList}>
+            <AccessContext.Provider value={accessOf}>
+              <QueueContext.Provider value={queueOf ?? null}>
+                <div className="flex flex-col gap-4 pb-16 lg:gap-4 lg:pb-8">
+                  <RailStyles />
+                  {/* The day's own actions, above the tabs on a phone or tablet, full
               width. (The day's stats strip is retired: the tabs and the rail
               already say how the day is made up.) The extra bottom margin holds
               the refresh button's refreshed caption clear of the tabs. */}
-          {/* The top margin keeps Refresh clear of the week strip's calendar
+                  {/* The top margin keeps Refresh clear of the week strip's calendar
               button, so the two never meet under a thumb. */}
-          <div className="mt-4 mb-2 flex flex-col gap-4 lg:hidden">
-            <DayActions
-              onViewCauseList={onViewCauseList}
-              onJoinCourt={onJoinCourt}
-              onRefresh={onRefresh}
-              locale={locale}
-            />
-          </div>
+                  <div className="mt-4 mb-2 flex flex-col gap-4 lg:hidden">
+                    <DayActions
+                      onViewCauseList={onViewCauseList}
+                      onJoinCourt={onJoinCourt}
+                      onRefresh={onRefresh}
+                      locale={locale}
+                    />
+                  </div>
 
-          {/* Keyed by phase so a new day re-opens on its live sitting. */}
-          <SlotTabs
-            key={dayPhase}
+                  {/* Keyed by phase so a new day re-opens on its live sitting. */}
+                  <SlotTabs
+                    key={dayPhase}
 
-            daySlots={daySlots}
-            dayPhase={dayPhase}
-            filters={filters}
-            onFilterChange={onFilterChange}
-            peopleOptionsOf={peopleOptionsOf}
-            selectedCaseId={selectedCaseId}
-            onOpenCase={onOpenCase}
-            tabActions={tabActions}
-            filterVariant={filterVariant}
-            locale={locale}
-          />
-        </div>
-      </QueueContext.Provider>
-      </AccessContext.Provider>
-      </ViewInCauseListContext.Provider>
-      </SingleCourtContext.Provider>
+                    daySlots={daySlots}
+                    dayPhase={dayPhase}
+                    filters={filters}
+                    onFilterChange={onFilterChange}
+                    peopleOptionsOf={peopleOptionsOf}
+                    selectedCaseId={selectedCaseId}
+                    onOpenCase={onOpenCase}
+                    tabActions={tabActions}
+                    filterVariant={filterVariant}
+                    locale={locale}
+                  />
+                </div>
+              </QueueContext.Provider>
+            </AccessContext.Provider>
+          </ViewInCauseListContext.Provider>
+        </SingleCourtContext.Provider>
       </ShowTimesContext.Provider>
     </OpenTasksContext.Provider>
   );
@@ -1850,20 +2037,23 @@ function SlotTabs({
   const daySlots = listed.length ? listed : allSlots;
   // The sitting being called now leads; on a past or future day, the first.
   const [active, setActive] = React.useState(
-    () => (daySlots.find((s) => s.live) ?? daySlots[0]).key
+    () => (daySlots.find((s) => s.live) ?? daySlots[0]).key,
   );
   // A different sitting configuration can arrive without remounting the page.
   // Never leave Radix pointing at a panel that is no longer in the list.
-  const selectedSlot = daySlots.find((s) => s.key === active)
-    ?? daySlots.find((s) => s.live)
-    ?? daySlots[0];
+  const selectedSlot =
+    daySlots.find((s) => s.key === active) ?? daySlots.find((s) => s.live) ?? daySlots[0];
   const activeIndex = daySlots.indexOf(selectedSlot);
 
   return (
     // At least a screen tall (less the app header), so a shorter sitting
     // never shrinks the page under a reader who has scrolled down: the
     // browser would clamp the scroll and jump them back up.
-    <Tabs value={selectedSlot.key} onValueChange={setActive} className="min-h-[calc(100svh-3.5rem)] gap-6 md:gap-0">
+    <Tabs
+      value={selectedSlot.key}
+      onValueChange={setActive}
+      className="min-h-[calc(100svh-3.5rem)] gap-6 md:gap-0"
+    >
       {/* Phone: the Case view's tab row. The sittings that fit stay on one
           line; the rest fold into More, so the row never wraps to two lines. */}
       <div className="md:hidden">
@@ -1892,64 +2082,75 @@ function SlotTabs({
 
       {/* Tablet and desktop: one stable hit area per tab; the active fill joins the panel. */}
       <div className="hidden items-end justify-between gap-4 md:flex">
-      <TabsList className="flex h-auto min-w-0 flex-1 items-end justify-start gap-0 rounded-none border-0 bg-transparent p-0 group-data-horizontal/tabs:h-auto">
-        {daySlots.map((slot, i) => {
-          const isActive = i === activeIndex;
-          // Chrome's thin divider between two closed tabs; none beside the open one.
-          const divider = i > 0 && !isActive && i - 1 !== activeIndex;
-          return (
-            <TabsTrigger
-              key={slot.key}
-              value={slot.key}
-              style={{ zIndex: isActive ? 30 : 20 }}
-              // Every tab reserves its joins in both states. Selection changes
-              // paint, never height, margins or label position.
-              className={cn(
-                "group/slot -mb-px h-10 rounded-none border-0 bg-transparent p-0 text-body-compact font-medium transition-none data-active:bg-transparent dark:data-active:border-0 dark:data-active:bg-transparent group-data-[variant=default]/tabs-list:data-active:shadow-none",
-                // As in Chrome: the open tab keeps its full width; closed tabs
-                // give way, truncating, when the row runs short.
-                isActive ? "flex-none" : "min-w-16 flex-initial",
-                divider &&
-                  "before:absolute before:top-2 before:bottom-2 before:-left-px before:w-px before:bg-border"
-              )}
-            >
-              {/* Each tab reserves 16px a side for the open tab's 20px side (a
+        <TabsList className="flex h-auto min-w-0 flex-1 items-end justify-start gap-0 rounded-none border-0 bg-transparent p-0 group-data-horizontal/tabs:h-auto">
+          {daySlots.map((slot, i) => {
+            const isActive = i === activeIndex;
+            // Chrome's thin divider between two closed tabs; none beside the open one.
+            const divider = i > 0 && !isActive && i - 1 !== activeIndex;
+            return (
+              <TabsTrigger
+                key={slot.key}
+                value={slot.key}
+                style={{ zIndex: isActive ? 30 : 20 }}
+                // Every tab reserves its joins in both states. Selection changes
+                // paint, never height, margins or label position.
+                className={cn(
+                  "group/slot -mb-px h-10 rounded-none border-0 bg-transparent p-0 text-body-compact font-medium transition-none data-active:bg-transparent dark:data-active:border-0 dark:data-active:bg-transparent group-data-[variant=default]/tabs-list:data-active:shadow-none",
+                  // As in Chrome: the open tab keeps its full width; closed tabs
+                  // give way, truncating, when the row runs short.
+                  isActive ? "flex-none" : "min-w-16 flex-initial",
+                  divider &&
+                    "before:absolute before:top-2 before:bottom-2 before:-left-px before:w-px before:bg-border",
+                )}
+              >
+                {/* Each tab reserves 16px a side for the open tab's 20px side (a
                   12px top corner, a near-upright lean, a 9px foot), so a
                   neighbour's hover fill stops about 4px short of it. */}
-              <SlotTabTip label={slot.label} enabled={!isActive}>
-              <span className={cn(
-                "relative mr-4 flex h-full min-w-0 flex-1 items-center justify-center gap-2 border-t border-transparent px-3",
-                i > 0 && "ml-4",
-                isActive && "border-hairline bg-card",
-                isActive && i === 0 && "rounded-tl-xl border-l"
-              )}>
-              {!isActive ? (
-                <TabHover lean={i === activeIndex + 1 ? "left" : i === activeIndex - 1 ? "right" : null} />
-              ) : null}
-              <SlotClock live={slot.live} ended={slot.ended} locale={locale} />
-              {/* Short on a tablet, where three full ranges cannot share the row. */}
-              <span className="min-w-0 truncate tabular-nums lg:hidden">{shortSitting(slot.window)}</span>
-              <span className="hidden min-w-0 truncate tabular-nums lg:inline">{slot.label}</span>
-              {isActive ? (
-                <>
-                  {/* The first tab's left edge runs into the panel's edge. */}
-                  {i > 0 ? <TabSide side="left" /> : null}
-                  <TabSide side="right" />
-                </>
-              ) : null}
-              </span>
-              </SlotTabTip>
-            </TabsTrigger>
-          );
-        })}
-      </TabsList>
-      {/* Lifted 8px off the panel so the buttons breathe above it. */}
-      {tabActions ? <div className="shrink-0 pb-2">{tabActions}</div> : null}
+                <SlotTabTip label={slot.label} enabled={!isActive}>
+                  <span
+                    className={cn(
+                      "relative mr-4 flex h-full min-w-0 flex-1 items-center justify-center gap-2 border-t border-transparent px-3",
+                      i > 0 && "ml-4",
+                      isActive && "border-hairline bg-card",
+                      isActive && i === 0 && "rounded-tl-xl border-l",
+                    )}
+                  >
+                    {!isActive ? (
+                      <TabHover
+                        lean={
+                          i === activeIndex + 1 ? "left" : i === activeIndex - 1 ? "right" : null
+                        }
+                      />
+                    ) : null}
+                    <SlotClock live={slot.live} ended={slot.ended} locale={locale} />
+                    {/* Short on a tablet, where three full ranges cannot share the row. */}
+                    <span className="min-w-0 truncate tabular-nums lg:hidden">
+                      {shortSitting(slot.window)}
+                    </span>
+                    <span className="hidden min-w-0 truncate tabular-nums lg:inline">
+                      {slot.label}
+                    </span>
+                    {isActive ? (
+                      <>
+                        {/* The first tab's left edge runs into the panel's edge. */}
+                        {i > 0 ? <TabSide side="left" /> : null}
+                        <TabSide side="right" />
+                      </>
+                    ) : null}
+                  </span>
+                </SlotTabTip>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+        {/* Lifted 8px off the panel so the buttons breathe above it. */}
+        {tabActions ? <div className="shrink-0 pb-2">{tabActions}</div> : null}
       </div>
 
       {daySlots.map((slot, i) => {
         const filter = filters[slot.key] ?? NO_SLOT_FILTER;
-        const change = (patch: Partial<SlotFilter>) => onFilterChange(slot.key, { ...filter, ...patch });
+        const change = (patch: Partial<SlotFilter>) =>
+          onFilterChange(slot.key, { ...filter, ...patch });
         const people = peopleOptionsOf(slot.hearings, filter.scope);
         const courts = courtOptionsOf(slot.hearings);
         const hiddenCount = slot.hiddenByAccess;
@@ -2001,24 +2202,26 @@ function SlotTabs({
                 />
               </>
             ) : (
-            <>
-            <ScopeSwitch
-              scope={filter.scope}
-              onChange={(scope) => {
-                // Drop any ticked name the new scope no longer offers.
-                const offered = new Set(peopleOptionsOf(slot.hearings, scope).map((o) => o.person.id));
-                change({ scope, people: filter.people.filter((id) => offered.has(id)) });
-              }}
-              locale={locale}
-            />
-            <span aria-hidden="true" className="hidden flex-1 lg:block" />
-            <PeopleFilter
-              people={filter.people}
-              options={people}
-              onChange={(picked) => change({ people: picked })}
-              locale={locale}
-            />
-            </>
+              <>
+                <ScopeSwitch
+                  scope={filter.scope}
+                  onChange={(scope) => {
+                    // Drop any ticked name the new scope no longer offers.
+                    const offered = new Set(
+                      peopleOptionsOf(slot.hearings, scope).map((o) => o.person.id),
+                    );
+                    change({ scope, people: filter.people.filter((id) => offered.has(id)) });
+                  }}
+                  locale={locale}
+                />
+                <span aria-hidden="true" className="hidden flex-1 lg:block" />
+                <PeopleFilter
+                  people={filter.people}
+                  options={people}
+                  onChange={(picked) => change({ people: picked })}
+                  locale={locale}
+                />
+              </>
             )}
             {singleCourt ? null : (
               <CourtFilter
@@ -2032,17 +2235,23 @@ function SlotTabs({
         );
         const empty = slot.board.slots.length === 0;
         return (
-          <TabsContent
-            key={slot.key}
-            value={slot.key}
-            className="relative z-10"
-          >
+          <TabsContent key={slot.key} value={slot.key} className="relative z-10">
             {/* From a tablet up the sitting sits in the white panel its tab joins. */}
-            <Card variant="raised" className={cn("max-md:contents md:gap-0 md:overflow-visible md:px-4 md:pt-4 md:pb-4", HOME_PANEL_PAD, i === 0 && "md:rounded-tl-none")}>
+            <Card
+              variant="raised"
+              className={cn(
+                "max-md:contents md:gap-0 md:overflow-visible md:px-4 md:pt-4 md:pb-4",
+                HOME_PANEL_PAD,
+                i === 0 && "md:rounded-tl-none",
+              )}
+            >
               {empty && isFiltered(filter) ? (
                 <div className="flex flex-col gap-4 pb-4">
                   {filterRow}
-                  <EmptyBoard locale={locale} onClear={() => onFilterChange(slot.key, NO_SLOT_FILTER)} />
+                  <EmptyBoard
+                    locale={locale}
+                    onClear={() => onFilterChange(slot.key, NO_SLOT_FILTER)}
+                  />
                 </div>
               ) : (
                 <Board
@@ -2075,7 +2284,10 @@ function shortSitting(window: { start: string; end: string }): string {
   const part = (hhmm: string) => {
     const [h, m] = hhmm.split(":").map(Number);
     const hour = h % 12 || 12;
-    return { text: m ? `${hour}:${String(m).padStart(2, "0")}` : String(hour), ap: h < 12 ? "am" : "pm" };
+    return {
+      text: m ? `${hour}:${String(m).padStart(2, "0")}` : String(hour),
+      ap: h < 12 ? "am" : "pm",
+    };
   };
   const a = part(window.start);
   const b = part(window.end);
@@ -2087,7 +2299,15 @@ function shortSitting(window: { start: string; end: string }): string {
  * may have truncated to make room for the open one. It hangs on the tab's inner
  * face, not the trigger, so it never overwrites the trigger's own data-state.
  */
-function SlotTabTip({ label, enabled, children }: { label: string; enabled: boolean; children: React.ReactElement }) {
+function SlotTabTip({
+  label,
+  enabled,
+  children,
+}: {
+  label: string;
+  enabled: boolean;
+  children: React.ReactElement;
+}) {
   if (!enabled) return children;
   return (
     <Tooltip>

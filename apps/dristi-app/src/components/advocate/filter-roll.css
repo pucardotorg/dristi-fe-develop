@@ -6,9 +6,17 @@
    or keyboard focus so it never moves while being read or clicked. */
 
 @keyframes filter-roll {
-  0%, 42% { transform: translateY(0); }
-  50%, 92% { transform: translateY(-33.3333%); }
-  100% { transform: translateY(-66.6667%); }
+  0%,
+  42% {
+    transform: translateY(0);
+  }
+  50%,
+  92% {
+    transform: translateY(-33.3333%);
+  }
+  100% {
+    transform: translateY(-66.6667%);
+  }
 }
 
 .filter-roll-track {
@@ -22,5 +30,8 @@ button[data-state="open"] .filter-roll-track {
 
 /* No motion: the count stands still, it is the more useful of the two. */
 @media (prefers-reduced-motion: reduce) {
-  .filter-roll-track { animation: none; transform: translateY(-33.3333%); }
+  .filter-roll-track {
+    animation: none;
+    transform: translateY(-33.3333%);
+  }
 }

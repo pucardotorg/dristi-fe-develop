@@ -1,11 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  EyeIcon,
-  FilesIcon,
-  SearchXIcon,
-} from "lucide-react";
+import { EyeIcon, FilesIcon, SearchXIcon } from "lucide-react";
 
 import { DocumentScroller } from "@/components/employee/document-scroller";
 import { zoneFor, type ZoneRect } from "@/lib/employee/document-zones";
@@ -79,9 +75,7 @@ export function CaseFileView({ review }: { review: CaseReview }) {
     key: string;
     rowId?: string;
     zone?: ZoneRect | null;
-  } | null>(
-    null,
-  );
+  } | null>(null);
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const wide = useMinWidth(1280);
   const asideRef = React.useRef<HTMLElement>(null);
@@ -120,9 +114,7 @@ export function CaseFileView({ review }: { review: CaseReview }) {
     if (!wide) setSheetOpen(true);
   };
 
-  const panel = (
-    <DocumentPanel bundle={bundle} selected={selected} query={needle} />
-  );
+  const panel = <DocumentPanel bundle={bundle} selected={selected} query={needle} />;
 
   const visibleGroups = groups.map((view) => view.group);
 
@@ -155,12 +147,16 @@ export function CaseFileView({ review }: { review: CaseReview }) {
         {needle && (matchCount > 0 || docMatches > 0) ? (
           <p role="status" className="-mt-4 text-body-compact text-muted-foreground">
             <span className="tabular-nums">{matchCount}</span>{" "}
-            {matchCount === 1 ? t("registerCaseFile_particular") : t("registerCaseFile_particulars")}
+            {matchCount === 1
+              ? t("registerCaseFile_particular")
+              : t("registerCaseFile_particulars")}
             {docMatches > 0 ? (
               <>
                 {" · "}
                 <span className="tabular-nums">{docMatches}</span>{" "}
-                {docMatches === 1 ? t("registerCaseFile_documentInTheList") : t("registerCaseFile_documentsInTheList")}
+                {docMatches === 1
+                  ? t("registerCaseFile_documentInTheList")
+                  : t("registerCaseFile_documentsInTheList")}
               </>
             ) : null}
           </p>
@@ -235,7 +231,9 @@ export function CaseFileView({ review }: { review: CaseReview }) {
         <SheetContent side="right" className="gap-0 p-0 data-[side=right]:sm:max-w-md">
           <SheetHeader className="sr-only">
             <SheetTitle>{t("registerCaseFile_documents")}</SheetTitle>
-            <SheetDescription>{t("registerCaseFile_theDocumentsThisComplaintWasFiled")}</SheetDescription>
+            <SheetDescription>
+              {t("registerCaseFile_theDocumentsThisComplaintWasFiled")}
+            </SheetDescription>
           </SheetHeader>
           <div className="flex min-h-0 flex-1 flex-col pt-12">{panel}</div>
         </SheetContent>
@@ -390,7 +388,9 @@ function GroupCard({
         <Band gutter={gutter}>
           <p className="py-2 text-body-compact text-muted-foreground">
             {translateText(t, group.empty.explanation) ??
-              (group.empty.reason === "none-named" ? t("registerCaseFile_noneNamed") : t("registerCaseFile_noneOnRecord"))}
+              (group.empty.reason === "none-named"
+                ? t("registerCaseFile_noneNamed")
+                : t("registerCaseFile_noneOnRecord"))}
           </p>
         </Band>
       ) : null}
@@ -512,13 +512,7 @@ type RowProps = {
  * The lit row takes the tables' lighter tone on hover and `accent` while its page is the
  * one on show — the same pair the queues use.
  */
-function FactRow({
-  item,
-  needle,
-  docNo,
-  selected,
-  onShow,
-}: RowProps & { item: FactItem }) {
+function FactRow({ item, needle, docNo, selected, onShow }: RowProps & { item: FactItem }) {
   const { id, fact, label } = item;
   const source = fact.source ? docNo(fact.source) : undefined;
   const current = selected?.rowId === id;
@@ -568,7 +562,11 @@ function Value({ fact, needle }: { fact: CaseFact; needle: string }) {
         fact.exception && "text-warning-ink",
       )}
     >
-      {fact.value ? <Marked text={fact.value} needle={needle} /> : t("registerCaseFile_notProvided")}
+      {fact.value ? (
+        <Marked text={fact.value} needle={needle} />
+      ) : (
+        t("registerCaseFile_notProvided")
+      )}
     </span>
   );
 }
@@ -776,7 +774,10 @@ function ContentsRail({ groups }: { groups: CaseGroup[] }) {
   if (groups.length < 2) return null;
 
   return (
-    <nav aria-label={t("registerCaseFile_caseFileContents")} className="group/toc sticky top-32 w-4">
+    <nav
+      aria-label={t("registerCaseFile_caseFileContents")}
+      className="group/toc sticky top-32 w-4"
+    >
       <div aria-hidden className="flex flex-col items-end gap-3 py-2">
         {groups.map((group) => (
           <span
@@ -861,9 +862,7 @@ function DocumentPanel({
 }) {
   const t = useTranslations();
   const docs = bundle.docs.filter((candidate) => !query || hit(candidate.title, query));
-  const absent = bundle.absent.filter(
-    (candidate) => !query || hit(candidate.title, query),
-  );
+  const absent = bundle.absent.filter((candidate) => !query || hit(candidate.title, query));
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -881,9 +880,7 @@ function DocumentPanel({
         <DocumentScroller
           docs={docs}
           absent={absent}
-          active={
-            selected ? { doc: selected.key, zone: selected.zone ?? null } : null
-          }
+          active={selected ? { doc: selected.key, zone: selected.zone ?? null } : null}
         />
       )}
     </div>

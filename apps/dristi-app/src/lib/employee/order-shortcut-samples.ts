@@ -25,7 +25,7 @@ const SAMPLES: readonly Sample[] = [
       "<p>Complainant present through counsel. Perused the complaint, the sworn statement of the complainant filed on affidavit under <b>Section 145 of the Negotiable Instruments Act, 1881</b>, and the documents produced, namely:</p>",
       "<ol>",
       "<li>the original cheque No. [Cheque Number] dated [Cheque Date] for <b>₹[Cheque Amount]</b>;</li>",
-      "<li>the bank's return memo dated [Return Memo Date] stating the reason \"[Return Reason]\";</li>",
+      '<li>the bank\'s return memo dated [Return Memo Date] stating the reason "[Return Reason]";</li>',
       "<li>the copy of the statutory demand notice dated [Notice Date] with its postal receipt; and</li>",
       "<li>the proof of delivery of the notice on [Delivery Date].</li>",
       "</ol>",
@@ -62,7 +62,7 @@ const SAMPLES: readonly Sample[] = [
     id: "sample-rich-summons-unserved",
     name: "Summons unserved — fresh steps",
     html: [
-      "<p>Summons to the accused returned <b>unserved</b> with the endorsement \"[Endorsement]\".</p>",
+      '<p>Summons to the accused returned <b>unserved</b> with the endorsement "[Endorsement]".</p>',
       "<p>The complainant is directed to:</p>",
       "<ul>",
       "<li>verify and furnish the correct present address of the accused;</li>",
@@ -120,10 +120,9 @@ function plainText(html: string): string {
     .trim();
 }
 
-export const FORMATTED_SAMPLE_SHORTCUTS: readonly OrderShortcut[] =
-  SAMPLES.map((sample) => ({
-    id: sample.id,
-    name: sample.name,
-    html: sample.html,
-    text: plainText(sample.html),
-  }));
+export const FORMATTED_SAMPLE_SHORTCUTS: readonly OrderShortcut[] = SAMPLES.map((sample) => ({
+  id: sample.id,
+  name: sample.name,
+  html: sample.html,
+  text: plainText(sample.html),
+}));

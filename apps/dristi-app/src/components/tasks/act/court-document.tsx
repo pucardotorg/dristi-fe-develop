@@ -34,7 +34,11 @@ export function documentKindOf(task: Task): DocumentKind {
  * affidavit is sworn by a deponent; a memo and an application are filed. No document
  * gets another's boilerplate.
  */
-function wordsFor(kind: DocumentKind, court: string, why: string): { opening: string; closing: string; role: string } {
+function wordsFor(
+  kind: DocumentKind,
+  court: string,
+  why: string,
+): { opening: string; closing: string; role: string } {
   const because = why ? `, ${why.charAt(0).toLowerCase() + why.slice(1)}` : "";
   switch (kind) {
     case "vakalatnama":
@@ -98,14 +102,18 @@ export function CourtDocument({
     <Card variant="raised" className={cn("gap-0 p-6 md:p-10", className)}>
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 text-body">
         <header className="flex flex-col items-center gap-1 text-center">
-          <p className="text-caption font-semibold text-paper-muted-foreground">{tr("actCourtDocument_beforeThe")}</p>
+          <p className="text-caption font-semibold text-paper-muted-foreground">
+            {tr("actCourtDocument_beforeThe")}
+          </p>
           <p className="text-body font-semibold">{kase.court}</p>
           {kase.stNumber || kase.cnr ? (
             <p className="font-mono text-caption tabular-nums text-paper-muted-foreground">
               {[kase.stNumber, kase.cnr].filter(Boolean).join(" · ")}
             </p>
           ) : (
-            <p className="text-caption text-paper-muted-foreground">{tr("actCourtDocument_notYetNumbered")}</p>
+            <p className="text-caption text-paper-muted-foreground">
+              {tr("actCourtDocument_notYetNumbered")}
+            </p>
           )}
         </header>
 
@@ -118,7 +126,9 @@ export function CourtDocument({
           <p className="text-paper-muted-foreground">{tr("actCourtDocument_accused")}</p>
         </div>
 
-        <h2 className="text-center text-title-s font-semibold text-balance">{documentTitleOf(task)}</h2>
+        <h2 className="text-center text-title-s font-semibold text-balance">
+          {documentTitleOf(task)}
+        </h2>
 
         <div className="flex flex-col gap-4 leading-relaxed text-pretty">
           <p>{words.opening}</p>
@@ -140,9 +150,14 @@ export function CourtDocument({
 
         <div className="grid grid-cols-1 gap-6 border-t border-hairline pt-6 text-body-compact sm:grid-cols-2">
           <div className="flex flex-col gap-1">
-            <p className="text-caption font-semibold text-paper-muted-foreground">{tr("actCourtDocument_placeDate")}</p>
+            <p className="text-caption font-semibold text-paper-muted-foreground">
+              {tr("actCourtDocument_placeDate")}
+            </p>
             <p>
-              {tr.rich("actCourtDocument_sampleDistrictLongDate", { longDate: longDate(task.completion?.at ?? new Date().toISOString()), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+              {tr.rich("actCourtDocument_sampleDistrictLongDate", {
+                longDate: longDate(task.completion?.at ?? new Date().toISOString()),
+                span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+              })}
             </p>
           </div>
           <div className="flex flex-col gap-1">
@@ -151,13 +166,22 @@ export function CourtDocument({
               <p className="flex items-start gap-1.5 text-success-ink">
                 <CircleCheckIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
                 <span>
-                  {tr.rich("actCourtDocument_digitallySignedByNameDateTime", { name: signedBy.name, dateTime: dateTime(task.completion!.at), receipt: (task.completion?.receipt) ?? "", span: (chunks) => <span className="block font-mono text-caption tabular-nums">{chunks}</span> })}
+                  {tr.rich("actCourtDocument_digitallySignedByNameDateTime", {
+                    name: signedBy.name,
+                    dateTime: dateTime(task.completion!.at),
+                    receipt: task.completion?.receipt ?? "",
+                    span: (chunks) => (
+                      <span className="block font-mono text-caption tabular-nums">{chunks}</span>
+                    ),
+                  })}
                 </span>
               </p>
             ) : (
               <p className="text-paper-muted-foreground">
                 {signatories.map((s) => s.name).join(" / ") || "—"}
-                <span className="block text-caption">{tr("actCourtDocument_signaturePending")}</span>
+                <span className="block text-caption">
+                  {tr("actCourtDocument_signaturePending")}
+                </span>
               </p>
             )}
           </div>

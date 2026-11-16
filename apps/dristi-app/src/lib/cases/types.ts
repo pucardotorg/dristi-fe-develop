@@ -11,20 +11,9 @@
  */
 
 export type ActiveStage =
-  | "scrutiny"
-  | "cognizance"
-  | "summons"
-  | "appearance"
-  | "evidence"
-  | "arguments"
-  | "judgment";
+  "scrutiny" | "cognizance" | "summons" | "appearance" | "evidence" | "arguments" | "judgment";
 
-export type DisposedOutcome =
-  | "convicted"
-  | "acquitted"
-  | "compounded"
-  | "withdrawn"
-  | "dismissed";
+export type DisposedOutcome = "convicted" | "acquitted" | "compounded" | "withdrawn" | "dismissed";
 
 /**
  * A folder in the grid. Every view folds: the live views fold by stage, Disposed
@@ -126,10 +115,7 @@ export function partiesLabel(record: CaseRecord): string {
   return `${record.parties.complainant} v. ${record.parties.accused}`;
 }
 
-export function counselFor(
-  record: CaseRecord,
-  side: CounselSide
-): string[] {
+export function counselFor(record: CaseRecord, side: CounselSide): string[] {
   return record.counsel?.[side]?.filter((name) => name.length > 0) ?? [];
 }
 
@@ -142,8 +128,5 @@ export function formatCounselList(names: string[]): string {
 }
 
 export function allCounselNames(record: CaseRecord): string {
-  return [
-    ...counselFor(record, "complainant"),
-    ...counselFor(record, "accused"),
-  ].join(" ");
+  return [...counselFor(record, "complainant"), ...counselFor(record, "accused")].join(" ");
 }

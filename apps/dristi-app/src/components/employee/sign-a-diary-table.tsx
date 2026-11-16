@@ -15,20 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import {
   causeTitle,
   courtHearingPurposeLabel,
   type CourtHearingPurposeId,
 } from "@/lib/employee/hearings";
-import {
-  formatADiaryDate,
-  type ADiaryEntry,
-} from "@/lib/employee/sign-a-diary";
+import { formatADiaryDate, type ADiaryEntry } from "@/lib/employee/sign-a-diary";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
@@ -69,8 +62,12 @@ export function SignADiaryTable({
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>{t("signADiaryTable_case")}</TableHead>
-          <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>{t("signADiaryTable_hearing")}</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
+            {t("signADiaryTable_case")}
+          </TableHead>
+          <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
+            {t("signADiaryTable_hearing")}
+          </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-80 whitespace-normal")}>
             {t("signADiaryTable_proceedings")}
           </TableHead>
@@ -114,7 +111,9 @@ export function SignADiaryTable({
                 className={rowOpenerClass}
               >
                 <span className="sr-only">
-                  {t("signADiaryTable_readAndCorrectTheEntryIn", { courtText: courtText(entry.caseNumber) })}
+                  {t("signADiaryTable_readAndCorrectTheEntryIn", {
+                    courtText: courtText(entry.caseNumber),
+                  })}
                 </span>
                 <span className="line-clamp-2">{entry.business}</span>
               </button>
@@ -130,13 +129,7 @@ export function SignADiaryTable({
 }
 
 /** A date over what it is for — the hearing and next-hearing cells. */
-function DateAndPurpose({
-  day,
-  purpose,
-}: {
-  day: string;
-  purpose: CourtHearingPurposeId;
-}) {
+function DateAndPurpose({ day, purpose }: { day: string; purpose: CourtHearingPurposeId }) {
   return (
     <div className="flex flex-col gap-1">
       <span className="tabular-nums whitespace-nowrap">{formatADiaryDate(day)}</span>

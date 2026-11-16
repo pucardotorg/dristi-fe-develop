@@ -28,10 +28,7 @@ import { caseFilingApi, caseFilingErrorMessage } from "@/lib/filing/data/cases-a
 import { getStep, neighbours, type StepId } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import type { FilingDraft } from "@/lib/filing/types";
-import {
-  stepForValidationField,
-  type ValidationError,
-} from "@/lib/filing/validation";
+import { stepForValidationField, type ValidationError } from "@/lib/filing/validation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,12 +38,7 @@ import {
   DescriptionTerm,
 } from "@/components/ui/description-list";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Dialog } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import {
@@ -123,24 +115,16 @@ function SubBlock({ title, rows }: { title: string; rows: Row[] }) {
 }
 
 /** Opens the read-only panel for a section. Changing anything happens in the section. */
-function ReviewButton({
-  section,
-  onClick,
-}: {
-  section: string;
-  onClick: () => void;
-}) {
+function ReviewButton({ section, onClick }: { section: string; onClick: () => void }) {
   const t = useTranslations();
   return (
     <>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={onClick}
-        className="max-sm:hidden"
-      >
+      <Button type="button" variant="outline" onClick={onClick} className="max-sm:hidden">
         <PencilLineIcon data-icon="inline-start" aria-hidden />
-        {t.rich("previewSection_reviewSection", { section, span: (chunks) => <span className="sr-only">{chunks}</span> })}
+        {t.rich("previewSection_reviewSection", {
+          section,
+          span: (chunks) => <span className="sr-only">{chunks}</span>,
+        })}
       </Button>
       {/* Phone: the DS small button, so a long section title keeps its line. */}
       <Button
@@ -151,7 +135,10 @@ function ReviewButton({
         className="h-10 sm:hidden"
       >
         <PencilLineIcon data-icon="inline-start" aria-hidden />
-        {t.rich("previewSection_reviewSection", { section, span: (chunks) => <span className="sr-only">{chunks}</span> })}
+        {t.rich("previewSection_reviewSection", {
+          section,
+          span: (chunks) => <span className="sr-only">{chunks}</span>,
+        })}
       </Button>
     </>
   );
@@ -406,13 +393,8 @@ function IncompleteSections({
                 className="h-10 w-full justify-start gap-2 px-2 font-normal"
               >
                 <Link href={s.href}>
-                  <span className="min-w-0 flex-1 truncate text-left">
-                    {s.title}
-                  </span>
-                  <ChevronRightIcon
-                    aria-hidden
-                    className="text-muted-foreground"
-                  />
+                  <span className="min-w-0 flex-1 truncate text-left">{s.title}</span>
+                  <ChevronRightIcon aria-hidden className="text-muted-foreground" />
                 </Link>
               </Button>
             </li>
@@ -439,9 +421,7 @@ export function PreviewSection() {
   /** The backend completeness check runs on "Continue to sign". */
   const [validating, setValidating] = React.useState(false);
   /** The missing items the backend reported; `null` while the dialog is closed. */
-  const [problems, setProblems] = React.useState<ValidationError[] | null>(
-    null,
-  );
+  const [problems, setProblems] = React.useState<ValidationError[] | null>(null);
   /** The check itself could not run (offline, session ended, draft expired). */
   const [validateError, setValidateError] = React.useState<string | null>(null);
 
@@ -495,9 +475,7 @@ export function PreviewSection() {
   const yourOathAhead = signatories(draft, profile).complainants.some(
     (s) => s.you && s.oathTaken === false,
   );
-  const incomplete = (Object.keys(panels) as PanelKey[]).filter(
-    (k) => !done(k),
-  );
+  const incomplete = (Object.keys(panels) as PanelKey[]).filter((k) => !done(k));
 
   /** The browser's print dialog — which is also how a PDF is saved. */
   const printFile = () => {
@@ -542,23 +520,30 @@ export function PreviewSection() {
           title={t("previewSection_preview")}
           description={
             <>
-              {t.rich("previewSection_checkEverythingYouHaveFiledUse", { strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong> })}
+              {t.rich("previewSection_checkEverythingYouHaveFiledUse", {
+                strong: (chunks) => (
+                  <strong className="font-semibold text-foreground">{chunks}</strong>
+                ),
+              })}
             </>
           }
         />
 
         <Tabs value={view} onValueChange={setView} className="gap-6">
           <div className="flex flex-col items-start justify-between gap-2 border-b border-hairline sm:flex-row sm:items-end">
-            <TabsList variant="line" aria-label={t("previewSection_previewFormat")} className="order-2 sm:order-none">
-              <TabsTrigger value="synopsis" className="h-10 px-3">{t("previewSection_complaint")}</TabsTrigger>
-              <TabsTrigger value="document" className="h-10 px-3">{t("previewSection_complaintPdf")}</TabsTrigger>
-            </TabsList>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={printFile}
-              className="sm:mb-2"
+            <TabsList
+              variant="line"
+              aria-label={t("previewSection_previewFormat")}
+              className="order-2 sm:order-none"
             >
+              <TabsTrigger value="synopsis" className="h-10 px-3">
+                {t("previewSection_complaint")}
+              </TabsTrigger>
+              <TabsTrigger value="document" className="h-10 px-3">
+                {t("previewSection_complaintPdf")}
+              </TabsTrigger>
+            </TabsList>
+            <Button type="button" variant="outline" onClick={printFile} className="sm:mb-2">
               <PrinterIcon data-icon="inline-start" aria-hidden />
               {t("previewSection_printOrSaveAsPdf")}
             </Button>
@@ -809,10 +794,7 @@ export function PreviewSection() {
                   className="flex items-start gap-3 border-b border-hairline py-3 text-body-compact last:border-b-0"
                 >
                   <span className="flex h-5 shrink-0 items-center">
-                    <CheckIcon
-                      className="size-4 text-success-ink"
-                      aria-hidden
-                    />
+                    <CheckIcon className="size-4 text-success-ink" aria-hidden />
                   </span>
                   {line}
                 </p>
@@ -820,10 +802,7 @@ export function PreviewSection() {
               {documents.remaining ? (
                 <p className="flex items-start gap-3 border-t border-hairline py-3 text-body-compact">
                   <span className="flex h-5 shrink-0 items-center">
-                    <TriangleAlertIcon
-                      className="size-4 text-warning-ink"
-                      aria-hidden
-                    />
+                    <TriangleAlertIcon className="size-4 text-warning-ink" aria-hidden />
                   </span>
                   {documents.remaining} required document
                   {documents.remaining === 1 ? "" : "s"} still to upload
@@ -860,12 +839,16 @@ export function PreviewSection() {
           if (!open) setEditKey(null);
         }}
       >
-        <ChromeDialogContent mobileSheet className="sm:max-w-md" onInteractOutside={(event) => event.preventDefault()}>
+        <ChromeDialogContent
+          mobileSheet
+          className="sm:max-w-md"
+          onInteractOutside={(event) => event.preventDefault()}
+        >
           <DialogHeader>
-            <DialogTitle>{t("previewSection_openTheValueSection", { value: panel?.title ?? "" })}</DialogTitle>
-            <DialogDescription>
-              {t("previewSection_changesAreMadeInTheSection")}
-            </DialogDescription>
+            <DialogTitle>
+              {t("previewSection_openTheValueSection", { value: panel?.title ?? "" })}
+            </DialogTitle>
+            <DialogDescription>{t("previewSection_changesAreMadeInTheSection")}</DialogDescription>
           </DialogHeader>
 
           <Field orientation="horizontal">
@@ -880,11 +863,7 @@ export function PreviewSection() {
           </Field>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setEditKey(null)}
-            >
+            <Button type="button" variant="outline" onClick={() => setEditKey(null)}>
               {t("previewSection_stayHere")}
             </Button>
             <Button type="button" onClick={confirmReview}>
@@ -904,19 +883,14 @@ export function PreviewSection() {
         <ChromeDialogContent mobileSheet className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t("previewSection_someDetailsAreStillNeeded")}</DialogTitle>
-            <DialogDescription>
-              {t("previewSection_theCourtNeedsTheseBeforeYou")}
-            </DialogDescription>
+            <DialogDescription>{t("previewSection_theCourtNeedsTheseBeforeYou")}</DialogDescription>
           </DialogHeader>
 
           <ul className="flex flex-col divide-y divide-hairline">
             {problems?.map((p, i) => {
               const step = stepForValidationField(p.field, p.message);
               return (
-                <li
-                  key={`${p.field}-${i}`}
-                  className="flex items-start justify-between gap-3 py-3"
-                >
+                <li key={`${p.field}-${i}`} className="flex items-start justify-between gap-3 py-3">
                   <span className="flex min-w-0 items-start gap-2 text-body-compact">
                     <TriangleAlertIcon
                       className="mt-0.5 size-4 shrink-0 text-warning-ink"
@@ -944,11 +918,7 @@ export function PreviewSection() {
           </ul>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setProblems(null)}
-            >
+            <Button type="button" variant="outline" onClick={() => setProblems(null)}>
               {t("common_close")}
             </Button>
           </DialogFooter>

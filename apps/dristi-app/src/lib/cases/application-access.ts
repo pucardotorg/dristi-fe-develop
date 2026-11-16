@@ -77,7 +77,7 @@ function peopleById(file: ApplicationsFile): Map<string, SubmissionPerson> {
 /** The side an application belongs to: the side of the person who raises it. */
 export function submissionSide(
   submission: Submission,
-  people: Map<string, SubmissionPerson>
+  people: Map<string, SubmissionPerson>,
 ): CaseSide {
   return (
     people.get(submission.submittedById)?.side ??
@@ -93,13 +93,12 @@ export function submissionSide(
  */
 export function officeOf(
   viewer: ApplicationViewer,
-  people: Map<string, SubmissionPerson>
+  people: Map<string, SubmissionPerson>,
 ): Set<string> {
   const office = new Set<string>();
   if (!viewer.personId) return office;
   const self = people.get(viewer.personId);
-  const lead =
-    viewer.role === "clerk" ? (self?.officeOf ?? viewer.personId) : viewer.personId;
+  const lead = viewer.role === "clerk" ? (self?.officeOf ?? viewer.personId) : viewer.personId;
   office.add(lead);
   office.add(viewer.personId);
   for (const person of people.values()) {
@@ -112,10 +111,7 @@ function fromOffice(submission: Submission, office: Set<string>): boolean {
   return office.has(submission.submittedById) || office.has(submission.createdById);
 }
 
-function forViewersParty(
-  submission: Submission,
-  viewer: ApplicationViewer
-): boolean {
+function forViewersParty(submission: Submission, viewer: ApplicationViewer): boolean {
   return Boolean(viewer.partyId) && submission.onBehalfOfId === viewer.partyId;
 }
 
@@ -129,7 +125,7 @@ function forViewersParty(
 export function canSeeApplication(
   viewer: ApplicationViewer,
   submission: Submission,
-  file: ApplicationsFile
+  file: ApplicationsFile,
 ): boolean {
   if (viewer.role === "court") return isSubmittedToCourt(submission.status);
   const people = peopleById(file);
@@ -146,15 +142,11 @@ export function canSeeApplication(
       /* Whoever it was sent to for signing sees it too (DSB-18). */
       return (
         fromOffice(submission, officeOf(viewer, people)) ||
-        (viewer.personId !== undefined &&
-          (submission.signers ?? []).includes(viewer.personId))
+        (viewer.personId !== undefined && (submission.signers ?? []).includes(viewer.personId))
       );
     case "litigant":
     case "poa-holder":
-      return (
-        submission.status === "pending-payment" &&
-        forViewersParty(submission, viewer)
-      );
+      return submission.status === "pending-payment" && forViewersParty(submission, viewer);
   }
 }
 
@@ -170,13 +162,12 @@ export function canSeeApplication(
 export function applicationStepFor(
   viewer: ApplicationViewer,
   submission: Submission,
-  file: ApplicationsFile
+  file: ApplicationsFile,
 ): ApplicationStep | null {
   if (!canSeeApplication(viewer, submission, file)) return null;
   const people = peopleById(file);
   const office = officeOf(viewer, people);
-  const drafter =
-    viewer.role === "advocate" || viewer.role === "pip" || viewer.role === "clerk";
+  const drafter = viewer.role === "advocate" || viewer.role === "pip" || viewer.role === "clerk";
 
   switch (submission.status) {
     case "draft":
@@ -204,7 +195,7 @@ export function applicationStepFor(
 export function waitingOn(
   viewer: ApplicationViewer,
   submission: Submission,
-  file: ApplicationsFile
+  file: ApplicationsFile,
 ): SubmissionPerson | null {
   if (submission.status !== "pending-signature") return null;
   if (applicationStepFor(viewer, submission, file) === "sign") return null;
@@ -227,14 +218,14 @@ export function objectionDeadline(decisionOn: string): string {
 /** The objection raised against this application, if any (at most one, ALC-24). */
 export function objectionAgainst(
   submission: Submission,
-  file: ApplicationsFile
+  file: ApplicationsFile,
 ): Submission | null {
   return (
     file.submissions.find(
       (item) =>
         item.type === "objection" &&
         item.objectionToId === submission.id &&
-        item.status !== "expired"
+        item.status !== "expired",
     ) ?? null
   );
 }
@@ -271,7 +262,7 @@ export type ObjectionInvitation = {
 export function objectionInvitations(
   viewer: ApplicationViewer,
   file: ApplicationsFile,
-  today: string
+  today: string,
 ): ObjectionInvitation[] {
   if (!viewer.personId) return [];
   const canFile = viewer.role !== "litigant" && viewer.role !== "poa-holder";
@@ -285,7 +276,7 @@ export function objectionInvitations(
         item.decisionOn !== null &&
         submissionSide(item, people) !== viewer.side &&
         objectionDeadline(item.decisionOn) >= today &&
-        objectionAgainst(item, file) === null
+        objectionAgainst(item, file) === null,
     )
     .map((application) => ({
       application,
@@ -318,10 +309,9 @@ export function resolveApplicationViewer(options: {
   /** The side office access gives, when the advocate is on no vakalatnama. */
   fallbackSide: CaseSide;
 }): ApplicationViewer | null {
-  const { file, profile, accountName, isSignedInAdvocate, fallbackSide } =
-    options;
+  const { file, profile, accountName, isSignedInAdvocate, fallbackSide } = options;
   const advocate = file.people.find(
-    (person) => person.kind === "advocate" && isSignedInAdvocate(person.name)
+    (person) => person.kind === "advocate" && isSignedInAdvocate(person.name),
   );
 
   if (profile === "advocate") {
@@ -332,9 +322,7 @@ export function resolveApplicationViewer(options: {
 
   if (profile === "clerk") {
     const clerk = advocate
-      ? file.people.find(
-          (person) => person.kind === "clerk" && person.officeOf === advocate.id
-        )
+      ? file.people.find((person) => person.kind === "clerk" && person.officeOf === advocate.id)
       : undefined;
     return clerk
       ? { role: "clerk", side: clerk.side, personId: clerk.id }
@@ -346,7 +334,7 @@ export function resolveApplicationViewer(options: {
   const self = file.people.find(
     (person) =>
       (person.kind === "party" || person.kind === "poa-holder") &&
-      person.name.toLowerCase().includes(needle)
+      person.name.toLowerCase().includes(needle),
   );
   if (!self) return null;
   if (self.kind === "poa-holder") {
@@ -358,7 +346,7 @@ export function resolveApplicationViewer(options: {
     };
   }
   const represented = file.people.some(
-    (person) => person.kind === "advocate" && person.side === self.side
+    (person) => person.kind === "advocate" && person.side === self.side,
   );
   return {
     role: represented ? "litigant" : "pip",

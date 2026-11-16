@@ -2,3 +2,4 @@ node_modules
 .next
 apps/dristi-app/public/vendor
 package-lock.json
+apps/dristi-app/scripts/extraction-report.md

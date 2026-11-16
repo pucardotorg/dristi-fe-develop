@@ -130,7 +130,7 @@ export function useDropTarget({
         filesRef.current(filesFromDrop(event.dataTransfer));
       },
     }),
-    [setOver]
+    [setOver],
   );
 
   return { isOver, dropProps };

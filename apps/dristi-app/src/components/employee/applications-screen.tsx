@@ -38,21 +38,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  sideLabel,
-  type LifecycleApplication,
-} from "@/lib/applications/lifecycle";
-import {
-  today,
-  useApplicationsReady,
-  useLifecycleApplications,
-} from "@/lib/applications/store";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { sideLabel, type LifecycleApplication } from "@/lib/applications/lifecycle";
+import { today, useApplicationsReady, useLifecycleApplications } from "@/lib/applications/store";
 import {
   APPLICATION_VIEWS,
   applicationsIn,
@@ -67,15 +55,8 @@ import {
 } from "@/lib/employee/application-queue";
 import { caseOf, causeTitleOf } from "@/lib/employee/application-tasks";
 import { nextApplicationOrderKey } from "@/lib/employee/application-order-draft";
-import {
-  pendingOrderStage,
-  pendingOrderStageLabel,
-} from "@/lib/employee/pending-orders";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { pendingOrderStage, pendingOrderStageLabel } from "@/lib/employee/pending-orders";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { notify } from "@/components/feedback";
 import { useTranslations } from "next-intl";
@@ -171,7 +152,6 @@ export function ApplicationsScreen({
     router.replace(`/employee/applications?view=${view}`, { scroll: false });
   }
 
-
   /* An order already started on an application, and where it stands — so a row the bench
      has acted on does not read as untouched until the order is signed. */
   const orders = usePendingOrders();
@@ -186,10 +166,14 @@ export function ApplicationsScreen({
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <h1 className="text-title text-balance font-semibold">{t("applicationsScreen_applications")}</h1>
+        <h1 className="text-title text-balance font-semibold">
+          {t("applicationsScreen_applications")}
+        </h1>
         {/* The day the bench is working, as a cause list heads itself: To onboard and To
             decide are *today's* work (Anshumanth, 2026-10-08). */}
-        <p className="text-body text-muted-foreground">{t("applicationsScreen_todayTodayLabel", { todayLabel: todayLabel(on) })}</p>
+        <p className="text-body text-muted-foreground">
+          {t("applicationsScreen_todayTodayLabel", { todayLabel: todayLabel(on) })}
+        </p>
       </header>
 
       <section className="flex min-w-0 flex-col gap-6 rounded-xl border border-hairline bg-card p-6 shadow-raised">
@@ -229,7 +213,9 @@ export function ApplicationsScreen({
                   {query ? <SearchXIcon aria-hidden /> : <InboxIcon aria-hidden />}
                 </EmptyMedia>
                 <EmptyTitle className="text-title-s font-semibold">
-                  {query ? t("applicationsScreen_noApplicationMatchesThisSearch") : translateText(t, EMPTY[view].title)}
+                  {query
+                    ? t("applicationsScreen_noApplicationMatchesThisSearch")
+                    : translateText(t, EMPTY[view].title)}
                 </EmptyTitle>
                 <EmptyDescription className="text-body">
                   {query
@@ -253,7 +239,11 @@ export function ApplicationsScreen({
               {/* Phones get the same bands as the table, each headed the same way. */}
               <div className="flex flex-col gap-6 md:hidden">
                 {(banded ? bandsOf(rows, on) : [{ id: "rows", label: "", rows }]).map((band) => (
-                  <section key={band.id} className="flex flex-col gap-3" aria-label={band.label || undefined}>
+                  <section
+                    key={band.id}
+                    className="flex flex-col gap-3"
+                    aria-label={band.label || undefined}
+                  >
                     {band.label ? (
                       <h2 className="flex items-baseline gap-2 text-body-compact font-semibold">
                         {band.label}
@@ -304,7 +294,6 @@ export function ApplicationsScreen({
             </div>
           ) : null}
         </div>
-
       </section>
 
       <ApplicationDialog
@@ -329,11 +318,9 @@ export function ApplicationsScreen({
             ?.focus()
         }
       />
-
     </div>
   );
 }
-
 
 /**
  * The views as a single-select pill row — the pending-tasks row (`chrome/pill-plate.ts`).
@@ -373,7 +360,11 @@ function ViewPills({
                 <span className="inline-flex">
                   <ToggleGroupItem
                     value={entry.id}
-                    aria-label={count === null ? translateText(t, entry.label) : `${translateText(t, entry.label)}, ${count}`}
+                    aria-label={
+                      count === null
+                        ? translateText(t, entry.label)
+                        : `${translateText(t, entry.label)}, ${count}`
+                    }
                     className={PILL_ITEM}
                   >
                     <span>{translateText(t, entry.label)}</span>
@@ -427,14 +418,16 @@ function StatusCell({
            reads the same whatever the line under it says. */
         <span className="flex flex-wrap items-center gap-2">
           <span className="font-medium text-foreground">{line.word}</span>
-          {line.due === "overdue" ? <Badge variant="destructive">{t("applicationsScreen_overdue")}</Badge> : null}
-          {line.due === "today" ? <Badge variant="warning">{t("applicationsScreen_dueToday")}</Badge> : null}
+          {line.due === "overdue" ? (
+            <Badge variant="destructive">{t("applicationsScreen_overdue")}</Badge>
+          ) : null}
+          {line.due === "today" ? (
+            <Badge variant="warning">{t("applicationsScreen_dueToday")}</Badge>
+          ) : null}
         </span>
       )}
       {line.detail ? (
-        <span
-          className={app.objectionId ? "font-medium text-foreground" : "text-muted-foreground"}
-        >
+        <span className={app.objectionId ? "font-medium text-foreground" : "text-muted-foreground"}>
           {line.detail}
         </span>
       ) : null}
@@ -466,12 +459,20 @@ function ApplicationsTable({
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={cn(TABLE_HEAD, "min-w-36 whitespace-normal")}>{t("applicationsScreen_application")}</TableHead>
-          <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>{t("applicationsScreen_case")}</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "min-w-36 whitespace-normal")}>
+            {t("applicationsScreen_application")}
+          </TableHead>
+          <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
+            {t("applicationsScreen_case")}
+          </TableHead>
           {/* The two short columns take their content's width; what is left goes to the
               columns that carry words, so Status never wraps a badge onto its own line. */}
-          <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>{t("applicationsScreen_number")}</TableHead>
-          <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>{t("applicationsScreen_filed")}</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>
+            {t("applicationsScreen_number")}
+          </TableHead>
+          <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>
+            {t("applicationsScreen_filed")}
+          </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
             {closed ? t("applicationsScreen_outcome") : t("applicationsScreen_status")}
           </TableHead>
@@ -502,10 +503,7 @@ function ApplicationsTable({
           {band.rows.map((app) => {
             const record = caseOf(app);
             return (
-              <TableRow
-                key={app.id}
-                {...rowActivation(tableRowClass({ selectable: false }))}
-              >
+              <TableRow key={app.id} {...rowActivation(tableRowClass({ selectable: false }))}>
                 <TableCell className={cn(TABLE_CELL, "align-top", "min-w-36 whitespace-normal")}>
                   {/* The side rides inside the opener: on its own line under it, the
                       opener's 40px floor left a gap between the two. */}
@@ -518,9 +516,7 @@ function ApplicationsTable({
                   >
                     {app.typeLabel}
                     {/* Under the application's name, the side alone says who filed it. */}
-                    <span className="font-normal text-muted-foreground">
-                      {sideLabel(app.side)}
-                    </span>
+                    <span className="font-normal text-muted-foreground">{sideLabel(app.side)}</span>
                   </button>
                 </TableCell>
                 <TableCell className={cn(TABLE_CELL, "align-top", "min-w-40 whitespace-normal")}>
@@ -529,7 +525,10 @@ function ApplicationsTable({
                     {record ? (
                       /* A number is read whole: it never breaks at its hyphens. */
                       <span className="whitespace-nowrap text-muted-foreground">
-                        <Identifier value={record.caseNumber} label={t("applicationsScreen_caseNumber")} />
+                        <Identifier
+                          value={record.caseNumber}
+                          label={t("applicationsScreen_caseNumber")}
+                        />
                       </span>
                     ) : null}
                   </span>
@@ -538,14 +537,22 @@ function ApplicationsTable({
                   <span className="flex flex-col gap-1">
                     <Identifier
                       value={app.applicationNumber ?? app.temporaryId ?? "—"}
-                      label={app.applicationNumber ? t("applicationsScreen_applicationNumber") : t("applicationsScreen_temporaryNumber")}
+                      label={
+                        app.applicationNumber
+                          ? t("applicationsScreen_applicationNumber")
+                          : t("applicationsScreen_temporaryNumber")
+                      }
                     />
                     {app.applicationNumber ? null : (
-                      <span className="text-muted-foreground">{t("applicationsScreen_temporary")}</span>
+                      <span className="text-muted-foreground">
+                        {t("applicationsScreen_temporary")}
+                      </span>
                     )}
                   </span>
                 </TableCell>
-                <TableCell className={cn(TABLE_CELL, "align-top", "whitespace-nowrap tabular-nums")}>
+                <TableCell
+                  className={cn(TABLE_CELL, "align-top", "whitespace-nowrap tabular-nums")}
+                >
                   {shortDate(app.submittedOn ?? app.createdOn)}
                 </TableCell>
                 <TableCell className={cn(TABLE_CELL, "align-top", "min-w-56 whitespace-normal")}>

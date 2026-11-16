@@ -221,12 +221,18 @@ describe("proxyToApi", () => {
 
   it("passes upstream error statuses through unchanged", async () => {
     const { impl } = fakeFetch(() =>
-      Response.json({ detail: "Too many requests." }, { status: 429, headers: { "retry-after": "30" } }),
+      Response.json(
+        { detail: "Too many requests." },
+        { status: 429, headers: { "retry-after": "30" } },
+      ),
     );
-    const res = await proxyToApi(new Request("http://app/api/v1/auth/otp/request", { method: "POST" }), {
-      api: ok,
-      fetchImpl: impl,
-    });
+    const res = await proxyToApi(
+      new Request("http://app/api/v1/auth/otp/request", { method: "POST" }),
+      {
+        api: ok,
+        fetchImpl: impl,
+      },
+    );
     assert.equal(res.status, 429);
     assert.equal(res.headers.get("retry-after"), "30");
   });
@@ -246,7 +252,10 @@ describe("proxyToApi", () => {
     const impl = (async () => {
       throw new TypeError("fetch failed");
     }) as typeof fetch;
-    const res = await proxyToApi(new Request("http://app/api/v1/health"), { api: ok, fetchImpl: impl });
+    const res = await proxyToApi(new Request("http://app/api/v1/health"), {
+      api: ok,
+      fetchImpl: impl,
+    });
     assert.equal(res.status, 502);
     assert.equal((await res.json()).code, "upstream_unreachable");
   });

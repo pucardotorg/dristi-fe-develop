@@ -4,13 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
 
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemTitle,
-  ItemGroup,
-} from "@/components/ui/item";
+import { Item, ItemActions, ItemContent, ItemTitle, ItemGroup } from "@/components/ui/item";
 import { CourtActionRow } from "@/components/employee/todays-actions-screen";
 import { formatCourtDay, isoDay } from "@/lib/employee/hearings";
 import { courtNavClubbed, courtNavClubbedTotal } from "@/lib/employee/navigation";
@@ -49,8 +43,7 @@ export function TodaysScheduleScreen() {
           {t("todaysScheduleScreen_todaysSchedule")}
         </h1>
         <p className="text-body text-muted-foreground tabular-nums">
-          Today, {formatCourtDay(today)} ·{" "}
-          {total === 1 ? "1 waiting" : `${total} waiting`}
+          Today, {formatCourtDay(today)} · {total === 1 ? "1 waiting" : `${total} waiting`}
         </p>
       </header>
 
@@ -65,9 +58,7 @@ export function TodaysScheduleScreen() {
                 <span className="text-caption font-medium text-muted-foreground">
                   {t("todaysScheduleScreen_conductingToday")}
                 </span>
-                <ItemTitle className="text-title-s font-semibold">
-                  {hearings.label}
-                </ItemTitle>
+                <ItemTitle className="text-title-s font-semibold">{hearings.label}</ItemTitle>
               </ItemContent>
               <ItemActions className="gap-3">
                 <span className="flex items-baseline gap-1.5">
@@ -78,10 +69,7 @@ export function TodaysScheduleScreen() {
                     {t("todaysScheduleScreen_listed")}
                   </span>
                 </span>
-                <ChevronRightIcon
-                  aria-hidden
-                  className="size-5 text-muted-foreground"
-                />
+                <ChevronRightIcon aria-hidden className="size-5 text-muted-foreground" />
               </ItemActions>
             </Link>
           </Item>

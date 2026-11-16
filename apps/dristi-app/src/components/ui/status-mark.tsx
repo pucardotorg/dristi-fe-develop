@@ -35,7 +35,11 @@ import { cn } from "@/lib/utils";
 export type MarkTone = "success" | "error" | "warning" | "info" | "neutral" | "danger";
 export type MarkSize = 14 | 16 | 20 | 24 | 40 | 56 | 60 | 72 | 96;
 
-type IconType = React.ComponentType<{ className?: string; strokeWidth?: number; "aria-hidden"?: boolean }>;
+type IconType = React.ComponentType<{
+  className?: string;
+  strokeWidth?: number;
+  "aria-hidden"?: boolean;
+}>;
 
 const SIZE: Record<MarkSize, string> = {
   14: "size-3.5",
@@ -71,7 +75,6 @@ const RING: Partial<Record<MarkTone, string>> = {
  * as the window settling, not as lag.
  */
 export const HERO_START = 160;
-
 
 /**
  * Hold a hero mark on its first frame until the browser has painted it, so a slow first
@@ -156,7 +159,11 @@ export function StatusMark({
     >
       {ring ? (
         <span
-          className={cn("absolute inset-0 rounded-full", ring, tone === "success" ? "fb-ring" : "fb-ring-soft")}
+          className={cn(
+            "absolute inset-0 rounded-full",
+            ring,
+            tone === "success" ? "fb-ring" : "fb-ring-soft",
+          )}
         />
       ) : null}
       <span
@@ -170,7 +177,21 @@ export function StatusMark({
       >
         {iconTone && Icon ? (
           <span className={cn("flex", !still && "fb-glyph-in")}>
-            <Icon className={size <= 16 ? "size-2.5" : size <= 24 ? "size-3.5" : size <= 40 ? "size-5" : size <= 72 ? "size-7" : "size-10"} strokeWidth={size <= 24 ? 2.4 : 2} aria-hidden />
+            <Icon
+              className={
+                size <= 16
+                  ? "size-2.5"
+                  : size <= 24
+                    ? "size-3.5"
+                    : size <= 40
+                      ? "size-5"
+                      : size <= 72
+                        ? "size-7"
+                        : "size-10"
+              }
+              strokeWidth={size <= 24 ? 2.4 : 2}
+              aria-hidden
+            />
           </span>
         ) : (
           <span
@@ -182,7 +203,16 @@ export function StatusMark({
             )}
             style={{ width: `${glyphShare * 100}%`, height: `${glyphShare * 100}%` }}
           >
-            <svg viewBox="0 0 24 24" className="size-full" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <svg
+              viewBox="0 0 24 24"
+              className="size-full"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={stroke}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
               <Glyph tone={tone} full={full} quick={quick} small={small} />
             </svg>
           </span>
@@ -192,9 +222,24 @@ export function StatusMark({
   );
 }
 
-function Glyph({ tone, full, quick, small }: { tone: MarkTone; full: boolean; quick: boolean; small: boolean }) {
+function Glyph({
+  tone,
+  full,
+  quick,
+  small,
+}: {
+  tone: MarkTone;
+  full: boolean;
+  quick: boolean;
+  small: boolean;
+}) {
   if (tone === "success") {
-    return <path className={full ? "fb-draw" : quick ? "fb-draw-quick" : undefined} d="M5 12.5l4.5 4.5L19 7.5" />;
+    return (
+      <path
+        className={full ? "fb-draw" : quick ? "fb-draw-quick" : undefined}
+        d="M5 12.5l4.5 4.5L19 7.5"
+      />
+    );
   }
   if (tone === "error") {
     return full ? (
@@ -212,7 +257,14 @@ function Glyph({ tone, full, quick, small }: { tone: MarkTone; full: boolean; qu
     const w = small ? 3.6 : 3;
     return (
       <g fill="currentColor" stroke="none">
-        <rect className={full ? "fb-bar" : undefined} x={12 - w / 2} y="3.5" width={w} height="11" rx={w / 2} />
+        <rect
+          className={full ? "fb-bar" : undefined}
+          x={12 - w / 2}
+          y="3.5"
+          width={w}
+          height="11"
+          rx={w / 2}
+        />
         <circle className={full ? "fb-dot" : undefined} cx="12" cy="19.2" r={small ? 2.1 : 1.8} />
       </g>
     );

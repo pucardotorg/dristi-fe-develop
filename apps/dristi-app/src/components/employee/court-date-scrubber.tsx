@@ -248,7 +248,9 @@ export function CourtDateScrubber({
                     ? "bg-accent-strong text-foreground"
                     : "bg-foreground text-background",
               )}
-              style={{ "--scrub-anchor": ((preview + 0.5) / NEARBY_COUNT) * 100 } as React.CSSProperties}
+              style={
+                { "--scrub-anchor": ((preview + 0.5) / NEARBY_COUNT) * 100 } as React.CSSProperties
+              }
               title={formatCourtDay(previewDay)}
             >
               <span className="court-scrubber-pointer absolute -top-1 size-1.5 -translate-x-1/2 rounded-full bg-inherit" />

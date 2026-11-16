@@ -17,11 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { causeTitle } from "@/lib/employee/hearings";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { type SignBailBond } from "@/lib/employee/sign-bail-bonds";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
@@ -90,9 +86,7 @@ export function SignBailBondsTable({
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "w-12")}>
             <Checkbox
-              checked={
-                allSelected ? true : someSelected ? "indeterminate" : false
-              }
+              checked={allSelected ? true : someSelected ? "indeterminate" : false}
               disabled={rows.length === 0}
               onCheckedChange={(next) => onToggleAll(next === true)}
               /* Names what the control does to what is on screen, not to the whole queue.
@@ -139,7 +133,10 @@ export function SignBailBondsTable({
                 <Checkbox
                   checked={selected}
                   onCheckedChange={() => onToggle(bond)}
-                  aria-label={t("signBailBondsTable_selectTheBailBondOfLitigant", { litigant: bond.litigant, courtText: courtText(bond.caseNumber) })}
+                  aria-label={t("signBailBondsTable_selectTheBailBondOfLitigant", {
+                    litigant: bond.litigant,
+                    courtText: courtText(bond.caseNumber),
+                  })}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -153,7 +150,7 @@ export function SignBailBondsTable({
                   type="button"
                   onClick={() => onOpen(bond)}
                   {...rowOpener}
-                className={rowOpenerClass}
+                  className={rowOpenerClass}
                 >
                   <span className="sr-only">
                     {t("signBailBondsTable_readTheBailBondOfLitigant", { litigant: bond.litigant })}
@@ -161,10 +158,11 @@ export function SignBailBondsTable({
                   {causeTitle(bond)}
                 </button>
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "whitespace-nowrap")}
-              >
-                <Identifier value={bond.caseNumber} label={t("signBailBondsTable_caseNumberLabel")} />
+              <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
+                <Identifier
+                  value={bond.caseNumber}
+                  label={t("signBailBondsTable_caseNumberLabel")}
+                />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
                 {bond.litigant}

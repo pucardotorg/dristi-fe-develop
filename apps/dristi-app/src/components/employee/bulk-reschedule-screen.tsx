@@ -10,15 +10,10 @@ import {
 } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 
 import { BulkRescheduleTable } from "@/components/employee/bulk-reschedule-table";
-import {
-  NewDateFilterField,
-} from "@/components/employee/new-date-filter";
+import { NewDateFilterField } from "@/components/employee/new-date-filter";
 import { QueueAnnouncer } from "@/components/employee/queue-announcer";
 import { QueueSearchField } from "@/components/employee/queue-search-field";
 import { Button } from "@/components/ui/button";
@@ -32,12 +27,7 @@ import {
   DescriptionRow,
   DescriptionTerm,
 } from "@/components/ui/description-list";
-import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import {
   Empty,
   EmptyContent,
@@ -46,11 +36,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   boardAfterMoves,
@@ -229,9 +215,7 @@ export function BulkRescheduleScreen() {
      "Select date range" while the board shows one day would be the control lying about
      its own value. The lazy initialiser reads the clock the reader is standing on —
      hydration runs it again on the client, so a server guess never sticks. */
-  const [filters, setFilters] = React.useState<RangeFilters>(() =>
-    todayOnly(today),
-  );
+  const [filters, setFilters] = React.useState<RangeFilters>(() => todayOnly(today));
 
   /**
    * What the bench has picked — held as what is *in*, and empty to start with.
@@ -244,9 +228,7 @@ export function BulkRescheduleScreen() {
    * afterwards. Storing what was chosen also means the count and the act can never
    * disagree: both read the same set, intersected with what is on screen.
    */
-  const [selected, setSelected] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [selected, setSelected] = React.useState<ReadonlySet<string>>(() => new Set());
 
   const [moved, setMoved] = React.useState<MovedTo>({});
 
@@ -260,9 +242,7 @@ export function BulkRescheduleScreen() {
    * that had no new hearing date. Splitting them lets each list be about one thing: what
    * is still to move, and what moved.
    */
-  const [tab, setTab] = React.useState<"unscheduled" | "scheduled">(
-    "unscheduled",
-  );
+  const [tab, setTab] = React.useState<"unscheduled" | "scheduled">("unscheduled");
 
   /**
    * Which of the record's new dates is on screen — **all of them, to start with.**
@@ -314,14 +294,9 @@ export function BulkRescheduleScreen() {
    * that does will not have to remember this.
    */
   const recordDays = rescheduledDays(scheduled);
-  const shownRecordDay = recordDays.some((entry) => entry.day === shownDay)
-    ? shownDay
-    : null;
+  const shownRecordDay = recordDays.some((entry) => entry.day === shownDay) ? shownDay : null;
   const recordRows =
-    shownRecordDay === null
-      ? scheduled
-      : scheduled.filter((row) => row.newDate === shownRecordDay);
-
+    shownRecordDay === null ? scheduled : scheduled.filter((row) => row.newDate === shownRecordDay);
 
   /* Derived from what is on screen, so the act can never reach a row the range has
      dropped — an id left in the set by a narrowed range simply stops counting, and a row
@@ -464,9 +439,7 @@ export function BulkRescheduleScreen() {
 
         <Tabs
           value={tab}
-          onValueChange={(value) =>
-            setTab(value as "unscheduled" | "scheduled")
-          }
+          onValueChange={(value) => setTab(value as "unscheduled" | "scheduled")}
           className="flex min-w-0 flex-col gap-6"
         >
           {/* Line `TabsList`, not the pill track — the same composition the process queue
@@ -521,11 +494,7 @@ export function BulkRescheduleScreen() {
                 `QueueAnnouncer`. This screen paginates nothing, so the whole range is
                 what is showing. One per tab, because switching tabs changes the answer
                 and the inactive pane is unmounted. */}
-            <QueueAnnouncer
-              from={1}
-              to={unscheduled.length}
-              total={unscheduled.length}
-            />
+            <QueueAnnouncer from={1} to={unscheduled.length} total={unscheduled.length} />
 
             {unscheduled.length === 0 ? (
               <NothingToMove
@@ -561,19 +530,12 @@ export function BulkRescheduleScreen() {
             )}
           </TabsContent>
 
-          <TabsContent
-            value="scheduled"
-            className="flex min-w-0 flex-col gap-4 outline-none"
-          >
+          <TabsContent value="scheduled" className="flex min-w-0 flex-col gap-4 outline-none">
             {/* Mounted whatever the record holds, including nothing — a live region has
                 to be in the DOM before the change to be read out at all
                 (`QueueAnnouncer`). Against the record's own total, so narrowing to one
                 date is spoken as the window it is. */}
-            <QueueAnnouncer
-              from={1}
-              to={recordRows.length}
-              total={scheduled.length}
-            />
+            <QueueAnnouncer from={1} to={recordRows.length} total={scheduled.length} />
 
             {scheduled.length === 0 ? (
               <NothingRescheduled />
@@ -804,10 +766,7 @@ function RangeField({
       ? undefined
       : {
           from: parseIsoDay(draft.from),
-          to:
-            draft.to === null || draft.from === draft.to
-              ? undefined
-              : parseIsoDay(draft.to),
+          to: draft.to === null || draft.from === draft.to ? undefined : parseIsoDay(draft.to),
         };
 
   function pick(next: DateRange | undefined) {
@@ -922,10 +881,7 @@ function RangeField({
                well as pointer, because pressing either does both. */
             onInteractOutside={(event) => {
               const target = event.detail.originalEvent.target;
-              if (
-                target instanceof Element &&
-                target.closest(`[data-range-part="${id}"]`)
-              ) {
+              if (target instanceof Element && target.closest(`[data-range-part="${id}"]`)) {
                 event.preventDefault();
               }
             }}
@@ -1148,11 +1104,7 @@ function RescheduledRecord({
             {t("bulkRescheduleScreen_newHearingDate")}
           </span>
           <div className="sm:w-64">
-            <NewDateFilterField
-              days={days}
-              value={shownDay}
-              onChange={onShowDay}
-            />
+            <NewDateFilterField days={days} value={shownDay} onChange={onShowDay} />
           </div>
         </div>
       ) : null}
@@ -1180,7 +1132,9 @@ function RescheduledRecord({
             caption={
               shownDay === null
                 ? t("bulkRescheduleScreen_hearingsThisSessionHasRescheduled")
-                : t("bulkRescheduleScreen_hearingsRescheduledToFormatCourtDay", { formatCourtDay: formatCourtDay(shownDay) })
+                : t("bulkRescheduleScreen_hearingsRescheduledToFormatCourtDay", {
+                    formatCourtDay: formatCourtDay(shownDay),
+                  })
             }
           />
         </div>
@@ -1279,10 +1233,11 @@ function RescheduleItemList({
               <span className="pt-0.5">
                 <Checkbox
                   checked={isSelected}
-                  onCheckedChange={(next) =>
-                    selection.onToggle(row.id, next === true)
-                  }
-                  aria-label={t("bulkRescheduleScreen_selectTitleCourtText", { title: row.title, courtText: courtText(row.caseNumber) })}
+                  onCheckedChange={(next) => selection.onToggle(row.id, next === true)}
+                  aria-label={t("bulkRescheduleScreen_selectTitleCourtText", {
+                    title: row.title,
+                    courtText: courtText(row.caseNumber),
+                  })}
                 />
               </span>
             ) : null}
@@ -1290,8 +1245,7 @@ function RescheduleItemList({
               <p className="text-body-compact font-medium">{row.title}</p>
               <p className="text-caption text-muted-foreground">
                 <Identifier value={row.caseNumber} label={t("bulkRescheduleScreen_caseNumber")} /> ·{" "}
-                {courtCaseStageLabel(row.stage)} ·{" "}
-                {courtHearingPurposeLabel(row.purpose)}
+                {courtCaseStageLabel(row.stage)} · {courtHearingPurposeLabel(row.purpose)}
               </p>
               <p className="text-body-compact tabular-nums text-muted-foreground">
                 {selection ? "" : t("bulkRescheduleScreen_previously")}
@@ -1302,7 +1256,9 @@ function RescheduleItemList({
                   the record exists to state. */}
               {showNewDate && row.newDate ? (
                 <p className="text-body-compact font-medium tabular-nums">
-                  {t("bulkRescheduleScreen_newHearingDateFormatListingDate", { formatListingDate: formatListingDate(row.newDate) })}
+                  {t("bulkRescheduleScreen_newHearingDateFormatListingDate", {
+                    formatListingDate: formatListingDate(row.newDate),
+                  })}
                 </p>
               ) : null}
             </div>
@@ -1693,8 +1649,8 @@ function RescheduleOverlay({
       description={
         stage === "day" ? (
           <DialogDescription className="text-body-compact tabular-nums text-muted-foreground">
-            {count} selected {plural(count, "hearing", "hearings")}{" "}
-            {plural(count, "moves", "move")} to one new date.
+            {count} selected {plural(count, "hearing", "hearings")} {plural(count, "moves", "move")}{" "}
+            to one new date.
           </DialogDescription>
         ) : null
       }
@@ -1781,11 +1737,7 @@ function RescheduleOverlay({
                 with verbs (*Approve* → *Confirm approval*) because each of its stages is a
                 decision. This one is not: picking a day is data collection, and the
                 decision is single and lives at the end. */}
-            <Button
-              type="button"
-              disabled={day === null}
-              onClick={() => go("sign")}
-            >
+            <Button type="button" disabled={day === null} onClick={() => go("sign")}>
               {t("common_next")}
             </Button>
           </>
@@ -1981,11 +1933,7 @@ function SignOrder({
   return (
     /* Flush: the strip and the rows draw their own rules edge to edge, so the card's own
        padding is off and `overflow-hidden` is what keeps the band inside the radius. */
-    <Card
-      variant="raised"
-      size="sm"
-      className="gap-0 overflow-hidden py-0"
-    >
+    <Card variant="raised" size="sm" className="gap-0 overflow-hidden py-0">
       {/* Once signed, the window's outcome above says so; the card keeps the facts. */}
       {signed ? null : (
         <div className="flex items-center gap-2 border-b border-hairline px-4 py-2.5 text-body-compact text-muted-foreground">
@@ -2010,7 +1958,9 @@ function SignOrder({
         className="grid grid-cols-1 px-4 sm:grid-cols-[auto_1fr] [&>*]:col-span-1 [&>*]:gap-x-4 [&>*]:gap-y-0.5 sm:[&>*]:col-span-2 [&>*]:grid-cols-subgrid"
       >
         <DescriptionRow className="border-hairline">
-          <DescriptionTerm className="text-body-compact">{t("bulkRescheduleScreen_cases")}</DescriptionTerm>
+          <DescriptionTerm className="text-body-compact">
+            {t("bulkRescheduleScreen_cases")}
+          </DescriptionTerm>
           <DescriptionDetails className="text-body-compact tabular-nums">
             {cases} {plural(cases, "case", "cases")}
           </DescriptionDetails>
@@ -2030,4 +1980,3 @@ function SignOrder({
     </Card>
   );
 }
-

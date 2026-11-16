@@ -4,10 +4,7 @@ import * as React from "react";
 
 import { useCourtText } from "@/components/court/court-provider";
 import { ListingApplicationDialog } from "@/components/employee/listing-application-dialog";
-import type {
-  ComposerApplication,
-  ComposerFact,
-} from "@/components/employee/order-sections";
+import type { ComposerApplication, ComposerFact } from "@/components/employee/order-sections";
 import { OrderDataFlags } from "@/components/employee/order-data-flags";
 import { GroupedCaseHistory } from "@/components/employee/grouped-case-history";
 import { OrderEditorComposer } from "@/components/employee/order-editor";
@@ -30,11 +27,7 @@ import {
 } from "@/lib/employee/listing-applications";
 import type { ComposerContext } from "@/lib/employee/order-composer";
 import { orderDraftKey, orderInitialDraft } from "@/lib/employee/order-door";
-import {
-  withCausePosting,
-  type Appearance,
-  type OrderDraft,
-} from "@/lib/employee/order-draft";
+import { withCausePosting, type Appearance, type OrderDraft } from "@/lib/employee/order-draft";
 import { useTranslations } from "next-intl";
 
 /**
@@ -106,17 +99,10 @@ function OrderDoorBody({ door }: { door: OrderDoor }) {
   const courtText = useCourtText();
   const { hearing, context, today } = door;
   const appearances = hearing?.appearances;
-  const initial = React.useMemo(
-    () => orderInitialDraft(door.initial),
-    [door.initial],
-  );
-  const [stored, setDraft] = useOrderDraft(
-    orderDraftKey(door.draftKey),
-    initial,
-  );
+  const initial = React.useMemo(() => orderInitialDraft(door.initial), [door.initial]);
+  const [stored, setDraft] = useOrderDraft(orderDraftKey(door.draftKey), initial);
   const draft = useCausePosting(door, stored);
-  const [openApplication, setOpenApplication] =
-    React.useState<ListingApplication | null>(null);
+  const [openApplication, setOpenApplication] = React.useState<ListingApplication | null>(null);
 
   const listing = hearing?.applications ?? [];
   const applications: ComposerApplication[] = listing.map((application) => ({
@@ -129,12 +115,7 @@ function OrderDoorBody({ door }: { door: OrderDoor }) {
   const openById = (id: string) =>
     setOpenApplication(listing.find((entry) => entry.id === id) ?? null);
   const applicationDialog = hearing
-    ? (
-        decide: (
-          id: string,
-          decision: ListingApplicationDecision | null,
-        ) => void,
-      ) => (
+    ? (decide: (id: string, decision: ListingApplicationDecision | null) => void) => (
         <ListingApplicationDialog
           hearing={hearing.hearing}
           application={openApplication}
@@ -160,9 +141,7 @@ function OrderDoorBody({ door }: { door: OrderDoor }) {
         caseNumber: door.document.caseNumber,
         origin:
           door.origin ??
-          (hearing
-            ? `Hearing · ${courtHearingPurposeLabel(hearing.purpose)}`
-            : "Order"),
+          (hearing ? `Hearing · ${courtHearingPurposeLabel(hearing.purpose)}` : "Order"),
       }}
       heading={door.heading}
       facts={door.facts}
@@ -184,15 +163,9 @@ function OrderDoorBody({ door }: { door: OrderDoor }) {
            process and application, as the cause list's sheet has it (owner,
            2026-10-23). A door with no listing (cognizance, an application) has no
            sittings to draw on, so it brings its own (`door.history`). */
-        hearing ? (
-          <GroupedCaseHistory hearing={hearing.hearing} />
-        ) : (
-          door.history
-        )
+        hearing ? <GroupedCaseHistory hearing={hearing.hearing} /> : door.history
       }
-      dataFlagsContent={
-        hearing ? <OrderDataFlags hearing={hearing.hearing} /> : undefined
-      }
+      dataFlagsContent={hearing ? <OrderDataFlags hearing={hearing.hearing} /> : undefined}
       context={context}
       purpose={hearing?.purpose}
       fixedIds={door.fixedIds}
@@ -219,10 +192,7 @@ function OrderDoorBody({ door }: { door: OrderDoor }) {
  * door and the reader enters the next hearing — the posting is set on the cause list, and
  * the order only shows it.
  */
-export function useCausePosting(
-  door: OrderDoor,
-  draft: OrderDraft,
-): OrderDraft {
+export function useCausePosting(door: OrderDoor, draft: OrderDraft): OrderDraft {
   const session = useHearingSession();
   const readerPosts = useReaderPostsNextHearing();
   return door.hearing && readerPosts

@@ -17,11 +17,41 @@ export const SCRUTINY_DRAFT_ID = "draft-scrutiny-sainaba";
 
 /** Intake slot keys the seeded draft uses — the officer's boxes are drawn on these. */
 export const SCRUTINY_FILES = {
-  cheque1: { id: "sc-f-c1f", name: "cheque-1-front.svg", size: 48_120, type: "image/svg+xml", ext: "SVG" },
-  cheque2: { id: "sc-f-c2f", name: "cheque-2-front.svg", size: 47_640, type: "image/svg+xml", ext: "SVG" },
-  adCard: { id: "sc-f-c1ad", name: "ad-card-scan.svg", size: 62_300, type: "image/svg+xml", ext: "SVG" },
-  ifscEvidence: { id: "sc-f-ifsc", name: "bank-branch-certificate.svg", size: 39_880, type: "image/svg+xml", ext: "SVG" },
-  memo2: { id: "sc-f-c2m", name: "cheque-2-return-memo.svg", size: 41_200, type: "image/svg+xml", ext: "SVG" },
+  cheque1: {
+    id: "sc-f-c1f",
+    name: "cheque-1-front.svg",
+    size: 48_120,
+    type: "image/svg+xml",
+    ext: "SVG",
+  },
+  cheque2: {
+    id: "sc-f-c2f",
+    name: "cheque-2-front.svg",
+    size: 47_640,
+    type: "image/svg+xml",
+    ext: "SVG",
+  },
+  adCard: {
+    id: "sc-f-c1ad",
+    name: "ad-card-scan.svg",
+    size: 62_300,
+    type: "image/svg+xml",
+    ext: "SVG",
+  },
+  ifscEvidence: {
+    id: "sc-f-ifsc",
+    name: "bank-branch-certificate.svg",
+    size: 39_880,
+    type: "image/svg+xml",
+    ext: "SVG",
+  },
+  memo2: {
+    id: "sc-f-c2m",
+    name: "cheque-2-return-memo.svg",
+    size: 41_200,
+    type: "image/svg+xml",
+    ext: "SVG",
+  },
 } as const satisfies Record<string, StoredFileRef>;
 
 /**
@@ -231,7 +261,6 @@ export const SCRUTINY_DEFECTS_RAFI: Defect[] = [
   },
 ];
 
-
 /* ───────────────────────── more returns for the demo ───────────────────────── */
 
 /**
@@ -252,12 +281,60 @@ export type ExtraReturn = {
 };
 
 export const EXTRA_RETURNS: ExtraReturn[] = [
-  { id: "t-retharsha", caseId: "c-harsha", draftId: "draft-scrutiny-harsha", base: "rafi", complainant: "Harsha Patel", accused: "Dinesh Solanki", returnedAgo: 1 },
-  { id: "t-retfarida", caseId: "c-farida", draftId: "draft-scrutiny-farida", base: "lakshmi", complainant: "Farida Sheikh", accused: "Kamal Traders", returnedAgo: 2 },
-  { id: "t-retvikram", caseId: "c-vikram", draftId: "draft-scrutiny-vikram", base: "sainaba", complainant: "Vikram Desai", accused: "Om Sai Logistics", returnedAgo: 1 },
-  { id: "t-retpriya", caseId: "c-priya", draftId: "draft-scrutiny-priya", base: "rafi", complainant: "Priya Mehta", accused: "Rajesh Bhatt", returnedAgo: 4 },
-  { id: "t-retimran", caseId: "c-imran", draftId: "draft-scrutiny-imran", base: "lakshmi", complainant: "Imran Qureshi", accused: "Shreeji Textiles", returnedAgo: 0 },
-  { id: "t-retgeeta", caseId: "c-geeta", draftId: "draft-scrutiny-geeta", base: "sainaba", complainant: "Geeta Rathod", accused: "Narmada Agro", returnedAgo: 3 },
+  {
+    id: "t-retharsha",
+    caseId: "c-harsha",
+    draftId: "draft-scrutiny-harsha",
+    base: "rafi",
+    complainant: "Harsha Patel",
+    accused: "Dinesh Solanki",
+    returnedAgo: 1,
+  },
+  {
+    id: "t-retfarida",
+    caseId: "c-farida",
+    draftId: "draft-scrutiny-farida",
+    base: "lakshmi",
+    complainant: "Farida Sheikh",
+    accused: "Kamal Traders",
+    returnedAgo: 2,
+  },
+  {
+    id: "t-retvikram",
+    caseId: "c-vikram",
+    draftId: "draft-scrutiny-vikram",
+    base: "sainaba",
+    complainant: "Vikram Desai",
+    accused: "Om Sai Logistics",
+    returnedAgo: 1,
+  },
+  {
+    id: "t-retpriya",
+    caseId: "c-priya",
+    draftId: "draft-scrutiny-priya",
+    base: "rafi",
+    complainant: "Priya Mehta",
+    accused: "Rajesh Bhatt",
+    returnedAgo: 4,
+  },
+  {
+    id: "t-retimran",
+    caseId: "c-imran",
+    draftId: "draft-scrutiny-imran",
+    base: "lakshmi",
+    complainant: "Imran Qureshi",
+    accused: "Shreeji Textiles",
+    returnedAgo: 0,
+  },
+  {
+    id: "t-retgeeta",
+    caseId: "c-geeta",
+    draftId: "draft-scrutiny-geeta",
+    base: "sainaba",
+    complainant: "Geeta Rathod",
+    accused: "Narmada Agro",
+    returnedAgo: 3,
+  },
 ];
 
 export const DEFECTS_BY_BASE: Record<ExtraReturn["base"], Defect[]> = {

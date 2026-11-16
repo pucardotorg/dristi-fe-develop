@@ -80,13 +80,14 @@ export function DraftOrdersTable({ rows }: { rows: HearingOrder[] }) {
           const { hearing } = order;
           return (
             <TableRow key={hearing.id} {...rowActivation(tableRowClass())}>
-              <TableCell
-                className={cn(TABLE_CELL, "min-w-48 font-medium whitespace-normal")}
-              >
+              <TableCell className={cn(TABLE_CELL, "min-w-48 font-medium whitespace-normal")}>
                 {causeTitle(hearing)}
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                <Identifier value={hearing.caseNumber} label={t("draftOrdersTable_caseNumberLabel")} />
+                <Identifier
+                  value={hearing.caseNumber}
+                  label={t("draftOrdersTable_caseNumberLabel")}
+                />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}>
                 <DrawnUpAt order={order} />
@@ -156,7 +157,10 @@ export function ContinueDrafting({
   return (
     <Button asChild variant="outline" size="sm" className={cn("text-body-compact", className)}>
       <Link href={draftOrderHref(order.hearing)} {...rowOpener}>
-        {t.rich("draftOrdersTable_continueDraftingTheOrderInCause", { causeTitle: causeTitle(order.hearing), span: (chunks) => <span className="sr-only">{chunks}</span> })}
+        {t.rich("draftOrdersTable_continueDraftingTheOrderInCause", {
+          causeTitle: causeTitle(order.hearing),
+          span: (chunks) => <span className="sr-only">{chunks}</span>,
+        })}
       </Link>
     </Button>
   );

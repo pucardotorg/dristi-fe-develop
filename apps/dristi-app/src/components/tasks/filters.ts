@@ -3,7 +3,12 @@
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { DEFAULT_FILTERS, CATEGORY_ORDER, type DueFilter, type Filters } from "@/lib/tasks/selectors";
+import {
+  DEFAULT_FILTERS,
+  CATEGORY_ORDER,
+  type DueFilter,
+  type Filters,
+} from "@/lib/tasks/selectors";
 import type { TaskCategory, TaskView } from "@/lib/tasks/types";
 
 const VIEWS: TaskView[] = ["needs-action", "waiting", "completed", "archived"];
@@ -13,8 +18,17 @@ const DUES: DueFilter[] = ["overdue", "today", "week", "before-hearing"];
  *  One value is a list of one, so the older single-choice links still open. */
 function manyOf<T extends string>(v: string | null, allowed?: readonly T[]): T[] {
   if (!v) return [];
-  const parts = [...new Set(v.split(",").map((part) => part.trim()).filter(Boolean))];
-  return (allowed ? parts.filter((part) => (allowed as readonly string[]).includes(part)) : parts) as T[];
+  const parts = [
+    ...new Set(
+      v
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean),
+    ),
+  ];
+  return (
+    allowed ? parts.filter((part) => (allowed as readonly string[]).includes(part)) : parts
+  ) as T[];
 }
 
 function oneOf<T extends string>(v: string | null, allowed: readonly T[], fallback: T): T {
@@ -65,7 +79,7 @@ export function useFilters() {
       const qs = p.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
-    [pathname, router]
+    [pathname, router],
   );
 
   const setFilters = React.useCallback(
@@ -73,7 +87,7 @@ export function useFilters() {
       const next = typeof patch === "function" ? patch(filters) : { ...filters, ...patch };
       write(next, taskId);
     },
-    [filters, taskId, write]
+    [filters, taskId, write],
   );
 
   const setTaskId = React.useCallback((id: string | null) => write(filters, id), [filters, write]);

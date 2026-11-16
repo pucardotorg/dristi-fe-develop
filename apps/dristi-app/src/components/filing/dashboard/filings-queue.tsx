@@ -65,12 +65,18 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { rowActivation, rowOpener } from "@/lib/employee/row-activation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
-
 
 /** The tone words, so a colour is never the only thing saying "this one is late". */
 const TONE_CLASS: Record<QueueRow["info"]["tone"], string> = {
@@ -220,7 +226,7 @@ export function FilingsQueue({
     (next: Partial<View>) => {
       router.replace(`${pathname}${writeView({ ...view, ...next })}`, { scroll: false });
     },
-    [router, pathname, view]
+    [router, pathname, view],
   );
 
   /*
@@ -243,7 +249,7 @@ export function FilingsQueue({
 
   const filtered = React.useMemo(
     () => applyQueueFilters(rows, { q: view.q, court, sort }),
-    [rows, view.q, court, sort]
+    [rows, view.q, court, sort],
   );
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / view.size));
@@ -261,11 +267,7 @@ export function FilingsQueue({
   const pageIds = slice.filter((row) => rowBulkable(view.tab, row)).map((row) => row.id);
   const selectedOnPage = pageIds.filter((id) => selected.has(id)).length;
   const pageState: boolean | "indeterminate" =
-    selectedOnPage === 0
-      ? false
-      : selectedOnPage === pageIds.length
-        ? true
-        : "indeterminate";
+    selectedOnPage === 0 ? false : selectedOnPage === pageIds.length ? true : "indeterminate";
 
   const body = (
     <>
@@ -287,7 +289,9 @@ export function FilingsQueue({
         ) : bulkKind === "pay" && selectedRows.length > 0 && !cards ? (
           <Button onClick={() => onBulk("pay", selectedRows)} className="shrink-0 tabular-nums">
             <WalletIcon data-icon="inline-start" aria-hidden />
-            {t("filingsQueue_payMoney", { money: money(selectedRows.reduce((sum, row) => sum + (row.amount ?? 0), 0)) })}
+            {t("filingsQueue_payMoney", {
+              money: money(selectedRows.reduce((sum, row) => sum + (row.amount ?? 0), 0)),
+            })}
           </Button>
         ) : null}
         <div className={cn("relative col-span-2", DESK_SEARCH)}>
@@ -345,7 +349,9 @@ export function FilingsQueue({
               {rows.length === 0 ? <InboxIcon aria-hidden /> : <SearchIcon aria-hidden />}
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
-              {rows.length === 0 ? emptyTitle(view.tab) : t("filingsQueue_noFilingsMatchYourSearch")}
+              {rows.length === 0
+                ? emptyTitle(view.tab)
+                : t("filingsQueue_noFilingsMatchYourSearch")}
             </EmptyTitle>
             <EmptyDescription className="text-body-compact">
               {rows.length === 0
@@ -385,7 +391,7 @@ export function FilingsQueue({
                   // needs one; settle it before copying either to another screen.
                   className={cn(
                     "relative",
-                    selected.has(row.id) && "border-primary/40 bg-brand-muted/50"
+                    selected.has(row.id) && "border-primary/40 bg-brand-muted/50",
                   )}
                   leading={
                     selectable && rowBulkable(view.tab, row) ? (
@@ -420,7 +426,7 @@ export function FilingsQueue({
                   <p
                     className={cn(
                       "-mt-2 text-body-compact text-muted-foreground",
-                      selectable && "pl-8"
+                      selectable && "pl-8",
                     )}
                   >
                     {layout.info}{" "}
@@ -436,7 +442,7 @@ export function FilingsQueue({
                             ? "font-normal text-muted-foreground"
                             : row.info.tone === "default"
                               ? "text-foreground"
-                              : TONE_CLASS[row.info.tone]
+                              : TONE_CLASS[row.info.tone],
                         )}
                       >
                         {row.info.lead}
@@ -512,11 +518,16 @@ export function FilingsQueue({
                 className={cn(
                   "border-hairline shadow-modal pointer-events-auto absolute inset-x-4 bottom-[calc(--spacing(4)+env(safe-area-inset-bottom))] flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-opacity",
                   selectedIds.length === 0 &&
-                    "translate-y-[calc(100%+--spacing(8))] opacity-0 duration-200 motion-reduce:translate-y-0"
+                    "translate-y-[calc(100%+--spacing(8))] opacity-0 duration-200 motion-reduce:translate-y-0",
                 )}
               >
-                <p className="flex flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground" aria-live="polite">
-                  <span className="tabular-nums">{t("filingsQueue_lengthSelected", { length: String(selectedIds.length) })}</span>
+                <p
+                  className="flex flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground"
+                  aria-live="polite"
+                >
+                  <span className="tabular-nums">
+                    {t("filingsQueue_lengthSelected", { length: String(selectedIds.length) })}
+                  </span>
                   <Button
                     variant="link"
                     className="h-auto p-0 font-normal underline"
@@ -527,11 +538,18 @@ export function FilingsQueue({
                 </p>
                 {bulkKind === "discard" ? (
                   <Button variant="destructive" onClick={() => onDiscard(selectedIds)}>
-                    <Trash2Icon data-icon="inline-start" aria-hidden />{t("filingsQueue_discard")}
+                    <Trash2Icon data-icon="inline-start" aria-hidden />
+                    {t("filingsQueue_discard")}
                   </Button>
                 ) : (
-                  <Button onClick={() => onBulk(bulkKind === "sign" ? "sign" : "pay", selectedRows)}>
-                    {bulkKind === "sign" ? <PenToolIcon data-icon="inline-start" aria-hidden /> : <WalletIcon data-icon="inline-start" aria-hidden />}
+                  <Button
+                    onClick={() => onBulk(bulkKind === "sign" ? "sign" : "pay", selectedRows)}
+                  >
+                    {bulkKind === "sign" ? (
+                      <PenToolIcon data-icon="inline-start" aria-hidden />
+                    ) : (
+                      <WalletIcon data-icon="inline-start" aria-hidden />
+                    )}
                     {bulkKind === "sign" ? t("filingsQueue_sign") : t("filingsQueue_pay")}
                   </Button>
                 )}
@@ -561,7 +579,7 @@ export function FilingsQueue({
                       key={column}
                       className={cn(
                         column === layout.columns[0] && !selectable && "pl-6",
-                        column === "action" && "pr-6 text-right"
+                        column === "action" && "pr-6 text-right",
                       )}
                     >
                       {headingFor(column, layout)}
@@ -610,7 +628,7 @@ export function FilingsQueue({
                           column === layout.columns[0] && !selectable && "pl-6",
                           column === "action" && "pr-6",
                           column === "parties" && "font-medium",
-                          column === "court" && "text-muted-foreground"
+                          column === "court" && "text-muted-foreground",
                         )}
                       >
                         {renderCell(column, row, onDiscard, here)}
@@ -623,20 +641,32 @@ export function FilingsQueue({
           </div>
 
           <p className={cn("px-4 pb-4 text-caption text-muted-foreground", REGISTER_CARDS_ONLY)}>
-            {t.rich("filingsQueue_showingLengthOfLength2", { length: String(slice.length), length2: String(filtered.length), span: (chunks) => <span className="tabular-nums">{chunks}</span>, span2: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+            {t.rich("filingsQueue_showingLengthOfLength2", {
+              length: String(slice.length),
+              length2: String(filtered.length),
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+              span2: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
 
           <div
             className={cn(
               "flex-wrap items-center justify-between gap-4 border-t border-hairline px-6 py-4",
-              DESK_PAGER
+              DESK_PAGER,
             )}
           >
             {/* `items-center` on one line, and the select at the DS `sm` height with
                 caption type, so the count and the size read as one sentence. */}
             <div className="flex items-center gap-3">
               <p className="text-caption leading-none text-muted-foreground">
-                {t.rich("filingsQueue_showingValueMinOfLength", { value: String(start + 1), min: String(Math.min(start + view.size, filtered.length)), length: String(filtered.length), span: (chunks) => <span className="tabular-nums">{chunks}</span>, span2: (chunks) => <span className="tabular-nums">{chunks}</span>, span3: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+                {t.rich("filingsQueue_showingValueMinOfLength", {
+                  value: String(start + 1),
+                  min: String(Math.min(start + view.size, filtered.length)),
+                  length: String(filtered.length),
+                  span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                  span2: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                  span3: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                })}
               </p>
               <NativeSelect
                 value={String(view.size)}
@@ -696,7 +726,9 @@ export function FilingsQueue({
   return (
     <Card variant="raised" className="gap-0 overflow-visible py-0">
       <div className={cn("flex flex-col gap-1 px-4 pt-4 pb-4", DESK_HEAD)}>
-        <h2 className="text-title-s font-semibold text-foreground">{t("filingsQueue_yourFilings")}</h2>
+        <h2 className="text-title-s font-semibold text-foreground">
+          {t("filingsQueue_yourFilings")}
+        </h2>
         <p className="text-body-compact text-muted-foreground">
           {t("filingsQueue_allYourFilingsFinishedAndIn")}
         </p>
@@ -714,7 +746,9 @@ export function FilingsQueue({
       >
         {/* Only the strip pins: the heading above it is read once, and keeping it on
             screen cost 90px of every scroll. */}
-        <div className={cn("sticky top-14 z-10 border-b border-hairline bg-card px-4", DESK_GUTTER)}>
+        <div
+          className={cn("sticky top-14 z-10 border-b border-hairline bg-card px-4", DESK_GUTTER)}
+        >
           {/* Never a sideways scroll: what does not fit folds into More (owner, Sept 21). */}
           <OverflowTabsList
             aria-label={t("filingsQueue_filingStates")}
@@ -776,7 +810,7 @@ function renderCell(
   column: ColumnId,
   row: QueueRow,
   onDiscard: (ids: string[]) => void,
-  here: string
+  here: string,
 ): React.ReactNode {
   switch (column) {
     case "ref":
@@ -819,7 +853,7 @@ function renderCell(
             className={cn(
               "block tabular-nums",
               row.info.lead === "NA" && "text-muted-foreground",
-              row.info.tone !== "default" && TONE_CLASS[row.info.tone]
+              row.info.tone !== "default" && TONE_CLASS[row.info.tone],
             )}
           >
             {row.info.lead}
@@ -832,11 +866,7 @@ function renderCell(
         </>
       );
     case "progress":
-      return row.progress ? (
-        <span className="tabular-nums">{row.progress.savedOn}</span>
-      ) : (
-        "—"
-      );
+      return row.progress ? <span className="tabular-nums">{row.progress.savedOn}</span> : "—";
     case "action":
       return (
         <div className="flex items-center justify-end gap-1">

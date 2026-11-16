@@ -72,9 +72,7 @@ export function AddressFields({
           if (cancelled || !hit) return;
           const { value: addr, onChange: commit, pinFill: filled } = latest.current;
           // Only the state spellings the select actually offers can be filled into it.
-          const stateHit = STATES.find(
-            (s) => s.toLowerCase() === hit.state.trim().toLowerCase()
-          );
+          const stateHit = STATES.find((s) => s.toLowerCase() === hit.state.trim().toLowerCase());
           const fillDistrict = !addr.district.trim() || !!filled?.district;
           const fillState = (!addr.state.trim() || !!filled?.state) && !!stateHit;
           if (!fillDistrict && !fillState) return;
@@ -139,7 +137,11 @@ export function AddressFields({
   );
   const districtField = (
     <FormField label={t("addressFields_district")} name={key("district")} required={required}>
-      <TextField value={value.district} onChange={setDistrict} placeholder={t("addressFields_district")} />
+      <TextField
+        value={value.district}
+        onChange={setDistrict}
+        placeholder={t("addressFields_district")}
+      />
     </FormField>
   );
   const stateField = (
@@ -157,7 +159,9 @@ export function AddressFields({
   /* Mounted whether or not it has anything to say, so the fill is announced. */
   const lookupStatus = (
     <LookupStatus>
-      {filledLabel && shownFill ? t("addressFields_filledLabelFilledFromPinPin", { filledLabel, pin: shownFill.pin }) : null}
+      {filledLabel && shownFill
+        ? t("addressFields_filledLabelFilledFromPinPin", { filledLabel, pin: shownFill.pin })
+        : null}
     </LookupStatus>
   );
 

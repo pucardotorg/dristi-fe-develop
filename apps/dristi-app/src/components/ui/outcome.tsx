@@ -96,8 +96,14 @@ export function OutcomeHeader({
   children?: React.ReactNode;
   className?: string;
 }) {
-  const Title = titleFrom === "dialog" ? DialogTitle : titleFrom === "alert-dialog" ? AlertDialogTitle : "h2";
-  const Body = titleFrom === "dialog" ? DialogDescription : titleFrom === "alert-dialog" ? AlertDialogDescription : "p";
+  const Title =
+    titleFrom === "dialog" ? DialogTitle : titleFrom === "alert-dialog" ? AlertDialogTitle : "h2";
+  const Body =
+    titleFrom === "dialog"
+      ? DialogDescription
+      : titleFrom === "alert-dialog"
+        ? AlertDialogDescription
+        : "p";
   const titleRef = React.useRef<HTMLHeadingElement>(null);
   React.useEffect(() => {
     if (focusTitle) titleRef.current?.focus();
@@ -114,31 +120,50 @@ export function OutcomeHeader({
         compact ? "px-6 pt-8 pb-6" : "px-6 pt-8 pb-6 sm:px-12 sm:pt-12 sm:pb-8",
         className,
       )}
-      style={{ background: `linear-gradient(180deg, ${BAND[tone]} 0%, color-mix(in oklab, ${BAND[tone]} 55%, ${SURFACE[surface]}) 100%)` }}
+      style={{
+        background: `linear-gradient(180deg, ${BAND[tone]} 0%, color-mix(in oklab, ${BAND[tone]} 55%, ${SURFACE[surface]}) 100%)`,
+      }}
     >
-      <StatusMark tone={tone} icon={icon} size={compact ? 60 : 72} reject={reject} still={still} className={compact ? undefined : "max-sm:size-15"} />
+      <StatusMark
+        tone={tone}
+        icon={icon}
+        size={compact ? 60 : 72}
+        reject={reject}
+        still={still}
+        className={compact ? undefined : "max-sm:size-15"}
+      />
       <div className="flex max-w-md flex-col items-center gap-1.5">
         {title ? (
-        <Title
-          ref={titleRef}
-          tabIndex={focusTitle ? -1 : undefined}
-          className={cn(
-            "text-balance text-foreground outline-none",
-            !still && "fb-rise",
-            compact ? "text-title-s font-semibold" : "text-title-s font-semibold sm:text-title",
-          )}
-          style={rise(180)}
-        >
-          {title}
-        </Title>
+          <Title
+            ref={titleRef}
+            tabIndex={focusTitle ? -1 : undefined}
+            className={cn(
+              "text-balance text-foreground outline-none",
+              !still && "fb-rise",
+              compact ? "text-title-s font-semibold" : "text-title-s font-semibold sm:text-title",
+            )}
+            style={rise(180)}
+          >
+            {title}
+          </Title>
         ) : null}
         {body ? (
-          <Body className={cn("text-body text-pretty", title ? "text-muted-foreground" : "text-foreground", !still && "fb-rise")} style={rise(240)}>
+          <Body
+            className={cn(
+              "text-body text-pretty",
+              title ? "text-muted-foreground" : "text-foreground",
+              !still && "fb-rise",
+            )}
+            style={rise(240)}
+          >
             {body}
           </Body>
         ) : null}
         {children ? (
-          <div className={cn("flex flex-col items-center pt-1", !still && "fb-rise")} style={rise(280)}>
+          <div
+            className={cn("flex flex-col items-center pt-1", !still && "fb-rise")}
+            style={rise(280)}
+          >
             {children}
           </div>
         ) : null}
@@ -148,7 +173,13 @@ export function OutcomeHeader({
 }
 
 /** "Amount paid · ₹1,250" under a payment outcome's title: the amount is always labelled. */
-export function OutcomeAmount({ label, value }: { label: React.ReactNode; value: React.ReactNode }) {
+export function OutcomeAmount({
+  label,
+  value,
+}: {
+  label: React.ReactNode;
+  value: React.ReactNode;
+}) {
   return (
     <>
       <span className="text-caption font-medium text-muted-foreground">{label}</span>
@@ -327,20 +358,34 @@ export function PageOutcome({
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10"
-          style={{ background: `radial-gradient(ellipse at 50% 32%, ${glow}, var(--background) 70%)` }}
+          style={{
+            background: `radial-gradient(ellipse at 50% 32%, ${glow}, var(--background) 70%)`,
+          }}
         />
       ) : null}
       <StatusMark tone={tone} icon={icon} size={scale === "hero" ? 96 : 56} still={still} />
       {/* Centred text keeps a short measure; a left-aligned page keeps its column's. */}
-      <div className={cn("flex flex-col gap-2", align === "center" ? "max-w-md items-center" : "max-w-2xl")}>
+      <div
+        className={cn(
+          "flex flex-col gap-2",
+          align === "center" ? "max-w-md items-center" : "max-w-2xl",
+        )}
+      >
         <Heading
-          className={cn("font-semibold text-balance", scale === "hero" ? "text-display-s" : "text-title", !still && "fb-rise")}
+          className={cn(
+            "font-semibold text-balance",
+            scale === "hero" ? "text-display-s" : "text-title",
+            !still && "fb-rise",
+          )}
           style={rise(150)}
         >
           {title}
         </Heading>
         {body ? (
-          <p className={cn("text-body text-pretty text-muted-foreground", !still && "fb-rise")} style={rise(210)}>
+          <p
+            className={cn("text-body text-pretty text-muted-foreground", !still && "fb-rise")}
+            style={rise(210)}
+          >
             {body}
           </p>
         ) : null}

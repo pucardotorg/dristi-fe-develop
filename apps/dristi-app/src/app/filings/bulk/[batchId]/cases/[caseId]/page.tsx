@@ -20,5 +20,7 @@ export default async function BulkCasePage({
   const bc = (await getBatch(batchId))?.cases.find((c) => c.id === caseId);
   const step = bc ? firstFlaggedStep(openFlags(bc)) : "complainant";
   const q = ai ? `?ai=${encodeURIComponent(ai)}` : "";
-  redirect(`/filings/bulk/${encodeURIComponent(batchId)}/cases/${encodeURIComponent(caseId)}/${getStep(step).segment}${q}`);
+  redirect(
+    `/filings/bulk/${encodeURIComponent(batchId)}/cases/${encodeURIComponent(caseId)}/${getStep(step).segment}${q}`,
+  );
 }

@@ -62,7 +62,7 @@ const UNLISTED_SECTIONS: readonly CaseSection[] = ["hearings", "complaint"];
 
 /** What the strip renders, in strip order. */
 export const CASE_NAV_SECTIONS = CASE_SECTIONS.filter(
-  (section) => !UNLISTED_SECTIONS.includes(section.value)
+  (section) => !UNLISTED_SECTIONS.includes(section.value),
 );
 
 /**
@@ -81,17 +81,12 @@ export function isCaseSection(value: string): value is CaseSection {
   return CASE_SECTIONS.some((section) => section.value === value);
 }
 
-export function parseCaseSection(
-  value: string | string[] | undefined
-): CaseSection {
+export function parseCaseSection(value: string | string[] | undefined): CaseSection {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw && isCaseSection(raw) ? raw : DEFAULT_CASE_SECTION;
 }
 
-export function caseSectionHref(
-  caseId: string,
-  section: CaseSection
-): string {
+export function caseSectionHref(caseId: string, section: CaseSection): string {
   if (section === DEFAULT_CASE_SECTION) return `/cases/${caseId}`;
   return `/cases/${caseId}?section=${section}`;
 }
@@ -103,7 +98,7 @@ export function caseSectionHref(
 export function hearingHref(
   caseId: string,
   hearingId: string,
-  from: CaseSection = DEFAULT_CASE_SECTION
+  from: CaseSection = DEFAULT_CASE_SECTION,
 ): string {
   const base = caseSectionHref(caseId, from);
   return `${base}${base.includes("?") ? "&" : "?"}hearing=${hearingId}`;
@@ -130,9 +125,7 @@ export function caseDetailHref(caseId: string, origin?: CaseOrigin): string {
   return origin ? `/cases/${caseId}?from=${origin}` : `/cases/${caseId}`;
 }
 
-export function parseCaseOrigin(
-  value: string | string[] | undefined
-): CaseOrigin | undefined {
+export function parseCaseOrigin(value: string | string[] | undefined): CaseOrigin | undefined {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw === "long-pending" ? raw : undefined;
 }

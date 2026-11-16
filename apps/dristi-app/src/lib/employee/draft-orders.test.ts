@@ -1,11 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  draftOrderHref,
-  draftOrdersForSitting,
-  hasOrderDrawnUp,
-} from "./draft-orders";
+import { draftOrderHref, draftOrdersForSitting, hasOrderDrawnUp } from "./draft-orders";
 import {
   hearingsForDay,
   withHearingSession,
@@ -154,9 +150,7 @@ describe("draftOrdersForSitting", () => {
   });
 
   it("leaves the board something still to be called", () => {
-    const stillListed = todaysBoard().filter(
-      (entry) => entry.status === "scheduled",
-    );
+    const stillListed = todaysBoard().filter((entry) => entry.status === "scheduled");
     /* Start hearing has to have somewhere to land: a board with nothing scheduled would
        take the cause list's own act off the screen. */
     assert.ok(stillListed.length >= 5);
@@ -167,19 +161,12 @@ describe("hasOrderDrawnUp", () => {
   it("is the two facts the cause list marks, and nothing else", () => {
     assert.equal(hasOrderDrawnUp(hearing(), {}), false);
     assert.equal(hasOrderDrawnUp(hearing({ status: "completed" }), {}), true);
-    assert.equal(
-      hasOrderDrawnUp(hearing(), { [editorDraftKey("h-1")]: EMPTY_ORDER_DRAFT }),
-      true,
-    );
+    assert.equal(hasOrderDrawnUp(hearing(), { [editorDraftKey("h-1")]: EMPTY_ORDER_DRAFT }), true);
   });
 });
 
 describe("draftOrderHref", () => {
   it("points at the composer that owns the words", () => {
-    assert.equal(
-      draftOrderHref({ id: "h-254" }),
-      "/employee/hearings/h-254/order",
-    );
+    assert.equal(draftOrderHref({ id: "h-254" }), "/employee/hearings/h-254/order");
   });
 });
-

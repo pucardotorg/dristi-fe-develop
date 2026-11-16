@@ -2,12 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  CheckCircle2Icon,
-  DownloadIcon,
-  FileSpreadsheetIcon,
-  FileTextIcon,
-  } from "lucide-react";
+import { CheckCircle2Icon, DownloadIcon, FileSpreadsheetIcon, FileTextIcon } from "lucide-react";
 
 import { aiModeFrom } from "@/lib/bulk/ai-review";
 import type { CaseExtraction } from "@/lib/bulk/case-doc";
@@ -39,18 +34,9 @@ import {
   tableRowClass,
 } from "@/components/chrome/table-plate";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
@@ -87,10 +73,12 @@ import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
 import type { MessageKey } from "@/i18n/messages";
 
-
 /** The demo spreadsheets the upload offers, from `public/samples/` (`scripts/bulk-demo-files.mts`). */
 const SAMPLES = [
-  { key: "tata-capital-bulk-filing-template.xlsx", label: "uploadScreen_sampleFile1TemplateFormat" },
+  {
+    key: "tata-capital-bulk-filing-template.xlsx",
+    label: "uploadScreen_sampleFile1TemplateFormat",
+  },
   { key: "tata-capital-recovery-mis.xlsx", label: "Sample file 2: custom format" },
 ];
 
@@ -114,7 +102,10 @@ function ReadingCard({ rows }: { rows: ReadingRow[] }) {
         </CardTitle>
         <Progress
           value={(done / rows.length) * 100}
-          aria-label={t("uploadScreen_doneOfLengthRead", { done: String(done), length: String(rows.length) })}
+          aria-label={t("uploadScreen_doneOfLengthRead", {
+            done: String(done),
+            length: String(rows.length),
+          })}
         />
         <CardDescription className="tabular-nums" aria-live="polite">
           {t("uploadScreen_doneOfLengthRead", { done: String(done), length: String(rows.length) })}
@@ -147,9 +138,7 @@ function ReadingCard({ rows }: { rows: ReadingRow[] }) {
               <span
                 className={cn(
                   "truncate text-body-compact",
-                  r.state === "waiting"
-                    ? "text-muted-foreground"
-                    : "font-medium",
+                  r.state === "waiting" ? "text-muted-foreground" : "font-medium",
                 )}
               >
                 {r.name}
@@ -229,7 +218,8 @@ export function UploadScreen() {
   // that needs a file read falls back to the file until there is one.
   const search = useSearchParams();
   const asked = search.get("step") as UploadStep | null;
-  const step: UploadStep = book && asked && ["map", "values", "review"].includes(asked) ? asked : "file";
+  const step: UploadStep =
+    book && asked && ["map", "values", "review"].includes(asked) ? asked : "file";
   const setStep = (s: UploadStep) => router.push(uploadHref(setupId, s, search.get("ai")));
   const [map, setMap] = React.useState<ColumnMap>({});
   const [counts, setCounts] = React.useState<InstanceCounts>({});
@@ -263,19 +253,14 @@ export function UploadScreen() {
     return GROUPS.filter((g) => g.repeats && !g.parent)
       .map((g) => ({ g, n: inst[g.id].length }))
       .filter(({ g, n }) => n > (g.always ? 1 : 0))
-      .map(
-        ({ g, n }) =>
-          `${g.label.toLowerCase()} up to ${g.first > 1 ? n + 1 : n}`,
-      )
+      .map(({ g, n }) => `${g.label.toLowerCase()} up to ${g.first > 1 ? n + 1 : n}`)
       .join(", ");
   }, [book, counts]);
   const unknown = book ? unknownValues(book.cases, map, counts) : {};
   const unknownLists = Object.keys(unknown) as ListName[];
   // Required fields no column fills: every case arrives without them.
   const missing = book && !docs ? unmatchedRequired(book.cases.headers, map) : [];
-  const valuesDone = unknownLists.every((l) =>
-    unknown[l]!.every((v) => values[l]?.[v]),
-  );
+  const valuesDone = unknownLists.every((l) => unknown[l]!.every((v) => values[l]?.[v]));
 
   // The sections rail lists matching only where this file needs it.
   const report = useReportUploadState();
@@ -293,8 +278,7 @@ export function UploadScreen() {
       if (files.length > 1 && !docs)
         throw new Error("Upload one Excel file, or Word files and PDFs only.");
       const b = docs ? await readDocuments() : await readWorkbook(file);
-      if (!b.cases.rows.length)
-        throw new Error("No case rows were found in this file.");
+      if (!b.cases.rows.length) throw new Error("No case rows were found in this file.");
       setBook(b);
       const m = autoMap(b.cases.headers);
       setMap(m);
@@ -320,9 +304,7 @@ export function UploadScreen() {
     };
     setReading(files.map((f) => ({ name: f.name, state: "waiting" })));
     const mark = (i: number, row: Partial<ReadingRow>) =>
-      setReading((rows) =>
-        rows ? rows.map((r, k) => (k === i ? { ...r, ...row } : r)) : rows,
-      );
+      setReading((rows) => (rows ? rows.map((r, k) => (k === i ? { ...r, ...row } : r)) : rows));
     // One document per request, a few at a time, so each shows as it is read. Each takes
     // a moment at least, so the reading can be followed.
     const read: Read[] = new Array(files.length);
@@ -360,17 +342,12 @@ export function UploadScreen() {
         });
       }
     };
-    await Promise.all(
-      Array.from({ length: Math.min(3, files.length) }, worker),
-    );
+    await Promise.all(Array.from({ length: Math.min(3, files.length) }, worker));
     await new Promise((r) => setTimeout(r, 500));
     const values = read.map((x) => {
-      const v = Object.fromEntries(
-        Object.entries(x.fields).map(([k, f]) => [k, f.value]),
-      );
+      const v = Object.fromEntries(Object.entries(x.fields).map(([k, f]) => [k, f.value]));
       // No reference in the document: the file's name stands in.
-      if (!v["Case reference"]?.trim())
-        v["Case reference"] = x.fileName.replace(/\.[^.]+$/, "");
+      if (!v["Case reference"]?.trim()) v["Case reference"] = x.fileName.replace(/\.[^.]+$/, "");
       return v;
     });
     setOriginals(
@@ -410,9 +387,7 @@ export function UploadScreen() {
           fileName,
           detailsFormat: (() => {
             const format = formats.find((f) => f.id === formatId);
-            return format
-              ? { id: format.id, html: formatForFiler(format), court }
-              : undefined;
+            return format ? { id: format.id, html: formatForFiler(format), court } : undefined;
           })(),
         },
         counts,
@@ -427,8 +402,7 @@ export function UploadScreen() {
         ),
       });
       const json = await res.json();
-      if (!res.ok)
-        throw new Error([json.error, ...(json.details ?? [])].join(" "));
+      if (!res.ok) throw new Error([json.error, ...(json.details ?? [])].join(" "));
       router.push(`/filings/bulk/${json.batchId}?tab=documents`);
     } catch (e) {
       setError((e as Error).message);
@@ -438,18 +412,29 @@ export function UploadScreen() {
 
   if (!ready) return null;
 
-  const errorNotice = error ? (
-    <StatusLine tone="error">{error}</StatusLine>
-  ) : null;
-  const backFromReview: UploadStep = unknownLists.length ? "values" : template || docs ? "file" : "map";
-  const PREVIEW = ["reference", "accusedName", "chequeNumber", "chequeAmount", "returnReason", "dispatchDate"];
+  const errorNotice = error ? <StatusLine tone="error">{error}</StatusLine> : null;
+  const backFromReview: UploadStep = unknownLists.length
+    ? "values"
+    : template || docs
+      ? "file"
+      : "map";
+  const PREVIEW = [
+    "reference",
+    "accusedName",
+    "chequeNumber",
+    "chequeAmount",
+    "returnReason",
+    "dispatchDate",
+  ];
 
   if (step === "file")
     return (
       <>
         <FilingMain>
           <FilingPageHeader
-            title={ai === "on" ? t("uploadScreen_excelFileOrCaseDocuments") : t("uploadScreen_excelFile")}
+            title={
+              ai === "on" ? t("uploadScreen_excelFileOrCaseDocuments") : t("uploadScreen_excelFile")
+            }
             description={t("uploadScreen_oneRowPerCaseEachUpload")}
           />
           {errorNotice}
@@ -460,7 +445,9 @@ export function UploadScreen() {
               <CardContent className="flex flex-col gap-6">
                 <Field className="gap-1.5">
                   <FieldLabel htmlFor="sheet">
-                    {ai === "on" ? t("uploadScreen_excelFileOrOneDocumentPer") : t("uploadScreen_excelFile")}
+                    {ai === "on"
+                      ? t("uploadScreen_excelFileOrOneDocumentPer")
+                      : t("uploadScreen_excelFile")}
                   </FieldLabel>
                   <FileDrop
                     id="sheet"
@@ -468,8 +455,16 @@ export function UploadScreen() {
                     multiple={ai === "on"}
                     files={files}
                     onFiles={setFiles}
-                    prompt={ai === "on" ? t("uploadScreen_dragYourExcelFileOrCase") : t("uploadScreen_dragYourExcelFileHere")}
-                    hint={ai === "on" ? t("uploadScreen_xlsxOrCsvOrWordAnd") : t("uploadScreen_xlsxOrCsv")}
+                    prompt={
+                      ai === "on"
+                        ? t("uploadScreen_dragYourExcelFileOrCase")
+                        : t("uploadScreen_dragYourExcelFileHere")
+                    }
+                    hint={
+                      ai === "on"
+                        ? t("uploadScreen_xlsxOrCsvOrWordAnd")
+                        : t("uploadScreen_xlsxOrCsv")
+                    }
                   />
                   <span className="text-caption text-muted-foreground">
                     {t("uploadScreen_theTemplatesColumnsGoStraightIn")}
@@ -477,7 +472,9 @@ export function UploadScreen() {
                 </Field>
                 {/* Demo: the two sample spreadsheets, one click away instead of on disk. */}
                 <div className="flex flex-col gap-2">
-                  <span className="text-body-compact text-muted-foreground">{t("uploadScreen_orTryASampleFile")}</span>
+                  <span className="text-body-compact text-muted-foreground">
+                    {t("uploadScreen_orTryASampleFile")}
+                  </span>
                   <div className="flex flex-wrap gap-2">
                     {SAMPLES.map((x) => (
                       <Button
@@ -505,13 +502,20 @@ export function UploadScreen() {
           )}
           <Card variant="raised">
             <CardHeader>
-              <CardTitle className="text-body font-semibold">{t("uploadScreen_theSameForEveryCaseIn")}</CardTitle>
+              <CardTitle className="text-body font-semibold">
+                {t("uploadScreen_theSameForEveryCaseIn")}
+              </CardTitle>
               <CardDescription>
                 {t("uploadScreen_likeTheComplainantsAndAdvocatesThese")}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-6">
-              <BatchParties adr={adr} setAdr={setAdr} formatId={formatId} setFormatId={setFormatId} />
+              <BatchParties
+                adr={adr}
+                setAdr={setAdr}
+                formatId={formatId}
+                setFormatId={setFormatId}
+              />
             </CardContent>
           </Card>
         </FilingMain>
@@ -563,7 +567,7 @@ export function UploadScreen() {
           />
           {errorNotice}
           {unknownLists.map((l) => (
-            <Card key={l} variant="raised" >
+            <Card key={l} variant="raised">
               <CardHeader>
                 <CardTitle className="text-body font-semibold">{t(LIST_TITLE[l])}</CardTitle>
               </CardHeader>
@@ -618,13 +622,18 @@ export function UploadScreen() {
             title={t("uploadScreen_review")}
             description={
               <>
-                <span className="tabular-nums">{book.cases.rows.length}</span> cases read from {fileName}.{" "}
-                {docs ? "Read from the documents." : template ? "The file follows the template." : "Columns matched."}
+                <span className="tabular-nums">{book.cases.rows.length}</span> cases read from{" "}
+                {fileName}.{" "}
+                {docs
+                  ? "Read from the documents."
+                  : template
+                    ? "The file follows the template."
+                    : "Columns matched."}
                 {book.cases.discarded
                   ? ` ${book.cases.discarded} template guide row${book.cases.discarded === 1 ? "" : "s"} (format or example) discarded.`
                   : ""}
-                {repeatsFound ? ` Repeated sections: ${repeatsFound}.` : ""} The filing checks run once
-                the batch is created.
+                {repeatsFound ? ` Repeated sections: ${repeatsFound}.` : ""} The filing checks run
+                once the batch is created.
               </>
             }
           />
@@ -635,12 +644,12 @@ export function UploadScreen() {
               still
               title={`${missing.length} required field${missing.length === 1 ? " is" : "s are"} not in your file`}
             >
-                Every case will arrive without{" "}
-                {new Intl.ListFormat("en", { type: "conjunction" }).format(
-                  missing.map((c) => c.header.toLowerCase()),
-                )}
-                . Each case stays in draft until you enter {missing.length === 1 ? "it" : "them"} on
-                its Case details.
+              Every case will arrive without{" "}
+              {new Intl.ListFormat("en", { type: "conjunction" }).format(
+                missing.map((c) => c.header.toLowerCase()),
+              )}
+              . Each case stays in draft until you enter {missing.length === 1 ? "it" : "them"} on
+              its Case details.
             </StatusLine>
           ) : null}
           <Card variant="raised">
@@ -652,7 +661,10 @@ export function UploadScreen() {
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="overflow-x-auto">
-                <Table className="border-separate border-spacing-0" aria-label={t("uploadScreen_firstRows")}>
+                <Table
+                  className="border-separate border-spacing-0"
+                  aria-label={t("uploadScreen_firstRows")}
+                >
                   <TableHeader>
                     <TableRow className={TABLE_HEAD_ROW}>
                       {PREVIEW.map((k) => (
@@ -670,9 +682,17 @@ export function UploadScreen() {
                           return (
                             <TableCell
                               key={k}
-                              className={cn(TABLE_CELL, "tabular-nums", k === "reference" && "pl-4 font-medium")}
+                              className={cn(
+                                TABLE_CELL,
+                                "tabular-nums",
+                                k === "reference" && "pl-4 font-medium",
+                              )}
                             >
-                              {typeof i === "number" ? row[i] || "—" : i && typeof i === "object" ? i.every : "—"}
+                              {typeof i === "number"
+                                ? row[i] || "—"
+                                : i && typeof i === "object"
+                                  ? i.every
+                                  : "—"}
                             </TableCell>
                           );
                         })}
@@ -694,7 +714,11 @@ export function UploadScreen() {
           onBack={() => setStep(backFromReview)}
           onContinue={() => void create()}
           continueDisabled={busy}
-          continueLabel={busy ? t("uploadScreen_creatingBatch") : t("uploadScreen_createBatchOfLength", { length: String(book.cases.rows.length) })}
+          continueLabel={
+            busy
+              ? t("uploadScreen_creatingBatch")
+              : t("uploadScreen_createBatchOfLength", { length: String(book.cases.rows.length) })
+          }
         />
       </>
     );

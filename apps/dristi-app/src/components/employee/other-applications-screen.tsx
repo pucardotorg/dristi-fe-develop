@@ -10,10 +10,7 @@ import { CourtFilters, CourtSortSelect } from "@/components/employee/court-filte
 import { OtherApplicationDialog } from "@/components/employee/other-application-dialog";
 import { OtherApplicationsTable } from "@/components/employee/other-applications-table";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -23,12 +20,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  causeTitle,
-  counselFor,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { causeTitle, counselFor, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import {
   EMPTY_OTHER_APPLICATION_FILTERS,
   OTHER_APPLICATIONS_QUEUE,
@@ -96,9 +88,7 @@ export function OtherApplicationsScreen() {
   );
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(() => new Set());
   const [open, setOpen] = React.useState<OtherApplication | null>(null);
   const searchRef = React.useRef<HTMLInputElement>(null);
 
@@ -115,8 +105,7 @@ export function OtherApplicationsScreen() {
   const currentPage = Math.min(page, pageCount);
   const start = (currentPage - 1) * pageSize;
   const pageRows = rows.slice(start, start + pageSize);
-  const isFiltered =
-    filters.stage !== "all" || filters.query !== "" || filters.type !== "all";
+  const isFiltered = filters.stage !== "all" || filters.query !== "" || filters.type !== "all";
 
   /**
    * Change some of the filters. A patch, merged into the latest state: the Filters sheet
@@ -155,7 +144,9 @@ export function OtherApplicationsScreen() {
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
             ? t("otherApplicationsScreen_1ApplicationIsWaitingForReview")
-            : t("otherApplicationsScreen_lengthApplicationsAreWaitingForReview", { length: String(remaining.length) })}
+            : t("otherApplicationsScreen_lengthApplicationsAreWaitingForReview", {
+                length: String(remaining.length),
+              })}
         </p>
       </header>
 
@@ -182,17 +173,10 @@ export function OtherApplicationsScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
-          <OtherApplicationsEmpty
-            isFiltered={isFiltered}
-            onClear={clearFilters}
-          />
+          <OtherApplicationsEmpty isFiltered={isFiltered} onClear={clearFilters} />
         ) : (
           <div className="flex min-w-0 flex-col gap-4">
             {/* min-w-0 lets this flex item shrink below the table's content width, so a
@@ -333,14 +317,12 @@ function OtherApplicationsEmpty({
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FolderCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FolderCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? t("otherApplicationsScreen_noMattersMatchTheseFilters") : t("otherApplicationsScreen_nothingWaiting")}
+          {isFiltered
+            ? t("otherApplicationsScreen_noMattersMatchTheseFilters")
+            : t("otherApplicationsScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
@@ -382,33 +364,31 @@ function OtherApplicationsItemList({
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((application) => (
-        <QueueItemRow
-          key={application.id}
-          className="flex flex-col gap-2"
-        >
-            <button
-              type="button"
-              onClick={() => onOpen(application)}
-              {...rowOpener}
-                className={rowOpenerClass}
-            >
-              <span className="sr-only">{t("otherApplicationsScreen_review")} </span>
-              {causeTitle(application)}
-            </button>
-          <p className="min-w-0 text-body-compact">
-            {otherApplicationTypeLabel(application.type)}
-          </p>
+        <QueueItemRow key={application.id} className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => onOpen(application)}
+            {...rowOpener}
+            className={rowOpenerClass}
+          >
+            <span className="sr-only">{t("otherApplicationsScreen_review")} </span>
+            {causeTitle(application)}
+          </button>
+          <p className="min-w-0 text-body-compact">{otherApplicationTypeLabel(application.type)}</p>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={application.caseNumber} label={t("otherApplicationsScreen_caseNumber")} />
-            {t.rich("otherApplicationsScreen_otherApplicationStageLabelAppliedFormat", { otherApplicationStageLabel: otherApplicationStageLabel(application.stage), formatOtherApplicationLongDate: formatOtherApplicationLongDate(application.appliedOn), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+            <Identifier
+              value={application.caseNumber}
+              label={t("otherApplicationsScreen_caseNumber")}
+            />
+            {t.rich("otherApplicationsScreen_otherApplicationStageLabelAppliedFormat", {
+              otherApplicationStageLabel: otherApplicationStageLabel(application.stage),
+              formatOtherApplicationLongDate: formatOtherApplicationLongDate(application.appliedOn),
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
           <CounselCell
-            complainant={counselFor(application, "complainant").map(
-              (counsel) => counsel.name,
-            )}
-            accused={counselFor(application, "accused").map(
-              (counsel) => counsel.name,
-            )}
+            complainant={counselFor(application, "complainant").map((counsel) => counsel.name)}
+            accused={counselFor(application, "accused").map((counsel) => counsel.name)}
           />
         </QueueItemRow>
       ))}

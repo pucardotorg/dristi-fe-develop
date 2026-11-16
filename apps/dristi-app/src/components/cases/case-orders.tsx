@@ -5,11 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FileSearchIcon } from "lucide-react";
 
 import { RestingCard } from "@/components/cases/case-overview-card";
-import {
-  RECENT_ROW,
-  RowViewButton,
-  useRecentRow,
-} from "@/components/cases/register-controls";
+import { RECENT_ROW, RowViewButton, useRecentRow } from "@/components/cases/register-controls";
 import { OrderRecordDialog } from "@/components/cases/order-record-dialog";
 import {
   TABLE_CELL,
@@ -27,10 +23,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -104,8 +97,7 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
     );
   }
 
-  const openOrder =
-    orders.find((order) => order.id === searchParams.get(ORDER_PARAM)) ?? null;
+  const openOrder = orders.find((order) => order.id === searchParams.get(ORDER_PARAM)) ?? null;
   const rows = orders.filter((order) => order.kind === kind);
 
   function setOpenOrder(order: OrderRecord | null) {
@@ -158,103 +150,88 @@ export function CaseOrders({ record }: { record: CaseRecord }) {
         </Empty>
       ) : (
         <>
-        {/* Under a finger held upright: a card per order. Date and title lead,
+          {/* Under a finger held upright: a card per order. Date and title lead,
             the business of the day follows in full rather than cut at two
             lines, and the card itself opens the order. */}
-        <ul className={cn("flex flex-col gap-3", REGISTER_CARDS_ONLY)}>
-          {rows.map((order) => (
-            <li key={order.id}>
-              <RegisterTrayCard
-                title={order.title}
-                open={tray.isOpen(order.id)}
-                onOpenChange={tray.toggle(order.id)}
-                marked={openOrder?.id === order.id}
-                className={cn(recentId === order.id && RECENT_ROW)}
-                actions={
-                  <Button type="button" onClick={() => setOpenOrder(order)}>
-                    {t("caseOrders_viewOrder")}
-                  </Button>
-                }
-              >
-                <time
-                  dateTime={order.issuedOn}
-                  className="-mt-2 text-caption tabular-nums text-muted-foreground"
-                >
-                  {formatCaseDate(order.issuedOn)}
-                </time>
-                {order.botd ? (
-                  <p className="border-t border-hairline pt-3 text-body-compact text-muted-foreground">
-                    {order.botd}
-                  </p>
-                ) : null}
-              </RegisterTrayCard>
-            </li>
-          ))}
-        </ul>
-        <div className={REGISTER_TABLE_ONLY}>
-        <Table>
-          <TableHeader>
-            <TableRow className={TABLE_HEAD_ROW}>
-              <TableHead className={cn(TABLE_HEAD, "w-36")}>{t("caseOrders_date")}</TableHead>
-              <TableHead className={cn(TABLE_HEAD, "w-1/3")}>{t("caseOrders_title")}</TableHead>
-              <TableHead className={TABLE_HEAD}>{t("caseOrders_boTd")}</TableHead>
-              <TableHead className={cn(TABLE_HEAD, "w-24")}>{t("caseOrders_action")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody className={tableBodyClass({ marksOpenRow: true })}>
+          <ul className={cn("flex flex-col gap-3", REGISTER_CARDS_ONLY)}>
             {rows.map((order) => (
-              <TableRow
-                key={order.id}
-                ref={recentId === order.id ? recentRowRef : undefined}
-                aria-current={openOrder?.id === order.id ? "true" : undefined}
-                className={cn(
-                  tableRowClass({ open: openOrder?.id === order.id }),
-                  "cursor-pointer",
-                  recentId === order.id && RECENT_ROW
-                )}
-                onClick={() => setOpenOrder(order)}
-              >
-                <TableCell
-                  className={cn(TABLE_CELL, "tabular-nums")}
+              <li key={order.id}>
+                <RegisterTrayCard
+                  title={order.title}
+                  open={tray.isOpen(order.id)}
+                  onOpenChange={tray.toggle(order.id)}
+                  marked={openOrder?.id === order.id}
+                  className={cn(recentId === order.id && RECENT_ROW)}
+                  actions={
+                    <Button type="button" onClick={() => setOpenOrder(order)}>
+                      {t("caseOrders_viewOrder")}
+                    </Button>
+                  }
                 >
-                  <time dateTime={order.issuedOn}>
+                  <time
+                    dateTime={order.issuedOn}
+                    className="-mt-2 text-caption tabular-nums text-muted-foreground"
+                  >
                     {formatCaseDate(order.issuedOn)}
                   </time>
-                </TableCell>
-                <TableCell
-                  className={cn(
-                    TABLE_CELL,
-                    "font-medium whitespace-normal"
-                  )}
-                >
-                  {order.title}
-                </TableCell>
-                <TableCell
-                  className={cn(
-                    TABLE_CELL,
-                    "whitespace-normal text-muted-foreground"
-                  )}
-                >
                   {order.botd ? (
-                    <span className="line-clamp-2">{order.botd}</span>
-                  ) : (
-                    <>
-                      <span aria-hidden>—</span>
-                      <span className="sr-only">{t("caseOrders_notRecorded")}</span>
-                    </>
-                  )}
-                </TableCell>
-                <TableCell className={TABLE_CELL}>
-                  <RowViewButton
-                    label={order.title}
-                    onClick={() => setOpenOrder(order)}
-                  />
-                </TableCell>
-              </TableRow>
+                    <p className="border-t border-hairline pt-3 text-body-compact text-muted-foreground">
+                      {order.botd}
+                    </p>
+                  ) : null}
+                </RegisterTrayCard>
+              </li>
             ))}
-          </TableBody>
-        </Table>
-        </div>
+          </ul>
+          <div className={REGISTER_TABLE_ONLY}>
+            <Table>
+              <TableHeader>
+                <TableRow className={TABLE_HEAD_ROW}>
+                  <TableHead className={cn(TABLE_HEAD, "w-36")}>{t("caseOrders_date")}</TableHead>
+                  <TableHead className={cn(TABLE_HEAD, "w-1/3")}>{t("caseOrders_title")}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{t("caseOrders_boTd")}</TableHead>
+                  <TableHead className={cn(TABLE_HEAD, "w-24")}>{t("caseOrders_action")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className={tableBodyClass({ marksOpenRow: true })}>
+                {rows.map((order) => (
+                  <TableRow
+                    key={order.id}
+                    ref={recentId === order.id ? recentRowRef : undefined}
+                    aria-current={openOrder?.id === order.id ? "true" : undefined}
+                    className={cn(
+                      tableRowClass({ open: openOrder?.id === order.id }),
+                      "cursor-pointer",
+                      recentId === order.id && RECENT_ROW,
+                    )}
+                    onClick={() => setOpenOrder(order)}
+                  >
+                    <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+                      <time dateTime={order.issuedOn}>{formatCaseDate(order.issuedOn)}</time>
+                    </TableCell>
+                    <TableCell className={cn(TABLE_CELL, "font-medium whitespace-normal")}>
+                      {order.title}
+                    </TableCell>
+                    <TableCell
+                      className={cn(TABLE_CELL, "whitespace-normal text-muted-foreground")}
+                    >
+                      {order.botd ? (
+                        <span className="line-clamp-2">{order.botd}</span>
+                      ) : (
+                        <>
+                          <span aria-hidden>—</span>
+                          <span className="sr-only">{t("caseOrders_notRecorded")}</span>
+                        </>
+                      )}
+                    </TableCell>
+                    <TableCell className={TABLE_CELL}>
+                      <RowViewButton label={order.title} onClick={() => setOpenOrder(order)} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </>
       )}
 

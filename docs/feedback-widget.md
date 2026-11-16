@@ -12,12 +12,12 @@ Product: <https://www.faster-fixes.com> · Source: <https://github.com/manucoffi
 
 ## What is already wired
 
-| Change | File |
-|---|---|
-| Widget mount, disabled unless a key is present | `apps/dristi-app/src/components/feedback-provider.tsx` |
-| Mounted inside `ThemeProvider`, wrapping the app | `apps/dristi-app/src/app/layout.tsx` |
-| Dependency `@fasterfixes/react` | `apps/dristi-app/package.json` |
-| Key documented | `apps/dristi-app/.env.example` |
+| Change                                           | File                                                   |
+| ------------------------------------------------ | ------------------------------------------------------ |
+| Widget mount, disabled unless a key is present   | `apps/dristi-app/src/components/feedback-provider.tsx` |
+| Mounted inside `ThemeProvider`, wrapping the app | `apps/dristi-app/src/app/layout.tsx`                   |
+| Dependency `@fasterfixes/react`                  | `apps/dristi-app/package.json`                         |
+| Key documented                                   | `apps/dristi-app/.env.example`                         |
 
 **The widget is off by default, twice over.** It renders only when
 `NEXT_PUBLIC_FASTERFIXES_PROJECT_ID` is set at build time **and** the visitor carries a
@@ -81,7 +81,7 @@ Netlify. Two things to know:
 
 - **Netlify deploy previews and branch deploys will not match.** Those URLs are
   `deploy-preview-42--<site>.netlify.app` and `<branch>--<site>.netlify.app` — the `--`
-  sits *inside* one DNS label, so the host does not end in `.<site>.netlify.app` and the
+  sits _inside_ one DNS label, so the host does not end in `.<site>.netlify.app` and the
   subdomain rule above does not apply. Only the production URL will carry the widget.
 - Localhost still works regardless, so local review is unaffected.
 
@@ -222,14 +222,14 @@ NEXT_PUBLIC_FASTERFIXES_API_ORIGIN=https://feedback.internal.example
 **What self-hosting actually requires.** It is a Next.js app deployment, not a container
 you drop in. There is no Docker Compose in the repo. You need:
 
-| Piece | Note |
-|---|---|
-| Node host running `apps/web` | Vercel recommended; anything running Next.js works |
-| PostgreSQL 14+ | Prisma migrations committed; `migrate:deploy` in the pipeline |
-| S3-compatible object store | Cloudflare R2 or AWS S3 — holds the screenshots |
-| **Inngest** account | Background jobs (screenshot processing, GitHub sync). *Required in production* — so "self-hosted" still depends on a third-party SaaS |
-| Resend or Plunk | Transactional email; sign-up confirmation and password reset need it |
-| GitHub App | Optional, only for the GitHub integration |
+| Piece                        | Note                                                                                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Node host running `apps/web` | Vercel recommended; anything running Next.js works                                                                                    |
+| PostgreSQL 14+               | Prisma migrations committed; `migrate:deploy` in the pipeline                                                                         |
+| S3-compatible object store   | Cloudflare R2 or AWS S3 — holds the screenshots                                                                                       |
+| **Inngest** account          | Background jobs (screenshot processing, GitHub sync). _Required in production_ — so "self-hosted" still depends on a third-party SaaS |
+| Resend or Plunk              | Transactional email; sign-up confirmation and password reset need it                                                                  |
+| GitHub App                   | Optional, only for the GitHub integration                                                                                             |
 
 Stripe is not needed — billing code is cloud-only.
 

@@ -24,10 +24,7 @@ import {
 
 import { TASKS_HOME } from "@/lib/tasks/routes";
 import { getAuthService, signOutCitizen } from "@/lib/auth";
-import {
-  setNewAccountShell,
-  setSignedInMobile,
-} from "@/lib/filing/linked-complaints";
+import { setNewAccountShell, setSignedInMobile } from "@/lib/filing/linked-complaints";
 import { summaryOf } from "@/lib/tasks/selectors";
 import { resetBulk } from "@/components/bulk/api";
 import { resetSampleDrafts } from "@/lib/filing/sample-drafts";
@@ -40,11 +37,7 @@ import { useProfile, type ProfileRole } from "@/components/shell/profile";
 import { VIEWER_CLERK_NAME } from "@/lib/cases/viewer";
 import { RAIL_THEMES, useRailTheme } from "@/components/shell/rail-theme";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Sidebar,
   SidebarContent,
@@ -58,11 +51,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
 
@@ -172,7 +161,9 @@ const START: NavItem[] = [
   },
 ];
 
-const WITH: NavItem[] = [{ id: "people", label: "appSidebar_people", icon: UsersIcon, href: "/people" }];
+const WITH: NavItem[] = [
+  { id: "people", label: "appSidebar_people", icon: UsersIcon, href: "/people" },
+];
 
 /**
  * The row's label. It has to leave the layout on collapse, not merely be clipped by the
@@ -254,7 +245,9 @@ function TasksCountLabel() {
   if (profileRole === "litigant") return null;
   const { action } = summaryOf({ people, cases, tasks, user, now: new Date() });
   if (!action) return null;
-  return <span className="sr-only">{tr("appSidebar_actionNeedAction", { action: String(action) })}</span>;
+  return (
+    <span className="sr-only">{tr("appSidebar_actionNeedAction", { action: String(action) })}</span>
+  );
 }
 
 /**
@@ -264,9 +257,7 @@ function TasksCountLabel() {
 /** The keystroke that opens search, on the row that opens it. Muted — it is a reminder. */
 function SearchShortcut() {
   const { shortcut } = useAppSearch();
-  return (
-    <span className={`${LABEL} ${MUTED} ml-auto text-caption tabular-nums`}>{shortcut}</span>
-  );
+  return <span className={`${LABEL} ${MUTED} ml-auto text-caption tabular-nums`}>{shortcut}</span>;
 }
 
 function NavRow({ item, onAction }: { item: NavItem; onAction?: () => void }) {
@@ -340,11 +331,7 @@ function NavRow({ item, onAction }: { item: NavItem; onAction?: () => void }) {
         tooltip={translateText(tr, label)}
         className={ROW}
       >
-        <Link
-          href={href}
-          aria-current={isPage ? "page" : undefined}
-          onClick={closeSheet}
-        >
+        <Link href={href} aria-current={isPage ? "page" : undefined} onClick={closeSheet}>
           <Icon aria-hidden />
           <span className={LABEL}>{translateText(tr, label)}</span>
           {id === "tasks" ? (
@@ -467,13 +454,8 @@ const PROFILE_HOME: Record<ProfileRole, string> = {
 function ProfileFooter() {
   const tr = useTranslations();
   const { state, people, user, setUser, resetSandbox } = useTasks();
-  const {
-    profileRole,
-    advocateProfileAvailable,
-    displayName,
-    setProfileRole,
-    signOut,
-  } = useProfile();
+  const { profileRole, advocateProfileAvailable, displayName, setProfileRole, signOut } =
+    useProfile();
   const router = useRouter();
   const roleLabel = PROFILE_LABEL[profileRole];
 
@@ -481,7 +463,10 @@ function ProfileFooter() {
   // person. So Anjali stays Anjali whether she is acting as advocate or litigant. The
   // demo clerk profile is the exception: a clerk is someone else in her office, so it
   // shows the clerk's own name (`displayName`, see `profile.tsx`).
-  const nameParts = displayName.replace(/^Adv\.\s*/, "").trim().split(/\s+/);
+  const nameParts = displayName
+    .replace(/^Adv\.\s*/, "")
+    .trim()
+    .split(/\s+/);
   const displayInitials = (
     (nameParts[0]?.[0] ?? "") + (nameParts[nameParts.length - 1]?.[0] ?? "")
   ).toUpperCase();
@@ -527,7 +512,10 @@ function ProfileFooter() {
                 <SidebarMenuButton
                   className={`${ROW} h-12 group-data-[collapsible=icon]:size-10!`}
                   tooltip={`${displayName} · ${roleLabel}`}
-                  aria-label={tr("appSidebar_displayNameRoleLabelAccountMenu", { displayName, roleLabel })}
+                  aria-label={tr("appSidebar_displayNameRoleLabelAccountMenu", {
+                    displayName,
+                    roleLabel,
+                  })}
                 >
                   <span className="relative shrink-0">
                     <span
@@ -547,12 +535,8 @@ function ProfileFooter() {
                     </span>
                   </span>
                   <span className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate text-body-compact font-medium">
-                      {displayName}
-                    </span>
-                    <span className={`truncate text-caption ${MUTED}`}>
-                      {roleLabel}
-                    </span>
+                    <span className="truncate text-body-compact font-medium">{displayName}</span>
+                    <span className={`truncate text-caption ${MUTED}`}>{roleLabel}</span>
                   </span>
                 </SidebarMenuButton>
               </PopoverTrigger>
@@ -590,9 +574,7 @@ function ProfileFooter() {
                         {tr("appSidebar_l")}
                       </span>
                       <span className="flex-1 text-left">{tr("appSidebar_litigant")}</span>
-                      {profileRole === "litigant" ? (
-                        <CheckIcon aria-hidden />
-                      ) : null}
+                      {profileRole === "litigant" ? <CheckIcon aria-hidden /> : null}
                     </Button>
                     <Button
                       variant="ghost"
@@ -606,9 +588,7 @@ function ProfileFooter() {
                         {tr("appSidebar_a")}
                       </span>
                       <span className="flex-1 text-left">{tr("appSidebar_advocate")}</span>
-                      {profileRole === "advocate" ? (
-                        <CheckIcon aria-hidden />
-                      ) : null}
+                      {profileRole === "advocate" ? <CheckIcon aria-hidden /> : null}
                     </Button>
                   </>
                 ) : null}
@@ -634,9 +614,7 @@ function ProfileFooter() {
                           void setUser(p.id);
                         }}
                       >
-                        <span className="flex-1 truncate text-left">
-                          {p.name}
-                        </span>
+                        <span className="flex-1 truncate text-left">{p.name}</span>
                         {profileRole !== "clerk" && p.id === user.id ? (
                           <CheckIcon aria-hidden />
                         ) : null}
@@ -653,15 +631,11 @@ function ProfileFooter() {
                           className="w-full justify-start font-normal"
                           onClick={() => setProfileRole("clerk")}
                         >
-                          <span className="flex-1 truncate text-left">
-                            {VIEWER_CLERK_NAME}
-                          </span>
+                          <span className="flex-1 truncate text-left">{VIEWER_CLERK_NAME}</span>
                           <span className="text-caption text-muted-foreground">
                             {tr("appSidebar_clerk")}
                           </span>
-                          {profileRole === "clerk" ? (
-                            <CheckIcon aria-hidden />
-                          ) : null}
+                          {profileRole === "clerk" ? <CheckIcon aria-hidden /> : null}
                         </Button>
                       ) : null}
                     </React.Fragment>
@@ -696,11 +670,7 @@ function ProfileFooter() {
                     litigant with one profile) there is nothing to rule off, so the line
                     goes and the band cancels the top padding too. */}
                 <div className="sticky -bottom-2 -mx-2 -mb-2 bg-popover p-2 not-first:border-t not-first:border-hairline first:-mt-2">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={onSignOut}
-                  >
+                  <Button variant="ghost" className="w-full justify-start" onClick={onSignOut}>
                     <LogOutIcon aria-hidden />
                     <span className="flex-1 text-left">{tr("appSidebar_signOut")}</span>
                   </Button>
@@ -763,7 +733,10 @@ function RailPlate({ vars, children }: { vars: React.CSSProperties; children: Re
   return (
     // A pixel wider than the sheet so the plate also covers the sheet's own light
     // 1px edge border, which otherwise shows as a beige line down the right side.
-    <div style={vars} className="flex h-full w-[calc(100%+1px)] flex-col bg-sidebar text-(--sidebar-foreground)">
+    <div
+      style={vars}
+      className="flex h-full w-[calc(100%+1px)] flex-col bg-sidebar text-(--sidebar-foreground)"
+    >
       {children}
     </div>
   );
@@ -819,31 +792,35 @@ export function AppSidebar() {
        * breadcrumb bar's rule are one continuous line across the whole chrome.
        */}
       <RailPlate vars={theme.vars as React.CSSProperties}>
-      <SidebarHeader className="h-14 flex-row items-center justify-between border-b border-(--rail-seam) px-3 py-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-        {/* The ON Courts glyph alone, in both states. The full lockup stacks its
+        <SidebarHeader className="h-14 flex-row items-center justify-between border-b border-(--rail-seam) px-3 py-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          {/* The ON Courts glyph alone, in both states. The full lockup stacks its
             wordmark under the mark, and at the size a 56px bar can spare, "24×7 ON
             COURTS" cannot be read. Gujarat's SARAS 2.0 is one line of text, so it is named
             beside its mark until the rail folds. `onDark` follows the plate, not the
             app's mode. */}
-        <BrandGlyph
-          className="h-6"
-          onDark={theme.darkPlate}
-          named
-          wordmarkClassName="group-data-[collapsible=icon]:hidden"
-        />
-        <SidebarTrigger
-          aria-label={tr("appSidebar_collapseMainNavigation")}
-          className={`size-8 shrink-0 group-data-[collapsible=icon]:hidden [&_svg]:size-5 ${MUTED} hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
-        />
-      </SidebarHeader>
+          <BrandGlyph
+            className="h-6"
+            onDark={theme.darkPlate}
+            named
+            wordmarkClassName="group-data-[collapsible=icon]:hidden"
+          />
+          <SidebarTrigger
+            aria-label={tr("appSidebar_collapseMainNavigation")}
+            className={`size-8 shrink-0 group-data-[collapsible=icon]:hidden [&_svg]:size-5 ${MUTED} hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
+          />
+        </SidebarHeader>
 
-      <SidebarContent>
-        <NavGroup items={mainItems} label={tr("appSidebar_main")} actions={{ search: openSearch }} />
-        <NavGroup items={START} label={tr("appSidebar_startSomething")} separated />
-        <NavGroup items={WITH} label={tr("appSidebar_people")} separated />
-      </SidebarContent>
+        <SidebarContent>
+          <NavGroup
+            items={mainItems}
+            label={tr("appSidebar_main")}
+            actions={{ search: openSearch }}
+          />
+          <NavGroup items={START} label={tr("appSidebar_startSomething")} separated />
+          <NavGroup items={WITH} label={tr("appSidebar_people")} separated />
+        </SidebarContent>
 
-      <ProfileFooter />
+        <ProfileFooter />
       </RailPlate>
     </Sidebar>
   );

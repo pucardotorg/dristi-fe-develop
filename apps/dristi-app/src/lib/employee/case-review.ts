@@ -62,13 +62,7 @@ import {
 } from "lucide-react";
 
 import { CURRENT_STAFF } from "./content";
-import {
-  causeTitle,
-  counselFor,
-  formatListingDate,
-  isoDay,
-  parseIsoDay,
-} from "./hearings";
+import { causeTitle, counselFor, formatListingDate, isoDay, parseIsoDay } from "./hearings";
 import { formatCaseDate, formatChequeAmount } from "./hearing-overview";
 import { registerCaseById, type RegisterCase } from "./register-cases";
 
@@ -632,17 +626,11 @@ export const CASE_FILE_CHUNKS: Partial<Record<CaseGroupId, CaseFileChunkSpec[]>>
     { title: "Basic details", terms: [{ term: FACT_TERMS.age }] },
     {
       title: "Institution details",
-      terms: [
-        { term: FACT_TERMS.authorisedSignatory },
-        { term: FACT_TERMS.registeredOffice },
-      ],
+      terms: [{ term: FACT_TERMS.authorisedSignatory }, { term: FACT_TERMS.registeredOffice }],
     },
     {
       title: "Address",
-      terms: [
-        { term: FACT_TERMS.currentAddress },
-        { term: FACT_TERMS.permanentAddress },
-      ],
+      terms: [{ term: FACT_TERMS.currentAddress }, { term: FACT_TERMS.permanentAddress }],
     },
     {
       title: "Power of attorney",
@@ -705,9 +693,7 @@ export const CASE_FILE_CHUNKS: Partial<Record<CaseGroupId, CaseFileChunkSpec[]>>
   debt: [
     {
       title: "Nature of debt",
-      terms: [
-        { term: FACT_TERMS.natureOfDebt, label: "Nature" },
-      ],
+      terms: [{ term: FACT_TERMS.natureOfDebt, label: "Nature" }],
     },
     {
       title: "Payment against the cheque",
@@ -746,7 +732,8 @@ export function chunkFacts<T extends { fact: CaseFact }>(
       const rows = spec.rows
         .map((row) => ({ label: row.label, cells: row.terms.map(find) }))
         .filter((row) => row.cells.some(Boolean));
-      if (rows.length) chunks.push({ kind: "compare", title: spec.title, columns: spec.columns, rows });
+      if (rows.length)
+        chunks.push({ kind: "compare", title: spec.title, columns: spec.columns, rows });
     } else {
       const list = spec.terms.flatMap(({ term, label }) => {
         const item = find(term);
@@ -847,10 +834,7 @@ export function caseFileCounts(review: CaseReview): CaseFileCounts {
   ]);
   return {
     values: blocks.reduce((total, block) => total + (block.facts?.length ?? 0), 0),
-    documents: blocks.reduce(
-      (total, block) => total + (block.documents?.length ?? 0),
-      0,
-    ),
+    documents: blocks.reduce((total, block) => total + (block.documents?.length ?? 0), 0),
   };
 }
 
@@ -1169,8 +1153,7 @@ function pick<T>(list: readonly T[], seed: number): T {
  */
 function numberOf(seed: number, salt: number, count: number): number {
   const low = 10 ** (count - 1);
-  const mixed =
-    ((seed + salt * 31 + count * 7) * 2654435761 + salt * 104729) >>> 0;
+  const mixed = ((seed + salt * 31 + count * 7) * 2654435761 + salt * 104729) >>> 0;
   return low + (mixed % (10 ** count - low));
 }
 
@@ -1235,13 +1218,7 @@ const POST_OFFICES = [
   "Kilikolloor",
 ] as const;
 
-const POLICE_STATIONS = [
-  "Town East",
-  "Town West",
-  "Chinnakada",
-  "Kottiyam",
-  "Chavara",
-] as const;
+const POLICE_STATIONS = ["Town East", "Town West", "Chinnakada", "Kottiyam", "Chavara"] as const;
 
 /**
  * What the cheque was given for.
@@ -1271,12 +1248,7 @@ const SIGNATORIES = [
   "T. Mohanan",
 ] as const;
 
-const WITNESS_NAMES = [
-  "Sudhakaran Nair",
-  "Beena Thomas",
-  "Nazeer Ahmed",
-  "Sarala Devi",
-] as const;
+const WITNESS_NAMES = ["Sudhakaran Nair", "Beena Thomas", "Nazeer Ahmed", "Sarala Devi"] as const;
 
 /** `DemandNotice.paymentStatus`, in the two labels the filing form offers. */
 const PAYMENT_STATUS = {
@@ -1377,10 +1349,7 @@ function chainFor(
   const returnedOn = shiftDay(noticeSentOn, -(3 + (seed % 22)));
   const depositedOn = shiftDay(returnedOn, -(1 + (seed % 3)));
   /* Inside the three months, or past them by enough that no rounding hides it. */
-  const chequeOn = shiftDay(
-    depositedOn,
-    depositedLate ? -(95 + (seed % 20)) : -(6 + (seed % 70)),
-  );
+  const chequeOn = shiftDay(depositedOn, depositedLate ? -(95 + (seed % 20)) : -(6 + (seed % 70)));
   const repliedOn = shiftDay(noticeServedOn, 5 + (seed % 9));
   return {
     submittedOn,
@@ -1477,10 +1446,7 @@ export type CaseChain = {
  * a day — and it is the first state a real backend will produce, so the screen has to be
  * able to say it rather than quietly reading as cleared (brief §10, §11.3).
  */
-export function scrutinyFor(
-  id: string,
-  today: string,
-): CaseScrutiny | undefined {
+export function scrutinyFor(id: string, today: string): CaseScrutiny | undefined {
   const complaint = registerCaseById(id);
   if (!complaint) return undefined;
   const wait = complaint.daysSinceSubmitted;
@@ -1503,10 +1469,7 @@ export function scrutinyFor(
      or two, varying by file. Bounded below by the round count (a round is at least a
      day) and above by the days actually available. */
   const perRound = 8 + (seed % 12);
-  const days = Math.min(
-    Math.max(rounds * perRound - (seed % 6), rounds),
-    available,
-  );
+  const days = Math.min(Math.max(rounds * perRound - (seed % 6), rounds), available);
   const takenUpOn = shiftDay(submittedOn, takenUpIn);
   const clearedOn = shiftDay(submittedOn, takenUpIn + days);
   const issues = marks.scrutinyIssues;
@@ -1547,9 +1510,7 @@ const SCRUTINY_ROUND_FLOOR_DAYS = 3;
 
 /** Whole days between two `YYYY-MM-DD` days. */
 export function daysBetween(from: string, to: string): number {
-  return Math.round(
-    (parseIsoDay(to).getTime() - parseIsoDay(from).getTime()) / 86400000,
-  );
+  return Math.round((parseIsoDay(to).getTime() - parseIsoDay(from).getTime()) / 86400000);
 }
 
 /** A rupee amount that reads like a cheque — round to the nearest hundred. */
@@ -1725,9 +1686,9 @@ export type CaseFactSource = CaseSlotKey | AdvocateSlotRef;
  * under. Read by the summary, to name a required slot nobody filled, and by the file,
  * to say where a fact's source sits.
  */
-export function caseSlotFor(key: string):
-  | { label: string; kind: CaseDocumentKind; group: CaseGroupId; head: string }
-  | undefined {
+export function caseSlotFor(
+  key: string,
+): { label: string; kind: CaseDocumentKind; group: CaseGroupId; head: string } | undefined {
   if (key in CASE_SLOTS) {
     return CASE_SLOTS[key as CaseSlotKey];
   }
@@ -1749,18 +1710,11 @@ function slot(key: CaseSlotKey, missing: string[]): CaseDocument {
   };
 }
 
-function advocateSlotKey(
-  index: number,
-  which: AdvocateSlotKey,
-): AdvocateSlotRef {
+function advocateSlotKey(index: number, which: AdvocateSlotKey): AdvocateSlotRef {
   return `advocate-${index}-${which}`;
 }
 
-function advocateSlot(
-  index: number,
-  which: AdvocateSlotKey,
-  missing: string[],
-): CaseDocument {
+function advocateSlot(index: number, which: AdvocateSlotKey, missing: string[]): CaseDocument {
   const spec = ADVOCATE_SLOTS[which];
   const key = advocateSlotKey(index, which);
   return {
@@ -1779,10 +1733,7 @@ function advocateSlot(
  * module that asked for itself would render one day on the server and another in the
  * browser.
  */
-export function caseReviewFor(
-  id: string,
-  today: string,
-): CaseReview | undefined {
+export function caseReviewFor(id: string, today: string): CaseReview | undefined {
   const complaint = registerCaseById(id);
   if (!complaint) return undefined;
 
@@ -1818,11 +1769,7 @@ export function caseReviewFor(
 }
 
 /** 1 — who is on each side, and how the court reaches them. */
-function litigantSection(
-  complaint: RegisterCase,
-  seed: number,
-  marks: CaseFileMarks,
-): CaseSection {
+function litigantSection(complaint: RegisterCase, seed: number, marks: CaseFileMarks): CaseSection {
   const complainant = complaint.parties.complainant;
   const accused = complaint.parties.accused;
   const entity = marks.complainantType === "institution";
@@ -2122,9 +2069,7 @@ function caseSpecificSection(
             ]
           : []),
       ],
-      documents: [
-        slot("debt-proof", marks.missing),
-      ],
+      documents: [slot("debt-proof", marks.missing)],
     },
     {
       id: "demand-notice",
@@ -2201,18 +2146,14 @@ function caseSpecificSection(
            renders in words, rather than a second composed sentence. */
         {
           term: FACT_TERMS.grounds,
-          value: applicationFiled
-            ? pick(CONDONATION_GROUNDS, seed)
-            : undefined,
+          value: applicationFiled ? pick(CONDONATION_GROUNDS, seed) : undefined,
           /* The grounds are read off the application, which is exactly why the row is
              empty when the application never arrived — and why the row is then not a
              control either: the slot it points at is absent. */
           source: "delay-application",
         },
       ],
-      documents: [
-        slot("delay-application", marks.missing),
-      ],
+      documents: [slot("delay-application", marks.missing)],
     });
   }
 
@@ -2242,10 +2183,7 @@ function additionalSection(
         icon: UserRoundCheckIcon,
         /* "Named", not "added": a complainant names a witness in the complaint, and
            "added" is the form's word for what the filer did to a list. */
-        empty:
-          marks.witnesses === 0
-            ? { reason: "none-named" as const }
-            : undefined,
+        empty: marks.witnesses === 0 ? { reason: "none-named" as const } : undefined,
         records: Array.from({ length: marks.witnesses }, (_, index) => ({
           id: `witness-${index + 1}`,
           heading: pick(WITNESS_NAMES, seed + index),
@@ -2277,19 +2215,14 @@ function additionalSection(
         facts: [
           {
             term: FACT_TERMS.otherDetails,
-            value: marks.otherDetails
-              ? pick(OTHER_DETAILS, seed)
-              : undefined,
+            value: marks.otherDetails ? pick(OTHER_DETAILS, seed) : undefined,
             /* The filer wrote it in the complaint, so the complaint is where a reader
                checks it — including on the files where the slot is empty and the row
                says "Not stated". */
             source: "complaint",
           },
         ],
-        documents: [
-          slot("complaint", marks.missing),
-          slot("s223-affidavit", marks.missing),
-        ],
+        documents: [slot("complaint", marks.missing), slot("s223-affidavit", marks.missing)],
       },
       {
         id: "advocates",
@@ -2367,27 +2300,17 @@ function paymentSection(seed: number, marks: CaseFileMarks): CaseSection {
             id: true,
           },
         ],
-        documents: [
-          slot("payment-receipt", marks.missing),
-        ],
+        documents: [slot("payment-receipt", marks.missing)],
       },
     ],
   };
 }
 
-
 /* ─────────────────────────── The summary (the glance) ─────────────────────────── */
 
 /** One dated step in the life of the cheque, in the order the statute counts them. */
 export type CaseSummaryStep = {
-  id:
-    | "dated"
-    | "presented"
-    | "returned"
-    | "notice-sent"
-    | "notice-served"
-    | "accrued"
-    | "filed";
+  id: "dated" | "presented" | "returned" | "notice-sent" | "notice-served" | "accrued" | "filed";
   label: string;
   on: string;
   onLabel: string;
@@ -2529,10 +2452,7 @@ const SUMMARY_DOCUMENTS: { key: CaseSlotKey; label: string }[] = [
  * value is a field, and the three windows are numbers the screen lays out rather than
  * sentences it prints.
  */
-export function caseSummaryFor(
-  id: string,
-  today: string,
-): CaseSummary | undefined {
+export function caseSummaryFor(id: string, today: string): CaseSummary | undefined {
   const complaint = registerCaseById(id);
   if (!complaint) return undefined;
 
@@ -2544,11 +2464,7 @@ export function caseSummaryFor(
   const payer = bankFor(seed, 2);
   const counsel = counselFor(complaint, "complainant");
 
-  const step = (
-    stepId: CaseSummaryStep["id"],
-    label: string,
-    on: string,
-  ): CaseSummaryStep => ({
+  const step = (stepId: CaseSummaryStep["id"], label: string, on: string): CaseSummaryStep => ({
     id: stepId,
     label,
     on,
@@ -2575,8 +2491,7 @@ export function caseSummaryFor(
 
   const presentation = daysBetween(chain.chequeOn, chain.depositedOn);
   const notice = daysBetween(chain.returnedOn, chain.noticeSentOn);
-  const applicationOnFile =
-    marks.delayed && !marks.missing.includes("delay-application");
+  const applicationOnFile = marks.delayed && !marks.missing.includes("delay-application");
   const filingStatus: CaseWindowStatus =
     chain.sinceAccrual < 0
       ? "early"
@@ -2691,9 +2606,7 @@ export function caseSummaryFor(
     })),
     otherMissing: marks.missing
       .filter(
-        (key) =>
-          key !== "delay-application" &&
-          !SUMMARY_DOCUMENTS.some((doc) => doc.key === key),
+        (key) => key !== "delay-application" && !SUMMARY_DOCUMENTS.some((doc) => doc.key === key),
       )
       .map((key) => {
         const spec = caseSlotFor(key);

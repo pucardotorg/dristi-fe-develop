@@ -77,10 +77,7 @@ function ApplicationBody({
   onReturnFocus: () => void;
 }) {
   const t = useTranslations();
-  const document = useMemo(
-    () => buildOtherApplicationDocument(application),
-    [application],
-  );
+  const document = useMemo(() => buildOtherApplicationDocument(application), [application]);
 
   return (
     <ApplicationReviewOverlay
@@ -88,7 +85,11 @@ function ApplicationBody({
       description={
         <>
           {/* The overlay renders this as its accessible description. */}
-          <Identifier value={application.caseNumber} label={t("otherApplicationDialog_caseNumber")} copyable={false} />
+          <Identifier
+            value={application.caseNumber}
+            label={t("otherApplicationDialog_caseNumber")}
+            copyable={false}
+          />
           {" · "}
           {causeTitle(application)}
         </>
@@ -99,7 +100,10 @@ function ApplicationBody({
             {otherApplicationTypeLabel(application.type)}
           </ReviewRow>
           <ReviewRow term={t("otherApplicationDialog_caseNumberTerm")}>
-            <Identifier value={application.caseNumber} label={t("otherApplicationDialog_caseNumber")} />
+            <Identifier
+              value={application.caseNumber}
+              label={t("otherApplicationDialog_caseNumber")}
+            />
           </ReviewRow>
           <ReviewRow term={t("otherApplicationDialog_stage")}>
             {otherApplicationStageLabel(application.stage)}

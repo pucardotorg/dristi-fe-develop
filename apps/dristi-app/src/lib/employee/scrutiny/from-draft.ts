@@ -1,14 +1,5 @@
-import {
-  affidavitBody,
-  htmlToParagraphs,
-} from "@/components/filing/sections/preview/derive";
-import {
-  addressToString,
-  plural,
-  rupees,
-  toDisplayDate,
-  toLongDate,
-} from "@/lib/filing/format";
+import { affidavitBody, htmlToParagraphs } from "@/components/filing/sections/preview/derive";
+import { addressToString, plural, rupees, toDisplayDate, toLongDate } from "@/lib/filing/format";
 import {
   ACCUSED_ENTITY_TYPES,
   ENTITY_TYPES,
@@ -224,12 +215,7 @@ function readFromFirst(
 
 /* ── the builder ─────────────────────────────────────────────────────────── */
 
-function group(
-  id: string,
-  icon: GroupIcon,
-  title: string,
-  fields: Field[],
-): FieldGroupDef {
+function group(id: string, icon: GroupIcon, title: string, fields: Field[]): FieldGroupDef {
   return { id, icon, title, fields };
 }
 
@@ -386,7 +372,11 @@ function complainantGroups(draft: FilingDraft): FieldGroupDef[] {
           label: "Authorised representative · Mobile number",
           value: shown(r.mobile && `+91 ${r.mobile}`),
         },
-        { id: `${p}-rep-name`, label: "Authorised representative · Full name", value: shown(r.name) },
+        {
+          id: `${p}-rep-name`,
+          label: "Authorised representative · Full name",
+          value: shown(r.name),
+        },
         { id: `${p}-rep-age`, label: "Authorised representative · Age", value: shown(r.age) },
         {
           id: `${p}-rep-mail`,
@@ -642,7 +632,11 @@ function noticeGroups(draft: FilingDraft): FieldGroupDef[] {
       });
     } else {
       fields.push(
-        { id: `${p}-retdate`, label: "Date of return as not delivered", value: date(nt.returnDate) },
+        {
+          id: `${p}-retdate`,
+          label: "Date of return as not delivered",
+          value: date(nt.returnDate),
+        },
         {
           id: `${p}-nondel`,
           label: "Reason for non-delivery",
@@ -778,9 +772,7 @@ function prayerGroup(draft: FilingDraft): FieldGroupDef {
 
 function witnessGroups(draft: FilingDraft): FieldGroupDef[] {
   // An optional section: a filing with no witnesses says so rather than going quiet.
-  const named = draft.witnesses.filter(
-    (w) => w.fullName.trim() || w.designation.trim(),
-  );
+  const named = draft.witnesses.filter((w) => w.fullName.trim() || w.designation.trim());
   if (!named.length) {
     return [
       group("wit", "user", "Witnesses", [
@@ -807,7 +799,12 @@ function witnessGroups(draft: FilingDraft): FieldGroupDef[] {
     }
     fields.push(
       { id: `${p}-age`, label: "Age", value: shown(w.age) },
-      { id: `${p}-prove`, label: "What will this witness prove?", value: prose(w.prove), long: true },
+      {
+        id: `${p}-prove`,
+        label: "What will this witness prove?",
+        value: prose(w.prove),
+        long: true,
+      },
       ...contactFields(p, w.contacts),
       ...addressBlockFields(p, w.addresses),
     );
@@ -950,7 +947,7 @@ function affidavitGroup(draft: FilingDraft): FieldGroupDef {
     // Why it was not e-signed, as the filer said before the upload opened (`SCR-15`).
     const fallback = draft.sign.paperFallback;
     const reason = fallback
-      ? PAPER_FALLBACK_REASONS.find((r) => r.id === fallback.reason)?.label ?? fallback.reason
+      ? (PAPER_FALLBACK_REASONS.find((r) => r.id === fallback.reason)?.label ?? fallback.reason)
       : "";
     fields.push({
       id: "aff-paper-reason",
@@ -1020,7 +1017,9 @@ function oathGroup(draft: FilingDraft, options: DraftReadOptions): FieldGroupDef
       value: oath ? `Recorded by ${who} · ${stamp(oath.at)}` : "Not recorded",
       ...(oath ? { video: oathDocId(i) } : {}),
       ...(oath && oathCarriedOver(draft, id)
-        ? { note: `Carried over from an earlier round — recorded ${stamp(oath.at).split(" · ")[0]}` }
+        ? {
+            note: `Carried over from an earlier round — recorded ${stamp(oath.at).split(" · ")[0]}`,
+          }
         : {}),
     };
   });
@@ -1085,7 +1084,9 @@ export function caseFromDraft(draft: FilingDraft, options: DraftReadOptions): Dr
     party: {
       complainant: names.complainant,
       accused: names.accused,
-      submitted: draft.filedAt ? `Submitted ${toLongDate(draft.filedAt.slice(0, 10))}` : "fromDraft_notYetSubmitted",
+      submitted: draft.filedAt
+        ? `Submitted ${toLongDate(draft.filedAt.slice(0, 10))}`
+        : "fromDraft_notYetSubmitted",
       advocate: draft.advocates[0] ? shown(advocateName(draft.advocates[0])) : "Party in person",
     },
     sections,

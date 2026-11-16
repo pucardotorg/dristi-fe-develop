@@ -42,7 +42,7 @@ export function parseEvidenceMarks(raw: string | null): EvidenceMarks {
  */
 export function nextEvidenceNumber(
   taken: (string | null | undefined)[],
-  side: EvidenceSide
+  side: EvidenceSide,
 ): string {
   const highest = taken.reduce((max, number) => {
     const match = number ? new RegExp(`^${side}(\\d+)$`).exec(number) : null;

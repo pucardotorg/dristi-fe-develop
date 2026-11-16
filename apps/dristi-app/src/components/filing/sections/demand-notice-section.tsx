@@ -34,22 +34,10 @@ import { DateField } from "@/components/filing/date-field";
 import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
-import {
-  FormCard,
-  FormDivider,
-  FormRow,
-  HalfWidth,
-} from "@/components/filing/form-card";
+import { FormCard, FormDivider, FormRow, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
-import {
-  CorrectionInstance,
-  useCorrectionInstanceRequest,
-} from "@/components/filing/posture";
-import {
-  OptionSelect,
-  PrefixInput,
-  TextField,
-} from "@/components/filing/inputs";
+import { CorrectionInstance, useCorrectionInstanceRequest } from "@/components/filing/posture";
+import { OptionSelect, PrefixInput, TextField } from "@/components/filing/inputs";
 import { SectionNotice } from "@/components/filing/notices";
 import { SectionTabs } from "@/components/filing/section-tabs";
 import { YesNoSegmented } from "@/components/filing/segmented";
@@ -92,8 +80,7 @@ export function DemandNoticeSection() {
    */
   const [sourceOpen, setSourceOpen] = useSourceOpenState();
   /** Which of this notice's uploads the rail shows. */
-  const [sourceDoc, setSourceDoc] =
-    React.useState<keyof typeof DOC_LABELS>("demand-notice");
+  const [sourceDoc, setSourceDoc] = React.useState<keyof typeof DOC_LABELS>("demand-notice");
 
   const index = Math.min(active, notices.length - 1);
   const notice = notices[index];
@@ -179,11 +166,7 @@ export function DemandNoticeSection() {
           onRemove={askRemove}
           addLabel={t("demandNoticeSection_addDemandNotice")}
           onAdd={addNotice}
-          trailing={
-            !sourceOpen ? (
-              <ViewSourceButton onClick={() => setSourceOpen(true)} />
-            ) : null
-          }
+          trailing={!sourceOpen ? <ViewSourceButton onClick={() => setSourceOpen(true)} /> : null}
         />
 
         <CorrectionInstance value={index}>
@@ -357,9 +340,7 @@ export function DemandNoticeSection() {
               >
                 <OptionSelect
                   value={notice.paymentStatus}
-                  onValueChange={(v) =>
-                    set("paymentStatus", v as DemandNotice["paymentStatus"])
-                  }
+                  onValueChange={(v) => set("paymentStatus", v as DemandNotice["paymentStatus"])}
                   options={PAYMENT_STATUS}
                   ariaLabel={t("demandNoticeSection_hasTheDrawerAccusedMadeFull")}
                 />

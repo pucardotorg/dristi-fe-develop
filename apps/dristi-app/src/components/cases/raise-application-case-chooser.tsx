@@ -2,36 +2,19 @@
 
 import { useId, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowRightIcon,
-  ChevronDownIcon,
-  EyeIcon,
-  SearchIcon,
-} from "lucide-react";
+import { ArrowRightIcon, ChevronDownIcon, EyeIcon, SearchIcon } from "lucide-react";
 
 import { CaseStage } from "@/components/cases/case-identity";
 import { CasePeekPushRegion } from "@/components/cases/case-peek";
 import { COLLAPSE_MOTION } from "@/components/cases/motion";
 import { RegisterSearch } from "@/components/cases/register-controls";
-import {
-  CASE_PEEK_ID,
-  CasePeekProvider,
-  useCasePeek,
-} from "@/components/cases/use-case-peek";
+import { CASE_PEEK_ID, CasePeekProvider, useCasePeek } from "@/components/cases/use-case-peek";
 import { Identifier } from "@/components/chrome/identifier";
 import { SIDE_PANEL_PUSH } from "@/components/ui/side-panel";
-import {
-  PAGE_GROUND,
-  PAGE_GUTTER,
-  PAGE_TITLE,
-} from "@/components/shell/page-frame";
+import { PAGE_GROUND, PAGE_GUTTER, PAGE_TITLE } from "@/components/shell/page-frame";
 import { PANEL_CLASS } from "@/components/shell/panel";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Empty,
   EmptyDescription,
@@ -47,12 +30,7 @@ import {
   ItemGroup,
   ItemTitle,
 } from "@/components/ui/item";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { partiesLabel, type CaseRecord } from "@/lib/cases/types";
 import { withOrigin } from "@/lib/nav/origin";
 import { cn } from "@/lib/utils";
@@ -117,9 +95,7 @@ export function RaiseApplicationCaseChooser({
       <CasePeekProvider now={now}>
         {/* The Cases page's docked peek, on the same terms: the header eases aside,
         the list keeps its width and the panel slides over its far edge. */}
-        <CasePeekPushRegion
-          className={cn("flex flex-1 flex-col", PAGE_GROUND, PAGE_GUTTER)}
-        >
+        <CasePeekPushRegion className={cn("flex flex-1 flex-col", PAGE_GROUND, PAGE_GUTTER)}>
           <div className="flex w-full flex-col gap-6">
             {/* Keyed to the column, not the viewport; see FilingFrame's header. */}
             <header className={cn("@container", SIDE_PANEL_PUSH)}>
@@ -150,7 +126,10 @@ export function RaiseApplicationCaseChooser({
               </h2>
               <p aria-live="polite" className="sr-only">
                 {typed
-                  ? t("raiseApplicationCaseChooser_lengthOfLength2CasesMatch", { length: String(shown.length), length2: String(ordered.length) })
+                  ? t("raiseApplicationCaseChooser_lengthOfLength2CasesMatch", {
+                      length: String(shown.length),
+                      length2: String(ordered.length),
+                    })
                   : ""}
               </p>
 
@@ -161,9 +140,7 @@ export function RaiseApplicationCaseChooser({
                       key={record.id}
                       record={record}
                       expanded={expandedId === record.id}
-                      onExpandedChange={(open) =>
-                        setExpandedId(open ? record.id : null)
-                      }
+                      onExpandedChange={(open) => setExpandedId(open ? record.id : null)}
                     />
                   ))}
                 </ItemGroup>
@@ -174,8 +151,7 @@ export function RaiseApplicationCaseChooser({
                     className="text-body-compact text-muted-foreground tabular-nums"
                     aria-live="polite"
                   >
-                    Showing {rows.length} of {shown.length}{" "}
-                    {shown.length === 1 ? "case" : "cases"}
+                    Showing {rows.length} of {shown.length} {shown.length === 1 ? "case" : "cases"}
                   </p>
                   {remaining > 0 ? (
                     <Button
@@ -228,21 +204,14 @@ function CaseRow({
   return (
     <>
       <PointerCaseRow record={record} />
-      <TouchCaseRow
-        record={record}
-        expanded={expanded}
-        onExpandedChange={onExpandedChange}
-      />
+      <TouchCaseRow record={record} expanded={expanded} onExpandedChange={onExpandedChange} />
     </>
   );
 }
 
 function selectHref(record: CaseRecord) {
   // The list records itself, so the next page's back arrow returns here.
-  return withOrigin(
-    `/cases/${record.id}/filings/application`,
-    "/raise-application",
-  );
+  return withOrigin(`/cases/${record.id}/filings/application`, "/raise-application");
 }
 
 const ROW_SHELL = cn(PANEL_CLASS, "rounded-xl px-4 py-3");
@@ -293,10 +262,7 @@ function PointerCaseRow({ record }: { record: CaseRecord }) {
       <ItemContent className="min-w-0 gap-1">
         <div className="flex min-w-0 items-center gap-0.5">
           <ItemTitle className="line-clamp-none min-w-0 text-body-compact font-semibold break-words text-foreground">
-            <Link
-              href={selectHref(record)}
-              className="outline-none after:absolute after:inset-0"
-            >
+            <Link href={selectHref(record)} className="outline-none after:absolute after:inset-0">
               {parties}
             </Link>
           </ItemTitle>
@@ -319,7 +285,9 @@ function PointerCaseRow({ record }: { record: CaseRecord }) {
                 <EyeIcon aria-hidden />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">{t("raiseApplicationCaseChooser_previewCase")}</TooltipContent>
+            <TooltipContent side="bottom">
+              {t("raiseApplicationCaseChooser_previewCase")}
+            </TooltipContent>
           </Tooltip>
         </div>
         <CaseFacts record={record} />
@@ -379,7 +347,7 @@ function TouchCaseRow({
         className={cn(
           ROW_SHELL,
           "relative z-10 flex w-full items-center gap-3 border bg-card text-left outline-none transition-colors active:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50",
-          expanded && "border-border"
+          expanded && "border-border",
         )}
       >
         <span className="flex min-w-0 flex-1 flex-col gap-1">
@@ -399,18 +367,13 @@ function TouchCaseRow({
           aria-hidden
           className={cn(
             "size-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-            expanded && "rotate-180"
+            expanded && "rotate-180",
           )}
         />
       </CollapsibleTrigger>
       <CollapsibleContent className={cn(COLLAPSE_MOTION, "mx-3")}>
         <div className="flex items-center gap-2 rounded-b-xl bg-secondary p-3">
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1"
-            onClick={() => open(record)}
-          >
+          <Button type="button" variant="outline" className="flex-1" onClick={() => open(record)}>
             {t("raiseApplicationCaseChooser_preview")}
           </Button>
           <Button asChild className="flex-1">

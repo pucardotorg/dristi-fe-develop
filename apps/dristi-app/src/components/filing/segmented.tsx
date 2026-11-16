@@ -4,10 +4,7 @@ import * as React from "react";
 
 import type { YesNo } from "@/lib/filing/types";
 import { cn } from "@/lib/utils";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { useFieldReadOnly, useLockedDisabled } from "@/components/filing/posture";
 import { ReadOnlyValue } from "@/components/filing/inputs";
 
@@ -44,7 +41,11 @@ export function Segmented<T extends string>({
   if (readOnly) {
     const chosen = options.find((o) => o.value === value);
     return (
-      <ReadOnlyValue value={chosen?.label ?? value ?? ""} ariaLabel={ariaLabel} className="w-fit min-w-32" />
+      <ReadOnlyValue
+        value={chosen?.label ?? value ?? ""}
+        ariaLabel={ariaLabel}
+        className="w-fit min-w-32"
+      />
     );
   }
   return (

@@ -41,16 +41,27 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30 flex h-14 items-center gap-4 bg-(--pv-navy) px-4 text-white">
-        <Link href="/provakil/collections/litigation" className="flex items-baseline gap-0.5 pr-2" aria-label="Provakil home">
+        <Link
+          href="/provakil/collections/litigation"
+          className="flex items-baseline gap-0.5 pr-2"
+          aria-label="Provakil home"
+        >
           <span className="text-[22px] font-bold tracking-tight lowercase">provakil</span>
           <span className="size-1.5 rounded-full bg-[#00c9a7]" aria-hidden />
         </Link>
-        <button disabled title="Not part of this demo" className="flex cursor-not-allowed items-center gap-2 whitespace-nowrap rounded-md bg-white/10 px-3 py-1.5 text-[13px] font-medium opacity-60">
+        <button
+          disabled
+          title="Not part of this demo"
+          className="flex cursor-not-allowed items-center gap-2 whitespace-nowrap rounded-md bg-white/10 px-3 py-1.5 text-[13px] font-medium opacity-60"
+        >
           <BriefcaseIcon className="size-4" aria-hidden />
           Legal Collections
           <ChevronDownIcon className="size-4 opacity-70" aria-hidden />
         </button>
-        <div className="mx-auto hidden w-full max-w-xl cursor-not-allowed items-center gap-2 rounded-md bg-white/10 px-3 py-1.5 opacity-50 md:flex" title="Not part of this demo">
+        <div
+          className="mx-auto hidden w-full max-w-xl cursor-not-allowed items-center gap-2 rounded-md bg-white/10 px-3 py-1.5 opacity-50 md:flex"
+          title="Not part of this demo"
+        >
           <SearchIcon className="size-4 opacity-70" aria-hidden />
           <input
             disabled
@@ -60,15 +71,27 @@ export function Shell({ children }: { children: React.ReactNode }) {
           />
         </div>
         <div className="ml-auto flex items-center gap-1">
-          <button disabled className="cursor-not-allowed rounded-full p-2 opacity-50" aria-label="Help" title="Not part of this demo">
+          <button
+            disabled
+            className="cursor-not-allowed rounded-full p-2 opacity-50"
+            aria-label="Help"
+            title="Not part of this demo"
+          >
             <HelpCircleIcon className="size-5" />
           </button>
-          <button disabled className="relative cursor-not-allowed rounded-full p-2 opacity-50" aria-label="Notifications" title="Not part of this demo">
+          <button
+            disabled
+            className="relative cursor-not-allowed rounded-full p-2 opacity-50"
+            aria-label="Notifications"
+            title="Not part of this demo"
+          >
             <BellIcon className="size-5" />
             <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[#00c9a7]" />
           </button>
           <div className="ml-2 flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-full bg-(--pv-teal) text-[13px] font-medium">PV</span>
+            <span className="flex size-8 items-center justify-center rounded-full bg-(--pv-teal) text-[13px] font-medium">
+              PV
+            </span>
             <div className="hidden whitespace-nowrap leading-tight xl:block">
               <div className="text-[13px] font-medium">Priya Vyas</div>
               <div className="text-[11px] text-white/60">Legal Manager · Tata Capital</div>
@@ -101,7 +124,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   <Link
                     href={item.href}
                     className={`flex items-center gap-3 rounded-md px-3 py-2 text-[13px] ${
-                      active ? "bg-(--pv-blue-50) font-medium text-(--pv-blue)" : "text-(--pv-slate) hover:bg-(--pv-ground)"
+                      active
+                        ? "bg-(--pv-blue-50) font-medium text-(--pv-blue)"
+                        : "text-(--pv-slate) hover:bg-(--pv-ground)"
                     }`}
                   >
                     <Icon className="size-4" aria-hidden />
@@ -115,7 +140,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <Link
               href="/provakil/settings/integrations/saras"
               className={`flex items-center gap-3 rounded-md px-3 py-2 text-[13px] ${
-                pathname.startsWith("/provakil/settings") ? "bg-(--pv-blue-50) font-medium text-(--pv-blue)" : "text-(--pv-slate) hover:bg-(--pv-ground)"
+                pathname.startsWith("/provakil/settings")
+                  ? "bg-(--pv-blue-50) font-medium text-(--pv-blue)"
+                  : "text-(--pv-slate) hover:bg-(--pv-ground)"
               }`}
             >
               <SettingsIcon className="size-4" aria-hidden />
@@ -134,7 +161,9 @@ export function NotInDemo({ title }: { title: string }) {
   return (
     <div className="p-6">
       <h1 className="text-xl font-medium">{title}</h1>
-      <p className="mt-2 text-(--pv-muted)">Not part of this demo. The demo covers Litigation and the DRISTI connector.</p>
+      <p className="mt-2 text-(--pv-muted)">
+        Not part of this demo. The demo covers Litigation and the DRISTI connector.
+      </p>
     </div>
   );
 }

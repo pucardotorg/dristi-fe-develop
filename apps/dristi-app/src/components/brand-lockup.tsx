@@ -22,15 +22,7 @@ import { cn } from "@/lib/utils";
 
 const LABEL = "24×7 ON Courts";
 
-function Mark({
-  base,
-  onDark,
-  className,
-}: {
-  base: string;
-  onDark: boolean;
-  className?: string;
-}) {
+function Mark({ base, onDark, className }: { base: string; onDark: boolean; className?: string }) {
   return (
     <span role="img" aria-label={LABEL} className={cn("inline-flex", className)}>
       {onDark ? (
@@ -96,11 +88,7 @@ function PlaceholderMark({
   className?: string;
 }) {
   return (
-    <span
-      role="img"
-      aria-label={name}
-      className={cn("inline-flex items-center gap-2", className)}
-    >
+    <span role="img" aria-label={name} className={cn("inline-flex items-center gap-2", className)}>
       <PlaceholderGlyph name={name} />
       {wordmark ? (
         <span

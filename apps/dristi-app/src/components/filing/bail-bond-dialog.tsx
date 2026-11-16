@@ -27,18 +27,10 @@ import {
   focusFirstInvalid,
 } from "@/components/cases/filing-form-shared";
 import { ComposedDocumentViewer } from "@/components/cases/pdf-viewer";
-import {
-  UPLOAD_HELP,
-  UploadedDocField,
-} from "@/components/cases/uploaded-doc-field";
+import { UPLOAD_HELP, UploadedDocField } from "@/components/cases/uploaded-doc-field";
 import { useCourtText } from "@/components/court/court-provider";
 import { PaperFallbackLink } from "@/components/filing/paper-fallback";
-import {
-  ChoiceCard,
-  DscLookup,
-  InstrumentChoice,
-  OtpEntry,
-} from "@/components/filing/sign-stages";
+import { ChoiceCard, DscLookup, InstrumentChoice, OtpEntry } from "@/components/filing/sign-stages";
 import { Badge } from "@/components/ui/badge";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -55,18 +47,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { AccessCase } from "@/lib/access/content";
 import { datedThis } from "@/lib/cases/application-document";
 import {
@@ -223,9 +205,7 @@ export function BailBondDialog({
     setAmount("");
     setBondType("");
     setCount("");
-    setLockedContacts(
-      lockedSureties.map((entry) => ({ phone: entry.phone, email: entry.email })),
-    );
+    setLockedContacts(lockedSureties.map((entry) => ({ phone: entry.phone, email: entry.email })));
     setSureties(Array.from({ length: missingCount }, emptySurety));
   }
 
@@ -308,9 +288,7 @@ export function BailBondDialog({
   }
 
   function returnFocusToGenerate() {
-    document
-      .querySelector<HTMLElement>(`button[form="${CSS.escape(formId)}"]`)
-      ?.focus();
+    document.querySelector<HTMLElement>(`button[form="${CSS.escape(formId)}"]`)?.focus();
   }
 
   const description = pick(
@@ -434,7 +412,10 @@ export function BailBondDialog({
                   {/* Set by the magistrate: grey, read-only, never the
                       yellow "we filled this, change it" tint. */}
                   <div className="grid gap-6 md:grid-cols-2">
-                    <PrefilledField label={t("bailBondDialog_petitioner")} value={BOND_LITIGANT.name} />
+                    <PrefilledField
+                      label={t("bailBondDialog_petitioner")}
+                      value={BOND_LITIGANT.name}
+                    />
                     <PrefilledField
                       label={t("bailBondDialog_petitionersFathersName")}
                       value={BOND_LITIGANT.father}
@@ -455,9 +436,15 @@ export function BailBondDialog({
                     </Banner>
                   ) : null}
                   {lockedSureties.map((surety, index) => (
-                    <RowWell key={surety.name} legend={t("bailBondDialog_suretyValue", { value: String(index + 1) })}>
+                    <RowWell
+                      key={surety.name}
+                      legend={t("bailBondDialog_suretyValue", { value: String(index + 1) })}
+                    >
                       <div className="grid gap-6 md:grid-cols-2">
-                        <PrefilledField label={t("bailBondDialog_suretyName")} value={surety.name} />
+                        <PrefilledField
+                          label={t("bailBondDialog_suretyName")}
+                          value={surety.name}
+                        />
                         <PrefilledField
                           label={t("bailBondDialog_fathersMothersName")}
                           value={surety.father}
@@ -493,7 +480,10 @@ export function BailBondDialog({
                           }}
                         />
                       </div>
-                      <PrefilledField label={t("bailBondDialog_suretyAddress")} value={surety.address} />
+                      <PrefilledField
+                        label={t("bailBondDialog_suretyAddress")}
+                        value={surety.address}
+                      />
                     </RowWell>
                   ))}
                 </>
@@ -506,7 +496,9 @@ export function BailBondDialog({
                 ? sureties.map((item, index) => (
                     <RowWell
                       key={item.id}
-                      legend={t("bailBondDialog_suretyValue", { value: String(lockedSureties.length + index + 1) })}
+                      legend={t("bailBondDialog_suretyValue", {
+                        value: String(lockedSureties.length + index + 1),
+                      })}
                     >
                       <div className="grid gap-6 md:grid-cols-2">
                         <TextField
@@ -549,9 +541,7 @@ export function BailBondDialog({
                         label={t("bailBondDialog_suretyIdProof")}
                         files={item.identityProof}
                         error={errors[`${item.id}.identityProof`]}
-                        onFilesChange={(identityProof) =>
-                          updateSurety(item.id, { identityProof })
-                        }
+                        onFilesChange={(identityProof) => updateSurety(item.id, { identityProof })}
                         onErrorChange={(error) =>
                           setErrors((current) => ({
                             ...current,
@@ -564,9 +554,7 @@ export function BailBondDialog({
                         label={t("bailBondDialog_proofOfSolvency")}
                         files={item.solvencyProof}
                         error={errors[`${item.id}.solvencyProof`]}
-                        onFilesChange={(solvencyProof) =>
-                          updateSurety(item.id, { solvencyProof })
-                        }
+                        onFilesChange={(solvencyProof) => updateSurety(item.id, { solvencyProof })}
                         onErrorChange={(error) =>
                           setErrors((current) => ({
                             ...current,
@@ -728,7 +716,10 @@ function GeneratedBondDialog({
                 </FactGroup>
                 <FactGroup columns={2}>
                   <Fact label={t("bailBondDialog_case")}>
-                    <Identifier value={accessCase.caseNumber} label={t("bailBondDialog_caseNumber")} />
+                    <Identifier
+                      value={accessCase.caseNumber}
+                      label={t("bailBondDialog_caseNumber")}
+                    />
                   </Fact>
                   <Fact label={t("bailBondDialog_generatedOn")}>
                     <span className="tabular-nums">{generatedOn}</span>
@@ -793,11 +784,19 @@ function GeneratedBondDocument({
         </p>
         <div className="flex flex-col gap-1">
           <p className="text-body font-semibold">
-            {t.rich("bailBondDialog_caseNoCaseNumber", { caseNumber: accessCase.caseNumber, span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+            {t.rich("bailBondDialog_caseNoCaseNumber", {
+              caseNumber: accessCase.caseNumber,
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
-          <p className="text-body font-semibold">{t("bailBondDialog_inTheMatterOfTitle", { title: accessCase.title })}</p>
           <p className="text-body font-semibold">
-            {t.rich("bailBondDialog_dateGeneratedOn", { generatedOn, span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+            {t("bailBondDialog_inTheMatterOfTitle", { title: accessCase.title })}
+          </p>
+          <p className="text-body font-semibold">
+            {t.rich("bailBondDialog_dateGeneratedOn", {
+              generatedOn,
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
         </div>
       </header>
@@ -1007,70 +1006,80 @@ function BondSignatureDialog({
                       : t("bailBondDialog_theLitigantHasBeenSentA")
               }
             />
-          <div className="flex flex-col gap-4 px-6 py-6">
-            <OutcomeSummary>
-            <DescriptionList>
-              <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-                <DescriptionTerm className="text-body-compact">{t("bailBondDialog_submissionDate")}</DescriptionTerm>
-                <DescriptionDetails className="text-body-compact">
-                  {formatCaseDate(new Date().toISOString())}
-                </DescriptionDetails>
-              </DescriptionRow>
-              <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-                <DescriptionTerm className="text-body-compact">{t("bailBondDialog_bondId")}</DescriptionTerm>
-                <DescriptionDetails className="flex items-center gap-2 text-body-compact font-medium">
-                  <Identifier value={BOND_ID} label={t("bailBondDialog_bondNumber")} />
-                </DescriptionDetails>
-              </DescriptionRow>
-              <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-                <DescriptionTerm className="text-body-compact">{t("bailBondDialog_status")}</DescriptionTerm>
-                <DescriptionDetails>
-                  <Badge variant="warning">
-                    {pick(
-                      method === "esign" ? bondCopy.statusPendingSign : bondCopy.statusPendingReview,
-                      "en",
-                    )}
-                  </Badge>
-                </DescriptionDetails>
-              </DescriptionRow>
-            </DescriptionList>
-            </OutcomeSummary>
+            <div className="flex flex-col gap-4 px-6 py-6">
+              <OutcomeSummary>
+                <DescriptionList>
+                  <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
+                    <DescriptionTerm className="text-body-compact">
+                      {t("bailBondDialog_submissionDate")}
+                    </DescriptionTerm>
+                    <DescriptionDetails className="text-body-compact">
+                      {formatCaseDate(new Date().toISOString())}
+                    </DescriptionDetails>
+                  </DescriptionRow>
+                  <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
+                    <DescriptionTerm className="text-body-compact">
+                      {t("bailBondDialog_bondId")}
+                    </DescriptionTerm>
+                    <DescriptionDetails className="flex items-center gap-2 text-body-compact font-medium">
+                      <Identifier value={BOND_ID} label={t("bailBondDialog_bondNumber")} />
+                    </DescriptionDetails>
+                  </DescriptionRow>
+                  <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
+                    <DescriptionTerm className="text-body-compact">
+                      {t("bailBondDialog_status")}
+                    </DescriptionTerm>
+                    <DescriptionDetails>
+                      <Badge variant="warning">
+                        {pick(
+                          method === "esign"
+                            ? bondCopy.statusPendingSign
+                            : bondCopy.statusPendingReview,
+                          "en",
+                        )}
+                      </Badge>
+                    </DescriptionDetails>
+                  </DescriptionRow>
+                </DescriptionList>
+              </OutcomeSummary>
 
-            {method === "esign" ? (
-              <div className="flex flex-col gap-2">
-                <p className="text-body-compact font-medium">{t("bailBondDialog_signingLink")}</p>
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="min-w-0 truncate font-mono text-body-compact">
-                    {BOND_SIGN_LINK}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={copied ? t("bailBondDialog_copied") : t("bailBondDialog_copySigningLink")}
-                    onClick={() => {
-                      void navigator.clipboard?.writeText(BOND_SIGN_LINK);
-                      setCopied(true);
-                    }}
-                  >
-                    {copied ? (
-                      <CheckIcon className="text-success-ink" aria-hidden />
-                    ) : (
-                      <CopyIcon aria-hidden />
-                    )}
+              {method === "esign" ? (
+                <div className="flex flex-col gap-2">
+                  <p className="text-body-compact font-medium">{t("bailBondDialog_signingLink")}</p>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="min-w-0 truncate font-mono text-body-compact">
+                      {BOND_SIGN_LINK}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={
+                        copied ? t("bailBondDialog_copied") : t("bailBondDialog_copySigningLink")
+                      }
+                      onClick={() => {
+                        void navigator.clipboard?.writeText(BOND_SIGN_LINK);
+                        setCopied(true);
+                      }}
+                    >
+                      {copied ? (
+                        <CheckIcon className="text-success-ink" aria-hidden />
+                      ) : (
+                        <CopyIcon aria-hidden />
+                      )}
+                    </Button>
+                  </div>
+                  {/* The demo stand-in for the SMS/email the parties receive. Centred on a
+                    phone, left with the facts from tablet up (owner, Oct 29). */}
+                  <Button asChild variant="outline" className="self-center sm:self-start">
+                    <a href={BOND_SIGN_PATH} target="_blank" rel="noreferrer">
+                      <ExternalLinkIcon data-icon="inline-start" aria-hidden />
+                      {pick(bondCopy.openLinkDemo, "en")}
+                    </a>
                   </Button>
                 </div>
-                {/* The demo stand-in for the SMS/email the parties receive. Centred on a
-                    phone, left with the facts from tablet up (owner, Oct 29). */}
-                <Button asChild variant="outline" className="self-center sm:self-start">
-                  <a href={BOND_SIGN_PATH} target="_blank" rel="noreferrer">
-                    <ExternalLinkIcon data-icon="inline-start" aria-hidden />
-                    {pick(bondCopy.openLinkDemo, "en")}
-                  </a>
-                </Button>
-              </div>
-            ) : null}
-          </div>
+              ) : null}
+            </div>
           </div>
         ) : (
           <>
@@ -1083,7 +1092,9 @@ function BondSignatureDialog({
                 >
                   {stepTitle}
                 </DialogTitle>
-                {step === "signed" ? <Badge variant="success">{t("bailBondDialog_signed")}</Badge> : null}
+                {step === "signed" ? (
+                  <Badge variant="success">{t("bailBondDialog_signed")}</Badge>
+                ) : null}
               </div>
               <DialogDescription>{stepDescription}</DialogDescription>
             </DialogHeader>
@@ -1091,8 +1102,7 @@ function BondSignatureDialog({
             <div
               className={cn(
                 "flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-6 py-6",
-                (step === "method" || step === "instrument") &&
-                  "gap-4 bg-muted dark:bg-background",
+                (step === "method" || step === "instrument") && "gap-4 bg-muted dark:bg-background",
               )}
             >
               {step === "method" ? (
@@ -1161,12 +1171,18 @@ function BondSignatureDialog({
                   </Field>
                   <FieldError>{fileError}</FieldError>
                   <p className="flex flex-wrap items-center gap-1 text-body-compact">
-                    {t.rich("bailBondDialog_needTheUnsignedBailBondTo", { button: (chunks) => <Button
-                      type="button"
-                      variant="link"
-                      className="h-auto p-0 underline"
-                      onClick={downloadNotice}
-                    >{chunks}</Button> })}
+                    {t.rich("bailBondDialog_needTheUnsignedBailBondTo", {
+                      button: (chunks) => (
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="h-auto p-0 underline"
+                          onClick={downloadNotice}
+                        >
+                          {chunks}
+                        </Button>
+                      ),
+                    })}
                   </p>
                 </>
               ) : null}

@@ -77,15 +77,12 @@ export function ordersForSitting(
     .sort((a, b) => a.item - b.item)
     .map((hearing) => {
       const draft =
-        drafts[editorDraftKey(hearing.id)] ??
-        initialOrderDraft(hearing, hearing.status, today);
+        drafts[editorDraftKey(hearing.id)] ?? initialOrderDraft(hearing, hearing.status, today);
       const signed = signing[hearing.id];
       return {
         hearing,
         status: signed ?? "draft",
-        items: draft.blocks
-          .filter((block) => block.kind === "item")
-          .map(blockLabel),
+        items: draft.blocks.filter((block) => block.kind === "item").map(blockLabel),
         gaps: gapsOf(draft),
         nextDate: draft.next === "list" ? draft.nextDate : null,
       };

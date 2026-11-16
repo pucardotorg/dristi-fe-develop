@@ -10,10 +10,7 @@ import { ApproveCopyApplicationTable } from "@/components/employee/approve-copy-
 import { ListFooter } from "@/components/employee/list-footer";
 import { QueueAnnouncer } from "@/components/employee/queue-announcer";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -88,7 +85,10 @@ const COPY_FILTERS: ColumnFilter<CopyApplication>[] = [
     id: "copy-side",
     label: "Petitioner's side",
     allLabel: "Either side",
-    options: [{ value: "complainant", label: "Complainant" }, { value: "accused", label: "Accused" }],
+    options: [
+      { value: "complainant", label: "Complainant" },
+      { value: "accused", label: "Accused" },
+    ],
     test: (row, value) => row.applicant.side === value,
   },
 ];
@@ -146,12 +146,8 @@ export function ApproveCopyApplicationScreen() {
   );
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
-  const [picked, setPicked] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(() => new Set());
+  const [picked, setPicked] = React.useState<ReadonlySet<string>>(() => new Set());
   const [open, setOpen] = React.useState<CopyApplication | null>(null);
   const [announcement, setAnnouncement] = React.useState("");
   const searchRef = React.useRef<HTMLInputElement>(null);
@@ -162,12 +158,8 @@ export function ApproveCopyApplicationScreen() {
      already hands it back. */
   const acceptedFromBar = React.useRef(false);
 
-  const remaining = COPY_APPLICATION_QUEUE.filter(
-    (application) => !decidedIds.has(application.id),
-  );
-  const [columns, setColumns] = React.useState(() =>
-    emptyColumnFilters(COPY_FILTERS),
-  );
+  const remaining = COPY_APPLICATION_QUEUE.filter((application) => !decidedIds.has(application.id));
+  const [columns, setColumns] = React.useState(() => emptyColumnFilters(COPY_FILTERS));
   const [sort, setSort] = React.useState<CopySort>("oldest");
 
   const rows = sortRows(
@@ -254,7 +246,9 @@ export function ApproveCopyApplicationScreen() {
     setOpen(null);
     removeFromQueue(
       [application.id],
-      t("approveCopyApplicationScreen_applicationNumberAcceptedOnThisScreen", { applicationNumber: application.applicationNumber }),
+      t("approveCopyApplicationScreen_applicationNumberAcceptedOnThisScreen", {
+        applicationNumber: application.applicationNumber,
+      }),
     );
   }
 
@@ -262,7 +256,9 @@ export function ApproveCopyApplicationScreen() {
     setOpen(null);
     removeFromQueue(
       [application.id],
-      t("approveCopyApplicationScreen_applicationNumberRejectedOnThisScreen", { applicationNumber: application.applicationNumber }),
+      t("approveCopyApplicationScreen_applicationNumberRejectedOnThisScreen", {
+        applicationNumber: application.applicationNumber,
+      }),
     );
   }
 
@@ -283,7 +279,9 @@ export function ApproveCopyApplicationScreen() {
           <p className="text-body text-muted-foreground">
             {remaining.length === 1
               ? t("approveCopyApplicationScreen_1ApplicationIsWaitingForApproval")
-              : t("approveCopyApplicationScreen_lengthApplicationsAreWaitingForApproval", { length: String(remaining.length) })}
+              : t("approveCopyApplicationScreen_lengthApplicationsAreWaitingForApproval", {
+                  length: String(remaining.length),
+                })}
           </p>
         </header>
 
@@ -314,17 +312,10 @@ export function ApproveCopyApplicationScreen() {
           />
 
           {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-          <QueueAnnouncer
-            from={start + 1}
-            to={start + pageRows.length}
-            total={rows.length}
-          />
+          <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
           {pageRows.length === 0 ? (
-            <CopyApplicationsEmpty
-              isFiltered={isFiltered}
-              onClear={clearFilters}
-            />
+            <CopyApplicationsEmpty isFiltered={isFiltered} onClear={clearFilters} />
           ) : (
             <div className="flex min-w-0 flex-col gap-4">
               {/* min-w-0 lets this flex item shrink below the table's content width, so a
@@ -400,11 +391,7 @@ export function ApproveCopyApplicationScreen() {
             ) : null}
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  className="w-full sm:w-fit"
-                  disabled={selectedIds.size === 0}
-                >
+                <Button type="button" className="w-full sm:w-fit" disabled={selectedIds.size === 0}>
                   {t("approveCopyApplicationScreen_acceptApplications")}
                 </Button>
               </AlertDialogTrigger>
@@ -420,7 +407,9 @@ export function ApproveCopyApplicationScreen() {
                   <AlertDialogTitle>
                     {selectedIds.size === 1
                       ? t("approveCopyApplicationScreen_acceptThisCopyApplication")
-                      : t("approveCopyApplicationScreen_acceptSizeCopyApplications", { size: String(selectedIds.size) })}
+                      : t("approveCopyApplicationScreen_acceptSizeCopyApplications", {
+                          size: String(selectedIds.size),
+                        })}
                   </AlertDialogTitle>
                   <AlertDialogDescription className="text-body">
                     {selectedIds.size === 1
@@ -429,7 +418,6 @@ export function ApproveCopyApplicationScreen() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
 
-                
                 <AlertDialogFooter>
                   <AlertDialogCancel>{t("common_back")}</AlertDialogCancel>
                   <AlertDialogAction onClick={acceptSelected}>
@@ -517,11 +505,7 @@ function CopyApplicationsEmpty({
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FileCheck2Icon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FileCheck2Icon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isFiltered
@@ -568,17 +552,17 @@ function CopyApplicationItemList({
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((application) => (
-        <QueueItemRow
-          key={application.id}
-          className="flex items-start gap-3"
-        >
+        <QueueItemRow key={application.id} className="flex items-start gap-3">
           {/* The DS box expands its own hit area to 40×40; the name it carries is the
               application and who asked for it, not the column, because a row read aloud
               has no column header. */}
           <Checkbox
             checked={selectedIds.has(application.id)}
             onCheckedChange={() => onToggle(application)}
-            aria-label={t("approveCopyApplicationScreen_selectApplicationNumberName", { applicationNumber: application.applicationNumber, name: application.applicant.name })}
+            aria-label={t("approveCopyApplicationScreen_selectApplicationNumberName", {
+              applicationNumber: application.applicationNumber,
+              name: application.applicant.name,
+            })}
             className="mt-1"
           />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -586,21 +570,29 @@ function CopyApplicationItemList({
               type="button"
               onClick={() => onOpen(application)}
               {...rowOpener}
-                className={rowOpenerClass}
+              className={rowOpenerClass}
             >
               <span className="sr-only">{t("approveCopyApplicationScreen_review")} </span>
               {/* The number is the row's opener — the face without a second control. */}
-              <Identifier value={application.applicationNumber} label={t("approveCopyApplicationScreen_applicationNumber")} copyable={false} />
+              <Identifier
+                value={application.applicationNumber}
+                label={t("approveCopyApplicationScreen_applicationNumber")}
+                copyable={false}
+              />
             </button>
-            <p className="min-w-0 text-body-compact">
-              {application.applicant.name}
-            </p>
+            <p className="min-w-0 text-body-compact">{application.applicant.name}</p>
             <p className="min-w-0 text-caption text-muted-foreground">
               {application.record.description}
             </p>
             <p className="text-caption text-muted-foreground">
-              <Identifier value={application.caseNumber} label={t("approveCopyApplicationScreen_caseNumber")} />
-              {t.rich("approveCopyApplicationScreen_raisedFormatCopyApplicationDate", { formatCopyApplicationDate: formatCopyApplicationDate(application.raisedOn), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+              <Identifier
+                value={application.caseNumber}
+                label={t("approveCopyApplicationScreen_caseNumber")}
+              />
+              {t.rich("approveCopyApplicationScreen_raisedFormatCopyApplicationDate", {
+                formatCopyApplicationDate: formatCopyApplicationDate(application.raisedOn),
+                span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+              })}
             </p>
           </div>
         </QueueItemRow>

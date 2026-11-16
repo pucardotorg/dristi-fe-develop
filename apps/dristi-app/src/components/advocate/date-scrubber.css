@@ -1,6 +1,8 @@
 /* The square covers the strip as its bars tuck upward. Transitions retarget
    from the displayed position, including when hover reverses mid-stagger. */
-.date-scrubber { container-type: inline-size; }
+.date-scrubber {
+  container-type: inline-size;
+}
 .date-scrubber-bar {
   opacity: 0;
   transform: translateY(calc(-100% - var(--spacing)));
@@ -12,17 +14,24 @@
   opacity: 1;
   transform: translateY(0);
 }
-.date-scrubber-tick, .date-scrubber-cursor {
+.date-scrubber-tick,
+.date-scrubber-cursor {
   transition: transform var(--scrub-duration) var(--scrub-easing);
 }
 /* Keep the bubble inside the square's width, even with a month suffix. cqw
    reads this control's width; percentages read the bubble's own width. */
 .date-scrubber-badge {
-  --scrub-shift: clamp(calc(var(--scrub-anchor) * -1cqw), -50%, calc((100 - var(--scrub-anchor)) * 1cqw - 100%));
+  --scrub-shift: clamp(
+    calc(var(--scrub-anchor) * -1cqw),
+    -50%,
+    calc((100 - var(--scrub-anchor)) * 1cqw - 100%)
+  );
   transform: translateX(var(--scrub-shift));
   transition: transform var(--scrub-duration) var(--scrub-easing);
 }
-.date-scrubber-pointer { left: calc(var(--scrub-shift) * -1); }
+.date-scrubber-pointer {
+  left: calc(var(--scrub-shift) * -1);
+}
 .date-scrubber-bubble {
   opacity: 0;
   transition-property: opacity;
@@ -55,7 +64,8 @@
   transition-delay: 0ms !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  .date-scrubber *, .date-scrubber-weekday {
+  .date-scrubber *,
+  .date-scrubber-weekday {
     transition-duration: 0ms !important;
     transition-delay: 0ms !important;
   }

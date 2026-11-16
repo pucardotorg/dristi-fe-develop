@@ -208,11 +208,13 @@ export type RegisterResult = {
   entries?: number;
 };
 
-const desc = <T,>(list: T[], key: (row: T) => number | null) =>
+const desc = <T>(list: T[], key: (row: T) => number | null) =>
   list.slice().sort((a, b) => (key(b) ?? 0) - (key(a) ?? 0));
 
 function calendarDefinition(docket: CourtDocket, longPendingOnly: boolean): Definition {
-  const rows = desc(docket.cases, (c) => c.filed).filter((c) => !longPendingOnly || c.longPendingAt !== null);
+  const rows = desc(docket.cases, (c) => c.filed).filter(
+    (c) => !longPendingOnly || c.longPendingAt !== null,
+  );
   return {
     unit: ["case", "cases"],
     rows,
@@ -232,7 +234,9 @@ function calendarDefinition(docket: CourtDocket, longPendingOnly: boolean): Defi
       column<DocketCase>("Disposal", (c) => (c.disposal ? text(c.disposal.method) : EMPTY)),
       column<DocketCase>("Disposed on", (c) => date(c.disposal?.date ?? null)),
       column<DocketCase>("Next hearing", (c) => (isPending(c) ? nextHearingCell(c) : EMPTY)),
-      column<DocketCase>("Hearing type", (c) => (c.nextHearing !== null && c.nextPurpose ? text(c.nextPurpose) : EMPTY)),
+      column<DocketCase>("Hearing type", (c) =>
+        c.nextHearing !== null && c.nextPurpose ? text(c.nextPurpose) : EMPTY,
+      ),
     ],
   };
 }
@@ -292,7 +296,10 @@ function applicationsDefinition(docket: CourtDocket): Definition {
 
 function disposedDefinition(docket: CourtDocket, view: string): Definition {
   const measures = courtMeasures(docket);
-  const rows = desc(view === "cmp" ? measures.cmpDisposed : measures.stDisposed, (c) => c.disposal!.date);
+  const rows = desc(
+    view === "cmp" ? measures.cmpDisposed : measures.stDisposed,
+    (c) => c.disposal!.date,
+  );
   return {
     unit: ["case", "cases"],
     rows,
@@ -336,9 +343,13 @@ function pendingDefinition(docket: CourtDocket, view: string, year: number | und
     rows,
     haystack: (row) => caseHaystack(row as DocketCase),
     columns: [
-      column<DocketCase>("Case", (c) => ({ kind: "case", number: c.caseNumber, title: c.title }), { wrap: true }),
+      column<DocketCase>("Case", (c) => ({ kind: "case", number: c.caseNumber, title: c.title }), {
+        wrap: true,
+      }),
       column<DocketCase>("Stage", (c) => text(stageLabel(c))),
-      column<DocketCase>("Days in stage", (c) => num(daysInStage(c, docket.today)), { numeric: true }),
+      column<DocketCase>("Days in stage", (c) => num(daysInStage(c, docket.today)), {
+        numeric: true,
+      }),
       column<DocketCase>("Next hearing", nextHearingCell),
     ],
   };
@@ -350,7 +361,10 @@ type BailRow = DocketCase;
 function bailsDefinition(docket: CourtDocket): Definition {
   return {
     unit: ["bail", "bails"],
-    rows: desc(docket.cases.filter((c) => c.bailAt !== null), (c) => c.bailAt),
+    rows: desc(
+      docket.cases.filter((c) => c.bailAt !== null),
+      (c) => c.bailAt,
+    ),
     date: (row) => (row as BailRow).bailAt,
     haystack: (row) => caseHaystack(row as BailRow),
     columns: [
@@ -441,7 +455,9 @@ function feeRows(docket: CourtDocket): FeeMonth[] {
   const first = monthKey(docket.start);
   const last = monthKey(docket.today);
   for (let month = first; month <= last; month++) {
-    const registered = docket.cases.filter((c) => c.registeredAt !== null && monthKey(c.registeredAt) === month);
+    const registered = docket.cases.filter(
+      (c) => c.registeredAt !== null && monthKey(c.registeredAt) === month,
+    );
     /* One vakalath for the complainant at registration, one for the accused at appearance. */
     const appeared = docket.cases.filter((c) =>
       c.log.some((entry) => entry.stage === "appearance" && monthKey(entry.end) === month),
@@ -458,7 +474,8 @@ function feeRows(docket: CourtDocket): FeeMonth[] {
       vakalaths,
       courtFee: vakalaths * VAKALATNAMA.courtFee + registered.length * DELAY_NOTICE_COURT_FEE,
       applicationFee: applications * DEMO_APPLICATION_FEE,
-      advocateWelfare: registered.length * ADVOCATE_WELFARE_FUND + vakalaths * VAKALATNAMA.welfareFund,
+      advocateWelfare:
+        registered.length * ADVOCATE_WELFARE_FUND + vakalaths * VAKALATNAMA.welfareFund,
       legalBenefit: registered.length * LEGAL_BENEFIT_FUND,
       clerkWelfare: registered.length * CLERK_WELFARE_FUND,
       complaintFee: registered.length * COMPLAINT_FEE,
@@ -478,10 +495,14 @@ function feesDefinition(docket: CourtDocket): Definition {
       column<FeeMonth>("Month", (m) => text(monthLabel(m.month))),
       column<FeeMonth>("Vakalaths filed", (m) => num(m.vakalaths), { numeric: true }),
       column<FeeMonth>("Court fee", (m) => money(m.courtFee), { numeric: true }),
-      column<FeeMonth>("Application fee (demo rate)", (m) => money(m.applicationFee), { numeric: true }),
+      column<FeeMonth>("Application fee (demo rate)", (m) => money(m.applicationFee), {
+        numeric: true,
+      }),
       column<FeeMonth>("Advocate Welfare Fund", (m) => money(m.advocateWelfare), { numeric: true }),
       column<FeeMonth>("Legal Benefit Fund", (m) => money(m.legalBenefit), { numeric: true }),
-      column<FeeMonth>("Advocate Clerk Welfare Fund", (m) => money(m.clerkWelfare), { numeric: true }),
+      column<FeeMonth>("Advocate Clerk Welfare Fund", (m) => money(m.clerkWelfare), {
+        numeric: true,
+      }),
       column<FeeMonth>("Complaint fee", (m) => money(m.complaintFee), { numeric: true }),
       column<FeeMonth>("Delay condonation fee", (m) => money(m.condonationFee), { numeric: true }),
       column<FeeMonth>("Total", (m) => money(total(m), true), { numeric: true }),
@@ -519,7 +540,9 @@ function copiesDefinition(docket: CourtDocket): Definition {
     date: (row) => (row as CopyApplication).applied,
     haystack: (row) => caseHaystack((row as CopyApplication).case),
     columns: [
-      column<CopyApplication>("Copy application no.", (x) => id(x.number, "copy application number")),
+      column<CopyApplication>("Copy application no.", (x) =>
+        id(x.number, "copy application number"),
+      ),
       column<CopyApplication>("Case no.", (x) => id(x.case.caseNumber)),
       column<CopyApplication>("Applied on", (x) => date(x.applied)),
       column<CopyApplication>("Applicant", (x) => text(x.applicant)),
@@ -527,7 +550,9 @@ function copiesDefinition(docket: CourtDocket): Definition {
       column<CopyApplication>("Sheets", (x) => num(x.sheets), { numeric: true }),
       column<CopyApplication>("Fee", (x) => money(x.fee), { numeric: true }),
       column<CopyApplication>("Issued on", (x) =>
-        x.issued === null ? { kind: "status", text: "Not issued", tone: "warning" } : date(x.issued),
+        x.issued === null
+          ? { kind: "status", text: "Not issued", tone: "warning" }
+          : date(x.issued),
       ),
     ],
   };
@@ -677,10 +702,16 @@ export function registerIndexCount(
   if (register.sourceToConfirm) return null;
   const measures = courtMeasures(docket);
   if (register.id === "pending") {
-    return { count: measures.stPending.length + measures.cmpPending.length, unit: ["entry", "entries"] };
+    return {
+      count: measures.stPending.length + measures.cmpPending.length,
+      unit: ["entry", "entries"],
+    };
   }
   if (register.id === "disposed") {
-    return { count: measures.stDisposed.length + measures.cmpDisposed.length, unit: ["entry", "entries"] };
+    return {
+      count: measures.stDisposed.length + measures.cmpDisposed.length,
+      unit: ["entry", "entries"],
+    };
   }
   const result = registerView(docket, register.id);
   if (!result) return null;

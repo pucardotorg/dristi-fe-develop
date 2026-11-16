@@ -32,9 +32,7 @@ describe("cause list bulk filters", () => {
     const names = advocatesOnList(board()).slice(0, 2);
     const rows = filterHearings(board(), { ...EMPTY_FILTERS, advocates: names });
     assert.ok(rows.length > 0);
-    assert.ok(
-      rows.every((hearing) => hearing.counsel.some((c) => names.includes(c.name))),
-    );
+    assert.ok(rows.every((hearing) => hearing.counsel.some((c) => names.includes(c.name))));
     const one = filterHearings(board(), { ...EMPTY_FILTERS, advocates: [names[0]] });
     assert.ok(rows.length >= one.length);
   });
@@ -56,7 +54,10 @@ describe("cause list bulk filters", () => {
 
   it("lists each advocate once, sorted", () => {
     const names = advocatesOnList(board());
-    assert.deepEqual(names, [...new Set(names)].sort((a, b) => a.localeCompare(b)));
+    assert.deepEqual(
+      names,
+      [...new Set(names)].sort((a, b) => a.localeCompare(b)),
+    );
   });
 });
 
@@ -77,11 +78,7 @@ describe("cause list bulk acts", () => {
   it("sets only what was given and keeps the rest of each posting", () => {
     const [a, b] = board();
     setHearingsNext([a.id], { nextPurpose: "plea" }, NO_CAUSE_POSTING);
-    setHearingsNext(
-      [a.id, b.id],
-      { next: "list", nextDate: "2026-11-02" },
-      NO_CAUSE_POSTING,
-    );
+    setHearingsNext([a.id, b.id], { next: "list", nextDate: "2026-11-02" }, NO_CAUSE_POSTING);
     const session = readHearingSession();
     assert.deepEqual(session.postings[a.id], {
       next: "list",
@@ -97,9 +94,7 @@ describe("demo data", () => {
     const { SITTING_SEEDS } = await import("./sample-sitting");
     const { pendingOrderStage } = await import("./pending-orders");
     const day = SITTING_SEEDS.orders;
-    const stages = Object.values(day.pending).map((order) =>
-      pendingOrderStage(order, day.signing),
-    );
+    const stages = Object.values(day.pending).map((order) => pendingOrderStage(order, day.signing));
     for (const stage of [
       "drafting",
       "awaiting-signature",

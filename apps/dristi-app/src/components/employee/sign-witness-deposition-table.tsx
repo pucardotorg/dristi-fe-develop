@@ -8,11 +8,7 @@ import {
   tableRowClass,
 } from "@/components/chrome/table-plate";
 import { CounselCell } from "@/components/employee/counsel-cell";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -84,9 +80,7 @@ export function SignWitnessDepositionTable({
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "w-12")}>
             <Checkbox
-              checked={
-                allSelected ? true : someSelected ? "indeterminate" : false
-              }
+              checked={allSelected ? true : someSelected ? "indeterminate" : false}
               onCheckedChange={(next) => onToggleAll(next === true)}
               /* Names what the control does to what is on screen, not to the whole
                  queue — the header checkbox reaches this page of rows only, and a label
@@ -140,7 +134,11 @@ export function SignWitnessDepositionTable({
                   /* The sheet, not the row: one case can put four of these in the list,
                      and a label naming only the cause would read aloud four times
                      identically. */
-                  aria-label={t("signWitnessDepositionTable_selectTheDepositionOfNameTag", { name: deposition.witness.name, tag, courtText: courtText(deposition.caseNumber) })}
+                  aria-label={t("signWitnessDepositionTable_selectTheDepositionOfNameTag", {
+                    name: deposition.witness.name,
+                    tag,
+                    courtText: courtText(deposition.caseNumber),
+                  })}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -149,54 +147,44 @@ export function SignWitnessDepositionTable({
                   underlined teal names down a column is the colour ui-craft §4 rations.
                   The underline now arrives on the *row's* hover, wherever the pointer
                   sits, and on this control's own focus — see `rowOpenerClass`. */}
-              <TableCell
-                className={cn(
-                  TABLE_CELL,
-                  "min-w-64 font-medium whitespace-normal",
-                )}
-              >
+              <TableCell className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}>
                 <button
                   type="button"
                   onClick={() => onOpen(deposition)}
                   {...rowOpener}
-                className={rowOpenerClass}
+                  className={rowOpenerClass}
                 >
                   <span className="sr-only">
-                    {t("signWitnessDepositionTable_readAndSignTheDepositionOf", { name: deposition.witness.name })}
+                    {t("signWitnessDepositionTable_readAndSignTheDepositionOf", {
+                      name: deposition.witness.name,
+                    })}
                   </span>
                   {causeTitle(deposition)}
                 </button>
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "whitespace-nowrap")}
-              >
-                <Identifier value={deposition.caseNumber} label={t("signWitnessDepositionTable_caseNumberLabel")} />
+              <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
+                <Identifier
+                  value={deposition.caseNumber}
+                  label={t("signWitnessDepositionTable_caseNumberLabel")}
+                />
               </TableCell>
               {/* The name carries the fact; the tag labels it, so it recedes to muted
                   the way the `(C)` / `(A)` marks do in the advocates cell beside it.
                   Spoken in full, because "PW1" read aloud is not a sentence. */}
               <TableCell className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}>
-                <span className="text-foreground">
-                  {deposition.witness.name}
-                </span>{" "}
+                <span className="text-foreground">{deposition.witness.name}</span>{" "}
                 <span aria-hidden className="text-muted-foreground">
                   {tag}
                 </span>
                 <span className="sr-only">{`, ${tag}, ${witnessRoleLabel(deposition)}`}</span>
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}
-              >
+              <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>
                 {formatDepositionDate(deposition.depositionOn)}
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-nowrap")}>
                 <CounselCell
-                  complainant={counselFor(deposition, "complainant").map(
-                    (counsel) => counsel.name,
-                  )}
-                  accused={counselFor(deposition, "accused").map(
-                    (counsel) => counsel.name,
-                  )}
+                  complainant={counselFor(deposition, "complainant").map((counsel) => counsel.name)}
+                  accused={counselFor(deposition, "accused").map((counsel) => counsel.name)}
                   dense
                 />
               </TableCell>

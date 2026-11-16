@@ -18,6 +18,6 @@ export function useCompactBoard(): boolean {
   return useSyncExternalStore(
     subscribe,
     () => window.matchMedia(COMPACT_QUERY).matches,
-    () => false
+    () => false,
   );
 }

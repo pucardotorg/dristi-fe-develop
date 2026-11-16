@@ -16,9 +16,6 @@ export default async function Page({
   const { applicationId } = await params;
   const { view } = await searchParams;
   redirect(
-    applicationHref(
-      decodeURIComponent(applicationId),
-      Array.isArray(view) ? view[0] : view,
-    ),
+    applicationHref(decodeURIComponent(applicationId), Array.isArray(view) ? view[0] : view),
   );
 }

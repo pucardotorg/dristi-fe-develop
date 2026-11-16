@@ -2,11 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { hearingById } from "./hearings";
-import {
-  addItemsToDraft,
-  bulkOrderItems,
-  orderTextPreview,
-} from "./order-bulk-items";
+import { addItemsToDraft, bulkOrderItems, orderTextPreview } from "./order-bulk-items";
 import { composerContextFor } from "./order-context";
 import { EMPTY_ORDER_DRAFT } from "./order-draft";
 
@@ -14,11 +10,7 @@ const context = composerContextFor(hearingById("h-246")!);
 
 describe("adding order items in bulk", () => {
   it("adds each chosen item once", () => {
-    const result = addItemsToDraft(
-      EMPTY_ORDER_DRAFT,
-      ["issue-of-summons", "cost"],
-      context,
-    );
+    const result = addItemsToDraft(EMPTY_ORDER_DRAFT, ["issue-of-summons", "cost"], context);
     assert.deepEqual(result.added, ["issue-of-summons", "cost"]);
     assert.equal(result.draft.blocks.length, 2);
   });
@@ -32,11 +24,7 @@ describe("adding order items in bulk", () => {
   });
 
   it("leaves out an item the catalogue forbids beside another", () => {
-    const result = addItemsToDraft(
-      EMPTY_ORDER_DRAFT,
-      ["cognizance", "dismiss-case"],
-      context,
-    );
+    const result = addItemsToDraft(EMPTY_ORDER_DRAFT, ["cognizance", "dismiss-case"], context);
     assert.deepEqual(result.added, ["cognizance"]);
     assert.equal(result.skipped[0].type, "dismiss-case");
   });

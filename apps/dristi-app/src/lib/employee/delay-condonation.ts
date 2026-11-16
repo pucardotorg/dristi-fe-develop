@@ -52,13 +52,8 @@ export const DELAY_CONDONATION_STAGES: {
   label: string;
 }[] = [{ id: "registration", label: "Registration" }, ...CASE_STAGES];
 
-export function delayCondonationStageLabel(
-  stage: DelayCondonationStage,
-): string {
-  return (
-    DELAY_CONDONATION_STAGES.find((entry) => entry.id === stage)?.label ??
-    stage
-  );
+export function delayCondonationStageLabel(stage: DelayCondonationStage): string {
+  return DELAY_CONDONATION_STAGES.find((entry) => entry.id === stage)?.label ?? stage;
 }
 
 export type DelayCondonationCase = {
@@ -528,8 +523,7 @@ export const DELAY_CONDONATION_QUEUE: DelayCondonationCase[] = [
     filedFor: "complainant",
     delayDays: 13,
     delayIn: "filing the affidavit of evidence",
-    reason:
-      "The affidavit was ready but the deponent was ill on the date fixed for swearing it.",
+    reason: "The affidavit was ready but the deponent was ill on the date fixed for swearing it.",
   },
   {
     id: "dc-407",
@@ -707,18 +701,14 @@ export function buildDelayCondonationDocument(
     { term: "Complainant", value: matter.parties.complainant },
     { term: "Accused", value: matter.parties.accused },
   ];
-  const complainantCounsel = counselFor(matter, "complainant").map(
-    (counsel) => counsel.name,
-  );
+  const complainantCounsel = counselFor(matter, "complainant").map((counsel) => counsel.name);
   if (complainantCounsel.length) {
     facts.push({
       term: "Complainant counsel",
       value: complainantCounsel.join(", "),
     });
   }
-  const accusedCounsel = counselFor(matter, "accused").map(
-    (counsel) => counsel.name,
-  );
+  const accusedCounsel = counselFor(matter, "accused").map((counsel) => counsel.name);
   if (accusedCounsel.length) {
     facts.push({ term: "Accused counsel", value: accusedCounsel.join(", ") });
   }
@@ -753,9 +743,7 @@ export function buildDelayCondonationDocument(
   };
 }
 
-export function delayCondonationDocumentText(
-  document: DelayCondonationDocument,
-): string {
+export function delayCondonationDocumentText(document: DelayCondonationDocument): string {
   return [
     document.court,
     `Case no. ${document.caseNumber}`,
@@ -765,9 +753,7 @@ export function delayCondonationDocumentText(
     "",
     ...document.facts.map((fact) => `${fact.term}: ${fact.value}`),
     "",
-    ...document.paragraphs.map(
-      (paragraph, index) => `${index + 1}. ${paragraph}`,
-    ),
+    ...document.paragraphs.map((paragraph, index) => `${index + 1}. ${paragraph}`),
     "",
     `Prayer: ${document.prayer}`,
     "",
@@ -776,15 +762,11 @@ export function delayCondonationDocumentText(
   ].join("\n");
 }
 
-export function delayCondonationDocumentFilename(
-  matter: DelayCondonationCase,
-): string {
+export function delayCondonationDocumentFilename(matter: DelayCondonationCase): string {
   return `${matter.caseNumber.replace(/\//g, "-")}-delay-condonation.txt`;
 }
 
-export function downloadDelayCondonationDocument(
-  matter: DelayCondonationCase,
-): void {
+export function downloadDelayCondonationDocument(matter: DelayCondonationCase): void {
   const document = buildDelayCondonationDocument(matter);
   const url = URL.createObjectURL(
     new Blob([localizeForDownload(delayCondonationDocumentText(document))], { type: "text/plain" }),

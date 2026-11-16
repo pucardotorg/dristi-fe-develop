@@ -10,12 +10,7 @@
 import pack from "./hearings-dummy.json";
 import { formatCaseDate, counselFor, type CaseRecord } from "./types";
 
-export type HearingStatus =
-  | "scheduled"
-  | "ongoing"
-  | "completed"
-  | "rescheduled"
-  | "abandoned";
+export type HearingStatus = "scheduled" | "ongoing" | "completed" | "rescheduled" | "abandoned";
 
 export const HEARING_STATUSES: { id: HearingStatus; label: string }[] = [
   { id: "scheduled", label: "Scheduled" },
@@ -26,15 +21,9 @@ export const HEARING_STATUSES: { id: HearingStatus; label: string }[] = [
 ];
 
 export type TranscriptAvailability =
-  | "available"
-  | "not_available"
-  | "temporarily_unavailable"
-  | "restricted";
+  "available" | "not_available" | "temporarily_unavailable" | "restricted";
 
-export type TranscriptRecordStatus =
-  | "available"
-  | "temporarily_unavailable"
-  | "restricted";
+export type TranscriptRecordStatus = "available" | "temporarily_unavailable" | "restricted";
 
 export type HearingsView = "timeline" | "table";
 
@@ -196,7 +185,7 @@ export function hearingStatusLabel(status: HearingStatus): string {
  * colour alone).
  */
 export function hearingStatusVariant(
-  status: HearingStatus
+  status: HearingStatus,
 ): "info" | "success" | "secondary" | "warning" {
   switch (status) {
     case "scheduled":
@@ -219,7 +208,7 @@ export function isHearingHeld(hearing: Hearing): boolean {
 
 export function hearingPartyNames(
   hearing: Hearing,
-  peopleById: Map<string, HearingPerson>
+  peopleById: Map<string, HearingPerson>,
 ): string {
   return hearing.participantIds
     .map((id) => peopleById.get(id)?.name)
@@ -231,7 +220,7 @@ const VISIBLE_PARTIES = 2;
 
 export function hearingPartiesDisplay(
   hearing: Hearing,
-  peopleById: Map<string, HearingPerson>
+  peopleById: Map<string, HearingPerson>,
 ): string {
   if (hearing.partiesDisplay) return hearing.partiesDisplay;
   const names = hearing.participantIds
@@ -241,10 +230,7 @@ export function hearingPartiesDisplay(
   return `${names[0]}, ${names[1]} +${names.length - VISIBLE_PARTIES}`;
 }
 
-export function canOpenTranscript(
-  file: HearingsFile,
-  hearing: Hearing
-): boolean {
+export function canOpenTranscript(file: HearingsFile, hearing: Hearing): boolean {
   if (!hearing.transcriptId) return false;
   const transcript = findTranscript(file, hearing.transcriptId);
   return transcript?.recordStatus === "available";
@@ -252,7 +238,7 @@ export function canOpenTranscript(
 
 export function transcriptListState(
   file: HearingsFile,
-  hearing: Hearing
+  hearing: Hearing,
 ): TranscriptRecordStatus | "unavailable" | null {
   if (canOpenTranscript(file, hearing)) return null;
   if (hearing.transcriptId) {
@@ -262,33 +248,24 @@ export function transcriptListState(
     }
     if (transcript?.recordStatus === "restricted") return "restricted";
   }
-  if (
-    hearing.transcriptAvailability === "not_available" ||
-    Boolean(hearing.transcriptId)
-  ) {
+  if (hearing.transcriptAvailability === "not_available" || Boolean(hearing.transcriptId)) {
     return "unavailable";
   }
   return null;
 }
 
-export function canOpenDepositions(
-  file: HearingsFile,
-  hearing: Hearing
-): boolean {
+export function canOpenDepositions(file: HearingsFile, hearing: Hearing): boolean {
   return depositionsFor(file, hearing.depositionIds).length > 0;
 }
 
-export function hearingHasArtifacts(
-  file: HearingsFile,
-  hearing: Hearing
-): boolean {
+export function hearingHasArtifacts(file: HearingsFile, hearing: Hearing): boolean {
   return canOpenTranscript(file, hearing) || canOpenDepositions(file, hearing);
 }
 
 export function hearingTimelineStatus(
   hearing: Hearing,
   index: number,
-  currentIndex: number
+  currentIndex: number,
 ): "past" | "current" | "future" {
   if (!isHearingHeld(hearing)) return "future";
   return index === currentIndex ? "current" : "past";
@@ -296,7 +273,7 @@ export function hearingTimelineStatus(
 
 export function hearingPeopleGroups(
   hearing: Hearing,
-  peopleById: Map<string, HearingPerson>
+  peopleById: Map<string, HearingPerson>,
 ): {
   parties: HearingPerson[];
   advocates: HearingPerson[];
@@ -307,37 +284,27 @@ export function hearingPeopleGroups(
     .filter((person): person is HearingPerson => Boolean(person));
 
   const advocates = people.filter((person) => /counsel/i.test(person.role));
-  const parties = people.filter((person) =>
-    /^(Complainant|Accused)$/.test(person.role)
-  );
+  const parties = people.filter((person) => /^(Complainant|Accused)$/.test(person.role));
   const witnesses = people.filter(
-    (person) => !advocates.includes(person) && !parties.includes(person)
+    (person) => !advocates.includes(person) && !parties.includes(person),
   );
 
   return { parties, advocates, witnesses };
 }
 
 /** Last court direction, or an explicit result on the hearing. */
-export function hearingDirection(
-  hearing: Hearing,
-  file: HearingsFile
-): string | undefined {
+export function hearingDirection(hearing: Hearing, file: HearingsFile): string | undefined {
   if (hearing.result) return hearing.result;
   if (hearing.status === "abandoned") return undefined;
   if (!hearing.transcriptId) return undefined;
   const transcript = findTranscript(file, hearing.transcriptId);
   if (!transcript || transcript.recordStatus !== "available") return undefined;
-  const lastCourt = [...transcript.entries]
-    .reverse()
-    .find((entry) => entry.speaker === "Court");
+  const lastCourt = [...transcript.entries].reverse().find((entry) => entry.speaker === "Court");
   return lastCourt?.text;
 }
 
 /** Result callout on the timeline card — includes why an abandoned listing stopped. */
-export function hearingResultCopy(
-  hearing: Hearing,
-  file: HearingsFile
-): string | undefined {
+export function hearingResultCopy(hearing: Hearing, file: HearingsFile): string | undefined {
   if (hearing.status === "abandoned") {
     const reason = hearing.statusReason ?? "This hearing did not proceed.";
     if (hearing.nextOn && !hearing.statusReason) {
@@ -360,24 +327,15 @@ export function hearingDateParts(iso: string): { day: string; monthYear: string 
   };
 }
 
-export function findTranscript(
-  file: HearingsFile,
-  id: string
-): HearingTranscript | undefined {
+export function findTranscript(file: HearingsFile, id: string): HearingTranscript | undefined {
   return file.transcripts.find((item) => item.id === id);
 }
 
-export function findDeposition(
-  file: HearingsFile,
-  id: string
-): WitnessDeposition | undefined {
+export function findDeposition(file: HearingsFile, id: string): WitnessDeposition | undefined {
   return file.depositions.find((item) => item.id === id);
 }
 
-export function depositionsFor(
-  file: HearingsFile,
-  ids: string[]
-): WitnessDeposition[] {
+export function depositionsFor(file: HearingsFile, ids: string[]): WitnessDeposition[] {
   return ids
     .map((id) => findDeposition(file, id))
     .filter((item): item is WitnessDeposition => Boolean(item));
@@ -420,9 +378,7 @@ export function transcriptRecordLabel(transcript: HearingTranscript): string {
     : "Hearing transcript summary — not verbatim";
 }
 
-export function transcriptUnavailableLabel(
-  status: TranscriptRecordStatus
-): string {
+export function transcriptUnavailableLabel(status: TranscriptRecordStatus): string {
   if (status === "temporarily_unavailable") {
     return "This transcript is temporarily unavailable. Try again later.";
   }
@@ -441,9 +397,7 @@ export function depositionStatusLabel(deposition: WitnessDeposition): string {
 
 function typeIdFromPack(label: string): HearingTypeId {
   const normalized = label.trim().toLowerCase();
-  const match = HEARING_TYPES.find(
-    (item) => item.label.toLowerCase() === normalized
-  );
+  const match = HEARING_TYPES.find((item) => item.label.toLowerCase() === normalized);
   if (!match) {
     throw new Error(`Unknown hearing type in dummy pack: ${label}`);
   }
@@ -510,9 +464,7 @@ function featuredFile(): HearingsFile {
         migrated: Boolean(row.migrated),
         participantIds: row.participantIds,
         partiesDisplay: row.partiesDisplay,
-        transcriptAvailability: availabilityFromPack(
-          row.transcriptAvailability
-        ),
+        transcriptAvailability: availabilityFromPack(row.transcriptAvailability),
         transcriptId: row.transcriptId ?? undefined,
         depositionIds: row.depositionIds,
       };
@@ -588,10 +540,7 @@ export function hearingTypeFromCase(record: CaseRecord): HearingTypeId {
   return typeFromStage(record);
 }
 
-export function hearingOnDate(
-  file: HearingsFile,
-  iso: string
-): Hearing | undefined {
+export function hearingOnDate(file: HearingsFile, iso: string): Hearing | undefined {
   return file.hearings.find((hearing) => hearing.on === iso);
 }
 
@@ -648,17 +597,15 @@ const STAGE_BOTD: Record<string, string> = {
 const LAST_STEP: Record<string, string> = {
   scrutiny: "Defects to be cured before the case is placed for cognizance",
   cognizance: "Complainant to file the process fee and take steps for service of summons",
-  summons: "Fresh summons to issue; complainant to take steps through the court and by registered post",
+  summons:
+    "Fresh summons to issue; complainant to take steps through the court and by registered post",
   appearance: "Accused to file the bail bond; case to be posted for plea",
   evidence: "Complainant to keep the next witness present; no further adjournment will be granted",
   arguments: "Parties to file written submissions before the next date",
   judgment: "Posted for pronouncement of judgment",
 };
 
-function defaultHearings(
-  record: CaseRecord,
-  people: HearingPerson[]
-): Hearing[] {
+function defaultHearings(record: CaseRecord, people: HearingPerson[]): Hearing[] {
   const participantIds = people.map((person) => person.id).slice(0, 4);
   const hearings: Hearing[] = [];
 
@@ -799,10 +746,7 @@ export function selectHearings(options: {
   };
 }
 
-export function hearingPageWindow(
-  page: number,
-  pageCount: number
-): (number | "gap")[] {
+export function hearingPageWindow(page: number, pageCount: number): (number | "gap")[] {
   if (pageCount <= 7) {
     return Array.from({ length: pageCount }, (_, index) => index + 1);
   }
@@ -812,8 +756,6 @@ export function hearingPageWindow(
     .sort((a, b) => a - b);
 
   return visible.flatMap((entry, index) =>
-    index > 0 && entry - visible[index - 1] > 1
-      ? ["gap" as const, entry]
-      : [entry]
+    index > 0 && entry - visible[index - 1] > 1 ? ["gap" as const, entry] : [entry],
   );
 }

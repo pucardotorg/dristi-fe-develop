@@ -10,10 +10,7 @@ import { ARRIVAL } from "@/components/chrome/motion";
 import { useArrival } from "@/components/employee/use-arrival";
 import { rowActivation } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
-import {
-  RegisterCaseLink,
-  RegisterCasesTable,
-} from "@/components/employee/register-cases-table";
+import { RegisterCaseLink, RegisterCasesTable } from "@/components/employee/register-cases-table";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -23,11 +20,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  counselFor,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { counselFor, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import {
   EMPTY_REGISTER_FILTERS,
   REGISTER_QUEUE,
@@ -126,19 +119,19 @@ export function RegisterCasesScreen() {
      showing disagree. Every change resets to page one — the old Search button did that,
      and a keystroke that narrows the list to four rows must not leave the reader on
      page three of nothing. */
-  const [filters, setFilters] = React.useState<RegisterFilters>(
-    EMPTY_REGISTER_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<RegisterFilters>(EMPTY_REGISTER_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
 
-  const [columns, setColumns] = React.useState(() =>
-    emptyColumnFilters(REGISTER_COLUMN_FILTERS),
-  );
+  const [columns, setColumns] = React.useState(() => emptyColumnFilters(REGISTER_COLUMN_FILTERS));
   const [sort, setSort] = React.useState<RegisterSort>("longest");
 
   const rows = sortRows(
-    applyColumnFilters(filterRegisterCases(REGISTER_QUEUE, filters), REGISTER_COLUMN_FILTERS, columns),
+    applyColumnFilters(
+      filterRegisterCases(REGISTER_QUEUE, filters),
+      REGISTER_COLUMN_FILTERS,
+      columns,
+    ),
     REGISTER_SORTS,
     sort,
   );
@@ -161,10 +154,7 @@ export function RegisterCasesScreen() {
 
   return (
     <div
-      className={cn(
-        "flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8",
-        arrival && ARRIVAL[arrival],
-      )}
+      className={cn("flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8", arrival && ARRIVAL[arrival])}
     >
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
@@ -176,7 +166,9 @@ export function RegisterCasesScreen() {
         <p className="text-body text-muted-foreground">
           {REGISTER_QUEUE.length === 1
             ? t("registerCasesScreen_1ComplaintIsWaitingToBe")
-            : t("registerCasesScreen_lengthComplaintsAreWaitingToBe", { length: String(REGISTER_QUEUE.length) })}
+            : t("registerCasesScreen_lengthComplaintsAreWaitingToBe", {
+                length: String(REGISTER_QUEUE.length),
+              })}
         </p>
       </header>
 
@@ -206,11 +198,7 @@ export function RegisterCasesScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <RegisterCasesEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -293,26 +281,18 @@ function RegisterCasesFilters({
  * up to date — the same good-empty Schedule hearing already uses. Borderless and
  * unpadded; the panel is already the frame.
  */
-function RegisterCasesEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function RegisterCasesEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
   const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FolderCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FolderCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? t("registerCasesScreen_noMattersMatchThisSearch") : t("registerCasesScreen_nothingWaiting")}
+          {isFiltered
+            ? t("registerCasesScreen_noMattersMatchThisSearch")
+            : t("registerCasesScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
@@ -354,27 +334,18 @@ function RegisterCasesItemList({ rows }: { rows: RegisterCase[] }) {
           {/* The same opener as the table's first cell, in the box a stacked row
               wants: `min-h-10` for the touch target, and the item's own line rather
               than a cell to fill. */}
-          <RegisterCaseLink
-            matter={matter}
-            className="flex min-h-10 min-w-0 items-center"
-          />
+          <RegisterCaseLink matter={matter} className="flex min-h-10 min-w-0 items-center" />
           <p className="text-caption text-muted-foreground">
             <Identifier value={matter.filingNumber} label={t("registerCasesScreen_filingNumber")} />
             {" · "}
-            <span className="tabular-nums text-warning-ink">
-              {matter.daysSinceSubmitted}
-            </span>{" "}
+            <span className="tabular-nums text-warning-ink">{matter.daysSinceSubmitted}</span>{" "}
             {matter.daysSinceSubmitted === 1
               ? t("registerCasesScreen_daySinceSubmitted")
               : t("registerCasesScreen_daysSinceSubmitted")}
           </p>
           <CounselCell
-            complainant={counselFor(matter, "complainant").map(
-              (counsel) => counsel.name,
-            )}
-            accused={counselFor(matter, "accused").map(
-              (counsel) => counsel.name,
-            )}
+            complainant={counselFor(matter, "complainant").map((counsel) => counsel.name)}
+            accused={counselFor(matter, "accused").map((counsel) => counsel.name)}
           />
         </li>
       ))}

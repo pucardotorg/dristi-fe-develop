@@ -12,13 +12,11 @@ import { formatCaseDate, type CaseRecord } from "./types";
  * open question Q-3). What is here is a working guess taken from the legacy
  * product, kept in one place so it is one edit to correct.
  */
-export type ProcessType =
-  "Notice" | "Summons" | "Warrant" | "Proclamation" | "Attachment";
+export type ProcessType = "Notice" | "Summons" | "Warrant" | "Proclamation" | "Attachment";
 
 export type ChannelType = "Registered post" | "Police" | "SMS" | "Email";
 
-export type ChannelStatus =
-  "pending-dispatch" | "sent" | "delivered" | "not-delivered";
+export type ChannelStatus = "pending-dispatch" | "sent" | "delivered" | "not-delivered";
 
 const CHANNEL_STATUS: Record<
   ChannelStatus,
@@ -105,8 +103,7 @@ const PACK: Partial<Record<string, ProcessPersonSeed[]>> = {
               status: "sent",
               statusOn: "3 July 2026",
               feePaidOn: "1 July 2026",
-              remarks:
-                "Affixture at the address is recorded. The public reading is awaited.",
+              remarks: "Affixture at the address is recorded. The public reading is awaited.",
             },
           ],
         },
@@ -121,8 +118,7 @@ const PACK: Partial<Record<string, ProcessPersonSeed[]>> = {
               destination: "Punalur police station",
               status: "not-delivered",
               statusOn: "14 June 2026",
-              nonDeliveryReason:
-                "The accused was not found at the address on record.",
+              nonDeliveryReason: "The accused was not found at the address on record.",
               feePaidOn: "8 May 2026",
               remarks: "Returned unexecuted.",
               /* A placeholder file: the prototype has no real report. */
@@ -201,9 +197,7 @@ const PACK: Partial<Record<string, ProcessPersonSeed[]>> = {
  * disposed case keeps its history.
  */
 export function processStatus(record: CaseRecord): ProcessPerson[] {
-  const seeds = (PACK[record.id] ?? []).filter(
-    (person) => person.rounds.length > 0,
-  );
+  const seeds = (PACK[record.id] ?? []).filter((person) => person.rounds.length > 0);
   if (seeds.length === 0) return [];
 
   const people = withParticipants(record, seeds);
@@ -245,10 +239,7 @@ export function processStatus(record: CaseRecord): ProcessPerson[] {
  * its number ("PW-2"). A seed whose participant is not on the register is
  * dropped rather than shown under an invented name.
  */
-function withParticipants(
-  record: CaseRecord,
-  seeds: ProcessPersonSeed[],
-): ProcessPerson[] {
+function withParticipants(record: CaseRecord, seeds: ProcessPersonSeed[]): ProcessPerson[] {
   let file: ReturnType<typeof participantsFile>;
   try {
     file = participantsFile(record);
@@ -271,8 +262,6 @@ function withParticipants(
   }
   return seeds.flatMap((seed) => {
     const participant = roleOf.get(seed.participantId);
-    return participant
-      ? [{ id: seed.participantId, ...participant, rounds: seed.rounds }]
-      : [];
+    return participant ? [{ id: seed.participantId, ...participant, rounds: seed.rounds }] : [];
   });
 }

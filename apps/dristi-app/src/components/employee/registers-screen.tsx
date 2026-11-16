@@ -32,7 +32,11 @@ export function RegistersScreen() {
       <header className="flex flex-col gap-1">
         <h1 className="text-title text-balance font-semibold">{t("registersScreen_registers")}</h1>
         <p className="text-body text-muted-foreground tabular-nums">
-          {t("registersScreen_courtTextKeptRegistersWithEntries", { courtText: courtText(court), kept: String(kept), toConfirm: String(toConfirm) })}
+          {t("registersScreen_courtTextKeptRegistersWithEntries", {
+            courtText: courtText(court),
+            kept: String(kept),
+            toConfirm: String(toConfirm),
+          })}
         </p>
       </header>
 
@@ -62,14 +66,17 @@ export function RegistersScreen() {
                         </span>
                         {count ? (
                           <span className="text-caption text-muted-foreground tabular-nums">
-                            {formatCount(count.count)} {count.count === 1 ? count.unit[0] : count.unit[1]}
+                            {formatCount(count.count)}{" "}
+                            {count.count === 1 ? count.unit[0] : count.unit[1]}
                           </span>
                         ) : (
                           <Badge variant="outline">{t("registersScreen_sourceToConfirm")}</Badge>
                         )}
                       </span>
                       <span className="text-body font-semibold">{register.name}</span>
-                      <span className="text-body-compact text-muted-foreground">{translateText(t, register.description)}</span>
+                      <span className="text-body-compact text-muted-foreground">
+                        {translateText(t, register.description)}
+                      </span>
                     </Link>
                   </li>
                 );

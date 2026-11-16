@@ -84,7 +84,7 @@ export function TaskActPage({ action }: { action: ActPageAction }) {
       if (message) notify.success(message);
       router.push(`/tasks?task=${encodeURIComponent(target)}`);
     },
-    [id, requestHighlight, router]
+    [id, requestHighlight, router],
   );
 
   const missing = state === "ready" && (!task || !kase);
@@ -108,7 +108,9 @@ export function TaskActPage({ action }: { action: ActPageAction }) {
                   <EmptyMedia variant="icon">
                     <FileTextIcon aria-hidden />
                   </EmptyMedia>
-                  <EmptyTitle>{forbidden ? tr("actPage_notOnYourAccess") : tr("actPage_thisTaskIsNotHere")}</EmptyTitle>
+                  <EmptyTitle>
+                    {forbidden ? tr("actPage_notOnYourAccess") : tr("actPage_thisTaskIsNotHere")}
+                  </EmptyTitle>
                   <EmptyDescription>
                     {forbidden
                       ? tr("actPage_youAreNotOnThisCases")

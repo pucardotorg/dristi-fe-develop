@@ -12,9 +12,20 @@ import { AddressFields } from "@/components/filing/address-fields";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { updateVak } from "@/lib/vakalatnama/store";
-import { BAR_REGISTER, EMPTY_ADDRESS, makeAdvocateId, type BarAdvocate } from "@/lib/vakalatnama/data";
+import {
+  BAR_REGISTER,
+  EMPTY_ADDRESS,
+  makeAdvocateId,
+  type BarAdvocate,
+} from "@/lib/vakalatnama/data";
 import type { Address, Advocate, Vakalatnama } from "@/lib/vakalatnama/types";
 import { Identifier } from "@/components/chrome/identifier";
 import { useTranslations } from "next-intl";
@@ -46,7 +57,8 @@ export function AdvocatesStep({ vak }: { vak: Vakalatnama }) {
     updateVak(vak.id, (p) => {
       const rest = p.advocates.filter((a) => a.id !== id);
       // If we removed the service advocate, hand it to the first remaining one.
-      if (rest.length && !rest.some((a) => a.forService)) rest[0] = { ...rest[0], forService: true };
+      if (rest.length && !rest.some((a) => a.forService))
+        rest[0] = { ...rest[0], forService: true };
       return { ...p, advocates: rest };
     });
 
@@ -70,7 +82,11 @@ export function AdvocatesStep({ vak }: { vak: Vakalatnama }) {
         title={t("stepsAdvocates_appointAdvocates")}
         description={t("stepsAdvocates_searchTheBarRegisterOrAdd")}
       >
-        <FormField label={t("stepsAdvocates_findAnAdvocate")} asGroup help={t("stepsAdvocates_searchByNameOrEnrolmentNumber")}>
+        <FormField
+          label={t("stepsAdvocates_findAnAdvocate")}
+          asGroup
+          help={t("stepsAdvocates_searchByNameOrEnrolmentNumber")}
+        >
           <ComboField
             value={query}
             onChange={setQuery}
@@ -106,10 +122,18 @@ export function AdvocatesStep({ vak }: { vak: Vakalatnama }) {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto]">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t("stepsAdvocates_name")} optional>
-              <TextField value={manualName} onChange={setManualName} placeholder={t("stepsAdvocates_advocatesName")} />
+              <TextField
+                value={manualName}
+                onChange={setManualName}
+                placeholder={t("stepsAdvocates_advocatesName")}
+              />
             </FormField>
             <FormField label={t("stepsAdvocates_enrolmentNo")} optional>
-              <TextField value={manualEnrol} onChange={setManualEnrol} placeholder={t("stepsAdvocates_eGK3051996")} />
+              <TextField
+                value={manualEnrol}
+                onChange={setManualEnrol}
+                placeholder={t("stepsAdvocates_eGK3051996")}
+              />
             </FormField>
           </div>
           <div className="flex items-end">
@@ -138,9 +162,7 @@ export function AdvocatesStep({ vak }: { vak: Vakalatnama }) {
                 <UserPlusIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle>{t("stepsAdvocates_noAdvocateAppointedYet")}</EmptyTitle>
-              <EmptyDescription>
-                {t("stepsAdvocates_addAtLeastOneAdvocateThe")}
-              </EmptyDescription>
+              <EmptyDescription>{t("stepsAdvocates_addAtLeastOneAdvocateThe")}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         </FormCard>
@@ -155,11 +177,12 @@ export function AdvocatesStep({ vak }: { vak: Vakalatnama }) {
             className="flex flex-col gap-3"
           >
             {vak.advocates.map((a) => (
-              <div
-                key={a.id}
-                className="flex items-center gap-3 rounded-lg bg-surface-sunken p-3"
-              >
-                <RadioGroupItem value={a.id} id={`svc-${a.id}`} aria-label={t("stepsAdvocates_addressForService")} />
+              <div key={a.id} className="flex items-center gap-3 rounded-lg bg-surface-sunken p-3">
+                <RadioGroupItem
+                  value={a.id}
+                  id={`svc-${a.id}`}
+                  aria-label={t("stepsAdvocates_addressForService")}
+                />
                 <div className="flex min-w-0 flex-1 flex-col">
                   <Label htmlFor={`svc-${a.id}`} className="text-body font-medium">
                     {a.name}

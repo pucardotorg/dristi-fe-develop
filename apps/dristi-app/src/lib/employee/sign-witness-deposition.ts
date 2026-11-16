@@ -68,11 +68,7 @@ import { localizeForDownload, voicedForDownload } from "@/lib/court/browser";
  * twenty-two times.
  */
 export type WitnessKind =
-  | "complainant"
-  | "bank-official"
-  | "attesting-witness"
-  | "accused"
-  | "accountant";
+  "complainant" | "bank-official" | "attesting-witness" | "accused" | "accountant";
 
 /**
  * What happened after the chief examination.
@@ -986,9 +982,7 @@ export function buildWitnessDepositionDocument(
   };
 }
 
-export function witnessDepositionDocumentText(
-  document: WitnessDepositionDocument,
-): string {
+export function witnessDepositionDocumentText(document: WitnessDepositionDocument): string {
   return [
     document.court,
     document.jurisdiction,
@@ -1014,20 +1008,18 @@ export function witnessDepositionDocumentText(
   ].join("\n");
 }
 
-export function witnessDepositionDocumentFilename(
-  deposition: WitnessDeposition,
-): string {
+export function witnessDepositionDocumentFilename(deposition: WitnessDeposition): string {
   return `${deposition.caseNumber.replace(/\//g, "-")}-deposition-${witnessTag(
     deposition,
   ).toLowerCase()}.txt`;
 }
 
-export function downloadWitnessDepositionDocument(
-  deposition: WitnessDeposition,
-): void {
+export function downloadWitnessDepositionDocument(deposition: WitnessDeposition): void {
   const document = buildWitnessDepositionDocument(deposition);
   const url = URL.createObjectURL(
-    new Blob([localizeForDownload(witnessDepositionDocumentText(document))], { type: "text/plain" }),
+    new Blob([localizeForDownload(witnessDepositionDocumentText(document))], {
+      type: "text/plain",
+    }),
   );
   const anchor = window.document.createElement("a");
   anchor.href = url;

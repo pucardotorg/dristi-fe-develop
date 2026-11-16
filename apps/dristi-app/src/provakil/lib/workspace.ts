@@ -108,8 +108,12 @@ async function matters() {
       ...m,
       stage: "Filed" as const,
       filedOn: "SARAS 2.0",
-      cnr: registered ? c?.caseFileNumber ?? m.cnr : m.cnr,
-      push: { ...push, batchNumber: batch?.batchNumber ?? push.batchNumber, batchId: batch?.batchId ?? push.batchId },
+      cnr: registered ? (c?.caseFileNumber ?? m.cnr) : m.cnr,
+      push: {
+        ...push,
+        batchNumber: batch?.batchNumber ?? push.batchNumber,
+        batchId: batch?.batchId ?? push.batchId,
+      },
       dristi: c ? { status: c.status, caseFileNumber: c.caseFileNumber } : null,
     };
   });
@@ -120,7 +124,10 @@ async function matters() {
 /** Assign an empanelled advocate to matters. */
 function assignAdvocate({ matterIds, enrolment }: { matterIds: string[]; enrolment: string }) {
   if (!ADVOCATES.some((a) => a.enrolment === enrolment) || !matterIds?.length) {
-    return Response.json({ error: "Choose an empanelled advocate and at least one case." }, { status: 400 });
+    return Response.json(
+      { error: "Choose an empanelled advocate and at least one case." },
+      { status: 400 },
+    );
   }
   assign(matterIds, enrolment);
   return Response.json({ ok: true });
@@ -131,13 +138,17 @@ function assignAdvocate({ matterIds, enrolment }: { matterIds: string[]; enrolme
  * answers through its Bulk Filing API. Other courts are not connected in this demo.
  */
 async function courtAdvocates(court: string | null) {
-  if (court !== "saras") return Response.json({ error: "This court is not connected." }, { status: 404 });
+  if (court !== "saras")
+    return Response.json({ error: "This court is not connected." }, { status: 404 });
   try {
     const res = await sarasAdvocates();
     if (!res.ok) throw new Error(String(res.status));
     return Response.json(res.json);
   } catch {
-    return Response.json({ error: `SARAS 2.0 could not be reached at ${window.location.origin}.` }, { status: 502 });
+    return Response.json(
+      { error: `SARAS 2.0 could not be reached at ${window.location.origin}.` },
+      { status: 502 },
+    );
   }
 }
 
@@ -157,7 +168,8 @@ async function push(body: {
   // Record the dialog's choices on the matters first, so Provakil shows who filed each.
   if (assignments) {
     const byAdvocate = new Map<string, string[]>();
-    for (const [id, a] of Object.entries(assignments)) byAdvocate.set(a.enrolment, [...(byAdvocate.get(a.enrolment) ?? []), id]);
+    for (const [id, a] of Object.entries(assignments))
+      byAdvocate.set(a.enrolment, [...(byAdvocate.get(a.enrolment) ?? []), id]);
     for (const [enrolment, ids] of byAdvocate) assign(ids, enrolment);
   }
   const chosen = currentMatters()
@@ -167,29 +179,59 @@ async function push(body: {
   const unassigned = chosen.filter((m) => !m.advocate);
   if (unassigned.length) {
     return Response.json(
-      { error: "Assign an advocate first.", details: unassigned.map((m) => `${m.lan} has no advocate.`) },
-      { status: 400 }
+      {
+        error: "Assign an advocate first.",
+        details: unassigned.map((m) => `${m.lan} has no advocate.`),
+      },
+      { status: 400 },
     );
   }
 
   const byAdvocate = new Map<string, Matter[]>();
-  for (const m of chosen) byAdvocate.set(m.advocate!.enrolment, [...(byAdvocate.get(m.advocate!.enrolment) ?? []), m]);
+  for (const m of chosen)
+    byAdvocate.set(m.advocate!.enrolment, [...(byAdvocate.get(m.advocate!.enrolment) ?? []), m]);
 
   // The court fetches each document from Provakil's own address, as it would from outside.
   const docBase = `${window.location.origin}/provakil`;
-  const batches: { pushId: string; advocate: Matter["advocate"]; request: unknown; response: unknown }[] = [];
+  const batches: {
+    pushId: string;
+    advocate: Matter["advocate"];
+    request: unknown;
+    response: unknown;
+  }[] = [];
   for (const [enrolment, group] of byAdvocate) {
     const pushId = `PVK-PUSH-${Date.now().toString(36).toUpperCase()}${batches.length}`;
-    const request = buildRequest(group, { docBase, pushId, sentBy: sentBy ?? "Priya Vyas", adr: adr ?? "no" });
+    const request = buildRequest(group, {
+      docBase,
+      pushId,
+      sentBy: sentBy ?? "Priya Vyas",
+      adr: adr ?? "no",
+    });
     let res: Awaited<ReturnType<typeof sarasPush>>;
     try {
       res = await sarasPush(request);
     } catch {
-      return Response.json({ error: `SARAS 2.0 could not be reached at ${window.location.origin}.`, batches }, { status: 502 });
+      return Response.json(
+        { error: `SARAS 2.0 could not be reached at ${window.location.origin}.`, batches },
+        { status: 502 },
+      );
     }
-    const json = res.json as { error?: string; details?: string[]; batchId: string; batchNumber: string; url: string };
+    const json = res.json as {
+      error?: string;
+      details?: string[];
+      batchId: string;
+      batchNumber: string;
+      url: string;
+    };
     if (!res.ok) {
-      return Response.json({ error: json.error ?? `SARAS 2.0 answered ${res.status}.`, details: json.details, batches }, { status: 502 });
+      return Response.json(
+        {
+          error: json.error ?? `SARAS 2.0 answered ${res.status}.`,
+          details: json.details,
+          batches,
+        },
+        { status: 502 },
+      );
     }
     write(PUSHES, [
       ...readPushes(),

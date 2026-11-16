@@ -7,12 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTranslations } from "next-intl";
 
@@ -97,9 +92,7 @@ export function PartyDetailSlot({
             </Button>
           </DrawerClose>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 @container">
-          {children}
-        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 @container">{children}</div>
       </DrawerContent>
     </Drawer>
   );

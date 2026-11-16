@@ -12,12 +12,7 @@ import {
 
 import { PANEL_CLASS } from "@/components/shell/panel";
 import { Badge } from "@/components/ui/badge";
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "@/components/ui/item";
+import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
 import {
   APPLICATION_TYPE_MATCH_FLOOR,
   searchApplicationTypes,
@@ -70,17 +65,11 @@ export function ApplicationTypePicker({
   const t = useTranslations();
   const results = useMemo(
     () =>
-      searchApplicationTypes(query).filter(
-        (result) => !available || available(result.guide.id)
-      ),
-    [query, available]
+      searchApplicationTypes(query).filter((result) => !available || available(result.guide.id)),
+    [query, available],
   );
-  const matched = results.filter(
-    (result) => result.score >= APPLICATION_TYPE_MATCH_FLOOR
-  );
-  const others = results.filter(
-    (result) => result.score < APPLICATION_TYPE_MATCH_FLOOR
-  );
+  const matched = results.filter((result) => result.score >= APPLICATION_TYPE_MATCH_FLOOR);
+  const others = results.filter((result) => result.score < APPLICATION_TYPE_MATCH_FLOOR);
   const typed = query.trim().length > 0;
   const ranked = typed && matched.length > 0;
 
@@ -98,7 +87,11 @@ export function ApplicationTypePicker({
       <p aria-live="polite" className="sr-only">
         {typed
           ? ranked
-            ? t("applicationTypePicker_lengthOfLength2ApplicationTypesMatch", { length: String(matched.length), length2: String(results.length), label: matched[0].guide.label })
+            ? t("applicationTypePicker_lengthOfLength2ApplicationTypesMatch", {
+                length: String(matched.length),
+                length2: String(results.length),
+                label: matched[0].guide.label,
+              })
             : t("applicationTypePicker_noApplicationTypeMatchesWhatYou")
           : ""}
       </p>
@@ -106,7 +99,11 @@ export function ApplicationTypePicker({
       {ranked ? (
         <>
           <TypeSection
-            title={matched.length === 1 ? t("applicationTypePicker_closestMatch") : t("applicationTypePicker_closestMatches")}
+            title={
+              matched.length === 1
+                ? t("applicationTypePicker_closestMatch")
+                : t("applicationTypePicker_closestMatches")
+            }
             guides={matched.map((result) => result.guide)}
             value={value}
             leadId={matched[0].guide.id}
@@ -223,18 +220,10 @@ function TypeSection({
     <section aria-labelledby={headingId} className="flex flex-col gap-3">
       {/* The card titles' size in the muted ink (owner, Sept 21): a label over
           a group, quieter than the cards it names. */}
-      <h2
-        id={headingId}
-        className="text-body-compact font-semibold text-muted-foreground"
-      >
+      <h2 id={headingId} className="text-body-compact font-semibold text-muted-foreground">
         {title}
       </h2>
-      <TypeGrid
-        guides={guides}
-        value={value}
-        leadId={leadId}
-        onChoose={onChoose}
-      />
+      <TypeGrid guides={guides} value={value} leadId={leadId} onChoose={onChoose} />
     </section>
   );
 }
@@ -315,7 +304,7 @@ function TypeCard({
            fill, a step darker than the muted ground; the edge going from
            hairline to full border; and the lift. Any one of them surviving is
            enough to read as "this is under the pointer". */
-        "hover:border-border hover:bg-accent hover:shadow-overlay active:shadow-raised"
+        "hover:border-border hover:bg-accent hover:shadow-overlay active:shadow-raised",
       )}
     >
       <button
@@ -330,10 +319,7 @@ function TypeCard({
           ) : lead ? (
             <Badge variant="secondary">{t("applicationTypePicker_closestMatch")}</Badge>
           ) : null}
-          <ArrowRightIcon
-            className="ml-auto size-4 shrink-0 text-muted-foreground"
-            aria-hidden
-          />
+          <ArrowRightIcon className="ml-auto size-4 shrink-0 text-muted-foreground" aria-hidden />
         </div>
 
         <ItemContent className="w-full min-w-0 gap-1 text-left">

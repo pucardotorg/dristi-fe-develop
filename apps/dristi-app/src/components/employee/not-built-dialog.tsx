@@ -4,12 +4,7 @@ import { ConstructionIcon } from "lucide-react";
 
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import {
   Empty,
   EmptyContent,
@@ -69,7 +64,11 @@ export function NotBuiltDialog({
             <EmptyDescription className="text-body text-pretty">
               {item ? (
                 <>
-                  {t.rich("notBuiltDialog_itemWouldOpenOpens", { item, opens, span: (chunks) => <span className="font-medium text-foreground">{chunks}</span> })}
+                  {t.rich("notBuiltDialog_itemWouldOpenOpens", {
+                    item,
+                    opens,
+                    span: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+                  })}
                 </>
               ) : null}
               {t("notBuiltDialog_thatScreenHasntBeenBuiltYet")}

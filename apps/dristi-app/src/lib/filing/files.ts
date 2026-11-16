@@ -127,7 +127,7 @@ const pageCache = new Map<string, Promise<RenderedPage | null>>();
  */
 export function renderPdfFirstPage(
   blob: Blob,
-  opts: { maxEdge?: number; cacheId?: string } = {}
+  opts: { maxEdge?: number; cacheId?: string } = {},
 ): Promise<RenderedPage | null> {
   const { maxEdge = 1600, cacheId } = opts;
   if (cacheId) {
@@ -163,7 +163,10 @@ export function renderPdfFirstPage(
         items.push({ str: it.str, x, y, w: (it.width ?? 0) * scale, h });
         lines.push(it.str + (it.hasEOL ? "\n" : " "));
       }
-      const text = lines.join("").replace(/[ \t]+\n/g, "\n").trim();
+      const text = lines
+        .join("")
+        .replace(/[ \t]+\n/g, "\n")
+        .trim();
       const out: RenderedPage = {
         dataUrl: canvas.toDataURL("image/png"),
         width: canvas.width,
@@ -186,7 +189,12 @@ export function renderPdfFirstPage(
 export type FilePreview =
   | { status: "loading" }
   | { status: "missing" }
-  | { status: "ready"; kind: "image" | "pdf" | "other"; imageUrl: string | null; fileUrl: string | null };
+  | {
+      status: "ready";
+      kind: "image" | "pdf" | "other";
+      imageUrl: string | null;
+      fileUrl: string | null;
+    };
 
 /**
  * A displayable picture of a stored file: the image itself, page 1 of a PDF, or nothing

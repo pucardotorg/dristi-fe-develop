@@ -84,7 +84,11 @@ function Dead({
           </EmptyHeader>
           <EmptyContent>
             <Button asChild variant="outline">
-              <Link href={back}>{origin ? tr("scrutinyScrutinyPage_backToLabel", { label: origin.label }) : tr("scrutinyScrutinyPage_backToTasks")}</Link>
+              <Link href={back}>
+                {origin
+                  ? tr("scrutinyScrutinyPage_backToLabel", { label: origin.label })
+                  : tr("scrutinyScrutinyPage_backToTasks")}
+              </Link>
             </Button>
           </EmptyContent>
         </Empty>

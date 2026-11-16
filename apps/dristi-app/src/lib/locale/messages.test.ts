@@ -33,7 +33,10 @@ const KEY_FORMAT = /^[a-z][A-Za-z0-9]*_[A-Za-z0-9]+(?:_[A-Za-z0-9]+)*$/;
 
 describe("message catalogs", () => {
   it("are flat maps of string messages", () => {
-    for (const [locale, catalog] of [["en", en], ["hi", hi]] as const) {
+    for (const [locale, catalog] of [
+      ["en", en],
+      ["hi", hi],
+    ] as const) {
       for (const [key, message] of Object.entries(catalog)) {
         assert.equal(typeof message, "string", `${locale}: ${key} is not a string`);
       }
@@ -61,7 +64,10 @@ describe("message catalogs", () => {
     assert.deepEqual(broken, []);
   });
 
-  for (const [locale, catalog] of [["en", en], ["hi", hi]] as const) {
+  for (const [locale, catalog] of [
+    ["en", en],
+    ["hi", hi],
+  ] as const) {
     it(`formats every ${locale} message without error`, () => {
       const errors: string[] = [];
       const t = createTranslator({
@@ -124,7 +130,8 @@ describe("keys referenced in code", () => {
     const pattern = /\bt(?:\.rich|\.markup)?\(\s*["']([a-z][A-Za-z0-9]*_[A-Za-z0-9_]+)["']/g;
     const missing = new Set<string>();
     for (const { text } of files) {
-      for (const match of text.matchAll(pattern)) if (!Object.hasOwn(en, match[1])) missing.add(match[1]);
+      for (const match of text.matchAll(pattern))
+        if (!Object.hasOwn(en, match[1])) missing.add(match[1]);
     }
     assert.deepEqual([...missing], []);
   });
@@ -136,7 +143,12 @@ describe("keys referenced in code", () => {
    */
   it("include every key-shaped string with a catalog prefix", () => {
     /* Back-end field and cookie names that only look like keys. */
-    const NOT_KEYS = new Set(["sidebar_state", "registration_number", "registration_status", "document_type"]);
+    const NOT_KEYS = new Set([
+      "sidebar_state",
+      "registration_number",
+      "registration_status",
+      "document_type",
+    ]);
     const prefixes = new Set(Object.keys(en).map((key) => key.split("_")[0]));
     const literal = /["'`]([a-z][A-Za-z0-9]*_[A-Za-z0-9]+)["'`]/g;
     const missing: string[] = [];
@@ -144,7 +156,8 @@ describe("keys referenced in code", () => {
       for (const match of text.matchAll(literal)) {
         const key = match[1];
         if (NOT_KEYS.has(key)) continue;
-        if (prefixes.has(key.split("_")[0]) && !Object.hasOwn(en, key)) missing.push(`${file}: ${key}`);
+        if (prefixes.has(key.split("_")[0]) && !Object.hasOwn(en, key))
+          missing.push(`${file}: ${key}`);
       }
     }
     assert.deepEqual(missing, []);

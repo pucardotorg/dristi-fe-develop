@@ -30,14 +30,8 @@ import { useProfile } from "@/components/shell/profile";
 import { noticeToShell, normalizePhone, useAccess } from "@/components/access/access-state";
 import { registeredUserByName } from "@/lib/access/content";
 import { VIEWER_CLERK_NAME } from "@/lib/cases/viewer";
-import {
-  NotificationsBell,
-  type ShellNotification,
-} from "@/components/shell/notifications";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { NotificationsBell, type ShellNotification } from "@/components/shell/notifications";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { pick, ui, type Locale } from "@/lib/onboarding/content";
 import { LANGUAGE_NAME, SECOND_LANGUAGES } from "@/lib/locale-config";
 import { Button } from "@/components/ui/button";
@@ -100,17 +94,17 @@ function TrailList({
     <BreadcrumbList className={cn("flex-nowrap", className)}>
       {lead ? <BreadcrumbItem className="shrink-0">{lead}</BreadcrumbItem> : null}
       {skip > 0 ? null : (
-      <BreadcrumbItem className="shrink-0" data-trail-entry>
-        {crumbs.length && root.href ? (
-          <BreadcrumbLink asChild>
-            <Link href={root.href} className={idFace(root)}>
-              {root.label}
-            </Link>
-          </BreadcrumbLink>
-        ) : (
-          <BreadcrumbPage className={idFace(root)}>{root.label}</BreadcrumbPage>
-        )}
-      </BreadcrumbItem>
+        <BreadcrumbItem className="shrink-0" data-trail-entry>
+          {crumbs.length && root.href ? (
+            <BreadcrumbLink asChild>
+              <Link href={root.href} className={idFace(root)}>
+                {root.label}
+              </Link>
+            </BreadcrumbLink>
+          ) : (
+            <BreadcrumbPage className={idFace(root)}>{root.label}</BreadcrumbPage>
+          )}
+        </BreadcrumbItem>
       )}
       {crumbs.map((crumb, i) => {
         const isLast = i === last;
@@ -119,10 +113,7 @@ function TrailList({
         return (
           <React.Fragment key={`${i}-${crumb.label}`}>
             <BreadcrumbSeparator className="shrink-0" data-trail-separator />
-            <BreadcrumbItem
-              className={isLast ? "min-w-0" : "shrink-0"}
-              data-trail-entry
-            >
+            <BreadcrumbItem className={isLast ? "min-w-0" : "shrink-0"} data-trail-entry>
               {isLast ? (
                 <BreadcrumbPage className={cn("truncate font-medium", idFace(crumb))}>
                   {crumb.label}
@@ -194,11 +185,11 @@ function ChromeBreadcrumb({
       const room = slot.clientWidth;
       const gap = parseFloat(getComputedStyle(list).columnGap) || 0;
       const widths = [...list.querySelectorAll<HTMLElement>("[data-trail-entry]")].map(
-        (node) => node.getBoundingClientRect().width
+        (node) => node.getBoundingClientRect().width,
       );
       const separator =
-        list.querySelector<HTMLElement>("[data-trail-separator]")?.getBoundingClientRect()
-          .width ?? 0;
+        list.querySelector<HTMLElement>("[data-trail-separator]")?.getBoundingClientRect().width ??
+        0;
       const step = separator + gap * 2;
       const total = widths.reduce((sum, w) => sum + w, 0) + step * (widths.length - 1);
       let next = 0;
@@ -255,7 +246,7 @@ function ChromeBreadcrumb({
                   <ChevronDownIcon
                     className={cn(
                       "size-3.5 transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-                      open && "rotate-180"
+                      open && "rotate-180",
                     )}
                   />
                 </span>
@@ -295,10 +286,7 @@ function NavTrigger() {
           they sit side by side with nothing between them and the button reads as the
           trail's first item. A hairline is the least that separates them — and it lives
           here, with the trigger, so the two appear and disappear together. */}
-      <Separator
-        orientation="vertical"
-        className="h-5! shrink-0 self-center! bg-hairline"
-      />
+      <Separator orientation="vertical" className="h-5! shrink-0 self-center! bg-hairline" />
     </>
   );
 }
@@ -472,33 +460,31 @@ export function TopBar() {
   return (
     // `sticky` is positioned, so the phone search row can hang under it, full width.
     <header className="sticky top-0 z-30 flex shrink-0 flex-col border-b border-hairline bg-card">
-     <div className="flex h-14 shrink-0 items-center gap-3 px-4 sm:px-6">
-      <NavTrigger />
-      <ChromeBreadcrumb
-        open={trailOpen}
-        onToggle={() => setTrailFor(trailOpen ? null : pathname)}
-        onFitsChange={setTrailFits}
-        /* Which state's court the app runs as: a demo switch, kept to one icon beside
+      <div className="flex h-14 shrink-0 items-center gap-3 px-4 sm:px-6">
+        <NavTrigger />
+        <ChromeBreadcrumb
+          open={trailOpen}
+          onToggle={() => setTrailFor(trailOpen ? null : pathname)}
+          onFitsChange={setTrailFits}
+          /* Which state's court the app runs as: a demo switch, kept to one icon beside
            the Settings title rather than a section of the page (owner, 2026-10-08). */
-        after={
-          pathname === "/settings" ? (
-            <CourtSwitch className="text-muted-foreground" />
-          ) : undefined
-        }
-      />
-      <LanguageToggle />
-      {/* The person is named once, at the foot of the rail. A second avatar here said
+          after={
+            pathname === "/settings" ? <CourtSwitch className="text-muted-foreground" /> : undefined
+          }
+        />
+        <LanguageToggle />
+        {/* The person is named once, at the foot of the rail. A second avatar here said
           the same thing twice and put two account controls on one screen. What stays is
           the one thing this bar owes you that the rail cannot give: what changed. */}
-      <NotificationsBell
-        notifications={items}
-        onRead={() => {
-          notifications.markAllRead();
-          if (profileRole === "clerk" && clerkPhone) markNoticesRead(clerkPhone);
-        }}
-        onClearAll={notifications.clearStale}
-      />
-     </div>
+        <NotificationsBell
+          notifications={items}
+          onRead={() => {
+            notifications.markAllRead();
+            if (profileRole === "clerk" && clerkPhone) markNoticesRead(clerkPhone);
+          }}
+          onClearAll={notifications.clearStale}
+        />
+      </div>
       <Collapsible open={trailOpen}>
         <CollapsibleContent id={TRAIL_ROW_ID} className={COLLAPSE_MOTION}>
           <Breadcrumb className="overflow-x-auto border-t border-hairline px-4 py-3 sm:px-6">

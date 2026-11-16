@@ -9,17 +9,8 @@ import { Identifier } from "@/components/chrome/identifier";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -56,25 +47,15 @@ import { useTranslations } from "next-intl";
  * Papers show as a thumbnail strip — a look at the page, not a reader.
  * A filed preview opens that paper in Case file.
  */
-export function CaseComplaint({
-  record,
-  partId,
-}: {
-  record: CaseRecord;
-  partId: string;
-}) {
+export function CaseComplaint({ record, partId }: { record: CaseRecord; partId: string }) {
   const t = useTranslations();
   const router = useCaseRouter();
   const tree = complaintTree(record.id);
   const selected = findNode(tree, partId);
   const pane =
-    selected && !isComplaintFolder(selected)
-      ? complaintPane(record.id, selected.id)
-      : undefined;
+    selected && !isComplaintFolder(selected) ? complaintPane(record.id, selected.id) : undefined;
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [openIds, setOpenIds] = useState(
-    () => new Set(ancestorIds(tree, partId))
-  );
+  const [openIds, setOpenIds] = useState(() => new Set(ancestorIds(tree, partId)));
 
   function selectPart(id: string) {
     setOpenIds((current) => {
@@ -114,8 +95,7 @@ export function CaseComplaint({
      "Cheque number 000184" as one string leaves nothing to set as an identifier. The
      heading is the kind of thing, so it is also the copy affordance's name. */
   const headingText =
-    pane?.title ??
-    (selected && !isComplaintFolder(selected) ? selected.label : "Complaint");
+    pane?.title ?? (selected && !isComplaintFolder(selected) ? selected.label : "Complaint");
   const headingId = pane
     ? pane.titleId
     : selected && !isComplaintFolder(selected)
@@ -134,25 +114,16 @@ export function CaseComplaint({
     <div className="sticky top-0 z-10 flex w-full flex-col gap-4 bg-background md:gap-0">
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full shrink-0 sm:w-auto md:hidden"
-          >
+          <Button type="button" variant="outline" className="w-full shrink-0 sm:w-auto md:hidden">
             {t("caseComplaint_browseComplaint")}
           </Button>
         </SheetTrigger>
-        <SheetContent
-          side="left"
-          className="w-full overflow-y-auto p-0 sm:max-w-sm"
-        >
+        <SheetContent side="left" className="w-full overflow-y-auto p-0 sm:max-w-sm">
           <SheetHeader>
             <SheetTitle className="text-title-s font-semibold">
               {t("caseComplaint_complaint")}
             </SheetTitle>
-            <SheetDescription>
-              {t("caseComplaint_chooseARecordToOpen")}
-            </SheetDescription>
+            <SheetDescription>{t("caseComplaint_chooseARecordToOpen")}</SheetDescription>
           </SheetHeader>
           <div className="px-4 pb-6">
             <nav aria-label={t("caseComplaint_complaint")}>
@@ -228,16 +199,9 @@ function ComplaintIndex({
             >
               <div className={rowShell}>
                 <CollapsibleTrigger
-                  className={cn(
-                    rowClass,
-                    depthPad[Math.min(depth, depthPad.length - 1)]
-                  )}
+                  className={cn(rowClass, depthPad[Math.min(depth, depthPad.length - 1)])}
                 >
-                  <IndexLabel
-                    number={node.number}
-                    label={node.label}
-                    labelId={node.labelId}
-                  />
+                  <IndexLabel number={node.number} label={node.label} labelId={node.labelId} />
                   <ChevronDownIcon
                     className="pointer-events-none mt-0.5 size-4 shrink-0 text-muted-foreground group-aria-expanded/file-row:hidden"
                     aria-hidden
@@ -262,7 +226,7 @@ function ComplaintIndex({
                   <p
                     className={cn(
                       "border-b border-border py-3 text-body text-muted-foreground",
-                      depthPad[Math.min(depth + 1, depthPad.length - 1)]
+                      depthPad[Math.min(depth + 1, depthPad.length - 1)],
                     )}
                   >
                     {t("caseComplaint_noneInThisFileYet")}
@@ -279,15 +243,10 @@ function ComplaintIndex({
                 className={cn(
                   rowClass,
                   depthPad[Math.min(depth, depthPad.length - 1)],
-                  selectedId === node.id &&
-                    "bg-accent-strong font-medium hover:bg-accent-strong"
+                  selectedId === node.id && "bg-accent-strong font-medium hover:bg-accent-strong",
                 )}
               >
-                <IndexLabel
-                  number={node.number}
-                  label={node.label}
-                  labelId={node.labelId}
-                />
+                <IndexLabel number={node.number} label={node.label} labelId={node.labelId} />
               </button>
             </div>
           )}
@@ -316,24 +275,17 @@ function IndexLabel({
 }) {
   return (
     <span className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 text-left">
-      <span className="tabular-nums text-muted-foreground">
-        {fileNumberLabel(number)}
-      </span>
+      <span className="tabular-nums text-muted-foreground">{fileNumberLabel(number)}</span>
       <span className="min-w-0 whitespace-normal">
         {label}
         {labelId ? (
           <>
             {" "}
             {/* The row itself is the navigation button — no control nested inside it. */}
-            <Identifier
-              value={labelId}
-              label={label.toLowerCase()}
-              copyable={false}
-            />
+            <Identifier value={labelId} label={label.toLowerCase()} copyable={false} />
           </>
         ) : null}
       </span>
     </span>
   );
 }
-

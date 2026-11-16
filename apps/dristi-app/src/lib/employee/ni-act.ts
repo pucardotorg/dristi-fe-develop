@@ -33,11 +33,7 @@ export type NiWindowId = "presentation" | "notice" | "filing";
  * thing that matters most on the filing window: that the file is late *and* there is an
  * application on record asking the court to excuse it.
  */
-export type NiWindowStatus =
-  | "within"
-  | "outside"
-  | "early"
-  | "condonation-sought";
+export type NiWindowStatus = "within" | "outside" | "early" | "condonation-sought";
 
 /**
  * Each window in the statute's own words: the limit as the Act writes it, and the day

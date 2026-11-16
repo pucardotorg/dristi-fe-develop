@@ -5,14 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronDownIcon, LogOutIcon, RotateCcwIcon, SearchIcon, SettingsIcon } from "lucide-react";
 
-import {
-  useCourtRole,
-  useCourtSession,
-} from "@/components/employee/use-court-role";
-import {
-  courtRoleLabel,
-  type CourtRole,
-} from "@/lib/employee/content";
+import { useCourtRole, useCourtSession } from "@/components/employee/use-court-role";
+import { courtRoleLabel, type CourtRole } from "@/lib/employee/content";
 import { setCourtRole } from "@/lib/employee/court-role";
 import { clearCourtSession } from "@/lib/employee/session";
 import { COURT_ACCOUNTS, courtAccounts } from "@/lib/employee/sign-in";
@@ -92,11 +86,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -104,11 +94,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -121,12 +107,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { COURT_IDS, courtProfile, isCourtId } from "@/lib/court/profiles";
 import { ConfirmMark, IrreversibleNote, notify } from "@/components/feedback";
@@ -166,8 +147,7 @@ const RAIL_MENU =
 /** What the row says out loud past its label. The count is a mark; the words go here. */
 function spokenNote(item: CourtNavItem): string {
   return railRowNote([
-    item.count !== undefined &&
-      (item.count === 0 ? "nothing waiting" : `${item.count} waiting`),
+    item.count !== undefined && (item.count === 0 ? "nothing waiting" : `${item.count} waiting`),
     item.external && "opens outside DRISTI",
     !item.href && "not available yet",
   ]);
@@ -210,10 +190,9 @@ function RowContents({ item }: { item: CourtNavItem }) {
            card's teal keep winning over it. */
         <Icon
           aria-hidden
-          className={[
-            "text-(--rail-muted)",
-            "group-data-[collapsible=icon]:text-current",
-          ].join(" ")}
+          className={["text-(--rail-muted)", "group-data-[collapsible=icon]:text-current"].join(
+            " ",
+          )}
         />
       ) : (
         <span aria-hidden className="size-5 shrink-0" />
@@ -309,12 +288,7 @@ function CourtNavRow({
     const isActive = active ?? isCourtNavActive(pathname, item.href);
     return (
       <SidebarMenuItem>
-        <SidebarMenuButton
-          asChild
-          isActive={isActive}
-          tooltip={item.label}
-          className={RAIL_ROW}
-        >
+        <SidebarMenuButton asChild isActive={isActive} tooltip={item.label} className={RAIL_ROW}>
           <Link href={item.href} aria-current={isActive ? "page" : undefined}>
             <RowContents item={item} />
           </Link>
@@ -328,21 +302,12 @@ function CourtNavRow({
             {item.children.map((child) =>
               child.href ? (
                 <SidebarMenuSubItem key={child.id}>
-                  <SidebarMenuSubButton
-                    asChild
-                    isActive={isCourtNavActive(pathname, child.href)}
-                  >
+                  <SidebarMenuSubButton asChild isActive={isCourtNavActive(pathname, child.href)}>
                     <Link
                       href={child.href}
-                      aria-current={
-                        isCourtNavActive(pathname, child.href)
-                          ? "page"
-                          : undefined
-                      }
+                      aria-current={isCourtNavActive(pathname, child.href) ? "page" : undefined}
                     >
-                      <span className="min-w-0 flex-1 truncate">
-                        {child.label}
-                      </span>
+                      <span className="min-w-0 flex-1 truncate">{child.label}</span>
                       {child.count !== undefined && child.count > 0 ? (
                         <span className="shrink-0 text-caption text-muted-foreground tabular-nums">
                           {child.count}
@@ -367,25 +332,19 @@ function CourtNavRow({
             <RowContents item={item} />
           </SidebarMenuButton>
         </TooltipTrigger>
-        <TooltipContent side="right">
-          {deadRowNote(item, collapsed)}
-        </TooltipContent>
+        <TooltipContent side="right">{deadRowNote(item, collapsed)}</TooltipContent>
       </Tooltip>
     </SidebarMenuItem>
   );
 }
 
 /** A group is current when the page open is one of its rows, or one of a row's children. */
-function isCourtNavGroupActive(
-  pathname: string,
-  group: CourtNavGroup,
-): boolean {
+function isCourtNavGroupActive(pathname: string, group: CourtNavGroup): boolean {
   return group.items.some(
     (item) =>
       (item.href !== undefined && isCourtNavActive(pathname, item.href)) ||
       (item.children?.some(
-        (child) =>
-          child.href !== undefined && isCourtNavActive(pathname, child.href),
+        (child) => child.href !== undefined && isCourtNavActive(pathname, child.href),
       ) ??
         false),
   );
@@ -427,8 +386,7 @@ function isCourtNavGroupActive(
  */
 function useCourtNavDisclosure(groups: CourtNavGroup[]) {
   const pathname = usePathname();
-  const currentId =
-    groups.find((group) => isCourtNavGroupActive(pathname, group))?.id ?? null;
+  const currentId = groups.find((group) => isCourtNavGroupActive(pathname, group))?.id ?? null;
   const [openId, setOpenId] = React.useState<string | null>(currentId);
   const [derivedFrom, setDerivedFrom] = React.useState(pathname);
 
@@ -500,7 +458,9 @@ function CourtNavGroupMark({
       {/* The glyph is decorative, so the button needs words of its own — and they say more
           than the tooltip beside it does. The tooltip names the section for someone who
           can see the strip; this names it and its consequence for someone who cannot. */}
-      <span className="sr-only">{t("employeeNav_labelExpandsTheNavigation", { label: group.label })}</span>
+      <span className="sr-only">
+        {t("employeeNav_labelExpandsTheNavigation", { label: group.label })}
+      </span>
     </SidebarMenuButton>
   );
 }
@@ -651,9 +611,7 @@ function CourtNavOpenSection({ group }: { group: CourtNavGroup }) {
        the next edit; folded, the break's own margin is the whole separation. */
     <div className="flex flex-col gap-1 group-data-[collapsible=icon]:gap-0">
       <CourtNavBreak />
-      <SidebarGroupLabel className="sticky top-0 z-10 bg-sidebar">
-        {group.label}
-      </SidebarGroupLabel>
+      <SidebarGroupLabel className="sticky top-0 z-10 bg-sidebar">{group.label}</SidebarGroupLabel>
       <SidebarMenu className={RAIL_MENU}>
         {group.items.map((item) => (
           <CourtNavRow key={item.id} item={item} />
@@ -797,9 +755,7 @@ function CourtNavGroupSection({
             aria-current={isCurrent && !open ? true : undefined}
           >
             <Icon aria-hidden />
-            <span className="min-w-0 flex-1 truncate text-left">
-              {group.label}
-            </span>
+            <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>
             {/* One mark turned rather than two swapped: the toggle's width is constant
                 by construction, so the label's truncation point cannot move as the
                 section flips. Down closed, up open, as every other disclosure here. */}
@@ -874,10 +830,7 @@ function CourtRailHeader() {
   const courtText = useCourtText();
   const { isMobile } = useSidebar();
   const { court } = useCourtSession();
-  const handoff = useFoldFocusHandoff(
-    useRailCollapsed(),
-    focusChromeFoldTrigger,
-  );
+  const handoff = useFoldFocusHandoff(useRailCollapsed(), focusChromeFoldTrigger);
   return (
     <div className={RAIL_BRAND_ROW}>
       <BrandGlyph className="h-6 shrink-0" onDark={CHARCOAL_PLATE.darkPlate} />
@@ -1018,8 +971,7 @@ function CourtSettingsControl() {
               { id: "tabs", label: t("employeeNav_combinedWithTabs") },
               { id: "split", label: t("employeeNav_splitIntoTwoRows") },
             ],
-            onChange: (next: string) =>
-              setCognizanceLayout(next as CognizanceLayout),
+            onChange: (next: string) => setCognizanceLayout(next as CognizanceLayout),
           },
         ]
       : []),
@@ -1065,10 +1017,7 @@ function CourtSettingsControl() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="settings-seat">{t("employeeNav_workingAs")}</Label>
-              <Select
-                value={seat}
-                onValueChange={(next) => setCourtRole(next as CourtRole)}
-              >
+              <Select value={seat} onValueChange={(next) => setCourtRole(next as CourtRole)}>
                 <SelectTrigger id="settings-seat" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -1131,11 +1080,7 @@ function CourtSettingsControl() {
                     {setting.label}
                   </Label>
                   <Select value={setting.value} onValueChange={setting.onChange}>
-                    <SelectTrigger
-                      id={`settings-${setting.id}`}
-                      size="sm"
-                      className="w-full"
-                    >
+                    <SelectTrigger id={`settings-${setting.id}`} size="sm" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1167,7 +1112,10 @@ function CourtSettingsControl() {
                       size="sm"
                       className="w-full justify-between font-normal"
                     >
-                      {t("employeeNav_lengthOfLength2Shown", { length: String(shown.length), length2: String(OPTIONAL_COURT_NAV_ROWS.length) })}
+                      {t("employeeNav_lengthOfLength2Shown", {
+                        length: String(shown.length),
+                        length2: String(OPTIONAL_COURT_NAV_ROWS.length),
+                      })}
                       <ChevronDownIcon aria-hidden className="text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -1179,9 +1127,7 @@ function CourtSettingsControl() {
                         onSelect={(event) => event.preventDefault()}
                         onCheckedChange={(checked) =>
                           setShown(
-                            checked
-                              ? [...shown, row.id]
-                              : shown.filter((id) => id !== row.id),
+                            checked ? [...shown, row.id] : shown.filter((id) => id !== row.id),
                           )
                         }
                       >
@@ -1213,9 +1159,7 @@ function CourtSettingsControl() {
             <ConfirmMark danger icon={RotateCcwIcon} />
             <AlertDialogTitle>{t("employeeNav_resetSandboxDataQuestion")}</AlertDialogTitle>
             <AlertDialogDescription>
-              <span className="block">
-              {t("employeeNav_theSampleApplicationsComeBackAnd")}
-              </span>
+              <span className="block">{t("employeeNav_theSampleApplicationsComeBackAnd")}</span>
               <IrreversibleNote>{t("employeeNav_thisCannotBeUndone")}</IrreversibleNote>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1226,7 +1170,9 @@ function CourtSettingsControl() {
               onClick={() => {
                 resetSandboxData();
                 void resetBulk();
-                notify.neutral(t("employeeNav_sandboxDataResetTheSampleApplications"), { icon: RotateCcwIcon });
+                notify.neutral(t("employeeNav_sandboxDataResetTheSampleApplications"), {
+                  icon: RotateCcwIcon,
+                });
               }}
             >
               {t("employeeNav_reset")}
@@ -1269,10 +1215,7 @@ function CourtIdentityFooter() {
      control — the one thing that caused the change and is on screen either side of it,
      though not the same element either side: see `focusChromeFoldTrigger`. The name's
      trigger stays on screen folded, so it has no focus to lose. */
-  const handoff = useFoldFocusHandoff(
-    useRailCollapsed(),
-    focusChromeFoldTrigger,
-  );
+  const handoff = useFoldFocusHandoff(useRailCollapsed(), focusChromeFoldTrigger);
 
   // Back to the court sign-in, with nobody seated.
   function onSignOut() {
@@ -1306,17 +1249,8 @@ function CourtIdentityFooter() {
             </span>
           </SidebarMenuButton>
         </PopoverTrigger>
-        <PopoverContent
-          side="top"
-          align="start"
-          collisionPadding={16}
-          className="w-56 p-2"
-        >
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            onClick={onSignOut}
-          >
+        <PopoverContent side="top" align="start" collisionPadding={16} className="w-56 p-2">
+          <Button variant="ghost" className="w-full justify-start" onClick={onSignOut}>
             <LogOutIcon aria-hidden />
             <span className="flex-1 text-left">{t("employeeNav_signOut")}</span>
           </Button>
@@ -1331,10 +1265,7 @@ function CourtIdentityFooter() {
  * Pending orders' live count, set on its row: the orders live in this browser, so the
  * rail's data cannot carry the number (`pendingOrderCountFor`).
  */
-function withPendingCount(
-  groups: CourtNavGroup[],
-  count: number | undefined,
-): CourtNavGroup[] {
+function withPendingCount(groups: CourtNavGroup[], count: number | undefined): CourtNavGroup[] {
   return groups.map((group) =>
     group.items.some((item) => item.id === "pending-orders")
       ? {
@@ -1351,10 +1282,7 @@ function withPendingCount(
  * Groups, less the optional rows Court settings has hidden (`nav-shown.ts`) — and less
  * any group left empty.
  */
-function withShownRows(
-  groups: CourtNavGroup[],
-  shown: readonly string[],
-): CourtNavGroup[] {
+function withShownRows(groups: CourtNavGroup[], shown: readonly string[]): CourtNavGroup[] {
   return groups
     .map((group) => ({
       ...group,
@@ -1369,28 +1297,24 @@ export function EmployeeNav() {
   const seat = useCourtRole();
   const { court } = useCourt();
   /* The split rows are the delay split's; a case-type deployment keeps its tabs. */
-  const pendingCount = pendingOrderCountFor(
-    seat,
-    usePendingOrders(),
-    useOrderSigning(),
-    court,
-  );
+  const pendingCount = pendingOrderCountFor(seat, usePendingOrders(), useOrderSigning(), court);
   const [shown] = useCourtNavShown();
-  const groups = withShownRows(withPendingCount(
-    courtNavGroupsForSeat(
-      courtNavGroupsForCourt(
-        courtNavGroupsFor(
-          courtProfile(court).cognizanceSplit === "delay"
-            ? cognizanceLayout
-            : "tabs",
+  const groups = withShownRows(
+    withPendingCount(
+      courtNavGroupsForSeat(
+        courtNavGroupsForCourt(
+          courtNavGroupsFor(
+            courtProfile(court).cognizanceSplit === "delay" ? cognizanceLayout : "tabs",
+          ),
+          court,
         ),
+        seat,
         court,
       ),
-      seat,
-      court,
+      pendingCount,
     ),
-    pendingCount,
-  ), shown);
+    shown,
+  );
   const trailing = courtNavItemsForSeat(COURT_NAV_TRAILING, seat).filter((item) =>
     courtNavRowShown(item.id, shown),
   );
@@ -1422,9 +1346,7 @@ export function EmployeeNav() {
             ))}
           </SidebarMenu>
           {layout === "open" ? (
-            groups.map((group) => (
-              <CourtNavOpenSection key={group.id} group={group} />
-            ))
+            groups.map((group) => <CourtNavOpenSection key={group.id} group={group} />)
           ) : layout === "grouped" ? (
             groups.map((group) => (
               <CourtNavGroupSection
@@ -1448,9 +1370,7 @@ export function EmployeeNav() {
               {courtNavRowsFor(layout, court, seat)
                 .filter((item) => courtNavRowShown(item.id, shown))
                 .map((item) =>
-                  item.id === "pending-orders"
-                    ? { ...item, count: pendingCount }
-                    : item,
+                  item.id === "pending-orders" ? { ...item, count: pendingCount } : item,
                 )
                 .map((item) => (
                   <CourtNavRow
@@ -1458,11 +1378,7 @@ export function EmployeeNav() {
                     item={item}
                     active={
                       isCourtNavCombinedRow(item)
-                        ? isCourtNavCombinedActive(
-                            pathname,
-                            layout,
-                            court,
-                          )
+                        ? isCourtNavCombinedActive(pathname, layout, court)
                         : undefined
                     }
                   />

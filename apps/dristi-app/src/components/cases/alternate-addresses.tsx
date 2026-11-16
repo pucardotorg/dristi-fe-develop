@@ -18,12 +18,7 @@ import { PlusIcon, Trash2Icon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
@@ -75,11 +70,11 @@ export function AlternateAddresses({ subjectName }: { subjectName: string }) {
             variant="ghost"
             size="icon-sm"
             className="shrink-0 text-muted-foreground"
-            aria-label={t("alternateAddresses_removeTheAddressInLocality", { locality: address.address.locality })}
+            aria-label={t("alternateAddresses_removeTheAddressInLocality", {
+              locality: address.address.locality,
+            })}
             onClick={() =>
-              setAddresses((current) =>
-                current.filter((item) => item.id !== address.id)
-              )
+              setAddresses((current) => current.filter((item) => item.id !== address.id))
             }
           >
             <Trash2Icon aria-hidden />
@@ -127,9 +122,7 @@ function AddAddressDialog({
   onAdd: (address: AlternateAddress) => void;
 }) {
   const t = useTranslations();
-  const [address, setAddress] = useState<StructuredAddress>(
-    emptyStructuredAddress
-  );
+  const [address, setAddress] = useState<StructuredAddress>(emptyStructuredAddress);
   const [policeStation, setPoliceStation] = useState("");
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -206,9 +199,7 @@ function AddAddressDialog({
                 setError(undefined);
               }}
             />
-            {error ? (
-              <p className="text-body-compact text-destructive-ink">{error}</p>
-            ) : null}
+            {error ? <p className="text-body-compact text-destructive-ink">{error}</p> : null}
 
             <Field>
               <FieldLabel htmlFor="alt-address-station">

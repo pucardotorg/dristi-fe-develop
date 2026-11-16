@@ -202,15 +202,9 @@ export const advHome = {
       "View only" reads as a UI mode; this is the word an advocate says. */
   notOnVakalatnama: t("advocate_notOnTheVakalatnama", "വക്കാലത്തിൽ ഇല്ല"),
   /** Above the tasks well inside a hearing card — it is not self-evidently a task list. */
-  blockersHeading: t(
-    "advocate_pendingBeforeThisHearing",
-    "ഈ ഹിയറിംഗിന് മുൻപ് ബാക്കി",
-  ),
+  blockersHeading: t("advocate_pendingBeforeThisHearing", "ഈ ഹിയറിംഗിന് മുൻപ് ബാക്കി"),
   itemN: t("advocate_itemN", "ഇനം {n}"),
-  concludedStrip: t(
-    "advocate_nConcludedEarlierItemsItems",
-    "നേരത്തെ തീർന്നത് {n} — ഇനം {items}",
-  ),
+  concludedStrip: t("advocate_nConcludedEarlierItemsItems", "നേരത്തെ തീർന്നത് {n} — ഇനം {items}"),
   viewCases: t("advocate_viewCases", "കേസുകൾ കാണുക"),
   layoutCards: t("advocate_cards", "കാർഡുകൾ"),
   layoutList: t("advocate_list", "പട്ടിക"),
@@ -223,10 +217,7 @@ export const advHome = {
   joinCourtroom: t("advocate_joinAHearing", "ഒരു വിചാരണയിൽ ചേരുക"),
   /** The "Join your hearing" picker: only the advocate's own hearings being called now. */
   joinDialogTitle: t("advocate_joinYourHearing", "നിങ്ങളുടെ വിചാരണയിൽ ചേരുക"),
-  joinDialogBody: t(
-    "advocate_yourHearingsBeingCalledRightNow",
-    "നിങ്ങളുടെ വിചാരണകൾ ഇപ്പോൾ വിളിക്കുന്നു.",
-  ),
+  joinDialogBody: t("advocate_yourHearingsBeingCalledRightNow", "നിങ്ങളുടെ വിചാരണകൾ ഇപ്പോൾ വിളിക്കുന്നു."),
   /** Footer note pointing to the cause list for any hearing that isn't the advocate's. */
   joinDialogOther: t(
     "advocate_toJoinAnyOtherHearingOpen",
@@ -266,17 +257,17 @@ export const advHome = {
   nextDay: t("advocate_nextDay", "അടുത്ത ദിവസം"),
   pickDate: t("advocate_pickADate", "തീയതി തിരഞ്ഞെടുക്കുക"),
   previewDates: t("advocate_previewNearbyDates", "അടുത്തുള്ള തീയതികൾ കാണുക"),
-  previewDateHelp: t("advocate_moveAcrossTheDateToPreview", "തീയതിക്ക് മുകളിലൂടെ നീങ്ങി നോക്കുക. തിരഞ്ഞെടുക്കാൻ ക്ലിക്ക് ചെയ്യുക. കീബോർഡിൽ ഇടത്, വലത് അമ്പുകൾ ഉപയോഗിച്ച ശേഷം Enter അല്ലെങ്കിൽ Space അമർത്തുക. Escape റദ്ദാക്കും."),
+  previewDateHelp: t(
+    "advocate_moveAcrossTheDateToPreview",
+    "തീയതിക്ക് മുകളിലൂടെ നീങ്ങി നോക്കുക. തിരഞ്ഞെടുക്കാൻ ക്ലിക്ക് ചെയ്യുക. കീബോർഡിൽ ഇടത്, വലത് അമ്പുകൾ ഉപയോഗിച്ച ശേഷം Enter അല്ലെങ്കിൽ Space അമർത്തുക. Escape റദ്ദാക്കും.",
+  ),
 
   /* Whose matters — the board's advocate switcher. Names, not a permission
      model: "view access" is the system's vocabulary, an advocate says a name. */
   whoseMatters: t("advocate_whoseMatters", "ആരുടെ വിഷയങ്ങൾ"),
   switcherYou: t("advocate_nameYou", "{name} (നിങ്ങൾ)"),
   showYourMatters: t("advocate_showYourMatters", "നിങ്ങളുടെ വിഷയങ്ങൾ കാണിക്കുക"),
-  emptyAdvocateTitle: t(
-    "advocate_nothingListedForName",
-    "{name}-ന് ഒന്നും പട്ടികയിലില്ല",
-  ),
+  emptyAdvocateTitle: t("advocate_nothingListedForName", "{name}-ന് ഒന്നും പട്ടികയിലില്ല"),
   emptyAdvocateBody: t(
     "advocate_noMattersListedOnThisDay",
     "ഈ ദിവസം {name} കേസിലുള്ള വിഷയങ്ങളൊന്നും പട്ടികയിലില്ല. മുഴുവൻ ബോർഡ് കാണാൻ നിങ്ങളുടെ വിഷയങ്ങളിലേക്ക് മടങ്ങുക.",
@@ -296,22 +287,13 @@ export const advHome = {
   railTitle: t("advocate_takeAction", "ബാക്കിയുള്ള ജോലികൾ"),
   /** The panel lists today and the next three days; the strip's badge counts every
       open task. The two can never agree, so the header says which one this is. */
-  railScope: t(
-    "advocate_dueInTheNext3Days",
-    "അടുത്ത 3 ദിവസത്തിനുള്ളിൽ അവസാനിക്കുന്നവ",
-  ),
-  prepTitle: t(
-    "advocate_importantUpcomingHearings",
-    "വരാനിരിക്കുന്ന പ്രധാന ഹിയറിംഗുകൾ",
-  ),
+  railScope: t("advocate_dueInTheNext3Days", "അടുത്ത 3 ദിവസത്തിനുള്ളിൽ അവസാനിക്കുന്നവ"),
+  prepTitle: t("advocate_importantUpcomingHearings", "വരാനിരിക്കുന്ന പ്രധാന ഹിയറിംഗുകൾ"),
   prepCaption: t(
     "advocate_evidenceCrossPleaAndArgumentsComing",
     "വരാനിരിക്കുന്ന തെളിവ്, വിസ്താരം, ബോധിപ്പിക്കൽ, വാദം",
   ),
-  prepOpen: t(
-    "advocate_openImportantUpcomingHearingsNAhead",
-    "പ്രധാന ഹിയറിംഗുകൾ തുറക്കുക, {n} വരാനുണ്ട്",
-  ),
+  prepOpen: t("advocate_openImportantUpcomingHearingsNAhead", "പ്രധാന ഹിയറിംഗുകൾ തുറക്കുക, {n} വരാനുണ്ട്"),
   prepGroupWeek: t("advocate_next7Days", "അടുത്ത 7 ദിവസം"),
   prepGroupLater: t("advocate_theFortnightAfter", "അതിനു ശേഷമുള്ള രണ്ടാഴ്ച"),
   prepTomorrow: t("advocate_tomorrow", "നാളെ"),
@@ -331,10 +313,7 @@ export const advHome = {
   railCollapse: t("advocate_collapseTakeAction", "ജോലികളുടെ പാനൽ ചുരുക്കുക"),
   railViewAll: t("advocate_viewAllNActions", "എല്ലാ {n} ജോലികളും കാണുക"),
   railEmptyTitle: t("advocate_nothingNeedsYou", "ഒന്നും ബാക്കിയില്ല"),
-  railEmptyBody: t(
-    "advocate_everyTaskIsDoneOrWaiting",
-    "എല്ലാം തീർന്നു, അല്ലെങ്കിൽ കോടതിയുടെ ഊഴം.",
-  ),
+  railEmptyBody: t("advocate_everyTaskIsDoneOrWaiting", "എല്ലാം തീർന്നു, അല്ലെങ്കിൽ കോടതിയുടെ ഊഴം."),
   railClose: t("advocate_closeThisPanel", "ഈ പാനൽ അടയ്ക്കുക"),
   open: t("advocate_open", "തുറക്കുക"),
   blocksHearing: t("advocate_blocksTheHearing", "ഹിയറിംഗ് തടയുന്നു"),
@@ -353,10 +332,7 @@ export const advHome = {
   peekTeam: t("advocate_alsoOnTheCase", "കേസിൽ ഒപ്പം"),
   peekTasks: t("advocate_pendingOnThisCase", "ഈ കേസിൽ ബാക്കി"),
   peekNoTasks: t("advocate_nothingPending", "ഒന്നും ബാക്കിയില്ല"),
-  peekNoTasksBody: t(
-    "advocate_thisMatterIsReadyForThe",
-    "ഈ വിഷയം ഹിയറിംഗിന് തയ്യാറാണ്.",
-  ),
+  peekNoTasksBody: t("advocate_thisMatterIsReadyForThe", "ഈ വിഷയം ഹിയറിംഗിന് തയ്യാറാണ്."),
 
   /* Day timeline — the unified rail + accordion view across every court */
   courtFilterAll: t("advocate_allCourts", "എല്ലാ കോടതികളും"),
@@ -382,13 +358,19 @@ export const advHome = {
   approxLabel: t("advocate_approx", "ഏകദേശം"),
   /* Cause list modal */
   causeListTitle: t("advocate_causeList", "കോസ് ലിസ്റ്റ്"),
-  causeListScope: t("advocate_everyMatterListedAcrossAllThe", "എല്ലാ കോടതികളിലുമായി ലിസ്റ്റ് ചെയ്ത എല്ലാ കേസുകളും"),
+  causeListScope: t(
+    "advocate_everyMatterListedAcrossAllThe",
+    "എല്ലാ കോടതികളിലുമായി ലിസ്റ്റ് ചെയ്ത എല്ലാ കേസുകളും",
+  ),
   causeListScopeCourt: t("advocate_everyMatterListedInCourt", "{court}-ൽ ലിസ്റ്റ് ചെയ്ത എല്ലാ കേസുകളും"),
   /* When many courts are picked, name the first two and count the rest, so the
      scope line stays short and never pushes the buttons below it. */
   causeListScopeOthers: t("advocate_courtsAndNOthers", "{courts} കൂടാതെ {n} എണ്ണം"),
   causeListAllCourts: t("advocate_allCourts", "എല്ലാ കോടതികളും"),
-  causeListSearch: t("advocate_searchByCaseNameNumberOr", "കേസ് പേര്, നമ്പർ അല്ലെങ്കിൽ വക്കീൽ ഉപയോഗിച്ച് തിരയുക"),
+  causeListSearch: t(
+    "advocate_searchByCaseNameNumberOr",
+    "കേസ് പേര്, നമ്പർ അല്ലെങ്കിൽ വക്കീൽ ഉപയോഗിച്ച് തിരയുക",
+  ),
   causeListReset: t("advocate_reset", "പുനഃസജ്ജമാക്കുക"),
   causeListDownload: t("advocate_downloadCauseList", "കോസ് ലിസ്റ്റ് ഡൗൺലോഡ് ചെയ്യുക"),
   causeListJoin: t("advocate_joinHearingOnline", "ഹിയറിംഗ് ഓൺലൈനിൽ ചേരുക"),
@@ -453,10 +435,7 @@ export const advHome = {
   conflictPill: t("advocate_nHearings", "{n} ഹിയറിംഗുകൾ"),
   nowConflictPill: t("advocate_nHearingsNow", "ഇപ്പോൾ {n} ഹിയറിംഗുകൾ"),
   slotExpand: t("advocate_showTheHearingsAtTime", "{time}-ലെ ഹിയറിംഗുകൾ കാണിക്കുക"),
-  nowEmpty: t(
-    "advocate_nothingIsBeingCalledRightNow",
-    "ഇപ്പോൾ ഒന്നും വിളിക്കുന്നില്ല",
-  ),
+  nowEmpty: t("advocate_nothingIsBeingCalledRightNow", "ഇപ്പോൾ ഒന്നും വിളിക്കുന്നില്ല"),
   noUpcoming: t("advocate_nothingScheduledNext", "അടുത്തതായി ഒന്നുമില്ല"),
   /* Day header (desktop): the big date and the board's title. */
   hearingsForDay: t("advocate_yourHearingsForTheDay", "ഈ ദിവസത്തെ നിങ്ങളുടെ ഹിയറിംഗുകൾ"),
@@ -491,7 +470,10 @@ export const advHome = {
   accessMine: t("advocate_onMyVakalatnama", "എന്റെ വക്കാലത്തിലുള്ളവ"),
   accessMineTip: t("advocate_hearingsWhereYouAreOnThe", "നിങ്ങൾ വക്കാലത്തിലുള്ള വിചാരണകൾ"),
   accessOfficeOnly: t("advocate_officeAccess", "ഓഫീസ് ആക്സസ്"),
-  accessOfficeTip: t("advocate_hearingsThroughOfficeAccessNotYour", "ഓഫീസ് ആക്സസ് വഴി, നിങ്ങളുടെ വക്കാലത്ത് വഴിയല്ല"),
+  accessOfficeTip: t(
+    "advocate_hearingsThroughOfficeAccessNotYour",
+    "ഓഫീസ് ആക്സസ് വഴി, നിങ്ങളുടെ വക്കാലത്ത് വഴിയല്ല",
+  ),
   accessAll: t("advocate_allHearings", "എല്ലാ വിചാരണകളും"),
   accessAllTip: t("advocate_everythingYouCanSeeBothKinds", "നിങ്ങൾക്ക് കാണാവുന്നതെല്ലാം, രണ്ടു തരവും"),
   /** Advanced filters: the menu entry, the button when people are narrowed, and the sheet. */
@@ -547,7 +529,10 @@ export const advHome = {
   /* The tag says it in words (owner, 2026-10-14): "Up next", "1 before you". */
   queueTagAhead: t("advocate_nBeforeYou", "{n} മുമ്പ്"),
   queueAheadOne: t("advocate_1HearingBeforeYoursInThis", "ഈ കോടതിയിൽ നിങ്ങളുടേതിന് മുമ്പ് 1 ഹിയറിങ്."),
-  queueAheadMany: t("advocate_nHearingsBeforeYoursInThis", "ഈ കോടതിയിൽ നിങ്ങളുടേതിന് മുമ്പ് {n} ഹിയറിങ്ങുകൾ."),
+  queueAheadMany: t(
+    "advocate_nHearingsBeforeYoursInThis",
+    "ഈ കോടതിയിൽ നിങ്ങളുടേതിന് മുമ്പ് {n} ഹിയറിങ്ങുകൾ.",
+  ),
   queueIsNext: t("advocate_yoursIsNextInThisCourt", "ഈ കോടതിയിൽ അടുത്തത് നിങ്ങളുടേതാണ്."),
   accessMineLabel: t(
     "advocate_youreOnTheVakalatnamaSeeWho",
@@ -557,10 +542,7 @@ export const advHome = {
     "advocate_youHaveOfficeAccessSeeWhos",
     "നിങ്ങൾക്ക് ഓഫീസ് ആക്സസ് ഉണ്ട്. വക്കാലത്തിൽ ആരൊക്കെയെന്ന് കാണുക.",
   ),
-  emptyCourtsTitle: t(
-    "advocate_noHearingsInTheSelectedCourts",
-    "തിരഞ്ഞെടുത്ത കോടതികളിൽ ഹിയറിംഗുകളില്ല",
-  ),
+  emptyCourtsTitle: t("advocate_noHearingsInTheSelectedCourts", "തിരഞ്ഞെടുത്ത കോടതികളിൽ ഹിയറിംഗുകളില്ല"),
   emptyCourtsBody: t(
     "advocate_nothingIsListedTodayInThe",
     "നിങ്ങൾ തിരഞ്ഞെടുത്ത കോടതികളിൽ ഇന്ന് ഒന്നും പട്ടികയിലില്ല.",
@@ -587,28 +569,19 @@ export const advDialog = {
   title: t("advocate_joinACase", "കേസിൽ ചേരുക"),
 
   /* summons auto-modal (unique URL, advocate account) */
-  summonsHeading: t(
-    "advocate_reviewThisChequeBounceCase",
-    "ഈ ചെക്ക് മടക്ക കേസ് പരിശോധിക്കുക",
-  ),
+  summonsHeading: t("advocate_reviewThisChequeBounceCase", "ഈ ചെക്ക് മടക്ക കേസ് പരിശോധിക്കുക"),
   summonsBody: t(
     "advocate_thisSummonsWasSentToA",
     "ഈ കേസിലെ ഒരു കക്ഷിക്കാണ് ഈ സമൻസ് അയച്ചത്. വിവരങ്ങൾ പരിശോധിച്ച്, അവർക്ക് വേണ്ടി ഓൺലൈനായി പ്രവർത്തിക്കാൻ കേസിൽ ചേരുക.",
   ),
 
   /* lookup */
-  lookupBody: t(
-    "advocate_enterTheCaseNumberOrFiling",
-    "കേസ് നമ്പർ അല്ലെങ്കിൽ ഫയലിംഗ് നമ്പർ നൽകുക.",
-  ),
+  lookupBody: t("advocate_enterTheCaseNumberOrFiling", "കേസ് നമ്പർ അല്ലെങ്കിൽ ഫയലിംഗ് നമ്പർ നൽകുക."),
   findAndJoin: t("advocate_findCaseAndJoin", "കേസ് കണ്ടെത്തി ചേരുക"),
   /* Closing partway through asks first (owner, 2026-10-13). Malayalam drafted. */
   /* The product's one discard question (`DiscardQuestion`), in this window's chrome. */
   leaveTitle: t("advocate_doYouWantToDiscardYour", "ഇതുവരെ നൽകിയത് ഉപേക്ഷിക്കണോ?"),
-  leaveBody: t(
-    "advocate_whatYouveEnteredHereWillNot",
-    "ഇതുവരെ നൽകിയ വിവരങ്ങൾ സൂക്ഷിക്കില്ല.",
-  ),
+  leaveBody: t("advocate_whatYouveEnteredHereWillNot", "ഇതുവരെ നൽകിയ വിവരങ്ങൾ സൂക്ഷിക്കില്ല."),
   leaveStay: t("advocate_keepEditing", "തിരുത്തൽ തുടരുക"),
   leaveGo: t("advocate_discard", "ഉപേക്ഷിക്കുക"),
   lookupSandboxTip: t("advocate_sandboxWhoYouAreOnThis", "സാൻഡ്‌ബോക്സ്: ഈ കേസിൽ നിങ്ങൾ ആര്"),
@@ -647,7 +620,10 @@ export const advDialog = {
     "advocate_ifYouChooseLitigantOrPo",
     "കക്ഷി അല്ലെങ്കിൽ പവർ ഓഫ് അറ്റോർണി ഉടമ തിരഞ്ഞെടുക്കുകയാണെങ്കിൽ, തുടരുന്നതിന് മുൻപ് നിങ്ങളുടെ കക്ഷി പ്രൊഫൈലിലേക്ക് മാറും. പ്രൊഫൈൽ മെനുവിൽ നിന്ന് എപ്പോൾ വേണമെങ്കിലും പ്രൊഫൈൽ മാറ്റാം.",
   ),
-  accountSwitchTitle: t("advocate_switchingToYourLitigantProfile", "നിങ്ങളുടെ കക്ഷി പ്രൊഫൈലിലേക്ക് മാറുന്നു"),
+  accountSwitchTitle: t(
+    "advocate_switchingToYourLitigantProfile",
+    "നിങ്ങളുടെ കക്ഷി പ്രൊഫൈലിലേക്ക് മാറുന്നു",
+  ),
   accountSwitchBody: t(
     "advocate_wellContinueThisCaseFromYour",
     "നിങ്ങളുടെ കക്ഷി ഹോമിൽ നിന്ന് ഈ കേസ് തുടരും.",
@@ -655,10 +631,7 @@ export const advDialog = {
   accountSwitchStatus: t("advocate_switchingProfile", "പ്രൊഫൈൽ മാറ്റുന്നു…"),
 
   /* who you represent */
-  roleBody: t(
-    "advocate_tellUsWhoYouRepresentIn",
-    "ഈ കേസിൽ നിങ്ങൾ ആർക്ക് വേണ്ടിയാണ് ഹാജരാകുന്നതെന്ന് പറയുക.",
-  ),
+  roleBody: t("advocate_tellUsWhoYouRepresentIn", "ഈ കേസിൽ നിങ്ങൾ ആർക്ക് വേണ്ടിയാണ് ഹാജരാകുന്നതെന്ന് പറയുക."),
   sideLegend: t(
     "advocate_areYouRepresentingAComplainantOr",
     "പരാതിക്കാരനെയാണോ പ്രതിയെയാണോ നിങ്ങൾ പ്രതിനിധീകരിക്കുന്നത്?",
@@ -696,10 +669,7 @@ export const advDialog = {
   ),
   /* Per litigant: whose number this is, said on the field itself (owner, 2026-10-12). */
   contactMobileLabel: t("advocate_nameSMobileNumber", "{name}-ന്റെ മൊബൈൽ നമ്പർ"),
-  contactMobileError: t(
-    "advocate_enterAValid10DigitMobile",
-    "സാധുവായ 10 അക്ക മൊബൈൽ നമ്പർ നൽകുക.",
-  ),
+  contactMobileError: t("advocate_enterAValid10DigitMobile", "സാധുവായ 10 അക്ക മൊബൈൽ നമ്പർ നൽകുക."),
 
   /* vakalatnama */
   vkTitle: t("advocate_vakalatnama", "വക്കാലത്ത്"),
@@ -730,10 +700,7 @@ export const advDialog = {
      needs review. */
   /* Counts the others only (owner, 2026-10-14): "including you" read as "2 more than me"
      and the wrong number of names went in. */
-  vkCountLabel: t(
-    "advocate_howManyMoreAdvocatesAreNamed",
-    "ഇതിൽ മറ്റ് എത്ര അഭിഭാഷകരുടെ പേര് കൂടിയുണ്ട്?",
-  ),
+  vkCountLabel: t("advocate_howManyMoreAdvocatesAreNamed", "ഇതിൽ മറ്റ് എത്ര അഭിഭാഷകരുടെ പേര് കൂടിയുണ്ട്?"),
   vkCountDecrease: t("advocate_oneFewerAdvocate", "ഒരു അഭിഭാഷകൻ കുറവ്"),
   vkCountIncrease: t("advocate_oneMoreAdvocate", "ഒരു അഭിഭാഷകൻ കൂടി"),
   vkCountError: t("advocate_enter1OrMore", "1 അല്ലെങ്കിൽ കൂടുതൽ നൽകുക."),
@@ -755,20 +722,11 @@ export const advDialog = {
     "advocate_youPayTheVakalatnamaFeeInThe",
     "അടുത്ത ഘട്ടത്തിൽ വക്കാലത്ത് ഫീസ് അടയ്ക്കണം ({amount}). എത്ര അഭിഭാഷകരുടെ പേരുണ്ടെങ്കിലും ഫീസ് ഇതുതന്നെ. മറ്റുള്ളവർക്ക് കേസിൽ ചേരാൻ ക്ഷണം ലഭിക്കും; അവർ അടയ്ക്കേണ്ടതില്ല.",
   ),
-  vkAddLegend: t(
-    "advocate_addTheOtherAdvocatesOnThis",
-    "ഈ വക്കാലത്തിലെ മറ്റ് അഭിഭാഷകരെ ചേർക്കുക",
-  ),
-  vkInviteToast: t(
-    "advocate_inviteToJoinTheCaseSent",
-    "കേസിൽ ചേരാൻ {names} എന്നവർക്ക് ക്ഷണം അയച്ചു",
-  ),
+  vkAddLegend: t("advocate_addTheOtherAdvocatesOnThis", "ഈ വക്കാലത്തിലെ മറ്റ് അഭിഭാഷകരെ ചേർക്കുക"),
+  vkInviteToast: t("advocate_inviteToJoinTheCaseSent", "കേസിൽ ചേരാൻ {names} എന്നവർക്ക് ക്ഷണം അയച്ചു"),
   vkAddFieldLabel: t("advocate_otherAdvocatesOnTheVakalatnama", "വക്കാലത്തിലെ മറ്റ് അഭിഭാഷകർ"),
   vkAddSuggested: t("advocate_advocatesYouOftenAdd", "നിങ്ങൾ പതിവായി ചേർക്കുന്ന അഭിഭാഷകർ"),
-  vkAddNewNumber: t(
-    "advocate_theyllGetAnInviteToJoin",
-    "കേസിൽ ചേരാൻ അവർക്ക് ക്ഷണം ലഭിക്കും.",
-  ),
+  vkAddNewNumber: t("advocate_theyllGetAnInviteToJoin", "കേസിൽ ചേരാൻ അവർക്ക് ക്ഷണം ലഭിക്കും."),
   vkAddKeepTyping: t(
     "advocate_noAdvocateYouveAddedMatchesEnter",
     "നിങ്ങൾ ചേർത്ത അഭിഭാഷകരിൽ ആരും പൊരുത്തപ്പെടുന്നില്ല. അവരുടെ മൊബൈൽ നമ്പർ അല്ലെങ്കിൽ ബാർ ഐഡി മുഴുവൻ നൽകുക.",
@@ -785,14 +743,8 @@ export const advDialog = {
     "advocate_addExactlyNOtherAdvocatesTo",
     "മുകളിലെ എണ്ണവുമായി യോജിക്കാൻ കൃത്യം {n} അഭിഭാഷകരെ കൂടി ചേർക്കുക.",
   ),
-  vkSearchLabel: t(
-    "advocate_searchYourGeneratedVakalatnamas",
-    "തയ്യാറാക്കിയ വക്കാലത്തുകൾ തിരയുക",
-  ),
-  vkSearchPlaceholder: t(
-    "advocate_searchByNameOrLitigant",
-    "പേര് അല്ലെങ്കിൽ കക്ഷി ഉപയോഗിച്ച് തിരയുക",
-  ),
+  vkSearchLabel: t("advocate_searchYourGeneratedVakalatnamas", "തയ്യാറാക്കിയ വക്കാലത്തുകൾ തിരയുക"),
+  vkSearchPlaceholder: t("advocate_searchByNameOrLitigant", "പേര് അല്ലെങ്കിൽ കക്ഷി ഉപയോഗിച്ച് തിരയുക"),
   vkSearchEmpty: t(
     "advocate_noVakalatnamasMatchYourSearch",
     "നിങ്ങളുടെ തിരയലുമായി പൊരുത്തപ്പെടുന്ന വക്കാലത്തുകളില്ല.",
@@ -814,10 +766,7 @@ export const advDialog = {
     "advocate_checkTheUploadedDocumentBeforeContinuing",
     "തുടരുന്നതിന് മുൻപ് അപ്‌ലോഡ് ചെയ്ത രേഖ പരിശോധിക്കുക.",
   ),
-  docPreviewAlt: t(
-    "advocate_previewOfTheUploadedDocument",
-    "അപ്‌ലോഡ് ചെയ്ത രേഖയുടെ പ്രിവ്യൂ",
-  ),
+  docPreviewAlt: t("advocate_previewOfTheUploadedDocument", "അപ്‌ലോഡ് ചെയ്ത രേഖയുടെ പ്രിവ്യൂ"),
   previewTitle: t("advocate_vakalatnamaPreview", "വക്കാലത്ത് പ്രിവ്യൂ"),
   previewBody: t(
     "advocate_checkThatThisIsTheRight",
@@ -830,10 +779,7 @@ export const advDialog = {
 
   /* payment — inside the flow; access waits for it (JOIN-54) */
   payTitle: t("advocate_payTheVakalatnamaFee", "വക്കാലത്ത് ഫീസ് അടയ്ക്കുക"),
-  payBody: t(
-    "advocate_youGetAccessToTheCase",
-    "ഫീസ് അടച്ചാൽ കേസിലേക്ക് ആക്‌സസ് ലഭിക്കും.",
-  ),
+  payBody: t("advocate_youGetAccessToTheCase", "ഫീസ് അടച്ചാൽ കേസിലേക്ക് ആക്‌സസ് ലഭിക്കും."),
   payFeeHead: t("advocate_fee", "ഫീസ്"),
   payFeeName: t("advocate_vakalatnamaFee", "വക്കാലത്ത് ഫീസ്"),
   payCase: t("advocate_case", "കേസ്"),
@@ -855,10 +801,7 @@ export const advDialog = {
     "പേയ്‌മെന്റ് സ്ഥിരീകരിക്കുന്നതുവരെ ഈ വിൻഡോ അടയ്ക്കുകയോ റിഫ്രഷ് ചെയ്യുകയോ ചെയ്യരുത്.",
   ),
   paidTitle: t("advocate_paymentSuccessful", "പേയ്‌മെന്റ് വിജയകരം"),
-  paidBody: t(
-    "advocate_theVakalatnamaFeeIsPaidYou",
-    "വക്കാലത്ത് ഫീസ് അടച്ചു. ഇപ്പോൾ കേസിലേക്ക് ആക്‌സസ് ഉണ്ട്.",
-  ),
+  paidBody: t("advocate_theVakalatnamaFeeIsPaidYou", "വക്കാലത്ത് ഫീസ് അടച്ചു. ഇപ്പോൾ കേസിലേക്ക് ആക്‌സസ് ഉണ്ട്."),
   paidAmount: t("advocate_amountPaid", "അടച്ച തുക"),
   paidRef: t("advocate_paymentReference", "പേയ്‌മെന്റ് റഫറൻസ്"),
 
@@ -869,17 +812,11 @@ export const advDialog = {
     "നിങ്ങളുടെ വക്കാലത്ത് അപ്‌ലോഡ് ചെയ്തു. വക്കാലത്ത് ഫീസ് അടയ്ക്കൽ ഇപ്പോൾ നിങ്ങളുടെ ബാക്കിയുള്ള ജോലികളിലുണ്ട് — ഫീസ് അടച്ചാൽ കേസിലേക്ക് ആക്‌സസ് ലഭിക്കും.",
   ),
   joinedTitle: t("advocate_youHaveJoinedThisCase", "നിങ്ങൾ ഈ കേസിൽ ചേർന്നു"),
-  joinedBody: t(
-    "advocate_youCanNowActForThe",
-    "ഇനി ഈ കേസിൽ കക്ഷിക്ക് (കക്ഷികൾക്ക്) വേണ്ടി പ്രവർത്തിക്കാം.",
-  ),
+  joinedBody: t("advocate_youCanNowActForThe", "ഇനി ഈ കേസിൽ കക്ഷിക്ക് (കക്ഷികൾക്ക്) വേണ്ടി പ്രവർത്തിക്കാം."),
   /* The settled band on the joined case (Oct 6). Malayalam drafted — needs review. */
   joinedBand: t("advocate_joinedRepresentingNames", "ചേർന്നു · {names}-നെ പ്രതിനിധീകരിക്കുന്നു"),
   viewCaseFile: t("advocate_viewCaseFile", "കേസ് ഫയൽ കാണുക"),
-  prototypeCaseFile: t(
-    "advocate_thisActionWillOpenTheCase",
-    "ഈ പ്രവർത്തനം കേസ് ഫയൽ തുറക്കും.",
-  ),
+  prototypeCaseFile: t("advocate_thisActionWillOpenTheCase", "ഈ പ്രവർത്തനം കേസ് ഫയൽ തുറക്കും."),
 
   bailOpening: t("advocate_openingTheBailApplication", "ജാമ്യാപേക്ഷ തുറക്കുന്നു…"),
 
@@ -904,18 +841,12 @@ export const advDialog = {
 
   /* notifications */
   notifJoinedTitle: t("advocate_youJoinedCaseNumber", "{caseNumber} കേസിൽ ചേർന്നു"),
-  notifJoinedBody: t(
-    "advocate_youCanNowActForNames",
-    "ഇനി ഈ കേസിൽ {names}-ന് വേണ്ടി പ്രവർത്തിക്കാം.",
-  ),
+  notifJoinedBody: t("advocate_youCanNowActForNames", "ഇനി ഈ കേസിൽ {names}-ന് വേണ്ടി പ്രവർത്തിക്കാം."),
   notifRequestTitle: t(
     "advocate_joinRequestSentForCaseNumber",
     "{caseNumber} കേസിൽ ചേരാനുള്ള അപേക്ഷ അയച്ചു",
   ),
-  notifRequestBody: t(
-    "advocate_youWillBeToldBySms",
-    "തീരുമാനമാകുമ്പോൾ SMS വഴി അറിയിക്കും.",
-  ),
+  notifRequestBody: t("advocate_youWillBeToldBySms", "തീരുമാനമാകുമ്പോൾ SMS വഴി അറിയിക്കും."),
 } as const;
 
 /* ------------------------------------------------------- new advocate: shell home */

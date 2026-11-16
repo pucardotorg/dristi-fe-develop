@@ -420,10 +420,7 @@ export const DEFAULT_SIGN_ORDER_FILTERS: SignOrderFilters = {
   query: "",
 };
 
-export function filterSignOrders(
-  rows: SignOrder[],
-  filters: SignOrderFilters,
-): SignOrder[] {
+export function filterSignOrders(rows: SignOrder[], filters: SignOrderFilters): SignOrder[] {
   const query = caseSearchKey(filters.query);
   return rows.filter((order) => {
     if (filters.status !== "all" && order.status !== filters.status) {
@@ -431,11 +428,7 @@ export function filterSignOrders(
     }
     if (filters.addedOn && order.addedOn !== filters.addedOn) return false;
     if (!query) return true;
-    const haystack = [
-      order.parties.complainant,
-      order.parties.accused,
-      order.caseNumber,
-    ]
+    const haystack = [order.parties.complainant, order.parties.accused, order.caseNumber]
       .join(" ")
       .toLowerCase();
     return haystack.includes(query);
@@ -593,9 +586,7 @@ export function signOrderDocumentText(document: SignOrderDocument): string {
     "",
     document.title,
     "",
-    ...document.paragraphs.map(
-      (paragraph, index) => `${index + 1}. ${paragraph}`,
-    ),
+    ...document.paragraphs.map((paragraph, index) => `${index + 1}. ${paragraph}`),
     "",
     `Dated this the ${document.dated}.`,
     "",

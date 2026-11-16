@@ -24,7 +24,9 @@ const requireFromApp = createRequire(path.join(APP_ROOT, "package.json"));
 const ts = requireFromApp("typescript") as typeof TS;
 
 const WRITE = process.argv.includes("--write");
-const REPORT_FILE = path.resolve(argValue("--report") ?? path.join(APP_ROOT, "scripts/extraction-report.md"));
+const REPORT_FILE = path.resolve(
+  argValue("--report") ?? path.join(APP_ROOT, "scripts/extraction-report.md"),
+);
 const PREVIEW_DIR = argValue("--preview");
 const SRC = path.join(APP_ROOT, "src");
 const MESSAGES_DIR = path.join(APP_ROOT, "messages");
@@ -48,59 +50,247 @@ const COMMON: Record<string, string> = {
 
 /** Props and properties whose value is always text a person reads. */
 const TEXT_PROPS = new Set([
-  "label", "aria-label", "ariaLabel", "title", "placeholder", "alt", "description", "term",
-  "help", "tip", "tooltip", "note", "body", "heading", "legend", "caption", "warning",
-  "eyebrow", "empty", "prompt", "aria-description", "aria-roledescription", "aria-valuetext",
-  "aria-placeholder", "subtitle", "message", "hint", "summary", "text",
+  "label",
+  "aria-label",
+  "ariaLabel",
+  "title",
+  "placeholder",
+  "alt",
+  "description",
+  "term",
+  "help",
+  "tip",
+  "tooltip",
+  "note",
+  "body",
+  "heading",
+  "legend",
+  "caption",
+  "warning",
+  "eyebrow",
+  "empty",
+  "prompt",
+  "aria-description",
+  "aria-roledescription",
+  "aria-valuetext",
+  "aria-placeholder",
+  "subtitle",
+  "message",
+  "hint",
+  "summary",
+  "text",
 ]);
 const TEXT_PROP_SUFFIX = /(Label|Title|Description|Placeholder|Hint|Heading|Text|Message)$/;
 
 /** Never text, whatever they hold. */
 const NEVER_PROPS = new Set([
-  "d", "id", "key", "href", "src", "className", "class", "type", "variant", "name", "role",
-  "htmlFor", "as", "size", "tone", "side", "align", "icon", "method", "target", "rel", "lang",
-  "dir", "form", "pattern", "autoComplete", "inputMode", "mode", "fill", "stroke", "viewBox",
-  "xmlns", "style", "ref", "slot", "accept", "encType", "action", "sizes", "srcSet", "loading",
-  "sandbox", "allow", "download", "kind", "status", "state", "color", "intent", "path", "to",
-  "route", "query", "locale", "format", "unit", "currency", "code", "field", "column", "sort",
-  "order", "group", "category", "stage", "step", "tab", "view", "layout", "position",
-  "orientation", "placement", "data", "testId", "value", "defaultValue", "url", "email",
-  "phone", "mobile", "botd", "clause", "slots", "token", "mime", "ext", "fileName", "filename",
-  "font", "en", "ml", "hi", "gu", "pa", "transform", "strokeWidth", "points", "x", "y",
-  "cx", "cy", "r", "rx", "ry", "width", "height", "aria-hidden", "tabIndex", "autoFocus",
-  "aria-labelledby", "aria-describedby", "aria-controls", "aria-current", "aria-live",
-  "aria-haspopup", "aria-expanded", "aria-invalid", "aria-required", "aria-selected",
-  "aria-checked", "aria-pressed", "aria-disabled", "aria-orientation", "aria-modal",
-  "aria-atomic", "aria-busy", "aria-level", "aria-owns", "aria-sort", "aria-valuemax",
-  "aria-valuemin", "aria-valuenow", "aria-colcount", "aria-rowcount", "aria-colindex",
-  "aria-rowindex", "aria-posinset", "aria-setsize", "aria-errormessage", "aria-keyshortcuts",
-  "aria-multiline", "aria-multiselectable", "aria-readonly", "aria-relevant", "aria-details",
-  "aria-flowto", "aria-activedescendant", "aria-autocomplete",
+  "d",
+  "id",
+  "key",
+  "href",
+  "src",
+  "className",
+  "class",
+  "type",
+  "variant",
+  "name",
+  "role",
+  "htmlFor",
+  "as",
+  "size",
+  "tone",
+  "side",
+  "align",
+  "icon",
+  "method",
+  "target",
+  "rel",
+  "lang",
+  "dir",
+  "form",
+  "pattern",
+  "autoComplete",
+  "inputMode",
+  "mode",
+  "fill",
+  "stroke",
+  "viewBox",
+  "xmlns",
+  "style",
+  "ref",
+  "slot",
+  "accept",
+  "encType",
+  "action",
+  "sizes",
+  "srcSet",
+  "loading",
+  "sandbox",
+  "allow",
+  "download",
+  "kind",
+  "status",
+  "state",
+  "color",
+  "intent",
+  "path",
+  "to",
+  "route",
+  "query",
+  "locale",
+  "format",
+  "unit",
+  "currency",
+  "code",
+  "field",
+  "column",
+  "sort",
+  "order",
+  "group",
+  "category",
+  "stage",
+  "step",
+  "tab",
+  "view",
+  "layout",
+  "position",
+  "orientation",
+  "placement",
+  "data",
+  "testId",
+  "value",
+  "defaultValue",
+  "url",
+  "email",
+  "phone",
+  "mobile",
+  "botd",
+  "clause",
+  "slots",
+  "token",
+  "mime",
+  "ext",
+  "fileName",
+  "filename",
+  "font",
+  "en",
+  "ml",
+  "hi",
+  "gu",
+  "pa",
+  "transform",
+  "strokeWidth",
+  "points",
+  "x",
+  "y",
+  "cx",
+  "cy",
+  "r",
+  "rx",
+  "ry",
+  "width",
+  "height",
+  "aria-hidden",
+  "tabIndex",
+  "autoFocus",
+  "aria-labelledby",
+  "aria-describedby",
+  "aria-controls",
+  "aria-current",
+  "aria-live",
+  "aria-haspopup",
+  "aria-expanded",
+  "aria-invalid",
+  "aria-required",
+  "aria-selected",
+  "aria-checked",
+  "aria-pressed",
+  "aria-disabled",
+  "aria-orientation",
+  "aria-modal",
+  "aria-atomic",
+  "aria-busy",
+  "aria-level",
+  "aria-owns",
+  "aria-sort",
+  "aria-valuemax",
+  "aria-valuemin",
+  "aria-valuenow",
+  "aria-colcount",
+  "aria-rowcount",
+  "aria-colindex",
+  "aria-rowindex",
+  "aria-posinset",
+  "aria-setsize",
+  "aria-errormessage",
+  "aria-keyshortcuts",
+  "aria-multiline",
+  "aria-multiselectable",
+  "aria-readonly",
+  "aria-relevant",
+  "aria-details",
+  "aria-flowto",
+  "aria-activedescendant",
+  "aria-autocomplete",
 ]);
 
 /** Toast-like calls whose first argument is a message. */
-const MESSAGE_CALLS = /^(toast|notify|alert|confirm)(\.\w+)?$|^set[A-Z]\w*(Error|Message|Notice|Status|Title|Text|Label|Hint)$/;
+const MESSAGE_CALLS =
+  /^(toast|notify|alert|confirm)(\.\w+)?$|^set[A-Z]\w*(Error|Message|Notice|Status|Title|Text|Label|Hint)$/;
 
 /** String methods: a value they are called on is being worked with, not shown. */
-const STRING_METHODS = /^(split|toLowerCase|toUpperCase|toLocaleLowerCase|toLocaleUpperCase|includes|startsWith|endsWith|indexOf|lastIndexOf|localeCompare|match|matchAll|search|replace|replaceAll|trim|trimStart|trimEnd|normalize|slice|substring|charAt|charCodeAt|codePointAt|padStart|padEnd|repeat|concat|at|length)$/;
+const STRING_METHODS =
+  /^(split|toLowerCase|toUpperCase|toLocaleLowerCase|toLocaleUpperCase|includes|startsWith|endsWith|indexOf|lastIndexOf|localeCompare|match|matchAll|search|replace|replaceAll|trim|trimStart|trimEnd|normalize|slice|substring|charAt|charCodeAt|codePointAt|padStart|padEnd|repeat|concat|at|length)$/;
 
 /** Constants holding sample data, not interface text. */
 const DEMO_CONSTANT = /^(DEMO|SAMPLE|MOCK|FIXTURE)_/;
 
 /** Files skipped on purpose, with the reason the report gives. */
 const SKIPPED_FILES: { test: (rel: string) => boolean; reason: string }[] = [
-  { test: (rel) => /\.test\.tsx?$/.test(rel) || rel.endsWith(".d.ts"), reason: "Tests and type declarations" },
+  {
+    test: (rel) => /\.test\.tsx?$/.test(rel) || rel.endsWith(".d.ts"),
+    reason: "Tests and type declarations",
+  },
   { test: (rel) => rel.startsWith("src/i18n/"), reason: "The localization setup itself" },
-  { test: (rel) => /(^|\/)(fixtures?|sandbox|sample-[\w-]+|demo-[\w-]+)\.tsx?$/.test(rel) || rel.includes("/fixtures/"), reason: "Fixture and sandbox demo data (comes from the back end later)" },
-  { test: (rel) => rel === "src/lib/summons/content.ts", reason: "Printed summons text: a court document, language set by the court (later item 17)" },
-  { test: (rel) => rel === "src/lib/court/places.ts", reason: "Per-court names and places: data, not interface text" },
-  { test: (rel) => rel === "src/lib/court/localize.ts", reason: "Court text layer rules (English patterns it matches)" },
-  { test: (rel) => rel === "src/lib/bulk/excel-spec.ts", reason: "Spreadsheet column headers must match uploaded files" },
-  { test: (rel) => rel === "src/lib/locale-config.ts", reason: "Language names are shown in their own script" },
-  { test: (rel) => rel === "src/lib/tasks/transitions.ts", reason: "Task and application history sentences (later item 1)" },
+  {
+    test: (rel) =>
+      /(^|\/)(fixtures?|sandbox|sample-[\w-]+|demo-[\w-]+)\.tsx?$/.test(rel) ||
+      rel.includes("/fixtures/"),
+    reason: "Fixture and sandbox demo data (comes from the back end later)",
+  },
+  {
+    test: (rel) => rel === "src/lib/summons/content.ts",
+    reason: "Printed summons text: a court document, language set by the court (later item 17)",
+  },
+  {
+    test: (rel) => rel === "src/lib/court/places.ts",
+    reason: "Per-court names and places: data, not interface text",
+  },
+  {
+    test: (rel) => rel === "src/lib/court/localize.ts",
+    reason: "Court text layer rules (English patterns it matches)",
+  },
+  {
+    test: (rel) => rel === "src/lib/bulk/excel-spec.ts",
+    reason: "Spreadsheet column headers must match uploaded files",
+  },
+  {
+    test: (rel) => rel === "src/lib/locale-config.ts",
+    reason: "Language names are shown in their own script",
+  },
+  {
+    test: (rel) => rel === "src/lib/tasks/transitions.ts",
+    reason: "Task and application history sentences (later item 1)",
+  },
   { test: (rel) => rel.startsWith("src/app/api/"), reason: "Server API routes, no interface" },
-  { test: (rel) => rel.startsWith("src/app/feedback-kit/"), reason: "Internal showcase of the feedback components, not a product screen (confirm)" },
-  { test: (rel) => rel.startsWith("src/provakil/") || rel.startsWith("src/app/provakil/"), reason: "Provakil mock: a stand-in for a third-party product, not part of DRISTI (its README)" },
+  {
+    test: (rel) => rel.startsWith("src/app/feedback-kit/"),
+    reason: "Internal showcase of the feedback components, not a product screen (confirm)",
+  },
+  {
+    test: (rel) => rel.startsWith("src/provakil/") || rel.startsWith("src/app/provakil/"),
+    reason: "Provakil mock: a stand-in for a third-party product, not part of DRISTI (its README)",
+  },
 ];
 
 /** Logic modules with no React, where no translator exists. */
@@ -154,12 +344,16 @@ type FileState = {
 /* ───────────────────────────── Program ───────────────────────────── */
 
 const configPath = path.join(APP_ROOT, "tsconfig.json");
-const parsed = ts.getParsedCommandLineOfConfigFile(configPath, {}, {
-  ...ts.sys,
-  onUnRecoverableConfigFileDiagnostic: (d) => {
-    throw new Error(ts.flattenDiagnosticMessageText(d.messageText, "\n"));
+const parsed = ts.getParsedCommandLineOfConfigFile(
+  configPath,
+  {},
+  {
+    ...ts.sys,
+    onUnRecoverableConfigFileDiagnostic: (d) => {
+      throw new Error(ts.flattenDiagnosticMessageText(d.messageText, "\n"));
+    },
   },
-});
+);
 if (!parsed) throw new Error("Could not read tsconfig.json");
 const program = ts.createProgram({
   rootNames: parsed.fileNames.filter((f) => f.startsWith(SRC + path.sep)),
@@ -218,7 +412,10 @@ function looksLikeCode(text: string): boolean {
   if (!/\s/.test(s) && /^[a-z]+[A-Z]\w*$/.test(s)) return true;
   if (!/\s/.test(s) && /^[a-z0-9]+(-[a-z0-9]+)+$/.test(s)) return true;
   const tokens = s.split(/\s+/);
-  if (tokens.every((t) => /^[!a-z0-9:\-/[\].#%()_&>*~+]+$/.test(t)) && tokens.some((t) => /[-:[\]/]/.test(t)))
+  if (
+    tokens.every((t) => /^[!a-z0-9:\-/[\].#%()_&>*~+]+$/.test(t)) &&
+    tokens.some((t) => /[-:[\]/]/.test(t))
+  )
     return true;
   return false;
 }
@@ -262,18 +459,22 @@ function copyToIcu(text: string): string {
 
 function camel(words: string[]): string {
   return words
-    .map((w, i) => (i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()))
+    .map((w, i) =>
+      i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(),
+    )
     .join("");
 }
 
 function words(message: string): string[] {
-  return message
-    .replace(/<\/?[a-z0-9]+>/g, " ")
-    // {causeTitle} → "cause title", so the key reads itemCauseTitle, not itemCausetitle.
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/[’']/g, "")
-    .split(/[^A-Za-z0-9]+/)
-    .filter(Boolean);
+  return (
+    message
+      .replace(/<\/?[a-z0-9]+>/g, " ")
+      // {causeTitle} → "cause title", so the key reads itemCauseTitle, not itemCausetitle.
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/[’']/g, "")
+      .split(/[^A-Za-z0-9]+/)
+      .filter(Boolean)
+  );
 }
 
 /** Per prefix: message → key, and every key taken. */
@@ -314,10 +515,13 @@ function keyFor(state: FileState, message: string, role: string, source: string)
   const all = words(message);
   const base = all.length ? all : ["text"];
   const candidates: string[] = [];
-  for (let n = Math.min(6, base.length); n <= base.length; n++) candidates.push(camel(base.slice(0, n)));
+  for (let n = Math.min(6, base.length); n <= base.length; n++)
+    candidates.push(camel(base.slice(0, n)));
   // Readable ways to tell near-identical messages apart, before falling back to a number.
   const short = camel(base.slice(0, 6));
-  const roleSuffix = role ? role.replace(/^aria-/, "aria").replace(/-(\w)/g, (_, c: string) => c.toUpperCase()) : "";
+  const roleSuffix = role
+    ? role.replace(/^aria-/, "aria").replace(/-(\w)/g, (_, c: string) => c.toUpperCase())
+    : "";
   if (roleSuffix) candidates.push(short + roleSuffix.charAt(0).toUpperCase() + roleSuffix.slice(1));
   for (const suffix of punctuationSuffixes(message)) candidates.push(short + suffix);
   let key = "";
@@ -370,19 +574,41 @@ function remember(key: string, message: string, rel: string, source: string) {
  * dynamic segments and the top-level folders are ignored; a clash adds the parent folder.
  */
 function computePrefixes(rels: string[]): Map<string, string> {
-  const ROUTE_FILES = new Set(["page", "layout", "index", "loading", "error", "not-found", "template", "default", "route"]);
+  const ROUTE_FILES = new Set([
+    "page",
+    "layout",
+    "index",
+    "loading",
+    "error",
+    "not-found",
+    "template",
+    "default",
+    "route",
+  ]);
   const tokensOf = (rel: string): { tokens: string[]; base: number } => {
     const parts = rel
       .replace(/^src\//, "")
       .replace(/\.(tsx?|mts)$/, "")
       .split("/")
-      .filter((s) => !/^\(.*\)$/.test(s) && !/^\[.*\]$/.test(s) && !["app", "components", "lib", "hooks"].includes(s));
+      .filter(
+        (s) =>
+          !/^\(.*\)$/.test(s) &&
+          !/^\[.*\]$/.test(s) &&
+          !["app", "components", "lib", "hooks"].includes(s),
+      );
     const file = parts[parts.length - 1] ?? "app";
-    if ((file === "content" || file === "copy") && parts.length > 1) return { tokens: parts.slice(0, -1), base: 1 };
+    if ((file === "content" || file === "copy") && parts.length > 1)
+      return { tokens: parts.slice(0, -1), base: 1 };
     if (ROUTE_FILES.has(file)) return { tokens: parts, base: Math.min(2, parts.length) };
     return { tokens: parts, base: 1 };
   };
-  const name = (parts: string[]) => camel(parts.join("-").split(/[^A-Za-z0-9]+/).filter(Boolean)) || "app";
+  const name = (parts: string[]) =>
+    camel(
+      parts
+        .join("-")
+        .split(/[^A-Za-z0-9]+/)
+        .filter(Boolean),
+    ) || "app";
   const info = new Map(rels.map((rel) => [rel, tokensOf(rel)] as const));
   const extra = new Map<string, number>(rels.map((rel) => [rel, 0]));
   const result = new Map<string, string>();
@@ -425,7 +651,8 @@ function isPascal(name: string): boolean {
 function functionName(fn: TS.FunctionLikeDeclaration): string | undefined {
   if (fn.name && ts.isIdentifier(fn.name)) return fn.name.text;
   let p: TS.Node = fn.parent;
-  while (ts.isCallExpression(p) || ts.isParenthesizedExpression(p) || ts.isAsExpression(p)) p = p.parent;
+  while (ts.isCallExpression(p) || ts.isParenthesizedExpression(p) || ts.isAsExpression(p))
+    p = p.parent;
   if (ts.isVariableDeclaration(p) && ts.isIdentifier(p.name)) return p.name.text;
   if (ts.isExportAssignment(p)) return "default";
   return undefined;
@@ -436,7 +663,10 @@ function isComponentOrHook(fn: TS.FunctionLikeDeclaration): boolean {
   const name = functionName(fn);
   if (!name) {
     // `export default function () {}` in a route file.
-    return ts.isFunctionDeclaration(fn) && !!fn.modifiers?.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword);
+    return (
+      ts.isFunctionDeclaration(fn) &&
+      !!fn.modifiers?.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword)
+    );
   }
   if (name === "default") return true;
   return isPascal(name) || /^use[A-Z]/.test(name);
@@ -471,7 +701,10 @@ function scopeOf(node: TS.Node): Scope {
     if (ts.isParameter(parent) && parent.initializer === p) inParameter = true;
     if (ts.isBindingElement(parent) && parent.initializer === p) inParameter = true;
     if (isFunctionLike(parent)) {
-      if (inParameter && parent.parameters.some((param) => param.pos <= node.pos && node.end <= param.end)) {
+      if (
+        inParameter &&
+        parent.parameters.some((param) => param.pos <= node.pos && node.end <= param.end)
+      ) {
         inParameter = false;
         nearestFn ??= parent;
         continue;
@@ -495,12 +728,16 @@ function outer(node: TS.Node): TS.Node {
     (ts.isConditionalExpression(n.parent) && n.parent.condition !== n) ||
     (ts.isBinaryExpression(n.parent) &&
       n.parent.right === n &&
-      [ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.AmpersandAmpersandToken].includes(
-        n.parent.operatorToken.kind,
-      )) ||
+      [
+        ts.SyntaxKind.QuestionQuestionToken,
+        ts.SyntaxKind.BarBarToken,
+        ts.SyntaxKind.AmpersandAmpersandToken,
+      ].includes(n.parent.operatorToken.kind)) ||
     (ts.isBinaryExpression(n.parent) &&
       n.parent.left === n &&
-      [ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken].includes(n.parent.operatorToken.kind))
+      [ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken].includes(
+        n.parent.operatorToken.kind,
+      ))
   ) {
     n = n.parent;
   }
@@ -508,7 +745,8 @@ function outer(node: TS.Node): TS.Node {
 }
 
 function propName(name: TS.PropertyName | TS.JsxAttributeName): string | undefined {
-  if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name)) return name.text;
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name))
+    return name.text;
   if (ts.isJsxNamespacedName(name)) return `${name.namespace.text}:${name.name.text}`;
   return undefined;
 }
@@ -557,18 +795,40 @@ function isNonTextCall(call: TS.CallExpression | TS.NewExpression): boolean {
   return (
     ts.isNewExpression(call) ||
     /^(console\.\w+|cn|clsx|cva|twMerge|require|import|fetch|encodeURIComponent|decodeURIComponent|JSON\.\w+|Number|parseInt|parseFloat|RegExp|Symbol|URLSearchParams|setItem|getItem|removeItem|matchMedia|addEventListener|removeEventListener|dispatchEvent|createElement|querySelector(All)?|getElementById|closest|setAttribute|getAttribute|startsWith|endsWith|includes|indexOf|split|replace(All)?|match|test|join|padStart|padEnd|localeCompare|toLocaleString|toLocaleDateString|format|formatDate|router\.\w+|redirect|notFound|useState|useRef|useReducer|useLocalStorageValue|cookies|headers|searchParams\.\w+|params\.\w+|Intl\.\w+|describe|it|test|assert\.\w+)$/.test(
-      callee.replace(/^.*\.(?=[a-zA-Z]+$)/, (m) => (/(console|JSON|router|searchParams|params|Intl|assert)\.$/.test(m) ? m : "")),
+      callee.replace(/^.*\.(?=[a-zA-Z]+$)/, (m) =>
+        /(console|JSON|router|searchParams|params|Intl|assert)\.$/.test(m) ? m : "",
+      ),
     ) ||
-    /\.(get|set|has|delete|push|replace|includes|startsWith|endsWith|indexOf|split|join|match|test|localeCompare|getItem|setItem|removeItem|querySelector|closest|setAttribute|getAttribute|addEventListener)$/.test(callee)
+    /\.(get|set|has|delete|push|replace|includes|startsWith|endsWith|indexOf|split|join|match|test|localeCompare|getItem|setItem|removeItem|querySelector|closest|setAttribute|getAttribute|addEventListener)$/.test(
+      callee,
+    )
   );
 }
 
 /* ───────────────────────────── JSX text ───────────────────────────── */
 
 const ENTITIES: Record<string, string> = {
-  apos: "'", quot: '"', amp: "&", lt: "<", gt: ">", nbsp: " ", mdash: "—", ndash: "–",
-  hellip: "…", rsquo: "’", lsquo: "‘", ldquo: "“", rdquo: "”", middot: "·", times: "×",
-  rarr: "→", larr: "←", bull: "•", copy: "©", reg: "®", deg: "°",
+  apos: "'",
+  quot: '"',
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  nbsp: " ",
+  mdash: "—",
+  ndash: "–",
+  hellip: "…",
+  rsquo: "’",
+  lsquo: "‘",
+  ldquo: "“",
+  rdquo: "”",
+  middot: "·",
+  times: "×",
+  rarr: "→",
+  larr: "←",
+  bull: "•",
+  copy: "©",
+  reg: "®",
+  deg: "°",
 };
 
 function decodeEntities(text: string): string {
@@ -603,10 +863,18 @@ function containsLetteredString(node: TS.Node): boolean {
   let found = false;
   const visit = (n: TS.Node) => {
     if (found) return;
-    if ((ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) && hasLetters(n.text) && !looksLikeCode(n.text)) {
+    if (
+      (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) &&
+      hasLetters(n.text) &&
+      !looksLikeCode(n.text)
+    ) {
       if (!isValuePosition(n) && !isInsideNonTextCall(n)) found = true;
     }
-    if (ts.isTemplateExpression(n) && hasLetters(n.head.text + n.templateSpans.map((s) => s.literal.text).join(""))) found = true;
+    if (
+      ts.isTemplateExpression(n) &&
+      hasLetters(n.head.text + n.templateSpans.map((s) => s.literal.text).join(""))
+    )
+      found = true;
     if (ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n) || ts.isJsxFragment(n)) return;
     ts.forEachChild(n, visit);
   };
@@ -642,7 +910,7 @@ function primitiveKind(expr: TS.Expression): "string" | "number" | "other" {
   let numeric = false;
   for (const t of parts) {
     const f = t.getFlags();
-    if (f & (ts.TypeFlags.StringLike)) continue;
+    if (f & ts.TypeFlags.StringLike) continue;
     if (f & (ts.TypeFlags.NumberLike | ts.TypeFlags.BigIntLike)) {
       numeric = true;
       continue;
@@ -655,7 +923,8 @@ function primitiveKind(expr: TS.Expression): "string" | "number" | "other" {
 
 function valueName(expr: TS.Expression): string {
   let e: TS.Expression = expr;
-  while (ts.isNonNullExpression(e) || ts.isParenthesizedExpression(e) || ts.isAsExpression(e)) e = e.expression;
+  while (ts.isNonNullExpression(e) || ts.isParenthesizedExpression(e) || ts.isAsExpression(e))
+    e = e.expression;
   if (ts.isIdentifier(e)) return e.text;
   if (ts.isPropertyAccessExpression(e)) return e.name.text;
   if (ts.isCallExpression(e)) {
@@ -676,7 +945,8 @@ function jsxPiece(child: TS.JsxChild): Piece | "skip" | "break" {
   if (ts.isJsxExpression(child)) {
     const e = child.expression;
     if (!e) return "skip";
-    if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return { kind: "text", text: e.text, node: child };
+    if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e))
+      return { kind: "text", text: e.text, node: child };
     if (containsJsx(e)) return "break";
     if (containsLetteredString(e)) return { kind: "complex", node: child };
     const kind = primitiveKind(e);
@@ -693,7 +963,13 @@ function jsxPiece(child: TS.JsxChild): Piece | "skip" | "break" {
     }
     if (!inner.length) return "break";
     const tagName = child.openingElement.tagName.getText().split(".").pop() ?? "tag";
-    return { kind: "tag", tag: tagName.toLowerCase().replace(/[^a-z0-9]/g, "") || "tag", element: child, inner, node: child };
+    return {
+      kind: "tag",
+      tag: tagName.toLowerCase().replace(/[^a-z0-9]/g, "") || "tag",
+      element: child,
+      inner,
+      node: child,
+    };
   }
   return "break";
 }
@@ -742,11 +1018,20 @@ function addToHookDeps(state: FileState, node: TS.Node, component: TS.FunctionLi
     state.depsDone.add(deps);
     if (deps.elements.some((e) => ts.isIdentifier(e) && e.text === state.translator)) continue;
     const at = deps.getEnd() - 1;
-    state.edits.push({ start: at, end: at, text: deps.elements.length ? `, ${state.translator}` : state.translator });
+    state.edits.push({
+      start: at,
+      end: at,
+      text: deps.elements.length ? `, ${state.translator}` : state.translator,
+    });
   }
 }
 
-function messageCall(translator: string, key: string, values: { name: string; code: string }[], rich = false): string {
+function messageCall(
+  translator: string,
+  key: string,
+  values: { name: string; code: string }[],
+  rich = false,
+): string {
   const fn = rich ? `${translator}.rich` : translator;
   if (!values.length) return `${fn}("${key}")`;
   const obj = values.map((v) => (v.code === v.name ? v.name : `${v.name}: ${v.code}`)).join(", ");
@@ -784,14 +1069,17 @@ function messageValue(state: FileState, expr: TS.Expression, numeric: boolean): 
 
 function isNullable(expr: TS.Expression): boolean {
   const type = checker.getTypeAtLocation(expr);
-  return (type.isUnion() ? type.types : [type]).some((t) => (t.getFlags() & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void)) !== 0);
+  return (type.isUnion() ? type.types : [type]).some(
+    (t) => (t.getFlags() & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void)) !== 0,
+  );
 }
 
 /** A value going into a message: translated first if it now holds a key. */
 function keyAwareCode(state: FileState, expr: TS.Expression): string {
   const code = expr.getText(state.sf);
   let inner: TS.Expression = expr;
-  while (ts.isNonNullExpression(inner) || ts.isParenthesizedExpression(inner)) inner = inner.expression;
+  while (ts.isNonNullExpression(inner) || ts.isParenthesizedExpression(inner))
+    inner = inner.expression;
   const info = readerInfo(inner);
   if (!info) return code;
   if (info.strict) return `${state.translator}(${code})`;
@@ -802,16 +1090,26 @@ function keyAwareCode(state: FileState, expr: TS.Expression): string {
 /** Whether an expression reads a converted constant (or calls a function returning a key). */
 function readerInfo(node: TS.Node): Tracked | undefined {
   if (ts.isCallExpression(node)) return trackedCall(node) ? { strict: false } : undefined;
-  if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node) || ts.isIdentifier(node)) return trackedFor(node);
+  if (
+    ts.isPropertyAccessExpression(node) ||
+    ts.isElementAccessExpression(node) ||
+    ts.isIdentifier(node)
+  )
+    return trackedFor(node);
   return undefined;
 }
 
 function trackedCall(node: TS.CallExpression): boolean {
-  const callee = ts.isPropertyAccessExpression(node.expression) ? node.expression.name : node.expression;
+  const callee = ts.isPropertyAccessExpression(node.expression)
+    ? node.expression.name
+    : node.expression;
   let symbol = checker.getSymbolAtLocation(callee);
   if (symbol && symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
   return !!symbol?.declarations?.some(
-    (d) => trackedDeclarations.has(d) && (ts.isFunctionDeclaration(d) || (ts.isVariableDeclaration(d) && !!d.initializer && isFunctionLike(d.initializer))),
+    (d) =>
+      trackedDeclarations.has(d) &&
+      (ts.isFunctionDeclaration(d) ||
+        (ts.isVariableDeclaration(d) && !!d.initializer && isFunctionLike(d.initializer))),
   );
 }
 
@@ -833,16 +1131,38 @@ function visitJsxChildren(state: FileState, parent: TS.JsxElement | TS.JsxFragme
     if (!run.some((p) => p.kind === "text" && pieceHasLetters(p))) continue;
     // A lone complex child (`{cond ? "Yes" : "No"}`) is converted literal by literal.
     if (run.length === 1 && run[0].kind === "complex") continue;
-    const text = run.map((p) => (p.kind === "text" ? p.text : p.kind === "value" ? `{${p.name}}` : p.kind === "tag" ? `<${p.tag}>…` : "{…}")).join("");
+    const text = run
+      .map((p) =>
+        p.kind === "text"
+          ? p.text
+          : p.kind === "value"
+            ? `{${p.name}}`
+            : p.kind === "tag"
+              ? `<${p.tag}>…`
+              : "{…}",
+      )
+      .join("");
     for (const p of run) claimed.add(p.node);
     markClaimed(run);
     if (run.some((p) => p.kind === "complex")) {
-      report(state, run[0].node, "Complex split sentence", text, "Write it as one message; a word chosen in code becomes an ICU `select`.");
+      report(
+        state,
+        run[0].node,
+        "Complex split sentence",
+        text,
+        "Write it as one message; a word chosen in code becomes an ICU `select`.",
+      );
       continue;
     }
     const translator = translatorFor(state, parent);
     if (!translator) {
-      report(state, run[0].node, "Text in a helper outside a component", text, "Pass the translator in as a parameter.");
+      report(
+        state,
+        run[0].node,
+        "Text in a helper outside a component",
+        text,
+        "Pass the translator in as a parameter.",
+      );
       continue;
     }
     convertRun(state, run, translator);
@@ -873,7 +1193,10 @@ function convertRun(state: FileState, run: Piece[], translator: string) {
   };
   collect(run);
   const tagNames = uniqueNames(tagPieces.map((t) => t.tag));
-  const valueNames = uniqueNames(valuePieces.map((v) => v.name), new Set(tagNames));
+  const valueNames = uniqueNames(
+    valuePieces.map((v) => v.name),
+    new Set(tagNames),
+  );
   const nameOf = new Map<Piece, string>();
   tagPieces.forEach((t, i) => nameOf.set(t, tagNames[i]));
   valuePieces.forEach((v, i) => nameOf.set(v, valueNames[i]));
@@ -888,10 +1211,16 @@ function convertRun(state: FileState, run: Piece[], translator: string) {
       })
       .join("");
   const message = render(run).replace(/\s+/g, " ").trim();
-  const plain = run.map((p) => (p.kind === "text" ? p.text : "")).join("").trim();
+  const plain = run
+    .map((p) => (p.kind === "text" ? p.text : ""))
+    .join("")
+    .trim();
   const key = keyFor(state, message, "", plain || message);
 
-  const values = valuePieces.map((v) => ({ name: nameOf.get(v) ?? v.name, code: valueCode(state, v) }));
+  const values = valuePieces.map((v) => ({
+    name: nameOf.get(v) ?? v.name,
+    code: valueCode(state, v),
+  }));
   const richValues = tagPieces.map((t) => {
     const open = t.element.openingElement.getText(sf);
     const close = t.element.closingElement.getText(sf);
@@ -910,9 +1239,13 @@ function convertRun(state: FileState, run: Piece[], translator: string) {
 }
 
 /** Template literal `Remove ${name}` → message and values. */
-function templateMessage(state: FileState, node: TS.TemplateExpression): { message: string; values: { name: string; code: string }[] } | undefined {
+function templateMessage(
+  state: FileState,
+  node: TS.TemplateExpression,
+): { message: string; values: { name: string; code: string }[] } | undefined {
   const exprs = node.templateSpans.map((s) => s.expression);
-  for (const e of exprs) if (primitiveKind(e) === "other" || containsLetteredString(e)) return undefined;
+  for (const e of exprs)
+    if (primitiveKind(e) === "other" || containsLetteredString(e)) return undefined;
   const names = uniqueNames(exprs.map(valueName));
   let message = escapeIcu(node.head.text);
   const values = exprs.map((e, i) => {
@@ -932,7 +1265,10 @@ function templateText(node: TS.TemplateExpression): string {
  * A string in code. Decides whether it is interface text and, if so, whether it becomes
  * `t("key")` here (inside a component), a key in a constant (outside one), or a report line.
  */
-function visitString(state: FileState, node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression) {
+function visitString(
+  state: FileState,
+  node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression,
+) {
   if (claimed.has(node)) return;
   const text = ts.isTemplateExpression(node) ? templateText(node) : node.text;
   if (!hasLetters(text)) return;
@@ -948,20 +1284,39 @@ function visitString(state: FileState, node: TS.StringLiteral | TS.NoSubstitutio
   // The type expects this exact English (a union of literals): changing it breaks the code.
   if (!ts.isTemplateExpression(node) && isLiteralTypeContext(at)) {
     if (isSentenceLike(text) || (/\s/.test(text.trim()) && isTextInTextPlace(text))) {
-      report(state, node, "English used as a value", text, "The code uses this English as an identifier. Keep it, and map it to a key where it is shown.");
+      report(
+        state,
+        node,
+        "English used as a value",
+        text,
+        "The code uses this English as an identifier. Keep it, and map it to a key where it is shown.",
+      );
     }
     return;
   }
 
   // JSX attribute: <X title="…" /> or title={…}.
-  const attr = ts.isJsxAttribute(parent) ? parent : ts.isJsxExpression(parent) && ts.isJsxAttribute(parent.parent) ? parent.parent : undefined;
+  const attr = ts.isJsxAttribute(parent)
+    ? parent
+    : ts.isJsxExpression(parent) && ts.isJsxAttribute(parent.parent)
+      ? parent.parent
+      : undefined;
   if (attr) {
     const name = propName(attr.name) ?? "";
     if (NEVER_PROPS.has(name) && name !== "value") return;
     if (name.startsWith("data-") || name.startsWith("on")) return;
     if (!isTextProp(name)) {
-      if (isSentenceLike(text) || (name === "value" && isTextInTextPlace(text) && /^[A-Z]/.test(text.trim()))) {
-        report(state, node, "Unclear prop", `${name}="${text}"`, `If \`${name}\` is shown on screen, add it to the text props or wrap the value in t().`);
+      if (
+        isSentenceLike(text) ||
+        (name === "value" && isTextInTextPlace(text) && /^[A-Z]/.test(text.trim()))
+      ) {
+        report(
+          state,
+          node,
+          "Unclear prop",
+          `${name}="${text}"`,
+          `If \`${name}\` is shown on screen, add it to the text props or wrap the value in t().`,
+        );
       }
       return;
     }
@@ -980,15 +1335,20 @@ function visitString(state: FileState, node: TS.StringLiteral | TS.NoSubstitutio
   // Object property: { label: "…" }.
   if (ts.isPropertyAssignment(parent) && parent.initializer === at) {
     const name = propName(parent.name) ?? "";
-    if (ORDER_TEMPLATE_FILES.has(state.rel) && ["botd", "clause", "name", "value"].includes(name)) return;
+    if (ORDER_TEMPLATE_FILES.has(state.rel) && ["botd", "clause", "name", "value"].includes(name))
+      return;
     if (name === "en") {
       convertCopyText(state, node, text);
       return;
     }
     if (NEVER_PROPS.has(name)) return;
     // A lone lowercase word in an object ("cnr", "caseNumber") is an identifier, not text.
-    const loneLowercase = /^[a-z][A-Za-z0-9]*$/.test(text.trim()) || /^[A-Z0-9_]+$/.test(text.trim());
-    const textual = (isTextProp(name) || isLabelMap(parent)) && !loneLowercase ? isTextInTextPlace(text) : isSentenceLike(text);
+    const loneLowercase =
+      /^[a-z][A-Za-z0-9]*$/.test(text.trim()) || /^[A-Z0-9_]+$/.test(text.trim());
+    const textual =
+      (isTextProp(name) || isLabelMap(parent)) && !loneLowercase
+        ? isTextInTextPlace(text)
+        : isSentenceLike(text);
     if (!textual) {
       if (/^[A-Z][a-z]+$/.test(text)) singleWordValues++;
       return;
@@ -1011,8 +1371,12 @@ function visitString(state: FileState, node: TS.StringLiteral | TS.NoSubstitutio
   }
 
   // "Case " + number: the pieces cannot be reordered for another language.
-  if (ts.isBinaryExpression(node.parent) && node.parent.operatorToken.kind === ts.SyntaxKind.PlusToken) {
-    if (/\s/.test(text.trim()) || /\s$|^\s/.test(text)) report(state, node, "Joined with +", text, "Make it one message with placeholders.");
+  if (
+    ts.isBinaryExpression(node.parent) &&
+    node.parent.operatorToken.kind === ts.SyntaxKind.PlusToken
+  ) {
+    if (/\s/.test(text.trim()) || /\s$|^\s/.test(text))
+      report(state, node, "Joined with +", text, "Make it one message with placeholders.");
     return;
   }
 
@@ -1023,7 +1387,13 @@ function visitString(state: FileState, node: TS.StringLiteral | TS.NoSubstitutio
 
   // Lists of English: often values that are stored or compared, not only shown.
   if (ts.isArrayLiteralExpression(parent)) {
-    report(state, node, "English used as a value", text, "If this list is only shown, move it to keys; if the text is stored or compared, keep it and translate where it is shown.");
+    report(
+      state,
+      node,
+      "English used as a value",
+      text,
+      "If this list is only shown, move it to keys; if the text is stored or compared, keep it and translate where it is shown.",
+    );
     return;
   }
 
@@ -1042,14 +1412,25 @@ function visitString(state: FileState, node: TS.StringLiteral | TS.NoSubstitutio
     return;
   }
   // Module-level constant: const EMPTY_TITLE = "Nothing here yet".
-  if (scope.kind === "module" && ts.isVariableDeclaration(parent) && parent.initializer === at && !ts.isTemplateExpression(node)) {
+  if (
+    scope.kind === "module" &&
+    ts.isVariableDeclaration(parent) &&
+    parent.initializer === at &&
+    !ts.isTemplateExpression(node)
+  ) {
     convertConstant(state, node, text, "", parent);
     return;
   }
   // A function that returns fixed text: return "Pending". Its callers translate the result.
   const returning = returningFunction(at);
   if (returning && !ts.isTemplateExpression(node) && isUnsafeHolder(returning)) {
-    report(state, node, "English used as a value", text, "Callers use this text to build other text. Translate where it is shown instead.");
+    report(
+      state,
+      node,
+      "English used as a value",
+      text,
+      "Callers use this text to build other text. Translate where it is shown instead.",
+    );
     return;
   }
   if (returning && !ts.isTemplateExpression(node)) {
@@ -1059,11 +1440,23 @@ function visitString(state: FileState, node: TS.StringLiteral | TS.NoSubstitutio
     return;
   }
   if (isLibFile(state.rel)) {
-    report(state, node, "Sentence built in lib/", text, "Return a key and values, or take the translator as a parameter (one approved pattern).");
+    report(
+      state,
+      node,
+      "Sentence built in lib/",
+      text,
+      "Return a key and values, or take the translator as a parameter (one approved pattern).",
+    );
     return;
   }
   if (scope.kind === "helper") {
-    report(state, node, "Text in a helper outside a component", text, "Pass the translator in as a parameter.");
+    report(
+      state,
+      node,
+      "Text in a helper outside a component",
+      text,
+      "Pass the translator in as a parameter.",
+    );
     return;
   }
   report(state, node, "Unclear string", text, "Decide whether this is shown on screen.");
@@ -1087,7 +1480,12 @@ function returningFunction(at: TS.Node): TS.Node | undefined {
   if (!fn || !isFunctionLike(fn) || isComponentOrHook(fn)) return undefined;
   if (ts.isFunctionDeclaration(fn) && fn.name) return fn;
   const holder = fn.parent;
-  if ((ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && ts.isVariableDeclaration(holder) && ts.isIdentifier(holder.name)) return holder;
+  if (
+    (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) &&
+    ts.isVariableDeclaration(holder) &&
+    ts.isIdentifier(holder.name)
+  )
+    return holder;
   return undefined;
 }
 
@@ -1096,7 +1494,9 @@ function isLiteralTypeContext(node: TS.Node): boolean {
   const type = checker.getContextualType(node as TS.Expression);
   if (!type) return false;
   // SetStateAction<"a" | "b" | null> also carries an updater function; only strings matter.
-  const parts = (type.isUnion() ? type.types : [type]).filter((t) => (t.getFlags() & ts.TypeFlags.Object) === 0);
+  const parts = (type.isUnion() ? type.types : [type]).filter(
+    (t) => (t.getFlags() & ts.TypeFlags.Object) === 0,
+  );
   const anyString = parts.some((t) => (t.getFlags() & ts.TypeFlags.String) !== 0);
   return !anyString && parts.some((t) => t.isStringLiteral());
 }
@@ -1105,24 +1505,56 @@ function isCopyHelper(call: TS.CallExpression): boolean {
   if (!ts.isIdentifier(call.expression)) return false;
   const symbol = checker.getSymbolAtLocation(call.expression);
   const decl = symbol?.valueDeclaration;
-  if (!decl || !ts.isVariableDeclaration(decl) || !decl.initializer || !ts.isArrowFunction(decl.initializer)) return false;
+  if (
+    !decl ||
+    !ts.isVariableDeclaration(decl) ||
+    !decl.initializer ||
+    !ts.isArrowFunction(decl.initializer)
+  )
+    return false;
   const returnType = decl.initializer.type?.getText() ?? "";
   return returnType === "Copy";
 }
 
 /** Inside a component: the string becomes `t("key")` right where it is. */
-function convertInline(state: FileState, node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression, text: string, role: string, isAttribute: boolean) {
+function convertInline(
+  state: FileState,
+  node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression,
+  text: string,
+  role: string,
+  isAttribute: boolean,
+) {
   // A template that cannot become one message is reported before a translator is asked
   // for, so no component gets a translator it never uses.
   const tm = ts.isTemplateExpression(node) ? templateMessage(state, node) : undefined;
   if (ts.isTemplateExpression(node) && !tm) {
-    report(state, node, "Complex split sentence", text, "Write it as one message with placeholders.");
+    report(
+      state,
+      node,
+      "Complex split sentence",
+      text,
+      "Write it as one message with placeholders.",
+    );
     return;
   }
   const translator = translatorFor(state, node);
   if (!translator) {
-    if (isLibFile(state.rel)) report(state, node, "Sentence built in lib/", text, "Return a key and values, or take the translator as a parameter.");
-    else report(state, node, "Text in a helper outside a component", text, "Pass the translator in as a parameter.");
+    if (isLibFile(state.rel))
+      report(
+        state,
+        node,
+        "Sentence built in lib/",
+        text,
+        "Return a key and values, or take the translator as a parameter.",
+      );
+    else
+      report(
+        state,
+        node,
+        "Text in a helper outside a component",
+        text,
+        "Pass the translator in as a parameter.",
+      );
     return;
   }
   let call: string;
@@ -1135,13 +1567,27 @@ function convertInline(state: FileState, node: TS.StringLiteral | TS.NoSubstitut
     call = messageCall(translator, key, []);
   }
   const directAttribute = isAttribute && ts.isJsxAttribute(node.parent);
-  state.edits.push({ start: node.getStart(state.sf), end: node.getEnd(), text: directAttribute ? `{${call}}` : call });
+  state.edits.push({
+    start: node.getStart(state.sf),
+    end: node.getEnd(),
+    text: directAttribute ? `{${call}}` : call,
+  });
 }
 
 /** Copy `en` text: the key goes where the English was; Malayalam stays beside it. */
-function convertCopyText(state: FileState, node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression, text: string) {
+function convertCopyText(
+  state: FileState,
+  node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression,
+  text: string,
+) {
   if (ts.isTemplateExpression(node)) {
-    report(state, node, "Copy text with a template", text, "Use a {name} placeholder and fillCopy.");
+    report(
+      state,
+      node,
+      "Copy text with a template",
+      text,
+      "Use a {name} placeholder and fillCopy.",
+    );
     return;
   }
   if (KEY_SHAPE.test(text)) return;
@@ -1153,9 +1599,21 @@ function convertCopyText(state: FileState, node: TS.StringLiteral | TS.NoSubstit
  * Outside a component: the constant holds the key, and the places that show it are found
  * through the type checker and wrapped in a translator.
  */
-function convertConstant(state: FileState, node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression, text: string, role: string, holder: TS.PropertyAssignment | TS.VariableDeclaration) {
+function convertConstant(
+  state: FileState,
+  node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression,
+  text: string,
+  role: string,
+  holder: TS.PropertyAssignment | TS.VariableDeclaration,
+) {
   if (ts.isTemplateExpression(node)) {
-    report(state, node, isLibFile(state.rel) ? "Sentence built in lib/" : "Text in a helper outside a component", text, "Return a key and values, or translate where it is shown.");
+    report(
+      state,
+      node,
+      isLibFile(state.rel) ? "Sentence built in lib/" : "Text in a helper outside a component",
+      text,
+      "Return a key and values, or translate where it is shown.",
+    );
     return;
   }
   const scope = scopeOf(node);
@@ -1164,7 +1622,13 @@ function convertConstant(state: FileState, node: TS.StringLiteral | TS.NoSubstit
     return;
   }
   if (isUnsafeHolder(holder)) {
-    report(state, node, "English used as a value", text, "Its text is used beyond showing it (built into other text, compared, or passed on where the script cannot follow). Translate where it is shown instead.");
+    report(
+      state,
+      node,
+      "English used as a value",
+      text,
+      "Its text is used beyond showing it (built into other text, compared, or passed on where the script cannot follow). Translate where it is shown instead.",
+    );
     return;
   }
   // Module level or inside a plain function: the value is a key either way, and the
@@ -1175,13 +1639,24 @@ function convertConstant(state: FileState, node: TS.StringLiteral | TS.NoSubstit
   track(holder);
 }
 
-function convertDefaultProp(state: FileState, node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression, text: string, holder: TS.BindingElement | TS.ParameterDeclaration) {
+function convertDefaultProp(
+  state: FileState,
+  node: TS.StringLiteral | TS.NoSubstitutionTemplateLiteral | TS.TemplateExpression,
+  text: string,
+  holder: TS.BindingElement | TS.ParameterDeclaration,
+) {
   if (ts.isTemplateExpression(node)) {
     report(state, node, "Default text for a prop", text, "Use a key as the default.");
     return;
   }
   if (isUnsafeHolder(holder)) {
-    report(state, node, "Default text for a prop", text, "The component builds other text from this prop. Translate where it is shown.");
+    report(
+      state,
+      node,
+      "Default text for a prop",
+      text,
+      "The component builds other text from this prop. Translate where it is shown.",
+    );
     return;
   }
   const key = keyFor(state, escapeIcu(text.trim()), "", text.trim());
@@ -1216,11 +1691,16 @@ function contextualDeclarations(holder: TS.PropertyAssignment): TS.Node[] {
 /** Whether converting this holder would put a key into text the code builds. */
 function isUnsafeHolder(holder: TS.Node): boolean {
   if (unsafeDeclarations.has(holder)) return true;
-  return ts.isPropertyAssignment(holder) && contextualDeclarations(holder).some((d) => unsafeDeclarations.has(d));
+  return (
+    ts.isPropertyAssignment(holder) &&
+    contextualDeclarations(holder).some((d) => unsafeDeclarations.has(d))
+  );
 }
 
 function isConstDeclaration(decl: TS.VariableDeclaration): boolean {
-  return ts.isVariableDeclarationList(decl.parent) && (decl.parent.flags & ts.NodeFlags.Const) !== 0;
+  return (
+    ts.isVariableDeclarationList(decl.parent) && (decl.parent.flags & ts.NodeFlags.Const) !== 0
+  );
 }
 
 /**
@@ -1231,7 +1711,11 @@ function markStrictRecord(holder: TS.PropertyAssignment) {
   const decl = holdingVariable(holder);
   if (!decl?.type) return;
   const type = decl.type;
-  if (ts.isTypeReferenceNode(type) && type.typeName.getText() === "Record" && type.typeArguments?.length === 2) {
+  if (
+    ts.isTypeReferenceNode(type) &&
+    type.typeName.getText() === "Record" &&
+    type.typeArguments?.length === 2
+  ) {
     const value = type.typeArguments[1];
     if (value.kind === ts.SyntaxKind.StringKeyword) strictCandidates.set(value, decl);
   }
@@ -1240,7 +1724,12 @@ function markStrictRecord(holder: TS.PropertyAssignment) {
 /** The `const X = { … }` an object property sits directly in. */
 function holdingVariable(holder: TS.PropertyAssignment): TS.VariableDeclaration | undefined {
   let obj: TS.Node = holder.parent;
-  while (ts.isAsExpression(obj.parent) || ts.isSatisfiesExpression(obj.parent) || ts.isParenthesizedExpression(obj.parent)) obj = obj.parent;
+  while (
+    ts.isAsExpression(obj.parent) ||
+    ts.isSatisfiesExpression(obj.parent) ||
+    ts.isParenthesizedExpression(obj.parent)
+  )
+    obj = obj.parent;
   const decl = obj.parent;
   return ts.isVariableDeclaration(decl) && decl.initializer === obj ? decl : undefined;
 }
@@ -1254,7 +1743,9 @@ function isLabelMap(holder: TS.PropertyAssignment): boolean {
   const decl = holdingVariable(holder);
   if (!decl || !ts.isIdentifier(decl.name)) return false;
   // By name only: a Record<string, string> is just as often a table of codes (GENDER_CODES).
-  return /(LABELS?|TITLES?|TEXTS?|COPY|HEADINGS?|CAPTIONS?|Labels?|Titles?|Copy)$/.test(decl.name.text);
+  return /(LABELS?|TITLES?|TEXTS?|COPY|HEADINGS?|CAPTIONS?|Labels?|Titles?|Copy)$/.test(
+    decl.name.text,
+  );
 }
 
 /**
@@ -1264,10 +1755,17 @@ function isLabelMap(holder: TS.PropertyAssignment): boolean {
 function confirmStrictRecords() {
   for (const [value, decl] of strictCandidates) {
     let obj: TS.Node | undefined = decl.initializer;
-    while (obj && (ts.isAsExpression(obj) || ts.isSatisfiesExpression(obj) || ts.isParenthesizedExpression(obj))) obj = obj.expression;
+    while (
+      obj &&
+      (ts.isAsExpression(obj) || ts.isSatisfiesExpression(obj) || ts.isParenthesizedExpression(obj))
+    )
+      obj = obj.expression;
     if (!obj || !ts.isObjectLiteralExpression(obj)) continue;
     const allKeys = obj.properties.every(
-      (p) => ts.isPropertyAssignment(p) && (ts.isStringLiteral(p.initializer) || ts.isNoSubstitutionTemplateLiteral(p.initializer)) && (convertedLiterals.has(p.initializer) || KEY_SHAPE.test(p.initializer.text)),
+      (p) =>
+        ts.isPropertyAssignment(p) &&
+        (ts.isStringLiteral(p.initializer) || ts.isNoSubstitutionTemplateLiteral(p.initializer)) &&
+        (convertedLiterals.has(p.initializer) || KEY_SHAPE.test(p.initializer.text)),
     );
     if (allKeys) strictVariables.add(value);
   }
@@ -1280,12 +1778,17 @@ function visitReaders(state: FileState) {
   const visit = (node: TS.Node) => {
     // Values already folded into a converted message were translated there.
     if (claimed.has(node)) return;
-    if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node) || (ts.isIdentifier(node) && !isDeclarationName(node))) {
+    if (
+      ts.isPropertyAccessExpression(node) ||
+      ts.isElementAccessExpression(node) ||
+      (ts.isIdentifier(node) && !isDeclarationName(node))
+    ) {
       const info = trackedFor(node);
       if (info) handleReader(state, node as TS.Expression, info);
     }
     // stageLabel(stage): a function that returns a key.
-    if (ts.isCallExpression(node) && !claimed.has(node) && trackedCall(node)) handleReader(state, node, { strict: false });
+    if (ts.isCallExpression(node) && !claimed.has(node) && trackedCall(node))
+      handleReader(state, node, { strict: false });
     ts.forEachChild(node, visit);
   };
   visit(state.sf);
@@ -1294,7 +1797,13 @@ function visitReaders(state: FileState) {
 function isDeclarationName(node: TS.Identifier): boolean {
   const p = node.parent;
   return (
-    ((ts.isVariableDeclaration(p) || ts.isPropertyAssignment(p) || ts.isBindingElement(p) || ts.isParameter(p) || ts.isPropertySignature(p) || ts.isShorthandPropertyAssignment(p)) && p.name === node) ||
+    ((ts.isVariableDeclaration(p) ||
+      ts.isPropertyAssignment(p) ||
+      ts.isBindingElement(p) ||
+      ts.isParameter(p) ||
+      ts.isPropertySignature(p) ||
+      ts.isShorthandPropertyAssignment(p)) &&
+      p.name === node) ||
     ts.isPropertyAccessExpression(p) ||
     ts.isImportSpecifier(p) ||
     ts.isExportSpecifier(p) ||
@@ -1313,14 +1822,26 @@ function trackedFor(node: TS.Node): Tracked | undefined {
       if (value && strictVariables.has(value)) return { strict: true };
       if (decl.initializer && containsTrackedProperty(decl.initializer)) return { strict: false };
     }
-    if (decl && ts.isVariableDeclaration(decl) && !decl.type && decl.initializer && containsTrackedProperty(decl.initializer)) return { strict: false };
+    if (
+      decl &&
+      ts.isVariableDeclaration(decl) &&
+      !decl.type &&
+      decl.initializer &&
+      containsTrackedProperty(decl.initializer)
+    )
+      return { strict: false };
     return undefined;
   } else symbol = checker.getSymbolAtLocation(node);
   if (!symbol) return undefined;
   if (symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
   // const { label } = item: the name now holds what item.label held, a key.
   for (const d of symbol.declarations ?? []) {
-    if (ts.isBindingElement(d) && ts.isObjectBindingPattern(d.parent) && destructuredDeclarations(d).length) return { strict: false };
+    if (
+      ts.isBindingElement(d) &&
+      ts.isObjectBindingPattern(d.parent) &&
+      destructuredDeclarations(d).length
+    )
+      return { strict: false };
   }
   for (const d of symbol.declarations ?? []) {
     const info = trackedDeclarations.get(d);
@@ -1330,7 +1851,12 @@ function trackedFor(node: TS.Node): Tracked | undefined {
         const type = checker.getTypeAtLocation(node);
         if (type.isStringLiteral()) return { strict: true };
         const tdecl = resolvedDeclaration(node.expression);
-        if (tdecl && ts.isVariableDeclaration(tdecl) && tdecl.type && ts.isTypeReferenceNode(tdecl.type)) {
+        if (
+          tdecl &&
+          ts.isVariableDeclaration(tdecl) &&
+          tdecl.type &&
+          ts.isTypeReferenceNode(tdecl.type)
+        ) {
           const value = tdecl.type.typeArguments?.[1];
           if (value && strictVariables.has(value)) return { strict: true };
         }
@@ -1351,7 +1877,9 @@ function resolvedDeclaration(expr: TS.Expression): TS.Declaration | undefined {
 /** The converted declarations a reader reaches. */
 function readerDeclarations(node: TS.Node): TS.Node[] {
   if (ts.isCallExpression(node)) {
-    const callee = ts.isPropertyAccessExpression(node.expression) ? node.expression.name : node.expression;
+    const callee = ts.isPropertyAccessExpression(node.expression)
+      ? node.expression.name
+      : node.expression;
     let symbol = checker.getSymbolAtLocation(callee);
     if (symbol && symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
     return (symbol?.declarations ?? []).filter((d) => trackedDeclarations.has(d));
@@ -1381,9 +1909,17 @@ function readerDeclarations(node: TS.Node): TS.Node[] {
 function scanUnsafe(state: FileState) {
   const visit = (node: TS.Node) => {
     const isReader =
-      ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node) || ts.isCallExpression(node) || (ts.isIdentifier(node) && !isDeclarationName(node));
+      ts.isPropertyAccessExpression(node) ||
+      ts.isElementAccessExpression(node) ||
+      ts.isCallExpression(node) ||
+      (ts.isIdentifier(node) && !isDeclarationName(node));
     // LIST.split("\n"), NAME.toLowerCase(): a string method means the value is data.
-    if (isReader && ts.isPropertyAccessExpression(node.parent) && node.parent.expression === node && STRING_METHODS.test(node.parent.name.text)) {
+    if (
+      isReader &&
+      ts.isPropertyAccessExpression(node.parent) &&
+      node.parent.expression === node &&
+      STRING_METHODS.test(node.parent.name.text)
+    ) {
       for (const d of readerDeclarations(node)) unsafeDeclarations.add(d);
     }
     if (isReader && !isPartOfLongerAccess(node)) {
@@ -1393,9 +1929,13 @@ function scanUnsafe(state: FileState) {
       // A whole map of converted strings handed on (`addressParts: ADDRESS_PARTS`): its
       // values are then read under another name the script cannot follow.
       if (ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) {
-        let symbol = checker.getSymbolAtLocation(ts.isPropertyAccessExpression(node) ? node.name : node);
-        if (symbol && symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
-        for (const d of symbol?.declarations ?? []) for (const h of convertedStringsIn(d)) unsafeDeclarations.add(h);
+        let symbol = checker.getSymbolAtLocation(
+          ts.isPropertyAccessExpression(node) ? node.name : node,
+        );
+        if (symbol && symbol.flags & ts.SymbolFlags.Alias)
+          symbol = checker.getAliasedSymbol(symbol);
+        for (const d of symbol?.declarations ?? [])
+          for (const h of convertedStringsIn(d)) unsafeDeclarations.add(h);
       }
     }
     // { label }: a converted value handed on in shorthand, under a property the script cannot follow.
@@ -1403,7 +1943,8 @@ function scanUnsafe(state: FileState) {
       const value = checker.getShorthandAssignmentValueSymbol(node);
       for (const d of value?.declarations ?? []) {
         if (trackedDeclarations.has(d)) unsafeDeclarations.add(d);
-        if (ts.isBindingElement(d) && ts.isObjectBindingPattern(d.parent)) for (const c of destructuredDeclarations(d)) unsafeDeclarations.add(c);
+        if (ts.isBindingElement(d) && ts.isObjectBindingPattern(d.parent))
+          for (const c of destructuredDeclarations(d)) unsafeDeclarations.add(c);
       }
     }
     // ({ label, value }) => `${label}: ${value}`: a converted property read by destructuring.
@@ -1424,9 +1965,16 @@ function scanUnsafe(state: FileState) {
  */
 function markUnread() {
   for (const [d] of trackedDeclarations) {
-    const holder = ts.isPropertyAssignment(d) || ts.isVariableDeclaration(d) || ts.isFunctionDeclaration(d) || ts.isBindingElement(d) || ts.isParameter(d);
+    const holder =
+      ts.isPropertyAssignment(d) ||
+      ts.isVariableDeclaration(d) ||
+      ts.isFunctionDeclaration(d) ||
+      ts.isBindingElement(d) ||
+      ts.isParameter(d);
     if (!holder) continue;
-    const seen = readersSeen.has(d) || (ts.isPropertyAssignment(d) && contextualDeclarations(d).some((c) => readersSeen.has(c)));
+    const seen =
+      readersSeen.has(d) ||
+      (ts.isPropertyAssignment(d) && contextualDeclarations(d).some((c) => readersSeen.has(c)));
     if (!seen) unsafeDeclarations.add(d);
   }
 }
@@ -1434,12 +1982,14 @@ function markUnread() {
 /** The converted declarations a destructured property comes from. */
 function destructuredDeclarations(element: TS.BindingElement): TS.Node[] {
   const nameNode = element.propertyName ?? element.name;
-  const name = ts.isIdentifier(nameNode) || ts.isStringLiteral(nameNode) ? nameNode.text : undefined;
+  const name =
+    ts.isIdentifier(nameNode) || ts.isStringLiteral(nameNode) ? nameNode.text : undefined;
   if (!name) return [];
   const type = checker.getTypeAtLocation(element.parent);
   const out: TS.Node[] = [];
   for (const t of type.isUnion() ? type.types : [type]) {
-    for (const d of t.getProperty(name)?.declarations ?? []) if (trackedDeclarations.has(d)) out.push(d);
+    for (const d of t.getProperty(name)?.declarations ?? [])
+      if (trackedDeclarations.has(d)) out.push(d);
   }
   return out;
 }
@@ -1453,9 +2003,19 @@ function bindingOnlyShown(element: TS.BindingElement): boolean {
   let shownOnly = true;
   const visit = (n: TS.Node) => {
     if (!shownOnly) return;
-    if (ts.isIdentifier(n) && n !== element.name && checker.getSymbolAtLocation(n) === symbol && !isShown(n)) shownOnly = false;
+    if (
+      ts.isIdentifier(n) &&
+      n !== element.name &&
+      checker.getSymbolAtLocation(n) === symbol &&
+      !isShown(n)
+    )
+      shownOnly = false;
     // { id, label }: shorthand passes the value on, and resolves to the new property.
-    if (ts.isShorthandPropertyAssignment(n) && checker.getShorthandAssignmentValueSymbol(n) === symbol) shownOnly = false;
+    if (
+      ts.isShorthandPropertyAssignment(n) &&
+      checker.getShorthandAssignmentValueSymbol(n) === symbol
+    )
+      shownOnly = false;
     ts.forEachChild(n, visit);
   };
   visit(scope);
@@ -1464,9 +2024,15 @@ function bindingOnlyShown(element: TS.BindingElement): boolean {
 
 /** Converted string properties inside a constant or property that holds an object. */
 function convertedStringsIn(decl: TS.Node): TS.PropertyAssignment[] {
-  if (!(ts.isVariableDeclaration(decl) || ts.isPropertyAssignment(decl)) || !decl.initializer) return [];
+  if (!(ts.isVariableDeclaration(decl) || ts.isPropertyAssignment(decl)) || !decl.initializer)
+    return [];
   let init: TS.Expression = decl.initializer;
-  while (ts.isAsExpression(init) || ts.isSatisfiesExpression(init) || ts.isParenthesizedExpression(init)) init = init.expression;
+  while (
+    ts.isAsExpression(init) ||
+    ts.isSatisfiesExpression(init) ||
+    ts.isParenthesizedExpression(init)
+  )
+    init = init.expression;
   if (!ts.isObjectLiteralExpression(init)) return [];
   const out: TS.PropertyAssignment[] = [];
   for (const p of init.properties) {
@@ -1480,7 +2046,8 @@ function convertedStringsIn(decl: TS.Node): TS.PropertyAssignment[] {
 function isPartOfLongerAccess(node: TS.Node): boolean {
   const p = node.parent;
   return (
-    ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) && p.expression === node) ||
+    ((ts.isPropertyAccessExpression(p) || ts.isElementAccessExpression(p)) &&
+      p.expression === node) ||
     (ts.isCallExpression(p) && p.expression === node) ||
     (ts.isPropertyAccessExpression(p) && p.name === node)
   );
@@ -1502,7 +2069,9 @@ function isShown(node: TS.Node): boolean {
   const p = at.parent;
   return (
     (ts.isJsxExpression(p) && !ts.isJsxAttribute(p.parent)) ||
-    (ts.isJsxExpression(p) && ts.isJsxAttribute(p.parent) && isTextProp(propName(p.parent.name) ?? "")) ||
+    (ts.isJsxExpression(p) &&
+      ts.isJsxAttribute(p.parent) &&
+      isTextProp(propName(p.parent.name) ?? "")) ||
     (ts.isCallExpression(p) && MESSAGE_CALLS.test(calleeText(p)) && p.arguments[0] === at) ||
     (ts.isTemplateSpan(p) && isShownTemplate(p.parent)) ||
     (ts.isJsxExpression(p) && ts.isJsxAttribute(p.parent) && propName(p.parent.name) === "key")
@@ -1532,24 +2101,50 @@ function handleReader(state: FileState, node: TS.Expression, info: Tracked) {
 
   const shown =
     (ts.isJsxExpression(parent) && !ts.isJsxAttribute(parent.parent)) ||
-    (ts.isJsxExpression(parent) && ts.isJsxAttribute(parent.parent) && isTextProp(propName(parent.parent.name) ?? "")) ||
+    (ts.isJsxExpression(parent) &&
+      ts.isJsxAttribute(parent.parent) &&
+      isTextProp(propName(parent.parent.name) ?? "")) ||
     (ts.isCallExpression(parent) && MESSAGE_CALLS.test(calleeText(parent))) ||
     (ts.isTemplateSpan(parent) && isShownTemplate(parent.parent));
   if (!shown) {
     if (isUsedAsData(at)) {
-      report(state, node, "Key used as data", text, "This now holds a key. Search, sort or compare on the translated text instead.");
+      report(
+        state,
+        node,
+        "Key used as data",
+        text,
+        "This now holds a key. Search, sort or compare on the translated text instead.",
+      );
     } else if (ts.isJsxExpression(parent) && ts.isJsxAttribute(parent.parent)) {
-      report(state, node, "Unclear prop", `${propName(parent.parent.name)}={${text}}`, "This now holds a key. Translate it here if the prop is shown on screen.");
+      report(
+        state,
+        node,
+        "Unclear prop",
+        `${propName(parent.parent.name)}={${text}}`,
+        "This now holds a key. Translate it here if the prop is shown on screen.",
+      );
     }
     return;
   }
   if (!isStringLike(node)) {
-    report(state, node, "Key used as data", text, "This sometimes holds a key but is not plain text here (it may be JSX). Translate it where the key is produced.");
+    report(
+      state,
+      node,
+      "Key used as data",
+      text,
+      "This sometimes holds a key but is not plain text here (it may be JSX). Translate it where the key is produced.",
+    );
     return;
   }
   const translator = translatorFor(state, node);
   if (!translator) {
-    report(state, node, "Key shown outside a component", text, "Translate where it is shown, or pass the translator in.");
+    report(
+      state,
+      node,
+      "Key shown outside a component",
+      text,
+      "Translate where it is shown, or pass the translator in.",
+    );
     return;
   }
   if (info.strict) {
@@ -1557,7 +2152,11 @@ function handleReader(state: FileState, node: TS.Expression, info: Tracked) {
     state.edits.push({ start: node.getEnd(), end: node.getEnd(), text: ")" });
   } else {
     state.usesTranslateText = true;
-    state.edits.push({ start: node.getStart(sf), end: node.getStart(sf), text: `translateText(${translator}, ` });
+    state.edits.push({
+      start: node.getStart(sf),
+      end: node.getStart(sf),
+      text: `translateText(${translator}, `,
+    });
     state.edits.push({ start: node.getEnd(), end: node.getEnd(), text: ")" });
   }
 }
@@ -1565,20 +2164,49 @@ function handleReader(state: FileState, node: TS.Expression, info: Tracked) {
 /** A string, possibly missing: the only thing translateText takes. */
 function isStringLike(expr: TS.Expression): boolean {
   const type = checker.getTypeAtLocation(expr);
-  return (type.isUnion() ? type.types : [type]).every((t) => (t.getFlags() & (ts.TypeFlags.StringLike | ts.TypeFlags.Undefined | ts.TypeFlags.Null)) !== 0);
+  return (type.isUnion() ? type.types : [type]).every(
+    (t) =>
+      (t.getFlags() & (ts.TypeFlags.StringLike | ts.TypeFlags.Undefined | ts.TypeFlags.Null)) !== 0,
+  );
 }
 
 function isShownTemplate(template: TS.Node): boolean {
   const at = outer(template);
   const p = at.parent;
-  return (ts.isJsxExpression(p) && !ts.isJsxAttribute(p.parent)) || (ts.isJsxExpression(p) && ts.isJsxAttribute(p.parent) && isTextProp(propName(p.parent.name) ?? ""));
+  return (
+    (ts.isJsxExpression(p) && !ts.isJsxAttribute(p.parent)) ||
+    (ts.isJsxExpression(p) &&
+      ts.isJsxAttribute(p.parent) &&
+      isTextProp(propName(p.parent.name) ?? ""))
+  );
 }
 
 function isUsedAsData(node: TS.Node): boolean {
   const p = node.parent;
-  if (ts.isBinaryExpression(p) && [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken, ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken, ts.SyntaxKind.LessThanToken, ts.SyntaxKind.GreaterThanToken].includes(p.operatorToken.kind)) return true;
-  if (ts.isPropertyAccessExpression(p) && /^(toLowerCase|toUpperCase|includes|startsWith|endsWith|indexOf|localeCompare|split|match|search|trim|normalize|length)$/.test(p.name.text)) return true;
-  if (ts.isCallExpression(p) && /localeCompare|includes|indexOf|startsWith|endsWith|filter|sort|find/.test(calleeText(p))) return true;
+  if (
+    ts.isBinaryExpression(p) &&
+    [
+      ts.SyntaxKind.EqualsEqualsEqualsToken,
+      ts.SyntaxKind.ExclamationEqualsEqualsToken,
+      ts.SyntaxKind.EqualsEqualsToken,
+      ts.SyntaxKind.ExclamationEqualsToken,
+      ts.SyntaxKind.LessThanToken,
+      ts.SyntaxKind.GreaterThanToken,
+    ].includes(p.operatorToken.kind)
+  )
+    return true;
+  if (
+    ts.isPropertyAccessExpression(p) &&
+    /^(toLowerCase|toUpperCase|includes|startsWith|endsWith|indexOf|localeCompare|split|match|search|trim|normalize|length)$/.test(
+      p.name.text,
+    )
+  )
+    return true;
+  if (
+    ts.isCallExpression(p) &&
+    /localeCompare|includes|indexOf|startsWith|endsWith|filter|sort|find/.test(calleeText(p))
+  )
+    return true;
   if (ts.isCaseClause(p) || ts.isSwitchStatement(p)) return true;
   return false;
 }
@@ -1591,8 +2219,17 @@ function visitCopyReads(state: FileState) {
     if (ts.isPropertyAccessExpression(node) && node.name.text === "en") {
       const type = checker.getTypeAtLocation(node.expression);
       if (type.getProperty("ml") || type.aliasSymbol?.name === "Copy") {
-        if (!/^src\/lib\/(onboarding|join)\/content\.ts$/.test(state.rel) || !isInsidePickOrFill(node)) {
-          report(state, node, "Reads copy.en directly", node.getText(state.sf), "Read it through pick() or a translator; copy.en now holds a key.");
+        if (
+          !/^src\/lib\/(onboarding|join)\/content\.ts$/.test(state.rel) ||
+          !isInsidePickOrFill(node)
+        ) {
+          report(
+            state,
+            node,
+            "Reads copy.en directly",
+            node.getText(state.sf),
+            "Read it through pick() or a translator; copy.en now holds a key.",
+          );
         }
       }
     }
@@ -1603,7 +2240,8 @@ function visitCopyReads(state: FileState) {
 
 function isInsidePickOrFill(node: TS.Node): boolean {
   for (let p = node.parent; p; p = p.parent) {
-    if (ts.isFunctionDeclaration(p) && p.name && /^(pick|fill|fillCopy)$/.test(p.name.text)) return true;
+    if (ts.isFunctionDeclaration(p) && p.name && /^(pick|fill|fillCopy)$/.test(p.name.text))
+      return true;
   }
   return false;
 }
@@ -1613,7 +2251,17 @@ function isInsidePickOrFill(node: TS.Node): boolean {
 function bindingNames(sf: TS.SourceFile): Set<string> {
   const names = new Set<string>();
   const visit = (n: TS.Node) => {
-    if ((ts.isVariableDeclaration(n) || ts.isParameter(n) || ts.isBindingElement(n) || ts.isFunctionDeclaration(n) || ts.isImportSpecifier(n) || ts.isImportClause(n) || ts.isNamespaceImport(n)) && n.name && ts.isIdentifier(n.name)) {
+    if (
+      (ts.isVariableDeclaration(n) ||
+        ts.isParameter(n) ||
+        ts.isBindingElement(n) ||
+        ts.isFunctionDeclaration(n) ||
+        ts.isImportSpecifier(n) ||
+        ts.isImportClause(n) ||
+        ts.isNamespaceImport(n)) &&
+      n.name &&
+      ts.isIdentifier(n.name)
+    ) {
       names.add(n.name.text);
     }
     ts.forEachChild(n, visit);
@@ -1640,7 +2288,8 @@ function isDemoConstant(node: TS.Node): string | undefined {
 
 function isPageMetadata(node: TS.Node): boolean {
   for (let p: TS.Node | undefined = node; p; p = p.parent) {
-    if (ts.isVariableDeclaration(p) && ts.isIdentifier(p.name) && p.name.text === "metadata") return true;
+    if (ts.isVariableDeclaration(p) && ts.isIdentifier(p.name) && p.name.text === "metadata")
+      return true;
     if (ts.isFunctionDeclaration(p) && p.name?.text === "generateMetadata") return true;
   }
   return false;
@@ -1660,15 +2309,34 @@ function analyse(state: FileState) {
   const visit = (node: TS.Node) => {
     if (isCodeElement(node)) return;
     if (ts.isJsxElement(node) || ts.isJsxFragment(node)) visitJsxChildren(state, node);
-    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateExpression(node)) {
+    if (
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isTemplateExpression(node)
+    ) {
       const demo = isDemoConstant(node);
       if (demo) {
-        if (!demoSeen.has(demo)) skips.push({ file: state.rel, line: lineOf(sf, node), text: demo, reason: "Demo data constant" });
+        if (!demoSeen.has(demo))
+          skips.push({
+            file: state.rel,
+            line: lineOf(sf, node),
+            text: demo,
+            reason: "Demo data constant",
+          });
         demoSeen.add(demo);
       } else if (isPageMetadata(node)) {
-        if (!metadataSeen && hasLetters(node.getText(sf))) skips.push({ file: state.rel, line: lineOf(sf, node), text: "metadata", reason: "Page title (later item 10)" });
+        if (!metadataSeen && hasLetters(node.getText(sf)))
+          skips.push({
+            file: state.rel,
+            line: lineOf(sf, node),
+            text: "metadata",
+            reason: "Page title (later item 10)",
+          });
         metadataSeen = true;
-      } else if (ts.isTemplateExpression(node) && ts.isTemplateExpression(node.parent?.parent ?? node)) {
+      } else if (
+        ts.isTemplateExpression(node) &&
+        ts.isTemplateExpression(node.parent?.parent ?? node)
+      ) {
         // Nested template: handled with its parent.
       } else {
         visitString(state, node);
@@ -1678,7 +2346,13 @@ function analyse(state: FileState) {
     if (ts.isJsxText(node) && !claimed.has(node)) {
       const text = renderedJsxText(node);
       if (pieceHasLetters({ kind: "text", text, node })) {
-        report(state, node, "Unclear string", text, "Text the script could not place in a message.");
+        report(
+          state,
+          node,
+          "Unclear string",
+          text,
+          "Text the script could not place in a message.",
+        );
       }
     }
     ts.forEachChild(node, visit);
@@ -1699,12 +2373,18 @@ function finishFile(state: FileState) {
     const serverAsync = isAsync && !state.isClient;
     if (serverAsync) needsGetTranslations = true;
     else needsUseTranslations = true;
-    const line = serverAsync ? `const ${state.translator} = await getTranslations();` : `const ${state.translator} = useTranslations();`;
+    const line = serverAsync
+      ? `const ${state.translator} = await getTranslations();`
+      : `const ${state.translator} = useTranslations();`;
     if (ts.isBlock(fn.body)) {
-      const already = fn.body.statements.some((s) => ts.isVariableStatement(s) && s.getText(sf).startsWith(`const ${state.translator} =`));
+      const already = fn.body.statements.some(
+        (s) => ts.isVariableStatement(s) && s.getText(sf).startsWith(`const ${state.translator} =`),
+      );
       if (already) continue;
       const first = fn.body.statements[0];
-      const indent = first ? " ".repeat(sf.getLineAndCharacterOfPosition(first.getStart(sf)).character) : "  ";
+      const indent = first
+        ? " ".repeat(sf.getLineAndCharacterOfPosition(first.getStart(sf)).character)
+        : "  ";
       const at = fn.body.getStart(sf) + 1;
       state.edits.push({ start: at, end: at, text: `\n${indent}${line}` });
     } else {
@@ -1715,15 +2395,31 @@ function finishFile(state: FileState) {
     }
   }
   const text = sf.getFullText();
-  if (needsUseTranslations && !/import\s*\{[^}]*\buseTranslations\b[^}]*\}\s*from\s*"next-intl"/.test(text)) imports.push(`import { useTranslations } from "next-intl";`);
-  if (needsGetTranslations && !/\bgetTranslations\b[^;]*from\s*"next-intl\/server"/.test(text)) imports.push(`import { getTranslations } from "next-intl/server";`);
-  if (state.usesTranslateText && !/\btranslateText\b[^;]*from\s*"@\/i18n\/translate-text"/.test(text)) imports.push(`import { translateText } from "@/i18n/translate-text";`);
-  if (state.usesMessageKey && !/\bMessageKey\b[^;]*from\s*"@\/i18n\/messages"/.test(text)) imports.push(`import type { MessageKey } from "@/i18n/messages";`);
+  if (
+    needsUseTranslations &&
+    !/import\s*\{[^}]*\buseTranslations\b[^}]*\}\s*from\s*"next-intl"/.test(text)
+  )
+    imports.push(`import { useTranslations } from "next-intl";`);
+  if (needsGetTranslations && !/\bgetTranslations\b[^;]*from\s*"next-intl\/server"/.test(text))
+    imports.push(`import { getTranslations } from "next-intl/server";`);
+  if (
+    state.usesTranslateText &&
+    !/\btranslateText\b[^;]*from\s*"@\/i18n\/translate-text"/.test(text)
+  )
+    imports.push(`import { translateText } from "@/i18n/translate-text";`);
+  if (state.usesMessageKey && !/\bMessageKey\b[^;]*from\s*"@\/i18n\/messages"/.test(text))
+    imports.push(`import type { MessageKey } from "@/i18n/messages";`);
   if (imports.length) {
     const lastImport = [...sf.statements].reverse().find(ts.isImportDeclaration);
-    const directive = sf.statements.find((s) => ts.isExpressionStatement(s) && ts.isStringLiteral(s.expression));
+    const directive = sf.statements.find(
+      (s) => ts.isExpressionStatement(s) && ts.isStringLiteral(s.expression),
+    );
     const at = lastImport ? lastImport.getEnd() : directive ? directive.getEnd() : 0;
-    state.edits.push({ start: at, end: at, text: (at ? "\n" : "") + imports.join("\n") + (at ? "" : "\n") });
+    state.edits.push({
+      start: at,
+      end: at,
+      text: (at ? "\n" : "") + imports.join("\n") + (at ? "" : "\n"),
+    });
   }
 }
 
@@ -1732,7 +2428,11 @@ function resetPass() {
   // What builds other text stays English, so its readers have nothing to translate.
   for (const d of unsafeDeclarations) trackedDeclarations.delete(d);
   for (const [d] of trackedDeclarations) {
-    if (ts.isPropertyAssignment(d) && contextualDeclarations(d).some((c) => unsafeDeclarations.has(c))) trackedDeclarations.delete(d);
+    if (
+      ts.isPropertyAssignment(d) &&
+      contextualDeclarations(d).some((c) => unsafeDeclarations.has(c))
+    )
+      trackedDeclarations.delete(d);
   }
   newMessages.clear();
   findings.length = 0;
@@ -1763,7 +2463,9 @@ function applyEdits(rel: string, source: string, edits: Edit[]): string {
   let last: (Edit & { i: number }) | undefined;
   for (const e of sorted) {
     if (last && e.start !== e.end && e.end > last.start && last.start !== last.end) {
-      throw new Error(`Overlapping edits in ${rel}: "${source.slice(e.start, e.end)}" → ${e.text} and "${source.slice(last.start, last.end)}" → ${last.text}`);
+      throw new Error(
+        `Overlapping edits in ${rel}: "${source.slice(e.start, e.end)}" → ${e.text} and "${source.slice(last.start, last.end)}" → ${last.text}`,
+      );
     }
     out = out.slice(0, e.start) + e.text + out.slice(e.end);
     if (e.start !== e.end) last = e;
@@ -1776,7 +2478,9 @@ function applyEdits(rel: string, source: string, edits: Edit[]): string {
 const sourceFiles = program
   .getSourceFiles()
   .filter((sf) => sf.fileName.startsWith(SRC + path.sep) && /\.tsx?$/.test(sf.fileName));
-const rels = sourceFiles.map((sf) => path.relative(APP_ROOT, sf.fileName).split(path.sep).join("/"));
+const rels = sourceFiles.map((sf) =>
+  path.relative(APP_ROOT, sf.fileName).split(path.sep).join("/"),
+);
 const prefixes = computePrefixes(rels);
 const skippedFiles: { file: string; reason: string }[] = [];
 
@@ -1787,7 +2491,12 @@ for (const sf of sourceFiles) {
     if (!/\.test\.tsx?$|\.d\.ts$/.test(rel)) skippedFiles.push({ file: rel, reason: skip.reason });
     continue;
   }
-  const isClient = sf.statements.some((s) => ts.isExpressionStatement(s) && ts.isStringLiteral(s.expression) && s.expression.text === "use client");
+  const isClient = sf.statements.some(
+    (s) =>
+      ts.isExpressionStatement(s) &&
+      ts.isStringLiteral(s.expression) &&
+      s.expression.text === "use client",
+  );
   files.set(rel, {
     rel,
     sf,
@@ -1839,12 +2548,19 @@ const mergedEnglish: Record<string, string> = { ...english };
 for (const [k, v] of newMessages) if (!(k in mergedEnglish)) mergedEnglish[k] = v;
 const mergedHindi: Record<string, string> = { ...hindi };
 for (const [k, v] of Object.entries(mergedEnglish)) if (!(k in mergedHindi)) mergedHindi[k] = v;
-const sortKeys = (o: Record<string, string>) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b, "en")));
+const sortKeys = (o: Record<string, string>) =>
+  Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b, "en")));
 
 if (WRITE) {
   for (const c of changed) fs.writeFileSync(path.join(APP_ROOT, c.rel), c.after);
-  fs.writeFileSync(path.join(MESSAGES_DIR, "en.json"), JSON.stringify(sortKeys(mergedEnglish), null, 2) + "\n");
-  fs.writeFileSync(path.join(MESSAGES_DIR, "hi.json"), JSON.stringify(sortKeys(mergedHindi), null, 2) + "\n");
+  fs.writeFileSync(
+    path.join(MESSAGES_DIR, "en.json"),
+    JSON.stringify(sortKeys(mergedEnglish), null, 2) + "\n",
+  );
+  fs.writeFileSync(
+    path.join(MESSAGES_DIR, "hi.json"),
+    JSON.stringify(sortKeys(mergedHindi), null, 2) + "\n",
+  );
 } else if (PREVIEW_DIR) {
   for (const c of changed) {
     const out = path.join(PREVIEW_DIR, c.rel);
@@ -1852,8 +2568,14 @@ if (WRITE) {
     fs.writeFileSync(out, c.after);
   }
   fs.mkdirSync(path.join(PREVIEW_DIR, "messages"), { recursive: true });
-  fs.writeFileSync(path.join(PREVIEW_DIR, "messages/en.json"), JSON.stringify(sortKeys(mergedEnglish), null, 2) + "\n");
-  fs.writeFileSync(path.join(PREVIEW_DIR, "messages/hi.json"), JSON.stringify(sortKeys(mergedHindi), null, 2) + "\n");
+  fs.writeFileSync(
+    path.join(PREVIEW_DIR, "messages/en.json"),
+    JSON.stringify(sortKeys(mergedEnglish), null, 2) + "\n",
+  );
+  fs.writeFileSync(
+    path.join(PREVIEW_DIR, "messages/hi.json"),
+    JSON.stringify(sortKeys(mergedHindi), null, 2) + "\n",
+  );
 }
 
 writeReport();
@@ -1874,10 +2596,13 @@ function writeReport() {
   lines.push("Rebuilt on every run: it lists only what is still pending.", "");
   lines.push("## Summary", "", "| | Count |", "|---|---|");
   lines.push(`| New messages | ${newMessages.size} |`);
-  lines.push(`| Messages already in en.json, reused | ${[...keysInUse].filter((k) => k in english).length} |`);
+  lines.push(
+    `| Messages already in en.json, reused | ${[...keysInUse].filter((k) => k in english).length} |`,
+  );
   lines.push(`| Files ${WRITE ? "changed" : "that would change"} | ${changed.length} |`);
   lines.push(`| Needs a hand fix | ${findings.length} |`);
-  for (const [c, n] of [...byCategory.entries()].sort((a, b) => b[1] - a[1])) lines.push(`| — ${c} | ${n} |`);
+  for (const [c, n] of [...byCategory.entries()].sort((a, b) => b[1] - a[1]))
+    lines.push(`| — ${c} | ${n} |`);
   lines.push(`| Skipped on purpose (files) | ${skippedFiles.length} |`);
   lines.push(`| Single capitalised words in data positions, left alone | ${singleWordValues} |`);
   lines.push("");
@@ -1894,14 +2619,25 @@ function writeReport() {
 
   lines.push("## Skipped on purpose", "");
   lines.push("### Files", "");
-  for (const s of skippedFiles.sort((a, b) => a.file.localeCompare(b.file))) lines.push(`- ${s.file} — ${s.reason}`);
+  for (const s of skippedFiles.sort((a, b) => a.file.localeCompare(b.file)))
+    lines.push(`- ${s.file} — ${s.reason}`);
   lines.push("", "### Inside files", "");
   for (const s of skips) lines.push(`- ${s.file}:${s.line} — ${s.text} — ${s.reason}`);
-  lines.push("- src/lib/employee/order-templates.ts — order wording (`botd`, variable `name`, option `value`, `conditional.clause`) — court document text (later item 17)");
+  lines.push(
+    "- src/lib/employee/order-templates.ts — order wording (`botd`, variable `name`, option `value`, `conditional.clause`) — court document text (later item 17)",
+  );
   lines.push("");
 
-  lines.push("## Shared candidates for `common_`", "", "English that appears in three or more files. Approve any that mean the same everywhere.", "");
-  for (const [text, set] of shared) lines.push(`- "${clip(text)}" — ${set.size} files: ${[...set].map((f) => path.basename(f)).join(", ")}`);
+  lines.push(
+    "## Shared candidates for `common_`",
+    "",
+    "English that appears in three or more files. Approve any that mean the same everywhere.",
+    "",
+  );
+  for (const [text, set] of shared)
+    lines.push(
+      `- "${clip(text)}" — ${set.size} files: ${[...set].map((f) => path.basename(f)).join(", ")}`,
+    );
   lines.push("");
 
   lines.push("## Keys in en.json no longer used in code", "");
@@ -1911,7 +2647,9 @@ function writeReport() {
 
   fs.mkdirSync(path.dirname(REPORT_FILE), { recursive: true });
   fs.writeFileSync(REPORT_FILE, lines.join("\n"));
-  console.log(`${WRITE ? "Wrote" : "Dry run:"} ${newMessages.size} new messages, ${changed.length} files, ${findings.length} to fix by hand.`);
+  console.log(
+    `${WRITE ? "Wrote" : "Dry run:"} ${newMessages.size} new messages, ${changed.length} files, ${findings.length} to fix by hand.`,
+  );
   console.log(`Report: ${REPORT_FILE}`);
 }
 

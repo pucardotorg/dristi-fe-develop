@@ -34,7 +34,13 @@ export function PaperFallbackLink({ onClick }: { onClick: () => void }) {
   const t = useTranslations();
   return (
     <p className="flex flex-wrap items-center gap-x-1 text-body-compact text-muted-foreground">
-      {t.rich("paperFallback_unableToESignUploadA", { button: (chunks) => <Button type="button" variant="link" className="px-0 underline" onClick={onClick}>{chunks}</Button> })}
+      {t.rich("paperFallback_unableToESignUploadA", {
+        button: (chunks) => (
+          <Button type="button" variant="link" className="px-0 underline" onClick={onClick}>
+            {chunks}
+          </Button>
+        ),
+      })}
     </p>
   );
 }

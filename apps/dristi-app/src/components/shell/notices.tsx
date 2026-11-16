@@ -21,8 +21,7 @@ const NOTICE_ROLE = {
   assertive: "alert",
 } as const;
 
-export type NoticeVariant =
-  "neutral" | "info" | "warning" | "success" | "destructive";
+export type NoticeVariant = "neutral" | "info" | "warning" | "success" | "destructive";
 
 /**
  * A notice that carries a status wears that status: the DS `Alert` variants ship the

@@ -29,11 +29,7 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Toggle } from "@/components/ui/toggle";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   buildCasesHref,
   clearedFilters,
@@ -54,12 +50,7 @@ import { useProfile } from "@/components/shell/profile";
 
 import { CasesFiltersButton, CasesAppliedFilters } from "./cases-filters";
 import { CasePeekPushRegion } from "./case-peek";
-import {
-  CARDS_ONLY,
-  TABLE_FRAME,
-  TABLE_ONLY,
-  TABLE_QUERY,
-} from "./cases-layout";
+import { CARDS_ONLY, TABLE_FRAME, TABLE_ONLY, TABLE_QUERY } from "./cases-layout";
 import { CollapsibleLabel } from "./collapsible-label";
 import { CasesListResults } from "./cases-list-results";
 import { CasesResultsSkeleton } from "./cases-list-skeleton";
@@ -99,15 +90,13 @@ export function CasesScreen({
   const router = useRouter();
   const { search, effective, go, onSearchChange } = useCasesNavigation(query);
   const [bookmarks, setBookmarks] = React.useState<ReadonlySet<string>>(
-    () => new Set(initialBookmarks)
+    () => new Set(initialBookmarks),
   );
   const { locale } = useLocale();
   const { profileRole, switchProfile } = useProfile();
 
   // Bulk share: select cases in the list, then Share access adds staff to all at once.
-  const [selectedCases, setSelectedCases] = React.useState<Set<string>>(
-    () => new Set()
-  );
+  const [selectedCases, setSelectedCases] = React.useState<Set<string>>(() => new Set());
   const [shareOpen, setShareOpen] = React.useState(false);
   const [joinOpen, setJoinOpen] = React.useState(false);
   const toggleSelected = React.useCallback((id: string) => {
@@ -139,7 +128,7 @@ export function CasesScreen({
           court: record.court,
           nextHearing: record.nextHearing?.on ?? "—",
         })),
-    [cases, selectedCases]
+    [cases, selectedCases],
   );
 
   const totals = summariseCases(cases, bookmarks);
@@ -152,8 +141,7 @@ export function CasesScreen({
   const narrowed = isNarrowed(effective);
   const matched = selection.total;
   /* The long-pending flag repeats the filter when that is the only status shown. */
-  const onlyLongPending =
-    effective.status.length === 1 && effective.status[0] === "long-pending";
+  const onlyLongPending = effective.status.length === 1 && effective.status[0] === "long-pending";
 
   function pageLink(page: number) {
     const href = buildCasesHref(effective, { page });
@@ -182,9 +170,7 @@ export function CasesScreen({
      stands in for the round trip the server will make, so the change reads as a
      deliberate step rather than a flicker. */
   const [filtersPending, setFiltersPending] = React.useState(false);
-  const pendingTimer = React.useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
-  );
+  const pendingTimer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   React.useEffect(() => () => clearTimeout(pendingTimer.current), []);
   const applyFilters = React.useCallback(
     (patch: Partial<CasesQuery>) => {
@@ -193,7 +179,7 @@ export function CasesScreen({
       clearTimeout(pendingTimer.current);
       pendingTimer.current = setTimeout(() => setFiltersPending(false), 600);
     },
-    [go]
+    [go],
   );
 
   /* Joining is the advocate journey. A litigant joins from their own home, so the
@@ -244,7 +230,9 @@ export function CasesScreen({
           <EmptyMedia variant="icon">
             <FolderOpenIcon aria-hidden />
           </EmptyMedia>
-          <EmptyTitle className="text-title-s font-semibold">{t("casesCasesScreen_noCasesYet")}</EmptyTitle>
+          <EmptyTitle className="text-title-s font-semibold">
+            {t("casesCasesScreen_noCasesYet")}
+          </EmptyTitle>
           <EmptyDescription className="text-body">
             {t("casesCasesScreen_aCaseAppearsHereOnceIts")}
           </EmptyDescription>
@@ -310,31 +298,31 @@ export function CasesScreen({
           // The white frame is the table's. Below `md` every case is its own
           // card, and a framed card full of bordered cards was a box of boxes
           // with 24px lost on each side of a 375px screen (owner, Sept 21).
-          TABLE_FRAME
+          TABLE_FRAME,
         )}
       >
-          {/* What narrows the list sits with the list: the selection's action,
+        {/* What narrows the list sits with the list: the selection's action,
               the filters, the search. When the peek pushes the column, this row
               compresses in place rather than wrapping below the title. */}
-          <CasesToolbar
-            matched={matched}
-            total={cases.length}
-            selectedCount={selectedCases.size}
-            onShare={() => setShareOpen(true)}
-            query={effective}
-            cases={cases}
-            totals={totals}
-            onApply={applyFilters}
-            search={search}
-            onSearchChange={onSearchChange}
-          />
+        <CasesToolbar
+          matched={matched}
+          total={cases.length}
+          selectedCount={selectedCases.size}
+          onShare={() => setShareOpen(true)}
+          query={effective}
+          cases={cases}
+          totals={totals}
+          onApply={applyFilters}
+          search={search}
+          onSearchChange={onSearchChange}
+        />
 
-          {/* `empty:hidden`: with nothing applied this held a gap of its own. */}
-          <div className={cn(SIDE_PANEL_PUSH, "empty:hidden")}>
-            <CasesAppliedFilters query={effective} onChange={applyFilters} />
-          </div>
+        {/* `empty:hidden`: with nothing applied this held a gap of its own. */}
+        <div className={cn(SIDE_PANEL_PUSH, "empty:hidden")}>
+          <CasesAppliedFilters query={effective} onChange={applyFilters} />
+        </div>
 
-          {body}
+        {body}
       </div>
     );
 
@@ -348,57 +336,55 @@ export function CasesScreen({
       }}
     >
       <CasePeekProvider now={now}>
-      {/* The Pending tasks ground, as on the case page, so the white panel and
+        {/* The Pending tasks ground, as on the case page, so the white panel and
           its edge stand off the page (owner, Sept 18). */}
-      <CasePeekPushRegion
-        pushWhen={TABLE_QUERY}
-        className="flex min-w-0 flex-1 flex-col gap-6 bg-muted p-6 md:gap-8 md:p-8 dark:bg-background"
-      >
-        {/* One plane above the panel: the title, then on the right the Bookmarked
+        <CasePeekPushRegion
+          pushWhen={TABLE_QUERY}
+          className="flex min-w-0 flex-1 flex-col gap-6 bg-muted p-6 md:gap-8 md:p-8 dark:bg-background"
+        >
+          {/* One plane above the panel: the title, then on the right the Bookmarked
             lens and the page's one bg-primary action (Laws: ration teal). Bookmarked is
             an icon toggle — a view the person turns on and off, not a command — its
             meaning carried by a tooltip so it stays a single quiet mark beside the loud
             teal action. It sits here rather than in the panel because it is about the
             person, not the case, and beside Join a case because that is the other thing
             on this page that is theirs to do. */}
-        <header
-          className={
-            "flex flex-wrap items-center justify-between gap-4 " + SIDE_PANEL_PUSH
-          }
-        >
-          <h1 className={PAGE_TITLE}>{t("casesCasesScreen_cases")}</h1>
-          <div className="flex min-w-0 flex-wrap items-center gap-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Toggle
-                  variant="outline"
-                  pressed={effective.bookmarked}
-                  onPressedChange={(bookmarked) => go({ bookmarked })}
-                  aria-label={t("casesCasesScreen_bookmarkedCases")}
-                  className="size-10 shrink-0"
-                >
-                  <BookmarkIcon
-                    aria-hidden
-                    className={effective.bookmarked ? "fill-current" : undefined}
-                  />
-                </Toggle>
-              </TooltipTrigger>
-              <TooltipContent>{t("casesCasesScreen_bookmarkedCases")}</TooltipContent>
-            </Tooltip>
-            <Button size="lg" onClick={joinCase} className="shrink-0">
-              <UserPlusIcon data-icon="inline-start" aria-hidden />
-              {pick(advJoinPage.cta, locale)}
-            </Button>
-          </div>
-        </header>
+          <header
+            className={"flex flex-wrap items-center justify-between gap-4 " + SIDE_PANEL_PUSH}
+          >
+            <h1 className={PAGE_TITLE}>{t("casesCasesScreen_cases")}</h1>
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toggle
+                    variant="outline"
+                    pressed={effective.bookmarked}
+                    onPressedChange={(bookmarked) => go({ bookmarked })}
+                    aria-label={t("casesCasesScreen_bookmarkedCases")}
+                    className="size-10 shrink-0"
+                  >
+                    <BookmarkIcon
+                      aria-hidden
+                      className={effective.bookmarked ? "fill-current" : undefined}
+                    />
+                  </Toggle>
+                </TooltipTrigger>
+                <TooltipContent>{t("casesCasesScreen_bookmarkedCases")}</TooltipContent>
+              </Tooltip>
+              <Button size="lg" onClick={joinCase} className="shrink-0">
+                <UserPlusIcon data-icon="inline-start" aria-hidden />
+                {pick(advJoinPage.cta, locale)}
+              </Button>
+            </div>
+          </header>
 
-        {/* Cards only: without the table's white frame, "Cases" and its actions
+          {/* Cards only: without the table's white frame, "Cases" and its actions
             ran straight into "Your cases". A hairline parts the page's header
             from the list's (owner, Sept 21). */}
-        <Separator className={cn("bg-hairline", CARDS_ONLY)} />
+          <Separator className={cn("bg-hairline", CARDS_ONLY)} />
 
-        {panel}
-      </CasePeekPushRegion>
+          {panel}
+        </CasePeekPushRegion>
       </CasePeekProvider>
       <ShareDialog
         open={shareOpen}
@@ -493,20 +479,17 @@ function CasesToolbar({
         <h2 className="text-title-s font-semibold">{t("casesCasesScreen_yourCases")}</h2>
         {/* Says how many matched out of everything, so a filtered list is never
             mistaken for the whole book. */}
-        <p
-          className="text-body-compact text-muted-foreground tabular-nums"
-          aria-live="polite"
-        >
+        <p className="text-body-compact text-muted-foreground tabular-nums" aria-live="polite">
           Showing {matched} of {total} {total === 1 ? "case" : "cases"}
         </p>
       </div>
       <div
         className={
           "flex min-w-0 items-center gap-2 max-sm:order-3 sm:ml-auto sm:justify-end " +
-          (compact ? "flex-nowrap" : "flex-wrap")
+          (compact ? "flex-nowrap" : "flex-wrap") +
           // Below `sm`: search on its own line first, then Share access and
           // Filters splitting the next one. Wrapped left, they read as dropped.
-          + " max-sm:[&>[data-toolbar-action]]:flex-1"
+          " max-sm:[&>[data-toolbar-action]]:flex-1"
         }
       >
         <Tooltip>
@@ -516,14 +499,13 @@ function CasesToolbar({
               disabled={selectedCount === 0}
               onClick={onShare}
               data-toolbar-action
-              className={
-                "relative shrink-0 gap-0 duration-300 " +
-                (compact ? "px-2.5" : "px-4")
-              }
+              className={"relative shrink-0 gap-0 duration-300 " + (compact ? "px-2.5" : "px-4")}
               aria-label={`Share access${selectedCount ? `, ${selectedCount} selected` : ""}`}
             >
               <Share2Icon aria-hidden />
-              <CollapsibleLabel show={!compact}>{t("casesCasesScreen_shareAccess")}</CollapsibleLabel>
+              <CollapsibleLabel show={!compact}>
+                {t("casesCasesScreen_shareAccess")}
+              </CollapsibleLabel>
               {selectedCount ? (
                 <span className="ms-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-caption font-medium tabular-nums text-primary-foreground">
                   {selectedCount}
@@ -577,7 +559,9 @@ function CasesToolbar({
             onChange={(event) => onSearchChange(event.target.value)}
             // Short enough to read whole in the narrower box the toolbar gets on a
             // tablet on its side; the magnifier already says "search".
-            placeholder={compact ? t("casesCasesScreen_search") : t("casesCasesScreen_caseNameOrNumber")}
+            placeholder={
+              compact ? t("casesCasesScreen_search") : t("casesCasesScreen_caseNameOrNumber")
+            }
           />
         </InputGroup>
       </div>

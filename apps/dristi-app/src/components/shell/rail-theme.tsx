@@ -2,10 +2,7 @@
 
 import * as React from "react";
 
-import {
-  useLocalStorageValue,
-  writeLocalStorageValue,
-} from "@/hooks/use-local-storage-value";
+import { useLocalStorageValue, writeLocalStorageValue } from "@/hooks/use-local-storage-value";
 
 /**
  * EXPERIMENT — selectable grounds for the navigation rail.
@@ -223,8 +220,7 @@ export function RailThemeProvider({ children }: { children: React.ReactNode }) {
   // second setState pass. In private mode the hook keeps the choice in memory —
   // it applies, it just does not persist.
   const stored = useLocalStorageValue(STORAGE_KEY);
-  const id =
-    stored && RAIL_THEMES.some((t) => t.id === stored) ? stored : DEFAULT_ID;
+  const id = stored && RAIL_THEMES.some((t) => t.id === stored) ? stored : DEFAULT_ID;
 
   const setThemeId = React.useCallback((next: string) => {
     if (!RAIL_THEMES.some((t) => t.id === next)) return;
@@ -232,21 +228,13 @@ export function RailThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const theme = RAIL_THEMES.find((t) => t.id === id) ?? RAIL_THEMES[2];
-  const value = React.useMemo(
-    () => ({ theme, setThemeId }),
-    [theme, setThemeId],
-  );
+  const value = React.useMemo(() => ({ theme, setThemeId }), [theme, setThemeId]);
 
-  return (
-    <RailThemeContext.Provider value={value}>
-      {children}
-    </RailThemeContext.Provider>
-  );
+  return <RailThemeContext.Provider value={value}>{children}</RailThemeContext.Provider>;
 }
 
 export function useRailTheme(): RailThemeValue {
   const value = React.useContext(RailThemeContext);
-  if (!value)
-    throw new Error("useRailTheme must be used inside RailThemeProvider");
+  if (!value) throw new Error("useRailTheme must be used inside RailThemeProvider");
   return value;
 }

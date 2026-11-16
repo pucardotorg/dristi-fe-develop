@@ -39,7 +39,8 @@ export function executantIntro(e: Executant): string {
     }`;
   }
   const name = e.name.trim() || "[name]";
-  const rel = e.relationType && e.relationName.trim() ? `${e.relationType} ${e.relationName.trim()}` : "";
+  const rel =
+    e.relationType && e.relationName.trim() ? `${e.relationType} ${e.relationName.trim()}` : "";
   const age = e.age.trim() ? `aged ${e.age.trim()} years` : "";
   const addr = addressLine(e.address);
   return ["I", `${name}`, rel, age, addr ? `of ${addr}` : ""]

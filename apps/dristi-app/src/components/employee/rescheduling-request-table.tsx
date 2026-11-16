@@ -16,15 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { causeTitle } from "@/lib/employee/hearings";
-import {
-  formatRequestDate,
-  type ReschedulingRequest,
-} from "@/lib/employee/rescheduling-request";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { formatRequestDate, type ReschedulingRequest } from "@/lib/employee/rescheduling-request";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useTranslations } from "next-intl";
@@ -86,9 +79,7 @@ export function ReschedulingRequestTable({
         </tr>
         {rows.map((request) => (
           <TableRow key={request.id} {...rowActivation(tableRowClass())}>
-            <TableCell
-              className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}
-            >
+            <TableCell className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}>
               <button
                 type="button"
                 onClick={() => onOpen(request)}
@@ -100,7 +91,10 @@ export function ReschedulingRequestTable({
               </button>
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              <Identifier value={request.caseNumber} label={t("reschedulingRequestTable_caseNumberLabel")} />
+              <Identifier
+                value={request.caseNumber}
+                label={t("reschedulingRequestTable_caseNumberLabel")}
+              />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>
               {formatRequestDate(request.appliedOn)}

@@ -153,25 +153,18 @@ export function normaliseColumns(
   }
   for (const id of available) if (!order.includes(id)) order.push(id);
   const visible = order.filter(
-    (id) =>
-      causeListColumn(id).locked ||
-      (stored.visible as unknown[]).includes(id),
+    (id) => causeListColumn(id).locked || (stored.visible as unknown[]).includes(id),
   );
   return { order, visible };
 }
 
 /** The columns on screen, in order. */
 export function shownColumns(columns: CauseListColumns): CauseListColumn[] {
-  return columns.order
-    .filter((id) => columns.visible.includes(id))
-    .map(causeListColumn);
+  return columns.order.filter((id) => columns.visible.includes(id)).map(causeListColumn);
 }
 
 /** Show or hide one column. A locked column stays on. */
-export function toggleColumn(
-  columns: CauseListColumns,
-  id: CauseListColumnId,
-): CauseListColumns {
+export function toggleColumn(columns: CauseListColumns, id: CauseListColumnId): CauseListColumns {
   if (causeListColumn(id).locked) return columns;
   const visible = columns.visible.includes(id)
     ? columns.visible.filter((entry) => entry !== id)
@@ -201,9 +194,7 @@ export function moveColumn(
   let index = 0;
   return {
     ...columns,
-    order: columns.order.map((id) =>
-      columns.visible.includes(id) ? next[index++] : id,
-    ),
+    order: columns.order.map((id) => (columns.visible.includes(id) ? next[index++] : id)),
   };
 }
 
@@ -219,7 +210,5 @@ export function shiftColumn(
 }
 
 export function sameColumns(a: CauseListColumns, b: CauseListColumns): boolean {
-  return (
-    a.order.join() === b.order.join() && a.visible.join() === b.visible.join()
-  );
+  return a.order.join() === b.order.join() && a.visible.join() === b.visible.join();
 }

@@ -200,8 +200,7 @@ export function UploadedDocField({
         copy={{
           title: label,
           description:
-            copy?.previewDescription ??
-            t("uploadedDocField_checkTheDocumentIsReadableBefore"),
+            copy?.previewDescription ?? t("uploadedDocField_checkTheDocumentIsReadableBefore"),
           alt: copy?.previewAlt ?? label,
         }}
       />
@@ -250,4 +249,3 @@ export function ReplaceFileButton({
     </>
   );
 }
-

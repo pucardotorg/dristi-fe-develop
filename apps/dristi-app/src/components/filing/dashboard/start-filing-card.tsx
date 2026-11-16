@@ -2,22 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
-import {
-  ArrowLeftRightIcon,
-  ChevronRightIcon,
-  CreditCardIcon,
-  FilePlusIcon,
-} from "lucide-react";
+import { ArrowLeftRightIcon, ChevronRightIcon, CreditCardIcon, FilePlusIcon } from "lucide-react";
 
 import { CASE_TYPE, PSS_CASE_TYPE } from "@/lib/filing/options";
 import { NEW_FILING, NEW_PSS_FILING } from "@/lib/filing/steps";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 
 /**
@@ -50,9 +39,7 @@ function CaseTypeRow({
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="text-body-compact font-medium">{title}</span>
-          <span className="text-body-compact text-muted-foreground">
-            {caption}
-          </span>
+          <span className="text-body-compact text-muted-foreground">{caption}</span>
         </span>
         <ChevronRightIcon
           aria-hidden

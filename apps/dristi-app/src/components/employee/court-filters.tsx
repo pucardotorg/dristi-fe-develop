@@ -46,12 +46,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
 
 /**
@@ -177,15 +172,14 @@ export function CourtSortSelect<T extends string>({
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent side="bottom">{t("courtFilters_sortCurrent", { current })}</TooltipContent>
+            <TooltipContent side="bottom">
+              {t("courtFilters_sortCurrent", { current })}
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <DropdownMenuContent align="end" className="min-w-52">
           <DropdownMenuLabel>{t("courtFilters_sortBy")}</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            value={value}
-            onValueChange={(next) => onChange(next as T)}
-          >
+          <DropdownMenuRadioGroup value={value} onValueChange={(next) => onChange(next as T)}>
             {options.map((option) => (
               <DropdownMenuRadioItem key={option.id} value={option.id}>
                 {option.label}
@@ -220,7 +214,6 @@ export function CourtSortSelect<T extends string>({
     </div>
   );
 }
-
 
 export function CourtFilters({
   leading,
@@ -285,8 +278,7 @@ export function CourtFilters({
   const labelHidden = search.labelHidden ?? true;
   const appliedFields = fields.filter((field) => field.value !== field.all);
   const appliedMulti = multi.filter((field) => field.values.length > 0);
-  const applied =
-    appliedFields.length + appliedMulti.length + (date?.active ? 1 : 0);
+  const applied = appliedFields.length + appliedMulti.length + (date?.active ? 1 : 0);
   const controls = fields.length + multi.length + (date ? 1 : 0);
 
   /* Wrapped in a form only where Enter is a fast path — a lone search input inside a
@@ -339,10 +331,7 @@ export function CourtFilters({
           <div className="flex min-w-0 flex-col gap-2">
             {/* Hidden with the search's, so the two controls share a top edge; the select's
                 own value ("All process types") still says what it filters. */}
-            <Label
-              htmlFor={only.id}
-              className={labelHidden ? "sr-only" : "text-body-compact"}
-            >
+            <Label htmlFor={only.id} className={labelHidden ? "sr-only" : "text-body-compact"}>
               {only.label}
             </Label>
             <Select value={only.value} onValueChange={only.onApply}>
@@ -363,11 +352,7 @@ export function CourtFilters({
           <div className="flex min-w-0 flex-col gap-2">
             <span
               id="court-filter-date"
-              className={
-                labelHidden
-                  ? "sr-only"
-                  : "w-fit text-body-compact font-medium"
-              }
+              className={labelHidden ? "sr-only" : "w-fit text-body-compact font-medium"}
             >
               {date.label}
             </span>
@@ -413,12 +398,7 @@ export function CourtFilters({
         ) : null}
         <div className="flex min-w-0 items-end gap-3 max-sm:w-full max-sm:flex-col max-sm:items-stretch">
           {searchNode}
-          <CourtFiltersSheet
-            fields={fields}
-            multi={multi}
-            date={date}
-            applied={applied}
-          />
+          <CourtFiltersSheet fields={fields} multi={multi} date={date} applied={applied} />
           {trailing}
         </div>
         {end ? <div className="ml-auto flex items-end gap-3">{end}</div> : null}
@@ -435,8 +415,7 @@ export function CourtFilters({
             <AppliedChip
               key={field.id}
               label={
-                field.options.find((option) => option.value === field.value)
-                  ?.label ?? field.value
+                field.options.find((option) => option.value === field.value)?.label ?? field.value
               }
               onClear={() => field.onApply(field.all)}
             />
@@ -445,21 +424,13 @@ export function CourtFilters({
             field.values.map((value) => (
               <AppliedChip
                 key={`${field.id}-${value}`}
-                label={
-                  field.options.find((option) => option.value === value)?.label ??
-                  value
-                }
-                onClear={() =>
-                  field.onApply(field.values.filter((entry) => entry !== value))
-                }
+                label={field.options.find((option) => option.value === value)?.label ?? value}
+                onClear={() => field.onApply(field.values.filter((entry) => entry !== value))}
               />
             )),
           )}
           {date?.active ? (
-            <AppliedChip
-              label={date.chipLabel}
-              onClear={() => date.onApply(undefined)}
-            />
+            <AppliedChip label={date.chipLabel} onClear={() => date.onApply(undefined)} />
           ) : null}
           <Button
             type="button"
@@ -491,9 +462,10 @@ function CourtFiltersSheet({
   const seed = React.useCallback(
     () => ({
       fields: Object.fromEntries(fields.map((field) => [field.id, field.value])),
-      multi: Object.fromEntries(
-        multi.map((field) => [field.id, [...field.values]]),
-      ) as Record<string, string[]>,
+      multi: Object.fromEntries(multi.map((field) => [field.id, [...field.values]])) as Record<
+        string,
+        string[]
+      >,
       date: date?.value,
     }),
     [fields, multi, date],
@@ -508,9 +480,7 @@ function CourtFiltersSheet({
   const draftFieldCount = fields.filter(
     (field) => (draft.fields[field.id] ?? field.all) !== field.all,
   ).length;
-  const draftMultiCount = multi.filter(
-    (field) => (draft.multi[field.id] ?? []).length > 0,
-  ).length;
+  const draftMultiCount = multi.filter((field) => (draft.multi[field.id] ?? []).length > 0).length;
   const draftCount =
     draftFieldCount + draftMultiCount + (date && date.draftActive(draft.date) ? 1 : 0);
 
@@ -553,13 +523,11 @@ function CourtFiltersSheet({
           ) : null}
         </Button>
       </SheetTrigger>
-      <SheetContent
-        side="right"
-        aria-describedby={undefined}
-        className="w-full sm:max-w-sm"
-      >
+      <SheetContent side="right" aria-describedby={undefined} className="w-full sm:max-w-sm">
         <SheetHeader>
-          <SheetTitle className="text-title-s font-semibold">{t("courtFilters_filters")}</SheetTitle>
+          <SheetTitle className="text-title-s font-semibold">
+            {t("courtFilters_filters")}
+          </SheetTitle>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
@@ -610,10 +578,7 @@ function CourtFiltersSheet({
             // `DatePicker` owns its trigger and takes no `id`, so the label names a group
             // around it rather than pointing `htmlFor` at a control that does not exist.
             <div className="flex min-w-0 flex-col gap-2">
-              <span
-                id="court-filter-date"
-                className="w-fit text-body-compact font-medium"
-              >
+              <span id="court-filter-date" className="w-fit text-body-compact font-medium">
                 {date.label}
               </span>
               <div role="group" aria-labelledby="court-filter-date">
@@ -673,12 +638,8 @@ function MultiSelectField({
         items={field.options}
         value={picked}
         itemToStringLabel={(option: CourtFilterOption) => option.label}
-        isItemEqualToValue={(a: CourtFilterOption, b: CourtFilterOption) =>
-          a.value === b.value
-        }
-        onValueChange={(next: CourtFilterOption[]) =>
-          onChange(next.map((option) => option.value))
-        }
+        isItemEqualToValue={(a: CourtFilterOption, b: CourtFilterOption) => a.value === b.value}
+        onValueChange={(next: CourtFilterOption[]) => onChange(next.map((option) => option.value))}
       >
         <ComboboxChips ref={anchor}>
           <ComboboxValue>

@@ -96,8 +96,7 @@ export function hearingSittings(id: string): HearingSitting[] {
  * case history's events put them: the accused's appearance on the day they joined the
  * case, the plea and evidence after it, and nothing after the last sitting.
  */
-const APPEARANCE_ORDER =
-  "Accused appeared through counsel and moved for bail. Posted for plea.";
+const APPEARANCE_ORDER = "Accused appeared through counsel and moved for bail. Posted for plea.";
 const PLEA_ORDER =
   "Particulars of the offence read over and explained to the accused, who pleaded not guilty. Posted for evidence of the complainant.";
 
@@ -153,8 +152,7 @@ const EARLIER_SITTINGS: Partial<Record<string, HearingSitting[]>> = {
     {
       on: "2026-05-15",
       purpose: "Evidence of complainant",
-      order:
-        "PW-1 examined in chief. Exhibits P1 to P5 marked. Cross-examination deferred.",
+      order: "PW-1 examined in chief. Exhibits P1 to P5 marked. Cross-examination deferred.",
       directed: true,
     },
     { on: "2026-04-13", purpose: "Plea", order: PLEA_ORDER, directed: true },
@@ -215,8 +213,7 @@ const EARLIER_SITTINGS: Partial<Record<string, HearingSitting[]>> = {
     {
       on: "2026-07-23",
       purpose: "Evidence of complainant",
-      order:
-        "Proof affidavit of PW-1 filed. Posted for examination-in-chief to continue.",
+      order: "Proof affidavit of PW-1 filed. Posted for examination-in-chief to continue.",
       directed: true,
     },
     { on: "2026-05-31", purpose: "Plea", order: PLEA_ORDER, directed: true },
@@ -231,8 +228,7 @@ const EARLIER_SITTINGS: Partial<Record<string, HearingSitting[]>> = {
     {
       on: "2026-06-26",
       purpose: "Examination of accused under S. 351 BNSS",
-      order:
-        "Accused examined and denied the incriminating circumstances. Posted for arguments.",
+      order: "Accused examined and denied the incriminating circumstances. Posted for arguments.",
       directed: true,
     },
     {
@@ -254,8 +250,7 @@ const EARLIER_SITTINGS: Partial<Record<string, HearingSitting[]>> = {
     {
       on: "2026-07-05",
       purpose: "Arguments",
-      order:
-        "Arguments of the complainant heard. Counsel for the accused to reply.",
+      order: "Arguments of the complainant heard. Counsel for the accused to reply.",
       directed: true,
     },
     {
@@ -313,8 +308,7 @@ const HEARING_CASE_EXTRAS: Partial<Record<string, HearingCaseExtras>> = {
     lastHearing: {
       on: "2026-08-12",
       purpose: "Plea",
-      order:
-        "Accused pleaded not guilty. Matter posted for evidence of the complainant.",
+      order: "Accused pleaded not guilty. Matter posted for evidence of the complainant.",
       directed: true,
     },
   },
@@ -328,8 +322,7 @@ const HEARING_CASE_EXTRAS: Partial<Record<string, HearingCaseExtras>> = {
     lastHearing: {
       on: "2026-08-05",
       purpose: "Evidence of complainant",
-      order:
-        "PW-1's examination-in-chief concluded. Cross-examination to continue.",
+      order: "PW-1's examination-in-chief concluded. Cross-examination to continue.",
       directed: false,
     },
   },
@@ -339,8 +332,7 @@ const HEARING_CASE_EXTRAS: Partial<Record<string, HearingCaseExtras>> = {
     lastHearing: {
       on: "2026-07-29",
       purpose: "For reports",
-      order:
-        "Forensic report awaited. Matter posted for reports to be received.",
+      order: "Forensic report awaited. Matter posted for reports to be received.",
       directed: true,
     },
   },
@@ -354,8 +346,7 @@ const HEARING_CASE_EXTRAS: Partial<Record<string, HearingCaseExtras>> = {
     lastHearing: {
       on: "2026-08-26",
       purpose: "Examination of accused under S. 351 BNSS",
-      order:
-        "Examination of the accused begun. Matter part-heard and posted for continuation.",
+      order: "Examination of the accused begun. Matter part-heard and posted for continuation.",
       directed: false,
     },
   },
@@ -514,11 +505,7 @@ type StatutoryChain = {
  * **None of this is a court record.** It is demo data, deterministic from the case
  * number so a screenshot taken twice shows the same case.
  */
-function statutoryChain(
-  filedOn: string,
-  seed: number,
-  late: boolean,
-): StatutoryChain {
+function statutoryChain(filedOn: string, seed: number, late: boolean): StatutoryChain {
   const sinceAccrual = late ? 44 + (seed % 90) : 4 + (seed % 24);
   const accruedOn = shiftDay(filedOn, -sinceAccrual);
   const noticeServedOn = shiftDay(accruedOn, -PAYMENT_WINDOW_DAYS);
@@ -681,10 +668,7 @@ export function caseTimeline(
   let previous = extras.filedOn;
   for (const event of COURT_EVENTS) {
     if (!hasHappened(event, hearing.stage)) continue;
-    const proposed = shiftDay(
-      extras.filedOn,
-      Math.max(1, Math.round(span * event.at)),
-    );
+    const proposed = shiftDay(extras.filedOn, Math.max(1, Math.round(span * event.at)));
     const on = proposed < previous ? previous : proposed;
     previous = on;
     inCourt.push({
@@ -701,7 +685,5 @@ export function caseTimeline(
 
 /** Whole days between two `YYYY-MM-DD` days. */
 function daysApart(from: string, to: string): number {
-  return Math.round(
-    (parseIsoDay(to).getTime() - parseIsoDay(from).getTime()) / 86400000,
-  );
+  return Math.round((parseIsoDay(to).getTime() - parseIsoDay(from).getTime()) / 86400000);
 }

@@ -126,7 +126,7 @@ export function OnboardingModal({
             "duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
             "focus-visible:ring-3 focus-visible:ring-ring/50",
             "md:inset-4 md:h-[calc(100dvh-2rem)] md:rounded-xl md:shadow-modal md:ring-1 md:ring-hairline",
-            "lg:inset-6 lg:h-[calc(100dvh-3rem)] xl:inset-8 xl:h-[calc(100dvh-4rem)]"
+            "lg:inset-6 lg:h-[calc(100dvh-3rem)] xl:inset-8 xl:h-[calc(100dvh-4rem)]",
           )}
         >
           <DialogDescription className="sr-only">
@@ -135,20 +135,11 @@ export function OnboardingModal({
 
           {/* -------------------------------------------------- utility bar */}
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-hairline px-4 py-3 md:px-6">
-            <Select
-              value={locale}
-              onValueChange={(value) => onLocaleChange(value as Locale)}
-            >
+            <Select value={locale} onValueChange={(value) => onLocaleChange(value as Locale)}>
               {/* Duplicated inside the modal: the page header's language control sits
                 behind the scrim and cannot be reached while this is open. */}
-              <SelectTrigger
-                className="w-auto max-w-full"
-                aria-label={pick(ui.language, locale)}
-              >
-                <GlobeIcon
-                  className="size-4 text-muted-foreground"
-                  aria-hidden
-                />
+              <SelectTrigger className="w-auto max-w-full" aria-label={pick(ui.language, locale)}>
+                <GlobeIcon className="size-4 text-muted-foreground" aria-hidden />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -179,21 +170,13 @@ export function OnboardingModal({
           >
             <div className="mx-auto w-full max-w-3xl px-6 py-4 md:max-w-6xl md:px-8 lg:px-12">
               <div className="flex w-full flex-col items-center gap-3">
-                <Stepper
-                  className={CENTRED_STEPPER}
-                >
+                <Stepper className={CENTRED_STEPPER}>
                   {STEP_ORDER.map((id, i) => (
                     <StepperItem
                       key={id}
                       step={i + 1}
                       title={pick(stepTitles[id], locale)}
-                      status={
-                        i < index
-                          ? "complete"
-                          : i === index
-                            ? "current"
-                            : "upcoming"
-                      }
+                      status={i < index ? "complete" : i === index ? "current" : "upcoming"}
                       aria-current={i === index ? "step" : undefined}
                       // Markers are navigable: the reader can jump to any stage
                       // rather than being held to Back / Continue.
@@ -225,9 +208,7 @@ export function OnboardingModal({
                 {step === "choices" && <ChoicesStep {...stepProps} />}
                 {step === "date" && <DateStep {...stepProps} />}
                 {step === "help" && <HelpStep {...stepProps} />}
-                {step === "join" && (
-                  <JoinStep {...stepProps} onFinish={handleClose} />
-                )}
+                {step === "join" && <JoinStep {...stepProps} onFinish={handleClose} />}
               </section>
 
               <aside className="flex min-w-0 flex-col gap-6 md:sticky md:top-0 md:col-span-5 md:self-start lg:col-span-4">
@@ -246,38 +227,32 @@ export function OnboardingModal({
               so Back and Proceed line up with the page above them (owner, 2026-10-14). */}
           <footer className="shrink-0 border-t border-hairline bg-muted">
             <div className="mx-auto flex w-full max-w-3xl flex-col-reverse gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:max-w-6xl md:px-8 lg:px-12">
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto"
-              onClick={() => setIndex((i) => Math.max(0, i - 1))}
-              disabled={isFirst}
-              data-icon="inline-start"
-            >
-              <ArrowLeftIcon aria-hidden />
-              {pick(ui.back, locale)}
-            </Button>
-
-            {isLast ? (
               <Button
-                className="w-full sm:hidden"
-                onClick={handleClose}
-                data-icon="inline-end"
-              >
-                {pick(join.cta, locale)}
-                <ArrowRightIcon aria-hidden />
-              </Button>
-            ) : (
-              <Button
+                variant="outline"
                 className="w-full sm:w-auto"
-                onClick={() =>
-                  setIndex((i) => Math.min(STEP_ORDER.length - 1, i + 1))
-                }
-                data-icon="inline-end"
+                onClick={() => setIndex((i) => Math.max(0, i - 1))}
+                disabled={isFirst}
+                data-icon="inline-start"
               >
-                {pick(ui.proceed, locale)}
-                <ArrowRightIcon aria-hidden />
+                <ArrowLeftIcon aria-hidden />
+                {pick(ui.back, locale)}
               </Button>
-            )}
+
+              {isLast ? (
+                <Button className="w-full sm:hidden" onClick={handleClose} data-icon="inline-end">
+                  {pick(join.cta, locale)}
+                  <ArrowRightIcon aria-hidden />
+                </Button>
+              ) : (
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={() => setIndex((i) => Math.min(STEP_ORDER.length - 1, i + 1))}
+                  data-icon="inline-end"
+                >
+                  {pick(ui.proceed, locale)}
+                  <ArrowRightIcon aria-hidden />
+                </Button>
+              )}
             </div>
           </footer>
         </DialogPrimitive.Content>

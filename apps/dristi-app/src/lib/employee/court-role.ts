@@ -89,9 +89,7 @@ export function seatPostsNextHearing(role: CourtRole, court: CourtId): boolean {
 
 /** Whether this seat holds both Scrutiny officer and Case registerer in this state. */
 function seatScrutinisesAndRegisters(role: CourtRole, court: CourtId): boolean {
-  return (
-    seatHolds(role, court, "scrutiny-officer") && seatHolds(role, court, "case-registerer")
-  );
+  return seatHolds(role, court, "scrutiny-officer") && seatHolds(role, court, "case-registerer");
 }
 
 /**

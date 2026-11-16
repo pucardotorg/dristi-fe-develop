@@ -15,7 +15,7 @@ describe("the take cognizance layout setting", () => {
     clearCognizanceLayout();
   });
 
-  it("stands on \"tabs\" with nothing chosen yet — today's built behaviour", () => {
+  it('stands on "tabs" with nothing chosen yet — today\'s built behaviour', () => {
     assert.equal(readCognizanceLayout(), "tabs");
     assert.equal(DEFAULT_COGNIZANCE_LAYOUT, "tabs");
   });

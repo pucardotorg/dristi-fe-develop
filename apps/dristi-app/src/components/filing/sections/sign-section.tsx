@@ -126,10 +126,7 @@ import { FilingMain, useSourceRailSlot } from "@/components/filing/filing-shell"
 import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { useLeaveGuard } from "@/components/filing/leave-guard";
 import { useTaskActions } from "@/components/tasks/use-task-actions";
-import {
-  SignFlowDialog,
-  type SignFlowStart,
-} from "@/components/filing/sign-flow-dialog";
+import { SignFlowDialog, type SignFlowStart } from "@/components/filing/sign-flow-dialog";
 import { CourtDocument } from "@/components/filing/sections/preview/court-document";
 import { useFilePicker } from "@/components/filing/use-file-picker";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
@@ -137,19 +134,10 @@ import { Identifier } from "@/components/chrome/identifier";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
 
-
 type ModalKey =
-  | "esign"
-  | "dsc"
-  | "upload"
-  | "payment"
-  | "procaddr"
-  | "processing"
-  | "success"
-  | null;
+  "esign" | "dsc" | "upload" | "payment" | "procaddr" | "processing" | "success" | null;
 
 /* ───────────────────────────── Signature rail ──────────────────────── */
-
 
 /**
  * Who must sign, and where each of them has got to.
@@ -207,10 +195,7 @@ function SignatureGroup({
       <AccordionContent className="pb-0">
         <ul className="flex flex-col">
           {rows.map((s) => (
-            <li
-              key={s.id}
-              className="flex items-center gap-3 border-t border-hairline py-3"
-            >
+            <li key={s.id} className="flex items-center gap-3 border-t border-hairline py-3">
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="flex min-w-0 items-center gap-2">
                   <span className="truncate text-body-compact font-semibold text-foreground">
@@ -218,7 +203,9 @@ function SignatureGroup({
                   </span>
                   {/* "You" is a caption, not a second chip. */}
                   {s.you ? (
-                    <span className="shrink-0 text-body-compact text-muted-foreground">{tr("signSection_you")}</span>
+                    <span className="shrink-0 text-body-compact text-muted-foreground">
+                      {tr("signSection_you")}
+                    </span>
                   ) : null}
                 </span>
                 <span className="truncate text-body-compact text-muted-foreground">{s.role}</span>
@@ -244,14 +231,15 @@ function SignatureGroup({
 function stateChip(
   all: Signatory[],
   requested: boolean,
-  onPaper: boolean
+  onPaper: boolean,
 ): { variant: "secondary" | "info" | "success"; label: string } {
   const signed = all.filter((s) => s.status === "signed").length;
   if (all.length > 0 && !all.some(isOutstanding)) {
     return { variant: "success", label: `${signed} of ${all.length} signed` };
   }
   // Every signature is in and an oath is not — not done, and not "signing".
-  if (all.length > 0 && signed === all.length) return { variant: "info", label: "signSection_oathPending" };
+  if (all.length > 0 && signed === all.length)
+    return { variant: "info", label: "signSection_oathPending" };
   if (onPaper) return { variant: "secondary", label: "signSection_physicalDocument" };
   if (!requested) return { variant: "secondary", label: "signSection_notSent" };
   return { variant: "info", label: `${signed} of ${all.length} signed` };
@@ -364,9 +352,7 @@ function FeeGroup({
     <div className="flex shrink-0 flex-col gap-3 rounded-lg bg-surface-sunken p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-body-compact font-semibold text-foreground">{title}</h3>
-        <span className="text-body-compact font-semibold tabular-nums">
-          {money(total)}
-        </span>
+        <span className="text-body-compact font-semibold tabular-nums">{money(total)}</span>
       </div>
       {caption ? <p className="text-caption text-muted-foreground">{caption}</p> : null}
       <dl className="flex flex-col divide-y divide-hairline">
@@ -429,7 +415,7 @@ export function SignSection() {
       if (copyTimer.current) window.clearTimeout(copyTimer.current);
       if (remindTimer.current) window.clearTimeout(remindTimer.current);
     },
-    []
+    [],
   );
 
   const filed = draft.status === "filed";
@@ -466,12 +452,9 @@ export function SignSection() {
   // Who signs is derived from the parties, never stored: editing a party changes this list.
   const { complainants, advocates } = React.useMemo(
     () => signatories(draft, profile),
-    [draft, profile]
+    [draft, profile],
   );
-  const everyone = React.useMemo(
-    () => [...complainants, ...advocates],
-    [complainants, advocates]
-  );
+  const everyone = React.useMemo(() => [...complainants, ...advocates], [complainants, advocates]);
   // The same person can be both a complainant and the advocate — one signature covers
   // every capacity they sign in.
   const yous = everyone.filter((s) => s.you);
@@ -497,18 +480,21 @@ export function SignSection() {
     () =>
       onPaper && !allSigned
         ? phoneConfirmers(draft).filter(
-            (p) => !isYourConfirmation(p, profile) && !confirmationComplete(draft, p)
+            (p) => !isYourConfirmation(p, profile) && !confirmationComplete(draft, p),
           )
         : [],
-    [onPaper, allSigned, draft, profile]
+    [onPaper, allSigned, draft, profile],
   );
-  const othersOutstanding: Signatory[] = onPaper && !allSigned
-    ? complainants.filter((s) => paperOthers.some((p) => confirmerSlot(p.id) === s.id))
-    : everyone.filter((s) => !s.you && isOutstanding(s));
+  const othersOutstanding: Signatory[] =
+    onPaper && !allSigned
+      ? complainants.filter((s) => paperOthers.some((p) => confirmerSlot(p.id) === s.id))
+      : everyone.filter((s) => !s.you && isOutstanding(s));
   /** Everyone the requests go out to — the signatories who are not at this keyboard. */
   const otherSigners = Math.max(0, everyone.length - yous.length);
   const others =
-    otherSigners === 1 ? tr("signSection_theOtherParty") : tr("signSection_theOtherOtherSignersParties", { otherSigners: String(otherSigners) });
+    otherSigners === 1
+      ? tr("signSection_theOtherParty")
+      : tr("signSection_theOtherOtherSignersParties", { otherSigners: String(otherSigners) });
   const have = otherSigners === 1 ? "has" : "have";
 
   /** What the footer's act waits on — the court fee, or the send back to scrutiny. */
@@ -537,7 +523,7 @@ export function SignSection() {
       setLeaveTo(href);
       return true;
     },
-    [filed, anySigned, requested, setLeaveTo]
+    [filed, anySigned, requested, setLeaveTo],
   );
   useLeaveGuard(guardLeaving);
 
@@ -615,8 +601,7 @@ export function SignSection() {
    * The short delay is the point of it: the screen paints, the reader sees where they
    * are, and then the question arrives over it.
    */
-  const shouldAsk =
-    !filed && !requested && !onPaper && everyone.length > 0 && !allSigned;
+  const shouldAsk = !filed && !requested && !onPaper && everyone.length > 0 && !allSigned;
   /** Asked already on this visit — a close is not undone by a re-render. */
   const askedThisVisit = React.useRef(false);
   React.useEffect(() => {
@@ -695,7 +680,11 @@ export function SignSection() {
    */
   const editPlan = (
     plan: AccusedPlan,
-    change: (draft: { rounds: Record<string, number>; delivery: number; addresses: number[] }) => void
+    change: (draft: {
+      rounds: Record<string, number>;
+      delivery: number;
+      addresses: number[];
+    }) => void,
   ) =>
     update((d) => {
       const next = {
@@ -718,20 +707,14 @@ export function SignSection() {
       if (!option) return;
       next.rounds[key] = Math.min(option.maxRounds, Math.max(option.minRounds, value));
       if (key === "summons") {
-        next.delivery = Math.min(
-          next.rounds.summons,
-          Math.max(DELIVERY_MIN_ROUNDS, next.delivery)
-        );
+        next.delivery = Math.min(next.rounds.summons, Math.max(DELIVERY_MIN_ROUNDS, next.delivery));
       }
     });
 
   /** How many of this accused's summons rounds go by e-post — separately chosen. */
   const setDelivery = (plan: AccusedPlan, value: number) =>
     editPlan(plan, (next) => {
-      next.delivery = Math.min(
-        next.rounds.summons,
-        Math.max(DELIVERY_MIN_ROUNDS, value)
-      );
+      next.delivery = Math.min(next.rounds.summons, Math.max(DELIVERY_MIN_ROUNDS, value));
     });
 
   /** Where this accused's summons goes — at least one address stays selected. */
@@ -798,20 +781,27 @@ export function SignSection() {
           </dt>
           <dd className="text-body font-semibold">
             {sign.caseFileNumber ? (
-              <Identifier value={sign.caseFileNumber} label={tr("signSection_caseFileNumberLabel")} />
+              <Identifier
+                value={sign.caseFileNumber}
+                label={tr("signSection_caseFileNumberLabel")}
+              />
             ) : (
               <span className="tabular-nums">—</span>
             )}
           </dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className="text-body-compact font-medium text-muted-foreground">{tr("signSection_filedOn")}</dt>
+          <dt className="text-body-compact font-medium text-muted-foreground">
+            {tr("signSection_filedOn")}
+          </dt>
           <dd className="text-body-compact font-medium tabular-nums">
             {draft.filedAt ? toLongDate(draft.filedAt.slice(0, 10)) : "—"}
           </dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className="text-body-compact font-medium text-muted-foreground">{tr("signSection_amountPaid")}</dt>
+          <dt className="text-body-compact font-medium text-muted-foreground">
+            {tr("signSection_amountPaid")}
+          </dt>
           <dd className="text-body-compact font-medium tabular-nums">
             {money(sign.paidAmount ?? bill.total)}
           </dd>
@@ -888,28 +878,31 @@ export function SignSection() {
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={sandboxSignOthers}>{tr("signSection_markTheOthersAsDone")}</DropdownMenuItem>
+          <DropdownMenuItem onSelect={sandboxSignOthers}>
+            {tr("signSection_markTheOthersAsDone")}
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ) : null;
 
   /** Where things stand, in one sentence, while something is still owed. */
-  const waitingLine = !youSigned && yous.length > 0
-    ? yourOathAhead
-      ? tr("signSection_yourSignatureAndOathAreStill")
-      : tr("signSection_yourSignatureIsStillNeeded")
-    : yourOathOwed
-      ? tr("signSection_yourSignatureIsInTakeYour")
-      : yous.length === 0 && pending > 0
-        ? /*
-           * Nobody at this keyboard is a signatory — the clerk. An Aadhaar OTP or a DSC
-           * is personal and cannot be used on someone else's behalf, so there is no
-           * signing action here (owner's colleague, 2026-09-23).
-           */
-          tr("signSection_othersHaveTheLinkNobodyHere", { others, have })
-        : pending > 0
-          ? `Waiting on ${pending === 1 ? "one more party" : `${pending} more parties`}.`
-          : `Waiting on ${oathsOwed.length === 1 ? "one oath" : `${oathsOwed.length} oaths`}.`;
+  const waitingLine =
+    !youSigned && yous.length > 0
+      ? yourOathAhead
+        ? tr("signSection_yourSignatureAndOathAreStill")
+        : tr("signSection_yourSignatureIsStillNeeded")
+      : yourOathOwed
+        ? tr("signSection_yourSignatureIsInTakeYour")
+        : yous.length === 0 && pending > 0
+          ? /*
+             * Nobody at this keyboard is a signatory — the clerk. An Aadhaar OTP or a DSC
+             * is personal and cannot be used on someone else's behalf, so there is no
+             * signing action here (owner's colleague, 2026-09-23).
+             */
+            tr("signSection_othersHaveTheLinkNobodyHere", { others, have })
+          : pending > 0
+            ? `Waiting on ${pending === 1 ? "one more party" : `${pending} more parties`}.`
+            : `Waiting on ${oathsOwed.length === 1 ? "one oath" : `${oathsOwed.length} oaths`}.`;
 
   const signActions = noSignatories ? (
     <p className="text-body-compact text-muted-foreground">
@@ -919,17 +912,16 @@ export function SignSection() {
     /* ── Every signature and oath is in ── */
     <div className="flex flex-col gap-3">
       <SectionNotice variant="success" announce="polite" still={completeOnOpen}>
-        {onPaper ? tr("signSection_theUploadedCopyCarriesEverySignature") : tr("signSection_everyPartyHasSigned")}
+        {onPaper
+          ? tr("signSection_theUploadedCopyCarriesEverySignature")
+          : tr("signSection_everyPartyHasSigned")}
         {signingRules().oath ? tr("signSection_andEveryoneHasTakenTheOath") : "."}{" "}
-        {returned ? tr("signSection_youCanSendTheCorrectionsTo") : tr("signSection_youCanPayTheCourtFee")}
+        {returned
+          ? tr("signSection_youCanSendTheCorrectionsTo")
+          : tr("signSection_youCanPayTheCourtFee")}
       </SectionNotice>
       {onPaper ? (
-        <Button
-          type="button"
-          variant="ghost"
-          className="w-full"
-          onClick={() => openFlow("paper")}
-        >
+        <Button type="button" variant="ghost" className="w-full" onClick={() => openFlow("paper")}>
           <UploadIcon data-icon="inline-start" aria-hidden />
           {tr("signSection_replaceSignedCopy")}
         </Button>
@@ -941,12 +933,7 @@ export function SignSection() {
       <p className="text-body-compact text-muted-foreground">
         {tr("signSection_printItCollectEverySignatureThen")}
       </p>
-      <Button
-        type="button"
-        size="lg"
-        className="w-full"
-        onClick={() => openFlow("paper")}
-      >
+      <Button type="button" size="lg" className="w-full" onClick={() => openFlow("paper")}>
         {tr("signSection_uploadSignedCopy")}
       </Button>
       {/* Either mode can be chosen from the other: a filer who picked paper and then
@@ -967,12 +954,7 @@ export function SignSection() {
     </div>
   ) : !requested && !onPaper ? (
     /* ── Nobody has been asked yet ── */
-    <Button
-      type="button"
-      size="lg"
-      className="w-full"
-      onClick={() => openFlow("choose")}
-    >
+    <Button type="button" size="lg" className="w-full" onClick={() => openFlow("choose")}>
       {yourOathAhead ? tr("signSection_signAndTakeYourOath") : tr("signSection_continueToSigning")}
     </Button>
   ) : (
@@ -981,21 +963,13 @@ export function SignSection() {
       <p className="text-body-compact text-muted-foreground">{waitingLine}</p>
 
       {yous.length > 0 && !youSigned && !onPaper ? (
-        <Button
-          type="button"
-          size="lg"
-          className="w-full"
-          onClick={() => openFlow("sign")}
-        >
-          {yourOathAhead ? tr("signSection_eSignAndTakeYourOath") : tr("signSection_addYourESignature")}
+        <Button type="button" size="lg" className="w-full" onClick={() => openFlow("sign")}>
+          {yourOathAhead
+            ? tr("signSection_eSignAndTakeYourOath")
+            : tr("signSection_addYourESignature")}
         </Button>
       ) : yourOathOwed ? (
-        <Button
-          type="button"
-          size="lg"
-          className="w-full"
-          onClick={() => openFlow("oath")}
-        >
+        <Button type="button" size="lg" className="w-full" onClick={() => openFlow("oath")}>
           {tr("signSection_takeYourOath")}
         </Button>
       ) : null}
@@ -1094,7 +1068,9 @@ export function SignSection() {
                 ? tr("signSection_theCorrectionsHaveBeenSentBack")
                 : returned
                   ? tr("signSection_scrutinyReturnedThisComplaintEveryoneSigns")
-                  : tr("signSection_aCriminalComplaintUnderS138", { courtText: courtText(COURT.name) })
+                  : tr("signSection_aCriminalComplaintUnderS138", {
+                      courtText: courtText(COURT.name),
+                    })
           }
         />
 
@@ -1107,7 +1083,9 @@ export function SignSection() {
             walk through the filing, and a control for the paper in the column was
             competing with it (owner, 2026-09-24). */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-body font-semibold text-foreground">{tr("signSection_theComplaint")}</h2>
+          <h2 className="text-body font-semibold text-foreground">
+            {tr("signSection_theComplaint")}
+          </h2>
           <Button type="button" variant="outline" size="sm" onClick={printFile}>
             <PrinterIcon data-icon="inline-start" aria-hidden />
             {tr("signSection_printOrSaveAsPdf")}
@@ -1136,7 +1114,7 @@ export function SignSection() {
             >
               {railBody}
             </aside>,
-            slot
+            slot,
           )
         : null}
 
@@ -1152,7 +1130,11 @@ export function SignSection() {
           onBack={() => {
             if (!guardLeaving(backHref)) router.push(backHref);
           }}
-          continueLabel={returned ? tr("signSection_sendCorrectionsToScrutiny") : tr("signSection_continueToPayFees")}
+          continueLabel={
+            returned
+              ? tr("signSection_sendCorrectionsToScrutiny")
+              : tr("signSection_continueToPayFees")
+          }
           /*
            * Nothing to pay for until the sheet is signed, so the step's one real action
            * stays dead until it is — and then it is the focal teal, as on every other
@@ -1165,7 +1147,9 @@ export function SignSection() {
           showSaveState={false}
           onContinue={() => {
             if (resubmitted) {
-              notify.neutral(tr("signSection_theseCorrectionsHaveAlreadyBeenSent"), { icon: SendIcon });
+              notify.neutral(tr("signSection_theseCorrectionsHaveAlreadyBeenSent"), {
+                icon: SendIcon,
+              });
               return;
             }
             if (!complete) {
@@ -1203,24 +1187,24 @@ export function SignSection() {
         offered as declinable rather than offered and then refused.
       */}
       <Dialog open={modal === "procaddr"} onOpenChange={(open) => !open && closeModal()}>
-        <ChromeDialogContent mobileSheet className="grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100svh-2rem)] sm:max-w-2xl" onInteractOutside={(event) => event.preventDefault()}>
+        <ChromeDialogContent
+          mobileSheet
+          className="grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100svh-2rem)] sm:max-w-2xl"
+          onInteractOutside={(event) => event.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>{tr("signSection_changeProcessAddress")}</DialogTitle>
-            <DialogDescription>
-              {tr("signSection_whatTheCourtIssuesToThe")}
-            </DialogDescription>
+            <DialogDescription>{tr("signSection_whatTheCourtIssuesToThe")}</DialogDescription>
           </DialogHeader>
 
           <div className="flex min-h-0 flex-col gap-6 overflow-y-auto">
             {plans.map((plan) => {
               const rounds = plan.rounds;
-              const line = bill.delivery.find((l) =>
-                l.key.startsWith(`${plan.accusedId}:`)
-              );
+              const line = bill.delivery.find((l) => l.key.startsWith(`${plan.accusedId}:`));
               /** 1 … summons rounds — e-post never falls below the mandatory round. */
               const deliveryChoices = Array.from(
                 { length: Math.max(0, rounds.summons - DELIVERY_MIN_ROUNDS + 1) },
-                (_, i) => DELIVERY_MIN_ROUNDS + i
+                (_, i) => DELIVERY_MIN_ROUNDS + i,
               );
               return (
                 <section
@@ -1228,12 +1212,10 @@ export function SignSection() {
                   className={cn(
                     "flex flex-col gap-4",
                     // One accused needs no dividing from itself; several do.
-                    plans.length > 1 && "border-t border-hairline pt-6 first:border-t-0 first:pt-0"
+                    plans.length > 1 && "border-t border-hairline pt-6 first:border-t-0 first:pt-0",
                   )}
                 >
-                  <h3 className="text-body font-semibold text-foreground">
-                    {plan.label}
-                  </h3>
+                  <h3 className="text-body font-semibold text-foreground">{plan.label}</h3>
 
                   {/* Addresses first: they multiply the summons, so where comes before
                       how many — a round cannot be priced until you know how far it
@@ -1251,15 +1233,10 @@ export function SignSection() {
                               <Checkbox
                                 id={id}
                                 checked={plan.selected.includes(address.index)}
-                                onCheckedChange={() =>
-                                  toggleAddress(plan, address.index)
-                                }
+                                onCheckedChange={() => toggleAddress(plan, address.index)}
                               />
                               <FieldContent>
-                                <Label
-                                  htmlFor={id}
-                                  className="text-body-compact font-medium"
-                                >
+                                <Label htmlFor={id} className="text-body-compact font-medium">
                                   {address.label}
                                 </Label>
                                 <FieldDescription className="text-caption">
@@ -1275,10 +1252,16 @@ export function SignSection() {
                       </>
                     ) : (
                       <p className="text-body-compact text-muted-foreground">
-                        {tr.rich("signSection_addThisAccusedsAddressInThe", { link: (chunks) => <Link
-                          href={hrefFor("accused")}
-                          className="font-medium text-primary underline underline-offset-2"
-                        >{chunks}</Link> })}
+                        {tr.rich("signSection_addThisAccusedsAddressInThe", {
+                          link: (chunks) => (
+                            <Link
+                              href={hrefFor("accused")}
+                              className="font-medium text-primary underline underline-offset-2"
+                            >
+                              {chunks}
+                            </Link>
+                          ),
+                        })}
                       </p>
                     )}
                   </FieldSet>
@@ -1293,7 +1276,7 @@ export function SignSection() {
                         const chosen = rounds[option.key] ?? option.minRounds;
                         const choices = Array.from(
                           { length: option.maxRounds - option.minRounds + 1 },
-                          (_, i) => option.minRounds + i
+                          (_, i) => option.minRounds + i,
                         );
                         const amount = bill.process
                           .filter((l) => l.key === `${plan.accusedId}:${option.key}`)
@@ -1304,10 +1287,7 @@ export function SignSection() {
                             className="flex flex-wrap items-start justify-between gap-4 py-3 first:pt-0"
                           >
                             <div className="flex min-w-56 flex-1 flex-col gap-0.5">
-                              <Label
-                                htmlFor={id}
-                                className="text-body-compact font-medium"
-                              >
+                              <Label htmlFor={id} className="text-body-compact font-medium">
                                 {option.label}
                                 {option.minRounds > 0 ? (
                                   <span className="text-muted-foreground">
@@ -1359,10 +1339,15 @@ export function SignSection() {
                             className="text-body-compact font-medium"
                           >
                             {CHANNEL_FEE.label}
-                            <span className="text-muted-foreground"> {tr("signSection_required")}</span>
+                            <span className="text-muted-foreground">
+                              {" "}
+                              {tr("signSection_required")}
+                            </span>
                           </Label>
                           <p className="text-caption text-muted-foreground tabular-nums">
-                            {tr("signSection_moneyForEachAddressEveryRound", { money: money(CHANNEL_FEE.amount) })}
+                            {tr("signSection_moneyForEachAddressEveryRound", {
+                              money: money(CHANNEL_FEE.amount),
+                            })}
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-4">
@@ -1370,13 +1355,13 @@ export function SignSection() {
                             id={`delivery-${plan.accusedId}`}
                             className="w-40"
                             value={String(plan.delivery)}
-                            onChange={(e) =>
-                              setDelivery(plan, Number(e.target.value))
-                            }
+                            onChange={(e) => setDelivery(plan, Number(e.target.value))}
                           >
                             {deliveryChoices.map((n) => (
                               <NativeSelectOption key={n} value={String(n)}>
-                                {n === 1 ? tr("signSection_1Round") : tr("signSection_nRounds", { n: String(n) })}
+                                {n === 1
+                                  ? tr("signSection_1Round")
+                                  : tr("signSection_nRounds", { n: String(n) })}
                               </NativeSelectOption>
                             ))}
                           </NativeSelect>
@@ -1403,9 +1388,7 @@ export function SignSection() {
           */}
           <div className="flex items-baseline justify-between gap-4 border-t border-hairline pt-4">
             <span className="text-body font-semibold">{tr("signSection_payableNow")}</span>
-            <span className="text-title-s font-semibold tabular-nums">
-              {money(bill.total)}
-            </span>
+            <span className="text-title-s font-semibold tabular-nums">{money(bill.total)}</span>
           </div>
 
           <DialogFooter>
@@ -1427,7 +1410,11 @@ export function SignSection() {
         process by process, and this screen only adds it up.
       */}
       <Dialog open={modal === "payment"} onOpenChange={(open) => !open && closeModal()}>
-        <ChromeDialogContent mobileSheet className="grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100svh-2rem)] sm:max-w-xl" onInteractOutside={(event) => event.preventDefault()}>
+        <ChromeDialogContent
+          mobileSheet
+          className="grid-rows-[auto_minmax(0,1fr)_auto] max-h-[calc(100svh-2rem)] sm:max-w-xl"
+          onInteractOutside={(event) => event.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>{tr("signSection_payCourtFees")}</DialogTitle>
             <DialogDescription>
@@ -1462,9 +1449,7 @@ export function SignSection() {
 
           <div className="flex items-baseline justify-between gap-4 border-t border-hairline pt-4">
             <span className="text-body font-semibold">{tr("signSection_payableNow")}</span>
-            <span className="text-title-s font-semibold tabular-nums">
-              {money(bill.total)}
-            </span>
+            <span className="text-title-s font-semibold tabular-nums">{money(bill.total)}</span>
           </div>
 
           <Button type="button" size="lg" className="w-full" onClick={payNow}>
@@ -1472,11 +1457,7 @@ export function SignSection() {
           </Button>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setModal("procaddr")}
-            >
+            <Button type="button" variant="outline" onClick={() => setModal("procaddr")}>
               {tr("signSection_changeProcessAddress")}
             </Button>
           </DialogFooter>
@@ -1485,7 +1466,8 @@ export function SignSection() {
 
       {/* ── Processing ── */}
       <Dialog open={modal === "processing"}>
-        <ChromeDialogContent mobileSheet
+        <ChromeDialogContent
+          mobileSheet
           className="sm:max-w-sm"
           showCloseButton={false}
           onEscapeKeyDown={(e) => e.preventDefault()}
@@ -1505,7 +1487,8 @@ export function SignSection() {
 
       {/* ── Payment successful ── */}
       <Dialog open={modal === "success"} onOpenChange={(open) => !open && closeModal()}>
-        <ChromeDialogContent mobileSheet
+        <ChromeDialogContent
+          mobileSheet
           showCloseButton={false}
           className="gap-0 overflow-hidden p-0 sm:max-w-lg"
         >
@@ -1516,7 +1499,10 @@ export function SignSection() {
             title={tr("signSection_paymentSuccessful")}
             body={tr("signSection_yourCaseFileIsComplete")}
           >
-            <OutcomeAmount label={tr("signSection_amountPaid")} value={money(sign.paidAmount ?? bill.total)} />
+            <OutcomeAmount
+              label={tr("signSection_amountPaid")}
+              value={money(sign.paidAmount ?? bill.total)}
+            />
           </OutcomeHeader>
 
           <div className="flex flex-col gap-4 p-6">
@@ -1526,7 +1512,10 @@ export function SignSection() {
                   <DescriptionTerm>{tr("signSection_caseFileNumber")}</DescriptionTerm>
                   <DescriptionDetails className="flex flex-wrap items-center justify-end gap-2">
                     {sign.caseFileNumber ? (
-                      <Identifier value={sign.caseFileNumber} label={tr("signSection_caseFileNumberLabel")} />
+                      <Identifier
+                        value={sign.caseFileNumber}
+                        label={tr("signSection_caseFileNumberLabel")}
+                      />
                     ) : (
                       <span className="tabular-nums">—</span>
                     )}
@@ -1540,7 +1529,10 @@ export function SignSection() {
                   <DescriptionTerm>{tr("signSection_paymentReference")}</DescriptionTerm>
                   <DescriptionDetails>
                     {sign.paymentRef ? (
-                      <Identifier value={sign.paymentRef} label={tr("signSection_paymentReferenceLabel")} />
+                      <Identifier
+                        value={sign.paymentRef}
+                        label={tr("signSection_paymentReferenceLabel")}
+                      />
                     ) : (
                       "—"
                     )}
@@ -1548,7 +1540,6 @@ export function SignSection() {
                 </DescriptionRow>
               </DescriptionList>
             </OutcomeSummary>
-
           </div>
 
           {/* The warm band every outcome dialog closes on. */}
@@ -1577,7 +1568,9 @@ export function SignSection() {
           if (!open) setLeaveTo(null);
         }}
         title={
-          anySigned ? tr("signSection_goingBackVoidsTheSignatures") : tr("signSection_goingBackRecallsTheRequests")
+          anySigned
+            ? tr("signSection_goingBackVoidsTheSignatures")
+            : tr("signSection_goingBackRecallsTheRequests")
         }
         description={
           onPaper
@@ -1590,7 +1583,9 @@ export function SignSection() {
                 } discarded, the outstanding requests are withdrawn, and everyone is asked again.`
               : tr("signSection_thePartiesHaveAlreadyBeenAsked")
         }
-        confirmLabel={anySigned ? tr("signSection_goBackAndReSign") : tr("signSection_goBackAndRecall")}
+        confirmLabel={
+          anySigned ? tr("signSection_goBackAndReSign") : tr("signSection_goBackAndRecall")
+        }
         cancelLabel={tr("signSection_stayHere")}
         icon={PenOffIcon}
         onConfirm={confirmLeave}

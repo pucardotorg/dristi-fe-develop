@@ -6,15 +6,10 @@
  */
 
 import { blankRepresentative } from "@/lib/filing/blank";
-import {
-  MODE_OF_SERVICE,
-  NATURE_OF_DEBT,
-  RETURN_REASONS,
-} from "@/lib/filing/options";
+import { MODE_OF_SERVICE, NATURE_OF_DEBT, RETURN_REASONS } from "@/lib/filing/options";
 import type { Address, FilingDraft } from "@/lib/filing/types";
 
-const daysAgo = (n: number) =>
-  new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
+const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
 
 const or = (v: string, fallback: string) => (v.trim() ? v : fallback);
 
@@ -91,11 +86,9 @@ export function demoPdf(name: string): File {
   const xref = body.length;
   body += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, "0")} 00000 n \n`).join("")}`;
   body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
-  return new File(
-    [body],
-    `${name.replace(/[^\w]+/g, "-").toLowerCase()}-demo.pdf`,
-    { type: "application/pdf" },
-  );
+  return new File([body], `${name.replace(/[^\w]+/g, "-").toLowerCase()}-demo.pdf`, {
+    type: "application/pdf",
+  });
 }
 
 /**

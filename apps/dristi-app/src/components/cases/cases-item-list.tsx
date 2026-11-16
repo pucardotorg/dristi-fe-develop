@@ -3,18 +3,8 @@
 import * as React from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemGroup,
-  ItemTitle,
-} from "@/components/ui/item";
-import {
-  formatCaseDate,
-  partiesLabel,
-  type CaseRecord,
-} from "@/lib/cases/types";
+import { Item, ItemActions, ItemContent, ItemGroup, ItemTitle } from "@/components/ui/item";
+import { formatCaseDate, partiesLabel, type CaseRecord } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
 
 import { BookmarkButton } from "./bookmark-button";
@@ -78,9 +68,7 @@ export function CasesItemList({
         // ("Evidence of the complainant", "Plea"). Said twice on one card it
         // read as a mistake, so the purpose shows only when it adds something.
         const purpose =
-          next?.purpose && next.purpose !== record.substage
-            ? next.purpose
-            : undefined;
+          next?.purpose && next.purpose !== record.substage ? next.purpose : undefined;
         return (
           <Item
             key={record.id}
@@ -91,8 +79,7 @@ export function CasesItemList({
               "relative flex-col items-stretch gap-3 rounded-xl p-4 active:bg-accent",
               /* A long press must not lift the text or the system menu. */
               selectable && "select-none [-webkit-touch-callout:none]",
-              (picked || openRecord?.id === record.id) &&
-                "border-border bg-accent-strong"
+              (picked || openRecord?.id === record.id) && "border-border bg-accent-strong",
             )}
             {...longPress(record.id)}
           >
@@ -108,7 +95,9 @@ export function CasesItemList({
                   <Checkbox
                     checked={picked}
                     onCheckedChange={() => toggle(record.id)}
-                    aria-label={t("casesItemList_selectPartiesLabel", { partiesLabel: partiesLabel(record) })}
+                    aria-label={t("casesItemList_selectPartiesLabel", {
+                      partiesLabel: partiesLabel(record),
+                    })}
                     className="size-5"
                   />
                 </div>
@@ -133,9 +122,7 @@ export function CasesItemList({
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                     <CaseStage record={record} detail={false} />
                     {disposedOn ? (
-                      <span className="text-caption text-muted-foreground">
-                        {disposedOn}
-                      </span>
+                      <span className="text-caption text-muted-foreground">{disposedOn}</span>
                     ) : null}
                   </div>
                 )}
@@ -155,9 +142,7 @@ export function CasesItemList({
                   {t("casesItemList_nextHearing")}
                 </span>
                 <span className="text-body-compact text-foreground">
-                  <span className="font-medium tabular-nums">
-                    {formatCaseDate(next.on)}
-                  </span>
+                  <span className="font-medium tabular-nums">{formatCaseDate(next.on)}</span>
                   {purpose ? (
                     <span className="text-muted-foreground">
                       <span aria-hidden> · </span>
@@ -202,7 +187,7 @@ function useLongPress(
    *  handlers stay on, because the press that made the first pick still has
    *  its click to swallow after this turns true. */
   selecting: boolean,
-  onLongPress: (id: string) => void
+  onLongPress: (id: string) => void,
 ) {
   const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const start = React.useRef<{ x: number; y: number } | null>(null);

@@ -74,10 +74,7 @@ function RequestBody({
   onReturnFocus: () => void;
 }) {
   const t = useTranslations();
-  const document = useMemo(
-    () => buildReschedulingDocument(request),
-    [request],
-  );
+  const document = useMemo(() => buildReschedulingDocument(request), [request]);
   const listedOn = formatRequestLongDate(request.listedOn);
   const purpose = courtHearingPurposeLabel(request.purpose);
   const currentHearing = `${listedOn} · ${purpose}`;
@@ -89,12 +86,17 @@ function RequestBody({
       facts={
         <>
           <ReviewRow term={t("reschedulingRequestDialog_caseNumber")}>
-            <Identifier value={request.caseNumber} label={t("reschedulingRequestDialog_caseNumberLabel")} />
+            <Identifier
+              value={request.caseNumber}
+              label={t("reschedulingRequestDialog_caseNumberLabel")}
+            />
           </ReviewRow>
           <ReviewRow term={t("reschedulingRequestDialog_applicationSentOn")}>
             {formatRequestLongDate(request.appliedOn)}
           </ReviewRow>
-          <ReviewRow term={t("reschedulingRequestDialog_currentHearing")}>{currentHearing}</ReviewRow>
+          <ReviewRow term={t("reschedulingRequestDialog_currentHearing")}>
+            {currentHearing}
+          </ReviewRow>
           <ReviewRow term={t("reschedulingRequestDialog_proposedHearingDate")}>
             {formatProposedDates(request.proposedOn)}
           </ReviewRow>

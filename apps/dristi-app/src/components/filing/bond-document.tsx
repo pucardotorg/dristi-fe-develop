@@ -7,13 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import type { AccessCase } from "@/lib/access/content";
-import {
-  BOND_AMOUNT,
-  BOND_LITIGANT,
-  bailDialog,
-  bondCopy,
-  fillCopy,
-} from "@/lib/bail/content";
+import { BOND_AMOUNT, BOND_LITIGANT, bailDialog, bondCopy, fillCopy } from "@/lib/bail/content";
 import { cn } from "@/lib/utils";
 import { useCourtText } from "@/components/court/court-provider";
 

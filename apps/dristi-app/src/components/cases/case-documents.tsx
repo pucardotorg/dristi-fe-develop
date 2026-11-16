@@ -1,21 +1,14 @@
 "use client";
 
 import { useMemo, useState, type MouseEvent, type ReactNode } from "react";
-import {
-  ChevronDownIcon,
-  FileSearchIcon,
-  FileTextIcon,
-} from "lucide-react";
+import { ChevronDownIcon, FileSearchIcon, FileTextIcon } from "lucide-react";
 
 import { DocumentRecordDialog } from "@/components/cases/document-record-dialog";
 import { DownloadFilingButton } from "@/components/cases/download-filing-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  RegisterFilter,
-  RegisterSearch,
-} from "@/components/cases/register-controls";
+import { RegisterFilter, RegisterSearch } from "@/components/cases/register-controls";
 import {
   TABLE_CELL,
   TABLE_HEAD,
@@ -23,10 +16,7 @@ import {
   tableBodyClass,
   tableRowClass,
 } from "@/components/chrome/table-plate";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import {
   Empty,
   EmptyDescription,
@@ -62,12 +52,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DOCUMENTS_PAGE_SIZE,
   DOCUMENTS_PAGE_SIZES,
@@ -121,14 +106,8 @@ import {
 } from "@/components/cases/case-applications";
 import { SignReviewDialog } from "@/components/cases/sign-review-dialog";
 import { SubmitDocumentsDialog } from "@/components/cases/submit-documents-form";
-import {
-  MarkEvidenceDialog,
-  useCanMarkEvidence,
-} from "@/components/cases/mark-evidence-dialog";
-import {
-  evidenceMarksKey,
-  parseEvidenceMarks,
-} from "@/lib/cases/evidence-marks";
+import { MarkEvidenceDialog, useCanMarkEvidence } from "@/components/cases/mark-evidence-dialog";
+import { evidenceMarksKey, parseEvidenceMarks } from "@/lib/cases/evidence-marks";
 import {
   findDocumentSubmission,
   parseSavedDocumentSubmissions,
@@ -156,8 +135,7 @@ type SubmitterOption = {
 
 const headClass = TABLE_HEAD;
 const cellClass = TABLE_CELL;
-const filterBarClass =
-  "flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end";
+const filterBarClass = "flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end";
 const filterFieldClass = "min-w-0 w-full md:w-72";
 
 /**
@@ -181,7 +159,7 @@ export function CaseDocuments({ record }: { record: CaseRecord }) {
   const savedRaw = useSessionValue(savedDocumentSubmissionsKey(record.id));
   const fromCourt = useMemo(
     () => documentsFromCourt(parseSavedDocumentSubmissions(savedRaw)),
-    [savedRaw]
+    [savedRaw],
   );
 
   if (!file) return <DocumentsError />;
@@ -231,10 +209,7 @@ function bondDocument(record: CaseRecord, people: DocumentPerson[]): CaseDocumen
 export function DocumentsLoading() {
   const t = useTranslations();
   return (
-    <DocumentsPanel
-      busy
-      switcher={<Skeleton className="h-10 w-64 rounded-lg" />}
-    >
+    <DocumentsPanel busy switcher={<Skeleton className="h-10 w-64 rounded-lg" />}>
       <span className="sr-only" role="status">
         {t("casesCaseDocuments_loadingDocuments")}
       </span>
@@ -285,9 +260,7 @@ function DocumentsReady({
   const [typeIds, setTypeIds] = useState<string[]>([]);
   const [submitterIds, setSubmitterIds] = useState<string[]>([]);
   const [filingQuery, setFilingQuery] = useState("");
-  const [pageSize, setPageSize] = useState<DocumentsPageSize>(
-    DOCUMENTS_PAGE_SIZE
-  );
+  const [pageSize, setPageSize] = useState<DocumentsPageSize>(DOCUMENTS_PAGE_SIZE);
   const [page, setPage] = useState(1);
   const cards = useMediaQuery(REGISTER_CARDS_QUERY);
   const [visible, setVisible] = useState(SHOW_MORE_STEP);
@@ -298,10 +271,8 @@ function DocumentsReady({
   const [replaced, setReplaced] = useState<Record<string, { label: string; src: string }>>({});
   const filings = useMemo(
     () =>
-      filed.map((item) =>
-        replaced[item.id] ? { ...item, documents: [replaced[item.id]] } : item
-      ),
-    [filed, replaced]
+      filed.map((item) => (replaced[item.id] ? { ...item, documents: [replaced[item.id]] } : item)),
+    [filed, replaced],
   );
   function replaceFile(item: ApplicationRecord, picked: File) {
     setReplaced((all) => ({
@@ -327,9 +298,7 @@ function DocumentsReady({
     ])
       .filter((document) => !documentNotSubmitted(document))
       .map((document) =>
-        marks[document.id]
-          ? { ...document, evidenceNumber: marks[document.id] }
-          : document
+        marks[document.id] ? { ...document, evidenceNumber: marks[document.id] } : document,
       );
   }, [filings, applications, fromCourt.documents, file.documents, marksRaw]);
   /* Marking is the court's, for a seat with the Evidence marker role
@@ -342,11 +311,11 @@ function DocumentsReady({
   const court = useCaseReader() === "court";
   const bondRow = useMemo(
     () => (bail && !court ? bondDocument(record, file.people) : null),
-    [bail, court, record, file.people]
+    [bail, court, record, file.people],
   );
   const listed = useMemo(
     () => (bondRow ? [bondRow, ...documents] : documents),
-    [bondRow, documents]
+    [bondRow, documents],
   );
   const canMark = useCanMarkEvidence();
   const [marking, setMarking] = useState<CaseDocument | null>(null);
@@ -356,10 +325,7 @@ function DocumentsReady({
       ...documentPeopleFromFilings([...filings, ...applications]),
       ...fromCourt.people,
       ...file.people,
-    ].map((person) => [
-      person.id,
-      person,
-    ])
+    ].map((person) => [person.id, person]),
   );
   const [filingOpen, setFilingOpen] = useState<string | null>(null);
   const [reviewing, setReviewing] = useState<ApplicationRecord[]>([]);
@@ -376,11 +342,8 @@ function DocumentsReady({
   ];
   /* The review reads the batch as it is now, replaced files and all. */
   const reviewingNow = useMemo(
-    () =>
-      reviewing.map(
-        (item) => filings.find((entry) => entry.id === item.id) ?? item
-      ),
-    [reviewing, filings]
+    () => reviewing.map((item) => filings.find((entry) => entry.id === item.id) ?? item),
+    [reviewing, filings],
   );
   const openFiling = filings.find((item) => item.id === filingOpen) ?? null;
 
@@ -412,9 +375,7 @@ function DocumentsReady({
     }
   }
 
-  const kindDocuments = listed.filter(
-    (document) => documentKind(document.type) === kind
-  );
+  const kindDocuments = listed.filter((document) => documentKind(document.type) === kind);
   const submitterOptions = uniqueSubmitters(kindDocuments, peopleById);
 
   const typeOptions = DOCUMENT_FILTER_TYPES.map((item) => ({
@@ -428,8 +389,7 @@ function DocumentsReady({
     documents: listed.filter(
       (document) =>
         (typeIds.length === 0 || typeIds.includes(document.type)) &&
-        (submitterIds.length === 0 ||
-          submitterIds.includes(document.submittedById))
+        (submitterIds.length === 0 || submitterIds.includes(document.submittedById)),
     ),
     kind,
     typeId: null,
@@ -441,8 +401,7 @@ function DocumentsReady({
     page: cards ? 1 : page,
   });
 
-  const filtered =
-    typeIds.length > 0 || submitterIds.length > 0 || filingQuery.trim() !== "";
+  const filtered = typeIds.length > 0 || submitterIds.length > 0 || filingQuery.trim() !== "";
   const showTypeFilter = kind === "documents";
 
   function resetPage() {
@@ -511,21 +470,13 @@ function DocumentsReady({
     <>
       <DocumentsPanel switcher={switcher}>
         {kind === "documents" && actions.length > 0 ? (
-          <NeedsAction
-            caseId={record.id}
-            entries={actions}
-            onAct={act}
-            onOpen={setFilingOpen}
-          />
+          <NeedsAction caseId={record.id} entries={actions} onAct={act} onOpen={setFilingOpen} />
         ) : null}
         {/* As on Applications: the controls sit on the table they narrow, a
             step clear of Needs attention, the search at the row's far end
             (owner, Oct 8). */}
         <div
-          className={cn(
-            REGISTER_FILTER_ROW,
-            kind === "documents" && actions.length > 0 && "mt-4"
-          )}
+          className={cn(REGISTER_FILTER_ROW, kind === "documents" && actions.length > 0 && "mt-4")}
         >
           {showTypeFilter ? (
             <RegisterFilter
@@ -548,12 +499,7 @@ function DocumentsReady({
             options={submitterOptions}
           />
           {filtered ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={clearFilters}
-            >
+            <Button type="button" variant="ghost" size="sm" onClick={clearFilters}>
               {t("casesCaseDocuments_clearFilters")}
             </Button>
           ) : null}
@@ -616,13 +562,16 @@ function DocumentsReady({
               className={cn(
                 "flex-col gap-3 md:flex-row md:items-center md:justify-between",
                 REGISTER_TABLE_ONLY,
-                "md:pointer-fine:flex md:landscape:flex"
+                "md:pointer-fine:flex md:landscape:flex",
               )}
             >
               <div className="flex flex-wrap items-center gap-4">
                 {selection.pageCount > 1 ? (
                   <p className="text-body-compact text-muted-foreground">
-                    {t("casesCaseDocuments_showingFromTo", { from: String(selection.from), to: String(selection.to) })}
+                    {t("casesCaseDocuments_showingFromTo", {
+                      from: String(selection.from),
+                      to: String(selection.to),
+                    })}
                   </p>
                 ) : null}
                 <DocumentsPageSizeSelect
@@ -638,15 +587,10 @@ function DocumentsReady({
                   <PaginationContent>
                     {selection.page > 1 ? (
                       <PaginationItem>
-                        <PaginationPrevious
-                          {...pageLink(selection.page - 1)}
-                        />
+                        <PaginationPrevious {...pageLink(selection.page - 1)} />
                       </PaginationItem>
                     ) : null}
-                    {documentPageWindow(
-                      selection.page,
-                      selection.pageCount
-                    ).map((entry, index) => (
+                    {documentPageWindow(selection.page, selection.pageCount).map((entry, index) => (
                       <PaginationItem key={`${entry}-${index}`}>
                         {entry === "gap" ? (
                           <PaginationEllipsis />
@@ -654,7 +598,9 @@ function DocumentsReady({
                           <PaginationLink
                             {...pageLink(entry)}
                             isActive={entry === selection.page}
-                            aria-label={t("casesCaseDocuments_goToPageEntry", { entry: String(entry) })}
+                            aria-label={t("casesCaseDocuments_goToPageEntry", {
+                              entry: String(entry),
+                            })}
                           >
                             {entry}
                           </PaginationLink>
@@ -752,11 +698,7 @@ function DocumentsReady({
   );
 }
 
-function matchingCountLabel(
-  kind: DocumentKind,
-  total: number,
-  filtered: boolean
-): string {
+function matchingCountLabel(kind: DocumentKind, total: number, filtered: boolean): string {
   const noun =
     kind === "bail-bonds"
       ? total === 1
@@ -766,9 +708,7 @@ function matchingCountLabel(
         ? "document"
         : "documents";
   if (!filtered) return `${total} ${noun}`;
-  return total === 1
-    ? `1 ${noun} matches the filters`
-    : `${total} ${noun} match the filters`;
+  return total === 1 ? `1 ${noun} matches the filters` : `${total} ${noun} match the filters`;
 }
 
 function emptyTitle(kind: DocumentKind, filtered: boolean): string {
@@ -777,9 +717,7 @@ function emptyTitle(kind: DocumentKind, filtered: boolean): string {
       ? "No bail bonds matching filters"
       : "No documents matching filters";
   }
-  return kind === "bail-bonds"
-    ? "No bail bonds recorded"
-    : "No documents recorded";
+  return kind === "bail-bonds" ? "No bail bonds recorded" : "No documents recorded";
 }
 
 function emptyDescription(kind: DocumentKind, filtered: boolean): string {
@@ -795,7 +733,7 @@ function emptyDescription(kind: DocumentKind, filtered: boolean): string {
 
 function uniqueSubmitters(
   documents: CaseDocument[],
-  peopleById: Map<string, DocumentPerson>
+  peopleById: Map<string, DocumentPerson>,
 ): SubmitterOption[] {
   const seen = new Set<string>();
   const options: SubmitterOption[] = [];
@@ -878,18 +816,32 @@ function KindTabs({
           badge inside a control. */}
       <SegmentedControlItem
         value="documents"
-        aria-label={t("casesCaseDocuments_documentsDocumentsCount", { documentsCount: String(documentsCount) })}
+        aria-label={t("casesCaseDocuments_documentsDocumentsCount", {
+          documentsCount: String(documentsCount),
+        })}
       >
         <span className="flex items-center gap-1.5">
-          {t.rich("casesCaseDocuments_documentsDocumentsCount2", { documentsCount: String(documentsCount), span: (chunks) => <span className="font-normal tabular-nums text-muted-foreground">{chunks}</span> })}
+          {t.rich("casesCaseDocuments_documentsDocumentsCount2", {
+            documentsCount: String(documentsCount),
+            span: (chunks) => (
+              <span className="font-normal tabular-nums text-muted-foreground">{chunks}</span>
+            ),
+          })}
         </span>
       </SegmentedControlItem>
       <SegmentedControlItem
         value="bail-bonds"
-        aria-label={t("casesCaseDocuments_bailBondsBailBondsCount", { bailBondsCount: String(bailBondsCount) })}
+        aria-label={t("casesCaseDocuments_bailBondsBailBondsCount", {
+          bailBondsCount: String(bailBondsCount),
+        })}
       >
         <span className="flex items-center gap-1.5">
-          {t.rich("casesCaseDocuments_bailBondsBailBondsCount2", { bailBondsCount: String(bailBondsCount), span: (chunks) => <span className="font-normal tabular-nums text-muted-foreground">{chunks}</span> })}
+          {t.rich("casesCaseDocuments_bailBondsBailBondsCount2", {
+            bailBondsCount: String(bailBondsCount),
+            span: (chunks) => (
+              <span className="font-normal tabular-nums text-muted-foreground">{chunks}</span>
+            ),
+          })}
         </span>
       </SegmentedControlItem>
     </SegmentedControl>
@@ -954,12 +906,18 @@ function DocumentsTable({
       <TableCaption className="sr-only">{caption}</TableCaption>
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={cn(headClass, "min-w-56")}>{t("casesCaseDocuments_document")}</TableHead>
+          <TableHead className={cn(headClass, "min-w-56")}>
+            {t("casesCaseDocuments_document")}
+          </TableHead>
           <TableHead className={cn(headClass, "min-w-40")}>
             {t("casesCaseDocuments_documentType")}
           </TableHead>
-          <TableHead className={cn(headClass, "w-40")}>{t("casesCaseDocuments_submittedBy")}</TableHead>
-          <TableHead className={cn(headClass, "w-36")}>{t("casesCaseDocuments_submittedOn")}</TableHead>
+          <TableHead className={cn(headClass, "w-40")}>
+            {t("casesCaseDocuments_submittedBy")}
+          </TableHead>
+          <TableHead className={cn(headClass, "w-36")}>
+            {t("casesCaseDocuments_submittedOn")}
+          </TableHead>
           <TableHead className={cn(headClass, "w-36")}>
             {t("casesCaseDocuments_evidenceNumber")}
           </TableHead>
@@ -1009,7 +967,9 @@ function DocumentsTable({
                     type="button"
                     variant="outline"
                     size="sm"
-                    aria-label={t("casesCaseDocuments_markAsEvidenceTitle", { title: document.title })}
+                    aria-label={t("casesCaseDocuments_markAsEvidenceTitle", {
+                      title: document.title,
+                    })}
                     onClick={(event) => {
                       event.stopPropagation();
                       onMark(document);
@@ -1102,7 +1062,9 @@ function DocumentsItemList({
                 ) : null}
                 {/* The bond's row opens its status, not a document record. */}
                 <Button type="button" onClick={() => onOpenRecord(document)}>
-                  {document.id === BOND_ROW_ID ? t("casesCaseDocuments_viewBondStatus") : t("casesCaseDocuments_viewDocument")}
+                  {document.id === BOND_ROW_ID
+                    ? t("casesCaseDocuments_viewBondStatus")
+                    : t("casesCaseDocuments_viewDocument")}
                 </Button>
               </>
             }
@@ -1160,7 +1122,9 @@ function EvidenceNumber({
     return (
       <Badge
         variant="secondary"
-        aria-label={t("casesCaseDocuments_markedAsEvidenceEvidenceNumber", { evidenceNumber: document.evidenceNumber })}
+        aria-label={t("casesCaseDocuments_markedAsEvidenceEvidenceNumber", {
+          evidenceNumber: document.evidenceNumber,
+        })}
       >
         <Identifier
           value={document.evidenceNumber}
@@ -1198,9 +1162,7 @@ function DocumentsEmpty({
           <Icon aria-hidden />
         </EmptyMedia>
         <EmptyTitle className="text-body font-semibold">{title}</EmptyTitle>
-        {description ? (
-          <EmptyDescription>{description}</EmptyDescription>
-        ) : null}
+        {description ? <EmptyDescription>{description}</EmptyDescription> : null}
       </EmptyHeader>
     </Empty>
   );

@@ -14,10 +14,7 @@ import {
  * The Take cognizance layout setting and its setter, live across every component that
  * reads it — `useCourtNavLayout`'s shape, over `cognizance-layout.ts` instead.
  */
-export function useCognizanceLayout(): [
-  CognizanceLayout,
-  (layout: CognizanceLayout) => void,
-] {
+export function useCognizanceLayout(): [CognizanceLayout, (layout: CognizanceLayout) => void] {
   const layout = React.useSyncExternalStore(
     subscribeToCognizanceLayout,
     readCognizanceLayout,

@@ -68,7 +68,7 @@ export function TaskRespondDialog({
     const done = await act(
       task.id,
       (t, ctx) => respond(t, ctx, accepted, note),
-      accepted ? tr("respondDialog_requestAccepted") : tr("respondDialog_requestDeclined")
+      accepted ? tr("respondDialog_requestAccepted") : tr("respondDialog_requestDeclined"),
     );
     if (done) {
       onOpenChange(false);
@@ -87,7 +87,11 @@ export function TaskRespondDialog({
                 {kase.parties}
                 <span aria-hidden> · </span>
                 {/* No copy control inside the dialog's accessible description. */}
-                <Identifier value={kase.stNumber} label={tr("respondDialog_caseNumber")} copyable={false} />
+                <Identifier
+                  value={kase.stNumber}
+                  label={tr("respondDialog_caseNumber")}
+                  copyable={false}
+                />
               </>
             ) : null}
           </DialogDescription>

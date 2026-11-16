@@ -216,7 +216,9 @@ export function ShortcutsPanel<T extends PanelShortcut>({
         }}
       >
         <h3 id={formId} className="text-body-compact font-semibold">
-          {editingEntry ? t("shortcutsPanel_editName2", { name: editingEntry.name }) : t("shortcutsPanel_newShortcut")}
+          {editingEntry
+            ? t("shortcutsPanel_editName2", { name: editingEntry.name })
+            : t("shortcutsPanel_newShortcut")}
         </h3>
         <Field data-invalid={tried && nameError ? true : undefined}>
           <FieldLabel htmlFor={nameId}>{t("shortcutsPanel_name")}</FieldLabel>
@@ -248,7 +250,9 @@ export function ShortcutsPanel<T extends PanelShortcut>({
               {t("common_cancel")}
             </Button>
           ) : null}
-          <Button type="submit">{editing ? t("shortcutsPanel_saveShortcut") : t("shortcutsPanel_addShortcut")}</Button>
+          <Button type="submit">
+            {editing ? t("shortcutsPanel_saveShortcut") : t("shortcutsPanel_addShortcut")}
+          </Button>
         </div>
       </form>
     </div>

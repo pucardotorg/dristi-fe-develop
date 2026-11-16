@@ -14,11 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { COURT_IDS, courtProfile, isCourtId } from "@/lib/court/profiles";
 import {
@@ -45,7 +41,7 @@ function useBrandHue(): [BrandHue | null, (hue: BrandHue) => void] {
   const [hue, setHue] = React.useState<BrandHue | null>(() =>
     typeof document === "undefined"
       ? null
-      : resolveBrandHue(court, document.documentElement.dataset.brandHue)
+      : resolveBrandHue(court, document.documentElement.dataset.brandHue),
   );
   const choose = React.useCallback((next: BrandHue) => {
     setHue(next);

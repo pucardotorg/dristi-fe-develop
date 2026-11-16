@@ -17,13 +17,7 @@
  */
 
 import * as React from "react";
-import {
-  IdCardIcon,
-  RefreshCwIcon,
-  ScanFaceIcon,
-  UserIcon,
-  VideoIcon,
-} from "lucide-react";
+import { IdCardIcon, RefreshCwIcon, ScanFaceIcon, UserIcon, VideoIcon } from "lucide-react";
 
 import { storeUpload } from "@/lib/filing/data";
 import { discardStoredFile, formatDuration, getFileUrl } from "@/lib/filing/files";
@@ -212,7 +206,9 @@ export function OathCapture({
             icon={<VideoIcon className="size-5" />}
             onClick={record}
           >
-            {t("oathCapture_opensYourCameraHereRecordingStops", { formatDuration: formatDuration(OATH_MAX_SECONDS) })}
+            {t("oathCapture_opensYourCameraHereRecordingStops", {
+              formatDuration: formatDuration(OATH_MAX_SECONDS),
+            })}
           </ChoiceCard>
           {busy ? (
             <p role="status" className="text-body-compact text-muted-foreground">

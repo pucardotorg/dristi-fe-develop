@@ -8,11 +8,11 @@ with its source PDF.
 
 ## Pre / post 1 July 2024 pairing
 
-| Domain | Pre-2024-07-01 | Post-2024-07-01 |
-|---|---|---|
+| Domain    | Pre-2024-07-01                          | Post-2024-07-01                                 |
+| --------- | --------------------------------------- | ----------------------------------------------- |
 | Procedure | Code of Criminal Procedure, 1973 (CrPC) | Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS) |
-| Penal | Indian Penal Code, 1860 (IPC) | Bharatiya Nyaya Sanhita, 2023 (BNS) |
-| Evidence | Indian Evidence Act, 1872 (IEA) | Bharatiya Sakshya Adhiniyam, 2023 (BSA) |
+| Penal     | Indian Penal Code, 1860 (IPC)           | Bharatiya Nyaya Sanhita, 2023 (BNS)             |
+| Evidence  | Indian Evidence Act, 1872 (IEA)         | Bharatiya Sakshya Adhiniyam, 2023 (BSA)         |
 
 Applicability for a case follows the **cause-of-action date** (when the cheque bounced),
 not the filing or hearing date. See [architecture.md](architecture.md).

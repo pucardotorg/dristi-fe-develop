@@ -17,11 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  isHearingsPageSize,
-  PAGE_SIZES,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { isHearingsPageSize, PAGE_SIZES, type HearingsPageSize } from "@/lib/employee/hearings";
 import { useTranslations } from "next-intl";
 
 /**
@@ -90,13 +86,14 @@ export function ListFooter({
             the count changes is a live region that says nothing about the change worth
             hearing. */}
         <p className="text-body-compact text-muted-foreground tabular-nums">
-          {t("listFooter_showingFromToOfTotal", { from: String(from), to: String(to), total: String(total) })}
+          {t("listFooter_showingFromToOfTotal", {
+            from: String(from),
+            to: String(to),
+            total: String(total),
+          })}
         </p>
         <div className="flex items-center gap-2">
-          <Label
-            htmlFor={id}
-            className="text-body-compact font-normal text-muted-foreground"
-          >
+          <Label htmlFor={id} className="text-body-compact font-normal text-muted-foreground">
             {t("listFooter_perPage")}
           </Label>
           <Select

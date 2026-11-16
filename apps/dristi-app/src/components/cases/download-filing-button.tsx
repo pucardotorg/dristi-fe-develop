@@ -4,11 +4,7 @@ import type { MouseEvent } from "react";
 import { DownloadIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
 
 /**
@@ -47,13 +43,7 @@ export function DownloadFilingButton({
         <TooltipTrigger asChild>
           {/* Disabled buttons swallow pointer events — the span carries the hover. */}
           <span className="inline-flex" onClick={stop}>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              disabled
-              aria-label={label}
-            >
+            <Button type="button" variant="ghost" size="icon-sm" disabled aria-label={label}>
               <DownloadIcon aria-hidden />
             </Button>
           </span>
@@ -68,13 +58,7 @@ export function DownloadFilingButton({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          asChild
-          aria-label={label}
-          onClick={stop}
-        >
+        <Button variant="ghost" size="icon-sm" asChild aria-label={label} onClick={stop}>
           <a href={href} target="_blank" rel="noreferrer" download>
             <DownloadIcon aria-hidden />
           </a>

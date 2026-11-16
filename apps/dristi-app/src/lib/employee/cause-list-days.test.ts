@@ -56,7 +56,9 @@ describe("causeListForDay", () => {
   it("keeps today as the live board", () => {
     assert.equal(
       causeListForDay(TODAY, TODAY, EMPTY_SESSION).length,
-      CAUSE_LIST.filter((hearing) => hearing.status !== "rescheduled" && hearing.status !== "abandoned").length,
+      CAUSE_LIST.filter(
+        (hearing) => hearing.status !== "rescheduled" && hearing.status !== "abandoned",
+      ).length,
     );
   });
 });

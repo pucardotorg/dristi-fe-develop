@@ -39,7 +39,10 @@ describe("appBaseUrl", () => {
 describe("appUrl", () => {
   it("puts the path after the base address", () => {
     process.env.NEXT_PUBLIC_APP_BASE_URL = "https://fe.dristi-dev.in/";
-    assert.equal(appUrl("/sign/abc?step=preview"), "https://fe.dristi-dev.in/sign/abc?step=preview");
+    assert.equal(
+      appUrl("/sign/abc?step=preview"),
+      "https://fe.dristi-dev.in/sign/abc?step=preview",
+    );
   });
 
   it("stays a relative path when there is no base address", () => {

@@ -134,9 +134,7 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
             {t("queueTable_with")}
           </TableHead>
-          <TableHead
-            className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}
-          >
+          <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>
             {t("queueTable_waiting")}
           </TableHead>
         </TableRow>
@@ -158,18 +156,12 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
               <Identifier value={filing.no} label={t("queueTable_filingNumber")} />
             </TableCell>
-            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              {filing.stage}
-            </TableCell>
+            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>{filing.stage}</TableCell>
             {/* Foreground ink, not muted: as a second line under the parties this was
                 subordinate to them, and as its own column it is a fact of the same
                 standing as Stage. */}
-            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              {filing.type}
-            </TableCell>
-            <TableCell className={cn(TABLE_CELL, "max-w-44 truncate")}>
-              {filing.advocate}
-            </TableCell>
+            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>{filing.type}</TableCell>
+            <TableCell className={cn(TABLE_CELL, "max-w-44 truncate")}>{filing.advocate}</TableCell>
             <TableCell
               className={cn(
                 TABLE_CELL,
@@ -180,9 +172,7 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
               {filing.who}
             </TableCell>
             {/* Right-aligned because it is a compared number, and it is the sort key. */}
-            <TableCell
-              className={cn(TABLE_CELL, "text-right whitespace-nowrap")}
-            >
+            <TableCell className={cn(TABLE_CELL, "text-right whitespace-nowrap")}>
               <WaitingCell filing={filing} />
             </TableCell>
           </TableRow>

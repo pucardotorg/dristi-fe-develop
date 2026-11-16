@@ -82,7 +82,7 @@ export function OverflowTabsList({
     const list = listRef.current;
     if (!list || widths) return;
     const tabs = [...list.querySelectorAll<HTMLElement>("[data-overflow-tab]")].map(
-      (node) => node.getBoundingClientRect().width
+      (node) => node.getBoundingClientRect().width,
     );
     const more = list.querySelector<HTMLElement>("[data-overflow-more]");
     setMeasured({
@@ -176,7 +176,7 @@ export function OverflowTabsList({
                     className={cn(
                       "relative min-h-10 gap-1.5 pl-3 text-body-compact",
                       current &&
-                        "font-semibold before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-brand-accent"
+                        "font-semibold before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-brand-accent",
                     )}
                   >
                     {item.label}

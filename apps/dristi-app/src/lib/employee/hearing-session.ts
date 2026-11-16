@@ -108,9 +108,7 @@ function fromStored(stored: StoredSession): HearingSession {
   return {
     ...marksFrom(stored),
     day: stored.day ?? null,
-    previous: stored.previous
-      ? { ...marksFrom(stored.previous), day: stored.previous.day }
-      : null,
+    previous: stored.previous ? { ...marksFrom(stored.previous), day: stored.previous.day } : null,
     postings: stored.postings ?? NO_POSTINGS,
   };
 }
@@ -160,9 +158,7 @@ function commit(next: HearingSession): void {
   saveRecord(STORAGE_KEY, {
     ...marksToStore(next),
     day: next.day,
-    previous: next.previous
-      ? { ...marksToStore(next.previous), day: next.previous.day }
-      : null,
+    previous: next.previous ? { ...marksToStore(next.previous), day: next.previous.day } : null,
     postings: { ...next.postings },
   } satisfies StoredSession);
   for (const listener of listeners) listener();

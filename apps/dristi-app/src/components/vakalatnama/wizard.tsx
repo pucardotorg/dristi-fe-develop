@@ -75,7 +75,9 @@ export function VakalatnamaWizard({ id }: { id: string }) {
       <div className="px-4 pb-8 pt-6 sm:px-6 lg:px-12">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
           <header className="flex flex-col gap-1">
-            <h1 className="text-title font-semibold tracking-tight">{t("wizard_newVakalatnama")}</h1>
+            <h1 className="text-title font-semibold tracking-tight">
+              {t("wizard_newVakalatnama")}
+            </h1>
             <p className="text-body text-muted-foreground">
               {t("wizard_appointOneOrMoreAdvocatesFor")}
             </p>
@@ -86,7 +88,10 @@ export function VakalatnamaWizard({ id }: { id: string }) {
           <div>
             <Stepper
               className={CENTRED_STEPPER}
-              aria-label={t("wizard_stepValueOfLength", { value: String(step + 1), length: String(STEPS.length) })}
+              aria-label={t("wizard_stepValueOfLength", {
+                value: String(step + 1),
+                length: String(STEPS.length),
+              })}
             >
               {STEPS.map((s, i) => (
                 <StepperItem
@@ -99,7 +104,12 @@ export function VakalatnamaWizard({ id }: { id: string }) {
               ))}
             </Stepper>
             <p className={STEP_CAPTION}>
-              {t.rich("wizard_stepValueOfLengthTitle", { value: String(step + 1), length: String(STEPS.length), title: translateText(t, active.title), span: (chunks) => <span className="font-medium text-foreground">{chunks}</span> })}
+              {t.rich("wizard_stepValueOfLengthTitle", {
+                value: String(step + 1),
+                length: String(STEPS.length),
+                title: translateText(t, active.title),
+                span: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+              })}
             </p>
           </div>
 
@@ -127,11 +137,7 @@ export function VakalatnamaWizard({ id }: { id: string }) {
                     {t("wizard_allPartiesMustSignToContinue")}
                   </span>
                 ) : null}
-                <Button
-                  type="button"
-                  onClick={() => go(step + 1)}
-                  disabled={continueBlocked}
-                >
+                <Button type="button" onClick={() => go(step + 1)} disabled={continueBlocked}>
                   {continueLabel}
                   <ArrowRightIcon aria-hidden />
                 </Button>

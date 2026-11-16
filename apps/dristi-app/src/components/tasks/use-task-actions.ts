@@ -52,13 +52,11 @@ export const FLOW_DIALOG: Record<Flow, { title: string; description: string }> =
   },
   scrutiny: {
     title: "useTaskActions_continuingInTheScrutinyFlow",
-    description:
-      "useTaskActions_correctingTheDefectsHappensInThe",
+    description: "useTaskActions_correctingTheDefectsHappensInThe",
   },
   filing: {
     title: "useTaskActions_continuingInTheFilingFlow",
-    description:
-      "useTaskActions_draftingAndFilingHappensInThe",
+    description: "useTaskActions_draftingAndFilingHappensInThe",
   },
 };
 
@@ -115,14 +113,16 @@ export function useTaskActions({ inDialog = false }: { inDialog?: boolean } = {}
         return task;
       } catch (e) {
         const message =
-          e instanceof TransitionError ? e.message : t("useTaskActions_somethingWentWrongNothingWasChanged");
+          e instanceof TransitionError
+            ? e.message
+            : t("useTaskActions_somethingWentWrongNothingWasChanged");
         fail(message);
         return null;
       } finally {
         setBusy(null);
       }
     },
-    [dispatch, online, fail, t]
+    [dispatch, online, fail, t],
   );
 
   return { act, busy, online, error };

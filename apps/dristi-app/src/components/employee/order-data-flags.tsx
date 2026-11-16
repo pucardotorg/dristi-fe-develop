@@ -65,11 +65,8 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
           {t("orderDataFlags_attendanceHistory")}
         </h3>
         <p className="text-caption text-muted-foreground">
-          {history.total === 1
-            ? "1 past hearing."
-            : `${history.total} past hearings.`}{" "}
-          The last {history.recent.length === 1 ? "one" : history.recent.length}{" "}
-          shown, latest on the right.
+          {history.total === 1 ? "1 past hearing." : `${history.total} past hearings.`} The last{" "}
+          {history.recent.length === 1 ? "one" : history.recent.length} shown, latest on the right.
         </p>
       </div>
 
@@ -96,11 +93,7 @@ export function OrderDataFlags({ hearing }: { hearing?: CourtHearing }) {
         </div>
         <ul className="flex flex-col">
           {history.rows.map((row) => (
-            <AttendanceLine
-              key={row.appearance.id}
-              row={row}
-              sittings={history.recent}
-            />
+            <AttendanceLine key={row.appearance.id} row={row} sittings={history.recent} />
           ))}
         </ul>
       </div>
@@ -131,21 +124,16 @@ function AttendanceLine({
   const t = useTranslations();
   const { appearance } = row;
   /* A side's counsel is one line for the side; the advocates on record name it. */
-  const name =
-    appearance.kind === "counsel" ? appearance.role : appearance.name;
+  const name = appearance.kind === "counsel" ? appearance.role : appearance.name;
   const detail =
-    appearance.kind === "counsel"
-      ? (appearance.advocates ?? []).join(", ")
-      : appearance.role;
+    appearance.kind === "counsel" ? (appearance.advocates ?? []).join(", ") : appearance.role;
 
   return (
     <li className="flex min-h-14 items-center gap-3 border-b border-hairline py-2 last:border-b-0">
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-body-compact font-medium">{name}</span>
         {detail ? (
-          <span className="truncate text-caption text-muted-foreground">
-            {detail}
-          </span>
+          <span className="truncate text-caption text-muted-foreground">{detail}</span>
         ) : null}
       </div>
       <ol
@@ -166,7 +154,10 @@ function AttendanceLine({
           {row.percent === undefined ? "—" : `${row.percent}%`}
         </span>
         <span className="text-caption text-muted-foreground tabular-nums">
-          {t("orderDataFlags_presentOfRequired", { present: String(row.present), required: String(row.required) })}
+          {t("orderDataFlags_presentOfRequired", {
+            present: String(row.present),
+            required: String(row.required),
+          })}
         </span>
       </div>
     </li>

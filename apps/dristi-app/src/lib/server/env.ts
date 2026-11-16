@@ -11,9 +11,7 @@
  * proxy can show, instead of becoming a confusing upstream URL.
  */
 
-export type ApiBaseUrlResult =
-  | { ok: true; baseUrl: string }
-  | { ok: false; reason: string };
+export type ApiBaseUrlResult = { ok: true; baseUrl: string } | { ok: false; reason: string };
 
 /**
  * The backend's versioned API root the proxy forwards to, e.g.

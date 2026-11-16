@@ -14,12 +14,7 @@
 import pack from "./orders-dummy.json";
 import { counselFor, type CaseRecord } from "./types";
 
-export type OrderClassId =
-  | "judicial"
-  | "process"
-  | "scheduling"
-  | "workflow"
-  | "other";
+export type OrderClassId = "judicial" | "process" | "scheduling" | "workflow" | "other";
 
 /**
  * The broad split the register is read by: orders are passed by the court,
@@ -30,10 +25,7 @@ export type OrderClassId =
  */
 export type OrderKind = "order" | "notification";
 
-export type OrderStatus =
-  | "draft-in-progress"
-  | "pending-signature"
-  | "published";
+export type OrderStatus = "draft-in-progress" | "pending-signature" | "published";
 
 export type OrderTypeId =
   | "abate-case"
@@ -412,9 +404,7 @@ export function orderStatusLabel(status: OrderStatus): string {
 }
 
 /** Publication workflow — not case status. Pair with the words (Laws). */
-export function orderStatusVariant(
-  status: OrderStatus
-): "success" | "info" | "warning" {
+export function orderStatusVariant(status: OrderStatus): "success" | "info" | "warning" {
   if (status === "published") return "success";
   if (status === "pending-signature") return "info";
   return "warning";
@@ -463,7 +453,7 @@ export type OrdersFile = {
 
 export function orderPartiesDisplay(
   order: OrderRecord,
-  peopleById: Map<string, OrderPerson>
+  peopleById: Map<string, OrderPerson>,
 ): string {
   if (order.partiesDisplay) return order.partiesDisplay;
   return order.participantIds
@@ -487,9 +477,7 @@ export function hasIssuedDocument(order: OrderRecord): boolean {
 
 function typeIdFromPack(label: string): OrderTypeId {
   const normalized = label.trim().toLowerCase();
-  const match = ORDER_TYPES.find(
-    (item) => item.label.toLowerCase() === normalized
-  );
+  const match = ORDER_TYPES.find((item) => item.label.toLowerCase() === normalized);
   if (!match) {
     throw new Error(`Unknown order type in dummy pack: ${label}`);
   }
@@ -505,7 +493,7 @@ function statusFromPack(value: string): OrderStatus {
 }
 
 function documentFromPack(
-  value: { label: string; href?: string; page?: number } | null | undefined
+  value: { label: string; href?: string; page?: number } | null | undefined,
 ): OrderDocument | undefined {
   if (!value) return undefined;
   return {
@@ -620,8 +608,7 @@ function addDays(day: string, days: number): string {
  */
 function cognizanceOn(record: CaseRecord): string {
   const afterScrutiny = addDays(record.filedOn, SCRUTINY_DAYS);
-  const firstCourtDay =
-    record.previousHearingOn ?? record.nextHearing?.on ?? record.disposal?.on;
+  const firstCourtDay = record.previousHearingOn ?? record.nextHearing?.on ?? record.disposal?.on;
   if (!firstCourtDay || afterScrutiny <= firstCourtDay) return afterScrutiny;
   return firstCourtDay > record.filedOn ? firstCourtDay : record.filedOn;
 }
@@ -632,10 +619,7 @@ function cognizanceOn(record: CaseRecord): string {
  * Class and kind both come off the catalogue, so reclassifying a type
  * cannot leave a synthesised record filed under the old group.
  */
-function defaultOrders(
-  record: CaseRecord,
-  people: OrderPerson[]
-): OrderRecord[] {
+function defaultOrders(record: CaseRecord, people: OrderPerson[]): OrderRecord[] {
   const partyIds = people
     .filter((person) => person.role === "Complainant" || person.role === "Accused")
     .map((person) => person.id);
@@ -747,9 +731,7 @@ function withIssuedDocument(order: OrderRecord): OrderRecord {
       href: ORDERS_PDF,
       page:
         ORDER_PAGE_BY_TYPE[order.type] ??
-        (order.classId === "process"
-          ? PROCESS_ORDER_PAGE
-          : ORDER_OF_THE_DAY_PAGE),
+        (order.classId === "process" ? PROCESS_ORDER_PAGE : ORDER_OF_THE_DAY_PAGE),
     },
   };
 }
@@ -778,9 +760,7 @@ export function selectOrders(options: {
   pageSize: OrdersPageSize;
   page: number;
 }): OrdersSelection {
-  const matched = options.orders.filter(
-    (order) => order.kind === options.kind
-  );
+  const matched = options.orders.filter((order) => order.kind === options.kind);
 
   const sorted = [...matched].sort((a, b) => {
     const byDate = b.issuedOn.localeCompare(a.issuedOn);
@@ -803,10 +783,7 @@ export function selectOrders(options: {
   };
 }
 
-export function orderPageWindow(
-  page: number,
-  pageCount: number
-): (number | "gap")[] {
+export function orderPageWindow(page: number, pageCount: number): (number | "gap")[] {
   if (pageCount <= 7) {
     return Array.from({ length: pageCount }, (_, index) => index + 1);
   }
@@ -816,8 +793,6 @@ export function orderPageWindow(
     .sort((a, b) => a - b);
 
   return visible.flatMap((entry, index) =>
-    index > 0 && entry - visible[index - 1] > 1
-      ? ["gap" as const, entry]
-      : [entry]
+    index > 0 && entry - visible[index - 1] > 1 ? ["gap" as const, entry] : [entry],
   );
 }

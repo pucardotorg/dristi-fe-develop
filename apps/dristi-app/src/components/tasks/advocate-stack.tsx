@@ -43,17 +43,25 @@ export function AdvocateStack({
   const shown = all.slice(0, max);
   const rest = all.length - shown.length;
   const onVakalatnama = (p: Person) => kase.signatories.includes(p.id);
-  const names = all.map((p) => (onVakalatnama(p) ? `${p.name} (on the vakalatnama)` : p.name)).join(", ");
+  const names = all
+    .map((p) => (onVakalatnama(p) ? `${p.name} (on the vakalatnama)` : p.name))
+    .join(", ");
   if (!all.length) return null;
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <AvatarGroup role="group" aria-label={`${label}: ${names}`} className={cn("w-fit -space-x-1", className)}>
+        <AvatarGroup
+          role="group"
+          aria-label={`${label}: ${names}`}
+          className={cn("w-fit -space-x-1", className)}
+        >
           {shown.map((p) => (
             <PersonAvatar key={p.id} person={p} you={p.id === user.id} size="default" />
           ))}
           {rest > 0 ? (
-            <AvatarGroupCount className="bg-surface-sunken text-caption font-medium tabular-nums text-foreground">+{rest}</AvatarGroupCount>
+            <AvatarGroupCount className="bg-surface-sunken text-caption font-medium tabular-nums text-foreground">
+              +{rest}
+            </AvatarGroupCount>
           ) : null}
         </AvatarGroup>
       </TooltipTrigger>

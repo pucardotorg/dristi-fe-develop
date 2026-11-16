@@ -371,10 +371,7 @@ function nextHearingSentence(day: string, purpose: CourtHearingPurposeId): strin
 }
 
 function composeBusiness(seed: ADiarySeed, nextHearing: string): string {
-  return [
-    ...seed.proceedings,
-    nextHearingSentence(nextHearing, seed.nextPurpose),
-  ].join("\n\n");
+  return [...seed.proceedings, nextHearingSentence(nextHearing, seed.nextPurpose)].join("\n\n");
 }
 
 /**
@@ -430,10 +427,7 @@ export type ADiaryFilters = {
 export const DEFAULT_A_DIARY_FILTERS: ADiaryFilters = { dated: null };
 
 /** Which day the filter is asking for, with `null` resolved to the reader's today. */
-export function resolveADiaryDay(
-  filters: ADiaryFilters,
-  today: string,
-): string {
+export function resolveADiaryDay(filters: ADiaryFilters, today: string): string {
   return filters.dated ?? today;
 }
 
@@ -498,9 +492,7 @@ export function saveBusinessOfTheDay(
 ): ADiaryEntry[] {
   const text = business.trim();
   if (!text) return rows;
-  return rows.map((entry) =>
-    entry.id === id ? { ...entry, business: text } : entry,
-  );
+  return rows.map((entry) => (entry.id === id ? { ...entry, business: text } : entry));
 }
 
 /** "31 Aug 2026" — the same column register every other court-side list uses. */
@@ -611,9 +603,7 @@ export function aDiaryDocumentText(document: ADiaryDocument): string {
     "",
     document.attendance,
     "",
-    ...document.paragraphs.map(
-      (paragraph, index) => `${index + 1}. ${paragraph}`,
-    ),
+    ...document.paragraphs.map((paragraph, index) => `${index + 1}. ${paragraph}`),
     "",
     document.signature,
   ].join("\n");
@@ -669,10 +659,7 @@ export type ADiaryDayDocument = {
   signature: string;
 };
 
-export function buildADiaryDayDocument(
-  day: string,
-  rows: ADiaryEntry[],
-): ADiaryDayDocument {
+export function buildADiaryDayDocument(day: string, rows: ADiaryEntry[]): ADiaryDayDocument {
   return {
     court: `Before the ${COURT}`,
     dated: formatCourtDay(day),

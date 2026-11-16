@@ -5,10 +5,7 @@ import type { LifecycleApplication } from "@/lib/applications/lifecycle";
 
 import { applicationOrderHref } from "./application-order-decision";
 import { applicationOrderKey, quickOrderDraft } from "./application-order-draft";
-import {
-  applicationOrderOutcomes,
-  outcomeHearingDate,
-} from "./application-order-outcome";
+import { applicationOrderOutcomes, outcomeHearingDate } from "./application-order-outcome";
 import type { ItemBlock } from "./order-composer";
 
 const item: ItemBlock = {

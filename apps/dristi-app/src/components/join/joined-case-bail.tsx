@@ -13,11 +13,7 @@ import { useTranslations } from "next-intl";
  * what the join looked up: the cause title, the court, and the person who
  * just joined on the accused side.
  */
-function joinedCaseRecord(
-  joinCase: JoinCase,
-  accused: string,
-  advocate?: string
-): CaseRecord {
+function joinedCaseRecord(joinCase: JoinCase, accused: string, advocate?: string): CaseRecord {
   const filed = /^(\d{2})-(\d{2})-(\d{4})$/.exec(joinCase.filingDate);
   const filedOn = filed ? `${filed[3]}-${filed[2]}-${filed[1]}` : "";
   const complainantAdvocate =

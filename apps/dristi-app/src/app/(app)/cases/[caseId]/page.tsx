@@ -5,9 +5,7 @@ import { CaseDetail } from "@/components/cases/case-detail";
 import { findCaseRecord } from "@/lib/cases/party-cases";
 import { serverCourtText } from "@/lib/court/server";
 
-export async function generateMetadata(
-  props: PageProps<"/cases/[caseId]">
-): Promise<Metadata> {
+export async function generateMetadata(props: PageProps<"/cases/[caseId]">): Promise<Metadata> {
   const { caseId } = await props.params;
   const record = findCaseRecord(caseId);
   const courtText = await serverCourtText();
@@ -15,9 +13,7 @@ export async function generateMetadata(
 }
 
 /** The advocate's case view. The screen is shared with the court (`case-detail.tsx`). */
-export default async function CaseDetailPage(
-  props: PageProps<"/cases/[caseId]">
-) {
+export default async function CaseDetailPage(props: PageProps<"/cases/[caseId]">) {
   const { caseId } = await props.params;
   const record = findCaseRecord(caseId);
   if (!record) notFound();

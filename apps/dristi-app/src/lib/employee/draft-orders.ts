@@ -50,10 +50,7 @@ export function draftOrderHref(hearing: { id: string }): string {
  * Written as the two booleans `HearingOrdersButton` reads for its own glyph so a change
  * to either side has somewhere to be caught.
  */
-export function hasOrderDrawnUp(
-  hearing: CourtHearing,
-  drafts: OrderDrafts,
-): boolean {
+export function hasOrderDrawnUp(hearing: CourtHearing, drafts: OrderDrafts): boolean {
   const drafted = hasDraftFor(drafts, hearing.id);
   const recorded = hearing.status === "completed";
   return drafted || recorded;

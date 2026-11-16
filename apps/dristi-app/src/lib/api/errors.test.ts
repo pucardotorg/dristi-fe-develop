@@ -19,7 +19,10 @@ describe("parseErrorBody", () => {
   });
 
   it("keeps a machine-readable code", () => {
-    assert.equal(parseErrorBody({ detail: "x", code: "upstream_timeout" }).code, "upstream_timeout");
+    assert.equal(
+      parseErrorBody({ detail: "x", code: "upstream_timeout" }).code,
+      "upstream_timeout",
+    );
   });
 
   it("flattens nested field errors to dotted paths and skips meta", () => {
@@ -37,11 +40,11 @@ describe("parseErrorBody", () => {
   });
 
   it("falls back to the first non-field error, then a generic sentence", () => {
+    assert.equal(parseErrorBody({ non_field_errors: ["Invalid OTP."] }).message, "Invalid OTP.");
     assert.equal(
-      parseErrorBody({ non_field_errors: ["Invalid OTP."] }).message,
-      "Invalid OTP.",
+      parseErrorBody("<html>Bad gateway</html>").message,
+      "Something went wrong. Please try again.",
     );
-    assert.equal(parseErrorBody("<html>Bad gateway</html>").message, "Something went wrong. Please try again.");
     assert.equal(parseErrorBody(null).message, "Something went wrong. Please try again.");
   });
 });
@@ -64,7 +67,11 @@ describe("parseErrorBody — the standard errors[] shape", () => {
   it("maps dotted and indexed field paths to the flattened keys", () => {
     const parsed = parseErrorBody({
       errors: [
-        { code: "E00002", message: "This field is required.", field: "profile.bar_registration_id" },
+        {
+          code: "E00002",
+          message: "This field is required.",
+          field: "profile.bar_registration_id",
+        },
         { code: "E00001", message: "Unsupported type.", field: "documents[0].file" },
         { code: "E01011", message: "Too short.", field: "password" },
         { code: "E01011", message: "Too common.", field: "password" },
@@ -111,7 +118,9 @@ describe("ApiError", () => {
     assert.equal(error.fieldError("missing"), undefined);
     assert.equal(error.hasCode("E01013"), false);
     assert.equal(
-      new ApiError({ kind: "http", status: 403, message: "x", codes: ["E01013"] }).hasCode("E01013"),
+      new ApiError({ kind: "http", status: 403, message: "x", codes: ["E01013"] }).hasCode(
+        "E01013",
+      ),
       true,
     );
     assert.equal(error.name, "ApiError");

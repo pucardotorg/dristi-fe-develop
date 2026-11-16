@@ -124,9 +124,7 @@ export function AccusedSection() {
    */
   const missingContact = draft.accused.filter((acc) => !accusedHasContact(acc));
   const missingNames = nameList(
-    draft.accused.flatMap((acc, i) =>
-      accusedHasContact(acc) ? [] : [accusedLabel(acc, i)]
-    )
+    draft.accused.flatMap((acc, i) => (accusedHasContact(acc) ? [] : [accusedLabel(acc, i)])),
   );
 
   const handleContinue = () => {
@@ -196,7 +194,7 @@ export function AccusedSection() {
 
         {/* Which accused the fields below belong to, so a check can point at its field. */}
         <CorrectionInstance value={index}>
-        {/*
+          {/*
           Identity. "Is the accused a person or an institution?" and "what kind of
           institution?" are two questions: the old single list made you answer the second
           to get past the first, and left "Proprietorship" sitting next to "Individual" as
@@ -205,111 +203,119 @@ export function AccusedSection() {
           Age is gone. It was optional, nothing downstream read it, and nobody knows the
           age of the person they are suing (owner, 2026-08-19).
         */}
-        <FormCard title={isIndividual ? t("accusedSection_accusedValueDetails", { value: String(index + 1) }) : t("accusedSection_entityDetails")}>
-          <FormRow>
-            <FormField label={t("accusedSection_accusedType")} required>
-              <OptionSelect
-                value={a.type}
-                onValueChange={(v) => setField("type", v as AccusedType)}
-                options={ACCUSED_TYPES}
-              />
-            </FormField>
-            {isIndividual ? null : (
-              <FormField label={t("accusedSection_typeOfEntity")} name="entType" required>
+          <FormCard
+            title={
+              isIndividual
+                ? t("accusedSection_accusedValueDetails", { value: String(index + 1) })
+                : t("accusedSection_entityDetails")
+            }
+          >
+            <FormRow>
+              <FormField label={t("accusedSection_accusedType")} required>
                 <OptionSelect
-                  value={a.entType}
-                  onValueChange={(v) => setField("entType", v)}
-                  options={ACCUSED_ENTITY_TYPES}
-                  placeholder={t("accusedSection_selectType")}
+                  value={a.type}
+                  onValueChange={(v) => setField("type", v as AccusedType)}
+                  options={ACCUSED_TYPES}
                 />
               </FormField>
-            )}
-          </FormRow>
-          <HalfWidth>
-            <FormField label={isIndividual ? t("accusedSection_fullName") : t("accusedSection_entityName")} name="name" required>
-              <TextField
-                value={a.name}
-                onChange={(v) => setField("name", v)}
-                placeholder={t("accusedSection_asItShouldAppearOnThe")}
-                autoComplete="off"
-              />
-            </FormField>
-          </HalfWidth>
-        </FormCard>
+              {isIndividual ? null : (
+                <FormField label={t("accusedSection_typeOfEntity")} name="entType" required>
+                  <OptionSelect
+                    value={a.entType}
+                    onValueChange={(v) => setField("entType", v)}
+                    options={ACCUSED_ENTITY_TYPES}
+                    placeholder={t("accusedSection_selectType")}
+                  />
+                </FormField>
+              )}
+            </FormRow>
+            <HalfWidth>
+              <FormField
+                label={isIndividual ? t("accusedSection_fullName") : t("accusedSection_entityName")}
+                name="name"
+                required
+              >
+                <TextField
+                  value={a.name}
+                  onChange={(v) => setField("name", v)}
+                  placeholder={t("accusedSection_asItShouldAppearOnThe")}
+                  autoComplete="off"
+                />
+              </FormField>
+            </HalfWidth>
+          </FormCard>
 
-        {/*
+          {/*
           Who answers for the entity. Under S-141 the company is not summoned alone —
           every person who was in charge of its business when the cheque bounced is
           proceeded against with it, so this is a list, not a field.
         */}
-        {isIndividual ? null : (
+          {isIndividual ? null : (
+            <FormCard
+              title={t("accusedSection_whoIsSummonedForTheEntity")}
+              description={t("accusedSection_directorsPartnersOrOfficersInCharge")}
+            >
+              <RepresentativeList reps={a.reps} onChange={(reps) => setField("reps", reps)} />
+            </FormCard>
+          )}
+
+          {/* Contact */}
           <FormCard
-            title={t("accusedSection_whoIsSummonedForTheEntity")}
-            description={t("accusedSection_directorsPartnersOrOfficersInCharge")}
+            title={t("accusedSection_contactDetails")}
+            description={t("accusedSection_whereTheCourtCanReachThe")}
           >
-            <RepresentativeList
-              reps={a.reps}
-              onChange={(reps) => setField("reps", reps)}
+            <ContactList
+              contacts={a.contacts}
+              onChange={(contacts) => setField("contacts", contacts)}
             />
           </FormCard>
-        )}
 
-        {/* Contact */}
-        <FormCard
-          title={t("accusedSection_contactDetails")}
-          description={t("accusedSection_whereTheCourtCanReachThe")}
-        >
-          <ContactList
-            contacts={a.contacts}
-            onChange={(contacts) => setField("contacts", contacts)}
-          />
-        </FormCard>
-
-        {/* Service addresses */}
-        <FormCard title={t("accusedSection_addressDetails")}>
-          {!draft.dismissed.accusedAddress ? (
-            <SectionNotice
-              variant="info"
-              onDismiss={() =>
-                update((d) => {
-                  d.dismissed.accusedAddress = true;
-                })
-              }
-            >
-              {t("accusedSection_theSummonsGoesToEveryAddress")}
-            </SectionNotice>
-          ) : null}
-          <AddressBlockList
-            blocks={a.addresses}
-            onChange={(addresses) => setField("addresses", addresses)}
-          />
-        </FormCard>
-
-        {/* Jurisdiction */}
-        <FormCard title={t("accusedSection_jurisdiction")}>
-          <FormField
-            asGroup
-            label={t("accusedSection_doesTheAccusedResideWithinThe")}
-            help={t("accusedSection_theCourtDecidesJurisdictionOnThe")}
-          >
-            <YesNoSegmented
-              value={a.jurisdiction}
-              onValueChange={(v) => setField("jurisdiction", v)}
-              ariaLabel={t("accusedSection_doesTheAccusedResideWithinThe")}
+          {/* Service addresses */}
+          <FormCard title={t("accusedSection_addressDetails")}>
+            {!draft.dismissed.accusedAddress ? (
+              <SectionNotice
+                variant="info"
+                onDismiss={() =>
+                  update((d) => {
+                    d.dismissed.accusedAddress = true;
+                  })
+                }
+              >
+                {t("accusedSection_theSummonsGoesToEveryAddress")}
+              </SectionNotice>
+            ) : null}
+            <AddressBlockList
+              blocks={a.addresses}
+              onChange={(addresses) => setField("addresses", addresses)}
             />
-          </FormField>
-        </FormCard>
+          </FormCard>
+
+          {/* Jurisdiction */}
+          <FormCard title={t("accusedSection_jurisdiction")}>
+            <FormField
+              asGroup
+              label={t("accusedSection_doesTheAccusedResideWithinThe")}
+              help={t("accusedSection_theCourtDecidesJurisdictionOnThe")}
+            >
+              <YesNoSegmented
+                value={a.jurisdiction}
+                onValueChange={(v) => setField("jurisdiction", v)}
+                ariaLabel={t("accusedSection_doesTheAccusedResideWithinThe")}
+              />
+            </FormField>
+          </FormCard>
         </CorrectionInstance>
       </FilingMain>
 
-      <FilingFooter
-        backHref={prev ? hrefFor(prev) : undefined}
-        onContinue={handleContinue}
-      />
+      <FilingFooter backHref={prev ? hrefFor(prev) : undefined} onContinue={handleContinue} />
 
       {/* Continue while some accused — named here — has no phone or email. */}
       <Dialog open={noContactOpen} onOpenChange={setNoContactOpen}>
-        <ChromeDialogContent mobileSheet className="sm:max-w-lg" onInteractOutside={(event) => event.preventDefault()}>
+        <ChromeDialogContent
+          mobileSheet
+          className="sm:max-w-lg"
+          onInteractOutside={(event) => event.preventDefault()}
+        >
           <DialogHeader>
             <div className="flex items-center gap-3">
               <span
@@ -337,7 +343,12 @@ export function AccusedSection() {
 
       {/* The confirmation itself — the court is told this was a considered choice. */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <ChromeDialogContent mobileSheet aria-describedby={confirmStatementId} className="sm:max-w-lg" onInteractOutside={(event) => event.preventDefault()}>
+        <ChromeDialogContent
+          mobileSheet
+          aria-describedby={confirmStatementId}
+          className="sm:max-w-lg"
+          onInteractOutside={(event) => event.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>{t("accusedSection_confirmProceedWithoutDetails")}</DialogTitle>
           </DialogHeader>

@@ -7,21 +7,14 @@ import type { ScrutinyController } from "@/lib/employee/scrutiny/use-scrutiny-st
 import { cn } from "@/lib/utils";
 import { RaisedItem } from "@/components/employee/scrutiny/field-row";
 import { FlagComposer } from "@/components/employee/scrutiny/flag-composer";
-import {
-  RecordList,
-  RecordRow,
-} from "@/components/employee/scrutiny/record-rows";
+import { RecordList, RecordRow } from "@/components/employee/scrutiny/record-rows";
 import { ReturnedValue } from "@/components/employee/scrutiny/returned-value";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { SHEET } from "@/components/employee/scrutiny/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
 
 /**
@@ -160,7 +153,9 @@ function ChangeCard({
               <FlagIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{flag ? t("changesList_editThisFlag") : t("changesList_raiseAgain")}</TooltipContent>
+          <TooltipContent>
+            {flag ? t("changesList_editThisFlag") : t("changesList_raiseAgain")}
+          </TooltipContent>
         </Tooltip>
       </div>
 
@@ -186,18 +181,9 @@ function ChangeCard({
         </RecordList>
 
         {composing ? (
-          <FlagComposer
-            field={field}
-            controller={controller}
-            onGoToItem={onGoToItem}
-          />
+          <FlagComposer field={field} controller={controller} onGoToItem={onGoToItem} />
         ) : flag ? (
-          <RaisedItem
-            field={field}
-            flag={flag}
-            controller={controller}
-            onGoToItem={onGoToItem}
-          />
+          <RaisedItem field={field} flag={flag} controller={controller} onGoToItem={onGoToItem} />
         ) : null}
       </div>
     </Card>

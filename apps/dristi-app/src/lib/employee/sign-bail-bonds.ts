@@ -500,14 +500,9 @@ export function signSelectedBailBonds(
  * reference asks for none and inventing a reasons taxonomy for a demo would be inventing
  * product. Like signing, it writes nothing anywhere.
  */
-export function rejectBailBond(
-  rows: SignBailBond[],
-  id: string,
-): SignBailBond[] {
+export function rejectBailBond(rows: SignBailBond[], id: string): SignBailBond[] {
   return rows.map((bond) =>
-    bond.id === id && bond.status === "pending-signature"
-      ? { ...bond, status: "rejected" }
-      : bond,
+    bond.id === id && bond.status === "pending-signature" ? { ...bond, status: "rejected" } : bond,
   );
 }
 
@@ -603,9 +598,7 @@ function bondClauses(bond: SignBailBond): {
   };
 }
 
-export function buildSignBailBondDocument(
-  bond: SignBailBond,
-): SignBailBondDocument {
+export function buildSignBailBondDocument(bond: SignBailBond): SignBailBondDocument {
   const { recital, undertakings } = bondClauses(bond);
   const year = bond.caseNumber.split("/").at(-1) ?? "";
 
@@ -635,9 +628,7 @@ export function buildSignBailBondDocument(
   };
 }
 
-export function signBailBondDocumentText(
-  document: SignBailBondDocument,
-): string {
+export function signBailBondDocumentText(document: SignBailBondDocument): string {
   return [
     `Case Number: ${document.caseNumber}`,
     "",
@@ -650,9 +641,7 @@ export function signBailBondDocumentText(
     "",
     ...document.recital,
     "",
-    ...document.undertakings.map(
-      (clause, index) => `${index + 1}. ${clause}`,
-    ),
+    ...document.undertakings.map((clause, index) => `${index + 1}. ${clause}`),
     "",
     `Dated this the ${document.dated}.`,
     "",

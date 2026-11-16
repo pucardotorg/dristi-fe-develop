@@ -5,7 +5,7 @@ Snapshot: 2026-07-30. Source: [domain model site](https://dristidomain.netlify.a
 
 ## What this layer is
 
-The normative layer: what a system *must* do to run a case lawfully. Each statement is:
+The normative layer: what a system _must_ do to run a case lawfully. Each statement is:
 
 - traced back to the **provision** that requires it,
 - intended to be **testable**,

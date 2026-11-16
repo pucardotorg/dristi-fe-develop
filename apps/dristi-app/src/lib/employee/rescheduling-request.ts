@@ -129,8 +129,7 @@ export const RESCHEDULING_QUEUE: ReschedulingRequest[] = [
     sender: "Adv. Suresh Menon",
     filedFor: "complainant",
     createdBy: "Clerk to Adv. Suresh Menon",
-    reason:
-      "The complainant is out of station on the listed date and seeks a later posting.",
+    reason: "The complainant is out of station on the listed date and seeks a later posting.",
   },
   {
     id: "rr-309",
@@ -192,8 +191,7 @@ export const RESCHEDULING_QUEUE: ReschedulingRequest[] = [
     sender: "Adv. Suresh Menon",
     filedFor: "complainant",
     createdBy: "Clerk to Adv. Suresh Menon",
-    reason:
-      "The bank witness summoned for the listed date is not available until the week after.",
+    reason: "The bank witness summoned for the listed date is not available until the week after.",
   },
   {
     id: "rr-306",
@@ -211,8 +209,7 @@ export const RESCHEDULING_QUEUE: ReschedulingRequest[] = [
     sender: "Adv. Nisha Thomas",
     filedFor: "complainant",
     createdBy: "Clerk to Adv. Nisha Thomas",
-    reason:
-      "Written arguments will not be ready by the listed date; a short posting is sought.",
+    reason: "Written arguments will not be ready by the listed date; a short posting is sought.",
   },
   {
     id: "rr-305",
@@ -387,9 +384,7 @@ export function consentLabel(agreed: boolean): string {
 }
 
 export function filedForName(request: ReschedulingRequest): string {
-  return request.filedFor === "complainant"
-    ? request.parties.complainant
-    : request.parties.accused;
+  return request.filedFor === "complainant" ? request.parties.complainant : request.parties.accused;
 }
 
 /** "Adv. X on behalf of Y" — the sender line the reference showed. */
@@ -416,9 +411,7 @@ export type ReschedulingDocument = {
  * case number, cause title, a facts table, numbered operative paragraphs and
  * a prayer. Restated here so the employee area does not read `lib/cases`.
  */
-export function buildReschedulingDocument(
-  request: ReschedulingRequest,
-): ReschedulingDocument {
+export function buildReschedulingDocument(request: ReschedulingRequest): ReschedulingDocument {
   const filedFor = filedForName(request);
   const facts: { term: string; value: string }[] = [
     { term: "Complainant", value: request.parties.complainant },
@@ -452,9 +445,7 @@ export function buildReschedulingDocument(
       request.listedOn,
     )} for ${courtHearingPurposeLabel(request.purpose).toLowerCase()}.`,
     `The applicant seeks a change of the hearing date for the following reason: ${request.reason}`,
-    `The party is available to attend on ${formatProposedDates(
-      request.proposedOn,
-    )}.`,
+    `The party is available to attend on ${formatProposedDates(request.proposedOn)}.`,
     request.partiesAgreed
       ? "The other parties in the case have agreed to the proposed dates."
       : "The other parties in the case have not yet agreed to the proposed dates.",
@@ -474,9 +465,7 @@ export function buildReschedulingDocument(
   };
 }
 
-export function reschedulingDocumentText(
-  document: ReschedulingDocument,
-): string {
+export function reschedulingDocumentText(document: ReschedulingDocument): string {
   return [
     document.court,
     `Case no. ${document.caseNumber}`,
@@ -486,9 +475,7 @@ export function reschedulingDocumentText(
     "",
     ...document.facts.map((fact) => `${fact.term}: ${fact.value}`),
     "",
-    ...document.paragraphs.map(
-      (paragraph, index) => `${index + 1}. ${paragraph}`,
-    ),
+    ...document.paragraphs.map((paragraph, index) => `${index + 1}. ${paragraph}`),
     "",
     `Prayer: ${document.prayer}`,
     "",
@@ -497,15 +484,11 @@ export function reschedulingDocumentText(
   ].join("\n");
 }
 
-export function reschedulingDocumentFilename(
-  request: ReschedulingRequest,
-): string {
+export function reschedulingDocumentFilename(request: ReschedulingRequest): string {
   return `${request.caseNumber.replace(/\//g, "-")}-advancement-reschedule.txt`;
 }
 
-export function downloadReschedulingDocument(
-  request: ReschedulingRequest,
-): void {
+export function downloadReschedulingDocument(request: ReschedulingRequest): void {
   const document = buildReschedulingDocument(request);
   const url = URL.createObjectURL(
     new Blob([localizeForDownload(reschedulingDocumentText(document))], { type: "text/plain" }),

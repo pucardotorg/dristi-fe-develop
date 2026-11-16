@@ -8,11 +8,7 @@ import {
   tableRowClass,
 } from "@/components/chrome/table-plate";
 import { CounselCell } from "@/components/employee/counsel-cell";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import {
   Table,
   TableBody,
@@ -93,9 +89,7 @@ export function OtherApplicationsTable({
                 focus, where a pointer or a keyboard has actually asked. The teal link
                 colour is the citizen side's, for an action inline in prose; a court queue
                 is thirty rows of data and rations it. */}
-            <TableCell
-              className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}
-            >
+            <TableCell className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}>
               <button
                 type="button"
                 onClick={() => onOpen(application)}
@@ -106,22 +100,19 @@ export function OtherApplicationsTable({
                 {causeTitle(application)}
               </button>
             </TableCell>
-            <TableCell
-              className={cn(TABLE_CELL, "whitespace-nowrap")}
-            >
-              <Identifier value={application.caseNumber} label={t("otherApplicationsTable_caseNumberLabel")} />
+            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
+              <Identifier
+                value={application.caseNumber}
+                label={t("otherApplicationsTable_caseNumberLabel")}
+              />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
               {otherApplicationStageLabel(application.stage)}
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
               <CounselCell
-                complainant={counselFor(application, "complainant").map(
-                  (counsel) => counsel.name,
-                )}
-                accused={counselFor(application, "accused").map(
-                  (counsel) => counsel.name,
-                )}
+                complainant={counselFor(application, "complainant").map((counsel) => counsel.name)}
+                accused={counselFor(application, "accused").map((counsel) => counsel.name)}
                 dense
               />
             </TableCell>

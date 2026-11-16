@@ -178,7 +178,7 @@ export type Position = {
   deliveryPending: Record<StageKey, DatedCase[]>;
 };
 
-const byStageOf = <T,>(): Record<StageKey, T[]> =>
+const byStageOf = <T>(): Record<StageKey, T[]> =>
   Object.fromEntries(STAGES.map((stage) => [stage.key, [] as T[]])) as Record<StageKey, T[]>;
 
 /** One entry per case, keeping its largest days; longest first. */
@@ -408,7 +408,9 @@ export type Reading = {
 export function readingFor(selection: Period, docket: CourtDocket): Reading {
   const { from, to } = clampPeriod(selection, docket);
   const single = from === to;
-  const movement = single ? { from: Math.max(docket.start, monthStart(monthKey(to))), to } : { from, to };
+  const movement = single
+    ? { from: Math.max(docket.start, monthStart(monthKey(to))), to }
+    : { from, to };
   const before = single ? to - 30 * DAY_MS : from;
   return {
     selection: { from, to },
@@ -546,7 +548,10 @@ export function nextDates(docket: CourtDocket): NextDates {
   for (const x of posted) {
     const typical = medians[x.case.stage!];
     if (typical !== null && x.gap > typical * 2 && x.gap > 14) {
-      farBeyond[x.case.stage!].push({ case: x.case, days: daysBetween(today, x.case.nextHearing!) });
+      farBeyond[x.case.stage!].push({
+        case: x.case,
+        days: daysBetween(today, x.case.nextHearing!),
+      });
     }
   }
 
@@ -598,7 +603,9 @@ export function processAveragesIn(
     values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : null;
   const all = docket.cases.flatMap((c) => c.processes);
   return {
-    toPayment: mean(all.filter((p) => inside(p.paid, period)).map((p) => daysBetween(p.issued, p.paid!))),
+    toPayment: mean(
+      all.filter((p) => inside(p.paid, period)).map((p) => daysBetween(p.issued, p.paid!)),
+    ),
     toDelivery: mean(
       all.filter((p) => inside(p.delivered, period)).map((p) => daysBetween(p.paid!, p.delivered!)),
     ),
@@ -739,7 +746,8 @@ export function defaultSelection(docket: CourtDocket): Period {
 export function periodKind({ from, to }: Period): PeriodKind {
   if (from === to) return "day";
   const key = monthKey(from);
-  if (new Date(from).getUTCDate() === 1 && key === monthKey(to)) return to === monthEnd(key) ? "full" : "month";
+  if (new Date(from).getUTCDate() === 1 && key === monthKey(to))
+    return to === monthEnd(key) ? "full" : "month";
   return "span";
 }
 
@@ -795,7 +803,8 @@ export function periodReading(
   const period = clampPeriod(selection, docket);
   const kind = periodKind(period);
   const length = daysBetween(period.from, period.to) + 1;
-  const yearSteps = kind === "day" ? 52 : kind === "span" ? Math.max(1, Math.round(365 / length)) : 12;
+  const yearSteps =
+    kind === "day" ? 52 : kind === "span" ? Math.max(1, Math.round(365 / length)) : 12;
   const one = (steps: number) => {
     const p = periodBack(period, steps, docket);
     return p ? [p] : [];
@@ -845,12 +854,16 @@ export function compareShort(compare: CompareMode, selection: Period): string {
 const inPeriod = (t: number | null, { from, to }: Period) => t !== null && t >= from && t <= to;
 
 /** Cases filed, and cases closed (disposed or moved to long pending), over a period. */
-export function filedAndClosed(docket: CourtDocket, period: Period): { filed: number; closed: number } {
+export function filedAndClosed(
+  docket: CourtDocket,
+  period: Period,
+): { filed: number; closed: number } {
   let filed = 0;
   let closed = 0;
   for (const c of docket.cases) {
     if (inPeriod(c.filed, period)) filed++;
-    if ((c.disposal && inPeriod(c.disposal.date, period)) || inPeriod(c.longPendingAt, period)) closed++;
+    if ((c.disposal && inPeriod(c.disposal.date, period)) || inPeriod(c.longPendingAt, period))
+      closed++;
   }
   return { filed, closed };
 }
@@ -1001,7 +1014,9 @@ export function monthlyTrends(
       note: "Disposals ÷ filings. Above 100% the backlog shrinks.",
       at: (period) => {
         const filed = docket.cases.filter((c) => inPeriod(c.filed, period)).length;
-        const disposed = docket.cases.filter((c) => c.disposal && inPeriod(c.disposal.date, period)).length;
+        const disposed = docket.cases.filter(
+          (c) => c.disposal && inPeriod(c.disposal.date, period),
+        ).length;
         return filed ? (disposed / filed) * 100 : null;
       },
     },
@@ -1047,7 +1062,12 @@ export function monthlyTrends(
   const result = measures.map((m): Trend => {
     const points = months.map((k) => {
       const at = Math.min(monthEnd(k), t);
-      return { month: k, at, partial: at !== monthEnd(k), value: m.at({ from: monthStart(k), to: at }) };
+      return {
+        month: k,
+        at,
+        partial: at !== monthEnd(k),
+        value: m.at({ from: monthStart(k), to: at }),
+      };
     });
     const real = points.filter((p) => p.value !== null);
     const last = real.at(-1) ?? null;
@@ -1056,9 +1076,21 @@ export function monthlyTrends(
     let verdict: Trend["verdict"] = real.length < 4 ? null : "steady";
     if (verdict && last && base) {
       const change = (last.value! - base) / Math.abs(base);
-      if (Math.abs(change) >= 0.05) verdict = change > 0 === (m.better === "up") ? "better" : "worse";
+      if (Math.abs(change) >= 0.05)
+        verdict = change > 0 === (m.better === "up") ? "better" : "worse";
     }
-    return { id: m.id, label: m.label, better: m.better, reference: m.reference, unit: m.unit, note: m.note, points, last, base, verdict };
+    return {
+      id: m.id,
+      label: m.label,
+      better: m.better,
+      reference: m.reference,
+      unit: m.unit,
+      note: m.note,
+      points,
+      last,
+      base,
+      verdict,
+    };
   });
   cache.set(key, result);
   return result;
@@ -1098,7 +1130,8 @@ export function closedCases(docket: CourtDocket, period: Period): ClosedRow[] {
   for (const c of docket.cases) {
     if (c.disposal && inPeriod(c.disposal.date, period)) {
       const m = c.disposal.method;
-      const outcome: OutcomeKey = m === "Convicted" || m === "Acquitted" || m === "Settled" ? m : "early";
+      const outcome: OutcomeKey =
+        m === "Convicted" || m === "Acquitted" || m === "Settled" ? m : "early";
       rows.push({
         case: c,
         days: daysBetween(c.filed, c.disposal.date),
@@ -1137,7 +1170,13 @@ export type PendingSets = {
 export function pendingSets(docket: CourtDocket, period: Period): PendingSets {
   const t = period.to;
   const position = positionOn(docket, t);
-  const sets: PendingSets = { all: [], cmp: [], st: [], awaitingRegistration: [], ages: [[], [], []] };
+  const sets: PendingSets = {
+    all: [],
+    cmp: [],
+    st: [],
+    awaitingRegistration: [],
+    ages: [[], [], []],
+  };
   for (const stage of STAGES) {
     for (const c of position.byStage[stage.key]) {
       const row = { case: c, days: daysBetween(c.filed, t) };
@@ -1145,7 +1184,8 @@ export function pendingSets(docket: CourtDocket, period: Period): PendingSets {
       if (c.cognizanceAt !== null && c.cognizanceAt <= t) sets.st.push(row);
       else if (c.registeredAt !== null && c.registeredAt <= t) sets.cmp.push(row);
       else sets.awaitingRegistration.push(row);
-      const age = c.filed >= period.from ? 0 : daysBetween(c.filed, period.from) <= OLD_CASE_DAYS ? 1 : 2;
+      const age =
+        c.filed >= period.from ? 0 : daysBetween(c.filed, period.from) <= OLD_CASE_DAYS ? 1 : 2;
       sets.ages[age].push(row);
     }
   }
@@ -1208,7 +1248,11 @@ export function trendDetail(trend: Trend): TrendDetail {
 }
 
 /** What went into one month of a trend — the design's crosshair breakdown. */
-export function trendBreakdown(docket: CourtDocket, id: TrendId, point: TrendPoint): { label: string; value: string }[] {
+export function trendBreakdown(
+  docket: CourtDocket,
+  id: TrendId,
+  point: TrendPoint,
+): { label: string; value: string }[] {
   const period = { from: monthStart(point.month), to: point.at };
   const count = (pred: (c: DocketCase) => boolean) => docket.cases.filter(pred).length;
   const fmt = (n: number) => n.toLocaleString("en-IN");
@@ -1219,13 +1263,19 @@ export function trendBreakdown(docket: CourtDocket, id: TrendId, point: TrendPoi
       return [
         { label: "courtFlow_disposed", value: fmt(disposed) },
         { label: "courtFlow_filed", value: fmt(filed) },
-        { label: disposed >= filed ? "courtFlow_backlogShrankBy" : "courtFlow_backlogGrewBy", value: fmt(Math.abs(disposed - filed)) },
+        {
+          label: disposed >= filed ? "courtFlow_backlogShrankBy" : "courtFlow_backlogGrewBy",
+          value: fmt(Math.abs(disposed - filed)),
+        },
       ];
     }
     return [
       { label: "courtFlow_filedInTheMonth", value: fmt(filed) },
       { label: "courtFlow_disposedInTheMonth", value: fmt(disposed) },
-      { label: "courtFlow_movedToLongPending", value: fmt(count((c) => inPeriod(c.longPendingAt, period))) },
+      {
+        label: "courtFlow_movedToLongPending",
+        value: fmt(count((c) => inPeriod(c.longPendingAt, period))),
+      },
     ];
   }
   if (id === "overdue") {
@@ -1254,7 +1304,10 @@ export function trendBreakdown(docket: CourtDocket, id: TrendId, point: TrendPoi
   if (!days.length) return [];
   return [
     { label: "courtFlow_summonsDelivered", value: fmt(days.length) },
-    { label: "courtFlow_within14Days", value: `${Math.round((days.filter((d) => d <= 14).length / days.length) * 100)}%` },
+    {
+      label: "courtFlow_within14Days",
+      value: `${Math.round((days.filter((d) => d <= 14).length / days.length) * 100)}%`,
+    },
     { label: "courtFlow_slowest", value: `${fmt(Math.max(...days))} days` },
   ];
 }
@@ -1288,7 +1341,10 @@ export type StagePathStage = {
 const pathCache = new WeakMap<CourtDocket, Map<string, Record<StageKey, StagePathStage>>>();
 
 /** The design's stage path: each stage's cases, days-in-stage bins and movement in a period. */
-export function stagePathFor(docket: CourtDocket, period: Period): Record<StageKey, StagePathStage> {
+export function stagePathFor(
+  docket: CourtDocket,
+  period: Period,
+): Record<StageKey, StagePathStage> {
   let cache = pathCache.get(docket);
   if (!cache) pathCache.set(docket, (cache = new Map()));
   const key = `${period.from}:${period.to}`;
@@ -1314,7 +1370,8 @@ export function stagePathFor(docket: CourtDocket, period: Period): Record<StageK
       rows: [],
       late: (b === 0 ? 0 : b * w + 1) > limit,
     }));
-    for (const r of rows) bins[Math.min(n - 1, r.days <= 0 ? 0 : Math.ceil(r.days / w) - 1)].rows.push(r);
+    for (const r of rows)
+      bins[Math.min(n - 1, r.days <= 0 ? 0 : Math.ceil(r.days / w) - 1)].rows.push(r);
     out[s.key] = {
       stage: s.key,
       limit,
@@ -1330,14 +1387,16 @@ export function stagePathFor(docket: CourtDocket, period: Period): Record<StageK
   const order = STAGES.map((s) => s.key);
   for (const c of docket.cases) {
     const entries = c.log.map((e) => ({ stage: e.stage, start: e.start, end: e.end }));
-    if (c.stage !== null && c.stageStart !== null) entries.push({ stage: c.stage, start: c.stageStart, end: Infinity });
+    if (c.stage !== null && c.stageStart !== null)
+      entries.push({ stage: c.stage, start: c.stageStart, end: Infinity });
     const closedAt = Math.min(c.disposal ? c.disposal.date : Infinity, c.longPendingAt ?? Infinity);
     entries.forEach((e, j) => {
       if (e.start > closedAt) return;
       if (inPeriod(e.start, period)) {
         out[e.stage].cameIn++;
         const prev = entries[j - 1];
-        if (prev && order.indexOf(prev.stage) + 1 === order.indexOf(e.stage)) out[prev.stage].movedOn++;
+        if (prev && order.indexOf(prev.stage) + 1 === order.indexOf(e.stage))
+          out[prev.stage].movedOn++;
       }
       const leftAt = Math.min(e.end, closedAt);
       if (leftAt >= e.start && inPeriod(leftAt, period)) out[e.stage].left++;
@@ -1442,9 +1501,16 @@ const ATTENTION_DEF: Record<
 };
 
 /** Cases grouped by how long they have waited on the check's own measure — the design's `binStrip`. */
-export function attentionBins(id: AttentionCheckId, rows: CheckRow[], usual: (r: CheckRow) => number): AttentionBin[] {
+export function attentionBins(
+  id: AttentionCheckId,
+  rows: CheckRow[],
+  usual: (r: CheckRow) => number,
+): AttentionBin[] {
   const def = ATTENTION_DEF[id];
-  const values = rows.map((r) => ({ r, v: id === "long" ? usual(r) : id === "soon" ? Math.max(0, r.days) : r.days }));
+  const values = rows.map((r) => ({
+    r,
+    v: id === "long" ? usual(r) : id === "soon" ? Math.max(0, r.days) : r.days,
+  }));
   if (!values.length) return [];
   const lo = def.low;
   const maxV = Math.max(...values.map((x) => x.v));
@@ -1471,10 +1537,16 @@ export function attentionBins(id: AttentionCheckId, rows: CheckRow[], usual: (r:
           ? `gap ${from}–${to}× the usual`
           : w === 1
             ? def.tip(from)
-            : def.tip(from).replace(/[\d,]+ days/, `${from.toLocaleString("en-IN")}–${to.toLocaleString("en-IN")} days`);
+            : def
+                .tip(from)
+                .replace(
+                  /[\d,]+ days/,
+                  `${from.toLocaleString("en-IN")}–${to.toLocaleString("en-IN")} days`,
+                );
     return { from, to, label, rows: [] };
   });
-  for (const { r, v } of values) bins[Math.min(n - 1, Math.max(0, Math.floor((v - lo) / w)))].rows.push(r);
+  for (const { r, v } of values)
+    bins[Math.min(n - 1, Math.max(0, Math.floor((v - lo) / w)))].rows.push(r);
   return bins;
 }
 
@@ -1504,12 +1576,19 @@ export function attentionFor(docket: CourtDocket, selection: Period): AttentionR
     STAGES.flatMap((s) => lists[s.key].map((row) => ({ ...row, stage: s.key })));
   const gapRatio = (r: CheckRow) => {
     const c = r.case;
-    const gap = c.previousPosting !== null && c.nextHearing !== null ? daysBetween(c.previousPosting, c.nextHearing) : 0;
+    const gap =
+      c.previousPosting !== null && c.nextHearing !== null
+        ? daysBetween(c.previousPosting, c.nextHearing)
+        : 0;
     return gap / Math.max(1, next.usual[r.stage] ?? 1);
   };
   const days = (n: number) => `${n.toLocaleString("en-IN")} ${n === 1 ? "day" : "days"}`;
 
-  const make = (id: AttentionCheckId, source: () => CheckRow[], atStart: () => number | null): AttentionCheck => {
+  const make = (
+    id: AttentionCheckId,
+    source: () => CheckRow[],
+    atStart: () => number | null,
+  ): AttentionCheck => {
     const def = ATTENTION_DEF[id];
     const available = !def.latestOnly || live;
     const rows = available ? source() : [];
@@ -1559,8 +1638,16 @@ export function attentionFor(docket: CourtDocket, selection: Period): AttentionR
       label: "courtFlow_hearingDates",
       source: "Note B",
       checks: [
-        make("undated", () => longestFirst(flat(next.undated)), () => null),
-        make("long", () => longestFirst(flat(next.farBeyond)), () => null),
+        make(
+          "undated",
+          () => longestFirst(flat(next.undated)),
+          () => null,
+        ),
+        make(
+          "long",
+          () => longestFirst(flat(next.farBeyond)),
+          () => null,
+        ),
       ],
     },
     {
@@ -1568,15 +1655,33 @@ export function attentionFor(docket: CourtDocket, selection: Period): AttentionR
       label: "courtFlow_process",
       source: "Note D",
       checks: [
-        make("soon", () => flat(next.hearingSoon).sort((a, b) => a.days - b.days), () => null),
-        make("pay", () => longestFirst(flat(at.paymentPending)), () => (before ? sumStages(before.paymentPending) : null)),
-        make("del", () => longestFirst(flat(at.deliveryPending)), () => (before ? sumStages(before.deliveryPending) : null)),
+        make(
+          "soon",
+          () => flat(next.hearingSoon).sort((a, b) => a.days - b.days),
+          () => null,
+        ),
+        make(
+          "pay",
+          () => longestFirst(flat(at.paymentPending)),
+          () => (before ? sumStages(before.paymentPending) : null),
+        ),
+        make(
+          "del",
+          () => longestFirst(flat(at.deliveryPending)),
+          () => (before ? sumStages(before.deliveryPending) : null),
+        ),
       ],
     },
   ];
   const ids = new Set<number>();
   for (const g of groups) for (const ch of g.checks) for (const r of ch.rows) ids.add(r.case.id);
-  const result: AttentionReading = { day: to, start: range ? from : null, live, groups, distinct: ids.size };
+  const result: AttentionReading = {
+    day: to,
+    start: range ? from : null,
+    live,
+    groups,
+    distinct: ids.size,
+  };
   cache.set(key, result);
   return result;
 }
@@ -1610,7 +1715,9 @@ export function closureBaseline(docket: CourtDocket, periods: Period[]): Closure
   const each = periods.map((p) => closureSummary(docket, p));
   const avg = (k: "total" | "judgements" | "convicted" | "toLongPending") =>
     each.reduce((sum, x) => sum + x[k], 0) / each.length;
-  const pooled = periods.flatMap((p) => closedCases(docket, p)).filter((r) => r.outcome !== "toLongPending");
+  const pooled = periods
+    .flatMap((p) => closedCases(docket, p))
+    .filter((r) => r.outcome !== "toLongPending");
   return {
     total: avg("total"),
     judgements: avg("judgements"),
@@ -1637,7 +1744,10 @@ export function outcomeDetail(rows: ClosedRow[]): OutcomeDetail {
   return {
     medianDays: median(rows.map((r) => r.days)),
     beforeCognizance: rows.filter((r) => r.beforeCognizance).length,
-    ages: bands.map(([label, lo, hi]) => ({ label, rows: rows.filter((r) => r.days >= lo && r.days <= hi) })),
+    ages: bands.map(([label, lo, hi]) => ({
+      label,
+      rows: rows.filter((r) => r.days >= lo && r.days <= hi),
+    })),
   };
 }
 
@@ -1663,7 +1773,8 @@ export function closureTimeline(
   const spans: [number, number][] = [];
   if (unit === "day") for (let t = period.from; t <= period.to; t += DAY_MS) spans.push([t, t]);
   else if (unit === "week")
-    for (let t = period.from; t <= period.to; t += 7 * DAY_MS) spans.push([t, Math.min(period.to, t + 6 * DAY_MS)]);
+    for (let t = period.from; t <= period.to; t += 7 * DAY_MS)
+      spans.push([t, Math.min(period.to, t + 6 * DAY_MS)]);
   else
     for (let k = monthKey(period.from); k <= monthKey(period.to); k++)
       spans.push([Math.max(period.from, monthStart(k)), Math.min(period.to, monthEnd(k))]);
@@ -1671,10 +1782,19 @@ export function closureTimeline(
   const rows = closedCases(docket, period);
   const columns = spans.map(([a, b]) => {
     const inside = rows.filter((r) => r.closedOn >= a && r.closedOn <= b);
-    const by = { Convicted: 0, Acquitted: 0, Settled: 0, early: 0, toLongPending: 0 } as Record<OutcomeKey, number>;
+    const by = { Convicted: 0, Acquitted: 0, Settled: 0, early: 0, toLongPending: 0 } as Record<
+      OutcomeKey,
+      number
+    >;
     for (const r of inside) by[r.outcome]++;
     const day = new Date(a).getUTCDay();
-    return { from: a, to: b, weekend: unit === "day" && (day === 0 || day === 6), total: inside.length, by };
+    return {
+      from: a,
+      to: b,
+      weekend: unit === "day" && (day === 0 || day === 6),
+      total: inside.length,
+      by,
+    };
   });
   const busiest = columns.reduce((best, c) => (c.total > best.total ? c : best));
   return { unit, columns, busiest };

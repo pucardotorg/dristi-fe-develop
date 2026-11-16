@@ -25,19 +25,11 @@ export function RecordList({
   className?: string;
   children: React.ReactNode;
 }) {
-  return (
-    <dl className={cn("flex flex-col gap-2", className)}>{children}</dl>
-  );
+  return <dl className={cn("flex flex-col gap-2", className)}>{children}</dl>;
 }
 
 /** One row: a quiet label above the fact. */
-export function RecordRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+export function RecordRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
       {/* 14px muted, not 12: the owner's standing rule for key-value data (2026-09-11,

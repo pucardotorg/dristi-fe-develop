@@ -29,10 +29,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import {
   Select,
   SelectContent,
@@ -169,8 +166,12 @@ function Register({ register }: { register: RegisterMeta }) {
         <h1 className="text-title text-balance font-semibold">
           {register.no}. {register.name}
         </h1>
-        <p className="text-body text-muted-foreground tabular-nums">{countLine(result, isFiltered)}</p>
-        <p className="max-w-3xl text-body-compact text-muted-foreground">{translateText(t, register.description)}</p>
+        <p className="text-body text-muted-foreground tabular-nums">
+          {countLine(result, isFiltered)}
+        </p>
+        <p className="max-w-3xl text-body-compact text-muted-foreground">
+          {translateText(t, register.description)}
+        </p>
       </header>
 
       {register.sourceToConfirm ? (
@@ -357,7 +358,9 @@ function RegisterRows({
           <EmptyMedia variant="icon">
             <FileSearchIcon aria-hidden />
           </EmptyMedia>
-          <EmptyTitle className="text-body font-semibold">{t("registerScreen_noEntriesMatch")}</EmptyTitle>
+          <EmptyTitle className="text-body font-semibold">
+            {t("registerScreen_noEntriesMatch")}
+          </EmptyTitle>
           <EmptyDescription className="text-body-compact">
             {t("registerScreen_clearTheSearchOrWidenThe")}
           </EmptyDescription>
@@ -372,7 +375,11 @@ function RegisterRows({
   }
 
   /* The month-wise and statement views are summaries, numbered by their own periods. */
-  const serial = !(result.view === "month" || result.register.id === "statements" || result.register.id === "fees");
+  const serial = !(
+    result.view === "month" ||
+    result.register.id === "statements" ||
+    result.register.id === "fees"
+  );
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -411,11 +418,17 @@ function PendingByYear({
     <div className="grid min-w-0 gap-6 lg:grid-cols-3 lg:items-start">
       <div className="min-w-0">
         <Table className="w-full border-separate border-spacing-0 text-body-compact">
-          <caption className="sr-only">{t("registerScreen_kindCasesPendingByTheYear", { kind })}</caption>
+          <caption className="sr-only">
+            {t("registerScreen_kindCasesPendingByTheYear", { kind })}
+          </caption>
           <TableHeader>
             <TableRow className={TABLE_HEAD_ROW}>
-              <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>{t("registerScreen_year")}</TableHead>
-              <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>{t("registerScreen_pending")}</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
+                {t("registerScreen_year")}
+              </TableHead>
+              <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>
+                {t("registerScreen_pending")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className={tableBodyClass({ selectable: true })}>
@@ -441,16 +454,22 @@ function PendingByYear({
                       onClick={() => onYear(entry.year)}
                       className="min-h-10 w-full cursor-pointer rounded-sm text-left font-medium tabular-nums underline-offset-4 outline-none group-hover/row:underline focus-visible:ring-3 focus-visible:ring-focus-ring"
                     >
-                      <span className="sr-only">{t("registerScreen_showKindCasesPendingFrom", { kind })} </span>
+                      <span className="sr-only">
+                        {t("registerScreen_showKindCasesPendingFrom", { kind })}{" "}
+                      </span>
                       {entry.year}
                     </button>
                   </TableCell>
-                  <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>{formatCount(entry.count)}</TableCell>
+                  <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+                    {formatCount(entry.count)}
+                  </TableCell>
                 </TableRow>
               );
             })}
             <TableRow className={tableRowClass({ hover: false })}>
-              <TableCell className={cn(TABLE_CELL, "font-semibold")}>{t("registerScreen_total")}</TableCell>
+              <TableCell className={cn(TABLE_CELL, "font-semibold")}>
+                {t("registerScreen_total")}
+              </TableCell>
               <TableCell className={cn(TABLE_CELL, "text-right font-semibold tabular-nums")}>
                 {formatCount(result.total)}
               </TableCell>
@@ -460,9 +479,15 @@ function PendingByYear({
       </div>
       <section aria-labelledby="pending-year" className="flex min-w-0 flex-col gap-4 lg:col-span-2">
         <h2 id="pending-year" className="text-body font-semibold">
-          {t("registerScreen_kindCasesPendingFromYear", { kind, year: (result.year) == null ? "" : String(result.year) })}
+          {t("registerScreen_kindCasesPendingFromYear", {
+            kind,
+            year: result.year == null ? "" : String(result.year),
+          })}
           {chosen ? (
-            <span className="font-normal text-muted-foreground tabular-nums"> · {formatCount(chosen.count)}</span>
+            <span className="font-normal text-muted-foreground tabular-nums">
+              {" "}
+              · {formatCount(chosen.count)}
+            </span>
           ) : null}
         </h2>
         {children}
@@ -477,12 +502,18 @@ function SourceToConfirm({ result }: { result: RegisterResult }) {
   return (
     <section aria-label={result.register.name} className={PANEL}>
       <div className="min-w-0">
-        <DocketTable caption={t("registerScreen_nameColumns", { name: result.register.name })} columns={result.columns} rows={[]} />
+        <DocketTable
+          caption={t("registerScreen_nameColumns", { name: result.register.name })}
+          columns={result.columns}
+          rows={[]}
+        />
       </div>
       <Empty className="px-0 py-6">
         <EmptyHeader>
           <Badge variant="outline">{t("registerScreen_sourceToConfirm")}</Badge>
-          <EmptyTitle className="text-body font-semibold">{t("registerScreen_noEntriesToShow")}</EmptyTitle>
+          <EmptyTitle className="text-body font-semibold">
+            {t("registerScreen_noEntriesToShow")}
+          </EmptyTitle>
           <EmptyDescription className="text-body-compact">
             {t("registerScreen_theseColumnsAreFromTheNote")}
           </EmptyDescription>

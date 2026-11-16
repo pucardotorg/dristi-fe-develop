@@ -198,134 +198,135 @@ export function DocumentsSection() {
   const docCells = (doc: CaseDocument, index: number, group: DocumentGroup) => ({
     name: (
       <>
-      {doc.custom ? (
-        <Input
-          value={doc.name}
-          onChange={(e) =>
-            patchDoc(doc.id, (d) => {
-              d.name = e.target.value;
-            })
-          }
-          // The name is kept with the saved document, so a change is sent to the case too.
-          onFocus={() => {
-            nameOnFocus.current = doc.name;
-          }}
-          onBlur={() => {
-            if (doc.file && doc.name.trim() !== nameOnFocus.current.trim()) {
-              void updateDetails({ kind: "row", id: doc.id }, { displayName: doc.name });
+        {doc.custom ? (
+          <Input
+            value={doc.name}
+            onChange={(e) =>
+              patchDoc(doc.id, (d) => {
+                d.name = e.target.value;
+              })
             }
-          }}
-          placeholder={t("documentsSection_documentName")}
-          aria-label={t("documentsSection_documentNameRowValueOfTitle", { value: String(index + 1), title: group.title })}
-        />
-      ) : (
-        <div className="flex min-h-10 flex-col justify-center gap-0.5">
-          <span className="text-body-compact font-medium">
-            {doc.name}
-            {doc.required ? (
-              <>
-                {" "}
-                <RequiredMark />
-              </>
-            ) : null}
-          </span>
-          {doc.intakeKey && doc.file ? (
-            <span className="text-caption text-muted-foreground">
-              {t("documentsSection_providedAtCaseIntake")}
+            // The name is kept with the saved document, so a change is sent to the case too.
+            onFocus={() => {
+              nameOnFocus.current = doc.name;
+            }}
+            onBlur={() => {
+              if (doc.file && doc.name.trim() !== nameOnFocus.current.trim()) {
+                void updateDetails({ kind: "row", id: doc.id }, { displayName: doc.name });
+              }
+            }}
+            placeholder={t("documentsSection_documentName")}
+            aria-label={t("documentsSection_documentNameRowValueOfTitle", {
+              value: String(index + 1),
+              title: group.title,
+            })}
+          />
+        ) : (
+          <div className="flex min-h-10 flex-col justify-center gap-0.5">
+            <span className="text-body-compact font-medium">
+              {doc.name}
+              {doc.required ? (
+                <>
+                  {" "}
+                  <RequiredMark />
+                </>
+              ) : null}
             </span>
-          ) : null}
-        </div>
-      )}
+            {doc.intakeKey && doc.file ? (
+              <span className="text-caption text-muted-foreground">
+                {t("documentsSection_providedAtCaseIntake")}
+              </span>
+            ) : null}
+          </div>
+        )}
       </>
     ),
     file: (
       <>
-      {doc.file ? (
-        <Button
-          type="button"
-          variant="link"
-          className="h-auto min-h-10 max-w-full justify-start px-0 py-1"
-          onClick={() => setPreviewId(doc.id)}
-          aria-label={t("documentsSection_previewName", { name: doc.file.name })}
-        >
-          <FileTextIcon data-icon="inline-start" aria-hidden />
-          <span className="flex min-w-0 flex-col items-start">
-            <span className="max-w-full truncate">{doc.file.name}</span>
-            <span className="text-caption font-normal text-muted-foreground tabular-nums">
-              {formatBytes(doc.file.size)}
-            </span>
-          </span>
-        </Button>
-      ) : (
-        <div className="flex items-center gap-3">
+        {doc.file ? (
           <Button
             type="button"
-            variant="outline"
-            onClick={() => uploadDoc(doc.id)}
-            aria-label={`Upload ${doc.name || `row ${index + 1}`}`}
+            variant="link"
+            className="h-auto min-h-10 max-w-full justify-start px-0 py-1"
+            onClick={() => setPreviewId(doc.id)}
+            aria-label={t("documentsSection_previewName", { name: doc.file.name })}
           >
-            <UploadIcon data-icon="inline-start" aria-hidden />
-            {t("documentsSection_upload")}
+            <FileTextIcon data-icon="inline-start" aria-hidden />
+            <span className="flex min-w-0 flex-col items-start">
+              <span className="max-w-full truncate">{doc.file.name}</span>
+              <span className="text-caption font-normal text-muted-foreground tabular-nums">
+                {formatBytes(doc.file.size)}
+              </span>
+            </span>
           </Button>
-          <span className="text-caption text-muted-foreground">
-            {t("documentsSection_noFileChosen")}
-          </span>
-        </div>
-      )}
+        ) : (
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => uploadDoc(doc.id)}
+              aria-label={`Upload ${doc.name || `row ${index + 1}`}`}
+            >
+              <UploadIcon data-icon="inline-start" aria-hidden />
+              {t("documentsSection_upload")}
+            </Button>
+            <span className="text-caption text-muted-foreground">
+              {t("documentsSection_noFileChosen")}
+            </span>
+          </div>
+        )}
       </>
     ),
     digital: (
       <>
-      <span className="inline-flex h-10 items-center">
-        <Checkbox
-          checked={doc.digital}
-          onCheckedChange={(checked) => setDigital(doc, checked === true)}
-          aria-label={`Natively digital: ${
-            doc.name || `row ${index + 1}`
-          }`}
-        />
-      </span>
+        <span className="inline-flex h-10 items-center">
+          <Checkbox
+            checked={doc.digital}
+            onCheckedChange={(checked) => setDigital(doc, checked === true)}
+            aria-label={`Natively digital: ${doc.name || `row ${index + 1}`}`}
+          />
+        </span>
       </>
     ),
     actions: (
       <>
-      <div className="flex h-10 items-center justify-end gap-1">
-        {doc.file ? (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => uploadDoc(doc.id)}
-              aria-label={`Re-upload ${doc.name || `row ${index + 1}`}`}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <RefreshCwIcon aria-hidden />
-            </Button>
+        <div className="flex h-10 items-center justify-end gap-1">
+          {doc.file ? (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => uploadDoc(doc.id)}
+                aria-label={`Re-upload ${doc.name || `row ${index + 1}`}`}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCwIcon aria-hidden />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => askRemoveDoc(doc.id)}
+                aria-label={`Delete ${doc.name || `row ${index + 1}`}`}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <Trash2Icon aria-hidden />
+              </Button>
+            </>
+          ) : doc.custom ? (
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={() => askRemoveDoc(doc.id)}
-              aria-label={`Delete ${doc.name || `row ${index + 1}`}`}
-              className="text-muted-foreground hover:text-destructive"
+              aria-label={t("documentsSection_removeRowValue", { value: String(index + 1) })}
+              className="text-muted-foreground hover:text-foreground"
             >
-              <Trash2Icon aria-hidden />
+              <XIcon aria-hidden />
             </Button>
-          </>
-        ) : doc.custom ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => askRemoveDoc(doc.id)}
-            aria-label={t("documentsSection_removeRowValue", { value: String(index + 1) })}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <XIcon aria-hidden />
-          </Button>
-        ) : null}
-      </div>
+          ) : null}
+        </div>
       </>
     ),
   });
@@ -343,7 +344,9 @@ export function DocumentsSection() {
         />
 
         <SectionNotice variant="neutral">
-          {t.rich("documentsSection_tickNativelyDigitalForAnOriginal", { strong: (chunks) => <strong className="font-semibold">{chunks}</strong> })}
+          {t.rich("documentsSection_tickNativelyDigitalForAnOriginal", {
+            strong: (chunks) => <strong className="font-semibold">{chunks}</strong>,
+          })}
         </SectionNotice>
 
         {unsaved.length > 0 ? (
@@ -432,10 +435,14 @@ export function DocumentsSection() {
                       <TableHead>{t("documentsSection_file")}</TableHead>
                       <TableHead className="text-center">
                         <span className="inline-flex items-center gap-1">
-                          {t.rich("documentsSection_nativelyDigitalTickOnlyForOriginal", { labeltip: (chunks) => <LabelTip>{chunks}</LabelTip> })}
+                          {t.rich("documentsSection_nativelyDigitalTickOnlyForOriginal", {
+                            labeltip: (chunks) => <LabelTip>{chunks}</LabelTip>,
+                          })}
                         </span>
                       </TableHead>
-                      <TableHead className="px-4 text-right">{t("documentsSection_actions")}</TableHead>
+                      <TableHead className="px-4 text-right">
+                        {t("documentsSection_actions")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -443,27 +450,25 @@ export function DocumentsSection() {
                     {group.docs.map((doc, index) => {
                       const cells = docCells(doc, index, group);
                       return (
-                      <TableRow key={doc.id} className="border-hairline">
-                        <TableCell className="px-4 py-2 align-middle text-muted-foreground tabular-nums">
-                          {index + 1}
-                        </TableCell>
+                        <TableRow key={doc.id} className="border-hairline">
+                          <TableCell className="px-4 py-2 align-middle text-muted-foreground tabular-nums">
+                            {index + 1}
+                          </TableCell>
 
-                        <TableCell className="py-2 align-middle whitespace-normal">
-                          {cells.name}
-                        </TableCell>
+                          <TableCell className="py-2 align-middle whitespace-normal">
+                            {cells.name}
+                          </TableCell>
 
-                        <TableCell className="py-2 align-middle whitespace-normal">
-                          {cells.file}
-                        </TableCell>
+                          <TableCell className="py-2 align-middle whitespace-normal">
+                            {cells.file}
+                          </TableCell>
 
-                        <TableCell className="py-2 text-center align-middle">
-                          {cells.digital}
-                        </TableCell>
+                          <TableCell className="py-2 text-center align-middle">
+                            {cells.digital}
+                          </TableCell>
 
-                        <TableCell className="px-4 py-2 align-middle">
-                          {cells.actions}
-                        </TableCell>
-                      </TableRow>
+                          <TableCell className="px-4 py-2 align-middle">{cells.actions}</TableCell>
+                        </TableRow>
                       );
                     })}
                   </TableBody>
@@ -471,11 +476,7 @@ export function DocumentsSection() {
               </div>
 
               <div className="border-t border-hairline p-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => addOtherDoc(group.id)}
-                >
+                <Button type="button" variant="ghost" onClick={() => addOtherDoc(group.id)}>
                   <PlusIcon data-icon="inline-start" aria-hidden />
                   {t("documentsSection_addOtherDocument")}
                 </Button>
@@ -528,7 +529,9 @@ export function DocumentsSection() {
         {previewDoc?.quality === "good" ? (
           <Alert variant="success">
             <CheckIcon aria-hidden />
-            <AlertDescription>{t("documentsSection_thisDocumentIsClearAndReadable")}</AlertDescription>
+            <AlertDescription>
+              {t("documentsSection_thisDocumentIsClearAndReadable")}
+            </AlertDescription>
           </Alert>
         ) : null}
       </FilePreviewDialog>

@@ -24,7 +24,6 @@ export const HOME_HEADER_COLS = "lg:grid-cols-[10rem_minmax(0,1fr)]";
 
 /** The date block's own width inside its column: the rail's padding + rail, so it centres over the rail. */
 
-
 /** Inside the panel, after its 24px padding: rail | hearings. */
 export const HOME_RAIL_COLS = "lg:grid-cols-[7rem_minmax(0,1fr)] lg:gap-x-6";
 

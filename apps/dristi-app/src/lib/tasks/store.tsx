@@ -118,7 +118,7 @@ function useOnline(): boolean {
   return React.useSyncExternalStore(
     subscribe,
     () => navigator.onLine,
-    () => true
+    () => true,
   );
 }
 
@@ -143,14 +143,18 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
 
   const user = React.useMemo(
     () => people.find((p) => p.id === userId) ?? FALLBACK_USER,
-    [people, userId]
+    [people, userId],
   );
 
   // The first load starts from the initial "loading" state; `reload` re-enters it.
   const load = React.useCallback(async () => {
     try {
       const repo = getRepository();
-      let [ppl, cs, ts] = await Promise.all([repo.listPeople(), repo.listCases(), repo.listTasks()]);
+      let [ppl, cs, ts] = await Promise.all([
+        repo.listPeople(),
+        repo.listCases(),
+        repo.listTasks(),
+      ]);
       const freshPage = RESEED_ON_PAGE_LOAD && !reseededThisPage;
       reseededThisPage = true;
       if (ppl.length && (freshPage || !seedIsCurrent())) {
@@ -264,10 +268,16 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       const closed = changed
         .filter((t) => ["done", "expired", "obsolete"].includes(t.status))
         .map((t) => t.id);
-      announce({ type: "changed", ids: changed.map((t) => t.id), byId: user.id, byName: user.name, closed });
+      announce({
+        type: "changed",
+        ids: changed.map((t) => t.id),
+        byId: user.id,
+        byName: user.name,
+        closed,
+      });
       return "created" in result ? result.task : result;
     },
-    [announce, cases, people, user]
+    [announce, cases, people, user],
   );
 
   const setUser = React.useCallback(async (id: PersonId) => {
@@ -313,7 +323,23 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       requestHighlight,
       dismissGhost,
     }),
-    [state, error, people, cases, courtTasks, user, online, ghosts, highlight, reload, setUser, resetSandbox, dispatch, requestHighlight, dismissGhost]
+    [
+      state,
+      error,
+      people,
+      cases,
+      courtTasks,
+      user,
+      online,
+      ghosts,
+      highlight,
+      reload,
+      setUser,
+      resetSandbox,
+      dispatch,
+      requestHighlight,
+      dismissGhost,
+    ],
   );
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;

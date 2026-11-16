@@ -12,9 +12,7 @@ describe("the Application item", () => {
   it("opens on onboard yes, with the decision question to answer", () => {
     const outcome = initialApplicationOutcome();
     assert.equal(outcome.onboard, "yes");
-    assert.deepEqual(applicationOutcomeGaps(outcome, false), [
-      "Decision passed",
-    ]);
+    assert.deepEqual(applicationOutcomeGaps(outcome, false), ["Decision passed"]);
   });
 
   it("asks what was decided, and the workflow only when the type has one", () => {
@@ -22,10 +20,7 @@ describe("the Application item", () => {
       decided: "yes",
     });
     assert.deepEqual(applicationOutcomeGaps(decided, false), ["Decision"]);
-    assert.deepEqual(applicationOutcomeGaps(decided, true), [
-      "Decision",
-      "Workflow triggered",
-    ]);
+    assert.deepEqual(applicationOutcomeGaps(decided, true), ["Decision", "Workflow triggered"]);
   });
 
   it("asks for a response date and a date to bring it forward when nothing was decided", () => {
@@ -33,14 +28,9 @@ describe("the Application item", () => {
       decided: "no",
       responseNeeded: "yes",
     });
-    assert.deepEqual(applicationOutcomeGaps(open, false), [
-      "Respond by",
-      "Bring forward on",
-    ]);
+    assert.deepEqual(applicationOutcomeGaps(open, false), ["Respond by", "Bring forward on"]);
     const noResponse = setApplicationOutcome(open, { responseNeeded: "no" });
-    assert.deepEqual(applicationOutcomeGaps(noResponse, false), [
-      "Bring forward on",
-    ]);
+    assert.deepEqual(applicationOutcomeGaps(noResponse, false), ["Bring forward on"]);
   });
 
   it("clears the answers a changed question hides", () => {
@@ -56,9 +46,6 @@ describe("the Application item", () => {
 
   it("knows Postpone's workflow, and gives every other type one for now", () => {
     assert.equal(applicationWorkflow("postpone"), "Rescheduling of hearing");
-    assert.equal(
-      applicationWorkflow("reopen-evidence"),
-      "The application's own workflow",
-    );
+    assert.equal(applicationWorkflow("reopen-evidence"), "The application's own workflow");
   });
 });

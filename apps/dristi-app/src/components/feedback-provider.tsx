@@ -22,8 +22,7 @@ import { FeedbackProvider as FasterFixesProvider } from "@fasterfixes/react";
  * touching this file.
  */
 const projectId = process.env.NEXT_PUBLIC_FASTERFIXES_PROJECT_ID;
-const captureDiagnostics =
-  process.env.NEXT_PUBLIC_FASTERFIXES_CAPTURE_DIAGNOSTICS !== "false";
+const captureDiagnostics = process.env.NEXT_PUBLIC_FASTERFIXES_CAPTURE_DIAGNOSTICS !== "false";
 const apiOrigin = process.env.NEXT_PUBLIC_FASTERFIXES_API_ORIGIN;
 
 const subscribeToReviewerToken = () => () => {};
@@ -41,9 +40,7 @@ function hasReviewerToken() {
   }
 }
 
-export function FeedbackProvider({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export function FeedbackProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const reviewerTokenPresent = React.useSyncExternalStore(
     subscribeToReviewerToken,
     hasReviewerToken,

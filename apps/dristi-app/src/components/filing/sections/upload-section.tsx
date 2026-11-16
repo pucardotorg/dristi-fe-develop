@@ -16,12 +16,7 @@
  */
 
 import * as React from "react";
-import {
-  CreditCardIcon,
-  MailIcon,
-  PlusIcon,
-  UserIcon,
-} from "lucide-react";
+import { CreditCardIcon, MailIcon, PlusIcon, UserIcon } from "lucide-react";
 
 import {
   intakeChequeGroup,
@@ -105,7 +100,7 @@ export function UploadSection() {
       const error = await attachFile(slotTarget(key), file);
       if (error) setPickError(error);
     },
-    [attachFile]
+    [attachFile],
   );
 
   /** Choose (or re-upload) a file for a slot. */
@@ -123,7 +118,7 @@ export function UploadSection() {
         void receiveFile(key, file);
       });
     },
-    [pick, intake, receiveFile, announce, t]
+    [pick, intake, receiveFile, announce, t],
   );
 
   /** Dropped files fill `keys` in order — empty required slots first. */
@@ -139,13 +134,13 @@ export function UploadSection() {
         announce(
           used === 1
             ? t("uploadSection_nameAdded", { name: dropped.files[0].name })
-            : t("uploadSection_usedFilesAddedToTheNext", { used: String(used) })
+            : t("uploadSection_usedFilesAddedToTheNext", { used: String(used) }),
         );
       } else if (problem) {
         announce(t("uploadSection_nothingWasAddedFromThatDrop"));
       }
     },
-    [receiveFile, announce, t]
+    [receiveFile, announce, t],
   );
 
   const deleteFile = (key: string) => {
@@ -188,15 +183,13 @@ export function UploadSection() {
       if (!party) return;
       const [doc] = uniqueSlotKeys(
         [intakeOtherPartyDoc(party.n, party.slots.length + 1)],
-        takenKeys(d.intake)
+        takenKeys(d.intake),
       );
       party.slots.push(doc);
     });
 
   /* Supporting documents are a panel of their own, so they get their own drop target. */
-  const supportingKeys = intake.supporting
-    .filter((s) => !s.file)
-    .map((s) => s.key);
+  const supportingKeys = intake.supporting.filter((s) => !s.file).map((s) => s.key);
   const supporting = useDropTarget({
     onFiles: (dropped) => dropIntoKeys(supportingKeys, dropped),
   });
@@ -216,8 +209,7 @@ export function UploadSection() {
       return {
         name: slot?.label ?? "This document",
         title: `Remove ${slot?.label ?? "this document"}?`,
-        description:
-          t("uploadSection_theFileIsRemovedFromThis"),
+        description: t("uploadSection_theFileIsRemovedFromThis"),
       };
     }
     const group =
@@ -279,30 +271,34 @@ export function UploadSection() {
         {/* Header and hint are one block: the hint is a footnote to the invitation
             above it, not a section of its own. */}
         <div className="flex flex-col gap-2">
-        <FilingPageHeader
-          eyebrow={t("uploadSection_documents")}
-          title={inCorrection ? t("uploadSection_caseDocuments") : t("uploadSection_addYourCaseDocuments")}
-          description={
-            inCorrection
-              ? t("uploadSection_theDocumentsFiledWithTheComplaint")
-              : t("uploadSection_addThePapersYouAlreadyHave")
-          }
-        />
+          <FilingPageHeader
+            eyebrow={t("uploadSection_documents")}
+            title={
+              inCorrection
+                ? t("uploadSection_caseDocuments")
+                : t("uploadSection_addYourCaseDocuments")
+            }
+            description={
+              inCorrection
+                ? t("uploadSection_theDocumentsFiledWithTheComplaint")
+                : t("uploadSection_addThePapersYouAlreadyHave")
+            }
+          />
 
-        {/*
-         * Nothing on this screen counts documents any more.
-         *
-         * A progress bar reading "0 of 7 required documents added · 7 to go" said the
-         * step was a checklist that had to be cleared, and the footer repeated it as a
-         * warning. Neither was true: every one of these can be added later, and the
-         * screen's own Continue never blocked on them. What is left is the affordance
-         * people actually miss — that a file can be dropped straight onto a card.
-         */}
-        {inCorrection ? null : (
-          <p className="text-body-compact text-muted-foreground pointer-coarse:hidden">
-            {t("uploadSection_dragFilesOntoACardOr")}
-          </p>
-        )}
+          {/*
+           * Nothing on this screen counts documents any more.
+           *
+           * A progress bar reading "0 of 7 required documents added · 7 to go" said the
+           * step was a checklist that had to be cleared, and the footer repeated it as a
+           * warning. Neither was true: every one of these can be added later, and the
+           * screen's own Continue never blocked on them. What is left is the affordance
+           * people actually miss — that a file can be dropped straight onto a card.
+           */}
+          {inCorrection ? null : (
+            <p className="text-body-compact text-muted-foreground pointer-coarse:hidden">
+              {t("uploadSection_dragFilesOntoACardOr")}
+            </p>
+          )}
         </div>
 
         {pickError ? (
@@ -329,7 +325,9 @@ export function UploadSection() {
           {/* ── The cheques ── */}
           {intake.cheques.length > 0 ? (
             <section className="flex flex-col gap-4">
-              <h2 className="text-caption font-semibold text-muted-foreground">{t("uploadSection_theCheques")}</h2>
+              <h2 className="text-caption font-semibold text-muted-foreground">
+                {t("uploadSection_theCheques")}
+              </h2>
 
               {intake.cheques.map((cheque, index) => (
                 <DocumentCard
@@ -398,7 +396,9 @@ export function UploadSection() {
           {/* ── The parties ── */}
           {intake.parties.length > 0 ? (
             <section className="flex flex-col gap-4">
-              <h2 className="text-caption font-semibold text-muted-foreground">{t("uploadSection_theParties")}</h2>
+              <h2 className="text-caption font-semibold text-muted-foreground">
+                {t("uploadSection_theParties")}
+              </h2>
 
               {intake.parties.map((party, index) => (
                 <DocumentCard
@@ -449,10 +449,7 @@ export function UploadSection() {
               <Card
                 variant="raised"
                 {...supporting.dropProps}
-                className={cn(
-                  "transition-shadow",
-                  supporting.isOver && "ring-3 ring-focus-ring"
-                )}
+                className={cn("transition-shadow", supporting.isOver && "ring-3 ring-focus-ring")}
               >
                 <CardContent className="flex flex-col gap-4">
                   {intake.supporting.map((slot) => (
@@ -465,7 +462,7 @@ export function UploadSection() {
                       onFiles={(dropped) =>
                         dropIntoKeys(
                           [slot.key, ...supportingKeys.filter((k) => k !== slot.key)],
-                          dropped
+                          dropped,
                         )
                       }
                     />

@@ -12,14 +12,16 @@ import { Segmented } from "@/components/filing/segmented";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { CheckCircle2Icon, InfoIcon } from "lucide-react";
 import { updateVak } from "@/lib/vakalatnama/store";
-import { COURTS, LITIGANT_CASES, STANDARD_TERMS, configFor, type FiledCase } from "@/lib/vakalatnama/data";
+import {
+  COURTS,
+  LITIGANT_CASES,
+  STANDARD_TERMS,
+  configFor,
+  type FiledCase,
+} from "@/lib/vakalatnama/data";
 import type { Scope, Terms, Vakalatnama } from "@/lib/vakalatnama/types";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
@@ -136,8 +138,10 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
                         className="self-start text-body-compact"
                       />
                       <span className="text-caption text-muted-foreground">
-                        {translateText(tr, LITIGANT_CASES.find((c) => c.caseNumber === s.caseNumber)?.title) ??
-                          tr("scope_selectedCase")}
+                        {translateText(
+                          tr,
+                          LITIGANT_CASES.find((c) => c.caseNumber === s.caseNumber)?.title,
+                        ) ?? tr("scope_selectedCase")}
                       </span>
                     </div>
                   </div>
@@ -160,9 +164,7 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
                 <Alert>
                   <InfoIcon aria-hidden />
                   <AlertTitle>{tr("scope_theCaseNumberStaysBlankFor")}</AlertTitle>
-                  <AlertDescription>
-                    {tr("scope_likeThePaperFormThisVakalatnama")}
-                  </AlertDescription>
+                  <AlertDescription>{tr("scope_likeThePaperFormThisVakalatnama")}</AlertDescription>
                 </Alert>
               </>
             )}
@@ -171,9 +173,7 @@ export function ScopeStep({ vak }: { vak: Vakalatnama }) {
           <Alert>
             <InfoIcon aria-hidden />
             <AlertTitle>{tr("scope_aStandingAppointment")}</AlertTitle>
-            <AlertDescription>
-              {tr("scope_thisCoversAllOfTheLitigants")}
-            </AlertDescription>
+            <AlertDescription>{tr("scope_thisCoversAllOfTheLitigants")}</AlertDescription>
           </Alert>
         )}
       </FormCard>

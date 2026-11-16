@@ -43,13 +43,7 @@ export type CaseSummary = {
 
 export type StepId = "papers" | "choices" | "date" | "help" | "join";
 
-export const STEP_ORDER: StepId[] = [
-  "papers",
-  "choices",
-  "date",
-  "help",
-  "join",
-];
+export const STEP_ORDER: StepId[] = ["papers", "choices", "date", "help", "join"];
 
 /** English and Malayalam always; Hindi where a translation exists, else English is shown. */
 export type Copy = { en: string; ml?: string; hi?: string; gu?: string; pa?: string };
@@ -70,10 +64,7 @@ export const ui = {
   back: t("common_back", "പുറകോട്ട്"),
   language: t("onboarding_language", "ഭാഷ"),
   helpTitle: t("onboarding_commonQuestions", "പതിവ് ചോദ്യങ്ങൾ"),
-  videoUnavailable: t(
-    "onboarding_videoWillPlayHere",
-    "വീഡിയോ ഇവിടെ വരും.",
-  ),
+  videoUnavailable: t("onboarding_videoWillPlayHere", "വീഡിയോ ഇവിടെ വരും."),
   notMe: t("onboarding_thisIsNotAboutMe", "ഇത് എന്നെക്കുറിച്ചല്ല"),
   notMeBody: t(
     "onboarding_doNotJoinThisCaseCall",
@@ -116,10 +107,7 @@ export const summaryFields: {
 /* -------------------------------------------------------- 1 · papers (55 w) */
 
 export const papers = {
-  heading: t(
-    "onboarding_youHaveReceivedASummonsIn",
-    "ചെക്ക് മടങ്ങിയ കേസിൽ നിങ്ങൾക്ക് സമൻസ് ലഭിച്ചു",
-  ),
+  heading: t("onboarding_youHaveReceivedASummonsIn", "ചെക്ക് മടങ്ങിയ കേസിൽ നിങ്ങൾക്ക് സമൻസ് ലഭിച്ചു"),
   body: t(
     "onboarding_theComplainantSaysYourChequeWas",
     "നിങ്ങളുടെ ചെക്ക് പണമില്ലാതെ മടങ്ങിയെന്നും നോട്ടീസിന് ശേഷവും പണം നൽകിയില്ലെന്നും പരാതിക്കാരൻ പറയുന്നു. കോടതി കേസ് കേൾക്കും.",
@@ -135,10 +123,7 @@ export const papers = {
 
 export const choices = {
   heading: t("onboarding_youHaveThreeWaysForward", "നിങ്ങൾക്ക് മൂന്ന് വഴികളുണ്ട്"),
-  intro: t(
-    "onboarding_twoOfTheseEndTheCase",
-    "ഇതിൽ രണ്ടെണ്ണം വിചാരണയില്ലാതെ കേസ് അവസാനിപ്പിക്കും.",
-  ),
+  intro: t("onboarding_twoOfTheseEndTheCase", "ഇതിൽ രണ്ടെണ്ണം വിചാരണയില്ലാതെ കേസ് അവസാനിപ്പിക്കും."),
   cards: [
     {
       id: "pay",
@@ -209,10 +194,7 @@ export const dateStep = {
 /* ---------------------------------------------------------- 4 · help (48 w) */
 
 export const help = {
-  heading: t(
-    "onboarding_youMayBeAbleToGet",
-    "സൗജന്യമായി അഭിഭാഷകനെ ലഭിച്ചേക്കാം",
-  ),
+  heading: t("onboarding_youMayBeAbleToGet", "സൗജന്യമായി അഭിഭാഷകനെ ലഭിച്ചേക്കാം"),
   body: t(
     "onboarding_womenAndChildrenQualifyWhateverThey",
     "സ്ത്രീകൾക്കും കുട്ടികൾക്കും വരുമാനം എത്രയായാലും ലഭിക്കും. വർഷം ₹3,00,000-ൽ താഴെ വരുമാനമുള്ള ആർക്കും ലഭിക്കും.",
@@ -222,10 +204,7 @@ export const help = {
     "നിങ്ങളുടെ സ്വന്തം വരുമാന സത്യവാങ്മൂലം മതി. സർട്ടിഫിക്കറ്റ് വേണ്ട.",
   ),
   primary: {
-    name: t(
-      "onboarding_districtLegalServicesAuthority",
-      "ജില്ലാ ലീഗൽ സർവീസസ് അതോറിറ്റി",
-    ),
+    name: t("onboarding_districtLegalServicesAuthority", "ജില്ലാ ലീഗൽ സർവീസസ് അതോറിറ്റി"),
     detail: t(
       "onboarding_askAboutFreeLegalAdviceOr",
       "സൗജന്യ നിയമോപദേശമോ കോടതിയിലെ പ്രതിനിധാനമോ ചോദിക്കാം. നിങ്ങൾക്ക് അർഹതയുണ്ടെങ്കിൽ അപേക്ഷിക്കാൻ DLSA സഹായിക്കുകയും ഒരു അഭിഭാഷകനെ നിയോഗിക്കുകയും ചെയ്തേക്കാം.",
@@ -238,10 +217,7 @@ export const help = {
 /* ---------------------------------------------------------- 5 · join (34 w) */
 
 export const join = {
-  heading: t(
-    "onboarding_joinYourCaseByLoggingIn",
-    "ലോഗിൻ ചെയ്തോ രജിസ്റ്റർ ചെയ്തോ കേസിൽ ചേരുക",
-  ),
+  heading: t("onboarding_joinYourCaseByLoggingIn", "ലോഗിൻ ചെയ്തോ രജിസ്റ്റർ ചെയ്തോ കേസിൽ ചേരുക"),
   body: t(
     "onboarding_signInToReadTheFull",
     "പൂർണ്ണ പരാതി വായിക്കാനും, പണം അടയ്ക്കാനും, പുതിയ തീയതി ചോദിക്കാനും, ജാമ്യത്തിന് അപേക്ഷിക്കാനും, അഭിഭാഷകനെ ചേർക്കാനും സൈൻ ഇൻ ചെയ്യുക.",
@@ -360,10 +336,7 @@ export const helpPanel: Record<StepId, HelpEntry[]> = {
       ),
     },
     {
-      q: t(
-        "onboarding_whatIfINeitherComeNor",
-        "ഹാജരാകാതെയും അപേക്ഷിക്കാതെയും ഇരുന്നാൽ?",
-      ),
+      q: t("onboarding_whatIfINeitherComeNor", "ഹാജരാകാതെയും അപേക്ഷിക്കാതെയും ഇരുന്നാൽ?"),
       a: t(
         "onboarding_theCourtCanIssueAWarrant",
         "കോടതിക്ക് അറസ്റ്റ് വാറന്റ് പുറപ്പെടുവിക്കാം, പരാതിക്കാരനോട് ചോദ്യം ചോദിക്കാനുള്ള അവകാശവും നഷ്ടപ്പെടും. തുടർന്നും വിട്ടുനിന്നാൽ ഒളിവിലാണെന്ന് പ്രഖ്യാപിച്ച് സ്വത്ത് കണ്ടുകെട്ടാം.",
@@ -393,10 +366,7 @@ export const helpPanel: Record<StepId, HelpEntry[]> = {
       ),
     },
     {
-      q: t(
-        "onboarding_freeAdviceWithNoEligibilityTest",
-        "യോഗ്യതാ പരിശോധനയില്ലാത്ത സൗജന്യ ഉപദേശം",
-      ),
+      q: t("onboarding_freeAdviceWithNoEligibilityTest", "യോഗ്യതാ പരിശോധനയില്ലാത്ത സൗജന്യ ഉപദേശം"),
       a: t(
         "onboarding_teleLawIsFreeForEvery",
         "ടെലി-ലോ എല്ലാ പൗരന്മാർക്കും സൗജന്യമാണ്. കോമൺ സർവീസ് സെന്ററിൽ നിന്നോ tele-law.in ആപ്പ് വഴിയോ പാനൽ അഭിഭാഷകനോട് സംസാരിക്കാം. ഉപദേശം മാത്രം. അവർ കോടതിയിൽ ഹാജരാകില്ല.",
@@ -522,5 +492,7 @@ export function pick(copy: Copy, locale: Locale): string {
 /** `{name}` → "{name}": the message formats to itself with its slots still open. */
 function keepSlots(locale: Locale, key: string): Record<string, string> {
   const message = getMessageCatalog(locale)[key] ?? "";
-  return Object.fromEntries([...message.matchAll(/\{(\w+)\}/g)].map(([slot, name]) => [name, slot]));
+  return Object.fromEntries(
+    [...message.matchAll(/\{(\w+)\}/g)].map(([slot, name]) => [name, slot]),
+  );
 }

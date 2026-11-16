@@ -13,12 +13,7 @@ import {
   DescriptionRow,
   DescriptionTerm,
 } from "@/components/ui/description-list";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import {
   Item,
   ItemContent,
@@ -66,9 +61,7 @@ export function DigitalRecord({
           <EmptyTitle className="text-body font-semibold">
             {translateText(t, emptyTitle)}
           </EmptyTitle>
-          <EmptyDescription>
-            {translateText(t, emptyDescription)}
-          </EmptyDescription>
+          <EmptyDescription>{translateText(t, emptyDescription)}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -108,18 +101,10 @@ export function DigitalRecord({
         <ItemGroup>
           {pane.people.map((person, index) => (
             <FragmentRow key={person.title} first={index === 0}>
-              <Item
-                role="listitem"
-                size="sm"
-                className="items-start px-0 hover:bg-transparent"
-              >
+              <Item role="listitem" size="sm" className="items-start px-0 hover:bg-transparent">
                 <ItemContent className="gap-2">
-                  <ItemTitle className="line-clamp-none min-w-0">
-                    {person.title}
-                  </ItemTitle>
-                  <ItemDescription className="line-clamp-none">
-                    {person.detail}
-                  </ItemDescription>
+                  <ItemTitle className="line-clamp-none min-w-0">{person.title}</ItemTitle>
+                  <ItemDescription className="line-clamp-none">{person.detail}</ItemDescription>
                 </ItemContent>
               </Item>
             </FragmentRow>
@@ -127,9 +112,7 @@ export function DigitalRecord({
         </ItemGroup>
       ) : null}
 
-      {documents.length > 0 ? (
-        <DocumentStrip caseId={caseId} documents={documents} />
-      ) : null}
+      {documents.length > 0 ? <DocumentStrip caseId={caseId} documents={documents} /> : null}
     </div>
   );
 }
@@ -138,32 +121,20 @@ function FieldRow({ field }: { field: ComplaintField }) {
   return (
     <DescriptionRow>
       <DescriptionTerm>{field.term}</DescriptionTerm>
-      <DescriptionDetails
-        className={cn(
-          field.empty ? "text-muted-foreground" : "font-medium"
-        )}
-      >
-        {field.id ? (
-          <Identifier value={field.value} label={field.term} />
-        ) : (
-          field.value
-        )}
+      <DescriptionDetails className={cn(field.empty ? "text-muted-foreground" : "font-medium")}>
+        {field.id ? <Identifier value={field.value} label={field.term} /> : field.value}
       </DescriptionDetails>
     </DescriptionRow>
   );
 }
 
-function DocumentStrip({
-  caseId,
-  documents,
-}: {
-  caseId: string;
-  documents: ComplaintDocument[];
-}) {
+function DocumentStrip({ caseId, documents }: { caseId: string; documents: ComplaintDocument[] }) {
   const t = useTranslations();
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-body-compact font-semibold text-foreground">{t("digitalRecord_documents")}</h3>
+      <h3 className="text-body-compact font-semibold text-foreground">
+        {t("digitalRecord_documents")}
+      </h3>
       <ul aria-label={t("digitalRecord_documents")} className="flex gap-4 overflow-x-auto pb-1">
         {documents.map((doc) => (
           <li key={doc.id} className="w-48 shrink-0">
@@ -175,29 +146,20 @@ function DocumentStrip({
   );
 }
 
-function DocumentTile({
-  caseId,
-  document,
-}: {
-  caseId: string;
-  document: ComplaintDocument;
-}) {
+function DocumentTile({ caseId, document }: { caseId: string; document: ComplaintDocument }) {
   const t = useTranslations();
   const src = complaintDocumentSrc(document);
   const href = complaintDocumentHref(caseId, document);
   const preview = (
-    <div
-      className={cn(
-        "overflow-hidden rounded-xl border border-border",
-        DOCUMENT_GROUND
-      )}
-    >
+    <div className={cn("overflow-hidden rounded-xl border border-border", DOCUMENT_GROUND)}>
       <AspectRatio ratio={3 / 4}>
         {src ? (
           <DocumentThumbnail src={src} />
         ) : (
           <div className="flex size-full items-center justify-center">
-            <p className="text-body-compact text-muted-foreground">{t("digitalRecord_notUploaded")}</p>
+            <p className="text-body-compact text-muted-foreground">
+              {t("digitalRecord_notUploaded")}
+            </p>
           </div>
         )}
       </AspectRatio>
@@ -208,9 +170,7 @@ function DocumentTile({
     return (
       <div className="flex flex-col gap-2">
         {preview}
-        <p className="text-body-compact font-medium text-foreground">
-          {document.label}
-        </p>
+        <p className="text-body-compact font-medium text-foreground">{document.label}</p>
       </div>
     );
   }
@@ -221,9 +181,7 @@ function DocumentTile({
       className="flex flex-col gap-2 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       {preview}
-      <span className="text-body-compact font-medium text-foreground">
-        {document.label}
-      </span>
+      <span className="text-body-compact font-medium text-foreground">{document.label}</span>
       <span className="text-caption font-medium text-muted-foreground">
         {t("digitalRecord_openInCaseFile")}
       </span>
@@ -245,13 +203,7 @@ function DocumentThumbnail({ src }: { src: string }) {
   );
 }
 
-function FragmentRow({
-  first,
-  children,
-}: {
-  first: boolean;
-  children: ReactNode;
-}) {
+function FragmentRow({ first, children }: { first: boolean; children: ReactNode }) {
   return (
     <>
       {first ? null : <ItemSeparator className="my-0" />}

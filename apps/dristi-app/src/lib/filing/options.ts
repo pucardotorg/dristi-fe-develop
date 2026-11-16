@@ -413,7 +413,6 @@ export const CHANNEL_FEE: FeeLine = {
  */
 export const DELIVERY_MIN_ROUNDS = 1;
 
-
 /* ───────────────────────────── Police stations ─────────────────────── */
 
 /**

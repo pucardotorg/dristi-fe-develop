@@ -101,7 +101,9 @@ export function OrderShortcutsDialog({
         <DialogHeader>
           <DialogTitle>{t("orderShortcutsDialog_shortcuts")}</DialogTitle>
           <DialogDescription>
-            {t.rich("orderShortcutsDialog_inTheOrderTypeToList", { kbd: (chunks) => <kbd className="font-mono">{chunks}</kbd> })}
+            {t.rich("orderShortcutsDialog_inTheOrderTypeToList", {
+              kbd: (chunks) => <kbd className="font-mono">{chunks}</kbd>,
+            })}
           </DialogDescription>
         </DialogHeader>
         <ShortcutsPanel

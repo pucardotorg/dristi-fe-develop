@@ -3,13 +3,7 @@ import { counselFor, type CaseRecord } from "@/lib/cases/types";
 import { viewerAccess, viewerRepresentation } from "@/lib/cases/viewer";
 
 import { CaseAdvocatesPair } from "./case-advocates";
-import {
-  CaseDate,
-  CaseIdentity,
-  CasePlain,
-  CaseStage,
-  CaseTitle,
-} from "./case-identity";
+import { CaseDate, CaseIdentity, CasePlain, CaseStage, CaseTitle } from "./case-identity";
 import { useTranslations } from "next-intl";
 
 /** Shared field body for the table cell and the stacked list. */
@@ -48,9 +42,7 @@ export function CaseField({
       const sides = viewerRepresentation(record);
       return (
         <CasePlain>
-          {sides
-            .map((side) => (side === "complainant" ? "Complainant" : "Accused"))
-            .join(" · ")}
+          {sides.map((side) => (side === "complainant" ? "Complainant" : "Accused")).join(" · ")}
         </CasePlain>
       );
     }
@@ -67,9 +59,7 @@ export function CaseField({
          stage under it was not needed). The stacked list keeps it. */
       return <CaseStage record={record} detail={list} />;
     case "nextHearing":
-      return (
-        <CaseDate iso={record.nextHearing?.on} emphasize={list} />
-      );
+      return <CaseDate iso={record.nextHearing?.on} emphasize={list} />;
     case "hearingPurpose":
       return <CasePlain>{record.nextHearing?.purpose}</CasePlain>;
     case "previousHearing":
@@ -89,8 +79,7 @@ export function caseFieldIsEmpty(record: CaseRecord, id: TableColumnId): boolean
       return false;
     case "advocates":
       return (
-        counselFor(record, "complainant").length === 0 &&
-        counselFor(record, "accused").length === 0
+        counselFor(record, "complainant").length === 0 && counselFor(record, "accused").length === 0
       );
     case "nextHearing":
       return !record.nextHearing?.on;

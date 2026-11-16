@@ -52,7 +52,11 @@ export async function bulkFetch(url: string, init: RequestInit = {}): Promise<Re
   ]);
   const u = new URL(url, window.location.origin);
   const method = (init.method ?? "GET").toUpperCase();
-  const parts = u.pathname.replace(/^\/api\/bulk\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
+  const parts = u.pathname
+    .replace(/^\/api\/bulk\/?/, "")
+    .split("/")
+    .filter(Boolean)
+    .map(decodeURIComponent);
   const json = () => JSON.parse(typeof init.body === "string" ? init.body : "null");
   const form = () => (init.body instanceof FormData ? init.body : new FormData());
   const fileIn = (f: FormData, key: string) => {
@@ -63,12 +67,16 @@ export async function bulkFetch(url: string, init: RequestInit = {}): Promise<Re
 
   let reply: Awaited<ReturnType<typeof h.getFile>> | null = null;
   const [a, id, b, caseId] = parts;
-  if (a === "batches" && !id) reply = method === "POST" ? await h.createBatch(store, json()) : await h.listSummaries(store);
+  if (a === "batches" && !id)
+    reply = method === "POST" ? await h.createBatch(store, json()) : await h.listSummaries(store);
   else if (a === "batches" && !b) reply = await h.getBatchView(store, id, ai);
   else if (a === "batches" && b === "actions") reply = await h.act(store, id, json());
   else if (a === "batches" && b === "drafts") reply = await h.batchDrafts(store, id);
   else if (a === "batches" && b === "cases" && caseId)
-    reply = method === "PUT" ? await h.putCase(store, id, caseId, json()) : await h.getCase(store, id, caseId);
+    reply =
+      method === "PUT"
+        ? await h.putCase(store, id, caseId, json())
+        : await h.getCase(store, id, caseId);
   else if (a === "batches" && b === "files") {
     const f = form();
     reply = await h.attach(store, id, {
@@ -79,18 +87,28 @@ export async function bulkFetch(url: string, init: RequestInit = {}): Promise<Re
       ai: f.get("ai")?.toString() ?? null,
     });
   } else if (a === "files" && id)
-    reply = method === "PUT" ? await h.putFile(store, id, fileIn(form(), "file")) : await h.getFile(store, id);
+    reply =
+      method === "PUT"
+        ? await h.putFile(store, id, fileIn(form(), "file"))
+        : await h.getFile(store, id);
   else if (a === "club") reply = await h.club(store, json().batchIds);
   else if (a === "extract") {
     const f = form();
-    reply = await h.extract(store, f.getAll("files").filter((x): x is File => x instanceof File), f.get("ai")?.toString() ?? null);
+    reply = await h.extract(
+      store,
+      f.getAll("files").filter((x): x is File => x instanceof File),
+      f.get("ai")?.toString() ?? null,
+    );
   }
 
   if (!reply) return Response.json({ error: "Not available in this deployment." }, { status: 404 });
   if ("file" in reply) {
     const { bytes, meta } = reply.file;
     return new Response(new Blob([bytes as BlobPart], { type: meta.type }), {
-      headers: { "content-type": meta.type, "content-disposition": `inline; filename="${encodeURIComponent(meta.name)}"` },
+      headers: {
+        "content-type": meta.type,
+        "content-disposition": `inline; filename="${encodeURIComponent(meta.name)}"`,
+      },
     });
   }
   return Response.json(reply.json, { status: reply.status });
@@ -98,7 +116,8 @@ export async function bulkFetch(url: string, init: RequestInit = {}): Promise<Re
 
 async function json<T>(res: Response): Promise<T> {
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((body as { error?: string }).error ?? `Request failed (${res.status})`);
+  if (!res.ok)
+    throw new Error((body as { error?: string }).error ?? `Request failed (${res.status})`);
   return body as T;
 }
 
@@ -112,8 +131,14 @@ export function setBulkAiMode(mode: AiMode): void {
 }
 
 export const bulkApi = {
-  list: () => bulkFetch(`/api/bulk/batches?ai=${aiMode}`, { cache: "no-store" }).then((r) => json<BatchSummary[]>(r)),
-  get: (id: string) => bulkFetch(`/api/bulk/batches/${id}?ai=${aiMode}`, { cache: "no-store" }).then((r) => json<BatchView>(r)),
+  list: () =>
+    bulkFetch(`/api/bulk/batches?ai=${aiMode}`, { cache: "no-store" }).then((r) =>
+      json<BatchSummary[]>(r),
+    ),
+  get: (id: string) =>
+    bulkFetch(`/api/bulk/batches/${id}?ai=${aiMode}`, { cache: "no-store" }).then((r) =>
+      json<BatchView>(r),
+    ),
   act: (id: string, body: Record<string, unknown>) =>
     bulkFetch(`/api/bulk/batches/${id}/actions`, {
       method: "POST",
@@ -128,7 +153,9 @@ export const bulkApi = {
     form.set("slotKey", slotKey);
     form.set("poor", String(poor));
     form.set("ai", aiMode);
-    return bulkFetch(`/api/bulk/batches/${id}/files`, { method: "POST", body: form }).then((r) => json<BatchView>(r));
+    return bulkFetch(`/api/bulk/batches/${id}/files`, { method: "POST", body: form }).then((r) =>
+      json<BatchView>(r),
+    );
   },
   club: (batchIds: string[]) =>
     bulkFetch("/api/bulk/club", {

@@ -68,7 +68,12 @@ describe("compareUrgency", () => {
     const affidavit = makeTask({ id: "affidavit", dueAt: at(-20) });
     assert.deepEqual(sorted(affidavit, fee), ["fee", "affidavit"]);
     // Not overdue: an upcoming blocker still leads an earlier plain deadline.
-    const blocker = makeTask({ id: "blocker", dueAt: at(4), hearingAt: at(4, 10), isBlocking: true });
+    const blocker = makeTask({
+      id: "blocker",
+      dueAt: at(4),
+      hearingAt: at(4, 10),
+      isBlocking: true,
+    });
     const plain = makeTask({ id: "plain", dueAt: at(1) });
     assert.deepEqual(sorted(plain, blocker), ["blocker", "plain"]);
   });

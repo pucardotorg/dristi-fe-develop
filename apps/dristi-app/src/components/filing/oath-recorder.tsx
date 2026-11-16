@@ -32,13 +32,15 @@ const MIME_CANDIDATES = [
 function pickMimeType(): string {
   const supported = window.MediaRecorder?.isTypeSupported;
   if (typeof supported !== "function") return "";
-  return MIME_CANDIDATES.find((candidate) => {
-    try {
-      return supported.call(window.MediaRecorder, candidate);
-    } catch {
-      return false;
-    }
-  }) ?? "";
+  return (
+    MIME_CANDIDATES.find((candidate) => {
+      try {
+        return supported.call(window.MediaRecorder, candidate);
+      } catch {
+        return false;
+      }
+    }) ?? ""
+  );
 }
 
 function messageFor(error: unknown): string {
@@ -220,11 +222,16 @@ export function OathRecorderPanel({
       />
 
       {status === "requesting" ? (
-        <p className="text-body-compact text-muted-foreground">{t("oathRecorder_requestingCameraAccess")}</p>
+        <p className="text-body-compact text-muted-foreground">
+          {t("oathRecorder_requestingCameraAccess")}
+        </p>
       ) : null}
 
       {status === "recording" ? (
-        <div aria-live="polite" className="inline-flex w-fit items-center gap-1.5 text-body-compact text-destructive">
+        <div
+          aria-live="polite"
+          className="inline-flex w-fit items-center gap-1.5 text-body-compact text-destructive"
+        >
           <span className="size-2 shrink-0 animate-pulse rounded-full bg-destructive" aria-hidden />
           <span className="tabular-nums">
             {formatDuration(elapsed)} / {formatDuration(maxDurationSeconds)}

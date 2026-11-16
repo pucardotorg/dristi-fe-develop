@@ -70,7 +70,14 @@ export function StatusLine({
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         {title ? <p className="text-body-compact font-semibold">{title}</p> : null}
-        <div className={cn("text-body-compact text-pretty", title ? "text-muted-foreground" : "font-semibold")}>{children}</div>
+        <div
+          className={cn(
+            "text-body-compact text-pretty",
+            title ? "text-muted-foreground" : "font-semibold",
+          )}
+        >
+          {children}
+        </div>
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
@@ -141,7 +148,13 @@ export function StatusFieldError({
   className?: string;
 }) {
   const line = (
-    <FieldError className={cn("flex items-center gap-1.5 pt-0.5 text-destructive-ink", !still && "fb-drop", className)}>
+    <FieldError
+      className={cn(
+        "flex items-center gap-1.5 pt-0.5 text-destructive-ink",
+        !still && "fb-drop",
+        className,
+      )}
+    >
       <CircleXIcon className="size-3.5 shrink-0" strokeWidth={2.4} aria-hidden />
       <span>{children}</span>
     </FieldError>

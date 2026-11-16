@@ -33,11 +33,7 @@ import { orderDraftKey } from "@/lib/employee/order-door";
 import { EMPTY_ORDER_DRAFT, type OrderDraft } from "@/lib/employee/order-draft";
 import { readOrderDraft, writeOrderDraft } from "@/lib/employee/order-drafts";
 import { richTextFromPlain } from "@/lib/employee/order-text";
-import {
-  markOrderReady,
-  markOrdersSigned,
-  readOrderSigning,
-} from "@/lib/employee/order-signing";
+import { markOrderReady, markOrdersSigned, readOrderSigning } from "@/lib/employee/order-signing";
 import {
   noteOrderDraft,
   sendOrderForSigning,
@@ -164,10 +160,7 @@ function QuickOrderContent({
   const [nextHearing, setNextHearing] = React.useState<Date | undefined>(undefined);
   const nextDay = nextHearing ? isoDay(nextHearing) : "";
   /* Words changed from the catalogue's, or a next date picked: closing asks first. */
-  const guard = useDiscardGuard(
-    text !== request.text || nextHearing !== undefined,
-    onClose,
-  );
+  const guard = useDiscardGuard(text !== request.text || nextHearing !== undefined, onClose);
   const key = nextApplicationOrderKey(application);
   const href = applicationOrderHref(application.id, undefined, view);
   const outcome = setApplicationOutcome(initialApplicationOutcome(), request.answers);
@@ -195,9 +188,7 @@ function QuickOrderContent({
         html: lines.map((line) => richTextFromPlain(line).html).join(""),
         text: lines.join("\n"),
       },
-      ...(request.needsHearingDate && nextDay
-        ? { next: "list" as const, nextDate: nextDay }
-        : {}),
+      ...(request.needsHearingDate && nextDay ? { next: "list" as const, nextDate: nextDay } : {}),
     };
   }
 
@@ -274,7 +265,9 @@ function QuickOrderContent({
           {t("applicationQuickOrder_openInOrderScreen")}
         </Button>
         <Button type="button" disabled={!ready} onClick={pass}>
-          {canSign ? t("applicationQuickOrder_signOrder") : t("applicationQuickOrder_sendForSigning")}
+          {canSign
+            ? t("applicationQuickOrder_signOrder")
+            : t("applicationQuickOrder_sendForSigning")}
         </Button>
       </DialogFooter>
       <DiscardQuestion guard={guard} />

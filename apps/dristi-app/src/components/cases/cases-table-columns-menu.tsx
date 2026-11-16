@@ -14,11 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import {
-  canonicalOrder,
-  isToggleableTableColumn,
-  TABLE_COLUMNS,
-} from "@/lib/cases/table-columns";
+import { canonicalOrder, isToggleableTableColumn, TABLE_COLUMNS } from "@/lib/cases/table-columns";
 
 import { useCasesTableColumns } from "./use-cases-table-columns";
 import { useTranslations } from "next-intl";
@@ -64,7 +60,9 @@ export function CasesTableColumnsMenu({
           <Columns3Icon aria-hidden />
           {/* A verb, like Share access beside it: "Columns" named a thing and
               left what the button does to be guessed (owner, Sept 18). */}
-          <CollapsibleLabel show={!compact}>{t("casesTableColumnsMenu_editColumns")}</CollapsibleLabel>
+          <CollapsibleLabel show={!compact}>
+            {t("casesTableColumnsMenu_editColumns")}
+          </CollapsibleLabel>
         </Button>
       </PopoverTrigger>
       {/* align="start" hangs the menu under the trigger's left edge so it sits under

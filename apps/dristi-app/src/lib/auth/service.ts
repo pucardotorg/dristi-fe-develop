@@ -51,9 +51,7 @@ export interface AuthService {
   getRejectedRegistration(): Promise<RejectedRegistration>;
 
   /** Send the corrected registration back for approval. Ends the session. */
-  resubmitRegistration(
-    details: ResubmissionDetails,
-  ): Promise<{ applicationNumber: string | null }>;
+  resubmitRegistration(details: ResubmissionDetails): Promise<{ applicationNumber: string | null }>;
 
   /** End the session. Safe to call when already signed out. */
   signOut(): Promise<void>;

@@ -20,7 +20,10 @@ export const journeySteps = {
   name: { title: t("registration_name"), description: t("registration_yourName") },
   contact: { title: t("registration_contact"), description: t("registration_mobileAndEmail") },
   password: { title: t("registration_password"), description: t("registration_secureYourAccount") },
-  verification: { title: t("registration_verification"), description: t("registration_yourRegistrationDetails") },
+  verification: {
+    title: t("registration_verification"),
+    description: t("registration_yourRegistrationDetails"),
+  },
   terms: { title: t("registration_terms"), description: t("registration_readAndAccept") },
 } as const;
 

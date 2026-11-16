@@ -41,16 +41,9 @@ import {
   HalfWidth,
 } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
-import {
-  CorrectionInstance,
-  useCorrectionInstanceRequest,
-} from "@/components/filing/posture";
+import { CorrectionInstance, useCorrectionInstanceRequest } from "@/components/filing/posture";
 import { IfscField } from "@/components/filing/ifsc-field";
-import {
-  OptionSelect,
-  PrefixInput,
-  TextField,
-} from "@/components/filing/inputs";
+import { OptionSelect, PrefixInput, TextField } from "@/components/filing/inputs";
 import { InfoWell, SectionNotice } from "@/components/filing/notices";
 import { SectionTabs } from "@/components/filing/section-tabs";
 import { YesNoSegmented } from "@/components/filing/segmented";
@@ -166,8 +159,7 @@ export function ChequeSection() {
   const previous = index > 0 ? cheques[index - 1] : null;
   const inheritedBank = previous?.bankName || "previous cheque";
   const presentedLate = chequePresentedLate(cheque);
-  const reasonNeedsCheck =
-    !!cheque.returnReason && !S138_SAFE_REASONS.has(cheque.returnReason);
+  const reasonNeedsCheck = !!cheque.returnReason && !S138_SAFE_REASONS.has(cheque.returnReason);
 
   /* Save every complete cheque and return memo to the case, then move on. A save failure
      keeps the filer here with the reason, so the data loss is visible. */
@@ -198,11 +190,7 @@ export function ChequeSection() {
           onRemove={askRemove}
           addLabel={t("chequeSection_addCheque")}
           onAdd={addCheque}
-          trailing={
-            !sourceOpen ? (
-              <ViewSourceButton onClick={() => setSourceOpen(true)} />
-            ) : null
-          }
+          trailing={!sourceOpen ? <ViewSourceButton onClick={() => setSourceOpen(true)} /> : null}
         />
 
         <CorrectionInstance value={index}>
@@ -261,10 +249,7 @@ export function ChequeSection() {
             {index > 0 ? (
               <>
                 <FormDivider />
-                <FormField
-                  asGroup
-                  label={t("chequeSection_areTheBankDetailsBelowThe")}
-                >
+                <FormField asGroup label={t("chequeSection_areTheBankDetailsBelowThe")}>
                   <YesNoSegmented
                     value={cheque.sameAsPrev}
                     onValueChange={(v) =>
@@ -324,7 +309,12 @@ export function ChequeSection() {
               <InfoWell>
                 <CreditCardIcon className="size-5 shrink-0" aria-hidden />
                 <p className="min-w-0 flex-1 text-body">
-                  {t.rich("chequeSection_usingBankDetailsFromChequeIndex", { index: String(index), inheritedBank, value: previous?.bankBranch ? `, ${previous.bankBranch}` : "", span: (chunks) => <span className="font-semibold">{chunks}</span> })}
+                  {t.rich("chequeSection_usingBankDetailsFromChequeIndex", {
+                    index: String(index),
+                    inheritedBank,
+                    value: previous?.bankBranch ? `, ${previous.bankBranch}` : "",
+                    span: (chunks) => <span className="font-semibold">{chunks}</span>,
+                  })}
                 </p>
               </InfoWell>
             ) : null}
@@ -386,11 +376,10 @@ export function ChequeSection() {
             </HalfWidth>
 
             {reasonNeedsCheck ? (
-              <SectionNotice
-                variant="warning"
-                title={t("chequeSection_checkThatS138StillApplies")}
-              >
-                {t.rich("chequeSection_section138IsSquarelyAttractedWhen", { span: (chunks) => <span className="font-semibold">{chunks}</span> })}
+              <SectionNotice variant="warning" title={t("chequeSection_checkThatS138StillApplies")}>
+                {t.rich("chequeSection_section138IsSquarelyAttractedWhen", {
+                  span: (chunks) => <span className="font-semibold">{chunks}</span>,
+                })}
               </SectionNotice>
             ) : null}
           </FormCard>
@@ -427,7 +416,9 @@ export function ChequeSection() {
         onOpenChange={setSourceOpen}
         title={
           sourceSlot?.label ??
-          (sourceDoc === "front" ? t("chequeSection_chequeFrontSide") : t("chequeSection_chequeReturnMemo"))
+          (sourceDoc === "front"
+            ? t("chequeSection_chequeFrontSide")
+            : t("chequeSection_chequeReturnMemo"))
         }
         chips={sourceDocs.map((d) => ({
           id: d.key,
@@ -437,11 +428,7 @@ export function ChequeSection() {
         }))}
         file={sourceSlot?.file ?? null}
         uploadHref={hrefFor("upload")}
-        imageAlt={
-          sourceDoc === "front"
-            ? "Uploaded cheque"
-            : "Uploaded cheque return memo"
-        }
+        imageAlt={sourceDoc === "front" ? "Uploaded cheque" : "Uploaded cheque return memo"}
         note={t("chequeSection_shownFromYourUploadedDocument")}
       />
     </>

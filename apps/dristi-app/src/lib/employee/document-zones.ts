@@ -88,9 +88,7 @@ function slotForTerm(term: string): string {
   if (/\bname\b/.test(t)) return "name";
   if (/photo|id proof|photograph/.test(t)) return "photo";
   if (
-    /date|dated|presented|deposit|returned|informed|served|dispatch|delivery|filing|filed/.test(
-      t,
-    )
+    /date|dated|presented|deposit|returned|informed|served|dispatch|delivery|filing|filed/.test(t)
   ) {
     return "date";
   }
@@ -101,10 +99,7 @@ function slotForTerm(term: string): string {
  * The region to mark for a fact read off a given kind of page — or `null` to ring the
  * whole page when the kind has no zone that fits the fact's slot.
  */
-export function zoneFor(
-  kind: CaseDocumentKind,
-  term: string,
-): ZoneRect | null {
+export function zoneFor(kind: CaseDocumentKind, term: string): ZoneRect | null {
   const zones = ZONES[kind] ?? {};
   return zones[slotForTerm(term)] ?? zones.page ?? null;
 }

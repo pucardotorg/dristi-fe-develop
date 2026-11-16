@@ -22,7 +22,11 @@ export const CLIENTS: Client[] = [
       cinPan: "U65990MH1991PLC000000",
       phone: "2266069000",
       email: "legal@tatacapital.example",
-      address: { line1: "11th Floor, Tower A, Peninsula Business Park, Lower Parel", city: "Mumbai", pin: "400013" },
+      address: {
+        line1: "11th Floor, Tower A, Peninsula Business Park, Lower Parel",
+        city: "Mumbai",
+        pin: "400013",
+      },
       representative: {
         name: "Rajesh K. Patel",
         designation: "Chief Manager, Legal",
@@ -34,7 +38,6 @@ export const CLIENTS: Client[] = [
     },
   },
 ];
-
 
 /** The signed-in advocate's enrolment number, for the demo (the profile holds none). */
 export const SELF_BAR = "K/1450/2012";

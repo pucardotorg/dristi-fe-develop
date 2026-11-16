@@ -29,8 +29,7 @@ export function tableHtml(
 ): string {
   const cols = Math.max(1, Math.floor(columns));
   const bodyRows = Math.max(0, Math.floor(rows) - 1);
-  const row = (tag: "th" | "td") =>
-    `<tr>${`<${tag}>${EMPTY}</${tag}>`.repeat(cols)}</tr>`;
+  const row = (tag: "th" | "td") => `<tr>${`<${tag}>${EMPTY}</${tag}>`.repeat(cols)}</tr>`;
   const head = `<thead>${row("th")}</thead>`;
   const body = bodyRows > 0 ? `<tbody>${row("td").repeat(bodyRows)}</tbody>` : "";
   return `<table>${head}${body}</table><p>${EMPTY}</p>`;

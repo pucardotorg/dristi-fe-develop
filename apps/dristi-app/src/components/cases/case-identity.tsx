@@ -55,7 +55,7 @@ export function CasePeekTrigger({
       onClick={() => open(record, { hideLongPendingFlag })}
       className={cn(
         "w-fit cursor-pointer rounded-sm p-0 text-left outline-none after:absolute after:inset-0 focus-visible:ring-3 focus-visible:ring-focus-ring",
-        IDENTITY_TONE[tone]
+        IDENTITY_TONE[tone],
       )}
     >
       <span className="sr-only">{t("caseIdentity_preview")} </span>
@@ -67,15 +67,9 @@ export function CasePeekTrigger({
   );
 }
 
-export function CaseTitle({
-  record,
-}: {
-  record: CaseRecord;
-}) {
+export function CaseTitle({ record }: { record: CaseRecord }) {
   return (
-    <span className="text-body-compact font-medium text-foreground">
-      {partiesLabel(record)}
-    </span>
+    <span className="text-body-compact font-medium text-foreground">{partiesLabel(record)}</span>
   );
 }
 
@@ -106,11 +100,7 @@ export function CaseIdentity({
 }) {
   return (
     <div className="flex min-w-0 flex-wrap items-center justify-start gap-2">
-      <CasePeekTrigger
-        record={record}
-        tone={tone}
-        hideLongPendingFlag={hideLongPendingFlag}
-      />
+      <CasePeekTrigger record={record} tone={tone} hideLongPendingFlag={hideLongPendingFlag} />
       {hideLongPendingFlag ? null : <CaseFlags record={record} />}
     </div>
   );
@@ -130,9 +120,7 @@ export function CaseStage({
   /** Substage / disposed date under the stage. Off on the dense table. */
   detail?: boolean;
 }) {
-  const label = record.disposal
-    ? outcomeLabel(record.disposal.outcome)
-    : stageLabel(record.stage);
+  const label = record.disposal ? outcomeLabel(record.disposal.outcome) : stageLabel(record.stage);
   const secondary = detail
     ? record.disposal
       ? `Disposed ${formatCaseDate(record.disposal.on)}`
@@ -141,48 +129,24 @@ export function CaseStage({
 
   return (
     <div className="flex flex-col items-start gap-1">
-      <Badge
-        variant={record.disposal ? "secondary" : "info"}
-        className="shrink-0"
-      >
+      <Badge variant={record.disposal ? "secondary" : "info"} className="shrink-0">
         {label}
       </Badge>
-      {secondary ? (
-        <span className="text-caption text-muted-foreground">{secondary}</span>
-      ) : null}
+      {secondary ? <span className="text-caption text-muted-foreground">{secondary}</span> : null}
     </div>
   );
 }
 
-export function CasePlain({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+export function CasePlain({ children, className }: { children: ReactNode; className?: string }) {
   if (children == null || children === "") return null;
-  return (
-    <span className={cn("text-body-compact text-foreground", className)}>
-      {children}
-    </span>
-  );
+  return <span className={cn("text-body-compact text-foreground", className)}>{children}</span>;
 }
 
-export function CaseDate({
-  iso,
-  emphasize = false,
-}: {
-  iso?: string;
-  emphasize?: boolean;
-}) {
+export function CaseDate({ iso, emphasize = false }: { iso?: string; emphasize?: boolean }) {
   if (!iso) return null;
   return (
     <span
-      className={cn(
-        "text-body-compact tabular-nums text-foreground",
-        emphasize && "font-medium"
-      )}
+      className={cn("text-body-compact tabular-nums text-foreground", emphasize && "font-medium")}
     >
       {formatCaseDate(iso)}
     </span>

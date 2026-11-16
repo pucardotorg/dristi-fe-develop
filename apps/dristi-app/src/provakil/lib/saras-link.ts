@@ -20,8 +20,16 @@ async function answer(res: Response): Promise<Answer> {
   return { ok: res.ok, status: res.status, json: await res.json().catch(() => ({})) };
 }
 
-async function inBrowser(run: (h: typeof import("@/lib/bulk/handlers"), store: typeof import("@/lib/bulk/store.browser").browserStore) => Promise<{ status: number; json?: unknown }>): Promise<Answer> {
-  const [h, { browserStore }] = await Promise.all([import("@/lib/bulk/handlers"), import("@/lib/bulk/store.browser")]);
+async function inBrowser(
+  run: (
+    h: typeof import("@/lib/bulk/handlers"),
+    store: typeof import("@/lib/bulk/store.browser").browserStore,
+  ) => Promise<{ status: number; json?: unknown }>,
+): Promise<Answer> {
+  const [h, { browserStore }] = await Promise.all([
+    import("@/lib/bulk/handlers"),
+    import("@/lib/bulk/store.browser"),
+  ]);
   const reply = await run(h, browserStore);
   return { ok: reply.status < 400, status: reply.status, json: reply.json ?? {} };
 }
@@ -40,7 +48,7 @@ export async function sarasPush(body: unknown): Promise<Answer> {
         headers: { "content-type": "application/json", ...auth },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(120_000),
-      })
+      }),
     );
   }
   return inBrowser((h, store) => h.receivePush(store, body, window.location.origin));
@@ -49,7 +57,13 @@ export async function sarasPush(body: unknown): Promise<Answer> {
 /** `GET /api/bulk/v1/batches`: what has been pushed, and where each case stands. */
 export async function sarasBatches(): Promise<Answer> {
   if ((await bulkStoreWhere()) === "server") {
-    return answer(await fetch("/api/bulk/v1/batches", { headers: auth, cache: "no-store", signal: AbortSignal.timeout(3000) }));
+    return answer(
+      await fetch("/api/bulk/v1/batches", {
+        headers: auth,
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      }),
+    );
   }
   return inBrowser((h, store) => h.pushedBatches(store));
 }

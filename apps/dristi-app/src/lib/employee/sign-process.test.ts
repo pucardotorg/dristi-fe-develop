@@ -124,9 +124,7 @@ describe("PROCESS_LINE", () => {
 describe("PROCESS_TABS", () => {
   it("puts every status in exactly one tab, and the tab agrees", () => {
     for (const status of PROCESS_STATUSES) {
-      const holders = PROCESS_TABS.filter((tab) =>
-        tab.statuses.includes(status.id),
-      );
+      const holders = PROCESS_TABS.filter((tab) => tab.statuses.includes(status.id));
       assert.equal(holders.length, 1, status.id);
       assert.equal(holders[0].id, status.tab, status.id);
     }
@@ -134,10 +132,7 @@ describe("PROCESS_TABS", () => {
 
   it("opens each tab on a status it holds", () => {
     for (const tab of PROCESS_TABS) {
-      assert.ok(
-        tab.defaultView === "all" || tab.statuses.includes(tab.defaultView),
-        tab.id,
-      );
+      assert.ok(tab.defaultView === "all" || tab.statuses.includes(tab.defaultView), tab.id);
     }
   });
 
@@ -150,10 +145,7 @@ describe("PROCESS_TABS", () => {
       "to-send",
       "send-failed",
     ]);
-    assert.deepEqual(processTab("service").statuses, [
-      "in-progress",
-      "completed",
-    ]);
+    assert.deepEqual(processTab("service").statuses, ["in-progress", "completed"]);
   });
 
   it("counts the work in each tab — on Service, only what is still out", () => {
@@ -293,7 +285,6 @@ describe("runProcessAct", () => {
     assert.equal(byId.get(refused.id)?.status, "send-failed");
     assert.equal(byId.get(refused.id)?.sendFailure, refused.demoSendFailure);
     for (const id of ids) assert.equal(byId.get(id)?.signedOn, ON);
-
   });
 
   it("sends a refused process on the resend after", () => {
@@ -337,9 +328,7 @@ describe("runProcessAct", () => {
     line = runProcessAct(line, "post", ids, ON);
     line = recordProcessReturns(
       line,
-      new Map<string, ProcessOutcome>([
-        [cover.id, { served: false, reason: "Door locked" }],
-      ]),
+      new Map<string, ProcessOutcome>([[cover.id, { served: false, reason: "Door locked" }]]),
       ON,
     );
     const row = line.find((process) => process.id === cover.id);
@@ -380,10 +369,7 @@ describe("actsForSelection", () => {
       processesAt(PROCESS_LINE, "to-sign")[0],
     ];
     assert.deepEqual(
-      actsForSelection(tab, picked).map((group) => [
-        group.act.id,
-        group.rows.length,
-      ]),
+      actsForSelection(tab, picked).map((group) => [group.act.id, group.rows.length]),
       [
         ["sign", 1],
         ["post", 1],
@@ -403,10 +389,7 @@ describe("actsForSelection", () => {
       out.filter(recordedByCourt).map((process) => process.id),
     );
     /* Completed and Failed are records: nothing to do to them here. */
-    assert.deepEqual(
-      actsForSelection(tab, processesAt(PROCESS_LINE, "completed")),
-      [],
-    );
+    assert.deepEqual(actsForSelection(tab, processesAt(PROCESS_LINE, "completed")), []);
   });
 });
 
@@ -587,15 +570,11 @@ describe("the selection, counted as envelopes", () => {
 
   /** A case this status holds more than one process for — the interesting shape. */
   const shared = collection.find(
-    (process) =>
-      collection.filter((other) => other.caseNumber === process.caseNumber)
-        .length > 1,
+    (process) => collection.filter((other) => other.caseNumber === process.caseNumber).length > 1,
   );
   assert.ok(shared, "the demo line needs a case with several processes waiting");
 
-  const siblings = collection.filter(
-    (process) => process.caseNumber === shared.caseNumber,
-  );
+  const siblings = collection.filter((process) => process.caseNumber === shared.caseNumber);
 
   it("puts one case in one entry, however much process is inside it", () => {
     const [entry, ...rest] = groupSelectionByCase(
@@ -610,27 +589,19 @@ describe("the selection, counted as envelopes", () => {
   it("counts only what is ticked, never the case's true total", () => {
     /* Two of three ticked is two covers' worth of nothing — the entry must not round up
        to the case's total, or it reports a cover as reconciled that is not. */
-    const [entry] = groupSelectionByCase(
-      collection,
-      new Set([siblings[0].id]),
-    );
+    const [entry] = groupSelectionByCase(collection, new Set([siblings[0].id]));
     assert.equal(entry.processes.length, 1);
     assert.ok(siblings.length > 1, "the fixture must have a sibling to leave out");
   });
 
   it("keeps the order the envelopes were picked up in", () => {
-    const other = collection.find(
-      (process) => process.caseNumber !== shared.caseNumber,
-    );
+    const other = collection.find((process) => process.caseNumber !== shared.caseNumber);
     assert.ok(other, "the demo line needs a second case at this status");
 
     /* A Set walks in insertion order, which is the clerk's own morning: the envelope
        just ticked belongs at the end of the tray, not wherever the line happens to hold
        it. Ticking the second case first must put it first. */
-    const picked = groupSelectionByCase(
-      collection,
-      new Set([other.id, siblings[0].id]),
-    );
+    const picked = groupSelectionByCase(collection, new Set([other.id, siblings[0].id]));
     assert.deepEqual(
       picked.map((entry) => entry.caseNumber),
       [other.caseNumber, shared.caseNumber],
@@ -638,9 +609,7 @@ describe("the selection, counted as envelopes", () => {
   });
 
   it("holds a case at the place its first process was ticked", () => {
-    const other = collection.find(
-      (process) => process.caseNumber !== shared.caseNumber,
-    );
+    const other = collection.find((process) => process.caseNumber !== shared.caseNumber);
     assert.ok(other);
     /* First, third, second: the case ticked first stays first even though its second
        process was ticked last. */
@@ -658,20 +627,14 @@ describe("the selection, counted as envelopes", () => {
   it("drops an id the status no longer holds rather than counting it", () => {
     const gone = processesAt(PROCESS_LINE, "to-post")[0];
     assert.ok(gone, "the demo line needs a row at another status");
-    const picked = groupSelectionByCase(
-      collection,
-      new Set([siblings[0].id, gone.id]),
-    );
+    const picked = groupSelectionByCase(collection, new Set([siblings[0].id, gone.id]));
     assert.equal(picked.length, 1);
     assert.equal(picked[0].caseNumber, shared.caseNumber);
   });
 
   it("takes the whole case out, because the whole case is the envelope", () => {
     const ids = processIdsForCase(collection, shared.caseNumber);
-    assert.deepEqual(
-      [...ids].sort(),
-      siblings.map((process) => process.id).sort(),
-    );
+    assert.deepEqual([...ids].sort(), siblings.map((process) => process.id).sort());
   });
 });
 
@@ -681,9 +644,7 @@ describe("what Enter is allowed to commit", () => {
   const base = defaultProcessFilters(stage);
 
   const shared = collection.find(
-    (process) =>
-      collection.filter((other) => other.caseNumber === process.caseNumber)
-        .length > 1,
+    (process) => collection.filter((other) => other.caseNumber === process.caseNumber).length > 1,
   );
   assert.ok(shared, "the demo line needs a case with several processes waiting");
 
@@ -715,24 +676,17 @@ describe("what Enter is allowed to commit", () => {
   });
 
   it("has nothing to commit when nothing matches", () => {
-    assert.equal(
-      singleCaseMatch(collection, { ...base, query: "ZZ/9999/1999" }),
-      null,
-    );
+    assert.equal(singleCaseMatch(collection, { ...base, query: "ZZ/9999/1999" }), null);
   });
 
   it("stays inside the status it was asked about", () => {
     /* A cover waiting for collection cannot be answered with a row that has already been
        signed, however exactly the number matches. */
     const elsewhere = processesAt(PROCESS_LINE, "to-post").find(
-      (process) =>
-        !collection.some((row) => row.caseNumber === process.caseNumber),
+      (process) => !collection.some((row) => row.caseNumber === process.caseNumber),
     );
     assert.ok(elsewhere, "the demo line needs a case that has moved on");
-    assert.equal(
-      singleCaseMatch(collection, { ...base, query: elsewhere.caseNumber }),
-      null,
-    );
+    assert.equal(singleCaseMatch(collection, { ...base, query: elsewhere.caseNumber }), null);
   });
 });
 
@@ -756,9 +710,7 @@ describe("the Service filters", () => {
     assert.ok(locked.length > 0);
     assert.ok(
       locked.every(
-        (process) =>
-          process.outcome?.served === false &&
-          process.outcome.reason === "Door locked",
+        (process) => process.outcome?.served === false && process.outcome.reason === "Door locked",
       ),
     );
   });
@@ -794,7 +746,6 @@ describe("the confirmation's one line", () => {
       "1 moves to To post in Issuance, 1 moves to In progress in Service.",
     );
   });
-
 });
 
 describe("the confirmation's success", () => {
@@ -806,9 +757,7 @@ describe("the confirmation's success", () => {
       "needs a row whose send is refused",
     );
     const ids = new Set([post.id, refusing.id]);
-    const after = runProcessAct(PROCESS_LINE, "sign", ids, ON).filter((p) =>
-      ids.has(p.id),
-    );
+    const after = runProcessAct(PROCESS_LINE, "sign", ids, ON).filter((p) => ids.has(p.id));
     assert.equal(landedLine(after), "It is now in To post in Issuance.");
     assert.equal(refusedLine(after), "1 could not be sent and is in Errored in Issuance.");
     assert.equal(processAct("sign").done("2 processes"), "2 processes signed");
@@ -821,10 +770,7 @@ describe("attachment (carried over from #43)", () => {
   it("is on the line, executed by the police", () => {
     assert.ok(attachment);
     assert.equal(attachment.channel, "police-icops");
-    assert.equal(
-      COURT_PROCESS_TYPES.find((type) => type.id === "attachment")?.executed,
-      true,
-    );
+    assert.equal(COURT_PROCESS_TYPES.find((type) => type.id === "attachment")?.executed, true);
   });
 
   it("is addressed to the police and directs the attachment of property", () => {
@@ -868,11 +814,7 @@ describe("By hand", () => {
     const others = PROCESS_LINE.filter(
       (process) => !(process.type === "proclamation" && process.status === "to-hand"),
     );
-    const next = executeOnDownload(
-      PROCESS_LINE,
-      new Set(others.map((process) => process.id)),
-      DAY,
-    );
+    const next = executeOnDownload(PROCESS_LINE, new Set(others.map((process) => process.id)), DAY);
     assert.deepEqual(
       next.filter((process) => others.includes(process)),
       others,
@@ -891,7 +833,6 @@ describe("By hand", () => {
   });
 });
 
-
 describe("e-Post and the Post officer", () => {
   it("signs e-Post into To send, and marks it sent from there", () => {
     const row = only(
@@ -899,10 +840,16 @@ describe("e-Post and the Post officer", () => {
       "an e-Post row to sign",
     );
     const signed = runProcessAct(PROCESS_LINE, "sign", new Set([row.id]), ON);
-    const moved = only(signed.filter((p) => p.id === row.id), "the signed row");
+    const moved = only(
+      signed.filter((p) => p.id === row.id),
+      "the signed row",
+    );
     assert.equal(moved.status, "to-send");
     const sent = runProcessAct(signed, "send", new Set([row.id]), ON);
-    const out = only(sent.filter((p) => p.id === row.id), "the sent row");
+    const out = only(
+      sent.filter((p) => p.id === row.id),
+      "the sent row",
+    );
     assert.equal(out.status, "in-progress");
     assert.equal(out.sentOn, ON);
     assert.equal(recordedByCourt(out), true);

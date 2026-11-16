@@ -25,8 +25,7 @@ import type { Defect, DefectTarget, Resolution } from "./types";
 
 export type DefectState =
   /** Nothing has been done about it yet. */
-  | "open"
-  | "resolved";
+  "open" | "resolved";
 
 const norm = (v: string | undefined | null): string => (v ?? "").trim();
 
@@ -72,7 +71,7 @@ export function isResolved(defect: Defect, value: string | undefined): boolean {
 /** How many of these defects are addressed, given a lookup of live values. */
 export function countResolved(
   defects: readonly Defect[],
-  valueOf: (defect: Defect) => string | undefined
+  valueOf: (defect: Defect) => string | undefined,
 ): { resolved: number; total: number } {
   let resolved = 0;
   for (const d of defects) if (isResolved(d, valueOf(d))) resolved += 1;
@@ -82,7 +81,7 @@ export function countResolved(
 /** Every defect addressed — the gate on "Submit corrections to scrutiny". */
 export function allResolved(
   defects: readonly Defect[],
-  valueOf: (defect: Defect) => string | undefined
+  valueOf: (defect: Defect) => string | undefined,
 ): boolean {
   return defects.length > 0 && defects.every((d) => isResolved(d, valueOf(d)));
 }
@@ -105,7 +104,7 @@ export function formOrder(a: Defect, b: Defect): number {
 /** The defect the screen should land on when it opens (or re-opens). */
 export function firstUnresolved(
   defects: readonly Defect[],
-  valueOf: (defect: Defect) => string | undefined
+  valueOf: (defect: Defect) => string | undefined,
 ): Defect | null {
   return defects.find((d) => !isResolved(d, valueOf(d))) ?? null;
 }
@@ -146,7 +145,7 @@ export function intendedResolution(
   keep: boolean,
   at: string,
   /** Why the filed value stands — recorded with a keep, ignored otherwise. */
-  reason?: string
+  reason?: string,
 ): Resolution | undefined {
   if (defect.target.kind === "doc") return defect.resolution;
   if (changed(defect, value)) return { how: "edited", value: value ?? "", at };

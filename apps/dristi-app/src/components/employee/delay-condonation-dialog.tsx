@@ -80,10 +80,7 @@ function MatterBody({
   onReturnFocus: () => void;
 }) {
   const t = useTranslations();
-  const document = useMemo(
-    () => buildDelayCondonationDocument(matter),
-    [matter],
-  );
+  const document = useMemo(() => buildDelayCondonationDocument(matter), [matter]);
 
   return (
     <ApplicationReviewOverlay
@@ -91,7 +88,11 @@ function MatterBody({
       description={
         <>
           {/* The overlay renders this as its accessible description. */}
-          <Identifier value={matter.caseNumber} label={t("delayCondonationDialog_caseNumber")} copyable={false} />
+          <Identifier
+            value={matter.caseNumber}
+            label={t("delayCondonationDialog_caseNumber")}
+            copyable={false}
+          />
           {" · "}
           {causeTitle(matter)}
         </>
@@ -107,11 +108,11 @@ function MatterBody({
           <ReviewRow term={t("delayCondonationDialog_stage")}>
             {delayCondonationStageLabel(matter.stage)}
           </ReviewRow>
-          <ReviewRow term={t("delayCondonationDialog_delayToBeCondoned")}>{delayLine(matter)}</ReviewRow>
+          <ReviewRow term={t("delayCondonationDialog_delayToBeCondoned")}>
+            {delayLine(matter)}
+          </ReviewRow>
           <ReviewRow term={t("delayCondonationDialog_dateOfApplication")}>
-            <span className="tabular-nums">
-              {formatDelayCondonationLongDate(matter.appliedOn)}
-            </span>
+            <span className="tabular-nums">{formatDelayCondonationLongDate(matter.appliedOn)}</span>
           </ReviewRow>
           <ReviewRow term={t("delayCondonationDialog_applicationFiler")}>
             {delayCondonationFiler(matter)}

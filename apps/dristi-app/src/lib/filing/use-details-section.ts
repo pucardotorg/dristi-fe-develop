@@ -26,7 +26,7 @@ export type SaveResult = { ok: boolean; error?: string };
 
 export function useDetailsSection(
   section: string,
-  build: (draft: FilingDraft) => DetailsSectionBody | null
+  build: (draft: FilingDraft) => DetailsSectionBody | null,
 ) {
   const { draft } = useFiling();
   const [saving, setSaving] = React.useState(false);

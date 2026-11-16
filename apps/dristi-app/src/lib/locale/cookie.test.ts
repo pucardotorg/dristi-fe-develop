@@ -9,7 +9,8 @@ describe("locale cookie", () => {
   });
 
   it("rejects unknown, empty and non-string values", () => {
-    for (const value of ["fr", "", "EN", "hi-IN", undefined, 42]) assert.equal(isLocale(value), false);
+    for (const value of ["fr", "", "EN", "hi-IN", undefined, 42])
+      assert.equal(isLocale(value), false);
   });
 
   it("falls back to English for a missing or stale cookie", () => {

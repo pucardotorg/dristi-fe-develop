@@ -44,12 +44,7 @@ import * as React from "react";
 
 import { PageOutcome } from "@/components/feedback";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  LogInIcon,
-  SignatureIcon,
-  VideoIcon,
-  LinkIcon,
-} from "lucide-react";
+import { LogInIcon, SignatureIcon, VideoIcon, LinkIcon } from "lucide-react";
 
 import { useStagedFlow, StagedOverlay } from "@/components/chrome/staged-overlay";
 import { BrandLockup } from "@/components/brand-lockup";
@@ -68,11 +63,7 @@ import {
 import { useLocalStorageValue } from "@/hooks/use-local-storage-value";
 import { ensureSampleDrafts } from "@/lib/filing/sample-drafts";
 import { FilingProvider, useFiling } from "@/lib/filing/store";
-import type {
-  OathVideo,
-  SignInstrument,
-  Signatory,
-} from "@/lib/filing/types";
+import type { OathVideo, SignInstrument, Signatory } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,10 +87,7 @@ import {
   ADVOCATE_AVAILABLE_KEY,
   PROFILE_ROLE_KEY,
 } from "@/components/shell/profile";
-import {
-  linkedComplaintHref,
-  rememberLinkedComplaint,
-} from "@/lib/filing/linked-complaints";
+import { linkedComplaintHref, rememberLinkedComplaint } from "@/lib/filing/linked-complaints";
 import { useTranslations } from "next-intl";
 
 type Stage = "why" | "account" | "confirm" | "sign" | "otp" | "dsc" | "signed" | "oath" | "done";
@@ -214,7 +202,7 @@ function SignLinkBody({
   /** On paper, the complainant this link answers for confirms by phone (`SIG-05`). */
   const confirmer = React.useMemo(
     () => phoneConfirmers(draft).find((p) => confirmerSlot(p.id) === signatoryId),
-    [draft, signatoryId]
+    [draft, signatoryId],
   );
   const needsConfirm =
     onPaper && !!confirmer && me?.status !== "signed" && !phoneConfirmed(draft, confirmer);
@@ -245,7 +233,13 @@ function SignLinkBody({
     const timer = window.setTimeout(() => {
       greeted.current = true;
       // Arriving from sign-in, the person has read why already; go to what is next.
-      const act: Start = needsConfirm ? "confirm" : needsSign ? "sign" : needsOath ? "oath" : "done";
+      const act: Start = needsConfirm
+        ? "confirm"
+        : needsSign
+          ? "sign"
+          : needsOath
+            ? "oath"
+            : "done";
       openAt(owed ? (inShell ? act : "why") : "done");
     }, 500);
     return () => window.clearTimeout(timer);
@@ -319,10 +313,16 @@ function SignLinkBody({
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8 md:py-12">
         <div className="flex flex-col gap-2">
           <h1 className="text-title text-balance font-semibold">
-            {filed ? tr("signLinkScreen_thisComplaintHasBeenFiled") : tr("signLinkScreen_youHaveBeenAskedToSign")}
+            {filed
+              ? tr("signLinkScreen_thisComplaintHasBeenFiled")
+              : tr("signLinkScreen_youHaveBeenAskedToSign")}
           </h1>
           <p className="text-body text-pretty text-muted-foreground">
-            {tr("signLinkScreen_filerIsFilingPartiesInThe", { filer, parties, courtText: courtText(COURT.name) })}
+            {tr("signLinkScreen_filerIsFilingPartiesInThe", {
+              filer,
+              parties,
+              courtText: courtText(COURT.name),
+            })}
           </p>
         </div>
 
@@ -487,7 +487,7 @@ function SignLinkWizard({
     () => () => {
       if (resendTimer.current) window.clearTimeout(resendTimer.current);
     },
-    []
+    [],
   );
 
   React.useEffect(() => {
@@ -503,13 +503,18 @@ function SignLinkWizard({
    * is the point of showing it.
    */
   const [signsHere] = React.useState(
-    needsSign || needsConfirm || start === "sign" || start === "confirm"
+    needsSign || needsConfirm || start === "sign" || start === "confirm",
   );
 
   /* The steps this person has, in order — the trail and the "what happens next" list. */
   const acts: { key: "sign" | "oath"; label: string }[] = [
     ...(signsHere
-      ? [{ key: "sign" as const, label: onPaper ? tr("signLinkScreen_confirmByOtp") : tr("signLinkScreen_eSign") }]
+      ? [
+          {
+            key: "sign" as const,
+            label: onPaper ? tr("signLinkScreen_confirmByOtp") : tr("signLinkScreen_eSign"),
+          },
+        ]
       : []),
     ...(sworn ? [{ key: "oath" as const, label: tr("signLinkScreen_oath") }] : []),
   ];
@@ -547,7 +552,6 @@ function SignLinkWizard({
     onConfirm();
     flow.go(sworn ? "oath" : "signed");
   };
-
 
   const title = {
     why: tr("signLinkScreen_youHaveBeenAskedToSignWhy"),
@@ -686,12 +690,23 @@ function SignLinkWizard({
 
           <ol className="flex flex-col gap-3">
             {[
-              ...(signedIn ? [] : [{ icon: LogInIcon, title: tr("signLinkScreen_signInOrCreateAnAccount") }]),
-              ...(needsSign ? [{ icon: SignatureIcon, title: tr("signLinkScreen_signTheComplaintWithAadhaarOtp") }] : []),
+              ...(signedIn
+                ? []
+                : [{ icon: LogInIcon, title: tr("signLinkScreen_signInOrCreateAnAccount") }]),
+              ...(needsSign
+                ? [
+                    {
+                      icon: SignatureIcon,
+                      title: tr("signLinkScreen_signTheComplaintWithAadhaarOtp"),
+                    },
+                  ]
+                : []),
               ...(needsConfirm
                 ? [{ icon: SignatureIcon, title: tr("signLinkScreen_confirmByOtpThatYouSigned") }]
                 : []),
-              ...(sworn && needsOath ? [{ icon: VideoIcon, title: tr("signLinkScreen_recordYourOathOnVideo") }] : []),
+              ...(sworn && needsOath
+                ? [{ icon: VideoIcon, title: tr("signLinkScreen_recordYourOathOnVideo") }]
+                : []),
             ].map(({ icon: Icon, title: t }, i) => (
               <li key={t} className="flex items-center gap-3">
                 <span
@@ -709,23 +724,31 @@ function SignLinkWizard({
 
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border border-hairline bg-surface-sunken p-4 sm:grid-cols-2">
             <div className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-body-compact text-muted-foreground">{tr("signLinkScreen_case")}</dt>
+              <dt className="text-body-compact text-muted-foreground">
+                {tr("signLinkScreen_case")}
+              </dt>
               <dd className="text-body-compact font-medium">{parties}</dd>
             </div>
             <div className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-body-compact text-muted-foreground">{tr("signLinkScreen_court")}</dt>
+              <dt className="text-body-compact text-muted-foreground">
+                {tr("signLinkScreen_court")}
+              </dt>
               <dd className="text-body-compact font-medium">{courtText(COURT.name)}</dd>
             </div>
             {chequeAmount ? (
               <div className="flex min-w-0 flex-col gap-0.5">
-                <dt className="text-body-compact text-muted-foreground">{tr("signLinkScreen_chequeAmount")}</dt>
+                <dt className="text-body-compact text-muted-foreground">
+                  {tr("signLinkScreen_chequeAmount")}
+                </dt>
                 <dd className="text-body-compact font-medium tabular-nums">
                   {money(Number(chequeAmount.replace(/[^\d.]/g, "")) || 0)}
                 </dd>
               </div>
             ) : null}
             <div className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-body-compact text-muted-foreground">{tr("signLinkScreen_youSignAs")}</dt>
+              <dt className="text-body-compact text-muted-foreground">
+                {tr("signLinkScreen_youSignAs")}
+              </dt>
               <dd className="text-body-compact font-medium">
                 {isAdvocate ? me.name : me.role.split(" · ")[0]}
               </dd>
@@ -734,9 +757,7 @@ function SignLinkWizard({
         </StageColumn>
       ) : flow.stage === "account" ? (
         <StageColumn>
-          <p className="text-body">
-            {tr("signLinkScreen_signInOrCreateAnAccountIf")}
-          </p>
+          <p className="text-body">{tr("signLinkScreen_signInOrCreateAnAccountIf")}</p>
         </StageColumn>
       ) : flow.stage === "confirm" ? (
         <StageColumn>
@@ -744,7 +765,13 @@ function SignLinkWizard({
           <p className="text-body">
             {tr("signLinkScreen_enteringTheOtpConfirmsThatYou", { filer })}
           </p>
-          <OtpEntry id="link-confirm-otp" value={otp} onChange={setOtp} resent={resent} onResend={resendOtp} />
+          <OtpEntry
+            id="link-confirm-otp"
+            value={otp}
+            onChange={setOtp}
+            resent={resent}
+            onResend={resendOtp}
+          />
         </StageColumn>
       ) : flow.stage === "sign" ? (
         <StageColumn>
@@ -762,44 +789,48 @@ function SignLinkWizard({
         </StageColumn>
       ) : flow.stage === "otp" ? (
         <StageColumn>
-          <OtpEntry id="link-otp" value={otp} onChange={setOtp} resent={resent} onResend={resendOtp} />
+          <OtpEntry
+            id="link-otp"
+            value={otp}
+            onChange={setOtp}
+            resent={resent}
+            onResend={resendOtp}
+          />
         </StageColumn>
       ) : flow.stage === "dsc" ? (
         <StageColumn>
           <DscLookup found={dscFound} holder="" />
         </StageColumn>
       ) : flow.stage === "signed" ? (
-          <SettledCard
-            title={title}
-            headline={
-              signedWith ? INSTRUMENT_LABEL[signedWith] : onPaper ? "Confirmed" : "Signature added"
-            }
-            rows={[{ ...me, status: "signed" }]}
-            footnote={
-              sworn ? "Next, record your oath." : "Nothing more is needed from you."
-            }
-          />
+        <SettledCard
+          title={title}
+          headline={
+            signedWith ? INSTRUMENT_LABEL[signedWith] : onPaper ? "Confirmed" : "Signature added"
+          }
+          rows={[{ ...me, status: "signed" }]}
+          footnote={sworn ? "Next, record your oath." : "Nothing more is needed from you."}
+        />
       ) : flow.stage === "oath" ? (
         <StageColumn>
           {acts.length > 1 ? <StepTrail steps={trail("oath")} /> : null}
           <OathCapture name={oathName} value={oath} onChange={onOath} />
         </StageColumn>
       ) : (
-          <SettledCard
-            title={title}
-            headline={
-              onPaper
-                ? sworn
-                  ? "Confirmed and oath recorded"
-                  : "Confirmed"
-                : sworn
-                  ? "Signed and oath recorded"
-                  : "Signed"
-            }
-            rows={[settledRow]}
-            footnote={`Nothing more is needed from you. ${filer} will file the case.`}
-            still={start === "done" && !leftOpening}
-          />
+        <SettledCard
+          title={title}
+          headline={
+            onPaper
+              ? sworn
+                ? "Confirmed and oath recorded"
+                : "Confirmed"
+              : sworn
+                ? "Signed and oath recorded"
+                : "Signed"
+          }
+          rows={[settledRow]}
+          footnote={`Nothing more is needed from you. ${filer} will file the case.`}
+          still={start === "done" && !leftOpening}
+        />
       )}
       <DiscardQuestion guard={guard} />
     </StagedOverlay>

@@ -1,7 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { ArrowDownIcon, ArrowLeftRightIcon, ArrowRightIcon, CheckIcon, ChevronDownIcon, FileSpreadsheetIcon, HashIcon, MinusIcon, PlusIcon, SearchIcon } from "lucide-react";
+import {
+  ArrowDownIcon,
+  ArrowLeftRightIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  FileSpreadsheetIcon,
+  HashIcon,
+  MinusIcon,
+  PlusIcon,
+  SearchIcon,
+} from "lucide-react";
 
 import {
   columnFit,
@@ -109,18 +120,13 @@ const NOUN: Partial<Record<GroupId, [string, string]>> = {
  * What the file allows, in one line: "Some cases have up to 2 cheques." A count is the
  * most any one case has; the rest leave the extra columns blank.
  */
-function foundSentence(
-  groups: Group[],
-  instances: Record<GroupId, Instance[]>,
-): string[] {
+function foundSentence(groups: Group[], instances: Record<GroupId, Instance[]>): string[] {
   const more = groups
     .map((g) => ({ g, n: instances[g.id].length, noun: NOUN[g.id] }))
     .filter(({ g, n, noun }) => noun && (g.always ? n > 1 : n > 0))
     .map(({ n, noun }) => `${n} ${noun![n === 1 ? 0 : 1]}`);
   const join = (xs: string[]) =>
-    xs.length < 2
-      ? xs.join("")
-      : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
+    xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
   return [
     more.length
       ? `Some cases have up to ${join(more)}.`
@@ -149,10 +155,7 @@ function FoundInFile({
       aria-labelledby="found-in-file"
     >
       <div className="flex flex-col gap-0.5">
-        <h3
-          id="found-in-file"
-          className="flex items-center gap-2 text-body-compact font-semibold"
-        >
+        <h3 id="found-in-file" className="flex items-center gap-2 text-body-compact font-semibold">
           <SheetTile small />
           {tr("columnMapping_foundInYourFile")}
         </h3>
@@ -318,9 +321,7 @@ function ColumnPicker({
           ? tr("columnMapping_everyRowName", { name: (o as PickOption).name })
           : (o as PickOption).name
       }
-      isItemEqualToValue={(a, b) =>
-        (a as PickOption).value === (b as PickOption).value
-      }
+      isItemEqualToValue={(a, b) => (a as PickOption).value === (b as PickOption).value}
       // Opening shows the whole list; typing narrows it by name or by value.
       filter={(o, q) => {
         const opt = o as PickOption;
@@ -338,10 +339,8 @@ function ColumnPicker({
             // Open, the field and its list read as one box: the field's lower corners square off.
             "has-[[data-popup-open]]:border-ring has-[[data-popup-open]]:ring-0 has-[[data-popup-side=bottom]]:rounded-b-none has-[[data-popup-side=top]]:rounded-t-none",
             // The same colours as the row's arrow, on the field itself.
-            state === "ok" &&
-              "border-success bg-success-muted ring-1 ring-success/40",
-            state === "warn" &&
-              "border-warning-ink bg-warning-muted ring-1 ring-warning/40",
+            state === "ok" && "border-success bg-success-muted ring-1 ring-success/40",
+            state === "warn" && "border-warning-ink bg-warning-muted ring-1 ring-warning/40",
             // Skipped: the same treatment in grey, so it reads as decided, not forgotten.
             state === "none" &&
               "border-muted-foreground/60 bg-muted ring-1 ring-muted-foreground/20",
@@ -390,9 +389,7 @@ function ColumnPicker({
                   name={o.name}
                   sample={o.sample ?? ""}
                   usedFor={
-                    o.value === value
-                      ? []
-                      : (used[Number(o.value)] ?? []).map((u) => u.label)
+                    o.value === value ? [] : (used[Number(o.value)] ?? []).map((u) => u.label)
                   }
                 />
               ) : o.kind === "every" ? (
@@ -439,11 +436,7 @@ function FieldRow({
   } | null>(null);
   const commit = (v: string, clear: Use[]) => {
     const next: ColumnSource =
-      v === NONE
-        ? null
-        : v.startsWith("every:")
-          ? { every: v.slice(6) }
-          : Number(v);
+      v === NONE ? null : v.startsWith("every:") ? { every: v.slice(6) } : Number(v);
     props.onChange({
       ...props.map,
       ...Object.fromEntries(clear.map((o) => [o.key, null])),
@@ -452,10 +445,7 @@ function FieldRow({
   };
   // Each column's first value, so the choice can be made by what the column holds.
   const firsts = React.useMemo(
-    () =>
-      props.headers.map(
-        (_, k) => props.rows.find((r) => r[k]?.trim())?.[k]?.trim() ?? "",
-      ),
+    () => props.headers.map((_, k) => props.rows.find((r) => r[k]?.trim())?.[k]?.trim() ?? ""),
     [props.headers, props.rows],
   );
   const fit: ColumnFit | null =
@@ -470,16 +460,9 @@ function FieldRow({
   const state: Link = fit === null ? "none" : fit.ok ? "ok" : "warn";
   return (
     // One line per field, centred on its dropdown, with a hover band to follow the row across.
-    <li
-      className={cn("grid grid-cols-1 items-center gap-1.5 py-2 sm:gap-0", ROW)}
-    >
-      <label
-        htmlFor={id}
-        className="flex min-w-0 items-center justify-between gap-2"
-      >
-        <span className="min-w-0 truncate text-body-compact font-medium">
-          {column.header}
-        </span>
+    <li className={cn("grid grid-cols-1 items-center gap-1.5 py-2 sm:gap-0", ROW)}>
+      <label htmlFor={id} className="flex min-w-0 items-center justify-between gap-2">
+        <span className="min-w-0 truncate text-body-compact font-medium">{column.header}</span>
         <LinkNode state={state} className="sm:hidden" />
       </label>
       {/* The connector: a line between the two sides, and on it this field's arrow. */}
@@ -511,10 +494,15 @@ function FieldRow({
           }}
           destructive={false}
           icon={ArrowLeftRightIcon}
-          title={tr("columnMapping_moveValueToHeader", { value: pending ? props.headers[Number(pending.value)] : "", header: column.header })}
+          title={tr("columnMapping_moveValueToHeader", {
+            value: pending ? props.headers[Number(pending.value)] : "",
+            header: column.header,
+          })}
           description={
             pending
-              ? tr("columnMapping_itIsMatchedToJoinMatching", { join: pending.others.map((o) => o.label).join(", ") })
+              ? tr("columnMapping_itIsMatchedToJoinMatching", {
+                  join: pending.others.map((o) => o.label).join(", "),
+                })
               : undefined
           }
           confirmLabel={tr("columnMapping_moveItHere")}
@@ -524,9 +512,7 @@ function FieldRow({
           }}
         />
         {fit && !fit.ok ? (
-          <span className="pt-1 pl-1 text-caption text-warning-ink">
-            {fit.note}
-          </span>
+          <span className="pt-1 pl-1 text-caption text-warning-ink">{fit.note}</span>
         ) : null}
       </div>
     </li>
@@ -605,21 +591,13 @@ function SidesHeader() {
   const tr = useTranslations();
   return (
     // On a phone the rows stack (field, then its column below), so the header stacks too.
-    <div
-      className={cn(
-        "flex flex-col gap-2 sm:grid sm:items-center sm:gap-3",
-        ROW,
-      )}
-    >
+    <div className={cn("flex flex-col gap-2 sm:grid sm:items-center sm:gap-3", ROW)}>
       <span className="flex items-center gap-3 text-body-compact font-semibold text-foreground">
         <AppTile />
         {tr("columnMapping_fieldInTheCase")}
       </span>
       <span className="hidden sm:block" />
-      <ArrowDownIcon
-        className="ml-3 size-4 text-muted-foreground sm:hidden"
-        aria-hidden
-      />
+      <ArrowDownIcon className="ml-3 size-4 text-muted-foreground sm:hidden" aria-hidden />
       <span className="flex items-center gap-3 text-body-compact font-semibold text-foreground">
         <SheetTile />
         {tr("columnMapping_columnInYourSheet")}
@@ -679,9 +657,7 @@ export function ColumnMapping(props: Props) {
       const list = g.repeats ? instances[g.id] : [firstInstance(g)];
       for (const i of list) {
         // Numbers only where there is more than one: "Cheque 2 · Cheque number", else "Cheque number".
-        const siblings = g.parent
-          ? instances[g.id].filter(([p]) => p === i[0]).length
-          : 0;
+        const siblings = g.parent ? instances[g.id].filter(([p]) => p === i[0]).length : 0;
         const where = g.parent
           ? `${instances.accused.length > 1 ? `Accused ${i[0]} · ` : ""}${siblings > 1 ? `${g.label.replace(/^Accused /, "")} ${i[1]} · ` : ""}`
           : g.repeats && list.length > 1
@@ -700,15 +676,11 @@ export function ColumnMapping(props: Props) {
     return out;
   }, [instances, props.map, props.headers]);
   // Which tab is open in each repeating section; kept while counts change.
-  const [openTab, setOpenTab] = React.useState<
-    Partial<Record<GroupId, string>>
-  >({});
+  const [openTab, setOpenTab] = React.useState<Partial<Record<GroupId, string>>>({});
 
   const isRequired = (c: Column) => MUST_MAP.includes(c.key);
   const fieldsOf = (g: Group) =>
-    COLUMNS.filter(
-      (c) => c.group === g.id && (showOptional || isRequired(c) || !g.always),
-    );
+    COLUMNS.filter((c) => c.group === g.id && (showOptional || isRequired(c) || !g.always));
 
   // Required fields across every case-level section and every tab of one a case always has.
   const requiredSlots = GROUPS.flatMap((g) =>
@@ -721,21 +693,16 @@ export function ColumnMapping(props: Props) {
   ).length;
 
   // The single filing's order and names, so the two read the same.
-  const top = ORDER.map((id) => GROUPS.find((g) => g.id === id)!).filter(
-    Boolean,
-  );
+  const top = ORDER.map((id) => GROUPS.find((g) => g.id === id)!).filter(Boolean);
   const children = (g: Group) => GROUPS.filter((x) => x.parent === g.id);
   // A section a case may not have at all (witnesses, other pending
   // cases) shows once it has a count, or with the optional fields.
-  const visible = (g: Group) =>
-    g.always || instances[g.id].length > 0 || showOptional;
+  const visible = (g: Group) => g.always || instances[g.id].length > 0 || showOptional;
   const optionalCount = COLUMNS.filter((c) => !isRequired(c)).length;
 
   const navKey = (g: Group) => STEP[g.id] ?? g.id;
   const shown = top.filter(visible);
-  const nav = shown.filter(
-    (g, k) => shown.findIndex((x) => navKey(x) === navKey(g)) === k,
-  );
+  const nav = shown.filter((g, k) => shown.findIndex((x) => navKey(x) === navKey(g)) === k);
   // How many of a section's required fields are matched, across its tabs and the parts
   // inside them (an accused's address). A section with none required counts every field.
   const navCount = (key: string): { n: number; of: number } => {
@@ -746,14 +713,10 @@ export function ColumnMapping(props: Props) {
       const cols = COLUMNS.filter((c) => c.group === g.id);
       const need = cols.filter(isRequired);
       const inst = g.repeats ? instances[g.id] : [firstInstance(g)];
-      return (need.length ? need : cols).flatMap((c) =>
-        inst.map((i) => ({ c, i })),
-      );
+      return (need.length ? need : cols).flatMap((c) => inst.map((i) => ({ c, i })));
     });
     return {
-      n: slots.filter(
-        ({ c, i }) => sourceFor(c, i, props.map, props.headers) !== null,
-      ).length,
+      n: slots.filter(({ c, i }) => sourceFor(c, i, props.map, props.headers) !== null).length,
       of: slots.length,
     };
   };
@@ -767,11 +730,8 @@ export function ColumnMapping(props: Props) {
       (entries) => {
         const first = entries
           .filter((e) => e.isIntersecting)
-          .sort(
-            (x, y) => x.boundingClientRect.top - y.boundingClientRect.top,
-          )[0];
-        if (first)
-          setActiveNav((first.target as HTMLElement).dataset.nav ?? "case");
+          .sort((x, y) => x.boundingClientRect.top - y.boundingClientRect.top)[0];
+        if (first) setActiveNav((first.target as HTMLElement).dataset.nav ?? "case");
       },
       { rootMargin: "-80px 0px -60% 0px" },
     );
@@ -783,8 +743,7 @@ export function ColumnMapping(props: Props) {
   const tabDone = (g: Group, i: Instance) => {
     const cols = COLUMNS.filter((c) => c.group === g.id);
     const need = cols.filter(isRequired);
-    const has = (c: Column) =>
-      sourceFor(c, i, props.map, props.headers) !== null;
+    const has = (c: Column) => sourceFor(c, i, props.map, props.headers) !== null;
     return need.length ? need.every(has) : cols.some(has);
   };
 
@@ -808,7 +767,10 @@ export function ColumnMapping(props: Props) {
               variant={matched === requiredSlots.length ? "success" : "warning"}
               className="tabular-nums"
             >
-              {tr("columnMapping_matchedOfLengthRequiredMatched", { matched: String(matched), length: String(requiredSlots.length) })}
+              {tr("columnMapping_matchedOfLengthRequiredMatched", {
+                matched: String(matched),
+                length: String(requiredSlots.length),
+              })}
             </Badge>
             <Button
               variant="ghost"
@@ -818,15 +780,14 @@ export function ColumnMapping(props: Props) {
             >
               <ChevronDownIcon
                 data-icon="inline-start"
-                className={cn(
-                  "transition-transform",
-                  showOptional && "rotate-180",
-                )}
+                className={cn("transition-transform", showOptional && "rotate-180")}
                 aria-hidden
               />
               {showOptional
                 ? tr("columnMapping_hideOptionalFields")
-                : tr("columnMapping_showOptionalFieldsOptionalCount", { optionalCount: String(optionalCount) })}
+                : tr("columnMapping_showOptionalFieldsOptionalCount", {
+                    optionalCount: String(optionalCount),
+                  })}
             </Button>
           </div>
 
@@ -850,19 +811,15 @@ export function ColumnMapping(props: Props) {
                         aria-current={active ? "location" : undefined}
                         onClick={() => {
                           setActiveNav(key);
-                          document
-                            .getElementById(`map-sec-${key}`)
-                            ?.scrollIntoView({
-                              behavior: "smooth",
-                              block: "start",
-                            });
+                          document.getElementById(`map-sec-${key}`)?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                          });
                         }}
                       >
                         <Icon
                           aria-hidden
-                          className={
-                            active ? undefined : "text-muted-foreground"
-                          }
+                          className={active ? undefined : "text-muted-foreground"}
                         />
                         <span className="min-w-0 truncate">
                           {step?.title ?? tr("columnMapping_case")}
@@ -873,11 +830,17 @@ export function ColumnMapping(props: Props) {
                           return n === of && of > 0 ? (
                             <span className="ml-auto flex items-center gap-1 text-caption text-success-ink">
                               <CheckIcon className="size-4" aria-hidden />
-                              <span className="sr-only">{tr("columnMapping_allOfMatched", { of: String(of) })}</span>
+                              <span className="sr-only">
+                                {tr("columnMapping_allOfMatched", { of: String(of) })}
+                              </span>
                             </span>
                           ) : (
                             <span className="ml-auto text-caption tabular-nums text-muted-foreground">
-                              {tr.rich("columnMapping_nOfOfMatched", { n: String(n), of: String(of), span: (chunks) => <span className="sr-only">{chunks}</span> })}
+                              {tr.rich("columnMapping_nOfOfMatched", {
+                                n: String(n),
+                                of: String(of),
+                                span: (chunks) => <span className="sr-only">{chunks}</span>,
+                              })}
                             </span>
                           );
                         })()}
@@ -898,10 +861,7 @@ export function ColumnMapping(props: Props) {
                 const list = g.repeats ? instances[g.id] : [firstInstance(g)];
                 const keys = list.map(instanceKey);
                 const chosen = openTab[g.id];
-                const current =
-                  chosen !== undefined && keys.includes(chosen)
-                    ? chosen
-                    : keys[0];
+                const current = chosen !== undefined && keys.includes(chosen) ? chosen : keys[0];
                 const name = (i: Instance) => `${g.label} ${i[0]}`;
                 return (
                   // Laid out as the single filing lays out a section: heading, tabs, then cards.
@@ -922,21 +882,19 @@ export function ColumnMapping(props: Props) {
                           label: name(i),
                           status: tabDone(g, i) ? "complete" : "attention",
                           // Only the last can go: the numbers are the sheet's _2, _3.
-                          removable:
-                            k === list.length - 1 &&
-                            list.length > (g.always ? 1 : 0),
+                          removable: k === list.length - 1 && list.length > (g.always ? 1 : 0),
                         }))}
                         activeId={current ?? ""}
-                        onSelect={(v) =>
-                          setOpenTab((t) => ({ ...t, [g.id]: v }))
-                        }
+                        onSelect={(v) => setOpenTab((t) => ({ ...t, [g.id]: v }))}
                         onRemove={() =>
                           props.onCounts({
                             ...props.counts,
                             [g.id]: list.length - 1,
                           })
                         }
-                        addLabel={tr("columnMapping_addToLowerCase", { toLowerCase: g.label.toLowerCase() })}
+                        addLabel={tr("columnMapping_addToLowerCase", {
+                          toLowerCase: g.label.toLowerCase(),
+                        })}
                         onAdd={() => addOne(g)}
                       />
                     ) : null}
@@ -952,14 +910,9 @@ export function ColumnMapping(props: Props) {
                         },
                         ...children(g)
                           .flatMap((c) =>
-                            instances[c.id]
-                              .filter(([p]) => p === i[0])
-                              .map((ci) => ({ c, ci })),
+                            instances[c.id].filter(([p]) => p === i[0]).map((ci) => ({ c, ci })),
                           )
-                          .filter(
-                            ({ c }) =>
-                              fieldsOf(c).length && (c.always || showOptional),
-                          )
+                          .filter(({ c }) => fieldsOf(c).length && (c.always || showOptional))
                           .map(({ c, ci }) => ({
                             key: `${c.id}-${instanceKey(ci)}`,
                             title: `${c.label} ${ci[1]}`,
@@ -972,14 +925,9 @@ export function ColumnMapping(props: Props) {
                         // runs from its top edge to its bottom edge.
                         <div key={part.key} className="flex flex-col gap-2">
                           {part.title ? (
-                            <h4 className="text-body font-semibold">
-                              {part.title}
-                            </h4>
+                            <h4 className="text-body font-semibold">{part.title}</h4>
                           ) : null}
-                          <Card
-                            variant="raised"
-                            className="relative gap-0 px-6 py-2"
-                          >
+                          <Card variant="raised" className="relative gap-0 px-6 py-2">
                             {/* The middle column of field 1fr, 3.5rem, column 1.2fr, inside px-6. */}
                             <span
                               aria-hidden

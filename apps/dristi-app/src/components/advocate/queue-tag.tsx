@@ -73,7 +73,7 @@ export function QueueTag({
                 QUEUE_TAG,
                 queueTone(queue),
                 "relative z-10 transition-colors hover:bg-accent-strong data-[state=open]:bg-accent-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                className
+                className,
               )}
             >
               <QueueFace queue={queue} locale={locale} />

@@ -31,9 +31,7 @@ export function FilingPageHeader({
     <div className={cn("flex flex-col gap-4", className)}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 flex-col gap-2">
-          {eyebrow ? (
-            <p className="text-caption font-medium text-primary">{eyebrow}</p>
-          ) : null}
+          {eyebrow ? <p className="text-caption font-medium text-primary">{eyebrow}</p> : null}
           <Heading className="text-title font-semibold tracking-tight text-foreground">
             {title}
           </Heading>

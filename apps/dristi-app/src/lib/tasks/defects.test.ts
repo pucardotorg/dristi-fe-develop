@@ -59,7 +59,13 @@ describe("defect resolution — derived, never certified", () => {
       resolution: {
         how: "replaced",
         at: AT,
-        replacement: { id: "f2", name: "ad-card.pdf", size: 10, type: "application/pdf", ext: "PDF" },
+        replacement: {
+          id: "f2",
+          name: "ad-card.pdf",
+          size: 10,
+          type: "application/pdf",
+          ext: "PDF",
+        },
       },
     };
     assert.equal(defectState(replaced, "f2"), "resolved");
@@ -76,11 +82,11 @@ describe("resolutionSatisfies — the task-side half, with no draft in hand", ()
     assert.equal(resolutionSatisfies(makeDefect()), false);
     assert.equal(
       resolutionSatisfies(makeDefect({ resolution: { how: "edited", value: "x", at: AT } })),
-      true
+      true,
     );
     assert.equal(
       resolutionSatisfies(makeDefect({ resolution: { how: "kept", value: "x", at: AT } })),
-      true
+      true,
     );
   });
 });
@@ -197,13 +203,16 @@ describe("the queue's order — the form's, not the memo's", () => {
     const sorted = [...memo].sort(formOrder);
     assert.deepEqual(
       sorted.map((d) => d.n),
-      [3, 4, 2, 1]
+      [3, 4, 2, 1],
     );
   });
 
   it("inside one instance the officer's numbering is the tiebreak", () => {
     const a = field(5, "cheque", 0);
     const b = field(2, "cheque", 0);
-    assert.deepEqual([a, b].sort(formOrder).map((d) => d.n), [2, 5]);
+    assert.deepEqual(
+      [a, b].sort(formOrder).map((d) => d.n),
+      [2, 5],
+    );
   });
 });

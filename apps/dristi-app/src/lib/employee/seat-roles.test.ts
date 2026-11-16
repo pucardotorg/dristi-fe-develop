@@ -40,7 +40,11 @@ describe("seat roles follow court-roles §3", () => {
   it("lets only the magistrate sign orders", () => {
     for (const court of ["kerala", "gujarat", "punjab-haryana"] as const) {
       for (const seat of seatsIn(court)) {
-        assert.equal(seatHolds(seat, court, "order-signer"), seat === "magistrate", `${court} ${seat}`);
+        assert.equal(
+          seatHolds(seat, court, "order-signer"),
+          seat === "magistrate",
+          `${court} ${seat}`,
+        );
       }
     }
   });
@@ -52,7 +56,11 @@ describe("seat roles follow court-roles §3", () => {
       "next-hearing-setter",
       "evidence-marker",
     ]);
-    assert.deepEqual(rolesOf("typist", "gujarat"), ["order-drafter", "order-data-filler", "evidence-marker"]);
+    assert.deepEqual(rolesOf("typist", "gujarat"), [
+      "order-drafter",
+      "order-data-filler",
+      "evidence-marker",
+    ]);
     /* Punjab & Haryana's Typist / Steno: one person, drafting only. */
     assert.deepEqual(rolesOf("typist", "punjab-haryana"), ["order-drafter"]);
   });

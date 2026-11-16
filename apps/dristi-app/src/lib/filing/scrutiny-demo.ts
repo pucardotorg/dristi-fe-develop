@@ -15,12 +15,7 @@
  * in it. Nothing here has been sent to a real court.
  */
 
-import {
-  blankCheque,
-  buildDocumentGroups,
-  createBlankDraft,
-  intakeChequeGroup,
-} from "./blank";
+import { blankCheque, buildDocumentGroups, createBlankDraft, intakeChequeGroup } from "./blank";
 import { getRepository } from "./data";
 import type { FilingDraft, IntakeSlot, StoredFileRef } from "./types";
 
@@ -44,7 +39,7 @@ function docSvg(title: string, lines: [string, string][]): Blob {
     .map(
       ([label, value], i) => `
     <text x="60" y="${120 + i * 56}" font-family="Helvetica, Arial" font-size="20" fill="#6b7280">${label}</text>
-    <text x="360" y="${120 + i * 56}" font-family="Helvetica, Arial" font-size="24" fill="#111827">${value}</text>`
+    <text x="360" y="${120 + i * 56}" font-family="Helvetica, Arial" font-size="24" fill="#111827">${value}</text>`,
     )
     .join("");
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
@@ -228,7 +223,13 @@ function buildLakshmiDraft(): FilingDraft {
   c.verified = true;
   c.name = "Lakshmi Devi";
   c.age = ""; // Defect 2 — not stated.
-  c.res = { line1: "Sreenilayam, Temple Road", city: "Kollam", pin: "691001", district: "Kollam", state: "Kerala" };
+  c.res = {
+    line1: "Sreenilayam, Temple Road",
+    city: "Kollam",
+    pin: "691001",
+    district: "Kollam",
+    state: "Kerala",
+  };
   c.perm = { ...c.res };
 
   d.advocates[0].name = "Anjali Nair";
@@ -239,7 +240,13 @@ function buildLakshmiDraft(): FilingDraft {
   a.contacts = [{ mobile: "9895034412", email: "" }];
   a.addresses = [
     {
-      addr: { line1: "Kurian Villa, Beach Road", city: "Kollam", pin: "691001", district: "Kollam", state: "Kerala" },
+      addr: {
+        line1: "Kurian Villa, Beach Road",
+        city: "Kollam",
+        pin: "691001",
+        district: "Kollam",
+        state: "Kerala",
+      },
       police: "Kollam East",
     },
   ];
@@ -293,7 +300,13 @@ function buildRafiDraft(): FilingDraft {
   c.verified = true;
   c.name = "Mohammed Rafi";
   c.age = "39";
-  c.res = { line1: "Rafi Manzil, Mosque Lane", city: "Karunagappally", pin: "690518", district: "Kollam", state: "Kerala" };
+  c.res = {
+    line1: "Rafi Manzil, Mosque Lane",
+    city: "Karunagappally",
+    pin: "690518",
+    district: "Kollam",
+    state: "Kerala",
+  };
   c.perm = { ...c.res };
 
   d.advocates[0].name = "Anjali Nair";
@@ -304,7 +317,13 @@ function buildRafiDraft(): FilingDraft {
   a.contacts = [{ mobile: "9744218830", email: "" }];
   a.addresses = [
     {
-      addr: { line1: "Thekkethil House", city: "Karunagappally", pin: "690518", district: "Kollam", state: "Kerala" },
+      addr: {
+        line1: "Thekkethil House",
+        city: "Karunagappally",
+        pin: "690518",
+        district: "Kollam",
+        state: "Kerala",
+      },
       police: "Karunagappally",
     },
   ];

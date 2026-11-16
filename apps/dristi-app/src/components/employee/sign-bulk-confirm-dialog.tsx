@@ -2,10 +2,7 @@
 
 import * as React from "react";
 
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,12 +22,7 @@ import { useTranslations } from "next-intl";
  * Four of the five plurals are a regular `-s`, so the copy builds those and the table
  * below holds only the one that is not.
  */
-export type SignBulkNoun =
-  | "form"
-  | "order"
-  | "bail bond"
-  | "deposition"
-  | "process";
+export type SignBulkNoun = "form" | "order" | "bail bond" | "deposition" | "process";
 
 const IRREGULAR_PLURALS: Partial<Record<SignBulkNoun, string>> = {
   process: "processes",
@@ -76,9 +68,7 @@ function signatureAct(noun: SignBulkNoun): SignBulkAct {
         : `Your signature goes on every ${noun} selected. This cannot be reversed.`,
     done: (phrase) => `${capitalise(phrase)} signed`,
     outcome: (one) =>
-      one
-        ? "It has left the signing queue."
-        : "They have left the signing queue.",
+      one ? "It has left the signing queue." : "They have left the signing queue.",
     confirm: "Sign",
   };
 }
@@ -342,14 +332,8 @@ function SignBulkConfirmBody({
                 the strong one, the same pair the sticky bar makes — the count is the
                 dialog's own captured one, so it agrees with the heading above it. */}
             {onDownload ? (
-              <Button
-                type="button"
-                variant="outline"
-                className="tabular-nums"
-                onClick={onDownload}
-              >
-                Download {signed.count}{" "}
-                {signed.count === 1 ? "document" : "documents"}
+              <Button type="button" variant="outline" className="tabular-nums" onClick={onDownload}>
+                Download {signed.count} {signed.count === 1 ? "document" : "documents"}
               </Button>
             ) : null}
             <Button type="button" onClick={onClose}>
@@ -484,15 +468,15 @@ function SignedFigures({ signed }: { signed: Signed }) {
           className="grid-cols-[1fr_auto] items-center border-hairline"
         >
           <DescriptionTerm className="text-body">{kind.label}</DescriptionTerm>
-          <DescriptionDetails className="text-body tabular-nums">
-            {kind.count}
-          </DescriptionDetails>
+          <DescriptionDetails className="text-body tabular-nums">{kind.count}</DescriptionDetails>
         </DescriptionRow>
       ))}
       <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
         <DescriptionTerm className="text-body">{t("signBulkConfirmDialog_cases")}</DescriptionTerm>
         <DescriptionDetails className="text-body tabular-nums">
-          {signed.cases === 1 ? t("signBulkConfirmDialog_1Case") : t("signBulkConfirmDialog_casesCases", { cases: String(signed.cases) })}
+          {signed.cases === 1
+            ? t("signBulkConfirmDialog_1Case")
+            : t("signBulkConfirmDialog_casesCases", { cases: String(signed.cases) })}
         </DescriptionDetails>
       </DescriptionRow>
     </DescriptionList>

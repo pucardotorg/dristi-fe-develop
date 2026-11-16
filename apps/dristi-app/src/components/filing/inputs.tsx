@@ -116,7 +116,7 @@ export function PrefixInput({
            restores full opacity; see its centre pane). */
         disabled && "bg-surface-sunken!",
         readOnly && "bg-muted",
-        className
+        className,
       )}
     >
       <InputGroupAddon variant="field">
@@ -175,9 +175,7 @@ export function OptionSelect({
   className?: string;
   id?: string;
 }) {
-  const opts: Option[] = options.map((o) =>
-    typeof o === "string" ? { value: o, label: o } : o
-  );
+  const opts: Option[] = options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
   const isDisabled = useLockedDisabled(disabled);
   const readOnly = useFieldReadOnly();
   /* A Select has no read-only state — a flagged one therefore shows its chosen option as
@@ -204,7 +202,12 @@ export function OptionSelect({
         form card that reads as the menu having eaten the label and the field below it.
         Inside a form a menu belongs under the control it belongs to, at its width.
       */}
-      <SelectContent position="popper" align="start" sideOffset={4} className="w-(--radix-select-trigger-width)">
+      <SelectContent
+        position="popper"
+        align="start"
+        sideOffset={4}
+        className="w-(--radix-select-trigger-width)"
+      >
         {opts.map((o) => (
           <SelectItem key={o.value} value={o.value}>
             {o.label}

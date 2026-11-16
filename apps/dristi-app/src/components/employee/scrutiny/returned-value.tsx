@@ -10,10 +10,7 @@ import { cn } from "@/lib/utils";
 import { useCourtText } from "@/components/court/court-provider";
 import { FieldValue } from "@/components/employee/scrutiny/record-rows";
 import { Badge } from "@/components/ui/badge";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { useTranslations } from "next-intl";
 
 /**
@@ -191,13 +188,7 @@ function AddedMark({ part }: { part: DiffPart }) {
 }
 
 /** Why the advocate kept the filed value, as they wrote it. Nothing for any other answer. */
-export function KeptReason({
-  item,
-  className,
-}: {
-  item: ReturnedItem;
-  className?: string;
-}) {
+export function KeptReason({ item, className }: { item: ReturnedItem; className?: string }) {
   const t = useTranslations();
   if (item.answer !== "kept" || !item.reason) return null;
   /* Paper on the info tint (change band / returned row): a white well with a hairline so

@@ -20,10 +20,7 @@ export default async function DraftLayout({
   return (
     // A row, not a column: the sections rail, the screen and the source rail are
     // siblings in it.
-    <div
-      className="flex min-w-0 flex-1"
-      style={{ ["--source-panel-w" as string]: PANEL_WIDTH }}
-    >
+    <div className="flex min-w-0 flex-1" style={{ ["--source-panel-w" as string]: PANEL_WIDTH }}>
       <DraftFrame draftId={draftId}>{children}</DraftFrame>
     </div>
   );

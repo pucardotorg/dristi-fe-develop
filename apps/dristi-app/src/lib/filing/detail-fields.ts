@@ -13,13 +13,7 @@
  */
 
 import { addressToString, nameList, rupees, toLongDate } from "./format";
-import {
-  COURT,
-  MODE_OF_SERVICE,
-  NATURE_OF_DEBT,
-  RETURN_REASONS,
-  type Option,
-} from "./options";
+import { COURT, MODE_OF_SERVICE, NATURE_OF_DEBT, RETURN_REASONS, type Option } from "./options";
 import {
   advocateName,
   causeOfActionDate,
@@ -45,14 +39,30 @@ const label = (options: Option[], value: string) =>
  * One value per row, said as a sentence: "123456 and 123457". Blanks drop out, and a
  * value two cheques share is said once — "dated 20 August 2026", not twice over.
  */
-const each = <T,>(rows: T[], read: (row: T) => string) =>
-  nameList([...new Set(rows.map(read).map((v) => v.trim()).filter(Boolean))]);
+const each = <T>(rows: T[], read: (row: T) => string) =>
+  nameList([
+    ...new Set(
+      rows
+        .map(read)
+        .map((v) => v.trim())
+        .filter(Boolean),
+    ),
+  ]);
 
 /** As `each`, but every row counts: two cheques of ₹50,000 are two amounts. */
-const every = <T,>(rows: T[], read: (row: T) => string) =>
-  nameList(rows.map(read).map((v) => v.trim()).filter(Boolean));
+const every = <T>(rows: T[], read: (row: T) => string) =>
+  nameList(
+    rows
+      .map(read)
+      .map((v) => v.trim())
+      .filter(Boolean),
+  );
 
-const comma = (...parts: string[]) => parts.map((p) => p.trim()).filter(Boolean).join(", ");
+const comma = (...parts: string[]) =>
+  parts
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .join(", ");
 
 export const DETAIL_FIELD_GROUPS: DetailFieldGroup[] = [
   {
@@ -117,13 +127,21 @@ export const DETAIL_FIELD_GROUPS: DetailFieldGroup[] = [
   {
     label: "detailFields_cheque",
     fields: [
-      { name: "Cheque Number", step: "cheque", resolve: (d) => each(d.cheques, (c) => c.chequeNumber) },
+      {
+        name: "Cheque Number",
+        step: "cheque",
+        resolve: (d) => each(d.cheques, (c) => c.chequeNumber),
+      },
       {
         name: "Cheque Date",
         step: "cheque",
         resolve: (d) => each(d.cheques, (c) => toLongDate(c.dateOnCheque)),
       },
-      { name: "Cheque Amount", step: "cheque", resolve: (d) => every(d.cheques, (c) => rupees(c.amount)) },
+      {
+        name: "Cheque Amount",
+        step: "cheque",
+        resolve: (d) => every(d.cheques, (c) => rupees(c.amount)),
+      },
       {
         name: "Total Cheque Amount",
         step: "cheque",
@@ -262,13 +280,15 @@ const asIs: Voice = (t) => t;
  * Only text between tags is touched.
  */
 export function generateDetails(html: string, draft: FilingDraft, voice: Voice = asIs): string {
-  return String(html ?? "").replace(/(^|>)([^<]*)/g, (_, open: string, text: string) =>
-    open +
-    text.replace(/\[([^\]\n]+)\]/g, (whole, name: string) => {
-      const field = detailField(name);
-      const value = field ? voice(field.resolve(draft)) : "";
-      return value ? escapeHtml(value) : whole;
-    }),
+  return String(html ?? "").replace(
+    /(^|>)([^<]*)/g,
+    (_, open: string, text: string) =>
+      open +
+      text.replace(/\[([^\]\n]+)\]/g, (whole, name: string) => {
+        const field = detailField(name);
+        const value = field ? voice(field.resolve(draft)) : "";
+        return value ? escapeHtml(value) : whole;
+      }),
   );
 }
 

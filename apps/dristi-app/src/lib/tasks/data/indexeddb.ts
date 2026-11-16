@@ -41,7 +41,7 @@ function db(): Promise<IDBPDatabase<TasksDB>> {
 
 async function putAll<S extends "people" | "cases" | "tasks">(
   store: S,
-  rows: TasksDB[S]["value"][]
+  rows: TasksDB[S]["value"][],
 ): Promise<void> {
   const tx = (await db()).transaction(store, "readwrite");
   await Promise.all([...rows.map((row) => tx.store.put(row)), tx.done]);

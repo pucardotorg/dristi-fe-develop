@@ -7,11 +7,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessageCatalog, TIME_ZONE } from "@/i18n/messages";
 import { serializeLocaleCookie } from "@/lib/locale/cookie";
 import type { Locale } from "@/lib/onboarding/content";
-import {
-  SECOND_LANGUAGE,
-  SECOND_LANGUAGES,
-  type SecondLanguage,
-} from "@/lib/locale-config";
+import { SECOND_LANGUAGE, SECOND_LANGUAGES, type SecondLanguage } from "@/lib/locale-config";
 
 /**
  * App-wide language. The old Portal shell carried locale as a prop pair; on the one
@@ -88,7 +84,11 @@ export function LocaleProvider({
   );
 
   return (
-    <NextIntlClientProvider locale={locale} messages={getMessageCatalog(locale)} timeZone={TIME_ZONE}>
+    <NextIntlClientProvider
+      locale={locale}
+      messages={getMessageCatalog(locale)}
+      timeZone={TIME_ZONE}
+    >
       <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
     </NextIntlClientProvider>
   );

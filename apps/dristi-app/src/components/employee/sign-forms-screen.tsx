@@ -10,10 +10,7 @@ import { SignBulkConfirmDialog } from "@/components/employee/sign-bulk-confirm-d
 import { SignFormDialog } from "@/components/employee/sign-form-dialog";
 import { SignFormsTable } from "@/components/employee/sign-forms-table";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -92,17 +89,11 @@ export function SignFormsScreen() {
      one and a deferred one. Every change resets to page one; the old Search button did
      that, and a keystroke that narrows the list to four rows must not leave the reader
      on page three of nothing. */
-  const [filters, setFilters] = React.useState<SignFormFilters>(
-    EMPTY_SIGN_FORM_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<SignFormFilters>(EMPTY_SIGN_FORM_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [signedIds, setSignedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
-  const [picked, setPicked] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [signedIds, setSignedIds] = React.useState<ReadonlySet<string>>(() => new Set());
+  const [picked, setPicked] = React.useState<ReadonlySet<string>>(() => new Set());
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [open, setOpen] = React.useState<SignForm | null>(null);
   const [announcement, setAnnouncement] = React.useState("");
@@ -119,8 +110,7 @@ export function SignFormsScreen() {
   const currentPage = Math.min(page, pageCount);
   const start = (currentPage - 1) * pageSize;
   const pageRows = rows.slice(start, start + pageSize);
-  const isFiltered =
-    filters.process !== "all" || filters.createdOn !== "" || filters.query !== "";
+  const isFiltered = filters.process !== "all" || filters.createdOn !== "" || filters.query !== "";
 
   /**
    * What is selected *and* still in the list.
@@ -196,7 +186,10 @@ export function SignFormsScreen() {
 
   function signOne(form: SignForm) {
     setOpen(null);
-    removeFromQueue([form.id], t("signFormsScreen_causeTitleLeftTheSigningQueue", { causeTitle: causeTitle(form) }));
+    removeFromQueue(
+      [form.id],
+      t("signFormsScreen_causeTitleLeftTheSigningQueue", { causeTitle: causeTitle(form) }),
+    );
   }
 
   function returnFocus() {
@@ -216,7 +209,9 @@ export function SignFormsScreen() {
           <p className="text-body text-muted-foreground">
             {remaining.length === 1
               ? t("signFormsScreen_1FormIsWaitingForYour")
-              : t("signFormsScreen_lengthFormsAreWaitingForYour", { length: String(remaining.length) })}
+              : t("signFormsScreen_lengthFormsAreWaitingForYour", {
+                  length: String(remaining.length),
+                })}
           </p>
         </header>
 
@@ -243,11 +238,7 @@ export function SignFormsScreen() {
           />
 
           {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-          <QueueAnnouncer
-            from={start + 1}
-            to={start + pageRows.length}
-            total={rows.length}
-          />
+          <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
           {pageRows.length === 0 ? (
             <SignFormsEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -305,10 +296,7 @@ export function SignFormsScreen() {
           a disabled button and says what to do instead. */}
       <footer className="sticky bottom-0 z-30 mt-8 border-t border-hairline bg-card px-6 py-3 md:px-8 md:py-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <p
-            className="text-body-compact text-muted-foreground sm:mr-auto"
-            aria-live="polite"
-          >
+          <p className="text-body-compact text-muted-foreground sm:mr-auto" aria-live="polite">
             {selectedIds.size === 0
               ? t("signFormsScreen_selectFormsToSignThemTogether")
               : selectedIds.size === 1
@@ -427,8 +415,7 @@ function SignFormsFilters({
             value: process.id,
             label: process.label,
           })),
-          onApply: (value) =>
-            onChange({ process: value as SignFormFilters["process"] }),
+          onApply: (value) => onChange({ process: value as SignFormFilters["process"] }),
         },
       ]}
       date={{
@@ -438,8 +425,7 @@ function SignFormsFilters({
         chipLabel: filters.createdOn ? formatListingDate(filters.createdOn) : "",
         draftActive: (value) => !!value,
         cleared: undefined,
-        onApply: (value) =>
-          onChange({ createdOn: value ? isoDay(value) : "" }),
+        onApply: (value) => onChange({ createdOn: value ? isoDay(value) : "" }),
       }}
       trailing={trailing}
       onClearAll={onClear}
@@ -455,26 +441,18 @@ function SignFormsFilters({
  * date — the same good-empty the register queue already uses. Borderless and unpadded;
  * the panel is already the frame.
  */
-function SignFormsEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function SignFormsEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
   const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FolderCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FolderCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? t("signFormsScreen_noFormsMatchTheseFilters") : t("signFormsScreen_nothingLeftToSign")}
+          {isFiltered
+            ? t("signFormsScreen_noFormsMatchTheseFilters")
+            : t("signFormsScreen_nothingLeftToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
@@ -516,14 +494,14 @@ function SignFormsItemList({
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((form) => (
-        <QueueItemRow
-          key={form.id}
-          className="flex items-start gap-3"
-        >
+        <QueueItemRow key={form.id} className="flex items-start gap-3">
           <Checkbox
             checked={selectedIds.has(form.id)}
             onCheckedChange={() => onToggle(form)}
-            aria-label={t("signFormsScreen_selectCauseTitleCourtText", { causeTitle: causeTitle(form), courtText: courtText(form.caseNumber) })}
+            aria-label={t("signFormsScreen_selectCauseTitleCourtText", {
+              causeTitle: causeTitle(form),
+              courtText: courtText(form.caseNumber),
+            })}
             className="mt-1"
           />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -531,7 +509,7 @@ function SignFormsItemList({
               type="button"
               onClick={() => onOpen(form)}
               {...rowOpener}
-                className={rowOpenerClass}
+              className={rowOpenerClass}
             >
               <span className="sr-only">{t("signFormsScreen_readAndSign")} </span>
               {causeTitle(form)}
@@ -541,9 +519,7 @@ function SignFormsItemList({
               {" · "}
               {signFormProcessLabel(form.process)}
               {" · "}
-              <span className="tabular-nums">
-                {formatSignFormDate(form.createdOn)}
-              </span>
+              <span className="tabular-nums">{formatSignFormDate(form.createdOn)}</span>
             </p>
           </div>
         </QueueItemRow>

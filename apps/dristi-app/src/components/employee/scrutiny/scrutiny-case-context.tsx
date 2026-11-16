@@ -21,11 +21,7 @@ export function ScrutinyCaseProvider({
   value: ScrutinyCase;
   children: React.ReactNode;
 }) {
-  return (
-    <ScrutinyCaseContext.Provider value={value}>
-      {children}
-    </ScrutinyCaseContext.Provider>
-  );
+  return <ScrutinyCaseContext.Provider value={value}>{children}</ScrutinyCaseContext.Provider>;
 }
 
 export function useScrutinyCase(): ScrutinyCase {

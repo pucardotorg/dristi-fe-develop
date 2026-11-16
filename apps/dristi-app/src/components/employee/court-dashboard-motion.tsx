@@ -117,7 +117,10 @@ export function TrickleDots({ count, trigger }: { count: number; trigger: string
     const track = ref.current;
     if (!track || reduced || !count) return;
     // The last dot starts two thirds of a lap late, so one lap plus that wait must fit.
-    const duration = Math.min(TRICKLE_LIMIT_MS * 0.6, Math.max(900, 3200 - Math.log2(count + 1) * 450));
+    const duration = Math.min(
+      TRICKLE_LIMIT_MS * 0.6,
+      Math.max(900, 3200 - Math.log2(count + 1) * 450),
+    );
     const iterations = Math.max(1, Math.floor((TRICKLE_LIMIT_MS - (duration * 2) / 3) / duration));
     const total = (duration * 2) / 3 + duration * iterations;
     const moving = [...track.querySelectorAll<HTMLElement>("[data-dot]")].map((dot, i) =>

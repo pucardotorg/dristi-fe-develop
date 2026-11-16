@@ -28,21 +28,14 @@ import {
 
 import { seatHolds, seatsIn } from "./seat-roles";
 import { APPROVE_COPY_QUEUE_COUNT } from "./approve-copy-application";
-import {
-  COGNIZANCE_QUEUE_COUNT,
-  cognizanceCaseById,
-  cognizanceTabCount,
-} from "./cognizance";
+import { COGNIZANCE_QUEUE_COUNT, cognizanceCaseById, cognizanceTabCount } from "./cognizance";
 import { type CognizanceLayout, readCognizanceLayout } from "./cognizance-layout";
 import { hearingById, TODAYS_HEARING_COUNT } from "./hearings";
 import type { CourtNavLayout } from "./nav-layout";
 import { findCaseRecord } from "../cases/party-cases";
 import { courtProfile, type CourtId } from "../court/profiles";
 import { scrutinyRegistersIn } from "./court-role";
-import {
-  APPROVE_REGISTRATIONS_TITLE,
-  REGISTRATIONS_QUEUE_COUNT,
-} from "./approve-registrations";
+import { APPROVE_REGISTRATIONS_TITLE, REGISTRATIONS_QUEUE_COUNT } from "./approve-registrations";
 import { registerCaseById, REGISTER_QUEUE_COUNT } from "./register-cases";
 import { readPendingOrders } from "./pending-orders";
 import { registerById, registerCrumb, REGISTERS_PAGE } from "./registers";
@@ -527,11 +520,7 @@ const SEAT_HIDDEN_ROWS: Partial<Record<CourtRole, ReadonlySet<string>>> = {
 };
 
 /** Whether this seat is offered this row — the one test every seat filter below shares. */
-export function seatHasNavRow(
-  role: CourtRole,
-  id: string,
-  court: CourtId = "kerala",
-): boolean {
+export function seatHasNavRow(role: CourtRole, id: string, court: CourtId = "kerala"): boolean {
   /* Approve registrations goes to whoever holds Account approver in this state
      (court-roles §3: the Scrutiny officer in Gujarat, the Ahlmad in Punjab & Haryana).
      Where the table names nobody yet (Kerala), the seat rules below still decide. */
@@ -539,9 +528,7 @@ export function seatHasNavRow(
      the Ahlmad in Punjab & Haryana (court-roles §3.3). */
   if (id === "scrutiny") return seatHolds(role, court, "scrutiny-officer");
   if (id === "approve-registrations") {
-    const approvers = seatsIn(court).filter((seat) =>
-      seatHolds(seat, court, "account-approver"),
-    );
+    const approvers = seatsIn(court).filter((seat) => seatHolds(seat, court, "account-approver"));
     if (approvers.length > 0) return approvers.includes(role);
   }
   /* Pending orders is where the magistrate signs (owner, 2026-10-14). */
@@ -621,9 +608,7 @@ export function courtNavGroupsForCourt(groups: CourtNavGroup[], court: CourtId):
  * returned exactly as `COURT_NAV_GROUPS` holds it — `"tabs"` returns that same array,
  * unchanged and uncopied.
  */
-export function courtNavGroupsFor(
-  cognizanceLayout: CognizanceLayout,
-): CourtNavGroup[] {
+export function courtNavGroupsFor(cognizanceLayout: CognizanceLayout): CourtNavGroup[] {
   const groups = COURT_NAV_GROUPS;
   if (cognizanceLayout !== "split") return groups;
   return groups.map((group) =>
@@ -632,9 +617,7 @@ export function courtNavGroupsFor(
       : {
           ...group,
           items: group.items.map((item) =>
-            item.id !== "cognizance"
-              ? item
-              : { ...item, children: cognizanceChildren() },
+            item.id !== "cognizance" ? item : { ...item, children: cognizanceChildren() },
           ),
         },
   );
@@ -666,10 +649,7 @@ const COURT_NAV_KEPT_APART: Record<
  * Every group's rows the deployment has, in the rail's own order — the one pass every
  * function below shares. Given a seat, less the rows that seat is not offered.
  */
-function courtNavAllItems(
-  court: CourtId,
-  role?: CourtRole,
-): CourtNavItem[] {
+function courtNavAllItems(court: CourtId, role?: CourtRole): CourtNavItem[] {
   const items = courtNavItemsForCourt(
     COURT_NAV_GROUPS.flatMap((group) => group.items),
     court,
@@ -678,11 +658,7 @@ function courtNavAllItems(
 }
 
 /** The rows named by a list of ids, in the order the ids were given — not the source's. */
-function courtNavItemsByIds(
-  ids: string[],
-  court: CourtId,
-  role?: CourtRole,
-): CourtNavItem[] {
+function courtNavItemsByIds(ids: string[], court: CourtId, role?: CourtRole): CourtNavItem[] {
   const all = courtNavAllItems(court, role);
   return ids
     .map((id) => all.find((item) => item.id === id))
@@ -712,9 +688,7 @@ export function courtNavClubbed(
   court: CourtId,
   role?: CourtRole,
 ): CourtNavItem[] {
-  const apart = new Set(
-    courtNavKeptApart(layout, court, undefined).map((item) => item.id),
-  );
+  const apart = new Set(courtNavKeptApart(layout, court, undefined).map((item) => item.id));
   return courtNavAllItems(court, role).filter((item) => !apart.has(item.id));
 }
 
@@ -724,10 +698,7 @@ export function courtNavClubbedTotal(
   court: CourtId,
   role?: CourtRole,
 ): number {
-  return courtNavClubbed(layout, court, role).reduce(
-    (total, item) => total + (item.count ?? 0),
-    0,
-  );
+  return courtNavClubbed(layout, court, role).reduce((total, item) => total + (item.count ?? 0), 0);
 }
 
 /** A layout that folds work into one row, rather than the rail's default four groups. */
@@ -782,8 +753,7 @@ export function courtNavRowsFor(
  */
 export function isCourtNavCombinedRow(item: CourtNavItem): boolean {
   return (
-    item.id === COURT_NAV_COMBINED_ROW.actions.id ||
-    item.id === COURT_NAV_COMBINED_ROW.schedule.id
+    item.id === COURT_NAV_COMBINED_ROW.actions.id || item.id === COURT_NAV_COMBINED_ROW.schedule.id
   );
 }
 
@@ -859,10 +829,7 @@ function scrutinyFilingNumber(segment: string): string | undefined {
  * the store has been read on the client. `EmployeeTopBar` passes one once it is ready;
  * until then, and for a record that is not found, the trail stops at the queue.
  */
-export type CourtRecordResolver = (
-  queue: string,
-  segment: string,
-) => string | undefined;
+export type CourtRecordResolver = (queue: string, segment: string) => string | undefined;
 
 const NESTED_ROUTES: {
   queue: string;
@@ -940,8 +907,7 @@ const NESTED_ROUTES: {
   {
     queue: COURT_CASES_PAGE.href,
     pattern: /^\/employee\/cases\/([^/]+)\/?$/,
-    identify: (id) =>
-      cognizanceCaseById(id)?.caseNumber ?? findCaseRecord(id)?.caseNumber,
+    identify: (id) => cognizanceCaseById(id)?.caseNumber ?? findCaseRecord(id)?.caseNumber,
   },
   {
     queue: "/employee/applications",
@@ -964,9 +930,7 @@ function nestedRecordOf(
   pathname: string,
   queue: string,
   resolve?: CourtRecordResolver,
-):
-  | { record: string | undefined; segment: string; order: boolean; keepsView: boolean }
-  | undefined {
+): { record: string | undefined; segment: string; order: boolean; keepsView: boolean } | undefined {
   const nested = NESTED_ROUTES.find((entry) => entry.queue === queue);
   if (!nested) return undefined;
   const match = nested.pattern.exec(pathname);
@@ -1157,7 +1121,6 @@ export function courtTrail(
   return [];
 }
 
-
 /** One queue with work waiting in it. */
 export type CourtWaitingItem = {
   id: string;
@@ -1190,27 +1153,27 @@ export type CourtWaitingGroup = {
  * a row at zero is waiting on nobody, and a group with nothing left in it is dropped
  * whole rather than printed as an empty heading.
  */
-export function courtWaitingGroups(
-  court: CourtId,
-): CourtWaitingGroup[] {
-  return courtNavGroupsForCourt(COURT_NAV_GROUPS, court).map((group) => {
-    const items = group.items
-      .filter(
-        (item): item is CourtNavItem & { href: string; count: number } =>
-          Boolean(item.href) && typeof item.count === "number" && item.count > 0,
-      )
-      .map((item) => ({
-        id: item.id,
-        label: item.label,
-        href: item.href,
-        count: item.count,
-      }));
-    return {
-      id: group.id,
-      label: group.label,
-      icon: group.icon,
-      total: items.reduce((sum, item) => sum + item.count, 0),
-      items,
-    };
-  }).filter((group) => group.items.length > 0);
+export function courtWaitingGroups(court: CourtId): CourtWaitingGroup[] {
+  return courtNavGroupsForCourt(COURT_NAV_GROUPS, court)
+    .map((group) => {
+      const items = group.items
+        .filter(
+          (item): item is CourtNavItem & { href: string; count: number } =>
+            Boolean(item.href) && typeof item.count === "number" && item.count > 0,
+        )
+        .map((item) => ({
+          id: item.id,
+          label: item.label,
+          href: item.href,
+          count: item.count,
+        }));
+      return {
+        id: group.id,
+        label: group.label,
+        icon: group.icon,
+        total: items.reduce((sum, item) => sum + item.count, 0),
+        items,
+      };
+    })
+    .filter((group) => group.items.length > 0);
 }

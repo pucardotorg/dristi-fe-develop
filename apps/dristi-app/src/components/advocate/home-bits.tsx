@@ -3,11 +3,7 @@
 import type { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/onboarding/content";
@@ -135,17 +131,12 @@ export function AdvocateStack({
                 the merge rather than winning — the count reads at the discs'
                 own size, which is what a peer of an initial should do. */}
             <AvatarGroupCount
-              className={cn(
-                "font-medium tabular-nums text-muted-foreground",
-                COUNT_FILL[surface]
-              )}
+              className={cn("font-medium tabular-nums text-muted-foreground", COUNT_FILL[surface])}
             >
               +{rest.length}
             </AvatarGroupCount>
           </TooltipTrigger>
-          <TooltipContent>
-            {rest.map((m) => m.person.name).join(", ")}
-          </TooltipContent>
+          <TooltipContent>{rest.map((m) => m.person.name).join(", ")}</TooltipContent>
         </Tooltip>
       ) : null}
     </AvatarGroup>
@@ -157,11 +148,9 @@ function labelOf(locale: Locale, member: TeamMember): string {
   const name = member.you
     ? fillCopy(advHome.switcherYou, locale, { name: member.person.name })
     : member.person.name;
-  return fillCopy(
-    member.acts ? advHome.teamHoldsVakalatnama : advHome.teamCaseAccess,
-    locale,
-    { name }
-  );
+  return fillCopy(member.acts ? advHome.teamHoldsVakalatnama : advHome.teamCaseAccess, locale, {
+    name,
+  });
 }
 
 /**
@@ -199,9 +188,7 @@ export function RowAction({
     // of them and nothing reflows when they trade places.
     <span className={cn("grid shrink-0 items-center justify-items-end", className)}>
       <span className="col-start-1 row-start-1 flex items-center transition-opacity group-hover/row:opacity-0 group-focus-within/row:opacity-0">
-        {rest ?? (
-          <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground" />
-        )}
+        {rest ?? <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground" />}
       </span>
       <Button
         variant="outline"
@@ -249,7 +236,7 @@ export function ItemChip({
           : surface === "card"
             ? "bg-surface-sunken group-hover/row:bg-card"
             : "bg-card",
-        size === "lg" ? "size-11" : "size-11"
+        size === "lg" ? "size-11" : "size-11",
       )}
     >
       {size === "lg" ? (
@@ -269,18 +256,12 @@ export function ItemChip({
  * rows repeat, and a red chip on each would spend the screen's whole
  * destructive budget before the rail count is read.
  */
-export function DueCue({
-  children,
-  overdue,
-}: {
-  children: ReactNode;
-  overdue?: boolean;
-}) {
+export function DueCue({ children, overdue }: { children: ReactNode; overdue?: boolean }) {
   return (
     <span
       className={cn(
         "text-caption tabular-nums",
-        overdue ? "font-medium text-destructive-ink" : "text-muted-foreground"
+        overdue ? "font-medium text-destructive-ink" : "text-muted-foreground",
       )}
     >
       {children}
@@ -316,7 +297,7 @@ export function HomeTaskRow({
     <div
       className={cn(
         "group/task relative flex min-h-16 items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-accent has-focus-visible:bg-accent",
-        className
+        className,
       )}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -327,9 +308,7 @@ export function HomeTaskRow({
         >
           {task.title}
         </button>
-        {sub ? (
-          <span className="text-caption text-muted-foreground">{sub}</span>
-        ) : null}
+        {sub ? <span className="text-caption text-muted-foreground">{sub}</span> : null}
       </div>
       <div className="relative z-10 flex shrink-0 items-center gap-3">
         <DueCue overdue={due.overdue}>{due.primary}</DueCue>

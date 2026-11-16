@@ -65,14 +65,14 @@ function AdvocatePage() {
       {newAccount ? (
         <AdvocateShellHome locale={locale} />
       ) : (
-      <AdvocateHome
-        locale={locale}
-        profileFirstName={firstName}
-        config={homeConfigFor(searchParams.get("slots"))}
-        // Demo only: `?filter=a` shows the scope switch beside a names menu; the
-        // default is the single People menu.
-        filterVariant={searchParams.get("filter") === "a" ? "switch" : "menu"}
-      />
+        <AdvocateHome
+          locale={locale}
+          profileFirstName={firstName}
+          config={homeConfigFor(searchParams.get("slots"))}
+          // Demo only: `?filter=a` shows the scope switch beside a names menu; the
+          // default is the single People menu.
+          filterVariant={searchParams.get("filter") === "a" ? "switch" : "menu"}
+        />
       )}
       {summonsCase ? (
         <AdvocateJoinCaseDialog

@@ -43,10 +43,7 @@ function haystack(draft: FilingDraft): string {
     ...draft.complainants.flatMap((c) => [c.name, c.entName, c.rep.name, c.poaHolder.name]),
     ...draft.accused.map((a) => a.name),
   ];
-  return [...parties, draft.sign.caseFileNumber ?? ""]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+  return [...parties, draft.sign.caseFileNumber ?? ""].filter(Boolean).join(" ").toLowerCase();
 }
 
 /** A filed case opens at Preview; a draft opens where the person left it. */
@@ -66,7 +63,7 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
   const needle = query.trim().toLowerCase();
   const match = React.useCallback(
     (d: FilingDraft) => !needle || haystack(d).includes(needle),
-    [needle]
+    [needle],
   );
   const matchedDrafts = drafts.filter(match);
   const matchedFiled = filed.filter(match);
@@ -98,9 +95,7 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
           </div>
         ) : (
           <CommandEmpty className="text-body-compact text-muted-foreground">
-            {nothingStored
-              ? t("appSearch_youHaventStartedAFilingIn")
-              : t("appSearch_noMatches")}
+            {nothingStored ? t("appSearch_youHaventStartedAFilingIn") : t("appSearch_noMatches")}
           </CommandEmpty>
         )}
 
@@ -114,7 +109,11 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
                     {draftTitle(d)}
                   </span>
                   <span className="truncate text-caption text-muted-foreground">
-                    {t.rich("appSearch_courtTextSavedToDisplayDate", { courtText: courtText(getStep(d.lastStep).title), toDisplayDate: toDisplayDate(d.updatedAt.slice(0, 10)), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+                    {t.rich("appSearch_courtTextSavedToDisplayDate", {
+                      courtText: courtText(getStep(d.lastStep).title),
+                      toDisplayDate: toDisplayDate(d.updatedAt.slice(0, 10)),
+                      span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                    })}
                   </span>
                 </span>
               </CommandItem>
@@ -144,7 +143,10 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
                     )}
                     {d.filedAt ? (
                       <>
-                        {t.rich("appSearch_filedToDisplayDate", { toDisplayDate: toDisplayDate(d.filedAt.slice(0, 10)), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+                        {t.rich("appSearch_filedToDisplayDate", {
+                          toDisplayDate: toDisplayDate(d.filedAt.slice(0, 10)),
+                          span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                        })}
                       </>
                     ) : null}
                   </span>
@@ -195,7 +197,7 @@ export function AppSearchProvider({ children }: { children: React.ReactNode }) {
 
   const value = React.useMemo<AppSearchValue>(
     () => ({ open: () => setOpen(true), shortcut }),
-    [shortcut]
+    [shortcut],
   );
 
   return (

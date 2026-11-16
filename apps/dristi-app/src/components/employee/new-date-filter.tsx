@@ -134,7 +134,9 @@ export function NewDateFilter({
              the count line: what is being filtered, and what it is filtered to. */
           aria-label={
             showing
-              ? t("newDateFilter_newHearingDateShowingFormatCourt", { formatCourtDay: formatCourtDay(showing.day) })
+              ? t("newDateFilter_newHearingDateShowingFormatCourt", {
+                  formatCourtDay: formatCourtDay(showing.day),
+                })
               : t("newDateFilter_newHearingDateShowingAllLength", { length: String(days.length) })
           }
         >
@@ -150,7 +152,14 @@ export function NewDateFilter({
           onValueChange={(next) => onChange(next === "all" ? null : next)}
         >
           <DropdownMenuRadioItem value="all">
-            {t.rich("newDateFilter_allDatesHearings", { hearings: hearings(total), span: (chunks) => <span className="ml-auto pl-4 text-caption tabular-nums text-muted-foreground">{chunks}</span> })}
+            {t.rich("newDateFilter_allDatesHearings", {
+              hearings: hearings(total),
+              span: (chunks) => (
+                <span className="ml-auto pl-4 text-caption tabular-nums text-muted-foreground">
+                  {chunks}
+                </span>
+              ),
+            })}
           </DropdownMenuRadioItem>
           {days.map((entry) => (
             <DropdownMenuRadioItem key={entry.day} value={entry.day}>

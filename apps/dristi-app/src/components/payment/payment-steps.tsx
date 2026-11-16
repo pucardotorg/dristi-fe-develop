@@ -32,7 +32,10 @@ export const GATEWAY_MS = 2600;
 /** The gateway round trip: a spinner while the gateway answers. */
 export function PaymentProcessing() {
   return (
-    <div role="status" className="flex min-h-32 flex-col items-center justify-center gap-3 text-center">
+    <div
+      role="status"
+      className="flex min-h-32 flex-col items-center justify-center gap-3 text-center"
+    >
       <Spinner className="size-8 text-primary" />
     </div>
   );

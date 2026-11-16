@@ -68,11 +68,15 @@ function Documents({
       <div className="flex flex-col gap-1">
         <h3 className="text-body font-semibold">{tr("actFilePage_documentsNeeded")}</h3>
         <p className="text-body-compact text-muted-foreground tabular-nums">
-          {tr("actFilePage_filledOfLengthAttachedValue", { filled: String(filled), length: String(slots.length), value: task.deadlineNote
-            ? ` · ${task.deadlineNote}`
-            : task.dueAt
-              ? ` · ${dueCueOf(task).primary.toLowerCase()}`
-              : "" })}
+          {tr("actFilePage_filledOfLengthAttachedValue", {
+            filled: String(filled),
+            length: String(slots.length),
+            value: task.deadlineNote
+              ? ` · ${task.deadlineNote}`
+              : task.dueAt
+                ? ` · ${dueCueOf(task).primary.toLowerCase()}`
+                : "",
+          })}
         </p>
       </div>
       <ul className="divide-y divide-hairline">
@@ -90,7 +94,13 @@ function Documents({
           ) : (
             <li key={slot} className="flex flex-col gap-2 py-3">
               <p className="text-body-compact font-medium">{slot}</p>
-              {f ? <FileChip file={f} /> : <p className="text-caption text-muted-foreground">{tr("actFilePage_notAttached")}</p>}
+              {f ? (
+                <FileChip file={f} />
+              ) : (
+                <p className="text-caption text-muted-foreground">
+                  {tr("actFilePage_notAttached")}
+                </p>
+              )}
             </li>
           );
         })}
@@ -105,7 +115,15 @@ function Documents({
 }
 
 /** A signatory's rail: file with the court, or save what is attached for later. */
-function FileCard({ ctx, files, complete }: { ctx: ActContext; files: StoredFileRef[]; complete: boolean }) {
+function FileCard({
+  ctx,
+  files,
+  complete,
+}: {
+  ctx: ActContext;
+  files: StoredFileRef[];
+  complete: boolean;
+}) {
   const tr = useTranslations();
   const { task, online, finish } = ctx;
   const { act, busy, error } = useTaskActions({ inDialog: true });
@@ -116,17 +134,28 @@ function FileCard({ ctx, files, complete }: { ctx: ActContext; files: StoredFile
       {error ? <StatusLine tone="error">{error}</StatusLine> : null}
       <PreparedNote ctx={ctx} />
       <div className="flex flex-col gap-2">
-        <Button size="lg" disabled={!online || !!busy || !complete} onClick={() => setConfirm(true)}>
+        <Button
+          size="lg"
+          disabled={!online || !!busy || !complete}
+          onClick={() => setConfirm(true)}
+        >
           <SendIcon data-icon="inline-start" aria-hidden />
           {tr("actFilePage_fileWithTheCourt")}
         </Button>
         {!complete ? (
-          <p className="text-caption text-muted-foreground">{tr("actFilePage_attachEveryDocumentBeforeFiling")}</p>
+          <p className="text-caption text-muted-foreground">
+            {tr("actFilePage_attachEveryDocumentBeforeFiling")}
+          </p>
         ) : null}
         <Button
           variant="ghost"
           disabled={!online || !!busy}
-          onClick={() => void act(task.id, (t, c) => saveDraft(t, c, undefined, files), { title: tr("actFilePage_savedAsADraft"), icon: SaveIcon })}
+          onClick={() =>
+            void act(task.id, (t, c) => saveDraft(t, c, undefined, files), {
+              title: tr("actFilePage_savedAsADraft"),
+              icon: SaveIcon,
+            })
+          }
         >
           {tr("actFilePage_saveForLater")}
         </Button>
@@ -136,8 +165,8 @@ function FileCard({ ctx, files, complete }: { ctx: ActContext; files: StoredFile
           <AlertDialogHeader>
             <AlertDialogTitle>{tr("actFilePage_fileWithTheCourtQuestion")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {n === 1 ? "1 document goes" : `${n} documents go`} to the registry for scrutiny. This cannot be
-              recalled; defects come back as a new task.
+              {n === 1 ? "1 document goes" : `${n} documents go`} to the registry for scrutiny. This
+              cannot be recalled; defects come back as a new task.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -172,7 +201,9 @@ export function FileBody({
   const [files, setFilesState] = React.useState<StoredFileRef[]>(task.files ?? []);
   function setFiles(next: StoredFileRef[]) {
     setFilesState(next);
-    onEntered?.(next.length !== (task.files ?? []).length || next.some((f, i) => f !== task.files?.[i]));
+    onEntered?.(
+      next.length !== (task.files ?? []).length || next.some((f, i) => f !== task.files?.[i]),
+    );
   }
   const slots = task.documentsNeeded?.length ? task.documentsNeeded : ["Document"];
   const complete = slots.every((s) => files.some((f) => f.slot === s));
@@ -180,7 +211,10 @@ export function FileBody({
   const editable = ["open", "draft", "ready"].includes(task.status);
 
   let rail: React.ReactNode;
-  if (closed) rail = <RecordCard ctx={ctx} title={closedTitle(task, tr("actFilePage_acceptedByTheRegistry"))} />;
+  if (closed)
+    rail = (
+      <RecordCard ctx={ctx} title={closedTitle(task, tr("actFilePage_acceptedByTheRegistry"))} />
+    );
   else if (task.status === "awaiting-court") rail = <CourtSandbox ctx={ctx} />;
   else if (signatory) rail = <FileCard ctx={ctx} files={files} complete={complete} />;
   else rail = <PrepareCard ctx={ctx} what="file" files={files} complete={complete} />;

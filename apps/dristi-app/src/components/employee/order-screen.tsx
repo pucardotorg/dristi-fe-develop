@@ -5,10 +5,7 @@ import Link from "next/link";
 import { CalendarX2Icon, ChevronRightIcon } from "lucide-react";
 
 import { useCourt, useCourtText } from "@/components/court/court-provider";
-import {
-  OrderDoorScreen,
-  type OrderDoor,
-} from "@/components/employee/order-door-screen";
+import { OrderDoorScreen, type OrderDoor } from "@/components/employee/order-door-screen";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { useHearingSession } from "@/components/employee/use-hearing-session";
 import { Button } from "@/components/ui/button";
@@ -34,10 +31,7 @@ import {
 import { applicationsForListing } from "@/lib/employee/listing-applications";
 import { composerContextFor } from "@/lib/employee/order-context";
 import { initialOrderDraft } from "@/lib/employee/order-demo";
-import {
-  appearancesFor,
-  nextOngoingListing,
-} from "@/lib/employee/order-draft";
+import { appearancesFor, nextOngoingListing } from "@/lib/employee/order-draft";
 import { useTranslations } from "next-intl";
 
 /** A hearing's order opens with nothing the drafter cannot remove. */
@@ -82,10 +76,7 @@ export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
   );
   const context = React.useMemo(() => composerContextFor(hearing), [hearing]);
   const appearances = React.useMemo(() => appearancesFor(hearing), [hearing]);
-  const applications = React.useMemo(
-    () => applicationsForListing(hearing.id),
-    [hearing.id],
-  );
+  const applications = React.useMemo(() => applicationsForListing(hearing.id), [hearing.id]);
   /* Next case (`HRG-10`) opens the next Ongoing hearing and is not a hearing control:
      it ends nothing and starts nothing — those are on the cause list (`HRG-00`). It
      reads the live session, so a hearing started from the cause list in another tab
@@ -109,7 +100,10 @@ export function useHearingOrderDoor(hearing: CourtHearing): OrderDoor {
       <Button asChild variant="outline" className="w-full shrink-0 sm:w-fit">
         <Link
           href={`/employee/hearings/${upNext.id}/order`}
-          aria-label={t("orderScreen_nextCaseItemItemCauseTitle", { item: String(upNext.item), causeTitle: causeTitle(upNext) })}
+          aria-label={t("orderScreen_nextCaseItemItemCauseTitle", {
+            item: String(upNext.item),
+            causeTitle: causeTitle(upNext),
+          })}
         >
           {t("orderScreen_nextCaseItemItem", { item: String(upNext.item) })}
           <ChevronRightIcon data-icon="inline-end" aria-hidden />
@@ -152,13 +146,10 @@ export function OrderMissing() {
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href="/employee/hearings">
-              {t("orderScreen_backToTodaysHearings")}
-            </Link>
+            <Link href="/employee/hearings">{t("orderScreen_backToTodaysHearings")}</Link>
           </Button>
         </EmptyContent>
       </Empty>
     </div>
   );
 }
-

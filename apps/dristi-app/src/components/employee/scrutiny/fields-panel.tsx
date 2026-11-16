@@ -12,12 +12,8 @@ import { SHEET } from "@/components/employee/scrutiny/sheet";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { Card } from "@/components/ui/card";
 import { DescriptionList } from "@/components/ui/description-list";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { useTranslations } from "next-intl";
-
 
 export interface FieldsPanelHandle {
   scrollToRow: (fieldId: string) => void;
@@ -184,7 +180,12 @@ export function FieldsPanel({
             className="shrink-0"
           >
             <SegmentedControlItem value="changes">
-              {t.rich("fieldsPanel_changesLength", { length: String(returned.items.length), span: (chunks) => <span className="ms-1.5 tabular-nums text-muted-foreground">{chunks}</span> })}
+              {t.rich("fieldsPanel_changesLength", {
+                length: String(returned.items.length),
+                span: (chunks) => (
+                  <span className="ms-1.5 tabular-nums text-muted-foreground">{chunks}</span>
+                ),
+              })}
             </SegmentedControlItem>
             <SegmentedControlItem value="full">{t("fieldsPanel_fullFiling")}</SegmentedControlItem>
           </SegmentedControl>
@@ -207,110 +208,109 @@ export function FieldsPanel({
           still pan sideways by trackpad or focus, without a track — the pill row's rule
           (`chrome/pill-plate.ts`). */}
       {changes ? null : (
-      <div className="flex h-14 shrink-0 items-stretch overflow-x-auto overflow-y-hidden border-b border-hairline bg-card px-4 [scrollbar-width:none]">
-        <nav aria-label={t("fieldsPanel_sections")} className="flex items-stretch gap-1">
-          {sections.map((section) => {
-            const current = active === section.id;
-            return (
-              <button
-                key={section.id}
-                type="button"
-                aria-current={current ? "true" : undefined}
-                onClick={() => jumpTo(section.id)}
-                className={cn(
-                  "relative flex shrink-0 items-center px-3 text-body-compact font-medium whitespace-nowrap transition-colors",
-                  "after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-brand-accent after:opacity-0 after:transition-opacity after:content-['']",
-                  "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
-                  current
-                    ? "text-primary after:opacity-100"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {section.num}. {section.title}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
+        <div className="flex h-14 shrink-0 items-stretch overflow-x-auto overflow-y-hidden border-b border-hairline bg-card px-4 [scrollbar-width:none]">
+          <nav aria-label={t("fieldsPanel_sections")} className="flex items-stretch gap-1">
+            {sections.map((section) => {
+              const current = active === section.id;
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  aria-current={current ? "true" : undefined}
+                  onClick={() => jumpTo(section.id)}
+                  className={cn(
+                    "relative flex shrink-0 items-center px-3 text-body-compact font-medium whitespace-nowrap transition-colors",
+                    "after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-brand-accent after:opacity-0 after:transition-opacity after:content-['']",
+                    "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+                    current
+                      ? "text-primary after:opacity-100"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {section.num}. {section.title}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
       )}
 
       <div className="relative flex-1 overflow-y-auto p-4" ref={scrollRef}>
         {changes ? (
-          <ChangesList
-            controller={controller}
-            onShowItem={onShowItem}
-            onGoToItem={onGoToItem}
-          />
-        ) : sections.map((section, index) => (
-          <section
-            className={cn(
-              "flex scroll-mt-3 flex-col gap-3",
-              index > 0 && "mt-8",
-            )}
-            id={`sec-${section.id}`}
-            key={section.id}
-          >
-            {/* The rule after the label is the separator; the label itself stays quiet.
+          <ChangesList controller={controller} onShowItem={onShowItem} onGoToItem={onGoToItem} />
+        ) : (
+          sections.map((section, index) => (
+            <section
+              className={cn("flex scroll-mt-3 flex-col gap-3", index > 0 && "mt-8")}
+              id={`sec-${section.id}`}
+              key={section.id}
+            >
+              {/* The rule after the label is the separator; the label itself stays quiet.
                 No section number here — the sticky tab strip above already carries it, so
                 repeating it on the in-scroll heading said the same "1" twice a few px
                 apart. The heading stays for the landmark; only the number goes.
                 `px-4` sets the label on the card's own content edge, so "Party Details"
                 and "Complainant Details" share one left margin (owner, 2026-09-15). */}
-            <h2 className="flex items-center gap-3 px-4 py-2 text-caption font-medium text-muted-foreground after:h-px after:flex-1 after:bg-hairline after:content-['']">
-              <span>{section.title}</span>
-            </h2>
-            <div className="flex flex-col gap-4">
-              {section.groups.map((group) => {
-                const Icon = GROUP_ICONS[group.icon];
-                return (
-                  /* The case-file card treatment (owner, 2026-09-15): a lifted, hairline
+              <h2 className="flex items-center gap-3 px-4 py-2 text-caption font-medium text-muted-foreground after:h-px after:flex-1 after:bg-hairline after:content-['']">
+                <span>{section.title}</span>
+              </h2>
+              <div className="flex flex-col gap-4">
+                {section.groups.map((group) => {
+                  const Icon = GROUP_ICONS[group.icon];
+                  return (
+                    /* The case-file card treatment (owner, 2026-09-15): a lifted, hairline
                      sheet whose header band is divided from its rows by one hairline, the
                      same stroke Register cases and Take cognizance use. Layout unchanged —
                      the icon leads the title, the rows sit below. */
-                  <Card key={group.id} variant="raised" className={cn(SHEET, "w-full @container")}>
-                    {/* The register case-file header (`register-case-file.tsx`): a sunken
+                    <Card
+                      key={group.id}
+                      variant="raised"
+                      className={cn(SHEET, "w-full @container")}
+                    >
+                      {/* The register case-file header (`register-case-file.tsx`): a sunken
                         band with the title at 14 — the panes are narrow, so the header
                         takes body-compact, not body (owner, 2026-09-15) — and the group
                         icon in a rounded square on the right, divided from the rows by one
                         hairline. */}
-                    <div className="flex items-center justify-between gap-4 bg-surface-sunken px-4 py-3">
-                      <h3 className="min-w-0 truncate text-body-compact font-semibold">
-                        {group.title}
-                      </h3>
-                      {returnedIn.group[`${section.id}/${group.title}`] ? (
-                        <Badge variant="info" className="ms-auto border-info tabular-nums">
-                          {errorsMarked(returnedIn.group[`${section.id}/${group.title}`])}
-                        </Badge>
-                      ) : null}
-                      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-hairline bg-card text-muted-foreground">
-                        <Icon className="size-5" />
-                      </span>
-                    </div>
-                    <DescriptionList
-                      role="listbox"
-                      aria-label={group.title}
-                      className="border-t border-hairline px-4 py-1"
-                    >
-                      {/*
-                       * The flattened field (`fieldById`) rather than re-flattening
-                       * inline: the object identity has to be stable across renders.
-                       */}
-                      {group.fields.map((field) => (
-                        <FieldRow
-                          key={field.id}
-                          field={fieldById[field.id]}
-                          controller={controller}
-                          aiOn={aiOn}
-                          onGoToItem={onGoToItem}
-                        />
-                      ))}
-                    </DescriptionList>
-                  </Card>
-                );
-              })}
-            </div>
-          </section>
-        ))}
+                      <div className="flex items-center justify-between gap-4 bg-surface-sunken px-4 py-3">
+                        <h3 className="min-w-0 truncate text-body-compact font-semibold">
+                          {group.title}
+                        </h3>
+                        {returnedIn.group[`${section.id}/${group.title}`] ? (
+                          <Badge variant="info" className="ms-auto border-info tabular-nums">
+                            {errorsMarked(returnedIn.group[`${section.id}/${group.title}`])}
+                          </Badge>
+                        ) : null}
+                        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-hairline bg-card text-muted-foreground">
+                          <Icon className="size-5" />
+                        </span>
+                      </div>
+                      <DescriptionList
+                        role="listbox"
+                        aria-label={group.title}
+                        className="border-t border-hairline px-4 py-1"
+                      >
+                        {/*
+                         * The flattened field (`fieldById`) rather than re-flattening
+                         * inline: the object identity has to be stable across renders.
+                         */}
+                        {group.fields.map((field) => (
+                          <FieldRow
+                            key={field.id}
+                            field={fieldById[field.id]}
+                            controller={controller}
+                            aiOn={aiOn}
+                            onGoToItem={onGoToItem}
+                          />
+                        ))}
+                      </DescriptionList>
+                    </Card>
+                  );
+                })}
+              </div>
+            </section>
+          ))
+        )}
         {/*
          * Tail so the last section can reach the top of the panel and the spy can select
          * it without the scroll bottoming out first.

@@ -14,11 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { CaseAccessList } from "@/components/access/access-list";
@@ -104,9 +100,7 @@ export function ShareDialog({
   /* Office access about to be removed: confirmed first, like every removal
      (OFC-36), in the People tab's own words. */
   const [confirmTarget, setConfirmTarget] = React.useState<AccessPerson | null>(null);
-  const [removedDerived, setRemovedDerived] = React.useState<ReadonlySet<string>>(
-    new Set(),
-  );
+  const [removedDerived, setRemovedDerived] = React.useState<ReadonlySet<string>>(new Set());
 
   const bulk = cases.length > 1;
   const single = cases.length === 1 ? cases[0] : null;
@@ -115,12 +109,9 @@ export function ShareDialog({
   const onCase = single
     ? [
         ...storePeople,
-        ...(extraPeople ?? []).filter(
-          (p) => !storeNames.has(p.name) && !removedDerived.has(p.id),
-        ),
+        ...(extraPeople ?? []).filter((p) => !storeNames.has(p.name) && !removedDerived.has(p.id)),
       ]
     : [];
-
 
   function handleOpenChange(nextOpen: boolean) {
     // Closing clears transient invite state so reopening any case scope starts
@@ -136,9 +127,8 @@ export function ShareDialog({
   }
 
   /* People stacked to invite, or a number or Bar ID still being typed. */
-  const guard = useDiscardGuard(
-    chips.length > 0 || typing.trim() !== "",
-    () => handleOpenChange(false),
+  const guard = useDiscardGuard(chips.length > 0 || typing.trim() !== "", () =>
+    handleOpenChange(false),
   );
 
   function confirmRemove() {
@@ -160,7 +150,10 @@ export function ShareDialog({
   function send() {
     const batch = chips;
     if (!batch.length) return;
-    const result = invite(batch.map((c) => c.phone ?? ""), cases.map((c) => c.id));
+    const result = invite(
+      batch.map((c) => c.phone ?? ""),
+      cases.map((c) => c.id),
+    );
     setResult(result);
     notify.success(fill(shareCopy.inviteToast, locale, { names: result.names.join(", ") }));
     setChips([]);
@@ -190,9 +183,7 @@ export function ShareDialog({
           {/* The one-line boundary against Add people (PM, Sept 2): what
               sharing grants, and what it does not. */}
           <p className="text-caption text-pretty text-muted-foreground">
-            {readOnly
-              ? pick(shareCopy.readOnlyNote, locale)
-              : pick(shareCopy.bodySingle, locale)}
+            {readOnly ? pick(shareCopy.readOnlyNote, locale) : pick(shareCopy.bodySingle, locale)}
           </p>
           {single ? (
             <div className="flex min-w-0 flex-col gap-0.5">
@@ -278,7 +269,10 @@ export function ShareDialog({
           {single ? (
             <>
               <Separator />
-              <section className="flex flex-col gap-1" aria-label={pick(shareCopy.whoHasAccess, locale)}>
+              <section
+                className="flex flex-col gap-1"
+                aria-label={pick(shareCopy.whoHasAccess, locale)}
+              >
                 <div className="flex flex-col items-stretch gap-3 pb-2 sm:flex-row sm:items-center">
                   <h3
                     id="access-list-heading"
@@ -312,14 +306,8 @@ export function ShareDialog({
                       : (personId) =>
                           setConfirmTarget(onCase.find((p) => p.id === personId) ?? null)
                   }
-                  onRemoveVakalat={
-                    readOnly
-                      ? undefined
-                      : (person) => setRemoveTarget(person.name)
-                  }
-                  selfAccessLabel={
-                    readOnly ? pick(shareCopy.selfOfficeAccess, locale) : undefined
-                  }
+                  onRemoveVakalat={readOnly ? undefined : (person) => setRemoveTarget(person.name)}
+                  selfAccessLabel={readOnly ? pick(shareCopy.selfOfficeAccess, locale) : undefined}
                 />
               </section>
             </>
@@ -343,7 +331,9 @@ export function ShareDialog({
                 case: single ? caseLabel(single) : "",
               })}
             </AlertDialogTitle>
-            <AlertDialogDescription>{pick(peopleCopy.removeBodyOne, locale)}</AlertDialogDescription>
+            <AlertDialogDescription>
+              {pick(peopleCopy.removeBodyOne, locale)}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{pick(peopleCopy.removeAllCancel, locale)}</AlertDialogCancel>

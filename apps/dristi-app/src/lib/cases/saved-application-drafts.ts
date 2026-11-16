@@ -69,14 +69,8 @@ function readSaved(caseId: string): SavedApplicationDraft[] {
 }
 
 /** Save, or replace the draft with the same id. */
-export function saveApplicationDraft(
-  caseId: string,
-  draft: SavedApplicationDraft
-): void {
-  const next = [
-    draft,
-    ...readSaved(caseId).filter((item) => item.id !== draft.id),
-  ];
+export function saveApplicationDraft(caseId: string, draft: SavedApplicationDraft): void {
+  const next = [draft, ...readSaved(caseId).filter((item) => item.id !== draft.id)];
   writeSessionValue(savedDraftsKey(caseId), JSON.stringify(next));
 }
 
@@ -110,9 +104,7 @@ export function savedDraftSubmission(draft: SavedApplicationDraft): Submission {
     courtResult: null,
     linkedOrder: null,
     defects: [],
-    documents: [
-      { label: filed ? "Filed application" : "Draft application" },
-    ],
+    documents: [{ label: filed ? "Filed application" : "Draft application" }],
     attachments: draft.attachments,
   };
 }

@@ -18,20 +18,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  JoinCaseDialog,
-  type JoinMode,
-  type JoinResult,
-} from "@/components/join/join-case-dialog";
+import { JoinCaseDialog, type JoinMode, type JoinResult } from "@/components/join/join-case-dialog";
 import { useLocale } from "@/components/shell/locale";
 import { useProfile } from "@/components/shell/profile";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import { DEMO_JOIN_CASE, fill, home, shell, type JoinCase } from "@/lib/join/content";
 import { Identifier } from "@/components/chrome/identifier";
-import {
-  LinkedComplaintCard,
-  useLinkedComplaints,
-} from "@/components/home/linked-complaint-cards";
+import { LinkedComplaintCard, useLinkedComplaints } from "@/components/home/linked-complaint-cards";
 import { useTranslations } from "next-intl";
 
 type HomeCase = { joinCase: JoinCase; status: "joined" };
@@ -72,9 +65,7 @@ export function HomeScreen({
   const { locale } = useLocale();
   const { displayName } = useProfile();
   const [dialogOpen, setDialogOpen] = React.useState(openManualJoin || Boolean(joinHandoff));
-  const [dialogMode, setDialogMode] = React.useState<JoinMode>(
-    joinHandoff ? "handoff" : "manual",
-  );
+  const [dialogMode, setDialogMode] = React.useState<JoinMode>(joinHandoff ? "handoff" : "manual");
   const [autoOpened, setAutoOpened] = React.useState(openManualJoin || Boolean(joinHandoff));
   const [cases, setCases] = React.useState<HomeCase[]>([]);
   const linkedComplaints = useLinkedComplaints();
@@ -86,9 +77,10 @@ export function HomeScreen({
 
   const summonsCase = summoned && hasCase ? DEMO_JOIN_CASE : undefined;
   const hasJoinedSummons = cases.some((entry) => entry.joinCase.cnr === summonsCase?.cnr);
-  const visibleCases: VisibleHomeCase[] = summonsCase && !hasJoinedSummons
-    ? [{ joinCase: summonsCase, status: "summons" }, ...cases]
-    : cases;
+  const visibleCases: VisibleHomeCase[] =
+    summonsCase && !hasJoinedSummons
+      ? [{ joinCase: summonsCase, status: "summons" }, ...cases]
+      : cases;
 
   React.useEffect(() => {
     if (!summonsCase || autoOpened || cases.length) return;
@@ -138,9 +130,7 @@ export function HomeScreen({
                     <div className="flex flex-col items-start gap-3">
                       <Badge variant={entry.status === "joined" ? "success" : "warning"}>
                         {pick(
-                          entry.status === "summons"
-                            ? home.statusSummons
-                            : home.statusJoined,
+                          entry.status === "summons" ? home.statusSummons : home.statusJoined,
                           locale,
                         )}
                       </Badge>
@@ -148,12 +138,19 @@ export function HomeScreen({
                     </div>
                     <div className="flex flex-col gap-2 text-caption text-muted-foreground">
                       <p>
-                        <span className="font-medium text-foreground">{pick(home.caseNumberLabel, locale)}</span>
+                        <span className="font-medium text-foreground">
+                          {pick(home.caseNumberLabel, locale)}
+                        </span>
                         <br />
-                        <Identifier value={entry.joinCase.caseNumber} label={t("homeScreen_caseNumber")} />
+                        <Identifier
+                          value={entry.joinCase.caseNumber}
+                          label={t("homeScreen_caseNumber")}
+                        />
                       </p>
                       <p>
-                        <span className="font-medium text-foreground">{pick(home.hearingLabel, locale)}</span>
+                        <span className="font-medium text-foreground">
+                          {pick(home.hearingLabel, locale)}
+                        </span>
                         <br />
                         {entry.joinCase.hearingDate}
                       </p>
@@ -161,9 +158,14 @@ export function HomeScreen({
                     <Button
                       variant="outline"
                       className="mt-auto w-full"
-                      onClick={() => (entry.status === "summons" ? openJoin("summons") : setNotice("case"))}
+                      onClick={() =>
+                        entry.status === "summons" ? openJoin("summons") : setNotice("case")
+                      }
                     >
-                      {pick(entry.status === "summons" ? home.reviewSummons : home.viewCase, locale)}
+                      {pick(
+                        entry.status === "summons" ? home.reviewSummons : home.viewCase,
+                        locale,
+                      )}
                       <ArrowRightIcon data-icon="inline-end" aria-hidden />
                     </Button>
                   </CardContent>
@@ -171,7 +173,9 @@ export function HomeScreen({
               ))}
             </div>
           ) : (
-            <p className="text-body-compact text-muted-foreground">{t("homeScreen_casesYouJoinOrFileWill")}</p>
+            <p className="text-body-compact text-muted-foreground">
+              {t("homeScreen_casesYouJoinOrFileWill")}
+            </p>
           )}
         </section>
 
@@ -185,7 +189,9 @@ export function HomeScreen({
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <p className="text-body-compact font-semibold">{pick(home.joinTitle, locale)}</p>
-                  <p className="text-caption text-muted-foreground">{pick(home.joinBody, locale)}</p>
+                  <p className="text-caption text-muted-foreground">
+                    {pick(home.joinBody, locale)}
+                  </p>
                 </div>
                 <Button className="shrink-0" onClick={() => openJoin("manual")}>
                   {pick(home.joinAction, locale)}
@@ -200,7 +206,9 @@ export function HomeScreen({
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <p className="text-body-compact font-semibold">{pick(home.fileTitle, locale)}</p>
-                  <p className="text-caption text-muted-foreground">{pick(home.fileBody, locale)}</p>
+                  <p className="text-caption text-muted-foreground">
+                    {pick(home.fileBody, locale)}
+                  </p>
                 </div>
                 <Button variant="outline" className="shrink-0" onClick={() => setNotice("file")}>
                   {pick(home.fileAction, locale)}
@@ -223,7 +231,11 @@ export function HomeScreen({
             <AlertTitle>{pick(home.prototypeTitle, locale)}</AlertTitle>
             <AlertDescription>
               {pick(
-                notice === "file" ? home.prototypeFile : notice === "nav" ? shell.prototypeNav : home.prototypeCase,
+                notice === "file"
+                  ? home.prototypeFile
+                  : notice === "nav"
+                    ? shell.prototypeNav
+                    : home.prototypeCase,
                 locale,
               )}
             </AlertDescription>

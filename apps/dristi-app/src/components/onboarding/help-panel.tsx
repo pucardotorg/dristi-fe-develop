@@ -57,9 +57,7 @@ export function HelpPanel({ step, locale }: { step: StepId; locale: Locale }) {
   return (
     <Card variant="raised" role="region" aria-label={pick(ui.helpTitle, locale)}>
       <CardHeader>
-        <h3 className="text-title-s font-semibold text-foreground">
-          {pick(ui.helpTitle, locale)}
-        </h3>
+        <h3 className="text-title-s font-semibold text-foreground">{pick(ui.helpTitle, locale)}</h3>
       </CardHeader>
 
       <CardContent className="pt-0">
@@ -71,9 +69,7 @@ export function HelpPanel({ step, locale }: { step: StepId; locale: Locale }) {
               className="border-border"
             >
               <AccordionTrigger className="min-h-10 items-center px-3 py-2.5 text-body hover:no-underline">
-                <span className="min-w-0 flex-1 text-pretty">
-                  {pick(entry.q, locale)}
-                </span>
+                <span className="min-w-0 flex-1 text-pretty">{pick(entry.q, locale)}</span>
               </AccordionTrigger>
               <AccordionContent className="px-3 pt-2 pb-3 text-body text-pretty text-muted-foreground">
                 {renderAnswer(entry, locale)}

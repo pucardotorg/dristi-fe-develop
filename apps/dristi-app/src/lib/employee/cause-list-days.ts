@@ -30,7 +30,10 @@ import {
 import type { HearingSession } from "./hearing-session";
 import { DOCKET_PURPOSE } from "./listing-load";
 
-type DayMarks = Pick<HearingSession, "ongoingIds" | "endedIds" | "passedOverIds" | "previous" | "postings">;
+type DayMarks = Pick<
+  HearingSession,
+  "ongoingIds" | "endedIds" | "passedOverIds" | "previous" | "postings"
+>;
 
 /* The docket's stages are the dashboard's; the cause list names a case's stage in its
    own words. A trial purpose says where in the trial the case is, so it wins. */
@@ -50,7 +53,11 @@ const STAGE_FROM_PURPOSE: Partial<Record<CourtHearingPurposeId, CourtCaseStage>>
   judgement: "judgement",
 };
 
-function docketListing(entry: DocketCase, purpose: CourtHearingPurposeId, status: CourtHearing["status"]): Omit<CourtHearing, "item"> {
+function docketListing(
+  entry: DocketCase,
+  purpose: CourtHearingPurposeId,
+  status: CourtHearing["status"],
+): Omit<CourtHearing, "item"> {
   const counsel: CourtCounsel[] = [];
   if (entry.advocate) counsel.push({ name: entry.advocate, side: "complainant" });
   if (entry.accusedAdvocate) counsel.push({ name: entry.accusedAdvocate, side: "accused" });
@@ -82,9 +89,18 @@ function docketDay(day: string, today: string, session: DayMarks): CourtHearing[
   for (const entry of courtDocket(today).cases) {
     const purpose = entry.nextPurpose ? DOCKET_PURPOSE[entry.nextPurpose] : undefined;
     if (!purpose) continue;
-    if (day > today && isPending(entry) && entry.nextHearing !== null && msToDay(entry.nextHearing) === day) {
+    if (
+      day > today &&
+      isPending(entry) &&
+      entry.nextHearing !== null &&
+      msToDay(entry.nextHearing) === day
+    ) {
       listings.push(docketListing(entry, purpose, "scheduled"));
-    } else if (day < today && entry.previousPosting !== null && msToDay(entry.previousPosting) === day) {
+    } else if (
+      day < today &&
+      entry.previousPosting !== null &&
+      msToDay(entry.previousPosting) === day
+    ) {
       listings.push(docketListing(entry, purpose, "completed"));
     }
   }
@@ -94,7 +110,12 @@ function docketDay(day: string, today: string, session: DayMarks): CourtHearing[
     for (const hearing of CAUSE_LIST) {
       const posting = session.postings[hearing.id];
       if (posting?.next === "list" && posting.nextDate === day && posting.nextPurpose) {
-        listings.push({ ...hearing, id: `${hearing.id}@${day}`, purpose: posting.nextPurpose, status: "scheduled" });
+        listings.push({
+          ...hearing,
+          id: `${hearing.id}@${day}`,
+          purpose: posting.nextPurpose,
+          status: "scheduled",
+        });
       }
     }
   }
@@ -103,7 +124,9 @@ function docketDay(day: string, today: string, session: DayMarks): CourtHearing[
 
 /** The cause list for `day`. */
 export function causeListForDay(day: string, today: string, session: DayMarks): CourtHearing[] {
-  return isWorkedDay(day, today, session) ? boardForDay(day, today, session) : docketDay(day, today, session);
+  return isWorkedDay(day, today, session)
+    ? boardForDay(day, today, session)
+    : docketDay(day, today, session);
 }
 
 /** How many sitting days the date scrubber reaches either side of the chosen one. */
@@ -134,8 +157,10 @@ export function stepSittingDay(day: string, delta: 1 | -1, today: string): strin
 export function nearbySittingDays(day: string, today: string): string[] {
   const before: string[] = [];
   const after: string[] = [];
-  for (let cursor = day, i = 0; i < NEARBY_RADIUS; i++) before.unshift((cursor = stepSittingDay(cursor, -1, today)));
-  for (let cursor = day, i = 0; i < NEARBY_RADIUS; i++) after.push((cursor = stepSittingDay(cursor, 1, today)));
+  for (let cursor = day, i = 0; i < NEARBY_RADIUS; i++)
+    before.unshift((cursor = stepSittingDay(cursor, -1, today)));
+  for (let cursor = day, i = 0; i < NEARBY_RADIUS; i++)
+    after.push((cursor = stepSittingDay(cursor, 1, today)));
   return [...before, day, ...after];
 }
 

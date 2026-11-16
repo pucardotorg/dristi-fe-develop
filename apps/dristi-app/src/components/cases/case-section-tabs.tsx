@@ -49,7 +49,7 @@ export const STRIP_TRIGGER = STRIP_ITEM;
  */
 const STRIP_LINK = cn(
   STRIP_ITEM,
-  "relative inline-flex items-center justify-center gap-1.5 rounded-md border border-transparent py-0.5 font-medium whitespace-nowrap text-muted-foreground transition-all hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring"
+  "relative inline-flex items-center justify-center gap-1.5 rounded-md border border-transparent py-0.5 font-medium whitespace-nowrap text-muted-foreground transition-all hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring",
 );
 
 /**
@@ -153,11 +153,7 @@ export function CaseSectionTabs({
       {/* Panels for the strip's own members only. An unlisted section never
           reaches here — it took the branch above. */}
       {CASE_NAV_SECTIONS.map((item) => (
-        <TabsContent
-          key={item.value}
-          value={item.value}
-          className="outline-none"
-        >
+        <TabsContent key={item.value} value={item.value} className="outline-none">
           {item.value === section ? children : null}
         </TabsContent>
       ))}
@@ -176,9 +172,7 @@ export function SectionPending({ label }: { label: string }) {
         <EmptyTitle className="text-title-s font-semibold">
           {t("caseSectionTabs_labelIsNotDesignedYet", { label })}
         </EmptyTitle>
-        <EmptyDescription>
-          {t("caseSectionTabs_theCaseHeaderIsInPlace")}
-        </EmptyDescription>
+        <EmptyDescription>{t("caseSectionTabs_theCaseHeaderIsInPlace")}</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

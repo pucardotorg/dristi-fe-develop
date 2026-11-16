@@ -6,7 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CONTROL_REVEAL } from "@/components/chrome/motion";
 import { advHome } from "@/lib/advocate/content";
-import { nearbyDateIndex, nearbyDates, NEARBY_DATE_COUNT, NEARBY_DATE_RADIUS } from "@/lib/advocate/date-scrubber";
+import {
+  nearbyDateIndex,
+  nearbyDates,
+  NEARBY_DATE_COUNT,
+  NEARBY_DATE_RADIUS,
+} from "@/lib/advocate/date-scrubber";
 import { dayKeyOf } from "@/lib/advocate/home";
 import type { Locale } from "@/lib/onboarding/content";
 import { pick } from "@/lib/onboarding/content";
@@ -70,7 +75,10 @@ export function DateScrubber({
   const previewKey = dayKeyOf(date);
   const previewTone = previewKey === todayKey ? "today" : previewKey < todayKey ? "past" : "future";
   const format = new Intl.DateTimeFormat(locale === "ml" ? "ml-IN" : "en-IN", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
   const previewLabel = format.format(date);
   const crossesMonth = date.getMonth() !== dates[NEARBY_DATE_RADIUS].getMonth();
@@ -85,7 +93,11 @@ export function DateScrubber({
   function begin(pointerX?: number) {
     setAnchor(selectedDay);
     const rect = faceRef.current?.getBoundingClientRect();
-    setIndex(pointerX !== undefined && rect ? nearbyDateIndex(pointerX, rect.left, rect.width) : NEARBY_DATE_RADIUS);
+    setIndex(
+      pointerX !== undefined && rect
+        ? nearbyDateIndex(pointerX, rect.left, rect.width)
+        : NEARBY_DATE_RADIUS,
+    );
   }
   function close() {
     setHovered(false);
@@ -107,7 +119,13 @@ export function DateScrubber({
     if (!open) begin();
     setInstant(true);
     setKeyboard(true);
-    setIndex(event.key === "Home" ? 0 : event.key === "End" ? NEARBY_DATE_COUNT - 1 : Math.max(0, Math.min(NEARBY_DATE_COUNT - 1, indexRef.current + delta!)));
+    setIndex(
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? NEARBY_DATE_COUNT - 1
+          : Math.max(0, Math.min(NEARBY_DATE_COUNT - 1, indexRef.current + delta!)),
+    );
   }
 
   return (
@@ -155,23 +173,40 @@ export function DateScrubber({
         onBlur={close}
         onKeyDown={onKeyDown}
         onClick={(event) => {
-          if (!canScrub) { onOpenCalendar(); return; }
+          if (!canScrub) {
+            onOpenCalendar();
+            return;
+          }
           const picked = dates[indexRef.current];
           close();
           onPickDate(picked, event.detail > 0);
         }}
         className={cn(
           "date-scrubber-face relative z-10 h-18 w-full rounded-xl border border-hairline bg-card p-0 hover:bg-card active:not-aria-[haspopup]:translate-y-0 transition-colors",
-          selectedDay === todayKey ? "text-brand-muted-foreground hover:text-brand-muted-foreground" : selectedDay < todayKey ? "text-muted-foreground hover:text-muted-foreground" : "text-foreground hover:text-foreground"
+          selectedDay === todayKey
+            ? "text-brand-muted-foreground hover:text-brand-muted-foreground"
+            : selectedDay < todayKey
+              ? "text-muted-foreground hover:text-muted-foreground"
+              : "text-foreground hover:text-foreground",
         )}
       >
         {children}
       </Button>
-      <span id={helpId} className="sr-only">{pick(advHome.previewDateHelp, locale)}</span>
-      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{keyboard && open ? previewLabel : ""}</span>
+      <span id={helpId} className="sr-only">
+        {pick(advHome.previewDateHelp, locale)}
+      </span>
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {keyboard && open ? previewLabel : ""}
+      </span>
 
-      <div aria-hidden="true" className="date-scrubber-strip pointer-events-none absolute inset-x-0 top-full h-12 overflow-y-clip">
-        <div className="mt-1 grid h-4" style={{ gridTemplateColumns: `repeat(${NEARBY_DATE_COUNT}, minmax(0, 1fr))` }}>
+      <div
+        aria-hidden="true"
+        className="date-scrubber-strip pointer-events-none absolute inset-x-0 top-full h-12 overflow-y-clip"
+      >
+        <div
+          className="mt-1 grid h-4"
+          style={{ gridTemplateColumns: `repeat(${NEARBY_DATE_COUNT}, minmax(0, 1fr))` }}
+        >
           {dates.map((tickDate, index) => {
             const order = NEARBY_DATE_RADIUS - Math.abs(index - NEARBY_DATE_RADIUS); // outside pair → inside pair → centre
             const length = barLengths[Math.min(NEARBY_DATE_RADIUS, Math.abs(index - preview))];
@@ -180,10 +215,19 @@ export function DateScrubber({
               <span
                 key={index}
                 className="date-scrubber-bar flex h-full justify-center"
-                style={{ transitionDelay: `${(open ? order : NEARBY_DATE_RADIUS - order) * CONTROL_REVEAL.stagger}ms` }}
+                style={{
+                  transitionDelay: `${(open ? order : NEARBY_DATE_RADIUS - order) * CONTROL_REVEAL.stagger}ms`,
+                }}
               >
                 <span
-                  className={cn("date-scrubber-tick block h-full w-0.5 origin-top rounded-full", key === todayKey ? "bg-primary" : key < todayKey ? "bg-muted-foreground" : "bg-foreground")}
+                  className={cn(
+                    "date-scrubber-tick block h-full w-0.5 origin-top rounded-full",
+                    key === todayKey
+                      ? "bg-primary"
+                      : key < todayKey
+                        ? "bg-muted-foreground"
+                        : "bg-foreground",
+                  )}
                   style={{ transform: `scaleY(${length / barLengths[0]})` }}
                 />
               </span>
@@ -191,14 +235,27 @@ export function DateScrubber({
           })}
         </div>
         <div className="date-scrubber-bubble absolute inset-x-0 top-6">
-          <div className="date-scrubber-cursor relative w-full" style={{ transform: `translateX(${((preview + 0.5) / NEARBY_DATE_COUNT - 0.5) * 100}%)` }}>
+          <div
+            className="date-scrubber-cursor relative w-full"
+            style={{
+              transform: `translateX(${((preview + 0.5) / NEARBY_DATE_COUNT - 0.5) * 100}%)`,
+            }}
+          >
             <Badge
               variant="secondary"
               className={cn(
                 "date-scrubber-badge absolute left-1/2 min-w-6 max-w-20 overflow-visible rounded-lg px-1.5 text-body-compact font-semibold tabular-nums transition-colors",
-                previewTone === "today" ? "bg-primary text-primary-foreground" : previewTone === "past" ? "bg-accent-strong text-foreground" : "bg-foreground text-background"
+                previewTone === "today"
+                  ? "bg-primary text-primary-foreground"
+                  : previewTone === "past"
+                    ? "bg-accent-strong text-foreground"
+                    : "bg-foreground text-background",
               )}
-              style={{ "--scrub-anchor": ((preview + 0.5) / NEARBY_DATE_COUNT) * 100 } as React.CSSProperties}
+              style={
+                {
+                  "--scrub-anchor": ((preview + 0.5) / NEARBY_DATE_COUNT) * 100,
+                } as React.CSSProperties
+              }
               title={previewLabel}
             >
               <span className="date-scrubber-pointer absolute -top-1 size-1.5 -translate-x-1/2 rounded-full bg-inherit" />

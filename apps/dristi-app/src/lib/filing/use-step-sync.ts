@@ -51,7 +51,7 @@ export async function runStepSave(caseId: string, step: string, save: StepSave) 
  */
 export function useStepSync(
   step: string,
-  save: (latest: () => FilingDraft, caseId: string) => Promise<void>
+  save: (latest: () => FilingDraft, caseId: string) => Promise<void>,
 ) {
   const { latest } = useFiling();
 

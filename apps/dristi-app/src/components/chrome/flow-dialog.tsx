@@ -5,11 +5,7 @@ import * as React from "react";
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { onOwnLayer } from "@/components/chrome/discard-guard";
 import { OVERLAY_RISE } from "@/components/chrome/motion";
-import {
-  useBackCloses,
-  useBottomSheet,
-  useFlowWindow,
-} from "@/components/chrome/flow-window";
+import { useBackCloses, useBottomSheet, useFlowWindow } from "@/components/chrome/flow-window";
 import { DialogClose } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
@@ -84,13 +80,13 @@ export function FlowDialogContent({
         bottomSheet.className,
         /* The sheet's own scroll would carry the header away; the dialog lays
            itself out and scrolls its stage. */
-        flow.phone && "max-h-[92dvh] overflow-hidden"
+        flow.phone && "max-h-[92dvh] overflow-hidden",
       )
     : cn(
         flow.className,
         flow.phone && !selfLaidOut && "flex flex-col",
         flow.phone &&
-          "[&>[data-slot=dialog-footer]]:mt-auto [&>[data-slot=dialog-footer]]:rounded-none [&>[data-slot=dialog-footer]]:pb-[calc(--spacing(6)+env(safe-area-inset-bottom))]"
+          "[&>[data-slot=dialog-footer]]:mt-auto [&>[data-slot=dialog-footer]]:rounded-none [&>[data-slot=dialog-footer]]:pb-[calc(--spacing(6)+env(safe-area-inset-bottom))]",
       );
   return (
     <ChromeDialogContent

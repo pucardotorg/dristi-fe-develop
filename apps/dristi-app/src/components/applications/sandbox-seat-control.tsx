@@ -35,9 +35,7 @@ export function SandboxSeatControl() {
           <NativeSelect
             id={roleId}
             value={seat.role}
-            onChange={(event) =>
-              setSandboxSeat({ ...seat, role: event.target.value as FilerRole })
-            }
+            onChange={(event) => setSandboxSeat({ ...seat, role: event.target.value as FilerRole })}
           >
             {FILER_ROLES.map((role) => (
               <NativeSelectOption key={role.id} value={role.id}>
@@ -57,8 +55,12 @@ export function SandboxSeatControl() {
               setSandboxSeat({ ...seat, opposing: event.target.value === "opposing" })
             }
           >
-            <NativeSelectOption value="own">{t("sandboxSeatControl_yourSideOfTheCase")}</NativeSelectOption>
-            <NativeSelectOption value="opposing">{t("sandboxSeatControl_theOtherSide")}</NativeSelectOption>
+            <NativeSelectOption value="own">
+              {t("sandboxSeatControl_yourSideOfTheCase")}
+            </NativeSelectOption>
+            <NativeSelectOption value="opposing">
+              {t("sandboxSeatControl_theOtherSide")}
+            </NativeSelectOption>
           </NativeSelect>
         </Field>
       </div>

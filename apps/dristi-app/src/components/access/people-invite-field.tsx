@@ -21,12 +21,7 @@ import { useCourtLocalized } from "@/components/court/court-provider";
 import { formatPhone } from "@/components/access/access-state";
 import { cn } from "@/lib/utils";
 import { pick, type Locale } from "@/lib/onboarding/content";
-import {
-  inviteFieldCopy,
-  REGISTERED_USERS,
-  roleCopy,
-  type AccessRole,
-} from "@/lib/access/content";
+import { inviteFieldCopy, REGISTERED_USERS, roleCopy, type AccessRole } from "@/lib/access/content";
 
 /**
  * Someone to invite, by either unique identifier: `phone` is spaced ("94950 33417"),
@@ -76,8 +71,7 @@ function useScrollOutsideLock() {
     });
   };
   return {
-    onWheel: (event: React.WheelEvent<HTMLElement>) =>
-      nudge(event.currentTarget, event.deltaY),
+    onWheel: (event: React.WheelEvent<HTMLElement>) => nudge(event.currentTarget, event.deltaY),
     onTouchStart: (event: React.TouchEvent<HTMLElement>) => {
       lastY.current = event.touches[0]?.clientY ?? 0;
     },
@@ -98,9 +92,7 @@ const BAR_ID = /^[a-z]{1,3}\/\d{1,6}\/\d{4}$/i;
 
 /** One identity per person, whichever identifier they were added by. */
 function keyOf(person: InvitePerson): string {
-  return person.phone
-    ? digitsOf(person.phone)
-    : (person.barId ?? "").toUpperCase();
+  return person.phone ? digitsOf(person.phone) : (person.barId ?? "").toUpperCase();
 }
 
 /** As the field shows it: the name alone, since the role is on the line under
@@ -111,9 +103,7 @@ function shownLabel(person: InvitePerson): string {
 
 /** What a chip or option reads as: the name you know them by, otherwise the identifier typed. */
 export function inviteLabel(person: InvitePerson): string {
-  return (
-    person.name ?? (person.phone ? `+91 ${person.phone}` : (person.barId ?? ""))
-  );
+  return person.name ?? (person.phone ? `+91 ${person.phone}` : (person.barId ?? ""));
 }
 
 /**
@@ -200,16 +190,14 @@ export function PeopleInviteField({
     (digits.length === 10 && digitsOf(person.phone ?? "") === digits);
   const matches = known.filter((person) => {
     if (chosen.has(keyOf(person))) return false;
-    if (!text)
-      return registeredOnly ? !officeTaken && Boolean(person.inOffice) : true;
+    if (!text) return registeredOnly ? !officeTaken && Boolean(person.inOffice) : true;
     if (looksLikeNumber) {
       if (!digits.length) return false;
       return registeredOnly && !person.inOffice
         ? digitsOf(person.phone ?? "") === digits
         : digitsOf(person.phone ?? "").includes(digits);
     }
-    if (looksLikeBarId)
-      return person.barId?.toLowerCase().includes(text) ?? false;
+    if (looksLikeBarId) return person.barId?.toLowerCase().includes(text) ?? false;
     return (
       (person.name?.toLowerCase().includes(text) ?? false) ||
       (person.barId?.toLowerCase().includes(text) ?? false)
@@ -235,10 +223,7 @@ export function PeopleInviteField({
     )
       ? typed
       : null;
-  const options: InvitePerson[] = [
-    ...(typedNew ? [typedNew] : []),
-    ...matches.slice(0, MAX_SHOWN),
-  ];
+  const options: InvitePerson[] = [...(typedNew ? [typedNew] : []), ...matches.slice(0, MAX_SHOWN)];
 
   return (
     <Combobox
@@ -253,9 +238,7 @@ export function PeopleInviteField({
       inputValue={query}
       onInputValueChange={setQuery}
       itemToStringLabel={inviteLabel}
-      isItemEqualToValue={(a: InvitePerson, b: InvitePerson) =>
-        keyOf(a) === keyOf(b)
-      }
+      isItemEqualToValue={(a: InvitePerson, b: InvitePerson) => keyOf(a) === keyOf(b)}
       autoHighlight
       disabled={disabled}
     >
@@ -274,9 +257,7 @@ export function PeopleInviteField({
                 aria-invalid={invalid || undefined}
                 aria-describedby={describedBy}
                 autoComplete="off"
-                placeholder={
-                  people.length ? undefined : pick(copy.placeholder, locale)
-                }
+                placeholder={people.length ? undefined : pick(copy.placeholder, locale)}
               />
             </>
           )}
@@ -286,10 +267,7 @@ export function PeopleInviteField({
           only repeat the placeholder (owner, Oct 26). */}
       <ComboboxContent
         anchor={anchor}
-        className={cn(
-          "pointer-events-auto",
-          !text && options.length === 0 && "hidden",
-        )}
+        className={cn("pointer-events-auto", !text && options.length === 0 && "hidden")}
       >
         <ComboboxEmpty>
           {pick(

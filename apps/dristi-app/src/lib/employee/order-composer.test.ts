@@ -44,14 +44,9 @@ describe("the catalogue", () => {
 
   it("gives every bracketed token in a template a field to fill it", () => {
     for (const template of ORDER_TEMPLATES) {
-      assert.equal(
-        openSlots(template.botd).length,
-        template.slots.length,
-        template.id,
-      );
+      assert.equal(openSlots(template.botd).length, template.slots.length, template.id);
       const keys = new Set(template.fields.map((field) => field.key));
-      for (const slot of template.slots)
-        assert.ok(keys.has(slot), `${template.id}: ${slot}`);
+      for (const slot of template.slots) assert.ok(keys.has(slot), `${template.id}: ${slot}`);
     }
   });
 
@@ -110,10 +105,7 @@ describe("the catalogue", () => {
   it("sets the next date in a hearing's own region, not with scheduling", () => {
     const scheduling = orderTemplate("scheduling-of-hearing");
     assert.ok(unavailableReason(scheduling, { hearingOngoing: true }));
-    assert.equal(
-      unavailableReason(scheduling, { hearingOngoing: false }),
-      null,
-    );
+    assert.equal(unavailableReason(scheduling, { hearingOngoing: false }), null);
   });
 });
 
@@ -134,10 +126,7 @@ describe("combination restrictions", () => {
   });
 
   it("allows two summonses, which are two order items", () => {
-    assert.equal(
-      combinationConflict("issue-of-summons", [{ type: "issue-of-summons" }]),
-      null,
-    );
+    assert.equal(combinationConflict("issue-of-summons", [{ type: "issue-of-summons" }]), null);
   });
 
   it("allows one decision per application", () => {
@@ -339,10 +328,7 @@ describe("master data", () => {
       for (const field of template.fields) {
         if (field.master) {
           assert.equal(field.kind, "master", `${template.id}: ${field.key}`);
-          assert.ok(
-            (field.options ?? []).length > 0,
-            `${template.id}: ${field.key}`,
-          );
+          assert.ok((field.options ?? []).length > 0, `${template.id}: ${field.key}`);
         }
       }
     }
@@ -352,19 +338,14 @@ describe("master data", () => {
       "DCA",
       beforeJoining,
     );
-    assert.ok(
-      notice.text.startsWith("Issue DCA notice to the accused Anand Traders."),
-    );
+    assert.ok(notice.text.startsWith("Issue DCA notice to the accused Anand Traders."));
   });
 });
 
 describe("templates", () => {
   it("write every template without a stray token", () => {
     for (const template of ORDER_TEMPLATES) {
-      const text = writeItemText(
-        createItemBlock(template.id, beforeJoining),
-        beforeJoining,
-      );
+      const text = writeItemText(createItemBlock(template.id, beforeJoining), beforeJoining);
       assert.ok(!text.includes("[Party Type]"), template.id);
     }
   });

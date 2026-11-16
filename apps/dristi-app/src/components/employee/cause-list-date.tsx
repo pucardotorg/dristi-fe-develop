@@ -16,12 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Kbd } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { stepSittingDay } from "@/lib/employee/cause-list-days";
 import { formatCourtDay, isoDay, isSittingDay, parseIsoDay } from "@/lib/employee/hearings";
 import { cn } from "@/lib/utils";
@@ -74,7 +69,7 @@ function JumpToToday({
   if (!shown) {
     if (direction === "forward") return null;
     return <span aria-hidden className={cn("invisible size-6 shrink-0", className)} />;
-  };
+  }
   const Icon = direction === "back" ? ChevronsLeftIcon : ChevronsRightIcon;
   return (
     <TooltipProvider delayDuration={300}>
@@ -85,7 +80,9 @@ function JumpToToday({
             type="button"
             variant="ghost"
             size="icon"
-            aria-label={t("causeListDate_backToTodayFormatCourtDay", { formatCourtDay: formatCourtDay(today) })}
+            aria-label={t("causeListDate_backToTodayFormatCourtDay", {
+              formatCourtDay: formatCourtDay(today),
+            })}
             aria-keyshortcuts="T"
             className={cn(
               "relative size-6 shrink-0 text-brand-muted-foreground after:absolute after:-inset-2 hover:text-brand-muted-foreground",
@@ -181,7 +178,11 @@ export function CauseListDate({
           onRevealChange={onScrubReveal}
         >
           {/* ds-typography-allow: owner asked for the advocate home's date (2026-10-22), larger than the DS display role as the header's lead. */}
-          <CourtRollingNumber value={String(date.getDate()).padStart(2, "0")} up={rollUp} className="text-[3.5rem] leading-none font-semibold tracking-tight" />
+          <CourtRollingNumber
+            value={String(date.getDate()).padStart(2, "0")}
+            up={rollUp}
+            className="text-[3.5rem] leading-none font-semibold tracking-tight"
+          />
           <span className="sr-only">{formatCourtDay(day)}</span>
         </CourtDateScrubber>
       </div>

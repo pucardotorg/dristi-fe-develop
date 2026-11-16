@@ -4,17 +4,8 @@ import * as React from "react";
 
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { onOwnLayer } from "@/components/chrome/discard-guard";
-import {
-  OVERLAY_RISE,
-  STAGE_SLIDE,
-  type StageMotion,
-} from "@/components/chrome/motion";
-import {
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { OVERLAY_RISE, STAGE_SLIDE, type StageMotion } from "@/components/chrome/motion";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 /**
@@ -239,32 +230,32 @@ export function StagedOverlay({
           stops looking like the overlay. `pr-16` keeps the title clear of the ghost close
           button the DS places top-right. */}
       {outcome ? null : (
-      <DialogHeader
-        key={headerKey}
-        className={cn(
-          "shrink-0 gap-2 border-b border-hairline p-6 pr-16",
-          headerKey === undefined
-            ? undefined
-            : "animate-in fade-in-0 duration-500 motion-reduce:animate-none",
-        )}
-      >
-        {titleAside ? (
-          <div className="flex flex-wrap items-center gap-2">
+        <DialogHeader
+          key={headerKey}
+          className={cn(
+            "shrink-0 gap-2 border-b border-hairline p-6 pr-16",
+            headerKey === undefined
+              ? undefined
+              : "animate-in fade-in-0 duration-500 motion-reduce:animate-none",
+          )}
+        >
+          {titleAside ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <StageTitle ref={setTitle}>{title}</StageTitle>
+              {titleAside}
+            </div>
+          ) : (
             <StageTitle ref={setTitle}>{title}</StageTitle>
-            {titleAside}
-          </div>
-        ) : (
-          <StageTitle ref={setTitle}>{title}</StageTitle>
-        )}
-        {description === undefined || description === null ? null : typeof
-            description === "string" ? (
-          <DialogDescription className="text-body-compact text-muted-foreground">
-            {description}
-          </DialogDescription>
-        ) : (
-          description
-        )}
-      </DialogHeader>
+          )}
+          {description === undefined || description === null ? null : typeof description ===
+            "string" ? (
+            <DialogDescription className="text-body-compact text-muted-foreground">
+              {description}
+            </DialogDescription>
+          ) : (
+            description
+          )}
+        </DialogHeader>
       )}
 
       {/* The stage — **the only thing in this window that moves.** By default a tinted
@@ -334,19 +325,12 @@ export function StagedOverlay({
  * heading that is focused by script rather than by Tab reads as an error state. The ring
  * the reader actually needs is the one on the control they tabbed to.
  */
-function StageTitle({
-  ref,
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogTitle>) {
+function StageTitle({ ref, className, ...props }: React.ComponentProps<typeof DialogTitle>) {
   return (
     <DialogTitle
       ref={ref}
       tabIndex={-1}
-      className={cn(
-        "text-title-s font-semibold tabular-nums outline-none",
-        className,
-      )}
+      className={cn("text-title-s font-semibold tabular-nums outline-none", className)}
       {...props}
     />
   );

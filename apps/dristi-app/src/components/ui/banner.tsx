@@ -1,13 +1,8 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import {
-  CircleAlertIcon,
-  CircleCheckIcon,
-  InfoIcon,
-  MegaphoneIcon,
-} from "lucide-react"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { CircleAlertIcon, CircleCheckIcon, InfoIcon, MegaphoneIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const bannerVariants = cva(
   "relative flex min-h-11 w-full items-center gap-2.5 border-s-3 px-4 py-3 text-sm",
@@ -15,20 +10,17 @@ const bannerVariants = cva(
     variants: {
       variant: {
         info: "border-info bg-info-muted text-info-muted-foreground",
-        warning:
-          "border-warning bg-warning-muted text-warning-muted-foreground",
-        success:
-          "border-success bg-success-muted text-success-muted-foreground",
-        error:
-          "border-destructive bg-destructive-muted text-destructive-muted-foreground",
+        warning: "border-warning bg-warning-muted text-warning-muted-foreground",
+        success: "border-success bg-success-muted text-success-muted-foreground",
+        error: "border-destructive bg-destructive-muted text-destructive-muted-foreground",
         neutral: "border-input bg-surface-sunken text-foreground",
       },
     },
     defaultVariants: {
       variant: "info",
     },
-  }
-)
+  },
+);
 
 const bannerIcons = {
   info: InfoIcon,
@@ -36,7 +28,7 @@ const bannerIcons = {
   success: CircleCheckIcon,
   error: CircleAlertIcon,
   neutral: MegaphoneIcon,
-} as const
+} as const;
 
 function Banner({
   className,
@@ -46,9 +38,9 @@ function Banner({
   ...props
 }: React.ComponentProps<"div"> &
   VariantProps<typeof bannerVariants> & {
-    action?: React.ReactNode
+    action?: React.ReactNode;
   }) {
-  const Icon = bannerIcons[variant ?? "info"]
+  const Icon = bannerIcons[variant ?? "info"];
 
   return (
     <div
@@ -66,7 +58,7 @@ function Banner({
         </div>
       ) : null}
     </div>
-  )
+  );
 }
 
-export { Banner, bannerVariants }
+export { Banner, bannerVariants };

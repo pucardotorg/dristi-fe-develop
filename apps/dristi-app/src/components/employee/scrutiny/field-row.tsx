@@ -2,26 +2,14 @@
 
 import * as React from "react";
 import { notify } from "@/components/feedback";
-import {
-  FileTextIcon,
-  FlagIcon,
-  HistoryIcon,
-  TriangleAlertIcon,
-} from "lucide-react";
+import { FileTextIcon, FlagIcon, HistoryIcon, TriangleAlertIcon } from "lucide-react";
 
 import { docName } from "@/lib/employee/scrutiny/field";
-import type {
-  Flag as FlagType,
-  FlatField,
-  ReturnedItem,
-} from "@/lib/employee/scrutiny/types";
+import type { Flag as FlagType, FlatField, ReturnedItem } from "@/lib/employee/scrutiny/types";
 import type { ScrutinyController } from "@/lib/employee/scrutiny/use-scrutiny-state";
 import { cn } from "@/lib/utils";
 import { FlagComposer } from "@/components/employee/scrutiny/flag-composer";
-import {
-  KeptReason,
-  ReturnedValue,
-} from "@/components/employee/scrutiny/returned-value";
+import { KeptReason, ReturnedValue } from "@/components/employee/scrutiny/returned-value";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { RESOLVE_IN_PLACE } from "@/components/chrome/motion";
 import {
@@ -37,11 +25,7 @@ import {
   DescriptionRow,
   DescriptionTerm,
 } from "@/components/ui/description-list";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
 
 /**
@@ -163,12 +147,20 @@ export function FieldRow({
                   <span className="inline-flex size-8 shrink-0 items-center justify-center text-muted-foreground">
                     <FileTextIcon className="size-4" aria-hidden="true" />
                     <span className="sr-only">
-                      {t("fieldRow_readFromDocNoNameValue", { no: String(docById[field.doc]?.no), name: docById[field.doc]?.name, value: field.srcnote ? ` — ${field.srcnote}` : "" })}
+                      {t("fieldRow_readFromDocNoNameValue", {
+                        no: String(docById[field.doc]?.no),
+                        name: docById[field.doc]?.name,
+                        value: field.srcnote ? ` — ${field.srcnote}` : "",
+                      })}
                     </span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {t("fieldRow_readFromDocNoNameValue", { no: String(docById[field.doc]?.no), name: docById[field.doc]?.name, value: field.srcnote ? ` — ${field.srcnote}` : "" })}
+                  {t("fieldRow_readFromDocNoNameValue", {
+                    no: String(docById[field.doc]?.no),
+                    name: docById[field.doc]?.name,
+                    value: field.srcnote ? ` — ${field.srcnote}` : "",
+                  })}
                 </TooltipContent>
               </Tooltip>
             ) : null}
@@ -213,12 +205,7 @@ export function FieldRow({
       {composing ? (
         <FlagComposer field={field} controller={controller} onGoToItem={onGoToItem} />
       ) : flag ? (
-        <RaisedItem
-          field={field}
-          flag={flag}
-          controller={controller}
-          onGoToItem={onGoToItem}
-        />
+        <RaisedItem field={field} flag={flag} controller={controller} onGoToItem={onGoToItem} />
       ) : null}
     </DescriptionRow>
   );
@@ -286,15 +273,7 @@ function ValueLines({ field }: { field: FlatField }) {
  * `unfound` looks the same but is a machine reading (the bundle was searched), and
  * `scannote` is poor-scan detection, so like `docread` and `ocrfail` they need AI on.
  */
-function Hints({
-  field,
-  flag,
-  aiOn,
-}: {
-  field: FlatField;
-  flag?: FlagType;
-  aiOn: boolean;
-}) {
+function Hints({ field, flag, aiOn }: { field: FlatField; flag?: FlagType; aiOn: boolean }) {
   const t = useTranslations();
   // A returned row says so in its own value and record, so no hint line repeats it.
   const { docById } = useScrutinyCase();
@@ -309,11 +288,7 @@ function Hints({
         className="inline-flex items-center gap-2 self-start rounded-md bg-surface-sunken p-1 pe-2.5 text-caption text-muted-foreground"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={thumbDoc.src}
-          alt=""
-          className="h-8 w-12 rounded-sm object-cover"
-        />
+        <img src={thumbDoc.src} alt="" className="h-8 w-12 rounded-sm object-cover" />
         <span className="tabular-nums">{t("fieldRow_docNo", { no: String(thumbDoc.no) })}</span>
       </div>,
     );
@@ -507,10 +482,9 @@ export function RaisedItem({
                * behind, and offer the second removal rather than performing it.
                */
               notify.neutral(
-                t("fieldRow_flagRemovedTheDocumentIssueOn", { docName: docName(
-                  fieldById[stranded]?.docrow ?? "",
-                  docById,
-                ) }),
+                t("fieldRow_flagRemovedTheDocumentIssueOn", {
+                  docName: docName(fieldById[stranded]?.docrow ?? "", docById),
+                }),
                 {
                   action: {
                     label: t("fieldRow_removeItToo"),
@@ -544,9 +518,12 @@ export function RaisedItem({
           <RecordRow label={t("fieldRow_reUploadRequested")}>
             {partner ? (
               <RecordLink onClick={() => onGoToItem(partner.id)}>
-                {t("fieldRow_yesDocNameValue", { docName: docName(partner.docrow ?? "", docById), value: controller.flags[partner.id]?.reason
-                  ? ` · ${controller.flags[partner.id]?.reason}`
-                  : "" })}
+                {t("fieldRow_yesDocNameValue", {
+                  docName: docName(partner.docrow ?? "", docById),
+                  value: controller.flags[partner.id]?.reason
+                    ? ` · ${controller.flags[partner.id]?.reason}`
+                    : "",
+                })}
               </RecordLink>
             ) : (
               <span className="text-muted-foreground">{t("fieldRow_no")}</span>
@@ -556,9 +533,7 @@ export function RaisedItem({
 
         {field.docrow && partner ? (
           <RecordRow label={t("fieldRow_raisedWith")}>
-            <RecordLink onClick={() => onGoToItem(partner.id)}>
-              {partner.label}
-            </RecordLink>
+            <RecordLink onClick={() => onGoToItem(partner.id)}>{partner.label}</RecordLink>
           </RecordRow>
         ) : null}
       </RecordList>

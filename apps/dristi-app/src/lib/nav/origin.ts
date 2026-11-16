@@ -78,7 +78,9 @@ export function withOrigin(href: string, from: string | null | undefined): strin
 }
 
 /** The crumb a recorded origin becomes: the area's name, pointing at the exact view. */
-export function originCrumb(from: string | null | undefined): { label: string; href: string } | null {
+export function originCrumb(
+  from: string | null | undefined,
+): { label: string; href: string } | null {
   const origin = safeOrigin(from);
   if (!origin) return null;
   return { label: areaOf(origin).label, href: origin };

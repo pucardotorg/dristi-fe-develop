@@ -52,12 +52,10 @@ function parse(raw: string): StoredColumns {
     }
     return {
       visible: canonicalToggleable(
-        record.visible.filter((entry): entry is string => typeof entry === "string")
+        record.visible.filter((entry): entry is string => typeof entry === "string"),
       ),
       order: migrateStoredColumnOrder(
-        canonicalOrder(
-          record.order.filter((entry): entry is string => typeof entry === "string")
-        )
+        canonicalOrder(record.order.filter((entry): entry is string => typeof entry === "string")),
       ),
     };
   } catch {
@@ -108,32 +106,22 @@ export function useCasesTableColumns(): {
   reorder: (
     from: TableColumnId,
     to: TableColumnId,
-    options?: { hideStage?: boolean; side?: DropSide }
+    options?: { hideStage?: boolean; side?: DropSide },
   ) => void;
-  shift: (
-    id: TableColumnId,
-    delta: -1 | 1,
-    options?: { hideStage?: boolean }
-  ) => void;
+  shift: (id: TableColumnId, delta: -1 | 1, options?: { hideStage?: boolean }) => void;
   /** Every column on, order untouched. */
   showAll: () => void;
   reset: () => void;
   isDefault: boolean;
   isAllVisible: boolean;
 } {
-  const snapshot = React.useSyncExternalStore(
-    subscribe,
-    read,
-    () => DEFAULT_SNAPSHOT
-  );
+  const snapshot = React.useSyncExternalStore(subscribe, read, () => DEFAULT_SNAPSHOT);
   const stored = React.useMemo(() => parse(snapshot), [snapshot]);
 
   const isVisible = React.useCallback(
     (id: TableColumnId) =>
-      id === "caseNumber"
-        ? true
-        : stored.visible.includes(id as ToggleableTableColumnId),
-    [stored.visible]
+      id === "caseNumber" ? true : stored.visible.includes(id as ToggleableTableColumnId),
+    [stored.visible],
   );
 
   const toggle = React.useCallback((id: ToggleableTableColumnId) => {
@@ -148,34 +136,21 @@ export function useCasesTableColumns(): {
     (
       from: TableColumnId,
       to: TableColumnId,
-      options?: { hideStage?: boolean; side?: DropSide }
+      options?: { hideStage?: boolean; side?: DropSide },
     ) => {
       const now = current();
       const visible = (id: TableColumnId) =>
-        id === "caseNumber"
-          ? true
-          : now.visible.includes(id as ToggleableTableColumnId);
+        id === "caseNumber" ? true : now.visible.includes(id as ToggleableTableColumnId);
       write({
         ...now,
-        order: moveVisibleColumn(
-          now.order,
-          from,
-          to,
-          visible,
-          options?.hideStage,
-          options?.side
-        ),
+        order: moveVisibleColumn(now.order, from, to, visible, options?.hideStage, options?.side),
       });
     },
-    []
+    [],
   );
 
   const shift = React.useCallback(
-    (
-      id: TableColumnId,
-      delta: -1 | 1,
-      options?: { hideStage?: boolean }
-    ) => {
+    (id: TableColumnId, delta: -1 | 1, options?: { hideStage?: boolean }) => {
       const now = current();
       const visible = (columnId: TableColumnId) =>
         columnId === "caseNumber"
@@ -183,16 +158,10 @@ export function useCasesTableColumns(): {
           : now.visible.includes(columnId as ToggleableTableColumnId);
       write({
         ...now,
-        order: shiftVisibleColumn(
-          now.order,
-          id,
-          delta,
-          visible,
-          options?.hideStage
-        ),
+        order: shiftVisibleColumn(now.order, id, delta, visible, options?.hideStage),
       });
     },
-    []
+    [],
   );
 
   const showAll = React.useCallback(() => {

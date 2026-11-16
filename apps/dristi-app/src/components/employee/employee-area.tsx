@@ -56,10 +56,7 @@ export function EmployeeArea({ children }: { children: React.ReactNode }) {
     open: area === "rail",
   });
   const navOpen = nav.area === area ? nav.open : area === "rail";
-  const setNavOpen = React.useCallback(
-    (open: boolean) => setNav({ area, open }),
-    [area],
-  );
+  const setNavOpen = React.useCallback((open: boolean) => setNav({ area, open }), [area]);
 
   return (
     /* The search is the area's, not the rail's: the rail is where it is *opened* from,
@@ -67,33 +64,33 @@ export function EmployeeArea({ children }: { children: React.ReactNode }) {
        Wrapping here is also what lets a screen offer its own way in later without the
        rail having to hand the opener down. */
     <CourtSearchProvider>
-    {/* The rail folds to a 4rem strip. The prop is the shell's rather than the rail's
+      {/* The rail folds to a 4rem strip. The prop is the shell's rather than the rail's
         because the page column's overlays measure their left edge from it too, and one of
         them is portalled out of this tree — see `ChromeShell`. */}
-    <ChromeShell
-      rail={<EmployeeNav />}
-      topBar={<EmployeeTopBar />}
-      railCollapsible="icon"
-      open={navOpen}
-      onOpenChange={setNavOpen}
-    >
-      {/* **The beige canvas, once, for the whole area** (owner, 2026-09-12: *"this base
+      <ChromeShell
+        rail={<EmployeeNav />}
+        topBar={<EmployeeTopBar />}
+        railCollapsible="icon"
+        open={navOpen}
+        onOpenChange={setNavOpen}
+      >
+        {/* **The beige canvas, once, for the whole area** (owner, 2026-09-12: *"this base
           change that we added for the surface, can you add it to all other pages also"*).
           It was per-screen while it was an experiment; it is the default now (`ui-craft`
           §1.0), so it belongs to the area's own column rather than to each screen that
           remembers to ask for it. The top bar and the rail keep their own fills, so the
           tint reads as the surface the work sits on. Dark keeps `bg-background`, because
           `muted` sits above `card` there and a tinted canvas would invert the depth. */}
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-muted dark:bg-background">
-        {children}
-      </main>
-      {/* Inside the page column, so it inherits the column's `--chrome-page-inset` and
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-muted dark:bg-background">
+          {children}
+        </main>
+        {/* Inside the page column, so it inherits the column's `--chrome-page-inset` and
           centres on the bench's workspace rather than on the window. */}
-      <FeedbackToaster />
-      {/* A triggered order decides the applications in its workflow, wherever it was
+        <FeedbackToaster />
+        {/* A triggered order decides the applications in its workflow, wherever it was
           signed or completed (owner, 2026-10-14). */}
-      <ApplicationOrderTriggers />
-    </ChromeShell>
+        <ApplicationOrderTriggers />
+      </ChromeShell>
     </CourtSearchProvider>
   );
 }

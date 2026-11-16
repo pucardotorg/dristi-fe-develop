@@ -8,12 +8,7 @@ import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DescriptionList } from "@/components/ui/description-list";
-import {
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useCourtLocalized } from "@/components/court/court-provider";
 import { useTranslations } from "next-intl";
@@ -113,9 +108,7 @@ export function ApplicationReviewOverlay({
     >
       <DialogHeader className="shrink-0 gap-2 p-6 pr-16">
         <div className="flex flex-wrap items-center gap-2">
-          <DialogTitle className="text-title-s font-semibold">
-            {title}
-          </DialogTitle>
+          <DialogTitle className="text-title-s font-semibold">{title}</DialogTitle>
           {/* The application's own state — waiting on this bench — stated once,
               here. The queue behind it is entirely pending, so a column of chips
               would say the same thing thirty times. */}
@@ -151,11 +144,7 @@ export function ApplicationReviewOverlay({
             kind: "composed",
             content: <ApplicationFacsimile document={document} />,
           }}
-          download={
-            onDownload
-              ? { onDownload, label: `Download ${document.title}` }
-              : undefined
-          }
+          download={onDownload ? { onDownload, label: `Download ${document.title}` } : undefined}
         />
       </div>
       {footer ?? (

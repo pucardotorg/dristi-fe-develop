@@ -31,16 +31,12 @@ const shortDate = (iso: string) =>
  */
 export function caseFacts(d: FilingDraft): CaseFact[] {
   const out: CaseFact[] = [];
-  const many = (label: string, i: number, n: number) =>
-    n > 1 ? `${label} ${i + 1}` : label;
+  const many = (label: string, i: number, n: number) => (n > 1 ? `${label} ${i + 1}` : label);
   d.cheques.forEach((q, i) => {
     const c = many("Cheque", i, d.cheques.length);
     out.push({
       label: c,
-      value: [
-        q.chequeNumber,
-        q.amount ? `₹${Number(q.amount).toLocaleString("en-IN")}` : "",
-      ]
+      value: [q.chequeNumber, q.amount ? `₹${Number(q.amount).toLocaleString("en-IN")}` : ""]
         .filter(Boolean)
         .join(" · "),
     });

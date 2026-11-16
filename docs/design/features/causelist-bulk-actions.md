@@ -1,4 +1,5 @@
 # Bulk actions on the cause list
+
 Updated: 2026-11-02
 Status: implemented (checked on the render; not independently reviewed)
 
@@ -16,16 +17,16 @@ act. It stays after an act to show the outcome, and goes when the selection is c
   uses it; type to narrow), plus the hearing date. Each picked value is its own removable
   chip on the row. Available with or without bulk mode. Added to `CourtFilters` as
   `multi` fields (`components/employee/court-filters.tsx`).
-- **Reader** — only when the court setting *Next hearing entered by* is **Reader**
+- **Reader** — only when the court setting _Next hearing entered by_ is **Reader**
   (Pending orders flow). **Bulk actions** opens one pop-up with three parts, applied
   together by one press:
   - **Hearing**: Leave as it is · End hearing · Pass over. Hearings the choice cannot
     take (already ended; or, for Pass over, already ended or passed over) are named in
     the pop-up; the date and purpose still apply to them.
   - **Next hearing date** (the row's load calendar, with "Not listed again") and **Next
-    hearing purpose** — each opens on *Leave as it is*.
+    hearing purpose** — each opens on _Leave as it is_.
   - The case stage is not set here or anywhere on the cause list; it is a filter only.
-  The pop-up is the pause before an outcome; there is no second confirmation.
+    The pop-up is the pause before an outcome; there is no second confirmation.
 - **Steno** — Pending orders flow, typist seat. **Add text to orders** opens one text
   box; the text is added at the end of each selected hearing's order (screen E's draft,
   `editor:<id>`), and each order then shows in Pending orders as Drafting. Orders already
@@ -35,7 +36,7 @@ act. It stays after an act to show the outcome, and goes when the selection is c
 - A seat with no bulk act gets no checkboxes, and nobody gets them on another day's
   list. On 2026-11-02 the magistrate, bench clerk and typist seats in the demo court
   all had them (the seats now take their roles per state, court-roles §3).
-- **Demo data** — Court settings → More settings → *Demo data*: **Orders in every
+- **Demo data** — Court settings → More settings → _Demo data_: **Orders in every
   state** (default) or **Empty day**. Orders in every state opens twelve of today's
   hearings as heard, with three orders in each Pending orders stage: Drafting (items 8,
   9, 12), Awaiting signature (1, 4, 6), Order data to fill (5, 7, 11), Triggered (2, 3,
@@ -69,23 +70,23 @@ act. It stays after an act to show the outcome, and goes when the selection is c
 
 ## Decisions
 
-| Date | Decision and reason | Source | Status |
-|---|---|---|---|
-| 2026-11-02 | No Bulk button: the checkboxes are on by default for every seat that has a bulk act, and the bar shows only while something is ticked. Switching a mode on was an extra press that bought nothing; no reason for the mode was ever recorded. | Owner | Implemented |
-| 2026-10-15 | Reader gets a Bulk button when the reader enters the next hearing: checkboxes, filters by advocate, case stage and purpose, select one or all, then mark completed or passed over, or set stage, date and purpose. | Owner | Implemented, stage setting later removed; button removed 2026-11-02 |
-| 2026-10-20 | The Classic flow is removed, so the steno's Bulk button no longer depends on the order flow: the typist seat always has it. | Owner | Implemented |
-| 2026-10-15 | Steno can select several hearings and type one text that goes to all their orders. | Owner | Implemented |
-| 2026-10-15 | Stage was first settable in bulk; the case stage cannot be changed by the user, so it was removed. Stage is a filter only. | Owner | Implemented |
-| 2026-10-15 | The steno's text is **added** after whatever each order already says, never replaces it. | Implementation choice | Implemented — confirm |
-| 2026-10-15 | First built as inline dropdowns shown in bulk mode; replaced by the existing Filters sheet. | Owner | Superseded |
-| 2026-10-15 | Every filter is multi-select. First built as tick-box groups (the Cases sheet's `CheckGroup`); replaced by multi-select dropdowns. | Owner | Implemented |
-| 2026-10-15 | First built as a menu of three separate acts; replaced by one pop-up so ending the hearing and setting date and purpose happen together. | Owner | Implemented |
-| 2026-10-15 | Advocate and Stage filters stay in the sheet outside bulk mode too. | Implementation choice | Implemented — confirm |
-| 2026-10-15 | No separate confirmation after the pop-up. | Implementation choice | Implemented |
-| 2026-10-15 | Pending orders: Signature and Order data in one column; order text column on Order data to fill; steno bulk-adds order items from a multi-select modal. | Owner | Implemented |
-| 2026-10-15 | Court settings as a pop-up: Working as and Court prominent, the rest small and folded. | Owner | Implemented |
-| 2026-10-15 | Sample data: three orders awaiting signature and three with order data to fill. Their hearings open as completed. | Owner (hearings completed: implementation choice) | Superseded by the setting below |
-| 2026-10-15 | Demo data setting: orders in every state, or a fully empty day. Three orders per stage, Drafting and Triggered added. Switching does not touch applications. | Owner (counts and applications: implementation choice) | Implemented |
+| Date       | Decision and reason                                                                                                                                                                                                                          | Source                                                 | Status                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------- |
+| 2026-11-02 | No Bulk button: the checkboxes are on by default for every seat that has a bulk act, and the bar shows only while something is ticked. Switching a mode on was an extra press that bought nothing; no reason for the mode was ever recorded. | Owner                                                  | Implemented                                                         |
+| 2026-10-15 | Reader gets a Bulk button when the reader enters the next hearing: checkboxes, filters by advocate, case stage and purpose, select one or all, then mark completed or passed over, or set stage, date and purpose.                           | Owner                                                  | Implemented, stage setting later removed; button removed 2026-11-02 |
+| 2026-10-20 | The Classic flow is removed, so the steno's Bulk button no longer depends on the order flow: the typist seat always has it.                                                                                                                  | Owner                                                  | Implemented                                                         |
+| 2026-10-15 | Steno can select several hearings and type one text that goes to all their orders.                                                                                                                                                           | Owner                                                  | Implemented                                                         |
+| 2026-10-15 | Stage was first settable in bulk; the case stage cannot be changed by the user, so it was removed. Stage is a filter only.                                                                                                                   | Owner                                                  | Implemented                                                         |
+| 2026-10-15 | The steno's text is **added** after whatever each order already says, never replaces it.                                                                                                                                                     | Implementation choice                                  | Implemented — confirm                                               |
+| 2026-10-15 | First built as inline dropdowns shown in bulk mode; replaced by the existing Filters sheet.                                                                                                                                                  | Owner                                                  | Superseded                                                          |
+| 2026-10-15 | Every filter is multi-select. First built as tick-box groups (the Cases sheet's `CheckGroup`); replaced by multi-select dropdowns.                                                                                                           | Owner                                                  | Implemented                                                         |
+| 2026-10-15 | First built as a menu of three separate acts; replaced by one pop-up so ending the hearing and setting date and purpose happen together.                                                                                                     | Owner                                                  | Implemented                                                         |
+| 2026-10-15 | Advocate and Stage filters stay in the sheet outside bulk mode too.                                                                                                                                                                          | Implementation choice                                  | Implemented — confirm                                               |
+| 2026-10-15 | No separate confirmation after the pop-up.                                                                                                                                                                                                   | Implementation choice                                  | Implemented                                                         |
+| 2026-10-15 | Pending orders: Signature and Order data in one column; order text column on Order data to fill; steno bulk-adds order items from a multi-select modal.                                                                                      | Owner                                                  | Implemented                                                         |
+| 2026-10-15 | Court settings as a pop-up: Working as and Court prominent, the rest small and folded.                                                                                                                                                       | Owner                                                  | Implemented                                                         |
+| 2026-10-15 | Sample data: three orders awaiting signature and three with order data to fill. Their hearings open as completed.                                                                                                                            | Owner (hearings completed: implementation choice)      | Superseded by the setting below                                     |
+| 2026-10-15 | Demo data setting: orders in every state, or a fully empty day. Three orders per stage, Drafting and Triggered added. Switching does not touch applications.                                                                                 | Owner (counts and applications: implementation choice) | Implemented                                                         |
 
 ## Verification and open work
 

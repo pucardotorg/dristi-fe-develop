@@ -95,7 +95,7 @@ export function BatchFilingDialog({
       if (kind === "sign") {
         const { complainants, advocates } = signatories(draft, profile);
         const yours = [...complainants, ...advocates].filter(
-          (s) => s.you && s.status === "pending"
+          (s) => s.you && s.status === "pending",
         );
         if (!yours.length) continue;
         for (const s of yours) draft.sign.signed[s.id] = { at: now, with: "aadhaar" };
@@ -131,11 +131,9 @@ export function BatchFilingDialog({
   const guard = useDiscardGuard(step === "confirm" && !running && otp.length > 0, close);
 
   return (
-    <Dialog
-      open={open && !!kind && n > 0}
-      onOpenChange={(next) => (next ? undefined : close())}
-    >
-      <ChromeDialogContent mobileSheet
+    <Dialog open={open && !!kind && n > 0} onOpenChange={(next) => (next ? undefined : close())}>
+      <ChromeDialogContent
+        mobileSheet
         className={cn("sm:max-w-md", step === "success" && "gap-0 overflow-hidden p-0")}
         showCloseButton={step === "confirm" && !running}
         onEscapeKeyDown={(e) => {
@@ -159,7 +157,10 @@ export function BatchFilingDialog({
                     : t("batchFilingDialog_signNDocuments", { n: String(n) })
                   : one
                     ? t("batchFilingDialog_payMoney", { money: money(total) })
-                    : t("batchFilingDialog_payMoneyForNFilings", { money: money(total), n: String(n) })}
+                    : t("batchFilingDialog_payMoneyForNFilings", {
+                        money: money(total),
+                        n: String(n),
+                      })}
               </DialogTitle>
               <DialogDescription>
                 {kind === "sign"
@@ -211,12 +212,16 @@ export function BatchFilingDialog({
                 {running ? (
                   <>
                     <Spinner data-icon="inline-start" aria-hidden />
-                    {kind === "sign" ? t("batchFilingDialog_signing") : t("batchFilingDialog_paying")}
+                    {kind === "sign"
+                      ? t("batchFilingDialog_signing")
+                      : t("batchFilingDialog_paying")}
                   </>
                 ) : kind === "sign" ? (
                   <>
                     <PenToolIcon data-icon="inline-start" aria-hidden />
-                    {one ? t("batchFilingDialog_sign") : t("batchFilingDialog_signNDocuments2", { n: String(n) })}
+                    {one
+                      ? t("batchFilingDialog_sign")
+                      : t("batchFilingDialog_signNDocuments2", { n: String(n) })}
                   </>
                 ) : (
                   <>
@@ -254,7 +259,9 @@ export function BatchFilingDialog({
                       ? t("batchFilingDialog_yourOathIsStillToBe")
                       : sworeLater === 1
                         ? t("batchFilingDialog_yourOathIsStillToBeTaken")
-                        : t("batchFilingDialog_yourOathIsStillToBeTakenOn", { sworeLater: String(sworeLater) })
+                        : t("batchFilingDialog_yourOathIsStillToBeTakenOn", {
+                            sworeLater: String(sworeLater),
+                          })
                     : t("batchFilingDialog_oneOtpCoveredTheSetThe")
                   : undefined
               }

@@ -4,10 +4,7 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FolderSearchIcon } from "lucide-react";
 
-import {
-  CourtCaseItemList,
-  CourtCasesTable,
-} from "@/components/employee/court-cases-table";
+import { CourtCaseItemList, CourtCasesTable } from "@/components/employee/court-cases-table";
 import { CourtFilters, CourtSortSelect } from "@/components/employee/court-filters";
 import { ListFooter } from "@/components/employee/list-footer";
 import { QueueAnnouncer } from "@/components/employee/queue-announcer";
@@ -129,9 +126,7 @@ export function CourtCasesScreen() {
   const start = (currentPage - 1) * pageSize;
   const pageRows = rows.slice(start, start + pageSize);
 
-  const active = filters.priority
-    ? courtPriorityById(filters.priority)
-    : undefined;
+  const active = filters.priority ? courtPriorityById(filters.priority) : undefined;
   const isFiltered = hasCourtCaseFilters(filters);
 
   /**
@@ -152,15 +147,18 @@ export function CourtCasesScreen() {
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
-        <h1 className="text-title text-balance font-semibold">
-          {t("courtCasesScreen_allCases")}
-        </h1>
+        <h1 className="text-title text-balance font-semibold">{t("courtCasesScreen_allCases")}</h1>
         {/* The count line says what is in view and what the court holds, in that order,
             because when a filter is on the first number is the one being read. */}
         <p className="text-body text-muted-foreground tabular-nums">
           {isFiltered
-            ? t("courtCasesScreen_lengthOfCourtCaseCountCases", { length: String(rows.length), COURT_CASE_COUNT: String(COURT_CASE_COUNT) })
-            : t("courtCasesScreen_courtCaseCountCasesOnThis", { COURT_CASE_COUNT: String(COURT_CASE_COUNT) })}
+            ? t("courtCasesScreen_lengthOfCourtCaseCountCases", {
+                length: String(rows.length),
+                COURT_CASE_COUNT: String(COURT_CASE_COUNT),
+              })
+            : t("courtCasesScreen_courtCaseCountCasesOnThis", {
+                COURT_CASE_COUNT: String(COURT_CASE_COUNT),
+              })}
         </p>
       </header>
 
@@ -232,11 +230,7 @@ export function CourtCasesScreen() {
         ) : null}
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <Empty className="px-0 py-6">
@@ -267,11 +261,7 @@ export function CourtCasesScreen() {
                 <CourtCasesTable rows={pageRows} today={today} onOpen={openCase} />
               </div>
               <div className="md:hidden">
-                <CourtCaseItemList
-                  rows={pageRows}
-                  today={today}
-                  onOpen={openCase}
-                />
+                <CourtCaseItemList rows={pageRows} today={today} onOpen={openCase} />
               </div>
             </div>
 
@@ -292,7 +282,6 @@ export function CourtCasesScreen() {
           </div>
         )}
       </section>
-
     </div>
   );
 }

@@ -21,8 +21,7 @@ export type FilingChromeValue = {
   setDraftLabel: (label: string | null) => void;
 };
 
-export const FilingChromeContext =
-  React.createContext<FilingChromeValue | null>(null);
+export const FilingChromeContext = React.createContext<FilingChromeValue | null>(null);
 
 /**
  * The filing area's own chrome state — the sections rail and the draft's breadcrumb
@@ -38,8 +37,7 @@ export function FilingChromeProvider({
   /** Read from the cookie on the server so the rail does not flip after hydration. */
   sectionsDefaultOpen?: boolean;
 }) {
-  const [sectionsOpen, setSectionsOpenState] =
-    React.useState(sectionsDefaultOpen);
+  const [sectionsOpen, setSectionsOpenState] = React.useState(sectionsDefaultOpen);
   const [sectionsSheetOpen, setSectionsSheetOpen] = React.useState(false);
   const setSectionsOpen = React.useCallback((open: boolean) => {
     setSectionsOpenState(open);
@@ -60,11 +58,7 @@ export function FilingChromeProvider({
     [sectionsOpen, setSectionsOpen, sectionsSheetOpen, draftLabel],
   );
 
-  return (
-    <FilingChromeContext.Provider value={value}>
-      {children}
-    </FilingChromeContext.Provider>
-  );
+  return <FilingChromeContext.Provider value={value}>{children}</FilingChromeContext.Provider>;
 }
 
 /**
@@ -74,8 +68,7 @@ export function FilingChromeProvider({
  */
 export function useFilingChrome(): FilingChromeValue {
   const ctx = React.useContext(FilingChromeContext);
-  if (!ctx)
-    throw new Error("useFilingChrome must be used inside <FilingsAppShell>");
+  if (!ctx) throw new Error("useFilingChrome must be used inside <FilingsAppShell>");
   return ctx;
 }
 

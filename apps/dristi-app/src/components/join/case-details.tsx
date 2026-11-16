@@ -2,11 +2,7 @@ import * as React from "react";
 import { InfoIcon, PhoneIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   DescriptionDetails,
   DescriptionList,
@@ -105,21 +101,12 @@ export function hasAccusedAdvocate(joinCase: JoinCase) {
  * show the same title the same way (Aug 31 round): wherever a join surface
  * prints the title, "1 other" answers who.
  */
-export function CaseTitleWithOthers({
-  joinCase,
-  locale,
-}: {
-  joinCase: JoinCase;
-  locale: Locale;
-}) {
+export function CaseTitleWithOthers({ joinCase, locale }: { joinCase: JoinCase; locale: Locale }) {
   const t = useTranslations();
   const otherMarker = " and 1 other";
   const otherAccused = joinCase.accused.slice(1);
-  const hasOtherAccused =
-    joinCase.title.endsWith(otherMarker) && otherAccused.length > 0;
-  const titleLead = hasOtherAccused
-    ? joinCase.title.slice(0, -otherMarker.length)
-    : joinCase.title;
+  const hasOtherAccused = joinCase.title.endsWith(otherMarker) && otherAccused.length > 0;
+  const titleLead = hasOtherAccused ? joinCase.title.slice(0, -otherMarker.length) : joinCase.title;
 
   return (
     <p className="text-body font-semibold text-pretty">
@@ -182,7 +169,9 @@ function NextHearing({ value, locale }: { value: string; locale: Locale }) {
         </span>
       ) : null}
       <div className="flex min-w-0 flex-col gap-0.5">
-        <p className="text-body-compact text-muted-foreground">{pick(caseDetails.hearing, locale)}</p>
+        <p className="text-body-compact text-muted-foreground">
+          {pick(caseDetails.hearing, locale)}
+        </p>
         {parts ? (
           <>
             <p className="text-body text-foreground tabular-nums">
@@ -255,42 +244,46 @@ export function CaseDetails({
   ];
   function valueOf(row: (typeof rows)[number]): React.ReactNode {
     return row.label === "complainantAdvocate" ? (
-                  <span className="flex items-center gap-2">
-                    <span>{row.value}</span>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={pick(caseDetails.complainantAdvocateContact, locale)}
-                        >
-                          <InfoIcon aria-hidden />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent align="end" collisionPadding={16} className="flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-3">
-                        <div className="flex flex-col gap-1">
-                          <p className="text-body-compact font-semibold">
-                            {pick(caseDetails.complainantAdvocateContact, locale)}
-                          </p>
-                          <p className="text-body-compact text-pretty text-muted-foreground">
-                            {pick(caseDetails.complainantAdvocateContactBody, locale)}
-                          </p>
-                        </div>
-                        <Button asChild variant="outline" size="sm" className="self-start">
-                          <a href={`tel:${joinCase.complainantAdvocatePhone.replace(/\s/g, "")}`}>
-                            <PhoneIcon data-icon="inline-start" aria-hidden />
-                            {joinCase.complainantAdvocatePhone}
-                          </a>
-                        </Button>
-                      </PopoverContent>
-                    </Popover>
-                  </span>
-                ) : row.idLabel ? (
-                  <Identifier value={row.value} label={row.idLabel} />
-                ) : (
-                  row.value
-                );
+      <span className="flex items-center gap-2">
+        <span>{row.value}</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={pick(caseDetails.complainantAdvocateContact, locale)}
+            >
+              <InfoIcon aria-hidden />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="end"
+            collisionPadding={16}
+            className="flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-3"
+          >
+            <div className="flex flex-col gap-1">
+              <p className="text-body-compact font-semibold">
+                {pick(caseDetails.complainantAdvocateContact, locale)}
+              </p>
+              <p className="text-body-compact text-pretty text-muted-foreground">
+                {pick(caseDetails.complainantAdvocateContactBody, locale)}
+              </p>
+            </div>
+            <Button asChild variant="outline" size="sm" className="self-start">
+              <a href={`tel:${joinCase.complainantAdvocatePhone.replace(/\s/g, "")}`}>
+                <PhoneIcon data-icon="inline-start" aria-hidden />
+                {joinCase.complainantAdvocatePhone}
+              </a>
+            </Button>
+          </PopoverContent>
+        </Popover>
+      </span>
+    ) : row.idLabel ? (
+      <Identifier value={row.value} label={row.idLabel} />
+    ) : (
+      row.value
+    );
   }
 
   /* One card for every join screen (owner, 2026-10-12: the same information was showing

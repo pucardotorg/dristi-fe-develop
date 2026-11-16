@@ -19,12 +19,7 @@ import {
 } from "@/components/ui/combobox";
 import { Badge } from "@/components/ui/badge";
 import { DocumentSlot } from "@/components/ui/document-slot";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -46,7 +41,11 @@ import { useTranslations } from "next-intl";
 export type PoaSide = "complainant" | "accused" | "";
 
 export function poaPartiesFor(joinCase: JoinCase, side: PoaSide): CaseParty[] {
-  return side === "complainant" ? joinCase.complainants : side === "accused" ? joinCase.accused : [];
+  return side === "complainant"
+    ? joinCase.complainants
+    : side === "accused"
+      ? joinCase.accused
+      : [];
 }
 
 /** A number on record, shown with only its last three digits. */
@@ -212,9 +211,7 @@ export function PoaJoinFields({
           </div>
           <div className="flex min-h-10 items-center gap-2">
             <RadioGroupItem value="accused" id="join-poa-side-accused" />
-            <Label htmlFor="join-poa-side-accused">
-              {pick(joinDialog.poaSideAccused, locale)}
-            </Label>
+            <Label htmlFor="join-poa-side-accused">{pick(joinDialog.poaSideAccused, locale)}</Label>
           </div>
         </RadioGroup>
         <FieldError>{touched && !side ? pick(joinDialog.poaSideError, locale) : null}</FieldError>
@@ -243,7 +240,9 @@ export function PoaJoinFields({
                       <ComboboxChip key={name}>{name}</ComboboxChip>
                     ))}
                     <ComboboxChipsInput
-                      placeholder={value.length ? undefined : pick(joinDialog.whichPoaPlaceholder, locale)}
+                      placeholder={
+                        value.length ? undefined : pick(joinDialog.whichPoaPlaceholder, locale)
+                      }
                     />
                   </>
                 )}
@@ -274,7 +273,6 @@ export function PoaJoinFields({
           {fill(joinDialog.poaAlreadyTaken, locale, { name: party.name })}
         </Banner>
       ))}
-
 
       {/* One well per party: its own authorization document (JOIN-32) and, if the
           party is not on the case yet, its own mobile number (JOIN-34). */}

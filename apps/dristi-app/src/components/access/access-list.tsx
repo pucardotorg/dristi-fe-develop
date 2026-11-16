@@ -31,7 +31,10 @@ import {
  */
 
 export function initials(name: string): string {
-  const parts = name.replace(/^Adv\.\s*/, "").trim().split(/\s+/);
+  const parts = name
+    .replace(/^Adv\.\s*/, "")
+    .trim()
+    .split(/\s+/);
   const first = parts[0]?.[0] ?? "";
   const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : "";
   return `${first}${last}`.toUpperCase() || "?";
@@ -114,12 +117,7 @@ export function PersonRow({
             {pick(roleCopy.vakalat, locale)}
           </span>
           {onRemoveVakalat ? (
-            <Button
-              type="button"
-              variant="destructive-ghost"
-              size="sm"
-              onClick={onRemoveVakalat}
-            >
+            <Button type="button" variant="destructive-ghost" size="sm" onClick={onRemoveVakalat}>
               {pick(listCopy.remove, locale)}
             </Button>
           ) : (
@@ -168,7 +166,8 @@ export function SelfRow({
       </Avatar>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <p className="truncate text-body-compact font-medium">
-          {SELF.name} <span className="font-normal text-muted-foreground">{pick(shareCopy.you, locale)}</span>
+          {SELF.name}{" "}
+          <span className="font-normal text-muted-foreground">{pick(shareCopy.you, locale)}</span>
         </p>
         <p className="truncate text-caption text-muted-foreground tabular-nums">{SELF.phone}</p>
       </div>
@@ -236,9 +235,7 @@ export function CaseAccessList({
           grant={grant}
           locale={locale}
           onRemove={onRemove ? () => onRemove(person.id) : undefined}
-          onRemoveVakalat={
-            onRemoveVakalat ? () => onRemoveVakalat(person) : undefined
-          }
+          onRemoveVakalat={onRemoveVakalat ? () => onRemoveVakalat(person) : undefined}
         />
       ))}
     </div>

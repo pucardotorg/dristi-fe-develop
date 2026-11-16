@@ -41,10 +41,7 @@ import {
   initialApplicationOutcome,
   type ApplicationOutcome,
 } from "@/lib/employee/application-outcome";
-import {
-  ItemDialog,
-  ItemsCard,
-} from "@/components/employee/order-items";
+import { ItemDialog, ItemsCard } from "@/components/employee/order-items";
 import { OrderSaveIndicator } from "@/components/employee/order-save-indicator";
 import { useCourt } from "@/components/court/court-provider";
 import { useOrderSigning } from "@/components/employee/use-order-signing";
@@ -69,10 +66,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { appendShortcut } from "@/lib/employee/order-shortcuts";
 import { derivedOrderTitle, orderTitle } from "@/lib/employee/order-title";
 import { unsignedCount } from "@/lib/employee/hearing-evidence";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { Separator } from "@/components/ui/separator";
 import type { ListingApplicationDecision } from "@/lib/employee/listing-applications";
 import {
@@ -96,10 +90,7 @@ import {
   type OrderTemplate,
   type OrderTemplateId,
 } from "@/lib/employee/order-templates";
-import {
-  markOrderReady,
-  returnOrderToDraft,
-} from "@/lib/employee/order-signing";
+import { markOrderReady, returnOrderToDraft } from "@/lib/employee/order-signing";
 import {
   moveOrderBackToDraft,
   noteOrderDraft,
@@ -113,11 +104,7 @@ import {
   type PendingOrderMeta,
   type PendingOrderStage,
 } from "@/lib/employee/pending-orders";
-import {
-  companionLabel,
-  orderTypeLabel,
-  orderTypeOf,
-} from "@/lib/employee/order-type";
+import { companionLabel, orderTypeLabel, orderTypeOf } from "@/lib/employee/order-type";
 import { cn } from "@/lib/utils";
 import { ConfirmMark, IrreversibleNote, notify } from "@/components/feedback";
 import { useTranslations } from "next-intl";
@@ -151,21 +138,13 @@ export function OrderEditorHeader({
       className="sticky top-14 z-20 flex flex-col gap-3 border-b border-hairline bg-card px-6 py-4 sm:flex-row sm:items-start sm:justify-between md:px-8"
     >
       <div className="flex min-w-0 flex-col gap-2">
-        <h1 className="min-w-0 text-title font-semibold text-balance">
-          {heading}
-        </h1>
+        <h1 className="min-w-0 text-title font-semibold text-balance">{heading}</h1>
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-6 gap-y-1">
           {facts.map((fact) => (
-            <p
-              key={fact.label}
-              className="flex min-w-0 items-baseline gap-2 text-body-compact"
-            >
+            <p key={fact.label} className="flex min-w-0 items-baseline gap-2 text-body-compact">
               <span className="text-muted-foreground">{fact.label}</span>
               {fact.identifier ? (
-                <Identifier
-                  value={fact.value}
-                  label={fact.label.toLowerCase()}
-                />
+                <Identifier value={fact.value} label={fact.label.toLowerCase()} />
               ) : (
                 <span className="tabular-nums">{fact.value}</span>
               )}
@@ -261,9 +240,7 @@ function PaperHead({
     <div className={cn("flex flex-col pt-8 md:pt-12", PAGE_X)}>
       <div className="flex flex-col items-center gap-1 text-center">
         <p className="text-body-compact font-semibold">{frame.courtLine}</p>
-        <p className="text-body-compact text-muted-foreground">
-          {frame.subLine}
-        </p>
+        <p className="text-body-compact text-muted-foreground">{frame.subLine}</p>
       </div>
       <Separator className="mt-6 bg-hairline" />
       {attendance ? <div className="pt-6">{attendance}</div> : null}
@@ -329,10 +306,7 @@ export function PaperRecital({
  * there was a hearing's roll. An order outside a hearing — on an application, say — sets
  * no next hearing (owner, 2026-10-22).
  */
-export function orderPaperRecitals(
-  draft: OrderDraft,
-  appearances?: Appearance[],
-): OrderPaperParts {
+export function orderPaperRecitals(draft: OrderDraft, appearances?: Appearance[]): OrderPaperParts {
   return {
     attendance: appearances ? (
       <PaperRecital
@@ -447,20 +421,13 @@ export function OrderPaperView({
     <article aria-label={t("orderEditor_orderText")} className={cn(PAPER, className)}>
       <PaperHead frame={frame} attendance={parts?.attendance} />
       {value.text.trim() ? (
-        <RichTextValueView
-          value={value}
-          className={cn("py-6 text-body [&>*+*]:mt-4", PAGE_X)}
-        />
+        <RichTextValueView value={value} className={cn("py-6 text-body [&>*+*]:mt-4", PAGE_X)} />
       ) : (
         <p className={cn("py-6 text-body text-muted-foreground", PAGE_X)}>
           {t("orderEditor_nothingHasBeenTypedInThis")}
         </p>
       )}
-      <PaperFoot
-        frame={frame}
-        status={status}
-        nextHearing={parts?.nextHearing}
-      />
+      <PaperFoot frame={frame} status={status} nextHearing={parts?.nextHearing} />
     </article>
   );
 }
@@ -497,17 +464,21 @@ export function OrderProgress({
       <li className="inline-flex items-center gap-2">
         <span className="text-muted-foreground">{t("orderEditor_signature")}</span>
         <Badge variant={signed ? "success" : "warning"}>
-          {signed ? t("orderEditor_signed") : stage === "drafting" ? t("orderEditor_notSent") : t("orderEditor_awaiting")}
+          {signed
+            ? t("orderEditor_signed")
+            : stage === "drafting"
+              ? t("orderEditor_notSent")
+              : t("orderEditor_awaiting")}
         </Badge>
       </li>
       <li className="inline-flex items-center gap-2">
         <span className="text-muted-foreground">{t("orderEditor_orderData")}</span>
-        <Badge
-          variant={
-            triggered ? "success" : workflowComplete ? "info" : "secondary"
-          }
-        >
-          {triggered ? t("orderEditor_triggered") : workflowComplete ? t("orderEditor_complete") : t("orderEditor_toFill")}
+        <Badge variant={triggered ? "success" : workflowComplete ? "info" : "secondary"}>
+          {triggered
+            ? t("orderEditor_triggered")
+            : workflowComplete
+              ? t("orderEditor_complete")
+              : t("orderEditor_toFill")}
         </Badge>
       </li>
     </ul>
@@ -577,12 +548,8 @@ export function orderPaperFields({
             update((current) => ({
               ...current,
               next: change.next ?? current.next,
-              nextPurpose:
-                change.purpose !== undefined
-                  ? change.purpose
-                  : current.nextPurpose,
-              nextDate:
-                change.date !== undefined ? change.date : current.nextDate,
+              nextPurpose: change.purpose !== undefined ? change.purpose : current.nextPurpose,
+              nextDate: change.date !== undefined ? change.date : current.nextDate,
             })),
         }}
         today={today}
@@ -639,9 +606,7 @@ export function OrderWorkflowFields({
     block: ItemBlock;
     mode: "add" | "edit";
   } | null>(null);
-  const items = draft.blocks.filter(
-    (block): block is ItemBlock => block.kind === "item",
-  );
+  const items = draft.blocks.filter((block): block is ItemBlock => block.kind === "item");
   const [outcomeOpen, setOutcomeOpen] = React.useState(false);
   const outcome = applicationItem
     ? withOnboarded(
@@ -675,9 +640,7 @@ export function OrderWorkflowFields({
       blocks:
         mode === "add"
           ? [...current.blocks, block]
-          : current.blocks.map((entry) =>
-              entry.id === block.id ? block : entry,
-            ),
+          : current.blocks.map((entry) => (entry.id === block.id ? block : entry)),
     }));
   }
 
@@ -746,10 +709,7 @@ export function OrderWorkflowFields({
           applicationItem && outcome
             ? {
                 label: `Application · ${applicationItem.label}`,
-                gaps: applicationOutcomeGaps(
-                  outcome,
-                  Boolean(applicationItem.workflow),
-                ).length,
+                gaps: applicationOutcomeGaps(outcome, Boolean(applicationItem.workflow)).length,
                 onEdit: () => setOutcomeOpen(true),
               }
             : undefined
@@ -780,50 +740,48 @@ export function OrderWorkflowFields({
       {/* The companion text, last (§6, `PUB-04`): the order text by default, or its own.
           Kerala's A-Diary text, Gujarat's Roznama, P&H's Summary; none on a Roznama order. */}
       {companion ? (
-      <Card variant="raised" className="min-w-0 gap-0 p-0">
-        <div className={FRAMED_HEAD}>
-          <h2 className="text-body-compact font-semibold">{companion}</h2>
-        </div>
-        <div className={cn(FRAMED_BODY, "flex min-w-0 flex-col gap-3")}>
-          <div className="flex items-start gap-3">
-            <Checkbox
-              id="order-adiary-same"
-              checked={aDiarySame}
-              disabled={disabled}
-              onCheckedChange={(checked) =>
-                setDraft((current) => ({
-                  ...current,
-                  aDiarySame: checked === true,
-                  /* Unticked for the first time: start from the order's own words. */
-                  aDiaryText:
-                    checked === true
-                      ? current.aDiaryText
-                      : (current.aDiaryText ?? orderText),
-                }))
-              }
-            />
-            <label htmlFor="order-adiary-same" className="text-body-compact">
-              {t("orderEditor_theCompanionAndOrderTextAre", { companion })}
-            </label>
+        <Card variant="raised" className="min-w-0 gap-0 p-0">
+          <div className={FRAMED_HEAD}>
+            <h2 className="text-body-compact font-semibold">{companion}</h2>
           </div>
-          {aDiarySame ? (
-            <p className="text-caption text-muted-foreground">
-              {t("orderEditor_theCompanionEntryIsTheOrder", { companion })}
-            </p>
-          ) : (
-            <Textarea
-              aria-label={companion}
-              value={draft.aDiaryText ?? ""}
-              disabled={disabled}
-              rows={5}
-              onChange={(event) => {
-                const aDiaryText = event.target.value;
-                setDraft((current) => ({ ...current, aDiaryText }));
-              }}
-            />
-          )}
-        </div>
-      </Card>
+          <div className={cn(FRAMED_BODY, "flex min-w-0 flex-col gap-3")}>
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="order-adiary-same"
+                checked={aDiarySame}
+                disabled={disabled}
+                onCheckedChange={(checked) =>
+                  setDraft((current) => ({
+                    ...current,
+                    aDiarySame: checked === true,
+                    /* Unticked for the first time: start from the order's own words. */
+                    aDiaryText:
+                      checked === true ? current.aDiaryText : (current.aDiaryText ?? orderText),
+                  }))
+                }
+              />
+              <label htmlFor="order-adiary-same" className="text-body-compact">
+                {t("orderEditor_theCompanionAndOrderTextAre", { companion })}
+              </label>
+            </div>
+            {aDiarySame ? (
+              <p className="text-caption text-muted-foreground">
+                {t("orderEditor_theCompanionEntryIsTheOrder", { companion })}
+              </p>
+            ) : (
+              <Textarea
+                aria-label={companion}
+                value={draft.aDiaryText ?? ""}
+                disabled={disabled}
+                rows={5}
+                onChange={(event) => {
+                  const aDiaryText = event.target.value;
+                  setDraft((current) => ({ ...current, aDiaryText }));
+                }}
+              />
+            )}
+          </div>
+        </Card>
       ) : null}
 
       {applicationItem && outcome ? (
@@ -847,9 +805,7 @@ export function OrderWorkflowFields({
         editing={editing}
         context={context}
         today={today}
-        onChange={(block) =>
-          setEditing((current) => (current ? { ...current, block } : current))
-        }
+        onChange={(block) => setEditing((current) => (current ? { ...current, block } : current))}
         onClose={() => setEditing(null)}
         description={t("orderEditor_recordedInThisOrdersDataAnd")}
         onConfirm={() => {
@@ -911,10 +867,7 @@ function OrderTypeControl({
 }
 
 /** An application already onboarded answers Onboard yes, whatever was stored. */
-export function withOnboarded(
-  outcome: ApplicationOutcome,
-  onboarded: boolean,
-): ApplicationOutcome {
+export function withOnboarded(outcome: ApplicationOutcome, onboarded: boolean): ApplicationOutcome {
   return onboarded ? { ...outcome, onboard: "yes" } : outcome;
 }
 
@@ -1045,10 +998,7 @@ export function OrderEditorComposer({
     }
     if (appearances && !postingSettled(draft)) {
       setView("order");
-      notify.neutral(
-        t("orderEditor_setTheNextHearingsDateAnd"),
-        { icon: PencilLineIcon },
-      );
+      notify.neutral(t("orderEditor_setTheNextHearingsDateAnd"), { icon: PencilLineIcon });
       window.requestAnimationFrame(() =>
         window.document.getElementById("order-next-hearing")?.focus(),
       );
@@ -1064,11 +1014,7 @@ export function OrderEditorComposer({
   }
 
   return (
-    <div
-      ref={rootRef}
-      className="flex min-h-0 min-w-0 flex-1 flex-col"
-      style={bands}
-    >
+    <div ref={rootRef} className="flex min-h-0 min-w-0 flex-1 flex-col" style={bands}>
       <OrderEditorHeader
         heading={heading}
         facts={facts}
@@ -1141,14 +1087,13 @@ export function OrderEditorComposer({
               locked={signing[queue.key] === "signed"}
             />
             {view === "evidence" ? null : finished ? (
-              <OrderProgress
-                stage={stage}
-                workflowComplete={Boolean(entry?.workflowComplete)}
-              />
+              <OrderProgress stage={stage} workflowComplete={Boolean(entry?.workflowComplete)} />
             ) : view === "order" ? (
               <div className="flex items-center gap-3">
                 <span className="hidden text-body-compact text-muted-foreground sm:inline">
-                  {t.rich("orderEditor_typeForAShortcut", { kbd: (chunks) => <kbd className="font-mono">{chunks}</kbd> })}
+                  {t.rich("orderEditor_typeForAShortcut", {
+                    kbd: (chunks) => <kbd className="font-mono">{chunks}</kbd>,
+                  })}
                 </span>
                 <Button
                   type="button"
@@ -1206,9 +1151,7 @@ export function OrderEditorComposer({
               purpose={purpose}
               inHearing={Boolean(appearances)}
               fixedIds={fixedIds}
-              disabled={
-                stage === "triggered" || Boolean(entry?.workflowComplete)
-              }
+              disabled={stage === "triggered" || Boolean(entry?.workflowComplete)}
               orderText={body.text}
               titleLocked={stage === "triggered"}
               applicationItem={applicationItem}
@@ -1219,9 +1162,7 @@ export function OrderEditorComposer({
           <OrderCasePanel
             className="lg:sticky lg:top-(--order-panel-top) lg:h-(--order-panel-fill) lg:rounded-b-none lg:border-b-0"
             links={draft.links}
-            onLinksChange={(links) =>
-              setDraft((current) => ({ ...current, links }))
-            }
+            onLinksChange={(links) => setDraft((current) => ({ ...current, links }))}
             disabled={false}
             historyContent={historyContent}
             dataFlagsContent={dataFlagsContent}
@@ -1265,10 +1206,7 @@ export function OrderEditorComposer({
                 moveOrderBackToDraft(queue.key, signing);
                 returnOrderToDraft(queue.key);
                 setView("order");
-                notify.neutral(
-                  t("orderEditor_backToDraftSendItFor"),
-                  { icon: Undo2Icon },
-                );
+                notify.neutral(t("orderEditor_backToDraftSendItFor"), { icon: Undo2Icon });
               }}
             >
               {t("orderEditor_moveBackToDraft")}
@@ -1327,14 +1265,10 @@ export function OrderEditorComposer({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            {nextDraft ? null : (
-              <AlertDialogCancel>{t("orderEditor_stayHere")}</AlertDialogCancel>
-            )}
+            {nextDraft ? null : <AlertDialogCancel>{t("orderEditor_stayHere")}</AlertDialogCancel>}
             <AlertDialogAction
               variant={nextDraft ? "outline" : "default"}
-              onClick={() =>
-                router.push(pendingOrdersHref(nextDraft ? "drafting" : undefined))
-              }
+              onClick={() => router.push(pendingOrdersHref(nextDraft ? "drafting" : undefined))}
             >
               {t("orderEditor_backToPendingOrders")}
             </AlertDialogAction>
@@ -1353,9 +1287,7 @@ export function OrderEditorComposer({
             <ConfirmMark danger icon={FileXIcon} />
             <AlertDialogTitle>{t("orderEditor_discardThisDraft")}</AlertDialogTitle>
             <AlertDialogDescription>
-              <span className="block">
-                {t("orderEditor_itsTextAndOrderDataAre")}
-              </span>
+              <span className="block">{t("orderEditor_itsTextAndOrderDataAre")}</span>
               <IrreversibleNote>{t("orderEditor_thisCannotBeUndone")}</IrreversibleNote>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1390,9 +1322,7 @@ export function OrderEditorComposer({
         }}
       />
 
-      {applicationDialog?.((id, decision) =>
-        decideOnly(setDraft, id, decision),
-      )}
+      {applicationDialog?.((id, decision) => decideOnly(setDraft, id, decision))}
     </div>
   );
 }

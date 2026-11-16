@@ -22,12 +22,7 @@ const NOTICE_ROLE = {
   assertive: "alert",
 } as const;
 
-export type NoticeVariant =
-  | "neutral"
-  | "info"
-  | "warning"
-  | "success"
-  | "destructive";
+export type NoticeVariant = "neutral" | "info" | "warning" | "success" | "destructive";
 
 /**
  * A notice that carries a status wears that status: the DS `Alert` variants ship the
@@ -124,7 +119,14 @@ export function SectionNotice({
         className={className}
         action={
           onDismiss ? (
-            <Button type="button" variant="ghost" size="icon" aria-label={t("filingNotices_dismiss")} onClick={onDismiss} className="text-muted-foreground">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={t("filingNotices_dismiss")}
+              onClick={onDismiss}
+              className="text-muted-foreground"
+            >
               <XIcon aria-hidden />
             </Button>
           ) : undefined
@@ -218,7 +220,7 @@ export function InfoWell({
     <div
       className={cn(
         "flex flex-wrap items-center gap-4 rounded-lg bg-surface-sunken p-4 text-body-compact text-muted-foreground",
-        className
+        className,
       )}
     >
       {children}

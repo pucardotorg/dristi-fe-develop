@@ -19,24 +19,11 @@ import { ChevronDownIcon, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { IntakeSlot } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useInCorrection } from "@/components/filing/posture";
 import { IntakeSlotRow } from "@/components/filing/upload/slot-row";
-import {
-  useDropTarget,
-  type DroppedFiles,
-} from "@/components/filing/upload/use-drop-target";
+import { useDropTarget, type DroppedFiles } from "@/components/filing/upload/use-drop-target";
 import { useTranslations } from "next-intl";
 
 /** Slots a dropped file can still go into, required ones first. */
@@ -98,12 +85,12 @@ export function DocumentCard({
   const claimRow = React.useCallback(
     (key: string, over: boolean) =>
       setOverRow((current) => (over ? key : current === key ? null : current)),
-    []
+    [],
   );
 
   const cardDrop = React.useCallback(
     (dropped: DroppedFiles) => onDropFiles(openKeys, dropped),
-    [onDropFiles, openKeys]
+    [onDropFiles, openKeys],
   );
   const { isOver, dropProps } = useDropTarget({ onFiles: cardDrop });
 
@@ -135,7 +122,7 @@ export function DocumentCard({
       {...dropProps}
       className={cn(
         "gap-6 transition-shadow",
-        isOver && overRow === null && "ring-3 ring-focus-ring"
+        isOver && overRow === null && "ring-3 ring-focus-ring",
       )}
     >
       <CardHeader>

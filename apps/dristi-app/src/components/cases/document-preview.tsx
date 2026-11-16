@@ -18,22 +18,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { DOCUMENT_GROUND } from "@/components/cases/document-ground";
 
-import {
-  ComposedDocumentViewer,
-  PdfViewer,
-  isImageSrc,
-  isPdfSrc,
-  parsePdfSrc,
-} from "./pdf-viewer";
+import { ComposedDocumentViewer, PdfViewer, isImageSrc, isPdfSrc, parsePdfSrc } from "./pdf-viewer";
 import { useTranslations } from "next-intl";
 
 /**
@@ -60,8 +49,7 @@ export type DocumentPreviewSource =
  * in the browser has to be written by whoever knows how to compose it.
  */
 export type DocumentDownload =
-  | { href: string; filename?: string; label?: string }
-  | { onDownload: () => void; label?: string };
+  { href: string; filename?: string; label?: string } | { onDownload: () => void; label?: string };
 
 /**
  * A document composed in the browser has nothing to download unless the
@@ -71,7 +59,7 @@ export type DocumentDownload =
  */
 function resolveDownload(
   source: DocumentPreviewSource,
-  download: DocumentDownload | undefined
+  download: DocumentDownload | undefined,
 ): DocumentDownload | undefined {
   if (download) return download;
   if (source.kind === "src") return { href: source.src };
@@ -203,16 +191,14 @@ export function DocumentPreview({
         aria-label={title}
         className={cn(
           "flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-hairline bg-card",
-          className
+          className,
         )}
       >
         <div
           className={cn(
             "flex shrink-0 gap-2 border-b border-hairline pr-1.5",
             // A header owns the strip's full height so its own rule can be the strip's.
-            header
-              ? "items-stretch justify-between"
-              : "items-center justify-between py-1.5 pl-4"
+            header ? "items-stretch justify-between" : "items-center justify-between py-1.5 pl-4",
           )}
         >
           {header ?? (
@@ -247,10 +233,7 @@ export function DocumentPreview({
         aria-label carries the heading the eye lost: the region is still named,
         and the well and the image beneath it name themselves too.
       */
-      <section
-        aria-label={title}
-        className={cn("flex min-h-0 min-w-0 flex-col", className)}
-      >
+      <section aria-label={title} className={cn("flex min-h-0 min-w-0 flex-col", className)}>
         <DocumentWell
           title={title}
           source={source}
@@ -267,12 +250,7 @@ export function DocumentPreview({
           scrolls={height !== "auto"}
           className={cn(wellHeight[height], "max-md:overflow-visible")}
           toolbar={
-            <DocumentPreviewActions
-              iconOnly
-              title={title}
-              source={source}
-              download={download}
-            >
+            <DocumentPreviewActions iconOnly title={title} source={source} download={download}>
               {actions}
             </DocumentPreviewActions>
           }
@@ -301,13 +279,9 @@ export function DocumentPreview({
           what you are about to download is not a trade worth making.
         */}
         <div className="flex min-w-0 flex-col gap-1">
-          <h3 className="text-body font-medium break-words text-foreground">
-            {title}
-          </h3>
+          <h3 className="text-body font-medium break-words text-foreground">{title}</h3>
           {description ? (
-            <p className="text-body-compact text-muted-foreground">
-              {description}
-            </p>
+            <p className="text-body-compact text-muted-foreground">{description}</p>
           ) : null}
         </div>
         <DocumentPreviewActions
@@ -359,16 +333,9 @@ export function DocumentPreviewActions({
   const cluster = (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       {children}
-      {resolved ? (
-        <DownloadAction title={title} download={resolved} iconOnly={iconOnly} />
-      ) : null}
+      {resolved ? <DownloadAction title={title} download={resolved} iconOnly={iconOnly} /> : null}
       {canExpand(source) ? (
-        <FullViewDialog
-          title={title}
-          source={source}
-          download={resolved}
-          iconOnly={iconOnly}
-        />
+        <FullViewDialog title={title} source={source} download={resolved} iconOnly={iconOnly} />
       ) : null}
     </div>
   );
@@ -385,13 +352,7 @@ export function DocumentPreviewActions({
  * the accessible name and the same words — so a voice user can speak what a
  * sighted user reads (ACCESSIBILITY §9, §12).
  */
-function IconAction({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function IconAction({ label, children }: { label: string; children: ReactNode }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
@@ -424,22 +385,10 @@ function DownloadAction({
 
   if ("href" in download) {
     const anchor = (
-      <Button
-        variant="ghost"
-        size={iconOnly ? "icon" : "default"}
-        className="shrink-0"
-        asChild
-      >
-        <a
-          href={download.href}
-          download={download.filename ?? true}
-          aria-label={label}
-        >
+      <Button variant="ghost" size={iconOnly ? "icon" : "default"} className="shrink-0" asChild>
+        <a href={download.href} download={download.filename ?? true} aria-label={label}>
           {iconOnly ? null : t("casesDocumentPreview_download")}
-          <DownloadIcon
-            data-icon={iconOnly ? undefined : "inline-end"}
-            aria-hidden
-          />
+          <DownloadIcon data-icon={iconOnly ? undefined : "inline-end"} aria-hidden />
         </a>
       </Button>
     );
@@ -456,10 +405,7 @@ function DownloadAction({
       onClick={download.onDownload}
     >
       {iconOnly ? null : t("casesDocumentPreview_download")}
-      <DownloadIcon
-        data-icon={iconOnly ? undefined : "inline-end"}
-        aria-hidden
-      />
+      <DownloadIcon data-icon={iconOnly ? undefined : "inline-end"} aria-hidden />
     </Button>
   );
   return iconOnly ? <IconAction label={label}>{button}</IconAction> : button;
@@ -500,10 +446,7 @@ function FullViewDialog({
         aria-label={label}
       >
         {iconOnly ? null : t("casesDocumentPreview_fullView")}
-        <Maximize2Icon
-          data-icon={iconOnly ? undefined : "inline-end"}
-          aria-hidden
-        />
+        <Maximize2Icon data-icon={iconOnly ? undefined : "inline-end"} aria-hidden />
       </Button>
     </DialogTrigger>
   );
@@ -514,7 +457,10 @@ function FullViewDialog({
       {/* The primitive parks its close button 8px from the corner, which left
           the title row hard against the top edge. Here it moves in to 16px and
           the row follows it (owner, Sept 18). */}
-      <FlowDialogContent outsideCloses className="flex h-[92svh] flex-col gap-4 overflow-hidden sm:max-w-[calc(100%-4rem)] [&>[data-slot=dialog-close]]:top-4 [&>[data-slot=dialog-close]]:right-4">
+      <FlowDialogContent
+        outsideCloses
+        className="flex h-[92svh] flex-col gap-4 overflow-hidden sm:max-w-[calc(100%-4rem)] [&>[data-slot=dialog-close]]:top-4 [&>[data-slot=dialog-close]]:right-4"
+      >
         {/* One plane: title, then the download icon, then the close button.
             The row's centre is the close button's (34px down), and `pr-8`
             leaves the download icon 4px short of it, so the two read as a
@@ -522,25 +468,16 @@ function FullViewDialog({
             close button already says how to go back. */}
         <div className="-mt-2.5 -mb-1.5 flex min-h-10 shrink-0 items-center justify-between gap-2 pr-8">
           <DialogHeader className="min-w-0">
-            <DialogTitle className="text-title-s font-semibold break-words">
-              {title}
-            </DialogTitle>
+            <DialogTitle className="text-title-s font-semibold break-words">{title}</DialogTitle>
             <DialogDescription className="sr-only">
               {t("casesDocumentPreview_fullViewCloseToGoBack")}
             </DialogDescription>
           </DialogHeader>
-          {download ? (
-            <DownloadAction title={title} download={download} iconOnly />
-          ) : null}
+          {download ? <DownloadAction title={title} download={download} iconOnly /> : null}
         </div>
         {/* Near window size the page is mostly white, so it takes the darker
             document ground wherever it opens from. */}
-        <DocumentWell
-          title={title}
-          source={source}
-          surface="ground"
-          className="min-h-0 flex-1"
-        />
+        <DocumentWell title={title} source={source} surface="ground" className="min-h-0 flex-1" />
       </FlowDialogContent>
     </Dialog>
   );
@@ -607,13 +544,7 @@ function DocumentWell({
 
   if (source.kind === "src") {
     return (
-      <div
-        className={cn(
-          "relative overflow-hidden rounded-xl",
-          fill.well,
-          className
-        )}
-      >
+      <div className={cn("relative overflow-hidden rounded-xl", fill.well, className)}>
         {/* Keyed on the src so switching documents rebuilds the viewer
             rather than leaving the previous one's scroll position behind. */}
         {isPdfSrc(source.src) ? (
@@ -640,9 +571,7 @@ function DocumentWell({
         )}
         {/* An iframe fills its well edge to edge, so there is no flow to put
             the toolbar in — it floats, and the page under it is a document. */}
-        {toolbar ? (
-          <div className="absolute top-2 right-2 z-10">{toolbar}</div>
-        ) : null}
+        {toolbar ? <div className="absolute top-2 right-2 z-10">{toolbar}</div> : null}
       </div>
     );
   }
@@ -653,7 +582,7 @@ function DocumentWell({
     "flex overflow-auto overscroll-contain rounded-xl p-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
     fill.well,
     toolbar && "flex-col gap-2",
-    className
+    className,
   );
 
   if (source.kind === "composed") {
@@ -664,7 +593,7 @@ function DocumentWell({
         className={cn(scrollableWell, "flex-col")}
       >
         {toolbar ? (
-        /*
+          /*
           Sticky for the same reason the header band is: a tall scan pushes the
           well past the viewport, and Download has to still be there when it
           does — at 375 the whole overlay body is what scrolls. It carries the
@@ -672,10 +601,8 @@ function DocumentWell({
           document passes under it; a ghost icon over a pale card scan is fill
           on fill, and this is the surface that answers it.
         */
-        <div className={cn("sticky top-0 z-10 flex justify-end", fill.strip)}>
-          {toolbar}
-        </div>
-      ) : null}
+          <div className={cn("sticky top-0 z-10 flex justify-end", fill.strip)}>{toolbar}</div>
+        ) : null}
         {/* Capped so full view buys a bigger document, not a longer line —
             past about 90 characters a paragraph gets harder to read, not
             easier. Inert at the widths the inline well ever reaches. */}
@@ -701,9 +628,7 @@ function DocumentWell({
           document passes under it; a ghost icon over a pale card scan is fill
           on fill, and this is the surface that answers it.
         */
-        <div className={cn("sticky top-0 z-10 flex justify-end", fill.strip)}>
-          {toolbar}
-        </div>
+        <div className={cn("sticky top-0 z-10 flex justify-end", fill.strip)}>{toolbar}</div>
       ) : null}
       {/*
         Centred with margin auto rather than items-center: a flex-centred
@@ -711,16 +636,15 @@ function DocumentWell({
         and a document is exactly the thing you cannot afford to crop.
       */}
       {isPreviewableImage(file) ? (
-        <FilePreviewImage
-          file={file}
-          className="m-auto block h-auto max-w-full rounded-md"
-        />
+        <FilePreviewImage file={file} className="m-auto block h-auto max-w-full rounded-md" />
       ) : (
         <div className="m-auto flex flex-col items-center gap-3 py-8 text-center">
           <FileTextIcon className="size-10 text-muted-foreground" aria-hidden />
           <p className="text-body font-medium">{file.name}</p>
           <p className="text-body-compact text-muted-foreground">
-            {t("casesDocumentPreview_formatFileSizePdfPagesAre", { formatFileSize: formatFileSize(file.size) })}
+            {t("casesDocumentPreview_formatFileSizePdfPagesAre", {
+              formatFileSize: formatFileSize(file.size),
+            })}
           </p>
         </div>
       )}

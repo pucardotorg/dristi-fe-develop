@@ -10,12 +10,7 @@ import { useCourtRole } from "@/components/employee/use-court-role";
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   EVIDENCE_SIDES,
   markEvidence,
@@ -113,7 +108,10 @@ export function MarkEvidenceDialog({
           {/* The number the choice gives, once there is a choice (DSB-14). */}
           {side ? (
             <p className="text-body-compact text-foreground">
-              {t.rich("markEvidenceDialog_itBecomesNextEvidenceNumber", { nextEvidenceNumber: nextEvidenceNumber(taken, side), span: (chunks) => <span className="font-mono font-medium">{chunks}</span> })}
+              {t.rich("markEvidenceDialog_itBecomesNextEvidenceNumber", {
+                nextEvidenceNumber: nextEvidenceNumber(taken, side),
+                span: (chunks) => <span className="font-mono font-medium">{chunks}</span>,
+              })}
             </p>
           ) : null}
         </div>

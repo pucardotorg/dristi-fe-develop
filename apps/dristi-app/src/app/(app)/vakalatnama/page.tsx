@@ -21,12 +21,7 @@ import { useProfile } from "@/components/shell/profile";
 import { createVak, discardVak, useVakList, useStoreReady } from "@/lib/vakalatnama/store";
 import { executantName, scopeLabel, statusLabel } from "@/lib/vakalatnama/format";
 import type { CreatorRole, Vakalatnama } from "@/lib/vakalatnama/types";
-import {
-  PAGE_GROUND,
-  PAGE_GUTTER,
-  PAGE_SUBTITLE,
-  PAGE_TITLE,
-} from "@/components/shell/page-frame";
+import { PAGE_GROUND, PAGE_GUTTER, PAGE_SUBTITLE, PAGE_TITLE } from "@/components/shell/page-frame";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
@@ -54,11 +49,13 @@ export default function VakalatnamaListPage() {
         <header className="flex flex-col gap-4 sm:landscape:flex-row sm:landscape:items-start sm:landscape:justify-between">
           <div className="flex min-w-0 flex-col gap-1">
             <h1 className={PAGE_TITLE}>{t("vakalatnamaPage_vakalatnama")}</h1>
-            <p className={PAGE_SUBTITLE}>
-              {t("vakalatnamaPage_appointAdvocatesForALitigantFor")}
-            </p>
+            <p className={PAGE_SUBTITLE}>{t("vakalatnamaPage_appointAdvocatesForALitigantFor")}</p>
           </div>
-          <Button type="button" onClick={create} className="shrink-0 self-start max-sm:w-full max-sm:self-stretch">
+          <Button
+            type="button"
+            onClick={create}
+            className="shrink-0 self-start max-sm:w-full max-sm:self-stretch"
+          >
             <PlusIcon aria-hidden />
             {t("vakalatnamaPage_newVakalatnama")}
           </Button>

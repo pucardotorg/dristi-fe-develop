@@ -10,12 +10,7 @@ import { useCaseReader } from "./case-reader";
 import { CaseNumberHistory } from "./case-number-history";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
 
 /**
@@ -57,13 +52,10 @@ export function CaseNumberLine({
     <span
       className={cn(
         "flex items-center gap-1 text-body-compact font-medium text-muted-foreground",
-        className
+        className,
       )}
     >
-      <Identifier
-        value={caseNumber}
-        label={t("caseHeaderParts_caseNumber")}
-      />
+      <Identifier value={caseNumber} label={t("caseHeaderParts_caseNumber")} />
       <span className="flex">
         <CaseNumberHistory history={history} />
       </span>
@@ -78,13 +70,7 @@ export function CaseNumberLine({
  * main stage's fill against the secondary stages' outline is the only
  * difference, and the tooltip names it.
  */
-export function CaseStageBadges({
-  stage,
-  subStages,
-}: {
-  stage: ReactNode;
-  subStages: string[];
-}) {
+export function CaseStageBadges({ stage, subStages }: { stage: ReactNode; subStages: string[] }) {
   const t = useTranslations();
   return (
     <TooltipProvider>

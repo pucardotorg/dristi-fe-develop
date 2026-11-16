@@ -23,7 +23,9 @@ function goodCase(reference: string, over: Partial<ApiCase> = {}): ApiCase {
         type: "individual",
         name: "Bhavesh N. Thakkar",
         mobile: "9824000001",
-        addresses: [{ line1: "22, Swastik Society, Navrangpura", city: "Ahmedabad", pin: "380009" }],
+        addresses: [
+          { line1: "22, Swastik Society, Navrangpura", city: "Ahmedabad", pin: "380009" },
+        ],
       },
     ],
     cheques: [
@@ -82,14 +84,24 @@ test("a complete case is held only for its documents, which the API did not send
   const batch = await batchOf([goodCase("A-1")]);
   const flags = caseFlags(batch.cases[0]);
   assert.ok(flags.length > 0);
-  assert.ok(flags.every((f) => f.section === "documents" && f.level === "hold"), JSON.stringify(flags.map((f) => f.field)));
+  assert.ok(
+    flags.every((f) => f.section === "documents" && f.level === "hold"),
+    JSON.stringify(flags.map((f) => f.field)),
+  );
   assert.equal(caseStage(batch.cases[0], flags), "held");
 });
 
 test("rules name the field and the level", async () => {
   const batch = await batchOf([
     goodCase("B-1", {
-      accused: [{ type: "individual", name: "Kiran Parmar", mobile: "98250 1234", addresses: [{ line1: "x", city: "Ahmedabad", pin: "380009" }] }],
+      accused: [
+        {
+          type: "individual",
+          name: "Kiran Parmar",
+          mobile: "98250 1234",
+          addresses: [{ line1: "x", city: "Ahmedabad", pin: "380009" }],
+        },
+      ],
     }),
   ]);
   const by = (field: string) => caseFlags(batch.cases[0]).filter((f) => f.field === field);
@@ -98,7 +110,9 @@ test("rules name the field and the level", async () => {
 
 test("any listed return reason passes: payment stopped raises nothing", async () => {
   const batch = await batchOf([
-    goodCase("C-1", { cheques: [{ ...goodCase("x").cheques[0], returnReason: "payment-stopped" }] }),
+    goodCase("C-1", {
+      cheques: [{ ...goodCase("x").cheques[0], returnReason: "payment-stopped" }],
+    }),
   ]);
   assert.ok(!caseFlags(batch.cases[0]).some((f) => f.field === "CHQ-10"));
 });
@@ -107,7 +121,12 @@ test("a blurry scan is a check on Documents, and skipping it clears it", async (
   const batch = await batchOf([goodCase("C-2")]);
   const bc = batch.cases[0];
   const slot = bc.draft.intake.cheques[0].slots[0];
-  attachToSlot(bc, slot.key, { id: "f1", name: "memo.png", type: "image/png", size: 10 } as StoredFileRef, true);
+  attachToSlot(
+    bc,
+    slot.key,
+    { id: "f1", name: "memo.png", type: "image/png", size: 10 } as StoredFileRef,
+    true,
+  );
   const soft = caseFlags(bc).find((f) => f.rule === "dcm-poor");
   assert.equal(soft?.level, "soft");
   assert.equal(soft?.section, "documents");
@@ -117,7 +136,9 @@ test("a blurry scan is a check on Documents, and skipping it clears it", async (
 
 test("a list value the court does not know is held, never guessed", async () => {
   const batch = await batchOf([
-    goodCase("D-1", { cheques: [{ ...goodCase("x").cheques[0], returnReason: "01 - Funds Insufficient" }] }),
+    goodCase("D-1", {
+      cheques: [{ ...goodCase("x").cheques[0], returnReason: "01 - Funds Insufficient" }],
+    }),
   ]);
   const f = caseFlags(batch.cases[0]).find((x) => x.rule === "chq-10-list");
   assert.equal(f?.level, "hold");
@@ -126,10 +147,14 @@ test("a list value the court does not know is held, never guessed", async () => 
 
 test("a late case needs a reason for condonation; a notice in transit holds the case", async () => {
   const late = goodCase("E-1", {
-    cheques: [{ ...goodCase("x").cheques[0], date: iso(140), presentedOn: iso(130), returnedOn: iso(125) }],
+    cheques: [
+      { ...goodCase("x").cheques[0], date: iso(140), presentedOn: iso(130), returnedOn: iso(125) },
+    ],
     notices: [{ ...goodCase("x").notices[0], dispatchedOn: iso(110), deliveredOn: iso(100) }],
   });
-  const transit = goodCase("E-2", { notices: [{ ...goodCase("x").notices[0], delivered: null, deliveredOn: undefined }] });
+  const transit = goodCase("E-2", {
+    notices: [{ ...goodCase("x").notices[0], delivered: null, deliveredOn: undefined }],
+  });
   const batch = await batchOf([late, transit]);
   const [a, b] = batch.cases.map((bc) => caseFlags(bc));
   assert.ok(a.some((f) => f.field === "JUR-12" && f.level === "hold"));
@@ -146,7 +171,15 @@ test("derived values are never taken from the sender", async () => {
 test("every hold that a filer can correct carries its fix inline, documents as upload slots", async () => {
   const batch = await batchOf([
     goodCase("H-1", {
-      accused: [{ type: "institution", name: "Navkar Foods Pvt Ltd", institutionType: "private-limited", mobile: "98250 1234", addresses: [{ line1: "x", city: "Ahmedabad", pin: "38001" }] }],
+      accused: [
+        {
+          type: "institution",
+          name: "Navkar Foods Pvt Ltd",
+          institutionType: "private-limited",
+          mobile: "98250 1234",
+          addresses: [{ line1: "x", city: "Ahmedabad", pin: "38001" }],
+        },
+      ],
       notices: [{ ...goodCase("x").notices[0], delivered: null, deliveredOn: undefined }],
       cheques: [{ ...goodCase("x").cheques[0], ifsc: "HDFC00521", returnReason: "Funds Insuff." }],
     }),
@@ -156,10 +189,24 @@ test("every hold that a filer can correct carries its fix inline, documents as u
   // Waiting for a date, or a duplicate cheque, has nothing to correct in place.
   const exempt = /^(jur-9-early|chq-dup|section-)/;
   const bare = holds.filter((f) => !exempt.test(f.rule) && (!f.fix || f.fix.kind === "documents"));
-  assert.deepEqual(bare.map((f) => f.rule), []);
+  assert.deepEqual(
+    bare.map((f) => f.rule),
+    [],
+  );
   assert.ok(holds.some((f) => f.fix?.kind === "upload"));
-  for (const rule of ["acc-14", "ldn-5", "adv-3", "acc-6-format", "acc-8-pin", "chq-5", "chq-10-list"]) {
-    assert.ok(holds.some((f) => f.rule === rule && f.fix), `${rule} has a fix`);
+  for (const rule of [
+    "acc-14",
+    "ldn-5",
+    "adv-3",
+    "acc-6-format",
+    "acc-8-pin",
+    "chq-5",
+    "chq-10-list",
+  ]) {
+    assert.ok(
+      holds.some((f) => f.rule === rule && f.fix),
+      `${rule} has a fix`,
+    );
   }
 });
 
@@ -174,7 +221,9 @@ test("a deposit or a reply the sender does not state holds the case, with the qu
   ]);
   const [unstated, stated] = batch.cases;
   assert.deepEqual(unstated.unstated?.sort(), ["jurisdiction.deposited", "notices.0.replied"]);
-  const holds = caseFlags(unstated).filter((f) => f.level === "hold").map((f) => f.field);
+  const holds = caseFlags(unstated)
+    .filter((f) => f.level === "hold")
+    .map((f) => f.field);
   assert.ok(holds.includes("JUR-1"));
   assert.ok(holds.includes("LDN-9"));
   assert.ok(!caseFlags(stated).some((f) => f.field === "JUR-1" || f.field === "LDN-9"));

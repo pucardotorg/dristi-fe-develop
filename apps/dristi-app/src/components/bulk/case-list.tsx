@@ -13,13 +13,7 @@ import type { CaseView } from "./api";
 import { useTranslations } from "next-intl";
 
 /** Where a case stands, as a small badge: what it needs, or a tick when nothing. */
-export function CaseStateBadge({
-  holds,
-  checks,
-}: {
-  holds: number;
-  checks: number;
-}) {
+export function CaseStateBadge({ holds, checks }: { holds: number; checks: number }) {
   const t = useTranslations();
   if (holds)
     return (
@@ -72,9 +66,7 @@ export function CaseList({
       if (li.offsetTop + li.offsetHeight / 2 < top) above += 1;
       else if (li.offsetTop + li.offsetHeight / 2 > bottom) below += 1;
     }
-    setHidden((h) =>
-      h.above === above && h.below === below ? h : { above, below },
-    );
+    setHidden((h) => (h.above === above && h.below === below ? h : { above, below }));
   }, []);
 
   React.useEffect(() => {
@@ -88,9 +80,7 @@ export function CaseList({
 
   // Keep the chosen case in view as it changes (Next case, a filter).
   React.useEffect(() => {
-    const el = scroller.current?.querySelector<HTMLElement>(
-      '[aria-current="true"]',
-    );
+    const el = scroller.current?.querySelector<HTMLElement>('[aria-current="true"]');
     el?.scrollIntoView({ block: "nearest" });
   }, [selectedId]);
 
@@ -101,15 +91,10 @@ export function CaseList({
     });
 
   return (
-    <Card
-      variant="raised"
-      className="sticky top-20 hidden gap-0 overflow-hidden py-0 lg:flex"
-    >
+    <Card variant="raised" className="sticky top-20 hidden gap-0 overflow-hidden py-0 lg:flex">
       <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
         <span className="text-body-compact font-semibold">{t("caseList_cases")}</span>
-        <span className="text-caption text-muted-foreground tabular-nums">
-          {cases.length}
-        </span>
+        <span className="text-caption text-muted-foreground tabular-nums">{cases.length}</span>
       </div>
       <div className="relative min-h-0">
         <ul
@@ -125,18 +110,12 @@ export function CaseList({
               <li key={c.id}>
                 <Button
                   variant="ghost"
-                  className={cn(
-                    RAIL_ROW,
-                    "h-auto min-h-12 py-2",
-                    active && RAIL_ROW_ACTIVE,
-                  )}
+                  className={cn(RAIL_ROW, "h-auto min-h-12 py-2", active && RAIL_ROW_ACTIVE)}
                   aria-current={active ? "true" : undefined}
                   onClick={() => onSelect(c.id)}
                 >
                   <span className="flex min-w-0 flex-1 flex-col items-start text-left">
-                    <span className="w-full truncate font-medium">
-                      {c.accused || c.title}
-                    </span>
+                    <span className="w-full truncate font-medium">{c.accused || c.title}</span>
                     <span className="w-full truncate text-caption text-muted-foreground tabular-nums">
                       {c.reference}
                       {c.cheque ? ` · ${c.cheque}` : ""}

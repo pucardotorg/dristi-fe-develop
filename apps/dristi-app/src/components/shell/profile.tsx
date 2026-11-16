@@ -79,9 +79,7 @@ export function ProfileProvider({
   // setState pass. A base litigant has no advocate profile until elevated.
   const storedRole = useLocalStorageValue(PROFILE_ROLE_KEY);
   const profileRole: ProfileRole =
-    storedRole === "litigant" ||
-    storedRole === "advocate" ||
-    storedRole === "clerk"
+    storedRole === "litigant" || storedRole === "advocate" || storedRole === "clerk"
       ? storedRole
       : initialRole;
 
@@ -94,10 +92,7 @@ export function ProfileProvider({
   const accountName = useLocalStorageValue(ACCOUNT_NAME_KEY) || "Anjali Nair";
 
   const switchProfile = React.useCallback(() => {
-    writeLocalStorageValue(
-      PROFILE_ROLE_KEY,
-      profileRole === "litigant" ? "advocate" : "litigant",
-    );
+    writeLocalStorageValue(PROFILE_ROLE_KEY, profileRole === "litigant" ? "advocate" : "litigant");
   }, [profileRole]);
 
   const setProfileRole = React.useCallback((role: ProfileRole) => {
@@ -135,9 +130,7 @@ export function ProfileProvider({
     ],
   );
 
-  return (
-    <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
-  );
+  return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 }
 
 export function useProfile(): ProfileValue {

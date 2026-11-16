@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { DownloadIcon, FileTextIcon, FileXIcon, XIcon } from "lucide-react";
 
-import {
-  Fact,
-  FactGroup,
-  Muted,
-} from "@/components/cases/application-record-dialog";
+import { Fact, FactGroup, Muted } from "@/components/cases/application-record-dialog";
 import {
   ComposedDocumentViewer,
   PdfViewer,
@@ -20,12 +16,7 @@ import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { Identifier } from "@/components/chrome/identifier";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import {
   Empty,
   EmptyDescription,
@@ -35,12 +26,7 @@ import {
 } from "@/components/ui/empty";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   documentSrc,
   documentSourceLabel,
@@ -151,7 +137,10 @@ function DocumentBody({
             <Badge variant="warning">{t("documentRecordDialog_pendingReview")}</Badge>
           ) : null}
           <DialogDescription className="sr-only">
-            {t("documentRecordDialog_documentTypeLabelFiledOnCase", { documentTypeLabel: documentTypeLabel(document.type), caseNumber: file.caseNumber })}
+            {t("documentRecordDialog_documentTypeLabelFiledOnCase", {
+              documentTypeLabel: documentTypeLabel(document.type),
+              caseNumber: file.caseNumber,
+            })}
           </DialogDescription>
         </div>
         {src ? (
@@ -164,7 +153,9 @@ function DocumentBody({
                     download={downloadName(document) ?? true}
                     aria-label={
                       pendingReview
-                        ? t("documentRecordDialog_downloadTitleNotYetSignedBy", { title: document.title })
+                        ? t("documentRecordDialog_downloadTitleNotYetSignedBy", {
+                            title: document.title,
+                          })
                         : t("documentRecordDialog_downloadTitle", { title: document.title })
                     }
                   >
@@ -200,7 +191,10 @@ function DocumentBody({
                     /* Copyable like every other identifier here (owner,
                        Oct 8), and only as wide as itself. */
                     <span className="flex">
-                      <Identifier value={document.provisionalId} label={t("documentRecordDialog_documentId")} />
+                      <Identifier
+                        value={document.provisionalId}
+                        label={t("documentRecordDialog_documentId")}
+                      />
                     </span>
                   ) : (
                     <Muted>{t("documentRecordDialog_givenWhenSubmitted")}</Muted>
@@ -212,19 +206,17 @@ function DocumentBody({
                 <Fact label={t("documentRecordDialog_documentType")}>
                   {documentTypeLabel(document.type)}
                 </Fact>
-                <Fact label={t("documentRecordDialog_source")}>{documentSourceLabel(document.source)}</Fact>
+                <Fact label={t("documentRecordDialog_source")}>
+                  {documentSourceLabel(document.source)}
+                </Fact>
                 <Fact label={t("documentRecordDialog_submittedOn")}>
-                  <span className="tabular-nums">
-                    {formatCaseDate(document.submittedOn)}
-                  </span>
+                  <span className="tabular-nums">{formatCaseDate(document.submittedOn)}</span>
                 </Fact>
                 <Fact label={t("documentRecordDialog_submittedBy")}>
                   <span className="flex flex-col gap-0.5">
                     <span>{displayName(submittedByName(document, peopleById))}</span>
                     {role ? (
-                      <span className="text-caption font-normal text-muted-foreground">
-                        {role}
-                      </span>
+                      <span className="text-caption font-normal text-muted-foreground">{role}</span>
                     ) : null}
                   </span>
                 </Fact>
@@ -234,7 +226,10 @@ function DocumentBody({
                 <FactGroup>
                   <Fact label={t("documentRecordDialog_evidenceNumber")}>
                     <span className="flex">
-                      <Identifier value={document.evidenceNumber} label={t("documentRecordDialog_evidenceNumberLabel")} />
+                      <Identifier
+                        value={document.evidenceNumber}
+                        label={t("documentRecordDialog_evidenceNumberLabel")}
+                      />
                     </span>
                   </Fact>
                 </FactGroup>
@@ -286,7 +281,7 @@ function DocumentBody({
                         onClick={() => setOpenSrc(item.src)}
                         className={cn(
                           "flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left text-body-compact outline-none transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50",
-                          item.src === src && "bg-accent-strong font-medium"
+                          item.src === src && "bg-accent-strong font-medium",
                         )}
                       >
                         <FileTextIcon
@@ -375,10 +370,7 @@ function Comments({
       <div className="flex flex-col gap-0.5">
         {/* A section of its own, not one more fact: titled in the ink and
             weight of a heading, not a fact's muted label (owner, Oct 8). */}
-        <FieldLabel
-          htmlFor={fieldId}
-          className="text-body-compact font-semibold text-foreground"
-        >
+        <FieldLabel htmlFor={fieldId} className="text-body-compact font-semibold text-foreground">
           {t("documentRecordDialog_comments")}
         </FieldLabel>
         <p id={scopeId} className="text-caption text-muted-foreground">

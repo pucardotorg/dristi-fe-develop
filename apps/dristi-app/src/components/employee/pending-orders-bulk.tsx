@@ -29,19 +29,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { hearingById } from "@/lib/employee/hearings";
-import {
-  addItemsToDraft,
-  bulkOrderItems,
-  itemAsksDetails,
-} from "@/lib/employee/order-bulk-items";
+import { addItemsToDraft, bulkOrderItems, itemAsksDetails } from "@/lib/employee/order-bulk-items";
 import { composerContextFor } from "@/lib/employee/order-context";
 import { initialOrderDraft } from "@/lib/employee/order-demo";
 import { orderInitialDraft } from "@/lib/employee/order-door";
-import {
-  editorDraftKey,
-  readOrderDraft,
-  writeOrderDraft,
-} from "@/lib/employee/order-drafts";
+import { editorDraftKey, readOrderDraft, writeOrderDraft } from "@/lib/employee/order-drafts";
 import {
   likelyTemplatesFor,
   orderTemplate,
@@ -114,7 +106,12 @@ export function AddOrderItemsDialog({
     }
     onDone(
       `${added} ${plural(added, "item", "items")} added across ${hearingOrders.length} ${plural(hearingOrders.length, "order", "orders")}.` +
-        (skipped.length ? t("pendingOrdersBulk_lengthLeftOutJoin", { length: String(skipped.length), join: skipped.join("; ") }) : ""),
+        (skipped.length
+          ? t("pendingOrdersBulk_lengthLeftOutJoin", {
+              length: String(skipped.length),
+              join: skipped.join("; "),
+            })
+          : ""),
     );
   }
 
@@ -127,8 +124,8 @@ export function AddOrderItemsDialog({
           </DialogTitle>
           <DialogDescription className="text-body-compact">
             Added to the order data of {hearingOrders.length} selected{" "}
-            {plural(hearingOrders.length, "order", "orders")}. An item an order already
-            has, or cannot hold beside its other items, is left out of that order.
+            {plural(hearingOrders.length, "order", "orders")}. An item an order already has, or
+            cannot hold beside its other items, is left out of that order.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2">
@@ -168,14 +165,8 @@ export function AddOrderItemsDialog({
             </ComboboxContent>
           </Combobox>
           {likely.length > 0 ? (
-            <section
-              aria-labelledby="bulk-items-likely"
-              className="flex min-w-0 flex-col gap-1"
-            >
-              <h3
-                id="bulk-items-likely"
-                className="text-body-compact text-muted-foreground"
-              >
+            <section aria-labelledby="bulk-items-likely" className="flex min-w-0 flex-col gap-1">
+              <h3 id="bulk-items-likely" className="text-body-compact text-muted-foreground">
                 {t("pendingOrdersBulk_likelyAtTheseHearings")}
               </h3>
               <ul className="-mx-2 flex min-w-0 flex-col">
@@ -186,10 +177,7 @@ export function AddOrderItemsDialog({
                       onClick={() => setPicked((current) => [...current, template])}
                       className="flex min-h-10 w-full min-w-0 items-center gap-2 rounded-lg px-2 text-left text-body-compact transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                     >
-                      <PlusIcon
-                        aria-hidden
-                        className="size-4 shrink-0 text-muted-foreground"
-                      />
+                      <PlusIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
                       <span className="sr-only">{t("pendingOrdersBulk_add")} </span>
                       {template.label}
                     </button>
@@ -201,15 +189,15 @@ export function AddOrderItemsDialog({
           {needDetails.length ? (
             <p className="text-caption text-muted-foreground">
               {needDetails.map((template) => template.label).join(", ")}{" "}
-              {plural(needDetails.length, "has", "have")} details of {plural(needDetails.length, "its", "their")}{" "}
-              own; fill them in each order before marking its order data complete.
+              {plural(needDetails.length, "has", "have")} details of{" "}
+              {plural(needDetails.length, "its", "their")} own; fill them in each order before
+              marking its order data complete.
             </p>
           ) : null}
           {left > 0 ? (
             <p className="text-caption text-muted-foreground">
-              {left} selected {plural(left, "order is", "orders are")} not from a
-              hearing and {plural(left, "is", "are")} left out; open{" "}
-              {plural(left, "it", "them")} to add items.
+              {left} selected {plural(left, "order is", "orders are")} not from a hearing and{" "}
+              {plural(left, "is", "are")} left out; open {plural(left, "it", "them")} to add items.
             </p>
           ) : null}
         </div>

@@ -15,9 +15,5 @@ import {
  * snapshot is the same empty map the module opens on, so hydration agrees.
  */
 export function useOrderSigning(): OrderSigning {
-  return React.useSyncExternalStore(
-    subscribeToOrderSigning,
-    readOrderSigning,
-    serverOrderSigning,
-  );
+  return React.useSyncExternalStore(subscribeToOrderSigning, readOrderSigning, serverOrderSigning);
 }

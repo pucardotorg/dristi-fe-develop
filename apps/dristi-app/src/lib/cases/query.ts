@@ -40,10 +40,7 @@ export const MAX_PAGE_SIZE = 500;
 export function isCasesPageSize(value: unknown): value is CasesPageSize {
   if (value === "all") return true;
   return (
-    typeof value === "number" &&
-    Number.isInteger(value) &&
-    value >= 1 &&
-    value <= MAX_PAGE_SIZE
+    typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= MAX_PAGE_SIZE
   );
 }
 
@@ -156,9 +153,7 @@ export function stageOptionsFor(query: Pick<CasesQuery, "status">): {
 /** Label for the "leave this folder" action, and for the stage filter group. */
 export function allBucketsLabel(query: Pick<CasesQuery, "status">): string {
   const statuses = statusesIn(query);
-  return statuses.length === 1 && statuses[0] === "disposed"
-    ? "All outcomes"
-    : "All stages";
+  return statuses.length === 1 && statuses[0] === "disposed" ? "All outcomes" : "All stages";
 }
 
 export function stageGroupLabel(query: Pick<CasesQuery, "status">): string {
@@ -172,17 +167,12 @@ export function stageGroupLabel(query: Pick<CasesQuery, "status">): string {
  */
 export function normalizeStageFilter(
   query: Pick<CasesQuery, "status">,
-  stages: readonly string[]
+  stages: readonly string[],
 ): BucketKey[] {
-  const allowed: BucketKey[] = bucketKeysFor(query).filter(
-    (key) => key !== "disposed"
-  );
+  const allowed: BucketKey[] = bucketKeysFor(query).filter((key) => key !== "disposed");
   const unique: BucketKey[] = [];
   for (const stage of stages) {
-    if (
-      allowed.includes(stage as BucketKey) &&
-      !unique.includes(stage as BucketKey)
-    ) {
+    if (allowed.includes(stage as BucketKey) && !unique.includes(stage as BucketKey)) {
       unique.push(stage as BucketKey);
     }
   }
@@ -193,10 +183,7 @@ export function normalizeStageFilter(
 function normalizeStatuses(values: readonly string[]): CaseStatus[] {
   const unique: CaseStatus[] = [];
   for (const value of values) {
-    if (
-      ALL_STATUSES.includes(value as CaseStatus) &&
-      !unique.includes(value as CaseStatus)
-    ) {
+    if (ALL_STATUSES.includes(value as CaseStatus) && !unique.includes(value as CaseStatus)) {
       unique.push(value as CaseStatus);
     }
   }
@@ -230,10 +217,7 @@ function multi(value: string | string[] | undefined): string[] {
   return values.map((entry) => entry?.trim() ?? "").filter(Boolean);
 }
 
-export function parseCasesQuery(
-  params: RawParams,
-  path?: { bucket?: string }
-): CasesQuery {
+export function parseCasesQuery(params: RawParams, path?: { bucket?: string }): CasesQuery {
   const status = normalizeStatuses(multi(params.status));
   const scope = { status };
 
@@ -267,10 +251,7 @@ export function parseCasesQuery(
  * Serialise a query back to a URL, dropping defaults so the landing stays a
  * plain `/cases`. Any patch other than `page` sends the reader back to page 1.
  */
-export function buildCasesHref(
-  query: CasesQuery,
-  patch: Partial<CasesQuery> = {}
-): string {
+export function buildCasesHref(query: CasesQuery, patch: Partial<CasesQuery> = {}): string {
   const next: CasesQuery = { ...query, ...patch };
   if (!("page" in patch)) next.page = 1;
   next.status = normalizeStatuses(next.status);
@@ -307,7 +288,7 @@ export function buildCasesHref(
 
 /** How many filters the sheet holds are on — what the Filters button counts. */
 export function countAppliedFilters(
-  query: Pick<CasesQuery, "status" | "type" | "stage" | "advocates">
+  query: Pick<CasesQuery, "status" | "type" | "stage" | "advocates">,
 ): number {
   return (
     query.status.length +
@@ -395,10 +376,7 @@ function matchesType(record: CaseRecord, type: string[]): boolean {
 
 function matchesAdvocates(record: CaseRecord, advocates: string[]): boolean {
   if (advocates.length === 0) return true;
-  const onRecord = [
-    ...counselFor(record, "complainant"),
-    ...counselFor(record, "accused"),
-  ];
+  const onRecord = [...counselFor(record, "complainant"), ...counselFor(record, "accused")];
   return advocates.some((name) => onRecord.includes(name));
 }
 
@@ -412,7 +390,7 @@ export function applySheetFilters(
   source: CaseRecord[],
   query: Pick<CasesQuery, "status" | "bookmarked" | "type" | "advocates" | "filed">,
   now: number,
-  bookmarks: ReadonlySet<string> = new Set(initialBookmarks(source))
+  bookmarks: ReadonlySet<string> = new Set(initialBookmarks(source)),
 ): CaseRecord[] {
   return source.filter((record) => {
     if (!matchesStatus(record, query.status)) return false;
@@ -466,24 +444,18 @@ export function selectCases(options: {
   const { query, bookmarks, now } = options;
   const source = options.source ?? CASES;
 
-  const matched = applySheetFilters(source, query, now, bookmarks).filter(
-    (record) => {
-      if (query.bucket && !inBucket(record, query.bucket)) return false;
-      if (!matchesSearch(record, query.search)) return false;
-      if (
-        query.stage.length > 0 &&
-        !query.stage.some((key) => inBucket(record, key))
-      ) {
-        return false;
-      }
-      return true;
+  const matched = applySheetFilters(source, query, now, bookmarks).filter((record) => {
+    if (query.bucket && !inBucket(record, query.bucket)) return false;
+    if (!matchesSearch(record, query.search)) return false;
+    if (query.stage.length > 0 && !query.stage.some((key) => inBucket(record, key))) {
+      return false;
     }
-  );
+    return true;
+  });
 
   const sorted = [...matched].sort(compare);
   /* "All" is one page holding everything, so the pagination has nothing to show. */
-  const pageSize =
-    query.pageSize === "all" ? Math.max(1, sorted.length) : query.pageSize;
+  const pageSize = query.pageSize === "all" ? Math.max(1, sorted.length) : query.pageSize;
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
   const page = Math.min(query.page, pageCount);
   const start = (page - 1) * pageSize;
@@ -514,7 +486,7 @@ export type CasesBucket = {
  */
 export function summariseBuckets(
   query: Pick<CasesQuery, "status">,
-  scoped: CaseRecord[]
+  scoped: CaseRecord[],
 ): CasesBucket[] {
   return bucketKeysFor(query).map((key) => ({
     key,
@@ -526,12 +498,11 @@ export function summariseBuckets(
 /** Counts per status and for the bookmark lens — the whole book, so the sheet can say what each option holds. */
 export function summariseCases(
   source: CaseRecord[] = CASES,
-  bookmarks: ReadonlySet<string> = new Set(initialBookmarks(source))
+  bookmarks: ReadonlySet<string> = new Set(initialBookmarks(source)),
 ): Record<CaseStatus | "bookmarked", number> {
   return {
     ongoing: source.filter((record) => statusOf(record) === "ongoing").length,
-    "long-pending": source.filter((record) => statusOf(record) === "long-pending")
-      .length,
+    "long-pending": source.filter((record) => statusOf(record) === "long-pending").length,
     disposed: source.filter((record) => statusOf(record) === "disposed").length,
     bookmarked: source.filter((record) => bookmarks.has(record.id)).length,
   };

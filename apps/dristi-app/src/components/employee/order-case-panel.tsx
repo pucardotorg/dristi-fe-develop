@@ -25,12 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   CASE_FILE_TREE,
   caseFilePdfSrc,
@@ -89,10 +84,9 @@ export function OrderCasePanel({
     () =>
       new Set(
         CASE_FILE_TREE.filter((node) =>
-          (isCaseFileFolder(node)
-            ? flattenLeaves(node.children ?? [])
-            : [node]
-          ).some((leaf) => links.includes(leaf.id)),
+          (isCaseFileFolder(node) ? flattenLeaves(node.children ?? []) : [node]).some((leaf) =>
+            links.includes(leaf.id),
+          ),
         ).map((node) => node.id),
       ),
   );
@@ -115,9 +109,7 @@ export function OrderCasePanel({
       returning.current = false;
       const target =
         (opener &&
-          listRef.current?.querySelector<HTMLElement>(
-            `[data-opens="${CSS.escape(opener)}"]`,
-          )) ||
+          listRef.current?.querySelector<HTMLElement>(`[data-opens="${CSS.escape(opener)}"]`)) ||
         listRef.current?.querySelector<HTMLElement>("input[type='search']");
       target?.focus();
     }
@@ -137,15 +129,14 @@ export function OrderCasePanel({
         label: node.label,
         /* A section that is one document of its own name is that document's row. */
         single: !isCaseFileFolder(node),
-        rows: (isCaseFileFolder(node)
-          ? flattenLeaves(node.children ?? [])
-          : [node]
-        ).map((leaf): DocumentRow => ({
-          id: leaf.id,
-          outline: leaf.number,
-          label: leaf.label,
-          node: leaf,
-        })),
+        rows: (isCaseFileFolder(node) ? flattenLeaves(node.children ?? []) : [node]).map(
+          (leaf): DocumentRow => ({
+            id: leaf.id,
+            outline: leaf.number,
+            label: leaf.label,
+            node: leaf,
+          }),
+        ),
       })),
     [],
   );
@@ -161,21 +152,13 @@ export function OrderCasePanel({
     .map((section) => ({
       ...section,
       rows: section.rows.filter(
-        (row) =>
-          !needle ||
-          `${row.label} ${section.label}`
-            .toLowerCase()
-            .includes(needle),
+        (row) => !needle || `${row.label} ${section.label}`.toLowerCase().includes(needle),
       ),
     }))
     .filter((section) => section.rows.length > 0);
 
   function toggle(id: string) {
-    onLinksChange(
-      links.includes(id)
-        ? links.filter((entry) => entry !== id)
-        : [...links, id],
-    );
+    onLinksChange(links.includes(id) ? links.filter((entry) => entry !== id) : [...links, id]);
   }
 
   /** `from` names the row it was opened from (its `data-opens`), for Back. */
@@ -185,18 +168,8 @@ export function OrderCasePanel({
   }
 
   return (
-    <Card
-      variant="raised"
-      className={cn(
-        "min-w-0 flex-col gap-0 overflow-hidden py-0",
-        className,
-      )}
-    >
-      <Tabs
-        value={tab}
-        onValueChange={setTab}
-        className="flex min-h-0 flex-1 flex-col gap-0"
-      >
+    <Card variant="raised" className={cn("min-w-0 flex-col gap-0 overflow-hidden py-0", className)}>
+      <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col gap-0">
         {/* The product's line tabs (case peek, Approve registrations): left-aligned on
             their own rule, the active mark landing on it. Here the strip is the panel's
             head, so it takes the head's height and its rule lines up with the heads either
@@ -207,24 +180,15 @@ export function OrderCasePanel({
             aria-label={t("orderCasePanel_besideTheOrder")}
             className="h-14 w-full justify-start rounded-none p-0 group-data-horizontal/tabs:h-14"
           >
-            <TabsTrigger
-              value="case-file"
-              className="h-full flex-none text-body-compact"
-            >
+            <TabsTrigger value="case-file" className="h-full flex-none text-body-compact">
               {t("orderCasePanel_caseFile")}
             </TabsTrigger>
             {historyContent ? (
-              <TabsTrigger
-                value="history"
-                className="h-full flex-none text-body-compact"
-              >
+              <TabsTrigger value="history" className="h-full flex-none text-body-compact">
                 {t("orderCasePanel_caseHistory")}
               </TabsTrigger>
             ) : null}
-            <TabsTrigger
-              value="data-flags"
-              className="h-full flex-none text-body-compact"
-            >
+            <TabsTrigger value="data-flags" className="h-full flex-none text-body-compact">
               {t("orderCasePanel_dataFlags")}
             </TabsTrigger>
           </TabsList>
@@ -250,12 +214,7 @@ export function OrderCasePanel({
               }}
             >
               <div className="flex min-w-0 items-center justify-between gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="-ml-3"
-                  onClick={closeInline}
-                >
+                <Button type="button" variant="ghost" className="-ml-3" onClick={closeInline}>
                   <ArrowLeftIcon data-icon="inline-start" aria-hidden />
                   {t("orderCasePanel_caseFile")}
                 </Button>
@@ -282,8 +241,7 @@ export function OrderCasePanel({
                       variant="outline"
                       aria-pressed={links.includes(viewing.id)}
                       className={cn(
-                        links.includes(viewing.id) &&
-                          "text-success-ink hover:text-success-ink",
+                        links.includes(viewing.id) && "text-success-ink hover:text-success-ink",
                       )}
                       onClick={() => toggle(viewing.id)}
                     >
@@ -340,10 +298,7 @@ export function OrderCasePanel({
                   className="flex min-w-0 flex-col gap-1 rounded-lg border border-hairline bg-surface-sunken p-2"
                 >
                   <div className="flex min-h-8 items-center justify-between gap-2 pr-3 pl-2">
-                    <h3
-                      id={`${searchId}-linked`}
-                      className="text-body-compact font-semibold"
-                    >
+                    <h3 id={`${searchId}-linked`} className="text-body-compact font-semibold">
                       {t("orderCasePanel_linkedToThisOrder")}
                     </h3>
                     {linkedRows.length > 0 ? (
@@ -411,8 +366,7 @@ export function OrderCasePanel({
                field's left edge and the counts and Link end on its right. */
                 <div className="-mx-2 flex min-w-0 flex-col gap-0.5">
                   {shown.map((section) => {
-                    const expanded =
-                      Boolean(needle) || openSections.has(section.id);
+                    const expanded = Boolean(needle) || openSections.has(section.id);
                     if (section.single) {
                       const row = section.rows[0];
                       return (
@@ -444,18 +398,14 @@ export function OrderCasePanel({
                         aria-labelledby={`${searchId}-${section.id}`}
                         className="flex min-w-0 flex-col"
                       >
-                        <h3
-                          id={`${searchId}-${section.id}`}
-                          className="min-w-0"
-                        >
+                        <h3 id={`${searchId}-${section.id}`} className="min-w-0">
                           <button
                             type="button"
                             aria-expanded={expanded}
                             onClick={() =>
                               setOpenSections((current) => {
                                 const next = new Set(current);
-                                if (next.has(section.id))
-                                  next.delete(section.id);
+                                if (next.has(section.id)) next.delete(section.id);
                                 else next.add(section.id);
                                 return next;
                               })
@@ -505,17 +455,11 @@ export function OrderCasePanel({
 
         {historyContent ? (
           /* A column, so an order opened in the tab can fill it (`OrderCaseHistory`). */
-          <TabsContent
-            value="history"
-            className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4"
-          >
+          <TabsContent value="history" className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
             {historyContent}
           </TabsContent>
         ) : null}
-        <TabsContent
-          value="data-flags"
-          className="min-h-0 flex-1 overflow-y-auto p-4"
-        >
+        <TabsContent value="data-flags" className="min-h-0 flex-1 overflow-y-auto p-4">
           {dataFlagsContent ?? <OrderDataFlags />}
         </TabsContent>
       </Tabs>
@@ -529,9 +473,7 @@ export function OrderCasePanel({
         <DialogContent className="flex h-[85dvh] flex-col gap-4 sm:max-w-5xl">
           <DialogHeader className="flex-row items-start justify-between gap-4 pr-12">
             <div className="flex min-w-0 flex-col gap-1">
-              <DialogTitle className="text-title-s font-semibold">
-                {viewing?.label}
-              </DialogTitle>
+              <DialogTitle className="text-title-s font-semibold">{viewing?.label}</DialogTitle>
               <DialogDescription>{t("orderCasePanel_fromTheCaseFile")}</DialogDescription>
             </div>
             {viewing && !disabled ? (

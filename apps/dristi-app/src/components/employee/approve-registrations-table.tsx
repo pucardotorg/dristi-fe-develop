@@ -28,11 +28,7 @@ import {
   type WaitTone,
 } from "@/lib/employee/approve-registrations";
 import { formatListingDate } from "@/lib/employee/hearings";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useTranslations } from "next-intl";

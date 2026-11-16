@@ -77,9 +77,7 @@ export function DownloadCaseFileDialog({
 
   function toggleSection(id: string, checked: boolean) {
     setFailed(false);
-    setSections((current) =>
-      checked ? [...current, id] : current.filter((item) => item !== id)
-    );
+    setSections((current) => (checked ? [...current, id] : current.filter((item) => item !== id)));
   }
 
   async function download() {
@@ -132,9 +130,7 @@ export function DownloadCaseFileDialog({
           <DialogTitle className="text-title-s font-semibold">
             {t("downloadCaseFileDialog_downloadCaseFile")}
           </DialogTitle>
-          <p className="font-mono text-caption font-medium text-muted-foreground">
-            {caseNumber}
-          </p>
+          <p className="font-mono text-caption font-medium text-muted-foreground">{caseNumber}</p>
         </DialogHeader>
 
         <div className="flex min-h-0 flex-col gap-4 overflow-y-auto px-6 py-4">
@@ -149,10 +145,7 @@ export function DownloadCaseFileDialog({
           >
             {FORMATS.map((item) => (
               <div key={item.value} className="flex min-h-8 items-center gap-2">
-                <RadioGroupItem
-                  value={item.value}
-                  id={`download-${item.value}`}
-                />
+                <RadioGroupItem value={item.value} id={`download-${item.value}`} />
                 <Label htmlFor={`download-${item.value}`}>{translateText(t, item.label)}</Label>
               </div>
             ))}
@@ -166,14 +159,9 @@ export function DownloadCaseFileDialog({
                   <Checkbox
                     id={`download-section-${node.id}`}
                     checked={sections.includes(node.id)}
-                    onCheckedChange={(checked) =>
-                      toggleSection(node.id, checked === true)
-                    }
+                    onCheckedChange={(checked) => toggleSection(node.id, checked === true)}
                   />
-                  <Label
-                    htmlFor={`download-section-${node.id}`}
-                    className="font-normal"
-                  >
+                  <Label htmlFor={`download-section-${node.id}`} className="font-normal">
                     {node.label}
                   </Label>
                 </div>
@@ -189,15 +177,13 @@ export function DownloadCaseFileDialog({
         </div>
 
         <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 py-4 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={guard.close}
-          >
+          <Button type="button" variant="outline" onClick={guard.close}>
             {t("common_cancel")}
           </Button>
           <Button type="button" disabled={blocked} onClick={download}>
-            {preparing ? t("downloadCaseFileDialog_preparing") : t("downloadCaseFileDialog_download")}
+            {preparing
+              ? t("downloadCaseFileDialog_preparing")
+              : t("downloadCaseFileDialog_download")}
           </Button>
         </div>
         <DiscardQuestion guard={guard} />

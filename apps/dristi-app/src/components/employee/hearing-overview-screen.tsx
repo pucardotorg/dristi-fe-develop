@@ -2,10 +2,7 @@
 
 import { type ReactNode } from "react";
 import Link from "next/link";
-import {
-  CalendarX2Icon,
-  ExternalLinkIcon,
-} from "lucide-react";
+import { CalendarX2Icon, ExternalLinkIcon } from "lucide-react";
 
 import { Identifier } from "@/components/chrome/identifier";
 import { GroupedCaseHistory } from "@/components/employee/grouped-case-history";
@@ -158,9 +155,7 @@ function HearingMissing() {
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href="/employee/hearings">
-              {t("hearingOverviewScreen_backToTodaysHearings")}
-            </Link>
+            <Link href="/employee/hearings">{t("hearingOverviewScreen_backToTodaysHearings")}</Link>
           </Button>
         </EmptyContent>
       </Empty>
@@ -242,7 +237,10 @@ export function HearingOverviewCaption({ hearing }: { hearing: CourtHearing }) {
       {/* The item is a *position* in today's board and keeps plain figures; the case
           number is an identifier and takes the treatment. The rule is by kind of fact,
           which is why these two sit side by side wearing different faces. */}
-      {t.rich("hearingOverviewScreen_itemItem", { item: String(hearing.item), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+      {t.rich("hearingOverviewScreen_itemItem", {
+        item: String(hearing.item),
+        span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+      })}
       <Identifier value={hearing.caseNumber} label={t("hearingOverviewScreen_caseNumber")} />
       {" · "}
       {courtHearingPurposeLabel(hearing.purpose)}
@@ -313,13 +311,18 @@ export function HearingOverviewSections({
             own, as View case opens, so the overview stays where the bench left it. */}
         <Button asChild variant="link" size="sm" className="h-auto shrink-0 px-0">
           <a href={HEARING_DEMO_CASE_ORDERS_HREF} target="_blank" rel="noopener">
-            {t.rich("hearingOverviewScreen_viewAllOrdersOpensInA", { span: (chunks) => <span className="sr-only">{chunks}</span> })}
+            {t.rich("hearingOverviewScreen_viewAllOrdersOpensInA", {
+              span: (chunks) => <span className="sr-only">{chunks}</span>,
+            })}
             <ExternalLinkIcon data-icon="inline-end" aria-hidden />
           </a>
         </Button>
       </div>
       {nextHearing ? (
-        <TabsContent value="next-hearing" className={`${TAB_BODY_BASE} ${TAB_BODY_HEIGHT[surface]}`}>
+        <TabsContent
+          value="next-hearing"
+          className={`${TAB_BODY_BASE} ${TAB_BODY_HEIGHT[surface]}`}
+        >
           {nextHearing}
         </TabsContent>
       ) : null}
@@ -362,8 +365,7 @@ const TAB_LIST: Record<HearingOverviewSurface, string> = {
   overlay: "h-10",
   panel: "h-14 group-data-horizontal/tabs:h-14",
 };
-const TAB_TRIGGER =
-  "h-full flex-none text-body-compact";
+const TAB_TRIGGER = "h-full flex-none text-body-compact";
 /**
  * Each tab scrolls in its own box; `p-4` is what the history's pinned filter expects of
  * that box, as in the order screen's tab. On the page the box is a fixed height, the same
@@ -379,8 +381,7 @@ const TAB_BODY_HEIGHT: Record<HearingOverviewSurface, string> = {
   panel: "h-[28rem] flex-none",
 };
 
-const HEARING_DEMO_CASE_ORDERS_HREF =
-  "/employee/cases/c-1001?section=orders-and-notifications";
+const HEARING_DEMO_CASE_ORDERS_HREF = "/employee/cases/c-1001?section=orders-and-notifications";
 
 /**
  * The overview's one way further into the case: the court's case view, opened on its
@@ -416,7 +417,9 @@ export function ViewCaseAction({
   return (
     <Button asChild variant={variant} className="w-fit shrink-0">
       <a href={HEARING_DEMO_CASE_HREF} target="_blank" rel="noopener">
-        {t.rich("hearingOverviewScreen_viewCaseOpensInANew", { span: (chunks) => <span className="sr-only">{chunks}</span> })}
+        {t.rich("hearingOverviewScreen_viewCaseOpensInANew", {
+          span: (chunks) => <span className="sr-only">{chunks}</span>,
+        })}
         <ExternalLinkIcon data-icon="inline-end" aria-hidden />
       </a>
     </Button>
@@ -444,12 +447,8 @@ function CaseFactsPanel({
   className?: string;
 }) {
   const t = useTranslations();
-  const complainantCounsel = counselFor(hearing, "complainant").map(
-    (entry) => entry.name,
-  );
-  const accusedCounsel = counselFor(hearing, "accused").map(
-    (entry) => entry.name,
-  );
+  const complainantCounsel = counselFor(hearing, "complainant").map((entry) => entry.name);
+  const accusedCounsel = counselFor(hearing, "accused").map((entry) => entry.name);
 
   return (
     /* In its tab: the tab is its frame and names it, so no panel and a hidden heading. */
@@ -481,16 +480,12 @@ function CaseFactsPanel({
         />
         {extras.chequeAmount ? (
           <FactRow surface={surface} term={t("hearingOverviewScreen_chequeAmount")}>
-            <span className="tabular-nums">
-              {formatChequeAmount(extras.chequeAmount)}
-            </span>
+            <span className="tabular-nums">{formatChequeAmount(extras.chequeAmount)}</span>
           </FactRow>
         ) : null}
         {extras.filedOn ? (
           <FactRow surface={surface} term={t("hearingOverviewScreen_filed")}>
-            <span className="tabular-nums">
-              {formatCaseDate(extras.filedOn)}
-            </span>
+            <span className="tabular-nums">{formatCaseDate(extras.filedOn)}</span>
           </FactRow>
         ) : null}
       </DescriptionList>
@@ -526,9 +521,7 @@ function FactRow({
   return (
     <DescriptionRow className={FACT_ROW_CLASS}>
       <DescriptionTerm className={BODY[surface]}>{term}</DescriptionTerm>
-      <DescriptionDetails className={`${BODY[surface]} font-medium`}>
-        {children}
-      </DescriptionDetails>
+      <DescriptionDetails className={`${BODY[surface]} font-medium`}>{children}</DescriptionDetails>
     </DescriptionRow>
   );
 }
@@ -555,7 +548,9 @@ function PartyRow({
         <span className="font-medium">{name}</span>
         {counsel.length > 0 ? (
           <span className="text-body-compact text-muted-foreground">
-            {t("hearingOverviewScreen_counselFormatCounselList", { formatCounselList: formatCounselList(counsel) })}
+            {t("hearingOverviewScreen_counselFormatCounselList", {
+              formatCounselList: formatCounselList(counsel),
+            })}
           </span>
         ) : null}
       </DescriptionDetails>

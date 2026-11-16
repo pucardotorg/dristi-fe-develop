@@ -27,18 +27,10 @@ import { useTranslations } from "next-intl";
  */
 
 /** One column of dated steps, under the phase it belongs to. */
-export function StepGroup({
-  heading,
-  children,
-}: {
-  heading: string;
-  children: React.ReactNode;
-}) {
+export function StepGroup({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <h3 className="text-body-compact font-semibold text-muted-foreground">
-        {heading}
-      </h3>
+      <h3 className="text-body-compact font-semibold text-muted-foreground">{heading}</h3>
       <Timeline className="text-body-compact">{children}</Timeline>
     </div>
   );
@@ -109,19 +101,12 @@ export function Step({
             <span
               className={cn(
                 "col-span-2 col-start-1 row-start-2 min-w-0 @xl:col-span-1 @xl:col-start-2 @xl:row-start-1",
-                tone === "warning"
-                  ? "text-warning-ink"
-                  : "text-muted-foreground",
+                tone === "warning" ? "text-warning-ink" : "text-muted-foreground",
               )}
             >
               {note}
               {aside ? (
-                <span
-                  className={cn(
-                    "block",
-                    tone === "warning" && "text-muted-foreground",
-                  )}
-                >
+                <span className={cn("block", tone === "warning" && "text-muted-foreground")}>
                   {aside}
                 </span>
               ) : null}

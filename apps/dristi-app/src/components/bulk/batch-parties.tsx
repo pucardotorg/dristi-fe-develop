@@ -11,10 +11,7 @@ import {
 } from "@/lib/filing/details-formats";
 import type { AdrPrayer } from "@/lib/filing/types";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
@@ -55,22 +52,14 @@ export function BatchParties({
     <>
       <Field className="gap-1.5">
         <FieldLabel>{t("batchParties_willingToSettleThroughAdr")}</FieldLabel>
-        <RadioGroup
-          value={adr}
-          onValueChange={(v) => setAdr(v as Adr)}
-          className="flex gap-6"
-        >
+        <RadioGroup value={adr} onValueChange={(v) => setAdr(v as Adr)} className="flex gap-6">
           {ADR_CHOICES.map(({ value: v, label }) => (
             <label
               key={v}
               htmlFor={`adr-${v}`}
               className="flex min-h-10 cursor-pointer items-center gap-2 text-body-compact"
             >
-              <RadioGroupItem
-                value={v}
-                id={`adr-${v}`}
-                aria-label={translateText(t, label)}
-              />
+              <RadioGroupItem value={v} id={`adr-${v}`} aria-label={translateText(t, label)} />
               {translateText(t, label)}
             </label>
           ))}

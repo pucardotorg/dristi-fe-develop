@@ -22,16 +22,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  filingNoun,
-  type ApplicationRecord,
-} from "@/lib/cases/application-record";
+import { Dialog, DialogClose, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { filingNoun, type ApplicationRecord } from "@/lib/cases/application-record";
 import type { CaseRecord } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -100,19 +92,13 @@ function ReviewBody({
   const t = useTranslations();
   const count = applications.length;
   const [openId, setOpenId] = useState(applications[0].id);
-  const open =
-    applications.find((item) => item.id === openId) ?? applications[0];
-  const composed = useMemo(
-    () => composedApplication(open, record),
-    [open, record]
-  );
+  const open = applications.find((item) => item.id === openId) ?? applications[0];
+  const composed = useMemo(() => composedApplication(open, record), [open, record]);
   /* A document (an affidavit, a memo) has no page set out from its details:
      its own file shows, as in its record. Nor has it a form to reopen. */
   const file = composed
     ? undefined
-    : open.documents.find(
-        (doc) => doc.src && (isPdfSrc(doc.src) || isImageSrc(doc.src))
-      );
+    : open.documents.find((doc) => doc.src && (isPdfSrc(doc.src) || isImageSrc(doc.src)));
   const pdf = file?.src && isPdfSrc(file.src) ? parsePdfSrc(file.src) : null;
   const image = file?.src && !pdf ? parsePdfSrc(file.src).url : null;
   const editable = open.source.kind === "application" && onEdit;
@@ -123,7 +109,10 @@ function ReviewBody({
       <div className="flex shrink-0 items-center gap-2 border-b border-hairline py-3 pr-3 pl-6">
         <div className="min-w-0 flex-1">
           <DialogTitle className="text-body-compact font-semibold text-pretty sm:truncate">
-            {t("signReviewDialog_signCountFilingNoun", { count: String(count), filingNoun: filingNoun(applications) })}
+            {t("signReviewDialog_signCountFilingNoun", {
+              count: String(count),
+              filingNoun: filingNoun(applications),
+            })}
           </DialogTitle>
           <DialogDescription className="sr-only">
             {t("signReviewDialog_readEachOneThenSignThem")}
@@ -142,7 +131,9 @@ function ReviewBody({
         <div className="flex min-h-0 flex-1 flex-col @3xl/review:flex-row">
           <div className="flex max-h-72 shrink-0 flex-col gap-1.5 overflow-y-auto border-b border-hairline p-4 @3xl/review:max-h-none @3xl/review:w-80 @3xl/review:border-r @3xl/review:border-b-0">
             <h3 className="text-caption font-medium text-muted-foreground">
-              {filingNoun(applications) === "documents" ? t("signReviewDialog_documents") : t("signReviewDialog_applications")}
+              {filingNoun(applications) === "documents"
+                ? t("signReviewDialog_documents")
+                : t("signReviewDialog_applications")}
             </h3>
             <ul className="-mx-2 flex flex-col gap-0.5">
               {applications.map((item) => (
@@ -153,7 +144,7 @@ function ReviewBody({
                     onClick={() => setOpenId(item.id)}
                     className={cn(
                       "flex min-h-10 w-full items-start gap-2 rounded-lg px-2 py-2 text-left outline-none transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50",
-                      item.id === open.id && "bg-accent-strong"
+                      item.id === open.id && "bg-accent-strong",
                     )}
                   >
                     <FileTextIcon
@@ -164,7 +155,7 @@ function ReviewBody({
                       <span
                         className={cn(
                           "text-body-compact text-foreground",
-                          item.id === open.id && "font-medium"
+                          item.id === open.id && "font-medium",
                         )}
                       >
                         {item.name}
@@ -245,7 +236,10 @@ function ReviewBody({
               className="w-full sm:w-auto"
               onClick={() => onEdit(open)}
             >
-              {t.rich("signReviewDialog_editName", { name: open.name, span: (chunks) => <span className="sr-only">{chunks}</span> })}
+              {t.rich("signReviewDialog_editName", {
+                name: open.name,
+                span: (chunks) => <span className="sr-only">{chunks}</span>,
+              })}
             </Button>
           ) : replaceable ? (
             <ReplaceFileButton
@@ -253,11 +247,7 @@ function ReviewBody({
               onFile={(picked) => onReplaceFile(open, picked)}
             />
           ) : null}
-          <Button
-            type="button"
-            className="w-full sm:w-auto"
-            onClick={() => onSign(applications)}
-          >
+          <Button type="button" className="w-full sm:w-auto" onClick={() => onSign(applications)}>
             {t("signReviewDialog_signAllCount", { count: String(count) })}
           </Button>
         </div>

@@ -5,7 +5,7 @@ Snapshot: 2026-07-30. Source: [domain model site](https://dristidomain.netlify.a
 
 ## Instrument
 
-Supreme Court of India draft *Regulations for Use of AI in Courts, 2026* — published for
+Supreme Court of India draft _Regulations for Use of AI in Courts, 2026_ — published for
 comment June 2026, **not yet in force**. National policy governing how courts run
 generally, not case-type-specific.
 

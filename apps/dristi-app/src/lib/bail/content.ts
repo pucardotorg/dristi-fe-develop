@@ -58,7 +58,11 @@ export type ApplicationTypeOption = {
 
 /** The legacy application-type list, unchanged in order. */
 export const APPLICATION_TYPES: ApplicationTypeOption[] = [
-  { id: "advancement", label: t("bail_advancementReschedule", "വാദം നേരത്തേയാക്കൽ / മാറ്റിവയ്ക്കൽ"), available: false },
+  {
+    id: "advancement",
+    label: t("bail_advancementReschedule", "വാദം നേരത്തേയാക്കൽ / മാറ്റിവയ്ക്കൽ"),
+    available: false,
+  },
   { id: "bail", label: t("bail_bail", "ജാമ്യം"), available: true },
   { id: "condonation", label: t("bail_condonationOfDelay", "കാലതാമസം മാപ്പാക്കൽ"), available: false },
   { id: "others", label: t("bail_others", "മറ്റുള്ളവ"), available: false },
@@ -152,10 +156,7 @@ export const bailDialog = {
   ),
   /* closing midway: the same question every filing dialog asks */
   discardTitle: t("bail_discardThisApplication", "ഈ അപേക്ഷ ഉപേക്ഷിക്കണോ?"),
-  discardBody: t(
-    "bail_anythingYouEnteredWillBeLost",
-    "നിങ്ങൾ നൽകിയതെല്ലാം നഷ്ടപ്പെടും.",
-  ),
+  discardBody: t("bail_anythingYouEnteredWillBeLost", "നിങ്ങൾ നൽകിയതെല്ലാം നഷ്ടപ്പെടും."),
   discardKeep: t("bail_keepEditing", "തിരുത്തൽ തുടരുക"),
   discardConfirm: t("bail_discard", "ഉപേക്ഷിക്കുക"),
   title: t("bail_bailApplication", "ജാമ്യാപേക്ഷ"),
@@ -216,10 +217,7 @@ export const bailDialog = {
     "bail_bailHereIsOrdinarilyGrantedOn",
     "ഇവിടെ സാധാരണയായി ജാമ്യക്കാരുടെ ഉറപ്പിന്മേലാണ് ജാമ്യം അനുവദിക്കുന്നത്, ഹർജിക്കാരന് വേണ്ടി ഉറപ്പുനൽകുന്നവർ. മജിസ്‌ട്രേറ്റ് സാധാരണ രണ്ട് പേരെ ആവശ്യപ്പെടും.",
   ),
-  suretyQuestion: t(
-    "bail_doYouWantToAddSurety",
-    "ജാമ്യാപേക്ഷയിൽ ജാമ്യക്കാരുടെ വിവരങ്ങൾ ചേർക്കണോ?",
-  ),
+  suretyQuestion: t("bail_doYouWantToAddSurety", "ജാമ്യാപേക്ഷയിൽ ജാമ്യക്കാരുടെ വിവരങ്ങൾ ചേർക്കണോ?"),
   yes: t("bail_yes", "അതെ"),
   no: t("bail_no", "ഇല്ല"),
   suretyChoiceError: t("bail_chooseYesOrNo", "അതെ അല്ലെങ്കിൽ ഇല്ല തിരഞ്ഞെടുക്കുക."),
@@ -281,10 +279,7 @@ export const bailDialog = {
 
   /* signature */
   signTitle: t("bail_addYourSignature", "നിങ്ങളുടെ ഒപ്പ് ചേർക്കുക"),
-  signBody: t(
-    "bail_signTheApplicationToSubmitIt",
-    "കോടതിയിൽ സമർപ്പിക്കാൻ അപേക്ഷയിൽ ഒപ്പിടുക.",
-  ),
+  signBody: t("bail_signTheApplicationToSubmitIt", "കോടതിയിൽ സമർപ്പിക്കാൻ അപേക്ഷയിൽ ഒപ്പിടുക."),
   tabEsign: t("bail_eSignWithAadhaar", "ആധാർ ഇ-സൈൻ"),
   tabUploadSigned: t("bail_uploadASignedCopy", "ഒപ്പിട്ട പകർപ്പ് അപ്‌ലോഡ് ചെയ്യുക"),
   esignNote: t(
@@ -303,17 +298,11 @@ export const bailDialog = {
   ),
   signedDocLabel: t("bail_signedApplication", "ഒപ്പിട്ട അപേക്ഷ"),
   signedNote: t("bail_signedByName", "{name} ഒപ്പിട്ടു"),
-  signError: t(
-    "bail_signTheApplicationBeforeContinuing",
-    "തുടരുന്നതിന് മുൻപ് അപേക്ഷയിൽ ഒപ്പിടുക.",
-  ),
+  signError: t("bail_signTheApplicationBeforeContinuing", "തുടരുന്നതിന് മുൻപ് അപേക്ഷയിൽ ഒപ്പിടുക."),
 
   /* court fee */
   payTitle: t("bail_courtFee", "കോടതി ഫീസ്"),
-  payBody: t(
-    "bail_payTheApplicationFeeToComplete",
-    "സമർപ്പണം പൂർത്തിയാക്കാൻ അപേക്ഷാ ഫീസ് അടയ്ക്കുക.",
-  ),
+  payBody: t("bail_payTheApplicationFeeToComplete", "സമർപ്പണം പൂർത്തിയാക്കാൻ അപേക്ഷാ ഫീസ് അടയ്ക്കുക."),
   feeLine: t("bail_applicationFee", "അപേക്ഷാ ഫീസ്"),
   totalLine: t("bail_total", "ആകെ"),
   // Legacy copy, kept verbatim per the Aug 24 review.
@@ -324,10 +313,7 @@ export const bailDialog = {
   payNow: t("bail_payFeeNow", "{fee} ഇപ്പോൾ അടയ്ക്കുക"),
   payLater: t("bail_payLater", "പിന്നീട് അടയ്ക്കാം"),
   /* Malayalam drafted — needs review. */
-  paidBody: t(
-    "bail_theApplicationFeeIsPaidContinue",
-    "അപേക്ഷാ ഫീസ് അടച്ചു. അപേക്ഷ ഫയൽ ചെയ്യാൻ തുടരുക.",
-  ),
+  paidBody: t("bail_theApplicationFeeIsPaidContinue", "അപേക്ഷാ ഫീസ് അടച്ചു. അപേക്ഷ ഫയൽ ചെയ്യാൻ തുടരുക."),
 
   /* submitted */
   doneTitle: t("bail_bailApplicationSubmitted", "ജാമ്യാപേക്ഷ സമർപ്പിച്ചു"),
@@ -363,20 +349,14 @@ export const bailDialog = {
     "bail_checkTheUploadedDocumentBeforeContinuing",
     "തുടരുന്നതിന് മുൻപ് അപ്‌ലോഡ് ചെയ്ത രേഖ പരിശോധിക്കുക.",
   ),
-  docPreviewAlt: t(
-    "bail_previewOfTheUploadedDocument",
-    "അപ്‌ലോഡ് ചെയ്ത രേഖയുടെ പ്രിവ്യൂ",
-  ),
+  docPreviewAlt: t("bail_previewOfTheUploadedDocument", "അപ്‌ലോഡ് ചെയ്ത രേഖയുടെ പ്രിവ്യൂ"),
 
   /* notifications */
   notifTitle: t(
     "bail_bailApplicationSubmittedForCaseNumber",
     "{caseNumber} കേസിൽ ജാമ്യാപേക്ഷ സമർപ്പിച്ചു",
   ),
-  notifBody: t(
-    "bail_submissionIdIdYouWillBe",
-    "സമർപ്പണ ഐഡി {id}. തീരുമാനമാകുമ്പോൾ SMS വഴി അറിയിക്കും.",
-  ),
+  notifBody: t("bail_submissionIdIdYouWillBe", "സമർപ്പണ ഐഡി {id}. തീരുമാനമാകുമ്പോൾ SMS വഴി അറിയിക്കും."),
 } as const;
 
 /* ------------------------------------------------------------------- bail bond */
@@ -427,10 +407,7 @@ export const bondCopy = {
     "വ്യക്തിഗത ബോണ്ട് കക്ഷിയുടെ സ്വന്തം ഉറപ്പാണ്; ജാമ്യക്കാർ ആവശ്യമില്ല.",
   ),
   suretiesRequiredLabel: t("bail_suretiesRequired", "ആവശ്യമായ ജാമ്യക്കാർ"),
-  suretiesRequiredError: t(
-    "bail_enterHowManySuretiesTheBond",
-    "ബോണ്ടിൽ എത്ര ജാമ്യക്കാർ വേണമെന്ന് നൽകുക.",
-  ),
+  suretiesRequiredError: t("bail_enterHowManySuretiesTheBond", "ബോണ്ടിൽ എത്ര ജാമ്യക്കാർ വേണമെന്ന് നൽകുക."),
   fromApplication: t("bail_fromTheBailApplication", "ജാമ്യാപേക്ഷയിൽ നിന്ന്"),
   lockedSuretyNote: t(
     "bail_approvedByTheMagistrateOnlyThe",
@@ -479,10 +456,7 @@ export const bondCopy = {
   proceedToSign: t("bail_proceedToSign", "ഒപ്പിടാൻ തുടരുക"),
 
   /* sign stage */
-  signBody: t(
-    "bail_signTheBailBondToSubmit",
-    "കോടതിയിൽ സമർപ്പിക്കാൻ ജാമ്യ ബോണ്ടിൽ ഒപ്പിടുക.",
-  ),
+  signBody: t("bail_signTheBailBondToSubmit", "കോടതിയിൽ സമർപ്പിക്കാൻ ജാമ്യ ബോണ്ടിൽ ഒപ്പിടുക."),
   uploadBondHint: t(
     "bail_downloadTheBailBondCollectThe",
     "ജാമ്യ ബോണ്ട് ഡൗൺലോഡ് ചെയ്ത്, കക്ഷിയുടെയും എല്ലാ ജാമ്യക്കാരുടെയും ഒപ്പുകൾ ശേഖരിച്ച്, ഒപ്പിട്ട പകർപ്പ് അപ്‌ലോഡ് ചെയ്യുക.",
@@ -496,10 +470,7 @@ export const bondCopy = {
     "bail_theLitigantAndEachSuretyHave",
     "ഒപ്പുകൾ ചേർക്കാനുള്ള ലിങ്ക് കക്ഷിക്കും ഓരോ ജാമ്യക്കാരനും SMS വഴി, ഇമെയിൽ നൽകിയാൽ അതുവഴിയും, അയച്ചിട്ടുണ്ട്.",
   ),
-  doneBodyUpload: t(
-    "bail_theSignedBondIsWithThe",
-    "ഒപ്പിട്ട ബോണ്ട് കോടതിയുടെ പരിശോധനയ്ക്കായി സമർപ്പിച്ചു.",
-  ),
+  doneBodyUpload: t("bail_theSignedBondIsWithThe", "ഒപ്പിട്ട ബോണ്ട് കോടതിയുടെ പരിശോധനയ്ക്കായി സമർപ്പിച്ചു."),
   doneTitleEdited: t("bail_bailBondUpdated", "ജാമ്യ ബോണ്ട് പുതുക്കി"),
   doneBodyEdited: t(
     "bail_earlierSignaturesStandInvalidatedTheLitigant",
@@ -558,10 +529,7 @@ export const bondCopy = {
   ),
 
   /* notification */
-  notifBondTitle: t(
-    "bail_bailBondSubmittedForCaseNumber",
-    "{caseNumber} കേസിൽ ജാമ്യ ബോണ്ട് സമർപ്പിച്ചു",
-  ),
+  notifBondTitle: t("bail_bailBondSubmittedForCaseNumber", "{caseNumber} കേസിൽ ജാമ്യ ബോണ്ട് സമർപ്പിച്ചു"),
   notifBondBody: t(
     "bail_bondIdIdTheLitigantAnd",
     "ബോണ്ട് ഐഡി {id}. കക്ഷിയോടും ജാമ്യക്കാരോടും ഒപ്പിടാൻ ആവശ്യപ്പെട്ടിട്ടുണ്ട്.",

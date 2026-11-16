@@ -78,7 +78,9 @@ export default function LandingPage() {
               className="group flex items-center justify-between gap-6 rounded-xl bg-card p-6 text-foreground transition-shadow hover:shadow-overlay focus-visible:ring-2 focus-visible:ring-brand-canvas-foreground focus-visible:outline-none"
             >
               <span className="flex min-w-0 flex-col gap-1">
-                <span className="text-title-s font-semibold">{translateText(t, entrance.title)}</span>
+                <span className="text-title-s font-semibold">
+                  {translateText(t, entrance.title)}
+                </span>
                 <span className="text-body-compact text-muted-foreground">
                   {translateText(t, entrance.who)}
                 </span>

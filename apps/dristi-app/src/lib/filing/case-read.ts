@@ -136,10 +136,7 @@ function formBlock(a: AddressRead): AddressBlock {
  * The form's contact rows from the backend's two lists, paired in order. How the form had
  * paired them is not kept, but the lists sent from the pairs come out the same.
  */
-function formContacts(
-  lists: ContactListsRead,
-  toForm: (mobile: string) => string
-): Contact[] {
+function formContacts(lists: ContactListsRead, toForm: (mobile: string) => string): Contact[] {
   const count = Math.max(lists.mobile_numbers.length, lists.email_addresses.length);
   return Array.from({ length: count }, (_, i) => ({
     mobile: lists.mobile_numbers[i] ? toForm(lists.mobile_numbers[i]) : "",
@@ -181,7 +178,7 @@ function merge<T extends SavedParty & { id: string }>(
   local: T[],
   groups: ParticipantRead[][],
   pending: (party: T) => boolean,
-  rebuild: (group: ParticipantRead[], base: T | undefined) => T
+  rebuild: (group: ParticipantRead[], base: T | undefined) => T,
 ): FromCase<T> {
   const taken = new Set<number>();
   const result: FromCase<T> = { parties: [], replaced: [], unsaved: [] };
@@ -193,7 +190,7 @@ function merge<T extends SavedParty & { id: string }>(
       continue;
     }
     const k = groups.findIndex(
-      (g, j) => !taken.has(j) && g.some((p) => ids.includes(p.case_participant_id))
+      (g, j) => !taken.has(j) && g.some((p) => ids.includes(p.case_participant_id)),
     );
     if (k >= 0) taken.add(k);
 
@@ -284,13 +281,13 @@ function withPoaHolder(
   c: Complainant,
   read: CaseRead,
   selfId: string | undefined,
-  profile: UserProfile | null
+  profile: UserProfile | null,
 ): Complainant {
   const forId = c.caseParticipantIds?.[0];
   const mandates = read.poa_mandates.filter((m) => m.represented_participant_id === forId);
   const holderId = mandates[0]?.poa_participant_id;
   const holder = read.participants.find(
-    (p) => p.role === "POA_HOLDER" && p.case_participant_id === holderId
+    (p) => p.role === "POA_HOLDER" && p.case_participant_id === holderId,
   );
   if (!forId || !holderId || !holder) {
     return { ...c, poa: "no", savedPoaHolder: undefined, poaSyncError: undefined };
@@ -322,22 +319,20 @@ function withPoaHolder(
 export function complainantsFromCase(
   read: CaseRead,
   local: Complainant[],
-  profile: UserProfile | null
+  profile: UserProfile | null,
 ): FromCase<Complainant> {
   const localSelf = selfComplainantId(local, profile);
   const pending = (c: Complainant) => {
     const poaPending =
       !!c.poaSyncError || poaBodyJson(c, localSelf, profile) !== c.savedPoaHolder?.body;
-    return (
-      !!c.syncError || partyChanged(complainantBodies(c, c.id === localSelf), c) || poaPending
-    );
+    return !!c.syncError || partyChanged(complainantBodies(c, c.id === localSelf), c) || poaPending;
   };
   const result = merge(
     local,
     byOrdinal(read, "COMPLAINANT").map((p) => [p]),
     pending,
     ([p], base) =>
-      complainantFrom(p, base ?? { ...blankComplainant(), id: `cp-${p.case_participant_id}` })
+      complainantFrom(p, base ?? { ...blankComplainant(), id: `cp-${p.case_participant_id}` }),
   );
 
   // Who "you" are, the bodies and the PoA holders depend on the whole list, so they come last.
@@ -412,10 +407,10 @@ export function accusedFromCase(read: CaseRead, local: Accused[]): FromCase<Accu
     (group, base) => {
       const a = accusedFrom(
         group,
-        base ?? { ...blankAccused(), id: `acc-${group[0].case_participant_id}` }
+        base ?? { ...blankAccused(), id: `acc-${group[0].case_participant_id}` },
       );
       return { ...a, savedBodies: savedBodiesOf(accusedBodies(a)) };
-    }
+    },
   );
   return result;
 }
@@ -444,8 +439,10 @@ function witnessFrom(p: ParticipantRead, base: Witness): Witness {
 
 /** A witness row nobody has typed into: the blank one a new draft starts with. */
 function untouchedWitness(w: Witness): boolean {
-  return !w.caseParticipantIds?.length &&
-    JSON.stringify({ ...w, id: "" }) === JSON.stringify({ ...blankWitness(), id: "" });
+  return (
+    !w.caseParticipantIds?.length &&
+    JSON.stringify({ ...w, id: "" }) === JSON.stringify({ ...blankWitness(), id: "" })
+  );
 }
 
 export function witnessesFromCase(read: CaseRead, local: Witness[]): FromCase<Witness> {
@@ -454,7 +451,8 @@ export function witnessesFromCase(read: CaseRead, local: Witness[]): FromCase<Wi
     local,
     groups,
     (w) => !!w.syncError || partyChanged(witnessBodies(w), w),
-    ([p], base) => witnessFrom(p, base ?? { ...blankWitness(), id: `wit-${p.case_participant_id}` })
+    ([p], base) =>
+      witnessFrom(p, base ?? { ...blankWitness(), id: `wit-${p.case_participant_id}` }),
   );
   // The case's witnesses take the place of the blank row a new draft starts with.
   if (groups.length > 0) result.parties = result.parties.filter((w) => !untouchedWitness(w));
@@ -467,7 +465,7 @@ function advocateFrom(
   reps: RepresentationRead[],
   base: Advocate,
   complainants: Complainant[],
-  participantIdOf: (c: Complainant) => string | undefined
+  participantIdOf: (c: Complainant) => string | undefined,
 ): Advocate {
   const [first] = reps;
   const clients = reps.map((r) => r.client_participant_id);
@@ -482,7 +480,7 @@ function advocateFrom(
       return id && clients.includes(id) ? [i] : [];
     }),
     representations: Object.fromEntries(
-      reps.map((r) => [r.client_participant_id, r.representation_id])
+      reps.map((r) => [r.client_participant_id, r.representation_id]),
     ),
     syncError: undefined,
   };
@@ -496,7 +494,7 @@ export function advocatesFromCase(
   read: CaseRead,
   local: Advocate[],
   complainants: Complainant[],
-  participantIdOf: (c: Complainant) => string | undefined
+  participantIdOf: (c: Complainant) => string | undefined,
 ): FromCase<Advocate> {
   const groups = new Map<string, RepresentationRead[]>();
   for (const r of read.representations) {

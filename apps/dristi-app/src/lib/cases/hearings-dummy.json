@@ -64,13 +64,7 @@
       "Warrant"
     ]
   },
-  "tableColumns": [
-    "Date",
-    "Hearing ID",
-    "Hearing Type",
-    "Parties",
-    "Status"
-  ],
+  "tableColumns": ["Date", "Hearing ID", "Hearing Type", "Parties", "Status"],
   "hearings": [
     {
       "hearingId": "HRG-017",
@@ -92,12 +86,7 @@
       "date": "2026-07-29",
       "dateDisplay": "29 July 2026",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "PARTY-A-001",
-        "ADV-C-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "PARTY-A-001", "ADV-C-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Arun Das +2",
       "summary": "PW-1 was examined in chief and partly cross-examined. Further cross-examination was deferred and the complainant was directed to keep PW-2 present on the next date.",
       "statusReason": null,
@@ -112,10 +101,7 @@
       "date": "2026-06-14",
       "dateDisplay": "14 June 2026",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "ADV-C-001"
-      ],
+      "participantIds": ["PARTY-C-001", "ADV-C-001"],
       "partiesDisplay": "Sunil Varghese, Adv. Ramesh Menon",
       "summary": "The accused was absent. The warrant was returned unexecuted and proclamation was ordered.",
       "statusReason": null,
@@ -130,10 +116,7 @@
       "date": "2026-04-06",
       "dateDisplay": "6 April 2026",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "ADV-C-001"
-      ],
+      "participantIds": ["PARTY-C-001", "ADV-C-001"],
       "partiesDisplay": "Sunil Varghese, Adv. Ramesh Menon",
       "summary": "The accused was absent despite summons. A bailable warrant was ordered.",
       "statusReason": null,
@@ -148,12 +131,7 @@
       "date": "2026-01-12",
       "dateDisplay": "12 January 2026",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "PARTY-A-001",
-        "ADV-C-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "PARTY-A-001", "ADV-C-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Arun Das +2",
       "summary": "Partial payment was recorded and time for the balance was considered.",
       "statusReason": null,
@@ -167,12 +145,7 @@
       "date": "2025-12-15",
       "dateDisplay": "15 December 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "PARTY-A-001",
-        "ADV-C-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "PARTY-A-001", "ADV-C-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Arun Das +2",
       "summary": "Judgment was pronounced. The accused was convicted; the operative directions are contained in the formal judgment and sentence order.",
       "statusReason": null,
@@ -186,12 +159,7 @@
       "date": "2025-12-01",
       "dateDisplay": "1 December 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "PARTY-A-001",
-        "ADV-C-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "PARTY-A-001", "ADV-C-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Arun Das +2",
       "summary": "Arguments concluded and written submissions were taken on record. Judgment was reserved.",
       "statusReason": null,
@@ -205,12 +173,7 @@
       "date": "2025-11-24",
       "dateDisplay": "24 November 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "PARTY-A-001",
-        "ADV-C-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "PARTY-A-001", "ADV-C-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Arun Das +2",
       "summary": "Complainant's arguments were heard. Accused's arguments commenced and remained part-heard.",
       "statusReason": null,
@@ -224,20 +187,13 @@
       "date": "2025-11-10",
       "dateDisplay": "10 November 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-A-001",
-        "WIT-DW1-001",
-        "ADV-A-001",
-        "ADV-C-001"
-      ],
+      "participantIds": ["PARTY-A-001", "WIT-DW1-001", "ADV-A-001", "ADV-C-001"],
       "partiesDisplay": "Arun Das, Ajith Kumar +2",
       "summary": "DW-1 was examined and cross-examined. Defence evidence was closed.",
       "statusReason": null,
       "transcriptAvailability": "available",
       "transcriptId": "TRN-011",
-      "depositionIds": [
-        "DEP-DW1-001"
-      ]
+      "depositionIds": ["DEP-DW1-001"]
     },
     {
       "hearingId": "HRG-010",
@@ -245,11 +201,7 @@
       "date": "2025-10-27",
       "dateDisplay": "27 October 2025",
       "status": "Abandoned",
-      "participantIds": [
-        "PARTY-A-001",
-        "WIT-DW1-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-A-001", "WIT-DW1-001", "ADV-A-001"],
       "partiesDisplay": "Arun Das, Ajith Kumar +1",
       "summary": "No evidence was recorded because DW-1 was not present.",
       "statusReason": "Hearing did not proceed; defence evidence was fixed for 10 November 2025.",
@@ -264,10 +216,7 @@
       "date": "2025-10-13",
       "dateDisplay": "13 October 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-A-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-A-001", "ADV-A-001"],
       "partiesDisplay": "Arun Das, Adv. P. Balachandran",
       "summary": "The accused was examined regarding the circumstances appearing in evidence and elected to adduce defence evidence.",
       "statusReason": null,
@@ -281,20 +230,13 @@
       "date": "2025-09-29",
       "dateDisplay": "29 September 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "WIT-PW2-001",
-        "ADV-C-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "WIT-PW2-001", "ADV-C-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Priya Nair +2",
       "summary": "Cross-examination of PW-2 concluded and complainant evidence was closed.",
       "statusReason": null,
       "transcriptAvailability": "available",
       "transcriptId": "TRN-008",
-      "depositionIds": [
-        "DEP-PW2-001"
-      ]
+      "depositionIds": ["DEP-PW2-001"]
     },
     {
       "hearingId": "HRG-007",
@@ -302,21 +244,13 @@
       "date": "2025-09-15",
       "dateDisplay": "15 September 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "WIT-PW2-001",
-        "ADV-C-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "WIT-PW2-001", "ADV-C-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Priya Nair +2",
       "summary": "Cross-examination of PW-1 concluded and PW-2 was examined in chief.",
       "statusReason": null,
       "transcriptAvailability": "available",
       "transcriptId": "TRN-007",
-      "depositionIds": [
-        "DEP-PW1-002",
-        "DEP-PW2-001"
-      ]
+      "depositionIds": ["DEP-PW1-002", "DEP-PW2-001"]
     },
     {
       "hearingId": "HRG-006",
@@ -324,20 +258,13 @@
       "date": "2025-09-01",
       "dateDisplay": "1 September 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "ADV-C-001",
-        "PARTY-A-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "ADV-C-001", "PARTY-A-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Adv. Ramesh Menon +2",
       "summary": "PW-1 was examined in chief, exhibits P1 to P5 were marked and cross-examination commenced.",
       "statusReason": null,
       "transcriptAvailability": "available",
       "transcriptId": "TRN-006",
-      "depositionIds": [
-        "DEP-PW1-001"
-      ]
+      "depositionIds": ["DEP-PW1-001"]
     },
     {
       "hearingId": "HRG-005",
@@ -345,12 +272,7 @@
       "date": "2025-08-18",
       "dateDisplay": "18 August 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "PARTY-A-001",
-        "ADV-C-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "PARTY-A-001", "ADV-C-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Arun Das +2",
       "summary": "Application seeking production of the bank return record was allowed.",
       "statusReason": null,
@@ -364,10 +286,7 @@
       "date": "2025-08-04",
       "dateDisplay": "4 August 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-A-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-A-001", "ADV-A-001"],
       "partiesDisplay": "Arun Das, Adv. P. Balachandran",
       "summary": "The accused pleaded not guilty and claimed trial.",
       "statusReason": null,
@@ -381,12 +300,7 @@
       "date": "2025-08-04",
       "dateDisplay": "4 August 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "PARTY-A-001",
-        "ADV-C-001",
-        "ADV-A-001"
-      ],
+      "participantIds": ["PARTY-C-001", "PARTY-A-001", "ADV-C-001", "ADV-A-001"],
       "partiesDisplay": "Sunil Varghese, Arun Das +2",
       "summary": "The accused appeared through counsel and bail was granted subject to conditions.",
       "statusReason": null,
@@ -400,10 +314,7 @@
       "date": "2025-07-21",
       "dateDisplay": "21 July 2025",
       "status": "Abandoned",
-      "participantIds": [
-        "PARTY-C-001",
-        "ADV-C-001"
-      ],
+      "participantIds": ["PARTY-C-001", "ADV-C-001"],
       "partiesDisplay": "Sunil Varghese, Adv. Ramesh Menon",
       "summary": "The hearing did not proceed because service on the accused was incomplete.",
       "statusReason": "Fresh summons directed; appearance fixed for 4 August 2025.",
@@ -418,10 +329,7 @@
       "date": "2025-06-23",
       "dateDisplay": "23 June 2025",
       "status": "Completed",
-      "participantIds": [
-        "PARTY-C-001",
-        "ADV-C-001"
-      ],
+      "participantIds": ["PARTY-C-001", "ADV-C-001"],
       "partiesDisplay": "Sunil Varghese, Adv. Ramesh Menon",
       "summary": "The complaint and verification materials were considered; cognizance was taken and process was directed.",
       "statusReason": null,
@@ -869,87 +777,57 @@
   "witnessDepositions": [
     {
       "depositionId": "DEP-PW1-001",
-      "hearingIds": [
-        "HRG-006"
-      ],
+      "hearingIds": ["HRG-006"],
       "witnessNumber": "PW-1",
       "witnessName": "Benny Alexander",
       "witnessType": "Complainant witness",
       "examinationStage": "Examination in chief and part cross-examination",
       "status": "Partly recorded",
       "summary": "The witness identified the transaction, cheque, return memo, legal demand notice and service records and denied that the cheque was retained only as security.",
-      "exhibits": [
-        "P1",
-        "P2",
-        "P3",
-        "P4",
-        "P5"
-      ],
+      "exhibits": ["P1", "P2", "P3", "P4", "P5"],
       "continuationDate": "2025-09-15"
     },
     {
       "depositionId": "DEP-PW1-002",
-      "hearingIds": [
-        "HRG-007"
-      ],
+      "hearingIds": ["HRG-007"],
       "witnessNumber": "PW-1",
       "witnessName": "Benny Alexander",
       "witnessType": "Complainant witness",
       "examinationStage": "Further cross-examination",
       "status": "Completed",
       "summary": "Further cross-examination regarding delivery, invoicing and the alleged security-cheque arrangement was completed.",
-      "exhibits": [
-        "P1",
-        "P2",
-        "P3"
-      ],
+      "exhibits": ["P1", "P2", "P3"],
       "continuationDate": null
     },
     {
       "depositionId": "DEP-PW2-001",
-      "hearingIds": [
-        "HRG-007",
-        "HRG-008"
-      ],
+      "hearingIds": ["HRG-007", "HRG-008"],
       "witnessNumber": "PW-2",
       "witnessName": "Priya Nair",
       "witnessType": "Bank witness",
       "examinationStage": "Examination in chief and cross-examination",
       "status": "Completed",
       "summary": "The witness identified the bank cheque-return record and stated that the testimony was limited to the bank record.",
-      "exhibits": [
-        "P6"
-      ],
+      "exhibits": ["P6"],
       "continuationDate": null
     },
     {
       "depositionId": "DEP-DW1-001",
-      "hearingIds": [
-        "HRG-011"
-      ],
+      "hearingIds": ["HRG-011"],
       "witnessNumber": "DW-1",
       "witnessName": "Ajith Kumar",
       "witnessType": "Defence witness",
       "examinationStage": "Examination in chief and cross-examination",
       "status": "Completed",
       "summary": "The witness described the defence account records and accepted that the adjustment note did not contain an acknowledgement signed by the complainant.",
-      "exhibits": [
-        "D1",
-        "D2"
-      ],
+      "exhibits": ["D1", "D2"],
       "continuationDate": null
     }
   ],
   "interactionRules": {
     "sortOrder": "date_descending",
     "defaultRowsPerPage": 10,
-    "rowsPerPageOptions": [
-      10,
-      20,
-      30,
-      40,
-      50
-    ],
+    "rowsPerPageOptions": [10, 20, 30, 40, 50],
     "filterMode": "party_type_and_status",
     "transcriptActionLabel": "View transcript",
     "depositionActionLabel": "View witness deposition",

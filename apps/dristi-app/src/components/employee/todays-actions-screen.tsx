@@ -4,13 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
 
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemTitle,
-  ItemGroup,
-} from "@/components/ui/item";
+import { Item, ItemActions, ItemContent, ItemTitle, ItemGroup } from "@/components/ui/item";
 import { formatCourtDay, isoDay } from "@/lib/employee/hearings";
 import {
   courtNavClubbed,
@@ -50,8 +44,7 @@ export function TodaysActionsScreen() {
           {t("todaysActionsScreen_todaysActions")}
         </h1>
         <p className="text-body text-muted-foreground tabular-nums">
-          Today, {formatCourtDay(today)} ·{" "}
-          {total === 1 ? "1 waiting" : `${total} waiting`} across{" "}
+          Today, {formatCourtDay(today)} · {total === 1 ? "1 waiting" : `${total} waiting`} across{" "}
           {items.length} queues
         </p>
       </header>
@@ -83,16 +76,12 @@ export function CourtActionRow({ item }: { item: CourtNavItem }) {
     <Item asChild variant="muted" className="px-4 py-3">
       <Link href={item.href!}>
         <ItemContent>
-          <ItemTitle className="text-body font-medium">
-            {item.label}
-          </ItemTitle>
+          <ItemTitle className="text-body font-medium">{item.label}</ItemTitle>
         </ItemContent>
         <ItemActions className="gap-3">
           {count > 0 ? (
             <span className="flex items-baseline gap-1.5">
-              <span className="text-title-s font-semibold tabular-nums">
-                {count}
-              </span>
+              <span className="text-title-s font-semibold tabular-nums">{count}</span>
               <span className="text-caption text-muted-foreground">
                 {t("todaysActionsScreen_waiting")}
               </span>

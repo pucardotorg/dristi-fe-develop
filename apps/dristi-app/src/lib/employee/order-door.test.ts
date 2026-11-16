@@ -14,8 +14,7 @@ import { hasDraftFor } from "./order-drafts";
 const today = "2026-09-07";
 /* A finished listing with applications on it, so its opening draft carries decisions. */
 const hearing =
-  CAUSE_LIST.find((entry) => applicationsForListing(entry.id).length > 0) ??
-  CAUSE_LIST[0];
+  CAUSE_LIST.find((entry) => applicationsForListing(entry.id).length > 0) ?? CAUSE_LIST[0];
 const heard = initialOrderDraft(hearing, "completed", today);
 
 const late = COGNIZANCE_QUEUE.find(hasDelay) ?? COGNIZANCE_QUEUE[0];
@@ -26,10 +25,7 @@ const cognizanceDraft = { ...EMPTY_ORDER_DRAFT, blocks: cognizance.blocks };
 describe("orderDraftKey", () => {
   it("keeps the key the order screen has always used, and the queue sees it", () => {
     assert.equal(orderDraftKey("h1"), "editor:h1");
-    assert.equal(
-      orderDraftKey("cognizance:c1:notice"),
-      "editor:cognizance:c1:notice",
-    );
+    assert.equal(orderDraftKey("cognizance:c1:notice"), "editor:cognizance:c1:notice");
     assert.ok(hasDraftFor({ [orderDraftKey("h1")]: EMPTY_ORDER_DRAFT }, "h1"));
   });
 });
@@ -48,8 +44,6 @@ describe("orderInitialDraft", () => {
 
   it("keeps an application's decision as an item", () => {
     const draft = orderInitialDraft(heard);
-    assert.ok(
-      draft.blocks.some((block) => block.kind === "item" && block.applicationId),
-    );
+    assert.ok(draft.blocks.some((block) => block.kind === "item" && block.applicationId));
   });
 });

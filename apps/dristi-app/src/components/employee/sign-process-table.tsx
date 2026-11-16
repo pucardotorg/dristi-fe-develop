@@ -17,11 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { causeTitle } from "@/lib/employee/hearings";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import {
   bandByStatus,
   courtProcessTypeInline,
@@ -78,21 +74,11 @@ export function ProcessStatusText({
        end; stacked, every status reads the same way at every width and needs no
        separator at all. */
     <span className="flex flex-col">
-      <span
-        className={cn(
-          "font-medium",
-          line.warn ? "text-warning-ink" : "text-foreground",
-        )}
-      >
+      <span className={cn("font-medium", line.warn ? "text-warning-ink" : "text-foreground")}>
         {translateText(t, line.word)}
       </span>
       {detail ? (
-        <span
-          className={cn(
-            "text-muted-foreground",
-            line.day && "tabular-nums whitespace-nowrap",
-          )}
-        >
+        <span className={cn("text-muted-foreground", line.day && "tabular-nums whitespace-nowrap")}>
           {detail}
         </span>
       ) : null}
@@ -162,9 +148,7 @@ export function SignProcessTable({
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "w-12")}>
             <Checkbox
-              checked={
-                allSelected ? true : someSelected ? "indeterminate" : false
-              }
+              checked={allSelected ? true : someSelected ? "indeterminate" : false}
               disabled={rows.length === 0}
               onCheckedChange={(next) => onToggleAll(next === true)}
               /* Every row in view — the list is not paged. */
@@ -204,10 +188,7 @@ export function SignProcessTable({
         /* Each band is a `tbody` so the plate's neighbour rules — the last row's rule, a
            run of picked rows rounding as one — stay inside the band they belong to. */
         bands.map((band) => (
-          <TableBody
-            key={band.status.id}
-            className={tableBodyClass({ selectable: true })}
-          >
+          <TableBody key={band.status.id} className={tableBodyClass({ selectable: true })}>
             <tr>
               <th scope="rowgroup" colSpan={COLUMNS} className="p-0 text-left">
                 <BandLabel status={band.status} count={band.rows.length} />
@@ -242,12 +223,8 @@ function BandLabel({ status, count }: { status: ProcessStatus; count: number }) 
     <div className="flex w-full items-baseline gap-2 border-b border-hairline px-4 pt-4 pb-2">
       {/* 14px, the table's own size: a band names the rows under it and must not read
           smaller than the data it heads. */}
-      <span className="text-body-compact font-semibold text-foreground">
-        {status.label}
-      </span>
-      <span className="text-body-compact tabular-nums text-muted-foreground">
-        {count}
-      </span>
+      <span className="text-body-compact font-semibold text-foreground">{status.label}</span>
+      <span className="text-body-compact tabular-nums text-muted-foreground">{count}</span>
     </div>
   );
 }
@@ -278,14 +255,15 @@ function ProcessRow({
         <Checkbox
           checked={selected}
           onCheckedChange={() => onToggle(process)}
-          aria-label={t("signProcessTable_selectTheInlineInCourtText", { inline, courtText: courtText(process.caseNumber) })}
+          aria-label={t("signProcessTable_selectTheInlineInCourtText", {
+            inline,
+            courtText: courtText(process.caseNumber),
+          })}
         />
       </TableCell>
       {/* The row's opener. Quiet `text-foreground` rather than a teal underline: the teal
           is rationed for the one strong action on the screen. */}
-      <TableCell
-        className={cn(TABLE_CELL, "min-w-48 font-medium whitespace-normal")}
-      >
+      <TableCell className={cn(TABLE_CELL, "min-w-48 font-medium whitespace-normal")}>
         <button
           type="button"
           onClick={() => onOpen(process)}
@@ -300,9 +278,7 @@ function ProcessRow({
         <Identifier value={process.caseNumber} label={t("signProcessTable_caseNumberLabel")} />
       </TableCell>
       {/* Which instrument this is — the fact that tells three rows of one case apart. */}
-      <TableCell className={cn(TABLE_CELL, "min-w-36 whitespace-normal")}>
-        {type}
-      </TableCell>
+      <TableCell className={cn(TABLE_CELL, "min-w-36 whitespace-normal")}>{type}</TableCell>
       {statusColumn ? (
         <TableCell className={cn(TABLE_CELL, "min-w-32 whitespace-normal")}>
           <ProcessStatusText process={process} />

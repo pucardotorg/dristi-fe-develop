@@ -48,11 +48,7 @@ import {
  * It dies on a reload, like everything else in this store.
  */
 export function useOrderDrafts(): OrderDrafts {
-  return React.useSyncExternalStore(
-    subscribeToOrderDrafts,
-    readOrderDrafts,
-    serverOrderDrafts,
-  );
+  return React.useSyncExternalStore(subscribeToOrderDrafts, readOrderDrafts, serverOrderDrafts);
 }
 
 export function useOrderDraft(

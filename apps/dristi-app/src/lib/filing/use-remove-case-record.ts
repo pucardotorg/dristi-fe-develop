@@ -32,6 +32,6 @@ export function useRemoveCaseRecord(): RemoveCaseRecord {
       });
       return true;
     },
-    [latest, update]
+    [latest, update],
   );
 }

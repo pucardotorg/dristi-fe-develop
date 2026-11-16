@@ -37,7 +37,9 @@ function RollingDigit({ digit, up, delay }: { digit: string; up: boolean; delay:
           key={`out-${faces.turn}`}
           data-roll={`out-${direction}`}
           style={{ animationDelay: `${delay}ms` }}
-          onAnimationEnd={() => setFaces((f) => (f.turn === faces.turn ? { ...f, previous: null } : f))}
+          onAnimationEnd={() =>
+            setFaces((f) => (f.turn === faces.turn ? { ...f, previous: null } : f))
+          }
           className="rolling-face absolute inset-0"
         >
           {faces.previous}

@@ -39,18 +39,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   TABLE_CELL,
   TABLE_HEAD,
@@ -58,13 +48,13 @@ import {
   tableBodyClass,
   tableRowClass,
 } from "@/components/chrome/table-plate";
+import { causeListOn, dayKeyOf, type CauseListRow, type HearingStatus } from "@/lib/advocate/home";
 import {
-  causeListOn,
-  dayKeyOf,
-  type CauseListRow,
-  type HearingStatus,
-} from "@/lib/advocate/home";
-import { causeStatusKey, groupCauseList, searchCauseList, type CauseListGroupBy } from "@/lib/advocate/cause-list-groups";
+  causeStatusKey,
+  groupCauseList,
+  searchCauseList,
+  type CauseListGroupBy,
+} from "@/lib/advocate/cause-list-groups";
 import type { World } from "@/lib/tasks/selectors";
 import { advHome, fillCopy } from "@/lib/advocate/content";
 import type { Locale } from "@/lib/onboarding/content";
@@ -102,19 +92,39 @@ function StatusChip({
   // not a floating fill — the status solid for the ongoing tint (DS 6a), a neutral
   // edge for completed and listed, an amber edge for a passed-over matter.
   if (status === "now") {
-    return <Badge variant="success" className="border-success">{pick(advHome.statusOngoing, locale)}</Badge>;
+    return (
+      <Badge variant="success" className="border-success">
+        {pick(advHome.statusOngoing, locale)}
+      </Badge>
+    );
   }
   // Passed over today: called, not heard, still owed its hearing. The chip stays
   // two words; the status column has no room for a date.
   if (passedOver && !passedOverOn) {
-    return <Badge variant="outline" className="border-warning text-warning-ink">{pick(advHome.statusPassedOver, locale)}</Badge>;
+    return (
+      <Badge variant="outline" className="border-warning text-warning-ink">
+        {pick(advHome.statusPassedOver, locale)}
+      </Badge>
+    );
   }
   if (status === "concluded") {
-    return <Badge variant="secondary" className="border-border">{pick(advHome.statusCompleted, locale)}</Badge>;
+    return (
+      <Badge variant="secondary" className="border-border">
+        {pick(advHome.statusCompleted, locale)}
+      </Badge>
+    );
   }
   // A matter carried over from an earlier day is simply listed today; the day it
   // was passed over rides on the chip's tooltip.
-  return <Badge variant="outline" className="border-border" title={passedOverOn ? passedOverLabel(locale) : undefined}>{pick(advHome.statusListed, locale)}</Badge>;
+  return (
+    <Badge
+      variant="outline"
+      className="border-border"
+      title={passedOverOn ? passedOverLabel(locale) : undefined}
+    >
+      {pick(advHome.statusListed, locale)}
+    </Badge>
+  );
 }
 
 /** The status-group heading copy, keyed by the four-way cause-list status. */
@@ -141,15 +151,18 @@ function CourtMultiFilter({
   onChange: (next: string[]) => void;
   locale: Locale;
 }) {
-  const labelOf = (c: string) =>
-    courts.find((o) => o.court === c)?.label ?? c;
+  const labelOf = (c: string) => courts.find((o) => o.court === c)?.label ?? c;
   const toggle = (c: string) =>
     onChange(selected.includes(c) ? selected.filter((x) => x !== c) : [...selected, c]);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="cause-touch-control min-w-0 flex-1 gap-1.5 text-caption md:min-w-44 md:flex-none">
+        <Button
+          variant="outline"
+          size="sm"
+          className="cause-touch-control min-w-0 flex-1 gap-1.5 text-caption md:min-w-44 md:flex-none"
+        >
           <ListFilter aria-hidden="true" className="text-muted-foreground" />
           {selected.length === 0 ? (
             <span className="flex-1 text-left">{pick(advHome.causeListAllCourts, locale)}</span>
@@ -246,9 +259,17 @@ export function CauseListDialog({
           view through the scrim — a workspace over the page, not a new page. The
           body mounts fresh each open, so its date and search start from the
           board's day without an effect resetting them; sort-by is held above. */}
-      <DialogContent showCloseButton={false} className="cause-list-dialog flex h-dvh w-full max-w-full flex-col gap-0 overflow-hidden rounded-none p-0 sm:max-w-full md:h-[calc(100svh-4rem)] md:max-w-[calc(100%-4rem)] md:rounded-xl">
+      <DialogContent
+        showCloseButton={false}
+        className="cause-list-dialog flex h-dvh w-full max-w-full flex-col gap-0 overflow-hidden rounded-none p-0 sm:max-w-full md:h-[calc(100svh-4rem)] md:max-w-[calc(100%-4rem)] md:rounded-xl"
+      >
         <DialogClose asChild>
-          <Button variant="ghost" size="icon" className="cause-list-close absolute top-2 right-2 z-10" aria-label={locale === "ml" ? "അടയ്ക്കുക" : tr("common_close")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="cause-list-close absolute top-2 right-2 z-10"
+            aria-label={locale === "ml" ? "അടയ്ക്കുക" : tr("common_close")}
+          >
             <X aria-hidden="true" />
           </Button>
         </DialogClose>
@@ -306,14 +327,14 @@ function CauseListBody({
       return () => media.removeEventListener("change", callback);
     },
     () => window.matchMedia(CARDS_QUERY).matches,
-    () => false
+    () => false,
   );
   const [date, setDate] = React.useState(day);
   const [query, setQuery] = React.useState("");
   const [selectedCourts, setSelectedCourts] = React.useState<string[]>([]);
   const groupRefs = React.useRef(new Map<string, HTMLButtonElement>());
   const jumpTarget = React.useRef<string | null>(null);
-  const copy = (en: string, ml: string) => locale === "ml" ? ml : en;
+  const copy = (en: string, ml: string) => (locale === "ml" ? ml : en);
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [refreshedAt, setRefreshedAt] = React.useState(() => Date.now());
   const { phase, trigger } = useRefreshPhase(() => setRefreshedAt(Date.now()));
@@ -330,7 +351,7 @@ function CauseListBody({
     const overlay = traceRef.current;
     if (!container || !overlay) return;
     const row = container.querySelector<HTMLElement>(
-      `[data-cause-row="${CSS.escape(highlight.caseId)}"]`
+      `[data-cause-row="${CSS.escape(highlight.caseId)}"]`,
     );
     if (!row) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -379,7 +400,7 @@ function CauseListBody({
           arm();
         }
       },
-      { root: container, threshold: [0.85] }
+      { root: container, threshold: [0.85] },
     );
     observer.observe(row);
     // A last resort so the stroke can never fail to appear.
@@ -407,9 +428,7 @@ function CauseListBody({
   // header buttons below it.
   const courtsLabel = React.useMemo(() => {
     if (selectedCourts.length === 0) return null;
-    const labels = selectedCourts.map(
-      (c) => courtOptions.find((o) => o.court === c)?.label ?? c
-    );
+    const labels = selectedCourts.map((c) => courtOptions.find((o) => o.court === c)?.label ?? c);
     if (labels.length <= 2) return labels.join(", ");
     return fillCopy(advHome.causeListScopeOthers, locale, {
       courts: labels.slice(0, 2).join(", "),
@@ -418,27 +437,30 @@ function CauseListBody({
   }, [selectedCourts, courtOptions, locale]);
 
   const rows = React.useMemo(
-    () =>
-      causeListOn(
-        world,
-        date,
-        now,
-        selectedCourts.length ? selectedCourts : undefined
-      ),
-    [world, date, now, selectedCourts]
+    () => causeListOn(world, date, now, selectedCourts.length ? selectedCourts : undefined),
+    [world, date, now, selectedCourts],
   );
   const filtered = React.useMemo(() => searchCauseList(rows, query), [rows, query]);
   const mineCount = React.useMemo(() => filtered.filter((r) => r.mine).length, [filtered]);
-  const groups = React.useMemo(() => groupCauseList(filtered, groupBy, intl).map(({ key, rows: items }) => ({
-    key,
-    // Item groups read "Item 3"; court groups name the court with its number
-    // ("SARAS Court 2") — one cause list per court; status groups read as the status
-    // word; hearing-type groups are the stage itself.
-    label: groupBy === "item" ? `${pick(advHome.colItem, locale)} ${key}` :
-      groupBy === "court" ? courtName(items[0]) :
-      groupBy === "status" ? pick(STATUS_GROUP_LABEL[causeStatusKey(items[0])], locale) : key,
-    rows: items,
-  })), [filtered, groupBy, intl, locale]);
+  const groups = React.useMemo(
+    () =>
+      groupCauseList(filtered, groupBy, intl).map(({ key, rows: items }) => ({
+        key,
+        // Item groups read "Item 3"; court groups name the court with its number
+        // ("SARAS Court 2") — one cause list per court; status groups read as the status
+        // word; hearing-type groups are the stage itself.
+        label:
+          groupBy === "item"
+            ? `${pick(advHome.colItem, locale)} ${key}`
+            : groupBy === "court"
+              ? courtName(items[0])
+              : groupBy === "status"
+                ? pick(STATUS_GROUP_LABEL[causeStatusKey(items[0])], locale)
+                : key,
+        rows: items,
+      })),
+    [filtered, groupBy, intl, locale],
+  );
   const groupLabels = {
     item: pick(advHome.colItem, locale),
     court: pick(advHome.colCourt, locale),
@@ -462,14 +484,20 @@ function CauseListBody({
     target?.focus({ preventScroll: true });
     const container = scrollRef.current;
     const firstId = groups.find((group) => group.key === key)?.rows[0]?.id;
-    const firstRow = firstId ? container?.querySelector<HTMLElement>(`[data-cause-row="${firstId}"]`) : null;
+    const firstRow = firstId
+      ? container?.querySelector<HTMLElement>(`[data-cause-row="${firstId}"]`)
+      : null;
     if (!container || !target || !firstRow) return;
     // The pill is sticky, so its own position says nothing once it is pinned. Aim
     // at the group's first matter instead, landing it just under the pinned band
     // (the pill's sticky box, plus on desktop the column header above it).
     const band = target.closest<HTMLElement>(".sticky");
     const bandBottom = band ? (parseFloat(getComputedStyle(band).top) || 0) + band.offsetHeight : 0;
-    const to = container.scrollTop + firstRow.getBoundingClientRect().top - container.getBoundingClientRect().top - bandBottom;
+    const to =
+      container.scrollTop +
+      firstRow.getBoundingClientRect().top -
+      container.getBoundingClientRect().top -
+      bandBottom;
     glideTo(container, Math.max(0, to));
   };
 
@@ -503,20 +531,41 @@ function CauseListBody({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            ref={(node) => { if (node) groupRefs.current.set(group.key, node); else groupRefs.current.delete(group.key); }}
-            variant="ghost" size="sm"
+            ref={(node) => {
+              if (node) groupRefs.current.set(group.key, node);
+              else groupRefs.current.delete(group.key);
+            }}
+            variant="ghost"
+            size="sm"
             className="cause-touch-control max-w-full rounded-full border border-hairline bg-card shadow-raised"
-            aria-label={copy(tr("causeListDialog_jumpToAnotherToLowerCase", { toLowerCase: groupLabels[groupBy].toLowerCase() }), "മറ്റൊരു ഗ്രൂപ്പിലേക്ക് പോകുക")}
+            aria-label={copy(
+              tr("causeListDialog_jumpToAnotherToLowerCase", {
+                toLowerCase: groupLabels[groupBy].toLowerCase(),
+              }),
+              "മറ്റൊരു ഗ്രൂപ്പിലേക്ക് പോകുക",
+            )}
           >
-            <span className="truncate" title={group.label}>{group.label}</span>
+            <span className="truncate" title={group.label}>
+              {group.label}
+            </span>
             <span className="tabular-nums text-muted-foreground">({group.rows.length})</span>
             <ChevronDown aria-hidden="true" className="shrink-0" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent collisionPadding={16} className="max-h-72 w-56 text-caption" onCloseAutoFocus={focusJumpTarget}>
-          <DropdownMenuLabel className="text-caption text-muted-foreground">{copy("Jump to…", "ഇതിലേക്ക് പോകുക…")}</DropdownMenuLabel>
+        <DropdownMenuContent
+          collisionPadding={16}
+          className="max-h-72 w-56 text-caption"
+          onCloseAutoFocus={focusJumpTarget}
+        >
+          <DropdownMenuLabel className="text-caption text-muted-foreground">
+            {copy("Jump to…", "ഇതിലേക്ക് പോകുക…")}
+          </DropdownMenuLabel>
           {groups.map((target) => (
-            <DropdownMenuItem key={target.key} className="cause-touch-control text-caption" onSelect={() => jump(target.key)}>
+            <DropdownMenuItem
+              key={target.key}
+              className="cause-touch-control text-caption"
+              onSelect={() => jump(target.key)}
+            >
               <span className="min-w-0 flex-1 truncate">{target.label}</span>
               <span className="tabular-nums text-muted-foreground">{target.rows.length}</span>
             </DropdownMenuItem>
@@ -553,7 +602,13 @@ function CauseListBody({
           />
         </PopoverContent>
       </Popover>
-      <Button variant="outline" size="sm" className="cause-touch-control" aria-label={pick(advHome.causeListDownload, locale)} onClick={() => setRefreshedAt(Date.now())}>
+      <Button
+        variant="outline"
+        size="sm"
+        className="cause-touch-control"
+        aria-label={pick(advHome.causeListDownload, locale)}
+        onClick={() => setRefreshedAt(Date.now())}
+      >
         <Download aria-hidden="true" />
         <span className="hidden md:inline">{pick(advHome.causeListDownload, locale)}</span>
       </Button>
@@ -569,7 +624,9 @@ function CauseListBody({
   );
   const searchField = (
     <div className={cn("relative min-w-0 flex-1 md:min-w-56", !asCards && "md:max-w-96")}>
-      <label htmlFor="cause-list-search" className="sr-only">{copy("Search", "തിരയുക")}</label>
+      <label htmlFor="cause-list-search" className="sr-only">
+        {copy("Search", "തിരയുക")}
+      </label>
       <Search
         aria-hidden="true"
         className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -589,12 +646,17 @@ function CauseListBody({
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="cause-touch-control min-w-0 max-w-full">
           <ArrowDownWideNarrow aria-hidden="true" />
-          <span className="truncate">{copy(tr("causeListDialog_sortBy"), "ക്രമീകരണം")}: {groupLabels[groupBy]}</span>
+          <span className="truncate">
+            {copy(tr("causeListDialog_sortBy"), "ക്രമീകരണം")}: {groupLabels[groupBy]}
+          </span>
           <ChevronDown aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" collisionPadding={16} className="w-56">
-        <DropdownMenuRadioGroup value={groupBy} onValueChange={(value) => onGroupByChange(value as CauseListGroupBy)}>
+        <DropdownMenuRadioGroup
+          value={groupBy}
+          onValueChange={(value) => onGroupByChange(value as CauseListGroupBy)}
+        >
           {(singleCourt
             ? (["item", "hearingType", "status"] as const)
             : (["item", "court", "hearingType", "status"] as const)
@@ -638,7 +700,9 @@ function CauseListBody({
             </DialogTitle>
             <DialogDescription className="sr-only text-body-compact text-muted-foreground md:not-sr-only">
               {singleCourt || courtsLabel
-                ? fillCopy(advHome.causeListScopeCourt, locale, { court: singleCourt ?? courtsLabel ?? "" })
+                ? fillCopy(advHome.causeListScopeCourt, locale, {
+                    court: singleCourt ?? courtsLabel ?? "",
+                  })
                 : pick(advHome.causeListScope, locale)}{" "}
               · {dateLabel}
             </DialogDescription>
@@ -676,20 +740,30 @@ function CauseListBody({
         )}
       </div>
 
-      <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-auto overscroll-contain px-4 pb-4 md:px-6 [&>[data-slot=table-container]]:overflow-visible">
+      <div
+        ref={scrollRef}
+        className="relative min-h-0 flex-1 overflow-auto overscroll-contain px-4 pb-4 md:px-6 [&>[data-slot=table-container]]:overflow-visible"
+      >
         {filtered.length === 0 ? (
           <div role="status" className="flex flex-col items-center gap-4 py-12 text-center">
             <Search aria-hidden="true" className="size-8 text-muted-foreground" />
             <div className="flex flex-col gap-2">
               <h3 className="text-title-s font-semibold">
-                {query.trim() ? copy(tr("causeListDialog_noMatchingHearings"), "പൊരുത്തപ്പെടുന്ന ഹിയറിംഗുകളില്ല") : pick(advHome.causeListEmpty, locale)}
+                {query.trim()
+                  ? copy(tr("causeListDialog_noMatchingHearings"), "പൊരുത്തപ്പെടുന്ന ഹിയറിംഗുകളില്ല")
+                  : pick(advHome.causeListEmpty, locale)}
               </h3>
               <p className="text-body-compact text-muted-foreground">
-                {copy(tr("causeListDialog_tryACaseNameNumberAdvocate"), "കേസിന്റെ പേര്, നമ്പർ, അഭിഭാഷകൻ അല്ലെങ്കിൽ കോടതി തിരയുക, അല്ലെങ്കിൽ ഫിൽട്ടറുകൾ നീക്കുക.")}
+                {copy(
+                  tr("causeListDialog_tryACaseNameNumberAdvocate"),
+                  "കേസിന്റെ പേര്, നമ്പർ, അഭിഭാഷകൻ അല്ലെങ്കിൽ കോടതി തിരയുക, അല്ലെങ്കിൽ ഫിൽട്ടറുകൾ നീക്കുക.",
+                )}
               </p>
             </div>
             {(query || selectedCourts.length > 0) && (
-              <Button variant="outline" onClick={reset}>{copy(tr("causeListDialog_clearSearchAndFilters"), "തിരയലും ഫിൽട്ടറുകളും നീക്കുക")}</Button>
+              <Button variant="outline" onClick={reset}>
+                {copy(tr("causeListDialog_clearSearchAndFilters"), "തിരയലും ഫിൽട്ടറുകളും നീക്കുക")}
+              </Button>
             )}
           </div>
         ) : asCards ? (
@@ -708,7 +782,13 @@ function CauseListBody({
                 </div>
                 <div className="flex flex-col gap-4 md:gap-3">
                   {group.rows.map((row) => (
-                    <CauseCard key={row.id} row={row} showCourt={!singleCourt} locale={locale} onJoin={onJoin} />
+                    <CauseCard
+                      key={row.id}
+                      row={row}
+                      showCourt={!singleCourt}
+                      locale={locale}
+                      onJoin={onJoin}
+                    />
                   ))}
                 </div>
               </React.Fragment>
@@ -722,29 +802,55 @@ function CauseListBody({
                 through them. */}
             <TableHeader>
               <TableRow className={TABLE_HEAD_ROW}>
-                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-16")}>{pick(advHome.colItem, locale)}</TableHead>
-                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-1/5")}>{pick(advHome.colCase, locale)}</TableHead>
+                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-16")}>
+                  {pick(advHome.colItem, locale)}
+                </TableHead>
+                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-1/5")}>
+                  {pick(advHome.colCase, locale)}
+                </TableHead>
                 {singleCourt ? null : (
                   <>
-                    <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-32")}>{pick(advHome.colCourt, locale)}</TableHead>
-                    <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-24 whitespace-nowrap")}>{copy(tr("causeListDialog_courtNo"), "കോടതി നമ്പർ")}</TableHead>
+                    <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-32")}>
+                      {pick(advHome.colCourt, locale)}
+                    </TableHead>
+                    <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-24 whitespace-nowrap")}>
+                      {copy(tr("causeListDialog_courtNo"), "കോടതി നമ്പർ")}
+                    </TableHead>
                   </>
                 )}
-                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-1/6")}>{pick(advHome.colAdvocates, locale)}</TableHead>
-                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-52")}>{pick(advHome.colCaseNumber, locale)}</TableHead>
-                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD)}>{pick(advHome.colHearingType, locale)}</TableHead>
-                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-36")}>{pick(advHome.colStatus, locale)}<span className="sr-only"> / {copy("Actions", "പ്രവർത്തനങ്ങൾ")}</span></TableHead>
+                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-1/6")}>
+                  {pick(advHome.colAdvocates, locale)}
+                </TableHead>
+                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-52")}>
+                  {pick(advHome.colCaseNumber, locale)}
+                </TableHead>
+                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD)}>
+                  {pick(advHome.colHearingType, locale)}
+                </TableHead>
+                <TableHead className={cn(TABLE_HEAD, STICKY_HEAD, "w-36")}>
+                  {pick(advHome.colStatus, locale)}
+                  <span className="sr-only"> / {copy("Actions", "പ്രവർത്തനങ്ങൾ")}</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             {groups.map((group) => (
               <TableBody key={group.key} className={tableBodyClass({ hover: true })}>
                 <TableRow className={tableRowClass({ hover: false })}>
-                  <td colSpan={singleCourt ? 6 : 8} className="sticky top-10 z-10 bg-background px-0 pt-4 pb-2">
+                  <td
+                    colSpan={singleCourt ? 6 : 8}
+                    className="sticky top-10 z-10 bg-background px-0 pt-4 pb-2"
+                  >
                     {renderDivider(group)}
                   </td>
                 </TableRow>
                 {group.rows.map((row) => (
-                  <CauseRow key={row.id} row={row} showCourt={!singleCourt} locale={locale} onJoin={onJoin} />
+                  <CauseRow
+                    key={row.id}
+                    row={row}
+                    showCourt={!singleCourt}
+                    locale={locale}
+                    onJoin={onJoin}
+                  />
                 ))}
               </TableBody>
             ))}
@@ -752,22 +858,28 @@ function CauseListBody({
         )}
         {/* The trace overlay — placed and re-armed imperatively over the
             highlighted row (see the effect above). Hidden until a jump fires. */}
-        <div
-          ref={traceRef}
-          hidden
-          aria-hidden="true"
-          className="pointer-events-none absolute z-30"
-        >
+        <div ref={traceRef} hidden aria-hidden="true" className="pointer-events-none absolute z-30">
           <svg className="size-full overflow-visible">
             <rect className="cause-trace-rect" pathLength={100} />
           </svg>
         </div>
       </div>
 
-      <div aria-live="polite" className="cause-list-footer flex shrink-0 items-center gap-2 border-t border-hairline px-4 py-2 text-caption md:px-6 md:py-3 text-muted-foreground">
+      <div
+        aria-live="polite"
+        className="cause-list-footer flex shrink-0 items-center gap-2 border-t border-hairline px-4 py-2 text-caption md:px-6 md:py-3 text-muted-foreground"
+      >
         <span aria-hidden="true" className="size-2 rounded-full bg-input" />
-        <span className="flex-1">{fillCopy(advHome.causeListMineCount, locale, { n: String(mineCount) })}</span>
-        <Button variant="ghost" size="icon" className="md:hidden" onClick={trigger} aria-label={`${copy("Refresh", "പുതുക്കുക")}. ${fillCopy(advHome.causeListRefreshed, locale, { time: refreshedLabel })}`}>
+        <span className="flex-1">
+          {fillCopy(advHome.causeListMineCount, locale, { n: String(mineCount) })}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={trigger}
+          aria-label={`${copy("Refresh", "പുതുക്കുക")}. ${fillCopy(advHome.causeListRefreshed, locale, { time: refreshedLabel })}`}
+        >
           <RefreshIcon phase={phase} className="size-4" />
         </Button>
       </div>
@@ -777,7 +889,17 @@ function CauseListBody({
 
 /** Own matters use the resting warm-neutral fill; the label preserves meaning
  * without relying on colour. Only this row's right-hand content makes room. */
-function CauseRow({ row, showCourt, locale, onJoin }: { row: CauseListRow; showCourt: boolean; locale: Locale; onJoin: (row: CauseListRow) => void }) {
+function CauseRow({
+  row,
+  showCourt,
+  locale,
+  onJoin,
+}: {
+  row: CauseListRow;
+  showCourt: boolean;
+  locale: Locale;
+  onJoin: (row: CauseListRow) => void;
+}) {
   const tr = useTranslations();
   const cell = cn(TABLE_CELL, "align-middle");
   const canHover = useCanHover();
@@ -790,11 +912,20 @@ function CauseRow({ row, showCourt, locale, onJoin }: { row: CauseListRow; showC
     // the one row under the pointer, so it is a reviewed exception to the plate: it
     // goes on the cells via `[&>td]:` (overriding the shared `bg-card`), never the <tr>.
     // table-plate-allow
-    <TableRow data-cause-row={row.id} className={cn(tableRowClass({ hover: true }), "cause-row", row.mine && "[&>td]:bg-surface-sunken hover:[&>td]:bg-accent")}>
+    <TableRow
+      data-cause-row={row.id}
+      className={cn(
+        tableRowClass({ hover: true }),
+        "cause-row",
+        row.mine && "[&>td]:bg-surface-sunken hover:[&>td]:bg-accent",
+      )}
+    >
       <td className={cn(cell, "tabular-nums text-muted-foreground")}>{row.item}</td>
       <td className={cn(cell, "font-medium text-foreground")}>
         <span className="flex min-w-0 flex-col gap-1">
-          <span className="truncate" title={row.parties}>{row.parties}</span>
+          <span className="truncate" title={row.parties}>
+            {row.parties}
+          </span>
           {row.mine ? (
             <span className="inline-flex w-fit items-center gap-1.5 text-caption font-normal text-muted-foreground">
               <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-input" />
@@ -805,14 +936,32 @@ function CauseRow({ row, showCourt, locale, onJoin }: { row: CauseListRow; showC
       </td>
       {showCourt ? (
         <>
-          <td className={cell}><span className="block truncate" title={row.courtLabel}>{row.courtLabel}</span></td>
+          <td className={cell}>
+            <span className="block truncate" title={row.courtLabel}>
+              {row.courtLabel}
+            </span>
+          </td>
           <td className={cn(cell, "tabular-nums")}>{row.courtNumber ?? "N/A"}</td>
         </>
       ) : null}
-      <td className={cn(cell, "text-muted-foreground")}><span className="block truncate" title={row.advocates}>{row.advocates}</span></td>
+      <td className={cn(cell, "text-muted-foreground")}>
+        <span className="block truncate" title={row.advocates}>
+          {row.advocates}
+        </span>
+      </td>
       {/* Never truncated: the column is sized to hold a full CNR. */}
-      <td className={cn(cell, "whitespace-nowrap text-muted-foreground")}><Identifier value={row.caseNumber} label={tr("causeListDialog_caseNumber")} copyable={canHover} /></td>
-      <td className={cell}><span className="block truncate" title={row.hearingType}>{row.hearingType}</span></td>
+      <td className={cn(cell, "whitespace-nowrap text-muted-foreground")}>
+        <Identifier
+          value={row.caseNumber}
+          label={tr("causeListDialog_caseNumber")}
+          copyable={canHover}
+        />
+      </td>
+      <td className={cell}>
+        <span className="block truncate" title={row.hearingType}>
+          {row.hearingType}
+        </span>
+      </td>
       {/* The status tag is left-aligned like the other columns' content. Only an
           ongoing hearing can be joined: on hover its chip fades and a green Join
           slides in from the right — absolute, so it reserves no column width at rest
@@ -823,7 +972,12 @@ function CauseRow({ row, showCourt, locale, onJoin }: { row: CauseListRow; showC
             an icon button (cause-list.css), never stacked under it. */}
         <div className="flex items-center gap-2">
           <span className={cn("inline-flex", row.status === "now" && "cause-status")}>
-            <StatusChip status={row.status} passedOver={row.passedOver} passedOverOn={row.passedOverOn} locale={locale} />
+            <StatusChip
+              status={row.status}
+              passedOver={row.passedOver}
+              passedOverOn={row.passedOverOn}
+              locale={locale}
+            />
           </span>
           {row.status === "now" ? (
             <span className="cause-join absolute inset-y-0 right-4 flex items-center">
@@ -833,7 +987,8 @@ function CauseRow({ row, showCourt, locale, onJoin }: { row: CauseListRow; showC
                 onClick={() => onJoin(row)}
                 aria-label={`${joinLabel}: ${row.parties}, ${row.courtLabel}, ${row.courtNumber ?? "N/A"}`}
               >
-                <Video aria-hidden="true" /><span className="cause-join-label">{joinLabel}</span>
+                <Video aria-hidden="true" />
+                <span className="cause-join-label">{joinLabel}</span>
               </Button>
             </span>
           ) : null}
@@ -859,7 +1014,9 @@ function glideTo(container: HTMLElement, to: number) {
   const from = container.scrollTop;
   const start = performance.now();
   let cancelled = false;
-  const cancel = () => { cancelled = true; };
+  const cancel = () => {
+    cancelled = true;
+  };
   container.addEventListener("wheel", cancel, { once: true, passive: true });
   container.addEventListener("touchstart", cancel, { once: true, passive: true });
   const step = (now: number) => {
@@ -876,7 +1033,17 @@ function glideTo(container: HTMLElement, to: number) {
 }
 
 /** Mobile cause-list cards share the home identity block and disclose live actions. */
-function CauseCard({ row, showCourt, locale, onJoin }: { row: CauseListRow; showCourt: boolean; locale: Locale; onJoin: (row: CauseListRow) => void }) {
+function CauseCard({
+  row,
+  showCourt,
+  locale,
+  onJoin,
+}: {
+  row: CauseListRow;
+  showCourt: boolean;
+  locale: Locale;
+  onJoin: (row: CauseListRow) => void;
+}) {
   const tr = useTranslations();
   const [open, setOpen] = React.useState(false);
   const [pointerMotion, setPointerMotion] = React.useState(true);
@@ -884,66 +1051,148 @@ function CauseCard({ row, showCourt, locale, onJoin }: { row: CauseListRow; show
   const joinLabel = locale === "ml" ? "ഹിയറിംഗിൽ ചേരുക" : tr("causeListDialog_joinHearing");
   return (
     <Collapsible open={open} onOpenChange={setOpen} data-pointer-motion={pointerMotion}>
-      <article data-cause-row={row.id} className={cn(
-        // Phone: a stacked card. Upright tablet: two rows. The first holds the item
-        // box, the name and number, the court, and the status at the far right; the
-        // second starts under the item box and carries hearing type and advocates
-        // on one line each, so nothing wraps and the name has room to run. The court
-        // and status columns are fixed widths so they line up from card to card.
-        "relative flex flex-col gap-3 rounded-xl p-4 shadow-raised md:grid md:grid-cols-[auto_minmax(0,1fr)_13rem_6rem] md:items-start md:gap-x-4 md:gap-y-3",
-        // Teal belongs to a live matter only; everything else is beige. Hers takes
-        // the heavier stroke of whichever colour applies, the rest a hairline. A
-        // live matter of hers breathes in time with the dot.
-        row.mine ? "border-[1.5px] bg-surface-sunken" : "border bg-card",
-        ongoing ? (row.mine ? "border-brand-accent" : "border-brand-accent/40") : (row.mine ? "border-border" : "border-hairline"),
-        row.mine && ongoing && "cause-mine-live"
-      )}>
+      <article
+        data-cause-row={row.id}
+        className={cn(
+          // Phone: a stacked card. Upright tablet: two rows. The first holds the item
+          // box, the name and number, the court, and the status at the far right; the
+          // second starts under the item box and carries hearing type and advocates
+          // on one line each, so nothing wraps and the name has room to run. The court
+          // and status columns are fixed widths so they line up from card to card.
+          "relative flex flex-col gap-3 rounded-xl p-4 shadow-raised md:grid md:grid-cols-[auto_minmax(0,1fr)_13rem_6rem] md:items-start md:gap-x-4 md:gap-y-3",
+          // Teal belongs to a live matter only; everything else is beige. Hers takes
+          // the heavier stroke of whichever colour applies, the rest a hairline. A
+          // live matter of hers breathes in time with the dot.
+          row.mine ? "border-[1.5px] bg-surface-sunken" : "border bg-card",
+          ongoing
+            ? row.mine
+              ? "border-brand-accent"
+              : "border-brand-accent/40"
+            : row.mine
+              ? "border-border"
+              : "border-hairline",
+          row.mine && ongoing && "cause-mine-live",
+        )}
+      >
         <div className="flex min-w-0 items-start gap-3 md:contents">
           <ItemChip item={row.item} size="lg" surface={row.mine ? "sunken" : "card"} />
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <h3 className={cn("text-body-compact font-semibold wrap-anywhere", ongoing ? "text-primary" : "text-foreground")}>{row.parties}</h3>
-            <p className="text-body-compact wrap-anywhere text-muted-foreground"><Identifier value={row.caseNumber} label={tr("causeListDialog_caseNumber")} copyable={false} /></p>
+            <h3
+              className={cn(
+                "text-body-compact font-semibold wrap-anywhere",
+                ongoing ? "text-primary" : "text-foreground",
+              )}
+            >
+              {row.parties}
+            </h3>
+            <p className="text-body-compact wrap-anywhere text-muted-foreground">
+              <Identifier
+                value={row.caseNumber}
+                label={tr("causeListDialog_caseNumber")}
+                copyable={false}
+              />
+            </p>
           </div>
           {/* A live matter says so with the pulsing dot alone, no tag to spend a row on. */}
-          {ongoing ? <span className="flex size-4 shrink-0 items-center justify-center md:col-start-4 md:row-start-1 md:justify-self-end md:w-9 md:self-start">
-            <span aria-hidden="true" className="now-dot size-2 rounded-full bg-primary" />
-            <span className="sr-only">{pick(advHome.statusOngoing, locale)}</span>
-          </span> : <span className="shrink-0 md:col-start-4 md:row-start-1 md:justify-self-end md:self-start"><StatusChip status={row.status} passedOver={row.passedOver} passedOverOn={row.passedOverOn} locale={locale} /></span>}
+          {ongoing ? (
+            <span className="flex size-4 shrink-0 items-center justify-center md:col-start-4 md:row-start-1 md:justify-self-end md:w-9 md:self-start">
+              <span aria-hidden="true" className="now-dot size-2 rounded-full bg-primary" />
+              <span className="sr-only">{pick(advHome.statusOngoing, locale)}</span>
+            </span>
+          ) : (
+            <span className="shrink-0 md:col-start-4 md:row-start-1 md:justify-self-end md:self-start">
+              <StatusChip
+                status={row.status}
+                passedOver={row.passedOver}
+                passedOverOn={row.passedOverOn}
+                locale={locale}
+              />
+            </span>
+          )}
         </div>
         <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 text-body-compact md:contents">
           {showCourt ? (
             <div className="contents md:col-start-3 md:row-start-1 md:flex md:min-w-0 md:flex-col md:gap-0.5">
-              <dt className="text-muted-foreground md:text-caption">{pick(advHome.colCourt, locale)}</dt>
-              <dd className="wrap-anywhere">{row.courtLabel} ·{"\u00a0"}{row.courtNumber ?? "N/A"}</dd>
+              <dt className="text-muted-foreground md:text-caption">
+                {pick(advHome.colCourt, locale)}
+              </dt>
+              <dd className="wrap-anywhere">
+                {row.courtLabel} ·{"\u00a0"}
+                {row.courtNumber ?? "N/A"}
+              </dd>
             </div>
           ) : null}
           <div className="contents md:col-span-2 md:col-start-1 md:row-start-2 md:flex md:min-w-0 md:items-baseline md:gap-2">
-            <dt className="text-muted-foreground md:shrink-0 md:text-caption">{pick(advHome.colHearingType, locale)}</dt>
-            <dd className="wrap-anywhere md:truncate" title={row.hearingType}>{row.hearingType}</dd>
+            <dt className="text-muted-foreground md:shrink-0 md:text-caption">
+              {pick(advHome.colHearingType, locale)}
+            </dt>
+            <dd className="wrap-anywhere md:truncate" title={row.hearingType}>
+              {row.hearingType}
+            </dd>
           </div>
-          <div className={cn("contents md:col-span-2 md:col-start-3 md:row-start-2 md:flex md:min-w-0 md:items-baseline md:gap-2", ongoing && !row.mine && "md:pr-12")}>
-            <dt className="text-muted-foreground md:shrink-0 md:text-caption">{pick(advHome.colAdvocates, locale)}</dt>
-            <dd className={cn("wrap-anywhere md:truncate", ongoing && !row.mine && "pr-6 md:pr-0")} title={row.advocates}>{row.advocates}</dd>
+          <div
+            className={cn(
+              "contents md:col-span-2 md:col-start-3 md:row-start-2 md:flex md:min-w-0 md:items-baseline md:gap-2",
+              ongoing && !row.mine && "md:pr-12",
+            )}
+          >
+            <dt className="text-muted-foreground md:shrink-0 md:text-caption">
+              {pick(advHome.colAdvocates, locale)}
+            </dt>
+            <dd
+              className={cn("wrap-anywhere md:truncate", ongoing && !row.mine && "pr-6 md:pr-0")}
+              title={row.advocates}
+            >
+              {row.advocates}
+            </dd>
           </div>
         </dl>
-        {row.mine || ongoing ? <div className={cn("flex items-center gap-2 md:col-span-full", !row.mine && "contents md:flex")}>
-          {row.mine ? <span className="inline-flex w-fit items-center gap-1.5 text-caption text-muted-foreground">
-            <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-input" />{pick(advHome.causeListMine, locale)}
-          </span> : null}
-          {ongoing ? <CollapsibleTrigger
-            onPointerDown={() => setPointerMotion(true)} onKeyDown={() => setPointerMotion(false)}
-            aria-label={`${joinLabel}: ${row.parties}`}
-            className={cn("group ml-auto size-9 shrink-0 rounded-full text-muted-foreground after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring", row.mine ? "-my-2" : "-mt-12 -mb-2")}
-          ><ChevronDown aria-hidden="true" className="mx-auto size-4 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none" /></CollapsibleTrigger> : null}
-        </div> : null}
+        {row.mine || ongoing ? (
+          <div
+            className={cn(
+              "flex items-center gap-2 md:col-span-full",
+              !row.mine && "contents md:flex",
+            )}
+          >
+            {row.mine ? (
+              <span className="inline-flex w-fit items-center gap-1.5 text-caption text-muted-foreground">
+                <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-input" />
+                {pick(advHome.causeListMine, locale)}
+              </span>
+            ) : null}
+            {ongoing ? (
+              <CollapsibleTrigger
+                onPointerDown={() => setPointerMotion(true)}
+                onKeyDown={() => setPointerMotion(false)}
+                aria-label={`${joinLabel}: ${row.parties}`}
+                className={cn(
+                  "group ml-auto size-9 shrink-0 rounded-full text-muted-foreground after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring",
+                  row.mine ? "-my-2" : "-mt-12 -mb-2",
+                )}
+              >
+                <ChevronDown
+                  aria-hidden="true"
+                  className="mx-auto size-4 transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+                />
+              </CollapsibleTrigger>
+            ) : null}
+          </div>
+        ) : null}
       </article>
-      {ongoing ? <CollapsibleContent className="hearing-reveal mx-3 overflow-hidden">
-        <div className="hearing-actions rounded-b-xl border border-t-0 border-hairline bg-card p-3 shadow-raised">
-          <Button className="w-full" onClick={() => onJoin(row)} aria-label={`${joinLabel}: ${row.parties}, ${row.courtLabel}, ${row.courtNumber ?? "N/A"}`}>
-            <Video aria-hidden="true" />{joinLabel}
-          </Button>
-        </div>
-      </CollapsibleContent> : null}
+      {ongoing ? (
+        <CollapsibleContent className="hearing-reveal mx-3 overflow-hidden">
+          <div className="hearing-actions rounded-b-xl border border-t-0 border-hairline bg-card p-3 shadow-raised">
+            <Button
+              className="w-full"
+              onClick={() => onJoin(row)}
+              aria-label={`${joinLabel}: ${row.parties}, ${row.courtLabel}, ${row.courtNumber ?? "N/A"}`}
+            >
+              <Video aria-hidden="true" />
+              {joinLabel}
+            </Button>
+          </div>
+        </CollapsibleContent>
+      ) : null}
     </Collapsible>
   );
 }

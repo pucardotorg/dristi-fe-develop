@@ -73,8 +73,18 @@ export function CountBarChart({
               />
             }
           />
-          <Bar dataKey="value" fill="var(--color-value)" radius={[4, 4, 0, 0]} isAnimationActive={false}>
-            <LabelList dataKey="shown" position="top" offset={6} className="fill-foreground tabular-nums" />
+          <Bar
+            dataKey="value"
+            fill="var(--color-value)"
+            radius={[4, 4, 0, 0]}
+            isAnimationActive={false}
+          >
+            <LabelList
+              dataKey="shown"
+              position="top"
+              offset={6}
+              className="fill-foreground tabular-nums"
+            />
           </Bar>
         </BarChart>
       </ChartContainer>

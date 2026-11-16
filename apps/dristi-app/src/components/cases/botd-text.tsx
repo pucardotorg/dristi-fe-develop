@@ -28,7 +28,9 @@ export function BotdText({ text }: { text: string }) {
 
   return (
     <div className="mt-2 flex flex-col items-start gap-1 rounded-md bg-surface-sunken px-3 py-2.5">
-      <span className="mb-1 text-caption font-medium text-foreground">{t("botdText_businessOfTheDay")}</span>
+      <span className="mb-1 text-caption font-medium text-foreground">
+        {t("botdText_businessOfTheDay")}
+      </span>
       <p
         ref={ref}
         className={cn("text-body-compact text-muted-foreground", !open && "line-clamp-2")}
@@ -45,7 +47,10 @@ export function BotdText({ text }: { text: string }) {
           {open ? t("botdText_showLess") : t("botdText_readMore")}
           <ChevronDownIcon
             aria-hidden="true"
-            className={cn("size-3.5 transition-transform duration-200 motion-reduce:transition-none", open && "rotate-180")}
+            className={cn(
+              "size-3.5 transition-transform duration-200 motion-reduce:transition-none",
+              open && "rotate-180",
+            )}
           />
         </button>
       ) : null}

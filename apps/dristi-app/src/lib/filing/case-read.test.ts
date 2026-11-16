@@ -2,19 +2,14 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { blankAccused, blankAdvocate, blankComplainant, blankWitness } from "./blank";
-import { accusedFromCase, advocatesFromCase, complainantsFromCase, witnessesFromCase } from "./case-read";
-import type {
-  AddressRead,
-  CaseRead,
-  ParticipantRead,
-  RepresentationRead,
-} from "./data/cases-api";
 import {
-  accusedBodies,
-  complainantBodies,
-  partyChanged,
-  poaHolderBody,
-} from "./parties";
+  accusedFromCase,
+  advocatesFromCase,
+  complainantsFromCase,
+  witnessesFromCase,
+} from "./case-read";
+import type { AddressRead, CaseRead, ParticipantRead, RepresentationRead } from "./data/cases-api";
+import { accusedBodies, complainantBodies, partyChanged, poaHolderBody } from "./parties";
 import type { Accused, Complainant } from "./types";
 
 const ADDRESS: AddressRead = {
@@ -262,12 +257,18 @@ describe("witnessesFromCase", () => {
       mobile_numbers: ["+919000000002"],
       email_addresses: [],
       addresses: [{ ...ADDRESS, police_station: "Kollam East" }],
-      witness: { side: "COMPLAINANT", what_will_witness_prove: "The cheque bounced.", additional_details: {} },
+      witness: {
+        side: "COMPLAINANT",
+        what_will_witness_prove: "The cheque bounced.",
+        additional_details: {},
+      },
       ...overrides,
     });
 
   it("reads a witness from the case in place of the blank row a new draft starts with", () => {
-    const { parties } = witnessesFromCase(caseOf({ participants: [witnessRead()] }), [blankWitness()]);
+    const { parties } = witnessesFromCase(caseOf({ participants: [witnessRead()] }), [
+      blankWitness(),
+    ]);
     assert.equal(parties.length, 1);
     const [w] = parties;
     assert.equal(w.fullName, "Suresh Pillai");
@@ -385,7 +386,10 @@ describe("accusedFromCase", () => {
     // A company's number may be a landline, so it is kept as stored.
     assert.deepEqual(a.contacts, [{ mobile: "0474 2233445", email: "" }]);
     assert.equal(a.addresses[0].police, "Kollam East");
-    assert.deepEqual(a.reps.map((r) => r.name), ["Meera", "Arun"]);
+    assert.deepEqual(
+      a.reps.map((r) => r.name),
+      ["Meera", "Arun"],
+    );
     assert.deepEqual(a.caseParticipantIds, ["a1", "a2"]);
     assert.equal(partyChanged(accusedBodies(a), a), false);
   });
@@ -401,9 +405,7 @@ describe("accusedFromCase", () => {
     local.contactUnknownDeclaredAt = "2026-11-01T09:00:00Z";
     local.savedBodies = accusedBodies(local).map((b) => JSON.stringify(b));
     const read = caseOf({
-      participants: [
-        accusedRow({ mobile_numbers: [], contact_details_unknown_declared: true }),
-      ],
+      participants: [accusedRow({ mobile_numbers: [], contact_details_unknown_declared: true })],
     });
     const [a] = accusedFromCase(read, [local]).parties;
     assert.equal(a.contactUnknownDeclaredAt, "2026-11-01T09:00:00Z");

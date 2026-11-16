@@ -40,17 +40,9 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ApplicationViewer } from "@/lib/cases/application-access";
-import type {
-  ApplicationTypeId,
-  SubmissionDocumentTypeId,
-} from "@/lib/cases/applications";
+import type { ApplicationTypeId, SubmissionDocumentTypeId } from "@/lib/cases/applications";
 import { formatCaseDate, type CaseRecord } from "@/lib/cases/types";
 import { rupees } from "@/lib/tasks/format";
 import { file, recordPayment } from "@/lib/tasks/transitions";
@@ -174,8 +166,7 @@ export function TaskPaymentDialog({
   const [outcome, setOutcome] = React.useState<PaymentResult>("success");
   const [failed, setFailed] = React.useState(false);
   const [receipt, setReceipt] = React.useState("");
-  const amount =
-    task.amountPaise !== undefined ? rupees(task.amountPaise) : null;
+  const amount = task.amountPaise !== undefined ? rupees(task.amountPaise) : null;
   const overdue = task.dueAt ? daysOverdue(task.dueAt) : 0;
 
   async function pay() {
@@ -229,103 +220,96 @@ export function TaskPaymentDialog({
             {amount ? <OutcomeAmount label={tr("taskFlows_amountPaid")} value={amount} /> : null}
           </OutcomeHeader>
         ) : (
-        <DialogHeader className="shrink-0 border-b border-hairline px-6 pt-6 pr-16 pb-4 text-left">
-          <DialogTitle className="text-title-s font-semibold text-balance">
-            {title}
-          </DialogTitle>
-          <DialogDescription className="text-body-compact text-muted-foreground">
-            <TaskCaseLine kase={kase} />
-          </DialogDescription>
-        </DialogHeader>
+          <DialogHeader className="shrink-0 border-b border-hairline px-6 pt-6 pr-16 pb-4 text-left">
+            <DialogTitle className="text-title-s font-semibold text-balance">{title}</DialogTitle>
+            <DialogDescription className="text-body-compact text-muted-foreground">
+              <TaskCaseLine kase={kase} />
+            </DialogDescription>
+          </DialogHeader>
         )}
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
-        {stage === "pay" ? (
-          <div className="flex flex-col gap-4">
-            {failed ? (
-              <StatusLine tone="error">
-                {/* Offline or refused: its own words; otherwise the gateway said no. */}
-                {error ?? tr("taskFlows_thePaymentDidNotGoThrough")}
-              </StatusLine>
-            ) : null}
-            <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
-              {task.feeHead ? (
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>{tr("taskFlows_fee")}</DescriptionTerm>
-                  <DescriptionDetails>{task.feeHead}</DescriptionDetails>
-                </DescriptionRow>
+          {stage === "pay" ? (
+            <div className="flex flex-col gap-4">
+              {failed ? (
+                <StatusLine tone="error">
+                  {/* Offline or refused: its own words; otherwise the gateway said no. */}
+                  {error ?? tr("taskFlows_thePaymentDidNotGoThrough")}
+                </StatusLine>
               ) : null}
-              <DescriptionRow className="border-hairline">
-                <DescriptionTerm>{tr("taskFlows_case")}</DescriptionTerm>
-                <DescriptionDetails>
-                  {kase.stNumber ? (
+              <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
+                {task.feeHead ? (
+                  <DescriptionRow className="border-hairline">
+                    <DescriptionTerm>{tr("taskFlows_fee")}</DescriptionTerm>
+                    <DescriptionDetails>{task.feeHead}</DescriptionDetails>
+                  </DescriptionRow>
+                ) : null}
+                <DescriptionRow className="border-hairline">
+                  <DescriptionTerm>{tr("taskFlows_case")}</DescriptionTerm>
+                  <DescriptionDetails>
+                    {kase.stNumber ? (
+                      <Identifier value={kase.stNumber} label={tr("taskFlows_caseNumber")} />
+                    ) : (
+                      kase.parties
+                    )}
+                  </DescriptionDetails>
+                </DescriptionRow>
+                {task.dueAt ? (
+                  <DescriptionRow className="border-hairline">
+                    <DescriptionTerm>{tr("taskFlows_due")}</DescriptionTerm>
+                    <DescriptionDetails className="tabular-nums">
+                      {formatCaseDate(task.dueAt)}
+                      {overdue > 0 ? (
+                        <span className="text-destructive">
+                          {" "}
+                          · {overdue === 1 ? "1 day" : `${overdue} days`} overdue
+                        </span>
+                      ) : null}
+                    </DescriptionDetails>
+                  </DescriptionRow>
+                ) : null}
+                {amount ? (
+                  <DescriptionRow className="border-hairline">
+                    <DescriptionTerm>{tr("taskFlows_amount")}</DescriptionTerm>
+                    <DescriptionDetails className="font-semibold tabular-nums">
+                      {amount}
+                    </DescriptionDetails>
+                  </DescriptionRow>
+                ) : null}
+              </DescriptionList>
+            </div>
+          ) : null}
+
+          {stage === "processing" ? <PaymentProcessing /> : null}
+
+          {stage === "paid" ? (
+            <PaymentFacts
+              rows={[
+                ...(task.feeHead ? [{ label: tr("taskFlows_fee"), value: task.feeHead }] : []),
+                {
+                  label: tr("taskFlows_case"),
+                  value: kase.stNumber ? (
                     <Identifier value={kase.stNumber} label={tr("taskFlows_caseNumber")} />
                   ) : (
                     kase.parties
-                  )}
-                </DescriptionDetails>
-              </DescriptionRow>
-              {task.dueAt ? (
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>{tr("taskFlows_due")}</DescriptionTerm>
-                  <DescriptionDetails className="tabular-nums">
-                    {formatCaseDate(task.dueAt)}
-                    {overdue > 0 ? (
-                      <span className="text-destructive">
-                        {" "}
-                        · {overdue === 1 ? "1 day" : `${overdue} days`} overdue
-                      </span>
-                    ) : null}
-                  </DescriptionDetails>
-                </DescriptionRow>
-              ) : null}
-              {amount ? (
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>{tr("taskFlows_amount")}</DescriptionTerm>
-                  <DescriptionDetails className="font-semibold tabular-nums">
-                    {amount}
-                  </DescriptionDetails>
-                </DescriptionRow>
-              ) : null}
-            </DescriptionList>
-          </div>
-        ) : null}
-
-        {stage === "processing" ? <PaymentProcessing /> : null}
-
-        {stage === "paid" ? (
-          <PaymentFacts
-            rows={[
-              ...(task.feeHead ? [{ label: tr("taskFlows_fee"), value: task.feeHead }] : []),
-              {
-                label: tr("taskFlows_case"),
-                value: kase.stNumber ? (
-                  <Identifier value={kase.stNumber} label={tr("taskFlows_caseNumber")} />
-                ) : (
-                  kase.parties
-                ),
-              },
-              ...(receipt
-                ? [
-                    {
-                      label: tr("taskFlows_receipt"),
-                      value: <Identifier value={receipt} label={tr("taskFlows_receiptNumber")} />,
-                    },
-                  ]
-                : []),
-            ]}
-          />
-        ) : null}
-
+                  ),
+                },
+                ...(receipt
+                  ? [
+                      {
+                        label: tr("taskFlows_receipt"),
+                        value: <Identifier value={receipt} label={tr("taskFlows_receiptNumber")} />,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+          ) : null}
         </div>
 
         {stage === "pay" ? (
           <DialogFooter className="mx-0 mb-0 shrink-0 gap-2 border-hairline bg-surface-sunken px-6 py-4 sm:justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {tr("taskFlows_payLater")}
             </Button>
             <div className="flex items-center gap-2">
@@ -376,10 +360,7 @@ export function TaskPaymentDialog({
 
         {stage === "paid" ? (
           <DialogFooter className="mx-0 mb-0 shrink-0 border-hairline bg-surface-sunken px-6 py-4">
-            <Button
-              type="button"
-              onClick={() => finish(`Paid ${amount ?? ""}`.trim())}
-            >
+            <Button type="button" onClick={() => finish(`Paid ${amount ?? ""}`.trim())}>
               {tr("taskFlows_done")}
             </Button>
           </DialogFooter>
@@ -456,13 +437,7 @@ function recordOf(kase: Case, filerName: string): CaseRecord {
  * File the application a task asks for, in View case's Raise application: opened
  * over the page at the type the task names. Finishing it files the task.
  */
-export function TaskApplicationFlow({
-  ctx,
-  onClose,
-}: {
-  ctx: ActContext;
-  onClose: () => void;
-}) {
+export function TaskApplicationFlow({ ctx, onClose }: { ctx: ActContext; onClose: () => void }) {
   const tr = useTranslations();
   const { task, kase, user, finish } = ctx;
   const { act } = useTaskActions();

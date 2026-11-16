@@ -10,10 +10,7 @@ import { SignBulkConfirmDialog } from "@/components/employee/sign-bulk-confirm-d
 import { SignWitnessDepositionDialog } from "@/components/employee/sign-witness-deposition-dialog";
 import { SignWitnessDepositionTable } from "@/components/employee/sign-witness-deposition-table";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -24,12 +21,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  causeTitle,
-  counselFor,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { causeTitle, counselFor, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import {
   EMPTY_WITNESS_DEPOSITION_FILTERS,
   WITNESS_DEPOSITION_QUEUE,
@@ -130,12 +122,8 @@ export function SignWitnessDepositionScreen() {
   );
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [signedIds, setSignedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
-  const [picked, setPicked] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [signedIds, setSignedIds] = React.useState<ReadonlySet<string>>(() => new Set());
+  const [picked, setPicked] = React.useState<ReadonlySet<string>>(() => new Set());
   const [open, setOpen] = React.useState<WitnessDeposition | null>(null);
   const [bulkOpen, setBulkOpen] = React.useState(false);
   const [notice, setNotice] = React.useState("");
@@ -143,16 +131,16 @@ export function SignWitnessDepositionScreen() {
   /* The bulk confirmation hands focus back here on the way out — see its `triggerRef`. */
   const signRef = React.useRef<HTMLButtonElement>(null);
 
-  const remaining = WITNESS_DEPOSITION_QUEUE.filter(
-    (deposition) => !signedIds.has(deposition.id),
-  );
-  const [columns, setColumns] = React.useState(() =>
-    emptyColumnFilters(DEPOSITION_COLUMN_FILTERS),
-  );
+  const remaining = WITNESS_DEPOSITION_QUEUE.filter((deposition) => !signedIds.has(deposition.id));
+  const [columns, setColumns] = React.useState(() => emptyColumnFilters(DEPOSITION_COLUMN_FILTERS));
   const [sort, setSort] = React.useState<DepositionSort>("oldest");
 
   const rows = sortRows(
-    applyColumnFilters(filterWitnessDepositions(remaining, filters), DEPOSITION_COLUMN_FILTERS, columns),
+    applyColumnFilters(
+      filterWitnessDepositions(remaining, filters),
+      DEPOSITION_COLUMN_FILTERS,
+      columns,
+    ),
     DEPOSITION_SORTS,
     sort,
   );
@@ -175,9 +163,7 @@ export function SignWitnessDepositionScreen() {
   const visibleIds = new Set(rows.map((deposition) => deposition.id));
   const selectedIds = new Set([...picked].filter((id) => visibleIds.has(id)));
   /* In list order, so the confirmation's summary reads the way the table does. */
-  const selectedDepositions = rows.filter((deposition) =>
-    selectedIds.has(deposition.id),
-  );
+  const selectedDepositions = rows.filter((deposition) => selectedIds.has(deposition.id));
 
   function changeFilters(next: WitnessDepositionFilters) {
     setFilters(next);
@@ -250,7 +236,9 @@ export function SignWitnessDepositionScreen() {
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
             ? t("signWitnessDepositionScreen_1DepositionIsWaitingForYour")
-            : t("signWitnessDepositionScreen_lengthDepositionsAreWaitingForYour", { length: String(remaining.length) })}
+            : t("signWitnessDepositionScreen_lengthDepositionsAreWaitingForYour", {
+                length: String(remaining.length),
+              })}
         </p>
       </header>
 
@@ -281,11 +269,7 @@ export function SignWitnessDepositionScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <DepositionsEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -486,23 +470,13 @@ function SignBar({
  * date — the same good-empty the sibling queues use. Borderless and unpadded; the panel
  * is already the frame.
  */
-function DepositionsEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function DepositionsEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
   const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <UserCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <UserCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isFiltered
@@ -552,10 +526,7 @@ function DepositionItemList({
       {rows.map((deposition) => {
         const tag = witnessTag(deposition);
         return (
-          <QueueItemRow
-            key={deposition.id}
-            className="flex gap-3"
-          >
+          <QueueItemRow key={deposition.id} className="flex gap-3">
             {/* The DS box expands its own hit area to 40×40; the name it carries is the
                 sheet and its case, not the column, because a row read aloud has no
                 column header. */}
@@ -563,7 +534,11 @@ function DepositionItemList({
               <Checkbox
                 checked={selectedIds.has(deposition.id)}
                 onCheckedChange={() => onToggle(deposition)}
-                aria-label={t("signWitnessDepositionScreen_selectTheDepositionOfNameTag", { name: deposition.witness.name, tag, courtText: courtText(deposition.caseNumber) })}
+                aria-label={t("signWitnessDepositionScreen_selectTheDepositionOfNameTag", {
+                  name: deposition.witness.name,
+                  tag,
+                  courtText: courtText(deposition.caseNumber),
+                })}
               />
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -585,16 +560,18 @@ function DepositionItemList({
                 <span className="sr-only">{`, ${tag}, ${witnessRoleLabel(deposition)}`}</span>
               </p>
               <p className="text-caption text-muted-foreground">
-                <Identifier value={deposition.caseNumber} label={t("signWitnessDepositionScreen_caseNumber")} />
-                {t.rich("signWitnessDepositionScreen_recordedFormatDepositionDate", { formatDepositionDate: formatDepositionDate(deposition.depositionOn), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+                <Identifier
+                  value={deposition.caseNumber}
+                  label={t("signWitnessDepositionScreen_caseNumber")}
+                />
+                {t.rich("signWitnessDepositionScreen_recordedFormatDepositionDate", {
+                  formatDepositionDate: formatDepositionDate(deposition.depositionOn),
+                  span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                })}
               </p>
               <CounselCell
-                complainant={counselFor(deposition, "complainant").map(
-                  (counsel) => counsel.name,
-                )}
-                accused={counselFor(deposition, "accused").map(
-                  (counsel) => counsel.name,
-                )}
+                complainant={counselFor(deposition, "complainant").map((counsel) => counsel.name)}
+                accused={counselFor(deposition, "accused").map((counsel) => counsel.name)}
               />
             </div>
           </QueueItemRow>

@@ -102,7 +102,7 @@ export function BulkSetupFlow({
     documents: false,
   });
   const onFile = pathname.endsWith("/file");
-  const uploadStep = (onFile ? params.get("step") ?? "file" : null) as UploadStep | null;
+  const uploadStep = (onFile ? (params.get("step") ?? "file") : null) as UploadStep | null;
 
   const repository = React.useMemo(() => new BulkSetupRepository(setupId), [setupId]);
 
@@ -139,10 +139,28 @@ export function BulkSetupFlow({
             done: upload.read && uploadStep !== "file",
           },
           ...(upload.matchColumns
-            ? [{ id: "map", title: t("setupFlow_matchColumns"), icon: Columns3Icon, href: uploadHref(setupId, "map", ai), active: uploadStep === "map", disabled: !upload.read }]
+            ? [
+                {
+                  id: "map",
+                  title: t("setupFlow_matchColumns"),
+                  icon: Columns3Icon,
+                  href: uploadHref(setupId, "map", ai),
+                  active: uploadStep === "map",
+                  disabled: !upload.read,
+                },
+              ]
             : []),
           ...(upload.matchValues
-            ? [{ id: "values", title: t("setupFlow_matchValues"), icon: ListChecksIcon, href: uploadHref(setupId, "values", ai), active: uploadStep === "values", disabled: !upload.read }]
+            ? [
+                {
+                  id: "values",
+                  title: t("setupFlow_matchValues"),
+                  icon: ListChecksIcon,
+                  href: uploadHref(setupId, "values", ai),
+                  active: uploadStep === "values",
+                  disabled: !upload.read,
+                },
+              ]
             : []),
           {
             id: "review",
@@ -199,7 +217,9 @@ export function BulkSetupFlow({
         </div>
       }
     >
-      <DraftBreadcrumbLabel label={ai === "on" ? t("setupFlow_uploadCases") : t("setupFlow_uploadExcel")} />
+      <DraftBreadcrumbLabel
+        label={ai === "on" ? t("setupFlow_uploadCases") : t("setupFlow_uploadExcel")}
+      />
       <UploadStateContext.Provider value={setUpload}>
         <FieldPolicyProvider value={policy}>
           <FilingShell banner={<SetupBar />}>{children}</FilingShell>

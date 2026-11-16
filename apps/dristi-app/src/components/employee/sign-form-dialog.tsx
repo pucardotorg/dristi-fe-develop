@@ -3,10 +3,7 @@
 import * as React from "react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 import { DocumentPreview } from "@/components/cases/document-preview";
 import {
   SIGN_SCENES,
@@ -15,10 +12,7 @@ import {
   SignatureStage,
   type SignStage,
 } from "@/components/employee/sign-method-stage";
-import {
-  signatureSubject,
-  useSignatureChoice,
-} from "@/components/employee/sign-signature-fields";
+import { signatureSubject, useSignatureChoice } from "@/components/employee/sign-signature-fields";
 import { useHeldRecord } from "@/components/employee/use-held-record";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -134,7 +128,11 @@ function SignFormBody({
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(form)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={form.caseNumber} label={t("signFormDialog_caseNumber")} copyable={false} />
+          <Identifier
+            value={form.caseNumber}
+            label={t("signFormDialog_caseNumber")}
+            copyable={false}
+          />
         </DialogDescription>
       }
       sceneKey={flow.sceneKey}
@@ -219,7 +217,9 @@ function FormFacsimile({ document: storedDocument }: { document: SignFormDocumen
       </ol>
 
       <p className="text-body">{document.closing}</p>
-      <p className="text-body">{t("signFormDialog_datedThisTheDated", { dated: document.dated })}</p>
+      <p className="text-body">
+        {t("signFormDialog_datedThisTheDated", { dated: document.dated })}
+      </p>
 
       <section className="flex flex-col gap-1">
         <h4 className="text-body font-semibold">{t("signFormDialog_deponent")}</h4>

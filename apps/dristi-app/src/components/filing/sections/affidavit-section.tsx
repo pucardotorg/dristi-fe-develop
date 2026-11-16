@@ -79,12 +79,7 @@ export function AffidavitSection() {
           description={t("affidavitSection_theSwornStatementThatGoesOn")}
           actions={
             touched ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setResetOpen(true)}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => setResetOpen(true)}>
                 <RotateCcwIcon data-icon="inline-start" aria-hidden />
                 {t("affidavitSection_restoreStandardText")}
               </Button>
@@ -119,7 +114,10 @@ export function AffidavitSection() {
         </FormCard>
 
         {error ? (
-          <SectionNotice variant="destructive" title={t("affidavitSection_couldntSaveToTheCourtsServer")}>
+          <SectionNotice
+            variant="destructive"
+            title={t("affidavitSection_couldntSaveToTheCourtsServer")}
+          >
             {error}
           </SectionNotice>
         ) : null}

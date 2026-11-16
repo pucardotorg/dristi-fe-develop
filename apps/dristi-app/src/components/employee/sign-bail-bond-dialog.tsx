@@ -3,10 +3,7 @@
 import * as React from "react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 import { DocumentPreview } from "@/components/cases/document-preview";
 import {
   SIGN_SCENES,
@@ -132,10 +129,7 @@ function SignBailBondBody({
   });
   const choice = useSignatureChoice(NOUN);
   const guard = useDiscardGuard(choice.entered, onClose);
-  const document = React.useMemo(
-    () => buildSignBailBondDocument(bond),
-    [bond],
-  );
+  const document = React.useMemo(() => buildSignBailBondDocument(bond), [bond]);
   const reading = flow.stage === "read";
 
   return (
@@ -147,16 +141,30 @@ function SignBailBondBody({
       className="h-[85dvh] sm:max-w-4xl"
       /* The reference titles this overlay with the cause and the paper — "… vs … - Bail
          Bond" — and that is the right pair: the bond has no name of its own. */
-      title={reading ? t("signBailBondDialog_causeTitleBailBond", { causeTitle: causeTitle(bond) }) : t("signBailBondDialog_addSignature")}
+      title={
+        reading
+          ? t("signBailBondDialog_causeTitleBailBond", { causeTitle: causeTitle(bond) })
+          : t("signBailBondDialog_addSignature")
+      }
       titleRef={flow.titleRef}
       /* The litigant leads the supporting line rather than the case number, because with
          two bonds to a case the litigant is the only thing that says which of them is
          open. It stands on both stages: it is what the signature is being put to. */
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
-          {t.rich("signBailBondDialog_executedByLitigant", { litigant: bond.litigant, span: (chunks) => <span aria-hidden>{chunks}</span> })}
+          {t.rich("signBailBondDialog_executedByLitigant", {
+            litigant: bond.litigant,
+            span: (chunks) => <span aria-hidden>{chunks}</span>,
+          })}
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={bond.caseNumber} label={t("signBailBondDialog_caseNumber")} copyable={false} />{t("signBailBondDialog_addedFormatSignBailBondDate", { formatSignBailBondDate: formatSignBailBondDate(bond.addedOn) })}
+          <Identifier
+            value={bond.caseNumber}
+            label={t("signBailBondDialog_caseNumber")}
+            copyable={false}
+          />
+          {t("signBailBondDialog_addedFormatSignBailBondDate", {
+            formatSignBailBondDate: formatSignBailBondDate(bond.addedOn),
+          })}
         </DialogDescription>
       }
       sceneKey={flow.sceneKey}
@@ -168,11 +176,7 @@ function SignBailBondBody({
       footer={
         reading ? (
           <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onReject(bond)}
-            >
+            <Button type="button" variant="outline" onClick={() => onReject(bond)}>
               {t("signBailBondDialog_reject")}
             </Button>
             <Button type="button" onClick={() => flow.go("sign")}>
@@ -242,9 +246,7 @@ function BailBondFacsimile({ document: storedDocument }: { document: SignBailBon
         <p className="text-center text-body tabular-nums">
           {t("signBailBondDialog_caseNumberCaseNumber", { caseNumber: document.caseNumber })}
         </p>
-        <h3 className="text-center text-title-s font-semibold">
-          {document.court}
-        </h3>
+        <h3 className="text-center text-title-s font-semibold">{document.court}</h3>
         <div className="flex flex-col gap-1">
           <p className="text-body tabular-nums">{document.register}</p>
           <p className="text-body">{document.matter}</p>
@@ -269,7 +271,9 @@ function BailBondFacsimile({ document: storedDocument }: { document: SignBailBon
         ))}
       </ol>
 
-      <p className="text-body">{t("signBailBondDialog_datedThisTheDated", { dated: document.dated })}</p>
+      <p className="text-body">
+        {t("signBailBondDialog_datedThisTheDated", { dated: document.dated })}
+      </p>
 
       {/* Who put their hand to it. A description list rather than prose, because the
           reference's paper signs itself in a block and a bench checking a bond checks the
@@ -277,17 +281,13 @@ function BailBondFacsimile({ document: storedDocument }: { document: SignBailBon
       <dl className="flex flex-col gap-2">
         {document.signatories.map((entry) => (
           <div key={entry.role} className="flex flex-wrap gap-2">
-            <dt className="text-body text-paper-muted-foreground">
-              {entry.role}:
-            </dt>
+            <dt className="text-body text-paper-muted-foreground">{entry.role}:</dt>
             <dd className="text-body">{entry.name}</dd>
           </div>
         ))}
       </dl>
 
-      <p className="text-body text-paper-muted-foreground">
-        {document.signature}
-      </p>
+      <p className="text-body text-paper-muted-foreground">{document.signature}</p>
     </article>
   );
 }

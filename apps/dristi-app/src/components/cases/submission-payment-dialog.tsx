@@ -21,11 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  filingStatusLabel,
-  filingStatusVariant,
-  type Submission,
-} from "@/lib/cases/applications";
+import { filingStatusLabel, filingStatusVariant, type Submission } from "@/lib/cases/applications";
 import { formatCaseDate } from "@/lib/cases/types";
 import { OutcomeHeader } from "@/components/feedback";
 import { useTranslations } from "next-intl";
@@ -43,15 +39,15 @@ export function CourtFeeSummary() {
   const t = useTranslations();
   return (
     <div className="flex flex-col gap-4">
-      <Banner variant="info">
-        {t("submissionPaymentDialog_pleaseVisitTheNyayMitraTo")}
-      </Banner>
+      <Banner variant="info">{t("submissionPaymentDialog_pleaseVisitTheNyayMitraTo")}</Banner>
 
       {/* The View Case payment dialog's sheet: white, hairline, 14px, figures
           tabular. The dialog around it supplies the well. */}
       <dl className="flex flex-col rounded-lg border border-hairline bg-card px-4 py-1 text-body-compact">
         <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5">
-          <dt className="min-w-0 text-muted-foreground">{t("submissionPaymentDialog_courtFees")}</dt>
+          <dt className="min-w-0 text-muted-foreground">
+            {t("submissionPaymentDialog_courtFees")}
+          </dt>
           <dd className="shrink-0 tabular-nums">{COURT_FEE}</dd>
         </div>
         <div className="flex items-baseline justify-between gap-4 py-2.5 font-semibold">
@@ -131,7 +127,10 @@ function PaymentBody({
   }
 
   return (
-    <ChromeDialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg" onInteractOutside={(event) => event.preventDefault()}>
+    <ChromeDialogContent
+      className="max-h-[85dvh] overflow-y-auto sm:max-w-lg"
+      onInteractOutside={(event) => event.preventDefault()}
+    >
       {paid ? (
         /* The payment's outcome takes the window over (skill `feedback-states`); the
            negative inset carries the band to the dialog's edges. */
@@ -147,25 +146,21 @@ function PaymentBody({
           <span className="pt-1 text-body-compact text-muted-foreground">{submission.title}</span>
         </OutcomeHeader>
       ) : (
-      <DialogHeader>
-        <div className="flex flex-wrap items-center gap-2">
-          <DialogTitle
-            ref={titleRef}
-            tabIndex={-1}
-            className="text-title-s font-semibold outline-none"
-          >
-            {t("submissionPaymentDialog_payment")}
-          </DialogTitle>
-          <Badge
-            variant={paid ? "success" : filingStatusVariant(submission.status)}
-          >
-            {paid ? t("submissionPaymentDialog_paid") : filingStatusLabel(submission.status)}
-          </Badge>
-        </div>
-        <DialogDescription className="text-body-compact">
-          {submission.title}
-        </DialogDescription>
-      </DialogHeader>
+        <DialogHeader>
+          <div className="flex flex-wrap items-center gap-2">
+            <DialogTitle
+              ref={titleRef}
+              tabIndex={-1}
+              className="text-title-s font-semibold outline-none"
+            >
+              {t("submissionPaymentDialog_payment")}
+            </DialogTitle>
+            <Badge variant={paid ? "success" : filingStatusVariant(submission.status)}>
+              {paid ? t("submissionPaymentDialog_paid") : filingStatusLabel(submission.status)}
+            </Badge>
+          </div>
+          <DialogDescription className="text-body-compact">{submission.title}</DialogDescription>
+        </DialogHeader>
       )}
 
       {paid ? (

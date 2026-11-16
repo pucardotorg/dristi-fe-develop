@@ -31,12 +31,7 @@
 export const DAY_MS = 86_400_000;
 
 export type StageKey =
-  | "registration"
-  | "cognizance"
-  | "appearance"
-  | "bail"
-  | "trial"
-  | "judgement";
+  "registration" | "cognizance" | "appearance" | "bail" | "trial" | "judgement";
 
 /**
  * Every limit the dashboard judges a case by, in one place so it can become court
@@ -74,12 +69,48 @@ export type Stage = {
 };
 
 export const STAGES: Stage[] = [
-  { key: "registration", label: "Registration", covers: "Filed, not yet registered", gap: 3, purpose: "" },
-  { key: "cognizance", label: "Cognizance", covers: "Registered, awaiting cognizance", gap: 28, purpose: "Cognizance" },
-  { key: "appearance", label: "Appearance", covers: "Process and appearance of the accused", gap: 24, purpose: "Appearance" },
-  { key: "bail", label: "Bail", covers: "Accused appeared, bail not yet granted", gap: 7, purpose: "Bail" },
-  { key: "trial", label: "Trial", covers: "Plea, evidence and arguments", gap: 18, purpose: "Evidence" },
-  { key: "judgement", label: "Judgement", covers: "Reserved for judgement", gap: 6, purpose: "Judgement" },
+  {
+    key: "registration",
+    label: "Registration",
+    covers: "Filed, not yet registered",
+    gap: 3,
+    purpose: "",
+  },
+  {
+    key: "cognizance",
+    label: "Cognizance",
+    covers: "Registered, awaiting cognizance",
+    gap: 28,
+    purpose: "Cognizance",
+  },
+  {
+    key: "appearance",
+    label: "Appearance",
+    covers: "Process and appearance of the accused",
+    gap: 24,
+    purpose: "Appearance",
+  },
+  {
+    key: "bail",
+    label: "Bail",
+    covers: "Accused appeared, bail not yet granted",
+    gap: 7,
+    purpose: "Bail",
+  },
+  {
+    key: "trial",
+    label: "Trial",
+    covers: "Plea, evidence and arguments",
+    gap: 18,
+    purpose: "Evidence",
+  },
+  {
+    key: "judgement",
+    label: "Judgement",
+    covers: "Reserved for judgement",
+    gap: 6,
+    purpose: "Judgement",
+  },
 ];
 
 const STAGE_BY_KEY = Object.fromEntries(STAGES.map((stage) => [stage.key, stage])) as Record<
@@ -95,12 +126,7 @@ export function stageByKey(key: StageKey): Stage {
 export const HEARING_STAGES = STAGES.filter((stage) => stage.key !== "registration");
 
 export type DisposalMethod =
-  | "Settled"
-  | "Withdrawn"
-  | "Dismissed"
-  | "Returned"
-  | "Convicted"
-  | "Acquitted";
+  "Settled" | "Withdrawn" | "Dismissed" | "Returned" | "Convicted" | "Acquitted";
 
 /** Disposals without a contest, as the statement of pendency counts them. */
 export const UNCONTESTED: ReadonlySet<DisposalMethod> = new Set([
@@ -254,12 +280,88 @@ export function monthShortLabel(key: number): string {
 
 const SEED = 138138;
 
-const MEN = ["Suresh", "Anil", "Rajesh", "Biju", "Thomas", "Abdul", "Manoj", "Sunil", "Ravi", "Jose", "Shaji", "Vinod", "Ajith", "Sabu", "Rahim", "Gopakumar", "Pradeep", "Saji", "Harikumar", "Sajeev"];
-const WOMEN = ["Priya", "Sreeja", "Fathima", "Deepa", "Mary", "Lekha", "Anitha", "Bindu", "Shiny", "Remya", "Sheeba", "Jaya"];
-const SURNAMES = ["Pillai", "Menon", "Nair", "Kurup", "Warrier", "Nambiar", "Panicker", "Unnithan", "Thampi", "Achari", "Kunju", "Rawther", "Varghese", "Joseph", "Kurian", "George", "Mathew", "Abraham"];
-const FIRMS = ["Chaithanya Agencies", "Ashtamudi Finance", "Sreevalsam Chits", "Quilon Traders", "Malabar Motors", "Anjali Gold Loans", "Thangassery Fisheries", "Karunagappally Cashews", "Punalur Plywoods", "Paravur Hardwares", "Kadappakada Textiles", "Chinnakada Electricals"];
-const COMPLAINANT_APPLICATIONS = ["Condonation of delay", "Amendment of complaint", "Return of documents", "Adjournment"];
-const ACCUSED_APPLICATIONS = ["Exemption from personal appearance", "Recall of warrant", "Adjournment", "Return of documents"];
+const MEN = [
+  "Suresh",
+  "Anil",
+  "Rajesh",
+  "Biju",
+  "Thomas",
+  "Abdul",
+  "Manoj",
+  "Sunil",
+  "Ravi",
+  "Jose",
+  "Shaji",
+  "Vinod",
+  "Ajith",
+  "Sabu",
+  "Rahim",
+  "Gopakumar",
+  "Pradeep",
+  "Saji",
+  "Harikumar",
+  "Sajeev",
+];
+const WOMEN = [
+  "Priya",
+  "Sreeja",
+  "Fathima",
+  "Deepa",
+  "Mary",
+  "Lekha",
+  "Anitha",
+  "Bindu",
+  "Shiny",
+  "Remya",
+  "Sheeba",
+  "Jaya",
+];
+const SURNAMES = [
+  "Pillai",
+  "Menon",
+  "Nair",
+  "Kurup",
+  "Warrier",
+  "Nambiar",
+  "Panicker",
+  "Unnithan",
+  "Thampi",
+  "Achari",
+  "Kunju",
+  "Rawther",
+  "Varghese",
+  "Joseph",
+  "Kurian",
+  "George",
+  "Mathew",
+  "Abraham",
+];
+const FIRMS = [
+  "Chaithanya Agencies",
+  "Ashtamudi Finance",
+  "Sreevalsam Chits",
+  "Quilon Traders",
+  "Malabar Motors",
+  "Anjali Gold Loans",
+  "Thangassery Fisheries",
+  "Karunagappally Cashews",
+  "Punalur Plywoods",
+  "Paravur Hardwares",
+  "Kadappakada Textiles",
+  "Chinnakada Electricals",
+];
+const COMPLAINANT_APPLICATIONS = [
+  "Condonation of delay",
+  "Amendment of complaint",
+  "Return of documents",
+  "Adjournment",
+];
+const ACCUSED_APPLICATIONS = [
+  "Exemption from personal appearance",
+  "Recall of warrant",
+  "Adjournment",
+  "Return of documents",
+];
 const WITNESSES: [string, "Complainant" | "Accused"][] = [
   ["Complainant", "Complainant"],
   ["Bank manager", "Complainant"],
@@ -281,7 +383,7 @@ function generate(todayDay: string): CourtDocket {
     return state / 4294967296;
   };
   const ri = (a: number, b: number) => a + Math.floor(rnd() * (b - a + 1));
-  const pick = <T,>(list: readonly T[]): T => list[Math.floor(rnd() * list.length)];
+  const pick = <T>(list: readonly T[]): T => list[Math.floor(rnd() * list.length)];
   const person = () => `${rnd() < 0.72 ? pick(MEN) : pick(WOMEN)} ${pick(SURNAMES)}`;
 
   const gaps = Object.fromEntries(STAGES.map((stage) => [stage.key, [] as number[]])) as Record<
@@ -409,9 +511,11 @@ function generate(todayDay: string): CourtDocket {
         if (stage.key === "cognizance") addProcess(c, "Notice", t + ri(0, 6) * DAY_MS);
         if (stage.key === "appearance") {
           addProcess(c, "Summons", t + ri(0, 4) * DAY_MS);
-          if (daysBetween(t, TODAY) > 50 && rnd() < 0.5) addProcess(c, "Warrant", t + ri(42, 50) * DAY_MS);
+          if (daysBetween(t, TODAY) > 50 && rnd() < 0.5)
+            addProcess(c, "Warrant", t + ri(42, 50) * DAY_MS);
         }
-        if (stage.key === "trial" && daysBetween(t, TODAY) > 15) addDepositions(c, t, TODAY, ri(0, 2));
+        if (stage.key === "trial" && daysBetween(t, TODAY) > 15)
+          addDepositions(c, t, TODAY, ri(0, 2));
         break;
       }
       const end = t + duration * DAY_MS;
@@ -426,7 +530,11 @@ function generate(todayDay: string): CourtDocket {
       if (stage.key === "registration") c.registeredAt = t;
       if (stage.key === "cognizance") {
         if (rnd() < 0.07) {
-          c.disposal = { at: "CMP", date: t, method: pick(["Withdrawn", "Dismissed", "Returned"] as const) };
+          c.disposal = {
+            at: "CMP",
+            date: t,
+            method: pick(["Withdrawn", "Dismissed", "Returned"] as const),
+          };
           break;
         }
         c.cognizanceAt = t;
@@ -466,7 +574,8 @@ function generate(todayDay: string): CourtDocket {
       const count = rnd() < 0.45 ? ri(1, 2) : 0;
       for (let i = 0; i < count; i++) {
         const submitted =
-          c.registeredAt + ri(1, Math.max(2, daysBetween(c.registeredAt, closed ?? TODAY))) * DAY_MS;
+          c.registeredAt +
+          ri(1, Math.max(2, daysBetween(c.registeredAt, closed ?? TODAY))) * DAY_MS;
         if (submitted > TODAY) continue;
         const accusedSide = rnd() < 0.5 && c.cognizanceAt !== null;
         const decided = submitted + ri(2, 40) * DAY_MS;
@@ -483,10 +592,17 @@ function generate(todayDay: string): CourtDocket {
       }
     }
 
-    if (closed === null && c.stage !== null && c.stage !== "registration" && c.stageStart !== null) {
+    if (
+      closed === null &&
+      c.stage !== null &&
+      c.stage !== "registration" &&
+      c.stageStart !== null
+    ) {
       const gap = STAGE_BY_KEY[c.stage].gap;
-      c.previousPosting = c.stageHearings > 0 ? TODAY - ri(1, Math.round(gap)) * DAY_MS : c.stageStart;
-      c.nextHearing = rnd() < 0.045 ? null : TODAY + ri(1, Math.max(4, Math.round(gap * 1.25))) * DAY_MS;
+      c.previousPosting =
+        c.stageHearings > 0 ? TODAY - ri(1, Math.round(gap)) * DAY_MS : c.stageStart;
+      c.nextHearing =
+        rnd() < 0.045 ? null : TODAY + ri(1, Math.max(4, Math.round(gap * 1.25))) * DAY_MS;
       c.nextPurpose =
         c.stage === "trial"
           ? pick(["Plea", "Evidence", "Evidence", "Arguments"])
@@ -554,7 +670,10 @@ function generate(todayDay: string): CourtDocket {
   const copies: CopyApplication[] = [];
   for (const c of cases) {
     if ((c.disposal && rnd() < 0.05) || (!c.disposal && c.registeredAt !== null && rnd() < 0.012)) {
-      const applied = Math.min(TODAY, (c.disposal ? c.disposal.date : c.registeredAt!) + ri(1, 30) * DAY_MS);
+      const applied = Math.min(
+        TODAY,
+        (c.disposal ? c.disposal.date : c.registeredAt!) + ri(1, 30) * DAY_MS,
+      );
       const sheets = ri(3, 42);
       const issued = applied + ri(1, 9) * DAY_MS;
       copies.push({
@@ -700,7 +819,9 @@ export function courtMeasures(docket: CourtDocket): CourtMeasures {
     return {
       type,
       issued: all.length,
-      toPayment: mean(all.filter((p) => p.paid !== null).map((p) => daysBetween(p.issued, p.paid!))),
+      toPayment: mean(
+        all.filter((p) => p.paid !== null).map((p) => daysBetween(p.issued, p.paid!)),
+      ),
       toDelivery: mean(
         all.filter((p) => p.delivered !== null).map((p) => daysBetween(p.paid!, p.delivered!)),
       ),
@@ -725,7 +846,11 @@ export function courtMeasures(docket: CourtDocket): CourtMeasures {
       .sort((a, b) => (a.previousPosting ?? 0) - (b.previousPosting ?? 0)),
     judgements,
     paymentPending: live
-      .filter((x) => x.process.paid === null && daysBetween(x.process.issued, today) > limits.paymentPendingDays)
+      .filter(
+        (x) =>
+          x.process.paid === null &&
+          daysBetween(x.process.issued, today) > limits.paymentPendingDays,
+      )
       .sort((a, b) => a.process.issued - b.process.issued),
     deliveryPending: live
       .filter(
@@ -772,9 +897,7 @@ const HEARING_BUCKETS: [string, number, number][] = [
 ];
 
 function gapsFor(docket: CourtDocket, stage: HearingStageFilter): number[] {
-  return stage === "all"
-    ? HEARING_STAGES.flatMap((s) => docket.gaps[s.key])
-    : docket.gaps[stage];
+  return stage === "all" ? HEARING_STAGES.flatMap((s) => docket.gaps[s.key]) : docket.gaps[stage];
 }
 
 /** Days between successive hearings, bucketed. */
@@ -808,7 +931,9 @@ export function gapSummary(
   docket: CourtDocket,
   stage: HearingStageFilter,
 ): { median: number; average: number; count: number } {
-  const gaps = gapsFor(docket, stage).slice().sort((a, b) => a - b);
+  const gaps = gapsFor(docket, stage)
+    .slice()
+    .sort((a, b) => a - b);
   if (gaps.length === 0) return { median: 0, average: 0, count: 0 };
   return {
     median: gaps[gaps.length >> 1],
@@ -851,7 +976,9 @@ function pendingAt(cases: DocketCase[], t: number): number {
 
 function statement(cases: DocketCase[], from: number, to: number, label: string): StatementRow {
   const filed = cases.filter((c) => c.filed >= from && c.filed <= to).length;
-  const disposed = cases.filter((c) => c.disposal && c.disposal.date >= from && c.disposal.date <= to);
+  const disposed = cases.filter(
+    (c) => c.disposal && c.disposal.date >= from && c.disposal.date <= to,
+  );
   const uncontested = disposed.filter((c) => UNCONTESTED.has(c.disposal!.method)).length;
   const contested = disposed.length - uncontested;
   const longPending = cases.filter(
@@ -889,13 +1016,15 @@ export function courtStatements(docket: CourtDocket): Record<StatementPeriod, St
   const monthly: StatementRow[] = [];
   for (let m = firstMonth; m <= lastMonth; m++) {
     const end = monthStart(m + 1) - DAY_MS;
-    monthly.push(statement(cases, monthStart(m), Math.min(end, today), `${monthLabel(m)}${toDate(end)}`));
+    monthly.push(
+      statement(cases, monthStart(m), Math.min(end, today), `${monthLabel(m)}${toDate(end)}`),
+    );
   }
 
   const quarterly: StatementRow[] = [];
   for (let q = firstMonth - (firstMonth % 3); q <= lastMonth; q += 3) {
     const end = monthStart(q + 3) - DAY_MS;
-    const label = `Q${((q % 12) / 3) + 1} ${Math.floor(q / 12)}${toDate(end)}`;
+    const label = `Q${(q % 12) / 3 + 1} ${Math.floor(q / 12)}${toDate(end)}`;
     quarterly.push(statement(cases, monthStart(q), Math.min(end, today), label));
   }
 

@@ -49,9 +49,7 @@ export function addItemsToDraft(
   const skipped: BulkItemsResult["skipped"] = [];
   for (const type of types) {
     const existing = blocks.flatMap((block) =>
-      block.kind === "item"
-        ? [{ type: block.type, applicationId: block.applicationId }]
-        : [],
+      block.kind === "item" ? [{ type: block.type, applicationId: block.applicationId }] : [],
     );
     if (existing.some((entry) => entry.type === type && !entry.applicationId)) {
       skipped.push({ type, reason: "Already in this order" });

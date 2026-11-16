@@ -25,10 +25,7 @@ import { Button } from "@/components/ui/button";
 import { DocumentSlot } from "@/components/ui/document-slot";
 import { useCorrection } from "@/components/filing/posture";
 import { SlotThumbnail } from "@/components/filing/upload/thumbnail";
-import {
-  useDropTarget,
-  type DroppedFiles,
-} from "@/components/filing/upload/use-drop-target";
+import { useDropTarget, type DroppedFiles } from "@/components/filing/upload/use-drop-target";
 import { useTranslations } from "next-intl";
 
 /** The DS status variant. */
@@ -104,7 +101,7 @@ export function IntakeSlotRow({
          did *not* flag is that the advocate can read them. */
       className={cn(
         "flex flex-col gap-2",
-        locked && "[&_button]:bg-disabled-fill [&_button]:text-muted-foreground"
+        locked && "[&_button]:bg-disabled-fill [&_button]:text-muted-foreground",
       )}
     >
       <div
@@ -112,7 +109,7 @@ export function IntakeSlotRow({
           "flex items-center gap-1 rounded-lg transition-shadow",
           // Same fill as the DS filled slot, so the slot and its actions read as one pill.
           slot.file && "bg-surface-sunken pr-4",
-          isOver && "ring-3 ring-focus-ring"
+          isOver && "ring-3 ring-focus-ring",
         )}
       >
         <DocumentSlot
@@ -125,7 +122,10 @@ export function IntakeSlotRow({
                 {/* Phone: "optional" as the form fields say it, a quiet word after the
                     name. The DS badge wrapped under the guidance and split the block. */}
                 {!slot.required && !slot.file ? (
-                  <span className="font-normal text-muted-foreground sm:hidden"> {t("slotRow_optional")}</span>
+                  <span className="font-normal text-muted-foreground sm:hidden">
+                    {" "}
+                    {t("slotRow_optional")}
+                  </span>
                 ) : null}
               </span>
               {showGuidance ? (
@@ -156,7 +156,7 @@ export function IntakeSlotRow({
             MEDIA_CLASS,
             slot.file
               ? "[&_[data-slot=document-slot-media]]:bg-card"
-              : "[&_[data-slot=document-slot-media]]:bg-surface-sunken [&_[data-slot=document-slot-media]_svg]:size-6"
+              : "[&_[data-slot=document-slot-media]]:bg-surface-sunken [&_[data-slot=document-slot-media]_svg]:size-6",
           )}
         />
 
@@ -197,7 +197,7 @@ export function IntakeSlotRow({
         data-defect={defect.n}
         className={cn(
           "scroll-mt-6 border-l-2 pl-3 transition-colors",
-          resolved ? "border-l-success-ink" : active ? "border-l-primary" : "border-l-border"
+          resolved ? "border-l-success-ink" : active ? "border-l-primary" : "border-l-border",
         )}
       >
         {body}

@@ -458,6 +458,17 @@ export function caseFilingErrorMessage(error: unknown): string {
   return partyFieldMessage(error) ?? error.fieldError("file") ?? error.message;
 }
 
+/**
+ * True when reading a case failed only because the case has not been saved yet.
+ *
+ * Nothing is stored on the server until a step's first save, so the first read of a new
+ * filing answers 404. A step that reads the case treats this as "nothing on the case yet"
+ * rather than a failure (see `loadFromCase` in use-case-parties / use-case-advocates).
+ */
+export function isCaseNotYetSaved(error: unknown): boolean {
+  return isApiError(error) && error.status === 404;
+}
+
 export function createCaseFilingApi(client: ApiClient = api) {
   return {
     /** Open a cheque bounce draft. Nothing is stored on the server until the first save. */

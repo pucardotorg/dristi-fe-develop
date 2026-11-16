@@ -14,10 +14,13 @@
 
 import * as React from "react";
 
-import { isApiError } from "@/lib/api";
-
 import { accusedFromCase, complainantsFromCase, witnessesFromCase } from "./case-read";
-import { caseFilingApi, caseFilingErrorMessage, type PartyRole } from "./data/cases-api";
+import {
+  caseFilingApi,
+  caseFilingErrorMessage,
+  isCaseNotYetSaved,
+  type PartyRole,
+} from "./data/cases-api";
 import {
   accusedBodies,
   complainantBodies,
@@ -210,7 +213,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
       } catch (error) {
         // A case not saved yet has nothing to read: treat it as an empty case
         // (nothing from it) and don't read again on the next save.
-        if (isApiError(error) && error.status === 404) {
+        if (isCaseNotYetSaved(error)) {
           loaded.current = true;
         } else {
           // The browser's copy is still there; the next save tries the case again.

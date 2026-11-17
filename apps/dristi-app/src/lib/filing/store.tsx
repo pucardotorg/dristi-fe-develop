@@ -57,16 +57,14 @@ export function useMounted(): boolean {
   return React.useSyncExternalStore(
     subscribeNoop,
     () => true,
-    () => false
+    () => false,
   );
 }
 
 const SAVE_DEBOUNCE_MS = 300;
 
 type LoadState =
-  | { status: "loading" }
-  | { status: "missing" }
-  | { status: "ready"; draft: FilingDraft };
+  { status: "loading" } | { status: "missing" } | { status: "ready"; draft: FilingDraft };
 
 const ALL_STEPS: StepId[] = ["upload", ...FILING_STEPS.map((s) => s.id)];
 
@@ -101,7 +99,7 @@ export function FilingProvider({
   const [loaded, setLoaded] = React.useState<{ id: string; result: LoadState } | null>(null);
   const state = React.useMemo<LoadState>(
     () => (loaded && loaded.id === draftId ? loaded.result : { status: "loading" }),
-    [loaded, draftId]
+    [loaded, draftId],
   );
   const setState = React.useCallback(
     (updater: LoadState | ((prev: LoadState) => LoadState)) =>
@@ -111,7 +109,7 @@ export function FilingProvider({
         const next = typeof updater === "function" ? updater(prevResult) : updater;
         return { id: draftId, result: next };
       }),
-    [draftId]
+    [draftId],
   );
   const [saveState, setSaveState] = React.useState<SaveState>("saved");
   const pathname = usePathname();
@@ -242,7 +240,7 @@ export function FilingProvider({
       setSaveState("saving");
       schedule();
     },
-    [schedule, setState]
+    [schedule, setState],
   );
 
   // Remember where the person is, so "Continue draft" resumes here, and that they have
@@ -263,7 +261,7 @@ export function FilingProvider({
 
   const hrefFor = React.useCallback(
     (s: StepId) => (hrefOverride ? hrefOverride(s) : stepHref(draftId, s)),
-    [draftId, hrefOverride]
+    [draftId, hrefOverride],
   );
 
   const discard = React.useCallback(async () => {
@@ -285,7 +283,7 @@ export function FilingProvider({
   const value = React.useMemo<FilingContextValue | null>(
     () =>
       draft ? { draft, saveState, update: commit, latest, hrefFor, steps, flush, discard } : null,
-    [draft, saveState, commit, latest, hrefFor, steps, flush, discard]
+    [draft, saveState, commit, latest, hrefFor, steps, flush, discard],
   );
 
   if (state.status === "loading") return <>{fallback}</>;

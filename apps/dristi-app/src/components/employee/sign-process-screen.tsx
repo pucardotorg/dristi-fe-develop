@@ -1,18 +1,9 @@
 "use client";
 
 import * as React from "react";
-import {
-  ArrowRightIcon,
-  FileCheck2Icon,
-  SearchXIcon,
-  XIcon,
-} from "lucide-react";
+import { ArrowRightIcon, FileCheck2Icon, SearchXIcon, XIcon } from "lucide-react";
 
-import {
-  PILL_COUNT,
-  PILL_ITEM,
-  PILL_ROW,
-} from "@/components/chrome/pill-plate";
+import { PILL_COUNT, PILL_ITEM, PILL_ROW } from "@/components/chrome/pill-plate";
 import { QueueAnnouncer } from "@/components/employee/queue-announcer";
 import {
   CourtFilters,
@@ -22,10 +13,7 @@ import {
 import { RecordReturnsDialog } from "@/components/employee/record-returns-dialog";
 import { ProcessMoveDialog } from "@/components/employee/process-move-dialog";
 import { SignProcessDialog } from "@/components/employee/sign-process-dialog";
-import {
-  ProcessStatusText,
-  SignProcessTable,
-} from "@/components/employee/sign-process-table";
+import { ProcessStatusText, SignProcessTable } from "@/components/employee/sign-process-table";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
 import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
@@ -40,16 +28,9 @@ import {
 } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { isPendingFilterChange } from "@/lib/employee/filter-state";
-import {
-  causeTitle,
-} from "@/lib/employee/hearings";
+import { causeTitle } from "@/lib/employee/hearings";
 import {
   actsForSelection,
   bandByStatus,
@@ -163,12 +144,8 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
   const tab = scopedTab(tabId);
   const [view, setView] = React.useState<ProcessView>(tab.defaultView);
 
-  const [filters, setFilters] = React.useState<ProcessFilters>(() =>
-    defaultProcessFilters(tab),
-  );
-  const [selectedIds, setSelectedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [filters, setFilters] = React.useState<ProcessFilters>(() => defaultProcessFilters(tab));
+  const [selectedIds, setSelectedIds] = React.useState<ReadonlySet<string>>(() => new Set());
   /* The row open in the overlay, by id: the overlay reads the live row off the line, so
      an act taken in it shows its new status without closing. */
   const [openId, setOpenId] = React.useState<string | null>(null);
@@ -178,8 +155,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
   const [confirming, setConfirming] = React.useState<ProcessActId | null>(null);
   /* The act the shared confirmation last opened on. Held past closing so the dialog keeps
      its verb while it closes and hands focus back. */
-  const [shown, setShown] =
-    React.useState<Exclude<ProcessActId, "record">>("sign");
+  const [shown, setShown] = React.useState<Exclude<ProcessActId, "record">>("sign");
   const [notice, setNotice] = React.useState("");
   /* What the last Enter did with the paper in the clerk's hand. Spoken, not shown — the
      chip arriving in the tray is what says it on screen. */
@@ -189,9 +165,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
   const [sort, setSort] = React.useState<ProcessSort>(DEFAULT_PROCESS_SORT);
   /* What the last act took, by id, so the confirmation's success can say where the rows
      are now — read back off the line once they have moved. */
-  const [actedIds, setActedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [actedIds, setActedIds] = React.useState<ReadonlySet<string>>(() => new Set());
   const searchRef = React.useRef<HTMLInputElement>(null);
   /* The bar button a confirmation was opened from, for focus to return to. Set on the
      press, because the bar can carry up to three act buttons. */
@@ -223,9 +197,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
   const selectedCases = pile ? groupSelectionByCase(pool, selectedIds) : [];
 
   const elsewhere =
-    rows.length === 0 && isFiltered
-      ? processesElsewhere(line, filters, { tab: tabId, view })
-      : [];
+    rows.length === 0 && isFiltered ? processesElsewhere(line, filters, { tab: tabId, view }) : [];
 
   /** Put the selection and the last word down — what any change of view does. */
   function resetWork() {
@@ -242,19 +214,11 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
    * still applied. The tab strip passes nothing and resets, which is what picking a tab
    * off the strip means.
    */
-  function changeTab(
-    next: ProcessTabId,
-    nextView?: ProcessView,
-    carry?: ProcessFilters,
-  ) {
+  function changeTab(next: ProcessTabId, nextView?: ProcessView, carry?: ProcessFilters) {
     const nextTab = scopedTab(next);
     setTabId(next);
     setView(nextView ?? nextTab.defaultView);
-    setFilters(
-      carry
-        ? rebaseFilters(carry, tab, nextTab)
-        : defaultProcessFilters(nextTab),
-    );
+    setFilters(carry ? rebaseFilters(carry, tab, nextTab) : defaultProcessFilters(nextTab));
     resetWork();
   }
 
@@ -367,10 +331,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
    * An act from the bar or the single-row overlay. It runs over the given rows in the
    * demo line, clears what it consumed and says what it did — nothing leaves the browser.
    */
-  function act(
-    actId: Exclude<ProcessActId, "record">,
-    ids: ReadonlySet<string>,
-  ) {
+  function act(actId: Exclude<ProcessActId, "record">, ids: ReadonlySet<string>) {
     const next = runProcessAct(allRows, actId, ids, todayIsoDay());
     const moved = allRows.filter(
       (process, index) => ids.has(process.id) && next[index] !== process,
@@ -417,13 +378,14 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
   /* Where the last act's rows are now — what the confirmation's success says. */
   const actedRows = line.filter((process) => actedIds.has(process.id));
 
-
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         {/* No supporting line (owner, 2026-10-06): the tab counts and the pills already
             say how much is standing where, and a sentence restating them was noise. */}
-        <h1 className="text-title text-balance font-semibold">{t("signProcessScreen_signProcess")}</h1>
+        <h1 className="text-title text-balance font-semibold">
+          {t("signProcessScreen_signProcess")}
+        </h1>
       </header>
 
       <Tabs
@@ -460,11 +422,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
         </div>
 
         {scope.tabs.map((entry) => (
-          <TabsContent
-            key={entry.id}
-            value={entry.id}
-            className="min-w-0 outline-none"
-          >
+          <TabsContent key={entry.id} value={entry.id} className="min-w-0 outline-none">
             {entry.id !== tabId ? null : (
               /* One panel: pills, filters, list and footer are one unit of work. */
               <section className="flex min-w-0 flex-col gap-6 rounded-xl border border-hairline bg-card p-6 shadow-raised">
@@ -475,12 +433,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
                   onSortChange={setSort}
                   leading={
                     hasPills(tab) ? (
-                      <ProcessPills
-                        tab={tab}
-                        line={line}
-                        view={view}
-                        onChange={changeView}
-                      />
+                      <ProcessPills tab={tab} line={line} view={view} onChange={changeView} />
                     ) : undefined
                   }
                   tab={tab}
@@ -492,11 +445,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
                   onSubmit={submitSearch}
                 />
 
-                <QueueAnnouncer
-                  from={1}
-                  to={rows.length}
-                  total={rows.length}
-                />
+                <QueueAnnouncer from={1} to={rows.length} total={rows.length} />
 
                 {/* The pile, above the list it was picked from — and outside the branch
                     below, so searching a case with nothing here empties the table without
@@ -515,15 +464,11 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
                 <div className="flex min-h-96 min-w-0 flex-col">
                   {rows.length === 0 ? (
                     <ProcessEmpty
-                      empty={
-                        view === "all" ? tab.empty : processStatus(view).empty
-                      }
+                      empty={view === "all" ? tab.empty : processStatus(view).empty}
                       isFiltered={isFiltered}
                       elsewhere={elsewhere}
                       onClear={clearFilters}
-                      onGoTo={(status) =>
-                        changeTab(status.tab, status.id, filters)
-                      }
+                      onGoTo={(status) => changeTab(status.tab, status.id, filters)}
                     />
                   ) : (
                     <div className="flex min-w-0 flex-col gap-4">
@@ -591,14 +536,10 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
           if (!next) setConfirming(null);
         }}
         triggerRef={actRef}
-        onConfirm={() =>
-          act(shown, new Set(confirmingRows.map((process) => process.id)))
-        }
+        onConfirm={() => act(shown, new Set(confirmingRows.map((process) => process.id)))}
         /* Only off signing: a signed paper is worth having in hand the moment it is
            done (owner, 2026-09-07), and the rows have left the view. */
-        onDownload={
-          shown === "sign" ? () => download(actedRows) : undefined
-        }
+        onDownload={shown === "sign" ? () => download(actedRows) : undefined}
         onReturnFocus={returnFocus}
       />
 
@@ -618,9 +559,7 @@ function SignProcessLine({ scope }: { scope: ProcessScope }) {
         onOpenChange={(next) => setOpenId(next ? next.id : null)}
         onSign={(process) => act("sign", new Set([process.id]))}
         onAct={(actId, process) => act(actId, new Set([process.id]))}
-        onRecord={(process, outcome, on) =>
-          record(new Map([[process.id, outcome]]), on)
-        }
+        onRecord={(process, outcome, on) => record(new Map([[process.id, outcome]]), on)}
         onDownloaded={(process) => {
           const next = executeOnDownload(allRows, new Set([process.id]), todayIsoDay());
           if (next.some((row, index) => row !== allRows[index])) setLine(next);
@@ -800,8 +739,7 @@ function ProcessFiltersForm({
         value: type.id,
         label: type.label,
       })),
-      onApply: (value) =>
-        onChange({ type: value as ProcessFilters["type"] }),
+      onApply: (value) => onChange({ type: value as ProcessFilters["type"] }),
     },
   ];
   if (tab.onlyChannel === undefined) {
@@ -815,8 +753,7 @@ function ProcessFiltersForm({
         value: channel.id,
         label: channel.label,
       })),
-      onApply: (value) =>
-        onChange({ channel: value as ProcessFilters["channel"] }),
+      onApply: (value) => onChange({ channel: value as ProcessFilters["channel"] }),
     });
   }
 
@@ -932,15 +869,15 @@ function ProcessSelectionTray({
                 label={t("signProcessScreen_caseNumber")}
                 copyable={false}
               />
-              <span className="tabular-nums text-muted-foreground">
-                {entry.processes.length}
-              </span>
+              <span className="tabular-nums text-muted-foreground">{entry.processes.length}</span>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-xs"
                 className="max-md:size-10"
-                aria-label={t("signProcessScreen_takeCourtTextOutOfThe", { courtText: courtText(entry.caseNumber) })}
+                aria-label={t("signProcessScreen_takeCourtTextOutOfThe", {
+                  courtText: courtText(entry.caseNumber),
+                })}
                 onClick={() => onRemoveCase(entry.caseNumber)}
               >
                 <XIcon aria-hidden />
@@ -952,12 +889,7 @@ function ProcessSelectionTray({
       {/* The chips' own 32px from `md`, so the button sits level with the first line of
           chips rather than floating taller than them; 40px below `md`, like the chips.
           The default size keeps its text at the DS 14px — `xs` and `sm` drop to 12px. */}
-      <Button
-        type="button"
-        variant="ghost"
-        className="shrink-0 md:h-8"
-        onClick={onClearSelection}
-      >
+      <Button type="button" variant="ghost" className="shrink-0 md:h-8" onClick={onClearSelection}>
         {t("signProcessScreen_clearSelection")}
       </Button>
     </section>
@@ -1057,9 +989,7 @@ function ProcessBar({
               type="button"
               variant={index === 0 ? "default" : "outline"}
               className="w-full sm:w-fit"
-              onClick={(event) =>
-                onRequestAct(group.act.id, event.currentTarget)
-              }
+              onClick={(event) => onRequestAct(group.act.id, event.currentTarget)}
             >
               {group.act.bar(group.rows.length)}
             </Button>
@@ -1133,13 +1063,12 @@ function ProcessEmpty({
         <EmptyContent>
           <div className="flex flex-wrap items-center justify-center gap-2">
             {elsewhere.map((entry) => (
-              <Button
-                key={entry.status.id}
-                variant="outline"
-                onClick={() => onGoTo(entry.status)}
-              >
+              <Button key={entry.status.id} variant="outline" onClick={() => onGoTo(entry.status)}>
                 <span className="tabular-nums">
-                  {t("signProcessScreen_countInLabel", { count: String(entry.count), label: entry.status.label })}
+                  {t("signProcessScreen_countInLabel", {
+                    count: String(entry.count),
+                    label: entry.status.label,
+                  })}
                 </span>
               </Button>
             ))}
@@ -1208,7 +1137,10 @@ function ProcessItemList({
                     <Checkbox
                       checked={selectedIds.has(process.id)}
                       onCheckedChange={() => onToggle(process)}
-                      aria-label={t("signProcessScreen_selectTheInlineInCourtText", { inline, courtText: courtText(process.caseNumber) })}
+                      aria-label={t("signProcessScreen_selectTheInlineInCourtText", {
+                        inline,
+                        courtText: courtText(process.caseNumber),
+                      })}
                     />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -1218,12 +1150,13 @@ function ProcessItemList({
                       {...rowOpener}
                       className={rowOpenerClass}
                     >
-                      <span className="sr-only">{t("signProcessScreen_readTheInlineIn", { inline })} </span>
+                      <span className="sr-only">
+                        {t("signProcessScreen_readTheInlineIn", { inline })}{" "}
+                      </span>
                       {causeTitle(process)}
                     </button>
                     <p className="min-w-0 text-body-compact">
-                      {courtProcessTypeLabel(process.type)} ·{" "}
-                      {processChannelLabel(process.channel)}
+                      {courtProcessTypeLabel(process.type)} · {processChannelLabel(process.channel)}
                     </p>
                     {statusLine ? (
                       <p className="min-w-0 text-body-compact">
@@ -1238,12 +1171,13 @@ function ProcessItemList({
                       {statusLine ? null : (
                         <>
                           {` · ${tab.dateColumn} `}
-                          <span className="tabular-nums">
-                            {formatProcessDate(process.paidOn)}
-                          </span>
+                          <span className="tabular-nums">{formatProcessDate(process.paidOn)}</span>
                         </>
                       )}
-                      {t.rich("signProcessScreen_hearingFormatProcessDate", { formatProcessDate: formatProcessDate(process.hearingDate), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+                      {t.rich("signProcessScreen_hearingFormatProcessDate", {
+                        formatProcessDate: formatProcessDate(process.hearingDate),
+                        span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                      })}
                     </p>
                   </div>
                 </QueueItemRow>

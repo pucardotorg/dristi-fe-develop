@@ -74,10 +74,7 @@ describe("cause list columns", () => {
     assert.equal(ids(withStatus).at(-1), "status");
     const moved = moveColumn(withStatus, "status", "action", "before");
     assert.deepEqual(ids(moved).slice(4, 7), ["purpose", "status", "action"]);
-    assert.deepEqual(ids(shiftColumn(moved, "status", -1)).slice(4, 6), [
-      "status",
-      "purpose",
-    ]);
+    assert.deepEqual(ids(shiftColumn(moved, "status", -1)).slice(4, 6), ["status", "purpose"]);
   });
 
   it("reads a stored choice back safely", () => {
@@ -89,9 +86,6 @@ describe("cause list columns", () => {
     assert.equal(read.order[0], "purpose");
     assert.ok(!read.order.includes("action"));
     assert.deepEqual(read.visible, ["purpose", "item", "caseName"]);
-    assert.deepEqual(
-      normaliseColumns(null, "typist", true),
-      defaultColumns("typist", true),
-    );
+    assert.deepEqual(normaliseColumns(null, "typist", true), defaultColumns("typist", true));
   });
 });

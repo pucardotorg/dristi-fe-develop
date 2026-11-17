@@ -5,12 +5,7 @@ import Link from "next/link";
 import { ChevronRightIcon, RotateCcwIcon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import type {
-  Filing,
-  Flag,
-  FlagMap,
-  FlatField,
-} from "@/lib/employee/scrutiny/types";
+import type { Filing, Flag, FlagMap, FlatField } from "@/lib/employee/scrutiny/types";
 import { markArrival } from "@/components/employee/use-arrival";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,10 +14,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { useCourt } from "@/components/court/court-provider";
 import type { RegistrationType } from "@/lib/court/profiles";
@@ -54,9 +46,7 @@ function group(
   allFields: FlatField[],
   fieldById: Record<string, FlatField>,
 ): Record<string, Item[]> {
-  const out: Record<string, Item[]> = Object.fromEntries(
-    GROUP_ORDER.map((g) => [g, []]),
-  );
+  const out: Record<string, Item[]> = Object.fromEntries(GROUP_ORDER.map((g) => [g, []]));
   for (const field of allFields) {
     const flag = flags[field.id];
     if (!flag) continue;
@@ -177,22 +167,22 @@ export function ReviewDialog({
           body: `Goes to ${party.advocate}.`,
         }
       : decision === "forward"
-      ? {
-          title: t("reviewDialog_forwardForRegistration"),
-          body: total
-            ? `The case moves to Register cases. ${total} open item${
-                total > 1 ? "s travel" : " travels"
-              } with it — forwarding does not clear ${total > 1 ? "them" : "it"}.`
-            : t("reviewDialog_everyFieldWasCheckedAgainstThe"),
-        }
-      : {
-          title: t("reviewDialog_registerCase"),
-          body: total
-            ? `The case moves to the Magistrate's list for cognizance. ${total} open item${
-                total > 1 ? "s travel" : " travels"
-              } with it — registering does not clear ${total > 1 ? "them" : "it"}.`
-            : t("reviewDialog_everyFieldWasCheckedAgainstTheBundle"),
-        };
+        ? {
+            title: t("reviewDialog_forwardForRegistration"),
+            body: total
+              ? `The case moves to Register cases. ${total} open item${
+                  total > 1 ? "s travel" : " travels"
+                } with it — forwarding does not clear ${total > 1 ? "them" : "it"}.`
+              : t("reviewDialog_everyFieldWasCheckedAgainstThe"),
+          }
+        : {
+            title: t("reviewDialog_registerCase"),
+            body: total
+              ? `The case moves to the Magistrate's list for cognizance. ${total} open item${
+                  total > 1 ? "s travel" : " travels"
+                } with it — registering does not clear ${total > 1 ? "them" : "it"}.`
+              : t("reviewDialog_everyFieldWasCheckedAgainstTheBundle"),
+          };
 
   /*
    * **The confirmation's own words.**
@@ -233,24 +223,22 @@ export function ReviewDialog({
              round, which is the word the case history already uses. */
         }
       : decision === "forward"
-      ? {
-          title: t("reviewDialog_forwardedForRegistration"),
-          state: "Forwarded",
-          body: total
-            ? `On Register cases${chosenLine}, with ${total} open item${
-                total > 1 ? "s" : ""
-              } attached.`
-            : `On Register cases${chosenLine}.`,
-        }
-      : {
-          title: t("reviewDialog_caseRegistered"),
-          state: chosen ? `Registered${chosenLine}` : "Registered",
-          body: total
-            ? `On the Magistrate's list, with ${total} open item${
-                total > 1 ? "s" : ""
-              } attached.`
-            : t("reviewDialog_onTheMagistratesListForCognizance"),
-        };
+        ? {
+            title: t("reviewDialog_forwardedForRegistration"),
+            state: "Forwarded",
+            body: total
+              ? `On Register cases${chosenLine}, with ${total} open item${
+                  total > 1 ? "s" : ""
+                } attached.`
+              : `On Register cases${chosenLine}.`,
+          }
+        : {
+            title: t("reviewDialog_caseRegistered"),
+            state: chosen ? `Registered${chosenLine}` : "Registered",
+            body: total
+              ? `On the Magistrate's list, with ${total} open item${total > 1 ? "s" : ""} attached.`
+              : t("reviewDialog_onTheMagistratesListForCognizance"),
+          };
 
   const needsAck = decision !== "send-back" && total > 0;
   const done = flow.stage === "done";
@@ -321,10 +309,7 @@ export function ReviewDialog({
                     {t("reviewDialog_nextFile")}
                   </Link>
                 ) : (
-                  <Link
-                    href="/employee/scrutiny"
-                    onClick={() => markArrival("back")}
-                  >
+                  <Link href="/employee/scrutiny" onClick={() => markArrival("back")}>
                     {t("reviewDialog_backToScrutiny")}
                   </Link>
                 )}
@@ -433,17 +418,10 @@ export function ReviewDialog({
                   className="flex items-baseline gap-1.5 text-caption font-semibold text-muted-foreground"
                 >
                   {g}
-                  <span className="font-normal tabular-nums">
-                    {groups[g].length}
-                  </span>
+                  <span className="font-normal tabular-nums">{groups[g].length}</span>
                 </h3>
                 {byOwner(groups[g]).map(([owner, list]) => (
-                  <Card
-                    variant="raised"
-                    key={owner || g}
-                    size="sm"
-                    className="gap-0 py-0"
-                  >
+                  <Card variant="raised" key={owner || g} size="sm" className="gap-0 py-0">
                     {owner ? (
                       <p className="border-b border-hairline px-4 py-3 text-body-compact font-semibold text-muted-foreground">
                         {owner}
@@ -491,9 +469,7 @@ export function ReviewDialog({
 function byOwner(items: Item[]): [string, Item[]][] {
   const out = new Map<string, Item[]>();
   for (const item of items) {
-    const owner = item.field.docrow
-      ? ""
-      : item.field.group.replace(/ Details$/, "");
+    const owner = item.field.docrow ? "" : item.field.group.replace(/ Details$/, "");
     out.set(owner, [...(out.get(owner) ?? []), item]);
   }
   return [...out];
@@ -503,13 +479,7 @@ function byOwner(items: Item[]): [string, Item[]][] {
  * One correction: the row is the way to it (the chevron says so, quietly), the field's
  * name leads, and what the officer said follows it.
  */
-function SummaryItem({
-  item,
-  onGoToItem,
-}: {
-  item: Item;
-  onGoToItem: (fieldId: string) => void;
-}) {
+function SummaryItem({ item, onGoToItem }: { item: Item; onGoToItem: (fieldId: string) => void }) {
   const t = useTranslations();
   const { field, flag } = item;
   /* Labelled, so the officer's words read as theirs (owner, 2026-10-09). */
@@ -519,7 +489,10 @@ function SummaryItem({
   ].filter((line): line is [string, string] => line !== null);
   const also =
     field.docrow && item.linked
-      ? t("reviewDialog_raisedWithToLowerCaseTo", { toLowerCase: item.linked.group.replace(/ Details$/, "").toLowerCase(), toLowerCase2: item.linked.label.toLowerCase() })
+      ? t("reviewDialog_raisedWithToLowerCaseTo", {
+          toLowerCase: item.linked.group.replace(/ Details$/, "").toLowerCase(),
+          toLowerCase2: item.linked.label.toLowerCase(),
+        })
       : null;
 
   return (
@@ -542,9 +515,7 @@ function SummaryItem({
                 </span>
               ))}
               {also ? (
-                <span className="text-body-compact text-muted-foreground">
-                  {also}
-                </span>
+                <span className="text-body-compact text-muted-foreground">{also}</span>
               ) : null}
             </span>
           ) : null}

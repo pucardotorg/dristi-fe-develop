@@ -99,10 +99,7 @@ describe("the blocks each act loads", () => {
       context,
     );
     assert.deepEqual(blockGaps(set, context), []);
-    assert.equal(
-      set.text,
-      "Next hearing is scheduled on 12 November 2026 for appearance.",
-    );
+    assert.equal(set.text, "Next hearing is scheduled on 12 November 2026 for appearance.");
   });
 });
 
@@ -111,7 +108,6 @@ describe("the act's own words", () => {
     assert.ok(cognizanceOrderOutcome(late, "cognizance").includes("delay"));
     assert.ok(!cognizanceOrderOutcome(timely, "cognizance").includes("delay"));
   });
-
 
   it("reads an act off a URL, and nothing else", () => {
     assert.ok(isCognizanceAct("cognizance"));
@@ -148,10 +144,7 @@ describe("the order's subject", () => {
       subjectScheduling({ kind: "cognizance", matter: late, act: "notice" }),
       "required",
     );
-    assert.equal(
-      subjectScheduling({ kind: "cognizance", matter: late, act: "dismiss" }),
-      "none",
-    );
+    assert.equal(subjectScheduling({ kind: "cognizance", matter: late, act: "dismiss" }), "none");
   });
 
   it("names no item and no purpose — a complaint has neither", () => {
@@ -166,8 +159,7 @@ describe("the order's subject", () => {
     assert.equal(first.label, "Act");
     assert.equal(first.value, "Take cognizance");
     assert.equal(
-      subjectFacts({ kind: "cognizance", matter: late, act: "dismiss" })[0]
-        .value,
+      subjectFacts({ kind: "cognizance", matter: late, act: "dismiss" })[0].value,
       "Dismiss case",
     );
   });
@@ -193,11 +185,7 @@ describe("the act a complaint arrives with", () => {
   it("is the one its tab offers, for every complaint in the queue", () => {
     for (const matter of COGNIZANCE_QUEUE) {
       const act = primaryActFor(matter);
-      assert.equal(
-        act,
-        tabFor(matter) === "with-delay" ? "notice" : "cognizance",
-        matter.id,
-      );
+      assert.equal(act, tabFor(matter) === "with-delay" ? "notice" : "cognizance", matter.id);
       assert.ok(compose(matter, act).blocks.length > 0);
     }
   });
@@ -206,8 +194,8 @@ describe("the act a complaint arrives with", () => {
 describe("a notice before cognizance (owner, 2026-10-13)", () => {
   it("presets the DCA notice only on a late complaint", () => {
     const value = (matter: CognizanceCase) =>
-      compose(matter, "notice").blocks.find((block) => block.type === "issue-of-notice")
-        ?.values.noticeType;
+      compose(matter, "notice").blocks.find((block) => block.type === "issue-of-notice")?.values
+        .noticeType;
     assert.equal(value(late), "DCA");
     assert.ok(!value(timely));
     assert.deepEqual(types(compose(timely, "notice").blocks), [

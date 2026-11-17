@@ -28,7 +28,10 @@ describe("wordDiff", () => {
     const now = "It is prayed:\n\nDirect the Accused to pay 20% of the cheque amount.";
     const parts = wordDiff(was, now);
     const side = (kind: "added" | "removed") =>
-      parts.filter((part) => part.kind !== kind).map((part) => part.text).join("");
+      parts
+        .filter((part) => part.kind !== kind)
+        .map((part) => part.text)
+        .join("");
     assert.equal(side("added"), was);
     assert.equal(side("removed"), now);
   });

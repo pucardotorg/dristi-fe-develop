@@ -15,11 +15,7 @@ import {
   ScrutinyQueueTable,
 } from "@/components/employee/scrutiny/queue-table";
 import { QUEUE, QUEUE_TABS } from "@/lib/employee/scrutiny/fixtures";
-import {
-  countByBall,
-  filterQueue,
-  SCRUTINY_QUEUE_COUNT,
-} from "@/lib/employee/scrutiny/queue";
+import { countByBall, filterQueue, SCRUTINY_QUEUE_COUNT } from "@/lib/employee/scrutiny/queue";
 import type { Ball, Filing, QueueOwner } from "@/lib/employee/scrutiny/types";
 import { PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import { Button } from "@/components/ui/button";
@@ -109,8 +105,7 @@ export function ScrutinyQueue() {
       ),
     [tab, owner, text, stage, caseType, sort],
   );
-  const filtered =
-    !!text.trim() || owner !== "anyone" || stage !== "all" || caseType !== "all";
+  const filtered = !!text.trim() || owner !== "anyone" || stage !== "all" || caseType !== "all";
 
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
   const currentPage = Math.min(page, pageCount);
@@ -149,7 +144,9 @@ export function ScrutinyQueue() {
         <p className="text-body text-muted-foreground">
           {SCRUTINY_QUEUE_COUNT === 1
             ? t("scrutinyScrutinyQueue_1ComplaintIsWaitingToBe")
-            : t("scrutinyScrutinyQueue_scrutinyQueueCountComplaintsAreWaiting", { SCRUTINY_QUEUE_COUNT: String(SCRUTINY_QUEUE_COUNT) })}
+            : t("scrutinyScrutinyQueue_scrutinyQueueCountComplaintsAreWaiting", {
+                SCRUTINY_QUEUE_COUNT: String(SCRUTINY_QUEUE_COUNT),
+              })}
         </p>
       </header>
 
@@ -181,20 +178,14 @@ export function ScrutinyQueue() {
                     Closed included, because a count shown two ways is two data types
                     to the eye — and it inherits the trigger's colour so the count and
                     its label read as one thing (ui-craft §2). */}
-                <span className="font-normal tabular-nums">
-                  {countByBall(QUEUE, queueTab.id)}
-                </span>
+                <span className="font-normal tabular-nums">{countByBall(QUEUE, queueTab.id)}</span>
               </TabsTrigger>
             ))}
           </TabsList>
         </div>
 
         {QUEUE_TABS.map((queueTab) => (
-          <TabsContent
-            key={queueTab.id}
-            value={queueTab.id}
-            className="min-w-0 outline-none"
-          >
+          <TabsContent key={queueTab.id} value={queueTab.id} className="min-w-0 outline-none">
             {queueTab.id !== tab ? null : (
               /* One panel: filters, list and footer are one unit of work, so they share
                  one lifted sheet — the recipe every other court-side queue uses. Nothing
@@ -255,11 +246,7 @@ export function ScrutinyQueue() {
                     already filtered as you type, and the live region it relied on used to
                     sit in the footer, which is not rendered when nothing matches. See
                     `QueueAnnouncer`. */}
-                <QueueAnnouncer
-                  from={start + 1}
-                  to={start + pageRows.length}
-                  total={rows.length}
-                />
+                <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
                 {pageRows.length === 0 ? (
                   <QueueEmpty
@@ -422,7 +409,9 @@ function QueueEmpty({
           <EmptyDescription className="text-body">
             {withAdvocates === 1
               ? t("scrutinyScrutinyQueue_1FilingIsWithAnAdvocate")
-              : t("scrutinyScrutinyQueue_withAdvocatesFilingsAreWithAdvocates", { withAdvocates: String(withAdvocates) })}
+              : t("scrutinyScrutinyQueue_withAdvocatesFilingsAreWithAdvocates", {
+                  withAdvocates: String(withAdvocates),
+                })}
           </EmptyDescription>
         ) : null}
       </EmptyHeader>

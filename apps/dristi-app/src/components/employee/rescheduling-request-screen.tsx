@@ -45,11 +45,7 @@ import {
   sortRows,
   type CourtSortSpec,
 } from "@/lib/employee/court-sort";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import {
   applyColumnFilters,
   columnFilterFields,
@@ -137,27 +133,25 @@ export function ReschedulingRequestScreen() {
      the table is showing disagree. Every change resets to page one — the old Search
      button did that, and a keystroke that narrows the list to four rows must not leave
      the reader on page three of nothing. */
-  const [filters, setFilters] = React.useState<ReschedulingFilters>(
-    EMPTY_RESCHEDULING_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<ReschedulingFilters>(EMPTY_RESCHEDULING_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(() => new Set());
   const [open, setOpen] = React.useState<ReschedulingRequest | null>(null);
   const searchRef = React.useRef<HTMLInputElement>(null);
 
-  const remaining = RESCHEDULING_QUEUE.filter(
-    (request) => !decidedIds.has(request.id),
-  );
+  const remaining = RESCHEDULING_QUEUE.filter((request) => !decidedIds.has(request.id));
   const [columns, setColumns] = React.useState(() =>
     emptyColumnFilters(RESCHEDULING_COLUMN_FILTERS),
   );
   const [sort, setSort] = React.useState<ReschedulingSort>("hearing");
 
   const rows = sortRows(
-    applyColumnFilters(filterReschedulingRequests(remaining, filters), RESCHEDULING_COLUMN_FILTERS, columns),
+    applyColumnFilters(
+      filterReschedulingRequests(remaining, filters),
+      RESCHEDULING_COLUMN_FILTERS,
+      columns,
+    ),
     RESCHEDULING_SORTS,
     sort,
   );
@@ -196,7 +190,9 @@ export function ReschedulingRequestScreen() {
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
             ? t("reschedulingRequestScreen_1ApplicationIsWaitingForReview")
-            : t("reschedulingRequestScreen_lengthApplicationsAreWaitingForReview", { length: String(remaining.length) })}
+            : t("reschedulingRequestScreen_lengthApplicationsAreWaitingForReview", {
+                length: String(remaining.length),
+              })}
         </p>
       </header>
 
@@ -224,11 +220,7 @@ export function ReschedulingRequestScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <ReschedulingEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -239,10 +231,7 @@ export function ReschedulingRequestScreen() {
                 <ReschedulingRequestTable rows={pageRows} onOpen={setOpen} />
               </div>
               <div className="md:hidden">
-                <ReschedulingRequestItemList
-                  rows={pageRows}
-                  onOpen={setOpen}
-                />
+                <ReschedulingRequestItemList rows={pageRows} onOpen={setOpen} />
               </div>
             </div>
 
@@ -313,26 +302,18 @@ function ReschedulingFiltersRow({
   );
 }
 
-function ReschedulingEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function ReschedulingEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
   const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FolderCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FolderCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? t("reschedulingRequestScreen_noMattersMatchThisSearch") : t("reschedulingRequestScreen_nothingWaiting")}
+          {isFiltered
+            ? t("reschedulingRequestScreen_noMattersMatchThisSearch")
+            : t("reschedulingRequestScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
@@ -389,8 +370,16 @@ function ReschedulingRequestItemList({
             {causeTitle(request)}
           </button>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={request.caseNumber} label={t("reschedulingRequestScreen_caseNumber")} />
-            {t.rich("reschedulingRequestScreen_appliedFormatRequestLongDateListed", { formatRequestLongDate: formatRequestLongDate(request.appliedOn), formatListingDate: formatListingDate(request.listedOn), span: (chunks) => <span className="tabular-nums">{chunks}</span>, span2: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+            <Identifier
+              value={request.caseNumber}
+              label={t("reschedulingRequestScreen_caseNumber")}
+            />
+            {t.rich("reschedulingRequestScreen_appliedFormatRequestLongDateListed", {
+              formatRequestLongDate: formatRequestLongDate(request.appliedOn),
+              formatListingDate: formatListingDate(request.listedOn),
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+              span2: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
         </li>
       ))}

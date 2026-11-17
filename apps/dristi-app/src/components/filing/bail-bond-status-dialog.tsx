@@ -18,12 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BondDocument, BondSignerList, type BondSigner } from "@/components/filing/bond-document";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import type { AccessCase } from "@/lib/access/content";
@@ -76,7 +71,11 @@ export function BailBondStatusDialog({
           </DialogTitle>
           <DialogDescription className="text-pretty">
             {/* No copy control inside the dialog's accessible description. */}
-            <Identifier value={accessCase.caseNumber} label={t("bailBondStatusDialog_caseNumber")} copyable={false} />
+            <Identifier
+              value={accessCase.caseNumber}
+              label={t("bailBondStatusDialog_caseNumber")}
+              copyable={false}
+            />
             <span aria-hidden> · </span>
             {accessCase.title}
           </DialogDescription>

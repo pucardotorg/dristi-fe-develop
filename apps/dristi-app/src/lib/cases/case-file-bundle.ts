@@ -31,8 +31,7 @@ type Entry = {
 };
 
 type IndexRow =
-  | { kind: "section"; number: string; label: string }
-  | { kind: "document"; entry: Entry };
+  { kind: "section"; number: string; label: string } | { kind: "document"; entry: Entry };
 
 const A4: [number, number] = [595.28, 841.89];
 const MARGIN = 64;
@@ -72,7 +71,15 @@ function centred(page: PDFPage, text: string, y: number, font: PDFFont, size: nu
   page.drawText(value, { x, y, size, font, color });
 }
 
-function right(page: PDFPage, text: string, x: number, y: number, font: PDFFont, size: number, color = INK) {
+function right(
+  page: PDFPage,
+  text: string,
+  x: number,
+  y: number,
+  font: PDFFont,
+  size: number,
+  color = INK,
+) {
   const value = safe(text);
   page.drawText(value, { x: x - font.widthOfTextAtSize(value, size), y, size, font, color });
 }
@@ -83,7 +90,9 @@ function parties(title: string): [string, string] {
 }
 
 async function loadSources(nodes: CaseFileNode[]): Promise<Map<string, PDFDocument>> {
-  const hrefs = [...new Set(nodes.map((node) => node.href).filter((href): href is string => !!href))];
+  const hrefs = [
+    ...new Set(nodes.map((node) => node.href).filter((href): href is string => !!href)),
+  ];
   const docs = await Promise.all(
     hrefs.map(async (href) => {
       const response = await fetch(href);
@@ -120,12 +129,16 @@ export async function buildCaseFileBundle(
   const rows: IndexRow[] = [];
   const entries: Entry[] = [];
   for (const { node, leaves } of sections) {
-    if (isCaseFileFolder(node)) rows.push({ kind: "section", number: node.number, label: node.label });
+    if (isCaseFileFolder(node))
+      rows.push({ kind: "section", number: node.number, label: node.label });
     for (const leaf of leaves) {
       const entry: Entry = {
         number: leaf.number,
         label: leaf.label,
-        path: leaf === node ? `${leaf.number}  ${leaf.label}` : `${leaf.number}  ${leaf.label}   in   ${node.number}  ${node.label}`,
+        path:
+          leaf === node
+            ? `${leaf.number}  ${leaf.label}`
+            : `${leaf.number}  ${leaf.label}   in   ${node.number}  ${node.label}`,
         node: leaf,
         docket: leaf.docket !== false,
         firstPage: 0,
@@ -162,8 +175,12 @@ export async function buildCaseFileBundle(
   // Cover page — download only, never in the on-screen tree (§6.2).
   const cover = pdf.addPage(A4);
   cover.drawRectangle({
-    x: MARGIN, y: MARGIN + 40, width: width - 2 * MARGIN, height: height - 2 * MARGIN - 80,
-    borderColor: INK, borderWidth: 1.5,
+    x: MARGIN,
+    y: MARGIN + 40,
+    width: width - 2 * MARGIN,
+    height: height - 2 * MARGIN - 80,
+    borderColor: INK,
+    borderWidth: 1.5,
   });
   centred(cover, "IN THE COURT OF", height - 230, regular, 12);
   centred(cover, bundleCase.court.toUpperCase(), height - 248, regular, 12);
@@ -177,8 +194,13 @@ export async function buildCaseFileBundle(
   const year = bundleCase.caseNumber.match(/(\d{4})\s*$/)?.[1];
   centred(cover, year ? `CASE FILE — ${year}` : "CASE FILE", MARGIN + 110, bold, 14);
   const generated = new Date().toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata", day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit", hour12: false,
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
   });
   centred(cover, `Generated ${generated} IST`, MARGIN + 60, regular, 9, MUTED);
 
@@ -196,7 +218,12 @@ export async function buildCaseFileBundle(
     page.drawText("DOCUMENT", { x: MARGIN + 44, y, size: 9, font: bold, color: MUTED });
     right(page, "PAGES", width - MARGIN, y, bold, 9, MUTED);
     y -= 8;
-    page.drawLine({ start: { x: MARGIN, y }, end: { x: width - MARGIN, y }, thickness: 0.6, color: INK });
+    page.drawLine({
+      start: { x: MARGIN, y },
+      end: { x: width - MARGIN, y },
+      thickness: 0.6,
+      color: INK,
+    });
     y -= ROW - 4;
     for (const item of indexChunks[p]) {
       if (item.kind === "section") {
@@ -208,14 +235,23 @@ export async function buildCaseFileBundle(
         const nested = entry.number.includes(".");
         const x = nested ? MARGIN + 14 : MARGIN;
         const font = nested ? regular : bold;
-        const pages = entry.firstPage === entry.lastPage ? `${entry.firstPage}` : `${entry.firstPage}–${entry.lastPage}`;
+        const pages =
+          entry.firstPage === entry.lastPage
+            ? `${entry.firstPage}`
+            : `${entry.firstPage}–${entry.lastPage}`;
         const labelX = nested ? MARGIN + 58 : MARGIN + 44;
         page.drawText(safe(entry.number), { x, y, size: 10, font });
         page.drawText(safe(entry.label), { x: labelX, y, size: 10, font });
         const from = labelX + font.widthOfTextAtSize(safe(entry.label), 10) + 6;
         const to = width - MARGIN - regular.widthOfTextAtSize(pages, 10) - 6;
         if (to > from) {
-          page.drawLine({ start: { x: from, y: y + 1 }, end: { x: to, y: y + 1 }, thickness: 0.6, color: RULE, dashArray: [1, 2] });
+          page.drawLine({
+            start: { x: from, y: y + 1 },
+            end: { x: to, y: y + 1 },
+            thickness: 0.6,
+            color: RULE,
+            dashArray: [1, 2],
+          });
         }
         right(page, pages, width - MARGIN, y, regular, 10);
       }
@@ -232,14 +268,30 @@ export async function buildCaseFileBundle(
       centred(page, `${complainant}  ...  Complainant`, height - 190, regular, 12);
       centred(page, "vs.", height - 210, regular, 12);
       centred(page, `${accused}  ...  Accused`, height - 230, regular, 12);
-      page.drawLine({ start: { x: MARGIN + 60, y: height - 260 }, end: { x: width - MARGIN - 60, y: height - 260 }, thickness: 0.8 });
+      page.drawLine({
+        start: { x: MARGIN + 60, y: height - 260 },
+        end: { x: width - MARGIN - 60, y: height - 260 },
+        thickness: 0.8,
+      });
       let y = height - 330;
       for (const line of wrap(entry.label.toUpperCase(), bold, 20, width - 2 * MARGIN - 40)) {
         centred(page, line, y, bold, 20);
         y -= 26;
       }
-      page.drawRectangle({ x: MARGIN, y: MARGIN + 50, width: width - 2 * MARGIN, height: 44, color: PANEL });
-      page.drawText("LOCATION IN CASE FILE", { x: MARGIN + 12, y: MARGIN + 80, size: 8, font: regular, color: MUTED });
+      page.drawRectangle({
+        x: MARGIN,
+        y: MARGIN + 50,
+        width: width - 2 * MARGIN,
+        height: 44,
+        color: PANEL,
+      });
+      page.drawText("LOCATION IN CASE FILE", {
+        x: MARGIN + 12,
+        y: MARGIN + 80,
+        size: 8,
+        font: regular,
+        color: MUTED,
+      });
       page.drawText(safe(entry.path), { x: MARGIN + 12, y: MARGIN + 62, size: 11, font: bold });
     }
     const source = entry.node.href ? sources.get(entry.node.href) : undefined;

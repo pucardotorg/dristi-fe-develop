@@ -49,11 +49,9 @@ export function PartiesLiveProvider({ children }: { children: ReactNode }) {
     <PartiesLiveContext.Provider
       value={{
         added,
-        addAdvocates: (names, partyIds) =>
-          setAdded((current) => [...current, { names, partyIds }]),
+        addAdvocates: (names, partyIds) => setAdded((current) => [...current, { names, partyIds }]),
         pendingWitnesses,
-        addWitnesses: (names) =>
-          setPendingWitnesses((current) => [...current, ...names]),
+        addWitnesses: (names) => setPendingWitnesses((current) => [...current, ...names]),
         pendingPoa,
         addPoaHolder: (partyId, holder) =>
           setPendingPoa((current) => [...current, { partyId, holder }]),
@@ -182,12 +180,7 @@ export function LiveAdvocateWells({
   return (
     <>
       {names.map((name) => (
-        <RepresentationWell
-          key={name}
-          advocate={name}
-          partyName={partyName}
-          caseRef={caseRef}
-        />
+        <RepresentationWell key={name} advocate={name} partyName={partyName} caseRef={caseRef} />
       ))}
     </>
   );

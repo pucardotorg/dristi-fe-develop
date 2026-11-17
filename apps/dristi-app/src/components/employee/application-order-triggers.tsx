@@ -7,11 +7,7 @@ import { useReaderPostsNextHearing } from "@/components/employee/use-next-hearin
 import { useOrderDrafts } from "@/components/employee/use-order-draft";
 import { useOrderSigning } from "@/components/employee/use-order-signing";
 import { usePendingOrders } from "@/components/employee/use-pending-orders";
-import {
-  draftOrder,
-  signOrder,
-  type LifecycleApplication,
-} from "@/lib/applications/lifecycle";
+import { draftOrder, signOrder, type LifecycleApplication } from "@/lib/applications/lifecycle";
 import {
   allotApplicationNumber,
   allotOrderId,
@@ -29,10 +25,7 @@ import {
 import { hearingById } from "@/lib/employee/hearings";
 import { applicationIdOfOrderKey } from "@/lib/employee/application-order-draft";
 import { applicationWorkflow } from "@/lib/employee/application-outcome";
-import {
-  applyApplicationOutcome,
-  orderApplied,
-} from "@/lib/employee/application-outcome-steps";
+import { applyApplicationOutcome, orderApplied } from "@/lib/employee/application-outcome-steps";
 import { orderTitle } from "@/lib/employee/order-title";
 import { withCausePosting } from "@/lib/employee/order-draft";
 import { editorDraftKey } from "@/lib/employee/order-drafts";
@@ -93,9 +86,10 @@ export function ApplicationOrderTriggers() {
       if (!typed) continue;
       /* A hearing's next date is the cause list's when the reader enters it (owner,
          2026-10-15). */
-      const draft = readerPosts && hearingById(order.key)
-        ? withCausePosting(typed, session.postings[order.key])
-        : typed;
+      const draft =
+        readerPosts && hearingById(order.key)
+          ? withCausePosting(typed, session.postings[order.key])
+          : typed;
 
       /* An order on an application: its Application item moves the application —
          onboarding, listing and deciding it (owner, 2026-10-21). */
@@ -104,8 +98,7 @@ export function ApplicationOrderTriggers() {
       const outcome = draft.applicationOutcome;
       const workflowOf = (app: LifecycleApplication) => ({
         workflow: applicationWorkflow(app.type),
-        hearingOn:
-          draft.next === "list" && draft.nextDate ? draft.nextDate : undefined,
+        hearingOn: draft.next === "list" && draft.nextDate ? draft.nextDate : undefined,
       });
       /* Tried first with nothing allotted: a number or order id is spent only on an
          order that moves the application. */
@@ -139,10 +132,20 @@ export function ApplicationOrderTriggers() {
         });
         const id = `${order.key}:outcome`;
         if (result.ok && summary) {
-          notify.success(t("applicationOrderTriggers_typeLabelApplicationSummary", { typeLabel: owner.typeLabel, summary }));
+          notify.success(
+            t("applicationOrderTriggers_typeLabelApplicationSummary", {
+              typeLabel: owner.typeLabel,
+              summary,
+            }),
+          );
         } else if (!result.ok && !reported.current.has(id)) {
           reported.current.add(id);
-          notify.error(t("applicationOrderTriggers_typeLabelApplicationCouldNotBe", { typeLabel: owner.typeLabel, error: result.error }));
+          notify.error(
+            t("applicationOrderTriggers_typeLabelApplicationCouldNotBe", {
+              typeLabel: owner.typeLabel,
+              error: result.error,
+            }),
+          );
         }
       }
       for (const outcome of applicationOrderOutcomes(draft.blocks)) {
@@ -169,11 +172,22 @@ export function ApplicationOrderTriggers() {
         const id = `${order.key}:${application.id}`;
         if (result.ok) {
           if (!told.delete(order.key)) {
-            notify.success(t("applicationOrderTriggers_labelSettledByTheSignedOrder", { label, SETTLED: SETTLED[outcome.kind] }));
+            notify.success(
+              t("applicationOrderTriggers_labelSettledByTheSignedOrder", {
+                label,
+                SETTLED: SETTLED[outcome.kind],
+              }),
+            );
           }
         } else if (!reported.current.has(id)) {
           reported.current.add(id);
-          notify.error(t("applicationOrderTriggers_labelCouldNotBeSettledError", { label, SETTLED: SETTLED[outcome.kind], error: result.error }));
+          notify.error(
+            t("applicationOrderTriggers_labelCouldNotBeSettledError", {
+              label,
+              SETTLED: SETTLED[outcome.kind],
+              error: result.error,
+            }),
+          );
         }
       }
     }

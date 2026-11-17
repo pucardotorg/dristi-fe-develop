@@ -14,11 +14,7 @@ import {
 } from "@/components/chrome/table-plate";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   DescriptionDetails,
   DescriptionList,
@@ -34,11 +30,7 @@ import {
 } from "@/components/ui/empty";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { OverflowTabsList } from "@/components/chrome/overflow-tabs";
-import {
-  STRIP_LIST,
-  STRIP_ROW,
-  STRIP_TRIGGER,
-} from "@/components/cases/case-section-tabs";
+import { STRIP_LIST, STRIP_ROW, STRIP_TRIGGER } from "@/components/cases/case-section-tabs";
 import {
   Table,
   TableBody,
@@ -105,13 +97,7 @@ export function CaseProcessStatus({ record }: { record: CaseRecord }) {
  * same `OverflowTabsList`, gutter and triggers — so it reads as tabs because
  * it is the tab row the reader already knows (owner, Oct 6).
  */
-function ProcessPeople({
-  caseId,
-  people,
-}: {
-  caseId: string;
-  people: ProcessPerson[];
-}) {
+function ProcessPeople({ caseId, people }: { caseId: string; people: ProcessPerson[] }) {
   const t = useTranslations();
   const [active, setActive] = useState(people[0].id);
   return (
@@ -119,11 +105,7 @@ function ProcessPeople({
        reads apart from the case's own section strip above it (owner, Oct 6). */
     <RestingCard>
       <CardContent>
-        <Tabs
-          value={active}
-          onValueChange={setActive}
-          className="flex min-w-0 flex-col gap-6"
-        >
+        <Tabs value={active} onValueChange={setActive} className="flex min-w-0 flex-col gap-6">
           <div className={STRIP_ROW}>
             <OverflowTabsList
               aria-label={t("caseProcessStatus_peopleProcessWasIssuedTo")}
@@ -136,19 +118,14 @@ function ProcessPeople({
                 measure: `${person.name} (${person.role})`,
                 label: (
                   <>
-                    {person.name}{" "}
-                    <span className="font-normal">({person.role})</span>
+                    {person.name} <span className="font-normal">({person.role})</span>
                   </>
                 ),
               }))}
             />
           </div>
           {people.map((person) => (
-            <TabsContent
-              key={person.id}
-              value={person.id}
-              className="outline-none"
-            >
+            <TabsContent key={person.id} value={person.id} className="outline-none">
               <ul className="flex flex-col gap-4">
                 {person.rounds.map((round, index) => (
                   <li key={round.id}>
@@ -231,7 +208,10 @@ function Round({
             />
             <span className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-6 gap-y-1">
               <span className="text-body-compact font-semibold text-foreground">
-                {t("caseProcessStatus_roundNumberProcessTitle", { number: String(number), processTitle: processTitle(round.processes) })}
+                {t("caseProcessStatus_roundNumberProcessTitle", {
+                  number: String(number),
+                  processTitle: processTitle(round.processes),
+                })}
               </span>
               <span className="flex min-w-0 flex-wrap items-center gap-y-1 text-body-compact text-muted-foreground group-data-[state=open]/round:hidden max-sm:flex-col max-sm:items-start">
                 {round.channels.map((channel) => (
@@ -246,10 +226,7 @@ function Round({
                     <span className="sr-only">, </span>
                     <span
                       aria-hidden
-                      className={cn(
-                        "size-2 shrink-0 rounded-full",
-                        STATUS_DOT[channel.status],
-                      )}
+                      className={cn("size-2 shrink-0 rounded-full", STATUS_DOT[channel.status])}
                     />
                     {channel.type} · {translateText(t, channelStatusView(channel.status).label)}
                   </span>
@@ -271,10 +248,7 @@ function Round({
                   <span className="tabular-nums">{round.order.on}</span>
                   {/* The order opens from its own fact (owner, Oct 6). */}
                   {round.order.id ? (
-                    <Link
-                      href={orderHref(caseId, round.order.id)}
-                      className={FACT_LINK}
-                    >
+                    <Link href={orderHref(caseId, round.order.id)} className={FACT_LINK}>
                       {t("caseProcessStatus_viewOrder")}
                     </Link>
                   ) : null}
@@ -288,11 +262,7 @@ function Round({
                 <>
                   {round.hearing.id ? (
                     <Link
-                      href={hearingHref(
-                        caseId,
-                        round.hearing.id,
-                        "notice-process-status",
-                      )}
+                      href={hearingHref(caseId, round.hearing.id, "notice-process-status")}
                       className={FACT_LINK}
                     >
                       {translateText(t, round.hearing.purpose)}
@@ -324,9 +294,7 @@ function Round({
                       <span className="font-medium">{channel.type}</span>
                     </FactRow>
                     <FactRow label={t("caseProcessStatus_destination")}>
-                      <span className="wrap-anywhere">
-                        {translateText(t, channel.destination)}
-                      </span>
+                      <span className="wrap-anywhere">{translateText(t, channel.destination)}</span>
                     </FactRow>
                     <FactRow label={t("caseProcessStatus_status")}>
                       <StatusMark channel={channel} />
@@ -374,16 +342,9 @@ function Round({
               <TableBody className={tableBodyClass({ hover: false })}>
                 {round.channels.map((channel) => {
                   return (
-                    <TableRow
-                      key={channel.type}
-                      className={tableRowClass({ hover: false })}
-                    >
-                      <TableCell className={cn(CELL, "font-medium")}>
-                        {channel.type}
-                      </TableCell>
-                      <TableCell
-                        className={cn(CELL, "whitespace-normal wrap-anywhere")}
-                      >
+                    <TableRow key={channel.type} className={tableRowClass({ hover: false })}>
+                      <TableCell className={cn(CELL, "font-medium")}>{channel.type}</TableCell>
+                      <TableCell className={cn(CELL, "whitespace-normal wrap-anywhere")}>
                         {translateText(t, channel.destination)}
                       </TableCell>
                       <TableCell className={CELL}>
@@ -422,9 +383,7 @@ function FactRow({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function hasRemarks(channel: ProcessChannel) {
-  return Boolean(
-    channel.nonDeliveryReason || channel.remarks || channel.executionReport,
-  );
+  return Boolean(channel.nonDeliveryReason || channel.remarks || channel.executionReport);
 }
 
 /**
@@ -442,9 +401,7 @@ function ChannelRemarks({ channel }: { channel: ProcessChannel }) {
     <span className="flex flex-col items-start gap-2">
       {channel.nonDeliveryReason || channel.remarks ? (
         <span className="flex flex-col gap-0.5">
-          {channel.nonDeliveryReason ? (
-            <span>{channel.nonDeliveryReason}</span>
-          ) : null}
+          {channel.nonDeliveryReason ? <span>{channel.nonDeliveryReason}</span> : null}
           {channel.remarks ? (
             <span className="text-muted-foreground">{channel.remarks}</span>
           ) : null}
@@ -455,10 +412,7 @@ function ChannelRemarks({ channel }: { channel: ProcessChannel }) {
            attachment chip it replaced was an upload tile — a boxed icon
            inside a darker frame, two icons for one act (owner, Oct 6). */
         <Button asChild variant="outline">
-          <a
-            href={channel.executionReport.href}
-            download={channel.executionReport.fileName}
-          >
+          <a href={channel.executionReport.href} download={channel.executionReport.fileName}>
             <DownloadIcon data-icon="inline-start" aria-hidden />
             {t("caseProcessStatus_executionReport")}
           </a>
@@ -480,16 +434,11 @@ function StatusMark({ channel }: { channel: ProcessChannel }) {
   const t = useTranslations();
   return (
     <span className="grid grid-cols-[auto_1fr] items-center gap-x-2 whitespace-nowrap">
-      <span
-        aria-hidden
-        className={cn("size-2 rounded-full", STATUS_DOT[channel.status])}
-      />
+      <span aria-hidden className={cn("size-2 rounded-full", STATUS_DOT[channel.status])} />
       <span className="text-foreground">
         {translateText(t, channelStatusView(channel.status).label)}
       </span>
-      <span className="col-start-2 tabular-nums text-muted-foreground">
-        {channel.statusOn}
-      </span>
+      <span className="col-start-2 tabular-nums text-muted-foreground">{channel.statusOn}</span>
     </span>
   );
 }

@@ -79,7 +79,7 @@ export function AdvocateSection() {
    */
   const represented = representedIndices(draft.complainants);
   const pipLabels = draft.complainants.flatMap((c, i) =>
-    isPartyInPerson(c) ? [`Complainant ${i + 1}`] : []
+    isPartyInPerson(c) ? [`Complainant ${i + 1}`] : [],
   );
   const allInPerson = draft.complainants.length > 0 && represented.length === 0;
 
@@ -124,15 +124,13 @@ export function AdvocateSection() {
    * the field look like two boxes for one answer.
    */
   const [queries, setQueries] = React.useState<Record<string, string>>({});
-  const setQuery = (id: string, value: string) =>
-    setQueries((q) => ({ ...q, [id]: value }));
-
+  const setQuery = (id: string, value: string) => setQueries((q) => ({ ...q, [id]: value }));
 
   // One Vakalatnama is uploaded per complainant; show the one belonging to the complainant
   // the first advocate acts for (clamped, since indices survive a complainant's removal).
   const vakalatnamaParty = Math.min(
     advocates[0]?.forComplainants[0] ?? 0,
-    Math.max(0, draft.complainants.length - 1)
+    Math.max(0, draft.complainants.length - 1),
   );
   const vakalatnama = partySourceSlot(draft, vakalatnamaParty, "vakalatnama");
 
@@ -146,7 +144,7 @@ export function AdvocateSection() {
         row.barNumber = adv.barNumber;
         row.name = adv.name;
       }),
-    [update]
+    [update],
   );
 
   /**
@@ -159,7 +157,7 @@ export function AdvocateSection() {
       setQuery(rowId, match ? "" : barNumber);
       if (match) choose(rowId, match);
     },
-    [choose]
+    [choose],
   );
 
   /** The signed-in advocate filling in their own row. */
@@ -197,9 +195,7 @@ export function AdvocateSection() {
 
   const toggleAll = (index: number, allSelected: boolean) =>
     update((d) => {
-      d.advocates[index].forComplainants = allSelected
-        ? []
-        : representedIndices(d.complainants);
+      d.advocates[index].forComplainants = allSelected ? [] : representedIndices(d.complainants);
     });
 
   const addAdvocate = () =>
@@ -222,11 +218,7 @@ export function AdvocateSection() {
         <FilingPageHeader
           title={t("advocateSection_advocateDetails")}
           description={t("advocateSection_addTheAdvocatesRepresentingTheComplainant")}
-          actions={
-            !sourceOpen ? (
-              <ViewSourceButton onClick={() => setSourceOpen(true)} />
-            ) : null
-          }
+          actions={!sourceOpen ? <ViewSourceButton onClick={() => setSourceOpen(true)} /> : null}
         />
 
         {unsaved.length > 0 ? (
@@ -244,7 +236,9 @@ export function AdvocateSection() {
           <SectionNotice
             variant="info"
             title={
-              allInPerson ? t("advocateSection_theComplainantAppearsInPerson") : t("advocateSection_appearingAsAPartyInPerson")
+              allInPerson
+                ? t("advocateSection_theComplainantAppearsInPerson")
+                : t("advocateSection_appearingAsAPartyInPerson")
             }
           >
             {allInPerson
@@ -278,199 +272,207 @@ export function AdvocateSection() {
           </SectionNotice>
         )}
 
-        {allInPerson ? null : advocates.map((a, i) => {
-          // Indices are kept even if a complainant is removed or turns party-in-person;
-          // only the ones an advocate may still act for count as selected.
-          const selected = a.forComplainants.filter((k) => represented.includes(k));
-          // Found through the search: the backend id is what "already found" means.
-          const found = a.advocateId;
-          const allSelected =
-            represented.length > 0 && selected.length === represented.length;
-          // "All complainants" is only true when none were held back for appearing in
-          // person; otherwise the ones actually covered are named.
-          const forLabel =
-            selected.length === 0
-              ? t("advocateSection_selectComplainants")
-              : allSelected && represented.length === choices.length
-                ? t("advocateSection_allComplainants")
-                : selected.map((k) => choices[k]).join(", ");
+        {allInPerson
+          ? null
+          : advocates.map((a, i) => {
+              // Indices are kept even if a complainant is removed or turns party-in-person;
+              // only the ones an advocate may still act for count as selected.
+              const selected = a.forComplainants.filter((k) => represented.includes(k));
+              // Found through the search: the backend id is what "already found" means.
+              const found = a.advocateId;
+              const allSelected = represented.length > 0 && selected.length === represented.length;
+              // "All complainants" is only true when none were held back for appearing in
+              // person; otherwise the ones actually covered are named.
+              const forLabel =
+                selected.length === 0
+                  ? t("advocateSection_selectComplainants")
+                  : allSelected && represented.length === choices.length
+                    ? t("advocateSection_allComplainants")
+                    : selected.map((k) => choices[k]).join(", ");
 
-          return (
-            <FormCard
-              key={a.id}
-              title={t("advocateSection_advocateValue", { value: String(i + 1) })}
-              action={
-                advocates.length > 1 ? (
-                  <RemoveButton
-                    label={t("advocateSection_removeAdvocateValue", { value: String(i + 1) })}
-                    onClick={() => removeAdvocate(i)}
-                  />
-                ) : undefined
-              }
-            >
-              {/* A lone short answer takes half the card, like every other one. */}
-              <HalfWidth>
-                <FormField asGroup label={t("advocateSection_advocateFor")} required>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      aria-label={t("advocateSection_advocateFor")}
-                      className="w-full justify-between font-normal"
-                    >
-                      <span
-                        className={
-                          selected.length === 0
-                            ? "min-w-0 truncate text-muted-foreground"
-                            : "min-w-0 truncate"
-                        }
-                      >
-                        {forLabel}
-                      </span>
-                      <ChevronDownIcon
-                        data-icon="inline-end"
-                        aria-hidden
-                        className="text-muted-foreground"
+              return (
+                <FormCard
+                  key={a.id}
+                  title={t("advocateSection_advocateValue", { value: String(i + 1) })}
+                  action={
+                    advocates.length > 1 ? (
+                      <RemoveButton
+                        label={t("advocateSection_removeAdvocateValue", { value: String(i + 1) })}
+                        onClick={() => removeAdvocate(i)}
                       />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuCheckboxItem
-                      checked={allSelected}
-                      onCheckedChange={() => toggleAll(i, allSelected)}
-                      onSelect={(event) => event.preventDefault()}
-                    >
-                      {t("advocateSection_allComplainants")}
-                    </DropdownMenuCheckboxItem>
-                    {choices.map((label, k) => {
-                      const inPerson = isPartyInPerson(draft.complainants[k]);
-                      return (
-                        <DropdownMenuCheckboxItem
-                          key={label}
-                          checked={!inPerson && selected.includes(k)}
-                          disabled={inPerson}
-                          onCheckedChange={() => toggleComplainant(i, k)}
-                          onSelect={(event) => event.preventDefault()}
-                        >
-                          <span className="min-w-0 truncate">{label}</span>
-                          {inPerson ? (
-                            <span className="ml-auto pl-3 text-caption font-medium text-muted-foreground">
-                              {t("advocateSection_inPerson")}
+                    ) : undefined
+                  }
+                >
+                  {/* A lone short answer takes half the card, like every other one. */}
+                  <HalfWidth>
+                    <FormField asGroup label={t("advocateSection_advocateFor")} required>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            aria-label={t("advocateSection_advocateFor")}
+                            className="w-full justify-between font-normal"
+                          >
+                            <span
+                              className={
+                                selected.length === 0
+                                  ? "min-w-0 truncate text-muted-foreground"
+                                  : "min-w-0 truncate"
+                              }
+                            >
+                              {forLabel}
                             </span>
-                          ) : null}
-                        </DropdownMenuCheckboxItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                  </DropdownMenu>
-                </FormField>
-              </HalfWidth>
+                            <ChevronDownIcon
+                              data-icon="inline-end"
+                              aria-hidden
+                              className="text-muted-foreground"
+                            />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuCheckboxItem
+                            checked={allSelected}
+                            onCheckedChange={() => toggleAll(i, allSelected)}
+                            onSelect={(event) => event.preventDefault()}
+                          >
+                            {t("advocateSection_allComplainants")}
+                          </DropdownMenuCheckboxItem>
+                          {choices.map((label, k) => {
+                            const inPerson = isPartyInPerson(draft.complainants[k]);
+                            return (
+                              <DropdownMenuCheckboxItem
+                                key={label}
+                                checked={!inPerson && selected.includes(k)}
+                                disabled={inPerson}
+                                onCheckedChange={() => toggleComplainant(i, k)}
+                                onSelect={(event) => event.preventDefault()}
+                              >
+                                <span className="min-w-0 truncate">{label}</span>
+                                {inPerson ? (
+                                  <span className="ml-auto pl-3 text-caption font-medium text-muted-foreground">
+                                    {t("advocateSection_inPerson")}
+                                  </span>
+                                ) : null}
+                              </DropdownMenuCheckboxItem>
+                            );
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </FormField>
+                  </HalfWidth>
 
-              {/*
+                  {/*
                 One search, not two fields. The bar number and the name are the same
                 lookup from two directions, so asking for both put one register behind
                 two boxes. Only advocates on the register can appear on a filing, so the
                 register is the whole path — there is nothing to type by hand.
               */}
-              {found ? (
-                <FormField asGroup label={t("advocateSection_advocate")} required>
-                  <div className="flex items-start gap-3 rounded-lg bg-surface-sunken p-4">
-                    <span
-                      aria-hidden
-                      className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-success bg-success-muted text-success-muted-foreground"
-                    >
-                      <CheckIcon className="size-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-body font-semibold text-foreground">
-                        {a.name}
-                      </p>
-                      <p className="truncate text-caption text-muted-foreground">
-                        <Identifier value={a.barNumber} label={t("advocateSection_barRegistration")} />
-                      </p>
-                    </div>
+                  {found ? (
+                    <FormField asGroup label={t("advocateSection_advocate")} required>
+                      <div className="flex items-start gap-3 rounded-lg bg-surface-sunken p-4">
+                        <span
+                          aria-hidden
+                          className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-success bg-success-muted text-success-muted-foreground"
+                        >
+                          <CheckIcon className="size-5" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-body font-semibold text-foreground">
+                            {a.name}
+                          </p>
+                          <p className="truncate text-caption text-muted-foreground">
+                            <Identifier
+                              value={a.barNumber}
+                              label={t("advocateSection_barRegistration")}
+                            />
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          aria-label={t("advocateSection_changeAdvocateValue", {
+                            value: String(i + 1),
+                          })}
+                          onClick={() => {
+                            setQuery(a.id, "");
+                            update((d) => {
+                              d.advocates[i].advocateId = undefined;
+                              d.advocates[i].barNumber = "";
+                              d.advocates[i].name = "";
+                            });
+                          }}
+                        >
+                          {t("advocateSection_change")}
+                        </Button>
+                      </div>
+                    </FormField>
+                  ) : (
+                    <FormField label={t("advocateSection_advocate")} required>
+                      <ComboField
+                        value={queries[a.id] ?? ""}
+                        onChange={(v: string) => {
+                          setQuery(a.id, v);
+                          void searchRegister(v);
+                        }}
+                        items={register}
+                        filter={null}
+                        onSelect={(item) => {
+                          setQuery(a.id, "");
+                          choose(a.id, item as FoundAdvocate);
+                        }}
+                        itemKey={(item) => (item as FoundAdvocate).id}
+                        itemLabel={(item) => (item as FoundAdvocate).name}
+                        renderItem={(item) => {
+                          const adv = item as FoundAdvocate;
+                          return (
+                            <span className="flex min-w-0 flex-col">
+                              <span className="truncate font-medium">{adv.name}</span>
+                              <span className="truncate text-caption text-muted-foreground">
+                                {/* A combobox row is an option — no control nested inside it. */}
+                                <Identifier
+                                  value={adv.barNumber}
+                                  label={t("advocateSection_barRegistration")}
+                                  copyable={false}
+                                />
+                              </span>
+                            </span>
+                          );
+                        }}
+                        placeholder={t("advocateSection_nameOrBarNumber")}
+                        emptyLabel={
+                          searchFailed
+                            ? t("advocateSection_weCouldntSearchRightNowTry")
+                            : (queries[a.id] ?? "").trim().length < ADVOCATE_SEARCH_MIN_LENGTH
+                              ? t("advocateSection_startTypingAnAdvocatesNameOr")
+                              : t("advocateSection_noApprovedAdvocateByThatName")
+                        }
+                        ariaLabel={t("advocateSection_advocate")}
+                      />
+                    </FormField>
+                  )}
+
+                  {canUseProfile ? (
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      aria-label={t("advocateSection_changeAdvocateValue", { value: String(i + 1) })}
-                      onClick={() => {
-                        setQuery(a.id, "");
-                        update((d) => {
-                          d.advocates[i].advocateId = undefined;
-                          d.advocates[i].barNumber = "";
-                          d.advocates[i].name = "";
-                        });
-                      }}
+                      className="w-fit"
+                      // Six identical "Use my details" in a row otherwise; the visible label
+                      // stays inside the accessible name, so voice control still works.
+                      aria-label={t("advocateSection_useMyDetailsForAdvocateValue", {
+                        value: String(i + 1),
+                      })}
+                      onClick={() => void fillFromProfile(a.id)}
                     >
-                      {t("advocateSection_change")}
+                      <UserRoundIcon data-icon="inline-start" aria-hidden />
+                      {t("advocateSection_useMyDetails")}
                     </Button>
-                  </div>
-                </FormField>
-              ) : (
-                <FormField label={t("advocateSection_advocate")} required>
-                  <ComboField
-                    value={queries[a.id] ?? ""}
-                    onChange={(v: string) => {
-                      setQuery(a.id, v);
-                      void searchRegister(v);
-                    }}
-                    items={register}
-                    filter={null}
-                    onSelect={(item) => {
-                      setQuery(a.id, "");
-                      choose(a.id, item as FoundAdvocate);
-                    }}
-                    itemKey={(item) => (item as FoundAdvocate).id}
-                    itemLabel={(item) => (item as FoundAdvocate).name}
-                    renderItem={(item) => {
-                      const adv = item as FoundAdvocate;
-                      return (
-                        <span className="flex min-w-0 flex-col">
-                          <span className="truncate font-medium">{adv.name}</span>
-                          <span className="truncate text-caption text-muted-foreground">
-                            {/* A combobox row is an option — no control nested inside it. */}
-                            <Identifier
-                              value={adv.barNumber}
-                              label={t("advocateSection_barRegistration")}
-                              copyable={false}
-                            />
-                          </span>
-                        </span>
-                      );
-                    }}
-                    placeholder={t("advocateSection_nameOrBarNumber")}
-                    emptyLabel={
-                      searchFailed
-                        ? t("advocateSection_weCouldntSearchRightNowTry")
-                        : (queries[a.id] ?? "").trim().length < ADVOCATE_SEARCH_MIN_LENGTH
-                          ? t("advocateSection_startTypingAnAdvocatesNameOr")
-                          : t("advocateSection_noApprovedAdvocateByThatName")
-                    }
-                    ariaLabel={t("advocateSection_advocate")}
-                  />
-                </FormField>
-              )}
-
-              {canUseProfile ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="w-fit"
-                  // Six identical "Use my details" in a row otherwise; the visible label
-                  // stays inside the accessible name, so voice control still works.
-                  aria-label={t("advocateSection_useMyDetailsForAdvocateValue", { value: String(i + 1) })}
-                  onClick={() => void fillFromProfile(a.id)}
-                >
-                  <UserRoundIcon data-icon="inline-start" aria-hidden />
-                  {t("advocateSection_useMyDetails")}
-                </Button>
-              ) : null}
-            </FormCard>
-          );
-        })}
+                  ) : null}
+                </FormCard>
+              );
+            })}
 
         {allInPerson ? null : (
           <Button

@@ -16,11 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { causeTitle, counselFor } from "@/lib/employee/hearings";
 import { caseStageLabel, type SchedulingCase } from "@/lib/employee/schedule";
 import { cn } from "@/lib/utils";
@@ -92,9 +88,7 @@ export function ScheduleTable({
             {/* The row's one emphasised cell, and its opener — the same clickable cause
                 title every court queue carries. It opens the scheduling flow, which is not
                 built yet (see the screen's `NotBuiltDialog`). */}
-            <TableCell
-              className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}
-            >
+            <TableCell className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}>
               <button
                 type="button"
                 onClick={() => onOpen(matter)}
@@ -113,12 +107,8 @@ export function ScheduleTable({
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
               <CounselCell
-                complainant={counselFor(matter, "complainant").map(
-                  (counsel) => counsel.name,
-                )}
-                accused={counselFor(matter, "accused").map(
-                  (counsel) => counsel.name,
-                )}
+                complainant={counselFor(matter, "complainant").map((counsel) => counsel.name)}
+                accused={counselFor(matter, "accused").map((counsel) => counsel.name)}
                 dense
               />
             </TableCell>

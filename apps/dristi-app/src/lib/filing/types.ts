@@ -349,11 +349,7 @@ export type ChequeDetails = {
 /* ───────────────────────────── Demand notice & debt ─────────────────────────────── */
 
 export type NoticeField =
-  | "natureDebt"
-  | "dispatchDate"
-  | "tracking"
-  | "modeService"
-  | "deliveryDate";
+  "natureDebt" | "dispatchDate" | "tracking" | "modeService" | "deliveryDate";
 
 export type DemandNotice = {
   id: string;
@@ -513,11 +509,7 @@ export type SignInstrument = "aadhaar" | "dsc" | "paper" | "otp";
 
 /** What stopped e-signing, as the person turning to paper says it (`PAPER_FALLBACK_REASONS`). */
 export type PaperFallbackReason =
-  | "otp-not-received"
-  | "dsc-not-working"
-  | "party-cannot-esign"
-  | "server-not-responding"
-  | "other";
+  "otp-not-received" | "dsc-not-working" | "party-cannot-esign" | "server-not-responding" | "other";
 
 /**
  * The confirmation taken before anyone is allowed onto the paper path: that they could

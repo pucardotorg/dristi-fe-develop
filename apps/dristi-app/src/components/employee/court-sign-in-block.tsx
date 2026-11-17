@@ -8,12 +8,7 @@ import { BrandLockup } from "@/components/brand-lockup";
 import { useCourt } from "@/components/court/court-provider";
 import { CHARCOAL_PLATE } from "@/components/chrome/rail-plate";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -116,8 +111,7 @@ export function CourtSignInBlock() {
      simply falls back — and a single-room account needs no pick, it lands on its one room.
      No effect syncs this; the fallback is the whole of it. */
   const [courtroomName, setCourtroomName] = React.useState<string | null>(null);
-  const courtroom =
-    courtrooms.find((room) => room.name === courtroomName) ?? courtrooms[0] ?? null;
+  const courtroom = courtrooms.find((room) => room.name === courtroomName) ?? courtrooms[0] ?? null;
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -172,7 +166,6 @@ export function CourtSignInBlock() {
             {t("courtSignInBlock_secureAccessForTheMagistratesBench")}
           </p>
         </div>
-
       </aside>
 
       {/* Form column. */}
@@ -238,7 +231,11 @@ export function CourtSignInBlock() {
                   <InputGroupAddon align="inline-end">
                     <InputGroupButton
                       size="icon-sm"
-                      aria-label={revealed ? t("courtSignInBlock_hidePassword") : t("courtSignInBlock_showPassword")}
+                      aria-label={
+                        revealed
+                          ? t("courtSignInBlock_hidePassword")
+                          : t("courtSignInBlock_showPassword")
+                      }
                       aria-pressed={revealed}
                       onClick={() => setRevealed((value) => !value)}
                     >
@@ -260,10 +257,7 @@ export function CourtSignInBlock() {
                 courtrooms.length > 1 ? (
                   <Field>
                     <FieldLabel htmlFor="court-room">{t("courtSignInBlock_courtRoom")}</FieldLabel>
-                    <Select
-                      value={courtroom?.name ?? undefined}
-                      onValueChange={setCourtroomName}
-                    >
+                    <Select value={courtroom?.name ?? undefined} onValueChange={setCourtroomName}>
                       <SelectTrigger id="court-room" className="w-full">
                         <SelectValue />
                       </SelectTrigger>
@@ -276,7 +270,9 @@ export function CourtSignInBlock() {
                       </SelectContent>
                     </Select>
                     <FieldDescription>
-                      {t("courtSignInBlock_youCoverLengthCourtRoomsPick", { length: String(courtrooms.length) })}
+                      {t("courtSignInBlock_youCoverLengthCourtRoomsPick", {
+                        length: String(courtrooms.length),
+                      })}
                     </FieldDescription>
                   </Field>
                 ) : (
@@ -286,10 +282,7 @@ export function CourtSignInBlock() {
                         nothing to choose (REG-36). Shown so the person knows which bench
                         they are about to enter, styled as a value at rest. */}
                     <div className="flex items-center gap-2.5 rounded-md border border-input bg-surface-sunken px-3 py-2.5">
-                      <LandmarkIcon
-                        aria-hidden
-                        className="size-4 shrink-0 text-muted-foreground"
-                      />
+                      <LandmarkIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 truncate text-body-compact font-medium">
                         {courtroom?.name}
                       </span>
@@ -326,11 +319,7 @@ export function CourtSignInBlock() {
         ].map((item, index) => (
           <span key={item.href} className="flex items-center gap-2">
             {index > 0 ? <span aria-hidden>·</span> : null}
-            <Button
-              variant="link"
-              asChild
-              className="h-10 px-0 text-caption text-muted-foreground"
-            >
+            <Button variant="link" asChild className="h-10 px-0 text-caption text-muted-foreground">
               <a href={item.href}>{item.label}</a>
             </Button>
           </span>

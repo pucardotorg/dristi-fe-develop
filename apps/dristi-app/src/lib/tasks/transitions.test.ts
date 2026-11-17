@@ -1,7 +1,18 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { at, junior, kase, makeDefect, makeTask, NOW, outsider, PEOPLE, senior, senior2 } from "./fixtures";
+import {
+  at,
+  junior,
+  kase,
+  makeDefect,
+  makeTask,
+  NOW,
+  outsider,
+  PEOPLE,
+  senior,
+  senior2,
+} from "./fixtures";
 import { verbFor, viewOf } from "./permissions";
 import {
   archive,
@@ -28,7 +39,17 @@ import type { Task, TaskStatus } from "./types";
 
 const ctx = (actor = senior): Ctx => ({ actor, kase, now: NOW, people: PEOPLE });
 
-const ALL: TaskStatus[] = ["open", "draft", "ready", "awaiting-court", "payment-confirming", "done", "expired", "obsolete", "archived"];
+const ALL: TaskStatus[] = [
+  "open",
+  "draft",
+  "ready",
+  "awaiting-court",
+  "payment-confirming",
+  "done",
+  "expired",
+  "obsolete",
+  "archived",
+];
 
 function throwsCode(fn: () => unknown, code: TransitionError["code"]) {
   assert.throws(fn, (e: unknown) => e instanceof TransitionError && e.code === code);
@@ -65,7 +86,10 @@ describe("drafts and ready (anyone on the case)", () => {
   it("an outsider may not draft; a hearing task cannot be drafted", () => {
     throwsCode(() => saveDraft(makeTask({ kind: "file" }), ctx(outsider)), "forbidden");
     throwsCode(() => saveDraft(makeTask({ kind: "hearing" }), ctx(senior)), "invalid");
-    throwsCode(() => markReady(makeTask({ kind: "file", status: "ready" }), ctx(junior)), "illegal-state");
+    throwsCode(
+      () => markReady(makeTask({ kind: "file", status: "ready" }), ctx(junior)),
+      "illegal-state",
+    );
   });
 });
 
@@ -132,14 +156,22 @@ describe("completing (signatories only)", () => {
     });
     throwsCode(() => refile(returned, ctx()), "invalid");
 
-    const one = resolveDefect(returned, ctx(junior), 1, { how: "edited", value: "KLGB0040213", at: at(0) });
+    const one = resolveDefect(returned, ctx(junior), 1, {
+      how: "edited",
+      value: "KLGB0040213",
+      at: at(0),
+    });
     assert.equal(one.status, "draft");
     assert.equal(one.draft?.by, junior.id);
     // Defect 2 still open, so the corrections cannot go back yet.
     throwsCode(() => refile(one, ctx(senior)), "invalid");
 
     // Keeping the filed value is enough — no reason, no forced edit.
-    const justified = resolveDefect(one, ctx(junior), 2, { how: "kept", value: "KLGB0040231", at: at(0) });
+    const justified = resolveDefect(one, ctx(junior), 2, {
+      how: "kept",
+      value: "KLGB0040231",
+      at: at(0),
+    });
     const filed = refile(justified, ctx(senior));
     assert.equal(filed.status, "awaiting-court");
     assert.match(filed.history.at(-1)!.text, /prepared by S\. Prakash/);
@@ -150,7 +182,10 @@ describe("completing (signatories only)", () => {
       kind: "returned",
       returned: { by: "scrutiny", at: at(-1), defects: [makeDefect({ n: 1 })] },
     });
-    throwsCode(() => resolveDefect(returned, ctx(junior), 9, { how: "edited", value: "x", at: at(0) }), "invalid");
+    throwsCode(
+      () => resolveDefect(returned, ctx(junior), 9, { how: "edited", value: "x", at: at(0) }),
+      "invalid",
+    );
   });
 
   it("markDone: any open-state task, any kind, by anyone on the case — records the manual close", () => {
@@ -162,7 +197,10 @@ describe("completing (signatories only)", () => {
     assert.equal(markDone(makeTask({ kind: "pay" }), ctx(junior)).status, "done");
     assert.equal(markDone(makeTask({ kind: "sign", status: "ready" }), ctx()).status, "done");
     throwsCode(() => markDone(makeTask({ kind: "pay" }), ctx(outsider)), "forbidden");
-    throwsCode(() => markDone(makeTask({ kind: "hearing", status: "done" }), ctx()), "illegal-state");
+    throwsCode(
+      () => markDone(makeTask({ kind: "hearing", status: "done" }), ctx()),
+      "illegal-state",
+    );
     throwsCode(() => markDone(makeTask({ status: "awaiting-court" }), ctx()), "illegal-state");
   });
 });
@@ -177,17 +215,34 @@ describe("the court", () => {
   });
 
   it("courtReturned supersedes the filing and creates a returned task with the defects", () => {
-    const filed = file(makeTask({ kind: "file", title: "File the proof affidavit of the complainant", dueAt: at(2) }), ctx());
-    const { task, created } = courtReturned(filed, ctx(junior), ["Not attested", "", "Annexure missing"]);
+    const filed = file(
+      makeTask({
+        kind: "file",
+        title: "File the proof affidavit of the complainant",
+        dueAt: at(2),
+      }),
+      ctx(),
+    );
+    const { task, created } = courtReturned(filed, ctx(junior), [
+      "Not attested",
+      "",
+      "Annexure missing",
+    ]);
     assert.equal(task.status, "obsolete");
     assert.equal(viewOf(task, senior, kase), "completed");
     assert.equal(created.kind, "returned");
     assert.equal(created.status, "open");
     assert.equal(created.title, "Fix 2 defects and re-file the proof affidavit of the complainant");
-    assert.deepEqual(created.returned?.defects.map((d) => d.note), ["Not attested", "Annexure missing"]);
+    assert.deepEqual(
+      created.returned?.defects.map((d) => d.note),
+      ["Not attested", "Annexure missing"],
+    );
     // Free text from the sandbox registry control has no field to point at, so the
     // remark stands against the filed bundle rather than guessing.
-    assert.deepEqual(created.returned?.defects.map((d) => d.target.kind), ["doc", "doc"]);
+    assert.deepEqual(
+      created.returned?.defects.map((d) => d.target.kind),
+      ["doc", "doc"],
+    );
     assert.equal(created.dueAt, filed.dueAt);
     assert.equal(verbFor(senior, created, kase), "Re-file");
     assert.equal(verbFor(junior, created, kase), "View");
@@ -252,8 +307,15 @@ describe("archiving", () => {
   });
 
   it("any non-closed state can be archived — a filed task too", () => {
-    assert.equal(archive(makeTask({ status: "awaiting-court" }), ctx()).archived?.from, "awaiting-court");
-    assert.equal(archive(makeTask({ status: "draft", draft: { by: junior.id, savedAt: at(-1) } }), ctx()).status, "archived");
+    assert.equal(
+      archive(makeTask({ status: "awaiting-court" }), ctx()).archived?.from,
+      "awaiting-court",
+    );
+    assert.equal(
+      archive(makeTask({ status: "draft", draft: { by: junior.id, savedAt: at(-1) } }), ctx())
+        .status,
+      "archived",
+    );
   });
 
   it("closed and already-archived tasks refuse; outsiders refuse", () => {
@@ -267,7 +329,12 @@ describe("archiving", () => {
 
 describe("housekeeping", () => {
   it("redate keeps the old date and writes the status note", () => {
-    const t = redate(makeTask({ dueAt: at(1), dueKind: "before-hearing" }), ctx(), at(4), "hearing adjourned");
+    const t = redate(
+      makeTask({ dueAt: at(1), dueKind: "before-hearing" }),
+      ctx(),
+      at(4),
+      "hearing adjourned",
+    );
     assert.equal(t.dueAt, at(4));
     assert.equal(t.redate?.from, at(1));
     assert.match(t.statusNote ?? "", /^Moved from .* — hearing adjourned$/);

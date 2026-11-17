@@ -1,12 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  ChevronRightIcon,
-  PlusIcon,
-  SearchIcon,
-  UsersIcon,
-} from "lucide-react";
+import { ChevronRightIcon, PlusIcon, SearchIcon, UsersIcon } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,12 +25,7 @@ import {
   registeredUserByPhone,
   type AccessPerson,
 } from "@/lib/access/content";
-import {
-  PAGE_GROUND,
-  PAGE_GUTTER,
-  PAGE_SUBTITLE,
-  PAGE_TITLE,
-} from "@/components/shell/page-frame";
+import { PAGE_GROUND, PAGE_GUTTER, PAGE_SUBTITLE, PAGE_TITLE } from "@/components/shell/page-frame";
 import { PANEL_CLASS } from "@/components/shell/panel";
 import { cn } from "@/lib/utils";
 
@@ -68,14 +58,8 @@ function displayName(person: AccessPerson): string {
  * a pending invite known only by number — gets no designation rather than a
  * guessed one.
  */
-function personDesignation(
-  person: AccessPerson,
-  locale: Locale,
-): string | null {
-  if (
-    person.barId ||
-    person.grants.some((g) => g.role === "vakalat" || g.role === "junior")
-  ) {
+function personDesignation(person: AccessPerson, locale: Locale): string | null {
+  if (person.barId || person.grants.some((g) => g.role === "vakalat" || g.role === "junior")) {
     return pick(peopleCopy.designationAdvocate, locale);
   }
   if (person.grants.some((g) => g.role === "clerk")) {
@@ -176,10 +160,7 @@ function PersonListRow({
             <span className="text-body-compact font-medium text-muted-foreground tabular-nums">
               {caseCount}
             </span>
-            <ChevronRightIcon
-              className="size-4 shrink-0 text-muted-foreground"
-              aria-hidden
-            />
+            <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           </span>
         </span>
       </button>
@@ -201,9 +182,7 @@ function PersonListRow({
             </AvatarFallback>
           </Avatar>
           <span className="flex min-w-0 flex-col gap-0.5">
-            <span className="truncate text-body-compact font-medium">
-              {displayName(person)}
-            </span>
+            <span className="truncate text-body-compact font-medium">{displayName(person)}</span>
             <span className="truncate text-caption text-muted-foreground">
               <span className="tabular-nums">{person.phone}</span>
               {person.allCases ? (
@@ -233,10 +212,7 @@ function PersonListRow({
             ? pick(peopleCopy.caseCountOne, locale)
             : fillCopy(peopleCopy.caseCount, locale, { count: String(count) })}
         </span>
-        <ChevronRightIcon
-          className="size-4 justify-self-end text-muted-foreground"
-          aria-hidden
-        />
+        <ChevronRightIcon className="size-4 justify-self-end text-muted-foreground" aria-hidden />
       </button>
     </>
   );
@@ -281,18 +257,10 @@ export function PeoplePage({ locale }: { locale: Locale }) {
   return (
     <div className="relative flex min-h-0 w-full flex-1 items-stretch">
       {/* ------------------------------------------------------ list column */}
-      <main
-        className={cn(
-          "flex min-h-0 min-w-0 flex-1 flex-col gap-6",
-          PAGE_GROUND,
-          PAGE_GUTTER,
-        )}
-      >
+      <main className={cn("flex min-h-0 min-w-0 flex-1 flex-col gap-6", PAGE_GROUND, PAGE_GUTTER)}>
         <header className="flex flex-col gap-4 sm:flex-row sm:items-start">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <h1 className={cn(PAGE_TITLE, "text-balance")}>
-              {pick(peopleCopy.title, locale)}
-            </h1>
+            <h1 className={cn(PAGE_TITLE, "text-balance")}>{pick(peopleCopy.title, locale)}</h1>
             <p className={PAGE_SUBTITLE}>{pick(peopleCopy.subtitle, locale)}</p>
           </div>
           {/* Full width on a phone, like the page's other lone actions. */}
@@ -313,9 +281,7 @@ export function PeoplePage({ locale }: { locale: Locale }) {
           <>
             <div className="flex flex-wrap items-end gap-4">
               <div className="flex w-full flex-col gap-2 sm:min-w-0 sm:flex-1">
-                <Label htmlFor="people-search">
-                  {pick(peopleCopy.searchLabel, locale)}
-                </Label>
+                <Label htmlFor="people-search">{pick(peopleCopy.searchLabel, locale)}</Label>
                 <div className="relative">
                   <SearchIcon
                     className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -332,9 +298,7 @@ export function PeoplePage({ locale }: { locale: Locale }) {
                 </div>
               </div>
               <div className="flex w-full flex-col gap-2 sm:w-48">
-                <Label htmlFor="people-sort">
-                  {pick(peopleCopy.sortLabel, locale)}
-                </Label>
+                <Label htmlFor="people-sort">{pick(peopleCopy.sortLabel, locale)}</Label>
                 <Select
                   value={peopleSort}
                   onValueChange={(value) => setPeopleSort(value as PeopleSort)}
@@ -343,9 +307,7 @@ export function PeoplePage({ locale }: { locale: Locale }) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="name-asc">
-                      {pick(peopleCopy.sortNameAsc, locale)}
-                    </SelectItem>
+                    <SelectItem value="name-asc">{pick(peopleCopy.sortNameAsc, locale)}</SelectItem>
                     <SelectItem value="name-desc">
                       {pick(peopleCopy.sortNameDesc, locale)}
                     </SelectItem>
@@ -427,9 +389,7 @@ export function PeoplePage({ locale }: { locale: Locale }) {
             <span className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <UsersIcon className="size-5" aria-hidden />
             </span>
-            <p className="text-body-compact font-semibold">
-              {pick(peopleCopy.emptyTitle, locale)}
-            </p>
+            <p className="text-body-compact font-semibold">{pick(peopleCopy.emptyTitle, locale)}</p>
             <p className="max-w-sm text-caption text-pretty text-muted-foreground">
               {pick(peopleCopy.emptyBody, locale)}
             </p>

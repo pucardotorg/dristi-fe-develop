@@ -29,9 +29,7 @@ describe("the court register", () => {
      builds today's rows from `CAUSE_LIST`, and this is the assertion that keeps it. */
   it("holds every matter listed today, with the cause list's own title and stage", () => {
     for (const hearing of CAUSE_LIST) {
-      const record = COURT_CASES.find(
-        (entry) => entry.caseNumber === hearing.caseNumber,
-      );
+      const record = COURT_CASES.find((entry) => entry.caseNumber === hearing.caseNumber);
       assert.ok(record, `${hearing.caseNumber} is not on the register`);
       assert.equal(courtCaseTitle(record), causeTitle(hearing));
       assert.equal(record.stage, hearing.stage);
@@ -57,10 +55,7 @@ describe("the court register", () => {
   it("has a date in front of it, or no date at all — never one behind", () => {
     for (const record of COURT_CASES) {
       if (record.nextHearingInDays === null) continue;
-      assert.ok(
-        record.nextHearingInDays >= 0,
-        `${record.caseNumber} is listed in the past`,
-      );
+      assert.ok(record.nextHearingInDays >= 0, `${record.caseNumber} is listed in the past`);
     }
   });
 
@@ -70,9 +65,7 @@ describe("the court register", () => {
     assert.ok(listedToday);
     assert.equal(nextHearingDay(listedToday, TODAY), TODAY);
 
-    const awaitingCognizance = COURT_CASES.find(
-      (r) => r.nextHearingInDays === null,
-    );
+    const awaitingCognizance = COURT_CASES.find((r) => r.nextHearingInDays === null);
     assert.ok(awaitingCognizance);
     assert.equal(nextHearingDay(awaitingCognizance, TODAY), null);
 
@@ -105,10 +98,7 @@ describe("the bench's six priorities", () => {
      reads 0 on every demo proves nothing about the composition. */
   it("holds at least one case in every category", () => {
     for (const priority of COURT_PRIORITIES) {
-      assert.ok(
-        courtPriorityCount(priority) > 0,
-        `${priority.id} has no cases behind it`,
-      );
+      assert.ok(courtPriorityCount(priority) > 0, `${priority.id} has no cases behind it`);
     }
   });
 
@@ -149,10 +139,7 @@ describe("the bench's six priorities", () => {
 describe("filtering the register", () => {
   it("returns everything with nothing set", () => {
     assert.equal(hasCourtCaseFilters(EMPTY_COURT_CASE_FILTERS), false);
-    assert.equal(
-      filterCourtCases(EMPTY_COURT_CASE_FILTERS).length,
-      COURT_CASE_COUNT,
-    );
+    assert.equal(filterCourtCases(EMPTY_COURT_CASE_FILTERS).length, COURT_CASE_COUNT);
   });
 
   it("narrows to a priority, and the count matches its tile", () => {
@@ -175,13 +162,8 @@ describe("filtering the register", () => {
   });
 
   it("finds a file by either party, and by the cause title", () => {
-    assert.ok(
-      filterCourtCases({ ...EMPTY_COURT_CASE_FILTERS, query: "Sunil" }).length > 0,
-    );
-    assert.ok(
-      filterCourtCases({ ...EMPTY_COURT_CASE_FILTERS, query: "Anand Traders" })
-        .length > 0,
-    );
+    assert.ok(filterCourtCases({ ...EMPTY_COURT_CASE_FILTERS, query: "Sunil" }).length > 0);
+    assert.ok(filterCourtCases({ ...EMPTY_COURT_CASE_FILTERS, query: "Anand Traders" }).length > 0);
     assert.ok(
       filterCourtCases({
         ...EMPTY_COURT_CASE_FILTERS,
@@ -191,11 +173,7 @@ describe("filtering the register", () => {
   });
 
   it("finds nothing for a number no file holds", () => {
-    assert.equal(
-      filterCourtCases({ ...EMPTY_COURT_CASE_FILTERS, query: "ST/999/2099" })
-        .length,
-      0,
-    );
+    assert.equal(filterCourtCases({ ...EMPTY_COURT_CASE_FILTERS, query: "ST/999/2099" }).length, 0);
   });
 
   it("stacks a stage, a priority and a search rather than replacing them", () => {
@@ -208,8 +186,7 @@ describe("filtering the register", () => {
     assert.ok(rows.every((r) => r.stage === "evidence" && r.flags.includes("stayed")));
     /* Narrower than either on its own is the point of stacking. */
     assert.ok(
-      rows.length <=
-        filterCourtCases({ ...EMPTY_COURT_CASE_FILTERS, priority: "stayed" }).length,
+      rows.length <= filterCourtCases({ ...EMPTY_COURT_CASE_FILTERS, priority: "stayed" }).length,
     );
   });
 });
@@ -223,16 +200,10 @@ describe("every flagged case carries its specifics", () => {
         assert.ok(record.custodyDays != null, `${record.caseNumber} in custody, no days`);
       }
       if (record.flags.includes("time-bound")) {
-        assert.ok(
-          record.deadlineInDays != null,
-          `${record.caseNumber} time-bound, no deadline`,
-        );
+        assert.ok(record.deadlineInDays != null, `${record.caseNumber} time-bound, no deadline`);
       }
       if (record.flags.includes("stayed") || record.flags.includes("appellate-pending")) {
-        assert.ok(
-          record.higherCourt != null,
-          `${record.caseNumber} above, no court`,
-        );
+        assert.ok(record.higherCourt != null, `${record.caseNumber} above, no court`);
       }
     }
   });
@@ -269,10 +240,7 @@ describe("what to act on first", () => {
     );
     /* And within custody, descending by days waited. */
     for (let i = 1; i < custody.length; i += 1) {
-      assert.ok(
-        (custody[i - 1]?.record.custodyDays ?? 0) >=
-          (custody[i]?.record.custodyDays ?? 0),
-      );
+      assert.ok((custody[i - 1]?.record.custodyDays ?? 0) >= (custody[i]?.record.custodyDays ?? 0));
     }
   });
 
@@ -284,13 +252,32 @@ describe("what to act on first", () => {
     const service = rows
       .filter((r) => r.attention.kind === "service")
       .map((r) => r.record.serviceOverdueDays ?? 0);
-    assert.deepEqual(deadlines, [...deadlines].sort((a, b) => a - b));
-    assert.deepEqual(service, [...service].sort((a, b) => b - a));
+    assert.deepEqual(
+      deadlines,
+      [...deadlines].sort((a, b) => a - b),
+    );
+    assert.deepEqual(
+      service,
+      [...service].sort((a, b) => b - a),
+    );
   });
 
   it("writes the reason in plain language with the number", () => {
-    assert.match(caseAttention({ ...COURT_CASES[0]!, custodyDays: 63, deadlineInDays: undefined, serviceOverdueDays: undefined })!.reason, /63 days/);
-    const tomorrow = caseAttention({ ...COURT_CASES[0]!, custodyDays: undefined, deadlineInDays: 1, serviceOverdueDays: undefined });
+    assert.match(
+      caseAttention({
+        ...COURT_CASES[0]!,
+        custodyDays: 63,
+        deadlineInDays: undefined,
+        serviceOverdueDays: undefined,
+      })!.reason,
+      /63 days/,
+    );
+    const tomorrow = caseAttention({
+      ...COURT_CASES[0]!,
+      custodyDays: undefined,
+      deadlineInDays: 1,
+      serviceOverdueDays: undefined,
+    });
     assert.equal(tomorrow?.reason, "Disposal deadline tomorrow");
   });
 });
@@ -300,14 +287,14 @@ describe("under a higher court", () => {
     const rows = underHigherCourtCases();
     assert.ok(rows.length > 0);
     for (const { record, reason } of rows) {
-      assert.ok(
-        record.flags.includes("stayed") ||
-          record.flags.includes("appellate-pending"),
-      );
+      assert.ok(record.flags.includes("stayed") || record.flags.includes("appellate-pending"));
       assert.match(reason, /Stayed by|Pending in/);
     }
     const ages = rows.map((r) => r.record.registeredDaysAgo);
-    assert.deepEqual(ages, [...ages].sort((a, b) => b - a));
+    assert.deepEqual(
+      ages,
+      [...ages].sort((a, b) => b - a),
+    );
   });
 });
 

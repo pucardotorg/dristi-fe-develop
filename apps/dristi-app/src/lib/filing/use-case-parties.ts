@@ -137,7 +137,7 @@ async function loadFromCase(
   caseId: string,
   latest: () => FilingDraft,
   update: (recipe: (d: FilingDraft) => void) => void,
-  profile: UserProfile | null
+  profile: UserProfile | null,
 ): Promise<Set<string>> {
   const read = await caseFilingApi.getCase(caseId);
   const caughtUp = (d: FilingDraft) => {
@@ -193,7 +193,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
         const party = partiesOf(d, kind).find((p) => p.id === id);
         if (party) patch(party);
       }),
-    [kind, update]
+    [kind, update],
   );
   const recordComplainant = React.useCallback(
     (id: string, patch: (c: Complainant) => void) =>
@@ -201,7 +201,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
         const c = d.complainants.find((x) => x.id === id);
         if (c) patch(c);
       }),
-    [update]
+    [update],
   );
 
   const sync = useStepSync(kind, async (latest, caseId) => {
@@ -323,9 +323,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
 
   const unsaved = (
     draft.caseId
-      ? partiesOf(draft, kind).filter(
-          (p) => p.syncError || ("poaSyncError" in p && p.poaSyncError)
-        )
+      ? partiesOf(draft, kind).filter((p) => p.syncError || ("poaSyncError" in p && p.poaSyncError))
       : []
   ) as PartyOf<K>[];
 

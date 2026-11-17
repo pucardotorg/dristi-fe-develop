@@ -121,7 +121,7 @@ export function ThumbnailWell({
     <div
       className={cn(
         "h-12 w-16 shrink-0 overflow-hidden rounded-md border border-hairline bg-card sm:h-14 sm:w-20",
-        className
+        className,
       )}
     >
       {children}

@@ -91,7 +91,10 @@ function LatestDayButton({ children, ...props }: React.ComponentProps<typeof Day
     <CalendarDayButton {...props}>
       {children}
       {props.modifiers.latest ? (
-        <span aria-hidden className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-current" />
+        <span
+          aria-hidden
+          className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-current"
+        />
       ) : null}
     </CalendarDayButton>
   );
@@ -101,9 +104,21 @@ type Draft = { a: number | null; b: number | null };
 
 const COMPARE_OPTIONS: { value: CompareMode; label: string | null; description: string }[] = [
   { value: "prev", label: null, description: "dashboardDatePicker_thePeriodJustBefore" },
-  { value: "year", label: "dashboardDatePicker_samePeriodLastYear", description: "dashboardDatePicker_removesSeasonalSwings" },
-  { value: "avg", label: "dashboardDatePicker_averageOfLast6", description: "dashboardDatePicker_theSteadiestBaseline" },
-  { value: "none", label: "dashboardDatePicker_noComparison", description: "dashboardDatePicker_showTheNumbersOnly" },
+  {
+    value: "year",
+    label: "dashboardDatePicker_samePeriodLastYear",
+    description: "dashboardDatePicker_removesSeasonalSwings",
+  },
+  {
+    value: "avg",
+    label: "dashboardDatePicker_averageOfLast6",
+    description: "dashboardDatePicker_theSteadiestBaseline",
+  },
+  {
+    value: "none",
+    label: "dashboardDatePicker_noComparison",
+    description: "dashboardDatePicker_showTheNumbersOnly",
+  },
 ];
 
 export function DashboardDatePicker({
@@ -196,7 +211,10 @@ export function DashboardDatePicker({
   } else if (b === null) {
     status = (
       <>
-        {tr.rich("dashboardDatePicker_startsFormatDayPickAnEnd", { formatDay: formatDay(a), strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong> })}
+        {tr.rich("dashboardDatePicker_startsFormatDayPickAnEnd", {
+          formatDay: formatDay(a),
+          strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong>,
+        })}
       </>
     );
   } else if (lo === hi) {
@@ -208,7 +226,13 @@ export function DashboardDatePicker({
   } else {
     status = (
       <>
-        {tr.rich("dashboardDatePicker_formatSpanFullFormatCountDays", { formatSpanFull: formatSpanFull(lo, hi), formatCount: formatCount(daysBetween(lo, hi) + 1), value: daysNote ? ` ${daysNote}` : "", value2: rangeNote ? ` · ${rangeNote({ from: lo, to: hi })}` : "", strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong> })}
+        {tr.rich("dashboardDatePicker_formatSpanFullFormatCountDays", {
+          formatSpanFull: formatSpanFull(lo, hi),
+          formatCount: formatCount(daysBetween(lo, hi) + 1),
+          value: daysNote ? ` ${daysNote}` : "",
+          value2: rangeNote ? ` · ${rangeNote({ from: lo, to: hi })}` : "",
+          strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong>,
+        })}
       </>
     );
   }
@@ -229,7 +253,11 @@ export function DashboardDatePicker({
             aria-haspopup="dialog"
             className="h-auto min-h-10 max-w-full flex-wrap justify-start gap-x-2 gap-y-1 py-2 text-left whitespace-normal tabular-nums"
           >
-            <CalendarDaysIcon data-icon="inline-start" aria-hidden className="text-muted-foreground" />
+            <CalendarDaysIcon
+              data-icon="inline-start"
+              aria-hidden
+              className="text-muted-foreground"
+            />
             {single ? (
               <span className="font-semibold">{formatDay(value.to)}</span>
             ) : (
@@ -241,17 +269,23 @@ export function DashboardDatePicker({
               </Badge>
             ) : single ? null : (
               <span className="text-muted-foreground">
-                {tr("dashboardDatePicker_formatCountDays", { formatCount: formatCount(daysBetween(value.from, value.to) + 1) })}
+                {tr("dashboardDatePicker_formatCountDays", {
+                  formatCount: formatCount(daysBetween(value.from, value.to) + 1),
+                })}
               </span>
             )}
             {versus ? (
               <>
                 {" "}
-                <span className="border-l border-hairline pl-2 font-normal text-muted-foreground">{versus}</span>
+                <span className="border-l border-hairline pl-2 font-normal text-muted-foreground">
+                  {versus}
+                </span>
               </>
             ) : null}
             <span className="sr-only">
-              {compare === undefined ? tr("dashboardDatePicker_changeThePeriod") : tr("dashboardDatePicker_changeThePeriodOrTheComparison")}
+              {compare === undefined
+                ? tr("dashboardDatePicker_changeThePeriod")
+                : tr("dashboardDatePicker_changeThePeriodOrTheComparison")}
             </span>
           </Button>
         </PopoverTrigger>
@@ -278,12 +312,14 @@ export function DashboardDatePicker({
               aria-labelledby={`${idPrefix}-quick`}
               className="flex flex-row flex-wrap gap-2 border-b border-hairline p-3 sm:w-44 sm:flex-col sm:flex-nowrap sm:gap-0.5 sm:border-r sm:border-b-0"
             >
-              <p id={`${idPrefix}-quick`} className="w-full px-2 pb-1 text-body-compact text-muted-foreground max-sm:sr-only">
+              <p
+                id={`${idPrefix}-quick`}
+                className="w-full px-2 pb-1 text-body-compact text-muted-foreground max-sm:sr-only"
+              >
                 {tr("dashboardDatePicker_quickPick")}
               </p>
               {presets.map((preset) => {
-                const pressed =
-                  b !== null && lo === preset.period.from && hi === preset.period.to;
+                const pressed = b !== null && lo === preset.period.from && hi === preset.period.to;
                 return (
                   <Button
                     key={preset.label}
@@ -315,7 +351,10 @@ export function DashboardDatePicker({
                   <ChevronLeftIcon aria-hidden />
                 </Button>
                 <Select value={String(month)} onValueChange={(next) => setMonth(Number(next))}>
-                  <SelectTrigger aria-label={tr("dashboardDatePicker_month")} className="h-10 min-w-0 flex-1 font-semibold">
+                  <SelectTrigger
+                    aria-label={tr("dashboardDatePicker_month")}
+                    className="h-10 min-w-0 flex-1 font-semibold"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -375,7 +414,9 @@ export function DashboardDatePicker({
 
               {compare === undefined ? null : (
                 <fieldset className="flex flex-col gap-2 border-t border-hairline pt-3 sm:w-72">
-                  <legend className="float-left mb-1 w-full text-body-compact text-muted-foreground">{tr("dashboardDatePicker_compareWith")}</legend>
+                  <legend className="float-left mb-1 w-full text-body-compact text-muted-foreground">
+                    {tr("dashboardDatePicker_compareWith")}
+                  </legend>
                   <RadioGroup
                     value={draftCompare}
                     onValueChange={(next) => setDraftCompare(next as CompareMode)}
@@ -386,11 +427,21 @@ export function DashboardDatePicker({
                       const range =
                         lo === null || hi === null ? value : { from: lo, to: b === null ? lo : hi };
                       return (
-                        <div key={option.value} className="flex items-start gap-3 rounded-md px-2 py-1.5 hover:bg-accent">
+                        <div
+                          key={option.value}
+                          className="flex items-start gap-3 rounded-md px-2 py-1.5 hover:bg-accent"
+                        >
                           <RadioGroupItem id={id} value={option.value} className="mt-0.5" />
-                          <Label htmlFor={id} className="flex cursor-pointer flex-col items-start gap-0 font-normal">
-                            <span className="text-body-compact font-medium">{translateText(tr, option.label) ?? previousName(range)}</span>
-                            <span className="text-caption text-muted-foreground">{translateText(tr, option.description)}</span>
+                          <Label
+                            htmlFor={id}
+                            className="flex cursor-pointer flex-col items-start gap-0 font-normal"
+                          >
+                            <span className="text-body-compact font-medium">
+                              {translateText(tr, option.label) ?? previousName(range)}
+                            </span>
+                            <span className="text-caption text-muted-foreground">
+                              {translateText(tr, option.description)}
+                            </span>
                           </Label>
                         </div>
                       );
@@ -400,7 +451,10 @@ export function DashboardDatePicker({
               )}
 
               <div className="flex flex-col gap-3 border-t border-hairline pt-3 sm:w-72">
-                <p aria-live="polite" className="min-h-10 text-body-compact text-muted-foreground tabular-nums">
+                <p
+                  aria-live="polite"
+                  className="min-h-10 text-body-compact text-muted-foreground tabular-nums"
+                >
                   {status}
                 </p>
                 <div className="flex items-center gap-2">
@@ -419,7 +473,10 @@ export function DashboardDatePicker({
                       if (compare !== undefined) setDraftCompare(defaultCompare);
                     }}
                   >
-                    {tr.rich("dashboardDatePicker_resetToToLowerCase", { toLowerCase: defaultLabel.toLowerCase(), span: (chunks) => <span className="sr-only">{chunks}</span> })}
+                    {tr.rich("dashboardDatePicker_resetToToLowerCase", {
+                      toLowerCase: defaultLabel.toLowerCase(),
+                      span: (chunks) => <span className="sr-only">{chunks}</span>,
+                    })}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                     {tr("common_cancel")}

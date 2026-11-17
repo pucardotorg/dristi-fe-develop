@@ -20,11 +20,7 @@
  */
 
 import { caseRecordGroup, type CaseRecordKind } from "./blank";
-import {
-  caseDocumentType,
-  type CaseDocumentMeta,
-  type CaseDocumentType,
-} from "./data/cases-api";
+import { caseDocumentType, type CaseDocumentMeta, type CaseDocumentType } from "./data/cases-api";
 import {
   documentGroupForParty,
   findDocumentRow,
@@ -58,8 +54,7 @@ export type UnsavedDocument = { target: DocumentTarget; label: string; error: st
  * or a demand notice's evidence row.
  */
 export type PendingLink = { target: DocumentTarget; caseDocumentId: string } & (
-  | { participantId: string; evidenceId?: never }
-  | { evidenceId: string; participantId?: never }
+  { participantId: string; evidenceId?: never } | { evidenceId: string; participantId?: never }
 );
 
 /** The participant a complainant is saved as on the case, if they are yet. */
@@ -128,10 +123,10 @@ export function targetForRow(intake: Intake, row: CaseDocument): DocumentTarget 
 function partyDocumentOwner(
   draft: DocumentsDraft,
   slotKey: string,
-  participantIdOf: ParticipantIdOf
+  participantIdOf: ParticipantIdOf,
 ): { owner: string | undefined } | null {
   const index = draft.intake.parties.findIndex((g) =>
-    g.slots.some((s) => s.key === slotKey && PARTY_DOC_TYPES.has(s.docType))
+    g.slots.some((s) => s.key === slotKey && PARTY_DOC_TYPES.has(s.docType)),
   );
   if (index === -1) return null;
   const complainant = draft.complainants[index];
@@ -146,10 +141,10 @@ function partyDocumentOwner(
 function noticePaperOwner(
   draft: DocumentsDraft,
   slotKey: string,
-  evidenceIdOf: EvidenceIdOf
+  evidenceIdOf: EvidenceIdOf,
 ): { owner: string | undefined } | null {
   const index = draft.intake.notices.findIndex((g) =>
-    g.slots.some((s) => s.key === slotKey && NOTICE_PAPER_TYPES.has(s.docType))
+    g.slots.some((s) => s.key === slotKey && NOTICE_PAPER_TYPES.has(s.docType)),
   );
   if (index === -1) return null;
   const notice = draft.notices[index];
@@ -184,7 +179,7 @@ export function scanEvidenceId(draft: DocumentsDraft, slotKey: string): string |
  */
 export function caseUploadFor(
   draft: DocumentsDraft,
-  target: DocumentTarget
+  target: DocumentTarget,
 ): CaseUpload | undefined {
   if (target.kind === "slot") {
     const slot = findIntakeSlot(draft.intake, target.key);
@@ -211,7 +206,7 @@ export function caseUploadFor(
  */
 export function pendingLinks(
   draft: DocumentsDraft,
-  { participantIdOf = savedAs, evidenceIdOf = noticeSavedAs }: SavedIds = {}
+  { participantIdOf = savedAs, evidenceIdOf = noticeSavedAs }: SavedIds = {},
 ): PendingLink[] {
   const party = draft.intake.parties.flatMap((group) =>
     group.slots.flatMap((slot): PendingLink[] => {
@@ -220,7 +215,7 @@ export function pendingLinks(
       if (!owner || owner === slot.linkedParticipantId) return [];
       const target = { kind: "slot", key: slot.key } as const;
       return [{ target, caseDocumentId: slot.caseDocumentId, participantId: owner }];
-    })
+    }),
   );
   const notice = draft.intake.notices.flatMap((group) =>
     group.slots.flatMap((slot): PendingLink[] => {
@@ -229,7 +224,7 @@ export function pendingLinks(
       if (!owner || owner === slot.linkedEvidenceId) return [];
       const target = { kind: "slot", key: slot.key } as const;
       return [{ target, caseDocumentId: slot.caseDocumentId, evidenceId: owner }];
-    })
+    }),
   );
   return [...party, ...notice];
 }
@@ -242,7 +237,7 @@ export function pendingLinks(
 export function caseRecordTargets(
   draft: DocumentsDraft,
   kind: CaseRecordKind,
-  index: number
+  index: number,
 ): DocumentTarget[] {
   const group = caseRecordGroup(draft, kind, index);
   if (!group) return [];
@@ -255,10 +250,10 @@ export function caseRecordTargets(
 }
 
 function unsaved(
-  entries: Array<{ target: DocumentTarget; label: string; record: SyncedFile | undefined }>
+  entries: Array<{ target: DocumentTarget; label: string; record: SyncedFile | undefined }>,
 ): UnsavedDocument[] {
   return entries.flatMap(({ target, label, record }) =>
-    record?.file && record.syncError ? [{ target, label, error: record.syncError }] : []
+    record?.file && record.syncError ? [{ target, label, error: record.syncError }] : [],
   );
 }
 
@@ -277,7 +272,7 @@ export function unsavedDocuments(draft: DocumentsDraft): UnsavedDocument[] {
         target: { kind: "row", id: d.id } as const,
         label: d.name.trim() || UNNAMED_ROW,
         record: d,
-      }))
+      })),
   );
   return unsaved([...slots, ...rows]);
 }
@@ -295,7 +290,7 @@ export function unsavedRows(draft: DocumentsDraft, groups: DocumentGroup[]): Uns
         if (!target) return [];
         const label = row.name.trim() || UNNAMED_ROW;
         return [{ target, label, record: findSynced(draft, target) }];
-      })
-    )
+      }),
+    ),
   );
 }

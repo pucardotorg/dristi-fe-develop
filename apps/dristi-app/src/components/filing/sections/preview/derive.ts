@@ -71,7 +71,7 @@ export function htmlToParagraphs(html: string): string[] {
         .replace(/&gt;/g, ">")
         .replace(/&#39;|&apos;/g, "'")
         .replace(/&quot;/g, '"')
-        .trim()
+        .trim(),
     )
     .filter(Boolean);
 }
@@ -113,8 +113,7 @@ export function advocateSummaries(draft: FilingDraft): AdvocateSummary[] {
   const complainants = draft.complainants;
   return draft.advocates.map((a, i) => {
     const forAll =
-      complainants.length > 0 &&
-      complainants.every((_, ci) => a.forComplainants.includes(ci));
+      complainants.length > 0 && complainants.every((_, ci) => a.forComplainants.includes(ci));
     const named = a.forComplainants
       .filter((ci) => ci < complainants.length)
       .map((ci) => `Complainant ${ci + 1}`)
@@ -258,8 +257,8 @@ export function noticeSummary(n: DemandNotice | undefined) {
     dispatched: orNot(
       joinDot(
         toDisplayDate(n?.dispatchDate ?? ""),
-        optionLabel(MODE_OF_SERVICE, n?.modeService ?? "")
-      )
+        optionLabel(MODE_OF_SERVICE, n?.modeService ?? ""),
+      ),
     ),
     dispatchDate: displayDate(n?.dispatchDate ?? ""),
     mode: orNot(optionLabel(MODE_OF_SERVICE, n?.modeService ?? "")),
@@ -382,15 +381,13 @@ export function witnessSummaries(draft: FilingDraft): WitnessSummary[] {
 }
 
 export function documentSummary(draft: FilingDraft) {
-  const uploaded: CaseDocument[] = draft.documents.flatMap((g) =>
-    g.docs.filter((d) => !!d.file)
-  );
+  const uploaded: CaseDocument[] = draft.documents.flatMap((g) => g.docs.filter((d) => !!d.file));
   const lines = draft.documents
     .map((g) =>
       g.docs
         .filter((d) => !!d.file)
         .map((d) => d.name)
-        .join(" · ")
+        .join(" · "),
     )
     .filter(Boolean);
   return { uploaded, lines, ...documentsProgress(draft.documents) };

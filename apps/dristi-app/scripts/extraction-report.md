@@ -5,23 +5,23 @@ Rebuilt on every run: it lists only what is still pending.
 
 ## Summary
 
-| | Count |
-|---|---|
-| New messages | 0 |
-| Messages already in en.json, reused | 0 |
-| Files that would change | 0 |
-| Needs a hand fix | 3713 |
-| — English used as a value | 2797 |
-| — Sentence built in lib/ | 514 |
-| — Complex split sentence | 180 |
-| — Text in a helper outside a component | 128 |
-| — Joined with + | 46 |
-| — Unclear prop | 42 |
-| — Reads copy.en directly | 3 |
-| — Default text for a prop | 2 |
-| — Unclear string | 1 |
-| Skipped on purpose (files) | 54 |
-| Single capitalised words in data positions, left alone | 1358 |
+|                                                        | Count |
+| ------------------------------------------------------ | ----- |
+| New messages                                           | 0     |
+| Messages already in en.json, reused                    | 0     |
+| Files that would change                                | 0     |
+| Needs a hand fix                                       | 3713  |
+| — English used as a value                              | 2797  |
+| — Sentence built in lib/                               | 514   |
+| — Complex split sentence                               | 180   |
+| — Text in a helper outside a component                 | 128   |
+| — Joined with +                                        | 46    |
+| — Unclear prop                                         | 42    |
+| — Reads copy.en directly                               | 3     |
+| — Default text for a prop                              | 2     |
+| — Unclear string                                       | 1     |
+| Skipped on purpose (files)                             | 54    |
+| Single capitalised words in data positions, left alone | 1358  |
 
 ## Needs a hand fix, by file
 
@@ -8472,7 +8472,6 @@ Rebuilt on every run: it lists only what is still pending.
 ## Shared candidates for `common_`
 
 English that appears in three or more files. Approve any that mean the same everywhere.
-
 
 ## Keys in en.json no longer used in code
 

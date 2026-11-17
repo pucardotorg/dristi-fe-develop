@@ -29,10 +29,5 @@ export default async function EmployeeCognizanceOrderPage({
 }) {
   const { caseId } = await params;
   const { act } = await searchParams;
-  return (
-    <CognizanceOrderScreen
-      caseId={caseId}
-      act={isCognizanceAct(act) ? act : null}
-    />
-  );
+  return <CognizanceOrderScreen caseId={caseId} act={isCognizanceAct(act) ? act : null} />;
 }

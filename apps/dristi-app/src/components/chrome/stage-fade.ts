@@ -2,11 +2,7 @@
 
 import * as React from "react";
 
-import {
-  STAGE_FADE,
-  STAGE_FADE_OUT_MS,
-  STAGE_FADE_PANEL,
-} from "@/components/chrome/motion";
+import { STAGE_FADE, STAGE_FADE_OUT_MS, STAGE_FADE_PANEL } from "@/components/chrome/motion";
 
 /**
  * The step of an overlay whose steps differ in height (`STAGE_FADE`): which step is
@@ -34,7 +30,7 @@ export function useStageFade<S extends string>(initial: S, order: readonly S[]) 
     () => () => {
       if (timer.current) window.clearTimeout(timer.current);
     },
-    []
+    [],
   );
 
   const setStage = React.useCallback(
@@ -53,7 +49,7 @@ export function useStageFade<S extends string>(initial: S, order: readonly S[]) 
         setPhase("in");
       }, STAGE_FADE_OUT_MS);
     },
-    [order, stage, reduced]
+    [order, stage, reduced],
   );
 
   /** Back to the first step with no motion, for an overlay being reset or reopened. */
@@ -100,6 +96,6 @@ function useReducedMotion(): boolean {
       return () => query.removeEventListener("change", onChange);
     },
     () => window.matchMedia(REDUCED).matches,
-    noServerMotion
+    noServerMotion,
   );
 }

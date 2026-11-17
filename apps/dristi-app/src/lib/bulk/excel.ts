@@ -40,7 +40,6 @@ import {
 
 export const TEMPLATE_FILE = "bulk-filing-template.xlsx";
 
-
 async function excel() {
   const mod = await import("exceljs");
   return (mod.default ?? mod) as typeof import("exceljs");
@@ -50,12 +49,17 @@ async function excel() {
 
 function columnLetter(n: number): string {
   let s = "";
-  for (let x = n; x > 0; x = Math.floor((x - 1) / 26)) s = String.fromCharCode(65 + ((x - 1) % 26)) + s;
+  for (let x = n; x > 0; x = Math.floor((x - 1) / 26))
+    s = String.fromCharCode(65 + ((x - 1) % 26)) + s;
   return s;
 }
 
 /** Light grey for the guide rows, so they read as instructions rather than data. */
-const GUIDE_FILL = { type: "pattern" as const, pattern: "solid" as const, fgColor: { argb: "FFF2F2F2" } };
+const GUIDE_FILL = {
+  type: "pattern" as const,
+  pattern: "solid" as const,
+  fgColor: { argb: "FFF2F2F2" },
+};
 
 /**
  * The Cases sheet. Row 1 is the header; row 2 says what each column takes; row 3 is a
@@ -64,7 +68,11 @@ const GUIDE_FILL = { type: "pattern" as const, pattern: "solid" as const, fgColo
 function addCasesSheet(wb: Workbook, all: TemplateColumn[], listRanges: Record<string, string>) {
   const ws = wb.addWorksheet(CASES_SHEET, { views: [{ state: "frozen", ySplit: 2 }] });
   const id = (t: TemplateColumn) => `${t.column.key}@${instanceKey(t.instance)}`;
-  ws.columns = all.map((t) => ({ header: t.header, key: id(t), width: Math.max(18, t.header.length + 4) }));
+  ws.columns = all.map((t) => ({
+    header: t.header,
+    key: id(t),
+    width: Math.max(18, t.header.length + 4),
+  }));
   const head = ws.getRow(1);
   head.font = { bold: true };
   head.alignment = { wrapText: true, vertical: "top" };
@@ -76,7 +84,9 @@ function addCasesSheet(wb: Workbook, all: TemplateColumn[], listRanges: Record<s
 
   // The example fills each section's first instance only.
   const isFirst = (t: TemplateColumn) => t.instance.every((n) => n === 1);
-  const ex = ws.addRow(Object.fromEntries(all.map((t) => [id(t), isFirst(t) ? t.column.example : ""])));
+  const ex = ws.addRow(
+    Object.fromEntries(all.map((t) => [id(t), isFirst(t) ? t.column.example : ""])),
+  );
   ex.font = { italic: true, color: { argb: "FF555555" } };
   ex.eachCell({ includeEmpty: true }, (cell) => (cell.fill = GUIDE_FILL));
   const firstData = 4;
@@ -95,7 +105,8 @@ function addCasesSheet(wb: Workbook, all: TemplateColumn[], listRanges: Record<s
         };
       }
     }
-    if (c.kind === "date" || c.kind === "text" || c.kind === "phone") ws.getColumn(i + 1).numFmt = "@";
+    if (c.kind === "date" || c.kind === "text" || c.kind === "phone")
+      ws.getColumn(i + 1).numFmt = "@";
   });
   return ws;
 }
@@ -149,12 +160,30 @@ export async function buildTemplate(): Promise<Blob> {
   }
   rules.addRow({});
   rules.addRow({ header: "One row per case on the Cases sheet, from row 4." });
-  rules.addRow({ header: "Every repeated thing carries its number in the header, next to what it counts: Accused 2 name, Cheque 1 amount, Accused 1 address 2 pincode." });
-  rules.addRow({ header: "More than the template has, such as a second cheque or an accused's second address: add the same columns with the next number (Cheque 2 number, Accused 1 address 2 line). Keep the words and the numbers' places exactly as the template writes them." });
-  rules.addRow({ header: "A section counts for a case when any of its cells is filled; its required columns then apply. Leave every cell of a section blank when the case does not have it." });
-  rules.addRow({ header: "Interim relief, final relief and the affidavit hold the full, finished text for the case. Each line break starts a new paragraph." });
-  rules.addRow({ header: "Row 2 says what each column takes and row 3 is an example. Both are skipped on upload, so they can stay." });
-  rules.addRow({ header: "Not in the sheet: the complainants and advocates and their documents (set on the upload screen), district, state, bank name and branch (looked up), cause of action, filing date, delay and fees (computed), and each case's documents (added after upload)." });
+  rules.addRow({
+    header:
+      "Every repeated thing carries its number in the header, next to what it counts: Accused 2 name, Cheque 1 amount, Accused 1 address 2 pincode.",
+  });
+  rules.addRow({
+    header:
+      "More than the template has, such as a second cheque or an accused's second address: add the same columns with the next number (Cheque 2 number, Accused 1 address 2 line). Keep the words and the numbers' places exactly as the template writes them.",
+  });
+  rules.addRow({
+    header:
+      "A section counts for a case when any of its cells is filled; its required columns then apply. Leave every cell of a section blank when the case does not have it.",
+  });
+  rules.addRow({
+    header:
+      "Interim relief, final relief and the affidavit hold the full, finished text for the case. Each line break starts a new paragraph.",
+  });
+  rules.addRow({
+    header:
+      "Row 2 says what each column takes and row 3 is an example. Both are skipped on upload, so they can stay.",
+  });
+  rules.addRow({
+    header:
+      "Not in the sheet: the complainants and advocates and their documents (set on the upload screen), district, state, bank name and branch (looked up), cause of action, filing date, delay and fees (computed), and each case's documents (added after upload).",
+  });
 
   const lists = wb.addWorksheet(LISTS_SHEET);
   listNames.forEach((name, i) => {
@@ -166,7 +195,9 @@ export async function buildTemplate(): Promise<Blob> {
   });
 
   const buf = await wb.xlsx.writeBuffer();
-  return new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  return new Blob([buf], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
 }
 
 /* ───────────────────────────── Reading ───────────────────────────── */
@@ -191,7 +222,10 @@ function cellText(v: unknown): string {
 
 function readSheet(ws: Worksheet): Sheet {
   const headers: string[] = [];
-  ws.getRow(1).eachCell({ includeEmpty: true }, (cell, col) => (headers[col - 1] = cellText(cell.value)));
+  ws.getRow(1).eachCell(
+    { includeEmpty: true },
+    (cell, col) => (headers[col - 1] = cellText(cell.value)),
+  );
   const rows: string[][] = [];
   let discarded = 0;
   ws.eachRow({ includeEmpty: false }, (row, n) => {
@@ -217,10 +251,16 @@ export async function readWorkbook(file: File): Promise<Workbookish> {
   if (/\.csv$/i.test(file.name)) {
     const text = new TextDecoder().decode(data);
     const lines = text.split(/\r?\n/).filter((l) => l.trim());
-    const split = (l: string) => l.match(/("([^"]|"")*"|[^,]*)(,|$)/g)!.slice(0, -1).map((c) => c.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"').trim());
+    const split = (l: string) =>
+      l
+        .match(/("([^"]|"")*"|[^,]*)(,|$)/g)!
+        .slice(0, -1)
+        .map((c) => c.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"').trim());
     const [h, ...all] = lines.map(split);
     const r = all.filter((row) => !isGuideRow(row));
-    return { cases: { name: file.name, headers: h ?? [], rows: r, discarded: all.length - r.length } };
+    return {
+      cases: { name: file.name, headers: h ?? [], rows: r, discarded: all.length - r.length },
+    };
   }
   await wb.xlsx.load(data);
   const sheets = wb.worksheets.map(readSheet);
@@ -251,7 +291,9 @@ export type ColumnMap = Record<string, ColumnSource>;
 export const isMapped = (s: ColumnSource | undefined) => s !== null && s !== undefined;
 
 export const mapKey = (key: string, instance: Instance, group: Group) =>
-  instanceKey(instance) === instanceKey(firstInstance(group)) ? key : `${key}@${instanceKey(instance)}`;
+  instanceKey(instance) === instanceKey(firstInstance(group))
+    ? key
+    : `${key}@${instanceKey(instance)}`;
 
 /**
  * Uploaded headers, indexed by name and repeat. A numbered template header is indexed under
@@ -297,8 +339,14 @@ function normaliseInstance(group: Group, raw: Instance): Instance {
  */
 export type InstanceCounts = Partial<Record<GroupId, number>>;
 
-export function instancesIn(headers: string[], counts: InstanceCounts = {}): Record<GroupId, Instance[]> {
-  const out = Object.fromEntries(GROUPS.map((g) => [g.id, [] as Instance[]])) as Record<GroupId, Instance[]>;
+export function instancesIn(
+  headers: string[],
+  counts: InstanceCounts = {},
+): Record<GroupId, Instance[]> {
+  const out = Object.fromEntries(GROUPS.map((g) => [g.id, [] as Instance[]])) as Record<
+    GroupId,
+    Instance[]
+  >;
   const seen = new Set<string>();
   const add = (g: Group, inst: Instance) => {
     const k = `${g.id}:${instanceKey(inst)}`;
@@ -313,7 +361,9 @@ export function instancesIn(headers: string[], counts: InstanceCounts = {}): Rec
       continue;
     }
     const { base, instance } = parseHeader(h);
-    const col = COLUMNS.find((c) => [c.header, ...c.aliases].some((x) => normHeader(x) === normHeader(base)));
+    const col = COLUMNS.find((c) =>
+      [c.header, ...c.aliases].some((x) => normHeader(x) === normHeader(base)),
+    );
     if (!col) continue;
     const g = groupOf(col.group);
     add(g, normaliseInstance(g, instance));
@@ -366,7 +416,7 @@ export function sourceFor(
   c: Column,
   instance: Instance,
   map: ColumnMap,
-  headers: string[]
+  headers: string[],
 ): ColumnSource {
   const g = groupOf(c.group);
   const own = map[mapKey(c.key, instance, g)];
@@ -405,7 +455,9 @@ export function followsTemplate(headers: string[]): boolean {
  * Template columns a mapping must cover before rows can be read. Payment after notice is
  * left out: without it, the amount paid decides (see `buildRequest`).
  */
-export const MUST_MAP = COLUMNS.filter((c) => c.required.startsWith("Yes") && c.key !== "payment").map((c) => c.key);
+export const MUST_MAP = COLUMNS.filter(
+  (c) => c.required.startsWith("Yes") && c.key !== "payment",
+).map((c) => c.key);
 
 /**
  * Required fields of the sections every case has (accused, cheque, notice) that no column
@@ -415,7 +467,9 @@ export const MUST_MAP = COLUMNS.filter((c) => c.required.startsWith("Yes") && c.
 export function unmatchedRequired(headers: string[], map: ColumnMap): Column[] {
   return COLUMNS.filter((c) => {
     const g = groupOf(c.group);
-    return MUST_MAP.includes(c.key) && g.always && sourceFor(c, firstInstance(g), map, headers) === null;
+    return (
+      MUST_MAP.includes(c.key) && g.always && sourceFor(c, firstInstance(g), map, headers) === null
+    );
   });
 }
 
@@ -426,7 +480,7 @@ export type ValueMap = Partial<Record<ListName, Record<string, string>>>;
 export function unknownValues(
   sheet: Sheet,
   map: ColumnMap,
-  counts: InstanceCounts = {}
+  counts: InstanceCounts = {},
 ): Partial<Record<ListName, string[]>> {
   const out: Partial<Record<ListName, Set<string>>> = {};
   const inst = instancesIn(sheet.headers, counts);
@@ -487,12 +541,21 @@ function reader(row: string[], headers: string[], map: ColumnMap, values: ValueM
 
 type Reader = ReturnType<typeof reader>;
 
-function accusedFrom(r: Reader, a: number, inst: Record<GroupId, Instance[]>): ApiCase["accused"][number] {
+function accusedFrom(
+  r: Reader,
+  a: number,
+  inst: Record<GroupId, Instance[]>,
+): ApiCase["accused"][number] {
   const at: Instance = [a];
   const type = r.list("accusedType", at) === "institution" ? "institution" : "individual";
   const addresses = inst.address
     .filter(([p, c]) => p === a && (c === 1 || r.any("address", [p, c])))
-    .map((i) => ({ line1: r.raw("accusedAddress", i), city: r.raw("accusedCity", i), pin: r.raw("accusedPin", i), policeStation: r.raw("accusedPolice", i) }));
+    .map((i) => ({
+      line1: r.raw("accusedAddress", i),
+      city: r.raw("accusedCity", i),
+      pin: r.raw("accusedPin", i),
+      policeStation: r.raw("accusedPolice", i),
+    }));
   const within = r.list("accusedJurisdiction", at);
   const persons = inst.person
     .filter(([p, c]) => p === a && r.any("person", [p, c]))
@@ -502,7 +565,14 @@ function accusedFrom(r: Reader, a: number, inst: Record<GroupId, Instance[]>): A
       mobile: r.raw("personMobile", i),
       email: r.raw("personEmail", i),
       ...(r.raw("personAddress", i)
-        ? { address: { line1: r.raw("personAddress", i), city: r.raw("personCity", i), pin: r.raw("personPin", i), policeStation: r.raw("personPolice", i) } }
+        ? {
+            address: {
+              line1: r.raw("personAddress", i),
+              city: r.raw("personCity", i),
+              pin: r.raw("personPin", i),
+              policeStation: r.raw("personPolice", i),
+            },
+          }
         : {}),
     }));
   return {
@@ -529,7 +599,7 @@ export function buildRequest(
     fileName: string;
     detailsFormat?: ApiBatchRequest["detailsFormat"];
   },
-  counts: InstanceCounts = {}
+  counts: InstanceCounts = {},
 ): ApiBatchRequest {
   const headers = book.cases.headers;
   const inst = instancesIn(headers, counts);
@@ -573,7 +643,8 @@ export function buildRequest(
           replied: yesNo(r.list("replied", i)),
           // Without a payment column, an amount paid over zero means part payment.
           payment:
-            r.list("payment", i) === "part" || (!isMapped(map.payment) && Number(paid.replace(/[^\d.]/g, "")) > 0)
+            r.list("payment", i) === "part" ||
+            (!isMapped(map.payment) && Number(paid.replace(/[^\d.]/g, "")) > 0)
               ? { status: "part" as const, amount: paid }
               : { status: "none" as const },
         };
@@ -584,7 +655,10 @@ export function buildRequest(
         complainantBranchPoliceStation: r.raw("payeePolice", firstCheque),
         drawerBranchPoliceStation: r.raw("drawerPolice", firstCheque),
         otherPending,
-        otherPendingCases: used("otherCase").map((i) => ({ court: r.raw("otherCourt", i), caseNumber: r.raw("otherNumber", i) })),
+        otherPendingCases: used("otherCase").map((i) => ({
+          court: r.raw("otherCourt", i),
+          caseNumber: r.raw("otherNumber", i),
+        })),
       },
       witnesses: used("witness").map((i) => ({
         name: r.raw("witnessName", i),
@@ -593,7 +667,11 @@ export function buildRequest(
         prove: r.raw("witnessProve", i),
         mobile: r.raw("witnessMobile", i),
         email: r.raw("witnessEmail", i),
-        address: { line1: r.raw("witnessAddress", i), city: r.raw("witnessCity", i), pin: r.raw("witnessPin", i) },
+        address: {
+          line1: r.raw("witnessAddress", i),
+          city: r.raw("witnessCity", i),
+          pin: r.raw("witnessPin", i),
+        },
       })),
       condonationReason: r.raw("condonation", one),
       otherDetails: r.raw("otherDetails", one),
@@ -635,9 +713,12 @@ export function columnFit(column: Column, values: string[]): ColumnFit {
       : { ok: false, note: `${bad} of ${filled.length} values are not ${what}` };
   };
   const digits = (v: string) => v.replace(/^\+?91[\s-]?/, "").replace(/\D/g, "");
-  if (/Pin$/.test(column.key)) return test((v) => /^\d{6}$/.test(v.replace(/\s/g, "")), "6-digit pincodes");
-  if (/Ifsc$/.test(column.key)) return test((v) => /^[A-Z]{4}0[A-Z0-9]{6}$/i.test(v.trim()), "IFSC codes");
-  if (/Email$/.test(column.key)) return test((v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "email addresses");
+  if (/Pin$/.test(column.key))
+    return test((v) => /^\d{6}$/.test(v.replace(/\s/g, "")), "6-digit pincodes");
+  if (/Ifsc$/.test(column.key))
+    return test((v) => /^[A-Z]{4}0[A-Z0-9]{6}$/i.test(v.trim()), "IFSC codes");
+  if (/Email$/.test(column.key))
+    return test((v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "email addresses");
   switch (column.kind) {
     case "date":
       return test((v) => /^\d{4}-\d{2}-\d{2}$/.test(sheetDate(v)), "dates");
@@ -648,7 +729,12 @@ export function columnFit(column: Column, values: string[]): ColumnFit {
     case "list": {
       if (!column.list) return { ok: true };
       const unknown = new Set(filled.filter((v) => listValue(column.list!, v) === null));
-      return unknown.size ? { ok: false, note: `${unknown.size} word${unknown.size === 1 ? "" : "s"} to match on the next step` } : { ok: true };
+      return unknown.size
+        ? {
+            ok: false,
+            note: `${unknown.size} word${unknown.size === 1 ? "" : "s"} to match on the next step`,
+          }
+        : { ok: true };
     }
     default:
       return { ok: true };

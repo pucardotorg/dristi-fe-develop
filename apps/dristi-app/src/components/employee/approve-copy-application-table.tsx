@@ -20,11 +20,7 @@ import {
   formatCopyApplicationDate,
   type CopyApplication,
 } from "@/lib/employee/approve-copy-application";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useTranslations } from "next-intl";
@@ -98,9 +94,7 @@ export function ApproveCopyApplicationTable({
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "w-12")}>
             <Checkbox
-              checked={
-                allSelected ? true : someSelected ? "indeterminate" : false
-              }
+              checked={allSelected ? true : someSelected ? "indeterminate" : false}
               /* Names what the control does to what is on screen, not to the whole
                  queue — the header checkbox reaches this page of rows only, and a label
                  that said "all applications" would be a promise the control does not keep
@@ -150,7 +144,10 @@ export function ApproveCopyApplicationTable({
                 <Checkbox
                   checked={selected}
                   onCheckedChange={() => onToggle(application)}
-                  aria-label={t("approveCopyApplicationTable_selectApplicationNumberName", { applicationNumber: application.applicationNumber, name: application.applicant.name })}
+                  aria-label={t("approveCopyApplicationTable_selectApplicationNumberName", {
+                    applicationNumber: application.applicationNumber,
+                    name: application.applicant.name,
+                  })}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -159,31 +156,32 @@ export function ApproveCopyApplicationTable({
                   teal numbers down a column is not what ui-craft §4 spends it on. The
                   underline now arrives on the *row's* hover, wherever the pointer sits,
                   and on this control's own focus — see `rowOpenerClass`. */}
-              <TableCell
-                className={cn(TABLE_CELL, "font-medium whitespace-nowrap")}
-              >
+              <TableCell className={cn(TABLE_CELL, "font-medium whitespace-nowrap")}>
                 <button
                   type="button"
                   onClick={() => onOpen(application)}
                   {...rowOpener}
-                className={rowOpenerClass}
+                  className={rowOpenerClass}
                 >
                   <span className="sr-only">{t("approveCopyApplicationTable_review")} </span>
                   {/* The number is the row's opener — the face without a second control. */}
-                  <Identifier value={application.applicationNumber} label={t("approveCopyApplicationTable_applicationNumberLabel")} copyable={false} />
+                  <Identifier
+                    value={application.applicationNumber}
+                    label={t("approveCopyApplicationTable_applicationNumberLabel")}
+                    copyable={false}
+                  />
                 </button>
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "whitespace-nowrap")}
-              >
-                <Identifier value={application.caseNumber} label={t("approveCopyApplicationTable_caseNumberLabel")} />
+              <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
+                <Identifier
+                  value={application.caseNumber}
+                  label={t("approveCopyApplicationTable_caseNumberLabel")}
+                />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
                 {application.applicant.name}
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}
-              >
+              <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>
                 {formatCopyApplicationDate(application.raisedOn)}
               </TableCell>
               {/* Plain text, not a chip. It is a sentence, not a state, and thirty tinted

@@ -117,7 +117,7 @@ export function useCorrectionInstance(): number {
  */
 export function useCorrectionInstanceRequest(
   step: StepId,
-  select: (instance: number) => void
+  select: (instance: number) => void,
 ): void {
   const correction = useCorrection();
   const request = correction?.instanceRequest ?? null;

@@ -21,20 +21,12 @@ import {
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError } from "@/components/ui/field";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
-import {
-  signFormProcessLabel,
-  type SignForm,
-} from "@/lib/employee/sign-forms";
+import { signFormProcessLabel, type SignForm } from "@/lib/employee/sign-forms";
 import { useTranslations } from "next-intl";
 
-const ACCEPTED_FILE_TYPES =
-  ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
+const ACCEPTED_FILE_TYPES = ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
 
 /** Aadhaar e-Sign sends six digits. The same length the rest of the app asks for. */
 const OTP_LENGTH = 6;
@@ -71,9 +63,7 @@ export function useSignatureChoice(noun = "form") {
   const t = useTranslations();
   const [method, setMethod] = React.useState<SignatureMethod | "">("");
   const [file, setFile] = React.useState<File | null>(null);
-  const [fileError, setFileError] = React.useState<string | undefined>(
-    undefined,
-  );
+  const [fileError, setFileError] = React.useState<string | undefined>(undefined);
   const [otp, setOtp] = React.useState("");
 
   function choose(next: SignatureMethod) {
@@ -115,8 +105,7 @@ export function useSignatureChoice(noun = "form") {
      picking the method is choosing a route, not completing it. An enabled Submit that
      then does nothing is worse than a disabled one whose reason is on screen above it. */
   const canSubmit =
-    (method === "e-sign" && otp.length === OTP_LENGTH) ||
-    (method === "upload" && file !== null);
+    (method === "e-sign" && otp.length === OTP_LENGTH) || (method === "upload" && file !== null);
 
   /* Something a close would throw away: digits of the code, or the signed copy. Choosing
      the method alone is the route, not yet an entry. */
@@ -260,9 +249,7 @@ export function SignatureFields({
         </div>
       ) : null}
 
-      {choice.method === "upload" ? (
-        <SignedCopyUpload choice={choice} noun={noun} />
-      ) : null}
+      {choice.method === "upload" ? <SignedCopyUpload choice={choice} noun={noun} /> : null}
 
       {/* The document is off screen on this step, so the reference offers it here. A
           link rather than a button: reading is not a third act competing with Back and
@@ -308,11 +295,7 @@ export function SignedCopyUpload({
         <p className="text-body text-muted-foreground">
           {t("signSignatureFields_dragAndDropTheSignedNoun", { noun })}
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => inputRef.current?.click()}
-        >
+        <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
           {t("signSignatureFields_browseFiles")}
         </Button>
         <input
@@ -331,9 +314,7 @@ export function SignedCopyUpload({
       <FieldDescription className="text-body-compact">
         {t("signSignatureFields_pdfJpgJpegOrPngMaximum")}
       </FieldDescription>
-      <FieldError className="text-body-compact">
-        {choice.fileError}
-      </FieldError>
+      <FieldError className="text-body-compact">{choice.fileError}</FieldError>
 
       {choice.file ? (
         <AttachmentGroup className="flex-col overflow-visible py-0 *:data-[slot=attachment]:w-full">
@@ -344,7 +325,9 @@ export function SignedCopyUpload({
             <AttachmentContent>
               <AttachmentTitle>{choice.file.name}</AttachmentTitle>
               <AttachmentDescription>
-                {t("signSignatureFields_formatFileSizeSelectedLocally", { formatFileSize: formatFileSize(choice.file.size) })}
+                {t("signSignatureFields_formatFileSizeSelectedLocally", {
+                  formatFileSize: formatFileSize(choice.file.size),
+                })}
               </AttachmentDescription>
             </AttachmentContent>
             <AttachmentActions>

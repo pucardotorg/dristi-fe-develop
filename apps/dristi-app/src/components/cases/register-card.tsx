@@ -4,11 +4,7 @@ import * as React from "react";
 import { ChevronDownIcon } from "lucide-react";
 
 import { COLLAPSE_MOTION } from "@/components/cases/motion";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PANEL_CLASS } from "@/components/shell/panel";
 import { cn } from "@/lib/utils";
 
@@ -65,7 +61,7 @@ export function RegisterTrayCard({
           PANEL_CLASS,
           "relative z-10 flex flex-col gap-3 rounded-xl border bg-card p-4 text-left transition-colors has-[[data-tray-title]:active]:bg-accent has-[[data-tray-title]:focus-visible]:border-ring has-[[data-tray-title]:focus-visible]:ring-3 has-[[data-tray-title]:focus-visible]:ring-focus-ring",
           (open || marked) && "border-border",
-          className
+          className,
         )}
       >
         <div className="flex items-start gap-3">
@@ -87,7 +83,7 @@ export function RegisterTrayCard({
             aria-hidden
             className={cn(
               "mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-              open && "rotate-180"
+              open && "rotate-180",
             )}
           />
         </div>
@@ -95,9 +91,7 @@ export function RegisterTrayCard({
       </div>
       <CollapsibleContent className={cn(COLLAPSE_MOTION, "mx-3")}>
         {tray ? (
-          <div className="flex flex-col gap-2 rounded-b-xl bg-secondary p-3">
-            {tray}
-          </div>
+          <div className="flex flex-col gap-2 rounded-b-xl bg-secondary p-3">{tray}</div>
         ) : (
           <div className="flex items-center gap-2 rounded-b-xl bg-secondary p-3 [&>*]:flex-1">
             {actions}

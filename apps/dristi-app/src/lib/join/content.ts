@@ -131,18 +131,9 @@ export const home = {
     "join_prototypeDestinationNotConnected",
     "പ്രോട്ടോടൈപ്പ്: ലക്ഷ്യസ്ഥാനം ബന്ധിപ്പിച്ചിട്ടില്ല",
   ),
-  prototypeFile: t(
-    "join_thisActionWillOpenTheE",
-    "ഈ പ്രവർത്തനം ഇ-ഫയലിംഗ് ഫ്ലോ തുറക്കും.",
-  ),
-  prototypeCase: t(
-    "join_thisActionWillOpenTheCase",
-    "ഈ പ്രവർത്തനം കേസ് ഫയൽ തുറക്കും.",
-  ),
-  prototypeId: t(
-    "join_thisActionWillOpenTheId",
-    "ഈ പ്രവർത്തനം പ്രൊഫൈലിലെ ID അപ്‌ലോഡ് തുറക്കും.",
-  ),
+  prototypeFile: t("join_thisActionWillOpenTheE", "ഈ പ്രവർത്തനം ഇ-ഫയലിംഗ് ഫ്ലോ തുറക്കും."),
+  prototypeCase: t("join_thisActionWillOpenTheCase", "ഈ പ്രവർത്തനം കേസ് ഫയൽ തുറക്കും."),
+  prototypeId: t("join_thisActionWillOpenTheId", "ഈ പ്രവർത്തനം പ്രൊഫൈലിലെ ID അപ്‌ലോഡ് തുറക്കും."),
   prototypeProfile: t(
     "join_profileEditingWillOpenHereComplete",
     "പ്രൊഫൈൽ തിരുത്തൽ ഇവിടെ തുറക്കും. ഈ ഓർമ്മപ്പെടുത്തൽ നീക്കാൻ വിലാസം പൂർത്തിയാക്കുക.",
@@ -152,10 +143,7 @@ export const home = {
 /* ------------------------------------------------------------ summons auto-modal */
 
 export const summonsModal = {
-  heading: t(
-    "join_reviewThisChequeBounceCase",
-    "ഈ ചെക്ക് മടക്ക കേസ് പരിശോധിക്കുക",
-  ),
+  heading: t("join_reviewThisChequeBounceCase", "ഈ ചെക്ക് മടക്ക കേസ് പരിശോധിക്കുക"),
   body: t(
     "join_yourNameAppearsInThisCase",
     "ഈ കേസിൽ നിങ്ങളുടെ പേര് ഉണ്ട്. വിവരങ്ങൾ പരിശോധിച്ച്, പരാതി വായിക്കാനും ഓൺലൈനായി മറുപടി നൽകാനും കേസിൽ ചേരുക.",
@@ -170,10 +158,7 @@ export const joinDialog = {
   /* Closing partway through asks first (owner, 2026-10-13). Malayalam drafted. */
   /* The product's one discard question (`DiscardQuestion`), in this window's chrome. */
   leaveTitle: t("join_doYouWantToDiscardYour", "ഇതുവരെ നൽകിയത് ഉപേക്ഷിക്കണോ?"),
-  leaveBody: t(
-    "join_whatYouveEnteredHereWillNot",
-    "ഇതുവരെ നൽകിയ വിവരങ്ങൾ സൂക്ഷിക്കില്ല.",
-  ),
+  leaveBody: t("join_whatYouveEnteredHereWillNot", "ഇതുവരെ നൽകിയ വിവരങ്ങൾ സൂക്ഷിക്കില്ല."),
   leaveStay: t("join_keepEditing", "തിരുത്തൽ തുടരുക"),
   leaveGo: t("join_discard", "ഉപേക്ഷിക്കുക"),
   title: t("join_joinYourCase", "നിങ്ങളുടെ കേസിൽ ചേരുക"),
@@ -185,10 +170,7 @@ export const joinDialog = {
   ),
   lookupLabel: t("join_caseNumberOrFilingNumber", "കേസ് നമ്പർ അല്ലെങ്കിൽ ഫയലിംഗ് നമ്പർ"),
   lookupPlaceholder: t("join_forExampleCc8472026", "ഉദാഹരണം: CC 847/2026"),
-  lookupError: t(
-    "join_enterTheNumberAsItAppears",
-    "രേഖകളിൽ കാണുന്നതുപോലെ നമ്പർ നൽകുക.",
-  ),
+  lookupError: t("join_enterTheNumberAsItAppears", "രേഖകളിൽ കാണുന്നതുപോലെ നമ്പർ നൽകുക."),
   lookupMiss: t(
     "join_noCaseMatchesThisNumberCheck",
     "ഈ നമ്പറിന് ചേരുന്ന കേസ് കണ്ടെത്തിയില്ല. സമൻസ് പരിശോധിക്കുക; കേസ് ഇനിയും സിസ്റ്റത്തിൽ എത്തിയിട്ടില്ലായിരിക്കാം.",
@@ -196,10 +178,7 @@ export const joinDialog = {
   search: t("join_findCase", "കേസ് കണ്ടെത്തുക"),
 
   /* access code — manual entry only; everyone joining needs it (JOIN-13) */
-  codeBody: t(
-    "join_enterTheSixDigitCodeFor",
-    "ഈ കേസിന്റെ ആറക്ക കോഡ് നൽകുക.",
-  ),
+  codeBody: t("join_enterTheSixDigitCodeFor", "ഈ കേസിന്റെ ആറക്ക കോഡ് നൽകുക."),
   codeLabel: t("join_accessCode", "ആക്‌സസ് കോഡ്"),
   codeCaseLead: t("join_youAreJoining", "നിങ്ങൾ ചേരുന്ന കേസ്"),
   /* Arriving from the summons QR or link (owner, 2026-10-14): the case is known, the
@@ -231,25 +210,16 @@ export const joinDialog = {
   codeVerify: t("join_verifyAccessCode", "ആക്‌സസ് കോഡ് പരിശോധിക്കുക"),
 
   /* details */
-  detailsBody: t(
-    "join_checkThatThisIsYourCase",
-    "തുടരുന്നതിന് മുൻപ് ഇത് നിങ്ങളുടെ കേസാണെന്ന് ഉറപ്പാക്കുക.",
-  ),
+  detailsBody: t("join_checkThatThisIsYourCase", "തുടരുന്നതിന് മുൻപ് ഇത് നിങ്ങളുടെ കേസാണെന്ന് ഉറപ്പാക്കുക."),
   acknowledgeNote: t(
     "join_byJoiningThisCaseYouConfirm",
     "ഈ കേസിൽ ചേരുന്നതിലൂടെ സമൻസ് നിങ്ങൾക്ക് ലഭിച്ചു എന്ന് സ്ഥിരീകരിക്കുന്നു.",
   ),
   downloadCaseFile: t("join_downloadCaseFile", "കേസ് ഫയൽ ഡൗൺലോഡ് ചെയ്യുക"),
-  downloadCaseFilePrototype: t(
-    "join_theCaseFileWillDownloadHere",
-    "കേസ് ഫയൽ ഇവിടെ ഡൗൺലോഡ് ചെയ്യും.",
-  ),
+  downloadCaseFilePrototype: t("join_theCaseFileWillDownloadHere", "കേസ് ഫയൽ ഇവിടെ ഡൗൺലോഡ് ചെയ്യും."),
 
   /* identity */
-  identityBody: t(
-    "join_tellUsWhoYouAreAnd",
-    "നിങ്ങൾ ആരാണെന്നും കേസിൽ എങ്ങനെ ചേരുമെന്നും ഞങ്ങളോട് പറയുക.",
-  ),
+  identityBody: t("join_tellUsWhoYouAreAnd", "നിങ്ങൾ ആരാണെന്നും കേസിൽ എങ്ങനെ ചേരുമെന്നും ഞങ്ങളോട് പറയുക."),
   whoLegend: t("join_whoAreYouJoiningAs", "നിങ്ങൾ ആരായാണ് ചേരുന്നത്?"),
   whoSelf: t("join_iAmTheAccused", "ഞാൻ തന്നെയാണ് പ്രതി"),
   accusedExplainTitle: t("join_whatDoesAccusedMean", "പ്രതി എന്നാൽ എന്ത്?"),
@@ -257,14 +227,8 @@ export const joinDialog = {
     "join_theAccusedIsThePersonOr",
     "കേസിന് മറുപടി നൽകേണ്ട വ്യക്തിയോ സ്ഥാപനമോ ആയി പരാതിയിൽ പേരുള്ള ആളാണ് പ്രതി. കോടതി കുറ്റക്കാരനായി കണ്ടെത്തി എന്നല്ല ഇതിന്റെ അർത്ഥം.",
   ),
-  whoPoa: t(
-    "join_iAmAPowerOfAttorney",
-    "ഞാൻ ഒരു പവർ ഓഫ് അറ്റോർണി ഉടമയാണ്",
-  ),
-  poaExplainTitle: t(
-    "join_whatIsAPowerOfAttorney",
-    "പവർ ഓഫ് അറ്റോർണി എന്നാൽ എന്ത്?",
-  ),
+  whoPoa: t("join_iAmAPowerOfAttorney", "ഞാൻ ഒരു പവർ ഓഫ് അറ്റോർണി ഉടമയാണ്"),
+  poaExplainTitle: t("join_whatIsAPowerOfAttorney", "പവർ ഓഫ് അറ്റോർണി എന്നാൽ എന്ത്?"),
   poaExplainBody: t(
     "join_aWrittenAuthorisationThatLetsYou",
     "പരാതിക്കാരന് വേണ്ടിയോ പ്രതിക്ക് വേണ്ടിയോ ഈ കേസിൽ പ്രവർത്തിക്കാൻ അനുവദിക്കുന്ന രേഖാമൂലമുള്ള അധികാരപത്രം. ഉദാഹരണത്തിന് വിദേശത്തുള്ള മാതാപിതാവിനോ അസുഖമുള്ള ബന്ധുവിനോ വേണ്ടി. ആ വ്യക്തിക്ക് എപ്പോൾ വേണമെങ്കിലും ഇത് റദ്ദാക്കാം.",
@@ -277,10 +241,7 @@ export const joinDialog = {
   poaSideComplainant: t("join_complainant", "പരാതിക്കാരൻ"),
   poaSideAccused: t("join_accused", "പ്രതി"),
   poaSideError: t("join_chooseASide", "ഒരു ഭാഗം തിരഞ്ഞെടുക്കുക."),
-  whichPoaLabel: t(
-    "join_whoDoYouHoldPowerOf",
-    "ആർക്ക് വേണ്ടിയാണ് നിങ്ങൾക്ക് പവർ ഓഫ് അറ്റോർണി ഉള്ളത്?",
-  ),
+  whichPoaLabel: t("join_whoDoYouHoldPowerOf", "ആർക്ക് വേണ്ടിയാണ് നിങ്ങൾക്ക് പവർ ഓഫ് അറ്റോർണി ഉള്ളത്?"),
   whichPoaHint: t(
     "join_chooseEveryoneYouHoldPowerOf",
     "ഈ കേസിൽ നിങ്ങൾക്ക് പവർ ഓഫ് അറ്റോർണി ഉള്ള എല്ലാവരെയും തിരഞ്ഞെടുക്കുക.",
@@ -302,17 +263,11 @@ export const joinDialog = {
     "join_anotherPowerOfAttorneyHolderIs",
     "{name}-ന് വേണ്ടി മറ്റൊരു പവർ ഓഫ് അറ്റോർണി ഉടമ ഇതിനകം ഈ കേസ് കൈകാര്യം ചെയ്യുന്നു. ഒരു സമയം ഒരു പവർ ഓഫ് അറ്റോർണി ഉടമയ്ക്ക് മാത്രമേ പ്രവർത്തിക്കാനാകൂ — ഇത് മാറ്റണമെങ്കിൽ 0000 000000 എന്ന നമ്പറിൽ കോടതിയെ വിളിക്കുക.",
   ),
-  appearLegend: t(
-    "join_howWillYouAppearInCourt",
-    "കോടതിയിൽ എങ്ങനെ ഹാജരാകും?",
-  ),
+  appearLegend: t("join_howWillYouAppearInCourt", "കോടതിയിൽ എങ്ങനെ ഹാജരാകും?"),
   /* "Find a lawyer", pointing to free legal aid at the District Legal Services
      Authority (owner, 2026-10-14). Malayalam drafted — needs review. */
   appearHire: t("join_findALawyer", "അഭിഭാഷകനെ കണ്ടെത്തുക"),
-  appearHireHint: t(
-    "join_youCanJoinNowAndAdd",
-    "ഇപ്പോൾ ചേരുകയും പിന്നീട് അഭിഭാഷകനെ ചേർക്കുകയും ചെയ്യാം.",
-  ),
+  appearHireHint: t("join_youCanJoinNowAndAdd", "ഇപ്പോൾ ചേരുകയും പിന്നീട് അഭിഭാഷകനെ ചേർക്കുകയും ചെയ്യാം."),
   findAdvocate: t("join_aboutFreeLegalAid", "സൗജന്യ നിയമസഹായത്തെക്കുറിച്ച്"),
   findAdvocateHelp: t(
     "join_theDistrictLegalServicesAuthorityGives",
@@ -334,10 +289,7 @@ export const joinDialog = {
     "join_yourAdvocateCanJoinTheCase",
     "നിങ്ങളുടെ അഭിഭാഷകന് പ്രത്യേകം കേസിൽ ചേരാം. നിങ്ങൾക്ക് ഇപ്പോൾ ആക്‌സസ് ലഭിക്കും.",
   ),
-  appearSelf: t(
-    "join_iWillRepresentMyselfPartyIn",
-    "ഞാൻ സ്വയം ഹാജരാകും (പാർട്ടി ഇൻ പേഴ്‌സൺ)",
-  ),
+  appearSelf: t("join_iWillRepresentMyselfPartyIn", "ഞാൻ സ്വയം ഹാജരാകും (പാർട്ടി ഇൻ പേഴ്‌സൺ)"),
   appearSelfHint: t(
     "join_calledAppearingAsAPartyIn",
     "പാർട്ടി ഇൻ പേഴ്‌സൺ എന്നാണ് ഇതിന് പേര്. ഒരു സത്യവാങ്മൂലം അപ്‌ലോഡ് ചെയ്താൽ ഉടൻ ആക്‌സസ് ലഭിക്കും.",
@@ -351,14 +303,8 @@ export const joinDialog = {
     "join_uploadYourSignedAffidavitAsA",
     "ഒപ്പിട്ട സത്യവാങ്മൂലം JPG, JPEG, PNG അല്ലെങ്കിൽ PDF ആയി അപ്‌ലോഡ് ചെയ്യുക.",
   ),
-  pipDocError: t(
-    "join_uploadTheAffidavitBeforeContinuing",
-    "തുടരുന്നതിന് മുമ്പ് സത്യവാങ്മൂലം അപ്‌ലോഡ് ചെയ്യുക.",
-  ),
-  appearError: t(
-    "join_chooseHowYouWillAppearIn",
-    "കോടതിയിൽ എങ്ങനെ ഹാജരാകുമെന്ന് തിരഞ്ഞെടുക്കുക.",
-  ),
+  pipDocError: t("join_uploadTheAffidavitBeforeContinuing", "തുടരുന്നതിന് മുമ്പ് സത്യവാങ്മൂലം അപ്‌ലോഡ് ചെയ്യുക."),
+  appearError: t("join_chooseHowYouWillAppearIn", "കോടതിയിൽ എങ്ങനെ ഹാജരാകുമെന്ന് തിരഞ്ഞെടുക്കുക."),
   poaDocLabel: t("join_authorizationDocument", "അധികാര രേഖ"),
   /* Each party's fields carry its name, in place of a heading over them that read past
      (owner, 2026-10-14). Malayalam drafted — needs review. */
@@ -372,18 +318,9 @@ export const joinDialog = {
     "join_alreadyOnTheCaseThisIs",
     "ഇതിനകം കേസിലുണ്ട്. ഇത് അവരുടെ അക്കൗണ്ടിലെ നമ്പറാണ്.",
   ),
-  poaPartyHeading: t(
-    "join_forName",
-    "{name}-ന് വേണ്ടി",
-  ),
-  poaDocHelp: t(
-    "join_uploadAJpgJpegPngOr",
-    "JPG, JPEG, PNG അല്ലെങ്കിൽ PDF അപ്‌ലോഡ് ചെയ്യുക.",
-  ),
-  poaDocTooltipLabel: t(
-    "join_aboutTheAuthorizationDocument",
-    "അധികാര രേഖയെക്കുറിച്ച്",
-  ),
+  poaPartyHeading: t("join_forName", "{name}-ന് വേണ്ടി"),
+  poaDocHelp: t("join_uploadAJpgJpegPngOr", "JPG, JPEG, PNG അല്ലെങ്കിൽ PDF അപ്‌ലോഡ് ചെയ്യുക."),
+  poaDocTooltipLabel: t("join_aboutTheAuthorizationDocument", "അധികാര രേഖയെക്കുറിച്ച്"),
   poaDocTooltip: t(
     "join_uploadAnAffidavitSignedByThe",
     "നിങ്ങളെ അവർക്ക് വേണ്ടി പ്രവർത്തിക്കാൻ അധികാരപ്പെടുത്തുന്ന വ്യക്തി ഒപ്പിട്ട സത്യവാങ്മൂലം അപ്‌ലോഡ് ചെയ്യുക.",
@@ -402,14 +339,8 @@ export const joinDialog = {
     "join_wellTextThisNumberTheCase",
     "ഈ നമ്പറിലേക്ക് SMS അയക്കും. അവർ സൈൻ ഇൻ ചെയ്ത് അത് അവരാണെന്ന് സ്ഥിരീകരിച്ചാൽ കേസ് അവരുടെ അക്കൗണ്ടുമായി ബന്ധിപ്പിക്കും.",
   ),
-  poaPhoneOnRecord: t(
-    "join_alreadyOnTheCaseNoNumber",
-    "ഇതിനകം കേസിലുണ്ട് — നമ്പർ ആവശ്യമില്ല.",
-  ),
-  poaAccusedPhoneError: t(
-    "join_enterA10DigitMobileNumber",
-    "10 അക്ക മൊബൈൽ നമ്പർ നൽകുക.",
-  ),
+  poaPhoneOnRecord: t("join_alreadyOnTheCaseNoNumber", "ഇതിനകം കേസിലുണ്ട് — നമ്പർ ആവശ്യമില്ല."),
+  poaAccusedPhoneError: t("join_enterA10DigitMobileNumber", "10 അക്ക മൊബൈൽ നമ്പർ നൽകുക."),
   joinSubmit: t("join_joinThisCase", "ഈ കേസിൽ ചേരുക"),
 
   /* outcomes */
@@ -424,10 +355,7 @@ export const joinDialog = {
   ),
   /* The settled band on the joined case (Oct 6). Malayalam drafted — needs review. */
   joinedBand: t("join_joinedAsName", "{name} ആയി ചേർന്നു"),
-  poaJoinedBand: t(
-    "join_joinedAsPowerOfAttorneyHolder",
-    "{name}-ന്റെ പവർ ഓഫ് അറ്റോർണി ഉടമയായി ചേർന്നു",
-  ),
+  poaJoinedBand: t("join_joinedAsPowerOfAttorneyHolder", "{name}-ന്റെ പവർ ഓഫ് അറ്റോർണി ഉടമയായി ചേർന്നു"),
   smsSentNote: t(
     "join_weveTextedNumbersTheCaseIs",
     "{numbers} എന്ന നമ്പറുകളിലേക്ക് SMS അയച്ചു. ഓരോരുത്തരും സൈൻ ഇൻ ചെയ്ത് സ്ഥിരീകരിച്ചാൽ കേസ് അവരുടെ അക്കൗണ്ടുമായി ബന്ധിപ്പിക്കും.",
@@ -461,10 +389,7 @@ export const shell = {
   expand: t("join_expand", "വികസിപ്പിക്കുക"),
   role: t("join_litigant", "കക്ഷി"),
   profileIncomplete: t("join_completeYourProfile", "പ്രൊഫൈൽ പൂർത്തിയാക്കുക"),
-  profileIncompleteLabel: t(
-    "join_profileIncomplete",
-    "പ്രൊഫൈൽ പൂർത്തിയായിട്ടില്ല",
-  ),
+  profileIncompleteLabel: t("join_profileIncomplete", "പ്രൊഫൈൽ പൂർത്തിയായിട്ടില്ല"),
   notifications: t("join_notifications", "അറിയിപ്പുകൾ"),
   noNotifications: t(
     "join_nothingYetUpdatesAboutYourCase",
@@ -472,17 +397,11 @@ export const shell = {
   ),
   justNow: t("join_justNow", "ഇപ്പോൾ"),
   clearAllNotifications: t("join_clearAll", "എല്ലാം മായ്ക്കുക"),
-  prototypeNav: t(
-    "join_thisSectionWillOpenHere",
-    "ഈ ഭാഗം ഇവിടെ തുറക്കും.",
-  ),
+  prototypeNav: t("join_thisSectionWillOpenHere", "ഈ ഭാഗം ഇവിടെ തുറക്കും."),
 } as const;
 
 export const profileCompletion = {
-  notificationTitle: t(
-    "join_completeYourProfile",
-    "പ്രൊഫൈൽ പൂർത്തിയാക്കുക",
-  ),
+  notificationTitle: t("join_completeYourProfile", "പ്രൊഫൈൽ പൂർത്തിയാക്കുക"),
   notificationBody: t(
     "join_addYourAddressAndOfficialId",
     "പ്രൊഫൈലിൽ നിന്ന് വിലാസവും ഔദ്യോഗിക IDയും ചേർക്കുക.",
@@ -500,10 +419,7 @@ export const idUpload = {
     "join_checkTheUploadedIdBeforeSubmitting",
     "സമർപ്പിക്കുന്നതിന് മുമ്പ് അപ്‌ലോഡ് ചെയ്ത ID പരിശോധിക്കുക.",
   ),
-  previewAlt: t(
-    "join_previewOfTheUploadedOfficialId",
-    "അപ്‌ലോഡ് ചെയ്ത ഔദ്യോഗിക IDയുടെ പ്രിവ്യൂ",
-  ),
+  previewAlt: t("join_previewOfTheUploadedOfficialId", "അപ്‌ലോഡ് ചെയ്ത ഔദ്യോഗിക IDയുടെ പ്രിവ്യൂ"),
   body: t(
     "join_uploadOneClearCopyOfAn",
     "നിങ്ങളുടെ പ്രൊഫൈലിൽ ചേർക്കാൻ ഒരു ഔദ്യോഗിക IDയുടെ വ്യക്തമായ പകർപ്പ് അപ്‌ലോഡ് ചെയ്യുക.",
@@ -519,14 +435,8 @@ export const idUpload = {
     other: t("join_other", "മറ്റുള്ളവ"),
   },
   uploadLabel: t("join_officialId", "ഔദ്യോഗിക ID"),
-  fileHelp: t(
-    "join_jpgJpegPngOrPdfUp",
-    "JPG, JPEG, PNG അല്ലെങ്കിൽ PDF · പരമാവധി 10 MB",
-  ),
-  chooseTypeFirst: t(
-    "join_chooseTheTypeOfIdBefore",
-    "ഫയൽ അപ്‌ലോഡ് ചെയ്യുന്നതിന് മുമ്പ് ID തരം തിരഞ്ഞെടുക്കുക.",
-  ),
+  fileHelp: t("join_jpgJpegPngOrPdfUp", "JPG, JPEG, PNG അല്ലെങ്കിൽ PDF · പരമാവധി 10 MB"),
+  chooseTypeFirst: t("join_chooseTheTypeOfIdBefore", "ഫയൽ അപ്‌ലോഡ് ചെയ്യുന്നതിന് മുമ്പ് ID തരം തിരഞ്ഞെടുക്കുക."),
   choose: t("join_chooseFile", "ഫയൽ തിരഞ്ഞെടുക്കുക"),
   change: t("join_changeFile", "ഫയൽ മാറ്റുക"),
   processing: t("join_checkingTheScan", "സ്കാൻ പരിശോധിക്കുന്നു…"),
@@ -540,22 +450,13 @@ export const idUpload = {
     "join_chooseAJpgJpegPngOr",
     "10 MB-ൽ കുറഞ്ഞ JPG, JPEG, PNG അല്ലെങ്കിൽ PDF ഫയൽ തിരഞ്ഞെടുക്കുക.",
   ),
-  missing: t(
-    "join_chooseTheTypeOfIdAnd",
-    "ID തരം തിരഞ്ഞെടുത്ത് വ്യക്തമായ ഫയൽ അപ്‌ലോഡ് ചെയ്യുക.",
-  ),
+  missing: t("join_chooseTheTypeOfIdAnd", "ID തരം തിരഞ്ഞെടുത്ത് വ്യക്തമായ ഫയൽ അപ്‌ലോഡ് ചെയ്യുക."),
   submit: t("join_submitId", "ID സമർപ്പിക്കുക"),
   submittedTitle: t("join_idSubmitted", "ID സമർപ്പിച്ചു"),
-  submittedBody: t(
-    "join_yourOfficialIdHasBeenAdded",
-    "നിങ്ങളുടെ ഔദ്യോഗിക ID പ്രൊഫൈലിൽ ചേർത്തു.",
-  ),
+  submittedBody: t("join_yourOfficialIdHasBeenAdded", "നിങ്ങളുടെ ഔദ്യോഗിക ID പ്രൊഫൈലിൽ ചേർത്തു."),
   done: t("join_done", "ശരി"),
   notifSubmittedTitle: t("join_idSubmitted", "ID സമർപ്പിച്ചു"),
-  notifSubmittedBody: t(
-    "join_yourOfficialIdHasBeenAdded",
-    "നിങ്ങളുടെ ഔദ്യോഗിക ID പ്രൊഫൈലിൽ ചേർത്തു.",
-  ),
+  notifSubmittedBody: t("join_yourOfficialIdHasBeenAdded", "നിങ്ങളുടെ ഔദ്യോഗിക ID പ്രൊഫൈലിൽ ചേർത്തു."),
 } as const;
 
 /* ------------------------------------------------------------------ case details */
@@ -574,8 +475,14 @@ export const caseDetails = {
   chequeAmount: t("join_amountClaimed", "ആവശ്യപ്പെടുന്ന തുക"),
   complainant: t("join_complainant", "പരാതിക്കാരൻ"),
   complainantAdvocate: t("join_complainantsAdvocate", "പരാതിക്കാരന്റെ അഭിഭാഷകൻ"),
-  complainantAdvocateContact: t("join_contactTheComplainantsAdvocate", "പരാതിക്കാരന്റെ അഭിഭാഷകനെ ബന്ധപ്പെടുക"),
-  complainantAdvocateContactBody: t("join_youCanContactTheComplainantsAdvocate", "പണമടയ്ക്കലോ ഒത്തുതീർപ്പോ ചർച്ച ചെയ്യാൻ പരാതിക്കാരന്റെ അഭിഭാഷകനെ ബന്ധപ്പെടാം."),
+  complainantAdvocateContact: t(
+    "join_contactTheComplainantsAdvocate",
+    "പരാതിക്കാരന്റെ അഭിഭാഷകനെ ബന്ധപ്പെടുക",
+  ),
+  complainantAdvocateContactBody: t(
+    "join_youCanContactTheComplainantsAdvocate",
+    "പണമടയ്ക്കലോ ഒത്തുതീർപ്പോ ചർച്ച ചെയ്യാൻ പരാതിക്കാരന്റെ അഭിഭാഷകനെ ബന്ധപ്പെടാം.",
+  ),
   callAdvocate: t("join_callAdvocate", "അഭിഭാഷകനെ വിളിക്കുക"),
   accusedAdvocate: t("join_accusedsAdvocate", "പ്രതിയുടെ അഭിഭാഷകൻ"),
   accusedParties: t("join_accused", "പ്രതികൾ"),

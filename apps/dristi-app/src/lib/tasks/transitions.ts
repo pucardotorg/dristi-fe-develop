@@ -77,7 +77,7 @@ function assertState(task: Task, from: TaskStatus[], what: string): void {
   if (!from.includes(task.status)) {
     throw new TransitionError(
       "illegal-state",
-      `Cannot ${what} a task that is ${task.status} (needs ${from.join(" or ")}).`
+      `Cannot ${what} a task that is ${task.status} (needs ${from.join(" or ")}).`,
     );
   }
 }
@@ -86,7 +86,12 @@ function assertAllowed(ok: boolean, what: string): void {
   if (!ok) throw new TransitionError("forbidden", `You are not allowed to ${what} this task.`);
 }
 
-function withHistory(task: Task, ctx: Ctx, text: string, by: PersonId | undefined = ctx.actor.id): Task {
+function withHistory(
+  task: Task,
+  ctx: Ctx,
+  text: string,
+  by: PersonId | undefined = ctx.actor.id,
+): Task {
   return { ...task, history: [...task.history, { at: nowOf(ctx), by, text }] };
 }
 
@@ -115,8 +120,10 @@ const PREPARABLE: TaskStatus[] = ["open", "draft", "ready"];
 export function saveDraft(task: Task, ctx: Ctx, note?: string, files?: StoredFileRef[]): Task {
   assertState(task, PREPARABLE, "save");
   assertAllowed(canView(ctx.actor, ctx.kase), "work on");
-  if (task.kind === "hearing") throw new TransitionError("invalid", "A hearing task has nothing to draft.");
-  if (task.kind === "review") throw new TransitionError("invalid", "A request is answered, not drafted.");
+  if (task.kind === "hearing")
+    throw new TransitionError("invalid", "A hearing task has nothing to draft.");
+  if (task.kind === "review")
+    throw new TransitionError("invalid", "A request is answered, not drafted.");
   const at = nowOf(ctx);
   return withHistory(
     {
@@ -128,7 +135,7 @@ export function saveDraft(task: Task, ctx: Ctx, note?: string, files?: StoredFil
       files: files ?? task.files,
     },
     ctx,
-    `${ctx.actor.name} saved a draft`
+    `${ctx.actor.name} saved a draft`,
   );
 }
 
@@ -143,8 +150,10 @@ export const startDraft = saveDraft;
 export function markReady(task: Task, ctx: Ctx, note?: string, files?: StoredFileRef[]): Task {
   assertState(task, ["open", "draft"], "mark ready");
   assertAllowed(canView(ctx.actor, ctx.kase), "prepare");
-  if (task.kind === "hearing") throw new TransitionError("invalid", "A hearing task is done in court, not prepared.");
-  if (task.kind === "review") throw new TransitionError("invalid", "A request is answered, not prepared.");
+  if (task.kind === "hearing")
+    throw new TransitionError("invalid", "A hearing task is done in court, not prepared.");
+  if (task.kind === "review")
+    throw new TransitionError("invalid", "A request is answered, not prepared.");
   const at = nowOf(ctx);
   const allFiles = files ?? task.files;
   const text = note?.trim() || task.draft?.note;
@@ -158,7 +167,7 @@ export function markReady(task: Task, ctx: Ctx, note?: string, files?: StoredFil
       files: allFiles,
     },
     ctx,
-    `${ctx.actor.name} marked this ready${text ? ` — “${text}”` : ""}`
+    `${ctx.actor.name} marked this ready${text ? ` — “${text}”` : ""}`,
   );
 }
 
@@ -176,7 +185,12 @@ const RESOLUTION_WORD: Record<Resolution["how"], string> = {
  * that the defect is cured: whether it counts is derived in `defects.ts` from the value
  * now in the filing. Passing `undefined` clears the record (an undo, or a value put back).
  */
-export function resolveDefect(task: Task, ctx: Ctx, n: number, resolution: Resolution | undefined): Task {
+export function resolveDefect(
+  task: Task,
+  ctx: Ctx,
+  n: number,
+  resolution: Resolution | undefined,
+): Task {
   if (task.kind !== "returned") throw new TransitionError("invalid", "Not a returned filing.");
   assertState(task, PREPARABLE, "resolve defects on");
   assertAllowed(canView(ctx.actor, ctx.kase), "edit");
@@ -197,10 +211,11 @@ export function resolveDefect(task: Task, ctx: Ctx, n: number, resolution: Resol
       ...task,
       status,
       returned: task.returned ? { ...task.returned, defects } : task.returned,
-      draft: status === "draft" ? { by: ctx.actor.id, savedAt: at, note: task.draft?.note } : task.draft,
+      draft:
+        status === "draft" ? { by: ctx.actor.id, savedAt: at, note: task.draft?.note } : task.draft,
     },
     ctx,
-    line
+    line,
   );
 }
 
@@ -242,7 +257,7 @@ export function sign(task: Task, ctx: Ctx): Task {
       completion: { by: ctx.actor.id, at, how: "event", receipt: ref },
     },
     ctx,
-    line(`signed with Aadhaar e-Sign — ${ref}`)
+    line(`signed with Aadhaar e-Sign — ${ref}`),
   );
 }
 
@@ -265,7 +280,7 @@ export function recordPayment(task: Task, ctx: Ctx, result: PaymentResult): Task
           completion: { by: ctx.actor.id, at, how: "event", receipt: ref },
         },
         ctx,
-        line(`paid — receipt ${ref}`)
+        line(`paid — receipt ${ref}`),
       );
     case "pending":
       return withHistory(
@@ -277,7 +292,7 @@ export function recordPayment(task: Task, ctx: Ctx, result: PaymentResult): Task
           lastPayment,
         },
         ctx,
-        line(`paid — gateway is confirming (ref ${ref})`)
+        line(`paid — gateway is confirming (ref ${ref})`),
       );
     case "failed":
       // Nothing moved: the task keeps its state (open stays open, a draft stays a draft,
@@ -285,7 +300,7 @@ export function recordPayment(task: Task, ctx: Ctx, result: PaymentResult): Task
       return withHistory(
         { ...task, statusNote: "Payment failed — try again", lastPayment },
         ctx,
-        `Payment failed (ref ${ref}) — nothing was paid`
+        `Payment failed (ref ${ref}) — nothing was paid`,
       );
   }
 }
@@ -305,7 +320,7 @@ export function file(task: Task, ctx: Ctx, files?: StoredFileRef[]): Task {
       files: files ?? task.files,
     },
     ctx,
-    line("filed with the court — awaiting scrutiny")
+    line("filed with the court — awaiting scrutiny"),
   );
 }
 
@@ -320,12 +335,15 @@ export function refile(task: Task, ctx: Ctx): Task {
   const line = beginComplete(task, ctx, "re-file");
   const defects = task.returned?.defects ?? [];
   if (!defects.length || !defects.every(resolutionSatisfies)) {
-    throw new TransitionError("invalid", "Every defect must be resolved before the corrections go back.");
+    throw new TransitionError(
+      "invalid",
+      "Every defect must be resolved before the corrections go back.",
+    );
   }
   return withHistory(
     { ...task, status: "awaiting-court", statusNote: undefined, draft: undefined },
     ctx,
-    line("submitted the corrections to scrutiny")
+    line("submitted the corrections to scrutiny"),
   );
 }
 
@@ -341,7 +359,7 @@ export function respond(task: Task, ctx: Ctx, accepted: boolean, note?: string):
   const addressee = task.review?.of;
   assertAllowed(
     canView(ctx.actor, ctx.kase) && (!addressee || ctx.actor.id === addressee),
-    "respond to"
+    "respond to",
   );
   const at = nowOf(ctx);
   const text = note?.trim() || undefined;
@@ -356,7 +374,7 @@ export function respond(task: Task, ctx: Ctx, accepted: boolean, note?: string):
       completion: { by: ctx.actor.id, at, how: "event" },
     },
     ctx,
-    `${ctx.actor.name} ${accepted ? "accepted" : "declined"} the request${text ? ` — “${text}”` : ""}`
+    `${ctx.actor.name} ${accepted ? "accepted" : "declined"} the request${text ? ` — “${text}”` : ""}`,
   );
 }
 
@@ -377,7 +395,7 @@ export function markDone(task: Task, ctx: Ctx): Task {
       completion: { by: ctx.actor.id, at, how: "manual" },
     },
     ctx,
-    `${ctx.actor.name} marked this done — completed outside DRISTI`
+    `${ctx.actor.name} marked this done — completed outside DRISTI`,
   );
 }
 
@@ -399,7 +417,7 @@ export function archive(task: Task, ctx: Ctx): Task {
       archived: { by: ctx.actor.id, at: nowOf(ctx), from: task.status },
     },
     ctx,
-    `${ctx.actor.name} archived this`
+    `${ctx.actor.name} archived this`,
   );
 }
 
@@ -411,7 +429,7 @@ export function unarchive(task: Task, ctx: Ctx): Task {
   return withHistory(
     { ...task, status: from, archived: undefined },
     ctx,
-    `${ctx.actor.name} restored this from the archive`
+    `${ctx.actor.name} restored this from the archive`,
   );
 }
 
@@ -434,7 +452,7 @@ export function confirmPayment(task: Task, ctx: Ctx): Task {
     },
     ctx,
     `Payment confirmed — receipt ${ref}`,
-    undefined
+    undefined,
   );
 }
 
@@ -453,7 +471,7 @@ export function courtAccepted(task: Task, ctx: Ctx): Task {
     },
     ctx,
     `Accepted by the registry — acknowledgement ${ref}`,
-    undefined
+    undefined,
   );
 }
 
@@ -461,7 +479,11 @@ export function courtAccepted(task: Task, ctx: Ctx): Task {
  * Registry returned the filing for compliance. The filed task is superseded and a
  * `returned` task takes its place, carrying the defects and the same deadline shape.
  */
-export function courtReturned(task: Task, ctx: Ctx, defects: string[]): { task: Task; created: Task } {
+export function courtReturned(
+  task: Task,
+  ctx: Ctx,
+  defects: string[],
+): { task: Task; created: Task } {
   assertState(task, ["awaiting-court"], "return");
   assertAllowed(canView(ctx.actor, ctx.kase), "record a return on");
   const list = defects.map((d) => d.trim()).filter(Boolean);
@@ -477,7 +499,7 @@ export function courtReturned(task: Task, ctx: Ctx, defects: string[]): { task: 
     },
     ctx,
     `Returned by scrutiny with ${plural}`,
-    undefined
+    undefined,
   );
   const object = objectOf(task.title);
   const created: Task = {
@@ -537,7 +559,12 @@ function objectOf(title: string): string {
 /** The window closed. System event. */
 export function expire(task: Task, ctx: Ctx, reason: string): Task {
   assertState(task, PREPARABLE, "expire");
-  return withHistory({ ...task, status: "expired", statusNote: reason }, ctx, `Expired — ${reason}`, undefined);
+  return withHistory(
+    { ...task, status: "expired", statusNote: reason },
+    ctx,
+    `Expired — ${reason}`,
+    undefined,
+  );
 }
 
 /** No longer needed — order withdrawn, case disposed. System event or a person. */
@@ -545,11 +572,21 @@ export function obsolete(task: Task, ctx: Ctx, reason: string): Task {
   if (TERMINAL.has(task.status)) {
     throw new TransitionError("illegal-state", "A closed task cannot be made obsolete.");
   }
-  return withHistory({ ...task, status: "obsolete", statusNote: reason }, ctx, `No longer needed — ${reason}`);
+  return withHistory(
+    { ...task, status: "obsolete", statusNote: reason },
+    ctx,
+    `No longer needed — ${reason}`,
+  );
 }
 
 /** A due date moved (a hearing was adjourned). Keeps the old date for the cue. */
-export function redate(task: Task, ctx: Ctx, newDue: string, reason: string, newHearing?: string): Task {
+export function redate(
+  task: Task,
+  ctx: Ctx,
+  newDue: string,
+  reason: string,
+  newHearing?: string,
+): Task {
   if (TERMINAL.has(task.status)) {
     throw new TransitionError("illegal-state", "A closed task cannot be re-dated.");
   }
@@ -565,7 +602,7 @@ export function redate(task: Task, ctx: Ctx, newDue: string, reason: string, new
     },
     ctx,
     `Due date moved from ${shortDate(from)} to ${shortDate(newDue)} — ${reason}`,
-    undefined
+    undefined,
   );
 }
 

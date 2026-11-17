@@ -2,12 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { COURT_ROLE_LABEL, COURT_SEATS, CURRENT_STAFF } from "./content";
-import {
-  accountFor,
-  COURT_ACCOUNTS,
-  COURT_SIGN_IN_ROLES,
-  courtroomsFor,
-} from "./sign-in";
+import { accountFor, COURT_ACCOUNTS, COURT_SIGN_IN_ROLES, courtroomsFor } from "./sign-in";
 import {
   readCourtRole,
   registersAtScrutiny,
@@ -22,7 +17,10 @@ describe("court seats", () => {
      selected. The two lists are the same list, in the same order. */
   it("offers every seat the sign-in offers, and starts signed out in the fixture's", () => {
     /* Kerala's seats; Punjab & Haryana adds an Ahlmad (court-roles §3). */
-    assert.deepEqual(COURT_SEATS, COURT_SIGN_IN_ROLES.filter((seat) => seat !== "ahlmad"));
+    assert.deepEqual(
+      COURT_SEATS,
+      COURT_SIGN_IN_ROLES.filter((seat) => seat !== "ahlmad"),
+    );
     assert.equal(CURRENT_STAFF.role, "bench-clerk");
     assert.equal(readCourtRole(), CURRENT_STAFF.role);
   });

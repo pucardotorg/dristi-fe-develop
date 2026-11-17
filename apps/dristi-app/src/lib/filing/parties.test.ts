@@ -156,7 +156,12 @@ describe("complainantBodies", () => {
     c.entName = "Kollam Traders Pvt Ltd";
     c.entCinPan = "abcde1234f";
     c.entAddr = { ...addr };
-    c.rep = { ...blankRepresentative(), name: "Meera Nair", designation: "Director", mobile: "9000000001" };
+    c.rep = {
+      ...blankRepresentative(),
+      name: "Meera Nair",
+      designation: "Director",
+      mobile: "9000000001",
+    };
     const [body] = complainantBodies(c);
     assert.equal(body.institution?.entity_type, "PRIVATE_LIMITED_COMPANY");
     assert.equal(body.institution?.entity_name, "Kollam Traders Pvt Ltd");
@@ -289,7 +294,7 @@ describe("accusedBodies", () => {
     assert.deepEqual(body.email_addresses, ["ravi@example.com"]);
     assert.deepEqual(
       body.addresses?.map((x) => x.police_station),
-      ["Kollam East", "Kollam West"]
+      ["Kollam East", "Kollam West"],
     );
     assert.deepEqual(body.additional_details, {});
   });
@@ -300,7 +305,10 @@ describe("accusedBodies", () => {
     a.addresses.unshift(blankAddressBlock());
     const [body] = accusedBodies(a);
     assert.deepEqual(body.mobile_numbers, ["+919123456780"]);
-    assert.deepEqual(body.addresses?.map((x) => x.line1), ["12 MG Road"]);
+    assert.deepEqual(
+      body.addresses?.map((x) => x.line1),
+      ["12 MG Road"],
+    );
   });
 
   it("sends a number or email typed twice once, since the backend refuses repeats", () => {
@@ -346,7 +354,9 @@ describe("accusedBodies", () => {
     a.type = "institution";
     a.entType = "llp";
     a.name = "Ravi & Sons LLP";
-    a.reps = [{ ...blankRepresentative(), name: "Ravi Kumar", designation: "Partner", addr: { ...addr } }];
+    a.reps = [
+      { ...blankRepresentative(), name: "Ravi Kumar", designation: "Partner", addr: { ...addr } },
+    ];
     const [body] = accusedBodies(a);
     assert.deepEqual(missingFields(body, "accused"), ["representative's police station"]);
   });
@@ -381,7 +391,7 @@ describe("accusedBodies", () => {
     }
     assert.deepEqual(
       bodies.map((b) => b.person?.name),
-      ["Ravi Kumar", "Sunil Kumar"]
+      ["Ravi Kumar", "Sunil Kumar"],
     );
   });
 
@@ -488,7 +498,10 @@ describe("witnessBodies", () => {
     };
     w.prove = "The notice was served.";
     await saveParty(api, "case-1", "witnesses", witnessBodies(w), saved);
-    assert.deepEqual(calls.map((x) => x.op), ["update"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["update"],
+    );
   });
 });
 
@@ -500,7 +513,7 @@ describe("missingFields", () => {
     assert.deepEqual(missing, ["city", "pincode", "police station"]);
     assert.equal(
       missingFieldsMessage(missing),
-      "Add the city, pincode and police station to save this to your case."
+      "Add the city, pincode and police station to save this to your case.",
     );
   });
 
@@ -679,7 +692,10 @@ describe("the filer as complainant", () => {
     const { api, calls } = fakeApi();
     const bodies = complainantBodies(complainant(), true);
     const result = await saveParty(api, "case-1", "complainants", bodies, {});
-    assert.deepEqual(calls.map((x) => x.op), ["add", "update"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["add", "update"],
+    );
     const sent = JSON.parse(JSON.stringify((calls[0] as { body: PartyInput }).body));
     assert.equal(sent.self, true);
     assert.equal("person" in sent, false);
@@ -697,7 +713,10 @@ describe("the filer as complainant", () => {
       savedBodies: complainantBodies(c).map((b) => JSON.stringify(b)),
     };
     await saveParty(api, "case-1", "complainants", complainantBodies(c, true), saved);
-    assert.deepEqual(calls.map((x) => x.op), ["remove", "add", "update"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["remove", "add", "update"],
+    );
   });
 });
 
@@ -730,7 +749,10 @@ describe("saveParty", () => {
     };
     c.name = "Asha M. Menon";
     const result = await saveParty(api, "case-1", "complainants", complainantBodies(c), saved);
-    assert.deepEqual(calls.map((x) => x.op), ["update"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["update"],
+    );
     assert.equal((calls[0] as { patch: ParticipantPatch }).patch.name_at_filing, "Asha M. Menon");
     assert.deepEqual(result.caseParticipantIds, ["p9"]);
   });
@@ -744,7 +766,10 @@ describe("saveParty", () => {
     };
     c.type = "institution";
     const result = await saveParty(api, "case-1", "complainants", complainantBodies(c), saved);
-    assert.deepEqual(calls.map((x) => x.op), ["remove", "add"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["remove", "add"],
+    );
     assert.deepEqual(result.caseParticipantIds, ["p1"]);
   });
 
@@ -758,7 +783,10 @@ describe("saveParty", () => {
     c.email = "asha.menon@example.com";
     c.differentlyAbled = "yes";
     await saveParty(api, "case-1", "complainants", complainantBodies(c), saved);
-    assert.deepEqual(calls.map((x) => x.op), ["update"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["update"],
+    );
     const { patch } = calls[0] as { patch: ParticipantPatch };
     assert.deepEqual(patch.email_addresses, ["asha.menon@example.com"]);
     assert.equal(patch.disability_status, true);
@@ -773,7 +801,10 @@ describe("saveParty", () => {
       { ...blankRepresentative(), name: "Sunil" },
     ];
     const before = accusedBodies(a);
-    const saved = { caseParticipantIds: ["p8", "p9"], savedBodies: before.map((b) => JSON.stringify(b)) };
+    const saved = {
+      caseParticipantIds: ["p8", "p9"],
+      savedBodies: before.map((b) => JSON.stringify(b)),
+    };
     a.reps = a.reps.slice(0, 1);
     const result = await saveParty(api, "case-1", "accused", accusedBodies(a), saved);
     assert.deepEqual(calls, [{ op: "remove", id: "p9" }]);
@@ -913,7 +944,13 @@ describe("PoA holder", () => {
 
   it("waits while its complainant is not on the case", async () => {
     const { api, calls } = poaApi();
-    const result = await savePoaHolder(api, "case-1", poaHolderBody(withHolder()), undefined, undefined);
+    const result = await savePoaHolder(
+      api,
+      "case-1",
+      poaHolderBody(withHolder()),
+      undefined,
+      undefined,
+    );
     assert.equal(calls.length, 0);
     assert.equal(result.saved, undefined);
   });
@@ -924,7 +961,10 @@ describe("PoA holder", () => {
     const first = await savePoaHolder(api, "case-1", poaHolderBody(c), "p1", undefined);
     c.poaHolder.age = "61";
     await savePoaHolder(api, "case-1", poaHolderBody(c), "p1", first.saved);
-    assert.deepEqual(calls.map((x) => x.op), ["add", "update"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["add", "update"],
+    );
     const patch = (calls[1] as { patch: ParticipantPatch }).patch;
     assert.equal(patch.age_at_filing, 61);
     assert.equal("is_party_in_person" in patch, false);
@@ -939,7 +979,10 @@ describe("PoA holder", () => {
     const first = await savePoaHolder(api, "case-1", poaHolderBody(c), "p1", undefined);
     c.poa = "no";
     const result = await savePoaHolder(api, "case-1", poaHolderBody(c), "p1", first.saved);
-    assert.deepEqual(calls.map((x) => x.op), ["add", "revoke"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["add", "revoke"],
+    );
     assert.equal(result.saved, undefined);
   });
 
@@ -948,7 +991,10 @@ describe("PoA holder", () => {
     const body = poaHolderBody(withHolder());
     const first = await savePoaHolder(api, "case-1", body, "p1", undefined);
     const result = await savePoaHolder(api, "case-1", body, "p2", first.saved);
-    assert.deepEqual(calls.map((x) => x.op), ["add", "revoke", "add"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["add", "revoke", "add"],
+    );
     assert.equal(result.saved?.forParticipantId, "p2");
   });
 
@@ -983,7 +1029,10 @@ describe("PoA holder", () => {
   it("adds the filer as self, without a person, then writes what they typed", async () => {
     const { api, calls } = poaApi();
     await savePoaHolder(api, "case-1", poaHolderBody(withHolder(), true), "p1", undefined);
-    assert.deepEqual(calls.map((x) => x.op), ["add", "update"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["add", "update"],
+    );
     const sent = (calls[0] as { body: Record<string, unknown> }).body;
     assert.equal(sent.self, true);
     assert.equal("person" in sent, false);
@@ -1006,7 +1055,7 @@ describe("saveParty — matching by who, not by position", () => {
       "case-1",
       "accused",
       accusedBodies(institutionAccused(["A", "B"])),
-      {}
+      {},
     );
     const [first, second] = calls.map((x) => (x as { body: PartyInput }).body);
     assert.ok(first.institution);
@@ -1027,7 +1076,10 @@ describe("saveParty — matching by who, not by position", () => {
     };
     const bodies = accusedBodies(institutionAccused(["A", "B"]));
     await saveParty(api, "case-1", "accused", bodies, saved);
-    assert.deepEqual(calls.map((x) => x.op), ["add"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["add"],
+    );
     assert.equal((calls[0] as { body: PartyInput }).body.institution_id, "i9");
   });
 
@@ -1070,7 +1122,7 @@ describe("saveParty — matching by who, not by position", () => {
       "case-1",
       "accused",
       accusedBodies(institutionAccused(["A", "C"])),
-      saved
+      saved,
     );
     assert.deepEqual(calls, [{ op: "remove", id: "pB" }]);
     assert.deepEqual(result.caseParticipantIds, ["pA", "pC"]);
@@ -1092,7 +1144,10 @@ describe("saveParty — matching by who, not by position", () => {
 
     const { api, calls } = fakeApi();
     const second = await saveParty(api, "case-1", "accused", bodies, first);
-    assert.deepEqual(calls.map((x) => x.op), ["add"]);
+    assert.deepEqual(
+      calls.map((x) => x.op),
+      ["add"],
+    );
     assert.deepEqual(second.caseParticipantIds, ["p1", "pB", "pC"]);
   });
 

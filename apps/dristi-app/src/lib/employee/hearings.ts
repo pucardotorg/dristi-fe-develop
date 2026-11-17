@@ -39,12 +39,7 @@
 import { caseSearchKey } from "@/lib/court/localize";
 
 export type CourtHearingStatus =
-  | "scheduled"
-  | "ongoing"
-  | "completed"
-  | "passed-over"
-  | "rescheduled"
-  | "abandoned";
+  "scheduled" | "ongoing" | "completed" | "passed-over" | "rescheduled" | "abandoned";
 
 export const COURT_HEARING_STATUSES: {
   id: CourtHearingStatus;
@@ -90,11 +85,7 @@ export function causeListStatusRank(status: CourtHearingStatus): number {
 
 /** A matter that still belongs on this day's cause list. */
 export function isOnTodaysCauseList(status: CourtHearingStatus): boolean {
-  return (
-    status === "scheduled" ||
-    status === "completed" ||
-    status === "passed-over"
-  );
+  return status === "scheduled" || status === "completed" || status === "passed-over";
 }
 
 /**
@@ -128,9 +119,7 @@ export function courtHearingStatusVariant(
 }
 
 export function courtHearingStatusLabel(status: CourtHearingStatus): string {
-  return (
-    COURT_HEARING_STATUSES.find((entry) => entry.id === status)?.label ?? status
-  );
+  return COURT_HEARING_STATUSES.find((entry) => entry.id === status)?.label ?? status;
 }
 
 /**
@@ -272,8 +261,7 @@ export function groupByStatus(
   compare: (a: CourtHearing, b: CourtHearing) => number = (a, b) => a.item - b.item,
 ): CourtHearing[] {
   return [...hearings].sort(
-    (a, b) =>
-      causeListStatusRank(a.status) - causeListStatusRank(b.status) || compare(a, b),
+    (a, b) => causeListStatusRank(a.status) - causeListStatusRank(b.status) || compare(a, b),
   );
 }
 
@@ -321,9 +309,7 @@ export const COURT_HEARING_PURPOSES: {
 ];
 
 export function courtHearingPurposeLabel(id: CourtHearingPurposeId): string {
-  return (
-    COURT_HEARING_PURPOSES.find((entry) => entry.id === id)?.label ?? id
-  );
+  return COURT_HEARING_PURPOSES.find((entry) => entry.id === id)?.label ?? id;
 }
 
 /**
@@ -336,10 +322,13 @@ export function hearingPurposeFromText(
 ): CourtHearingPurposeId | undefined {
   if (!text) return undefined;
   const plain = (value: string) =>
-    value.toLowerCase().replace(/\bthe\s+/g, "").replace(/\s+/g, " ").trim();
+    value
+      .toLowerCase()
+      .replace(/\bthe\s+/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
   const said = plain(text);
-  return COURT_HEARING_PURPOSES.find((entry) => said.startsWith(plain(entry.label)))
-    ?.id;
+  return COURT_HEARING_PURPOSES.find((entry) => said.startsWith(plain(entry.label)))?.id;
 }
 
 /**
@@ -355,13 +344,7 @@ export function hearingPurposeFromText(
  * the magistrate has not taken on file has no hearing to move.
  */
 export type CourtCaseStage =
-  | "cognizance"
-  | "process"
-  | "appearance"
-  | "plea"
-  | "evidence"
-  | "arguments"
-  | "judgement";
+  "cognizance" | "process" | "appearance" | "plea" | "evidence" | "arguments" | "judgement";
 
 export const COURT_CASE_STAGES: { id: CourtCaseStage; label: string }[] = [
   { id: "cognizance", label: "Cognizance" },
@@ -425,17 +408,12 @@ export type CourtHearing = {
  * (`schedule.ts`) writes a cause title the same way this list does. Two court-side
  * screens naming the same case differently is the drift this shape rules out.
  */
-export function causeTitle(matter: {
-  parties: { complainant: string; accused: string };
-}): string {
+export function causeTitle(matter: { parties: { complainant: string; accused: string } }): string {
   return `${matter.parties.complainant} v. ${matter.parties.accused}`;
 }
 
 /** One side's advocates on record. Structural for the same reason as `causeTitle`. */
-export function counselFor(
-  matter: { counsel: CourtCounsel[] },
-  side: CounselSide,
-): CourtCounsel[] {
+export function counselFor(matter: { counsel: CourtCounsel[] }, side: CounselSide): CourtCounsel[] {
   return matter.counsel.filter((entry) => entry.side === side);
 }
 
@@ -1039,16 +1017,15 @@ export function filterHearings(
       return false;
     }
     if (!query) return true;
-    const haystack =
-      `${causeTitle(hearing)} ${hearing.caseNumber}`.toLowerCase();
+    const haystack = `${causeTitle(hearing)} ${hearing.caseNumber}`.toLowerCase();
     return haystack.includes(query);
   });
 }
 
 /** Every advocate on record across these listings, by name, for the Advocate filter. */
 export function advocatesOnList(rows: CourtHearing[]): string[] {
-  return [...new Set(rows.flatMap((hearing) => hearing.counsel.map((c) => c.name)))].sort(
-    (a, b) => a.localeCompare(b),
+  return [...new Set(rows.flatMap((hearing) => hearing.counsel.map((c) => c.name)))].sort((a, b) =>
+    a.localeCompare(b),
   );
 }
 

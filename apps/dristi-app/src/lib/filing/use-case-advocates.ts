@@ -58,7 +58,7 @@ export async function syncAdvocates(
   latest: () => FilingDraft,
   caseId: string,
   update: Update,
-  fromCase: ReadonlySet<string> = new Set()
+  fromCase: ReadonlySet<string> = new Set(),
 ) {
   const record = (id: string, patch: (advocate: SavedAdvocate) => void) =>
     update((d) => {
@@ -135,7 +135,7 @@ export async function syncAdvocates(
 async function loadFromCase(
   caseId: string,
   latest: () => FilingDraft,
-  update: Update
+  update: Update,
 ): Promise<Set<string>> {
   const read = await caseFilingApi.getCase(caseId);
   const apply = (d: FilingDraft) => {

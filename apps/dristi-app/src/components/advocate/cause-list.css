@@ -148,14 +148,23 @@
 /* Her own matter, while it is being called: the teal stroke breathes on the live
  * dot's 2.5s beat. Colour only, so nothing reflows; still under reduced motion. */
 @keyframes cause-mine-pulse {
-  0%, 100% { border-color: var(--brand-accent); }
-  50% { border-color: color-mix(in srgb, var(--brand-accent) 35%, transparent); }
+  0%,
+  100% {
+    border-color: var(--brand-accent);
+  }
+  50% {
+    border-color: color-mix(in srgb, var(--brand-accent) 35%, transparent);
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .cause-mine-live { animation: cause-mine-pulse 2.5s ease-in-out infinite; }
+  .cause-mine-live {
+    animation: cause-mine-pulse 2.5s ease-in-out infinite;
+  }
 }
 
 /* The header's search, date, download, filter and sort take the lighter tan stroke
  * the home toolbar uses, at every width. The default input stroke read as a
  * wireframe. */
-.cause-list-header :is(button, input) { border-color: var(--border); }
+.cause-list-header :is(button, input) {
+  border-color: var(--border);
+}

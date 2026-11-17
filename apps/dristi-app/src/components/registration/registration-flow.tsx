@@ -13,12 +13,22 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DescriptionDetails, DescriptionList, DescriptionRow, DescriptionTerm } from "@/components/ui/description-list";
+import {
+  DescriptionDetails,
+  DescriptionList,
+  DescriptionRow,
+  DescriptionTerm,
+} from "@/components/ui/description-list";
 import { DocumentRowValue } from "@/components/document-preview";
 import { UploadedDocField } from "@/components/cases/uploaded-doc-field";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -56,7 +66,8 @@ import { SubmitErrorAlert } from "./submit-error-alert";
 import { PageOutcome } from "@/components/feedback";
 import { useTranslations } from "next-intl";
 
-type Step = "role" | "name" | "contact" | "password" | "verification" | "terms" | "success" | "application";
+type Step =
+  "role" | "name" | "contact" | "password" | "verification" | "terms" | "success" | "application";
 type AccountRole = "litigant" | "advocate" | "advocateClerk" | "poa" | "";
 /** Which backend call is in flight, so only its button shows progress. */
 type Pending = "send" | "verify" | "submit" | null;
@@ -86,7 +97,12 @@ function Heading({ title, body }: { title: string; body: string }) {
   );
 }
 
-function Actions({ locale, onBack, submitLabel, pending = false }: {
+function Actions({
+  locale,
+  onBack,
+  submitLabel,
+  pending = false,
+}: {
   locale: Locale;
   onBack: () => void;
   submitLabel?: string;
@@ -109,7 +125,14 @@ function Actions({ locale, onBack, submitLabel, pending = false }: {
   );
 }
 
-export function RegistrationFlow({ locale, summoned, toSign = false, initialMobile = "", verifiedMobile, onFinish }: {
+export function RegistrationFlow({
+  locale,
+  summoned,
+  toSign = false,
+  initialMobile = "",
+  verifiedMobile,
+  onFinish,
+}: {
   locale: Locale;
   summoned: boolean;
   toSign?: boolean;
@@ -169,7 +192,8 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
   }, [resendIn]);
 
   const needsVerification = NEEDS_VERIFICATION.has(role);
-  const verification = role === "advocateClerk" ? verificationSteps.advocateClerk : verificationSteps.advocate;
+  const verification =
+    role === "advocateClerk" ? verificationSteps.advocateClerk : verificationSteps.advocate;
   /* The backend's common-password list, loaded when the password step opens (it is too
      large for the sign-in page). Until it arrives only that one rule is skipped. */
   const [commonPasswords, setCommonPasswords] = React.useState<ReadonlySet<string> | undefined>();
@@ -177,9 +201,15 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
     if (step !== "password" || commonPasswords) return;
     let live = true;
     loadCommonPasswords()
-      .then((list) => { if (live) setCommonPasswords(list); })
-      .catch(() => { /* The backend still checks; its message shows if it refuses. */ });
-    return () => { live = false; };
+      .then((list) => {
+        if (live) setCommonPasswords(list);
+      })
+      .catch(() => {
+        /* The backend still checks; its message shows if it refuses. */
+      });
+    return () => {
+      live = false;
+    };
   }, [step, commonPasswords]);
 
   // The first policy rule the password fails, against what this person has told us so
@@ -191,7 +221,11 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
     setTouched(true);
     const list = commonPasswords ?? (await loadCommonPasswords().catch(() => undefined));
     if (list && !commonPasswords) setCommonPasswords(list);
-    if (passwordProblem(password, { mobile, name: fullName, email }, list) || password !== confirmPassword) return;
+    if (
+      passwordProblem(password, { mobile, name: fullName, email }, list) ||
+      password !== confirmPassword
+    )
+      return;
     setTouched(false);
     setStep(needsVerification ? "verification" : "terms");
   }
@@ -234,7 +268,11 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
         setOtpRequested(true);
         setResendIn(error.retryAfterSeconds ?? RESEND_SECONDS);
       } else {
-        setContactError(isAuthError(error) && error.code === "invalid-mobile" ? contactStep.mobileInvalid : registrationUi.unavailable);
+        setContactError(
+          isAuthError(error) && error.code === "invalid-mobile"
+            ? contactStep.mobileInvalid
+            : registrationUi.unavailable,
+        );
       }
     } finally {
       setPending(null);
@@ -272,7 +310,9 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
         name: fullName,
         email,
         password,
-        ...(needsVerification ? { registrationNumber: regNumber, document: idFile ?? undefined } : {}),
+        ...(needsVerification
+          ? { registrationNumber: regNumber, document: idFile ?? undefined }
+          : {}),
       });
       // Advocates and clerks are now signed out by the backend, awaiting approval.
       setApplicationNumber(outcome.applicationNumber);
@@ -335,7 +375,7 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
   if (step === "success") {
     if (needsVerification) {
       return (
-              /* Submitted, waiting on the court's approval: sent, not decided (the hourglass). */
+        /* Submitted, waiting on the court's approval: sent, not decided (the hourglass). */
         <div className="mx-auto flex min-h-[60vh] w-full max-w-lg flex-col justify-center">
           <PageOutcome
             tone="info"
@@ -345,7 +385,11 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                 ? pick(approvalStep.body, locale).replace("{id}", applicationNumber)
                 : pick(approvalStep.bodyNoNumber, locale)
             }
-            action={<Button size="lg" onClick={() => setStep("application")}>{pick(approvalStep.action, locale)}</Button>}
+            action={
+              <Button size="lg" onClick={() => setStep("application")}>
+                {pick(approvalStep.action, locale)}
+              </Button>
+            }
           />
         </div>
       );
@@ -359,12 +403,39 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
           title={pick(successStep.title, locale)}
           body={pick(toSign ? successStep.signBody : successStep.body, locale)}
           action={
-            <Button size="lg" onClick={() => onFinish && role ? onFinish({ idSkipped: true, profileIncomplete: true, name: fullName.trim(), role, mobile }) : setDestinationNotice(true)}>
-              {pick(toSign ? successStep.signAction : summoned ? successStep.summonedAction : successStep.generalAction, locale)}
+            <Button
+              size="lg"
+              onClick={() =>
+                onFinish && role
+                  ? onFinish({
+                      idSkipped: true,
+                      profileIncomplete: true,
+                      name: fullName.trim(),
+                      role,
+                      mobile,
+                    })
+                  : setDestinationNotice(true)
+              }
+            >
+              {pick(
+                toSign
+                  ? successStep.signAction
+                  : summoned
+                    ? successStep.summonedAction
+                    : successStep.generalAction,
+                locale,
+              )}
             </Button>
           }
         />
-        {destinationNotice ? <Alert variant="info" className="text-left"><AlertTitle>{t("registrationFlow_prototypeDestinationNotConnected")}</AlertTitle><AlertDescription>{t("registrationFlow_thisActionWillOpenYourPortal")}</AlertDescription></Alert> : null}
+        {destinationNotice ? (
+          <Alert variant="info" className="text-left">
+            <AlertTitle>{t("registrationFlow_prototypeDestinationNotConnected")}</AlertTitle>
+            <AlertDescription>
+              {t("registrationFlow_thisActionWillOpenYourPortal")}
+            </AlertDescription>
+          </Alert>
+        ) : null}
       </div>
     );
   }
@@ -372,14 +443,46 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
   if (step === "application") {
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
-        <h1 className="text-title text-balance text-center font-semibold">{applicationNumber ? pick(applicationView.title, locale).replace("{id}", applicationNumber) : pick(applicationView.titleNoNumber, locale)}</h1>
+        <h1 className="text-title text-balance text-center font-semibold">
+          {applicationNumber
+            ? pick(applicationView.title, locale).replace("{id}", applicationNumber)
+            : pick(applicationView.titleNoNumber, locale)}
+        </h1>
         <DescriptionList className="rounded-lg bg-muted px-4">
-          <DescriptionRow><DescriptionTerm>{pick(applicationView.name, locale)}</DescriptionTerm><DescriptionDetails>{fullName}</DescriptionDetails></DescriptionRow>
-          <DescriptionRow><DescriptionTerm>{pick(applicationView.mobile, locale)}</DescriptionTerm><DescriptionDetails>+91 {mobile}</DescriptionDetails></DescriptionRow>
-          {email ? <DescriptionRow><DescriptionTerm>{pick(applicationView.email, locale)}</DescriptionTerm><DescriptionDetails>{email}</DescriptionDetails></DescriptionRow> : null}
-          <DescriptionRow><DescriptionTerm>{pick(applicationView.role, locale)}</DescriptionTerm><DescriptionDetails>{pick(role === "advocateClerk" ? roleStep.advocateClerk : roleStep.advocate, locale)}</DescriptionDetails></DescriptionRow>
-          <DescriptionRow><DescriptionTerm>{pick(verification.numberLabel, locale)}</DescriptionTerm><DescriptionDetails><Identifier value={regNumber} label={t("registrationFlow_registrationNumber")} /></DescriptionDetails></DescriptionRow>
-          {idFile ? <DescriptionRow className="items-center"><DescriptionTerm>{pick(verification.uploadLabel, locale)}</DescriptionTerm><DescriptionDetails><DocumentRowValue file={idFile} locale={locale} /></DescriptionDetails></DescriptionRow> : null}
+          <DescriptionRow>
+            <DescriptionTerm>{pick(applicationView.name, locale)}</DescriptionTerm>
+            <DescriptionDetails>{fullName}</DescriptionDetails>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>{pick(applicationView.mobile, locale)}</DescriptionTerm>
+            <DescriptionDetails>+91 {mobile}</DescriptionDetails>
+          </DescriptionRow>
+          {email ? (
+            <DescriptionRow>
+              <DescriptionTerm>{pick(applicationView.email, locale)}</DescriptionTerm>
+              <DescriptionDetails>{email}</DescriptionDetails>
+            </DescriptionRow>
+          ) : null}
+          <DescriptionRow>
+            <DescriptionTerm>{pick(applicationView.role, locale)}</DescriptionTerm>
+            <DescriptionDetails>
+              {pick(role === "advocateClerk" ? roleStep.advocateClerk : roleStep.advocate, locale)}
+            </DescriptionDetails>
+          </DescriptionRow>
+          <DescriptionRow>
+            <DescriptionTerm>{pick(verification.numberLabel, locale)}</DescriptionTerm>
+            <DescriptionDetails>
+              <Identifier value={regNumber} label={t("registrationFlow_registrationNumber")} />
+            </DescriptionDetails>
+          </DescriptionRow>
+          {idFile ? (
+            <DescriptionRow className="items-center">
+              <DescriptionTerm>{pick(verification.uploadLabel, locale)}</DescriptionTerm>
+              <DescriptionDetails>
+                <DocumentRowValue file={idFile} locale={locale} />
+              </DescriptionDetails>
+            </DescriptionRow>
+          ) : null}
         </DescriptionList>
       </div>
     );
@@ -390,29 +493,73 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
       <div className="mx-auto w-full max-w-2xl">
         <Stepper
           className={CENTRED_STEPPER}
-          aria-label={pick(registrationUi.stepOf, locale).replace("{current}", String(journeyIndex + 1)).replace("{total}", String(journeyKeys.length))}
+          aria-label={pick(registrationUi.stepOf, locale)
+            .replace("{current}", String(journeyIndex + 1))
+            .replace("{total}", String(journeyKeys.length))}
         >
-          {journeyKeys.map((key, index) => <StepperItem key={key} step={index + 1} title={pick(journeySteps[key].title, locale)} status={index < journeyIndex ? "complete" : index === journeyIndex ? "current" : "upcoming"} />)}
+          {journeyKeys.map((key, index) => (
+            <StepperItem
+              key={key}
+              step={index + 1}
+              title={pick(journeySteps[key].title, locale)}
+              status={
+                index < journeyIndex ? "complete" : index === journeyIndex ? "current" : "upcoming"
+              }
+            />
+          ))}
         </Stepper>
         {/* Six names do not fit under six circles on a phone (Malayalam collides
             even at caption size), so below md one line names the step you are on. */}
         <p className="mt-3 text-center text-caption text-muted-foreground md:hidden">
-          {pick(registrationUi.stepOf, locale).replace("{current}", String(journeyIndex + 1)).replace("{total}", String(journeyKeys.length))}
+          {pick(registrationUi.stepOf, locale)
+            .replace("{current}", String(journeyIndex + 1))
+            .replace("{total}", String(journeyKeys.length))}
           {" · "}
-          <span className="font-medium text-foreground">{pick(journeySteps[journeyKeys[journeyIndex]].title, locale)}</span>
+          <span className="font-medium text-foreground">
+            {pick(journeySteps[journeyKeys[journeyIndex]].title, locale)}
+          </span>
         </p>
       </div>
 
       <div className="mx-auto w-full max-w-xl">
         {step === "role" ? (
-          <form className="flex flex-col gap-6" onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!role) return; setTouched(false); setStep("name"); }}>
+          <form
+            className="flex flex-col gap-6"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setTouched(true);
+              if (!role) return;
+              setTouched(false);
+              setStep("name");
+            }}
+          >
             <Heading title={pick(roleStep.title, locale)} body={pick(roleStep.body, locale)} />
             <Field data-invalid={touched && !role}>
-              <RadioGroup value={role} onValueChange={(value) => { setRole(value as AccountRole); setTouched(false); }} className="flex flex-col gap-3">
+              <RadioGroup
+                value={role}
+                onValueChange={(value) => {
+                  setRole(value as AccountRole);
+                  setTouched(false);
+                }}
+                className="flex flex-col gap-3"
+              >
                 {(["litigant", "poa", "advocate", "advocateClerk"] as const).map((value) => (
-                  <Label key={value} htmlFor={`registration-role-${value}`} className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-4 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-brand-muted">
-                    <RadioGroupItem id={`registration-role-${value}`} value={value} className="mt-0.5" />
-                    <span className="flex flex-col gap-1"><span className="font-medium">{pick(roleStep[value], locale)}</span><span className="text-caption font-normal text-muted-foreground">{pick(roleStep[`${value}Hint`], locale)}</span></span>
+                  <Label
+                    key={value}
+                    htmlFor={`registration-role-${value}`}
+                    className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-4 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-brand-muted"
+                  >
+                    <RadioGroupItem
+                      id={`registration-role-${value}`}
+                      value={value}
+                      className="mt-0.5"
+                    />
+                    <span className="flex flex-col gap-1">
+                      <span className="font-medium">{pick(roleStep[value], locale)}</span>
+                      <span className="text-caption font-normal text-muted-foreground">
+                        {pick(roleStep[`${value}Hint`], locale)}
+                      </span>
+                    </span>
                   </Label>
                 ))}
               </RadioGroup>
@@ -423,61 +570,188 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
         ) : null}
 
         {step === "name" ? (
-          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!fullName.trim()) return; setTouched(false); setStep("contact"); }}>
+          <form
+            className="flex flex-col gap-6"
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              setTouched(true);
+              if (!fullName.trim()) return;
+              setTouched(false);
+              setStep("contact");
+            }}
+          >
             <Heading title={pick(nameStep.title, locale)} body={pick(nameStep.body, locale)} />
             {/* One line, `autoComplete="name"`. The three-box version asked every person
                 whose name does not split that way to decide which box their name is. */}
             <Field data-invalid={(touched && !fullName.trim()) || Boolean(serverErrors.name)}>
-              <FieldLabel>{pick(nameStep.fullName, locale)} <span className="text-destructive">*</span></FieldLabel>
-              <Input value={fullName} autoComplete="name" placeholder={pick(nameStep.fullNamePlaceholder, locale)} onChange={(event) => { setFullName(event.target.value); setTouched(false); setServerErrors((e) => ({ ...e, name: undefined })); }} />
+              <FieldLabel>
+                {pick(nameStep.fullName, locale)} <span className="text-destructive">*</span>
+              </FieldLabel>
+              <Input
+                value={fullName}
+                autoComplete="name"
+                placeholder={pick(nameStep.fullNamePlaceholder, locale)}
+                onChange={(event) => {
+                  setFullName(event.target.value);
+                  setTouched(false);
+                  setServerErrors((e) => ({ ...e, name: undefined }));
+                }}
+              />
               <FieldDescription>{pick(nameStep.fullNameHint, locale)}</FieldDescription>
-              <FieldError>{touched && !fullName.trim() ? pick(nameStep.error, locale) : serverErrors.name ?? null}</FieldError>
+              <FieldError>
+                {touched && !fullName.trim()
+                  ? pick(nameStep.error, locale)
+                  : (serverErrors.name ?? null)}
+              </FieldError>
             </Field>
-            <Actions locale={locale} onBack={() => { setTouched(false); setStep("role"); }} />
+            <Actions
+              locale={locale}
+              onBack={() => {
+                setTouched(false);
+                setStep("role");
+              }}
+            />
           </form>
         ) : null}
 
         {step === "contact" ? (
-          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!mobileValid || !otpVerified || (email && !EMAIL.test(email))) return; setTouched(false); setStep("password"); }}>
-            <Heading title={pick(contactStep.title, locale)} body={pick(contactStep.body, locale)} />
-            <Field data-invalid={(touched && (!mobileValid || !otpVerified)) || Boolean(contactError)}>
-              <FieldLabel>{pick(contactStep.mobile, locale)} <span className="text-destructive">*</span></FieldLabel>
+          <form
+            className="flex flex-col gap-6"
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              setTouched(true);
+              if (!mobileValid || !otpVerified || (email && !EMAIL.test(email))) return;
+              setTouched(false);
+              setStep("password");
+            }}
+          >
+            <Heading
+              title={pick(contactStep.title, locale)}
+              body={pick(contactStep.body, locale)}
+            />
+            <Field
+              data-invalid={(touched && (!mobileValid || !otpVerified)) || Boolean(contactError)}
+            >
+              <FieldLabel>
+                {pick(contactStep.mobile, locale)} <span className="text-destructive">*</span>
+              </FieldLabel>
               <div className="flex gap-2">
                 {/* The DS disabled look, minus the 50% dim on the value itself: the number
                     is the one thing being verified against the code, so it stays at full
                     contrast while the frame and addon still read as locked. */}
-                <InputGroup className={cn("flex-1", otpRequested && "has-disabled:opacity-100 has-disabled:bg-surface-sunken dark:has-disabled:bg-surface-sunken")}><InputGroupAddon variant="field"><InputGroupText>+91</InputGroupText></InputGroupAddon><InputGroupInput type="tel" inputMode="numeric" maxLength={10} value={mobile} disabled={otpRequested} className={otpRequested ? "disabled:text-foreground disabled:opacity-100 disabled:[-webkit-text-fill-color:currentcolor]" : undefined} placeholder={pick(contactStep.mobilePlaceholder, locale)} onChange={(event) => { setMobile(event.target.value.replace(DIGITS, "").slice(0, 10)); setTouched(false); setContactError(null); }} /></InputGroup>
+                <InputGroup
+                  className={cn(
+                    "flex-1",
+                    otpRequested &&
+                      "has-disabled:opacity-100 has-disabled:bg-surface-sunken dark:has-disabled:bg-surface-sunken",
+                  )}
+                >
+                  <InputGroupAddon variant="field">
+                    <InputGroupText>+91</InputGroupText>
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
+                    value={mobile}
+                    disabled={otpRequested}
+                    className={
+                      otpRequested
+                        ? "disabled:text-foreground disabled:opacity-100 disabled:[-webkit-text-fill-color:currentcolor]"
+                        : undefined
+                    }
+                    placeholder={pick(contactStep.mobilePlaceholder, locale)}
+                    onChange={(event) => {
+                      setMobile(event.target.value.replace(DIGITS, "").slice(0, 10));
+                      setTouched(false);
+                      setContactError(null);
+                    }}
+                  />
+                </InputGroup>
                 {!otpRequested ? (
-                  <Button type="button" variant="outline" className="shrink-0" disabled={mobile.length !== 10} aria-disabled={pending !== null || undefined} onClick={() => { setTouched(false); void sendCode(); }}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="shrink-0"
+                    disabled={mobile.length !== 10}
+                    aria-disabled={pending !== null || undefined}
+                    onClick={() => {
+                      setTouched(false);
+                      void sendCode();
+                    }}
+                  >
                     {pending === "send" ? <Spinner data-icon="inline-start" aria-hidden /> : null}
                     {pick(contactStep.sendOtp, locale)}
                   </Button>
                 ) : (
-                  <Button type="button" variant="ghost" className="shrink-0" onClick={resetOtp}>{pick(contactStep.changeNumber, locale)}</Button>
+                  <Button type="button" variant="ghost" className="shrink-0" onClick={resetOtp}>
+                    {pick(contactStep.changeNumber, locale)}
+                  </Button>
                 )}
               </div>
               {otpVerified ? (
-                <p className="flex items-center gap-1.5 text-body-compact text-success-ink"><CheckCircle2Icon className="size-4" aria-hidden />{pick(contactStep.verified, locale)}</p>
+                <p className="flex items-center gap-1.5 text-body-compact text-success-ink">
+                  <CheckCircle2Icon className="size-4" aria-hidden />
+                  {pick(contactStep.verified, locale)}
+                </p>
               ) : (
                 <FieldDescription>{pick(contactStep.mobileHint, locale)}</FieldDescription>
               )}
-              <FieldError>{contactError ? pick(contactError, locale) : touched && mobile.length !== 10 ? pick(contactStep.mobileError, locale) : touched && !mobileValid ? pick(contactStep.mobileInvalid, locale) : touched && !otpVerified ? pick(contactStep.verifyFirst, locale) : null}</FieldError>
+              <FieldError>
+                {contactError
+                  ? pick(contactError, locale)
+                  : touched && mobile.length !== 10
+                    ? pick(contactStep.mobileError, locale)
+                    : touched && !mobileValid
+                      ? pick(contactStep.mobileInvalid, locale)
+                      : touched && !otpVerified
+                        ? pick(contactStep.verifyFirst, locale)
+                        : null}
+              </FieldError>
             </Field>
 
             {otpRequested && !otpVerified ? (
-              <Field data-invalid={(otpTouched && otpCode.length !== OTP_LENGTH) || Boolean(otpError)} className="rounded-lg bg-surface-sunken p-4">
+              <Field
+                data-invalid={(otpTouched && otpCode.length !== OTP_LENGTH) || Boolean(otpError)}
+                className="rounded-lg bg-surface-sunken p-4"
+              >
                 {/* Label repeated the description's "6-digit code"; kept for screen
                     readers, dropped from view (owner, Sept 11). */}
                 <FieldLabel className="sr-only">{pick(contactStep.otpLabel, locale)}</FieldLabel>
-                <FieldDescription>{pick(contactStep.otpSent, locale).replace("{number}", mobile)}</FieldDescription>
+                <FieldDescription>
+                  {pick(contactStep.otpSent, locale).replace("{number}", mobile)}
+                </FieldDescription>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                  <MaskedOtp value={otpCode} revealed={otpRevealed} onChange={(value) => { setOtpCode(value); setOtpTouched(false); setOtpError(null); }} />
-                  <Button type="button" className="sm:h-12" aria-disabled={pending !== null || undefined} onClick={() => { void verifyCode(); }}>
+                  <MaskedOtp
+                    value={otpCode}
+                    revealed={otpRevealed}
+                    onChange={(value) => {
+                      setOtpCode(value);
+                      setOtpTouched(false);
+                      setOtpError(null);
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    className="sm:h-12"
+                    aria-disabled={pending !== null || undefined}
+                    onClick={() => {
+                      void verifyCode();
+                    }}
+                  >
                     {pending === "verify" ? <Spinner data-icon="inline-start" aria-hidden /> : null}
                     {pick(contactStep.otpVerify, locale)}
                   </Button>
                 </div>
-                <FieldError>{otpTouched && otpCode.length !== OTP_LENGTH ? pick(contactStep.otpError, locale) : otpError ? pick(otpError, locale) : null}</FieldError>
+                <FieldError>
+                  {otpTouched && otpCode.length !== OTP_LENGTH
+                    ? pick(contactStep.otpError, locale)
+                    : otpError
+                      ? pick(otpError, locale)
+                      : null}
+                </FieldError>
                 {/* One row under the boxes: reveal on the left, under the code it reveals;
                     countdown / resend on the right, under the Verify it follows. The
                     countdown and the resend link share the right-hand slot at a fixed
@@ -491,26 +765,81 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                     aria-pressed={otpRevealed}
                     onClick={() => setOtpRevealed((value) => !value)}
                   >
-                    {otpRevealed ? <EyeOffIcon data-icon="inline-start" aria-hidden /> : <EyeIcon data-icon="inline-start" aria-hidden />}
+                    {otpRevealed ? (
+                      <EyeOffIcon data-icon="inline-start" aria-hidden />
+                    ) : (
+                      <EyeIcon data-icon="inline-start" aria-hidden />
+                    )}
                     {pick(otpRevealed ? contactStep.otpHide : contactStep.otpShow, locale)}
                   </Button>
                   {resendIn > 0 ? (
-                    <p className="text-body-compact whitespace-nowrap text-muted-foreground tabular-nums">{pick(contactStep.otpResendIn, locale).replace("{seconds}", String(resendIn))}</p>
+                    <p className="text-body-compact whitespace-nowrap text-muted-foreground tabular-nums">
+                      {pick(contactStep.otpResendIn, locale).replace("{seconds}", String(resendIn))}
+                    </p>
                   ) : (
-                    <Button type="button" variant="link" size="sm" className="h-auto p-0" disabled={pending !== null} onClick={() => { setOtpCode(""); void sendCode(); }}>{pick(contactStep.otpResend, locale)}</Button>
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      className="h-auto p-0"
+                      disabled={pending !== null}
+                      onClick={() => {
+                        setOtpCode("");
+                        void sendCode();
+                      }}
+                    >
+                      {pick(contactStep.otpResend, locale)}
+                    </Button>
                   )}
                 </div>
               </Field>
             ) : null}
 
-            <Field data-invalid={(touched && Boolean(email) && !EMAIL.test(email)) || Boolean(serverErrors.email)}><FieldLabel>{pick(contactStep.email, locale)}</FieldLabel><Input type="email" value={email} placeholder={pick(contactStep.emailPlaceholder, locale)} onChange={(event) => { setEmail(event.target.value); setTouched(false); setServerErrors((e) => ({ ...e, email: undefined })); }} /><FieldError>{touched && email && !EMAIL.test(email) ? pick(contactStep.emailError, locale) : serverErrors.email ?? null}</FieldError></Field>
-            <Actions locale={locale} onBack={() => { setTouched(false); setStep("name"); }} />
+            <Field
+              data-invalid={
+                (touched && Boolean(email) && !EMAIL.test(email)) || Boolean(serverErrors.email)
+              }
+            >
+              <FieldLabel>{pick(contactStep.email, locale)}</FieldLabel>
+              <Input
+                type="email"
+                value={email}
+                placeholder={pick(contactStep.emailPlaceholder, locale)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setTouched(false);
+                  setServerErrors((e) => ({ ...e, email: undefined }));
+                }}
+              />
+              <FieldError>
+                {touched && email && !EMAIL.test(email)
+                  ? pick(contactStep.emailError, locale)
+                  : (serverErrors.email ?? null)}
+              </FieldError>
+            </Field>
+            <Actions
+              locale={locale}
+              onBack={() => {
+                setTouched(false);
+                setStep("name");
+              }}
+            />
           </form>
         ) : null}
 
         {step === "password" ? (
-          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); void submitPassword(); }}>
-            <Heading title={pick(passwordStep.title, locale)} body={pick(passwordStep.body, locale)} />
+          <form
+            className="flex flex-col gap-6"
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              void submitPassword();
+            }}
+          >
+            <Heading
+              title={pick(passwordStep.title, locale)}
+              body={pick(passwordStep.body, locale)}
+            />
 
             <Field data-invalid={(touched && Boolean(problem)) || Boolean(serverErrors.password)}>
               <FieldLabel>{pick(passwordStep.password, locale)}</FieldLabel>
@@ -519,7 +848,11 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                 autoComplete="new-password"
                 value={password}
                 placeholder={pick(passwordStep.passwordPlaceholder, locale)}
-                onChange={(event) => { setPassword(event.target.value); setTouched(false); setServerErrors((e) => ({ ...e, password: undefined })); }}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  setTouched(false);
+                  setServerErrors((e) => ({ ...e, password: undefined }));
+                }}
               />
               {/* Under the box, one line that changes as they type: the whole policy at
                   rest, the one rule currently failing once typing starts, the all-clear
@@ -544,9 +877,22 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                       password && !problem && "text-success-ink",
                     )}
                   >
-                    {password && problem ? <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden /> : null}
-                    {password && !problem ? <CheckIcon className="mt-0.5 size-4 shrink-0" aria-hidden /> : null}
-                    <span>{pick(!password ? passwordStep.rules : problem ? passwordStep.problem[problem] : passwordStep.ok, locale)}</span>
+                    {password && problem ? (
+                      <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+                    ) : null}
+                    {password && !problem ? (
+                      <CheckIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+                    ) : null}
+                    <span>
+                      {pick(
+                        !password
+                          ? passwordStep.rules
+                          : problem
+                            ? passwordStep.problem[problem]
+                            : passwordStep.ok,
+                        locale,
+                      )}
+                    </span>
                   </FieldDescription>
                 )}
                 <Button
@@ -557,7 +903,11 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                   aria-pressed={passwordRevealed}
                   onClick={() => setPasswordRevealed((value) => !value)}
                 >
-                  {passwordRevealed ? <EyeOffIcon data-icon="inline-start" aria-hidden /> : <EyeIcon data-icon="inline-start" aria-hidden />}
+                  {passwordRevealed ? (
+                    <EyeOffIcon data-icon="inline-start" aria-hidden />
+                  ) : (
+                    <EyeIcon data-icon="inline-start" aria-hidden />
+                  )}
                   {pick(passwordRevealed ? passwordStep.hide : passwordStep.show, locale)}
                 </Button>
               </div>
@@ -575,7 +925,10 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                   autoComplete="new-password"
                   value={confirmPassword}
                   placeholder={pick(passwordStep.confirmPlaceholder, locale)}
-                  onChange={(event) => { setConfirmPassword(event.target.value); setTouched(false); }}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    setTouched(false);
+                  }}
                 />
                 {confirmPassword && confirmPassword === password ? (
                   <InputGroupAddon align="inline-end" className="text-success-ink">
@@ -584,24 +937,68 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                   </InputGroupAddon>
                 ) : null}
               </InputGroup>
-              <FieldError>{touched && password !== confirmPassword ? pick(passwordStep.confirmError, locale) : null}</FieldError>
+              <FieldError>
+                {touched && password !== confirmPassword
+                  ? pick(passwordStep.confirmError, locale)
+                  : null}
+              </FieldError>
             </Field>
 
             {/* No skip: the backend needs a password to finish registration (owner, Oct 15). */}
-            <Actions locale={locale} onBack={() => { setTouched(false); setStep("contact"); }} />
+            <Actions
+              locale={locale}
+              onBack={() => {
+                setTouched(false);
+                setStep("contact");
+              }}
+            />
           </form>
         ) : null}
 
         {step === "verification" ? (
-          <form className="flex flex-col gap-6" noValidate onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!regNumber.trim() || !idFile || fileProblem) return; setTouched(false); setStep("terms"); }}>
-            <Heading title={pick(verification.title, locale)} body={pick(verification.body, locale)} />
+          <form
+            className="flex flex-col gap-6"
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              setTouched(true);
+              if (!regNumber.trim() || !idFile || fileProblem) return;
+              setTouched(false);
+              setStep("terms");
+            }}
+          >
+            <Heading
+              title={pick(verification.title, locale)}
+              body={pick(verification.body, locale)}
+            />
             <Field data-invalid={(touched && !regNumber.trim()) || Boolean(serverErrors.regNumber)}>
-              <FieldLabel>{pick(verification.numberLabel, locale)} <span className="text-destructive">*</span></FieldLabel>
-              <Input value={regNumber} maxLength={REGISTRATION_NUMBER_MAX} placeholder={pick(verification.numberPlaceholder, locale)} onChange={(event) => { setRegNumber(event.target.value); setTouched(false); setServerErrors((e) => ({ ...e, regNumber: undefined })); }} />
-              <FieldError>{touched && !regNumber.trim() ? pick(verification.numberError, locale) : serverErrors.regNumber ?? null}</FieldError>
+              <FieldLabel>
+                {pick(verification.numberLabel, locale)} <span className="text-destructive">*</span>
+              </FieldLabel>
+              <Input
+                value={regNumber}
+                maxLength={REGISTRATION_NUMBER_MAX}
+                placeholder={pick(verification.numberPlaceholder, locale)}
+                onChange={(event) => {
+                  setRegNumber(event.target.value);
+                  setTouched(false);
+                  setServerErrors((e) => ({ ...e, regNumber: undefined }));
+                }}
+              />
+              <FieldError>
+                {touched && !regNumber.trim()
+                  ? pick(verification.numberError, locale)
+                  : (serverErrors.regNumber ?? null)}
+              </FieldError>
             </Field>
-            <Field data-invalid={(touched && !idFile) || fileProblem !== null || Boolean(serverErrors.idFile)}>
-              <FieldLabel>{pick(verification.uploadLabel, locale)} <span className="text-destructive">*</span></FieldLabel>
+            <Field
+              data-invalid={
+                (touched && !idFile) || fileProblem !== null || Boolean(serverErrors.idFile)
+              }
+            >
+              <FieldLabel>
+                {pick(verification.uploadLabel, locale)} <span className="text-destructive">*</span>
+              </FieldLabel>
               {/* The app's one upload row (Sept 3): the filled state is the
                   Attachment row with Change file / Remove on its right edge —
                   not a Change link stranded under the box. */}
@@ -609,8 +1006,16 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                 label={pick(verification.uploadLabel, locale)}
                 required
                 file={idFile}
-                onFileChange={(file) => { setIdFile(file); setTouched(false); setFileProblem(null); setServerErrors((e) => ({ ...e, idFile: undefined })); }}
-                onRejectFile={() => { setIdFile(null); setFileProblem("rejected"); }}
+                onFileChange={(file) => {
+                  setIdFile(file);
+                  setTouched(false);
+                  setFileProblem(null);
+                  setServerErrors((e) => ({ ...e, idFile: undefined }));
+                }}
+                onRejectFile={() => {
+                  setIdFile(null);
+                  setFileProblem("rejected");
+                }}
                 copy={{
                   changeFile: pick(verificationUi.changeFile, locale),
                   remove: pick(verificationUi.removeFile, locale),
@@ -618,30 +1023,97 @@ export function RegistrationFlow({ locale, summoned, toSign = false, initialMobi
                   chooseFile: pick(verificationUi.chooseFile, locale),
                 }}
               />
-              <FieldDescription>{pick(verification.uploadHint, locale)} {pick(verificationUi.fileHelp, locale)}</FieldDescription>
+              <FieldDescription>
+                {pick(verification.uploadHint, locale)} {pick(verificationUi.fileHelp, locale)}
+              </FieldDescription>
               {/* The server's own reason wins (it reads the file's contents); then a
                   refused pick; then the missing-file prompt. */}
-              <FieldError>{idFileError({ serverError: serverErrors.idFile, fileProblem, missingMessage: touched && !idFile ? pick(verification.uploadError, locale) : null, locale })}</FieldError>
+              <FieldError>
+                {idFileError({
+                  serverError: serverErrors.idFile,
+                  fileProblem,
+                  missingMessage:
+                    touched && !idFile ? pick(verification.uploadError, locale) : null,
+                  locale,
+                })}
+              </FieldError>
             </Field>
-            <Actions locale={locale} onBack={() => { setTouched(false); setStep("password"); }} />
+            <Actions
+              locale={locale}
+              onBack={() => {
+                setTouched(false);
+                setStep("password");
+              }}
+            />
           </form>
         ) : null}
 
         {step === "terms" ? (
-          <form className="flex flex-col gap-6" aria-busy={pending === "submit"} onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!termsAccepted || pending) return; void submitRegistration(); }}>
+          <form
+            className="flex flex-col gap-6"
+            aria-busy={pending === "submit"}
+            onSubmit={(event) => {
+              event.preventDefault();
+              setTouched(true);
+              if (!termsAccepted || pending) return;
+              void submitRegistration();
+            }}
+          >
             <Heading title={pick(termsStep.title, locale)} body={pick(termsStep.body, locale)} />
-            <div className="divide-y divide-border border-y border-border">{termsStep.clauses.map((clause, index) => <div key={index} className="flex gap-3 py-4"><span className="text-body-compact font-semibold text-muted-foreground">{index + 1}.</span><p className="text-body-compact text-muted-foreground">{pick(clause, locale)}</p></div>)}</div>
-            <Field data-invalid={touched && !termsAccepted}><div className="flex items-start gap-3 rounded-lg bg-surface-sunken p-4"><Checkbox id="registration-terms" checked={termsAccepted} onCheckedChange={(checked) => { setTermsAccepted(checked === true); setTouched(false); }} /><Label htmlFor="registration-terms" className="cursor-pointer text-body-compact leading-5">{pick(termsStep.accept, locale)}</Label></div><FieldError>{touched && !termsAccepted ? pick(termsStep.error, locale) : null}</FieldError></Field>
-            {submitError === "unavailable" ? <SubmitErrorAlert message={pick(registrationUi.unavailable, locale)} /> : null}
+            <div className="divide-y divide-border border-y border-border">
+              {termsStep.clauses.map((clause, index) => (
+                <div key={index} className="flex gap-3 py-4">
+                  <span className="text-body-compact font-semibold text-muted-foreground">
+                    {index + 1}.
+                  </span>
+                  <p className="text-body-compact text-muted-foreground">{pick(clause, locale)}</p>
+                </div>
+              ))}
+            </div>
+            <Field data-invalid={touched && !termsAccepted}>
+              <div className="flex items-start gap-3 rounded-lg bg-surface-sunken p-4">
+                <Checkbox
+                  id="registration-terms"
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => {
+                    setTermsAccepted(checked === true);
+                    setTouched(false);
+                  }}
+                />
+                <Label
+                  htmlFor="registration-terms"
+                  className="cursor-pointer text-body-compact leading-5"
+                >
+                  {pick(termsStep.accept, locale)}
+                </Label>
+              </div>
+              <FieldError>
+                {touched && !termsAccepted ? pick(termsStep.error, locale) : null}
+              </FieldError>
+            </Field>
+            {submitError === "unavailable" ? (
+              <SubmitErrorAlert message={pick(registrationUi.unavailable, locale)} />
+            ) : null}
             {/* Scaffolding, English-only like the other prototype notices: only the
                 litigant registration is connected to the backend so far. */}
             {submitError === "notSupported" ? (
               <Alert variant="info">
                 <AlertTitle>{t("registrationFlow_notConnectedYet")}</AlertTitle>
-                <AlertDescription>{t("registrationFlow_registrationForThisAccountTypeIs")}</AlertDescription>
+                <AlertDescription>
+                  {t("registrationFlow_registrationForThisAccountTypeIs")}
+                </AlertDescription>
               </Alert>
             ) : null}
-            <Actions locale={locale} onBack={() => { setTouched(false); setSubmitError(null); setStep(needsVerification ? "verification" : "password"); }} submitLabel={pick(termsStep.submit, locale)} pending={pending === "submit"} />
+            <Actions
+              locale={locale}
+              onBack={() => {
+                setTouched(false);
+                setSubmitError(null);
+                setStep(needsVerification ? "verification" : "password");
+              }}
+              submitLabel={pick(termsStep.submit, locale)}
+              pending={pending === "submit"}
+            />
           </form>
         ) : null}
       </div>

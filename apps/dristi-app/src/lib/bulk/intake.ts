@@ -114,7 +114,9 @@ async function complainantFrom(src: ApiComplainant): Promise<Complainant> {
   } else {
     comp.name = trim(src.name);
     comp.age = (src.age ?? "").replace(/\D/g, "");
-    comp.gender = (["male", "female", "other"].includes(src.gender ?? "") ? src.gender : "") as Complainant["gender"];
+    comp.gender = (
+      ["male", "female", "other"].includes(src.gender ?? "") ? src.gender : ""
+    ) as Complainant["gender"];
     comp.mobile = normalisePhone(src.phone);
     comp.email = trim(src.email).toLowerCase();
     comp.res = await address(src.address);
@@ -126,13 +128,22 @@ async function complainantFrom(src: ApiComplainant): Promise<Complainant> {
 }
 
 /** Fetches one document the sender listed and stores it, with any text read from it; `null` when it cannot. */
-export type FetchDocument = (doc: ApiDocument) => Promise<(StoredFileRef & { text?: string | null }) | null>;
+export type FetchDocument = (
+  doc: ApiDocument,
+) => Promise<(StoredFileRef & { text?: string | null }) | null>;
 
 async function buildDraft(
   req: ApiBatchRequest,
   c: ApiCase,
-  fetchDocument: FetchDocument
-): Promise<{ draft: FilingDraft; unknownBar: string[]; fetchFailed: string[]; unknownService: number[]; unstated: string[]; docText: Record<string, string | null> }> {
+  fetchDocument: FetchDocument,
+): Promise<{
+  draft: FilingDraft;
+  unknownBar: string[];
+  fetchFailed: string[];
+  unknownService: number[];
+  unstated: string[];
+  docText: Record<string, string | null>;
+}> {
   const draft = createBlankDraft(newId("d"), null);
   const now = new Date().toISOString();
 
@@ -159,7 +170,10 @@ async function buildDraft(
   draft.accused = await Promise.all(
     c.accused.map(async (a): Promise<Accused> => {
       const addresses: AddressBlock[] = await Promise.all(
-        a.addresses.map(async (ad) => ({ addr: await address(ad), police: trim(ad.policeStation) }))
+        a.addresses.map(async (ad) => ({
+          addr: await address(ad),
+          police: trim(ad.policeStation),
+        })),
       );
       // As sent; otherwise read from the addresses' districts.
       const inside =
@@ -179,7 +193,7 @@ async function buildDraft(
         // Bulk keeps this declaration on the batch case (`noContactDeclared`).
         contactUnknownDeclaredAt: null,
       };
-    })
+    }),
   );
 
   /* Cheques (CHQ), with one intake group of document slots each. */
@@ -203,7 +217,7 @@ async function buildDraft(
         returnReason: trim(q.returnReason),
         ifscFetched: !!bank,
       };
-    })
+    }),
   );
   draft.intake.cheques = draft.cheques.map((_, i) => intakeChequeGroup(i + 1));
 
@@ -273,7 +287,7 @@ async function buildDraft(
         prove: trim(w.prove),
         contacts: [{ mobile: normalisePhone(w.mobile), email: trim(w.email).toLowerCase() }],
         addresses: [{ addr: await address(w.address), police: trim(w.address?.policeStation) }],
-      }))
+      })),
     );
   }
 
@@ -286,7 +300,7 @@ async function buildDraft(
     [...draft.intake.cheques, ...draft.intake.notices, ...draft.intake.parties]
       .flatMap((g) => g.slots)
       .concat(draft.intake.supporting)
-      .map((s) => [s.key, s])
+      .map((s) => [s.key, s]),
   );
   for (const doc of c.documents ?? []) {
     const slot = slots.get(slotKeyFor(doc.code, doc.index ?? 1));
@@ -301,7 +315,12 @@ async function buildDraft(
   draft.documents = buildDocumentGroups(draft);
 
   // Every section was filled from the request, so each counts as opened.
-  draft.visited = [...PROGRESS_STEPS.filter((s) => s !== "sign"), "witnesses", "affidavit", "preview"];
+  draft.visited = [
+    ...PROGRESS_STEPS.filter((s) => s !== "sign"),
+    "witnesses",
+    "affidavit",
+    "preview",
+  ];
   draft.lastStep = "preview";
   /* PRY-1 from the batch's format, for a case that brought no additional details. Written
      last, so every value the format names is already on the draft. */
@@ -345,8 +364,12 @@ export function validateRequest(req: unknown): string[] {
   if (!r.source?.system) errors.push("source.system is required.");
   if (!r.complainant?.name) errors.push("complainant.name is required.");
   if (!Array.isArray(r.advocates)) errors.push("advocates must be a list.");
-  if (!Array.isArray(r.cases) || r.cases.length === 0) errors.push("cases must be a non-empty list.");
-  if (r.detailsFormat && (typeof r.detailsFormat.html !== "string" || typeof r.detailsFormat.id !== "string")) {
+  if (!Array.isArray(r.cases) || r.cases.length === 0)
+    errors.push("cases must be a non-empty list.");
+  if (
+    r.detailsFormat &&
+    (typeof r.detailsFormat.html !== "string" || typeof r.detailsFormat.id !== "string")
+  ) {
     errors.push("detailsFormat needs an id and html.");
   }
   const refs = new Set<string>();
@@ -366,7 +389,7 @@ export function validateRequest(req: unknown): string[] {
 export async function buildBatch(
   req: ApiBatchRequest,
   source: BatchSource,
-  fetchDocument: FetchDocument
+  fetchDocument: FetchDocument,
 ): Promise<Omit<Batch, "number">> {
   const now = new Date().toISOString();
   const cases: BatchCase[] = [];

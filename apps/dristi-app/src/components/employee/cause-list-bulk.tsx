@@ -4,10 +4,7 @@ import * as React from "react";
 import { CalendarDaysIcon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  DayBreakdown,
-  LoadCalendar,
-} from "@/components/employee/next-hearing-fields";
+import { DayBreakdown, LoadCalendar } from "@/components/employee/next-hearing-fields";
 import { PurposeField } from "@/components/employee/purpose-field";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { useHearingSession } from "@/components/employee/use-hearing-session";
@@ -45,10 +42,7 @@ import { listingLoad } from "@/lib/employee/listing-load";
 import { NO_CAUSE_POSTING } from "@/lib/employee/order-draft";
 import { initialOrderDraft } from "@/lib/employee/order-demo";
 import { orderInitialDraft } from "@/lib/employee/order-door";
-import {
-  editorDraftKey,
-  updateOrderDraft,
-} from "@/lib/employee/order-drafts";
+import { editorDraftKey, updateOrderDraft } from "@/lib/employee/order-drafts";
 import type { OrderSigning } from "@/lib/employee/order-signing";
 import {
   noteOrderDraft,
@@ -96,7 +90,6 @@ function plural(count: number, one: string, many: string): string {
 }
 
 /* ─────────────────────────────── the bulk bar ─────────────────────────────── */
-
 
 /**
  * What is selected, and the acts — sticky at the foot of the page, as the Orders view's
@@ -300,9 +293,8 @@ function BulkActionsDialog({
             {t("causeListBulk_bulkActions")}
           </DialogTitle>
           <DialogDescription className="text-body-compact">
-            For {selected.length} selected{" "}
-            {plural(selected.length, "hearing", "hearings")}. What you leave as it is
-            stays as each hearing has it.
+            For {selected.length} selected {plural(selected.length, "hearing", "hearings")}. What
+            you leave as it is stays as each hearing has it.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-6">
@@ -334,7 +326,7 @@ function BulkActionsDialog({
                 ))}
               </RadioGroup>
               {outcome === "complete" &&
-                marking.some((hearing) => hearing.status === "scheduled") ? (
+              marking.some((hearing) => hearing.status === "scheduled") ? (
                 <p className="text-caption text-muted-foreground">
                   {t("causeListBulk_aScheduledHearingIsStartedAnd")}
                 </p>
@@ -342,16 +334,14 @@ function BulkActionsDialog({
               {outcome !== "keep" && leaving.length > 0 ? (
                 <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-4">
                   <p className="text-body-compact font-medium">
-                    {leaving.length} selected{" "}
-                    {plural(leaving.length, "hearing is", "hearings are")} left as{" "}
-                    {plural(leaving.length, "it is", "they are")} — only a Scheduled or
+                    {leaving.length} selected {plural(leaving.length, "hearing is", "hearings are")}{" "}
+                    left as {plural(leaving.length, "it is", "they are")} — only a Scheduled or
                     Ongoing hearing can be {outcomeWord}
                   </p>
                   <ul className="flex flex-col gap-1 text-body-compact text-muted-foreground">
                     {leaving.map((hearing) => (
                       <li key={hearing.id}>
-                        <span className="tabular-nums">{hearing.item}.</span>{" "}
-                        {causeTitle(hearing)}
+                        <span className="tabular-nums">{hearing.item}.</span> {causeTitle(hearing)}
                       </li>
                     ))}
                   </ul>
@@ -379,7 +369,9 @@ function BulkActionsDialog({
                   value={notListed ? null : purpose}
                   disabled={notListed}
                   onChange={setPurpose}
-                  placeholder={notListed ? t("causeListBulk_notListed") : t("causeListBulk_leaveAsItIs")}
+                  placeholder={
+                    notListed ? t("causeListBulk_notListed") : t("causeListBulk_leaveAsItIs")
+                  }
                   labelledBy="bulk-set-purpose-label"
                 />
                 {purpose && !notListed ? (
@@ -403,8 +395,7 @@ function BulkActionsDialog({
             </Button>
           </DialogClose>
           <Button type="button" disabled={!changes} onClick={confirm}>
-            Apply to {selected.length}{" "}
-            {plural(selected.length, "hearing", "hearings")}
+            Apply to {selected.length} {plural(selected.length, "hearing", "hearings")}
           </Button>
         </DialogFooter>
         <DiscardQuestion guard={guard} />
@@ -496,11 +487,7 @@ function BulkDateField({
                 >
                   {t("causeListBulk_notListedAgain")}
                 </Label>
-                <Button
-                  type="button"
-                  className="ml-auto"
-                  onClick={() => setOpen(false)}
-                >
+                <Button type="button" className="ml-auto" onClick={() => setOpen(false)}>
                   {t("causeListBulk_done")}
                 </Button>
               </div>
@@ -570,12 +557,8 @@ function OrderTextDialog({
   const today = useCourtToday();
   const [text, setText] = React.useState("");
 
-  const taking = selected.filter((hearing) =>
-    stillDrafting(hearing, pending, signing),
-  );
-  const leaving = selected.filter(
-    (hearing) => !stillDrafting(hearing, pending, signing),
-  );
+  const taking = selected.filter((hearing) => stillDrafting(hearing, pending, signing));
+  const leaving = selected.filter((hearing) => !stillDrafting(hearing, pending, signing));
   const empty = text.trim().length === 0;
   const guard = useDiscardGuard(!empty, () => onOpenChange(false));
 
@@ -618,8 +601,7 @@ function OrderTextDialog({
       <DialogContent className="sm:max-w-xl" {...guard.contentProps} {...guard.outsideProps}>
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            Add the same text to {taking.length}{" "}
-            {plural(taking.length, "order", "orders")}
+            Add the same text to {taking.length} {plural(taking.length, "order", "orders")}
           </DialogTitle>
           <DialogDescription className="text-body-compact">
             {t("causeListBulk_itGoesAtTheEndOf")}
@@ -638,14 +620,12 @@ function OrderTextDialog({
         {leaving.length > 0 ? (
           <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-4">
             <p className="text-body-compact font-medium">
-              {leaving.length} selected{" "}
-              {plural(leaving.length, "order is", "orders are")} left out
+              {leaving.length} selected {plural(leaving.length, "order is", "orders are")} left out
             </p>
             <ul className="flex flex-col gap-1 text-body-compact text-muted-foreground">
               {leaving.map((hearing) => (
                 <li key={hearing.id}>
-                  <span className="tabular-nums">{hearing.item}.</span>{" "}
-                  {causeTitle(hearing)} —{" "}
+                  <span className="tabular-nums">{hearing.item}.</span> {causeTitle(hearing)} —{" "}
                   {signing[hearing.id] === "signed"
                     ? t("causeListBulk_alreadySigned")
                     : t("causeListBulk_sentForSigning")}
@@ -660,11 +640,7 @@ function OrderTextDialog({
               {t("common_cancel")}
             </Button>
           </DialogClose>
-          <Button
-            type="button"
-            disabled={empty || taking.length === 0}
-            onClick={confirm}
-          >
+          <Button type="button" disabled={empty || taking.length === 0} onClick={confirm}>
             Add to {taking.length} {plural(taking.length, "order", "orders")}
           </Button>
         </DialogFooter>

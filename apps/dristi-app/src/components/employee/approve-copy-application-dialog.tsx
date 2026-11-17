@@ -103,10 +103,7 @@ function ApplicationBody({
   onReturnFocus: () => void;
 }) {
   const t = useTranslations();
-  const document = useMemo(
-    () => buildCopyApplicationDocument(application),
-    [application],
-  );
+  const document = useMemo(() => buildCopyApplicationDocument(application), [application]);
 
   return (
     <ChromeDialogContent
@@ -160,12 +157,23 @@ function ApplicationBody({
         <div className="xl:min-h-0 xl:overflow-y-auto">
           <div className="rounded-lg bg-surface-sunken p-4">
             <DescriptionList>
-              <ReviewRow term={t("approveCopyApplicationDialog_applicationType")}>{t("approveCopyApplicationDialog_copyApplication")}</ReviewRow>
+              <ReviewRow term={t("approveCopyApplicationDialog_applicationType")}>
+                {t("approveCopyApplicationDialog_copyApplication")}
+              </ReviewRow>
               <ReviewRow term={t("approveCopyApplicationDialog_caseNumber")}>
-                <Identifier value={application.caseNumber} label={t("approveCopyApplicationDialog_caseNumberLabel")} />
+                <Identifier
+                  value={application.caseNumber}
+                  label={t("approveCopyApplicationDialog_caseNumberLabel")}
+                />
               </ReviewRow>
               <ReviewRow term={t("approveCopyApplicationDialog_copySought")}>
-                {t.rich("approveCopyApplicationDialog_descriptionDatedFormatCopyApplicationLong", { description: application.record.description, formatCopyApplicationLongDate: formatCopyApplicationLongDate(application.record.dated), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+                {t.rich("approveCopyApplicationDialog_descriptionDatedFormatCopyApplicationLong", {
+                  description: application.record.description,
+                  formatCopyApplicationLongDate: formatCopyApplicationLongDate(
+                    application.record.dated,
+                  ),
+                  span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                })}
               </ReviewRow>
               <ReviewRow term={t("approveCopyApplicationDialog_copiesRequired")}>
                 {copiesLine(application)}
@@ -196,11 +204,7 @@ function ApplicationBody({
         />
       </div>
       <DialogFooter className="mx-0 mb-0 shrink-0">
-        <Button
-          type="button"
-          variant="destructive"
-          onClick={() => onReject(application)}
-        >
+        <Button type="button" variant="destructive" onClick={() => onReject(application)}>
           {t("approveCopyApplicationDialog_reject")}
         </Button>
         <Button type="button" onClick={() => onAccept(application)}>
@@ -215,11 +219,7 @@ function ApplicationBody({
  * The application itself as paper — the same facsimile treatment the other court-side
  * review overlays use, bound to this application's own particulars.
  */
-function ApplicationFacsimile({
-  document: storedDocument,
-}: {
-  document: CopyApplicationDocument;
-}) {
+function ApplicationFacsimile({ document: storedDocument }: { document: CopyApplicationDocument }) {
   const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
@@ -227,14 +227,16 @@ function ApplicationFacsimile({
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          {t("approveCopyApplicationDialog_copyApplicationNoApplicationNumber", { applicationNumber: document.applicationNumber })}
+          {t("approveCopyApplicationDialog_copyApplicationNoApplicationNumber", {
+            applicationNumber: document.applicationNumber,
+          })}
         </p>
         <p className="text-body font-semibold">
-          {t("approveCopyApplicationDialog_inCaseNoCaseNumber", { caseNumber: document.caseNumber })}
+          {t("approveCopyApplicationDialog_inCaseNoCaseNumber", {
+            caseNumber: document.caseNumber,
+          })}
         </p>
-        <p className="text-body-compact text-paper-muted-foreground">
-          {document.matter}
-        </p>
+        <p className="text-body-compact text-paper-muted-foreground">{document.matter}</p>
       </header>
 
       <h3 className="text-center text-body font-semibold">{document.title}</h3>
@@ -269,7 +271,10 @@ function ApplicationFacsimile({
           {t("approveCopyApplicationDialog_presentedByFiledBy", { filedBy: document.filedBy })}
         </p>
         <p className="text-body-compact text-paper-muted-foreground">
-          {t("approveCopyApplicationDialog_datedThisDatedAtPlace", { dated: document.dated, place: document.place })}
+          {t("approveCopyApplicationDialog_datedThisDatedAtPlace", {
+            dated: document.dated,
+            place: document.place,
+          })}
         </p>
       </footer>
     </article>

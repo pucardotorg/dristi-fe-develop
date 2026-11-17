@@ -23,18 +23,8 @@ import { ReplaceFileButton } from "@/components/cases/uploaded-doc-field";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogClose, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import {
   applicationSideLabel,
   type ApplicationRecord,
@@ -147,13 +137,8 @@ function RecordBody({
      on record (the demo has few): the page the filer saw before signing.
      The other side sees it only once the court has taken it up (ALC-17),
      which is when this record first reaches them. */
-  const composed = useMemo(
-    () => composedApplication(application, record),
-    [application, record]
-  );
-  const [openSrc, setOpenSrc] = useState(
-    viewable[0]?.src ?? (composed ? COMPOSED : undefined)
-  );
+  const composed = useMemo(() => composedApplication(application, record), [application, record]);
+  const [openSrc, setOpenSrc] = useState(viewable[0]?.src ?? (composed ? COMPOSED : undefined));
   const showingComposed = openSrc === COMPOSED && composed !== null;
   const documents =
     composed && application.documents.length === 0
@@ -162,8 +147,7 @@ function RecordBody({
   /* A replaced file comes in under a new src: show it, not the old one. */
   const open = viewable.find((doc) => doc.src === openSrc) ?? viewable[0];
   const pdf = open?.src && isPdfSrc(open.src) ? parsePdfSrc(open.src) : null;
-  const image =
-    open?.src && !pdf && isImageSrc(open.src) ? parsePdfSrc(open.src).url : null;
+  const image = open?.src && !pdf && isImageSrc(open.src) ? parsePdfSrc(open.src).url : null;
 
   return (
     <>
@@ -172,9 +156,7 @@ function RecordBody({
           <DialogTitle className="text-body-compact font-semibold text-pretty sm:truncate">
             {application.name}
           </DialogTitle>
-          <Badge variant={application.statusVariant}>
-            {application.statusLabel}
-          </Badge>
+          <Badge variant={application.statusVariant}>{application.statusLabel}</Badge>
           <DialogDescription className="sr-only">
             {t("applicationRecordDialog_applicationRecordDocumentsAndLinkedOrder")}
           </DialogDescription>
@@ -198,10 +180,7 @@ function RecordBody({
                     variant="ghost"
                     size="icon-sm"
                     aria-label={t("applicationRecordDialog_download")}
-                    onClick={() =>
-                      composed &&
-                      downloadApplicationText(composed.document, record)
-                    }
+                    onClick={() => composed && downloadApplicationText(composed.document, record)}
                   >
                     <DownloadIcon aria-hidden />
                   </Button>
@@ -223,282 +202,273 @@ function RecordBody({
           the screen, a tablet (the rail open beside the dialog) set the
           application out in a strip about 180px wide and cut it off. */}
       <div className="@container/record flex min-h-0 flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 flex-col @3xl/record:flex-row">
-        <div className="flex max-h-72 shrink-0 flex-col gap-0 overflow-y-auto border-b border-hairline p-4 @3xl/record:max-h-none @3xl/record:w-80 @3xl/record:border-r @3xl/record:border-b-0">
-          {/* Grouped so the panel can be skimmed (owner, Sept 24): what is
+        <div className="flex min-h-0 flex-1 flex-col @3xl/record:flex-row">
+          <div className="flex max-h-72 shrink-0 flex-col gap-0 overflow-y-auto border-b border-hairline p-4 @3xl/record:max-h-none @3xl/record:w-80 @3xl/record:border-r @3xl/record:border-b-0">
+            {/* Grouped so the panel can be skimmed (owner, Sept 24): what is
               happening first, then numbers, dates, people, objections and the
               order, each group parted by a hairline. Dates and people run two
               to a row; they are short. */}
-          <div className="flex flex-col divide-y divide-hairline">
-            {courtLine(application) ? (
-              <p className="pb-3 text-body-compact text-foreground">
-                {courtLine(application)}
-                {isDecided(application.status) && application.linkedOrder ? (
-                  <>
-                    <span aria-hidden className="text-muted-foreground">
-                      {" · "}
-                    </span>
-                    <Button variant="link" asChild className="h-auto px-0">
-                      <Link
-                        href={orderHref(caseId, application.linkedOrder.id)}
-                      >
-                        {t("applicationRecordDialog_viewOrder")}
-                      </Link>
-                    </Button>
-                  </>
-                ) : null}
-              </p>
-            ) : null}
+            <div className="flex flex-col divide-y divide-hairline">
+              {courtLine(application) ? (
+                <p className="pb-3 text-body-compact text-foreground">
+                  {courtLine(application)}
+                  {isDecided(application.status) && application.linkedOrder ? (
+                    <>
+                      <span aria-hidden className="text-muted-foreground">
+                        {" · "}
+                      </span>
+                      <Button variant="link" asChild className="h-auto px-0">
+                        <Link href={orderHref(caseId, application.linkedOrder.id)}>
+                          {t("applicationRecordDialog_viewOrder")}
+                        </Link>
+                      </Button>
+                    </>
+                  ) : null}
+                </p>
+              ) : null}
 
-            {hasNumberFacts(application) ? (
-            <FactGroup>
-              {application.source.kind === "document" ||
-              application.source.type === "objection" ? null : (
-                <Fact label={t("applicationRecordDialog_applicationNumber")}>
-                  {application.applicationNumber ? (
-                    <span className="font-mono">
-                      {application.applicationNumber}
-                    </span>
-                  ) : (
-                    <Muted>
-                      {application.status === "dismissed"
-                        ? t("applicationRecordDialog_notAllottedDismissedBeforeTheCourt")
-                        : t("applicationRecordDialog_allottedWhenTheCourtTakesIt")}
-                    </Muted>
+              {hasNumberFacts(application) ? (
+                <FactGroup>
+                  {application.source.kind === "document" ||
+                  application.source.type === "objection" ? null : (
+                    <Fact label={t("applicationRecordDialog_applicationNumber")}>
+                      {application.applicationNumber ? (
+                        <span className="font-mono">{application.applicationNumber}</span>
+                      ) : (
+                        <Muted>
+                          {application.status === "dismissed"
+                            ? t("applicationRecordDialog_notAllottedDismissedBeforeTheCourt")
+                            : t("applicationRecordDialog_allottedWhenTheCourtTakesIt")}
+                        </Muted>
+                      )}
+                    </Fact>
                   )}
-                </Fact>
-              )}
-              {application.temporaryId ? (
-                /* One name for it at every status, marked the way forms mark
+                  {application.temporaryId ? (
+                    /* One name for it at every status, marked the way forms mark
                    "(optional)": it stands in until the court's number, and is
                    never cited in an order (owner, Sept 24). */
-                <Fact
-                  label={
-                    <>
-                      {t.rich("applicationRecordDialog_filingIdTemporary", { span: (chunks) => <span className="font-normal">{chunks}</span> })}
-                    </>
-                  }
-                >
-                  <span className="font-mono">{application.temporaryId}</span>
-                </Fact>
+                    <Fact
+                      label={
+                        <>
+                          {t.rich("applicationRecordDialog_filingIdTemporary", {
+                            span: (chunks) => <span className="font-normal">{chunks}</span>,
+                          })}
+                        </>
+                      }
+                    >
+                      <span className="font-mono">{application.temporaryId}</span>
+                    </Fact>
+                  ) : null}
+                </FactGroup>
               ) : null}
-            </FactGroup>
-            ) : null}
 
-            <FactGroup columns={2}>
-              <Fact label={t("applicationRecordDialog_createdOn")}>
-                <span className="tabular-nums">{application.createdShort}</span>
-              </Fact>
-              <Fact label={t("applicationRecordDialog_submittedOn")}>
-                {application.submittedShort ? (
-                  <span className="tabular-nums">
-                    {application.submittedShort}
-                  </span>
-                ) : (
-                  <Muted>{t("applicationRecordDialog_notYet")}</Muted>
-                )}
-              </Fact>
-              {application.onboardedShort ? (
-                <Fact label={t("applicationRecordDialog_takenUpOn")}>
-                  <span className="tabular-nums">
-                    {application.onboardedShort}
-                  </span>
+              <FactGroup columns={2}>
+                <Fact label={t("applicationRecordDialog_createdOn")}>
+                  <span className="tabular-nums">{application.createdShort}</span>
                 </Fact>
-              ) : null}
-              {application.expiresShort ? (
-                <Fact label={t("applicationRecordDialog_expiresOn")}>
-                  <span className="tabular-nums">
-                    {application.expiresShort}
-                  </span>
+                <Fact label={t("applicationRecordDialog_submittedOn")}>
+                  {application.submittedShort ? (
+                    <span className="tabular-nums">{application.submittedShort}</span>
+                  ) : (
+                    <Muted>{t("applicationRecordDialog_notYet")}</Muted>
+                  )}
                 </Fact>
-              ) : null}
-              {application.decisionShort &&
-              application.status === "pending-decision" ? (
-                <Fact label={t("applicationRecordDialog_decisionOn")}>
-                  <span className="tabular-nums">
-                    {application.decisionShort}
-                  </span>
-                </Fact>
-              ) : null}
-            </FactGroup>
-
-            <FactGroup columns={2}>
-              <Fact label={t("applicationRecordDialog_raisedBy")}>{application.filedBy}</Fact>
-              <Fact label={t("applicationRecordDialog_side")}>{applicationSideLabel(application.side)}</Fact>
-              {application.onBehalfOf ? (
-                <Fact label={t("applicationRecordDialog_onBehalfOf")}>{application.onBehalfOf}</Fact>
-              ) : null}
-              {application.draftedBy ? (
-                <Fact label={t("applicationRecordDialog_draftedBy")}>{application.draftedBy}</Fact>
-              ) : null}
-            </FactGroup>
-
-            {application.objectionsInvited !== undefined ||
-            application.objection ||
-            application.objectionTo ? (
-              <FactGroup>
-                {application.objectionsInvited !== undefined ? (
-                  <Fact label={t("applicationRecordDialog_objections")}>
-                    <span className="font-normal tabular-nums">
-                      {application.objectionsInvited
-                        ? application.objectionDue
-                          ? t("applicationRecordDialog_invitedDueByTheEndOf", { objectionDue: application.objectionDue })
-                          : t("applicationRecordDialog_invited")
-                        : t("applicationRecordDialog_notInvited")}
-                    </span>
+                {application.onboardedShort ? (
+                  <Fact label={t("applicationRecordDialog_takenUpOn")}>
+                    <span className="tabular-nums">{application.onboardedShort}</span>
                   </Fact>
                 ) : null}
-                {application.objection ? (
-                  <Fact label={t("applicationRecordDialog_objectionFiled")}>
-                    <LinkedRecord
-                      linked={application.objection}
-                      onOpen={onOpenLinked}
-                    />
+                {application.expiresShort ? (
+                  <Fact label={t("applicationRecordDialog_expiresOn")}>
+                    <span className="tabular-nums">{application.expiresShort}</span>
                   </Fact>
                 ) : null}
-                {application.objectionTo ? (
-                  <Fact label={t("applicationRecordDialog_objectionTo")}>
-                    <LinkedRecord
-                      linked={application.objectionTo}
-                      onOpen={onOpenLinked}
-                    />
+                {application.decisionShort && application.status === "pending-decision" ? (
+                  <Fact label={t("applicationRecordDialog_decisionOn")}>
+                    <span className="tabular-nums">{application.decisionShort}</span>
                   </Fact>
                 ) : null}
               </FactGroup>
-            ) : null}
 
-            <FactGroup>
-              <Fact label={t("applicationRecordDialog_linkedOrder")}>
-                {application.linkedOrder ? (
-                  <Button
-                    variant="link"
-                    asChild
-                    className="h-auto justify-start px-0 text-left whitespace-normal"
-                  >
-                    <Link href={orderHref(caseId, application.linkedOrder.id)}>
-                      {application.linkedOrder.label}
-                    </Link>
-                  </Button>
-                ) : (
-                  <Muted>
-                    {isDecided(application.status)
-                      ? t("applicationRecordDialog_orderNotOnFileYet")
-                      : t("applicationRecordDialog_noOrderYet")}
-                  </Muted>
-                )}
-              </Fact>
-            </FactGroup>
-          </div>
+              <FactGroup columns={2}>
+                <Fact label={t("applicationRecordDialog_raisedBy")}>{application.filedBy}</Fact>
+                <Fact label={t("applicationRecordDialog_side")}>
+                  {applicationSideLabel(application.side)}
+                </Fact>
+                {application.onBehalfOf ? (
+                  <Fact label={t("applicationRecordDialog_onBehalfOf")}>
+                    {application.onBehalfOf}
+                  </Fact>
+                ) : null}
+                {application.draftedBy ? (
+                  <Fact label={t("applicationRecordDialog_draftedBy")}>
+                    {application.draftedBy}
+                  </Fact>
+                ) : null}
+              </FactGroup>
 
-          <div className="flex flex-col gap-1.5 border-t border-hairline pt-3">
-            <h3 className="text-caption font-medium text-muted-foreground">
-              {t("applicationRecordDialog_documents")}
-            </h3>
-            {documents.length === 0 ? (
-              <Muted>{t("applicationRecordDialog_noneAttached")}</Muted>
-            ) : (
-              <ul className="-mx-2 flex flex-col gap-0.5">
-                {documents.map((doc, index) => {
-                  /* The application is always listed first; with no file of
-                     its own, it opens set out from its details. */
-                  const key =
-                    "src" in doc && doc.src
-                      ? doc.src
-                      : index === 0 && composed
-                        ? COMPOSED
-                        : undefined;
-                  return (
-                  <li key={doc.label}>
-                    {key ? (
-                      <button
-                        type="button"
-                        aria-pressed={key === openSrc}
-                        onClick={() => setOpenSrc(key)}
-                        className={cn(
-                          "flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left text-body-compact outline-none transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50",
-                          key === openSrc && "bg-accent-strong font-medium"
-                        )}
-                      >
-                        <FileTextIcon
-                          aria-hidden
-                          className="size-4 shrink-0 text-muted-foreground"
-                        />
-                        <span className="min-w-0">{doc.label}</span>
-                      </button>
-                    ) : (
-                      <span className="flex min-h-10 items-center gap-2 px-2 text-body-compact text-muted-foreground">
-                        <FileTextIcon aria-hidden className="size-4 shrink-0" />
-                        <span className="min-w-0">{doc.label}</span>
-                        <span className="ml-auto shrink-0 text-caption font-medium">
-                          {t("applicationRecordDialog_notOnFile")}
-                        </span>
+              {application.objectionsInvited !== undefined ||
+              application.objection ||
+              application.objectionTo ? (
+                <FactGroup>
+                  {application.objectionsInvited !== undefined ? (
+                    <Fact label={t("applicationRecordDialog_objections")}>
+                      <span className="font-normal tabular-nums">
+                        {application.objectionsInvited
+                          ? application.objectionDue
+                            ? t("applicationRecordDialog_invitedDueByTheEndOf", {
+                                objectionDue: application.objectionDue,
+                              })
+                            : t("applicationRecordDialog_invited")
+                          : t("applicationRecordDialog_notInvited")}
                       </span>
-                    )}
-                  </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        </div>
+                    </Fact>
+                  ) : null}
+                  {application.objection ? (
+                    <Fact label={t("applicationRecordDialog_objectionFiled")}>
+                      <LinkedRecord linked={application.objection} onOpen={onOpenLinked} />
+                    </Fact>
+                  ) : null}
+                  {application.objectionTo ? (
+                    <Fact label={t("applicationRecordDialog_objectionTo")}>
+                      <LinkedRecord linked={application.objectionTo} onOpen={onOpenLinked} />
+                    </Fact>
+                  ) : null}
+                </FactGroup>
+              ) : null}
 
-        {showingComposed && composed ? (
-          /* The PDF viewer's own frame (same well, margin, scrolling and
+              <FactGroup>
+                <Fact label={t("applicationRecordDialog_linkedOrder")}>
+                  {application.linkedOrder ? (
+                    <Button
+                      variant="link"
+                      asChild
+                      className="h-auto justify-start px-0 text-left whitespace-normal"
+                    >
+                      <Link href={orderHref(caseId, application.linkedOrder.id)}>
+                        {application.linkedOrder.label}
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Muted>
+                      {isDecided(application.status)
+                        ? t("applicationRecordDialog_orderNotOnFileYet")
+                        : t("applicationRecordDialog_noOrderYet")}
+                    </Muted>
+                  )}
+                </Fact>
+              </FactGroup>
+            </div>
+
+            <div className="flex flex-col gap-1.5 border-t border-hairline pt-3">
+              <h3 className="text-caption font-medium text-muted-foreground">
+                {t("applicationRecordDialog_documents")}
+              </h3>
+              {documents.length === 0 ? (
+                <Muted>{t("applicationRecordDialog_noneAttached")}</Muted>
+              ) : (
+                <ul className="-mx-2 flex flex-col gap-0.5">
+                  {documents.map((doc, index) => {
+                    /* The application is always listed first; with no file of
+                     its own, it opens set out from its details. */
+                    const key =
+                      "src" in doc && doc.src
+                        ? doc.src
+                        : index === 0 && composed
+                          ? COMPOSED
+                          : undefined;
+                    return (
+                      <li key={doc.label}>
+                        {key ? (
+                          <button
+                            type="button"
+                            aria-pressed={key === openSrc}
+                            onClick={() => setOpenSrc(key)}
+                            className={cn(
+                              "flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left text-body-compact outline-none transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50",
+                              key === openSrc && "bg-accent-strong font-medium",
+                            )}
+                          >
+                            <FileTextIcon
+                              aria-hidden
+                              className="size-4 shrink-0 text-muted-foreground"
+                            />
+                            <span className="min-w-0">{doc.label}</span>
+                          </button>
+                        ) : (
+                          <span className="flex min-h-10 items-center gap-2 px-2 text-body-compact text-muted-foreground">
+                            <FileTextIcon aria-hidden className="size-4 shrink-0" />
+                            <span className="min-w-0">{doc.label}</span>
+                            <span className="ml-auto shrink-0 text-caption font-medium">
+                              {t("applicationRecordDialog_notOnFile")}
+                            </span>
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {showingComposed && composed ? (
+            /* The PDF viewer's own frame (same well, margin, scrolling and
              zoom), with the download in the header as for a PDF (owner,
              Sept 24: one preview pattern). */
-          <ComposedDocumentViewer
-            key={application.id}
-            title={composed.document.title}
-            className="min-h-64 min-w-0 flex-1 rounded-none"
-          >
-            <GeneratedApplicationDocument
-              document={composed.document}
-              generatedOn={composed.dated}
-              signedBy={composed.signedBy}
+            <ComposedDocumentViewer
+              key={application.id}
+              title={composed.document.title}
+              className="min-h-64 min-w-0 flex-1 rounded-none"
+            >
+              <GeneratedApplicationDocument
+                document={composed.document}
+                generatedOn={composed.dated}
+                signedBy={composed.signedBy}
+              />
+            </ComposedDocumentViewer>
+          ) : image && open ? (
+            <ComposedDocumentViewer
+              key={open.src}
+              title={open.label}
+              className="min-h-64 min-w-0 flex-1 rounded-none"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- a local file's object URL */}
+              <img src={image} alt={open.label} className="block w-full" />
+            </ComposedDocumentViewer>
+          ) : pdf && open ? (
+            <PdfViewer
+              key={open.src}
+              src={pdf.url}
+              title={open.label}
+              pages={pdf.page ? { from: pdf.page, to: pdf.page } : undefined}
+              className="min-h-64 flex-1 rounded-none"
             />
-          </ComposedDocumentViewer>
-        ) : image && open ? (
-          <ComposedDocumentViewer
-            key={open.src}
-            title={open.label}
-            className="min-h-64 min-w-0 flex-1 rounded-none"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element -- a local file's object URL */}
-            <img src={image} alt={open.label} className="block w-full" />
-          </ComposedDocumentViewer>
-        ) : pdf && open ? (
-          <PdfViewer
-            key={open.src}
-            src={pdf.url}
-            title={open.label}
-            pages={pdf.page ? { from: pdf.page, to: pdf.page } : undefined}
-            className="min-h-64 flex-1 rounded-none"
-          />
-        ) : (
-          /* The same designed gap the order record shows when its PDF is
+          ) : (
+            /* The same designed gap the order record shows when its PDF is
              missing: the pane says what is absent and whether the reader has
              anything to do, instead of a stray line of grey text. */
-          <div className="flex min-h-64 flex-1 items-center justify-center bg-surface-sunken p-6">
-            <Empty className="flex-none">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <FileXIcon aria-hidden />
-                </EmptyMedia>
-                <EmptyTitle className="text-body font-semibold">
-                  {application.documents.length === 0
-                    ? t("applicationRecordDialog_noDocumentsWithThisApplication")
-                    : t("applicationRecordDialog_theseDocumentsAreNotOnFile")}
-                </EmptyTitle>
-                <EmptyDescription>
-                  {application.documents.length === 0
-                    ? t("applicationRecordDialog_nothingIsAttachedToItThe")
-                    : t("applicationRecordDialog_theyAreListedAlongsideAndOpen")}
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          </div>
-        )}
-      </div>
+            <div className="flex min-h-64 flex-1 items-center justify-center bg-surface-sunken p-6">
+              <Empty className="flex-none">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <FileXIcon aria-hidden />
+                  </EmptyMedia>
+                  <EmptyTitle className="text-body font-semibold">
+                    {application.documents.length === 0
+                      ? t("applicationRecordDialog_noDocumentsWithThisApplication")
+                      : t("applicationRecordDialog_theseDocumentsAreNotOnFile")}
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    {application.documents.length === 0
+                      ? t("applicationRecordDialog_nothingIsAttachedToItThe")
+                      : t("applicationRecordDialog_theyAreListedAlongsideAndOpen")}
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* The viewer's step, where they have one: read it, then act on it, in the
@@ -552,11 +522,7 @@ function RecordBody({
                 className="w-full sm:w-auto"
                 onFile={(file) => onReplaceFile(application, file)}
               />
-              <Button
-                type="button"
-                className="w-full sm:w-auto"
-                onClick={() => onAct(application)}
-              >
+              <Button type="button" className="w-full sm:w-auto" onClick={() => onAct(application)}>
                 {t("applicationRecordDialog_addSignature")}
               </Button>
             </div>
@@ -576,20 +542,12 @@ function RecordBody({
               >
                 {t("applicationRecordDialog_edit")}
               </Button>
-              <Button
-                type="button"
-                className="w-full sm:w-auto"
-                onClick={() => onAct(application)}
-              >
+              <Button type="button" className="w-full sm:w-auto" onClick={() => onAct(application)}>
                 {t("applicationRecordDialog_addSignature")}
               </Button>
             </div>
           ) : onAct ? (
-            <Button
-              type="button"
-              className="w-full sm:w-auto"
-              onClick={() => onAct(application)}
-            >
+            <Button type="button" className="w-full sm:w-auto" onClick={() => onAct(application)}>
               {application.step === "continue"
                 ? t("applicationRecordDialog_continueDraft")
                 : application.step === "sign"
@@ -612,10 +570,7 @@ const COMPOSED = "composed-application";
  * Pending payment on, by the advocate or party in person who raised it.
  * Null for a document submission (affidavit, memo), which has no such page.
  */
-export function composedApplication(
-  application: ApplicationRecord,
-  record: CaseRecord
-) {
+export function composedApplication(application: ApplicationRecord, record: CaseRecord) {
   const { source } = application;
   if (source.kind !== "application") return null;
   const side = application.side === "court" ? "" : application.side;
@@ -628,7 +583,7 @@ export function composedApplication(
       filedForSide: side,
       ...(title ? { title } : {}),
     },
-    record
+    record,
   );
   if (!document) return null;
   const objection = source.type === "objection";
@@ -645,8 +600,7 @@ export function composedApplication(
 /** An objection or a document has no application number; unfiled, no ID either. */
 function hasNumberFacts(application: ApplicationRecord): boolean {
   const numbered = !(
-    application.source.kind === "document" ||
-    application.source.type === "objection"
+    application.source.kind === "document" || application.source.type === "objection"
   );
   return numbered || Boolean(application.temporaryId);
 }
@@ -672,13 +626,9 @@ function courtLine(application: ApplicationRecord): string | undefined {
     case "accepted":
     case "rejected":
     case "dismissed":
-      return application.decision
-        ? `By order of ${application.decision}`
-        : "By order of the court";
+      return application.decision ? `By order of ${application.decision}` : "By order of the court";
     case "submitted":
-      return application.objectionTo
-        ? "Read with the application it objects to."
-        : undefined;
+      return application.objectionTo ? "Read with the application it objects to." : undefined;
     case "expired":
       return "Expired before it was submitted.";
     default:
@@ -694,9 +644,7 @@ function LinkedRecord({
   linked: LinkedApplication;
   onOpen?: (id: string) => void;
 }) {
-  const label = linked.number
-    ? `${linked.typeLabel} · ${linked.number}`
-    : linked.typeLabel;
+  const label = linked.number ? `${linked.typeLabel} · ${linked.number}` : linked.typeLabel;
   return (
     <span className="flex flex-col items-start gap-1">
       {onOpen ? (
@@ -717,20 +665,9 @@ function LinkedRecord({
 }
 
 /** One skimmable group of facts; the wrapper's hairline parts it from the next. */
-export function FactGroup({
-  columns = 1,
-  children,
-}: {
-  columns?: 1 | 2;
-  children: ReactNode;
-}) {
+export function FactGroup({ columns = 1, children }: { columns?: 1 | 2; children: ReactNode }) {
   return (
-    <dl
-      className={cn(
-        "grid gap-x-4 gap-y-3 py-3 first:pt-0",
-        columns === 2 && "grid-cols-2"
-      )}
-    >
+    <dl className={cn("grid gap-x-4 gap-y-3 py-3 first:pt-0", columns === 2 && "grid-cols-2")}>
       {children}
     </dl>
   );
@@ -739,20 +676,12 @@ export function FactGroup({
 export function Fact({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-0.5">
-      <dt className="text-caption font-medium text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="min-w-0 text-body-compact font-medium text-foreground">
-        {children}
-      </dd>
+      <dt className="text-caption font-medium text-muted-foreground">{label}</dt>
+      <dd className="min-w-0 text-body-compact font-medium text-foreground">{children}</dd>
     </div>
   );
 }
 
 export function Muted({ children }: { children: ReactNode }) {
-  return (
-    <span className="text-body-compact font-normal text-muted-foreground">
-      {children}
-    </span>
-  );
+  return <span className="text-body-compact font-normal text-muted-foreground">{children}</span>;
 }

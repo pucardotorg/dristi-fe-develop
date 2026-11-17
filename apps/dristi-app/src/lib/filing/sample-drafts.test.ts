@@ -3,7 +3,12 @@ import { after, before, describe, it } from "node:test";
 
 import { setSigningRules } from "./config";
 
-import { ADVOCATE_LINK_SAMPLES, OATH_DEMO_LINK, OATH_DEMO_SAMPLES, buildSampleDraft } from "./sample-drafts";
+import {
+  ADVOCATE_LINK_SAMPLES,
+  OATH_DEMO_LINK,
+  OATH_DEMO_SAMPLES,
+  buildSampleDraft,
+} from "./sample-drafts";
 import { complaintsNaming } from "./linked-complaints";
 import { asSignedIn } from "./profile";
 import { sameMobile, signatories } from "./selectors";
@@ -95,9 +100,17 @@ describe("the signed-in litigant in File a case", () => {
   };
 
   it("sits in their complainant seat, not the advocate's", () => {
-    const { complainants, advocates } = signatories(draft, asSignedIn(stored, "9000000001"), true, true);
+    const { complainants, advocates } = signatories(
+      draft,
+      asSignedIn(stored, "9000000001"),
+      true,
+      true,
+    );
     assert.equal(complainants[1].you, true);
-    assert.equal(advocates.some((a) => a.you), false);
+    assert.equal(
+      advocates.some((a) => a.you),
+      false,
+    );
   });
 
   it("leaves an advocate's profile alone", () => {

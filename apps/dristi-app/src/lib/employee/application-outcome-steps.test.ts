@@ -3,10 +3,7 @@ import { describe, it } from "node:test";
 
 import type { LifecycleApplication } from "@/lib/applications/lifecycle";
 
-import {
-  applicationIdOfOrderKey,
-  nextApplicationOrderKey,
-} from "./application-order-draft";
+import { applicationIdOfOrderKey, nextApplicationOrderKey } from "./application-order-draft";
 import {
   initialApplicationOutcome,
   setApplicationOutcome,
@@ -117,7 +114,12 @@ describe("an application's order, once triggered", () => {
     });
     const next = applyApplicationOutcome(
       listed,
-      answers({ onboard: "no", decided: "yes", decision: "disallowed-with-cost", workflowTriggered: "no" }),
+      answers({
+        onboard: "no",
+        decided: "yes",
+        decision: "disallowed-with-cost",
+        workflowTriggered: "no",
+      }),
       order(),
       options,
     );
@@ -134,10 +136,18 @@ describe("an application's order, once triggered", () => {
     );
     assert.ok(done);
     assert.equal(
-      applyApplicationOutcome(done, answers({ decided: "yes", decision: "allowed" }), order(), options),
+      applyApplicationOutcome(
+        done,
+        answers({ decided: "yes", decision: "allowed" }),
+        order(),
+        options,
+      ),
       null,
     );
-    assert.equal(applyApplicationOutcome(app(), initialApplicationOutcome(), order(), options), null);
+    assert.equal(
+      applyApplicationOutcome(app(), initialApplicationOutcome(), order(), options),
+      null,
+    );
   });
 });
 

@@ -75,7 +75,10 @@ export function SectionRail({
   }
 
   return (
-    <nav aria-label={t("sectionRail_filingSections")} className={cn("flex flex-col gap-4 px-2", className)}>
+    <nav
+      aria-label={t("sectionRail_filingSections")}
+      className={cn("flex flex-col gap-4 px-2", className)}
+    >
       {groups.map((g) => (
         <div key={g.group} className="flex w-full flex-col gap-1">
           <h2 className="px-2 text-caption font-medium text-muted-foreground">{g.group}</h2>

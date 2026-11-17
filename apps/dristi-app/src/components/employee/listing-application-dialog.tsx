@@ -106,7 +106,11 @@ function ApplicationBody({
             label={t("listingApplicationDialog_applicationNumber")}
             copyable={false}
           />
-          {t.rich("listingApplicationDialog_itemItemCauseTitle", { item: String(hearing.item), causeTitle: causeTitle(hearing), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+          {t.rich("listingApplicationDialog_itemItemCauseTitle", {
+            item: String(hearing.item),
+            causeTitle: causeTitle(hearing),
+            span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+          })}
         </>
       }
       facts={
@@ -115,18 +119,22 @@ function ApplicationBody({
             {listingApplicationLabel(application)}
           </ReviewRow>
           <ReviewRow term={t("listingApplicationDialog_applicationNumberTerm")}>
-            <Identifier value={application.number} label={t("listingApplicationDialog_applicationNumber")} />
+            <Identifier
+              value={application.number}
+              label={t("listingApplicationDialog_applicationNumber")}
+            />
           </ReviewRow>
           <ReviewRow term={t("listingApplicationDialog_caseNumber")}>
-            <Identifier value={hearing.caseNumber} label={t("listingApplicationDialog_caseNumberLabel")} />
+            <Identifier
+              value={hearing.caseNumber}
+              label={t("listingApplicationDialog_caseNumberLabel")}
+            />
           </ReviewRow>
           <ReviewRow term={t("listingApplicationDialog_stage")}>
             {courtCaseStageLabel(hearing.stage)}
           </ReviewRow>
           <ReviewRow term={t("listingApplicationDialog_dateOfApplication")}>
-            <span className="tabular-nums">
-              {formatCourtDay(application.filedOn)}
-            </span>
+            <span className="tabular-nums">{formatCourtDay(application.filedOn)}</span>
           </ReviewRow>
           <ReviewRow term={t("listingApplicationDialog_applicationFiler")}>
             {listingApplicationFiler(hearing, application)}

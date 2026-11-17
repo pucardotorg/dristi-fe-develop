@@ -12,14 +12,14 @@ screen → store → repository (lib/<feature>/data/http.ts)
            same-origin /api/v1/locations             (server, same origin)          Django
 ```
 
-| File | Owns |
-| --- | --- |
-| `client.ts` | `api` and `createApiClient`: URL + query, JSON or multipart body, CSRF header on writes, timeout + cancellation, envelope removal, error mapping |
-| `errors.ts` | `ApiError` (`kind`, `status`, `fieldErrors`, `retryAfterSeconds`, `code`) and the DRF error parser |
-| `envelope.ts` | The backend's `meta` envelope; `Page<T>` for paginated lists |
-| `csrf.ts` | Reading Django's `csrftoken` cookie |
-| `../server/env.ts` | `API_BASE_URL`, validated, read per request (server only) |
-| `../server/api-proxy.ts` | Forwarding: trailing slash, headers, cookies, path safety, 502/503/504 |
+| File                     | Owns                                                                                                                                             |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `client.ts`              | `api` and `createApiClient`: URL + query, JSON or multipart body, CSRF header on writes, timeout + cancellation, envelope removal, error mapping |
+| `errors.ts`              | `ApiError` (`kind`, `status`, `fieldErrors`, `retryAfterSeconds`, `code`) and the DRF error parser                                               |
+| `envelope.ts`            | The backend's `meta` envelope; `Page<T>` for paginated lists                                                                                     |
+| `csrf.ts`                | Reading Django's `csrftoken` cookie                                                                                                              |
+| `../server/env.ts`       | `API_BASE_URL`, validated, read per request (server only)                                                                                        |
+| `../server/api-proxy.ts` | Forwarding: trailing slash, headers, cookies, path safety, 502/503/504                                                                           |
 
 ## Using it
 

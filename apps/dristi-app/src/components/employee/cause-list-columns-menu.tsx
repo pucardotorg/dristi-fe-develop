@@ -13,12 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { causeListColumn } from "@/lib/employee/cause-list-columns";
 
 import type { useCauseListColumns } from "./use-cause-list-columns";
@@ -31,11 +26,7 @@ import { translateText } from "@/i18n/translate-text";
  * Reset to default; order is the grip on each heading, not this menu. S. no. and Case
  * name are locked on.
  */
-export function CauseListColumnsMenu({
-  state,
-}: {
-  state: ReturnType<typeof useCauseListColumns>;
-}) {
+export function CauseListColumnsMenu({ state }: { state: ReturnType<typeof useCauseListColumns> }) {
   const t = useTranslations();
   const { columns, toggle, showAll, reset, isDefault, isAllVisible } = state;
   return (

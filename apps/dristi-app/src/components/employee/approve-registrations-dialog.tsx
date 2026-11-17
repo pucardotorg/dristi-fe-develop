@@ -10,10 +10,7 @@ import {
 } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 import {
   TABLE_CELL,
   TABLE_HEAD,
@@ -26,16 +23,9 @@ import { ReviewRow } from "@/components/cases/filing-form-shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DescriptionList } from "@/components/ui/description-list";
-import {
-  Dialog,
-  DialogClose,
-} from "@/components/ui/dialog";
+import { Dialog, DialogClose } from "@/components/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -362,11 +352,7 @@ function RequestBody({
             {/* Soft destructive, not the solid. The DS reserves `destructive-solid` for a
                 confirmed irreversible act, and a rejection here is reversible by design —
                 `REG-23`: the advocate edits and resubmits, without limit. */}
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => go("reject")}
-            >
+            <Button type="button" variant="destructive" onClick={() => go("reject")}>
               {t("approveRegistrationsDialog_reject")}
             </Button>
             {/* The overlay's one teal button, on every stage that has one: the guarded
@@ -490,9 +476,7 @@ function ReviewStage({
 }) {
   const t = useTranslations();
   const rounds = rejectionRows(request);
-  const changed = comparisonBlocks(request).find(
-    (block) => block.id === "changed",
-  );
+  const changed = comparisonBlocks(request).find((block) => block.id === "changed");
 
   return (
     <div className="grid min-h-0 flex-1 grid-rows-[auto_auto] gap-6 overflow-y-auto p-6 md:grid-cols-[3fr_2fr] md:grid-rows-[minmax(0,1fr)] md:overflow-hidden">
@@ -544,7 +528,10 @@ function EvidenceColumn({ request }: { request: RegistrationRequest }) {
         content: (
           <IdCardPhoto
             src={request.photo.src}
-            alt={t("approveRegistrationsDialog_photographOfTheIdCardName", { idCardName: idCardName(request.registrantKind), fullName: request.fullName })}
+            alt={t("approveRegistrationsDialog_photographOfTheIdCardName", {
+              idCardName: idCardName(request.registrantKind),
+              fullName: request.fullName,
+            })}
             noun={noun}
           />
         ),
@@ -624,10 +611,7 @@ function DecisionStage({
           <Badge variant={accountTypeVariant(request.registrantKind)}>
             {roleLabel(request.registrantKind)}
           </Badge>
-          <p
-            lang={request.fullNameLang}
-            className="text-title-s font-semibold text-balance"
-          >
+          <p lang={request.fullNameLang} className="text-title-s font-semibold text-balance">
             {request.fullName}
           </p>
           {/* The number under the name: it means nothing until you know which register it
@@ -670,21 +654,17 @@ function DecisionStage({
                     an ordinary form field. A 16px mark in destructive ink beside a
                     body-compact label is the measured version: the stage is legibly a
                     rejection, and nothing is shouting. */}
-                <FieldLabel
-                  htmlFor={id}
-                  className="gap-1.5 text-body-compact font-medium"
-                >
-                  <CircleXIcon
-                    aria-hidden
-                    className="size-4 shrink-0 text-destructive-ink"
-                  />
+                <FieldLabel htmlFor={id} className="gap-1.5 text-body-compact font-medium">
+                  <CircleXIcon aria-hidden className="size-4 shrink-0 text-destructive-ink" />
                   {t("approveRegistrationsDialog_whyAreYouRejectingThis")}
                 </FieldLabel>
                 <Textarea
                   id={id}
                   ref={reasonRef}
                   className="min-h-32 text-body"
-                  placeholder={t("approveRegistrationsDialog_eGTheNameOnThe", { idCardName: idCardName(request.registrantKind) })}
+                  placeholder={t("approveRegistrationsDialog_eGTheNameOnThe", {
+                    idCardName: idCardName(request.registrantKind),
+                  })}
                   value={reason}
                   onChange={(event) => onChange(event.target.value)}
                 />
@@ -707,8 +687,7 @@ function DecisionStage({
           </div>
         ) : null}
       </StageCard>
-
-          </FocusedStage>
+    </FocusedStage>
   );
 }
 
@@ -736,7 +715,10 @@ function CardPhoto({ request }: { request: RegistrationRequest }) {
           not a site asset: it has no build-time dimensions and must not be re-encoded. */}
       <img
         src={request.photo.src}
-        alt={t("approveRegistrationsDialog_idPhotoLabelUploadedByFull", { idPhotoLabel: idPhotoLabel(request.registrantKind), fullName: request.fullName })}
+        alt={t("approveRegistrationsDialog_idPhotoLabelUploadedByFull", {
+          idPhotoLabel: idPhotoLabel(request.registrantKind),
+          fullName: request.fullName,
+        })}
         onError={() => setFailed(true)}
         className="mx-auto block h-40 w-auto max-w-full rounded-md object-contain"
       />
@@ -776,7 +758,9 @@ function StatusStrip({
         icon={approved ? undefined : UserXIcon}
         className="rounded-none border-b border-hairline ring-0"
       >
-        {approved ? t("approveRegistrationsDialog_accountCreated") : t("approveRegistrationsDialog_accountRejected")}
+        {approved
+          ? t("approveRegistrationsDialog_accountCreated")
+          : t("approveRegistrationsDialog_accountRejected")}
       </StatusLine>
     );
   }
@@ -789,7 +773,9 @@ function StatusStrip({
       className="flex items-center gap-2 border-b border-hairline px-4 py-2.5 text-body-compact text-muted-foreground animate-in fade-in-0 duration-500 motion-reduce:animate-none"
     >
       <span className="font-medium">
-        {rejecting ? t("approveRegistrationsDialog_youAreRejecting") : t("approveRegistrationsDialog_youAreApproving")}
+        {rejecting
+          ? t("approveRegistrationsDialog_youAreRejecting")
+          : t("approveRegistrationsDialog_youAreApproving")}
       </span>
     </div>
   );
@@ -807,9 +793,7 @@ function StatusStrip({
 function FocusedStage({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto p-6">
-      <div className="flex w-full max-w-xl flex-col gap-6 md:my-auto">
-        {children}
-      </div>
+      <div className="flex w-full max-w-xl flex-col gap-6 md:my-auto">{children}</div>
     </div>
   );
 }
@@ -842,17 +826,11 @@ function StageCard({
        a shadow rather than separating with a stroke; the shadow was previously
        rationed to hover, which is a state a card on a decision screen is mostly not
        in. */
-    <Card
-      variant="raised"
-      size="sm"
-      className={cn(flush && "gap-0 py-0")}
-    >
+    <Card variant="raised" size="sm" className={cn(flush && "gap-0 py-0")}>
       {flush ? (
         children
       ) : (
-        <CardContent className={cn("flex flex-col gap-4", className)}>
-          {children}
-        </CardContent>
+        <CardContent className={cn("flex flex-col gap-4", className)}>{children}</CardContent>
       )}
     </Card>
   );
@@ -865,11 +843,7 @@ function StageCard({
  * values inside are what the eye lands on.
  */
 function GroupHeading({ label }: { label: string }) {
-  return (
-    <h3 className="text-caption font-semibold text-muted-foreground">
-      {label}
-    </h3>
-  );
+  return <h3 className="text-caption font-semibold text-muted-foreground">{label}</h3>;
 }
 
 /**
@@ -1022,10 +996,7 @@ function ComparisonTable({ block }: { block: ComparisonBlock }) {
                 <span className="sr-only">{t("approveRegistrationsDialog_detail")}</span>
               </TableHead>
               {block.columns.map((column) => (
-                <TableHead
-                  key={column}
-                  className={cn(TABLE_HEAD, "whitespace-nowrap")}
-                >
+                <TableHead key={column} className={cn(TABLE_HEAD, "whitespace-nowrap")}>
                   {column}
                 </TableHead>
               ))}
@@ -1038,13 +1009,8 @@ function ComparisonTable({ block }: { block: ComparisonBlock }) {
               <td colSpan={span} className="h-2 p-0" />
             </tr>
             {block.rows.map((row) => (
-              <TableRow
-                key={row.id}
-                className={tableRowClass({ hover: false })}
-              >
-                <TableCell
-                  className={cn(TABLE_CELL, "align-top text-muted-foreground")}
-                >
+              <TableRow key={row.id} className={tableRowClass({ hover: false })}>
+                <TableCell className={cn(TABLE_CELL, "align-top text-muted-foreground")}>
                   {row.term}
                 </TableCell>
                 {row.values.map((value, index) => (
@@ -1103,7 +1069,9 @@ function EarlierRejections({ rounds }: { rounds: FactRow[] }) {
             <CollapsibleTrigger className="group/earlier flex min-h-10 w-fit items-center gap-1.5 rounded-lg text-left text-caption text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-focus-ring">
               {older.length === 1
                 ? t("approveRegistrationsDialog_1EarlierRound")
-                : t("approveRegistrationsDialog_lengthEarlierRounds", { length: String(older.length) })}
+                : t("approveRegistrationsDialog_lengthEarlierRounds", {
+                    length: String(older.length),
+                  })}
               <ChevronDownIcon
                 aria-hidden
                 className="size-4 shrink-0 transition-transform group-data-[state=open]/earlier:rotate-180"
@@ -1135,19 +1103,9 @@ function EarlierRejections({ rounds }: { rounds: FactRow[] }) {
  * decision**: the officer may hold the card another way, and an empty box that left them
  * to infer what happened would be worse than a sentence.
  */
-function IdCardPhoto({
-  src,
-  alt,
-  noun,
-}: {
-  src: string;
-  alt: string;
-  noun: string;
-}) {
+function IdCardPhoto({ src, alt, noun }: { src: string; alt: string; noun: string }) {
   const t = useTranslations();
-  const [status, setStatus] = React.useState<"loading" | "ready" | "failed">(
-    "loading",
-  );
+  const [status, setStatus] = React.useState<"loading" | "ready" | "failed">("loading");
 
   return (
     /* `flex-1` so the card scan takes the height the frame gives it rather than sitting
@@ -1167,9 +1125,7 @@ function IdCardPhoto({
       ) : null}
       {/* The well keeps its height while the file is on its way. A well that collapses
           and then jumps to full height moves the decision under the officer's cursor. */}
-      {status === "loading" ? (
-        <Skeleton className="h-64 w-full rounded-md" />
-      ) : null}
+      {status === "loading" ? <Skeleton className="h-64 w-full rounded-md" /> : null}
       {/* eslint-disable-next-line @next/next/no-img-element -- a served court document,
           not a site asset: it has no build-time dimensions and must not be re-encoded. */}
       <img

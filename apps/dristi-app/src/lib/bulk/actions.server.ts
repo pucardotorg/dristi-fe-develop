@@ -147,9 +147,7 @@ export function caseView(bc: BatchCase): CaseView {
     },
     stage: caseStage(bc, flags),
     flags,
-    skipped: every.filter(
-      (f) => f.level === "soft" && bc.skipped.includes(f.id),
-    ),
+    skipped: every.filter((f) => f.level === "soft" && bc.skipped.includes(f.id)),
     fee: d.sign.paidAmount ?? feeBill(d, FEES).total,
     signedWith: bc.signedWith,
     receiptNumber: bc.receiptNumber,
@@ -175,10 +173,7 @@ function filingAdvocate(batch: Batch): BatchSummary["filingAdvocate"] {
   return a ? { name: a.name, barNumber: a.barNumber } : null;
 }
 
-export function summarise(
-  batch: Batch,
-  all: Batch[],
-): BatchSummary {
+export function summarise(batch: Batch, all: Batch[]): BatchSummary {
   const counts: Record<CaseStage, number> = {
     held: 0,
     ready: 0,
@@ -189,12 +184,9 @@ export function summarise(
   for (const bc of batch.cases) {
     const flags = openFlags(bc);
     counts[caseStage(bc, flags)] += 1;
-    if (flags.length && bc.draft.status !== "filed" && !bc.signedWith)
-      flagged += 1;
+    if (flags.length && bc.draft.status !== "filed" && !bc.signedWith) flagged += 1;
   }
-  const into = batch.clubbedInto
-    ? all.find((b) => b.id === batch.clubbedInto)
-    : null;
+  const into = batch.clubbedInto ? all.find((b) => b.id === batch.clubbedInto) : null;
   return {
     id: batch.id,
     number: batch.number,
@@ -212,11 +204,7 @@ export function summarise(
   };
 }
 
-export function batchView(
-  batch: Batch,
-  all: Batch[],
-  ai: AiMode = "off",
-): BatchView {
+export function batchView(batch: Batch, all: Batch[], ai: AiMode = "off"): BatchView {
   const first = batch.cases[0]?.draft;
   const rep = first?.complainants[0]?.rep;
   return {
@@ -266,33 +254,22 @@ function setPath(target: Record<string, unknown>, path: string, value: string) {
   let node: Record<string, unknown> = target;
   for (const k of keys.slice(0, -1)) {
     const next = node[k];
-    if (next === null || typeof next !== "object")
-      throw new Error(`No such field: ${path}`);
+    if (next === null || typeof next !== "object") throw new Error(`No such field: ${path}`);
     node = next as Record<string, unknown>;
   }
   node[keys.at(-1)!] = value;
 }
 
 /** Write one value to a draft, then redo the lookups that hang off it. */
-export async function applyFix(
-  d: FilingDraft,
-  path: string,
-  raw: string,
-): Promise<void> {
+export async function applyFix(d: FilingDraft, path: string, raw: string): Promise<void> {
   let value = raw.trim();
   if (/\.(ifsc|entCinPan)$/.test(path)) value = value.toUpperCase();
-  if (/\.(mobile)$/.test(path))
-    value = value.replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
-  if (/\.(pin|amount|partAmount|age|chequeNumber)$/.test(path))
-    value = value.replace(/[^\d]/g, "");
+  if (/\.(mobile)$/.test(path)) value = value.replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
+  if (/\.(pin|amount|partAmount|age|chequeNumber)$/.test(path)) value = value.replace(/[^\d]/g, "");
   if (/\.email$/.test(path)) value = value.toLowerCase();
   // A person responsible that does not exist yet is created by naming them.
   const rep = /^accused\.(\d+)\.reps\.0\./.exec(path);
-  if (
-    rep &&
-    d.accused[Number(rep[1])] &&
-    !d.accused[Number(rep[1])].reps.length
-  ) {
+  if (rep && d.accused[Number(rep[1])] && !d.accused[Number(rep[1])].reps.length) {
     d.accused[Number(rep[1])].reps.push(blankRepresentative());
   }
   setPath(d as unknown as Record<string, unknown>, path, value);
@@ -420,10 +397,7 @@ export function attachToSlot(
 /** Cases that may be signed now: nothing holds them and no soft flag is left open. */
 export function signable(batch: Batch): BatchCase[] {
   return batch.cases.filter(
-    (bc) =>
-      bc.draft.status !== "filed" &&
-      !bc.signedWith &&
-      openFlags(bc).length === 0,
+    (bc) => bc.draft.status !== "filed" && !bc.signedWith && openFlags(bc).length === 0,
   );
 }
 
@@ -437,11 +411,7 @@ export function roundsFor(method: BulkSignMethod, n: number): number {
  * representative) and advocate (`SIG-03`) — in one mode for all parties (`SIG-04`).
  * The oath Gujarat asks for at signing is not taken in bulk; whether it can be is open.
  */
-export function signCases(
-  cases: BatchCase[],
-  method: BulkSignMethod,
-  at: string,
-): void {
+export function signCases(cases: BatchCase[], method: BulkSignMethod, at: string): void {
   for (const bc of cases) {
     const d = bc.draft;
     const { complainants, advocates } = signatories(d, null, false, true);
@@ -510,11 +480,8 @@ export function clubBatches(
     return { error: "A batch that was already clubbed is closed." };
   if (new Set(picked.map((b) => b.client)).size > 1)
     return { error: "Only batches for the same complainant can be clubbed." };
-  const moving = picked.flatMap((b) =>
-    b.cases.filter((c) => c.draft.status !== "filed"),
-  );
-  if (moving.length === 0)
-    return { error: "Every case in these batches is already filed." };
+  const moving = picked.flatMap((b) => b.cases.filter((c) => c.draft.status !== "filed"));
+  if (moving.length === 0) return { error: "Every case in these batches is already filed." };
 
   const result: Batch = {
     id: newId("batch"),
@@ -582,8 +549,7 @@ export function changePart(
             : d.witnesses;
   if (!list) return "No such accused.";
   if (op === "remove") {
-    if (list.length <= keep[part])
-      return `A case needs at least ${keep[part]} ${part}.`;
+    if (list.length <= keep[part]) return `A case needs at least ${keep[part]} ${part}.`;
     list.pop();
     if (part === "cheque") d.intake.cheques.pop();
     if (part === "notice") d.intake.notices.pop();
@@ -591,16 +557,14 @@ export function changePart(
     return null;
   }
   if (part === "accused") d.accused.push(blankAccused());
-  else if (part === "address")
-    d.accused[accused].addresses.push(blankAddressBlock());
+  else if (part === "address") d.accused[accused].addresses.push(blankAddressBlock());
   else if (part === "cheque") {
     d.cheques.push(blankCheque());
     d.intake.cheques.push(intakeChequeGroup(d.cheques.length));
   } else if (part === "notice") {
     d.notices.push(blankNotice());
     d.intake.notices.push(intakeNoticeGroup(d.notices.length));
-  }
-  else d.witnesses.push(blankWitness());
+  } else d.witnesses.push(blankWitness());
   // The documents follow the parts: a new cheque brings its cheque and memo, a new notice
   // its notice papers.
   d.documents = buildDocumentGroups(d);

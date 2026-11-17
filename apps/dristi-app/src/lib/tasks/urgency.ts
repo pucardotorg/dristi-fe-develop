@@ -77,7 +77,7 @@ export function compareUrgency(a: Task, b: Task, now: Date | string = new Date()
 
   const blocking = cmp(
     blocksUpcomingHearing(a, now) ? 0 : 1,
-    blocksUpcomingHearing(b, now) ? 0 : 1
+    blocksUpcomingHearing(b, now) ? 0 : 1,
   );
   if (blocking) return blocking;
 

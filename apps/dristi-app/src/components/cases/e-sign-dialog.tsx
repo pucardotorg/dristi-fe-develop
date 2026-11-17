@@ -1,39 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  SignatureIcon,
-  UploadIcon,
-} from "lucide-react";
+import { SignatureIcon, UploadIcon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
-import {
-  ChoiceCard,
-  DscLookup,
-  InstrumentChoice,
-  OtpEntry,
-} from "@/components/filing/sign-stages";
+import { ChoiceCard, DscLookup, InstrumentChoice, OtpEntry } from "@/components/filing/sign-stages";
 import { PaperFallbackLink } from "@/components/filing/paper-fallback";
 import { OFFICE_NO_ESIGN } from "@/components/cases/case-office-access";
-import {
-  UPLOAD_HELP,
-  UploadedDocField,
-} from "@/components/cases/uploaded-doc-field";
+import { UPLOAD_HELP, UploadedDocField } from "@/components/cases/uploaded-doc-field";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import { OutcomeHeader } from "@/components/feedback";
 import { useTranslations } from "next-intl";
@@ -163,9 +142,8 @@ export function ESignDialog({
   const done = confirmation.tone === "done";
   /* An OTP being typed or a signed copy attached: Escape, the close button or Back asks
      before throwing it away. A click outside does nothing (stakeholders, 2–3 Nov 2026). */
-  const guard = useDiscardGuard(
-    step !== "done" && (otp.length > 0 || file !== null),
-    () => (onDismiss ?? onBack)(),
+  const guard = useDiscardGuard(step !== "done" && (otp.length > 0 || file !== null), () =>
+    (onDismiss ?? onBack)(),
   );
 
   return (
@@ -210,8 +188,7 @@ export function ESignDialog({
               className={cn(
                 "flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-6 py-6",
                 // e-filing's choice cards sit on its tinted canvas.
-                (step === "method" || step === "instrument") &&
-                  "gap-4 bg-muted dark:bg-background"
+                (step === "method" || step === "instrument") && "gap-4 bg-muted dark:bg-background",
               )}
             >
               {step === "method" && officeAccess ? (
@@ -402,7 +379,9 @@ export function DocumentSignatureDialog({
       open={open}
       noun={several ? "documents" : "document"}
       chooseTitle={
-        several ? t("eSignDialog_howAreTheseCountDocumentsSigned", { count: String(count) }) : t("eSignDialog_howIsThisDocumentSigned")
+        several
+          ? t("eSignDialog_howAreTheseCountDocumentsSigned", { count: String(count) })
+          : t("eSignDialog_howIsThisDocumentSigned")
       }
       onBack={onBack}
       onSignLater={onSignLater}

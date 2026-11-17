@@ -23,10 +23,7 @@ describe("RESCHEDULING_QUEUE", () => {
 
 describe("filterReschedulingRequests", () => {
   it("returns the queue unchanged when the query is empty", () => {
-    const rows = filterReschedulingRequests(
-      RESCHEDULING_QUEUE,
-      EMPTY_RESCHEDULING_FILTERS,
-    );
+    const rows = filterReschedulingRequests(RESCHEDULING_QUEUE, EMPTY_RESCHEDULING_FILTERS);
     assert.equal(rows.length, RESCHEDULING_QUEUE.length);
   });
 
@@ -61,9 +58,7 @@ describe("filterReschedulingRequests", () => {
 
 describe("senderLine", () => {
   it("names the advocate and the party the application is for", () => {
-    const accusedFiled = RESCHEDULING_QUEUE.find(
-      (row) => row.filedFor === "accused",
-    );
+    const accusedFiled = RESCHEDULING_QUEUE.find((row) => row.filedFor === "accused");
     assert.ok(accusedFiled);
     assert.equal(
       senderLine(accusedFiled),
@@ -87,11 +82,7 @@ describe("buildReschedulingDocument", () => {
     assert.ok(disagreed);
     assert.equal(consentLabel(disagreed.partiesAgreed), "No");
     const document = buildReschedulingDocument(disagreed);
-    assert.ok(
-      document.paragraphs.some((paragraph) =>
-        paragraph.includes("have not yet agreed"),
-      ),
-    );
+    assert.ok(document.paragraphs.some((paragraph) => paragraph.includes("have not yet agreed")));
   });
 
   it("joins more than one proposed date", () => {

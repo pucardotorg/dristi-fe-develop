@@ -105,7 +105,9 @@ describe("api client: responses", () => {
   });
 
   it("reads blobs for downloads", async () => {
-    const { client } = setup(() => new Response("%PDF", { headers: { "content-type": "application/pdf" } }));
+    const { client } = setup(
+      () => new Response("%PDF", { headers: { "content-type": "application/pdf" } }),
+    );
     const blob = await client.get<Blob>("dristi-requests/1/documents/2", { responseType: "blob" });
     assert.equal(await blob.text(), "%PDF");
   });
@@ -170,6 +172,9 @@ describe("api client: failures", () => {
 
     const already = new AbortController();
     already.abort();
-    assert.equal((await rejection(client.get("health", { signal: already.signal }))).kind, "aborted");
+    assert.equal(
+      (await rejection(client.get("health", { signal: already.signal }))).kind,
+      "aborted",
+    );
   });
 });

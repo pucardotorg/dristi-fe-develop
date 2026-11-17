@@ -6,12 +6,7 @@ import { CircleCheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CaseStage } from "@/lib/bulk/types";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import type { CaseView } from "./api";
 import { useTranslations } from "next-intl";
@@ -51,15 +46,11 @@ export function CaseBadge({
   done?: number;
 }) {
   const t = useTranslations();
-  if (c.stage === "signed" || c.stage === "filed")
-    return <StageBadge stage={c.stage} />;
+  if (c.stage === "signed" || c.stage === "filed") return <StageBadge stage={c.stage} />;
   const holds = c.flags.filter((f) => f.level === "hold");
   const fields =
     holds.filter(
-      (f) =>
-        f.section !== "documents" &&
-        f.fix?.kind !== "upload" &&
-        f.fix?.kind !== "documents",
+      (f) => f.section !== "documents" && f.fix?.kind !== "upload" && f.fix?.kind !== "documents",
     ).length - done;
   const docs = c.docs.need - c.docs.have;
   if (fields)
@@ -93,9 +84,7 @@ export function StageBadge({ stage }: { stage: CaseStage }) {
   const t = useTranslations();
   return (
     <Badge variant={STAGE[stage].variant}>
-      {stage === "filed" ? (
-        <CircleCheckIcon data-icon="inline-start" aria-hidden />
-      ) : null}
+      {stage === "filed" ? <CircleCheckIcon data-icon="inline-start" aria-hidden /> : null}
       {translateText(t, STAGE[stage].label)}
     </Badge>
   );
@@ -126,10 +115,7 @@ export function StageTip({
           <ul className="flex flex-col gap-0.5">
             {STAGE_ORDER.filter((k) => counts[k]).map((k) => (
               <li key={k} className="flex items-center gap-2 tabular-nums">
-                <span
-                  aria-hidden
-                  className={cn("size-2 rounded-full", STAGE[k].fill)}
-                />
+                <span aria-hidden className={cn("size-2 rounded-full", STAGE[k].fill)} />
                 {translateText(t, STAGE[k].label)}: {counts[k]}
               </li>
             ))}
@@ -171,18 +157,10 @@ export function StageBar({
       </StageTip>
       <ul className="flex flex-wrap gap-x-3 gap-y-1">
         {STAGE_ORDER.filter((k) => counts[k]).map((k) => (
-          <li
-            key={k}
-            className="flex items-center gap-1.5 text-caption text-muted-foreground"
-          >
-            <span
-              aria-hidden
-              className={cn("size-2 shrink-0 rounded-full", STAGE[k].fill)}
-            />
+          <li key={k} className="flex items-center gap-1.5 text-caption text-muted-foreground">
+            <span aria-hidden className={cn("size-2 shrink-0 rounded-full", STAGE[k].fill)} />
             {translateText(t, STAGE[k].label)}
-            <span className="font-medium tabular-nums text-foreground">
-              {counts[k]}
-            </span>
+            <span className="font-medium tabular-nums text-foreground">{counts[k]}</span>
           </li>
         ))}
       </ul>

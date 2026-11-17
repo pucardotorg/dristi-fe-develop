@@ -5,12 +5,7 @@ import { DownloadIcon, FileTextIcon } from "lucide-react";
 
 import type { StoredFileRef } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 import { useBulkFileUrl } from "./api";
 import { useTranslations } from "next-intl";

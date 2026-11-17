@@ -141,7 +141,15 @@ function SignADiaryBody({
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(entry)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={entry.caseNumber} label={t("signADiaryDialog_caseNumber")} copyable={false} />{t.rich("signADiaryDialog_datedFormatAdiaryDate", { formatADiaryDate: formatADiaryDate(entry.dated), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+          <Identifier
+            value={entry.caseNumber}
+            label={t("signADiaryDialog_caseNumber")}
+            copyable={false}
+          />
+          {t.rich("signADiaryDialog_datedFormatAdiaryDate", {
+            formatADiaryDate: formatADiaryDate(entry.dated),
+            span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+          })}
         </DialogDescription>
       }
       /* One stage: reading the day's record, correcting it and signing it all happen in
@@ -162,8 +170,7 @@ function SignADiaryBody({
             className="text-caption text-muted-foreground sm:mr-auto sm:text-left"
             aria-live="polite"
           >
-            {saved ||
-              t("signADiaryDialog_savingChangesThisEntryAndThe")}
+            {saved || t("signADiaryDialog_savingChangesThisEntryAndThe")}
           </p>
           {/* `sm:self-center` because the frame owns the footer's own classes and this
               row pairs a caption that wraps with a 40px control. */}
@@ -214,7 +221,9 @@ function SignADiaryBody({
         <Card variant="raised" className="min-w-0 lg:min-h-0">
           <CardContent className="flex flex-col gap-4 lg:min-h-0 lg:flex-1">
             <Field data-invalid={blank} className="lg:min-h-0 lg:flex-1">
-              <FieldLabel className="text-body">{t("signADiaryDialog_businessOfTheDay")}</FieldLabel>
+              <FieldLabel className="text-body">
+                {t("signADiaryDialog_businessOfTheDay")}
+              </FieldLabel>
               {/* Stacked it grows with what is typed, from a four-line floor. Beside the
                   document it takes the panel's remaining height instead and scrolls
                   inside it — `field-sizing-fixed`, or the field's own content sizing
@@ -229,7 +238,9 @@ function SignADiaryBody({
                 }}
               />
               <FieldDescription className="text-body-compact">
-                {t("signADiaryDialog_whatThisCourtDidOnFormat", { formatADiaryDate: formatADiaryDate(entry.dated) })}
+                {t("signADiaryDialog_whatThisCourtDidOnFormat", {
+                  formatADiaryDate: formatADiaryDate(entry.dated),
+                })}
               </FieldDescription>
               {/* A day the court sat is a day with business. Emptying the record is the
                   one edit this field refuses, and it says so where the error belongs
@@ -245,7 +256,6 @@ function SignADiaryBody({
                 </FieldError>
               ) : null}
             </Field>
-
           </CardContent>
         </Card>
 
@@ -316,13 +326,13 @@ function ADiaryOrderFacsimile({ document: storedDocument }: { document: ADiaryDo
         <p className="text-body font-semibold">
           {t("signADiaryDialog_inTheMatterOfMatter", { matter: document.matter })}
         </p>
-        <p className="text-body font-semibold">{t("signADiaryDialog_datedDated", { dated: document.dated })}</p>
+        <p className="text-body font-semibold">
+          {t("signADiaryDialog_datedDated", { dated: document.dated })}
+        </p>
         {/* The offence, held back to the paper's quiet ink: an order sheet prints it
             above the operative part, and it is standing furniture — true of every case
             on this platform — rather than anything this order decided. */}
-        <p className="text-caption text-paper-muted-foreground">
-          {document.offence}
-        </p>
+        <p className="text-caption text-paper-muted-foreground">{document.offence}</p>
       </header>
 
       {/* Which order this is. Centred over the operative part, the way the order
@@ -337,7 +347,9 @@ function ADiaryOrderFacsimile({ document: storedDocument }: { document: ADiaryDo
       <section className="flex flex-col gap-4">
         <table className="w-full border-collapse text-left">
           <caption className="sr-only">
-            {t("signADiaryDialog_appearancesBeforeThisCourtInCase", { caseNumber: document.caseNumber })}
+            {t("signADiaryDialog_appearancesBeforeThisCourtInCase", {
+              caseNumber: document.caseNumber,
+            })}
           </caption>
           <tbody>
             {document.appearances.map(({ label, value }, index) => (
@@ -361,9 +373,7 @@ function ADiaryOrderFacsimile({ document: storedDocument }: { document: ADiaryDo
 
       <OperativePassage paragraphs={document.paragraphs} />
 
-      <p className="text-body text-paper-muted-foreground">
-        {document.signature}
-      </p>
+      <p className="text-body text-paper-muted-foreground">{document.signature}</p>
     </article>
   );
 }
@@ -380,9 +390,7 @@ function OperativePassage({ paragraphs }: { paragraphs: string[] }) {
   if (paragraphs.length <= 1) {
     /* `whitespace-pre-line` because the bench types this: a passage broken by a single
        newline should stay broken where it was broken. */
-    return (
-      <p className="text-body whitespace-pre-line">{paragraphs.join("")}</p>
-    );
+    return <p className="text-body whitespace-pre-line">{paragraphs.join("")}</p>;
   }
   return (
     <ol className="flex list-decimal flex-col gap-3 ps-6">

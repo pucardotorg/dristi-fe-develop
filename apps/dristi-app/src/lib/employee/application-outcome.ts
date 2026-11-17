@@ -21,11 +21,7 @@ import { acceptanceNeedsHearingDate } from "@/lib/applications/lifecycle";
 export type YesNo = "yes" | "no";
 
 export type ApplicationDecisionId =
-  | "allowed"
-  | "partly-allowed"
-  | "disallowed"
-  | "disallowed-with-cost"
-  | "disposed";
+  "allowed" | "partly-allowed" | "disallowed" | "disallowed-with-cost" | "disposed";
 
 /** What a decision on an application can be — the owner's list, with Allowed beside Partly allowed. */
 export const APPLICATION_DECISIONS: {
@@ -99,8 +95,7 @@ export function applicationOutcomeGaps(
   if (!outcome.decided) gaps.push("Decision passed");
   if (outcome.decided === "yes") {
     if (!outcome.decision) gaps.push("Decision");
-    if (hasWorkflow && !outcome.workflowTriggered)
-      gaps.push("Workflow triggered");
+    if (hasWorkflow && !outcome.workflowTriggered) gaps.push("Workflow triggered");
   }
   if (outcome.decided === "no") {
     if (!outcome.responseNeeded) gaps.push("Response needed");

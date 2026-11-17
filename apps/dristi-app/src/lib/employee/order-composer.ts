@@ -23,11 +23,7 @@
  * Pure: no React, so the rules are tested under node.
  */
 
-import {
-  courtHearingPurposeLabel,
-  formatOrderDate,
-  type CourtHearingPurposeId,
-} from "./hearings";
+import { courtHearingPurposeLabel, formatOrderDate, type CourtHearingPurposeId } from "./hearings";
 import {
   hasTemplateText,
   orderTemplate,
@@ -104,10 +100,7 @@ function upperFirst(text: string): string {
 }
 
 /** The one person a process item is addressed to, once chosen. */
-function addressee(
-  block: ItemBlock,
-  context: ComposerContext,
-): CasePerson | undefined {
+function addressee(block: ItemBlock, context: ComposerContext): CasePerson | undefined {
   const id = block.recipients?.person;
   return id ? context.people.find((person) => person.id === id) : undefined;
 }
@@ -140,13 +133,9 @@ export function fieldWording(
       return Number.isFinite(amount) ? `₹${RUPEES.format(amount)}` : value;
     }
     case "purpose":
-      return lowerFirst(
-        courtHearingPurposeLabel(value as CourtHearingPurposeId),
-      );
+      return lowerFirst(courtHearingPurposeLabel(value as CourtHearingPurposeId));
     case "witness":
-      return (
-        context.people.find((person) => person.id === value)?.name ?? value
-      );
+      return context.people.find((person) => person.id === value)?.name ?? value;
     default:
       return value;
   }
@@ -179,10 +168,7 @@ export function fieldAnswered(
  *
  * An order item with no template writes nothing (`ITM-05`).
  */
-export function writeItemText(
-  block: ItemBlock,
-  context: ComposerContext,
-): string {
+export function writeItemText(block: ItemBlock, context: ComposerContext): string {
   const template = orderTemplate(block.type);
   if (!hasTemplateText(template)) return "";
   const byKey = new Map(template.fields.map((field) => [field.key, field]));
@@ -197,9 +183,7 @@ export function writeItemText(
   /* The slots index the full template's tokens; a dropped clause takes its token with
      it, so the slots it held are skipped by counting them out of the clause. */
   const dropped =
-    botd === template.botd
-      ? 0
-      : (template.conditional?.clause.match(/\[[^\]]+\]/g) ?? []).length;
+    botd === template.botd ? 0 : (template.conditional?.clause.match(/\[[^\]]+\]/g) ?? []).length;
   let at = dropped;
 
   const written = botd.replace(/\[[^\]]+\]/g, (token) => {
@@ -214,9 +198,7 @@ export function writeItemText(
 
 /** The block with its text written again from its fields, unless it has been typed into. */
 function rewrite(block: ItemBlock, context: ComposerContext): ItemBlock {
-  return block.edited
-    ? block
-    : { ...block, text: writeItemText(block, context) };
+  return block.edited ? block : { ...block, text: writeItemText(block, context) };
 }
 
 /* ────────────────────────────── making blocks ──────────────────────────────── */
@@ -241,17 +223,11 @@ export function createItemBlock(
   let recipients: ProcessRecipients | undefined;
 
   if (template.fields.some((field) => field.kind === "recipients")) {
-    recipients = defaultProcessRecipients(
-      type,
-      context.people,
-      context.accusedJoined,
-    );
+    recipients = defaultProcessRecipients(type, context.people, context.accusedJoined);
     values.steps = stepsFor(context.people, recipients.person);
   }
   if (template.fields.some((field) => field.kind === "witness")) {
-    const witnesses = context.people.filter(
-      (person) => person.kind === "witness",
-    );
+    const witnesses = context.people.filter((person) => person.kind === "witness");
     if (witnesses.length === 1) values.witness = witnesses[0].id;
   }
   if (type === "rescheduling-of-hearing" && context.scheduledHearing) {
@@ -274,9 +250,7 @@ export function createItemBlock(
       .filter((other) => other.kind === "side" && other.key !== field.key)
       .map((other) => values[other.key]);
     values[field.key] =
-      options.find((option) => !taken.includes(option.value))?.value ??
-      options[0]?.value ??
-      "";
+      options.find((option) => !taken.includes(option.value))?.value ?? options[0]?.value ?? "";
   }
 
   const block: ItemBlock = {
@@ -300,10 +274,7 @@ export function setItemValue(
   value: string,
   context: ComposerContext,
 ): ItemBlock {
-  return rewrite(
-    { ...block, values: { ...block.values, [key]: value } },
-    context,
-  );
+  return rewrite({ ...block, values: { ...block.values, [key]: value } }, context);
 }
 
 /**
@@ -338,19 +309,13 @@ export function setItemRecipients(
   /* One station per selected postal address. A station the drafter chose for an address
      is kept while the person stays the same; any other address gets the one its locality
      resolves to (`AUT-04`). */
-  const auto = stationsFor(
-    context.people,
-    recipients.person,
-    recipients.destinations,
-  );
+  const auto = stationsFor(context.people, recipients.person, recipients.destinations);
   recipients = {
     ...recipients,
     policeStations: Object.fromEntries(
       Object.keys(auto).map((id) => [
         id,
-        (samePerson ? recipients.policeStations[id] : undefined) ||
-          auto[id] ||
-          "",
+        (samePerson ? recipients.policeStations[id] : undefined) || auto[id] || "",
       ]),
     ),
   };
@@ -380,10 +345,7 @@ const BRACKET = /\[[^\]]+\]/g;
  * - An order item whose text is empty: a template-less item writes nothing (`ITM-05`), and
  *   an order item with no words is not yet part of the order.
  */
-export function blockGaps(
-  block: ComposerBlock,
-  context: ComposerContext,
-): BlockGap[] {
+export function blockGaps(block: ComposerBlock, context: ComposerContext): BlockGap[] {
   if (block.kind === "text") {
     return (block.text.match(BRACKET) ?? []).map((token, index) => ({
       key: `bracket-${index}`,
@@ -405,10 +367,7 @@ export function blockGaps(
     const answered = fieldAnswered(block, field, context);
     const inText = template.slots.includes(field.key);
     const dropsClause = template.conditional?.field === field.key;
-    if (
-      !answered &&
-      (field.required || (!block.edited && inText && !dropsClause))
-    ) {
+    if (!answered && (field.required || (!block.edited && inText && !dropsClause))) {
       gaps.push({ key: field.key, label: field.label });
     }
   }
@@ -428,10 +387,7 @@ export function blockGaps(
  * because order items carry no template text any more (`VAR-06`, order-template-catalogue).
  * A process item's recipients count when its catalogue row marks them mandatory.
  */
-export function missingMandatory(
-  block: ComposerBlock,
-  context: ComposerContext,
-): BlockGap[] {
+export function missingMandatory(block: ComposerBlock, context: ComposerContext): BlockGap[] {
   if (block.kind !== "item") return [];
   const template = orderTemplate(block.type);
   const gaps: BlockGap[] = [];

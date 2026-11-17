@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore } from "react"
+import { useCallback, useSyncExternalStore } from "react";
 
 /**
  * A localStorage key as React state, hydration-safe — the `useSyncExternalStore`
@@ -17,65 +17,65 @@ import { useCallback, useSyncExternalStore } from "react"
  * behaviour these providers always had.
  */
 
-const listeners = new Map<string, Set<() => void>>()
+const listeners = new Map<string, Set<() => void>>();
 
 /** Private-mode fallback: applied-but-unpersisted values, per key. */
-const unpersisted = new Map<string, string>()
+const unpersisted = new Map<string, string>();
 
 function emit(key: string) {
-  listeners.get(key)?.forEach((listener) => listener())
+  listeners.get(key)?.forEach((listener) => listener());
 }
 
 export function writeLocalStorageValue(key: string, value: string) {
   try {
-    window.localStorage.setItem(key, value)
-    unpersisted.delete(key)
+    window.localStorage.setItem(key, value);
+    unpersisted.delete(key);
   } catch {
-    unpersisted.set(key, value)
+    unpersisted.set(key, value);
   }
-  emit(key)
+  emit(key);
 }
 
 export function removeLocalStorageValue(key: string) {
   try {
-    window.localStorage.removeItem(key)
+    window.localStorage.removeItem(key);
   } catch {
     /* Private mode: nothing was persisted, and the in-memory value goes below. */
   }
-  unpersisted.delete(key)
-  emit(key)
+  unpersisted.delete(key);
+  emit(key);
 }
 
 export function useLocalStorageValue(key: string): string | null {
   const subscribe = useCallback(
     (callback: () => void) => {
-      let set = listeners.get(key)
+      let set = listeners.get(key);
       if (!set) {
-        set = new Set()
-        listeners.set(key, set)
+        set = new Set();
+        listeners.set(key, set);
       }
-      set.add(callback)
+      set.add(callback);
       const onStorage = (event: StorageEvent) => {
-        if (event.key === key) callback()
-      }
-      window.addEventListener("storage", onStorage)
+        if (event.key === key) callback();
+      };
+      window.addEventListener("storage", onStorage);
       return () => {
-        set.delete(callback)
-        window.removeEventListener("storage", onStorage)
-      }
+        set.delete(callback);
+        window.removeEventListener("storage", onStorage);
+      };
     },
     [key],
-  )
+  );
 
   const getSnapshot = useCallback(() => {
-    const fallback = unpersisted.get(key)
-    if (fallback !== undefined) return fallback
+    const fallback = unpersisted.get(key);
+    if (fallback !== undefined) return fallback;
     try {
-      return window.localStorage.getItem(key)
+      return window.localStorage.getItem(key);
     } catch {
-      return null
+      return null;
     }
-  }, [key])
+  }, [key]);
 
-  return useSyncExternalStore(subscribe, getSnapshot, () => null)
+  return useSyncExternalStore(subscribe, getSnapshot, () => null);
 }

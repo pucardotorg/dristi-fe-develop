@@ -37,7 +37,7 @@ async function saveOneNotice(
   caseId: string,
   draft: FilingDraft,
   index: number,
-  update: Update
+  update: Update,
 ): Promise<string | undefined> {
   const notice = draft.notices[index];
   if (!demandNoticeReady(notice)) return notice.noticeEvidenceId;
@@ -66,7 +66,11 @@ async function saveOneNotice(
 export function removeNoticeEvidence(notice: Pick<DemandNotice, "noticeEvidenceId">) {
   if (!notice.noticeEvidenceId) return;
   caseFilingApi.deleteEvidence(notice.noticeEvidenceId).catch((error) => {
-    console.warn("[filing] couldn't remove demand-notice evidence from the case", notice.noticeEvidenceId, error);
+    console.warn(
+      "[filing] couldn't remove demand-notice evidence from the case",
+      notice.noticeEvidenceId,
+      error,
+    );
   });
 }
 

@@ -2,12 +2,7 @@ import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 /**
@@ -53,17 +48,14 @@ export function PageBackButton({
               // The hairline, not the input border: an edge, kept quiet.
               "relative border-hairline text-foreground after:absolute after:-inset-1",
               "pointer-coarse:size-9",
-              className
+              className,
             )}
           >
             <Link href={href} aria-label={label}>
               {/* Sized on the icon: the Button's own `svg:not([class*=size-])` rule
                   outranks a size set from the parent, which is how the old
                   arrow stayed 12px whatever the wrapper asked for. */}
-              <ArrowLeftIcon
-                aria-hidden
-                className="size-4.5 pointer-coarse:size-5"
-              />
+              <ArrowLeftIcon aria-hidden className="size-4.5 pointer-coarse:size-5" />
             </Link>
           </Button>
         </TooltipTrigger>

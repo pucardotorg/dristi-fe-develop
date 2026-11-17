@@ -26,12 +26,7 @@ import { useMemo, useRef, useState } from "react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldSeparator } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
@@ -67,11 +62,11 @@ function addressComplete(block: AddressBlock): boolean {
   const { line1, city, pin, district, state } = block.addr;
   return Boolean(
     line1.trim() &&
-      city.trim() &&
-      pin.trim() &&
-      district.trim() &&
-      state.trim() &&
-      block.police.trim()
+    city.trim() &&
+    pin.trim() &&
+    district.trim() &&
+    state.trim() &&
+    block.police.trim(),
   );
 }
 
@@ -106,9 +101,7 @@ export function AddWitnessDialog({
 }) {
   const t = useTranslations();
   const [step, setStep] = useState<1 | 2>(1);
-  const [witnesses, setWitnesses] = useState<DialogWitness[]>(() => [
-    newWitness(),
-  ]);
+  const [witnesses, setWitnesses] = useState<DialogWitness[]>(() => [newWitness()]);
   const [activeId, setActiveId] = useState(() => witnesses[0].id);
   const [error, setError] = useState<string | undefined>(undefined);
   const [filesErrors, setFilesErrors] = useState<Record<string, string>>({});
@@ -131,15 +124,12 @@ export function AddWitnessDialog({
       witnesses[0].contacts.some(hasText) ||
       witnesses[0].docs.length > 0 ||
       Boolean(witnesses[0].age || witnesses[0].prove),
-    [witnesses]
+    [witnesses],
   );
 
-  function setField<K extends keyof DialogWitness>(
-    key: K,
-    value: DialogWitness[K]
-  ) {
+  function setField<K extends keyof DialogWitness>(key: K, value: DialogWitness[K]) {
     setWitnesses((current) =>
-      current.map((item, i) => (i === index ? { ...item, [key]: value } : item))
+      current.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
     );
     setError(undefined);
   }
@@ -158,9 +148,7 @@ export function AddWitnessDialog({
   }
 
   function confirmRemove() {
-    const i = removeId
-      ? witnesses.findIndex((item) => item.id === removeId)
-      : -1;
+    const i = removeId ? witnesses.findIndex((item) => item.id === removeId) : -1;
     if (i < 0 || witnesses.length <= 1) {
       setRemoveId(null);
       return;
@@ -200,7 +188,7 @@ export function AddWitnessDialog({
       setError(
         witnessComplete(witnesses[missing])
           ? t("addWitnessForm_witnessValueNeedsAtLeastOne", { value: String(missing + 1) })
-          : t("addWitnessForm_witnessValueNeedsANameOr", { value: String(missing + 1) })
+          : t("addWitnessForm_witnessValueNeedsANameOr", { value: String(missing + 1) }),
       );
       // Surface the error where the action is — the notice sits at the top of
       // the scroll region, so bring it into view.
@@ -218,9 +206,7 @@ export function AddWitnessDialog({
         : t("addWitnessForm_applicationForTheAdditionOfWitnesses"),
     facts: witnesses.map((wit, i) => ({
       term: `Witness ${i + 1}`,
-      value: `${witnessIdentity(wit)}${
-        wit.prove.trim() ? ` — to prove: ${wit.prove.trim()}` : ""
-      }`,
+      value: `${witnessIdentity(wit)}${wit.prove.trim() ? ` — to prove: ${wit.prove.trim()}` : ""}`,
     })),
     prayer: [
       `The applicant, counsel on record in the above matter, prays that the ${
@@ -251,10 +237,7 @@ export function AddWitnessDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div
-            ref={formScrollRef}
-            className="min-h-0 flex-1 overflow-y-auto px-6 py-5"
-          >
+          <div ref={formScrollRef} className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
             {step === 1 ? (
               <div className="flex flex-col gap-6">
                 {error ? (
@@ -394,11 +377,7 @@ export function AddWitnessDialog({
 
           <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             {step === 2 ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setStep(1)}
-              >
+              <Button type="button" variant="outline" onClick={() => setStep(1)}>
                 {t("common_back")}
               </Button>
             ) : (
@@ -425,9 +404,7 @@ export function AddWitnessDialog({
           /* The application is out — the Witnesses group shows each name
              greyed, "Awaiting order", so the register never reads as if
              the flow lost the application. */
-          live?.addWitnesses(
-            witnesses.map(witnessIdentity).filter(Boolean)
-          );
+          live?.addWitnesses(witnesses.map(witnessIdentity).filter(Boolean));
           closeClean();
         }}
         confirmation={{
@@ -444,7 +421,9 @@ export function AddWitnessDialog({
         onOpenChange={(nextOpen) => {
           if (!nextOpen) setRemoveId(null);
         }}
-        title={t("addWitnessForm_removeWitnessRemoveNumber", { removeNumber: String(removeNumber) })}
+        title={t("addWitnessForm_removeWitnessRemoveNumber", {
+          removeNumber: String(removeNumber),
+        })}
         description={t("addWitnessForm_areYouSureYouWantTo")}
         note={t("addWitnessForm_thisCannotBeUndone")}
         confirmLabel={t("addWitnessForm_yesRemove")}

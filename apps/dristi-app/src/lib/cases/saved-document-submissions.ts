@@ -62,9 +62,7 @@ export function savedDocumentSubmissionsKey(caseId: string): string {
   return `dristi-demo-document-submissions:${caseId}`;
 }
 
-export function parseSavedDocumentSubmissions(
-  raw: string | null
-): SavedDocumentSubmission[] {
+export function parseSavedDocumentSubmissions(raw: string | null): SavedDocumentSubmission[] {
   if (!raw) return [];
   try {
     const value: unknown = JSON.parse(raw);
@@ -78,13 +76,13 @@ export function parseSavedDocumentSubmissions(
 export function saveDocumentSubmission(
   caseId: string,
   submission: SavedDocumentSubmission,
-  files: Map<string, File[]>
+  files: Map<string, File[]>,
 ): void {
   const key = savedDocumentSubmissionsKey(caseId);
   const next = [
     submission,
     ...parseSavedDocumentSubmissions(readSessionValue(key)).filter(
-      (item) => item.id !== submission.id
+      (item) => item.id !== submission.id,
     ),
   ];
   for (const [documentId, chosen] of files) FILES.set(documentId, chosen);
@@ -94,11 +92,11 @@ export function saveDocumentSubmission(
 /** The saved submission a document belongs to, for Continue draft. */
 export function findDocumentSubmission(
   caseId: string,
-  documentId: string
+  documentId: string,
 ): SavedDocumentSubmission | undefined {
-  return parseSavedDocumentSubmissions(
-    readSessionValue(savedDocumentSubmissionsKey(caseId))
-  ).find((item) => item.documents.some((doc) => doc.id === documentId));
+  return parseSavedDocumentSubmissions(readSessionValue(savedDocumentSubmissionsKey(caseId))).find(
+    (item) => item.documents.some((doc) => doc.id === documentId),
+  );
 }
 
 /** The files chosen for a document, for the form to take back. */
@@ -117,9 +115,7 @@ export function newSavedDocumentId(): string {
 }
 
 /** Each document of a saved submission, as a register row. */
-export function savedDocumentRows(
-  submission: SavedDocumentSubmission
-): Submission[] {
+export function savedDocumentRows(submission: SavedDocumentSubmission): Submission[] {
   const submitted = submission.status === "submitted";
   return submission.documents.map((doc) => ({
     id: doc.id,

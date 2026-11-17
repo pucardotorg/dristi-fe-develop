@@ -25,10 +25,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function EmployeeLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function EmployeeLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

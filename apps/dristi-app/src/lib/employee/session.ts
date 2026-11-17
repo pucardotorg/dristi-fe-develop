@@ -118,9 +118,9 @@ export function serverCourtSession(): CourtSession {
 export function setCourtSession(next: Partial<CourtSession>): void {
   const current = readCourtSession();
   const merged = { ...current, ...next };
-  if ((Object.keys(merged) as (keyof CourtSession)[]).every(
-    (key) => merged[key] === current[key],
-  )) {
+  if (
+    (Object.keys(merged) as (keyof CourtSession)[]).every((key) => merged[key] === current[key])
+  ) {
     return;
   }
   session = merged;

@@ -75,11 +75,7 @@ export function attendanceHistory(hearing: CourtHearing): AttendanceHistory {
  * was not required; otherwise each person has a steady rate, between about half and
  * nearly always, and each sitting is drawn against it.
  */
-function markAt(
-  listingId: string,
-  appearance: Appearance,
-  sitting: HearingSitting,
-): SittingMark {
+function markAt(listingId: string, appearance: Appearance, sitting: HearingSitting): SittingMark {
   const rate = 0.5 + (hash(`${listingId}:${appearance.id}`) % 46) / 100;
   const draw = (hash(`${listingId}:${appearance.id}:${sitting.on}`) % 100) / 100;
   if (hash(`required:${listingId}:${appearance.id}:${sitting.on}`) % 7 === 0) {

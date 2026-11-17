@@ -32,7 +32,7 @@ prototype shows it.
 
 ## Not done here
 
-- The filer-side correction fixtures cannot yet carry an *oath* defect (defect targets are
+- The filer-side correction fixtures cannot yet carry an _oath_ defect (defect targets are
   fields and documents). The carry-over rule is in place and clears exactly the oaths it is
   told were flagged; wiring a scrutiny flag through to the correction queue is a follow-up.
 - Oath wording: the step now shows the handover's placeholder affirmation (§18.2), which

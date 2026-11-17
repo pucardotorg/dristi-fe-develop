@@ -51,7 +51,11 @@ export function chequeBank(cheques: ChequeDetails[], index: number): Bank {
   let i = index;
   while (i > 0 && cheques[i].sameAsPrev === "yes") i -= 1;
   const c = cheques[i];
-  return { ifsc: c.ifsc.trim().toUpperCase(), bankName: c.bankName.trim(), bankBranch: c.bankBranch.trim() };
+  return {
+    ifsc: c.ifsc.trim().toUpperCase(),
+    bankName: c.bankName.trim(),
+    bankBranch: c.bankBranch.trim(),
+  };
 }
 
 /** The amount as the backend wants it — a positive number — or `null` when it is not one. */
@@ -128,7 +132,9 @@ export function chequeReady(cheques: ChequeDetails[], index: number): boolean {
 export function returnMemoReady(cheque: ChequeDetails): boolean {
   // The return reason must be one the backend's enum accepts; two design options have no
   // backend value yet (tracker B1), so a memo using them is held back until the enum grows.
-  return !!cheque.presentDate && !!cheque.returnDate && returnReasonValue(cheque.returnReason) !== null;
+  return (
+    !!cheque.presentDate && !!cheque.returnDate && returnReasonValue(cheque.returnReason) !== null
+  );
 }
 
 /** Local payment-status code → the backend's `PaymentStatus` enum value. */
@@ -205,10 +211,7 @@ export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody
 /** Whether a demand notice has every `LEGAL_DEMAND_NOTICE` field the backend requires. */
 export function demandNoticeReady(notice: DemandNotice): boolean {
   const base =
-    !!notice.natureDebt &&
-    !!notice.dispatchDate &&
-    !!notice.modeService &&
-    !!notice.paymentStatus;
+    !!notice.natureDebt && !!notice.dispatchDate && !!notice.modeService && !!notice.paymentStatus;
   if (!base) return false;
   if (notice.delivered === "yes") {
     // A delivered notice needs its delivery date.
@@ -216,7 +219,8 @@ export function demandNoticeReady(notice: DemandNotice): boolean {
   } else {
     // An undelivered one needs its return date and a backend-known non-delivery reason
     // ("address incomplete" has no backend value yet — tracker B3 — so it holds the row back).
-    if (!notice.returnDate || nonDeliveryReasonValue(notice.nonDeliveryReason) === null) return false;
+    if (!notice.returnDate || nonDeliveryReasonValue(notice.nonDeliveryReason) === null)
+      return false;
   }
   // A part payment needs a valid amount.
   if (notice.paymentStatus === "part" && chequeAmount(notice.partAmount) === null) return false;
@@ -244,7 +248,10 @@ function amountText(value: unknown): string {
 /** The cheque fields a `CHEQUE` evidence_info holds. */
 export function chequeFromEvidence(
   info: Record<string, unknown>,
-): Pick<ChequeDetails, "dateOnCheque" | "amount" | "chequeNumber" | "ifsc" | "bankName" | "bankBranch"> {
+): Pick<
+  ChequeDetails,
+  "dateOnCheque" | "amount" | "chequeNumber" | "ifsc" | "bankName" | "bankBranch"
+> {
   return {
     dateOnCheque: text(info.cheque_date),
     amount: amountText(info.amount),

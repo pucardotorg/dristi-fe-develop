@@ -2,11 +2,7 @@
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  ChevronRightIcon,
-  FlagIcon,
-  WalletIcon,
-} from "lucide-react";
+import { ChevronRightIcon, FlagIcon, WalletIcon } from "lucide-react";
 
 import { money } from "@/lib/filing/format";
 import { cn } from "@/lib/utils";
@@ -22,13 +18,7 @@ import {
 import { OutcomeAmount, OutcomeHeader, StatusLine } from "@/components/feedback";
 import { PaymentFacts } from "@/components/payment/payment-steps";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -85,23 +75,15 @@ function Receipts({
         <TableBody className={tableBodyClass({ hover: false })}>
           {cases.map((c) => (
             <TableRow key={c.id} className={tableRowClass({ hover: false })}>
-              <TableCell
-                className={cn(TABLE_CELL, "pl-4 font-medium tabular-nums")}
-              >
+              <TableCell className={cn(TABLE_CELL, "pl-4 font-medium tabular-nums")}>
                 {c.reference}
               </TableCell>
-              <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
-                {c.receiptNumber}
-              </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "tabular-nums", !fees && "pr-4")}
-              >
+              <TableCell className={cn(TABLE_CELL, "tabular-nums")}>{c.receiptNumber}</TableCell>
+              <TableCell className={cn(TABLE_CELL, "tabular-nums", !fees && "pr-4")}>
                 {c.caseFileNumber}
               </TableCell>
               {fees ? (
-                <TableCell
-                  className={cn(TABLE_CELL, "pr-4 text-right tabular-nums")}
-                >
+                <TableCell className={cn(TABLE_CELL, "pr-4 text-right tabular-nums")}>
                   {money(c.fee)}
                 </TableCell>
               ) : null}
@@ -128,9 +110,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
     return new Set((only.length ? only : due).map((c) => c.id));
   };
   const [picked, setPicked] = React.useState<Set<string>>(start);
-  const [dialog, setDialog] = React.useState<
-    "confirm" | "processing" | "done" | null
-  >(null);
+  const [dialog, setDialog] = React.useState<"confirm" | "processing" | "done" | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   // Re-select everything when the set on offer changes — adjusted during render, not in
@@ -180,9 +160,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
 
   return (
     <div className="flex flex-col gap-6">
-      {error ? (
-        <StatusLine tone="error">{error}</StatusLine>
-      ) : null}
+      {error ? <StatusLine tone="error">{error}</StatusLine> : null}
 
       {due.length === 0 ? (
         <Card variant="raised">
@@ -196,9 +174,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
             <CardTitle className="text-body font-semibold">
               {t("payTab_signedWaitingForPayment")}
             </CardTitle>
-            <CardDescription>
-              {t("payTab_feesForEachCaseOnePayment")}
-            </CardDescription>
+            <CardDescription>{t("payTab_feesForEachCaseOnePayment")}</CardDescription>
           </CardHeader>
           <div className="overflow-x-auto px-2">
             <Table
@@ -217,11 +193,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                             : false
                       }
                       onCheckedChange={(v) =>
-                        setPicked(
-                          v === true
-                            ? new Set(due.map((c) => c.id))
-                            : new Set(),
-                        )
+                        setPicked(v === true ? new Set(due.map((c) => c.id)) : new Set())
                       }
                       aria-label={t("payTab_selectEveryCase")}
                     />
@@ -254,17 +226,11 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                         aria-label={t("payTab_selectReference", { reference: c.reference })}
                       />
                     </TableCell>
-                    <TableCell
-                      className={cn(TABLE_CELL, "font-medium tabular-nums")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "font-medium tabular-nums")}>
                       {c.reference}
                     </TableCell>
-                    <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>
-                      {c.title}
-                    </TableCell>
-                    <TableCell
-                      className={cn(TABLE_CELL, "pr-4 text-right tabular-nums")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>{c.title}</TableCell>
+                    <TableCell className={cn(TABLE_CELL, "pr-4 text-right tabular-nums")}>
                       {money(c.fee)}
                     </TableCell>
                   </TableRow>
@@ -278,9 +244,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                 <span className="tabular-nums">{chosen.length}</span> case
                 {chosen.length === 1 ? "" : "s"}, one transaction
               </span>
-              <span className="text-title-s font-semibold tabular-nums">
-                {money(total)}
-              </span>
+              <span className="text-title-s font-semibold tabular-nums">{money(total)}</span>
             </div>
             <Button
               size="lg"
@@ -297,11 +261,15 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
 
       {batch.counts.filed ? (
         <p className="text-body-compact text-muted-foreground">
-          {t.rich("payTab_filedAlreadyPaidAndFiledSee", { filed: String(batch.counts.filed), span: (chunks) => <span className="tabular-nums">{chunks}</span>, button: (chunks) => <button
-            type="button"
-            className="underline"
-            onClick={() => go("filed")}
-          >{chunks}</button> })}
+          {t.rich("payTab_filedAlreadyPaidAndFiledSee", {
+            filed: String(batch.counts.filed),
+            span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            button: (chunks) => (
+              <button type="button" className="underline" onClick={() => go("filed")}>
+                {chunks}
+              </button>
+            ),
+          })}
         </p>
       ) : null}
 
@@ -329,9 +297,8 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                 title={t("payTab_paymentSuccessful")}
                 body={
                   <>
-                    <span className="tabular-nums">{last.caseIds.length}</span>{" "}
-                    case file{last.caseIds.length === 1 ? " is" : "s are"}{" "}
-                    complete.
+                    <span className="tabular-nums">{last.caseIds.length}</span> case file
+                    {last.caseIds.length === 1 ? " is" : "s are"} complete.
                   </>
                 }
               >
@@ -343,9 +310,14 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                   rows={[
                     {
                       label: t("payTab_paymentReference"),
-                      value: <Identifier value={last.ref} label={t("payTab_paymentReferenceLabel")} />,
+                      value: (
+                        <Identifier value={last.ref} label={t("payTab_paymentReferenceLabel")} />
+                      ),
                     },
-                    { label: t("payTab_filedOn"), value: <span className="tabular-nums">{ist(last.at)}</span> },
+                    {
+                      label: t("payTab_filedOn"),
+                      value: <span className="tabular-nums">{ist(last.at)}</span>,
+                    },
                   ]}
                 />
 
@@ -353,11 +325,17 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                 <Tabs defaultValue="filed" className="gap-3">
                   <TabsList variant="line">
                     <TabsTrigger value="filed">
-                      {t.rich("payTab_filedLength", { length: String(last.caseIds.length), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+                      {t.rich("payTab_filedLength", {
+                        length: String(last.caseIds.length),
+                        span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                      })}
                     </TabsTrigger>
                     {pendingAfter.length ? (
                       <TabsTrigger value="pending">
-                        {t.rich("payTab_stillPendingLength", { length: String(pendingAfter.length), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+                        {t.rich("payTab_stillPendingLength", {
+                          length: String(pendingAfter.length),
+                          span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                        })}
                       </TabsTrigger>
                     ) : null}
                   </TabsList>
@@ -405,7 +383,9 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                                 ))}
                                 {c.flags.length > 2 ? (
                                   <span className="text-caption text-muted-foreground tabular-nums">
-                                    {t("payTab_andValueMore", { value: String(c.flags.length - 2) })}
+                                    {t("payTab_andValueMore", {
+                                      value: String(c.flags.length - 2),
+                                    })}
                                   </span>
                                 ) : null}
                               </span>
@@ -424,39 +404,36 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
 
               {/* The warm band every outcome closes on; it stays put while the lists scroll. */}
               <footer className="flex shrink-0 flex-col gap-3 border-t border-hairline bg-surface-sunken px-6 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] sm:flex-row">
-                  {pendingAfter.length ? (
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="sm:flex-1"
-                      onClick={() => {
-                        setDialog(null);
-                        go(
-                          pendingAfter.some((c) => c.stage === "signed")
-                            ? "pay"
-                            : pendingAfter.some(
-                                  (c) => c.stage === "ready" && !c.flags.length,
-                                )
-                              ? "sign"
-                              : "scrutiny",
-                        );
-                      }}
-                    >
-                      Finish the pending{" "}
-                      {pendingAfter.length === 1 ? "case" : "cases"}
-                    </Button>
-                  ) : null}
+                {pendingAfter.length ? (
                   <Button
                     variant="outline"
                     size="lg"
                     className="sm:flex-1"
                     onClick={() => {
                       setDialog(null);
-                      go("filed");
+                      go(
+                        pendingAfter.some((c) => c.stage === "signed")
+                          ? "pay"
+                          : pendingAfter.some((c) => c.stage === "ready" && !c.flags.length)
+                            ? "sign"
+                            : "scrutiny",
+                      );
                     }}
                   >
-                    {t("payTab_seeFiledCases")}
+                    Finish the pending {pendingAfter.length === 1 ? "case" : "cases"}
                   </Button>
+                ) : null}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="sm:flex-1"
+                  onClick={() => {
+                    setDialog(null);
+                    go("filed");
+                  }}
+                >
+                  {t("payTab_seeFiledCases")}
+                </Button>
               </footer>
             </>
           ) : (

@@ -39,12 +39,7 @@ import {
   type CaseTask,
   type DueStatusView,
 } from "./peek";
-import {
-  applicationHref,
-  caseSectionHref,
-  hearingHref,
-  orderHref,
-} from "./sections";
+import { applicationHref, caseSectionHref, hearingHref, orderHref } from "./sections";
 import { formatCaseDate, outcomeLabel, type CaseRecord } from "./types";
 import { displayName } from "./names";
 
@@ -135,12 +130,7 @@ export type OverviewTask = {
 /** The PRD's category set (OVW-09). Process and Parties have no event source
  *  in the prototype yet; the full catalogue is maintained outside it. */
 export type OverviewUpdateCategory =
-  | "Filing"
-  | "Orders"
-  | "Submissions"
-  | "Process"
-  | "Hearing"
-  | "Parties";
+  "Filing" | "Orders" | "Submissions" | "Process" | "Hearing" | "Parties";
 
 export type OverviewUpdate = {
   id: string;
@@ -166,10 +156,7 @@ export type CaseOverviewModel = {
 /** A pulse, not a register — the owning tab holds the rest. */
 const UPDATE_LIMIT = 3;
 
-export function caseOverviewModel(
-  record: CaseRecord,
-  now: number,
-): CaseOverviewModel {
+export function caseOverviewModel(record: CaseRecord, now: number): CaseOverviewModel {
   const extras = peekExtras(record.id);
   return {
     nextHearing: overviewNextHearing(record, now),
@@ -184,10 +171,7 @@ export function caseOverviewModel(
  * case with nothing listed still gets the card: the absence is the fact,
  * and it is the one worth acting on.
  */
-function overviewNextHearing(
-  record: CaseRecord,
-  now: number,
-): OverviewNextHearing {
+function overviewNextHearing(record: CaseRecord, now: number): OverviewNextHearing {
   if (record.disposal || !record.nextHearing) {
     return {
       on: "overview_noHearingScheduled",
@@ -202,9 +186,7 @@ function overviewNextHearing(
   const purpose = record.nextHearing.purpose.trim();
   const status = nextHearingStatus(record, record.nextHearing.on);
   return {
-    on: isSameDay(record.nextHearing.on, now)
-      ? "Today"
-      : formatCaseDate(record.nextHearing.on),
+    on: isSameDay(record.nextHearing.on, now) ? "Today" : formatCaseDate(record.nextHearing.on),
     purpose: purpose.length > 0 ? purpose : undefined,
     tile: overviewDateTile(record.nextHearing.on, now),
     /* A next hearing is scheduled by definition, so that chip said nothing
@@ -272,11 +254,7 @@ function overviewDateTile(iso: string, now: number): OverviewDateTile {
  * to Applications made "Upload affidavit" open the tab that does not hold
  * documents, which is a button that lies about where it lands.
  */
-function overviewTasks(
-  record: CaseRecord,
-  extras: CasePeekExtras,
-  now: number,
-): OverviewTask[] {
+function overviewTasks(record: CaseRecord, extras: CasePeekExtras, now: number): OverviewTask[] {
   const authored: OverviewTask[] = (extras.tasks ?? [])
     .slice()
     .sort((a, b) => a.dueOn.localeCompare(b.dueOn))
@@ -311,16 +289,12 @@ function pendingPageTasks(record: CaseRecord, now: number): OverviewTask[] {
   if (!record.id.startsWith("tw-")) return [];
   const caseId = record.id.slice(3);
   return buildTasks()
-    .filter(
-      (task) => task.caseId === caseId && OPEN_TASK_STATUSES.has(task.status)
-    )
+    .filter((task) => task.caseId === caseId && OPEN_TASK_STATUSES.has(task.status))
     .map((task) => ({
       id: task.id,
       title: task.title,
       detail: task.why.event,
-      due: task.dueAt
-        ? dueStatusView(task.dueAt, record.nextHearing?.on, now)
-        : undefined,
+      due: task.dueAt ? dueStatusView(task.dueAt, record.nextHearing?.on, now) : undefined,
       href: taskHref(task.id),
       respondHref: taskHref(task.id),
     }));
@@ -352,10 +326,7 @@ function taskDetail(task: CaseTask): string | undefined {
  * out of three teaches the reader to distrust the third, which is exactly
  * the row that falls after the hearing.
  */
-function tasksBeforeHearing(
-  record: CaseRecord,
-  tasks: CaseTask[],
-): string | null {
+function tasksBeforeHearing(record: CaseRecord, tasks: CaseTask[]): string | null {
   const on = record.nextHearing?.on;
   if (!on || tasks.length === 0) return null;
   const hearingDay = dayStamp(on);
@@ -397,10 +368,7 @@ function overviewUpdates(
     },
   ];
 
-  if (
-    record.previousHearingOn &&
-    inComplaintWindow(record.previousHearingOn, filedOn, today)
-  ) {
+  if (record.previousHearingOn && inComplaintWindow(record.previousHearingOn, filedOn, today)) {
     raw.push({
       id: `${record.id}-last-hearing`,
       kind: "hearing",
@@ -414,10 +382,7 @@ function overviewUpdates(
     });
   }
 
-  if (
-    record.disposal &&
-    inComplaintWindow(record.disposal.on, filedOn, today)
-  ) {
+  if (record.disposal && inComplaintWindow(record.disposal.on, filedOn, today)) {
     raw.push({
       id: `${record.id}-disposal`,
       kind: "order",
@@ -471,7 +436,7 @@ function overviewUpdates(
 function registeredApplicationHref(record: CaseRecord, title: string): string {
   try {
     const match = applicationsFile(record).submissions.find(
-      (item) => item.title.trim().toLowerCase() === title.trim().toLowerCase()
+      (item) => item.title.trim().toLowerCase() === title.trim().toLowerCase(),
     );
     if (match) return applicationHref(record.id, match.id);
   } catch {
@@ -499,9 +464,7 @@ function collectRegisterUpdates(
   today: string,
   raw: RawUpdate[],
 ) {
-  const lastHearingDay = record.previousHearingOn
-    ? dayStamp(record.previousHearingOn)
-    : null;
+  const lastHearingDay = record.previousHearingOn ? dayStamp(record.previousHearingOn) : null;
   const disposalDay = record.disposal ? dayStamp(record.disposal.on) : null;
 
   try {
@@ -569,11 +532,7 @@ function submissionOccurred(status: FilingStatus): boolean {
   return isOnboardedStatus(status) || status === "submitted";
 }
 
-function inComplaintWindow(
-  on: string,
-  filedOn: string,
-  today: string,
-): boolean {
+function inComplaintWindow(on: string, filedOn: string, today: string): boolean {
   const day = dayStamp(on);
   return day >= filedOn && day <= today;
 }

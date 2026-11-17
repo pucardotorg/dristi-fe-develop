@@ -19,18 +19,11 @@ import { cn } from "@/lib/utils";
  * is that same treatment for the stacked list, so a row reads and behaves the same at every
  * width and on every screen.
  */
-export function QueueItemRow({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<"li">) {
+export function QueueItemRow({ className, children, ...props }: React.ComponentProps<"li">) {
   return (
     <li
       {...rowActivation(
-        cn(
-          "rounded-lg bg-surface-sunken p-4 transition-colors hover:bg-accent-strong",
-          className,
-        ),
+        cn("rounded-lg bg-surface-sunken p-4 transition-colors hover:bg-accent-strong", className),
       )}
       {...props}
     >

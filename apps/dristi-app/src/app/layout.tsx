@@ -21,8 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const product = courtText("DRISTI");
   return {
     title: { default: product, template: `%s · ${product}` },
-    description:
-      "PUCAR's platform for NI Act §138 (cheque-dishonour) cases through Indian courts.",
+    description: "PUCAR's platform for NI Act §138 (cheque-dishonour) cases through Indian courts.",
   };
 }
 

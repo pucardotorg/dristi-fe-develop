@@ -58,7 +58,7 @@ export type AnyPartyInput = PartyInput | WitnessInput;
 /** Drop empty values, so a body carries only what was entered. */
 function compact<T extends object>(value: T): T {
   return Object.fromEntries(
-    Object.entries(value).filter(([, v]) => v !== undefined && v !== "")
+    Object.entries(value).filter(([, v]) => v !== undefined && v !== ""),
   ) as T;
 }
 
@@ -106,7 +106,7 @@ function addressBlock(block: AddressBlock): Partial<AddressInput> {
  * half-typed number is not sent: `missingFields` holds the party back until it is whole.
  */
 function cinPan(
-  c: Pick<Complainant, "entCinPan" | "entCinPanSkippedAt">
+  c: Pick<Complainant, "entCinPan" | "entCinPanSkippedAt">,
 ): Pick<InstitutionInput, "pan" | "cin" | "pan_cin_skip_declared"> {
   if (c.entCinPanSkippedAt) return { pan_cin_skip_declared: true };
   const v = normaliseCinPan(c.entCinPan);
@@ -127,7 +127,7 @@ function hasVisibleText(html: string): boolean {
 
 /** A complainant appearing in person files the affidavit for it; anyone else files none. */
 function affidavit(
-  c: Pick<Complainant, "pip" | "affidavit">
+  c: Pick<Complainant, "pip" | "affidavit">,
 ): Pick<PartyInput, "party_in_person_affidavit"> {
   return c.pip === "yes" && hasVisibleText(c.affidavit)
     ? { party_in_person_affidavit: c.affidavit }
@@ -157,7 +157,7 @@ function unique(values: Array<string | undefined>, key = (v: string) => v): stri
 function contactLists(
   mobiles: Array<string | undefined>,
   emails: Array<string | undefined>,
-  addresses: Partial<AddressInput>[]
+  addresses: Partial<AddressInput>[],
 ): ContactLists {
   const mobile_numbers = unique(mobiles);
   const email_addresses = unique(emails, (e) => e.toLowerCase());
@@ -181,7 +181,7 @@ function addressBlocks(blocks: AddressBlock[]): Partial<AddressInput>[] {
  */
 export function selfComplainantId(
   complainants: Complainant[],
-  profile: UserProfile | null
+  profile: UserProfile | null,
 ): string | undefined {
   if (profile?.role !== "LITIGANT") return undefined;
   return complainants.find((c) => c.type === "individual" && isAccountMobile(c.mobile, profile))
@@ -209,7 +209,7 @@ export function complainantBodies(c: Complainant, isSelf = false): PartyInput[] 
           ? contactLists(
               [phone(c.rep.mobile)],
               [c.rep.email.trim()],
-              hasAddress(c.rep.addr) ? [address(c.rep.addr)] : []
+              hasAddress(c.rep.addr) ? [address(c.rep.addr)] : [],
             )
           : {}),
         is_party_in_person,
@@ -263,7 +263,11 @@ export function accusedBodies(a: Accused): PartyInput[] {
   });
 
   if (a.type === "individual") {
-    const own = contactLists(a.contacts.map((x) => phone(x.mobile)), emails, addresses);
+    const own = contactLists(
+      a.contacts.map((x) => phone(x.mobile)),
+      emails,
+      addresses,
+    );
     return [{ ...base(own), person: compact({ name: a.name.trim() }), ...own }];
   }
 
@@ -271,7 +275,11 @@ export function accusedBodies(a: Accused): PartyInput[] {
     entity_type: ENTITY_TYPE_CODES[a.entType],
     entity_name: a.name.trim(),
     // A company's number may be a landline, so it is sent as typed.
-    ...contactLists(a.contacts.map((x) => x.mobile.trim()), emails, addresses),
+    ...contactLists(
+      a.contacts.map((x) => x.mobile.trim()),
+      emails,
+      addresses,
+    ),
   });
   const reps = a.reps.filter((r) => r.name.trim());
   if (reps.length === 0) return [{ ...base(institution), institution }];
@@ -280,7 +288,7 @@ export function accusedBodies(a: Accused): PartyInput[] {
     const own = contactLists(
       [phone(rep.mobile)],
       [rep.email.trim()],
-      hasAddress(rep.addr) ? [address(rep.addr, rep.police)] : []
+      hasAddress(rep.addr) ? [address(rep.addr, rep.police)] : [],
     );
     return compact({
       ...base(institution, own),
@@ -309,7 +317,7 @@ export function witnessBodies(w: Witness): WitnessInput[] {
       ...contactLists(
         w.contacts.map((x) => phone(x.mobile)),
         w.contacts.map((x) => x.email.trim()),
-        addressBlocks(w.addresses)
+        addressBlocks(w.addresses),
       ),
       designation: w.designation.trim(),
       side: "COMPLAINANT" as const,
@@ -426,7 +434,7 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 function personPatch(
   body: Pick<PartyInput, "person" | "permanent_address">,
   before: Pick<PartyInput, "person" | "permanent_address"> | undefined,
-  hasPermanentAddress: boolean
+  hasPermanentAddress: boolean,
 ): Pick<ParticipantPatch, "disability_status" | "permanent_address"> {
   const disability = body.person?.disability_status ?? null;
   const permanent = body.permanent_address ?? null;
@@ -447,7 +455,7 @@ function personPatch(
  */
 function institutionPatch(
   institution: InstitutionInput,
-  before: InstitutionInput | undefined
+  before: InstitutionInput | undefined,
 ): Pick<ParticipantPatch, "institution" | "institution_contacts"> {
   const split = ({ mobile_numbers, email_addresses, addresses, ...company }: InstitutionInput) => ({
     company,
@@ -484,9 +492,7 @@ export function patchFor(body: AnyPartyInput, before?: AnyPartyInput): Participa
     name_at_filing: body.person?.name ?? body.institution?.entity_name ?? "",
     gender_at_filing: body.person?.gender ?? null,
     age_at_filing: body.person?.age ?? null,
-    ...(body.person && body.institution
-      ? { designation_at_filing: body.designation ?? null }
-      : {}),
+    ...(body.person && body.institution ? { designation_at_filing: body.designation ?? null } : {}),
     // An institution with nobody acting for it has no contacts outside `institution`.
     ...(body.person || body.self ? listsPatch(body) : {}),
     ...(body.institution ? institutionPatch(body.institution, previous?.institution) : {}),
@@ -577,7 +583,7 @@ export async function saveParty(
   caseId: string,
   role: PartyRole,
   bodies: AnyPartyInput[],
-  saved: SavedParty
+  saved: SavedParty,
 ): Promise<PartySaveResult> {
   const olds = (saved.caseParticipantIds ?? []).map((id, k) => {
     const json = saved.savedBodies?.[k] ?? "";
@@ -736,7 +742,7 @@ export async function savePoaHolder(
   caseId: string,
   body: PoaHolderBody | null,
   forId: string | undefined,
-  saved: SavedPoaHolder | undefined
+  saved: SavedPoaHolder | undefined,
 ): Promise<PoaSaveResult> {
   let current = saved;
   try {

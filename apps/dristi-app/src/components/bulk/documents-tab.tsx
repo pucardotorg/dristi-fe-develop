@@ -1,11 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  CircleAlertIcon,
-  WandSparklesIcon,
-  UploadIcon,
-} from "lucide-react";
+import { CircleAlertIcon, WandSparklesIcon, UploadIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -82,9 +78,7 @@ export function Slot({
 
   // Small text buttons, as the product's own "Replace file"; 32px tall with a 40px hit area.
   const SMALL_BTN = "relative after:absolute after:-inset-y-1 after:inset-x-0";
-  const fileLine = doc.file
-    ? `${doc.file.name} · ${sizeOf(doc.file.size)}`
-    : "";
+  const fileLine = doc.file ? `${doc.file.name} · ${sizeOf(doc.file.size)}` : "";
 
   const name = (
     <span className="flex min-w-0 flex-1 items-baseline gap-2">
@@ -102,7 +96,12 @@ export function Slot({
           {busy ? (
             <Spinner className="shrink-0" />
           ) : poor ? (
-            <StatusMark tone="warning" size={16} still label={t("documentsTab_uploadedHardToRead")} />
+            <StatusMark
+              tone="warning"
+              size={16}
+              still
+              label={t("documentsTab_uploadedHardToRead")}
+            />
           ) : (
             <StatusMark size={16} still label={t("documentsTab_uploaded")} />
           )}
@@ -149,10 +148,7 @@ export function Slot({
           {busy ? (
             <Spinner className="shrink-0" />
           ) : (
-            <UploadIcon
-              className="size-4 shrink-0 text-muted-foreground"
-              aria-hidden
-            />
+            <UploadIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           )}
           {name}
           <span
@@ -211,12 +207,9 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
   // Cases missing something first, in the order they had when the tab opened, so a case
   // does not jump away the moment its last document goes in.
   const poorOf = (c: CaseView) => c.flags.filter((f) => f.rule === "dcm-poor");
-  const needsWork = (c: CaseView) =>
-    c.docs.have < c.docs.need || poorOf(c).length > 0;
+  const needsWork = (c: CaseView) => c.docs.have < c.docs.need || poorOf(c).length > 0;
   const [order] = React.useState(() =>
-    [...batch.cases]
-      .sort((a, b) => Number(!needsWork(a)) - Number(!needsWork(b)))
-      .map((c) => c.id),
+    [...batch.cases].sort((a, b) => Number(!needsWork(a)) - Number(!needsWork(b))).map((c) => c.id),
   );
   const rank = (id: string) => {
     const i = order.indexOf(id);
@@ -227,10 +220,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
     .sort((a, b) => rank(a.id) - rank(b.id));
   const locked = batch.cases.length - open.length;
   const incomplete = open.filter((c) => c.docs.have < c.docs.need);
-  const missing = incomplete.reduce(
-    (n, c) => n + (c.docs.need - c.docs.have),
-    0,
-  );
+  const missing = incomplete.reduce((n, c) => n + (c.docs.need - c.docs.have), 0);
   const scans = open.reduce((n, c) => n + poorOf(c).length, 0);
 
   const upload = async (c: CaseView, d: Doc, file: File) => {
@@ -270,9 +260,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
         try {
           const blurry = c.id === blurryAt && i === 0;
           const file = blurry ? await demoBlurryScan(d.name) : demoPdf(d.name);
-          setBatch(
-            await bulkApi.attach(batch.id, c.id, d.slotKey!, file, blurry),
-          );
+          setBatch(await bulkApi.attach(batch.id, c.id, d.slotKey!, file, blurry));
         } catch (e) {
           setError((e as Error).message);
           setBusy(null);
@@ -300,8 +288,8 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
           <span className="flex items-center gap-2">
             <CircleAlertIcon className="size-4 text-warning-ink" aria-hidden />
             <span className="tabular-nums">
-              {missing} required document{missing === 1 ? "" : "s"} missing
-              across {incomplete.length} case
+              {missing} required document{missing === 1 ? "" : "s"} missing across{" "}
+              {incomplete.length} case
               {incomplete.length === 1 ? "" : "s"}
             </span>
           </span>
@@ -334,9 +322,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
         ) : null}
       </div>
 
-      {error ? (
-        <StatusLine tone="error">{error}</StatusLine>
-      ) : null}
+      {error ? <StatusLine tone="error">{error}</StatusLine> : null}
 
       {open.length === 0 ? (
         <Card variant="raised">
@@ -366,9 +352,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
                         {c.facts.map((f, k) => (
                           <React.Fragment key={k}>
                             <dt className="text-muted-foreground">{f.label}</dt>
-                            <dd className="min-w-0 break-words tabular-nums">
-                              {f.value}
-                            </dd>
+                            <dd className="min-w-0 break-words tabular-nums">{f.value}</dd>
                           </React.Fragment>
                         ))}
                       </dl>
@@ -385,10 +369,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
                           disabled={!!busy}
                           onClick={() => void fillDemo([c])}
                         >
-                          <WandSparklesIcon
-                            data-icon="inline-start"
-                            aria-hidden
-                          />
+                          <WandSparklesIcon data-icon="inline-start" aria-hidden />
                           {t("documentsTab_fillWithDemoFiles")}
                         </Button>
                       ) : null}
@@ -396,7 +377,10 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
                         variant={complete ? "success" : "warning"}
                         className="w-fit tabular-nums"
                       >
-                        {t("documentsTab_haveOfNeedRequired", { have: String(c.docs.have), need: String(c.docs.need) })}
+                        {t("documentsTab_haveOfNeedRequired", {
+                          have: String(c.docs.have),
+                          need: String(c.docs.need),
+                        })}
                       </Badge>
                     </div>
                     <ul className="grid grid-cols-1 content-start gap-2 lg:grid-cols-2">

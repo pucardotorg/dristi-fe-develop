@@ -26,13 +26,7 @@ function DraftTitle() {
 }
 
 /** Loads one draft into the store; shows the read state and the "no such draft" case. */
-export function DraftFrame({
-  draftId,
-  children,
-}: {
-  draftId: string;
-  children: React.ReactNode;
-}) {
+export function DraftFrame({ draftId, children }: { draftId: string; children: React.ReactNode }) {
   const t = useTranslations();
   return (
     <FilingProvider

@@ -75,9 +75,7 @@ export function SummonsDocument({ court }: Props) {
             <div className="t5">{tr("summonsDocument_inTheT", { t: t(f.court) })}</div>
           </div>
           <div className="title">{tr("summonsDocument_summonsToAnAccusedPerson")}</div>
-          <div className="t2 muted">
-            {tr("summonsDocument_formNo1SeeSection63")}
-          </div>
+          <div className="t2 muted">{tr("summonsDocument_formNo1SeeSection63")}</div>
         </div>
 
         <div className="rule-heavy" />
@@ -128,7 +126,9 @@ export function SummonsDocument({ court }: Props) {
                 </p>
               </td>
               <td style={{ width: "62mm" }} className="right">
-                <div className="t2 muted">{tr("summonsDocument_datedThisDated", { dated: f.dated })}</div>
+                <div className="t2 muted">
+                  {tr("summonsDocument_datedThisDated", { dated: f.dated })}
+                </div>
               </td>
             </tr>
           </tbody>
@@ -137,7 +137,13 @@ export function SummonsDocument({ court }: Props) {
         <div className="s2" />
 
         <p className="last">
-          {tr.rich("summonsDocument_tHasFiledAComplaintAgainst", { t: t(f.complainant), chequeNumber: f.chequeNumber, amount: f.amount, hearingDate: f.hearingDate, b: (chunks) => <b>{chunks}</b> })}
+          {tr.rich("summonsDocument_tHasFiledAComplaintAgainst", {
+            t: t(f.complainant),
+            chequeNumber: f.chequeNumber,
+            amount: f.amount,
+            hearingDate: f.hearingDate,
+            b: (chunks) => <b>{chunks}</b>,
+          })}
         </p>
 
         <div className="s2" />
@@ -149,7 +155,9 @@ export function SummonsDocument({ court }: Props) {
               <td />
               <td style={{ width: "62mm" }}>
                 <div style={{ height: "7mm" }} />
-                <div className="sigline">{tr("summonsDocument_digitallySignedByTheMagistrate")}</div>
+                <div className="sigline">
+                  {tr("summonsDocument_digitallySignedByTheMagistrate")}
+                </div>
               </td>
             </tr>
           </tbody>
@@ -158,7 +166,9 @@ export function SummonsDocument({ court }: Props) {
         <div className="s2" />
 
         <p className="t2 last">
-          {tr.rich("summonsDocument_thisProcessIsSystemGeneratedAnd", { b: (chunks) => <b>{chunks}</b> })}
+          {tr.rich("summonsDocument_thisProcessIsSystemGeneratedAnd", {
+            b: (chunks) => <b>{chunks}</b>,
+          })}
         </p>
 
         <div className="rule-mid" style={{ marginBottom: "3mm" }} />
@@ -169,32 +179,47 @@ export function SummonsDocument({ court }: Props) {
               <td className="ragged" style={{ paddingRight: "8mm" }}>
                 <div className="t4">{tr("summonsDocument_joinYourCaseOnline")}</div>
                 <div className="s2" />
-                <p>
-                  {tr("summonsDocument_joiningYourCaseLetsYouSee")}
-                </p>
+                <p>{tr("summonsDocument_joiningYourCaseLetsYouSee")}</p>
                 <p className="last">
-                  {tr("summonsDocument_goTo")} {portal()} {tr("summonsDocument_andRegisterSearchUsingCaseNo", { caseNumber })}
+                  {tr("summonsDocument_goTo")} {portal()}{" "}
+                  {tr("summonsDocument_andRegisterSearchUsingCaseNo", { caseNumber })}
                 </p>
               </td>
               <td className="joincol">
-                <div className="vern" lang={local.language.lang} style={{ fontFamily: local.language.font }}>
+                <div
+                  className="vern"
+                  lang={local.language.lang}
+                  style={{ fontFamily: local.language.font }}
+                >
                   {local.language.line}
                 </div>
                 <div className="s4" />
                 {local.portalIsReal ? (
                   <a href={`https://${local.portal}`} target="_blank" rel="noreferrer">
                     {/* eslint-disable-next-line @next/next/no-img-element -- print facsimile */}
-                    <img className="qr" src="/summons/qr_portal.png" alt={tr("summonsDocument_qrCodeJoinYourCase")} style={{ width: "30mm", height: "30mm" }} />
+                    <img
+                      className="qr"
+                      src="/summons/qr_portal.png"
+                      alt={tr("summonsDocument_qrCodeJoinYourCase")}
+                      style={{ width: "30mm", height: "30mm" }}
+                    />
                   </a>
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element -- print facsimile
-                  <img className="qr" src="/summons/qr_portal.png" alt={tr("summonsDocument_qrCodeJoinYourCase")} style={{ width: "30mm", height: "30mm" }} />
+                  <img
+                    className="qr"
+                    src="/summons/qr_portal.png"
+                    alt={tr("summonsDocument_qrCodeJoinYourCase")}
+                    style={{ width: "30mm", height: "30mm" }}
+                  />
                 )}
                 <div className="s2" />
                 <div className="qrcap">
                   {tr("summonsDocument_scanToJoinYourCase")}
                   <br />
-                  <span className="muted">{tr("summonsDocument_helpIsAvailableInYourLanguage")}</span>
+                  <span className="muted">
+                    {tr("summonsDocument_helpIsAvailableInYourLanguage")}
+                  </span>
                 </div>
               </td>
             </tr>
@@ -239,12 +264,20 @@ export function SummonsDocument({ court }: Props) {
         <div className="t5">{tr("summonsDocument_whatYouCanDoNow")}</div>
         <div className="s2" />
         <p>
-          {tr.rich("summonsDocument_beforeHearingDateChooseOneOf", { hearingDate: f.hearingDate, b: (chunks) => <b>{chunks}</b> })}
+          {tr.rich("summonsDocument_beforeHearingDateChooseOneOf", {
+            hearingDate: f.hearingDate,
+            b: (chunks) => <b>{chunks}</b>,
+          })}
         </p>
 
         <div className="bar">
           <p className="last keep12">
-            {tr.rich("summonsDocument_ifTodayIsAlreadyOnOr", { hearingDate: f.hearingDate, b: (chunks) => <b>{chunks}</b> })} {portal()} {tr("summonsDocument_forYourNewDateOrCall")} {phone(local.helpline)} {tr("summonsDocument_first")}
+            {tr.rich("summonsDocument_ifTodayIsAlreadyOnOr", {
+              hearingDate: f.hearingDate,
+              b: (chunks) => <b>{chunks}</b>,
+            })}{" "}
+            {portal()} {tr("summonsDocument_forYourNewDateOrCall")} {phone(local.helpline)}{" "}
+            {tr("summonsDocument_first")}
           </p>
         </div>
 
@@ -261,12 +294,20 @@ export function SummonsDocument({ court }: Props) {
                 <div className="t4 pt1">{tr("summonsDocument_payTheChequeAmount")}</div>
                 <div className="s1" />
                 <p className="last">
-                  {tr.rich("summonsDocument_payAmountAndTheCaseAgainst", { amount: f.amount, b: (chunks) => <b>{chunks}</b> })}
+                  {tr.rich("summonsDocument_payAmountAndTheCaseAgainst", {
+                    amount: f.amount,
+                    b: (chunks) => <b>{chunks}</b>,
+                  })}
                 </p>
               </td>
               <td style={{ width: "30mm", verticalAlign: "middle" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- print facsimile */}
-                <img className="qr" src="/summons/qr_pay.png" alt={tr("summonsDocument_qrCodePayTheCourt")} style={{ width: "26mm", height: "26mm" }} />
+                <img
+                  className="qr"
+                  src="/summons/qr_pay.png"
+                  alt={tr("summonsDocument_qrCodePayTheCourt")}
+                  style={{ width: "26mm", height: "26mm" }}
+                />
                 <div className="s2" />
                 <div className="qrcap">{tr("summonsDocument_payTheCourt")}</div>
               </td>
@@ -287,12 +328,16 @@ export function SummonsDocument({ court }: Props) {
                 <div className="t4 pt1">{tr("summonsDocument_settleWithTheComplainant")}</div>
                 <div className="s1" />
                 <p>
-                  {tr("summonsDocument_youCanAgreeAPaymentPlan", { t: t(f.complainantAdvocate), t2: t(f.complainant) })}
+                  {tr("summonsDocument_youCanAgreeAPaymentPlan", {
+                    t: t(f.complainantAdvocate),
+                    t2: t(f.complainant),
+                  })}
                   {phone(local.complainantAdvocate)}.
                 </p>
                 <p className="last">
                   {tr("summonsDocument_youCanAlsoAskTheCourt")}
-                  {portal("/lokadalat")}{tr("summonsDocument_applyOnThePortalWhereYou")}
+                  {portal("/lokadalat")}
+                  {tr("summonsDocument_applyOnThePortalWhereYou")}
                 </p>
               </td>
             </tr>
@@ -311,20 +356,21 @@ export function SummonsDocument({ court }: Props) {
                 <div className="label">{tr("summonsDocument_ifYouDisputeTheClaim")}</div>
                 <div className="t4 pt1">{tr("summonsDocument_contestTheCase")}</div>
                 <div className="s1" />
-                <p>
-                  {tr("summonsDocument_defendTheCaseWithALawyer")}
-                </p>
+                <p>{tr("summonsDocument_defendTheCaseWithALawyer")}</p>
                 {/* Bail sits with contesting, the choice that needs it (owner, 2026-10-14). */}
                 <p>
-                  {tr.rich("summonsDocument_ifYouContestTheCaseYour", { suretyAmount: f.suretyAmount, b: (chunks) => <b>{chunks}</b> })} {portal()}.
+                  {tr.rich("summonsDocument_ifYouContestTheCaseYour", {
+                    suretyAmount: f.suretyAmount,
+                    b: (chunks) => <b>{chunks}</b>,
+                  })}{" "}
+                  {portal()}.
                 </p>
                 <p className="last aid">
                   <span className="aidlabel">{tr("summonsDocument_freeLegalAid")}</span>
                   {t(f.legalAid)} &nbsp;·&nbsp; {phone(local.legalAid)}
                   <br />
                   <span className="aidlabel">{tr("summonsDocument_findALawyer")}</span>
-                  {t(f.barCouncil)} &nbsp;·&nbsp;{" "}
-                  {site(local.barCouncilSite)}
+                  {t(f.barCouncil)} &nbsp;·&nbsp; {site(local.barCouncilSite)}
                 </p>
               </td>
             </tr>
@@ -334,11 +380,10 @@ export function SummonsDocument({ court }: Props) {
         <div className="rule-mid" />
 
         <p>
-          {tr("summonsDocument_atTheHearingYouCanRespond")} {portal()} {tr("summonsDocument_andOpenYourCaseTheVideo")}
+          {tr("summonsDocument_atTheHearingYouCanRespond")} {portal()}{" "}
+          {tr("summonsDocument_andOpenYourCaseTheVideo")}
         </p>
-        <p>
-          {tr("summonsDocument_cannotAttendThatDayApplyOn", { hearingDate: f.hearingDate })}
-        </p>
+        <p>{tr("summonsDocument_cannotAttendThatDayApplyOn", { hearingDate: f.hearingDate })}</p>
         <p className="last">
           {tr.rich("summonsDocument_ifYouDoNotAppearAnd", { b: (chunks) => <b>{chunks}</b> })}
         </p>

@@ -72,21 +72,17 @@ describe("dayKeyOf", () => {
 describe("hearingsOn", () => {
   it("numbers the day's items in time order and splits status by the clock", () => {
     // NOW is 12:00Z; local hours here bracket it.
-    const w = world([
-      listed("late", 0, 22),
-      listed("early", 0, 6),
-      listed("tomorrow", 1, 10),
-    ]);
+    const w = world([listed("late", 0, 22), listed("early", 0, 6), listed("tomorrow", 1, 10)]);
     const today = dayKeyOf(at(0, 12));
     const items = hearingsOn(w, kase.court, today, NOW_MS);
 
     assert.deepEqual(
       items.map((h) => h.kase.id),
-      ["early", "late"]
+      ["early", "late"],
     );
     assert.deepEqual(
       items.map((h) => h.item),
-      [1, 2]
+      [1, 2],
     );
     assert.equal(items[0].status, "concluded");
     assert.equal(items[1].status, "upcoming");
@@ -100,7 +96,10 @@ describe("hearingsOn", () => {
   });
 
   it("excludes cases the user cannot view", () => {
-    const w: World = { ...world([listed("mine", 0, 15), { ...otherCase, nextHearingAt: at(0, 15) }]), user: senior };
+    const w: World = {
+      ...world([listed("mine", 0, 15), { ...otherCase, nextHearingAt: at(0, 15) }]),
+      user: senior,
+    };
     const today = dayKeyOf(at(0, 12));
     assert.equal(hearingsOn(w, kase.court, today, NOW_MS).length, 1);
     assert.equal(hearingsOn(w, otherCase.court, today, NOW_MS).length, 0);
@@ -114,11 +113,14 @@ describe("hearingsOn", () => {
         makeTask({ id: "t-block", caseId: c.id, isBlocking: true, status: "open" }),
         makeTask({ id: "t-done", caseId: c.id, isBlocking: true, status: "done" }),
         makeTask({ id: "t-plain", caseId: c.id, isBlocking: false, status: "open" }),
-      ]
+      ],
     );
     const today = dayKeyOf(at(0, 12));
     const [blocked, clear] = hearingsOn(w, kase.court, today, NOW_MS);
-    assert.deepEqual(blocked.blockers.map((t) => t.id), ["t-block"]);
+    assert.deepEqual(
+      blocked.blockers.map((t) => t.id),
+      ["t-block"],
+    );
     assert.equal(blocked.ready, false);
     assert.equal(clear.ready, true);
   });
@@ -126,10 +128,7 @@ describe("hearingsOn", () => {
 
 describe("passedOver", () => {
   it("carries a matter's passed-over flag onto the hearing and cause-list row", () => {
-    const w = world([
-      { ...listed("po", 0, 6), passedOver: true },
-      listed("done", 0, 6),
-    ]);
+    const w = world([{ ...listed("po", 0, 6), passedOver: true }, listed("done", 0, 6)]);
     const day = dayKeyOf(at(0, 12));
     const items = hearingsOn(w, kase.court, day, NOW_MS);
     assert.equal(items.find((h) => h.kase.id === "po")?.passedOver, true);
@@ -138,10 +137,7 @@ describe("passedOver", () => {
   });
 
   it("keeps a matter passed over today among the upcoming, not the concluded", () => {
-    const w = world([
-      { ...listed("po", 0, 6), passedOver: true },
-      listed("done", 0, 6),
-    ]);
+    const w = world([{ ...listed("po", 0, 6), passedOver: true }, listed("done", 0, 6)]);
     const day = dayKeyOf(at(0, 12));
     const items = hearingsOn(w, kase.court, day, NOW_MS);
     assert.equal(items.find((h) => h.kase.id === "po")?.status, "upcoming");
@@ -169,8 +165,14 @@ describe("boardOf", () => {
     ]);
     const board = boardOf(w, kase.court, dayKeyOf(at(0, 12)), NOW_MS);
     assert.equal(board.now?.kase.id, "live");
-    assert.deepEqual(board.upcoming.map((h) => h.kase.id), ["next"]);
-    assert.deepEqual(board.concluded.map((h) => h.kase.id), ["gone"]);
+    assert.deepEqual(
+      board.upcoming.map((h) => h.kase.id),
+      ["next"],
+    );
+    assert.deepEqual(
+      board.concluded.map((h) => h.kase.id),
+      ["gone"],
+    );
   });
 
   it("keeps a second live item on the board, as still to be called", () => {
@@ -184,7 +186,10 @@ describe("boardOf", () => {
     ]);
     const board = boardOf(w, kase.court, dayKeyOf(a), NOW_MS);
     assert.equal(board.now?.kase.id, "first");
-    assert.deepEqual(board.upcoming.map((h) => h.kase.id), ["second"]);
+    assert.deepEqual(
+      board.upcoming.map((h) => h.kase.id),
+      ["second"],
+    );
     assert.deepEqual(board.concluded, []);
   });
 });
@@ -204,7 +209,7 @@ describe("courtRooms", () => {
         ["24×7 ON Court", 2],
         ["CJM Court", 0],
         ["JMFC Court 1", 1],
-      ]
+      ],
     );
     assert.equal(matterCountOn(w, dayKeyOf(at(0, 12)), NOW_MS), 3);
   });
@@ -218,13 +223,20 @@ describe("inOneCourt", () => {
         listed("on1", 0, 11),
         listed("cjm1", 0, 13, "CJM Court"),
       ]),
-      "24×7 ON Court"
+      "24×7 ON Court",
     );
     const day = dayKeyOf(at(0, 12));
-    assert.deepEqual(courtRooms(w, day, NOW_MS).map((r) => [r.court, r.count]), [["24×7 ON Court", 3]]);
+    assert.deepEqual(
+      courtRooms(w, day, NOW_MS).map((r) => [r.court, r.count]),
+      [["24×7 ON Court", 3]],
+    );
     assert.deepEqual(
       hearingsOn(w, "24×7 ON Court", day, NOW_MS).map((h) => [h.kase.id, h.item]),
-      [["on1", 1], ["cjm1", 2], ["j1", 3]]
+      [
+        ["on1", 1],
+        ["cjm1", 2],
+        ["j1", 3],
+      ],
     );
   });
 
@@ -274,7 +286,10 @@ describe("courtLabelsOf", () => {
   it("never strips a court down to nothing", () => {
     // "Sample District" is the whole name of one court, so the run has to stop before it
     // — otherwise that heading would render empty.
-    const { establishment, shortOf } = courtLabelsOf(["Sample District", "CJM Court, Sample District"]);
+    const { establishment, shortOf } = courtLabelsOf([
+      "Sample District",
+      "CJM Court, Sample District",
+    ]);
     assert.equal(establishment, null);
     assert.equal(shortOf("Sample District"), "Sample District");
   });
@@ -312,7 +327,7 @@ describe("advocateRosterOn", () => {
         [senior.id, 2, true],
         [senior2.id, 1, false],
         [junior.id, 1, false],
-      ]
+      ],
     );
   });
 
@@ -337,18 +352,14 @@ describe("advocateRosterOn", () => {
       signatories: [senior2.id],
       advocates: [senior2.id],
     };
-    const roster = advocateRosterOn(
-      world([shared, mineAlone, theirs]),
-      today(),
-      NOW_MS
-    );
+    const roster = advocateRosterOn(world([shared, mineAlone, theirs]), today(), NOW_MS);
 
     assert.deepEqual(
       roster.map((o) => [o.person.id, o.count]),
       [
         [senior.id, 2],
         [senior2.id, 1],
-      ]
+      ],
     );
   });
 
@@ -361,7 +372,7 @@ describe("advocateRosterOn", () => {
     const roster = advocateRosterOn(world([c]), today(), NOW_MS);
     assert.deepEqual(
       roster.map((o) => o.person.id),
-      [senior.id, junior.id]
+      [senior.id, junior.id],
     );
   });
 
@@ -369,15 +380,12 @@ describe("advocateRosterOn", () => {
     const roster = advocateRosterOn(world([listed("later", 4, 15)]), today(), NOW_MS);
     assert.deepEqual(
       roster.map((o) => [o.person.id, o.count, o.you]),
-      [[senior.id, 0, true]]
+      [[senior.id, 0, true]],
     );
   });
 
   it("counts a matter once, however many courts the day spans", () => {
-    const w = world([
-      listed("on", 0, 15),
-      listed("jmfc", 0, 15, "JMFC Court 1"),
-    ]);
+    const w = world([listed("on", 0, 15), listed("jmfc", 0, 15, "JMFC Court 1")]);
     const roster = advocateRosterOn(w, today(), NOW_MS);
     assert.equal(roster[0].count, 2);
   });
@@ -408,7 +416,7 @@ describe("advocate chips (board filter)", () => {
     assert.equal(roster[0].person.id, senior.id);
 
     const visible = hearingsOn(w, kase.court, today(), NOW_MS).filter((h) =>
-      canView(senior.id, h.kase)
+      canView(senior.id, h.kase),
     );
     assert.deepEqual(visible.map((h) => h.kase.id).sort(), ["mine", "shared"]);
   });
@@ -421,9 +429,12 @@ describe("advocate chips (board filter)", () => {
 
     // …and picking their chip filters the board to that one matter.
     const visible = hearingsOn(w, kase.court, today(), NOW_MS).filter((h) =>
-      canView(senior2.id, h.kase)
+      canView(senior2.id, h.kase),
     );
-    assert.deepEqual(visible.map((h) => h.kase.id), ["shared"]);
+    assert.deepEqual(
+      visible.map((h) => h.kase.id),
+      ["shared"],
+    );
   });
 });
 
@@ -432,7 +443,7 @@ describe("weekOf", () => {
     const w = world(
       // `kase` itself is in the world so its task is visible to the user.
       [listed("h", 1, 15), kase],
-      [makeTask({ id: "t-due", caseId: kase.id, dueAt: at(2, 17), status: "open" })]
+      [makeTask({ id: "t-due", caseId: kase.id, dueAt: at(2, 17), status: "open" })],
     );
     const cells = weekOf(w, NOW_MS);
     assert.equal(cells.length, 7);
@@ -481,7 +492,7 @@ describe("railGroups", () => {
         makeTask({ id: "t-day5", dueAt: at(5, 17), status: "open" }),
         makeTask({ id: "t-beyond", dueAt: at(12, 17), status: "open" }),
         makeTask({ id: "t-undated", dueKind: "none", dueAt: undefined, status: "open" }),
-      ]
+      ],
     );
     const groups = railGroups(w, NOW_MS);
     assert.deepEqual(
@@ -489,7 +500,7 @@ describe("railGroups", () => {
       [
         ["today", ["t-over", "t-today"]],
         ["soon", ["t-tomorrow", "t-day3"]],
-      ]
+      ],
     );
   });
 });
@@ -519,18 +530,18 @@ describe("prepAhead", () => {
     const argumentsLater = { ...listed("later", 9, 10), stage: "Arguments" };
     const appearanceSoon = { ...listed("appearance", 1, 10), stage: "Appearance" };
     const beyondHorizon = { ...listed("far", 30, 10), stage: "Arguments" };
-    const w = world([
-      evidenceToday,
-      evidenceSoon,
-      argumentsLater,
-      appearanceSoon,
-      beyondHorizon,
-    ]);
+    const w = world([evidenceToday, evidenceSoon, argumentsLater, appearanceSoon, beyondHorizon]);
 
     // Today is the board's business; an appearance needs presence, not preparation.
     const queue = prepAhead(w, NOW_MS);
-    assert.deepEqual(queue.map((i) => i.kase.id), ["soon", "later"]);
-    assert.deepEqual(queue.map((i) => i.inDays), [2, 9]);
+    assert.deepEqual(
+      queue.map((i) => i.kase.id),
+      ["soon", "later"],
+    );
+    assert.deepEqual(
+      queue.map((i) => i.inDays),
+      [2, 9],
+    );
   });
 
   it("queues a substantial posting with nothing pending — lead time is the point", () => {
@@ -548,9 +559,12 @@ describe("prepAhead", () => {
       [
         makeTask({ id: "b1", caseId: c.id, isBlocking: true, status: "open" }),
         makeTask({ id: "done", caseId: c.id, isBlocking: true, status: "done" }),
-      ]
+      ],
     );
-    assert.deepEqual(prepAhead(w, NOW_MS)[0].blockers.map((t) => t.id), ["b1"]);
+    assert.deepEqual(
+      prepAhead(w, NOW_MS)[0].blockers.map((t) => t.id),
+      ["b1"],
+    );
   });
 
   it("splits into the next seven days and the fortnight after", () => {
@@ -563,7 +577,7 @@ describe("prepAhead", () => {
       [
         ["week", ["wk"]],
         ["later", ["later"]],
-      ]
+      ],
     );
   });
 });
@@ -578,11 +592,15 @@ describe("teamOf", () => {
     const team = teamOf(world([shared]), shared);
     assert.deepEqual(
       team.map((m) => [m.person.id, m.acts]),
-      [["p-sen2", true], [senior.id, true], ["p-jun", false]]
+      [
+        ["p-sen2", true],
+        [senior.id, true],
+        ["p-jun", false],
+      ],
     );
     assert.deepEqual(
       team.filter((m) => m.you).map((m) => m.person.id),
-      [senior.id]
+      [senior.id],
     );
   });
 });
@@ -603,10 +621,7 @@ describe("holdsVakalatnama", () => {
   it("is true only for signatories", () => {
     const w = world([kase]);
     assert.equal(holdsVakalatnama(w, kase), true);
-    assert.equal(
-      holdsVakalatnama(w, { ...kase, signatories: ["p-sen2"] }),
-      false
-    );
+    assert.equal(holdsVakalatnama(w, { ...kase, signatories: ["p-sen2"] }), false);
   });
 });
 
@@ -620,14 +635,14 @@ describe("railTasks", () => {
         makeTask({ id: "t-block", isBlocking: true, dueAt: at(4, 17), status: "open" }),
         makeTask({ id: "t-waiting", status: "awaiting-court" }),
         makeTask({ id: "t-outside", caseId: otherCase.id, status: "open" }),
-      ]
+      ],
     );
     // Outsider's case is invisible to senior; waiting tasks sit in another tab.
     // Order is whatever `sortTasks`/`compareUrgency` decree — the rail mirrors
     // /tasks exactly rather than re-deriving its own ranking.
     assert.deepEqual(
       railTasks(w).map((t) => t.id),
-      ["t-overdue", "t-block", "t-later"]
+      ["t-overdue", "t-block", "t-later"],
     );
   });
 });
@@ -650,10 +665,16 @@ describe("timelineOn", () => {
   it("groups matters across courts into time slots, splitting the day into zones", () => {
     const t = timelineOn(scene(), day, NOW_MS);
 
-    assert.deepEqual(t.concluded.map((s) => s.key), ["06:00"]);
+    assert.deepEqual(
+      t.concluded.map((s) => s.key),
+      ["06:00"],
+    );
     assert.equal(t.now.length, 1);
     assert.equal(t.now[0].hearings[0].kase.id, "live");
-    assert.deepEqual(t.upcoming.map((s) => s.key), ["22:00", "23:00"]);
+    assert.deepEqual(
+      t.upcoming.map((s) => s.key),
+      ["22:00", "23:00"],
+    );
   });
 
   it("flags a slot with two or more hearings as a conflict", () => {
@@ -699,7 +720,7 @@ describe("timelineOn", () => {
     assert.equal(t.now[0].hearings[0].kase.id, "later");
     assert.equal(
       t.concluded.some((s) => s.hearings[0].kase.id === "earlier"),
-      true
+      true,
     );
   });
 
@@ -712,7 +733,7 @@ describe("timelineOn", () => {
     const t = timelineOn(scene(), day, NOW_MS, ["Court B"]);
     assert.deepEqual(
       t.slots.map((s) => s.key),
-      ["06:00", "23:00"]
+      ["06:00", "23:00"],
     );
     assert.equal(t.summary.total, 2);
     assert.equal(t.summary.conflictSlots, 0);
@@ -755,7 +776,10 @@ describe("daySlotsOn", () => {
     assert.ok(board.upcoming.every((s) => s.hearings.length === 1));
     // The matters being called now are the one group.
     assert.equal(board.now.length, 1);
-    assert.deepEqual(board.now[0].hearings.map((h) => h.kase.id), ["live"]);
+    assert.deepEqual(
+      board.now[0].hearings.map((h) => h.kase.id),
+      ["live"],
+    );
     // No conflict is surfaced in the flat view.
     assert.equal(board.summary.conflictSlots, 0);
     assert.equal(board.summary.total, 6);
@@ -827,7 +851,7 @@ describe("sitting filters", () => {
     assert.deepEqual(ids(filterSlotHearings(w, hearingsOf(w), NO_SLOT_FILTER)), ["office", "own"]);
     assert.deepEqual(
       ids(filterSlotHearings(w, hearingsOf(w), { ...NO_SLOT_FILTER, scope: "mine" })),
-      ["own"]
+      ["own"],
     );
   });
 
@@ -835,7 +859,7 @@ describe("sitting filters", () => {
     const w = scene();
     assert.deepEqual(
       ids(filterSlotHearings(w, hearingsOf(w), { ...NO_SLOT_FILTER, scope: "office" })),
-      ["office"]
+      ["office"],
     );
   });
 
@@ -850,9 +874,15 @@ describe("sitting filters", () => {
   it("matches a ticked person on the Vakalatnama only, never on office access", () => {
     const w = scene();
     // S. Prakash is on "own" as an advocate but not its Vakalatnama: no match.
-    const byPrakash = filterSlotHearings(w, hearingsOf(w), { ...NO_SLOT_FILTER, people: [junior.id] });
+    const byPrakash = filterSlotHearings(w, hearingsOf(w), {
+      ...NO_SLOT_FILTER,
+      people: [junior.id],
+    });
     assert.deepEqual(ids(byPrakash), ["office"]);
-    const byManoj = filterSlotHearings(w, hearingsOf(w), { ...NO_SLOT_FILTER, people: [senior2.id] });
+    const byManoj = filterSlotHearings(w, hearingsOf(w), {
+      ...NO_SLOT_FILTER,
+      people: [senior2.id],
+    });
     assert.deepEqual(ids(byManoj), ["own"]);
   });
 
@@ -878,8 +908,14 @@ describe("sitting filters", () => {
     const w = scene();
     const [office, own] = ["office", "own"].map((id) => w.cases.find((c) => c.id === id)!);
     assert.equal(accessOf(w, own).office, false);
-    assert.deepEqual(accessOf(w, own).vakalatnama.map((p) => p.name), ["Anjali Nair", "R. Manoj"]);
+    assert.deepEqual(
+      accessOf(w, own).vakalatnama.map((p) => p.name),
+      ["Anjali Nair", "R. Manoj"],
+    );
     assert.equal(accessOf(w, office).office, true);
-    assert.deepEqual(accessOf(w, office).vakalatnama.map((p) => p.name), ["S. Prakash"]);
+    assert.deepEqual(
+      accessOf(w, office).vakalatnama.map((p) => p.name),
+      ["S. Prakash"],
+    );
   });
 });

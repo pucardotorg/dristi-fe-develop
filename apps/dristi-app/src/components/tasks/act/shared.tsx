@@ -69,7 +69,9 @@ export function RailCard({
     <section className="flex flex-col gap-4 rounded-xl bg-surface-sunken p-4">
       <div className="flex flex-col gap-1">
         <h3 className="text-body font-semibold">{title}</h3>
-        {description ? <p className="text-body-compact text-muted-foreground">{description}</p> : null}
+        {description ? (
+          <p className="text-body-compact text-muted-foreground">{description}</p>
+        ) : null}
       </div>
       {children}
     </section>
@@ -98,11 +100,14 @@ export function PreparedNote({ ctx }: { ctx: ActContext }) {
       <div className="flex items-center gap-2">
         {person ? <PersonAvatar person={person} /> : null}
         <p className="text-caption font-semibold text-muted-foreground">
-          {prepared ? tr("shared_preparedBy") : tr("shared_draftBy")} {person?.name ?? tr("shared_someone")}
+          {prepared ? tr("shared_preparedBy") : tr("shared_draftBy")}{" "}
+          {person?.name ?? tr("shared_someone")}
           {at ? ` · ${dateTime(at)}` : ""}
         </p>
       </div>
-      <p className="text-body-compact">{note || <span className="text-muted-foreground">{tr("shared_noNote")}</span>}</p>
+      <p className="text-body-compact">
+        {note || <span className="text-muted-foreground">{tr("shared_noNote")}</span>}
+      </p>
       {files?.length ? (
         <ul className="flex flex-col gap-1">
           {files.map((f) => (
@@ -236,7 +241,9 @@ export function FileSlot({
             {tr("shared_attached")}
           </span>
         ) : (
-          <span className="text-caption text-muted-foreground">{optional ? tr("shared_optional") : tr("shared_missing")}</span>
+          <span className="text-caption text-muted-foreground">
+            {optional ? tr("shared_optional") : tr("shared_missing")}
+          </span>
         )}
       </div>
       {file ? (
@@ -295,7 +302,13 @@ export function PrepareCard({
 
   return (
     <RailCard
-      title={ready ? tr("shared_prepared") : task.status === "draft" ? tr("shared_continuePreparing") : tr("shared_prepare")}
+      title={
+        ready
+          ? tr("shared_prepared")
+          : task.status === "draft"
+            ? tr("shared_continuePreparing")
+            : tr("shared_prepare")
+      }
       description={
         ready
           ? `Marked ready${task.prepared ? ` by ${nameOf(people, task.prepared.by)}` : ""}. ${who} will ${what} it. Save again to rework it.`
@@ -331,13 +344,20 @@ export function PrepareCard({
         <Button
           variant={ready ? "outline" : "ghost"}
           disabled={!online || !!busy}
-          onClick={() => void act(task.id, (x, c) => saveDraft(x, c, note, files), { title: tr("shared_savedAsADraft"), icon: SaveIcon })}
+          onClick={() =>
+            void act(task.id, (x, c) => saveDraft(x, c, note, files), {
+              title: tr("shared_savedAsADraft"),
+              icon: SaveIcon,
+            })
+          }
         >
           {tr("shared_saveAsDraft")}
         </Button>
       </div>
       {!complete && !ready ? (
-        <p className="text-caption text-muted-foreground">{tr("shared_finishThePreparationToMarkIt")}</p>
+        <p className="text-caption text-muted-foreground">
+          {tr("shared_finishThePreparationToMarkIt")}
+        </p>
       ) : null}
     </RailCard>
   );
@@ -413,14 +433,23 @@ function OtpForm({
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>
-          {tr.rich("shared_a6DigitOtpGoesTo", { name: signer.name, strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong> })}
+          {tr.rich("shared_a6DigitOtpGoesTo", {
+            name: signer.name,
+            strong: (chunks) => <strong className="font-semibold text-foreground">{chunks}</strong>,
+          })}
         </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-2">
         <Label htmlFor="esign-otp" className="text-body-compact">
           {tr("shared_enterOtp")}
         </Label>
-        <InputOTP id="esign-otp" maxLength={6} value={otp} onChange={setOtp} containerClassName="gap-2">
+        <InputOTP
+          id="esign-otp"
+          maxLength={6}
+          value={otp}
+          onChange={setOtp}
+          containerClassName="gap-2"
+        >
           <InputOTPGroup className="gap-2">
             {[0, 1, 2, 3, 4, 5].map((i) => (
               <InputOTPSlot key={i} index={i} className="size-10 rounded-lg border border-input" />
@@ -430,7 +459,12 @@ function OtpForm({
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-body-compact text-muted-foreground">{tr("shared_didntGetIt")}</span>
-        <Button type="button" variant="link" className="h-auto p-0 underline" onClick={() => setResent(true)}>
+        <Button
+          type="button"
+          variant="link"
+          className="h-auto p-0 underline"
+          onClick={() => setResent(true)}
+        >
           {resent ? tr("shared_sentAgain") : tr("shared_resendOtp")}
         </Button>
       </div>
@@ -457,10 +491,7 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
   const filled = defects.map((d) => d.trim()).filter(Boolean);
 
   return (
-    <RailCard
-      title={tr("shared_withTheCourt")}
-      description={tr("shared_filedTheRegistryHasItNow")}
-    >
+    <RailCard title={tr("shared_withTheCourt")} description={tr("shared_filedTheRegistryHasItNow")}>
       {error ? <StatusLine tone="error">{error}</StatusLine> : null}
       <div className="flex flex-wrap gap-2">
         <Button
@@ -482,19 +513,23 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
         <FlowDialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{tr("shared_returnWithDefects")}</DialogTitle>
-            <DialogDescription>
-              {tr("shared_enterOneToThreeScrutinyRemarks")}
-            </DialogDescription>
+            <DialogDescription>{tr("shared_enterOneToThreeScrutinyRemarks")}</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3">
             {defects.map((d, i) => (
               <Field key={i}>
-                <FieldLabel htmlFor={`defect-${i}`}>{tr("shared_defectValue", { value: String(i + 1) })}</FieldLabel>
+                <FieldLabel htmlFor={`defect-${i}`}>
+                  {tr("shared_defectValue", { value: String(i + 1) })}
+                </FieldLabel>
                 <Input
                   id={`defect-${i}`}
                   value={d}
-                  onChange={(e) => setDefects((prev) => prev.map((x, j) => (j === i ? e.target.value : x)))}
-                  placeholder={i === 0 ? tr("shared_affidavitNotAttestedByANotary") : tr("shared_optional")}
+                  onChange={(e) =>
+                    setDefects((prev) => prev.map((x, j) => (j === i ? e.target.value : x)))
+                  }
+                  placeholder={
+                    i === 0 ? tr("shared_affidavitNotAttestedByANotary") : tr("shared_optional")
+                  }
                 />
               </Field>
             ))}
@@ -513,7 +548,11 @@ export function CourtSandbox({ ctx }: { ctx: ActContext }) {
                   return r;
                 });
                 setOpen(false);
-                if (t) finish(`Returned — ${filled.length} defect${filled.length === 1 ? "" : "s"} to fix`, createdId);
+                if (t)
+                  finish(
+                    `Returned — ${filled.length} defect${filled.length === 1 ? "" : "s"} to fix`,
+                    createdId,
+                  );
               }}
             >
               {tr("shared_return")}
@@ -556,7 +595,9 @@ export function RecordCard({ ctx, title }: { ctx: ActContext; title: string }) {
             ) : null}
           </>
         ) : null}
-        {task.statusNote ? <p className="text-body-compact text-muted-foreground">{task.statusNote}</p> : null}
+        {task.statusNote ? (
+          <p className="text-body-compact text-muted-foreground">{task.statusNote}</p>
+        ) : null}
       </dl>
     </RailCard>
   );

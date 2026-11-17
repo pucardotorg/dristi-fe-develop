@@ -12,12 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ShareDialog } from "@/components/access/share-dialog";
 import type { AccessPerson } from "@/lib/access/content";
 import { useCaseBail } from "@/components/cases/case-bail-flow";
@@ -121,7 +116,9 @@ export function CaseHeaderActions({
                 <span className={TABLET_WORD}>{t("caseHeaderActions_shareAccess")}</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">{t("caseHeaderActions_shareAccessToThisCase")}</TooltipContent>
+            <TooltipContent side="bottom">
+              {t("caseHeaderActions_shareAccessToThisCase")}
+            </TooltipContent>
           </Tooltip>
         ) : null}
 
@@ -177,43 +174,49 @@ export function CaseHeaderActions({
             </Tooltip>
           )
         ) : (
-        <DropdownMenu open={filingsOpen} onOpenChange={setFilingsOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button type="button" className="order-first flex-1 md:pointer-fine:order-none md:pointer-fine:flex-none md:landscape:order-none md:landscape:flex-none">
-              {t("caseHeaderActions_makeFilings")}
-              <ChevronDownIcon data-icon="inline-end" aria-hidden />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-max min-w-(--radix-dropdown-menu-trigger-width) whitespace-nowrap">
-            <DropdownMenuItem asChild>
-              <Link href={`/cases/${caseId}/filings/application`}>
-                {t("caseHeaderActions_raiseApplication")}
-              </Link>
-            </DropdownMenuItem>
-            {/* A dialog over the case, as every filing is; not a page. */}
-            <DropdownMenuItem
-              onSelect={(event) => {
-                event.preventDefault();
-                setFilingsOpen(false);
-                setSubmitOpen(true);
-              }}
+          <DropdownMenu open={filingsOpen} onOpenChange={setFilingsOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                className="order-first flex-1 md:pointer-fine:order-none md:pointer-fine:flex-none md:landscape:order-none md:landscape:flex-none"
+              >
+                {t("caseHeaderActions_makeFilings")}
+                <ChevronDownIcon data-icon="inline-end" aria-hidden />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-max min-w-(--radix-dropdown-menu-trigger-width) whitespace-nowrap"
             >
-              {t("caseHeaderActions_submitDocuments")}
-            </DropdownMenuItem>
-            {/* Bail is raised from Raise application, under its own type. */}
-            {disposed ? null : (
+              <DropdownMenuItem asChild>
+                <Link href={`/cases/${caseId}/filings/application`}>
+                  {t("caseHeaderActions_raiseApplication")}
+                </Link>
+              </DropdownMenuItem>
+              {/* A dialog over the case, as every filing is; not a page. */}
               <DropdownMenuItem
                 onSelect={(event) => {
                   event.preventDefault();
                   setFilingsOpen(false);
-                  bail.openBondDirect();
+                  setSubmitOpen(true);
                 }}
               >
-                {t("caseHeaderActions_generateBailBond")}
+                {t("caseHeaderActions_submitDocuments")}
               </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              {/* Bail is raised from Raise application, under its own type. */}
+              {disposed ? null : (
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    setFilingsOpen(false);
+                    bail.openBondDirect();
+                  }}
+                >
+                  {t("caseHeaderActions_generateBailBond")}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 
@@ -240,10 +243,7 @@ export function CaseHeaderActions({
         // Lands on the register the submission is designed to appear in.
         onSubmitted={() =>
           router.push(
-            rebaseCaseHref(
-              caseSectionHref(caseId, "documents"),
-              court ? "court" : "advocate"
-            )
+            rebaseCaseHref(caseSectionHref(caseId, "documents"), court ? "court" : "advocate"),
           )
         }
       />
@@ -257,14 +257,14 @@ export function CaseHeaderActions({
       />
 
       {SHARE_ACCESS_ENABLED && !court ? (
-      <ShareDialog
-        open={shareOpen}
-        onOpenChange={setShareOpen}
-        cases={[accessCase]}
-        locale="en"
-        readOnly={shareReadOnly}
-        extraPeople={shareExtraPeople}
-      />
+        <ShareDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          cases={[accessCase]}
+          locale="en"
+          readOnly={shareReadOnly}
+          extraPeople={shareExtraPeople}
+        />
       ) : null}
     </TooltipProvider>
   );

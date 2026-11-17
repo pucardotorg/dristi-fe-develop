@@ -10,10 +10,7 @@ import { ARRIVAL } from "@/components/chrome/motion";
 import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { markCognizanceTab } from "@/components/employee/cognizance-return";
 import { COGNIZANCE_PATH } from "@/components/employee/cognizance-table";
-import {
-  OrderDoorScreen,
-  type OrderDoor,
-} from "@/components/employee/order-door-screen";
+import { OrderDoorScreen, type OrderDoor } from "@/components/employee/order-door-screen";
 import { markArrival, useArrival } from "@/components/employee/use-arrival";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { Button } from "@/components/ui/button";
@@ -32,10 +29,7 @@ import {
   type CognizanceAct,
   type CognizanceCase,
 } from "@/lib/employee/cognizance";
-import {
-  cognizanceComposition,
-  cognizanceOrderOutcome,
-} from "@/lib/employee/cognizance-order";
+import { cognizanceComposition, cognizanceOrderOutcome } from "@/lib/employee/cognizance-order";
 import { localizeDeep } from "@/lib/court/localize";
 import { CURRENT_STAFF } from "@/lib/employee/content";
 import { formatOrderDate } from "@/lib/employee/hearings";
@@ -79,22 +73,12 @@ export function CognizanceOrderScreen({
 
   return (
     <div className={cn("min-w-0", arrival && ARRIVAL[arrival])}>
-      <CognizanceOrder
-        key={`${matter.id}:${chosen}`}
-        matter={matter}
-        act={chosen}
-      />
+      <CognizanceOrder key={`${matter.id}:${chosen}`} matter={matter} act={chosen} />
     </div>
   );
 }
 
-function CognizanceOrder({
-  matter,
-  act,
-}: {
-  matter: CognizanceCase;
-  act: CognizanceAct;
-}) {
+function CognizanceOrder({ matter, act }: { matter: CognizanceCase; act: CognizanceAct }) {
   const door = useCognizanceOrderDoor(matter, act);
   return <OrderDoorScreen door={door} />;
 }
@@ -104,10 +88,7 @@ function CognizanceOrder({
  * (`cognizanceComposition`), the act's outcome under the title, and the way back to the
  * complaint.
  */
-export function useCognizanceOrderDoor(
-  matter: CognizanceCase,
-  act: CognizanceAct,
-): OrderDoor {
+export function useCognizanceOrderDoor(matter: CognizanceCase, act: CognizanceAct): OrderDoor {
   const t = useTranslations();
   const today = useCourtToday();
   const courtText = useCourtText();

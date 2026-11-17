@@ -62,12 +62,7 @@ import { localizeForDownload, voicedForDownload } from "@/lib/court/browser";
  * server — and each id selects a genuinely different application below, not one string
  * with the names swapped.
  */
-export type CopyRecordKind =
-  | "judgement"
-  | "order"
-  | "deposition"
-  | "exhibit"
-  | "complaint";
+export type CopyRecordKind = "judgement" | "order" | "deposition" | "exhibit" | "complaint";
 
 export const COPY_RECORD_KINDS: { id: CopyRecordKind; label: string }[] = [
   /* Sentence case, per the DS Laws — the reference's Title Case does not survive them. */
@@ -240,8 +235,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-08-27",
     record: {
       kind: "deposition",
-      description:
-        "Deposition of PW-2, the branch manager who proved the return memo",
+      description: "Deposition of PW-2, the branch manager who proved the return memo",
       dated: "2026-08-13",
     },
     copies: 1,
@@ -384,8 +378,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-08-03",
     record: {
       kind: "deposition",
-      description:
-        "Deposition of the complainant recorded as PW-1 on the day of chief examination",
+      description: "Deposition of the complainant recorded as PW-1 on the day of chief examination",
       dated: "2026-07-24",
     },
     copies: 1,
@@ -442,8 +435,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-07-23",
     record: {
       kind: "exhibit",
-      description:
-        "Exhibit P1, the dishonoured cheque, and Exhibit P2, the memo of return",
+      description: "Exhibit P1, the dishonoured cheque, and Exhibit P2, the memo of return",
       dated: "2026-05-29",
     },
     copies: 2,
@@ -556,8 +548,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-06-25",
     record: {
       kind: "deposition",
-      description:
-        "Deposition of DW-1 recorded on the day the defence evidence was closed",
+      description: "Deposition of DW-1 recorded on the day the defence evidence was closed",
       dated: "2026-06-17",
     },
     copies: 1,
@@ -641,8 +632,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-06-04",
     record: {
       kind: "order",
-      description:
-        "Order refusing to condone the delay in producing the bank's certificate",
+      description: "Order refusing to condone the delay in producing the bank's certificate",
       dated: "2026-05-26",
     },
     copies: 1,
@@ -671,8 +661,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-05-28",
     record: {
       kind: "deposition",
-      description:
-        "Deposition of PW-3, the handwriting expert examined on the disputed signature",
+      description: "Deposition of PW-3, the handwriting expert examined on the disputed signature",
       dated: "2026-05-14",
     },
     copies: 2,
@@ -699,8 +688,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-05-21",
     record: {
       kind: "complaint",
-      description:
-        "Complaint, the list of witnesses and the list of documents filed along with it",
+      description: "Complaint, the list of witnesses and the list of documents filed along with it",
       dated: "2026-03-30",
     },
     copies: 1,
@@ -729,8 +717,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-05-14",
     record: {
       kind: "judgement",
-      description:
-        "Judgement, and the order directing the fine to be paid as compensation",
+      description: "Judgement, and the order directing the fine to be paid as compensation",
       dated: "2026-05-07",
     },
     copies: 1,
@@ -815,8 +802,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-04-22",
     record: {
       kind: "deposition",
-      description:
-        "Deposition of PW-1 and the cross-examination recorded on the following posting",
+      description: "Deposition of PW-1 and the cross-examination recorded on the following posting",
       dated: "2026-04-08",
     },
     copies: 1,
@@ -845,8 +831,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-04-15",
     record: {
       kind: "judgement",
-      description:
-        "Judgement of conviction, and the sentence and default term recorded with it",
+      description: "Judgement of conviction, and the sentence and default term recorded with it",
       dated: "2026-04-08",
     },
     copies: 3,
@@ -932,8 +917,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-03-24",
     record: {
       kind: "exhibit",
-      description:
-        "Exhibit D2, the receipt relied on by the accused to prove part payment",
+      description: "Exhibit D2, the receipt relied on by the accused to prove part payment",
       dated: "2026-02-19",
     },
     copies: 1,
@@ -962,8 +946,7 @@ export const COPY_APPLICATION_QUEUE: CopyApplication[] = [
     raisedOn: "2026-03-10",
     record: {
       kind: "deposition",
-      description:
-        "Deposition of PW-4, the accountant who spoke to the entries in the ledger",
+      description: "Deposition of PW-4, the accountant who spoke to the entries in the ledger",
       dated: "2026-03-04",
     },
     copies: 2,
@@ -1114,8 +1097,7 @@ export function copyApplicationFiler(application: CopyApplication): string {
 
 /** "2 copies · Urgent" — the two facts about scale that travel together. */
 export function copiesLine(application: CopyApplication): string {
-  const copies =
-    application.copies === 1 ? "1 copy" : `${application.copies} copies`;
+  const copies = application.copies === 1 ? "1 copy" : `${application.copies} copies`;
   return `${copies} · ${copyUrgencyLabel(application.urgency)}`;
 }
 
@@ -1176,9 +1158,7 @@ function paragraphsFor(application: CopyApplication): {
   const recordDay = formatCopyApplicationLongDate(record.dated);
   const purpose = copyPurposeLabel(application.purpose).toLowerCase();
   const copies =
-    application.copies === 1
-      ? "one certified copy"
-      : `${application.copies} certified copies`;
+    application.copies === 1 ? "one certified copy" : `${application.copies} certified copies`;
 
   /* The last paragraph is the same job on every template — how much, how quickly, and
      what was paid at the counter — so it is written once. */
@@ -1285,9 +1265,7 @@ export function buildCopyApplicationDocument(
   };
 }
 
-export function copyApplicationDocumentText(
-  document: CopyApplicationDocument,
-): string {
+export function copyApplicationDocumentText(document: CopyApplicationDocument): string {
   return [
     document.court,
     `Copy application no. ${document.applicationNumber}`,
@@ -1298,9 +1276,7 @@ export function copyApplicationDocumentText(
     "",
     ...document.facts.map((fact) => `${fact.term}: ${fact.value}`),
     "",
-    ...document.paragraphs.map(
-      (paragraph, index) => `${index + 1}. ${paragraph}`,
-    ),
+    ...document.paragraphs.map((paragraph, index) => `${index + 1}. ${paragraph}`),
     "",
     "Prayer",
     document.prayer,
@@ -1315,15 +1291,11 @@ export function copyApplicationDocumentText(
   ].join("\n");
 }
 
-export function copyApplicationDocumentFilename(
-  application: CopyApplication,
-): string {
+export function copyApplicationDocumentFilename(application: CopyApplication): string {
   return `${application.applicationNumber.replace(/\//g, "-")}-copy-application.txt`;
 }
 
-export function downloadCopyApplicationDocument(
-  application: CopyApplication,
-): void {
+export function downloadCopyApplicationDocument(application: CopyApplication): void {
   const document = buildCopyApplicationDocument(application);
   const url = URL.createObjectURL(
     new Blob([localizeForDownload(copyApplicationDocumentText(document))], { type: "text/plain" }),

@@ -122,9 +122,7 @@ const SITTING_SUMMARIES: Record<string, string> = {
 
 /** A summary for an order with none written: its first sentence. */
 function summaryOf(text: string): string {
-  return (
-    SITTING_SUMMARIES[text] ?? text.match(/^.*?[.!?](\s|$)/)?.[0].trim() ?? text
-  );
+  return SITTING_SUMMARIES[text] ?? text.match(/^.*?[.!?](\s|$)/)?.[0].trim() ?? text;
 }
 
 function at(from: string, days: number, notAfter?: string): string {
@@ -265,9 +263,7 @@ export function groupedCaseHistory(
   /** The listing, for the prototype's examples that belong to one case. */
   listingId?: string,
 ): HistoryRow[] {
-  const dated = events.filter(
-    (step): step is CaseTimelineStep & { on: string } => !!step.on,
-  );
+  const dated = events.filter((step): step is CaseTimelineStep & { on: string } => !!step.on);
   const on = (id: string) => dated.find((step) => step.id === id)?.on;
   const rows: HistoryRow[] = [];
 
@@ -293,8 +289,7 @@ export function groupedCaseHistory(
       on: cognizanceOn,
       label: "Cognizance Taken",
       type: "orders",
-      summary:
-        "Cognizance taken of the offence. Process to issue to the accused.",
+      summary: "Cognizance taken of the offence. Process to issue to the accused.",
       href: orderHref("KL-DUMMY-001386-2025-OR1"),
       affects: [],
     });
@@ -309,8 +304,7 @@ export function groupedCaseHistory(
       on: issuedOn,
       label: "Order Issued - Issue of Summons",
       type: "orders",
-      summary:
-        "Summons to issue to the accused by RPAD. Complainant to pay the process fee.",
+      summary: "Summons to issue to the accused by RPAD. Complainant to pay the process fee.",
       href: orderHref("KL-DUMMY-001386-2025-OR2"),
       affects: [{ id: summons.id, label: summons.label }],
     });
@@ -329,8 +323,7 @@ export function groupedCaseHistory(
         on: allowedOn,
         label: "Order Issued - Bail",
         type: "orders",
-        summary:
-          "Bail allowed on the accused executing a bond with one surety.",
+        summary: "Bail allowed on the accused executing a bond with one surety.",
         href: orderHref("KL-DUMMY-001386-2025-OR4"),
         affects: [{ id: bail.id, label: bail.label }],
       },
@@ -374,17 +367,13 @@ export function groupedCaseHistory(
   /* Newest first (owner, 2026-10-23: "the most recent at the top"), a thread by its
      latest step. On one day an order sits above what led to it, and a thread the order
      moved above that order. Stable otherwise. */
-  const at = (row: HistoryRow) =>
-    row.kind === "thread" ? threadUpdatedOn(row) : row.on;
-  const rank = (row: HistoryRow) =>
-    row.kind === "event" ? 0 : row.kind === "order" ? 1 : 2;
+  const at = (row: HistoryRow) => (row.kind === "thread" ? threadUpdatedOn(row) : row.on);
+  const rank = (row: HistoryRow) => (row.kind === "event" ? 0 : row.kind === "order" ? 1 : 2);
   const sorted = rows
     .map((row, index) => ({ row, index }))
     .sort(
       (a, b) =>
-        at(b.row).localeCompare(at(a.row)) ||
-        rank(b.row) - rank(a.row) ||
-        b.index - a.index,
+        at(b.row).localeCompare(at(a.row)) || rank(b.row) - rank(a.row) || b.index - a.index,
     )
     .map(({ row }) => row);
 
@@ -417,11 +406,7 @@ export function cognizanceHistory(
   });
   return [
     event("registered", registeredOn, "Case Registered"),
-    event(
-      "forwarded",
-      shiftDay(registeredOn, -1),
-      "Case Forwarded to Magistrate",
-    ),
+    event("forwarded", shiftDay(registeredOn, -1), "Case Forwarded to Magistrate"),
     event("filed", shiftDay(registeredOn, -4), "Case Filed"),
   ];
 }

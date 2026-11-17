@@ -53,7 +53,9 @@ export function CaseNumberHistory({ history }: { history: PastCaseNumber[] }) {
               />
               {entry.generatedOn ? (
                 <span className="text-caption text-muted-foreground">
-                  {t("caseNumberHistory_generatedOnFormatCaseDate", { formatCaseDate: formatCaseDate(entry.generatedOn) })}
+                  {t("caseNumberHistory_generatedOnFormatCaseDate", {
+                    formatCaseDate: formatCaseDate(entry.generatedOn),
+                  })}
                 </span>
               ) : null}
             </li>

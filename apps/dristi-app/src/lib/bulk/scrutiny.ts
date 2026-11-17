@@ -92,8 +92,7 @@ const MOBILE = /^[6-9]\d{9}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME = /^[A-Za-z][A-Za-z .'-]*$/;
 
-const listed = (options: { value: string }[], v: string) =>
-  options.some((o) => o.value === v);
+const listed = (options: { value: string }[], v: string) => options.some((o) => o.value === v);
 
 type Push = (f: Omit<Flag, "id"> & { at: string }) => void;
 
@@ -133,9 +132,7 @@ function addressFlags(
       rule: `${base.rule}-pin`,
       level: "hold",
       at: `${path}.pin`,
-      message: a.pin
-        ? `Pincode "${a.pin}" is not 6 digits.`
-        : "Pincode is missing.",
+      message: a.pin ? `Pincode "${a.pin}" is not 6 digits.` : "Pincode is missing.",
       fix: {
         kind: "text",
         path: `${path}.pin`,
@@ -180,8 +177,7 @@ function dateFlag(
 export function caseFlags(bc: BatchCase): Flag[] {
   const d: FilingDraft = bc.draft;
   const out: Flag[] = [];
-  const push: Push = ({ at, ...f }) =>
-    out.push({ ...f, id: `${f.rule}:${at}` });
+  const push: Push = ({ at, ...f }) => out.push({ ...f, id: `${f.rule}:${at}` });
 
   /*
    * ── Complainants (LIT) ── The first is the batch's own, the same on every case, so a
@@ -234,9 +230,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           field: "LIT-18a",
           level: "hold",
           at: `c${k}.entCinPan`,
-          message: c.entCinPan
-            ? `"${c.entCinPan}" is not a CIN or PAN.`
-            : "CIN or PAN is missing.",
+          message: c.entCinPan ? `"${c.entCinPan}" is not a CIN or PAN.` : "CIN or PAN is missing.",
           fix: {
             kind: "text",
             path: `complainants.${k}.entCinPan`,
@@ -362,9 +356,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           field: "LIT-5",
           level: "hold",
           at: `c${k}.age`,
-          message: c.age
-            ? `Age "${c.age}" is not valid.`
-            : "Complainant's age is missing.",
+          message: c.age ? `Age "${c.age}" is not valid.` : "Complainant's age is missing.",
           fix: {
             kind: "text",
             path: `complainants.${k}.age`,
@@ -373,12 +365,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
             inputMode: "numeric",
           },
         });
-      addressFlags(
-        push,
-        c.res,
-        { rule: "lit-7", field: "LIT-7", ...lit },
-        `complainants.${k}.res`,
-      );
+      addressFlags(push, c.res, { rule: "lit-7", field: "LIT-7", ...lit }, `complainants.${k}.res`);
     }
   });
 
@@ -496,18 +483,14 @@ export function caseFlags(bc: BatchCase): Flag[] {
           inputMode: "tel",
         },
       });
-    if (
-      contact.mobile &&
-      complainantMobiles.some((m) => sameMobile(m, contact.mobile))
-    )
+    if (contact.mobile && complainantMobiles.some((m) => sameMobile(m, contact.mobile)))
       push({
         ...acc,
         rule: "lit-3-unique",
         field: "LIT-3",
         level: "hold",
         at: `${p}.mobile-dup`,
-        message:
-          "Mobile is the same as the complainant's. Each party needs their own number.",
+        message: "Mobile is the same as the complainant's. Each party needs their own number.",
         fix: {
           kind: "text",
           path: `${p}.contacts.0.mobile`,
@@ -555,8 +538,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           field: "ACC-14",
           level: "hold",
           at: `${p}.reps`,
-          message:
-            "No person responsible (S-141) is named for the institution.",
+          message: "No person responsible (S-141) is named for the institution.",
           fix: {
             kind: "text",
             path: `${p}.reps.0.name`,
@@ -628,9 +610,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         field: "CHQ-5",
         level: "hold",
         at: `${p}.ifsc`,
-        message: q.ifsc
-          ? `IFSC "${q.ifsc}" is not a valid IFSC.`
-          : "IFSC is missing.",
+        message: q.ifsc ? `IFSC "${q.ifsc}" is not a valid IFSC.` : "IFSC is missing.",
         fix: {
           kind: "text",
           path: `${p}.ifsc`,
@@ -1050,12 +1030,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         },
       });
     if (addr)
-      addressFlags(
-        push,
-        addr,
-        { rule: "wit-7", field: "WIT-7", ...wit },
-        `${p}.addresses.0.addr`,
-      );
+      addressFlags(push, addr, { rule: "wit-7", field: "WIT-7", ...wit }, `${p}.addresses.0.addr`);
   });
 
   /* ── Jurisdiction and limitation (JUR) ── */
@@ -1067,8 +1042,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
       field: "JUR-1",
       level: "hold",
       at: "jurisdiction.deposited",
-      message:
-        "Whether the cheque was deposited in the complainant's own account is not stated.",
+      message: "Whether the cheque was deposited in the complainant's own account is not stated.",
       fix: {
         kind: "select",
         path: "jurisdiction.deposited",
@@ -1118,13 +1092,10 @@ export function caseFlags(bc: BatchCase): Flag[] {
     // Say what to enter, not only what is wrong: a service date in the future is a typing
     // slip; a real but recent one means the case waits, or the date allows filing today.
     const today = new Date().toISOString().slice(0, 10);
-    const latest = new Date(Date.now() - 15 * 86_400_000)
-      .toISOString()
-      .slice(0, 10);
+    const latest = new Date(Date.now() - 15 * 86_400_000).toISOString().slice(0, 10);
     const served =
-      d.notices
-        .map((n) => (n.delivered === "no" ? n.returnDate : n.deliveryDate))
-        .find(Boolean) ?? "";
+      d.notices.map((n) => (n.delivered === "no" ? n.returnDate : n.deliveryDate)).find(Boolean) ??
+      "";
     push({
       ...jur,
       rule: "jur-9-early",
@@ -1136,11 +1107,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           ? `${toLongDate(served)} is in the future. Enter the day the notice was actually delivered.`
           : `To file today, the notice must have been served on or before ${toLongDate(latest)} (15 days ago). If it was served later, this case can be filed from ${toLongDate(lim.causeDate)}.`,
     });
-  } else if (
-    lim.elapsed !== null &&
-    !lim.withinLimit &&
-    !d.jurisdiction.condonationReason.trim()
-  )
+  } else if (lim.elapsed !== null && !lim.withinLimit && !d.jurisdiction.condonationReason.trim())
     push({
       ...jur,
       rule: "jur-12",
@@ -1226,9 +1193,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
 
 /** The flags still standing: every hold, and the soft flags not skipped. */
 export function openFlags(bc: BatchCase): Flag[] {
-  return caseFlags(bc).filter(
-    (f) => f.level === "hold" || !bc.skipped.includes(f.id),
-  );
+  return caseFlags(bc).filter((f) => f.level === "hold" || !bc.skipped.includes(f.id));
 }
 
 /** Where the case stands. Payment completes filing, as in the single flow. */

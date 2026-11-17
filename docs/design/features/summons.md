@@ -1,4 +1,5 @@
 # Summons (v15)
+
 Updated: 2026-10-12
 Status: built on `feature/summons-v15`; live route rendered and checked (desktop and 375px)
 
@@ -22,20 +23,20 @@ design with the owner's review fixes, for every court.
 
 ## Decisions
 
-| Date | Decision and reason | Source | Status |
-|---|---|---|---|
-| 2026-10-12 | Remove "Kollam District · Kerala Subordinate Judiciary". The court is the 24×7 ON Court. | Owner review of v14 | Built |
-| 2026-10-12 | One case number; the CNR is dropped. | Owner review of v14 | Built |
-| 2026-10-12 | No seal: signed digitally. | Owner review of v14 | Built |
-| 2026-10-12 | Print full addresses, never link text, on paper. | Owner review of v14 | Built |
-| 2026-10-12 | The paper has no video link: tell the person to sign in and open the case. | Owner review of v14 | Built |
-| 2026-10-12 | Not appearing does not cost the right to question the complainant. Clause removed. | Owner review of v14 | Built |
-| 2026-10-12 | Fit the summons to the court config (court name, language and so on). | PM, relayed by owner | Built |
-| 2026-10-12 | The language line follows the court's language: ml, gu, pa, hi. | Owner | Built |
-| 2026-10-12 | Design both a print and a digital version; the state is known from the summons URL. | Owner | Superseded by the next row |
-| 2026-10-12 | Print and digital read the same, so keep one version: "Please turn over" on screen too; links stay tappable on screen. | Owner | Built |
-| 2026-10-12 | "Summons to an Accused Person" at 10pt (t2), well under the 16pt court name; 12pt was still too large. | Owner | Built |
-| 2026-10-12 | Live in the onboarding modal's "View the original summons", touching no other screen. | Owner | Built |
+| Date       | Decision and reason                                                                                                    | Source               | Status                     |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------- | -------------------------- |
+| 2026-10-12 | Remove "Kollam District · Kerala Subordinate Judiciary". The court is the 24×7 ON Court.                               | Owner review of v14  | Built                      |
+| 2026-10-12 | One case number; the CNR is dropped.                                                                                   | Owner review of v14  | Built                      |
+| 2026-10-12 | No seal: signed digitally.                                                                                             | Owner review of v14  | Built                      |
+| 2026-10-12 | Print full addresses, never link text, on paper.                                                                       | Owner review of v14  | Built                      |
+| 2026-10-12 | The paper has no video link: tell the person to sign in and open the case.                                             | Owner review of v14  | Built                      |
+| 2026-10-12 | Not appearing does not cost the right to question the complainant. Clause removed.                                     | Owner review of v14  | Built                      |
+| 2026-10-12 | Fit the summons to the court config (court name, language and so on).                                                  | PM, relayed by owner | Built                      |
+| 2026-10-12 | The language line follows the court's language: ml, gu, pa, hi.                                                        | Owner                | Built                      |
+| 2026-10-12 | Design both a print and a digital version; the state is known from the summons URL.                                    | Owner                | Superseded by the next row |
+| 2026-10-12 | Print and digital read the same, so keep one version: "Please turn over" on screen too; links stay tappable on screen. | Owner                | Built                      |
+| 2026-10-12 | "Summons to an Accused Person" at 10pt (t2), well under the 16pt court name; 12pt was still too large.                 | Owner                | Built                      |
+| 2026-10-12 | Live in the onboarding modal's "View the original summons", touching no other screen.                                  | Owner                | Built                      |
 
 ## Open
 

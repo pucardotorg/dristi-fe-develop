@@ -6,12 +6,7 @@ import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useFieldPolicy } from "@/components/filing/field-policy";
 import { useInCorrection } from "@/components/filing/posture";
 import { SavingIndicator } from "@/components/filing/saving-indicator";
@@ -153,7 +148,7 @@ export function FilingFooter({
     <footer
       className={cn(
         "sticky bottom-0 z-30 border-t border-hairline bg-card px-6 pt-3 pb-[calc(--spacing(3)+env(safe-area-inset-bottom))] sm:pb-3",
-        className
+        className,
       )}
     >
       {/* Phone: the actions stack, as every dialog footer in the product does below

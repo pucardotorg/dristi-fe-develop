@@ -334,7 +334,8 @@ function build(spec: Spec): FilingDraft {
   }
   if (paper) {
     draft.complainants.forEach((c) => {
-      const tail = c.type === "institution" ? c.rep.mobile : c.poa === "yes" ? c.poaHolder.mobile : c.mobile;
+      const tail =
+        c.type === "institution" ? c.rep.mobile : c.poa === "yes" ? c.poaHolder.mobile : c.mobile;
       // Keyed as `phoneConfirmers` keys the row: a PoA holder confirms as themselves.
       const id = c.poa === "yes" ? `poa-${c.id}` : `sig-c-${c.id}`;
       draft.sign.confirmed[id] = { mobileTail: tail.slice(-4), at };
@@ -391,7 +392,10 @@ const SPECS: Spec[] = [
         name: "Deepak Choudhary",
         contacts: [{ mobile: "9867566316", email: "" }],
         addresses: [
-          { addr: addr("12, Shanti Kunj Society, Naroda", "Ahmedabad", "382330"), police: "Naroda" },
+          {
+            addr: addr("12, Shanti Kunj Society, Naroda", "Ahmedabad", "382330"),
+            police: "Naroda",
+          },
         ],
       },
     ],
@@ -803,7 +807,9 @@ const SPECS: Spec[] = [
       deposited: "no",
       drawerPolice: "Chandkheda",
       otherPending: "yes",
-      otherCases: [{ court: "Chief Judicial Magistrate, Ahmedabad (Rural)", caseNumber: "CC/1182/2025" }],
+      otherCases: [
+        { court: "Chief Judicial Magistrate, Ahmedabad (Rural)", caseNumber: "CC/1182/2025" },
+      ],
       filingDate: "2026-06-08",
     },
     adr: { adr: "no" },
@@ -1053,7 +1059,10 @@ const SPECS: Spec[] = [
         name: "Mahendra Shah",
         contacts: [{ mobile: "9426511804", email: "" }],
         addresses: [
-          { addr: addr("19, Ratnadeep Society, Naranpura", "Ahmedabad", "380013"), police: "Naranpura" },
+          {
+            addr: addr("19, Ratnadeep Society, Naranpura", "Ahmedabad", "380013"),
+            police: "Naranpura",
+          },
         ],
       },
     ],

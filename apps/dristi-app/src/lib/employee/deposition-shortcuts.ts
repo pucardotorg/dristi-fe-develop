@@ -49,77 +49,77 @@ export const SAMPLE_DEPOSITION_SHORTCUTS: readonly DepositionShortcut[] = Object
   sample(
     "chief-affidavit",
     "Chief affidavit read as evidence",
-    "<p>The chief affidavit of the witness, filed on [date], is read as part of this deposition. Exts. [P1 to P6] are marked through the witness.</p>"
+    "<p>The chief affidavit of the witness, filed on [date], is read as part of this deposition. Exts. [P1 to P6] are marked through the witness.</p>",
   ),
   sample(
     "cross-security",
     "Cross: cheque given as security",
     qa(
-      "It is suggested that cheque No. [cheque number] was given only as a blank security when the dealings began, and not to repay any debt. What do you say?"
-    )
+      "It is suggested that cheque No. [cheque number] was given only as a blank security when the dealings began, and not to repay any debt. What do you say?",
+    ),
   ),
   sample(
     "cross-source",
     "Cross: source of the money",
     qa("From where did you raise the amount you say was due from the accused?") +
-      qa("Is the amount shown in your income-tax returns?")
+      qa("Is the amount shown in your income-tax returns?"),
   ),
   sample(
     "cross-notice",
     "Cross: notice not received",
-    qa("The accused says the demand notice never reached them. What do you say?")
+    qa("The accused says the demand notice never reached them. What do you say?"),
   ),
   sample(
     "cross-records",
     "Cross: evidence from records only",
     qa("You were not present when the cheque was presented for collection?") +
-      qa("Your evidence is only from the records of the bank?")
+      qa("Your evidence is only from the records of the bank?"),
   ),
   sample(
     "cross-deferred",
     "Cross-examination deferred",
-    "<p>Cross-examination deferred to the next hearing at the request of counsel for the accused.</p>"
+    "<p>Cross-examination deferred to the next hearing at the request of counsel for the accused.</p>",
   ),
   sample(
     "351-evidence",
     "Accused: understanding of the evidence",
     qa(
-      "You heard the evidence of [PW-1 to PW-2] and saw Exts. [P1 to P6] marked. Did you understand the evidence against you?"
-    )
+      "You heard the evidence of [PW-1 to PW-2] and saw Exts. [P1 to P6] marked. Did you understand the evidence against you?",
+    ),
   ),
   sample(
     "351-cheque",
     "Accused: cheque (Ext. P1)",
     qa(
-      "PW-1 said that you issued Ext. P1, cheque No. [cheque number] for Rs. [amount], to repay the amount due to the complainant. What do you say?"
-    ) + qa("Is the signature on Ext. P1 yours?")
+      "PW-1 said that you issued Ext. P1, cheque No. [cheque number] for Rs. [amount], to repay the amount due to the complainant. What do you say?",
+    ) + qa("Is the signature on Ext. P1 yours?"),
   ),
   sample(
     "351-dishonour",
     "Accused: dishonour (Ext. P2)",
     qa(
-      "It is in evidence that Ext. P1 was returned unpaid for want of funds, as the return memo Ext. P2 shows. What do you say?"
-    )
+      "It is in evidence that Ext. P1 was returned unpaid for want of funds, as the return memo Ext. P2 shows. What do you say?",
+    ),
   ),
   sample(
     "351-notice",
     "Accused: notice and postal records (Exts. P3 to P5)",
     qa(
-      "PW-1 said the demand notice Ext. P3 was sent to you and reached you, as Exts. P4 and P5 show. What do you say?"
-    )
+      "PW-1 said the demand notice Ext. P3 was sent to you and reached you, as Exts. P4 and P5 show. What do you say?",
+    ),
   ),
   sample(
     "351-non-payment",
     "Accused: non-payment and Section 138",
     qa(
-      "PW-1 said you did not pay the amount within fifteen days of receiving the notice. What do you say?"
-    )
+      "PW-1 said you did not pay the amount within fifteen days of receiving the notice. What do you say?",
+    ),
   ),
   sample(
     "351-closing",
     "Accused: additional statement",
     qa("Is there anything more you want to say?") +
-      qa("Do you want to give evidence in your defence?")
+      qa("Do you want to give evidence in your defence?"),
   ),
 ]);
 
@@ -148,7 +148,7 @@ export function shapeQuestions(html: string): string {
       (_whole, _tag: string, marker: string, rest: string) => {
         const body = rest.replace(/<br\s*\/?>\s*$/i, "").trim();
         return `<p><strong>${marker}:</strong> ${body || (marker === "A" ? "[answer]" : "")}</p>`;
-      }
+      },
     )
     .replace(/<\/p>\s*<p><strong>A:<\/strong>/g, "<br><strong>A:</strong>");
 }
@@ -166,7 +166,7 @@ function isShortcutList(value: unknown): value is DepositionShortcut[] {
         typeof entry.id === "string" &&
         typeof entry.name === "string" &&
         typeof entry.text === "string" &&
-        typeof entry.html === "string"
+        typeof entry.html === "string",
     )
   );
 }
@@ -226,8 +226,8 @@ export function updateDepositionShortcut(id: string, name: string, html: string)
     readDepositionShortcuts().map((entry) =>
       entry.id === id
         ? { ...entry, name: name.trim(), text: plainText(shaped), html: shaped }
-        : entry
-    )
+        : entry,
+    ),
   );
 }
 
@@ -239,12 +239,10 @@ export function removeDepositionShortcut(id: string): void {
 export function depositionShortcutNameTaken(
   list: readonly DepositionShortcut[],
   name: string,
-  except?: string
+  except?: string,
 ): boolean {
   const wanted = name.trim().toLowerCase();
-  return list.some(
-    (entry) => entry.id !== except && entry.name.trim().toLowerCase() === wanted
-  );
+  return list.some((entry) => entry.id !== except && entry.name.trim().toLowerCase() === wanted);
 }
 
 /** The examination's own question sets: the questions put to the accused. */
@@ -261,7 +259,7 @@ export function isExaminationShortcut(entry: DepositionShortcut): boolean {
 export function matchDepositionShortcuts(
   list: readonly DepositionShortcut[],
   query: string,
-  kind: "deposition" | "examination"
+  kind: "deposition" | "examination",
 ): DepositionShortcut[] {
   const wanted = query.trim().toLowerCase();
   const rank = (name: string) => {

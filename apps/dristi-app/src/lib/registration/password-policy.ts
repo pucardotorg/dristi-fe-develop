@@ -25,13 +25,7 @@
  */
 
 export type PasswordRule =
-  | "length"
-  | "tooLong"
-  | "mobile"
-  | "name"
-  | "email"
-  | "numeric"
-  | "common";
+  "length" | "tooLong" | "mobile" | "name" | "email" | "numeric" | "common";
 
 export type PasswordContext = {
   /** The 10 national digits; compared as the backend stores it, `+91…`. */
@@ -72,10 +66,7 @@ function quickRatio(a: string[], b: string[]): number {
 
 /** Django's `exceeds_maximum_length_ratio`: a part far shorter than the password is skipped. */
 function exceedsLengthRatio(passwordLength: number, part: string[]): boolean {
-  return (
-    passwordLength >= 10 * part.length &&
-    part.length < (MAX_SIMILARITY / 2) * passwordLength
-  );
+  return passwordLength >= 10 * part.length && part.length < (MAX_SIMILARITY / 2) * passwordLength;
 }
 
 /**

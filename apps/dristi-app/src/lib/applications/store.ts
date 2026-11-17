@@ -81,9 +81,7 @@ function withSamples(base: Db): Db {
   if (base.seeded === SAMPLE_VERSION) return base;
   const sampleCounters = { ...FRESH.counters };
   const samples = sampleApplications(dayOf(new Date()), sampleCounters);
-  const filed = Object.fromEntries(
-    Object.entries(base.apps).filter(([id]) => !isSample(id)),
-  );
+  const filed = Object.fromEntries(Object.entries(base.apps).filter(([id]) => !isSample(id)));
   const counters: Counters = {
     temporary: Math.max(base.counters.temporary, sampleCounters.temporary),
     number: Math.max(base.counters.number, sampleCounters.number),
@@ -161,9 +159,7 @@ function subscribe(listener: () => void): () => void {
 
 function listSnapshot(): LifecycleApplication[] {
   if (listCacheVersion !== version) {
-    listCache = Object.values(ensure().apps).sort((a, b) =>
-      b.updatedOn.localeCompare(a.updatedOn),
-    );
+    listCache = Object.values(ensure().apps).sort((a, b) => b.updatedOn.localeCompare(a.updatedOn));
     listCacheVersion = version;
   }
   return listCache;
@@ -178,10 +174,7 @@ export function useLifecycleApplications(): LifecycleApplication[] {
 
 export function useCaseApplications(caseId: string): LifecycleApplication[] {
   const all = useLifecycleApplications();
-  return React.useMemo(
-    () => all.filter((app) => app.caseId === caseId),
-    [all, caseId],
-  );
+  return React.useMemo(() => all.filter((app) => app.caseId === caseId), [all, caseId]);
 }
 
 export function getApplication(id: string): LifecycleApplication | undefined {
@@ -274,10 +267,7 @@ export function applyStep(
 }
 
 export function createDraft(
-  input: Omit<
-    LifecycleApplication,
-    "id" | "status" | "createdOn" | "updatedOn" | "history"
-  >,
+  input: Omit<LifecycleApplication, "id" | "status" | "createdOn" | "updatedOn" | "history">,
   liveForm: unknown,
 ): string {
   const id = `app-${crypto.randomUUID().slice(0, 8)}`;

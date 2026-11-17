@@ -29,12 +29,7 @@ import {
   type DetailsFormat,
 } from "@/lib/filing/details-formats";
 import { getStep } from "@/lib/filing/steps";
-import {
-  PAGE_GROUND,
-  PAGE_GUTTER,
-  PAGE_SUBTITLE,
-  PAGE_TITLE,
-} from "@/components/shell/page-frame";
+import { PAGE_GROUND, PAGE_GUTTER, PAGE_SUBTITLE, PAGE_TITLE } from "@/components/shell/page-frame";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,15 +49,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { DetailFieldMenu } from "@/components/filing/detail-field-menu";
-import {
-  RichTextEditor,
-  type RichTextEditorHandle,
-} from "@/components/filing/rich-text-editor";
+import { RichTextEditor, type RichTextEditorHandle } from "@/components/filing/rich-text-editor";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
 
-const SECTION_LABEL =
-  "text-caption font-bold uppercase tracking-wider text-muted-foreground";
+const SECTION_LABEL = "text-caption font-bold uppercase tracking-wider text-muted-foreground";
 
 function Dot({ filled }: { filled: boolean }) {
   return (
@@ -272,10 +263,10 @@ export function DetailsFormatsScreen() {
   return (
     <div className={cn("flex w-full flex-1 flex-col gap-6", PAGE_GROUND, PAGE_GUTTER)}>
       <header className="flex flex-col gap-1">
-        <h1 className={cn(PAGE_TITLE, "text-foreground")}>{t("detailsFormatConfig_additionalDetailsFormats")}</h1>
-        <p className={PAGE_SUBTITLE}>
-          {t("detailsFormatConfig_theTextsAFilingCanStart")}
-        </p>
+        <h1 className={cn(PAGE_TITLE, "text-foreground")}>
+          {t("detailsFormatConfig_additionalDetailsFormats")}
+        </h1>
+        <p className={PAGE_SUBTITLE}>{t("detailsFormatConfig_theTextsAFilingCanStart")}</p>
       </header>
       <DetailsFormatConfig />
     </div>
@@ -321,7 +312,9 @@ function DetailsFormatConfig() {
                   )}
                 >
                   <FileTextIcon aria-hidden className="size-3.5 shrink-0" />
-                  <span className="min-w-0 flex-1 truncate">{f.name || t("detailsFormatConfig_untitled")}</span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {f.name || t("detailsFormatConfig_untitled")}
+                  </span>
                   {f.isDefault ? (
                     <Badge
                       variant={selected?.id === f.id ? "secondary" : "outline"}

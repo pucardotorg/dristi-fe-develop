@@ -42,19 +42,69 @@ export type TemplateVariable = {
 // ---------------------------------------------------------------------------
 
 export const GENERAL_VARIABLES: TemplateVariable[] = [
-  { name: "Court Name", resolution: "auto-fill", description: "Name of the court", source: "Court data" },
+  {
+    name: "Court Name",
+    resolution: "auto-fill",
+    description: "Name of the court",
+    source: "Court data",
+  },
   { name: "Case Name", resolution: "auto-fill", description: "e.g. X vs Y", source: "Case data" },
   { name: "Case Number", resolution: "auto-fill", description: "Case number", source: "Case data" },
   { name: "Current Date", resolution: "auto-fill", description: "Today's date", source: "System" },
-  { name: "Judge Name", resolution: "auto-fill", description: "Presiding judge", source: "Court data" },
-  { name: "Judge Designation", resolution: "auto-fill", description: "e.g. JMFC", source: "Court data" },
-  { name: "Complainant Name", resolution: "auto-fill", description: "Name of the complainant", source: "Case data" },
-  { name: "Accused Name", resolution: "auto-fill", description: "Name of the accused", source: "Case data" },
-  { name: "Party Type", resolution: "select", description: "Complainant, Accused, or Witness", source: "Case data" },
-  { name: "Party Name", resolution: "select", description: "Any person in the case", source: "Case data" },
-  { name: "Document Type", resolution: "select", description: "Type of document", source: "Master data" },
-  { name: "Hearing Purpose", resolution: "select", description: "Purpose of hearing", source: "Master data" },
-  { name: "Current Hearing Date", resolution: "auto-fill", description: "Date of the current/most recent hearing", source: "Case data" },
+  {
+    name: "Judge Name",
+    resolution: "auto-fill",
+    description: "Presiding judge",
+    source: "Court data",
+  },
+  {
+    name: "Judge Designation",
+    resolution: "auto-fill",
+    description: "e.g. JMFC",
+    source: "Court data",
+  },
+  {
+    name: "Complainant Name",
+    resolution: "auto-fill",
+    description: "Name of the complainant",
+    source: "Case data",
+  },
+  {
+    name: "Accused Name",
+    resolution: "auto-fill",
+    description: "Name of the accused",
+    source: "Case data",
+  },
+  {
+    name: "Party Type",
+    resolution: "select",
+    description: "Complainant, Accused, or Witness",
+    source: "Case data",
+  },
+  {
+    name: "Party Name",
+    resolution: "select",
+    description: "Any person in the case",
+    source: "Case data",
+  },
+  {
+    name: "Document Type",
+    resolution: "select",
+    description: "Type of document",
+    source: "Master data",
+  },
+  {
+    name: "Hearing Purpose",
+    resolution: "select",
+    description: "Purpose of hearing",
+    source: "Master data",
+  },
+  {
+    name: "Current Hearing Date",
+    resolution: "auto-fill",
+    description: "Date of the current/most recent hearing",
+    source: "Case data",
+  },
 ];
 
 /** Look up a general variable by name. */
@@ -139,9 +189,7 @@ export function parseVariables(text: string): string[] {
 
 /** All unique variables detected in both the BOTD and order text of a template. */
 export function allDetectedVariables(t: OrderTemplate): string[] {
-  return [
-    ...new Set([...parseVariables(t.botdText), ...parseVariables(t.orderText)]),
-  ];
+  return [...new Set([...parseVariables(t.botdText), ...parseVariables(t.orderText)])];
 }
 
 export type ClassifiedVariable = TemplateVariable & {
@@ -149,10 +197,7 @@ export type ClassifiedVariable = TemplateVariable & {
 };
 
 /** Classify a variable name against the general set, locked vars, and optional vars. */
-export function classifyVariable(
-  name: string,
-  t: OrderTemplate,
-): ClassifiedVariable {
+export function classifyVariable(name: string, t: OrderTemplate): ClassifiedVariable {
   if (GENERAL_VAR_SET.has(name)) {
     return { scope: "general", ...GENERAL_VAR_MAP[name] };
   }
@@ -173,9 +218,7 @@ export function classifyVariable(
 }
 
 /** Resolution type → CSS colour class key. */
-export function resolutionColor(
-  res: VariableResolution | "unknown",
-): string {
+export function resolutionColor(res: VariableResolution | "unknown"): string {
   switch (res) {
     case "auto-fill":
       return "auto";
@@ -191,10 +234,8 @@ export function resolutionColor(
 /** Human label for a variable's resolution. */
 export function resolutionLabel(v: TemplateVariable): string {
   if (v.resolution === "auto-fill") return "Auto-fills";
-  if (v.resolution === "select")
-    return "Select · " + (v.source || "list");
-  if (v.resolution === "input")
-    return "Input · " + (v.inputType || "text");
+  if (v.resolution === "select") return "Select · " + (v.source || "list");
+  if (v.resolution === "input") return "Input · " + (v.inputType || "text");
   return "";
 }
 
@@ -250,8 +291,18 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
       "It is directed that the [Party Type] files a [Document Type] for [Document Name] before the court by [Deadline for Submission]. Additionally, the [Party Type] must submit a response by [Deadline for Response].",
     lockedVars: [
       { name: "Document Name", resolution: "input", description: "Free text", inputType: "text" },
-      { name: "Deadline for Submission", resolution: "input", description: "Filing deadline", inputType: "date" },
-      { name: "Deadline for Response", resolution: "input", description: "Response deadline — conditional", inputType: "date" },
+      {
+        name: "Deadline for Submission",
+        resolution: "input",
+        description: "Filing deadline",
+        inputType: "date",
+      },
+      {
+        name: "Deadline for Response",
+        resolution: "input",
+        description: "Response deadline — conditional",
+        inputType: "date",
+      },
     ],
   },
   // Sheet #3 — locked: Hearing Date, Hearing Purpose
@@ -265,10 +316,14 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     category: "Case management",
     workflow: "Schedules next hearing",
     botdText: "Next hearing on [Hearing Date] for [Hearing Purpose]",
-    orderText:
-      "Next hearing is scheduled on [Hearing Date] for [Hearing Purpose].",
+    orderText: "Next hearing is scheduled on [Hearing Date] for [Hearing Purpose].",
     lockedVars: [
-      { name: "Hearing Date", resolution: "input", description: "Date of next hearing", inputType: "date" },
+      {
+        name: "Hearing Date",
+        resolution: "input",
+        description: "Date of next hearing",
+        inputType: "date",
+      },
     ],
   },
   // Sheet #7 — no locked, no optional
@@ -280,8 +335,7 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     category: "Case management",
     workflow: "Transfer case",
     botdText: "Case [Case Number] transferred",
-    orderText:
-      "The case is transferred to another court for further proceedings.",
+    orderText: "The case is transferred to another court for further proceedings.",
     lockedVars: [],
   },
   // Sheet #22 — no locked, no optional
@@ -355,7 +409,12 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     orderText:
       "Issue [Notice Type] notice to the [Party Type] [Party Name]. The [Party Type] is directed to make the appropriate payments and take steps.",
     lockedVars: [
-      { name: "Notice Type", resolution: "select", description: "Type of notice", source: "Master data" },
+      {
+        name: "Notice Type",
+        resolution: "select",
+        description: "Type of notice",
+        source: "Master data",
+      },
     ],
   },
   // Sheet #20 — locked: Party Type, Party Name — all general
@@ -400,7 +459,12 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     orderText:
       "Issue [Process Type] to the [Party Type] [Party Name]. The [Party Type] is directed to make the appropriate payments and take steps.",
     lockedVars: [
-      { name: "Process Type", resolution: "select", description: "Type of miscellaneous process", source: "Master data" },
+      {
+        name: "Process Type",
+        resolution: "select",
+        description: "Type of miscellaneous process",
+        source: "Master data",
+      },
     ],
   },
 
@@ -419,7 +483,12 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
       "Accused is released on bail. Particulars of offences u/s.138 of NI Act were read over and explained to the Accused to which he pleaded [Plea] and claimed to be tried.",
     lockedVars: [],
     optionalVars: [
-      { name: "Plea", resolution: "select", description: "Guilty / Not guilty", source: "Master data" },
+      {
+        name: "Plea",
+        resolution: "select",
+        description: "Guilty / Not guilty",
+        source: "Master data",
+      },
     ],
   },
 
@@ -437,8 +506,18 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
       "Both the Parties have voluntarily agreed to seek resolution through [Mode of ADR]. The parties are hereby referred to [Mode of ADR] to resolve their dispute by [Date of End of ADR].",
     lockedVars: [],
     optionalVars: [
-      { name: "Mode of ADR", resolution: "select", description: "Mediation, Arbitration, Lok Adalat", source: "Master data" },
-      { name: "Date of End of ADR", resolution: "input", description: "Deadline for resolution", inputType: "date" },
+      {
+        name: "Mode of ADR",
+        resolution: "select",
+        description: "Mediation, Arbitration, Lok Adalat",
+        source: "Master data",
+      },
+      {
+        name: "Date of End of ADR",
+        resolution: "input",
+        description: "Deadline for resolution",
+        inputType: "date",
+      },
     ],
   },
   // Sheet #8 — no locked, no optional
@@ -450,8 +529,7 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     category: "Resolution",
     workflow: "Close case — settlement",
     botdText: "Settlement accepted. Case closed.",
-    orderText:
-      "The settlement records have been accepted by the court. Case closed.",
+    orderText: "The settlement records have been accepted by the court. Case closed.",
     lockedVars: [],
   },
   // Sheet #11 — locked: Application Number (not general)
@@ -466,7 +544,12 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     orderText:
       "As per application [Application Number] complainant has sought to withdraw the complaint. Permission under Section 280 of the BNSS is granted and the Accused is acquitted.",
     lockedVars: [
-      { name: "Application Number", resolution: "select", description: "Pick from pending applications", source: "Case applications" },
+      {
+        name: "Application Number",
+        resolution: "select",
+        description: "Pick from pending applications",
+        source: "Case applications",
+      },
     ],
   },
   // Sheet #24 — no locked, no optional
@@ -478,8 +561,7 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     category: "Resolution",
     workflow: "Close case — abated",
     botdText: "Case abated",
-    orderText:
-      "The case is abated following the death of the Accused party.",
+    orderText: "The case is abated following the death of the Accused party.",
     lockedVars: [],
   },
 
@@ -508,8 +590,7 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     inDropdown: true,
     category: "Costs",
     workflow: "Creates payment task",
-    botdText:
-      "[Party Type] directed to pay [Amount] to [Party Type] as witness batta",
+    botdText: "[Party Type] directed to pay [Amount] to [Party Type] as witness batta",
     orderText:
       "The [Party Type] is directed to pay [Amount] to the [Party Type] as witness batta by [Date].",
     lockedVars: [
@@ -545,8 +626,18 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     orderText:
       "Next hearing scheduled on [Original Hearing Date] for [Hearing Purpose] has been rescheduled to [New Hearing Date].",
     lockedVars: [
-      { name: "Original Hearing Date", resolution: "select", description: "Pick from case calendar", source: "Case calendar" },
-      { name: "New Hearing Date", resolution: "input", description: "Rescheduled date", inputType: "date" },
+      {
+        name: "Original Hearing Date",
+        resolution: "select",
+        description: "Pick from case calendar",
+        source: "Case calendar",
+      },
+      {
+        name: "New Hearing Date",
+        resolution: "input",
+        description: "Rescheduled date",
+        inputType: "date",
+      },
     ],
   },
   // Sheet #5 — locked: Application Number, Application Type
@@ -557,11 +648,19 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     inDropdown: false,
     workflow: "Depends on application type",
     botdText: "Application [Application Number] accepted",
-    orderText:
-      "Application [Application Number] for [Application Type] is accepted.",
+    orderText: "Application [Application Number] for [Application Type] is accepted.",
     lockedVars: [
-      { name: "Application Number", resolution: "select", description: "Pick from pending applications", source: "Case applications" },
-      { name: "Application Type", resolution: "auto-fill", description: "Type of the selected application" },
+      {
+        name: "Application Number",
+        resolution: "select",
+        description: "Pick from pending applications",
+        source: "Case applications",
+      },
+      {
+        name: "Application Type",
+        resolution: "auto-fill",
+        description: "Type of the selected application",
+      },
     ],
   },
   // Sheet #6 — locked: Application Number, Application Type
@@ -572,11 +671,19 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     inDropdown: false,
     workflow: "",
     botdText: "Application [Application Number] rejected",
-    orderText:
-      "Application [Application Number] for [Application Type] is rejected.",
+    orderText: "Application [Application Number] for [Application Type] is rejected.",
     lockedVars: [
-      { name: "Application Number", resolution: "select", description: "Pick from pending applications", source: "Case applications" },
-      { name: "Application Type", resolution: "auto-fill", description: "Type of the selected application" },
+      {
+        name: "Application Number",
+        resolution: "select",
+        description: "Pick from pending applications",
+        source: "Case applications",
+      },
+      {
+        name: "Application Type",
+        resolution: "auto-fill",
+        description: "Type of the selected application",
+      },
     ],
   },
   // Sheet #13 — locked: Application Number
@@ -589,7 +696,12 @@ export const INITIAL_TEMPLATES: OrderTemplate[] = [
     botdText: "Bail application [Application Number] accepted",
     orderText: "Application [Application Number] is accepted.",
     lockedVars: [
-      { name: "Application Number", resolution: "select", description: "Pick from pending applications", source: "Case applications" },
+      {
+        name: "Application Number",
+        resolution: "select",
+        description: "Pick from pending applications",
+        source: "Case applications",
+      },
     ],
   },
 ];
@@ -660,10 +772,7 @@ export const HEARING_PURPOSES: HearingPurpose[] = [
     name: "Evidence of the complainant",
     peopleRequired: "Complainant, Complainant Advocate, Accused Advocate",
     likelyTemplateIds: ["t20", "t8"],
-    sectionWorkflows: [
-      "Evidence of the complainant",
-      "Examination of the witness",
-    ],
+    sectionWorkflows: ["Evidence of the complainant", "Examination of the witness"],
   },
   {
     id: 9,
@@ -733,21 +842,15 @@ export const HEARING_PURPOSES: HearingPurpose[] = [
 // ---------------------------------------------------------------------------
 
 /** Get hearing purposes that include a given template. */
-export function hearingPurposesForTemplate(
-  templateId: string,
-): HearingPurpose[] {
-  return HEARING_PURPOSES.filter((hp) =>
-    hp.likelyTemplateIds.includes(templateId),
-  );
+export function hearingPurposesForTemplate(templateId: string): HearingPurpose[] {
+  return HEARING_PURPOSES.filter((hp) => hp.likelyTemplateIds.includes(templateId));
 }
 
 /**
  * Compute initial `hearingPurposeIds` for every template from the
  * `likelyTemplateIds` reverse mapping in HEARING_PURPOSES.
  */
-export function initHearingPurposeIds(
-  templates: OrderTemplate[],
-): OrderTemplate[] {
+export function initHearingPurposeIds(templates: OrderTemplate[]): OrderTemplate[] {
   return templates.map((t) => ({
     ...t,
     hearingPurposeIds: t.hearingPurposeIds ?? hearingPurposesForTemplate(t.id).map((hp) => hp.id),

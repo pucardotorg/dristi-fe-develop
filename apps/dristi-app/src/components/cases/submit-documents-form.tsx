@@ -20,10 +20,7 @@ import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { useBackCloses, useFlowWindow } from "@/components/chrome/flow-window";
 
 import { SelectField, TextField } from "@/components/cases/application-type-fields";
-import {
-  DocumentPreview,
-  DocumentPreviewActions,
-} from "@/components/cases/document-preview";
+import { DocumentPreview, DocumentPreviewActions } from "@/components/cases/document-preview";
 import { Fact, FactGroup } from "@/components/cases/application-record-dialog";
 import {
   DiscardFilingDialog,
@@ -32,19 +29,10 @@ import {
   isPreviewableImage,
 } from "@/components/cases/filing-form-shared";
 import { DocumentSignatureDialog } from "@/components/cases/e-sign-dialog";
-import {
-  PdfViewer,
-  localFileSrc,
-  parsePdfSrc,
-} from "@/components/cases/pdf-viewer";
+import { PdfViewer, localFileSrc, parsePdfSrc } from "@/components/cases/pdf-viewer";
 import { useProfile } from "@/components/shell/profile";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import {
   Dialog,
   DialogClose,
@@ -161,7 +149,7 @@ function useDocumentFiler(caseId: string | undefined) {
         ? file.people.filter((person) => person.id === self.officeOf)
         : [];
       const party = file.people.find(
-        (person) => person.kind === "party" && person.side === viewer.side
+        (person) => person.kind === "party" && person.side === viewer.side,
       );
       /* Office access is an advocate's way onto a case they are not on the
          nama of; a party in person on a case with no advocate is not that. */
@@ -173,10 +161,7 @@ function useDocumentFiler(caseId: string | undefined) {
         /* The same people as Raise application (PM, Oct 26): an advocate,
            a party in person or a clerk. A litigant with an advocate, or a
            PoA holder, does not file; their advocate does. */
-        canSubmit:
-          viewer.role === "advocate" ||
-          viewer.role === "pip" ||
-          viewer.role === "clerk",
+        canSubmit: viewer.role === "advocate" || viewer.role === "pip" || viewer.role === "clerk",
         personId: viewer.personId,
         signerId: signers[0] ?? viewer.personId,
         signers,
@@ -340,7 +325,7 @@ export function SubmitDocumentsDialog({
         submittedOn: status === "submitted" ? FIXTURE_TODAY : undefined,
         byCourt: court,
       },
-      new Map([[draft.id, draft.files]])
+      new Map([[draft.id, draft.files]]),
     );
   }
 
@@ -370,13 +355,7 @@ export function SubmitDocumentsDialog({
   });
 
   if (filer && !filer.canSubmit) {
-    return (
-      <AdvocateFilesDialog
-        open={open}
-        onOpenChange={onOpenChange}
-        caseLine={caseLine}
-      />
-    );
+    return <AdvocateFilesDialog open={open} onOpenChange={onOpenChange} caseLine={caseLine} />;
   }
 
   return (
@@ -389,7 +368,7 @@ export function SubmitDocumentsDialog({
         }}
       >
         <FlowDialogContent
-        ownBack
+          ownBack
           /* As tall as the review that follows, so a document of many files
              lists them without the box growing; the list scrolls inside it. */
           className="flex h-[calc(100dvh---spacing(12))] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
@@ -404,9 +383,7 @@ export function SubmitDocumentsDialog({
             <DialogDescription className="text-body-compact text-pretty">
               {t("submitDocumentsForm_placeAnAffidavitAMemoOr")}
             </DialogDescription>
-            {caseLine ? (
-              <p className="text-caption text-muted-foreground">{caseLine}</p>
-            ) : null}
+            {caseLine ? <p className="text-caption text-muted-foreground">{caseLine}</p> : null}
           </DialogHeader>
 
           <form
@@ -437,9 +414,7 @@ export function SubmitDocumentsDialog({
               files={draft.files}
               error={errors.files}
               onFilesChange={(files) => update({ files })}
-              onErrorChange={(error) =>
-                setErrors((current) => ({ ...current, files: error }))
-              }
+              onErrorChange={(error) => setErrors((current) => ({ ...current, files: error }))}
             />
           </form>
 
@@ -460,18 +435,24 @@ export function SubmitDocumentsDialog({
           if (!next) setStage("form");
         }}
         draft={draft}
-        actionLabel={filer?.handoffTo ? t("submitDocumentsForm_sendForSignature") : t("submitDocumentsForm_sign")}
+        actionLabel={
+          filer?.handoffTo
+            ? t("submitDocumentsForm_sendForSignature")
+            : t("submitDocumentsForm_sign")
+        }
         onAction={() => {
           if (filer?.handoffTo) {
-            finish("pending-signature", t("submitDocumentsForm_sentToHandoffToToSign", { handoffTo: filer.handoffTo }), SendIcon);
+            finish(
+              "pending-signature",
+              t("submitDocumentsForm_sentToHandoffToToSign", { handoffTo: filer.handoffTo }),
+              SendIcon,
+            );
           } else {
             setStage("sign");
           }
         }}
         onReturnFocus={() =>
-          document
-            .querySelector<HTMLElement>(`button[form="${CSS.escape(formId)}"]`)
-            ?.focus()
+          document.querySelector<HTMLElement>(`button[form="${CSS.escape(formId)}"]`)?.focus()
         }
       />
 
@@ -481,7 +462,12 @@ export function SubmitDocumentsDialog({
         onComplete={() => finish("submitted")}
         onSignLater={
           caseId && filer && !court
-            ? () => finish("pending-signature", t("submitDocumentsForm_savedWaitingForYourSignature"), ClockIcon)
+            ? () =>
+                finish(
+                  "pending-signature",
+                  t("submitDocumentsForm_savedWaitingForYourSignature"),
+                  ClockIcon,
+                )
             : undefined
         }
       />
@@ -519,9 +505,7 @@ function AdvocateFilesDialog({
           <DialogTitle className="text-title-s font-semibold text-balance">
             {t("submitDocumentsForm_submitDocuments")}
           </DialogTitle>
-          {caseLine ? (
-            <p className="text-caption text-muted-foreground">{caseLine}</p>
-          ) : null}
+          {caseLine ? <p className="text-caption text-muted-foreground">{caseLine}</p> : null}
         </DialogHeader>
         <Empty className="px-6 py-12">
           <EmptyHeader className="gap-3">
@@ -579,8 +563,7 @@ function ReviewDialog({
   const files = draft.files;
   const current = files[Math.min(index, files.length - 1)];
   const title = draft.title.trim();
-  const typeLabel =
-    SUBMISSION_DOCUMENT_TYPES.find((item) => item.id === draft.type)?.label ?? "";
+  const typeLabel = SUBMISSION_DOCUMENT_TYPES.find((item) => item.id === draft.type)?.label ?? "";
 
   function step(by: number) {
     setIndex((value) => Math.min(files.length - 1, Math.max(0, value + by)));
@@ -588,17 +571,14 @@ function ReviewDialog({
 
   /* An object URL for a PDF, made once per file and let go when it changes. */
   const currentPdf = useMemo(
-    () =>
-      current && isPdfFile(current)
-        ? parsePdfSrc(localFileSrc(current)).url
-        : null,
-    [current]
+    () => (current && isPdfFile(current) ? parsePdfSrc(localFileSrc(current)).url : null),
+    [current],
   );
   useEffect(
     () => () => {
       if (currentPdf) URL.revokeObjectURL(currentPdf);
     },
-    [currentPdf]
+    [currentPdf],
   );
 
   const header = current ? (
@@ -608,7 +588,10 @@ function ReviewDialog({
       </h3>
       {files.length > 1 ? (
         <span className="shrink-0 text-caption tabular-nums text-muted-foreground">
-          {t("submitDocumentsForm_valueOfLength", { value: String(index + 1), length: String(files.length) })}
+          {t("submitDocumentsForm_valueOfLength", {
+            value: String(index + 1),
+            length: String(files.length),
+          })}
         </span>
       ) : null}
     </div>
@@ -705,13 +688,19 @@ function ReviewDialog({
                         onClick={() => setIndex(position)}
                         className={cn(
                           "flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left text-body-compact outline-none transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50",
-                          position === index && "bg-accent-strong font-medium"
+                          position === index && "bg-accent-strong font-medium",
                         )}
                       >
                         {isPreviewableImage(file) ? (
-                          <ImageIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+                          <ImageIcon
+                            aria-hidden
+                            className="size-4 shrink-0 text-muted-foreground"
+                          />
                         ) : (
-                          <FileTextIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+                          <FileTextIcon
+                            aria-hidden
+                            className="size-4 shrink-0 text-muted-foreground"
+                          />
                         )}
                         <span className="min-w-0 break-words">{file.name}</span>
                       </button>
@@ -764,7 +753,9 @@ function ReviewDialog({
                 />
               ) : (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl bg-card p-6 text-center">
-                  <p className="text-body font-medium">{t("submitDocumentsForm_noFilesAttached")}</p>
+                  <p className="text-body font-medium">
+                    {t("submitDocumentsForm_noFilesAttached")}
+                  </p>
                   <p className="text-body-compact text-muted-foreground">
                     {t("submitDocumentsForm_goBackAndAddAtLeast")}
                   </p>

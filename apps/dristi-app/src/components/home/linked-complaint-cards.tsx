@@ -45,17 +45,24 @@ function standing({ link, draft }: Loaded) {
   const onPaper = draft.sign.mode === "upload";
   // On paper this person confirms by OTP on their own device instead of e-signing (`SIG-05`).
   const confirmer = phoneConfirmers(draft).find((p) => confirmerSlot(p.id) === link.signatoryId);
-  const unconfirmed = onPaper && !!confirmer && me?.status !== "signed" && !phoneConfirmed(draft, confirmer);
+  const unconfirmed =
+    onPaper && !!confirmer && me?.status !== "signed" && !phoneConfirmed(draft, confirmer);
   // Only a complainant's slot carries an oath (`OTH-3`); `false` means it is still owed.
   const owed =
     !!me && ((!onPaper && me.status !== "signed") || unconfirmed || me.oathTaken === false);
   return owed
     ? {
-        badge: onPaper ? "linkedComplaintCards_yourConfirmationNeeded" : "linkedComplaintCards_yourESignatureNeeded",
+        badge: onPaper
+          ? "linkedComplaintCards_yourConfirmationNeeded"
+          : "linkedComplaintCards_yourESignatureNeeded",
         variant: "warning" as const,
         action: onPaper ? "Review and confirm" : "Review and sign",
       }
-    : { badge: "linkedComplaintCards_signedBeingFiled", variant: "secondary" as const, action: "View complaint" };
+    : {
+        badge: "linkedComplaintCards_signedBeingFiled",
+        variant: "secondary" as const,
+        action: "View complaint",
+      };
 }
 
 /**
@@ -121,7 +128,9 @@ export function LinkedComplaintCard({ item }: { item: Loaded }) {
           </p>
           {filer ? (
             <p>
-              <span className="font-medium text-foreground">{t("linkedComplaintCards_filedBy")}</span>
+              <span className="font-medium text-foreground">
+                {t("linkedComplaintCards_filedBy")}
+              </span>
               <br />
               {filer}
             </p>

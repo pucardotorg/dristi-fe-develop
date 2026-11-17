@@ -160,8 +160,7 @@ function parseStandardErrors(items: unknown[]): ParsedErrorBody {
     }
   }
   // A request-level message reads best; failing that, the first field's.
-  const message =
-    general ?? Object.values(fieldErrors)[0]?.[0] ?? GENERIC_HTTP_MESSAGE;
+  const message = general ?? Object.values(fieldErrors)[0]?.[0] ?? GENERIC_HTTP_MESSAGE;
   return { message, code: codes[0] ?? null, codes, fieldErrors, fieldCodes };
 }
 

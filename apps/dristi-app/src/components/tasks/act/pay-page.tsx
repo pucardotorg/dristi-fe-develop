@@ -55,16 +55,18 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return (
     <DescriptionRow className="border-hairline">
       <DescriptionTerm className="text-body-compact">{label}</DescriptionTerm>
-      <DescriptionDetails className="text-body-compact">
-        {children}
-      </DescriptionDetails>
+      <DescriptionDetails className="text-body-compact">{children}</DescriptionDetails>
     </DescriptionRow>
   );
 }
 
 const OUTCOMES: { value: PaymentResult; label: string; hint: string }[] = [
   { value: "success", label: "actPayPage_success", hint: "actPayPage_receiptIssuedTaskCloses" },
-  { value: "pending", label: "actPayPage_confirming", hint: "actPayPage_gatewayStillConfirmingTaskWaits" },
+  {
+    value: "pending",
+    label: "actPayPage_confirming",
+    hint: "actPayPage_gatewayStillConfirmingTaskWaits",
+  },
   { value: "failed", label: "actPayPage_failed", hint: "actPayPage_nothingPaidTaskStaysWhereIt" },
 ];
 
@@ -92,7 +94,7 @@ function PayCard({ ctx }: { ctx: ActContext }) {
     finish(
       outcome === "success"
         ? tr("actPayPage_paidAmountReceiptValue", { amount, value: t.completion?.receipt ?? "" })
-        : tr("actPayPage_paymentMadeTheGatewayIsConfirming")
+        : tr("actPayPage_paymentMadeTheGatewayIsConfirming"),
     );
   };
 
@@ -107,7 +109,11 @@ function PayCard({ ctx }: { ctx: ActContext }) {
       {error ? <StatusLine tone="error">{error}</StatusLine> : null}
       <PreparedNote ctx={ctx} />
       {task.lastPayment?.result === "failed" ? (
-        <div ref={failedRef} tabIndex={-1} className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <div
+          ref={failedRef}
+          tabIndex={-1}
+          className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
           <SectionNotice
             variant="destructive"
             announce={justFailed ? "assertive" : "none"}
@@ -120,13 +126,18 @@ function PayCard({ ctx }: { ctx: ActContext }) {
               value={task.lastPayment.ref}
               label={tr("actPayPage_paymentReference")}
               copyable={false}
-            />{tr("actPayPage_onDateTimeNothingWasPaid", { dateTime: dateTime(task.lastPayment.at) })}
+            />
+            {tr("actPayPage_onDateTimeNothingWasPaid", { dateTime: dateTime(task.lastPayment.at) })}
           </SectionNotice>
         </div>
       ) : null}
       <Field>
         <FieldLabel>{tr("actPayPage_sandboxGatewayResult")}</FieldLabel>
-        <RadioGroup value={outcome} onValueChange={(v) => setOutcome(v as PaymentResult)} className="gap-1">
+        <RadioGroup
+          value={outcome}
+          onValueChange={(v) => setOutcome(v as PaymentResult)}
+          className="gap-1"
+        >
           {OUTCOMES.map((o) => (
             <label
               key={o.value}
@@ -135,7 +146,9 @@ function PayCard({ ctx }: { ctx: ActContext }) {
               <RadioGroupItem value={o.value} id={`outcome-${o.value}`} className="mt-0.5" />
               <span className="flex flex-col">
                 <span className="text-body-compact font-medium">{translateText(tr, o.label)}</span>
-                <span className="text-caption text-muted-foreground">{translateText(tr, o.hint)}</span>
+                <span className="text-caption text-muted-foreground">
+                  {translateText(tr, o.hint)}
+                </span>
               </span>
             </label>
           ))}
@@ -147,10 +160,14 @@ function PayCard({ ctx }: { ctx: ActContext }) {
           disabled={!online || !!busy || task.amountPaise === undefined}
           onClick={() => setConfirm(true)}
         >
-          {tr("actPayPage_payValue", { value: task.amountPaise !== undefined ? ` ${rupees(task.amountPaise)}` : "" })}
+          {tr("actPayPage_payValue", {
+            value: task.amountPaise !== undefined ? ` ${rupees(task.amountPaise)}` : "",
+          })}
         </Button>
         {task.amountPaise === undefined ? (
-          <p className="text-caption text-muted-foreground">{tr("actPayPage_amountToBeFetchedTheFee")}</p>
+          <p className="text-caption text-muted-foreground">
+            {tr("actPayPage_amountToBeFetchedTheFee")}
+          </p>
         ) : null}
       </div>
 
@@ -164,7 +181,11 @@ function PayCard({ ctx }: { ctx: ActContext }) {
                 <>
                   <span aria-hidden> · </span>
                   {/* No copy control inside the prompt's accessible description. */}
-                  <Identifier value={kase.stNumber} label={tr("actPayPage_caseNumber")} copyable={false} />
+                  <Identifier
+                    value={kase.stNumber}
+                    label={tr("actPayPage_caseNumber")}
+                    copyable={false}
+                  />
                 </>
               ) : null}
               {tr("actPayPage_thisGoesToThePaymentGateway")}
@@ -172,7 +193,9 @@ function PayCard({ ctx }: { ctx: ActContext }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{tr("common_cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void pay()}>{tr("actPayPage_payAmount2", { amount })}</AlertDialogAction>
+            <AlertDialogAction onClick={() => void pay()}>
+              {tr("actPayPage_payAmount2", { amount })}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
       </AlertDialog>
@@ -195,7 +218,10 @@ function ConfirmingCard({ ctx }: { ctx: ActContext }) {
         disabled={!online || !!busy}
         onClick={async () => {
           const t = await act(task.id, confirmPayment);
-          if (t) finish(tr("actPayPage_paymentConfirmedReceiptValue", { value: t.completion?.receipt ?? "" }));
+          if (t)
+            finish(
+              tr("actPayPage_paymentConfirmedReceiptValue", { value: t.completion?.receipt ?? "" }),
+            );
         }}
       >
         {tr("actPayPage_gatewayConfirm")}
@@ -224,7 +250,9 @@ export function PayBody({ ctx }: { ctx: ActContext }) {
         <DescriptionList>
           <Row label={tr("actPayPage_amount")}>
             <span className="text-title-s font-semibold tabular-nums">
-              {task.amountPaise !== undefined ? rupees(task.amountPaise) : tr("actPayPage_toBeFetched")}
+              {task.amountPaise !== undefined
+                ? rupees(task.amountPaise)
+                : tr("actPayPage_toBeFetched")}
             </span>
           </Row>
           <Row label={tr("actPayPage_feeHead")}>{task.feeHead ?? "—"}</Row>
@@ -240,10 +268,14 @@ export function PayBody({ ctx }: { ctx: ActContext }) {
               <span className="text-muted-foreground">{tr("actPayPage_noDateSet")}</span>
             ) : (
               <>
-                <span className={cn("tabular-nums", due.overdue && "font-medium text-destructive-ink")}>
+                <span
+                  className={cn("tabular-nums", due.overdue && "font-medium text-destructive-ink")}
+                >
                   {due.primary}
                 </span>
-                {due.date ? <span className="tabular-nums text-muted-foreground"> · {due.date}</span> : null}
+                {due.date ? (
+                  <span className="tabular-nums text-muted-foreground"> · {due.date}</span>
+                ) : null}
               </>
             )}
             {task.deadlineNote ? (
@@ -252,7 +284,9 @@ export function PayBody({ ctx }: { ctx: ActContext }) {
           </Row>
           <Row label={tr("actPayPage_payer")}>
             {payers.map((p) => p.name).join(" or ") || tr("actPayPage_aSignatory")}
-            {signatory ? <span className="text-muted-foreground"> {tr("actPayPage_you")}</span> : null}
+            {signatory ? (
+              <span className="text-muted-foreground"> {tr("actPayPage_you")}</span>
+            ) : null}
           </Row>
           {task.completion?.receipt ? (
             <Row label={tr("actPayPage_receipt")}>

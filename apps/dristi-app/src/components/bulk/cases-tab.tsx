@@ -40,11 +40,7 @@ export function CasesTab({ batch, go }: BatchCtx) {
         <p className="text-body-compact text-muted-foreground tabular-nums">
           {pending.length ? `${pending.length} pending. ` : "Nothing pending. "}
           {filed} filed.{" "}
-          <button
-            type="button"
-            className="underline"
-            onClick={() => go("filed")}
-          >
+          <button type="button" className="underline" onClick={() => go("filed")}>
             See filed cases
           </button>
         </p>
@@ -68,9 +64,7 @@ export function CasesTab({ batch, go }: BatchCtx) {
                   <TableHead className={TABLE_HEAD}>{t("casesTab_causeOfAction")}</TableHead>
                   <TableHead className={TABLE_HEAD}>{t("casesTab_fileBy")}</TableHead>
                   <TableHead className={TABLE_HEAD}>{t("casesTab_documents")}</TableHead>
-                  <TableHead className={cn(TABLE_HEAD, "pr-4")}>
-                    {t("casesTab_status")}
-                  </TableHead>
+                  <TableHead className={cn(TABLE_HEAD, "pr-4")}>{t("casesTab_status")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className={tableBodyClass()}>
@@ -80,12 +74,7 @@ export function CasesTab({ batch, go }: BatchCtx) {
                     className={cn(tableRowClass(), "cursor-pointer")}
                     onClick={() => go("scrutiny", c.id)}
                   >
-                    <TableCell
-                      className={cn(
-                        TABLE_CELL,
-                        "pl-4 font-medium tabular-nums",
-                      )}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "pl-4 font-medium tabular-nums")}>
                       <button
                         type="button"
                         className="text-left hover:underline focus-visible:underline"
@@ -97,14 +86,10 @@ export function CasesTab({ batch, go }: BatchCtx) {
                         {c.reference}
                       </button>
                     </TableCell>
-                    <TableCell
-                      className={cn(TABLE_CELL, "min-w-56 whitespace-normal")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "min-w-56 whitespace-normal")}>
                       {c.title}
                     </TableCell>
-                    <TableCell
-                      className={cn(TABLE_CELL, "text-right tabular-nums")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
                       {money(c.amount)}
                     </TableCell>
                     <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
@@ -120,11 +105,12 @@ export function CasesTab({ batch, go }: BatchCtx) {
                         c.docs.have < c.docs.need && "text-warning-ink",
                       )}
                     >
-                      {t("casesTab_haveOfNeed", { have: String(c.docs.have), need: String(c.docs.need) })}
+                      {t("casesTab_haveOfNeed", {
+                        have: String(c.docs.have),
+                        need: String(c.docs.need),
+                      })}
                     </TableCell>
-                    <TableCell
-                      className={cn(TABLE_CELL, "pr-4 whitespace-normal")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "pr-4 whitespace-normal")}>
                       <div className="flex flex-wrap items-center gap-1.5">
                         <CaseBadge c={c} />
                         {c.stage !== "filed" && c.flags.length ? (

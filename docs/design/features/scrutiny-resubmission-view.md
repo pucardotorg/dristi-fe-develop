@@ -1,4 +1,5 @@
 # Re-scrutiny view for a resubmitted case
+
 Updated: 2026-10-29
 Status: implemented (2026-10-29 changes uncommitted on `revamp-scrutiny-resubmission`)
 
@@ -31,19 +32,20 @@ Review page with the before state and proposal: https://claude.ai/artifact/77o38
 
 ## Decisions
 
-| Date | Decision and reason | Source | Status |
-|---|---|---|---|
-| 2026-10-28 | Build inside the existing workbench, not a new screen. The advocate locks every unflagged field during a correction round (`correction-screen.tsx`, D3), so the returned items are the whole of what changed. | Claude's proposal; Neer asked to build it | Implemented |
-| 2026-10-28 | Use the advocate side's vocabulary for answers (`Resolution.how`: edited/kept/replaced). | Implementation choice | Implemented |
-| 2026-10-28 | Raise again reuses the ordinary flag, so the review dialog, send-back and the advocate's screen need nothing new. | Implementation choice | Implemented |
-| 2026-10-28 | Gate forwarding/registering until every returned item is answered. | Claude's recommendation; Neer has not answered | Built by default, open |
-| 2026-10-28 | Open on Changes, not Full filing. | Claude's recommendation; Neer has not answered | Built by default, open |
-| 2026-10-28 | "Kept as filed" shows "No reason given". It is not called "contested", because the advocate is never asked for a reason. | Claude's recommendation; Neer has not answered | Built by default, open |
-| 2026-10-28 | The decision-bar action follows the court, not the seat. Gujarat and Punjab & Haryana say "Register case"; Kerala says "Forward for registration". A typist in Ahmedabad was offered Forward, which names a Register cases queue that court does not have. | Neer, on the 00338 workbench | Implemented |
+| Date       | Decision and reason                                                                                                                                                                                                                                        | Source                                         | Status                 |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------- |
+| 2026-10-28 | Build inside the existing workbench, not a new screen. The advocate locks every unflagged field during a correction round (`correction-screen.tsx`, D3), so the returned items are the whole of what changed.                                              | Claude's proposal; Neer asked to build it      | Implemented            |
+| 2026-10-28 | Use the advocate side's vocabulary for answers (`Resolution.how`: edited/kept/replaced).                                                                                                                                                                   | Implementation choice                          | Implemented            |
+| 2026-10-28 | Raise again reuses the ordinary flag, so the review dialog, send-back and the advocate's screen need nothing new.                                                                                                                                          | Implementation choice                          | Implemented            |
+| 2026-10-28 | Gate forwarding/registering until every returned item is answered.                                                                                                                                                                                         | Claude's recommendation; Neer has not answered | Built by default, open |
+| 2026-10-28 | Open on Changes, not Full filing.                                                                                                                                                                                                                          | Claude's recommendation; Neer has not answered | Built by default, open |
+| 2026-10-28 | "Kept as filed" shows "No reason given". It is not called "contested", because the advocate is never asked for a reason.                                                                                                                                   | Claude's recommendation; Neer has not answered | Built by default, open |
+| 2026-10-28 | The decision-bar action follows the court, not the seat. Gujarat and Punjab & Haryana say "Register case"; Kerala says "Forward for registration". A typist in Ahmedabad was offered Forward, which names a Register cases queue that court does not have. | Neer, on the 00338 workbench                   | Implemented            |
 
 ## Variant B: in context (`?resub=inline`), 2026-10-28
 
 Built from Anshumanth's feedback for Neer to compare. The default URL still shows the split version above.
+
 - **No per-item Accept.** A returned item the officer leaves alone is accepted. The only
   act is Raise again, from the record's button or the row's flag, and both start from the
   earlier note. Nothing is gated. The bar reads "3 returned items" plus the usual flag count.
@@ -70,6 +72,7 @@ Built from Anshumanth's feedback for Neer to compare. The default URL still show
 
 Neer: "we should have kept the change tab, doesn't make sense to go through the entire
 thing again". `?resub=inline` now combines the two:
+
 - It opens on **Changes** again, so the officer doesn't walk the whole file. The
   "Returned item 1 of 3" stepper is removed, because the list does that job.
 - **No per-item Accept** (Anshumanth's point 1, not overruled). Cards carry only Raise
@@ -87,6 +90,7 @@ thing again". `?resub=inline` now combines the two:
 
 Neer: "too many buttons on these cards", and "Show in filing" and "Show in bundle" are
 "the same thing doing the same job with two different texts".
+
 - **One action per card: Raise again** (plus Accept on the default URL). "Show in
   filing", "Show in bundle" and "Compare in bundle" are gone. Picking the card, or its
   title with the keyboard (`aria-current` when selected), turns the bundle to its
@@ -108,6 +112,7 @@ Neer: "too many buttons on these cards", and "Show in filing" and "Show in bundl
 Anshumanth: "There's a slight highlight here, yes, but I can't see what the actual
 correction requested was or what the previous value was." Neer asked for a way to
 highlight the change that "grabs the eye immediately".
+
 - **The change is in the value.** A corrected value reads "~~₹6,05,000~~ → **₹6,50,000**"
   with a "Corrected" chip. Kept and re-uploaded rows show the value with a "Kept as
   filed" or "Re-uploaded" chip. A screen reader hears "₹6,05,000 changed to ₹6,50,000,
@@ -131,6 +136,7 @@ highlight the change that "grabs the eye immediately".
 
 Neer: "it needs to be highlighted in the card as well". He was looking at the Changes
 tab, and the highlight had only been built for Full filing.
+
 - **Each change card opens with a blue band** (`info-muted`, `border-info` edge) holding
   the change: old → new for a correction, the value for kept or re-uploaded, the answer
   chip and its date. Kept as filed adds "No reason given" (warning ink on the tint,
@@ -150,6 +156,7 @@ actually looking small". He also wrote "let's not call it 'returned items.' They
 'errors marked.'" Neer compared options in a prototype artifact
 (https://claude.ai/artifact/292enxVN8vhkgkzcK1ykEV), settled on its recommendations,
 and asked for them to be built in the product.
+
 - **A corrected value appears once, with the change marked inside it**
   (`returned-value.tsx`). Removed words are struck through in muted ink. Added words are
   semibold with an info underline. The word diff is the `diff` package (jsdiff, already
@@ -171,14 +178,14 @@ and asked for them to be built in the product.
   bundle document, so the Changes index showed 3 documents against 4 errors marked.
   00338 is back to its three items, and no fixture now shows a long correction.
 
-| Date | Decision and reason | Source | Status |
-|---|---|---|---|
-| 2026-10-29 | Mark the change inside the new value, and put the old value behind a Now / Before switch, the same switch for fields and documents. | Neer, from the prototype's recommendation | Implemented |
-| 2026-10-29 | "Errors marked" instead of "returned items". | Anshumanth | Implemented |
-| 2026-10-29 | No "As sent back on 3 Jun 2026" caption under Before on a field: the switch already says Before, and the send-back date lives in case history. The bundle's old scan keeps a dateless "Previous upload" label, because a full page can scroll its switch out of view. | Neer agreed to Claude's suggestion | Implemented |
+| Date       | Decision and reason                                                                                                                                                                                                                                                               | Source                                                                            | Status                                                          |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| 2026-10-29 | Mark the change inside the new value, and put the old value behind a Now / Before switch, the same switch for fields and documents.                                                                                                                                               | Neer, from the prototype's recommendation                                         | Implemented                                                     |
+| 2026-10-29 | "Errors marked" instead of "returned items".                                                                                                                                                                                                                                      | Anshumanth                                                                        | Implemented                                                     |
+| 2026-10-29 | No "As sent back on 3 Jun 2026" caption under Before on a field: the switch already says Before, and the send-back date lives in case history. The bundle's old scan keeps a dateless "Previous upload" label, because a full page can scroll its switch out of view.             | Neer agreed to Claude's suggestion                                                | Implemented                                                     |
 | 2026-10-29 | Now shows only the current value. Removed words no longer appear struck through in it; they are only under Before. New words keep their underline. Consequence: a correction that only deleted text marks nothing in Now, and the officer has to flip to Before to see what went. | Neer, artifact comment ("Now should show only the current stuff not the old one") | Implemented (supersedes the struck-through removed words above) |
-| 2026-10-29 | Underline and weight for added words, not the prototype's translucent fill, because DS Laws ban alpha status fills. | Implementation choice | Implemented |
-| 2026-10-29 | Kept as filed keeps the existing "Unchanged" chip and the advocate's reason. The prototype's "Not changed" warning band and its Raise again button were not carried over: the 2026-10-28 treatment already shows the reason the prototype leaves out. | Implementation choice; Neer to confirm | Open |
+| 2026-10-29 | Underline and weight for added words, not the prototype's translucent fill, because DS Laws ban alpha status fills.                                                                                                                                                               | Implementation choice                                                             | Implemented                                                     |
+| 2026-10-29 | Kept as filed keeps the existing "Unchanged" chip and the advocate's reason. The prototype's "Not changed" warning band and its Raise again button were not carried over: the 2026-10-28 treatment already shows the reason the prototype leaves out.                             | Implementation choice; Neer to confirm                                            | Open                                                            |
 
 Not built from the prototype: the document cases "More pages now" (page counts),
 "Newly added" and "Same file again" (file-hash check). The demo data has no page counts,
@@ -197,6 +204,7 @@ no newly added documents and no file fingerprints, and the hash check needs a ba
 ## Verification and open work
 
 Checked on 2026-10-28, against the dev server on localhost:3000 serving this branch, Gujarat skin, scrutiny-officer seat:
+
 - `tsc` clean for app source. eslint clean on the scrutiny folders. `check:tokens`,
   `check:ui-sync` and `check:table-rows` pass. `check:typography` and `check:spacing` fail
   only on files this change doesn't touch (`mobile-hearing-card.tsx`, `poa-join-fields.tsx`).
@@ -213,6 +221,7 @@ Checked on 2026-10-28, against the dev server on localhost:3000 serving this bra
 
 Checked on 2026-10-29 for the "errors marked" change, against :3000 serving this
 checkout (DS pin e0cadea6b9d4, `check:ds-fresh` passes), scrutiny-officer seat, on 00338:
+
 - eslint is clean on the scrutiny folders. `tsc` is clean for app source; the only
   errors are stale generated `.next` route types. The five DS gates report nothing in
   scrutiny files. `check:typography` and `check:spacing` still fail on the same
@@ -227,6 +236,7 @@ checkout (DS pin e0cadea6b9d4, `check:ds-fresh` passes), scrutiny-officer seat, 
   not an independent one.
 
 Open:
+
 1. Neer to confirm the three default decisions above.
 2. New items raised in round 2 aren't marked "New this round" yet. This was recommended
    because of the Kerala practice note about drip-fed defects.

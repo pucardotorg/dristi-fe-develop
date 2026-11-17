@@ -36,14 +36,11 @@ const ADR_OPTIONS: SegmentedOption<AdrPrayer["adr"]>[] = [
   { value: "maybe", label: "Maybe" },
 ];
 
-const ADR_QUESTION =
-  "adrPrayerSection_isTheComplainantWillingToSettle";
+const ADR_QUESTION = "adrPrayerSection_isTheComplainantWillingToSettle";
 
-const OTHER_DETAILS_QUESTION =
-  "adrPrayerSection_wouldYouLikeToAddAny";
+const OTHER_DETAILS_QUESTION = "adrPrayerSection_wouldYouLikeToAddAny";
 
-const RELIEF_HELP =
-  "adrPrayerSection_pleaseEditThisWhereRequiredAs";
+const RELIEF_HELP = "adrPrayerSection_pleaseEditThisWhereRequiredAs";
 
 export function AdrPrayerSection() {
   const t = useTranslations();
@@ -51,10 +48,7 @@ export function AdrPrayerSection() {
   const adr = draft.adr;
   const { prev, next } = neighbours("adr-prayer");
   const router = useRouter();
-  const { save, saving, error } = useDetailsSection(
-    "adr_other_prayer",
-    adrPrayerDetails,
-  );
+  const { save, saving, error } = useDetailsSection("adr_other_prayer", adrPrayerDetails);
 
   const set = <K extends keyof AdrPrayer>(key: K, value: AdrPrayer[K]) =>
     update((d) => {

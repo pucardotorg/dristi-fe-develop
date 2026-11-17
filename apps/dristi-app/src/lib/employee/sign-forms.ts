@@ -34,12 +34,7 @@
  */
 
 import { CURRENT_STAFF } from "./content";
-import {
-  causeTitle,
-  formatListingDate,
-  parseIsoDay,
-  type CourtCounsel,
-} from "./hearings";
+import { causeTitle, formatListingDate, parseIsoDay, type CourtCounsel } from "./hearings";
 import { caseSearchKey } from "@/lib/court/localize";
 import { localizeForDownload, voicedForDownload } from "@/lib/court/browser";
 
@@ -664,10 +659,7 @@ export const EMPTY_SIGN_FORM_FILTERS: SignFormFilters = {
   query: "",
 };
 
-export function filterSignForms(
-  rows: SignForm[],
-  filters: SignFormFilters,
-): SignForm[] {
+export function filterSignForms(rows: SignForm[], filters: SignFormFilters): SignForm[] {
   const query = caseSearchKey(filters.query);
   return rows.filter((form) => {
     if (filters.process !== "all" && form.process !== filters.process) {
@@ -774,9 +766,7 @@ function paragraphsFor(form: SignForm): { title: string; body: string[] } {
 
 export function buildSignFormDocument(form: SignForm): SignFormDocument {
   const { title, body } = paragraphsFor(form);
-  const complainantCounsel = form.counsel.find(
-    (counsel) => counsel.side === "complainant",
-  );
+  const complainantCounsel = form.counsel.find((counsel) => counsel.side === "complainant");
   const dated = formatSignFormLongDate(form.createdOn);
 
   return {
@@ -804,9 +794,7 @@ export function signFormDocumentText(document: SignFormDocument): string {
     "",
     document.title,
     "",
-    ...document.paragraphs.map(
-      (paragraph, index) => `${index + 1}. ${paragraph}`,
-    ),
+    ...document.paragraphs.map((paragraph, index) => `${index + 1}. ${paragraph}`),
     "",
     document.closing,
     `Dated this the ${document.dated}.`,

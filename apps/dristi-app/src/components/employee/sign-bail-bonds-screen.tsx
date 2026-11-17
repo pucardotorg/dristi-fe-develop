@@ -9,10 +9,7 @@ import { SignBailBondDialog } from "@/components/employee/sign-bail-bond-dialog"
 import { SignBulkConfirmDialog } from "@/components/employee/sign-bulk-confirm-dialog";
 import { SignBailBondsTable } from "@/components/employee/sign-bail-bonds-table";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -23,11 +20,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  causeTitle,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { causeTitle, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import {
   EMPTY_SIGN_BAIL_BOND_FILTERS,
   SIGN_BAIL_BOND_QUEUE,
@@ -115,22 +108,16 @@ export function SignBailBondsScreen() {
   /* The queue is state because signing and rejecting change it. One list, so the table,
      the count in the header and the footer can never disagree about what is still
      pending. */
-  const [bonds, setBonds] = React.useState<SignBailBond[]>(
-    SIGN_BAIL_BOND_QUEUE,
-  );
+  const [bonds, setBonds] = React.useState<SignBailBond[]>(SIGN_BAIL_BOND_QUEUE);
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used, so there is never a moment where what the bench has asked for and what
      the table is showing disagree. Every change resets to page one — the old Search
      button did that, and a keystroke that narrows the list to four rows must not leave
      the reader on page three of nothing. */
-  const [filters, setFilters] = React.useState<SignBailBondFilters>(
-    EMPTY_SIGN_BAIL_BOND_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<SignBailBondFilters>(EMPTY_SIGN_BAIL_BOND_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [picked, setPicked] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [picked, setPicked] = React.useState<ReadonlySet<string>>(() => new Set());
   /* The open bond is held by id, not by object: the queue is state, and a row captured
      before a signature would go stale the moment its status moved. */
   const [openId, setOpenId] = React.useState<string | null>(null);
@@ -141,9 +128,7 @@ export function SignBailBondsScreen() {
   const signRef = React.useRef<HTMLButtonElement>(null);
 
   const pending = filterSignBailBonds(bonds, EMPTY_SIGN_BAIL_BOND_FILTERS);
-  const [columns, setColumns] = React.useState(() =>
-    emptyColumnFilters(BAIL_BOND_COLUMN_FILTERS),
-  );
+  const [columns, setColumns] = React.useState(() => emptyColumnFilters(BAIL_BOND_COLUMN_FILTERS));
   const [sort, setSort] = React.useState<BailBondSort>("oldest");
 
   const rows = sortRows(
@@ -230,7 +215,10 @@ export function SignBailBondsScreen() {
     });
     setOpenId(null);
     setAnnouncement(
-      t("signBailBondsScreen_theBailBondOfLitigantIn", { litigant: bond.litigant, courtText: courtText(bond.caseNumber) }),
+      t("signBailBondsScreen_theBailBondOfLitigantIn", {
+        litigant: bond.litigant,
+        courtText: courtText(bond.caseNumber),
+      }),
     );
   }
 
@@ -251,7 +239,9 @@ export function SignBailBondsScreen() {
           <p className="text-body text-muted-foreground">
             {pending.length === 1
               ? t("signBailBondsScreen_1BailBondIsWaitingFor")
-              : t("signBailBondsScreen_lengthBailBondsAreWaitingFor", { length: String(pending.length) })}
+              : t("signBailBondsScreen_lengthBailBondsAreWaitingFor", {
+                  length: String(pending.length),
+                })}
           </p>
         </header>
 
@@ -282,11 +272,7 @@ export function SignBailBondsScreen() {
           />
 
           {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-          <QueueAnnouncer
-            from={start + 1}
-            to={start + pageRows.length}
-            total={rows.length}
-          />
+          <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
           {pageRows.length === 0 ? (
             <SignBailBondsEmpty isSearched={isSearched} onClear={clearFilters} />
@@ -463,26 +449,18 @@ function SignBailBondSearch({
  * the same good-empty the sibling queues use. Borderless and unpadded; the panel is
  * already the frame.
  */
-function SignBailBondsEmpty({
-  isSearched,
-  onClear,
-}: {
-  isSearched: boolean;
-  onClear: () => void;
-}) {
+function SignBailBondsEmpty({ isSearched, onClear }: { isSearched: boolean; onClear: () => void }) {
   const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isSearched ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FileSignatureIcon aria-hidden />
-          )}
+          {isSearched ? <SearchXIcon aria-hidden /> : <FileSignatureIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isSearched ? t("signBailBondsScreen_noBailBondMatchesThisSearch") : t("signBailBondsScreen_nothingToSign")}
+          {isSearched
+            ? t("signBailBondsScreen_noBailBondMatchesThisSearch")
+            : t("signBailBondsScreen_nothingToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isSearched
@@ -526,10 +504,7 @@ function SignBailBondsItemList({
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((bond) => (
-        <QueueItemRow
-          key={bond.id}
-          className="flex gap-3"
-        >
+        <QueueItemRow key={bond.id} className="flex gap-3">
           {/* The DS box expands its own hit area to 40×40; the name it carries is the bond
               and its case, not the column, because a row read aloud has no column
               header. */}
@@ -537,7 +512,10 @@ function SignBailBondsItemList({
             <Checkbox
               checked={selectedIds.has(bond.id)}
               onCheckedChange={() => onToggle(bond)}
-              aria-label={t("signBailBondsScreen_selectTheBailBondOfLitigant", { litigant: bond.litigant, courtText: courtText(bond.caseNumber) })}
+              aria-label={t("signBailBondsScreen_selectTheBailBondOfLitigant", {
+                litigant: bond.litigant,
+                courtText: courtText(bond.caseNumber),
+              })}
             />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -545,7 +523,7 @@ function SignBailBondsItemList({
               type="button"
               onClick={() => onOpen(bond)}
               {...rowOpener}
-                className={rowOpenerClass}
+              className={rowOpenerClass}
             >
               <span className="sr-only">
                 {t("signBailBondsScreen_readTheBailBondOfLitigant", { litigant: bond.litigant })}

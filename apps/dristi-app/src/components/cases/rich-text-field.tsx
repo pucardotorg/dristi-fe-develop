@@ -91,8 +91,7 @@ import { translateText } from "@/i18n/translate-text";
  * braces: `u` keeps its default rule today, and an underline that silently rendered as
  * plain text would be a mark the typist applied and the order never showed.
  */
-const LIST_CLASSES =
-  "[&_ol]:list-decimal [&_ol]:ps-6 [&_ul]:list-disc [&_ul]:ps-6 [&_u]:underline";
+const LIST_CLASSES = "[&_ol]:list-decimal [&_ol]:ps-6 [&_ul]:list-disc [&_ul]:ps-6 [&_u]:underline";
 
 /*
  * Tables, for the fields that allow them (`tables`), and on every view — a value that
@@ -155,7 +154,7 @@ function commandState(command: string): boolean {
  */
 function changedCommands(next: string[], current: string[]): string[] {
   return [...new Set([...next, ...current])].filter(
-    (command) => next.includes(command) !== current.includes(command)
+    (command) => next.includes(command) !== current.includes(command),
   );
 }
 
@@ -168,9 +167,7 @@ function changedCommands(next: string[], current: string[]): string[] {
  * sentence in the one being typed. Inline arrives as text through `insertText`, so it
  * carries no markup and the browser's own undo keeps working on it.
  */
-export type RichTextInsertion =
-  | { kind: "inline"; text: string }
-  | { kind: "block"; html: string };
+export type RichTextInsertion = { kind: "inline"; text: string } | { kind: "block"; html: string };
 
 /**
  * Inline completion, off unless a screen asks for it.
@@ -213,11 +210,7 @@ export type RichTextSuggestion = {
   /** What the typed words could become, best first. */
   resolve: (query: string, mode: SuggestMode) => readonly SuggestAnswer[];
   /** Accepted — record it, and return what to put in the document. */
-  accept: (
-    key: string,
-    query: string,
-    mode: SuggestMode,
-  ) => RichTextInsertion | null;
+  accept: (key: string, query: string, mode: SuggestMode) => RichTextInsertion | null;
 };
 
 export function RichTextField({
@@ -279,9 +272,7 @@ export function RichTextField({
   const indexRef = useRef(0);
   const queryRef = useRef<string | null>(null);
   const modeRef = useRef<SuggestMode | null>(null);
-  const [shown, setShown] = useState<{ key: string; label: string } | null>(
-    null,
-  );
+  const [shown, setShown] = useState<{ key: string; label: string } | null>(null);
   const [menu, setMenu] = useState<SlashMenu | null>(null);
   /** What the menu hangs from: the slash and the query typed after it, live. */
   const anchorRef = useRef<{
@@ -307,17 +298,12 @@ export function RichTextField({
   const syncToolbar = useCallback(() => {
     setMarks(MARKS.map((m) => m.command).filter(commandState));
     setLists(LISTS.map((l) => l.command).filter(commandState));
-    setAlignment(
-      ALIGNMENTS.find((item) => commandState(item.command))?.command ??
-        "justifyLeft"
-    );
+    setAlignment(ALIGNMENTS.find((item) => commandState(item.command))?.command ?? "justifyLeft");
     if (tables) {
       const editor = editorRef.current;
       const selection = window.getSelection();
       const node =
-        selection && selection.rangeCount > 0
-          ? selection.getRangeAt(0).startContainer
-          : null;
+        selection && selection.rangeCount > 0 ? selection.getRangeAt(0).startContainer : null;
       const cell = editor && node ? cellAt(editor, node) : null;
       cellRef.current = cell;
       setInTable(cell !== null);
@@ -493,8 +479,7 @@ export function RichTextField({
       if (document.activeElement === editorRef.current) syncToolbar();
     }
     document.addEventListener("selectionchange", handleSelectionChange);
-    return () =>
-      document.removeEventListener("selectionchange", handleSelectionChange);
+    return () => document.removeEventListener("selectionchange", handleSelectionChange);
   }, [syncToolbar]);
 
   /**
@@ -526,9 +511,7 @@ export function RichTextField({
        sentence itself is the query. Only one of the two rules ever answers — see
        `readProsePrefix`, which hands anything holding a slash back. */
     const trigger = reading ? readSuggestTrigger(reading.before) : null;
-    const prose = reading && trigger === null
-      ? readProsePrefix(reading.before)
-      : null;
+    const prose = reading && trigger === null ? readProsePrefix(reading.before) : null;
     const mode: SuggestMode = trigger === null ? "prose" : "trigger";
     const query = trigger ?? prose;
     if (!reading || query === null) {
@@ -640,11 +623,7 @@ export function RichTextField({
     const pick = active < 0 ? null : answers[active];
     setMenu({ answers, active, query, open: true });
     setShown((current) =>
-      !pick
-        ? null
-        : current?.key === pick.key
-          ? current
-          : { key: pick.key, label: pick.label },
+      !pick ? null : current?.key === pick.key ? current : { key: pick.key, label: pick.label },
     );
   }
 
@@ -715,11 +694,7 @@ export function RichTextField({
     let lead = "";
     if (mode === "trigger") {
       let slash = reading.before.length - query.length - 1;
-      if (
-        insertion.kind === "inline" &&
-        slash > 0 &&
-        /\s/.test(reading.before[slash - 1])
-      ) {
+      if (insertion.kind === "inline" && slash > 0 && /\s/.test(reading.before[slash - 1])) {
         slash -= 1;
         lead = " ";
       }
@@ -727,10 +702,7 @@ export function RichTextField({
       if (!start) return false;
       const search = document.createRange();
       search.setStart(start.node, start.offset);
-      search.setEnd(
-        selection.getRangeAt(0).startContainer,
-        selection.getRangeAt(0).startOffset,
-      );
+      search.setEnd(selection.getRangeAt(0).startContainer, selection.getRangeAt(0).startOffset);
       search.deleteContents();
       selection.removeAllRanges();
       selection.addRange(search);
@@ -747,8 +719,7 @@ export function RichTextField({
     /* **A table never lands inside another.** A shortcut whose text holds a table,
        accepted from inside a cell, goes in after the table the caret is in. */
     const cell = cellAt(editor, reading.host);
-    const outerTable =
-      cell && hasTable(insertion.html) ? cell.closest("table") : null;
+    const outerTable = cell && hasTable(insertion.html) ? cell.closest("table") : null;
     if (outerTable) {
       outerTable.insertAdjacentHTML("afterend", insertion.html);
       placeCaret(outerTable.nextElementSibling);
@@ -758,8 +729,7 @@ export function RichTextField({
     }
     /* The editor itself, or a cell with no block inside it: no block to put the
        insertion after, so it goes in at the caret. */
-    const host =
-      reading.host === editor || reading.host === cell ? null : reading.host;
+    const host = reading.host === editor || reading.host === cell ? null : reading.host;
     if (!host) {
       document.execCommand("insertHTML", false, insertion.html);
       ensureLineAfterTables(editor);
@@ -803,9 +773,7 @@ export function RichTextField({
     else if (!anchor || !editor.contains(anchor))
       editor.insertAdjacentHTML("beforeend", tableHtml());
     else document.execCommand("insertHTML", false, tableHtml());
-    const added = Array.from(editor.querySelectorAll("table")).find(
-      (table) => !before.has(table),
-    );
+    const added = Array.from(editor.querySelectorAll("table")).find((table) => !before.has(table));
     ensureLineAfterTables(editor);
     caretInto(added?.querySelector("th, td") ?? null);
     emitChange();
@@ -883,17 +851,13 @@ export function RichTextField({
          would take is pointed to, as a combobox does (WAI-ARIA 1.2). */
       aria-autocomplete={suggestion ? "list" : undefined}
       aria-controls={menuListed ? listboxId : undefined}
-      aria-activedescendant={
-        menuListed && menu.active >= 0 ? optionId(menu.active) : undefined
-      }
+      aria-activedescendant={menuListed && menu.active >= 0 ? optionId(menu.active) : undefined}
       contentEditable
       suppressContentEditableWarning
       className={cn(
         "w-full outline-none",
-        compact
-          ? "min-h-24 px-3 py-2 text-body-compact"
-          : "min-h-64 px-4 py-3 text-body",
-        CONTENT_CLASSES
+        compact ? "min-h-24 px-3 py-2 text-body-compact" : "min-h-64 px-4 py-3 text-body",
+        CONTENT_CLASSES,
       )}
       onInput={() => {
         if (tables && editorRef.current) ensureLineAfterTables(editorRef.current);
@@ -937,8 +901,7 @@ export function RichTextField({
         const menuOpen = Boolean(menu?.open);
         if (
           shown &&
-          (event.key === "Tab" ||
-            (menuOpen && event.key === "Enter" && !event.shiftKey))
+          (event.key === "Tab" || (menuOpen && event.key === "Enter" && !event.shiftKey))
         ) {
           event.preventDefault();
           acceptSuggestion();
@@ -961,38 +924,25 @@ export function RichTextField({
         /* The caret walking off the end of the search ends it. */
         if (
           menuOpen &&
-          ["ArrowLeft", "ArrowRight", "Home", "End", "PageUp", "PageDown"].includes(
-            event.key,
-          )
+          ["ArrowLeft", "ArrowRight", "Home", "End", "PageUp", "PageDown"].includes(event.key)
         ) {
           dismiss();
           return;
         }
         if (shown && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
           event.preventDefault();
-          indexRef.current = Math.max(
-            0,
-            indexRef.current + (event.key === "ArrowDown" ? 1 : -1),
-          );
+          indexRef.current = Math.max(0, indexRef.current + (event.key === "ArrowDown" ? 1 : -1));
           paintSuggestion();
           return;
         }
-        if (
-          event.key === "Backspace" ||
-          event.key === "Delete" ||
-          event.key === "Enter"
-        ) {
+        if (event.key === "Backspace" || event.key === "Delete" || event.key === "Enter") {
           clearGhost();
         }
       }}
       onPaste={(event) => {
         // Only ever hold markup this toolbar produced — paste arrives flat.
         event.preventDefault();
-        document.execCommand(
-          "insertText",
-          false,
-          event.clipboardData.getData("text/plain")
-        );
+        document.execCommand("insertText", false, event.clipboardData.getData("text/plain"));
         emitChange();
       }}
       onDrop={(event) => event.preventDefault()}
@@ -1113,11 +1063,7 @@ export function RichTextField({
                 }}
               >
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size={compact ? "xs" : "default"}
-                  >
+                  <Button type="button" variant="ghost" size={compact ? "xs" : "default"}>
                     {t("richTextField_table")}
                     <ChevronDownIcon data-icon="inline-end" aria-hidden />
                   </Button>
@@ -1140,10 +1086,7 @@ export function RichTextField({
                   <DropdownMenuItem onSelect={() => editTable(deleteColumn)}>
                     {t("richTextField_deleteColumn")}
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onSelect={() => editTable(deleteTable)}
-                  >
+                  <DropdownMenuItem variant="destructive" onSelect={() => editTable(deleteTable)}>
                     {t("richTextField_deleteTable")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -1177,7 +1120,11 @@ export function RichTextField({
           {menu?.open
             ? menu.answers.length === 0
               ? t("richTextField_noShortcutMatches")
-              : t("richTextField_valueValue2OfLengthPressEnter", { value: shown?.label ?? "", value2: String(menu.active + 1), length: String(menu.answers.length) })
+              : t("richTextField_valueValue2OfLengthPressEnter", {
+                  value: shown?.label ?? "",
+                  value2: String(menu.active + 1),
+                  length: String(menu.answers.length),
+                })
             : shown
               ? t("richTextField_suggestionLabelPressTabToAccept", { label: shown.label })
               : ""}
@@ -1268,7 +1215,7 @@ export function RichTextField({
               </div>
             ) : (
               <p className="px-2.5 py-2 text-body-compact text-muted-foreground">
-                {t("richTextField_noShortcutMatchesQuery", { query: (menu?.query) ?? "" })}
+                {t("richTextField_noShortcutMatchesQuery", { query: menu?.query ?? "" })}
               </p>
             )}
           </PopoverContent>
@@ -1293,9 +1240,7 @@ function makeRoomBelow(from: Element, bottom: number) {
   const viewport = window.visualViewport?.height ?? window.innerHeight;
   let short = bottom + MENU_ROOM - (viewport - MENU_GUTTER);
   if (short <= 0) return;
-  const behavior: ScrollBehavior = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches
+  const behavior: ScrollBehavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ? "auto"
     : "smooth";
   for (let node = from.parentElement; node && short > 0; node = node.parentElement) {
@@ -1368,10 +1313,7 @@ function drawGhost(host: HTMLElement, words: string): HTMLElement {
  * time a completion is accepted the line may hold a bold word or a link, and the trigger
  * has to be found in the block as it is rather than in the block as it was typed.
  */
-function pointAt(
-  block: Node,
-  offset: number,
-): { node: Node; offset: number } | null {
+function pointAt(block: Node, offset: number): { node: Node; offset: number } | null {
   const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
   let seen = 0;
   while (walker.nextNode()) {

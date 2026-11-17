@@ -46,10 +46,7 @@ const httpError = (status: number, codes: string[]) =>
 describe("caseDocumentType", () => {
   it("maps each upload slot to the backend's document type", () => {
     assert.equal(caseDocumentType("cheque-front"), "BOUNCED_CHEQUE");
-    assert.equal(
-      caseDocumentType("delivery-proof"),
-      "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE",
-    );
+    assert.equal(caseDocumentType("delivery-proof"), "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE");
     assert.equal(caseDocumentType("poa"), "POA_DOCUMENT");
     assert.equal(caseDocumentType("other"), "OTHER_SUPPORTING_DOCUMENT");
     assert.equal(caseDocumentType("id-proof"), "IDENTITY_PROOF");
@@ -72,9 +69,7 @@ describe("startDraft", () => {
   });
 
   it("refuses a response without a draft session id", async () => {
-    const { cases } = setup(() =>
-      Response.json({ meta: META }, { status: 201 }),
-    );
+    const { cases } = setup(() => Response.json({ meta: META }, { status: 201 }));
     await assert.rejects(cases.startDraft());
   });
 });
@@ -115,7 +110,7 @@ describe("uploadDocument", () => {
 
   it("sends whether the file is digital and the filer's name for it", async () => {
     const { cases, calls } = setup(() =>
-      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 }),
     );
     await cases.uploadDocument("c", new Blob(["x"]), "x.pdf", "OTHER_SUPPORTING_DOCUMENT", {
       isDigital: false,
@@ -128,7 +123,7 @@ describe("uploadDocument", () => {
 
   it("leaves out a blank name", async () => {
     const { cases, calls } = setup(() =>
-      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 }),
     );
     await cases.uploadDocument("c", new Blob(["x"]), "x.pdf", "OTHER_SUPPORTING_DOCUMENT", {
       displayName: "   ",
@@ -138,10 +133,7 @@ describe("uploadDocument", () => {
 
   it("encodes the case id in the path", async () => {
     const { cases, calls } = setup(() =>
-      Response.json(
-        { case_id: "a/b", case_document_id: "d", meta: META },
-        { status: 201 },
-      ),
+      Response.json({ case_id: "a/b", case_document_id: "d", meta: META }, { status: 201 }),
     );
     await cases.uploadDocument("a/b", new Blob(["x"]), "x.pdf", "RETURN_MEMO");
     assert.equal(calls[0].url, "/api/v1/cases/a%2Fb/documents");
@@ -151,7 +143,7 @@ describe("uploadDocument", () => {
 describe("document links", () => {
   it("uploads a complainant's document already linked to them", async () => {
     const { cases, calls } = setup(() =>
-      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 }),
     );
     await cases.uploadDocument("c", new Blob(["x"]), "id.pdf", "IDENTITY_PROOF", {
       caseParticipantId: "p-1",
@@ -178,17 +170,23 @@ describe("document links", () => {
 
   it("uploads a notice paper already linked to its notice's evidence", async () => {
     const { cases, calls } = setup(() =>
-      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 }),
     );
-    await cases.uploadDocument("c", new Blob(["x"]), "ad.pdf", "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE", {
-      caseEvidenceId: "ev-1",
-    });
+    await cases.uploadDocument(
+      "c",
+      new Blob(["x"]),
+      "ad.pdf",
+      "PROOF_OF_DELIVERY_OF_DEMAND_NOTICE",
+      {
+        caseEvidenceId: "ev-1",
+      },
+    );
     assert.equal((calls[0].raw as FormData).get("case_evidence_id"), "ev-1");
   });
 
   it("leaves case_evidence_id off an upload with no notice", async () => {
     const { cases, calls } = setup(() =>
-      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 })
+      Response.json({ case_id: "c", case_document_id: "d", meta: META }, { status: 201 }),
     );
     await cases.uploadDocument("c", new Blob(["x"]), "chq.pdf", "BOUNCED_CHEQUE");
     assert.equal((calls[0].raw as FormData).has("case_evidence_id"), false);
@@ -221,8 +219,8 @@ describe("parties", () => {
     const { cases, calls } = setup(() =>
       Response.json(
         { case_participant_id: "p1", institution_id: "i1", role: "ACCUSED", meta: META },
-        { status: 201 }
-      )
+        { status: 201 },
+      ),
     );
     assert.deepEqual(await cases.addParty("c0ffee", "accused", party), {
       participantId: "p1",
@@ -234,9 +232,7 @@ describe("parties", () => {
   });
 
   it("refuses a response without a participant id", async () => {
-    const { cases } = setup(() =>
-      Response.json({ meta: META }, { status: 201 }),
-    );
+    const { cases } = setup(() => Response.json({ meta: META }, { status: 201 }));
     await assert.rejects(cases.addParty("c0ffee", "complainants", party));
   });
 
@@ -270,9 +266,7 @@ describe("advocates", () => {
         count: 1,
         next: null,
         previous: null,
-        results: [
-          { id: "adv-1", name: "Anitha R", bar_registration_id: "K/0421/2004" },
-        ],
+        results: [{ id: "adv-1", name: "Anitha R", bar_registration_id: "K/0421/2004" }],
         meta: META,
       }),
     );
@@ -283,17 +277,13 @@ describe("advocates", () => {
   });
 
   it("does not search on fewer than two characters", async () => {
-    const { cases, calls } = setup(() =>
-      Response.json({ results: [], meta: META }),
-    );
+    const { cases, calls } = setup(() => Response.json({ results: [], meta: META }));
     assert.deepEqual(await cases.searchAdvocates(" o "), []);
     assert.equal(calls.length, 0);
   });
 
   it("searches on two characters, for a short name", async () => {
-    const { cases, calls } = setup(() =>
-      Response.json({ results: [], meta: META }),
-    );
+    const { cases, calls } = setup(() => Response.json({ results: [], meta: META }));
     await cases.searchAdvocates("om");
     assert.equal(calls[0].url, "/api/v1/advocates?search=om");
   });
@@ -305,10 +295,7 @@ describe("advocates", () => {
         { status: 201 },
       ),
     );
-    assert.deepEqual(await cases.addAdvocate("c0ffee", "adv-1", ["p1", "p2"]), [
-      "r1",
-      "r2",
-    ]);
+    assert.deepEqual(await cases.addAdvocate("c0ffee", "adv-1", ["p1", "p2"]), ["r1", "r2"]);
     assert.equal(calls[0].url, "/api/v1/cases/c0ffee/advocates");
     assert.deepEqual(calls[0].body, {
       advocate_id: "adv-1",
@@ -361,17 +348,11 @@ describe("PoA holders", () => {
 
 describe("caseFilingErrorMessage", () => {
   it("names a submitted case before anything else", () => {
-    assert.match(
-      caseFilingErrorMessage(httpError(409, ["E07001"])),
-      /submitted/,
-    );
+    assert.match(caseFilingErrorMessage(httpError(409, ["E07001"])), /submitted/);
   });
 
   it("says a document type is not accepted", () => {
-    assert.match(
-      caseFilingErrorMessage(httpError(400, ["E07002"])),
-      /doesn't accept/,
-    );
+    assert.match(caseFilingErrorMessage(httpError(400, ["E07002"])), /doesn't accept/);
   });
 
   it("says a witness is already on this side by its current code", () => {
@@ -387,10 +368,7 @@ describe("caseFilingErrorMessage", () => {
   });
 
   it("reads 404 as an expired or missing draft", () => {
-    assert.match(
-      caseFilingErrorMessage(httpError(404, [])),
-      /no longer on the court's server/,
-    );
+    assert.match(caseFilingErrorMessage(httpError(404, [])), /no longer on the court's server/);
   });
 
   it("names the 15 MB limit the upload screens check for a file too large", () => {

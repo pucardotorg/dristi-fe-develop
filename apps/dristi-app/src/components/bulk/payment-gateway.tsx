@@ -1,12 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  BuildingIcon,
-  CreditCardIcon,
-  LockIcon,
-  SmartphoneIcon,
-} from "lucide-react";
+import { BuildingIcon, CreditCardIcon, LockIcon, SmartphoneIcon } from "lucide-react";
 
 import { money } from "@/lib/filing/format";
 import { cn } from "@/lib/utils";
@@ -15,11 +10,7 @@ import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { StatusFieldControl, StatusFieldError, useRefusal } from "@/components/feedback";
 import { Input } from "@/components/ui/input";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslations } from "next-intl";
@@ -66,9 +57,7 @@ export function PaymentGateway({
   const [tried, setTried] = React.useState(false);
   const [left, setLeft] = React.useState(0);
   // A reference for this attempt, made once.
-  const [reference] = React.useState(
-    () => `SARAS${Math.random().toString().slice(2, 10)}`,
-  );
+  const [reference] = React.useState(() => `SARAS${Math.random().toString().slice(2, 10)}`);
 
   const cardErrors = {
     number:
@@ -107,7 +96,9 @@ export function PaymentGateway({
      takes focus, its line drops in, and a repeat press shakes it. */
   const { attempt, refuse, reset } = useRefusal();
   /* The field the last press pointed at, fixed at the press: typing never moves focus. */
-  const [refused, setRefused] = React.useState<"number" | "expiry" | "cvv" | "name" | "upi" | null>(null);
+  const [refused, setRefused] = React.useState<"number" | "expiry" | "cvv" | "name" | "upi" | null>(
+    null,
+  );
   const pointAt = (field: NonNullable<typeof refused>) => {
     if (field !== refused) {
       /* A different field is a first refusal: it takes focus, it does not shake. */
@@ -148,14 +139,11 @@ export function PaymentGateway({
             {tr("paymentGateway_payCourtFees")}
           </DialogTitle>
           <DialogDescription className="text-caption tabular-nums">
-            SARAS Court, Ahmedabad · {cases} case{cases === 1 ? "" : "s"} · Ref{" "}
-            {reference}
+            SARAS Court, Ahmedabad · {cases} case{cases === 1 ? "" : "s"} · Ref {reference}
           </DialogDescription>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-title-s font-semibold tabular-nums">
-            {money(amount)}
-          </span>
+          <span className="text-title-s font-semibold tabular-nums">{money(amount)}</span>
           <span className="flex items-center gap-1 text-caption text-muted-foreground">
             <LockIcon className="size-3" aria-hidden />
             {tr("paymentGateway_paymentGateway")}
@@ -194,10 +182,7 @@ export function PaymentGateway({
 
             {mode === "card" ? (
               <div className="grid grid-cols-2 gap-3">
-                <Field
-                  className="col-span-2 gap-1.5"
-                  data-invalid={tried && !!cardErrors.number}
-                >
+                <Field className="col-span-2 gap-1.5" data-invalid={tried && !!cardErrors.number}>
                   <FieldLabel htmlFor="gw-card">{tr("paymentGateway_cardNumber")}</FieldLabel>
                   <StatusFieldControl attempt={refused === "number" ? attempt : 0}>
                     <Input
@@ -206,9 +191,7 @@ export function PaymentGateway({
                       inputMode="numeric"
                       autoComplete="off"
                       value={card.number}
-                      onChange={(e) =>
-                        setCard({ ...card, number: groupCard(e.target.value) })
-                      }
+                      onChange={(e) => setCard({ ...card, number: groupCard(e.target.value) })}
                     />
                   </StatusFieldControl>
                   {tried && cardErrors.number ? (
@@ -220,10 +203,7 @@ export function PaymentGateway({
                     </StatusFieldError>
                   ) : null}
                 </Field>
-                <Field
-                  className="gap-1.5"
-                  data-invalid={tried && !!cardErrors.expiry}
-                >
+                <Field className="gap-1.5" data-invalid={tried && !!cardErrors.expiry}>
                   <FieldLabel htmlFor="gw-exp">{tr("paymentGateway_expiry")}</FieldLabel>
                   <StatusFieldControl attempt={refused === "expiry" ? attempt : 0}>
                     <Input
@@ -231,9 +211,7 @@ export function PaymentGateway({
                       id="gw-exp"
                       placeholder="MM/YY"
                       value={card.expiry}
-                      onChange={(e) =>
-                        setCard({ ...card, expiry: e.target.value.slice(0, 5) })
-                      }
+                      onChange={(e) => setCard({ ...card, expiry: e.target.value.slice(0, 5) })}
                     />
                   </StatusFieldControl>
                   {tried && cardErrors.expiry ? (
@@ -245,10 +223,7 @@ export function PaymentGateway({
                     </StatusFieldError>
                   ) : null}
                 </Field>
-                <Field
-                  className="gap-1.5"
-                  data-invalid={tried && !!cardErrors.cvv}
-                >
+                <Field className="gap-1.5" data-invalid={tried && !!cardErrors.cvv}>
                   <FieldLabel htmlFor="gw-cvv">{tr("paymentGateway_cvv")}</FieldLabel>
                   <StatusFieldControl attempt={refused === "cvv" ? attempt : 0}>
                     <Input
@@ -275,10 +250,7 @@ export function PaymentGateway({
                     </StatusFieldError>
                   ) : null}
                 </Field>
-                <Field
-                  className="col-span-2 gap-1.5"
-                  data-invalid={tried && !!cardErrors.name}
-                >
+                <Field className="col-span-2 gap-1.5" data-invalid={tried && !!cardErrors.name}>
                   <FieldLabel htmlFor="gw-name">{tr("paymentGateway_nameOnCard")}</FieldLabel>
                   <StatusFieldControl attempt={refused === "name" ? attempt : 0}>
                     <Input
@@ -310,7 +282,11 @@ export function PaymentGateway({
                     onChange={(e) => setUpi(e.target.value)}
                   />
                 </StatusFieldControl>
-                {tried && upiError ? <StatusFieldError attempt={refused === "upi" ? attempt : undefined}>{upiError}</StatusFieldError> : null}
+                {tried && upiError ? (
+                  <StatusFieldError attempt={refused === "upi" ? attempt : undefined}>
+                    {upiError}
+                  </StatusFieldError>
+                ) : null}
                 <span className="text-caption text-muted-foreground">
                   {tr("paymentGateway_aPaymentRequestGoesToThis")}
                 </span>
@@ -340,9 +316,7 @@ export function PaymentGateway({
           </>
         ) : stage === "card-otp" ? (
           <Field className="gap-2">
-            <FieldLabel>
-              {tr("paymentGateway_enterTheOtpYourBankSent")}
-            </FieldLabel>
+            <FieldLabel>{tr("paymentGateway_enterTheOtpYourBankSent")}</FieldLabel>
             <InputOTP maxLength={6} value={otp} onChange={setOtp}>
               <InputOTPGroup>
                 {Array.from({ length: 6 }, (_, i) => (
@@ -355,10 +329,7 @@ export function PaymentGateway({
             </span>
           </Field>
         ) : (
-          <div
-            role="status"
-            className="flex flex-col items-center gap-3 py-6 text-center"
-          >
+          <div role="status" className="flex flex-col items-center gap-3 py-6 text-center">
             <Spinner className="size-8 text-primary" />
             <p className="text-body font-medium">
               {stage === "upi-wait"

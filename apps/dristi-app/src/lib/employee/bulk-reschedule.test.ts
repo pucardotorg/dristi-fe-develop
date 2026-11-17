@@ -28,10 +28,7 @@ describe("the board a bulk move is drawn over", () => {
        a court on leave asks for, so the board has to outlast one. */
     const board = reschedulableHearings(TODAY);
     const last = board.reduce((a, row) => (row.date > a ? row.date : a), "");
-    assert.ok(
-      last > addDays(TODAY, 30),
-      `board stops at ${last}, inside a month of ${TODAY}`,
-    );
+    assert.ok(last > addDays(TODAY, 30), `board stops at ${last}, inside a month of ${TODAY}`);
   });
 });
 
@@ -39,10 +36,7 @@ describe("filterReschedulable", () => {
   const board = reschedulableHearings(TODAY);
 
   it("gives the whole board back when neither end is asked for", () => {
-    assert.equal(
-      filterReschedulable(board, span(null, null)).length,
-      board.length,
-    );
+    assert.equal(filterReschedulable(board, span(null, null)).length, board.length);
   });
 
   it("narrows as the span narrows, and both ends are inclusive", () => {
@@ -164,10 +158,7 @@ describe("a board with this session's moves written over it", () => {
   it("floors a second move on where the matter now stands", () => {
     /* Not on the day it was listed on — that day is behind the court once the first
        move has landed, and the calendar would offer it again. */
-    assert.equal(
-      earliestNewListing([row], null, TODAY),
-      addDays(NEW_DAY, 1),
-    );
+    assert.equal(earliestNewListing([row], null, TODAY), addDays(NEW_DAY, 1));
   });
 });
 
@@ -203,17 +194,13 @@ describe("the order a bulk move is passed by", () => {
     /* The screen never asks why the court is not sitting, and this build sends no
        notification. An order that said either would be the app writing the bench's
        words, or claiming an act nothing performed. */
-    const text = rescheduleOrderText(
-      buildRescheduleOrder(moving, NEW_DAY, TODAY, TODAY),
-    );
+    const text = rescheduleOrderText(buildRescheduleOrder(moving, NEW_DAY, TODAY, TODAY));
     assert.doesNotMatch(text, /leave|holiday|transfer|strike/i);
     assert.doesNotMatch(text, /notif|inform|intimat|serve/i);
   });
 
   it("writes the matters, the new date and the date it is passed", () => {
-    const text = rescheduleOrderText(
-      buildRescheduleOrder(moving, NEW_DAY, TODAY),
-    );
+    const text = rescheduleOrderText(buildRescheduleOrder(moving, NEW_DAY, TODAY));
 
     assert.match(text, /Order rescheduling listed hearings/);
     assert.match(text, new RegExp(`Matters \\(${moving.length}\\)`));
@@ -225,8 +212,9 @@ describe("the order a bulk move is passed by", () => {
     /* A second move is measured from the day the first one put it on, not from the
        fixture's day — otherwise the order would recite a date the board left behind. */
     const first = board[0];
-    const once = boardAfterMoves(TODAY, { [first.id]: addDays(TODAY, 2) })
-      .find((row) => row.id === first.id)!;
+    const once = boardAfterMoves(TODAY, { [first.id]: addDays(TODAY, 2) }).find(
+      (row) => row.id === first.id,
+    )!;
     const order = buildRescheduleOrder([once], addDays(TODAY, 9), TODAY);
     const asListed = buildRescheduleOrder(
       [{ ...first, date: addDays(TODAY, 2) }],

@@ -34,10 +34,7 @@ describe("COPY_APPLICATION_QUEUE", () => {
   it("offers a row for every kind of record the vocabulary names", () => {
     const kinds = new Set(COPY_APPLICATION_QUEUE.map((row) => row.record.kind));
     for (const kind of COPY_RECORD_KINDS) {
-      assert.ok(
-        kinds.has(kind.id),
-        `the vocabulary names ${kind.id} but no row asks for one`,
-      );
+      assert.ok(kinds.has(kind.id), `the vocabulary names ${kind.id} but no row asks for one`);
     }
   });
 
@@ -80,9 +77,7 @@ describe("COPY_APPLICATION_QUEUE", () => {
   it("names a petitioner who is actually a party to the cause", () => {
     for (const row of COPY_APPLICATION_QUEUE) {
       const expected =
-        row.applicant.side === "complainant"
-          ? row.parties.complainant
-          : row.parties.accused;
+        row.applicant.side === "complainant" ? row.parties.complainant : row.parties.accused;
       assert.equal(
         row.applicant.name,
         expected,
@@ -101,16 +96,10 @@ describe("COPY_APPLICATION_QUEUE", () => {
       "no record description long enough to wrap",
     );
     const withoutCounsel = COPY_APPLICATION_QUEUE.filter(
-      (row) =>
-        !row.counsel.some((counsel) => counsel.side === row.applicant.side),
+      (row) => !row.counsel.some((counsel) => counsel.side === row.applicant.side),
     );
-    assert.ok(
-      withoutCounsel.length >= 3,
-      "too few applicants appearing without counsel",
-    );
-    const months = new Set(
-      COPY_APPLICATION_QUEUE.map((row) => row.raisedOn.slice(0, 7)),
-    );
+    assert.ok(withoutCounsel.length >= 3, "too few applicants appearing without counsel");
+    const months = new Set(COPY_APPLICATION_QUEUE.map((row) => row.raisedOn.slice(0, 7)));
     assert.ok(months.size >= 8, "the dates do not spread across enough months");
   });
 });
@@ -118,10 +107,7 @@ describe("COPY_APPLICATION_QUEUE", () => {
 describe("filterCopyApplications", () => {
   it("returns the queue unchanged when nothing is searched for", () => {
     assert.equal(
-      filterCopyApplications(
-        COPY_APPLICATION_QUEUE,
-        EMPTY_COPY_APPLICATION_FILTERS,
-      ).length,
+      filterCopyApplications(COPY_APPLICATION_QUEUE, EMPTY_COPY_APPLICATION_FILTERS).length,
       COPY_APPLICATION_QUEUE.length,
     );
   });
@@ -174,16 +160,13 @@ describe("filterCopyApplications", () => {
     });
     assert.ok(rows.length > 0);
     assert.ok(
-      rows.every((row) =>
-        row.counsel.some((counsel) => counsel.name === "Adv. Meera John"),
-      ),
+      rows.every((row) => row.counsel.some((counsel) => counsel.name === "Adv. Meera John")),
     );
   });
 
   it("returns nothing when no application matches", () => {
     assert.equal(
-      filterCopyApplications(COPY_APPLICATION_QUEUE, { query: "CA/9999/2030" })
-        .length,
+      filterCopyApplications(COPY_APPLICATION_QUEUE, { query: "CA/9999/2030" }).length,
       0,
     );
   });
@@ -192,10 +175,7 @@ describe("filterCopyApplications", () => {
 describe("who filed the application", () => {
   it("names counsel on record for the petitioner's own side", () => {
     const row = COPY_APPLICATION_QUEUE.find((entry) => entry.id === "ca-318")!;
-    assert.equal(
-      copyApplicationFiler(row),
-      "Adv. Saurabh Verma, counsel for the accused",
-    );
+    assert.equal(copyApplicationFiler(row), "Adv. Saurabh Verma, counsel for the accused");
   });
 
   it("never borrows the other side's advocate", () => {
@@ -226,18 +206,13 @@ describe("the words the screen puts on a row", () => {
   });
 
   it("marks the urgent ones and leaves the rest ordinary", () => {
-    const urgent = COPY_APPLICATION_QUEUE.find(
-      (row) => row.urgency === "urgent",
-    )!;
+    const urgent = COPY_APPLICATION_QUEUE.find((row) => row.urgency === "urgent")!;
     assert.ok(copiesLine(urgent).endsWith("· Urgent"));
   });
 
   it("uses the court-side date registers — short in a column, long in prose", () => {
     assert.equal(formatCopyApplicationDate("2026-09-03"), "3 Sept 2026");
-    assert.equal(
-      formatCopyApplicationLongDate("2026-09-03"),
-      "3 September 2026",
-    );
+    assert.equal(formatCopyApplicationLongDate("2026-09-03"), "3 September 2026");
   });
 
   it("re-cases the vocabulary the way the DS Laws want it", () => {
@@ -251,9 +226,7 @@ describe("buildCopyApplicationDocument", () => {
   it("writes a genuinely different application for each kind of record", () => {
     const bodies = new Set<string>();
     for (const kind of COPY_RECORD_KINDS) {
-      const row = COPY_APPLICATION_QUEUE.find(
-        (entry) => entry.record.kind === kind.id,
-      )!;
+      const row = COPY_APPLICATION_QUEUE.find((entry) => entry.record.kind === kind.id)!;
       const document = buildCopyApplicationDocument(row);
       bodies.add(document.paragraphs[0]!);
       assert.ok(
@@ -266,9 +239,7 @@ describe("buildCopyApplicationDocument", () => {
 
   it("titles each kind for the record it asks about", () => {
     const titles = new Set(
-      COPY_APPLICATION_QUEUE.map(
-        (row) => buildCopyApplicationDocument(row).title,
-      ),
+      COPY_APPLICATION_QUEUE.map((row) => buildCopyApplicationDocument(row).title),
     );
     assert.equal(titles.size, COPY_RECORD_KINDS.length);
   });
@@ -284,9 +255,7 @@ describe("buildCopyApplicationDocument", () => {
     );
     assert.equal(document.court, "JMFC Court 1");
     assert.equal(document.place, "Sample District");
-    assert.ok(
-      document.paragraphs.some((paragraph) => paragraph.includes("11 folios")),
-    );
+    assert.ok(document.paragraphs.some((paragraph) => paragraph.includes("11 folios")));
     assert.ok(document.paragraphs.some((paragraph) => paragraph.includes("₹33")));
     assert.ok(document.prayer.includes("19 August 2026"));
     assert.equal(document.filedBy, "Adv. Suresh Menon, counsel for the complainant");
@@ -294,9 +263,7 @@ describe("buildCopyApplicationDocument", () => {
 
   it("carries the particulars the copying counter reads off the top", () => {
     const row = COPY_APPLICATION_QUEUE.find((entry) => entry.id === "ca-292")!;
-    const terms = buildCopyApplicationDocument(row).facts.map(
-      (fact) => fact.term,
-    );
+    const terms = buildCopyApplicationDocument(row).facts.map((fact) => fact.term);
     assert.deepEqual(terms, [
       "Applicant",
       "Record sought",
@@ -312,12 +279,9 @@ describe("buildCopyApplicationDocument", () => {
   it("quotes no rule, form number or fee schedule", () => {
     /* `docs/product/` does not define copy applications for §138, so the demo wording
        must not pretend to cite the provision that entitles it. */
-    const forbidden =
-      /\b(?:section|sec\.|s\.|rule|order [IVX]+|form no\.?|schedule [IVX0-9])\b/i;
+    const forbidden = /\b(?:section|sec\.|s\.|rule|order [IVX]+|form no\.?|schedule [IVX0-9])\b/i;
     for (const row of COPY_APPLICATION_QUEUE) {
-      const text = copyApplicationDocumentText(
-        buildCopyApplicationDocument(row),
-      );
+      const text = copyApplicationDocumentText(buildCopyApplicationDocument(row));
       const hit = text.match(forbidden);
       assert.equal(
         hit,
@@ -344,29 +308,28 @@ describe("the plain-text download", () => {
       document.prayer,
       document.filedBy,
     ].map((part) => text.indexOf(part));
-    assert.ok(positions.every((at) => at >= 0), "a part of the document is missing");
-    assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
+    assert.ok(
+      positions.every((at) => at >= 0),
+      "a part of the document is missing",
+    );
+    assert.deepEqual(
+      positions,
+      [...positions].sort((a, b) => a - b),
+    );
     /* The capacity is recited twice — once in the particulars at the top, once under the
        signature at the bottom — so the block that signs it is found from the end. */
-    assert.ok(
-      text.lastIndexOf(document.applicant.capacity) > text.indexOf(document.prayer),
-    );
+    assert.ok(text.lastIndexOf(document.applicant.capacity) > text.indexOf(document.prayer));
   });
 
   it("numbers the paragraphs the way the paper does", () => {
     const row = COPY_APPLICATION_QUEUE[0]!;
-    const text = copyApplicationDocumentText(
-      buildCopyApplicationDocument(row),
-    );
+    const text = copyApplicationDocumentText(buildCopyApplicationDocument(row));
     assert.ok(text.includes("\n1. "));
     assert.ok(text.includes("\n3. "));
   });
 
   it("names the file after the application, with nothing a filesystem will choke on", () => {
     const row = COPY_APPLICATION_QUEUE.find((entry) => entry.id === "ca-511")!;
-    assert.equal(
-      copyApplicationDocumentFilename(row),
-      "CA-511-2025-copy-application.txt",
-    );
+    assert.equal(copyApplicationDocumentFilename(row), "CA-511-2025-copy-application.txt");
   });
 });

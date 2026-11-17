@@ -22,10 +22,7 @@ export function sectionIssueCount(section: SectionDef): number {
 
 /** Items the officer has raised in a section. */
 export function sectionFlagCount(section: SectionDef, flags: FlagMap): number {
-  return section.groups.reduce(
-    (n, g) => n + g.fields.filter((f) => flags[f.id]).length,
-    0,
-  );
+  return section.groups.reduce((n, g) => n + g.fields.filter((f) => flags[f.id]).length, 0);
 }
 
 export function rectStyle(rect: Rect): React.CSSProperties {
@@ -63,11 +60,7 @@ export function isLinkedComplete(draft: Draft | null): boolean {
 
 /** The save gate. Both items have to be legible, not just entered. */
 export function canSaveDraft(field: Field, draft: Draft | null): boolean {
-  return (
-    isDraftDirty(field, draft) &&
-    saysSomething(field, draft) &&
-    isLinkedComplete(draft)
-  );
+  return isDraftDirty(field, draft) && saysSomething(field, draft) && isLinkedComplete(draft);
 }
 
 /**
@@ -82,10 +75,7 @@ export function canSaveDraft(field: Field, draft: Draft | null): boolean {
  * where a mark on an uploaded document could mislead — a field sourced from a generated
  * page has nothing to re-upload, so it takes the plain sentence.
  */
-export function unlocksSentence(
-  field: Field,
-  docRow: Record<string, string>,
-): string {
+export function unlocksSentence(field: Field, docRow: Record<string, string>): string {
   if (field.docrow) {
     return "Lets the advocate re-upload this document.";
   }
@@ -96,10 +86,7 @@ export function unlocksSentence(
 }
 
 /** Short enough that a Malayalam or Gujarati bundle label does not blow the line. */
-export function docName(
-  docId: string,
-  docById: Record<string, BundleDoc>,
-): string {
+export function docName(docId: string, docById: Record<string, BundleDoc>): string {
   const doc = docById[docId];
   return doc ? shortDocName(doc.name) : "the document";
 }

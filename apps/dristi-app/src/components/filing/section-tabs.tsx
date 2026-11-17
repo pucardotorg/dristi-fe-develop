@@ -88,74 +88,76 @@ export function SectionTabs({
         // edge to edge, the first thing in the form it is about. Alone in a corner it
         // read as a stray chip (owner, Sept 22). From `sm` up it is one row.
         "flex flex-wrap items-center gap-x-2 sm:flex-nowrap sm:border-b sm:border-hairline",
-        className
+        className,
       )}
     >
       <div className="flex w-full min-w-0 items-center gap-2 border-b border-hairline sm:contents">
-      <Tabs
-        value={activeId}
-        onValueChange={onSelect}
-        className={cn("min-w-0", addAfterTabs ? "flex-initial" : "flex-1")}
-      >
-        <TabsList
-          ref={listRef}
-          variant="line"
-          // w-full overrides the primitive's w-fit so the strip is bounded by
-          // the row and its overflow scrolls, instead of stretching the modal.
-          // justify-start overrides the primitive's centering: a strip with one
-          // or two tabs otherwise floats them mid-row, orphaned from the form
-          // below (owner, Sept 3).
-          className="w-full min-w-0 flex-nowrap justify-start gap-1 overflow-x-auto"
+        <Tabs
+          value={activeId}
+          onValueChange={onSelect}
+          className={cn("min-w-0", addAfterTabs ? "flex-initial" : "flex-1")}
         >
-          {tabs.map((t) => (
-            <div key={t.id} className="flex shrink-0 items-center">
-              <TabsTrigger
-                value={t.id}
-                className="h-10 flex-none gap-2 rounded-b-none text-body-compact"
-              >
-                <span
-                  aria-hidden
-                  className={cn(
-                    "size-2 shrink-0 rounded-full",
-                    t.status === "complete" ? "bg-success" : "bg-warning-ink"
-                  )}
-                />
-                <span className="sr-only">
-                  {t.status === "complete" ? tr("sectionTabs_complete") : tr("sectionTabs_needsAttention")}
-                </span>
-                {t.label}
-                {t.meta ? (
-                  <span className="font-normal text-muted-foreground">{t.meta}</span>
-                ) : null}
-              </TabsTrigger>
-              {t.removable && onRemove && canEditList ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={tr("sectionTabs_removeLabel", { label: t.label })}
-                  className="text-muted-foreground hover:text-destructive"
-                  onClick={() => onRemove(t.id)}
+          <TabsList
+            ref={listRef}
+            variant="line"
+            // w-full overrides the primitive's w-fit so the strip is bounded by
+            // the row and its overflow scrolls, instead of stretching the modal.
+            // justify-start overrides the primitive's centering: a strip with one
+            // or two tabs otherwise floats them mid-row, orphaned from the form
+            // below (owner, Sept 3).
+            className="w-full min-w-0 flex-nowrap justify-start gap-1 overflow-x-auto"
+          >
+            {tabs.map((t) => (
+              <div key={t.id} className="flex shrink-0 items-center">
+                <TabsTrigger
+                  value={t.id}
+                  className="h-10 flex-none gap-2 rounded-b-none text-body-compact"
                 >
-                  <XIcon aria-hidden />
-                </Button>
-              ) : null}
-            </div>
-          ))}
-        </TabsList>
-      </Tabs>
-      {addLabel && onAdd && canEditList ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onAdd}
-          className="shrink-0 text-primary"
-        >
-          <PlusIcon data-icon="inline-start" aria-hidden />
-          {addLabel}
-        </Button>
-      ) : null}
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "size-2 shrink-0 rounded-full",
+                      t.status === "complete" ? "bg-success" : "bg-warning-ink",
+                    )}
+                  />
+                  <span className="sr-only">
+                    {t.status === "complete"
+                      ? tr("sectionTabs_complete")
+                      : tr("sectionTabs_needsAttention")}
+                  </span>
+                  {t.label}
+                  {t.meta ? (
+                    <span className="font-normal text-muted-foreground">{t.meta}</span>
+                  ) : null}
+                </TabsTrigger>
+                {t.removable && onRemove && canEditList ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={tr("sectionTabs_removeLabel", { label: t.label })}
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => onRemove(t.id)}
+                  >
+                    <XIcon aria-hidden />
+                  </Button>
+                ) : null}
+              </div>
+            ))}
+          </TabsList>
+        </Tabs>
+        {addLabel && onAdd && canEditList ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onAdd}
+            className="shrink-0 text-primary"
+          >
+            <PlusIcon data-icon="inline-start" aria-hidden />
+            {addLabel}
+          </Button>
+        ) : null}
       </div>
       {trailing ? (
         <div className="flex w-full items-center pt-4 sm:ml-auto sm:w-auto sm:pt-0 [&>*]:w-full sm:[&>*]:w-auto">

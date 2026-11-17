@@ -72,12 +72,19 @@ export function dueCueOf(task: Task, now: Date | string = new Date()): DueCue {
   const settled = !isBinding(task);
   const anchored = !!task.hearingAt && at === task.hearingAt;
   if (settled) {
-    return { primary: anchored ? `Hearing ${shortDate(at)}` : `Due ${shortDate(at)}`, overdue: false };
+    return {
+      primary: anchored ? `Hearing ${shortDate(at)}` : `Due ${shortDate(at)}`,
+      overdue: false,
+    };
   }
   const days = daysUntil(at, now);
   const date = shortDate(at);
   if (days < 0) {
-    return { primary: days === -1 ? "1 day overdue" : `${-days} days overdue`, date, overdue: true };
+    return {
+      primary: days === -1 ? "1 day overdue" : `${-days} days overdue`,
+      date,
+      overdue: true,
+    };
   }
   if (days === 0) return { primary: "Due today", date, overdue: false };
   const inDays = days === 1 ? "in 1 day" : `in ${days} days`;
@@ -89,7 +96,11 @@ export function dueCueOf(task: Task, now: Date | string = new Date()): DueCue {
  * The second line under a Needs-action row's title: the status note ("Payment failed —
  * try again", "Prepared by S. Prakash"), or who holds the draft.
  */
-export function secondLineOf(task: Task, user: Person | PersonId, people: Person[]): string | undefined {
+export function secondLineOf(
+  task: Task,
+  user: Person | PersonId,
+  people: Person[],
+): string | undefined {
   if (task.status === "draft") {
     const uid = typeof user === "string" ? user : user.id;
     return `Draft · ${task.draft?.by === uid ? "you" : nameOf(people, task.draft?.by)}`;

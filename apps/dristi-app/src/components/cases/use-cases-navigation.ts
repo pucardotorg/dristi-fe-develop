@@ -15,9 +15,7 @@ export function useCasesNavigation(query: CasesQuery) {
   const pathname = usePathname();
   const [search, setSearch] = React.useState(query.search);
   const pushed = React.useRef(query.search);
-  const debounce = React.useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
-  );
+  const debounce = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   React.useEffect(() => {
     if (query.search !== pushed.current) {
@@ -26,10 +24,7 @@ export function useCasesNavigation(query: CasesQuery) {
     }
   }, [query.search]);
 
-  const effective = React.useMemo<CasesQuery>(
-    () => ({ ...query, search }),
-    [query, search]
-  );
+  const effective = React.useMemo<CasesQuery>(() => ({ ...query, search }), [query, search]);
 
   const goTo = React.useCallback(
     (href: string) => {
@@ -40,14 +35,14 @@ export function useCasesNavigation(query: CasesQuery) {
       }
       router.replace(href, { scroll: false });
     },
-    [pathname, router]
+    [pathname, router],
   );
 
   const go = React.useCallback(
     (patch: Partial<CasesQuery>) => {
       goTo(buildCasesHref(effective, patch));
     },
-    [effective, goTo]
+    [effective, goTo],
   );
 
   function onSearchChange(value: string) {

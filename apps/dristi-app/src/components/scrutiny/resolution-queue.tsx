@@ -60,7 +60,10 @@ export function QueueProgress({
           aria-valuemin={0}
           aria-valuemax={total}
           aria-valuenow={resolved}
-          aria-label={t("resolutionQueue_resolvedOfTotalCorrectionsDone", { resolved: String(resolved), total: String(total) })}
+          aria-label={t("resolutionQueue_resolvedOfTotalCorrectionsDone", {
+            resolved: String(resolved),
+            total: String(total),
+          })}
           className="flex gap-1"
         >
           {Array.from({ length: total }, (_, i) => (
@@ -68,7 +71,7 @@ export function QueueProgress({
               key={i}
               className={cn(
                 "h-1.5 min-w-0 flex-1 rounded-full transition-colors",
-                i < resolved ? "bg-primary" : "bg-track"
+                i < resolved ? "bg-primary" : "bg-track",
               )}
             />
           ))}
@@ -76,12 +79,18 @@ export function QueueProgress({
       ) : (
         <Progress
           value={total ? (resolved / total) * 100 : 0}
-          aria-label={t("resolutionQueue_resolvedOfTotalCorrectionsDone", { resolved: String(resolved), total: String(total) })}
+          aria-label={t("resolutionQueue_resolvedOfTotalCorrectionsDone", {
+            resolved: String(resolved),
+            total: String(total),
+          })}
           className="h-1.5"
         />
       )}
       <p className="text-caption text-muted-foreground tabular-nums">
-        {t("resolutionQueue_resolvedOfTotalDone", { resolved: String(resolved), total: String(total) })}
+        {t("resolutionQueue_resolvedOfTotalDone", {
+          resolved: String(resolved),
+          total: String(total),
+        })}
       </p>
     </div>
   );
@@ -106,13 +115,7 @@ function doneWord(defect: Defect, value: string | undefined): string {
   }
 }
 
-export function QueueRow({
-  item,
-  onOpen,
-}: {
-  item: QueueDefect;
-  onOpen: () => void;
-}) {
+export function QueueRow({ item, onOpen }: { item: QueueDefect; onOpen: () => void }) {
   const { defect, value } = item;
   const state = defectState(defect, value);
   const resolved = state === "resolved";
@@ -139,7 +142,7 @@ export function QueueRow({
         <span
           className={cn(
             "min-w-0 flex-1 text-body-compact break-words",
-            resolved ? "text-muted-foreground" : "text-foreground"
+            resolved ? "text-muted-foreground" : "text-foreground",
           )}
         >
           {where}
@@ -149,10 +152,7 @@ export function QueueRow({
             {doneWord(defect, value)}
           </span>
         ) : null}
-        <ChevronRightIcon
-          aria-hidden
-          className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-        />
+        <ChevronRightIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
       </Button>
     </li>
   );
@@ -186,23 +186,15 @@ export function ResolutionQueue({
             {renderOpen(item, i + 1)}
           </li>
         ) : (
-          <QueueRow
-            key={item.defect.n}
-            item={item}
-            onOpen={() => onOpenDefect(item.defect.n)}
-          />
-        )
+          <QueueRow key={item.defect.n} item={item} onOpen={() => onOpenDefect(item.defect.n)} />
+        ),
       )}
     </ul>
   );
 }
 
 /** The gate, in words. Never a dead button with no explanation beside it. */
-export function submitReason(
-  resolved: number,
-  total: number,
-  online: boolean
-): string {
+export function submitReason(resolved: number, total: number, online: boolean): string {
   if (!online) return "You are offline — corrections stay on this device until you reconnect.";
   const left = total - resolved;
   if (left <= 0) return "Everything is corrected.";

@@ -10,10 +10,7 @@ import { ListFooter } from "@/components/employee/list-footer";
 import { QueueAnnouncer } from "@/components/employee/queue-announcer";
 import { CourtFilters, CourtSortSelect } from "@/components/employee/court-filters";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -33,12 +30,7 @@ import {
   type DelayCondonationCase,
   type DelayCondonationFilters,
 } from "@/lib/employee/delay-condonation";
-import {
-  causeTitle,
-  counselFor,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { causeTitle, counselFor, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import { Identifier } from "@/components/chrome/identifier";
 import {
   caseSorts,
@@ -62,8 +54,7 @@ const DELAY_CONDONATION_SORTS: CourtSortSpec<DelayCondonationCase, DelayCondonat
   {
     id: "delay",
     label: "Longest delay first",
-    compare: (a, b) =>
-      b.delayDays - a.delayDays || compareCaseNumbers(a.caseNumber, b.caseNumber),
+    compare: (a, b) => b.delayDays - a.delayDays || compareCaseNumbers(a.caseNumber, b.caseNumber),
   },
   caseSorts<DelayCondonationCase>()[2] as CourtSortSpec<DelayCondonationCase, DelayCondonationSort>,
 ];
@@ -101,20 +92,20 @@ export function DelayCondonationScreen() {
   );
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(() => new Set());
   const [open, setOpen] = React.useState<DelayCondonationCase | null>(null);
   const searchRef = React.useRef<HTMLInputElement>(null);
 
   /* Answered rows leave the queue, so the list, the count above it and the
      pagination all shrink together. Nothing is written — see the dialog. */
-  const remaining = DELAY_CONDONATION_QUEUE.filter(
-    (matter) => !decidedIds.has(matter.id),
-  );
+  const remaining = DELAY_CONDONATION_QUEUE.filter((matter) => !decidedIds.has(matter.id));
   const [sort, setSort] = React.useState<DelayCondonationSort>("oldest-applied");
 
-  const rows = sortRows(filterDelayCondonationCases(remaining, filters), DELAY_CONDONATION_SORTS, sort);
+  const rows = sortRows(
+    filterDelayCondonationCases(remaining, filters),
+    DELAY_CONDONATION_SORTS,
+    sort,
+  );
 
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
   const currentPage = Math.min(page, pageCount);
@@ -154,7 +145,9 @@ export function DelayCondonationScreen() {
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
             ? t("delayCondonationScreen_1ApplicationIsWaitingForReview")
-            : t("delayCondonationScreen_lengthApplicationsAreWaitingForReview", { length: String(remaining.length) })}
+            : t("delayCondonationScreen_lengthApplicationsAreWaitingForReview", {
+                length: String(remaining.length),
+              })}
         </p>
       </header>
 
@@ -181,17 +174,10 @@ export function DelayCondonationScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
-          <DelayCondonationEmpty
-            isFiltered={isFiltered}
-            onClear={clearFilters}
-          />
+          <DelayCondonationEmpty isFiltered={isFiltered} onClear={clearFilters} />
         ) : (
           <div className="flex min-w-0 flex-col gap-4">
             {/* min-w-0 lets this flex item shrink below the table's content
@@ -319,14 +305,12 @@ function DelayCondonationEmpty({
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FolderCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FolderCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? t("delayCondonationScreen_noMattersMatchTheseFilters") : t("delayCondonationScreen_nothingWaiting")}
+          {isFiltered
+            ? t("delayCondonationScreen_noMattersMatchTheseFilters")
+            : t("delayCondonationScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
@@ -368,30 +352,27 @@ function DelayCondonationItemList({
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((matter) => (
-        <QueueItemRow
-          key={matter.id}
-          className="flex flex-col gap-2"
-        >
-            <button
-              type="button"
-              onClick={() => onOpen(matter)}
-              {...rowOpener}
-                className={rowOpenerClass}
-            >
-              <span className="sr-only">{t("delayCondonationScreen_review")} </span>
-              {causeTitle(matter)}
-            </button>
+        <QueueItemRow key={matter.id} className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => onOpen(matter)}
+            {...rowOpener}
+            className={rowOpenerClass}
+          >
+            <span className="sr-only">{t("delayCondonationScreen_review")} </span>
+            {causeTitle(matter)}
+          </button>
           <p className="text-caption text-muted-foreground">
             <Identifier value={matter.caseNumber} label={t("delayCondonationScreen_caseNumber")} />
-            {t.rich("delayCondonationScreen_delayCondonationStageLabelAppliedFormat", { delayCondonationStageLabel: delayCondonationStageLabel(matter.stage), formatDelayCondonationLongDate: formatDelayCondonationLongDate(matter.appliedOn), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+            {t.rich("delayCondonationScreen_delayCondonationStageLabelAppliedFormat", {
+              delayCondonationStageLabel: delayCondonationStageLabel(matter.stage),
+              formatDelayCondonationLongDate: formatDelayCondonationLongDate(matter.appliedOn),
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
           <CounselCell
-            complainant={counselFor(matter, "complainant").map(
-              (counsel) => counsel.name,
-            )}
-            accused={counselFor(matter, "accused").map(
-              (counsel) => counsel.name,
-            )}
+            complainant={counselFor(matter, "complainant").map((counsel) => counsel.name)}
+            accused={counselFor(matter, "accused").map((counsel) => counsel.name)}
           />
         </QueueItemRow>
       ))}

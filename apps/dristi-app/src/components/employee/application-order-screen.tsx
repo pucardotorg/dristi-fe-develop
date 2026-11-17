@@ -5,10 +5,7 @@ import Link from "next/link";
 import { FileQuestionIcon } from "lucide-react";
 
 import { useCourtText } from "@/components/court/court-provider";
-import {
-  OrderDoorScreen,
-  type OrderDoor,
-} from "@/components/employee/order-door-screen";
+import { OrderDoorScreen, type OrderDoor } from "@/components/employee/order-door-screen";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,10 +17,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import type { LifecycleApplication } from "@/lib/applications/lifecycle";
-import {
-  useApplicationsReady,
-  useLifecycleApplications,
-} from "@/lib/applications/store";
+import { useApplicationsReady, useLifecycleApplications } from "@/lib/applications/store";
 import { partiesLabel, type CaseRecord } from "@/lib/cases/types";
 import {
   applicationHref,
@@ -34,10 +28,7 @@ import {
   decisionItem,
   nextApplicationOrderKey,
 } from "@/lib/employee/application-order-draft";
-import {
-  applicationWorkflow,
-  initialApplicationOutcome,
-} from "@/lib/employee/application-outcome";
+import { applicationWorkflow, initialApplicationOutcome } from "@/lib/employee/application-outcome";
 import { caseOf, nextHearingOf } from "@/lib/employee/application-tasks";
 import { CURRENT_STAFF } from "@/lib/employee/content";
 import { formatOrderDate } from "@/lib/employee/hearings";
@@ -53,7 +44,10 @@ const APPLICATIONS = "/employee/applications";
  * from the application's state.
  */
 function backTo(applicationId: string, view?: string): { href: string; label: string } {
-  return { href: applicationHref(applicationId, view), label: "applicationOrderScreen_backToTheApplication" };
+  return {
+    href: applicationHref(applicationId, view),
+    label: "applicationOrderScreen_backToTheApplication",
+  };
 }
 
 /**
@@ -88,12 +82,7 @@ export function ApplicationOrderScreen({
   if (!ready) return null;
   if (!application || !record) return <OrderMissing />;
   return (
-    <ApplicationOrder
-      application={application}
-      record={record}
-      decision={decision}
-      view={view}
-    />
+    <ApplicationOrder application={application} record={record} decision={decision} view={view} />
   );
 }
 
@@ -172,12 +161,26 @@ export function useApplicationOrderDoor(
       { label: t("applicationOrderScreen_application"), value: application.typeLabel },
       { label: t("applicationOrderScreen_case"), value: record.caseNumber, identifier: true },
       ...(application.applicationNumber
-        ? [{ label: t("applicationOrderScreen_number"), value: application.applicationNumber, identifier: true }]
+        ? [
+            {
+              label: t("applicationOrderScreen_number"),
+              value: application.applicationNumber,
+              identifier: true,
+            },
+          ]
         : application.temporaryId
-          ? [{ label: t("applicationOrderScreen_temporaryId"), value: application.temporaryId, identifier: true }]
+          ? [
+              {
+                label: t("applicationOrderScreen_temporaryId"),
+                value: application.temporaryId,
+                identifier: true,
+              },
+            ]
           : []),
     ],
-    courtLine: courtText(t("applicationOrderScreen_beforeTheCourt", { court: CURRENT_STAFF.court })),
+    courtLine: courtText(
+      t("applicationOrderScreen_beforeTheCourt", { court: CURRENT_STAFF.court }),
+    ),
     subLine: `${record.caseNumber} · ${matter} · ${formatOrderDate(today)}`,
     navAction: (
       <Button asChild variant="outline" className="w-full shrink-0 sm:w-fit">

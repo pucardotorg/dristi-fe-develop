@@ -46,13 +46,7 @@ function DocTable({ children }: { children: React.ReactNode }) {
   );
 }
 
-function DocGroupRow({
-  children,
-  span = 3,
-}: {
-  children: React.ReactNode;
-  span?: number;
-}) {
+function DocGroupRow({ children, span = 3 }: { children: React.ReactNode; span?: number }) {
   return (
     <tr>
       <td
@@ -77,9 +71,7 @@ function DocCell({
   return (
     <td colSpan={span} className="border border-paper-border px-3 py-2 align-top">
       {label ? (
-        <span className="block text-caption font-medium text-paper-muted-foreground">
-          {label}
-        </span>
+        <span className="block text-caption font-medium text-paper-muted-foreground">{label}</span>
       ) : null}
       <span className="block break-words text-body-compact">{children}</span>
     </td>
@@ -101,16 +93,8 @@ function othersSuffix(count: number): string {
   return ` +${extra} other${extra > 1 ? "s" : ""}`;
 }
 
-function DocP({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <p className={cn("mt-3 text-body-compact leading-relaxed", className)}>{children}</p>
-  );
+function DocP({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <p className={cn("mt-3 text-body-compact leading-relaxed", className)}>{children}</p>;
 }
 
 /* ───────────────────────────── The document ────────────────────────── */
@@ -165,7 +149,9 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
         <p className="shrink-0 text-body-compact italic">{t("previewCourtDocument_complainant")}</p>
       </div>
 
-      <p className="py-1 text-center text-body-compact italic">{t("previewCourtDocument_versus")}</p>
+      <p className="py-1 text-center text-body-compact italic">
+        {t("previewCourtDocument_versus")}
+      </p>
 
       <div className="flex items-start justify-between gap-4 py-1">
         <div className="min-w-0">
@@ -205,11 +191,17 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
             <DocCell label={t("previewCourtDocument_dateOnCheque")}>
               {longDate(draft.cheques[0]?.dateOnCheque ?? "")}
             </DocCell>
-            <DocCell label={t("previewCourtDocument_amount")}>{cheques[0]?.amount ?? NOT_PROVIDED}</DocCell>
-            <DocCell label={t("previewCourtDocument_chequeNumber")}>{cheques[0]?.number ?? NOT_PROVIDED}</DocCell>
+            <DocCell label={t("previewCourtDocument_amount")}>
+              {cheques[0]?.amount ?? NOT_PROVIDED}
+            </DocCell>
+            <DocCell label={t("previewCourtDocument_chequeNumber")}>
+              {cheques[0]?.number ?? NOT_PROVIDED}
+            </DocCell>
           </tr>
           <tr>
-            <DocCell label={t("previewCourtDocument_bankName")}>{cheques[0]?.bankName ?? NOT_PROVIDED}</DocCell>
+            <DocCell label={t("previewCourtDocument_bankName")}>
+              {cheques[0]?.bankName ?? NOT_PROVIDED}
+            </DocCell>
             <DocCell label={t("previewCourtDocument_bankBranch")} span={2}>
               {cheques[0]?.bankBranch ?? NOT_PROVIDED}
             </DocCell>
@@ -239,7 +231,9 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
               {longDate(draft.notices[0]?.dispatchDate ?? "")}
             </DocCell>
             <DocCell label={t("previewCourtDocument_modeOfService")}>{notice.mode}</DocCell>
-            <DocCell label={t("previewCourtDocument_whetherDelivered")}>{notice.deliveredYesNo}</DocCell>
+            <DocCell label={t("previewCourtDocument_whetherDelivered")}>
+              {notice.deliveredYesNo}
+            </DocCell>
           </tr>
           <tr>
             <DocCell label={t("previewCourtDocument_dateOfDelivery")}>
@@ -257,7 +251,9 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
             </DocCell>
             <DocCell label={t("previewCourtDocument_jurisdictionInvokedUnderSection1422")}>
               {jurisdiction.depositedByPayee
-                ? t("previewCourtDocument_bankBranchTheComplainantsBankBranch", { bankBranch: jurisdiction.bankBranch })
+                ? t("previewCourtDocument_bankBranchTheComplainantsBankBranch", {
+                    bankBranch: jurisdiction.bankBranch,
+                  })
                 : t("previewCourtDocument_drawerAccusedBankBranch")}
             </DocCell>
             <DocCell label={t("previewCourtDocument_anyOtherComplaintPendingBetweenThe")}>
@@ -288,8 +284,12 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
           </tr>
           <tr>
             <DocCell label={t("previewCourtDocument_emailAddress")}>{complainant.email}</DocCell>
-            <DocCell label={t("previewCourtDocument_permanentAddress")}>{complainant.permanentAddress}</DocCell>
-            <DocCell label={t("previewCourtDocument_presentAddress")}>{complainant.presentAddress}</DocCell>
+            <DocCell label={t("previewCourtDocument_permanentAddress")}>
+              {complainant.permanentAddress}
+            </DocCell>
+            <DocCell label={t("previewCourtDocument_presentAddress")}>
+              {complainant.presentAddress}
+            </DocCell>
           </tr>
           <tr>
             <DocCell label={t("previewCourtDocument_poAForComplainant1")} span={3}>
@@ -308,7 +308,9 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
                 <DocGroupRow span={2}>
                   {a.forAll
                     ? t("previewCourtDocument_advocateForAllComplainants")
-                    : t("previewCourtDocument_advocateForAppearingFor", { appearingFor: a.appearingFor })}
+                    : t("previewCourtDocument_advocateForAppearingFor", {
+                        appearingFor: a.appearingFor,
+                      })}
                 </DocGroupRow>
                 <tr>
                   <DocCell label={t("previewCourtDocument_fullName")}>{a.name}</DocCell>
@@ -331,7 +333,15 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
             <React.Fragment key={a.key}>
               <DocGroupRow>{a.label}</DocGroupRow>
               <tr>
-                <DocCell label={a.isEntity ? t("previewCourtDocument_typeOfEntity") : t("previewCourtDocument_type")}>{a.type}</DocCell>
+                <DocCell
+                  label={
+                    a.isEntity
+                      ? t("previewCourtDocument_typeOfEntity")
+                      : t("previewCourtDocument_type")
+                  }
+                >
+                  {a.type}
+                </DocCell>
                 <DocCell label={t("previewCourtDocument_fullName")}>{a.name}</DocCell>
                 <DocCell label={t("previewCourtDocument_address")}>{a.address}</DocCell>
               </tr>
@@ -385,7 +395,9 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
             const s = noticeSummary(n);
             return (
               <React.Fragment key={n.id}>
-                <DocGroupRow>{t("previewCourtDocument_demandNoticeValue", { value: String(i + 1) })}</DocGroupRow>
+                <DocGroupRow>
+                  {t("previewCourtDocument_demandNoticeValue", { value: String(i + 1) })}
+                </DocGroupRow>
                 <tr>
                   <DocCell label={t("previewCourtDocument_natureOfDebtOrOtherLiability")} span={3}>
                     {s.nature}
@@ -396,10 +408,14 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
                     {longDate(n.dispatchDate)}
                   </DocCell>
                   <DocCell label={t("previewCourtDocument_modeOfService")}>{s.mode}</DocCell>
-                  <DocCell label={t("previewCourtDocument_whetherDelivered")}>{s.deliveredYesNo}</DocCell>
+                  <DocCell label={t("previewCourtDocument_whetherDelivered")}>
+                    {s.deliveredYesNo}
+                  </DocCell>
                 </tr>
                 <tr>
-                  <DocCell label={t("previewCourtDocument_dateOfDelivery")}>{longDate(n.deliveryDate)}</DocCell>
+                  <DocCell label={t("previewCourtDocument_dateOfDelivery")}>
+                    {longDate(n.deliveryDate)}
+                  </DocCell>
                   <DocCell label={t("previewCourtDocument_hasTheAccusedRepliedToThe")}>
                     {s.replied}
                   </DocCell>
@@ -417,11 +433,10 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       <DocTable>
         <tbody>
           <tr>
-            <DocCell
-              label={t("previewCourtDocument_wasTheChequeDeliveredForCollection")}
-              span={3}
-            >
-              {jurisdiction.depositedByPayee ? t("previewCourtDocument_yes") : t("previewCourtDocument_no")}
+            <DocCell label={t("previewCourtDocument_wasTheChequeDeliveredForCollection")} span={3}>
+              {jurisdiction.depositedByPayee
+                ? t("previewCourtDocument_yes")
+                : t("previewCourtDocument_no")}
             </DocCell>
           </tr>
           {jurisdiction.depositedByPayee ? (
@@ -429,8 +444,12 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
               <DocGroupRow>{t("previewCourtDocument_payeeComplainantBankDetails")}</DocGroupRow>
               <tr>
                 <DocCell label={t("previewCourtDocument_ifscCode")}>{jurisdiction.ifsc}</DocCell>
-                <DocCell label={t("previewCourtDocument_bankName")}>{jurisdiction.bankName}</DocCell>
-                <DocCell label={t("previewCourtDocument_bankBranch")}>{jurisdiction.bankBranch}</DocCell>
+                <DocCell label={t("previewCourtDocument_bankName")}>
+                  {jurisdiction.bankName}
+                </DocCell>
+                <DocCell label={t("previewCourtDocument_bankBranch")}>
+                  {jurisdiction.bankBranch}
+                </DocCell>
               </tr>
             </>
           ) : null}
@@ -443,10 +462,7 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
             {t("previewCourtDocument_otherChequeDishonourComplaintsBetweenThe")}
           </DocGroupRow>
           <tr>
-            <DocCell
-              label={t("previewCourtDocument_isThereAnyOtherChequeDishonour")}
-              span={3}
-            >
+            <DocCell label={t("previewCourtDocument_isThereAnyOtherChequeDishonour")} span={3}>
               {jurisdiction.otherPending}
             </DocCell>
           </tr>
@@ -465,11 +481,16 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
             <DocCell label={t("previewCourtDocument_dateOfComplaintFiling")}>
               {longDate(jurisdiction.filingDateIso)}
             </DocCell>
-            <DocCell label={t("previewCourtDocument_durationOfDelay")}>{translateText(t, jurisdiction.delayText)}</DocCell>
+            <DocCell label={t("previewCourtDocument_durationOfDelay")}>
+              {translateText(t, jurisdiction.delayText)}
+            </DocCell>
           </tr>
           {jurisdiction.condonationReason ? (
             <tr>
-              <DocCell label={t("previewCourtDocument_reasonForPrayingCondonationOfDelay")} span={3}>
+              <DocCell
+                label={t("previewCourtDocument_reasonForPrayingCondonationOfDelay")}
+                span={3}
+              >
                 {jurisdiction.condonationReason}
               </DocCell>
             </tr>
@@ -481,16 +502,15 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       <DocTable>
         <tbody>
           <tr>
-            <DocCell
-              label={t("previewCourtDocument_isTheComplainantWillingToSettle")}
-              span={3}
-            >
+            <DocCell label={t("previewCourtDocument_isTheComplainantWillingToSettle")} span={3}>
               {adrLabel(draft)}
             </DocCell>
           </tr>
         </tbody>
       </DocTable>
-      <p className="mt-4 text-body-compact font-semibold">{t("previewCourtDocument_anyAdditionalDetails")}</p>
+      <p className="mt-4 text-body-compact font-semibold">
+        {t("previewCourtDocument_anyAdditionalDetails")}
+      </p>
       {otherDetails.length ? (
         /* The filer's text as written — paragraphs and lists kept. */
         <div
@@ -502,13 +522,17 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       ) : (
         <DocP className="text-paper-muted-foreground">{NOT_PROVIDED}</DocP>
       )}
-      <p className="mt-4 text-body-compact font-semibold">{t("previewCourtDocument_interimRelief")}</p>
+      <p className="mt-4 text-body-compact font-semibold">
+        {t("previewCourtDocument_interimRelief")}
+      </p>
       {interimRelief.length ? (
         interimRelief.map((p, i) => <DocP key={i}>{p}</DocP>)
       ) : (
         <DocP className="text-paper-muted-foreground">{NOT_PROVIDED}</DocP>
       )}
-      <p className="mt-4 text-body-compact font-semibold">{t("previewCourtDocument_finalRelief")}</p>
+      <p className="mt-4 text-body-compact font-semibold">
+        {t("previewCourtDocument_finalRelief")}
+      </p>
       {finalRelief.length ? (
         finalRelief.map((p, i) => (
           <DocP key={i} className={i > 0 ? "ml-4" : undefined}>
@@ -529,7 +553,13 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
             <React.Fragment key={w.key}>
               <DocGroupRow>{w.label}</DocGroupRow>
               <tr>
-                <DocCell label={w.term === "Designation" ? t("previewCourtDocument_designation") : t("previewCourtDocument_fullName")}>
+                <DocCell
+                  label={
+                    w.term === "Designation"
+                      ? t("previewCourtDocument_designation")
+                      : t("previewCourtDocument_fullName")
+                  }
+                >
                   {w.name}
                 </DocCell>
                 <DocCell label={t("previewCourtDocument_whatWillThisWitnessProve")} span={2}>
@@ -580,19 +610,25 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
                       </span>
                     ) : null}
                   </DocCell>
-                  <DocCell>{d.digital ? t("previewCourtDocument_yes") : t("previewCourtDocument_no")}</DocCell>
+                  <DocCell>
+                    {d.digital ? t("previewCourtDocument_yes") : t("previewCourtDocument_no")}
+                  </DocCell>
                 </tr>
               ))
             ) : (
               <tr>
-                <DocCell span={3}>{t("previewCourtDocument_noDocumentsHaveBeenUploadedYet")}</DocCell>
+                <DocCell span={3}>
+                  {t("previewCourtDocument_noDocumentsHaveBeenUploadedYet")}
+                </DocCell>
               </tr>
             )}
           </tbody>
         </table>
       </div>
       <DocP>
-        {t("previewCourtDocument_signedOnValuePleaseSeePage", { value: jurisdiction.filingDateIso ? toLongDate(jurisdiction.filingDateIso) : "__" })}
+        {t("previewCourtDocument_signedOnValuePleaseSeePage", {
+          value: jurisdiction.filingDateIso ? toLongDate(jurisdiction.filingDateIso) : "__",
+        })}
       </DocP>
 
       {/* ── 4. Affidavit ── */}
@@ -607,7 +643,9 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
         dangerouslySetInnerHTML={{ __html: affidavitBody(draft) }}
       />
 
-      <h4 className="mt-8 text-body-compact font-semibold">{t("previewCourtDocument_complainant2")}</h4>
+      <h4 className="mt-8 text-body-compact font-semibold">
+        {t("previewCourtDocument_complainant2")}
+      </h4>
       <DocP>
         {t("previewCourtDocument_iConfirmThatIHaveRead")}
         <br />
@@ -616,12 +654,8 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
         {t("previewCourtDocument_2AffidavitOfFact")}
       </DocP>
       <h4 className="mt-6 text-body-compact font-semibold">{t("previewCourtDocument_advocate")}</h4>
-      <DocP>
-        {t("previewCourtDocument_iConfirmTheIdentityOfThe")}
-      </DocP>
-      <DocP>
-        {t("previewCourtDocument_iConfirmThatTheComplaintHas")}
-      </DocP>
+      <DocP>{t("previewCourtDocument_iConfirmTheIdentityOfThe")}</DocP>
+      <DocP>{t("previewCourtDocument_iConfirmThatTheComplaintHas")}</DocP>
       <DocP className="text-center">***</DocP>
       <DocP className="text-paper-muted-foreground">
         {t("previewCourtDocument_pleaseTurnOverThePageTo")}

@@ -12,11 +12,7 @@ import {
 } from "./application-access";
 import { applicationsRegister } from "./application-record";
 import { EMPTY_APPLICATION_DRAFT, validateApplication } from "./application-draft";
-import {
-  applicationsFile,
-  quotedOthersTitle,
-  type ApplicationsFile,
-} from "./applications";
+import { applicationsFile, quotedOthersTitle, type ApplicationsFile } from "./applications";
 import { FIXTURE_TODAY } from "./fixtures";
 import { findCaseRecord } from "./party-cases";
 import { isViewer, viewerRepresentation } from "./viewer";
@@ -44,9 +40,7 @@ function visibleIds(caseId: string, profile: ViewerProfile): Set<string> {
   const file = fileFor(caseId);
   const viewer = viewerFor(caseId, profile);
   return new Set(
-    file.submissions
-      .filter((item) => canSeeApplication(viewer, item, file))
-      .map((item) => item.id)
+    file.submissions.filter((item) => canSeeApplication(viewer, item, file)).map((item) => item.id),
   );
 }
 
@@ -119,10 +113,7 @@ describe("visibility (ALC-17, Users and actions)", () => {
 
 describe("the viewer's step", () => {
   it("lets the advocate sign what their clerk drafted", () => {
-    assert.equal(
-      stepOf("c-1001", "advocate", "sub-1001-memo-signature"),
-      "sign"
-    );
+    assert.equal(stepOf("c-1001", "advocate", "sub-1001-memo-signature"), "sign");
   });
 
   it("never lets a clerk sign, but lets them draft and pay", () => {
@@ -152,52 +143,37 @@ describe("objections (ALC-11 to ALC-13, ALC-24)", () => {
 
   it("invites the other side only where objections were asked for", () => {
     const file = fileFor("c-1001");
-    const ids = objectionInvitations(
-      viewerFor("c-1001", "advocate"),
-      file,
-      FIXTURE_TODAY
-    ).map((item) => item.application.id);
+    const ids = objectionInvitations(viewerFor("c-1001", "advocate"), file, FIXTURE_TODAY).map(
+      (item) => item.application.id,
+    );
     assert.deepEqual(ids, ["sub-1001-accused-production"]);
   });
 
   it("gives way once the side has started its one objection", () => {
     const file = fileFor("c-1001");
-    const ids = objectionInvitations(
-      viewerFor("c-1001", "advocate"),
-      file,
-      FIXTURE_TODAY
-    ).map((item) => item.application.id);
+    const ids = objectionInvitations(viewerFor("c-1001", "advocate"), file, FIXTURE_TODAY).map(
+      (item) => item.application.id,
+    );
     assert.ok(!ids.includes("sub-1001-accused-advance"));
   });
 
   it("closes once the deadline has passed", () => {
     const file = fileFor("c-1001");
-    assert.deepEqual(
-      objectionInvitations(viewerFor("c-1001", "advocate"), file, "2026-08-19"),
-      []
-    );
+    assert.deepEqual(objectionInvitations(viewerFor("c-1001", "advocate"), file, "2026-08-19"), []);
   });
 
   it("reminds a litigant, whose advocate files it", () => {
     const file = fileFor("lt-2202");
-    const invitations = objectionInvitations(
-      viewerFor("lt-2202", "litigant"),
-      file,
-      FIXTURE_TODAY
-    );
+    const invitations = objectionInvitations(viewerFor("lt-2202", "litigant"), file, FIXTURE_TODAY);
     assert.deepEqual(
       invitations.map((item) => [item.application.id, item.canFile]),
-      [["sub-lt-2202-complainant-witness", false]]
+      [["sub-lt-2202-complainant-witness", false]],
     );
   });
 
   it("lets an advocate file it", () => {
     const file = fileFor("c-1001");
-    const invitations = objectionInvitations(
-      viewerFor("c-1001", "advocate"),
-      file,
-      FIXTURE_TODAY
-    );
+    const invitations = objectionInvitations(viewerFor("c-1001", "advocate"), file, FIXTURE_TODAY);
     assert.ok(invitations.length > 0);
     assert.ok(invitations.every((item) => item.canFile));
   });
@@ -209,9 +185,7 @@ describe("the register", () => {
     const register = applicationsRegister(record, {
       viewer: viewerFor("c-1001", "advocate"),
       today: FIXTURE_TODAY,
-      moves: new Map([
-        ["sub-1001-pay", { status: "pending-review", submittedOn: FIXTURE_TODAY }],
-      ]),
+      moves: new Map([["sub-1001-pay", { status: "pending-review", submittedOn: FIXTURE_TODAY }]]),
     });
     const paid = register.applications.find((item) => item.id === "sub-1001-pay");
     assert.equal(paid?.status, "pending-review");
@@ -224,7 +198,7 @@ describe("naming an Others application in a sentence", () => {
   it("quotes the filer's own title exactly as typed", () => {
     assert.equal(
       quotedOthersTitle({ type: "application-others", title: "PW-2 recall" }),
-      "\u201cPW-2 recall\u201d"
+      "\u201cPW-2 recall\u201d",
     );
   });
 
@@ -233,10 +207,7 @@ describe("naming an Others application in a sentence", () => {
   });
 
   it("falls back when an Others filing has no title of its own", () => {
-    assert.equal(
-      quotedOthersTitle({ type: "application-others", title: "Others" }),
-      null
-    );
+    assert.equal(quotedOthersTitle({ type: "application-others", title: "Others" }), null);
     assert.equal(quotedOthersTitle({ type: "application-others", title: " " }), null);
   });
 });
@@ -249,7 +220,7 @@ describe("temporary IDs allotted in the session", () => {
       viewer: viewerFor("c-1001", "advocate"),
       today: FIXTURE_TODAY,
       moves: new Map(
-        ids.map((id) => [id, { status: "submitted" as const, submittedOn: FIXTURE_TODAY }])
+        ids.map((id) => [id, { status: "submitted" as const, submittedOn: FIXTURE_TODAY }]),
       ),
     });
     const allotted = [...register.applications, ...register.documents]
@@ -267,8 +238,7 @@ describe("who drafted it", () => {
       viewer: viewerFor("c-1001", "advocate"),
       today: FIXTURE_TODAY,
     });
-    const byId = (id: string) =>
-      register.applications.find((item) => item.id === id);
+    const byId = (id: string) => register.applications.find((item) => item.id === id);
     assert.equal(byId("sub-1001-clerk-draft")?.draftedBy, "Vinod Kumar");
     assert.equal(byId("sub-1001-summon-bank")?.draftedBy, undefined);
   });
@@ -281,19 +251,19 @@ describe("memos and affidavits", () => {
       viewer: viewerFor("c-1001", "advocate"),
       today: FIXTURE_TODAY,
     });
-    assert.ok(
-      register.applications.every((item) => item.source.kind === "application")
-    );
-    const memo = register.documents.find(
-      (item) => item.id === "sub-1001-memo-signature"
-    );
+    assert.ok(register.applications.every((item) => item.source.kind === "application"));
+    const memo = register.documents.find((item) => item.id === "sub-1001-memo-signature");
     assert.equal(memo?.step, "sign");
   });
 });
 
 describe("a Generic application's title", () => {
   it("takes the punctuation advocates cite with", () => {
-    for (const title of ["Cross-examination of PW-1", "Exemption under S.138", "Return of cheque (original)"]) {
+    for (const title of [
+      "Cross-examination of PW-1",
+      "Exemption under S.138",
+      "Return of cheque (original)",
+    ]) {
       const errors = validateApplication({
         ...EMPTY_APPLICATION_DRAFT,
         type: "application-others",
@@ -303,7 +273,6 @@ describe("a Generic application's title", () => {
     }
   });
 });
-
 
 describe("document submission (DSB-06, DSB-18)", () => {
   it("shows a submitted document to the other side at once", () => {
@@ -320,9 +289,7 @@ describe("document submission (DSB-06, DSB-18)", () => {
 
   it("keeps an unsigned document from the other side", () => {
     const file = fileFor("c-1001");
-    const document = file.submissions.find(
-      (item) => item.id === "sub-1001-memo-signature"
-    )!;
+    const document = file.submissions.find((item) => item.id === "sub-1001-memo-signature")!;
     const accused: ApplicationViewer = {
       role: "advocate",
       side: "accused",

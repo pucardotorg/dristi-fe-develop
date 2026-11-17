@@ -11,10 +11,7 @@ import {
   ViewCaseAction,
 } from "@/components/employee/hearing-overview-screen";
 import { HearingSessionButton } from "@/components/employee/hearings-table";
-import {
-  NextDateField,
-  NextPurposeField,
-} from "@/components/employee/next-hearing-fields";
+import { NextDateField, NextPurposeField } from "@/components/employee/next-hearing-fields";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogDescription } from "@/components/ui/dialog";
 import type { CourtRole } from "@/lib/employee/content";
@@ -178,8 +175,7 @@ function HearingOverviewBody({
           event.preventDefault();
       }}
       onEscapeKeyDown={(event) => {
-        if (document.querySelector('[data-slot="combobox-content"]'))
-          event.preventDefault();
+        if (document.querySelector('[data-slot="combobox-content"]')) event.preventDefault();
       }}
       /* The chip rides with the cause title, the same thought in the same order as the
          page: this matter, and where it stands on today's list. */
@@ -260,9 +256,10 @@ function HearingOverviewBody({
           three rows; it is `sr-only`, so where it sits changes nothing it does. */}
       <p className="sr-only" aria-live="polite">
         {resolved
-          ? t("hearingOverviewDialog_causeTitleIsNowToLower", { causeTitle: causeTitle(hearing), toLowerCase: courtHearingStatusLabel(
-              hearing.status,
-            ).toLowerCase() })
+          ? t("hearingOverviewDialog_causeTitleIsNowToLower", {
+              causeTitle: causeTitle(hearing),
+              toLowerCase: courtHearingStatusLabel(hearing.status).toLowerCase(),
+            })
           : null}
       </p>
     </StagedOverlay>

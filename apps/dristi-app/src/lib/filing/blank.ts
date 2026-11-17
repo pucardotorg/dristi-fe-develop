@@ -121,7 +121,7 @@ function firstComplainant(profile?: UserProfile | null): Complainant {
   return c;
 }
 
-export const blankAdvocate =(profile?: UserProfile | null): Advocate => {
+export const blankAdvocate = (profile?: UserProfile | null): Advocate => {
   // Only an advocate filing their own case is the advocate; anyone else's name would be wrong here.
   const self = profile?.role === "ADVOCATE" ? profile : null;
   return {
@@ -280,9 +280,14 @@ export function syncIntakeCounts(draft: FilingDraft): void {
   const taken = new Set(
     [...draft.intake.cheques, ...draft.intake.notices, ...draft.intake.parties]
       .flatMap((g) => g.slots)
-      .map((s) => s.key)
+      .map((s) => s.key),
   );
-  const grow = (groups: IntakeGroup[], records: unknown[], make: (n: number) => IntakeGroup, blank: () => unknown) => {
+  const grow = (
+    groups: IntakeGroup[],
+    records: unknown[],
+    make: (n: number) => IntakeGroup,
+    blank: () => unknown,
+  ) => {
     if (groups.length === 0) return;
     while (groups.length < records.length) {
       const group = make(groups.length + 1);
@@ -307,7 +312,7 @@ function groupsOf(draft: Pick<FilingDraft, "intake">, kind: CaseRecordKind): Int
 /** The form's records of a kind: its cheques, notices or complainants. */
 export function caseRecords(
   draft: Pick<FilingDraft, "cheques" | "notices" | "complainants">,
-  kind: CaseRecordKind
+  kind: CaseRecordKind,
 ): unknown[] {
   if (kind === "cheque") return draft.cheques;
   return kind === "notice" ? draft.notices : draft.complainants;
@@ -320,7 +325,7 @@ export function caseRecords(
 export function caseRecordGroup(
   draft: Pick<FilingDraft, "intake">,
   kind: CaseRecordKind,
-  index: number
+  index: number,
 ): IntakeGroup | undefined {
   const groups = groupsOf(draft, kind);
   return groups.length > 1 ? groups[index] : undefined;
@@ -444,15 +449,19 @@ type DocSpec = {
   intakeKey?: string;
 };
 
-function docRow(spec: DocSpec, existing: CaseDocument | undefined, slot?: IntakeSlot): CaseDocument {
-  const mirrored = spec.intakeKey ? slot ?? null : null;
+function docRow(
+  spec: DocSpec,
+  existing: CaseDocument | undefined,
+  slot?: IntakeSlot,
+): CaseDocument {
+  const mirrored = spec.intakeKey ? (slot ?? null) : null;
   return {
     id: existing?.id ?? uid("doc"),
     name: spec.name,
     required: spec.required,
     // Rows that mirror an intake slot always show that slot's file; others keep their own.
-    file: mirrored ? mirrored.file : existing?.file ?? null,
-    quality: mirrored ? (mirrored.file ? "good" : null) : existing?.quality ?? null,
+    file: mirrored ? mirrored.file : (existing?.file ?? null),
+    quality: mirrored ? (mirrored.file ? "good" : null) : (existing?.quality ?? null),
     digital: existing?.digital ?? false,
     intakeKey: spec.intakeKey,
     custom: false,
@@ -500,9 +509,21 @@ export function buildDocumentGroups(draft: FilingDraft): DocumentGroup[] {
       const sfx = manyNotices ? ` ${g.n}` : "";
       return [
         { name: `Demand notice${sfx}`, required: true, intakeKey: keyIn(g, "demand-notice") },
-        { name: `Proof of dispatch of demand notice (postal receipt)${sfx}`, required: true, intakeKey: keyIn(g, "dispatch-proof") },
-        { name: `Proof of delivery of demand notice (AD card)${sfx}`, required: true, intakeKey: keyIn(g, "delivery-proof") },
-        { name: `Reply to the demand notice${sfx}`, required: false, intakeKey: keyIn(g, "notice-reply") },
+        {
+          name: `Proof of dispatch of demand notice (postal receipt)${sfx}`,
+          required: true,
+          intakeKey: keyIn(g, "dispatch-proof"),
+        },
+        {
+          name: `Proof of delivery of demand notice (AD card)${sfx}`,
+          required: true,
+          intakeKey: keyIn(g, "delivery-proof"),
+        },
+        {
+          name: `Reply to the demand notice${sfx}`,
+          required: false,
+          intakeKey: keyIn(g, "notice-reply"),
+        },
       ];
     }),
   ];

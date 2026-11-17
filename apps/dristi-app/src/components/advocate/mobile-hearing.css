@@ -14,18 +14,35 @@
   animation: none;
 }
 @keyframes hearing-reveal-open {
-  from { height: 0; }
-  to { height: var(--radix-collapsible-content-height); }
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
 }
 @keyframes hearing-reveal-close {
-  from { height: var(--radix-collapsible-content-height); }
-  to { height: 0; }
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
 }
 @keyframes hearing-actions-settle {
-  0% { transform: translateY(-12%); }
-  72% { transform: translateY(2%); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(-12%);
+  }
+  72% {
+    transform: translateY(2%);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hearing-reveal, .hearing-actions { animation: none !important; }
+  .hearing-reveal,
+  .hearing-actions {
+    animation: none !important;
+  }
 }

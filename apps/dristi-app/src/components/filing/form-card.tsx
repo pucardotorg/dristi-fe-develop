@@ -44,11 +44,13 @@ export function FormCard({
         {description ? (
           <CardDescription className="text-body-compact">{description}</CardDescription>
         ) : null}
-        {action ? <CardAction className={!description ? "row-span-1 self-center" : undefined}>{action}</CardAction> : null}
+        {action ? (
+          <CardAction className={!description ? "row-span-1 self-center" : undefined}>
+            {action}
+          </CardAction>
+        ) : null}
       </CardHeader>
-      <CardContent className={cn("flex flex-col gap-6", contentClassName)}>
-        {children}
-      </CardContent>
+      <CardContent className={cn("flex flex-col gap-6", contentClassName)}>{children}</CardContent>
     </Card>
   );
 }
@@ -95,18 +97,12 @@ export function HalfWidth({
   children: React.ReactNode;
   className?: string;
 }) {
-  return (
-    <div className={cn("w-full md:w-1/2 md:pr-2", className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn("w-full md:w-1/2 md:pr-2", className)}>{children}</div>;
 }
 
 /** Sub-heading inside a card (e.g. "PoA holder details"). */
 export function FormSubhead({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-body-compact font-medium text-muted-foreground">{children}</p>
-  );
+  return <p className="text-body-compact font-medium text-muted-foreground">{children}</p>;
 }
 
 /** Hairline divider inside a card. */

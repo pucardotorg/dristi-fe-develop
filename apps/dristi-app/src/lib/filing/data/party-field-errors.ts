@@ -26,7 +26,7 @@ function nth(index: number | undefined): string {
 /** `[institution(_contacts).](mobile_numbers|email_addresses|addresses)[.index][.part]` */
 const CONTACT_FIELD = new RegExp(
   "^(?:(institution|institution_contacts)\\.)?" +
-    "(mobile_numbers|email_addresses|addresses)(?:\\.(\\d+))?(?:\\.(\\w+))?$"
+    "(mobile_numbers|email_addresses|addresses)(?:\\.(\\d+))?(?:\\.(\\w+))?$",
 );
 
 function contactMessage(field: string, codes: readonly string[]): string | undefined {
@@ -62,8 +62,7 @@ const FIELD_MESSAGES: Record<string, string> = {
 /** The form's message for the first party field the backend refused, if it is one we know. */
 export function partyFieldMessage(error: ApiError): string | undefined {
   for (const field of Object.keys(error.fieldErrors)) {
-    const message =
-      contactMessage(field, error.fieldCodes[field] ?? []) ?? FIELD_MESSAGES[field];
+    const message = contactMessage(field, error.fieldCodes[field] ?? []) ?? FIELD_MESSAGES[field];
     if (message) return message;
   }
   return undefined;

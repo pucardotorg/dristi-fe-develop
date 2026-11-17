@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { autoMap, buildRequest, columnFit, followsTemplate, instancesIn, MUST_MAP, sourceFor, unmatchedRequired, type Workbookish } from "./excel";
+import {
+  autoMap,
+  buildRequest,
+  columnFit,
+  followsTemplate,
+  instancesIn,
+  MUST_MAP,
+  sourceFor,
+  unmatchedRequired,
+  type Workbookish,
+} from "./excel";
 import { COLUMNS, GROUPS, parseHeader, templateColumns, templateHeader } from "./excel-spec";
 
 const complainant = {
@@ -16,42 +26,129 @@ function book(headers: string[], ...rows: string[][]): Workbookish {
 
 test("a header splits into its column and its repeat", () => {
   assert.deepEqual(parseHeader("Cheque number_2"), { base: "Cheque number", instance: [2] });
-  assert.deepEqual(parseHeader("Accused address_1_2"), { base: "Accused address", instance: [1, 2] });
+  assert.deepEqual(parseHeader("Accused address_1_2"), {
+    base: "Accused address",
+    instance: [1, 2],
+  });
   assert.deepEqual(parseHeader("Cheque number"), { base: "Cheque number", instance: [] });
 });
 
 test("_2 columns become the second cheque, accused and witness; _1_2 a second address", () => {
   const headers = [
-    "Case reference", "Accused name", "Accused address", "Accused address_1_2", "Accused name_2", "Accused address_2",
-    "Cheque number", "Cheque number_2", "Witness name", "Witness name_2",
+    "Case reference",
+    "Accused name",
+    "Accused address",
+    "Accused address_1_2",
+    "Accused name_2",
+    "Accused address_2",
+    "Cheque number",
+    "Cheque number_2",
+    "Witness name",
+    "Witness name_2",
   ];
-  const row = ["R-1", "A One", "Addr 1", "Addr 1b", "A Two", "Addr 2", "111111", "222222", "W1", "W2"];
+  const row = [
+    "R-1",
+    "A One",
+    "Addr 1",
+    "Addr 1b",
+    "A Two",
+    "Addr 2",
+    "111111",
+    "222222",
+    "W1",
+    "W2",
+  ];
   const inst = instancesIn(headers);
   assert.deepEqual(inst.accused, [[1], [2]]);
   // Accused 2 mirrors accused 1's two address slots; the blank one adds nothing below.
-  assert.deepEqual(inst.address, [[1, 1], [1, 2], [2, 1], [2, 2]]);
-  const req = buildRequest(book(headers, row), autoMap(headers), {}, { complainant, barNumbers: ["K/1450/2012"], adr: "no", fileName: "t" });
+  assert.deepEqual(inst.address, [
+    [1, 1],
+    [1, 2],
+    [2, 1],
+    [2, 2],
+  ]);
+  const req = buildRequest(
+    book(headers, row),
+    autoMap(headers),
+    {},
+    { complainant, barNumbers: ["K/1450/2012"], adr: "no", fileName: "t" },
+  );
   const c = req.cases[0];
-  assert.deepEqual(c.accused.map((a) => a.name), ["A One", "A Two"]);
-  assert.deepEqual(c.accused[0].addresses.map((a) => a.line1), ["Addr 1", "Addr 1b"]);
-  assert.deepEqual(c.accused[1].addresses.map((a) => a.line1), ["Addr 2"]);
-  assert.deepEqual(c.cheques.map((q) => q.number), ["111111", "222222"]);
-  assert.deepEqual(c.witnesses?.map((w) => w.name), ["W1", "W2"]);
+  assert.deepEqual(
+    c.accused.map((a) => a.name),
+    ["A One", "A Two"],
+  );
+  assert.deepEqual(
+    c.accused[0].addresses.map((a) => a.line1),
+    ["Addr 1", "Addr 1b"],
+  );
+  assert.deepEqual(
+    c.accused[1].addresses.map((a) => a.line1),
+    ["Addr 2"],
+  );
+  assert.deepEqual(
+    c.cheques.map((q) => q.number),
+    ["111111", "222222"],
+  );
+  assert.deepEqual(
+    c.witnesses?.map((w) => w.name),
+    ["W1", "W2"],
+  );
   assert.equal(c.complainants, undefined);
 });
 
 test("numbered template headers are read, and a file may carry more than the template", () => {
   const headers = [
-    "Case reference", "Accused 1 name", "Accused 1 address 1 line", "Accused 1 address 2 line", "Accused 2 name", "Accused 2 address 1 line",
-    "Cheque 1 number", "Cheque 1 complainant branch IFSC", "Cheque 2 number", "Deposited in complainant's account",
-    "Other complaint pending between the same parties", "Interim relief", "Final relief", "Affidavit",
+    "Case reference",
+    "Accused 1 name",
+    "Accused 1 address 1 line",
+    "Accused 1 address 2 line",
+    "Accused 2 name",
+    "Accused 2 address 1 line",
+    "Cheque 1 number",
+    "Cheque 1 complainant branch IFSC",
+    "Cheque 2 number",
+    "Deposited in complainant's account",
+    "Other complaint pending between the same parties",
+    "Interim relief",
+    "Final relief",
+    "Affidavit",
   ];
-  const row = ["R-1", "A One", "Addr 1", "Addr 1b", "A Two", "Addr 2", "111111", "HDFC0000060", "222222", "Yes", "No", "Pay 20%.", "Convict.", "I swear.\nTrue."];
-  const req = buildRequest(book(headers, row), autoMap(headers), {}, { complainant, barNumbers: [], adr: "no", fileName: "t" });
+  const row = [
+    "R-1",
+    "A One",
+    "Addr 1",
+    "Addr 1b",
+    "A Two",
+    "Addr 2",
+    "111111",
+    "HDFC0000060",
+    "222222",
+    "Yes",
+    "No",
+    "Pay 20%.",
+    "Convict.",
+    "I swear.\nTrue.",
+  ];
+  const req = buildRequest(
+    book(headers, row),
+    autoMap(headers),
+    {},
+    { complainant, barNumbers: [], adr: "no", fileName: "t" },
+  );
   const c = req.cases[0];
-  assert.deepEqual(c.accused.map((a) => a.name), ["A One", "A Two"]);
-  assert.deepEqual(c.accused[0].addresses.map((a) => a.line1), ["Addr 1", "Addr 1b"]);
-  assert.deepEqual(c.cheques.map((q) => q.number), ["111111", "222222"]);
+  assert.deepEqual(
+    c.accused.map((a) => a.name),
+    ["A One", "A Two"],
+  );
+  assert.deepEqual(
+    c.accused[0].addresses.map((a) => a.line1),
+    ["Addr 1", "Addr 1b"],
+  );
+  assert.deepEqual(
+    c.cheques.map((q) => q.number),
+    ["111111", "222222"],
+  );
   assert.equal(c.jurisdiction.complainantBranchIfsc, "HDFC0000060");
   assert.equal(c.jurisdiction.otherPending, false);
   assert.equal(c.interimRelief, "Pay 20%.");
@@ -60,7 +157,12 @@ test("numbered template headers are read, and a file may carry more than the tem
 
 test("an optional section left blank on a row adds nothing to that case", () => {
   const headers = ["Case reference", "Cheque number", "Witness name", "Witness name_2"];
-  const req = buildRequest(book(headers, ["R-1", "111111", "", ""]), autoMap(headers), {}, { complainant, barNumbers: [], adr: "no", fileName: "t" });
+  const req = buildRequest(
+    book(headers, ["R-1", "111111", "", ""]),
+    autoMap(headers),
+    {},
+    { complainant, barNumbers: [], adr: "no", fileName: "t" },
+  );
   assert.equal(req.cases[0].witnesses?.length, 0);
   assert.equal(req.cases[0].cheques.length, 1);
 });
@@ -70,17 +172,37 @@ test("in a filer's own layout, a matched column's _2 is read for the second inst
   const map = { ...autoMap(headers), chequeNumber: 1 };
   const col = COLUMNS.find((c) => c.key === "chequeNumber")!;
   assert.equal(sourceFor(col, [2], map, headers), 2);
-  const req = buildRequest(book(headers, ["R-1", "333333", "444444"]), map, {}, { complainant, barNumbers: [], adr: "no", fileName: "t" });
-  assert.deepEqual(req.cases[0].cheques.map((q) => q.number), ["333333", "444444"]);
+  const req = buildRequest(
+    book(headers, ["R-1", "333333", "444444"]),
+    map,
+    {},
+    { complainant, barNumbers: [], adr: "no", fileName: "t" },
+  );
+  assert.deepEqual(
+    req.cases[0].cheques.map((q) => q.number),
+    ["333333", "444444"],
+  );
 });
 
 test("repeats are per case: one row uses the _2 columns, the next leaves them blank", () => {
-  const headers = ["Case reference", "Accused name", "Accused address", "Accused name_2", "Accused address_2", "Cheque number", "Cheque number_2"];
+  const headers = [
+    "Case reference",
+    "Accused name",
+    "Accused address",
+    "Accused name_2",
+    "Accused address_2",
+    "Cheque number",
+    "Cheque number_2",
+  ];
   const req = buildRequest(
-    book(headers, ["R-1", "A One", "Addr 1", "A Two", "Addr 2", "111111", "222222"], ["R-2", "B One", "Addr 3", "", "", "333333", ""]),
+    book(
+      headers,
+      ["R-1", "A One", "Addr 1", "A Two", "Addr 2", "111111", "222222"],
+      ["R-2", "B One", "Addr 3", "", "", "333333", ""],
+    ),
     autoMap(headers),
     {},
-    { complainant, barNumbers: [], adr: "no", fileName: "t" }
+    { complainant, barNumbers: [], adr: "no", fileName: "t" },
   );
   assert.equal(req.cases[0].accused.length, 2);
   assert.equal(req.cases[0].cheques.length, 2);
@@ -91,7 +213,10 @@ test("repeats are per case: one row uses the _2 columns, the next leaves them bl
 test("a matched column is checked against its field: dates, pincodes, list words", () => {
   const col = (key: string) => COLUMNS.find((c) => c.key === key)!;
   assert.equal(columnFit(col("chequeDate"), ["01/09/2026", "14-09-2026", ""]).ok, true);
-  assert.deepEqual(columnFit(col("chequeDate"), ["Harsh", "Mehta", "01/09/2026"]), { ok: false, note: "2 of 3 values are not dates" });
+  assert.deepEqual(columnFit(col("chequeDate"), ["Harsh", "Mehta", "01/09/2026"]), {
+    ok: false,
+    note: "2 of 3 values are not dates",
+  });
   assert.equal(columnFit(col("accusedPin"), ["380015", "380 006"]).ok, true);
   assert.equal(columnFit(col("accusedName"), []).ok, false);
   const reason = columnFit(col("returnReason"), ["INSUFFICIENT FUNDS"]);
@@ -99,19 +224,45 @@ test("a matched column is checked against its field: dates, pincodes, list words
 });
 
 test("jurisdiction and a person responsible's police station are read from their columns", () => {
-  const headers = ["Case reference", "Accused 1 type", "Accused 1 name", "Accused 1 resides within jurisdiction", "Accused 1 person responsible 1 name", "Accused 1 person responsible 1 address line", "Accused 1 person responsible 1 police station", "Cheque 1 number"];
+  const headers = [
+    "Case reference",
+    "Accused 1 type",
+    "Accused 1 name",
+    "Accused 1 resides within jurisdiction",
+    "Accused 1 person responsible 1 name",
+    "Accused 1 person responsible 1 address line",
+    "Accused 1 person responsible 1 police station",
+    "Cheque 1 number",
+  ];
   const req = buildRequest(
-    book(headers, ["R-1", "Institution", "A Pvt Ltd", "No", "P One", "Plot 4", "Naroda Police Station", "111111"]),
+    book(headers, [
+      "R-1",
+      "Institution",
+      "A Pvt Ltd",
+      "No",
+      "P One",
+      "Plot 4",
+      "Naroda Police Station",
+      "111111",
+    ]),
     autoMap(headers),
     {},
-    { complainant, barNumbers: [], adr: "maybe", fileName: "t" }
+    { complainant, barNumbers: [], adr: "maybe", fileName: "t" },
   );
   const c = req.cases[0];
   assert.equal(c.accused[0].withinJurisdiction, false);
-  assert.equal(c.accused[0].personsResponsible?.[0].address?.policeStation, "Naroda Police Station");
+  assert.equal(
+    c.accused[0].personsResponsible?.[0].address?.policeStation,
+    "Naroda Police Station",
+  );
   assert.equal(req.adr, "maybe");
   // Left blank, jurisdiction is not sent: intake reads it from the address.
-  const blank = buildRequest(book(headers, ["R-2", "Individual", "B", "", "", "", "", "222222"]), autoMap(headers), {}, { complainant, barNumbers: [], adr: "no", fileName: "t" });
+  const blank = buildRequest(
+    book(headers, ["R-2", "Individual", "B", "", "", "", "", "222222"]),
+    autoMap(headers),
+    {},
+    { complainant, barNumbers: [], adr: "no", fileName: "t" },
+  );
   assert.equal(blank.cases[0].accused[0].withinJurisdiction, undefined);
 });
 
@@ -128,13 +279,20 @@ test("a required field no column fills is reported, so every case is known to la
 
 test("deposited and replied with no column are left unstated, not read as Yes and No", () => {
   const headers = ["Case reference", "Cheque number"];
-  const req = buildRequest(book(headers, ["R-1", "111111"]), autoMap(headers), {}, { complainant, barNumbers: [], adr: "no", fileName: "t" });
+  const req = buildRequest(
+    book(headers, ["R-1", "111111"]),
+    autoMap(headers),
+    {},
+    { complainant, barNumbers: [], adr: "no", fileName: "t" },
+  );
   assert.equal(req.cases[0].jurisdiction.depositedInOwnAccount, null);
   assert.equal(req.cases[0].notices[0].replied, null);
 });
 
 test("the template is recognised without its optional columns, and not with a column of its own", () => {
-  const required = COLUMNS.filter((c) => MUST_MAP.includes(c.key) && GROUPS.find((g) => g.id === c.group)!.always).map(templateHeader);
+  const required = COLUMNS.filter(
+    (c) => MUST_MAP.includes(c.key) && GROUPS.find((g) => g.id === c.group)!.always,
+  ).map(templateHeader);
   assert.equal(followsTemplate(required), true);
   assert.equal(followsTemplate(templateColumns().map((t) => t.header)), true);
   assert.equal(followsTemplate([...required, "Cheque 2 number", "Witness 2 name"]), true);

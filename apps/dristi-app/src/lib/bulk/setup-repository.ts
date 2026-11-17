@@ -76,7 +76,11 @@ export async function prefillKnownComplainant(draft: FilingDraft): Promise<void>
 
   const file = demoPdf(`Identity proof: ${src.name}`);
   const ref = { id: newId("f"), name: file.name, size: file.size, type: file.type, ext: "PDF" };
-  await new BulkSetupRepository(draft.id).putFile({ ...ref, blob: file, createdAt: new Date().toISOString() });
+  await new BulkSetupRepository(draft.id).putFile({
+    ...ref,
+    blob: file,
+    createdAt: new Date().toISOString(),
+  });
   const slot = draft.intake.parties[0]?.slots.find((x) => x.docType === "id-proof");
   if (slot) slot.file = ref;
 }

@@ -30,18 +30,8 @@ import {
   DescriptionRow,
   DescriptionTerm,
 } from "@/components/ui/description-list";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
@@ -127,10 +117,7 @@ export function RemoveAdvocateDialog({
   const [errors, setErrors] = useState<Errors>({});
 
   const current = STEPS.find((item) => item.step === step) ?? STEPS[0];
-  const isDirty = useMemo(
-    () => Boolean(reason || docFile || route),
-    [reason, docFile, route]
-  );
+  const isDirty = useMemo(() => Boolean(reason || docFile || route), [reason, docFile, route]);
 
   function resetForm() {
     setStep(1);
@@ -243,7 +230,9 @@ export function RemoveAdvocateDialog({
               </div>
               <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
                 <DialogTitle className="text-title-s font-semibold text-balance">
-                  {step === 1 ? t("removeAdvocateDialog_removeAdvocateName", { advocateName }) : current.title}
+                  {step === 1
+                    ? t("removeAdvocateDialog_removeAdvocateName", { advocateName })
+                    : current.title}
                 </DialogTitle>
                 {/* No text-pretty here: it balanced the last line by breaking
                     early mid-sentence, which read as a stray line break
@@ -252,7 +241,9 @@ export function RemoveAdvocateDialog({
                   {step === 3 && route
                     ? route === "consent"
                       ? t("removeAdvocateDialog_onceAdvocateNameAcceptsTheyCome", { advocateName })
-                      : t("removeAdvocateDialog_onceTheMagistrateOrdersItAdvocate", { advocateName })
+                      : t("removeAdvocateDialog_onceTheMagistrateOrdersItAdvocate", {
+                          advocateName,
+                        })
                     : step === 2 && route === "consent"
                       ? t("removeAdvocateDialog_giveAdvocateNameTheContextFor", { advocateName })
                       : current.description}
@@ -289,7 +280,9 @@ export function RemoveAdvocateDialog({
                           <div className="flex min-w-0 flex-col gap-0.5">
                             <div className="flex min-h-10 items-center">
                               <Label htmlFor="remove-route-consent">
-                                {t("removeAdvocateDialog_askAdvocateNameToConsent", { advocateName })}
+                                {t("removeAdvocateDialog_askAdvocateNameToConsent", {
+                                  advocateName,
+                                })}
                               </Label>
                             </div>
                             <p className="-mt-2 pb-1 text-caption text-muted-foreground">
@@ -327,15 +320,14 @@ export function RemoveAdvocateDialog({
                         >
                           {t("removeAdvocateDialog_whyShouldTheyBeRemoved")}
                           {route === "consent" ? (
-                            <span className="font-normal text-muted-foreground">
-                              {" "}
-                              (optional)
-                            </span>
+                            <span className="font-normal text-muted-foreground"> (optional)</span>
                           ) : null}
                         </FieldLabel>
                         <FieldDescription>
                           {route === "consent"
-                            ? t("removeAdvocateDialog_contextForAdvocateNameTheySee", { advocateName })
+                            ? t("removeAdvocateDialog_contextForAdvocateNameTheySee", {
+                                advocateName,
+                              })
                             : t("removeAdvocateDialog_theMagistrateReadsThisToDecide")}
                         </FieldDescription>
                         <Textarea
@@ -359,10 +351,7 @@ export function RemoveAdvocateDialog({
                         <FieldLabel className="block w-full text-body font-semibold leading-snug">
                           {t("removeAdvocateDialog_supportingDocument")}
                           {route === "consent" ? (
-                            <span className="font-normal text-muted-foreground">
-                              {" "}
-                              (optional)
-                            </span>
+                            <span className="font-normal text-muted-foreground"> (optional)</span>
                           ) : null}
                         </FieldLabel>
                         <FieldDescription>
@@ -382,10 +371,7 @@ export function RemoveAdvocateDialog({
                       </Field>
                     </>
                   ) : route === "magistrate" ? (
-                    <PartyApplicationDocument
-                      caseRef={caseRef}
-                      doc={applicationDoc}
-                    />
+                    <PartyApplicationDocument caseRef={caseRef} doc={applicationDoc} />
                   ) : (
                     <DescriptionList>
                       <ReviewRow term={t("removeAdvocateDialog_advocate")}>
@@ -398,9 +384,7 @@ export function RemoveAdvocateDialog({
                       </ReviewRow>
                       {reason.trim() ? (
                         <ReviewRow term={t("removeAdvocateDialog_grounds")}>
-                          <span className="whitespace-pre-wrap">
-                            {reason.trim()}
-                          </span>
+                          <span className="whitespace-pre-wrap">{reason.trim()}</span>
                         </ReviewRow>
                       ) : null}
                       {docFile ? (
@@ -473,19 +457,11 @@ export function RemoveAdvocateDialog({
   );
 }
 
-function ReviewRow({
-  term,
-  children,
-}: {
-  term: string;
-  children: React.ReactNode;
-}) {
+function ReviewRow({ term, children }: { term: string; children: React.ReactNode }) {
   return (
     <DescriptionRow className="grid-cols-1 sm:grid-cols-[minmax(7rem,10rem)_1fr]">
       <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
-      <DescriptionDetails className="text-body-compact">
-        {children}
-      </DescriptionDetails>
+      <DescriptionDetails className="text-body-compact">{children}</DescriptionDetails>
     </DescriptionRow>
   );
 }

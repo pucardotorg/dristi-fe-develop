@@ -15,17 +15,8 @@ import { DocumentPreviewActions } from "@/components/cases/document-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -48,20 +39,11 @@ import {
   type CaseFileNode,
   type CaseFileView,
 } from "@/lib/cases/case-file";
-import {
-  caseFileDigitalPane,
-  caseFileRegisterDocumentId,
-} from "@/lib/cases/case-file-digital";
+import { caseFileDigitalPane, caseFileRegisterDocumentId } from "@/lib/cases/case-file-digital";
 import { useSessionValue } from "@/lib/cases/demo-session";
 import { documentsFile } from "@/lib/cases/documents";
-import {
-  evidenceMarksKey,
-  parseEvidenceMarks,
-} from "@/lib/cases/evidence-marks";
-import {
-  MarkEvidenceDialog,
-  useCanMarkEvidence,
-} from "@/components/cases/mark-evidence-dialog";
+import { evidenceMarksKey, parseEvidenceMarks } from "@/lib/cases/evidence-marks";
+import { MarkEvidenceDialog, useCanMarkEvidence } from "@/components/cases/mark-evidence-dialog";
 import { type ComplaintPane } from "@/lib/cases/complaint";
 import { type CaseRecord } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
@@ -80,10 +62,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 
 import { DOCUMENT_GROUND } from "./document-ground";
 import { COLLAPSE_MOTION, glideToTop } from "./motion";
@@ -122,9 +101,7 @@ export function CaseFile({
   const leafSrc = leaf ? caseFilePdfSrc(leaf) : undefined;
   const leafLabel = leaf?.label;
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [openIds, setOpenIds] = useState(
-    () => new Set(ancestorIds(CASE_FILE_TREE, docId))
-  );
+  const [openIds, setOpenIds] = useState(() => new Set(ancestorIds(CASE_FILE_TREE, docId)));
 
   function selectDoc(id: string) {
     setOpenIds((current) => {
@@ -212,10 +189,7 @@ export function CaseFile({
             <ChevronRightIcon aria-hidden className="text-muted-foreground" />
           </Button>
         </SheetTrigger>
-        <SheetContent
-          side="left"
-          className="w-full overflow-y-auto p-0 sm:max-w-sm"
-        >
+        <SheetContent side="left" className="w-full overflow-y-auto p-0 sm:max-w-sm">
           <SheetHeader>
             <SheetTitle className="text-title-s font-semibold">
               {t("casesCaseFile_caseFile")}
@@ -277,10 +251,7 @@ export function CaseFile({
                 <DocumentViewSwitch
                   view={view}
                   onViewChange={(next) => {
-                    router.replace(
-                      caseFileDocHref(record.id, docId, next),
-                      { scroll: false }
-                    );
+                    router.replace(caseFileDocHref(record.id, docId, next), { scroll: false });
                   }}
                 />
                 {/*
@@ -303,12 +274,7 @@ export function CaseFile({
               </div>
             ) : null}
           </div>
-          <DocumentPane
-            caseId={record.id}
-            node={selected}
-            pane={pane}
-            view={view}
-          />
+          <DocumentPane caseId={record.id} node={selected} pane={pane} view={view} />
         </div>
       </Card>
       <MarkEvidenceDialog
@@ -316,10 +282,7 @@ export function CaseFile({
         document={marking}
         /* Every number given in the case, from any tab: a submitted document
            marked from Documents is not in the case file's own list. */
-        taken={[
-          ...register.map((document) => document.evidenceNumber),
-          ...Object.values(marks),
-        ]}
+        taken={[...register.map((document) => document.evidenceNumber), ...Object.values(marks)]}
         onOpenChange={(open) => {
           if (!open) setMarking(null);
         }}
@@ -375,7 +338,7 @@ export function CaseFileIndex({
                   className={cn(
                     rowClass,
                     "font-medium",
-                    depthPad[Math.min(depth, depthPad.length - 1)]
+                    depthPad[Math.min(depth, depthPad.length - 1)],
                   )}
                   onClick={(event) => {
                     if (openIds.has(node.id)) return;
@@ -412,7 +375,7 @@ export function CaseFileIndex({
                   <p
                     className={cn(
                       "py-1.5 text-body-compact text-muted-foreground",
-                      depthPad[Math.min(depth + 1, depthPad.length - 1)]
+                      depthPad[Math.min(depth + 1, depthPad.length - 1)],
                     )}
                   >
                     {t("casesCaseFile_noneInThisFileYet")}
@@ -437,8 +400,7 @@ export function CaseFileIndex({
                         rowClass,
                         depthPad[Math.min(depth, depthPad.length - 1)],
                         "pr-12",
-                        selectedId === node.id &&
-                          "bg-accent font-medium hover:bg-accent"
+                        selectedId === node.id && "bg-accent font-medium hover:bg-accent",
                       )}
                     >
                       <IndexLabel number={node.number} label={node.label} />
@@ -446,7 +408,9 @@ export function CaseFileIndex({
                         <Badge
                           variant="secondary"
                           className="shrink-0 font-mono"
-                          aria-label={t("casesCaseFile_markedAsEvidenceNumberFor", { numberFor: (evidence.numberFor(node.id)) ?? "" })}
+                          aria-label={t("casesCaseFile_markedAsEvidenceNumberFor", {
+                            numberFor: evidence.numberFor(node.id) ?? "",
+                          })}
                         >
                           {evidence.numberFor(node.id)}
                         </Badge>
@@ -516,8 +480,7 @@ const depthPad = ["px-2", "pr-2 pl-6", "pr-2 pl-8"] as const;
 
 function scrollNodeIntoIndex(node: HTMLElement) {
   const viewport = node.closest("[data-slot=scroll-area-viewport]");
-  const scroller =
-    viewport instanceof HTMLElement ? viewport : node.closest("nav");
+  const scroller = viewport instanceof HTMLElement ? viewport : node.closest("nav");
   if (!(scroller instanceof HTMLElement)) return;
   glideToTop(scroller, node);
 }
@@ -525,9 +488,7 @@ function scrollNodeIntoIndex(node: HTMLElement) {
 function IndexLabel({ number, label }: { number: string; label: string }) {
   return (
     <span className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 text-left">
-      <span className="tabular-nums text-muted-foreground">
-        {fileNumberLabel(number)}
-      </span>
+      <span className="tabular-nums text-muted-foreground">{fileNumberLabel(number)}</span>
       <span className="min-w-0 whitespace-normal">{label}</span>
     </span>
   );
@@ -595,7 +556,7 @@ function DocumentPane({
         className={cn(
           "col-start-1 row-start-1 min-h-0 min-w-0 overflow-hidden rounded-xl",
           DOCUMENT_GROUND,
-          view === "pdf" ? "visible" : "invisible"
+          view === "pdf" ? "visible" : "invisible",
         )}
         aria-hidden={view === "pdf" ? undefined : true}
       >
@@ -612,9 +573,7 @@ function DocumentPane({
                 <EmptyTitle className="text-body font-semibold">
                   {t("casesCaseFile_noDigitalRecord")}
                 </EmptyTitle>
-                <EmptyDescription>
-                  {t("casesCaseFile_noDigitalRecordIsFiledFor")}
-                </EmptyDescription>
+                <EmptyDescription>{t("casesCaseFile_noDigitalRecordIsFiledFor")}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           )}
@@ -641,17 +600,12 @@ function CaseFilePdf({ src, title }: { src: string; title: string }) {
 function NoDocumentSelected() {
   const t = useTranslations();
   return (
-    <Empty
-      id="case-file-document"
-      className="min-h-0 flex-1 border border-dashed border-border"
-    >
+    <Empty id="case-file-document" className="min-h-0 flex-1 border border-dashed border-border">
       <EmptyHeader>
         <EmptyTitle className="text-body font-semibold">
           {t("casesCaseFile_noDocumentSelected")}
         </EmptyTitle>
-        <EmptyDescription>
-          {t("casesCaseFile_chooseAnItemFromTheCase")}
-        </EmptyDescription>
+        <EmptyDescription>{t("casesCaseFile_chooseAnItemFromTheCase")}</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

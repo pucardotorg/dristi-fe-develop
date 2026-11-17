@@ -3,7 +3,17 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { ArrowLeftIcon, ArrowRightIcon, DownloadIcon, FlaskConicalIcon, MinusIcon, PlusIcon, SearchIcon, SearchXIcon, WalletIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  DownloadIcon,
+  FlaskConicalIcon,
+  MinusIcon,
+  PlusIcon,
+  SearchIcon,
+  SearchXIcon,
+  WalletIcon,
+} from "lucide-react";
 import { OutcomeAmount, OutcomeHeader, StatusLine, notify } from "@/components/feedback";
 
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
@@ -24,19 +34,9 @@ import {
   ComboboxValue,
   useComboboxAnchor,
 } from "@/components/ui/combobox";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DocumentSlot } from "@/components/ui/document-slot";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,11 +71,7 @@ import {
   DescriptionRow,
   DescriptionTerm,
 } from "@/components/ui/description-list";
-import {
-  CaseDetails,
-  CaseIdentity,
-  JOIN_PANEL,
-} from "@/components/join/case-details";
+import { CaseDetails, CaseIdentity, JOIN_PANEL } from "@/components/join/case-details";
 import { DownloadCaseFileButton } from "@/components/join/download-case-file-button";
 import {
   DocumentPreviewDialog,
@@ -83,12 +79,7 @@ import {
   useObjectUrl,
 } from "@/components/document-preview";
 import { pick, type Locale } from "@/lib/onboarding/content";
-import {
-  fill,
-  joinDialog,
-  type CaseParty,
-  type JoinCase,
-} from "@/lib/join/content";
+import { fill, joinDialog, type CaseParty, type JoinCase } from "@/lib/join/content";
 import {
   advDialog,
   VAKALATNAMA_CO_ADVOCATES,
@@ -109,11 +100,7 @@ import {
   type InvitePerson,
 } from "@/components/access/people-invite-field";
 import { useAccess } from "@/components/access/access-state";
-import {
-  joinOfficeCopy,
-  registerAccessCase,
-  shareCopy,
-} from "@/lib/access/content";
+import { joinOfficeCopy, registerAccessCase, shareCopy } from "@/lib/access/content";
 import { JOIN_DEMO_CASE_ID } from "@/lib/cases/party-cases";
 import { useCourt } from "@/components/court/court-provider";
 import { cn } from "@/lib/utils";
@@ -164,10 +151,27 @@ type Stage =
 
 /** The flow's order: each step's drift follows it (forward from the right, back from the left). */
 /** The steps where something has been entered that leaving would lose. */
-const LEAVE_ASKS: readonly Stage[] = ["code", "details", "account", "role", "verify", "vakalatnama"];
+const LEAVE_ASKS: readonly Stage[] = [
+  "code",
+  "details",
+  "account",
+  "role",
+  "verify",
+  "vakalatnama",
+];
 
-const STAGE_ORDER: readonly Stage[] = ["lookup", "invited", "code", "details", "account", "role", "verify", "vakalatnama", "pay", "done"];
-
+const STAGE_ORDER: readonly Stage[] = [
+  "lookup",
+  "invited",
+  "code",
+  "details",
+  "account",
+  "role",
+  "verify",
+  "vakalatnama",
+  "pay",
+  "done",
+];
 
 /** Every question on the vakalatnama step wears the same label. */
 const VK_QUESTION = "text-body font-semibold leading-snug";
@@ -258,7 +262,8 @@ function UploadedDocField({
         onChooseFile={() => inputRef.current?.click()}
         copy={{
           optional: locale === "ml" ? "നിർബന്ധമല്ല" : "Optional",
-          noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : t("advocateJoinCaseDialog_noFileChosenYet"),
+          noFile:
+            locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : t("advocateJoinCaseDialog_noFileChosenYet"),
           chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : t("advocateJoinCaseDialog_chooseFile"),
         }}
       />
@@ -427,8 +432,7 @@ export function AdvocateJoinCaseDialog({
      for the vakalatnama (owner, 2026-10-13). */
   const { court: joinCourt, profile: joinProfile } = useCourt();
   const flatJoinFee = joinProfile.fees.joinBilling === "flat";
-  const advocatesPaidFor =
-    !flatJoinFee && needsCoAdvocates && vkCountValid ? vkCountNumber + 1 : 1;
+  const advocatesPaidFor = !flatJoinFee && needsCoAdvocates && vkCountValid ? vkCountNumber + 1 : 1;
   /* Gujarat's is its own schedule's: ₹20 welfare fund + ₹2 court fee stamp, once
      (owner, 2026-10-14). */
   const gujaratFee = joinCourt === "gujarat";
@@ -442,11 +446,14 @@ export function AdvocateJoinCaseDialog({
     : rupees(VAKALATNAMA_FEE_PAISE * advocatesPaidFor);
   const isSummonsIntro = mode === "summons" && stage === "details";
 
-  React.useEffect(() => () => {
-    if (switchTimerRef.current !== null) window.clearTimeout(switchTimerRef.current);
-    if (payTimerRef.current !== null) window.clearTimeout(payTimerRef.current);
-    if (bailTimerRef.current !== null) window.clearTimeout(bailTimerRef.current);
-  }, []);
+  React.useEffect(
+    () => () => {
+      if (switchTimerRef.current !== null) window.clearTimeout(switchTimerRef.current);
+      if (payTimerRef.current !== null) window.clearTimeout(payTimerRef.current);
+      if (bailTimerRef.current !== null) window.clearTimeout(bailTimerRef.current);
+    },
+    [],
+  );
 
   // A failed payment announces itself and takes focus; the person stays on the step.
   React.useEffect(() => {
@@ -619,9 +626,7 @@ export function AdvocateJoinCaseDialog({
     event.preventDefault();
     setVerifyTouched(true);
     // Every litigant without a number on record needs a valid one before continuing.
-    const allValid = contactParties.every(
-      (party) => (contacts[party.id] ?? "").length === 10,
-    );
+    const allValid = contactParties.every((party) => (contacts[party.id] ?? "").length === 10);
     if (!allValid) return;
     setVerifyTouched(false);
     setStage("vakalatnama");
@@ -695,11 +700,16 @@ export function AdvocateJoinCaseDialog({
   function sendInvites() {
     if (!team.length || !joinCase) return;
     // Office access to the joined case as a specific case (OFC-42).
-    invite(team.map((person) => person.phone ?? ""), [JOIN_DEMO_CASE_ID]);
+    invite(
+      team.map((person) => person.phone ?? ""),
+      [JOIN_DEMO_CASE_ID],
+    );
     // The confirmation shows the batch just sent and replaces any earlier one — a
     // later send swaps the old notification out rather than growing it.
     setTeamInvited(team.map(inviteLabel));
-    notify.success(fill(shareCopy.inviteToast, locale, { names: team.map(inviteLabel).join(", ") }));
+    notify.success(
+      fill(shareCopy.inviteToast, locale, { names: team.map(inviteLabel).join(", ") }),
+    );
     setTeam([]);
   }
 
@@ -713,1159 +723,1270 @@ export function AdvocateJoinCaseDialog({
             title: pick(advDialog.invitedTitle, locale),
             body: fill(advDialog.invitedBody, locale, { name: VAKALATNAMA_INVITER }),
           }
-      : stage === "details"
-        ? isSummonsIntro
-          ? { title: pick(advDialog.summonsHeading, locale), body: pick(advDialog.summonsBody, locale) }
-          : { title: pick(advDialog.title, locale), body: pick(advDialog.detailsBody, locale) }
-        : stage === "code"
-          ? {
-              title: pick(advDialog.title, locale),
-              body: pick(
-                mode === "summons" ? joinDialog.codeSummonsBodyAdvocate : joinDialog.codeBody,
-                locale,
-              ),
-            }
-          : stage === "account"
-            ? switchingProfile
-              ? { title: pick(advDialog.accountSwitchTitle, locale), body: pick(advDialog.accountSwitchBody, locale) }
-              : { title: pick(advDialog.accountTitle, locale), body: pick(advDialog.accountBody, locale) }
-          : stage === "role"
-            ? { title: pick(advDialog.title, locale), body: pick(advDialog.roleBody, locale) }
-            : stage === "verify"
-              ? { title: pick(advDialog.verifyTitle, locale), body: pick(advDialog.verifyBody, locale) }
-              : stage === "pay"
-                ? { title: pick(advDialog.payTitle, locale), body: pick(advDialog.payBody, locale) }
-                : stage === "processing"
-                  ? { title: pick(advDialog.payProcessingTitle, locale), body: pick(advDialog.payProcessingBody, locale) }
-                  : stage === "paid"
-                    ? { title: pick(advDialog.paidTitle, locale), body: pick(advDialog.paidBody, locale) }
-                    : { title: pick(advDialog.vkTitle, locale), body: pick(advDialog.vkBody, locale) };
+        : stage === "details"
+          ? isSummonsIntro
+            ? {
+                title: pick(advDialog.summonsHeading, locale),
+                body: pick(advDialog.summonsBody, locale),
+              }
+            : { title: pick(advDialog.title, locale), body: pick(advDialog.detailsBody, locale) }
+          : stage === "code"
+            ? {
+                title: pick(advDialog.title, locale),
+                body: pick(
+                  mode === "summons" ? joinDialog.codeSummonsBodyAdvocate : joinDialog.codeBody,
+                  locale,
+                ),
+              }
+            : stage === "account"
+              ? switchingProfile
+                ? {
+                    title: pick(advDialog.accountSwitchTitle, locale),
+                    body: pick(advDialog.accountSwitchBody, locale),
+                  }
+                : {
+                    title: pick(advDialog.accountTitle, locale),
+                    body: pick(advDialog.accountBody, locale),
+                  }
+              : stage === "role"
+                ? { title: pick(advDialog.title, locale), body: pick(advDialog.roleBody, locale) }
+                : stage === "verify"
+                  ? {
+                      title: pick(advDialog.verifyTitle, locale),
+                      body: pick(advDialog.verifyBody, locale),
+                    }
+                  : stage === "pay"
+                    ? {
+                        title: pick(advDialog.payTitle, locale),
+                        body: pick(advDialog.payBody, locale),
+                      }
+                    : stage === "processing"
+                      ? {
+                          title: pick(advDialog.payProcessingTitle, locale),
+                          body: pick(advDialog.payProcessingBody, locale),
+                        }
+                      : stage === "paid"
+                        ? {
+                            title: pick(advDialog.paidTitle, locale),
+                            body: pick(advDialog.paidBody, locale),
+                          }
+                        : {
+                            title: pick(advDialog.vkTitle, locale),
+                            body: pick(advDialog.vkBody, locale),
+                          };
 
   return (
     <>
-    <Dialog open={open && !bailOpen} onOpenChange={handleOpenChange}>
-      <FlowDialogContent
-        lang={locale}
-        rise
-        sheet
-        style={panelStyle}
-        className={cn(
-          "flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl",
-          // No way out while the gateway confirms, as e-filing's processing window.
-          stage === "processing" && "[&_[data-slot=dialog-close]]:hidden",
-        )}
-        // The litigant combobox portals its list outside this dialog's DOM. Without
-        // this guard the modal dialog reads a click on that list as an outside
-        // interaction and swallows it before the option can be selected.
-        // A click outside never closes the flow: a misclick lost every step entered
-        // (owner, 2026-10-13). Close and Escape remain, and ask first partway through.
-        // This also keeps the litigant combobox's portalled list clickable.
-        // Escape must close the innermost layer only: with the combobox list open
-        // (its popup is in the DOM), the dialog stands down and lets the list
-        // close; a second Escape then closes the dialog.
-        onEscapeKeyDown={(event) => {
-          if (document.querySelector('[data-slot="combobox-content"]')) event.preventDefault();
-        }}
-      >
-        {/* The chrome, on every stage including the outcome: the same header the
+      <Dialog open={open && !bailOpen} onOpenChange={handleOpenChange}>
+        <FlowDialogContent
+          lang={locale}
+          rise
+          sheet
+          style={panelStyle}
+          className={cn(
+            "flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl",
+            // No way out while the gateway confirms, as e-filing's processing window.
+            stage === "processing" && "[&_[data-slot=dialog-close]]:hidden",
+          )}
+          // The litigant combobox portals its list outside this dialog's DOM. Without
+          // this guard the modal dialog reads a click on that list as an outside
+          // interaction and swallows it before the option can be selected.
+          // A click outside never closes the flow: a misclick lost every step entered
+          // (owner, 2026-10-13). Close and Escape remain, and ask first partway through.
+          // This also keeps the litigant combobox's portalled list clickable.
+          // Escape must close the innermost layer only: with the combobox list open
+          // (its popup is in the DOM), the dialog stands down and lets the list
+          // close; a second Escape then closes the dialog.
+          onEscapeKeyDown={(event) => {
+            if (document.querySelector('[data-slot="combobox-content"]')) event.preventDefault();
+          }}
+        >
+          {/* The chrome, on every stage including the outcome: the same header the
             product's staged overlays carry, so the outcome reads as this window
             settling rather than a different one (owner, Oct 6). Only the words
             change; the frame holds still while the stage below it moves. */}
-        {/* ...except the outcomes: payment and joining take the window over, as the owner
+          {/* ...except the outcomes: payment and joining take the window over, as the owner
             approved on the states board (Oct 29, skill `feedback-states`). Waiting on the
             fee is a gate, not news: neutral. */}
-        {!leaving && stage === "paid" ? (
-          <OutcomeHeader key="paid" titleFrom="dialog" focusTitle title={headerCopy.title} body={headerCopy.body}>
-            <OutcomeAmount label={pick(advDialog.paidAmount, locale)} value={fee} />
-          </OutcomeHeader>
-        ) : !leaving && stage === "done" ? (
-          <OutcomeHeader
-            key={unpaidOutcome ? "unpaid" : "joined"}
-            titleFrom="dialog"
-            focusTitle
-            tone={unpaidOutcome ? "neutral" : "success"}
-            icon={unpaidOutcome ? WalletIcon : undefined}
-            title={pick(unpaidOutcome ? advDialog.unpaidTitle : advDialog.joinedTitle, locale)}
-            body={pick(unpaidOutcome ? advDialog.unpaidBody : advDialog.joinedBody, locale)}
-          />
-        ) : (
-        <DialogHeader className="shrink-0 gap-2 border-b border-hairline p-6 pr-16 text-left">
-          <DialogTitle
-            ref={titleRef}
-            tabIndex={-1}
-            className="text-title-s font-semibold text-balance outline-none"
-          >
-            {leaving
-              ? pick(advDialog.leaveTitle, locale)
-              : stage === "done"
-                ? pick(unpaidOutcome ? advDialog.unpaidTitle : advDialog.joinedTitle, locale)
-                : headerCopy.title}
-          </DialogTitle>
-          <DialogDescription className="text-body-compact text-pretty text-muted-foreground">
-            {leaving
-              ? pick(advDialog.leaveBody, locale)
-              : stage === "done"
-                ? pick(unpaidOutcome ? advDialog.unpaidBody : advDialog.joinedBody, locale)
-                : headerCopy.body}
-          </DialogDescription>
-        </DialogHeader>
-        )}
+          {!leaving && stage === "paid" ? (
+            <OutcomeHeader
+              key="paid"
+              titleFrom="dialog"
+              focusTitle
+              title={headerCopy.title}
+              body={headerCopy.body}
+            >
+              <OutcomeAmount label={pick(advDialog.paidAmount, locale)} value={fee} />
+            </OutcomeHeader>
+          ) : !leaving && stage === "done" ? (
+            <OutcomeHeader
+              key={unpaidOutcome ? "unpaid" : "joined"}
+              titleFrom="dialog"
+              focusTitle
+              tone={unpaidOutcome ? "neutral" : "success"}
+              icon={unpaidOutcome ? WalletIcon : undefined}
+              title={pick(unpaidOutcome ? advDialog.unpaidTitle : advDialog.joinedTitle, locale)}
+              body={pick(unpaidOutcome ? advDialog.unpaidBody : advDialog.joinedBody, locale)}
+            />
+          ) : (
+            <DialogHeader className="shrink-0 gap-2 border-b border-hairline p-6 pr-16 text-left">
+              <DialogTitle
+                ref={titleRef}
+                tabIndex={-1}
+                className="text-title-s font-semibold text-balance outline-none"
+              >
+                {leaving
+                  ? pick(advDialog.leaveTitle, locale)
+                  : stage === "done"
+                    ? pick(unpaidOutcome ? advDialog.unpaidTitle : advDialog.joinedTitle, locale)
+                    : headerCopy.title}
+              </DialogTitle>
+              <DialogDescription className="text-body-compact text-pretty text-muted-foreground">
+                {leaving
+                  ? pick(advDialog.leaveBody, locale)
+                  : stage === "done"
+                    ? pick(unpaidOutcome ? advDialog.unpaidBody : advDialog.joinedBody, locale)
+                    : headerCopy.body}
+              </DialogDescription>
+            </DialogHeader>
+          )}
 
-        {/* The stage: the warm canvas the case and the questions are laid on as
+          {/* The stage: the warm canvas the case and the questions are laid on as
             white panels, the product's staged-overlay surface. It hugs each
             step's height, which changes while the window is faded out
             (`useStageFade`). Keyed on the step so each one opens scrolled to its
             top and plays its drift in. */}
-        <div
-          className={cn(
-            "relative flex min-h-0 flex-col overflow-hidden bg-muted dark:bg-background",
-            "shrink",
-            unpaidOutcome && "hidden",
-          )}
-        >
-        <div
-          key={stage}
-          className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-y-auto",
-            sceneClassName,
-          )}
-        >
-        {bailOpening ? (
           <div
-            role="status"
-            className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-muted/90 text-center motion-safe:animate-in motion-safe:fade-in-0 dark:bg-background/90"
+            className={cn(
+              "relative flex min-h-0 flex-col overflow-hidden bg-muted dark:bg-background",
+              "shrink",
+              unpaidOutcome && "hidden",
+            )}
           >
-            <Spinner className="size-8 text-primary" />
-            <p className="text-body-compact font-medium">{pick(advDialog.bailOpening, locale)}</p>
-          </div>
-        ) : null}
-        <div className="flex flex-col p-4 sm:p-6">
-          {/* ------------------------------------------------------- lookup */}
-          {stage === "lookup" ? (
-            <form id="adv-lookup" noValidate className={JOIN_PANEL} onSubmit={submitLookup}>
-              <Field data-invalid={queryTouched && query.trim().length < 4}>
-                <FieldLabel>{pick(joinDialog.lookupLabel, locale)}</FieldLabel>
-                <Input
-                  autoFocus
-                  value={query}
-                  placeholder={pick(joinDialog.lookupPlaceholder, locale)}
-                  onChange={(event) => {
-                    setQuery(event.target.value);
-                    setQueryTouched(false);
-                    setLookupMiss(false);
-                  }}
-                />
-                <FieldError>
-                  {queryTouched && query.trim().length < 4
-                    ? pick(joinDialog.lookupError, locale)
-                    : null}
-                </FieldError>
-              </Field>
-              {lookupMiss ? (
-                <StatusLine tone="neutral" icon={SearchXIcon}>{pick(joinDialog.lookupMiss, locale)}</StatusLine>
+            <div
+              key={stage}
+              className={cn("flex min-h-0 flex-1 flex-col overflow-y-auto", sceneClassName)}
+            >
+              {bailOpening ? (
+                <div
+                  role="status"
+                  className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-muted/90 text-center motion-safe:animate-in motion-safe:fade-in-0 dark:bg-background/90"
+                >
+                  <Spinner className="size-8 text-primary" />
+                  <p className="text-body-compact font-medium">
+                    {pick(advDialog.bailOpening, locale)}
+                  </p>
+                </div>
               ) : null}
-            </form>
-          ) : null}
+              <div className="flex flex-col p-4 sm:p-6">
+                {/* ------------------------------------------------------- lookup */}
+                {stage === "lookup" ? (
+                  <form id="adv-lookup" noValidate className={JOIN_PANEL} onSubmit={submitLookup}>
+                    <Field data-invalid={queryTouched && query.trim().length < 4}>
+                      <FieldLabel>{pick(joinDialog.lookupLabel, locale)}</FieldLabel>
+                      <Input
+                        autoFocus
+                        value={query}
+                        placeholder={pick(joinDialog.lookupPlaceholder, locale)}
+                        onChange={(event) => {
+                          setQuery(event.target.value);
+                          setQueryTouched(false);
+                          setLookupMiss(false);
+                        }}
+                      />
+                      <FieldError>
+                        {queryTouched && query.trim().length < 4
+                          ? pick(joinDialog.lookupError, locale)
+                          : null}
+                      </FieldError>
+                    </Field>
+                    {lookupMiss ? (
+                      <StatusLine tone="neutral" icon={SearchXIcon}>
+                        {pick(joinDialog.lookupMiss, locale)}
+                      </StatusLine>
+                    ) : null}
+                  </form>
+                ) : null}
 
-          {/* ---------------------------------------------- already added */}
-          {stage === "invited" && joinCase ? (
-            <CaseDetails joinCase={joinCase} locale={locale} compact />
-          ) : null}
+                {/* ---------------------------------------------- already added */}
+                {stage === "invited" && joinCase ? (
+                  <CaseDetails joinCase={joinCase} locale={locale} compact />
+                ) : null}
 
-          {/* ------------------------------------------------------ details */}
-          {/* Advocates get the full registry list (CNR, filing number, court, both
+                {/* ------------------------------------------------------ details */}
+                {/* Advocates get the full registry list (CNR, filing number, court, both
               sides' advocates) — the limited litigant set was an intimidation
               trade-off that does not apply to professionals. */}
-          {stage === "details" && joinCase ? (
-            <div className="flex flex-col gap-4">
-              <CaseDetails joinCase={joinCase} locale={locale} extended />
-              {downloadNotice ? (
-                <Banner variant="info" className="items-start">
-                  {pick(joinDialog.downloadCaseFilePrototype, locale)}
-                </Banner>
-              ) : null}
-            </div>
-          ) : null}
+                {stage === "details" && joinCase ? (
+                  <div className="flex flex-col gap-4">
+                    <CaseDetails joinCase={joinCase} locale={locale} extended />
+                    {downloadNotice ? (
+                      <Banner variant="info" className="items-start">
+                        {pick(joinDialog.downloadCaseFilePrototype, locale)}
+                      </Banner>
+                    ) : null}
+                  </div>
+                ) : null}
 
-          {/* --------------------------------------------- account for this case */}
-          {stage === "account" && joinCase ? (
-            switchingProfile ? (
-              <div className="flex min-h-32 flex-col items-center justify-center gap-3 text-center">
-                <Spinner className="size-6 text-primary" />
-                <p className="text-body-compact font-medium">{pick(advDialog.accountSwitchStatus, locale)}</p>
-              </div>
-            ) : (
-              <div className={JOIN_PANEL}>
-                <Field>
-                  <FieldLabel>{pick(advDialog.accountLabel, locale)}</FieldLabel>
-                  <Select
-                    value={accountRole}
-                    onValueChange={(value) => setAccountRole(value as AccountRole)}
+                {/* --------------------------------------------- account for this case */}
+                {stage === "account" && joinCase ? (
+                  switchingProfile ? (
+                    <div className="flex min-h-32 flex-col items-center justify-center gap-3 text-center">
+                      <Spinner className="size-6 text-primary" />
+                      <p className="text-body-compact font-medium">
+                        {pick(advDialog.accountSwitchStatus, locale)}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className={JOIN_PANEL}>
+                      <Field>
+                        <FieldLabel>{pick(advDialog.accountLabel, locale)}</FieldLabel>
+                        <Select
+                          value={accountRole}
+                          onValueChange={(value) => setAccountRole(value as AccountRole)}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="advocate">
+                              {pick(advDialog.accountAdvocate, locale)}
+                            </SelectItem>
+                            <SelectItem value="litigant">
+                              {pick(advDialog.accountLitigant, locale)}
+                            </SelectItem>
+                            <SelectItem value="poa">
+                              {pick(advDialog.accountPoa, locale)}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Banner variant="info" className="items-start">
+                        {pick(advDialog.accountNote, locale)}
+                      </Banner>
+                    </div>
+                  )
+                ) : null}
+
+                {/* --------------------------------------------------- access code */}
+                {stage === "code" && joinCase ? (
+                  <form
+                    id="adv-code"
+                    noValidate
+                    className="flex flex-col gap-4"
+                    onSubmit={submitCode}
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="advocate">{pick(advDialog.accountAdvocate, locale)}</SelectItem>
-                      <SelectItem value="litigant">{pick(advDialog.accountLitigant, locale)}</SelectItem>
-                      <SelectItem value="poa">{pick(advDialog.accountPoa, locale)}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Banner variant="info" className="items-start">{pick(advDialog.accountNote, locale)}</Banner>
-              </div>
-            )
-          ) : null}
-
-          {/* --------------------------------------------------- access code */}
-          {stage === "code" && joinCase ? (
-            <form id="adv-code" noValidate className="flex flex-col gap-4" onSubmit={submitCode}>
-              {/* Public identity only — title (with "1 other" explorable), case
+                    {/* Public identity only — title (with "1 other" explorable), case
                   number and court. The amount stays behind the code (JOIN-11). */}
-              <CaseIdentity
-                joinCase={joinCase}
-                locale={locale}
-                lead={pick(joinDialog.codeCaseLead, locale)}
-              />
-              <Banner variant="info" className="items-start">
-                {pick(
-                  mode === "summons" ? joinDialog.codeSummonsNoteAdvocate : joinDialog.codeNote,
-                  locale,
-                )}
-              </Banner>
-              <div className={JOIN_PANEL}>
-              <Field data-invalid={codeTouched && code.length !== CODE_LENGTH}>
-                <FieldLabel>{pick(joinDialog.codeLabel, locale)}</FieldLabel>
-                <InputOTP
-                  maxLength={CODE_LENGTH}
-                  pattern={REGEXP_ONLY_DIGITS}
-                  inputMode="numeric"
-                  value={code}
-                  onChange={(value) => {
-                    setCode(value);
-                    setCodeTouched(false);
-                  }}
-                >
-                  <InputOTPGroup className="w-full">
-                    {Array.from({ length: CODE_LENGTH }, (_, index) => (
-                      <InputOTPSlot
-                        key={index}
-                        index={index}
-                        className="h-12 w-auto flex-1 text-body font-semibold"
-                      />
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
-                <FieldError>
-                  {codeTouched && code.length !== CODE_LENGTH
-                    ? pick(joinDialog.codeError, locale)
-                    : null}
-                </FieldError>
-              </Field>
-              </div>
-            </form>
-          ) : null}
+                    <CaseIdentity
+                      joinCase={joinCase}
+                      locale={locale}
+                      lead={pick(joinDialog.codeCaseLead, locale)}
+                    />
+                    <Banner variant="info" className="items-start">
+                      {pick(
+                        mode === "summons"
+                          ? joinDialog.codeSummonsNoteAdvocate
+                          : joinDialog.codeNote,
+                        locale,
+                      )}
+                    </Banner>
+                    <div className={JOIN_PANEL}>
+                      <Field data-invalid={codeTouched && code.length !== CODE_LENGTH}>
+                        <FieldLabel>{pick(joinDialog.codeLabel, locale)}</FieldLabel>
+                        <InputOTP
+                          maxLength={CODE_LENGTH}
+                          pattern={REGEXP_ONLY_DIGITS}
+                          inputMode="numeric"
+                          value={code}
+                          onChange={(value) => {
+                            setCode(value);
+                            setCodeTouched(false);
+                          }}
+                        >
+                          <InputOTPGroup className="w-full">
+                            {Array.from({ length: CODE_LENGTH }, (_, index) => (
+                              <InputOTPSlot
+                                key={index}
+                                index={index}
+                                className="h-12 w-auto flex-1 text-body font-semibold"
+                              />
+                            ))}
+                          </InputOTPGroup>
+                        </InputOTP>
+                        <FieldError>
+                          {codeTouched && code.length !== CODE_LENGTH
+                            ? pick(joinDialog.codeError, locale)
+                            : null}
+                        </FieldError>
+                      </Field>
+                    </div>
+                  </form>
+                ) : null}
 
-          {/* ------------------------------------------------ representation */}
-          {stage === "role" && joinCase ? (
-            <form id="adv-role" noValidate className={cn(JOIN_PANEL, "gap-6")} onSubmit={submitRole}>
-              <Field data-invalid={roleTouched && !side}>
-                <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                  {pick(advDialog.sideLegend, locale)}
-                </FieldLabel>
-                <RadioGroup
-                  value={side}
-                  onValueChange={(value) => {
-                    const next = value as Side;
-                    setSide(next);
-                    // JOIN-40: a side with one party has it chosen for the advocate.
-                    const parties =
-                      next === "complainant" ? COMPLAINANT_PARTIES : (joinCase?.accused ?? []);
-                    setPartyIds(parties.length === 1 ? [parties[0].id] : []);
-                    setRoleTouched(false);
-                  }}
-                  className="flex flex-col gap-1"
-                >
-                  <div className="flex min-h-10 items-center gap-2">
-                    <RadioGroupItem value="complainant" id="adv-side-complainant" />
-                    <Label htmlFor="adv-side-complainant">
-                      {pick(advDialog.sideComplainant, locale)}
-                    </Label>
-                  </div>
-                  <div className="flex min-h-10 items-center gap-2">
-                    <RadioGroupItem value="accused" id="adv-side-accused" />
-                    <Label htmlFor="adv-side-accused">
-                      {pick(advDialog.sideAccused, locale)}
-                    </Label>
-                  </div>
-                </RadioGroup>
-                <FieldError>
-                  {roleTouched && !side ? pick(advDialog.sideError, locale) : null}
-                </FieldError>
-              </Field>
+                {/* ------------------------------------------------ representation */}
+                {stage === "role" && joinCase ? (
+                  <form
+                    id="adv-role"
+                    noValidate
+                    className={cn(JOIN_PANEL, "gap-6")}
+                    onSubmit={submitRole}
+                  >
+                    <Field data-invalid={roleTouched && !side}>
+                      <FieldLabel className="block w-full text-body font-semibold leading-snug">
+                        {pick(advDialog.sideLegend, locale)}
+                      </FieldLabel>
+                      <RadioGroup
+                        value={side}
+                        onValueChange={(value) => {
+                          const next = value as Side;
+                          setSide(next);
+                          // JOIN-40: a side with one party has it chosen for the advocate.
+                          const parties =
+                            next === "complainant"
+                              ? COMPLAINANT_PARTIES
+                              : (joinCase?.accused ?? []);
+                          setPartyIds(parties.length === 1 ? [parties[0].id] : []);
+                          setRoleTouched(false);
+                        }}
+                        className="flex flex-col gap-1"
+                      >
+                        <div className="flex min-h-10 items-center gap-2">
+                          <RadioGroupItem value="complainant" id="adv-side-complainant" />
+                          <Label htmlFor="adv-side-complainant">
+                            {pick(advDialog.sideComplainant, locale)}
+                          </Label>
+                        </div>
+                        <div className="flex min-h-10 items-center gap-2">
+                          <RadioGroupItem value="accused" id="adv-side-accused" />
+                          <Label htmlFor="adv-side-accused">
+                            {pick(advDialog.sideAccused, locale)}
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                      <FieldError>
+                        {roleTouched && !side ? pick(advDialog.sideError, locale) : null}
+                      </FieldError>
+                    </Field>
 
-              {side === "accused" ? (
-                <Banner variant="info" className="items-start">{pick(advDialog.accusedAckNote, locale)}</Banner>
-              ) : null}
+                    {side === "accused" ? (
+                      <Banner variant="info" className="items-start">
+                        {pick(advDialog.accusedAckNote, locale)}
+                      </Banner>
+                    ) : null}
 
-              {side ? (
-                <Field data-invalid={roleTouched && partyIds.length === 0}>
-                  <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                    {pick(advDialog.whichLegend, locale)}
-                  </FieldLabel>
-                  {/* Multi-select dropdown, not a checkbox list — a real case can carry
+                    {side ? (
+                      <Field data-invalid={roleTouched && partyIds.length === 0}>
+                        <FieldLabel className="block w-full text-body font-semibold leading-snug">
+                          {pick(advDialog.whichLegend, locale)}
+                        </FieldLabel>
+                        {/* Multi-select dropdown, not a checkbox list — a real case can carry
                       many litigants on one side, and one vakalatnama often covers
                       several of them. Selected litigants sit as removable chips. */}
-                  <Combobox
-                    multiple
-                    items={sideParties.map((party) => party.name)}
-                    value={selectedParties.map((party) => party.name)}
-                    onValueChange={(names: string[]) => {
-                      setPartyIds(
-                        sideParties
-                          .filter((party) => names.includes(party.name))
-                          .map((party) => party.id),
-                      );
-                      setRoleTouched(false);
-                    }}
-                  >
-                    <ComboboxChips ref={partyAnchor}>
-                      <ComboboxValue>
-                        {(value: string[]) => (
-                          <>
-                            {value.map((name) => (
-                              <ComboboxChip key={name}>{name}</ComboboxChip>
-                            ))}
-                            <ComboboxChipsInput
-                              placeholder={
-                                value.length
-                                  ? undefined
-                                  : pick(advDialog.whichPlaceholder, locale)
-                              }
-                            />
-                          </>
-                        )}
-                      </ComboboxValue>
-                    </ComboboxChips>
-                    {/* The popup portals to <body>, which the modal dialog freezes with
+                        <Combobox
+                          multiple
+                          items={sideParties.map((party) => party.name)}
+                          value={selectedParties.map((party) => party.name)}
+                          onValueChange={(names: string[]) => {
+                            setPartyIds(
+                              sideParties
+                                .filter((party) => names.includes(party.name))
+                                .map((party) => party.id),
+                            );
+                            setRoleTouched(false);
+                          }}
+                        >
+                          <ComboboxChips ref={partyAnchor}>
+                            <ComboboxValue>
+                              {(value: string[]) => (
+                                <>
+                                  {value.map((name) => (
+                                    <ComboboxChip key={name}>{name}</ComboboxChip>
+                                  ))}
+                                  <ComboboxChipsInput
+                                    placeholder={
+                                      value.length
+                                        ? undefined
+                                        : pick(advDialog.whichPlaceholder, locale)
+                                    }
+                                  />
+                                </>
+                              )}
+                            </ComboboxValue>
+                          </ComboboxChips>
+                          {/* The popup portals to <body>, which the modal dialog freezes with
                         pointer-events:none — so the list must re-enable its own, or every
                         option is unclickable (a Radix-dialog + portaled-popup interaction,
                         not a combobox bug). */}
-                    <ComboboxContent anchor={partyAnchor} className="pointer-events-auto">
-                      <ComboboxEmpty>{pick(advDialog.whichEmpty, locale)}</ComboboxEmpty>
-                      <ComboboxList>
-                        {(item: string) => (
-                          <ComboboxItem key={item} value={item}>
-                            {item}
-                          </ComboboxItem>
-                        )}
-                      </ComboboxList>
-                    </ComboboxContent>
-                  </Combobox>
-                  <FieldError>
-                    {roleTouched && partyIds.length === 0
-                      ? pick(advDialog.whichError, locale)
-                      : null}
-                  </FieldError>
-                </Field>
-              ) : null}
+                          <ComboboxContent anchor={partyAnchor} className="pointer-events-auto">
+                            <ComboboxEmpty>{pick(advDialog.whichEmpty, locale)}</ComboboxEmpty>
+                            <ComboboxList>
+                              {(item: string) => (
+                                <ComboboxItem key={item} value={item}>
+                                  {item}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+                        <FieldError>
+                          {roleTouched && partyIds.length === 0
+                            ? pick(advDialog.whichError, locale)
+                            : null}
+                        </FieldError>
+                      </Field>
+                    ) : null}
+                  </form>
+                ) : null}
 
-            </form>
-          ) : null}
-
-          {/* ---------------------------- litigant contact capture */}
-          {/* Only litigants not yet on the case are asked — the court has no number for
+                {/* ---------------------------- litigant contact capture */}
+                {/* Only litigants not yet on the case are asked — the court has no number for
               them. One labelled field each on a single screen; litigants already on the
               case are named in a note instead of asked. */}
-          {stage === "verify" ? (
-            <form id="adv-verify" noValidate className={cn(JOIN_PANEL, "gap-5")} onSubmit={submitVerify}>
-              {/* JOIN-64: no OTP here; each number's owner confirms at sign-in. */}
-              <Banner variant="info" className="items-start">{pick(advDialog.contactConfirmNote, locale)}</Banner>
-              {joinedParties.length ? (
-                <Banner variant="info" className="items-start">
-                  {fill(advDialog.contactAlreadyNote, locale, {
-                    names: joinedParties.map((party) => party.name).join(", "),
-                  })}
-                </Banner>
-              ) : null}
+                {stage === "verify" ? (
+                  <form
+                    id="adv-verify"
+                    noValidate
+                    className={cn(JOIN_PANEL, "gap-5")}
+                    onSubmit={submitVerify}
+                  >
+                    {/* JOIN-64: no OTP here; each number's owner confirms at sign-in. */}
+                    <Banner variant="info" className="items-start">
+                      {pick(advDialog.contactConfirmNote, locale)}
+                    </Banner>
+                    {joinedParties.length ? (
+                      <Banner variant="info" className="items-start">
+                        {fill(advDialog.contactAlreadyNote, locale, {
+                          names: joinedParties.map((party) => party.name).join(", "),
+                        })}
+                      </Banner>
+                    ) : null}
 
-              {contactParties.map((party) => {
-                const value = contacts[party.id] ?? "";
-                const invalid = verifyTouched && value.length !== 10;
-                return (
-                  <Field key={party.id} data-invalid={invalid}>
-                    {/* Whose number, on the field itself: the name alone did not read
+                    {contactParties.map((party) => {
+                      const value = contacts[party.id] ?? "";
+                      const invalid = verifyTouched && value.length !== 10;
+                      return (
+                        <Field key={party.id} data-invalid={invalid}>
+                          {/* Whose number, on the field itself: the name alone did not read
                         as "enter their mobile" (owner, 2026-10-12). The +91 group is
                         the product's mobile entry, as in registration. */}
-                    <FieldLabel htmlFor={`adv-mobile-${party.id}`} className="font-semibold">
-                      {fill(advDialog.contactMobileLabel, locale, { name: party.name })}
-                    </FieldLabel>
-                    <InputGroup>
-                      <InputGroupAddon variant="field">
-                        <InputGroupText>+91</InputGroupText>
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        id={`adv-mobile-${party.id}`}
-                        type="tel"
-                        inputMode="numeric"
-                        autoComplete="off"
-                        maxLength={10}
-                        aria-invalid={invalid || undefined}
-                        value={value}
-                        onChange={(event) =>
-                          updateContact(party.id, event.target.value.replace(/\D/g, "").slice(0, 10))
-                        }
-                      />
-                    </InputGroup>
-                    <FieldError>
-                      {invalid ? pick(advDialog.contactMobileError, locale) : null}
-                    </FieldError>
-                  </Field>
-                );
-              })}
-            </form>
-          ) : null}
+                          <FieldLabel htmlFor={`adv-mobile-${party.id}`} className="font-semibold">
+                            {fill(advDialog.contactMobileLabel, locale, { name: party.name })}
+                          </FieldLabel>
+                          <InputGroup>
+                            <InputGroupAddon variant="field">
+                              <InputGroupText>+91</InputGroupText>
+                            </InputGroupAddon>
+                            <InputGroupInput
+                              id={`adv-mobile-${party.id}`}
+                              type="tel"
+                              inputMode="numeric"
+                              autoComplete="off"
+                              maxLength={10}
+                              aria-invalid={invalid || undefined}
+                              value={value}
+                              onChange={(event) =>
+                                updateContact(
+                                  party.id,
+                                  event.target.value.replace(/\D/g, "").slice(0, 10),
+                                )
+                              }
+                            />
+                          </InputGroup>
+                          <FieldError>
+                            {invalid ? pick(advDialog.contactMobileError, locale) : null}
+                          </FieldError>
+                        </Field>
+                      );
+                    })}
+                  </form>
+                ) : null}
 
-          {/* --------------------------------------------------- vakalatnama */}
-          {stage === "vakalatnama" ? (
-            <form
-              id="adv-vakalatnama"
-              noValidate
-              className={cn(JOIN_PANEL, "gap-8")}
-              onSubmit={submitVakalatnama}
-            >
-              {/* One rhythm (owner, Oct 6): every question is the same semibold
+                {/* --------------------------------------------------- vakalatnama */}
+                {stage === "vakalatnama" ? (
+                  <form
+                    id="adv-vakalatnama"
+                    noValidate
+                    className={cn(JOIN_PANEL, "gap-8")}
+                    onSubmit={submitVakalatnama}
+                  >
+                    {/* One rhythm (owner, Oct 6): every question is the same semibold
                   label over its control, 12px apart, and questions sit 32px apart.
                   A note belongs to the question it explains, so the fee note rides
                   with the answer that brings it on. Not one big Field: a missed
                   upload must redden only the upload area. */}
-              <div className="flex flex-col gap-3">
-                <p className={VK_QUESTION}>{pick(advDialog.vkDocLabel, locale)}</p>
-                <Field data-invalid={vkTouched && !vkAttached}>
-                  <div className="flex flex-col gap-2">
-                    <UploadedDocField
-                      label={pick(advDialog.vkDocLabel, locale)}
-                      required
-                      file={vkFile}
-                      onFileChange={(file) => {
-                        setVkFile(file);
-                        setVkTouched(false);
-                      }}
-                      locale={locale}
-                    />
-                    <FieldDescription>{pick(advDialog.vkDocHelp, locale)}</FieldDescription>
-                    {/* The blank form to fill and sign, for an advocate who has not drawn
+                    <div className="flex flex-col gap-3">
+                      <p className={VK_QUESTION}>{pick(advDialog.vkDocLabel, locale)}</p>
+                      <Field data-invalid={vkTouched && !vkAttached}>
+                        <div className="flex flex-col gap-2">
+                          <UploadedDocField
+                            label={pick(advDialog.vkDocLabel, locale)}
+                            required
+                            file={vkFile}
+                            onFileChange={(file) => {
+                              setVkFile(file);
+                              setVkTouched(false);
+                            }}
+                            locale={locale}
+                          />
+                          <FieldDescription>{pick(advDialog.vkDocHelp, locale)}</FieldDescription>
+                          {/* The blank form to fill and sign, for an advocate who has not drawn
                         one up (owner, 2026-10-14). A sandbox file for now. */}
-                    <div>
-                      <Button asChild variant="outline" size="sm">
-                        <a href="/case-file/04-vakalats.pdf" download="vakalatnama-template.pdf">
-                          <DownloadIcon data-icon="inline-start" aria-hidden />
-                          {pick(advDialog.vkTemplate, locale)}
-                        </a>
-                      </Button>
+                          <div>
+                            <Button asChild variant="outline" size="sm">
+                              <a
+                                href="/case-file/04-vakalats.pdf"
+                                download="vakalatnama-template.pdf"
+                              >
+                                <DownloadIcon data-icon="inline-start" aria-hidden />
+                                {pick(advDialog.vkTemplate, locale)}
+                              </a>
+                            </Button>
+                          </div>
+                        </div>
+                        <FieldError>
+                          {vkTouched && !vkAttached ? pick(advDialog.vkAttachError, locale) : null}
+                        </FieldError>
+                      </Field>
                     </div>
-                  </div>
-                  <FieldError>
-                    {vkTouched && !vkAttached ? pick(advDialog.vkAttachError, locale) : null}
-                  </FieldError>
-                </Field>
-              </div>
 
-              {/* Is anyone else named on it? One question; the fee follows the answer. */}
-              <Field data-invalid={vkTouched && !vkOthers}>
-                <FieldLabel className={cn(VK_QUESTION, "block w-full")}>
-                  {pick(advDialog.vkOthersLegend, locale)}
-                </FieldLabel>
-                <RadioGroup
-                  value={vkOthers}
-                  onValueChange={(value) => {
-                    setVkOthers(value as YesNo);
-                    setVkTouched(false);
-                  }}
-                  className="flex flex-col gap-1"
-                >
-                  <div className="flex min-h-10 items-center gap-2">
-                    <RadioGroupItem value="no" id="adv-vk-no" />
-                    <Label htmlFor="adv-vk-no">{pick(advDialog.vkOthersNo, locale)}</Label>
-                  </div>
-                  <div className="flex min-h-10 items-center gap-2">
-                    <RadioGroupItem value="yes" id="adv-vk-yes" />
-                    <Label htmlFor="adv-vk-yes">{pick(advDialog.vkOthersYes, locale)}</Label>
-                  </div>
-                </RadioGroup>
-                <FieldError>
-                  {vkTouched && !vkOthers ? pick(advDialog.vkOthersError, locale) : null}
-                </FieldError>
-                {vkOthers === "no" ? (
-                  <Banner variant="info" className="items-start">
-                    {fill(
-                      gujaratFee ? advDialog.vkGujaratSoloFeeNote : advDialog.vkFeeNote,
-                      locale,
-                      { amount: fee },
-                    )}
-                  </Banner>
-                ) : null}
-              </Field>
+                    {/* Is anyone else named on it? One question; the fee follows the answer. */}
+                    <Field data-invalid={vkTouched && !vkOthers}>
+                      <FieldLabel className={cn(VK_QUESTION, "block w-full")}>
+                        {pick(advDialog.vkOthersLegend, locale)}
+                      </FieldLabel>
+                      <RadioGroup
+                        value={vkOthers}
+                        onValueChange={(value) => {
+                          setVkOthers(value as YesNo);
+                          setVkTouched(false);
+                        }}
+                        className="flex flex-col gap-1"
+                      >
+                        <div className="flex min-h-10 items-center gap-2">
+                          <RadioGroupItem value="no" id="adv-vk-no" />
+                          <Label htmlFor="adv-vk-no">{pick(advDialog.vkOthersNo, locale)}</Label>
+                        </div>
+                        <div className="flex min-h-10 items-center gap-2">
+                          <RadioGroupItem value="yes" id="adv-vk-yes" />
+                          <Label htmlFor="adv-vk-yes">{pick(advDialog.vkOthersYes, locale)}</Label>
+                        </div>
+                      </RadioGroup>
+                      <FieldError>
+                        {vkTouched && !vkOthers ? pick(advDialog.vkOthersError, locale) : null}
+                      </FieldError>
+                      {vkOthers === "no" ? (
+                        <Banner variant="info" className="items-start">
+                          {fill(
+                            gujaratFee ? advDialog.vkGujaratSoloFeeNote : advDialog.vkFeeNote,
+                            locale,
+                            { amount: fee },
+                          )}
+                        </Banner>
+                      ) : null}
+                    </Field>
 
-              {/* Say how many are named, then add exactly that many others; the fee
+                    {/* Say how many are named, then add exactly that many others; the fee
                   follows the number. */}
-              {needsCoAdvocates ? (
-                <>
-                  <Field data-invalid={vkTouched && !vkCountValid}>
-                    <FieldLabel htmlFor="adv-vk-count" className={cn(VK_QUESTION, "block w-full")}>
-                      {pick(advDialog.vkCountLabel, locale)}
-                    </FieldLabel>
-                    {/* Wrapped: Field stretches its direct children to full width. */}
-                    <div>
-                      <InputGroup className="w-36">
-                        <InputGroupAddon>
-                          <InputGroupButton
-                            size="icon-sm"
-                            aria-label={pick(advDialog.vkCountDecrease, locale)}
-                            aria-controls="adv-vk-count"
-                            aria-disabled={vkCountNumber <= 1}
-                            className="aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
-                            onClick={() => {
-                              setVkCount(String(Math.max(1, vkCountNumber - 1)));
-                              setVkTouched(false);
-                            }}
+                    {needsCoAdvocates ? (
+                      <>
+                        <Field data-invalid={vkTouched && !vkCountValid}>
+                          <FieldLabel
+                            htmlFor="adv-vk-count"
+                            className={cn(VK_QUESTION, "block w-full")}
                           >
-                            <MinusIcon aria-hidden />
-                          </InputGroupButton>
-                        </InputGroupAddon>
-                        <InputGroupInput
-                          id="adv-vk-count"
-                          inputMode="numeric"
-                          autoComplete="off"
-                          className="text-center tabular-nums"
-                          value={vkCount}
-                          aria-invalid={vkTouched && !vkCountValid}
-                          onChange={(event) => {
-                            setVkCount(event.target.value.replace(/\D/g, "").slice(0, 2));
-                            setVkTouched(false);
-                          }}
-                        />
-                        <InputGroupAddon align="inline-end">
-                          <InputGroupButton
-                            size="icon-sm"
-                            aria-label={pick(advDialog.vkCountIncrease, locale)}
-                            aria-controls="adv-vk-count"
-                            aria-disabled={vkCountNumber >= 99}
-                            className="aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
-                            onClick={() => {
-                              setVkCount(String(Math.min(99, Math.max(1, vkCountNumber + 1))));
-                              setVkTouched(false);
-                            }}
-                          >
-                            <PlusIcon aria-hidden />
-                          </InputGroupButton>
-                        </InputGroupAddon>
-                      </InputGroup>
-                    </div>
-                    <FieldError>
-                      {vkTouched && !vkCountValid ? pick(advDialog.vkCountError, locale) : null}
-                    </FieldError>
-                  </Field>
+                            {pick(advDialog.vkCountLabel, locale)}
+                          </FieldLabel>
+                          {/* Wrapped: Field stretches its direct children to full width. */}
+                          <div>
+                            <InputGroup className="w-36">
+                              <InputGroupAddon>
+                                <InputGroupButton
+                                  size="icon-sm"
+                                  aria-label={pick(advDialog.vkCountDecrease, locale)}
+                                  aria-controls="adv-vk-count"
+                                  aria-disabled={vkCountNumber <= 1}
+                                  className="aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+                                  onClick={() => {
+                                    setVkCount(String(Math.max(1, vkCountNumber - 1)));
+                                    setVkTouched(false);
+                                  }}
+                                >
+                                  <MinusIcon aria-hidden />
+                                </InputGroupButton>
+                              </InputGroupAddon>
+                              <InputGroupInput
+                                id="adv-vk-count"
+                                inputMode="numeric"
+                                autoComplete="off"
+                                className="text-center tabular-nums"
+                                value={vkCount}
+                                aria-invalid={vkTouched && !vkCountValid}
+                                onChange={(event) => {
+                                  setVkCount(event.target.value.replace(/\D/g, "").slice(0, 2));
+                                  setVkTouched(false);
+                                }}
+                              />
+                              <InputGroupAddon align="inline-end">
+                                <InputGroupButton
+                                  size="icon-sm"
+                                  aria-label={pick(advDialog.vkCountIncrease, locale)}
+                                  aria-controls="adv-vk-count"
+                                  aria-disabled={vkCountNumber >= 99}
+                                  className="aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+                                  onClick={() => {
+                                    setVkCount(
+                                      String(Math.min(99, Math.max(1, vkCountNumber + 1))),
+                                    );
+                                    setVkTouched(false);
+                                  }}
+                                >
+                                  <PlusIcon aria-hidden />
+                                </InputGroupButton>
+                              </InputGroupAddon>
+                            </InputGroup>
+                          </div>
+                          <FieldError>
+                            {vkTouched && !vkCountValid
+                              ? pick(advDialog.vkCountError, locale)
+                              : null}
+                          </FieldError>
+                        </Field>
 
-                  <Field data-invalid={vkTouched && vkCountValid && !coAdvocatesComplete}>
-                    <FieldLabel className={cn(VK_QUESTION, "block w-full")}>
-                      {pick(advDialog.vkAddLegend, locale)}
-                    </FieldLabel>
-                    {/* As Share (owner, 2026-10-13): only advocates this office has added
+                        <Field data-invalid={vkTouched && vkCountValid && !coAdvocatesComplete}>
+                          <FieldLabel className={cn(VK_QUESTION, "block w-full")}>
+                            {pick(advDialog.vkAddLegend, locale)}
+                          </FieldLabel>
+                          {/* As Share (owner, 2026-10-13): only advocates this office has added
                         before are suggested; anyone else is their full number, never
                         resolved to a name. */}
-                    <PeopleInviteField
-                      id="adv-vk-advocates"
-                      label={pick(advDialog.vkAddFieldLabel, locale)}
-                      known={VAKALATNAMA_CO_ADVOCATES}
-                      value={vkAdvocates}
-                      onValueChange={(next) => {
-                        setVkAdvocates(next);
-                        setVkTouched(false);
-                      }}
-                      locale={locale}
-                      copy={{
-                        suggested: advDialog.vkAddSuggested,
-                        newNumber: advDialog.vkAddNewNumber,
-                        keepTyping: advDialog.vkAddKeepTyping,
-                      }}
-                    />
-                    <FieldDescription>
-                      {vkCountValid ? (
-                        <span className="tabular-nums" aria-live="polite">
-                          {fill(advDialog.vkAddProgress, locale, {
-                            added: String(vkAdvocates.length),
-                            needed: String(coAdvocatesNeeded),
-                          })}
-                          {" · "}
-                        </span>
-                      ) : null}
-                      {pick(advDialog.vkAddHelp, locale)}
-                    </FieldDescription>
-                    <FieldError>
-                      {vkTouched && vkCountValid && !coAdvocatesComplete
-                        ? coAdvocatesNeeded === 1
-                          ? pick(advDialog.vkAddErrorOne, locale)
-                          : fill(advDialog.vkAddErrorMany, locale, { n: String(coAdvocatesNeeded) })
-                        : null}
-                    </FieldError>
-                    {vkCountValid ? (
-                      <Banner variant="info" className="items-start">
-                        {gujaratFee
-                          ? fill(advDialog.vkGujaratFeeNote, locale, { amount: fee })
-                          : flatJoinFee
-                          ? fill(advDialog.vkFlatFeeNote, locale, { amount: fee })
-                          : fill(advDialog.vkGroupFeeNote, locale, {
-                              n: String(advocatesPaidFor),
-                              amount: fee,
-                            })}
-                      </Banner>
+                          <PeopleInviteField
+                            id="adv-vk-advocates"
+                            label={pick(advDialog.vkAddFieldLabel, locale)}
+                            known={VAKALATNAMA_CO_ADVOCATES}
+                            value={vkAdvocates}
+                            onValueChange={(next) => {
+                              setVkAdvocates(next);
+                              setVkTouched(false);
+                            }}
+                            locale={locale}
+                            copy={{
+                              suggested: advDialog.vkAddSuggested,
+                              newNumber: advDialog.vkAddNewNumber,
+                              keepTyping: advDialog.vkAddKeepTyping,
+                            }}
+                          />
+                          <FieldDescription>
+                            {vkCountValid ? (
+                              <span className="tabular-nums" aria-live="polite">
+                                {fill(advDialog.vkAddProgress, locale, {
+                                  added: String(vkAdvocates.length),
+                                  needed: String(coAdvocatesNeeded),
+                                })}
+                                {" · "}
+                              </span>
+                            ) : null}
+                            {pick(advDialog.vkAddHelp, locale)}
+                          </FieldDescription>
+                          <FieldError>
+                            {vkTouched && vkCountValid && !coAdvocatesComplete
+                              ? coAdvocatesNeeded === 1
+                                ? pick(advDialog.vkAddErrorOne, locale)
+                                : fill(advDialog.vkAddErrorMany, locale, {
+                                    n: String(coAdvocatesNeeded),
+                                  })
+                              : null}
+                          </FieldError>
+                          {vkCountValid ? (
+                            <Banner variant="info" className="items-start">
+                              {gujaratFee
+                                ? fill(advDialog.vkGujaratFeeNote, locale, { amount: fee })
+                                : flatJoinFee
+                                  ? fill(advDialog.vkFlatFeeNote, locale, { amount: fee })
+                                  : fill(advDialog.vkGroupFeeNote, locale, {
+                                      n: String(advocatesPaidFor),
+                                      amount: fee,
+                                    })}
+                            </Banner>
+                          ) : null}
+                        </Field>
+                      </>
                     ) : null}
-                  </Field>
-                </>
-              ) : null}
-            </form>
-          ) : null}
-
-          {/* ------------------------------------------------------- payment */}
-          {/* JOIN-54: payment happens here, and access waits for it. A sandbox, like
-              the pending-tasks pay card: no money moves; pick the gateway's answer. */}
-          {stage === "pay" && joinCase ? (
-            <form
-              id="adv-pay"
-              noValidate
-              className={cn(JOIN_PANEL, "gap-5")}
-              onSubmit={(event) => {
-                event.preventDefault();
-                pay();
-              }}
-            >
-              {payFailed ? (
-                <div
-                  ref={payFailedRef}
-                  tabIndex={-1}
-                  className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <StatusLine tone="error">{pick(advDialog.payFailed, locale)}</StatusLine>
-                </div>
-              ) : null}
-              <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>{pick(advDialog.payFeeHead, locale)}</DescriptionTerm>
-                  <DescriptionDetails>{pick(advDialog.payFeeName, locale)}</DescriptionDetails>
-                </DescriptionRow>
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>{pick(advDialog.payCase, locale)}</DescriptionTerm>
-                  <DescriptionDetails>
-                    <Identifier value={joinCase.caseNumber} label={t("advocateJoinCaseDialog_caseNumber")} />
-                  </DescriptionDetails>
-                </DescriptionRow>
-                {gujaratFee ? (
-                  <>
-                    <DescriptionRow className="border-hairline">
-                      <DescriptionTerm>{pick(advDialog.payWelfare, locale)}</DescriptionTerm>
-                      <DescriptionDetails className="tabular-nums">
-                        {rupees(joinProfile.fees.join.welfareFund * 100)}
-                      </DescriptionDetails>
-                    </DescriptionRow>
-                    <DescriptionRow className="border-hairline">
-                      <DescriptionTerm>{pick(advDialog.payStamp, locale)}</DescriptionTerm>
-                      <DescriptionDetails className="tabular-nums">
-                        {rupees(joinProfile.fees.join.courtFee * 100)}
-                      </DescriptionDetails>
-                    </DescriptionRow>
-                  </>
+                  </form>
                 ) : null}
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>{pick(advDialog.payAmount, locale)}</DescriptionTerm>
-                  <DescriptionDetails className="font-semibold tabular-nums">{fee}</DescriptionDetails>
-                </DescriptionRow>
-              </DescriptionList>
-            </form>
-          ) : null}
 
-          {/* ------------------------------------------- the gateway round trip */}
-          {stage === "processing" ? <PaymentProcessing /> : null}
+                {/* ------------------------------------------------------- payment */}
+                {/* JOIN-54: payment happens here, and access waits for it. A sandbox, like
+              the pending-tasks pay card: no money moves; pick the gateway's answer. */}
+                {stage === "pay" && joinCase ? (
+                  <form
+                    id="adv-pay"
+                    noValidate
+                    className={cn(JOIN_PANEL, "gap-5")}
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      pay();
+                    }}
+                  >
+                    {payFailed ? (
+                      <div
+                        ref={payFailedRef}
+                        tabIndex={-1}
+                        className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <StatusLine tone="error">{pick(advDialog.payFailed, locale)}</StatusLine>
+                      </div>
+                    ) : null}
+                    <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
+                      <DescriptionRow className="border-hairline">
+                        <DescriptionTerm>{pick(advDialog.payFeeHead, locale)}</DescriptionTerm>
+                        <DescriptionDetails>
+                          {pick(advDialog.payFeeName, locale)}
+                        </DescriptionDetails>
+                      </DescriptionRow>
+                      <DescriptionRow className="border-hairline">
+                        <DescriptionTerm>{pick(advDialog.payCase, locale)}</DescriptionTerm>
+                        <DescriptionDetails>
+                          <Identifier
+                            value={joinCase.caseNumber}
+                            label={t("advocateJoinCaseDialog_caseNumber")}
+                          />
+                        </DescriptionDetails>
+                      </DescriptionRow>
+                      {gujaratFee ? (
+                        <>
+                          <DescriptionRow className="border-hairline">
+                            <DescriptionTerm>{pick(advDialog.payWelfare, locale)}</DescriptionTerm>
+                            <DescriptionDetails className="tabular-nums">
+                              {rupees(joinProfile.fees.join.welfareFund * 100)}
+                            </DescriptionDetails>
+                          </DescriptionRow>
+                          <DescriptionRow className="border-hairline">
+                            <DescriptionTerm>{pick(advDialog.payStamp, locale)}</DescriptionTerm>
+                            <DescriptionDetails className="tabular-nums">
+                              {rupees(joinProfile.fees.join.courtFee * 100)}
+                            </DescriptionDetails>
+                          </DescriptionRow>
+                        </>
+                      ) : null}
+                      <DescriptionRow className="border-hairline">
+                        <DescriptionTerm>{pick(advDialog.payAmount, locale)}</DescriptionTerm>
+                        <DescriptionDetails className="font-semibold tabular-nums">
+                          {fee}
+                        </DescriptionDetails>
+                      </DescriptionRow>
+                    </DescriptionList>
+                  </form>
+                ) : null}
 
-          {/* ------------------------------------------------------ receipt */}
-          {stage === "paid" && joinCase ? (
-            <div className={JOIN_PANEL}>
-              <PaymentFacts
-                rows={[
-                  { label: pick(advDialog.payFeeHead, locale), value: pick(advDialog.payFeeName, locale) },
-                  {
-                    label: pick(advDialog.payCase, locale),
-                    value: <Identifier value={joinCase.caseNumber} label={t("advocateJoinCaseDialog_caseNumber")} />,
-                  },
-                  {
-                    label: pick(advDialog.paidRef, locale),
-                    value: <Identifier value={paymentRef} label={t("advocateJoinCaseDialog_paymentReference")} />,
-                  },
-                ]}
-              />
-            </div>
-          ) : null}
+                {/* ------------------------------------------- the gateway round trip */}
+                {stage === "processing" ? <PaymentProcessing /> : null}
 
-          {/* --------------------------------------------------------- done */}
-          {stage === "done" && joinCase && !unpaidOutcome ? (
-            <div className="flex flex-col gap-4">
-              <CaseDetails
-                joinCase={joinCase}
-                locale={locale}
-                compact
-                outcome={fill(advDialog.joinedBand, locale, {
-                  names: selectedParties.map((party) => party.name).join(", "),
-                })}
-              />
+                {/* ------------------------------------------------------ receipt */}
+                {stage === "paid" && joinCase ? (
+                  <div className={JOIN_PANEL}>
+                    <PaymentFacts
+                      rows={[
+                        {
+                          label: pick(advDialog.payFeeHead, locale),
+                          value: pick(advDialog.payFeeName, locale),
+                        },
+                        {
+                          label: pick(advDialog.payCase, locale),
+                          value: (
+                            <Identifier
+                              value={joinCase.caseNumber}
+                              label={t("advocateJoinCaseDialog_caseNumber")}
+                            />
+                          ),
+                        },
+                        {
+                          label: pick(advDialog.paidRef, locale),
+                          value: (
+                            <Identifier
+                              value={paymentRef}
+                              label={t("advocateJoinCaseDialog_paymentReference")}
+                            />
+                          ),
+                        },
+                      ]}
+                    />
+                  </div>
+                ) : null}
 
-              {/* Optional: bring the office's subordinates onto the case. Numbers are
+                {/* --------------------------------------------------------- done */}
+                {stage === "done" && joinCase && !unpaidOutcome ? (
+                  <div className="flex flex-col gap-4">
+                    <CaseDetails
+                      joinCase={joinCase}
+                      locale={locale}
+                      compact
+                      outcome={fill(advDialog.joinedBand, locale, {
+                        names: selectedParties.map((party) => party.name).join(", "),
+                      })}
+                    />
+
+                    {/* Optional: bring the office's subordinates onto the case. Numbers are
                   typed one at a time and added to the stack above with the + button
                   (or Enter); Send invite then notifies everyone in the stack. */}
-              <div className={cn(JOIN_PANEL, "gap-3")}>
-                <div className="flex flex-col gap-1">
-                  {/* "Optional" is the DS's optional marker, not part of the heading. */}
-                  <div className="flex items-center gap-2">
-                    <p className="text-body font-semibold">
-                      {pick(advDialog.teamTitle, locale)}
-                    </p>
-                    <Badge variant="secondary">{pick(advDialog.teamOptional, locale)}</Badge>
-                  </div>
-                  <p className="text-body-compact text-pretty text-muted-foreground">
-                    {pick(advDialog.teamBody, locale)}
-                  </p>
-                </div>
+                    <div className={cn(JOIN_PANEL, "gap-3")}>
+                      <div className="flex flex-col gap-1">
+                        {/* "Optional" is the DS's optional marker, not part of the heading. */}
+                        <div className="flex items-center gap-2">
+                          <p className="text-body font-semibold">
+                            {pick(advDialog.teamTitle, locale)}
+                          </p>
+                          <Badge variant="secondary">{pick(advDialog.teamOptional, locale)}</Badge>
+                        </div>
+                        <p className="text-body-compact text-pretty text-muted-foreground">
+                          {pick(advDialog.teamBody, locale)}
+                        </p>
+                      </div>
 
-                {allCasesOffice.length ? (
-                  <p className="text-body-compact text-pretty text-muted-foreground">
-                    {pick(joinOfficeCopy.alreadyAdded, locale)}{" "}
-                    <span className="font-medium text-foreground">
-                      {allCasesOffice.map((person) => person.name).join(", ")}
-                    </span>
-                  </p>
-                ) : null}
+                      {allCasesOffice.length ? (
+                        <p className="text-body-compact text-pretty text-muted-foreground">
+                          {pick(joinOfficeCopy.alreadyAdded, locale)}{" "}
+                          <span className="font-medium text-foreground">
+                            {allCasesOffice.map((person) => person.name).join(", ")}
+                          </span>
+                        </p>
+                      ) : null}
 
-                {/* The office is suggested; any registered advocate or clerk can be
+                      {/* The office is suggested; any registered advocate or clerk can be
                     searched by name, number or Bar ID (owner, 2026-10-21, OFC-42). */}
-                <div className="flex items-start gap-2">
-                  <div className="min-w-0 flex-1">
-                    <PeopleInviteField
-                      id="adv-team"
-                      label={pick(advDialog.teamTitle, locale)}
-                      known={directoryOptions(office.map((person) => person.phone)).filter(
-                        (option) => !allCasesOffice.some((person) => person.phone === option.phone),
-                      )}
-                      value={team}
-                      onValueChange={setTeam}
-                      locale={locale}
-                      registeredOnly
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={!team.length}
-                    onClick={sendInvites}
-                  >
-                    {pick(advDialog.teamSendInvite, locale)}
-                  </Button>
-                </div>
+                      <div className="flex items-start gap-2">
+                        <div className="min-w-0 flex-1">
+                          <PeopleInviteField
+                            id="adv-team"
+                            label={pick(advDialog.teamTitle, locale)}
+                            known={directoryOptions(office.map((person) => person.phone)).filter(
+                              (option) =>
+                                !allCasesOffice.some((person) => person.phone === option.phone),
+                            )}
+                            value={team}
+                            onValueChange={setTeam}
+                            locale={locale}
+                            registeredOnly
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={!team.length}
+                          onClick={sendInvites}
+                        >
+                          {pick(advDialog.teamSendInvite, locale)}
+                        </Button>
+                      </div>
 
-                {team.length ? (
-                  <p className="text-body-compact text-muted-foreground">
-                    {pick(advDialog.teamAddedNote, locale)}
-                  </p>
-                ) : null}
+                      {team.length ? (
+                        <p className="text-body-compact text-muted-foreground">
+                          {pick(advDialog.teamAddedNote, locale)}
+                        </p>
+                      ) : null}
 
-                {/* One-line confirmation: a single tick, then the numbers just invited,
+                      {/* One-line confirmation: a single tick, then the numbers just invited,
                     inline and comma-separated. Replaced (not grown) on the next send. */}
-                {teamInvited.length ? (
-                  /* The toast announces the send and plays the mark; this line is the
+                      {teamInvited.length ? (
+                        /* The toast announces the send and plays the mark; this line is the
                      record of it in the window, so it stands still (as before). */
-                  <StatusLine tone="success" still>
-                    {pick(advDialog.teamInviteSentNote, locale)}{" "}
-                    <span className="tabular-nums">{teamInvited.join(", ")}</span>
-                  </StatusLine>
+                        <StatusLine tone="success" still>
+                          {pick(advDialog.teamInviteSentNote, locale)}{" "}
+                          <span className="tabular-nums">{teamInvited.join(", ")}</span>
+                        </StatusLine>
+                      ) : null}
+                    </div>
+                  </div>
                 ) : null}
               </div>
             </div>
-          ) : null}
-        </div>
-        </div>
-        </div>
+          </div>
 
-        {/* ------------------------------------------------------------ footer */}
-        <footer
-          className={`flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] sm:flex-row sm:items-center ${unpaidOutcome ? "sm:justify-end" : "sm:justify-between"} ${stage === "processing" ? "hidden" : ""} ${!leaving && (stage === "paid" || stage === "done") ? "bg-surface-sunken" : ""}`}
-        >
-          {leaving ? (
-            <>
-              <Button type="button" variant="outline" onClick={() => setLeaving(false)}>
-                {pick(advDialog.leaveStay, locale)}
-              </Button>
-              <Button type="button" variant="destructive-solid" onClick={discard}>
-                {pick(advDialog.leaveGo, locale)}
-              </Button>
-            </>
-          ) : (
-            <>
-            {stage === "lookup" ? (
+          {/* ------------------------------------------------------------ footer */}
+          <footer
+            className={`flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] sm:flex-row sm:items-center ${unpaidOutcome ? "sm:justify-end" : "sm:justify-between"} ${stage === "processing" ? "hidden" : ""} ${!leaving && (stage === "paid" || stage === "done") ? "bg-surface-sunken" : ""}`}
+          >
+            {leaving ? (
               <>
-                {mode === "summons" ? (
-                  /* "Not my case?" is not a dead end: back to the summons's own case and its
+                <Button type="button" variant="outline" onClick={() => setLeaving(false)}>
+                  {pick(advDialog.leaveStay, locale)}
+                </Button>
+                <Button type="button" variant="destructive-solid" onClick={discard}>
+                  {pick(advDialog.leaveGo, locale)}
+                </Button>
+              </>
+            ) : (
+              <>
+                {stage === "lookup" ? (
+                  <>
+                    {mode === "summons" ? (
+                      /* "Not my case?" is not a dead end: back to the summons's own case and its
                      code (owner, 2026-10-14). */
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setJoinCase(summonsCase);
-                      setSearched(false);
-                      setStage("code");
-                    }}
-                    data-icon="inline-start"
-                  >
-                    <ArrowLeftIcon aria-hidden />
-                    {pick(joinDialog.backToSummonsCase, locale)}
-                  </Button>
-                ) : (
-                  <span aria-hidden className="hidden sm:block" />
-                )}
-                <div className="flex items-center gap-2">
-                  {/* Sandbox, under the flask as on Pay: whether another advocate already
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setJoinCase(summonsCase);
+                          setSearched(false);
+                          setStage("code");
+                        }}
+                        data-icon="inline-start"
+                      >
+                        <ArrowLeftIcon aria-hidden />
+                        {pick(joinDialog.backToSummonsCase, locale)}
+                      </Button>
+                    ) : (
+                      <span aria-hidden className="hidden sm:block" />
+                    )}
+                    <div className="flex items-center gap-2">
+                      {/* Sandbox, under the flask as on Pay: whether another advocate already
                       named this one on a paid vakalatnama. Not modal — a modal menu inside
                       the dialog leaves the page pointer-locked once an item is chosen. */}
-                  <DropdownMenu modal={false}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            aria-label={pick(advDialog.lookupSandboxTip, locale)}
-                            className="text-muted-foreground"
+                      <DropdownMenu modal={false}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                aria-label={pick(advDialog.lookupSandboxTip, locale)}
+                                className="text-muted-foreground"
+                              >
+                                <FlaskConicalIcon aria-hidden />
+                              </Button>
+                            </DropdownMenuTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {pick(advDialog.lookupSandboxTip, locale)}
+                          </TooltipContent>
+                        </Tooltip>
+                        <DropdownMenuContent align="end" className="w-72">
+                          <DropdownMenuLabel>
+                            {pick(advDialog.lookupSandboxLabel, locale)}
+                          </DropdownMenuLabel>
+                          <DropdownMenuRadioGroup
+                            value={alreadyAdded ? "added" : "new"}
+                            onValueChange={(value) => setAlreadyAdded(value === "added")}
                           >
-                            <FlaskConicalIcon aria-hidden />
-                          </Button>
-                        </DropdownMenuTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent>{pick(advDialog.lookupSandboxTip, locale)}</TooltipContent>
-                    </Tooltip>
-                    <DropdownMenuContent align="end" className="w-72">
-                      <DropdownMenuLabel>{pick(advDialog.lookupSandboxLabel, locale)}</DropdownMenuLabel>
-                      <DropdownMenuRadioGroup
-                        value={alreadyAdded ? "added" : "new"}
-                        onValueChange={(value) => setAlreadyAdded(value === "added")}
+                            <DropdownMenuRadioItem value="new">
+                              {pick(advDialog.lookupSandboxNew, locale)}
+                            </DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="added">
+                              {pick(advDialog.lookupSandboxAdded, locale)}
+                            </DropdownMenuRadioItem>
+                          </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <Button
+                        type="submit"
+                        form="adv-lookup"
+                        data-icon="inline-start"
+                        className="flex-1 sm:flex-none"
                       >
-                        <DropdownMenuRadioItem value="new">
-                          {pick(advDialog.lookupSandboxNew, locale)}
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="added">
-                          {pick(advDialog.lookupSandboxAdded, locale)}
-                        </DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button
-                    type="submit"
-                    form="adv-lookup"
-                    data-icon="inline-start"
-                    className="flex-1 sm:flex-none"
-                  >
-                    <SearchIcon aria-hidden />
-                    {pick(advDialog.findAndJoin, locale)}
-                  </Button>
-                </div>
-              </>
-            ) : null}
+                        <SearchIcon aria-hidden />
+                        {pick(advDialog.findAndJoin, locale)}
+                      </Button>
+                    </div>
+                  </>
+                ) : null}
 
-            {stage === "invited" ? (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStage("lookup")}
-                  data-icon="inline-start"
-                >
-                  <ArrowLeftIcon aria-hidden />
-                  {pick(joinDialog.back, locale)}
-                </Button>
-                <Button type="button" onClick={viewCase}>
-                  {pick(joinDialog.viewCase, locale)}
-                </Button>
-              </>
-            ) : null}
+                {stage === "invited" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setStage("lookup")}
+                      data-icon="inline-start"
+                    >
+                      <ArrowLeftIcon aria-hidden />
+                      {pick(joinDialog.back, locale)}
+                    </Button>
+                    <Button type="button" onClick={viewCase}>
+                      {pick(joinDialog.viewCase, locale)}
+                    </Button>
+                  </>
+                ) : null}
 
-            {stage === "details" ? (
-              <>
-                {mode === "manual" ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStage("code")}
-                    data-icon="inline-start"
-                  >
-                    <ArrowLeftIcon aria-hidden />
-                    {pick(joinDialog.back, locale)}
-                  </Button>
-                ) : (
-                  <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                    {locale === "ml" ? "ഇപ്പോൾ വേണ്ട" : t("advocateJoinCaseDialog_notNow")}
-                  </Button>
-                )}
-                {/* Download sits next to the primary action as a compact icon; the label
+                {stage === "details" ? (
+                  <>
+                    {mode === "manual" ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setStage("code")}
+                        data-icon="inline-start"
+                      >
+                        <ArrowLeftIcon aria-hidden />
+                        {pick(joinDialog.back, locale)}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleOpenChange(false)}
+                      >
+                        {locale === "ml" ? "ഇപ്പോൾ വേണ്ട" : t("advocateJoinCaseDialog_notNow")}
+                      </Button>
+                    )}
+                    {/* Download sits next to the primary action as a compact icon; the label
                     rides in its hover tooltip. */}
-                <div className="flex items-center gap-2">
-                  <DownloadCaseFileButton
-                    label={pick(joinDialog.downloadCaseFile, locale)}
-                    onClick={() => setDownloadNotice(true)}
-                  />
-                  {/* Stacked footer on a phone: the primary fills the row beside
+                    <div className="flex items-center gap-2">
+                      <DownloadCaseFileButton
+                        label={pick(joinDialog.downloadCaseFile, locale)}
+                        onClick={() => setDownloadNotice(true)}
+                      />
+                      {/* Stacked footer on a phone: the primary fills the row beside
                       the icon, as wide as the Back button under it. */}
+                      <Button
+                        type="button"
+                        className="flex-1 sm:flex-none"
+                        onClick={() => setStage("account")}
+                        data-icon="inline-end"
+                      >
+                        {pick(joinDialog.continue, locale)}
+                        <ArrowRightIcon aria-hidden />
+                      </Button>
+                    </div>
+                  </>
+                ) : null}
+
+                {stage === "account" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={switchingProfile}
+                      onClick={() => setStage("details")}
+                      data-icon="inline-start"
+                    >
+                      <ArrowLeftIcon aria-hidden />
+                      {pick(joinDialog.back, locale)}
+                    </Button>
+                    <Button
+                      type="button"
+                      disabled={switchingProfile}
+                      onClick={continueFromAccount}
+                      data-icon="inline-end"
+                    >
+                      {pick(joinDialog.continue, locale)}
+                      <ArrowRightIcon aria-hidden />
+                    </Button>
+                  </>
+                ) : null}
+
+                {stage === "code" ? (
+                  <>
+                    {mode === "summons" && !searched ? (
+                      /* The wrong summons, or a mistyped link: search for the right case. */
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setCode("");
+                          setCodeTouched(false);
+                          setStage("lookup");
+                        }}
+                      >
+                        {pick(joinDialog.notMyCase, locale)}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setStage("lookup")}
+                        data-icon="inline-start"
+                      >
+                        <ArrowLeftIcon aria-hidden />
+                        {pick(joinDialog.back, locale)}
+                      </Button>
+                    )}
+                    <Button type="submit" form="adv-code" data-icon="inline-end">
+                      {pick(joinDialog.codeVerify, locale)}
+                      <ArrowRightIcon aria-hidden />
+                    </Button>
+                  </>
+                ) : null}
+
+                {stage === "role" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      // Representation always follows the account step in both modes.
+                      onClick={() => setStage("account")}
+                      data-icon="inline-start"
+                    >
+                      <ArrowLeftIcon aria-hidden />
+                      {pick(joinDialog.back, locale)}
+                    </Button>
+                    <Button type="submit" form="adv-role" data-icon="inline-end">
+                      {pick(joinDialog.continue, locale)}
+                      <ArrowRightIcon aria-hidden />
+                    </Button>
+                  </>
+                ) : null}
+
+                {stage === "verify" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      data-icon="inline-start"
+                      onClick={() => {
+                        setVerifyTouched(false);
+                        setStage("role");
+                      }}
+                    >
+                      <ArrowLeftIcon aria-hidden />
+                      {pick(joinDialog.back, locale)}
+                    </Button>
+                    <Button type="submit" form="adv-verify" data-icon="inline-end">
+                      {pick(joinDialog.continue, locale)}
+                      <ArrowRightIcon aria-hidden />
+                    </Button>
+                  </>
+                ) : null}
+
+                {stage === "vakalatnama" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      data-icon="inline-start"
+                      onClick={() => {
+                        setVkTouched(false);
+                        // Return to contact capture only if any litigant needed one;
+                        // otherwise step straight back to the representation stage.
+                        setStage(contactParties.length > 0 ? "verify" : "role");
+                      }}
+                    >
+                      <ArrowLeftIcon aria-hidden />
+                      {pick(joinDialog.back, locale)}
+                    </Button>
+                    <Button type="submit" form="adv-vakalatnama" data-icon="inline-end">
+                      {/* The fee is always due here, so the next step is payment. */}
+                      {pick(joinDialog.continue, locale)}
+                      <ArrowRightIcon aria-hidden />
+                    </Button>
+                  </>
+                ) : null}
+
+                {stage === "pay" ? (
+                  <>
+                    <Button type="button" variant="outline" onClick={payLater}>
+                      {pick(advDialog.payLater, locale)}
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      {/* Sandbox, tucked under the flask as on Sign (owner, 2026-10-12): the
+                      gateway's answer is a demo control, not part of the payment. */}
+                      <DropdownMenu>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                aria-label={pick(advDialog.paySandboxTip, locale)}
+                                className="text-muted-foreground"
+                              >
+                                <FlaskConicalIcon aria-hidden />
+                              </Button>
+                            </DropdownMenuTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>{pick(advDialog.paySandboxTip, locale)}</TooltipContent>
+                        </Tooltip>
+                        <DropdownMenuContent align="end" className="w-56">
+                          <DropdownMenuLabel>
+                            {pick(advDialog.payOutcomeLabel, locale)}
+                          </DropdownMenuLabel>
+                          <DropdownMenuRadioGroup
+                            value={payOutcome}
+                            onValueChange={(value) => setPayOutcome(value as "success" | "failed")}
+                          >
+                            <DropdownMenuRadioItem value="success">
+                              {pick(advDialog.payOutcomeSuccess, locale)}
+                            </DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="failed">
+                              {pick(advDialog.payOutcomeFailed, locale)}
+                            </DropdownMenuRadioItem>
+                          </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <Button type="submit" form="adv-pay" className="flex-1 sm:flex-none">
+                        {fill(advDialog.payNow, locale, { amount: fee })}
+                      </Button>
+                    </div>
+                  </>
+                ) : null}
+
+                {stage === "paid" ? (
                   <Button
                     type="button"
-                    className="flex-1 sm:flex-none"
-                    onClick={() => setStage("account")}
+                    className="sm:ml-auto"
+                    onClick={() => setStage("done")}
                     data-icon="inline-end"
                   >
                     {pick(joinDialog.continue, locale)}
                     <ArrowRightIcon aria-hidden />
                   </Button>
-                </div>
-              </>
-            ) : null}
+                ) : null}
 
-            {stage === "account" ? (
-              <>
-                <Button type="button" variant="outline" disabled={switchingProfile} onClick={() => setStage("details")} data-icon="inline-start">
-                  <ArrowLeftIcon aria-hidden />
-                  {pick(joinDialog.back, locale)}
-                </Button>
-                <Button
-                  type="button"
-                  disabled={switchingProfile}
-                  onClick={continueFromAccount}
-                  data-icon="inline-end"
-                >
-                  {pick(joinDialog.continue, locale)}
-                  <ArrowRightIcon aria-hidden />
-                </Button>
-              </>
-            ) : null}
-
-            {stage === "code" ? (
-              <>
-                {mode === "summons" && !searched ? (
-                  /* The wrong summons, or a mistyped link: search for the right case. */
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setCode("");
-                      setCodeTouched(false);
-                      setStage("lookup");
-                    }}
-                  >
-                    {pick(joinDialog.notMyCase, locale)}
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStage("lookup")}
-                    data-icon="inline-start"
-                  >
-                    <ArrowLeftIcon aria-hidden />
-                    {pick(joinDialog.back, locale)}
-                  </Button>
-                )}
-                <Button type="submit" form="adv-code" data-icon="inline-end">
-                  {pick(joinDialog.codeVerify, locale)}
-                  <ArrowRightIcon aria-hidden />
-                </Button>
-              </>
-            ) : null}
-
-            {stage === "role" ? (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  // Representation always follows the account step in both modes.
-                  onClick={() => setStage("account")}
-                  data-icon="inline-start"
-                >
-                  <ArrowLeftIcon aria-hidden />
-                  {pick(joinDialog.back, locale)}
-                </Button>
-                <Button type="submit" form="adv-role" data-icon="inline-end">
-                  {pick(joinDialog.continue, locale)}
-                  <ArrowRightIcon aria-hidden />
-                </Button>
-              </>
-            ) : null}
-
-            {stage === "verify" ? (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  data-icon="inline-start"
-                  onClick={() => {
-                    setVerifyTouched(false);
-                    setStage("role");
-                  }}
-                >
-                  <ArrowLeftIcon aria-hidden />
-                  {pick(joinDialog.back, locale)}
-                </Button>
-                <Button type="submit" form="adv-verify" data-icon="inline-end">
-                  {pick(joinDialog.continue, locale)}
-                  <ArrowRightIcon aria-hidden />
-                </Button>
-              </>
-            ) : null}
-
-            {stage === "vakalatnama" ? (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  data-icon="inline-start"
-                  onClick={() => {
-                    setVkTouched(false);
-                    // Return to contact capture only if any litigant needed one;
-                    // otherwise step straight back to the representation stage.
-                    setStage(contactParties.length > 0 ? "verify" : "role");
-                  }}
-                >
-                  <ArrowLeftIcon aria-hidden />
-                  {pick(joinDialog.back, locale)}
-                </Button>
-                <Button type="submit" form="adv-vakalatnama" data-icon="inline-end">
-                  {/* The fee is always due here, so the next step is payment. */}
-                  {pick(joinDialog.continue, locale)}
-                  <ArrowRightIcon aria-hidden />
-                </Button>
-              </>
-            ) : null}
-
-            {stage === "pay" ? (
-              <>
-                <Button type="button" variant="outline" onClick={payLater}>
-                  {pick(advDialog.payLater, locale)}
-                </Button>
-                <div className="flex items-center gap-2">
-                  {/* Sandbox, tucked under the flask as on Sign (owner, 2026-10-12): the
-                      gateway's answer is a demo control, not part of the payment. */}
-                  <DropdownMenu>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            aria-label={pick(advDialog.paySandboxTip, locale)}
-                            className="text-muted-foreground"
-                          >
-                            <FlaskConicalIcon aria-hidden />
-                          </Button>
-                        </DropdownMenuTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent>{pick(advDialog.paySandboxTip, locale)}</TooltipContent>
-                    </Tooltip>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>{pick(advDialog.payOutcomeLabel, locale)}</DropdownMenuLabel>
-                      <DropdownMenuRadioGroup
-                        value={payOutcome}
-                        onValueChange={(value) => setPayOutcome(value as "success" | "failed")}
+                {stage === "done" ? (
+                  unpaidOutcome ? (
+                    <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                      {pick(joinDialog.backHome, locale)}
+                    </Button>
+                  ) : side === "accused" ? (
+                    // Bail is an accused-side step; it leads only for the accused's advocate.
+                    <>
+                      <Button type="button" variant="outline" onClick={viewCase}>
+                        {pick(joinDialog.viewCase, locale)}
+                      </Button>
+                      <Button
+                        type="button"
+                        disabled={bailOpening}
+                        onClick={openBail}
+                        data-icon="inline-end"
                       >
-                        <DropdownMenuRadioItem value="success">
-                          {pick(advDialog.payOutcomeSuccess, locale)}
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="failed">
-                          {pick(advDialog.payOutcomeFailed, locale)}
-                        </DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button type="submit" form="adv-pay" className="flex-1 sm:flex-none">
-                    {fill(advDialog.payNow, locale, { amount: fee })}
-                  </Button>
-                </div>
+                        {pick(joinDialog.fileBail, locale)}
+                        <ArrowRightIcon aria-hidden />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleOpenChange(false)}
+                      >
+                        {pick(joinDialog.backHome, locale)}
+                      </Button>
+                      <Button type="button" onClick={viewCase} data-icon="inline-end">
+                        {pick(joinDialog.viewCase, locale)}
+                        <ArrowRightIcon aria-hidden />
+                      </Button>
+                    </>
+                  )
+                ) : null}
               </>
-            ) : null}
-
-            {stage === "paid" ? (
-              <Button
-                type="button"
-                className="sm:ml-auto"
-                onClick={() => setStage("done")}
-                data-icon="inline-end"
-              >
-                {pick(joinDialog.continue, locale)}
-                <ArrowRightIcon aria-hidden />
-              </Button>
-            ) : null}
-
-            {stage === "done" ? (
-              unpaidOutcome ? (
-                <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                  {pick(joinDialog.backHome, locale)}
-                </Button>
-              ) : side === "accused" ? (
-                // Bail is an accused-side step; it leads only for the accused's advocate.
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={viewCase}
-                  >
-                    {pick(joinDialog.viewCase, locale)}
-                  </Button>
-                  <Button
-                    type="button"
-                    disabled={bailOpening}
-                    onClick={openBail}
-                    data-icon="inline-end"
-                  >
-                    {pick(joinDialog.fileBail, locale)}
-                    <ArrowRightIcon aria-hidden />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                    {pick(joinDialog.backHome, locale)}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={viewCase}
-                    data-icon="inline-end"
-                  >
-                    {pick(joinDialog.viewCase, locale)}
-                    <ArrowRightIcon aria-hidden />
-                  </Button>
-                </>
-              )
-            ) : null}
-            </>
-          )}
-        </footer>
-      </FlowDialogContent>
-    </Dialog>
-    {bailOpen && joinCase ? (
-      <JoinedCaseBail
-        joinCase={joinCase}
-        accused={selectedParties.map((party) => party.name)}
-        as="advocate"
-        onViewCase={() => router.push(`/cases/${JOIN_DEMO_CASE_ID}`)}
-        onClose={() => {
-          setBailOpen(false);
-          handleOpenChange(false);
-        }}
-      />
-    ) : null}
+            )}
+          </footer>
+        </FlowDialogContent>
+      </Dialog>
+      {bailOpen && joinCase ? (
+        <JoinedCaseBail
+          joinCase={joinCase}
+          accused={selectedParties.map((party) => party.name)}
+          as="advocate"
+          onViewCase={() => router.push(`/cases/${JOIN_DEMO_CASE_ID}`)}
+          onClose={() => {
+            setBailOpen(false);
+            handleOpenChange(false);
+          }}
+        />
+      ) : null}
     </>
   );
 }

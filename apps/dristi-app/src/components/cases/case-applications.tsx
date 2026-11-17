@@ -2,12 +2,7 @@
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  ChevronDownIcon,
-  ClockIcon,
-  FileSearchIcon,
-  FileTextIcon,
-} from "lucide-react";
+import { ChevronDownIcon, ClockIcon, FileSearchIcon, FileTextIcon } from "lucide-react";
 
 import { ApplicationPaymentDialog } from "@/components/cases/application-payment-dialog";
 import { ApplicationRecordDialog } from "@/components/cases/application-record-dialog";
@@ -31,11 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Empty,
   EmptyDescription,
@@ -69,10 +60,7 @@ import {
   type ObjectionTask,
   filingNoun,
 } from "@/lib/cases/application-record";
-import {
-  resolveApplicationViewer,
-  type ApplicationViewer,
-} from "@/lib/cases/application-access";
+import { resolveApplicationViewer, type ApplicationViewer } from "@/lib/cases/application-access";
 import {
   FILING_STATUSES,
   applicationsFile,
@@ -83,11 +71,7 @@ import {
 import { FIXTURE_TODAY } from "@/lib/cases/fixtures";
 import { isViewer, viewerRepresentation } from "@/lib/cases/viewer";
 import { useProfile } from "@/components/shell/profile";
-import {
-  readSessionValue,
-  useSessionValue,
-  writeSessionValue,
-} from "@/lib/cases/demo-session";
+import { readSessionValue, useSessionValue, writeSessionValue } from "@/lib/cases/demo-session";
 import {
   parseSavedDrafts,
   savedDraftSubmission,
@@ -199,23 +183,15 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
       (filers.length === 0 || filers.includes(item.filedById)) &&
       (needle === "" ||
         [item.applicationNumber, item.temporaryId].some((id) =>
-          (id ?? "").toLowerCase().includes(needle)
-        ))
+          (id ?? "").toLowerCase().includes(needle),
+        )),
   );
   /* Needs attention is the viewer's to-do list, not a view of the table, so
      no filter or search narrows it (owner, Sept 18). */
   const actions = groupActions(register.applications, register.objectionTasks);
-  const filtered =
-    types.length > 0 ||
-    statuses.length > 0 ||
-    filers.length > 0 ||
-    needle !== "";
-  const openApplication =
-    register.applications.find((item) => item.id === recordOpen) ?? null;
-  const canDraft =
-    viewer.role === "advocate" ||
-    viewer.role === "pip" ||
-    viewer.role === "clerk";
+  const filtered = types.length > 0 || statuses.length > 0 || filers.length > 0 || needle !== "";
+  const openApplication = register.applications.find((item) => item.id === recordOpen) ?? null;
+  const canDraft = viewer.role === "advocate" || viewer.role === "pip" || viewer.role === "clerk";
 
   /** The step a filing is waiting on: a draft resumes in its form, the rest
    *  open their dialog. Signing starts from what is signed (owner, Oct 8):
@@ -263,12 +239,7 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
       {/* The controls sit directly on the table they narrow, below Needs
           attention and a step clear of it, so what they act on is read from
           where they are. */}
-      <div
-        className={cn(
-          REGISTER_FILTER_ROW,
-          actions.length > 0 && "mt-4"
-        )}
-      >
+      <div className={cn(REGISTER_FILTER_ROW, actions.length > 0 && "mt-4")}>
         <RegisterFilter
           label={t("caseApplications_type")}
           values={types}
@@ -328,7 +299,9 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
           {filtered
             ? rows.length === 1
               ? t("caseApplications_1ApplicationMatchesTheFilters")
-              : t("caseApplications_lengthApplicationsMatchTheFilters", { length: String(rows.length) })
+              : t("caseApplications_lengthApplicationsMatchTheFilters", {
+                  length: String(rows.length),
+                })
             : rows.length === 1
               ? t("caseApplications_1Application")
               : t("caseApplications_lengthApplications", { length: String(rows.length) })}
@@ -339,14 +312,12 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
         <Empty className="border border-dashed border-border">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              {filtered ? (
-                <FileSearchIcon aria-hidden />
-              ) : (
-                <FileTextIcon aria-hidden />
-              )}
+              {filtered ? <FileSearchIcon aria-hidden /> : <FileTextIcon aria-hidden />}
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
-              {filtered ? t("caseApplications_noApplicationsMatch") : t("caseApplications_noApplicationsYet")}
+              {filtered
+                ? t("caseApplications_noApplicationsMatch")
+                : t("caseApplications_noApplicationsYet")}
             </EmptyTitle>
             <EmptyDescription>
               {filtered
@@ -358,12 +329,12 @@ export function CaseApplications({ record }: { record: CaseRecord }) {
           </EmptyHeader>
         </Empty>
       ) : (
-          <ApplicationsTable
-            rows={rows}
-            onOpen={setRecordOpen}
-            recentId={recentId}
-            recentRowRef={recentRowRef}
-          />
+        <ApplicationsTable
+          rows={rows}
+          onOpen={setRecordOpen}
+          recentId={recentId}
+          recentRowRef={recentRowRef}
+        />
       )}
 
       <ApplicationRecordDialog
@@ -476,7 +447,7 @@ export function useFilingsRegister(record: CaseRecord) {
         .flatMap(savedDocumentRows),
       ...parseSavedDrafts(savedRaw).map(savedDraftSubmission),
     ],
-    [savedRaw, savedDocumentsRaw]
+    [savedRaw, savedDocumentsRaw],
   );
   const register = useMemo(() => {
     try {
@@ -528,8 +499,7 @@ export function SignAndPayDialogs({
   const count = signed.length;
   const noun = filingNoun(signed);
   /* A document never pays (DSB-19): signed is submitted, onto the record. */
-  const documents =
-    signed.length > 0 && signed.every((item) => item.source.kind === "document");
+  const documents = signed.length > 0 && signed.every((item) => item.source.kind === "document");
 
   function move(ids: string[], next: (item: ApplicationRecord) => ApplicationMove) {
     /* Read fresh, not from this render: signing then paying writes twice
@@ -559,66 +529,66 @@ export function SignAndPayDialogs({
           onComplete={() => {
             move(
               signing.map((item) => item.id),
-              () => ({ status: "submitted", submittedOn: FIXTURE_TODAY })
+              () => ({ status: "submitted", submittedOn: FIXTURE_TODAY }),
             );
             onSigningChange([]);
           }}
         />
       ) : (
-      <PartySignatureDialog
-        open={signing.length > 0}
-        onClose={() => onSigningChange([])}
-        onBack={
-          onBack
-            ? () => {
-                const batch = signing;
-                onSigningChange([]);
-                onBack(batch);
-              }
-            : undefined
-        }
-        onComplete={() => {
-          move(
-            signing.map((item) => item.id),
-            () => ({ status: "pending-payment" })
-          );
-          onSigningChange([]);
-        }}
-        chooseTitle={
-          count > 1
-            ? t("caseApplications_howAreTheseCountNounSigned", { count: String(count), noun })
-            : t("caseApplications_howIsThisNounSigned", { noun })
-        }
-        noun={filingNoun(signed, 1)}
-        submitLabel={t("caseApplications_submitSignedCopy")}
-        /* Signed goes on to the fee, as it does from the Raise application
-           form; only an advocate or party in person signs, and both may pay
-           (owner, Sept 24: signing stopped short of payment here). */
-        proceed={{
-          label: t("caseApplications_proceedToPayment"),
-          laterLabel: t("caseApplications_payLater"),
-          onClick: () => {
-            const batch = signing;
+        <PartySignatureDialog
+          open={signing.length > 0}
+          onClose={() => onSigningChange([])}
+          onBack={
+            onBack
+              ? () => {
+                  const batch = signing;
+                  onSigningChange([]);
+                  onBack(batch);
+                }
+              : undefined
+          }
+          onComplete={() => {
             move(
-              batch.map((item) => item.id),
-              () => ({ status: "pending-payment" })
+              signing.map((item) => item.id),
+              () => ({ status: "pending-payment" }),
             );
             onSigningChange([]);
-            onPayingChange(batch);
-          },
-        }}
-        confirmation={
-          count > 1
-            ? {
-                title: `${count} ${noun} signed`,
-                description: t("caseApplications_payTheCourtFeeToSubmit"),
-              }
-            : {
-                title: `${noun.charAt(0).toUpperCase()}${noun.slice(1)} signed`,
-                description: t("caseApplications_payTheCourtFeeToSubmitIt"),
-              }
-        }
-      />
+          }}
+          chooseTitle={
+            count > 1
+              ? t("caseApplications_howAreTheseCountNounSigned", { count: String(count), noun })
+              : t("caseApplications_howIsThisNounSigned", { noun })
+          }
+          noun={filingNoun(signed, 1)}
+          submitLabel={t("caseApplications_submitSignedCopy")}
+          /* Signed goes on to the fee, as it does from the Raise application
+           form; only an advocate or party in person signs, and both may pay
+           (owner, Sept 24: signing stopped short of payment here). */
+          proceed={{
+            label: t("caseApplications_proceedToPayment"),
+            laterLabel: t("caseApplications_payLater"),
+            onClick: () => {
+              const batch = signing;
+              move(
+                batch.map((item) => item.id),
+                () => ({ status: "pending-payment" }),
+              );
+              onSigningChange([]);
+              onPayingChange(batch);
+            },
+          }}
+          confirmation={
+            count > 1
+              ? {
+                  title: `${count} ${noun} signed`,
+                  description: t("caseApplications_payTheCourtFeeToSubmit"),
+                }
+              : {
+                  title: `${noun.charAt(0).toUpperCase()}${noun.slice(1)} signed`,
+                  description: t("caseApplications_payTheCourtFeeToSubmitIt"),
+                }
+          }
+        />
       )}
       <ApplicationPaymentDialog
         applications={paying}
@@ -706,9 +676,8 @@ export function NeedsAction({
 }) {
   const t = useTranslations();
   const count = entries.reduce(
-    (sum, entry) =>
-      sum + (entry.kind === "group" ? entry.applications.length : 1),
-    0
+    (sum, entry) => sum + (entry.kind === "group" ? entry.applications.length : 1),
+    0,
   );
   const tray = useOneOpen<string>();
   return (
@@ -762,7 +731,13 @@ export function NeedsAction({
           </li>
         ))}
       </ul>
-      <ul className={cn("flex-col gap-2", REGISTER_TABLE_ONLY, "md:pointer-fine:flex md:landscape:flex")}>
+      <ul
+        className={cn(
+          "flex-col gap-2",
+          REGISTER_TABLE_ONLY,
+          "md:pointer-fine:flex md:landscape:flex",
+        )}
+      >
         {entries.map((entry) => (
           <li key={entry.key} className="rounded-lg bg-card shadow-raised">
             {entry.kind === "single" ? (
@@ -773,18 +748,9 @@ export function NeedsAction({
                 onOpen={onOpen}
               />
             ) : entry.kind === "group" ? (
-              <ActionGroup
-                caseId={caseId}
-                entry={entry}
-                onAct={onAct}
-                onOpen={onOpen}
-              />
+              <ActionGroup caseId={caseId} entry={entry} onAct={onAct} onOpen={onOpen} />
             ) : (
-              <ObjectionRow
-                task={entry.task}
-                onOpen={onOpen}
-                onObject={onObject}
-              />
+              <ObjectionRow task={entry.task} onOpen={onOpen} onObject={onObject} />
             )}
           </li>
         ))}
@@ -808,13 +774,7 @@ const STEP_COPY = {
  * A card's title with its status beside it rather than on a row of its own:
  * the badge was a whole line of height for one word (owner, Sept 24).
  */
-function CardTitle({
-  label,
-  badge,
-}: {
-  label: string;
-  badge?: ReactNode;
-}) {
+function CardTitle({ label, badge }: { label: string; badge?: ReactNode }) {
   return (
     <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
       <span>{label}</span>
@@ -904,9 +864,7 @@ function TouchActionCard({
           label={application.name}
           badge={
             nested ? null : (
-              <Badge variant={application.statusVariant}>
-                {application.statusLabel}
-              </Badge>
+              <Badge variant={application.statusVariant}>{application.statusLabel}</Badge>
             )
           }
         />
@@ -915,11 +873,7 @@ function TouchActionCard({
       onOpenChange={onOpenChange}
       actions={
         <>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpen(application.id)}
-          >
+          <Button type="button" variant="outline" onClick={() => onOpen(application.id)}>
             {t("caseApplications_view")}
           </Button>
           <StepAction caseId={caseId} application={application} onAct={onAct} />
@@ -932,19 +886,17 @@ function TouchActionCard({
       <div className="-mt-1 flex flex-col gap-1 text-caption font-normal text-muted-foreground">
         <span>{filedLine(application)}</span>
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1 tabular-nums">
-          <span>{t("caseApplications_createdCreatedShort", { createdShort: application.createdShort })}</span>
-          {expiryText(application) ? (
-            <ExpiryNote text={expiryText(application)!} />
-          ) : null}
+          <span>
+            {t("caseApplications_createdCreatedShort", { createdShort: application.createdShort })}
+          </span>
+          {expiryText(application) ? <ExpiryNote text={expiryText(application)!} /> : null}
         </span>
       </div>
     </RegisterTrayCard>
   );
 }
 
-function groupTitle(
-  entry: Extract<ActionEntry, { kind: "group" }>
-): string {
+function groupTitle(entry: Extract<ActionEntry, { kind: "group" }>): string {
   const count = entry.applications.length;
   const noun = filingNoun(entry.applications);
   return entry.step === "sign"
@@ -1005,27 +957,20 @@ function TouchActionGroup({
           <ul className="flex flex-col gap-2" aria-label={groupTitle(entry)}>
             {entry.applications.map((application) => (
               <li key={application.id}>
-                <GroupMemberCard
-                  application={application}
-                  onAct={onAct}
-                  onOpen={onOpen}
-                />
+                <GroupMemberCard application={application} onAct={onAct} onOpen={onOpen} />
               </li>
             ))}
           </ul>
           {bulk ? (
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => onAct(entry.applications)}
-            >
-              {signing ? t("caseApplications_signAllCount", { count: String(count) }) : t("caseApplications_payAllCount", { count: String(count) })}
+            <Button type="button" className="w-full" onClick={() => onAct(entry.applications)}>
+              {signing
+                ? t("caseApplications_signAllCount", { count: String(count) })
+                : t("caseApplications_payAllCount", { count: String(count) })}
             </Button>
           ) : null}
         </>
       }
-    >
-    </RegisterTrayCard>
+    ></RegisterTrayCard>
   );
 }
 
@@ -1043,33 +988,28 @@ function GroupMemberCard({
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-hairline bg-card p-3">
       <div className="flex flex-col gap-1">
-        <p className="text-body-compact font-semibold text-foreground">
-          {application.name}
-        </p>
+        <p className="text-body-compact font-semibold text-foreground">{application.name}</p>
         <div className="flex flex-col gap-1 text-caption font-normal text-muted-foreground">
           <span>{filedLine(application)}</span>
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1 tabular-nums">
-            <span>{t("caseApplications_createdCreatedShort", { createdShort: application.createdShort })}</span>
-            {expiryText(application) ? (
-              <ExpiryNote text={expiryText(application)!} />
-            ) : null}
+            <span>
+              {t("caseApplications_createdCreatedShort", {
+                createdShort: application.createdShort,
+              })}
+            </span>
+            {expiryText(application) ? <ExpiryNote text={expiryText(application)!} /> : null}
           </span>
         </div>
       </div>
       <div className="flex gap-2 [&>*]:flex-1">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onOpen(application.id)}
-        >
-          {t.rich("caseApplications_viewTypeLabel", { typeLabel: application.typeLabel, span: (chunks) => <span className="sr-only">{chunks}</span> })}
+        <Button type="button" variant="outline" onClick={() => onOpen(application.id)}>
+          {t.rich("caseApplications_viewTypeLabel", {
+            typeLabel: application.typeLabel,
+            span: (chunks) => <span className="sr-only">{chunks}</span>,
+          })}
         </Button>
         {application.step && application.step !== "continue" ? (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onAct([application])}
-          >
+          <Button type="button" variant="outline" onClick={() => onAct([application])}>
             {STEP_COPY[application.step]}
             <span className="sr-only">: {application.typeLabel}</span>
           </Button>
@@ -1106,16 +1046,16 @@ function ActionRow({
             {application.name}
           </button>
           {nested ? null : (
-            <Badge variant={application.statusVariant}>
-              {application.statusLabel}
-            </Badge>
+            <Badge variant={application.statusVariant}>{application.statusLabel}</Badge>
           )}
         </div>
         {/* Who and when, at a note's weight; only the deadline keeps medium
             (owner, Oct 8). */}
         <p className="flex flex-wrap items-center gap-x-1 gap-y-1 text-caption font-normal text-muted-foreground">
           <span>{`${filedLine(application)} ·`}</span>
-          <span className="tabular-nums">{t("caseApplications_createdCreated", { created: application.created })}</span>
+          <span className="tabular-nums">
+            {t("caseApplications_createdCreated", { created: application.created })}
+          </span>
           {expiryText(application) ? (
             <>
               <span aria-hidden>·</span>
@@ -1125,16 +1065,16 @@ function ActionRow({
         </p>
       </div>
       {step ? (
-          <Button
-            type="button"
-            variant={nested ? "ghost" : "outline"}
-            size="sm"
-            className="max-sm:h-10"
-            onClick={() => onAct([application])}
-          >
-            {step}
-            <span className="sr-only">: {application.typeLabel}</span>
-          </Button>
+        <Button
+          type="button"
+          variant={nested ? "ghost" : "outline"}
+          size="sm"
+          className="max-sm:h-10"
+          onClick={() => onAct([application])}
+        >
+          {step}
+          <span className="sr-only">: {application.typeLabel}</span>
+        </Button>
       ) : null}
     </div>
   );
@@ -1164,9 +1104,7 @@ function ActionGroup({
     <Collapsible defaultOpen={!bulk}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 max-sm:basis-full">
-          <p className="text-body-compact font-medium text-foreground">
-            {groupTitle(entry)}
-          </p>
+          <p className="text-body-compact font-medium text-foreground">{groupTitle(entry)}</p>
           <Badge variant={lead.statusVariant}>{lead.statusLabel}</Badge>
           {groupExpiryText(entry.applications) ? (
             <span className="text-caption font-medium text-muted-foreground">
@@ -1175,13 +1113,10 @@ function ActionGroup({
           ) : null}
         </div>
         <CollapsibleTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="group/expand max-sm:h-10"
-          >
-            <span className="group-aria-expanded/expand:hidden">{t("caseApplications_showAll")}</span>
+          <Button type="button" variant="ghost" size="sm" className="group/expand max-sm:h-10">
+            <span className="group-aria-expanded/expand:hidden">
+              {t("caseApplications_showAll")}
+            </span>
             <span className="hidden group-aria-expanded/expand:inline">
               {t("caseApplications_hide")}
             </span>
@@ -1207,10 +1142,7 @@ function ActionGroup({
       <CollapsibleContent className={COLLAPSE_MOTION}>
         <ul className="border-t border-hairline">
           {entry.applications.map((application) => (
-            <li
-              key={application.id}
-              className="border-b border-hairline last:border-b-0"
-            >
+            <li key={application.id} className="border-b border-hairline last:border-b-0">
               <ActionRow
                 caseId={caseId}
                 application={application}
@@ -1236,14 +1168,10 @@ function objectionTitle(task: ObjectionTask): string {
   /* "Others" names no ask ("object to others"); the filer's own title
      does, quoted as typed. */
   const { application } = task;
-  const type =
-    quotedOthersTitle(application.source) ??
-    application.typeLabel.toLowerCase();
+  const type = quotedOthersTitle(application.source) ?? application.typeLabel.toLowerCase();
   /* A litigant or PoA holder is told, not tasked: their advocate files it
      (owner, Sept 24). */
-  return task.canFile
-    ? `File objection to ${type}`
-    : `Your advocate can object to ${type}`;
+  return task.canFile ? `File objection to ${type}` : `Your advocate can object to ${type}`;
 }
 
 function objectionLine(task: ObjectionTask): string {
@@ -1264,12 +1192,9 @@ function objectionLine(task: ObjectionTask): string {
  */
 function ObjectionDue({ task }: { task: ObjectionTask }) {
   const days = Math.round(
-    (Date.parse(`${task.dueOn}T00:00:00Z`) -
-      Date.parse(`${FIXTURE_TODAY}T00:00:00Z`)) /
-      86_400_000
+    (Date.parse(`${task.dueOn}T00:00:00Z`) - Date.parse(`${FIXTURE_TODAY}T00:00:00Z`)) / 86_400_000,
   );
-  const when =
-    days <= 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`;
+  const when = days <= 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`;
   /* Amber marks a deadline this reader has to meet; a reminder of their
      advocate's stays muted. */
   const urgent = task.canFile && days <= 2;
@@ -1277,7 +1202,7 @@ function ObjectionDue({ task }: { task: ObjectionTask }) {
     <span
       className={cn(
         "inline-flex items-center gap-1 font-medium whitespace-nowrap tabular-nums",
-        urgent && "font-medium text-warning-ink"
+        urgent && "font-medium text-warning-ink",
       )}
     >
       {urgent ? <ClockIcon className="size-3.5 shrink-0" aria-hidden /> : null}
@@ -1321,7 +1246,10 @@ function ObjectionRow({
           className="max-sm:h-10"
           onClick={() => onObject(task.application.id)}
         >
-          {t.rich("caseApplications_fileObjectionTypeLabel", { typeLabel: task.application.typeLabel, span: (chunks) => <span className="sr-only">{chunks}</span> })}
+          {t.rich("caseApplications_fileObjectionTypeLabel", {
+            typeLabel: task.application.typeLabel,
+            span: (chunks) => <span className="sr-only">{chunks}</span>,
+          })}
         </Button>
       ) : (
         <Button
@@ -1331,7 +1259,10 @@ function ObjectionRow({
           className="max-sm:h-10"
           onClick={() => onOpen(task.application.id)}
         >
-          {t.rich("caseApplications_viewTypeLabel", { typeLabel: task.application.typeLabel, span: (chunks) => <span className="sr-only">{chunks}</span> })}
+          {t.rich("caseApplications_viewTypeLabel", {
+            typeLabel: task.application.typeLabel,
+            span: (chunks) => <span className="sr-only">{chunks}</span>,
+          })}
         </Button>
       )}
     </div>
@@ -1359,18 +1290,11 @@ function TouchObjectionCard({
       onOpenChange={onOpenChange}
       actions={
         <>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpen(task.application.id)}
-          >
+          <Button type="button" variant="outline" onClick={() => onOpen(task.application.id)}>
             {t("caseApplications_view")}
           </Button>
           {task.canFile ? (
-            <Button
-              type="button"
-              onClick={() => onObject(task.application.id)}
-            >
+            <Button type="button" onClick={() => onObject(task.application.id)}>
               {t("caseApplications_fileObjection")}
             </Button>
           ) : null}
@@ -1431,7 +1355,7 @@ function noteClass(keepWhole = false): string {
     /* The Type column's subline weight: a note, never a second label
        (owner, Oct 8). The cells around it are medium, so it says normal. */
     "text-caption font-normal text-muted-foreground tabular-nums",
-    keepWhole && "whitespace-nowrap"
+    keepWhole && "whitespace-nowrap",
   );
 }
 
@@ -1501,189 +1425,174 @@ function ApplicationsTable({
   const tray = useOneOpen<string>();
   return (
     <>
-    <ul className={cn("flex flex-col gap-3", REGISTER_CARDS_ONLY)}>
-      {rows.map((item) => {
-        const note = statusNote(item);
-        return (
-        <li key={item.id}>
-          <RegisterTrayCard
-            title={
-              <CardTitle
-                label={item.name}
-                badge={
-                  <Badge variant={item.statusVariant}>{item.statusLabel}</Badge>
-                }
-              />
-            }
-            open={tray.isOpen(item.id)}
-            onOpenChange={tray.toggle(item.id)}
-            className={cn(recentId === item.id && RECENT_ROW)}
-            actions={
-              <Button type="button" onClick={() => onOpen(item.id)}>
-                {t("caseApplications_viewApplication")}
-              </Button>
-            }
-          >
-            <p className="-mt-2 text-caption text-muted-foreground">
-              {item.applicationNumber ? (
-                <Identifier
-                  value={item.applicationNumber}
-                  label={t("caseApplications_applicationNumber")}
-                  copyable={false}
-                />
-              ) : item.temporaryId ? (
-                <>
-                  <Identifier
-                    value={item.temporaryId}
-                    label={t("caseApplications_temporaryId")}
-                    copyable={false}
-                  />
-                  {awaitingNumber(item) ? t("caseApplications_temporary2") : null}
-                </>
-              ) : objectionTarget(item) ? null : (
-                /* An objection never gets a court number; its line says what
-                   it objects to instead. */
-                t("caseApplications_numberNotAllottedYet")
-              )}
-              {objectionTarget(item)
-                ? `${item.temporaryId ? " · " : ""}${objectionTarget(item)}`
-                : null}
-            </p>
-            {note ? (
-              <span className={cn("-mt-2", noteClass(!item.waitingOn))}>
-                {note}
-              </span>
-            ) : null}
-            <div className="flex flex-col gap-1 border-t border-hairline pt-3">
-              <p className="text-body-compact text-foreground">
-                {item.filedBy}
-                {item.fromOtherSide ? (
-                  <span className="text-caption text-muted-foreground">
-                    {` · ${applicationSideLabel(item.side)}`}
-                  </span>
-                ) : null}
-                {item.draftedBy ? (
-                  <span className="text-caption text-muted-foreground">
-                    {t("caseApplications_draftedByDraftedBy", { draftedBy: item.draftedBy })}
-                  </span>
-                ) : null}
-              </p>
-              <p className="text-caption tabular-nums text-muted-foreground">
-                Created {item.createdShort}
-                {item.submittedShort ? ` · Submitted ${item.submittedShort}` : ""}
-              </p>
-            </div>
-          </RegisterTrayCard>
-        </li>
-        );
-      })}
-    </ul>
-    <div className={REGISTER_TABLE_ONLY}>
-    <Table>
-      <TableHeader>
-        <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={TABLE_HEAD}>{t("caseApplications_type")}</TableHead>
-          <TableHead className={TABLE_HEAD}>{t("caseApplications_number")}</TableHead>
-          <TableHead className={TABLE_HEAD}>{t("caseApplications_status")}</TableHead>
-          <TableHead className={TABLE_HEAD}>{t("caseApplications_filedBy")}</TableHead>
-          <TableHead className={TABLE_HEAD}>{t("caseApplications_createdOn")}</TableHead>
-          <TableHead className={TABLE_HEAD}>{t("caseApplications_submittedOn")}</TableHead>
-          <TableHead className={TABLE_HEAD}>{t("caseApplications_action")}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody className={tableBodyClass()}>
+      <ul className={cn("flex flex-col gap-3", REGISTER_CARDS_ONLY)}>
         {rows.map((item) => {
           const note = statusNote(item);
           return (
-          <TableRow
-            key={item.id}
-            ref={recentId === item.id ? recentRowRef : undefined}
-            className={cn(
-              tableRowClass(),
-              "cursor-pointer",
-              recentId === item.id && RECENT_ROW
-            )}
-            onClick={() => onOpen(item.id)}
-          >
-            <TableCell
-              className={cn(TABLE_CELL, "font-medium whitespace-normal")}
-            >
-              <span className="flex min-w-0 flex-col gap-0.5">
-                <span>{item.typeLabel}</span>
-                {/* Others names no ask; the filer's own title does. One
-                    line, so the row keeps its height; the detail view's
-                    heading has it whole. */}
-                {item.ownTitle ? (
-                  <span
-                    /* w-0 + min-w-full: fills the column without
-                       widening it, so the other columns keep their room. */
-                    className="w-0 min-w-full truncate text-caption font-normal text-muted-foreground"
-                    title={item.ownTitle}
-                  >
-                    {item.ownTitle}
-                  </span>
-                ) : null}
-                {objectionTarget(item) ? (
-                  <span className="text-caption font-normal text-muted-foreground">
-                    {objectionTarget(item)}
-                  </span>
-                ) : null}
-              </span>
-            </TableCell>
-            <TableCell
-              className={cn(TABLE_CELL, "text-caption text-muted-foreground")}
-            >
-              <ApplicationNumber item={item} />
-            </TableCell>
-            <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>
-              <span className="flex flex-col items-start gap-0.5">
-                <Badge variant={item.statusVariant}>{item.statusLabel}</Badge>
+            <li key={item.id}>
+              <RegisterTrayCard
+                title={
+                  <CardTitle
+                    label={item.name}
+                    badge={<Badge variant={item.statusVariant}>{item.statusLabel}</Badge>}
+                  />
+                }
+                open={tray.isOpen(item.id)}
+                onOpenChange={tray.toggle(item.id)}
+                className={cn(recentId === item.id && RECENT_ROW)}
+                actions={
+                  <Button type="button" onClick={() => onOpen(item.id)}>
+                    {t("caseApplications_viewApplication")}
+                  </Button>
+                }
+              >
+                <p className="-mt-2 text-caption text-muted-foreground">
+                  {item.applicationNumber ? (
+                    <Identifier
+                      value={item.applicationNumber}
+                      label={t("caseApplications_applicationNumber")}
+                      copyable={false}
+                    />
+                  ) : item.temporaryId ? (
+                    <>
+                      <Identifier
+                        value={item.temporaryId}
+                        label={t("caseApplications_temporaryId")}
+                        copyable={false}
+                      />
+                      {awaitingNumber(item) ? t("caseApplications_temporary2") : null}
+                    </>
+                  ) : objectionTarget(item) ? null : (
+                    /* An objection never gets a court number; its line says what
+                   it objects to instead. */
+                    t("caseApplications_numberNotAllottedYet")
+                  )}
+                  {objectionTarget(item)
+                    ? `${item.temporaryId ? " · " : ""}${objectionTarget(item)}`
+                    : null}
+                </p>
                 {note ? (
-                  <span className={noteClass(!item.waitingOn)}>{note}</span>
+                  <span className={cn("-mt-2", noteClass(!item.waitingOn))}>{note}</span>
                 ) : null}
-              </span>
-            </TableCell>
-            <TableCell className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}>
-              {/* Raised by the signer; a clerk's draft says whose it is, so
-                  the advocate can find their office's drafts (PRD "view own
-                  and associated drafts"). */}
-              <span className="flex flex-col gap-0.5">
-                <span>{item.filedBy}</span>
-                {/* Only the opponent is marked: the viewer knows their own side,
-                    and the other side's drafts never reach them (owner, Sept 24). */}
-                {item.fromOtherSide ? (
-                  <span className={noteClass()}>
-                    {applicationSideLabel(item.side)}
-                  </span>
-                ) : null}
-                {item.draftedBy ? (
-                  <span className={noteClass()}>
-                    {t("caseApplications_draftedByDraftedBy2", { draftedBy: item.draftedBy })}
-                  </span>
-                ) : null}
-              </span>
-            </TableCell>
-            <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
-              {item.createdShort}
-            </TableCell>
-            <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
-              {item.submittedShort ?? <Dash label={t("caseApplications_notSubmitted")} />}
-            </TableCell>
-            <TableCell className={TABLE_CELL}>
-              {/* View on every row: the table is for finding and opening. The
-                  step is taken from the record, after reading it (owner,
-                  Sept 24); Needs attention stays the shortcut. */}
-              <RowViewButton
-                label={item.name}
-                onClick={() => onOpen(item.id)}
-              />
-            </TableCell>
-          </TableRow>
+                <div className="flex flex-col gap-1 border-t border-hairline pt-3">
+                  <p className="text-body-compact text-foreground">
+                    {item.filedBy}
+                    {item.fromOtherSide ? (
+                      <span className="text-caption text-muted-foreground">
+                        {` · ${applicationSideLabel(item.side)}`}
+                      </span>
+                    ) : null}
+                    {item.draftedBy ? (
+                      <span className="text-caption text-muted-foreground">
+                        {t("caseApplications_draftedByDraftedBy", { draftedBy: item.draftedBy })}
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="text-caption tabular-nums text-muted-foreground">
+                    Created {item.createdShort}
+                    {item.submittedShort ? ` · Submitted ${item.submittedShort}` : ""}
+                  </p>
+                </div>
+              </RegisterTrayCard>
+            </li>
           );
         })}
-      </TableBody>
-    </Table>
-    </div>
+      </ul>
+      <div className={REGISTER_TABLE_ONLY}>
+        <Table>
+          <TableHeader>
+            <TableRow className={TABLE_HEAD_ROW}>
+              <TableHead className={TABLE_HEAD}>{t("caseApplications_type")}</TableHead>
+              <TableHead className={TABLE_HEAD}>{t("caseApplications_number")}</TableHead>
+              <TableHead className={TABLE_HEAD}>{t("caseApplications_status")}</TableHead>
+              <TableHead className={TABLE_HEAD}>{t("caseApplications_filedBy")}</TableHead>
+              <TableHead className={TABLE_HEAD}>{t("caseApplications_createdOn")}</TableHead>
+              <TableHead className={TABLE_HEAD}>{t("caseApplications_submittedOn")}</TableHead>
+              <TableHead className={TABLE_HEAD}>{t("caseApplications_action")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className={tableBodyClass()}>
+            {rows.map((item) => {
+              const note = statusNote(item);
+              return (
+                <TableRow
+                  key={item.id}
+                  ref={recentId === item.id ? recentRowRef : undefined}
+                  className={cn(
+                    tableRowClass(),
+                    "cursor-pointer",
+                    recentId === item.id && RECENT_ROW,
+                  )}
+                  onClick={() => onOpen(item.id)}
+                >
+                  <TableCell className={cn(TABLE_CELL, "font-medium whitespace-normal")}>
+                    <span className="flex min-w-0 flex-col gap-0.5">
+                      <span>{item.typeLabel}</span>
+                      {/* Others names no ask; the filer's own title does. One
+                    line, so the row keeps its height; the detail view's
+                    heading has it whole. */}
+                      {item.ownTitle ? (
+                        <span
+                          /* w-0 + min-w-full: fills the column without
+                       widening it, so the other columns keep their room. */
+                          className="w-0 min-w-full truncate text-caption font-normal text-muted-foreground"
+                          title={item.ownTitle}
+                        >
+                          {item.ownTitle}
+                        </span>
+                      ) : null}
+                      {objectionTarget(item) ? (
+                        <span className="text-caption font-normal text-muted-foreground">
+                          {objectionTarget(item)}
+                        </span>
+                      ) : null}
+                    </span>
+                  </TableCell>
+                  <TableCell className={cn(TABLE_CELL, "text-caption text-muted-foreground")}>
+                    <ApplicationNumber item={item} />
+                  </TableCell>
+                  <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>
+                    <span className="flex flex-col items-start gap-0.5">
+                      <Badge variant={item.statusVariant}>{item.statusLabel}</Badge>
+                      {note ? <span className={noteClass(!item.waitingOn)}>{note}</span> : null}
+                    </span>
+                  </TableCell>
+                  <TableCell className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}>
+                    {/* Raised by the signer; a clerk's draft says whose it is, so
+                  the advocate can find their office's drafts (PRD "view own
+                  and associated drafts"). */}
+                    <span className="flex flex-col gap-0.5">
+                      <span>{item.filedBy}</span>
+                      {/* Only the opponent is marked: the viewer knows their own side,
+                    and the other side's drafts never reach them (owner, Sept 24). */}
+                      {item.fromOtherSide ? (
+                        <span className={noteClass()}>{applicationSideLabel(item.side)}</span>
+                      ) : null}
+                      {item.draftedBy ? (
+                        <span className={noteClass()}>
+                          {t("caseApplications_draftedByDraftedBy2", { draftedBy: item.draftedBy })}
+                        </span>
+                      ) : null}
+                    </span>
+                  </TableCell>
+                  <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+                    {item.createdShort}
+                  </TableCell>
+                  <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
+                    {item.submittedShort ?? <Dash label={t("caseApplications_notSubmitted")} />}
+                  </TableCell>
+                  <TableCell className={TABLE_CELL}>
+                    {/* View on every row: the table is for finding and opening. The
+                  step is taken from the record, after reading it (owner,
+                  Sept 24); Needs attention stays the shortcut. */}
+                    <RowViewButton label={item.name} onClick={() => onOpen(item.id)} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </>
   );
 }

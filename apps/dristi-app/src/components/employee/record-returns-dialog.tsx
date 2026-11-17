@@ -3,10 +3,7 @@
 import * as React from "react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 import { Identifier } from "@/components/chrome/identifier";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -156,9 +153,7 @@ function RecordReturnsBody({
   /* Captured on the first render: recording moves these rows off the list while the
      window is closing. */
   const [rows] = React.useState(given);
-  const [returnedOn, setReturnedOn] = React.useState<Date | undefined>(
-    () => new Date(),
-  );
+  const [returnedOn, setReturnedOn] = React.useState<Date | undefined>(() => new Date());
   const [marks, setMarks] = React.useState<Record<string, ReturnMark>>({});
   const guard = useDiscardGuard(!done && Object.keys(marks).length > 0, onClose);
 
@@ -169,8 +164,7 @@ function RecordReturnsBody({
   const left = rows.length - answered;
   const ready = left === 0 && returnedOn !== undefined;
   const cases = new Set(rows.map((process) => process.caseNumber)).size;
-  const subject =
-    rows.length === 1 ? t("recordReturnsDialog_1Return") : `${rows.length} returns`;
+  const subject = rows.length === 1 ? t("recordReturnsDialog_1Return") : `${rows.length} returns`;
 
   function mark(id: string, next: ReturnMark) {
     setMarks((current) => ({ ...current, [id]: { ...current[id], ...next } }));
@@ -204,9 +198,7 @@ function RecordReturnsBody({
   }
 
   /* "Mark all delivered", in the covers' own word where they share one. */
-  const executed = rows.map(
-    (process) => processOutcomeWord(process, true) === "Executed",
-  );
+  const executed = rows.map((process) => processOutcomeWord(process, true) === "Executed");
   const allWord = executed.every(Boolean)
     ? "executed"
     : executed.some(Boolean)
@@ -328,11 +320,7 @@ export function ReturnedOnField({
     <Field className="w-full sm:w-fit">
       <FieldLabel id={labelId}>{t("recordReturnsDialog_returnedOn")}</FieldLabel>
       <div role="group" aria-labelledby={labelId}>
-        <DatePicker
-          value={value}
-          onValueChange={onChange}
-          className="w-full sm:w-60"
-        />
+        <DatePicker value={value} onValueChange={onChange} className="w-full sm:w-60" />
       </div>
     </Field>
   );
@@ -362,8 +350,7 @@ export function ReturnRow({
   const reasonId = React.useId();
   const commentId = React.useId();
   const radioId = React.useId();
-  const value =
-    mark?.served === true ? "served" : mark?.served === false ? "unserved" : "";
+  const value = mark?.served === true ? "served" : mark?.served === false ? "unserved" : "";
 
   return (
     <li className="flex flex-col gap-3 border-b border-hairline py-4 last:border-b-0">
@@ -380,9 +367,7 @@ export function ReturnRow({
               copyable={false}
             />
           </p>
-          <p className="text-body-compact text-muted-foreground">
-            {causeTitle(process)}
-          </p>
+          <p className="text-body-compact text-muted-foreground">{causeTitle(process)}</p>
         </div>
         {/* Two answers, both visible, on the DS radio — the app's own yes/no
             (`YesNoField`, the bail dialog's), laid side by side. */}
@@ -392,7 +377,10 @@ export function ReturnRow({
             if (next === "served") onMark({ served: true, reason: undefined });
             if (next === "unserved") onMark({ served: false });
           }}
-          aria-label={t("recordReturnsDialog_whatTheInlineInCourtText", { inline, courtText: courtText(process.caseNumber) })}
+          aria-label={t("recordReturnsDialog_whatTheInlineInCourtText", {
+            inline,
+            courtText: courtText(process.caseNumber),
+          })}
           className="flex flex-wrap gap-x-6 gap-y-1"
         >
           {(["served", "unserved"] as const).map((option) => (
@@ -411,9 +399,7 @@ export function ReturnRow({
           <FieldLabel htmlFor={reasonId}>{t("recordReturnsDialog_reason")}</FieldLabel>
           <Select
             value={mark.reason ?? ""}
-            onValueChange={(reason) =>
-              onMark({ reason: reason as NonServiceReason })
-            }
+            onValueChange={(reason) => onMark({ reason: reason as NonServiceReason })}
           >
             <SelectTrigger id={reasonId} className="w-full sm:w-72">
               <SelectValue placeholder={t("recordReturnsDialog_chooseAReason")} />
@@ -433,7 +419,11 @@ export function ReturnRow({
         <>
           <Field>
             <FieldLabel htmlFor={commentId}>
-              {t.rich("recordReturnsDialog_commentOptional", { span: (chunks) => <span className="font-normal text-muted-foreground">{chunks}</span> })}
+              {t.rich("recordReturnsDialog_commentOptional", {
+                span: (chunks) => (
+                  <span className="font-normal text-muted-foreground">{chunks}</span>
+                ),
+              })}
             </FieldLabel>
             <Textarea
               id={commentId}

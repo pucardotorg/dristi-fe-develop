@@ -30,9 +30,7 @@ export function useDepositionShortcuts(): readonly DepositionShortcut[] {
  * The field's `/` completion over the shortcuts, as on the order screen: names only, and
  * the shortcut's text in place of `/` and the query, as paragraphs of its own.
  */
-export function useDepositionSuggestion(
-  kind: "deposition" | "examination",
-): RichTextSuggestion {
+export function useDepositionSuggestion(kind: "deposition" | "examination"): RichTextSuggestion {
   const shortcuts = useDepositionShortcuts();
   return React.useMemo(
     () => ({
@@ -84,11 +82,7 @@ export function DepositionShortcutsPanel({
       }}
       onRemove={removeDepositionShortcut}
       onInsert={onInsert}
-      textHint={
-        <>
-          {t("depositionShortcutsPanel_startALineWithQFor")}
-        </>
-      }
+      textHint={<>{t("depositionShortcutsPanel_startALineWithQFor")}</>}
     />
   );
 }

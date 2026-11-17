@@ -27,7 +27,13 @@ export type BulkBatch = {
 };
 
 /** Cases a client's system pushed across for filing, as one batch. */
-export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | null; needAction?: number }) {
+export function BulkImportCard({
+  batch,
+  needAction = 0,
+}: {
+  batch: BulkBatch | null;
+  needAction?: number;
+}) {
   const t = useTranslations();
   return (
     <Card variant="raised" className="gap-0">
@@ -39,7 +45,9 @@ export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | n
           <DownloadIcon className="size-5" />
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <CardTitle className="text-body font-semibold">{t("bulkImportCard_bulkFiling")}</CardTitle>
+          <CardTitle className="text-body font-semibold">
+            {t("bulkImportCard_bulkFiling")}
+          </CardTitle>
           <CardDescription className="text-body-compact">
             {t("bulkImportCard_bringInManyCasesFromYour")}
           </CardDescription>
@@ -50,7 +58,9 @@ export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | n
         {batch === null ? (
           <Empty className="items-start gap-0 border-0 p-0 text-left text-wrap">
             <EmptyHeader className="max-w-none items-start">
-              <EmptyTitle className="text-body font-semibold">{t("bulkImportCard_noImportsYet")}</EmptyTitle>
+              <EmptyTitle className="text-body font-semibold">
+                {t("bulkImportCard_noImportsYet")}
+              </EmptyTitle>
               <EmptyDescription className="text-body-compact text-wrap">
                 {t("bulkImportCard_casesAClientsSystemSendsOr")}
               </EmptyDescription>
@@ -64,7 +74,11 @@ export function BulkImportCard({ batch, needAction = 0 }: { batch: BulkBatch | n
             <div>
               <p className="text-body font-semibold">{batch.client}</p>
               <p className="text-caption text-muted-foreground">
-                {t("bulkImportCard_whatReceivedReceivedOnViaVia", { what: batch.what, receivedOn: batch.receivedOn, via: batch.via })}
+                {t("bulkImportCard_whatReceivedReceivedOnViaVia", {
+                  what: batch.what,
+                  receivedOn: batch.receivedOn,
+                  via: batch.via,
+                })}
               </p>
             </div>
             <StageBar counts={batch.counts} />

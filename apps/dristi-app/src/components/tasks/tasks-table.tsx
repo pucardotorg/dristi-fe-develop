@@ -12,11 +12,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Empty,
   EmptyContent,
@@ -83,12 +79,14 @@ function DueCell({ task, now }: { task: Task; now: Date }) {
             ? "font-medium text-destructive-ink"
             : due.date
               ? "text-foreground"
-              : "text-muted-foreground"
+              : "text-muted-foreground",
         )}
       >
         {due.primary}
       </span>
-      {due.date ? <span className="text-caption tabular-nums text-muted-foreground">{due.date}</span> : null}
+      {due.date ? (
+        <span className="text-caption tabular-nums text-muted-foreground">{due.date}</span>
+      ) : null}
     </div>
   );
 }
@@ -118,7 +116,7 @@ function VerbButton({
       onClick={onClick}
       className={cn(
         "w-24 justify-center whitespace-nowrap",
-        size === "xs" && "relative after:absolute after:-inset-1"
+        size === "xs" && "relative after:absolute after:-inset-1",
       )}
     >
       {verb}
@@ -204,7 +202,7 @@ function useFoldedBands(bands: DueBand[] | null) {
   const shown = React.useCallback(
     (rows: Task[]) =>
       bands ? bands.filter((b) => !folded.has(b.bucket)).flatMap((b) => b.tasks) : rows,
-    [bands, folded]
+    [bands, folded],
   );
   return { folded, toggleBand, shown };
 }
@@ -252,7 +250,7 @@ function BandLabel({
         /* Over loose cards the header is the only thing naming the group, so it
            steps up to the compact body size (owner, Sept 21). */
         loose ? "text-body-compact" : "text-caption",
-        hot ? "text-destructive-ink" : "text-foreground"
+        hot ? "text-destructive-ink" : "text-foreground",
       )}
     >
       {band.label}
@@ -271,7 +269,7 @@ function BandLabel({
           <ChevronDownIcon
             className={cn(
               "size-3.5 transition-transform duration-200 motion-reduce:transition-none",
-              !open && "-rotate-90"
+              !open && "-rotate-90",
             )}
           />
         </span>
@@ -280,7 +278,7 @@ function BandLabel({
           aria-hidden
           className={cn(
             "ml-auto size-4 shrink-0 text-muted-foreground transition-transform",
-            !open && "-rotate-90"
+            !open && "-rotate-90",
           )}
         />
       )}
@@ -299,11 +297,13 @@ function BandLabel({
         shell,
         /* A bare `button` inherits the browser's arrow cursor, which undercuts the
            hover fill's whole job of saying this is actionable. */
-        "cursor-pointer outline-none transition-colors hover:bg-surface-sunken focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        "cursor-pointer outline-none transition-colors hover:bg-surface-sunken focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
       )}
     >
       {body}
-      <span className="sr-only">{open ? tr("tasksTable_hideTheseTasks") : tr("tasksTable_showTheseTasks")}</span>
+      <span className="sr-only">
+        {open ? tr("tasksTable_hideTheseTasks") : tr("tasksTable_showTheseTasks")}
+      </span>
     </button>
   );
 }
@@ -394,7 +394,11 @@ export function TasksTable(props: TasksTableProps) {
               <EmptyMedia variant="icon">
                 <SearchXIcon aria-hidden />
               </EmptyMedia>
-              <EmptyTitle>{query?.trim() ? tr("tasksTable_nothingMatchesTrim", { trim: query.trim() }) : tr("tasksTable_noTasksMatch")}</EmptyTitle>
+              <EmptyTitle>
+                {query?.trim()
+                  ? tr("tasksTable_nothingMatchesTrim", { trim: query.trim() })
+                  : tr("tasksTable_noTasksMatch")}
+              </EmptyTitle>
               <EmptyDescription>
                 {query?.trim()
                   ? tr("tasksTable_tryAnotherSpellingOrAParty")
@@ -479,7 +483,17 @@ const ACTOR_VIEWS: ReadonlySet<TaskView> = new Set<TaskView>(["needs-action", "w
 
 function WideTable(props: TasksTableProps) {
   const tr = useTranslations();
-  const { rows, cases, user, now, view, banded = true, allSelected, someSelected, onToggleAll } = props;
+  const {
+    rows,
+    cases,
+    user,
+    now,
+    view,
+    banded = true,
+    allSelected,
+    someSelected,
+    onToggleAll,
+  } = props;
   const caseById = React.useMemo(() => new Map(cases.map((c) => [c.id, c])), [cases]);
   // The select column exists wherever a listed task can still be acted on outside the
   // system — marked done by hand or archived. Closed and archived rows have neither.
@@ -523,7 +537,11 @@ function WideTable(props: TasksTableProps) {
                 <Checkbox
                   checked={allSelected ? true : someSelected ? "indeterminate" : false}
                   onCheckedChange={() => onToggleAll(!allSelected)}
-                  aria-label={allSelected ? tr("tasksTable_clearTheWholeList") : tr("tasksTable_selectTheWholeList")}
+                  aria-label={
+                    allSelected
+                      ? tr("tasksTable_clearTheWholeList")
+                      : tr("tasksTable_selectTheWholeList")
+                  }
                 />
               </TableHead>
             ) : null}
@@ -541,7 +559,9 @@ function WideTable(props: TasksTableProps) {
                 the push panel narrows the table past the full width this column stands
                 down rather than wrapping every other cell to three lines. */}
             {actorsShown ? (
-              <TableHead className={cn(TABLE_HEAD, "hidden @4xl:table-cell")}>{tr("tasksTable_whoCanAct")}</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "hidden @4xl:table-cell")}>
+                {tr("tasksTable_whoCanAct")}
+              </TableHead>
             ) : null}
             {fifthHead ? <TableHead className={TABLE_HEAD}>{fifthHead}</TableHead> : null}
             <TableHead className={cn(TABLE_HEAD, "text-right")}>
@@ -555,10 +575,7 @@ function WideTable(props: TasksTableProps) {
              lit row, the rounding of a run of selected rows. Those rules cannot look
              across a `tbody`, so a run of picked rows rounds inside its own band. */
           bands.map((band) => (
-            <TableBody
-              key={band.bucket}
-              className={tableBodyClass({ selectable: true })}
-            >
+            <TableBody key={band.bucket} className={tableBodyClass({ selectable: true })}>
               {/* The label heads the rows below it, not a column — a plain `tr`, so the
                   DS row's own three fills never land on a strip that is not a record.
                   Its rule sits above the label, between this band and the one before, so
@@ -599,7 +616,21 @@ function WideTable(props: TasksTableProps) {
 
 function WideRow({ ctx, task }: { ctx: RowCtx; task: Task }) {
   const tr = useTranslations();
-  const { caseById, anySelectable, fifthHead, actorsShown, indexById, people, user, now, view, selected, offline, onVerb, onToggleSelect } = ctx;
+  const {
+    caseById,
+    anySelectable,
+    fifthHead,
+    actorsShown,
+    indexById,
+    people,
+    user,
+    now,
+    view,
+    selected,
+    offline,
+    onVerb,
+    onToggleSelect,
+  } = ctx;
   const index = indexById.get(task.id) ?? 0;
   const kase = caseById.get(task.caseId);
   if (!kase) return null;
@@ -619,10 +650,7 @@ function WideRow({ ctx, task }: { ctx: RowCtx; task: Task }) {
          open is a persistent "you are looking at this one" mark and it loses to
          selection, so the precedence is decided here rather than in CSS, where the two
          fills would race on source order. */
-      className={cn(
-        tableRowClass({ selectable: true }),
-        "cursor-pointer"
-      )}
+      className={cn(tableRowClass({ selectable: true }), "cursor-pointer")}
       onClick={(event) => {
         const target = event.target as HTMLElement;
         if (target.closest("button, a, [role=checkbox], label")) return;
@@ -775,7 +803,20 @@ function TaskCard({
 }) {
   const tr = useTranslations();
   const courtText = useCourtText();
-  const { caseById, indexById, people, user, now, view, selected, offline, fifthHead, actorsShown, onVerb, onToggleSelect } = ctx;
+  const {
+    caseById,
+    indexById,
+    people,
+    user,
+    now,
+    view,
+    selected,
+    offline,
+    fifthHead,
+    actorsShown,
+    onVerb,
+    onToggleSelect,
+  } = ctx;
   const kase = caseById.get(task.caseId);
   if (!kase) return null;
   const verb = verbFor(user, task, kase);
@@ -795,7 +836,7 @@ function TaskCard({
             PANEL_CLASS,
             "relative z-10 flex flex-col gap-3 rounded-xl border bg-card p-4 transition-colors has-[[data-task-title]:active]:bg-accent",
             (isSelected || open) && "border-border",
-            isSelected && "bg-accent-strong"
+            isSelected && "bg-accent-strong",
           )}
         >
           <div className="flex items-start gap-3">
@@ -830,7 +871,7 @@ function TaskCard({
                       ? "font-medium text-destructive-ink"
                       : due.date
                         ? "font-medium text-foreground"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground",
                   )}
                 >
                   {due.primary}
@@ -849,7 +890,7 @@ function TaskCard({
               aria-hidden
               className={cn(
                 "mt-1 size-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-                open && "rotate-180"
+                open && "rotate-180",
               )}
             />
           </div>
@@ -859,7 +900,11 @@ function TaskCard({
               <span className="text-body-compact text-foreground">{kase.parties}</span>
               <span className="text-caption text-muted-foreground">
                 {kase.stNumber ? (
-                  <Identifier value={kase.stNumber} label={tr("tasksTable_caseNumber")} copyable={false} />
+                  <Identifier
+                    value={kase.stNumber}
+                    label={tr("tasksTable_caseNumber")}
+                    copyable={false}
+                  />
                 ) : (
                   tr("tasksTable_notYetNumbered")
                 )}
@@ -909,7 +954,12 @@ function TaskCard({
 export function TasksTableSkeleton() {
   const tr = useTranslations();
   return (
-    <Card variant="raised" className="gap-0 py-0" aria-busy="true" aria-label={tr("tasksTable_loadingTasks")}>
+    <Card
+      variant="raised"
+      className="gap-0 py-0"
+      aria-busy="true"
+      aria-label={tr("tasksTable_loadingTasks")}
+    >
       {/* Inset from `md` — the width at which the rows that arrive are the wide table,
           which its panel insets by the same 16px. Below that the stacked list runs
           full-bleed and so does this, so the rows never shift as they land. */}
@@ -920,17 +970,17 @@ export function TasksTableSkeleton() {
           <Skeleton className="h-3 w-10" />
         </div>
         <ul className="divide-y divide-hairline">
-        {Array.from({ length: 7 }).map((_, i) => (
-          <li key={i} className="flex min-h-16 items-center gap-6 px-4 py-3">
-            <div className="flex flex-1 flex-col gap-2">
-              <Skeleton className="h-4 w-2/3 max-w-96" />
-              <Skeleton className="h-3 w-1/3 max-w-48" />
-            </div>
-            <Skeleton className="hidden h-3 w-20 md:block" />
-            <Skeleton className="hidden size-6 rounded-full md:block" />
-            <Skeleton className="h-8 w-16 rounded-lg" />
-          </li>
-        ))}
+          {Array.from({ length: 7 }).map((_, i) => (
+            <li key={i} className="flex min-h-16 items-center gap-6 px-4 py-3">
+              <div className="flex flex-1 flex-col gap-2">
+                <Skeleton className="h-4 w-2/3 max-w-96" />
+                <Skeleton className="h-3 w-1/3 max-w-48" />
+              </div>
+              <Skeleton className="hidden h-3 w-20 md:block" />
+              <Skeleton className="hidden size-6 rounded-full md:block" />
+              <Skeleton className="h-8 w-16 rounded-lg" />
+            </li>
+          ))}
         </ul>
       </div>
     </Card>

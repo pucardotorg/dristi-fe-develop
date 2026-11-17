@@ -28,11 +28,7 @@ import {
 } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
-import {
-  CASE_FILE_TREE,
-  caseFilePdfSrc,
-  findNode,
-} from "@/lib/cases/case-file";
+import { CASE_FILE_TREE, caseFilePdfSrc, findNode } from "@/lib/cases/case-file";
 import {
   caseTimeline,
   formatCaseWeekday,
@@ -99,8 +95,7 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
     const target = lastRef.current;
     const scroller = target?.closest<HTMLElement>('[data-slot="tabs-content"]');
     if (!target || !scroller) return;
-    const offset =
-      target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+    const offset = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
     scroller.scrollTop += offset - scroller.clientHeight / 3;
   }, [types]);
 
@@ -109,9 +104,7 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
       headRef.current?.focus();
     } else if (returnTo.current) {
       listRef.current
-        ?.querySelector<HTMLElement>(
-          `[data-opens="${CSS.escape(returnTo.current)}"]`,
-        )
+        ?.querySelector<HTMLElement>(`[data-opens="${CSS.escape(returnTo.current)}"]`)
         ?.focus();
       returnTo.current = null;
     }
@@ -123,13 +116,7 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
   }
 
   if (reading) {
-    return (
-      <OrderReader
-        entry={reading}
-        headRef={headRef}
-        onBack={() => setReading(null)}
-      />
-    );
+    return <OrderReader entry={reading} headRef={headRef} onBack={() => setReading(null)} />;
   }
 
   if (entries.length === 0) {
@@ -151,9 +138,7 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
   }
 
   const shown =
-    types.length === 0
-      ? entries
-      : entries.filter((entry) => types.includes(entry.type));
+    types.length === 0 ? entries : entries.filter((entry) => types.includes(entry.type));
 
   return (
     <section
@@ -164,11 +149,7 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
       <h2 id="order-case-history" className="sr-only">
         {t("employeeOrderCaseHistory_caseHistory")}
       </h2>
-      <HistoryTypeFilter
-        options={typeOptions}
-        value={types}
-        onValueChange={setTypes}
-      />
+      <HistoryTypeFilter options={typeOptions} value={types} onValueChange={setTypes} />
 
       {shown.length === 0 ? (
         <p className="text-body-compact text-muted-foreground">
@@ -219,8 +200,7 @@ export function HistoryTypeFilter({
     <div
       className={cn(
         "flex min-w-0 flex-col gap-2",
-        pinned &&
-          "sticky -top-4 z-20 -mx-4 -mt-4 border-b border-hairline bg-card px-4 pt-4 pb-3",
+        pinned && "sticky -top-4 z-20 -mx-4 -mt-4 border-b border-hairline bg-card px-4 pt-4 pb-3",
       )}
     >
       <Label id={filterId} className="text-body-compact">
@@ -231,12 +211,8 @@ export function HistoryTypeFilter({
         items={typeOptions}
         value={picked}
         itemToStringLabel={(option: TypeOption) => option.label}
-        isItemEqualToValue={(a: TypeOption, b: TypeOption) =>
-          a.value === b.value
-        }
-        onValueChange={(next: TypeOption[]) =>
-          setTypes(next.map((option) => option.value))
-        }
+        isItemEqualToValue={(a: TypeOption, b: TypeOption) => a.value === b.value}
+        onValueChange={(next: TypeOption[]) => setTypes(next.map((option) => option.value))}
       >
         <ComboboxChips ref={anchor}>
           <ComboboxValue>
@@ -247,7 +223,9 @@ export function HistoryTypeFilter({
                 ))}
                 <ComboboxChipsInput
                   aria-labelledby={filterId}
-                  placeholder={chosen.length ? undefined : t("employeeOrderCaseHistory_allEventTypes")}
+                  placeholder={
+                    chosen.length ? undefined : t("employeeOrderCaseHistory_allEventTypes")
+                  }
                 />
               </>
             )}
@@ -303,8 +281,7 @@ function HistoryEntry({
           className={cn(
             "flex min-w-0 flex-col gap-1",
             /* The well starts right of the rail, so the dot stays on the line. */
-            entry.last &&
-              "-my-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2",
+            entry.last && "-my-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2",
           )}
         >
           <div className="flex min-w-0 items-baseline justify-between gap-4">
@@ -325,10 +302,7 @@ function HistoryEntry({
                 </span>
               )}
             </span>
-            <time
-              dateTime={entry.on}
-              className="shrink-0 tabular-nums text-muted-foreground"
-            >
+            <time dateTime={entry.on} className="shrink-0 tabular-nums text-muted-foreground">
               {formatTimelineDate(entry.on)}
             </time>
           </div>
@@ -337,9 +311,7 @@ function HistoryEntry({
               {t("employeeOrderCaseHistory_lastOrder")}
             </Badge>
           ) : null}
-          {entry.note ? (
-            <p className="text-muted-foreground">{entry.note}</p>
-          ) : null}
+          {entry.note ? <p className="text-muted-foreground">{entry.note}</p> : null}
           {excerpt ? (
             <p id={textId} className="text-muted-foreground">
               {excerpt.text}
@@ -355,7 +327,9 @@ function HistoryEntry({
               className="h-10 w-fit px-0"
               onClick={onOpen}
             >
-              {entry.caseFileDoc ? t("employeeOrderCaseHistory_openTheOrder") : t("employeeOrderCaseHistory_readTheFullOrder")}
+              {entry.caseFileDoc
+                ? t("employeeOrderCaseHistory_openTheOrder")
+                : t("employeeOrderCaseHistory_readTheFullOrder")}
             </Button>
           ) : null}
         </div>
@@ -378,9 +352,7 @@ export function OrderReader({
   onBack: () => void;
 }) {
   const t = useTranslations();
-  const node = entry.caseFileDoc
-    ? findNode(CASE_FILE_TREE, entry.caseFileDoc)
-    : undefined;
+  const node = entry.caseFileDoc ? findNode(CASE_FILE_TREE, entry.caseFileDoc) : undefined;
   const src = node ? caseFilePdfSrc(node) : undefined;
 
   return (
@@ -393,12 +365,7 @@ export function OrderReader({
         }
       }}
     >
-      <Button
-        type="button"
-        variant="ghost"
-        className="-ml-3 w-fit"
-        onClick={onBack}
-      >
+      <Button type="button" variant="ghost" className="-ml-3 w-fit" onClick={onBack}>
         <ArrowLeftIcon data-icon="inline-start" aria-hidden />
         {t("employeeOrderCaseHistory_caseHistory")}
       </Button>

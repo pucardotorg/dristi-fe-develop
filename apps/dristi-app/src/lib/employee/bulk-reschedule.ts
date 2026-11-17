@@ -373,10 +373,7 @@ function nthSittingDay(from: string, count: number): string {
  * different day's block.
  */
 function byListing(a: ReschedulableHearing, b: ReschedulableHearing): number {
-  return (
-    listedOn(a).localeCompare(listedOn(b)) ||
-    a.caseNumber.localeCompare(b.caseNumber)
-  );
+  return listedOn(a).localeCompare(listedOn(b)) || a.caseNumber.localeCompare(b.caseNumber);
 }
 
 /**
@@ -466,17 +463,13 @@ export type RescheduledDay = { day: string; count: number };
  * day a matter now sits on and then by the court's own number — so the flat table reads
  * date by date without anything here sorting it again.
  */
-export function rescheduledDays(
-  rows: ReschedulableHearing[],
-): RescheduledDay[] {
+export function rescheduledDays(rows: ReschedulableHearing[]): RescheduledDay[] {
   const tally = new Map<string, number>();
   for (const row of rows) {
     if (row.newDate === undefined) continue;
     tally.set(row.newDate, (tally.get(row.newDate) ?? 0) + 1);
   }
-  return [...tally]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([day, count]) => ({ day, count }));
+  return [...tally].sort(([a], [b]) => a.localeCompare(b)).map(([day, count]) => ({ day, count }));
 }
 
 export type RescheduleFilters = {
@@ -505,8 +498,7 @@ export function filterReschedulable(
   /* ISO days sort as strings, so each bound is a plain comparison — no Date per row.
      A `null` end is not a bound at all rather than a bound at today. */
   const inSpan = (day: string) =>
-    (filters.from === null || day >= filters.from) &&
-    (filters.to === null || day <= filters.to);
+    (filters.from === null || day >= filters.from) && (filters.to === null || day <= filters.to);
 
   return rows.filter((row) => {
     /* Judged on the day the matter stands listed on — which for a matter this session
@@ -648,8 +640,7 @@ export function rescheduleOrderText(order: RescheduleOrder): string {
     "",
     `Matters (${order.matters.length})`,
     ...order.matters.map(
-      (matter) =>
-        `${matter.caseNumber} · ${matter.matter} · ${matter.from} → ${matter.to}`,
+      (matter) => `${matter.caseNumber} · ${matter.matter} · ${matter.from} → ${matter.to}`,
     ),
     "",
     `Dated this the ${order.dated}.`,

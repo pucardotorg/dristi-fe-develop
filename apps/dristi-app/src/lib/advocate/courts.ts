@@ -18,7 +18,7 @@ export const DEMO_COURT_NUMBERS: Readonly<Record<string, string>> = {
   "Addl. Sessions I": "5",
   "Addl. Sessions II": "6",
   "Family Court": "7",
-  "MACT": "8",
+  MACT: "8",
   "NI Act Court": "9",
 };
 

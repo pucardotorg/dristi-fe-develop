@@ -75,10 +75,7 @@ export function JurisdictionSection() {
   const [verdictOnOpen] = React.useState(delay === null ? null : withinLimit);
   const verdictStill = delay !== null && verdictOnOpen === withinLimit;
   // Shown in the derivation line, so the date it counts from is checkable.
-  const serviceDate = draft.notices
-    .map(noticeServiceDate)
-    .filter(Boolean)
-    .sort()[0] ?? "";
+  const serviceDate = draft.notices.map(noticeServiceDate).filter(Boolean).sort()[0] ?? "";
 
   // A late filing cannot be saved without a reason (the backend refuses it), so Continue
   // stops here and says so under the field rather than moving on with nothing saved.
@@ -154,7 +151,11 @@ export function JurisdictionSection() {
                     placeholder={t("jurisdictionSection_complainantsBank")}
                   />
                 </FormField>
-                <FormField label={t("jurisdictionSection_bankBranch")} name="payeeBankBranch" required>
+                <FormField
+                  label={t("jurisdictionSection_bankBranch")}
+                  name="payeeBankBranch"
+                  required
+                >
                   <TextField
                     value={j.payeeBankBranch}
                     onChange={(v) => set("payeeBankBranch", v)}
@@ -163,7 +164,11 @@ export function JurisdictionSection() {
                 </FormField>
               </FormRow>
               <HalfWidth>
-                <FormField label={t("jurisdictionSection_policeStationOfBankBranch")} name="payeePolice" required>
+                <FormField
+                  label={t("jurisdictionSection_policeStationOfBankBranch")}
+                  name="payeePolice"
+                  required
+                >
                   <ComboField
                     value={j.payeePolice}
                     onChange={(v: string) => set("payeePolice", v)}
@@ -177,7 +182,11 @@ export function JurisdictionSection() {
             </>
           ) : (
             <HalfWidth>
-              <FormField label={t("jurisdictionSection_policeStationOfDrawerAccusedBank")} name="drawerPolice" required>
+              <FormField
+                label={t("jurisdictionSection_policeStationOfDrawerAccusedBank")}
+                name="drawerPolice"
+                required
+              >
                 <ComboField
                   value={j.drawerPolice}
                   onChange={(v: string) => set("drawerPolice", v)}
@@ -293,23 +302,24 @@ export function JurisdictionSection() {
               }
               help={
                 limitation.causeDerived ? (
-                  t("jurisdictionSection_15DaysAfterTheDemandNotice", { toLongDate: toLongDate(serviceDate) })
+                  t("jurisdictionSection_15DaysAfterTheDemandNotice", {
+                    toLongDate: toLongDate(serviceDate),
+                  })
                 ) : limitation.derivedCause &&
                   limitation.derivedCause !== limitation.causeDate &&
                   !limitation.causeIssue ? (
                   // A typed date stops following the notice; say what the notice gives,
                   // and let the filer go back to it in one step.
                   <>
-                    {t("jurisdictionSection_theDemandNoticeGivesToLong", { toLongDate: toLongDate(limitation.derivedCause) })}
+                    {t("jurisdictionSection_theDemandNoticeGivesToLong", {
+                      toLongDate: toLongDate(limitation.derivedCause),
+                    })}
                     {noticeDateButton}
                   </>
                 ) : undefined
               }
             >
-              <DateField
-                value={limitation.causeDate}
-                onChange={(v) => set("causeDate", v)}
-              />
+              <DateField value={limitation.causeDate} onChange={(v) => set("causeDate", v)} />
             </FormField>
             <FormField
               label={t("jurisdictionSection_dateOfComplaintFiling")}
@@ -317,20 +327,23 @@ export function JurisdictionSection() {
               error={limitation.filingIssue}
               help={j.filingDate ? undefined : t("jurisdictionSection_today")}
             >
-              <DateField
-                value={limitation.filingDate}
-                onChange={(v) => set("filingDate", v)}
-              />
+              <DateField value={limitation.filingDate} onChange={(v) => set("filingDate", v)} />
             </FormField>
           </FormRow>
 
           {/* Nothing to derive from yet — said once, where the empty field is. */}
           {limitation.causeDate ? null : (
             <SectionNotice variant="neutral">
-              {t.rich("jurisdictionSection_theCauseOfActionIsWorked", { link: (chunks) => <Link
-                href={hrefFor("demand-notice")}
-                className="font-medium text-current underline underline-offset-2"
-              >{chunks}</Link> })}
+              {t.rich("jurisdictionSection_theCauseOfActionIsWorked", {
+                link: (chunks) => (
+                  <Link
+                    href={hrefFor("demand-notice")}
+                    className="font-medium text-current underline underline-offset-2"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </SectionNotice>
           )}
           {/*
@@ -341,8 +354,8 @@ export function JurisdictionSection() {
           */}
           {delay === null ? null : withinLimit ? (
             <SectionNotice variant="success" announce="polite" still={verdictStill}>
-              Within the limitation period: filed {delay} day{delay === 1 ? "" : "s"}{" "}
-              after the cause of action arose.
+              Within the limitation period: filed {delay} day{delay === 1 ? "" : "s"} after the
+              cause of action arose.
             </SectionNotice>
           ) : (
             <SectionNotice
@@ -374,7 +387,10 @@ export function JurisdictionSection() {
         </FormCard>
 
         {error ? (
-          <SectionNotice variant="destructive" title={t("jurisdictionSection_couldntSaveToTheCourtsServer")}>
+          <SectionNotice
+            variant="destructive"
+            title={t("jurisdictionSection_couldntSaveToTheCourtsServer")}
+          >
             {error}
           </SectionNotice>
         ) : null}

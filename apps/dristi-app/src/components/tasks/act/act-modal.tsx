@@ -18,12 +18,7 @@ import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { ACTIONABLE, canComplete } from "@/lib/tasks/permissions";
 import { useTasks } from "@/lib/tasks/store";
 import type { Case, Task, TaskId } from "@/lib/tasks/types";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { type ActContext } from "@/components/tasks/act/shared";
 import { type ActMode } from "@/components/tasks/use-task-actions";
 import { FileBody } from "@/components/tasks/act/file-page";
@@ -87,7 +82,7 @@ export function TaskActModal({
       onOpenChange(false);
       if (task) onFinished?.(taskId ?? task.id);
     },
-    [onOpenChange, onFinished, task]
+    [onOpenChange, onFinished, task],
   );
 
   /* The task this window opened to pay. Paying moves the task out of "needs action", and
@@ -95,7 +90,12 @@ export function TaskActModal({
      landed, so the payment's own success screen never showed. */
   const [payingId, setPayingId] = React.useState<string | null>(null);
   const opensToPay =
-    open && mode === "pay" && !!task && !!kase && canComplete(user, kase) && ACTIONABLE.has(task.status);
+    open &&
+    mode === "pay" &&
+    !!task &&
+    !!kase &&
+    canComplete(user, kase) &&
+    ACTIONABLE.has(task.status);
   /* Re-derived each time the window opens, never while it closes: clearing it on close
      swapped the window out mid-exit. */
   const [wasOpen, setWasOpen] = React.useState(open);
@@ -138,9 +138,7 @@ export function TaskActModal({
     (task.kind === "file" || (task.kind === "draft" && isApplicationTask(task)))
   ) {
     if (isApplicationTask(task)) {
-      return open ? (
-        <TaskApplicationFlow ctx={ctx} onClose={() => onOpenChange(false)} />
-      ) : null;
+      return open ? <TaskApplicationFlow ctx={ctx} onClose={() => onOpenChange(false)} /> : null;
     }
     return <TaskDocumentsDialog key={task.id} ctx={ctx} open={open} onOpenChange={onOpenChange} />;
   }
@@ -177,8 +175,12 @@ export function TaskActModal({
         {...guard.outsideProps}
       >
         <DialogHeader className="shrink-0 border-b border-hairline px-6 pt-6 pr-16 pb-4 text-left">
-          <DialogTitle className="text-title-s font-semibold text-balance">{task.title}</DialogTitle>
-          <DialogDescription className="text-caption text-muted-foreground">{caseLine}</DialogDescription>
+          <DialogTitle className="text-title-s font-semibold text-balance">
+            {task.title}
+          </DialogTitle>
+          <DialogDescription className="text-caption text-muted-foreground">
+            {caseLine}
+          </DialogDescription>
         </DialogHeader>
         <div className="min-h-0 flex-1 overflow-y-auto p-6">
           <Body ctx={ctx} mode={mode} onEntered={setEntered} />

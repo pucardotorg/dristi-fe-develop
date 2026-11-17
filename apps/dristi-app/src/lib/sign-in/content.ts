@@ -144,10 +144,7 @@ export const form = {
 } satisfies Record<string, Copy>;
 
 /** Tab labels stay short — five characters of Malayalam more and they wrap at 320px. */
-export const roles: Record<
-  Role,
-  { tab: Copy; helper: Copy; describes: Copy }
-> = {
+export const roles: Record<Role, { tab: Copy; helper: Copy; describes: Copy }> = {
   litigant: {
     tab: t("signIn_litigant"),
     /* Names the two ways a person ends up here without using "accused", which is the

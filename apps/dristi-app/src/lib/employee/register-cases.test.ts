@@ -27,18 +27,9 @@ describe("filterRegisterCases", () => {
   });
 
   it("matches a cause, a number, or an advocate", () => {
-    assert.equal(
-      filterRegisterCases(REGISTER_QUEUE, { query: "cashew" }).length,
-      1,
-    );
-    assert.equal(
-      filterRegisterCases(REGISTER_QUEUE, { query: "KL-000210-2026" })[0]?.id,
-      "r-210",
-    );
-    assert.equal(
-      filterRegisterCases(REGISTER_QUEUE, { query: "nisha" })[0]?.id,
-      "r-612",
-    );
+    assert.equal(filterRegisterCases(REGISTER_QUEUE, { query: "cashew" }).length, 1);
+    assert.equal(filterRegisterCases(REGISTER_QUEUE, { query: "KL-000210-2026" })[0]?.id, "r-210");
+    assert.equal(filterRegisterCases(REGISTER_QUEUE, { query: "nisha" })[0]?.id, "r-612");
   });
 
   it("treats surrounding spaces as no query", () => {

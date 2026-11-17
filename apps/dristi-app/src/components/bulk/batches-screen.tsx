@@ -22,12 +22,7 @@ import {
   tableBodyClass,
   tableRowClass,
 } from "@/components/chrome/table-plate";
-import {
-  PAGE_GROUND,
-  PAGE_GUTTER,
-  PAGE_SUBTITLE,
-  PAGE_TITLE,
-} from "@/components/shell/page-frame";
+import { PAGE_GROUND, PAGE_GUTTER, PAGE_SUBTITLE, PAGE_TITLE } from "@/components/shell/page-frame";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -96,10 +91,8 @@ export function SourceLabel({
         className={cn(
           "flex size-9 shrink-0 items-center justify-center rounded-lg",
           source.kind === "api" && "bg-info-muted text-info-muted-foreground",
-          source.kind === "excel" &&
-            "bg-success-muted text-success-muted-foreground",
-          source.kind === "documents" &&
-            "border border-hairline bg-card text-foreground",
+          source.kind === "excel" && "bg-success-muted text-success-muted-foreground",
+          source.kind === "documents" && "border border-hairline bg-card text-foreground",
           source.kind === "clubbed" && "bg-muted text-muted-foreground",
         )}
       >
@@ -116,10 +109,7 @@ export function SourceLabel({
       <span className="flex min-w-0 flex-col">
         <span>{name}</span>
         {source.reference ? (
-          <span
-            className="truncate text-caption text-muted-foreground"
-            title={source.reference}
-          >
+          <span className="truncate text-caption text-muted-foreground" title={source.reference}>
             {source.reference}
           </span>
         ) : null}
@@ -196,10 +186,7 @@ export function BatchesScreen() {
       data-state={picked.has(b.id) ? "selected" : undefined}
       onClick={() => router.push(`/filings/bulk/${b.id}`)}
     >
-      <TableCell
-        className={cn(TABLE_CELL, "w-12 pl-6")}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <TableCell className={cn(TABLE_CELL, "w-12 pl-6")} onClick={(e) => e.stopPropagation()}>
         {selectable ? (
           <Checkbox
             checked={picked.has(b.id)}
@@ -240,18 +227,18 @@ export function BatchesScreen() {
           to={b.source.kind === "api" ? b.filingAdvocate?.name : null}
         />
       </TableCell>
-      <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>
-        {b.client}
-      </TableCell>
+      <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>{b.client}</TableCell>
       <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
         {toLongDate(b.createdAt.slice(0, 10))}
       </TableCell>
-      <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
-        {b.total}
-      </TableCell>
+      <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>{b.total}</TableCell>
       <TableCell className={cn(TABLE_CELL, "pr-6 whitespace-normal")}>
         {b.clubbedInto ? (
-          <Badge variant="outline">{t("batchesScreen_clubbedIntoClubbedIntoNumber", { clubbedIntoNumber: (b.clubbedIntoNumber) ?? "" })}</Badge>
+          <Badge variant="outline">
+            {t("batchesScreen_clubbedIntoClubbedIntoNumber", {
+              clubbedIntoNumber: b.clubbedIntoNumber ?? "",
+            })}
+          </Badge>
         ) : b.total > 0 && b.counts.filed === b.total ? (
           <Badge variant="success">
             <CircleCheckIcon data-icon="inline-start" aria-hidden />
@@ -265,19 +252,11 @@ export function BatchesScreen() {
   );
 
   return (
-    <div
-      className={cn(
-        "flex w-full flex-1 flex-col gap-6",
-        PAGE_GROUND,
-        PAGE_GUTTER,
-      )}
-    >
+    <div className={cn("flex w-full flex-1 flex-col gap-6", PAGE_GROUND, PAGE_GUTTER)}>
       <header className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex flex-col gap-1">
           <h1 className={cn(PAGE_TITLE, "text-foreground")}>{t("batchesScreen_bulkFiling")}</h1>
-          <p className={PAGE_SUBTITLE}>
-            {t("batchesScreen_eachPushFromAClientsSystem")}
-          </p>
+          <p className={PAGE_SUBTITLE}>{t("batchesScreen_eachPushFromAClientsSystem")}</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row md:ml-auto">
           <Button variant="outline" onClick={() => void downloadTemplate()}>
@@ -293,9 +272,7 @@ export function BatchesScreen() {
         </div>
       </header>
 
-      {error ? (
-        <StatusLine tone="error">{error}</StatusLine>
-      ) : null}
+      {error ? <StatusLine tone="error">{error}</StatusLine> : null}
 
       <Card variant="raised" className="gap-0 py-0">
         <div className="flex flex-wrap items-center gap-3 px-6 py-4">
@@ -305,28 +282,20 @@ export function BatchesScreen() {
               <TabsTrigger value="active">
                 {t("batchesScreen_inProgress")}
                 {batches ? (
-                  <span className="text-muted-foreground tabular-nums">
-                    {open.length}
-                  </span>
+                  <span className="text-muted-foreground tabular-nums">{open.length}</span>
                 ) : null}
               </TabsTrigger>
               <TabsTrigger value="completed">
                 {t("batchesScreen_completed")}
                 {batches ? (
-                  <span className="text-muted-foreground tabular-nums">
-                    {closed.length}
-                  </span>
+                  <span className="text-muted-foreground tabular-nums">{closed.length}</span>
                 ) : null}
               </TabsTrigger>
             </TabsList>
           </Tabs>
           {chosen.length ? (
             <div className="ml-auto flex flex-wrap items-center gap-3">
-              {clubNote ? (
-                <span className="text-caption text-warning-ink">
-                  {clubNote}
-                </span>
-              ) : null}
+              {clubNote ? <span className="text-caption text-warning-ink">{clubNote}</span> : null}
               <span className="text-caption text-muted-foreground tabular-nums">
                 {t("batchesScreen_lengthSelected", { length: String(chosen.length) })}
               </span>
@@ -411,22 +380,17 @@ export function BatchesScreen() {
                       </span>
                       <SourceLabel
                         source={b.source}
-                        to={
-                          b.source.kind === "api"
-                            ? b.filingAdvocate?.name
-                            : null
-                        }
+                        to={b.source.kind === "api" ? b.filingAdvocate?.name : null}
                       />
                       {b.clubbedInto ? (
                         <Badge variant="outline">
-                          {t("batchesScreen_clubbedIntoClubbedIntoNumber", { clubbedIntoNumber: (b.clubbedIntoNumber) ?? "" })}
+                          {t("batchesScreen_clubbedIntoClubbedIntoNumber", {
+                            clubbedIntoNumber: b.clubbedIntoNumber ?? "",
+                          })}
                         </Badge>
                       ) : b.total > 0 && b.counts.filed === b.total ? (
                         <Badge variant="success">
-                          <CircleCheckIcon
-                            data-icon="inline-start"
-                            aria-hidden
-                          />
+                          <CircleCheckIcon data-icon="inline-start" aria-hidden />
                           {t("batchesScreen_doneAllTotalFiled", { total: String(b.total) })}
                         </Badge>
                       ) : (

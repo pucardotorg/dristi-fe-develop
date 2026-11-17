@@ -19,11 +19,7 @@ import { useCourtToday } from "@/components/employee/use-court-today";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   DescriptionDetails,
   DescriptionList,
@@ -62,11 +58,7 @@ import {
   type CaseSummaryWindow,
 } from "@/lib/employee/case-review";
 import { causeTitle } from "@/lib/employee/hearings";
-import {
-  REGISTER_QUEUE,
-  registerCaseById,
-  type RegisterCase,
-} from "@/lib/employee/register-cases";
+import { REGISTER_QUEUE, registerCaseById, type RegisterCase } from "@/lib/employee/register-cases";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useTranslations } from "next-intl";
@@ -108,9 +100,7 @@ export function RegisterCaseScreen({ caseId }: { caseId: string }) {
 
   /* Keyed on the complaint, so "Next complaint" opens a fresh page rather than the
      previous complaint's settled act. */
-  return (
-    <ComplaintPage key={caseId} complaint={complaint} summary={summary} review={review} />
-  );
+  return <ComplaintPage key={caseId} complaint={complaint} summary={summary} review={review} />;
 }
 
 /** Where this queue lives — its rows open beneath it. */
@@ -254,22 +244,19 @@ function ComplaintHeader({
           label={t("registerCaseScreen_filingNumber")}
           className="self-start text-body-compact text-muted-foreground"
         />
-        <h1
-          id="complaint-title"
-          className="text-balance font-semibold text-title"
-        >
+        <h1 id="complaint-title" className="text-balance font-semibold text-title">
           {causeTitle(complaint)}
         </h1>
       </div>
       <HeaderActs
-          ref={actsRef}
-          /* Scrolled past, this pair is the one in the sticky bar's shadow: left in
+        ref={actsRef}
+        /* Scrolled past, this pair is the one in the sticky bar's shadow: left in
              place so nothing reflows, but taken out of the tab order and off the
              accessibility tree, so the page never offers two Registers. */
-          offScreen={offScreen}
-          returnFocus={returnFocus}
-          onAct={onAct}
-        />
+        offScreen={offScreen}
+        returnFocus={returnFocus}
+        onAct={onAct}
+      />
     </header>
   );
 }
@@ -309,12 +296,7 @@ function HeaderActs({
       aria-hidden={offScreen || undefined}
       className="flex shrink-0 flex-wrap gap-3"
     >
-      <Button
-        ref={sendBackRef}
-        type="button"
-        variant="outline"
-        onClick={() => onAct("send-back")}
-      >
+      <Button ref={sendBackRef} type="button" variant="outline" onClick={() => onAct("send-back")}>
         {t("registerCaseScreen_sendBackToScrutiny")}
       </Button>
       <Button ref={registerRef} type="button" onClick={() => onAct("register")}>
@@ -340,10 +322,9 @@ function useScrolledPast(ref: React.RefObject<HTMLElement | null>): boolean {
       setPast(false);
       return;
     }
-    const observer = new IntersectionObserver(
-      ([entry]) => setPast(!entry.isIntersecting),
-      { rootMargin: "-100px 0px 0px 0px" },
-    );
+    const observer = new IntersectionObserver(([entry]) => setPast(!entry.isIntersecting), {
+      rootMargin: "-100px 0px 0px 0px",
+    });
     observer.observe(element);
     return () => observer.disconnect();
   }, [ref]);
@@ -388,8 +369,7 @@ function useComplaintTab(): [ComplaintTab, (next: ComplaintTab) => void] {
  * padding off, so the mark is the label's width and the first label lines up with the
  * cause title above it.
  */
-const TRIGGER =
-  "h-full flex-none group-data-[variant=line]/tabs-list:px-0 text-body-compact";
+const TRIGGER = "h-full flex-none group-data-[variant=line]/tabs-list:px-0 text-body-compact";
 
 function ComplaintTabs({
   tab,
@@ -568,7 +548,11 @@ function SynopsisPanel({ summary }: { summary: CaseSummary }) {
             <Fact
               term={SYNOPSIS_FIELDS.amount}
               format="figure"
-              note={cheque.partPaid ? t("registerCaseScreen_partPaidPaidBeforeFiling", { partPaid: cheque.partPaid }) : undefined}
+              note={
+                cheque.partPaid
+                  ? t("registerCaseScreen_partPaidPaidBeforeFiling", { partPaid: cheque.partPaid })
+                  : undefined
+              }
             >
               {cheque.amount}
             </Fact>
@@ -590,24 +574,33 @@ function SynopsisPanel({ summary }: { summary: CaseSummary }) {
           <SynopsisSection label={SUMMARY_TERMS.notice}>
             <Fact term={SYNOPSIS_FIELDS.mode}>{synopsis.notice.mode}</Fact>
             <Fact term={SYNOPSIS_FIELDS.tracking}>
-              <Identifier value={synopsis.notice.tracking} label={t("registerCaseScreen_trackingNumber")} />
+              <Identifier
+                value={synopsis.notice.tracking}
+                label={t("registerCaseScreen_trackingNumber")}
+              />
             </Fact>
             <Fact term={SYNOPSIS_FIELDS.replied}>
-              {synopsis.notice.replied ? t("registerCaseScreen_received") : <Absent>{t("registerCaseScreen_none")}</Absent>}
+              {synopsis.notice.replied ? (
+                t("registerCaseScreen_received")
+              ) : (
+                <Absent>{t("registerCaseScreen_none")}</Absent>
+              )}
             </Fact>
           </SynopsisSection>
 
           <SynopsisSection label={SUMMARY_TERMS.causeOfAction}>
             {/* The branch alone: the basis beside it read "Complainant's bank branch" on
                 every complaint in the queue, which is a caption, not a fact. */}
-            <Fact term={SYNOPSIS_FIELDS.jurisdiction}>
-              {synopsis.causeOfAction.jurisdiction}
-            </Fact>
+            <Fact term={SYNOPSIS_FIELDS.jurisdiction}>{synopsis.causeOfAction.jurisdiction}</Fact>
             <Fact
               term={SYNOPSIS_FIELDS.otherPending}
               tone={synopsis.causeOfAction.otherPending ? "warning" : undefined}
             >
-              {synopsis.causeOfAction.otherPending ? t("registerCaseScreen_onePending") : <Absent>{t("registerCaseScreen_none")}</Absent>}
+              {synopsis.causeOfAction.otherPending ? (
+                t("registerCaseScreen_onePending")
+              ) : (
+                <Absent>{t("registerCaseScreen_none")}</Absent>
+              )}
             </Fact>
           </SynopsisSection>
 
@@ -629,13 +622,7 @@ function SynopsisPanel({ summary }: { summary: CaseSummary }) {
  * One compartment of the synopsis: the head's name, then its particulars. White on the
  * hairline fill, so its edges are the dividers.
  */
-function SynopsisSection({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function SynopsisSection({ label, children }: { label: string; children: React.ReactNode }) {
   const id = React.useId();
   return (
     <section aria-labelledby={id} className="flex min-w-0 flex-col gap-4 bg-card p-6 md:p-8">
@@ -699,11 +686,7 @@ function Fact({
       <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
       <DescriptionDetails className="min-w-0 text-body-compact">
         <span
-          className={cn(
-            "font-medium",
-            FORMAT[format],
-            tone === "warning" && "text-warning-ink",
-          )}
+          className={cn("font-medium", FORMAT[format], tone === "warning" && "text-warning-ink")}
         >
           {children}
         </span>
@@ -737,7 +720,9 @@ function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
       <Panel id="scrutiny-heading" label={SUMMARY_TERMS.scrutiny}>
         <Card variant="raised" className={cn(SHEET, "@container")}>
           <div className="p-6 md:p-8">
-            <p className="text-body-compact text-muted-foreground">{t("registerCaseScreen_notRecorded")}</p>
+            <p className="text-body-compact text-muted-foreground">
+              {t("registerCaseScreen_notRecorded")}
+            </p>
           </div>
         </Card>
       </Panel>
@@ -779,15 +764,15 @@ function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
                     <Step
                       label={t("registerCaseScreen_takenUp")}
                       date={
-                        <time dateTime={scrutiny.takenUpOn}>
-                          {scrutiny.takenUpOnShortLabel}
-                        </time>
+                        <time dateTime={scrutiny.takenUpOn}>{scrutiny.takenUpOnShortLabel}</time>
                       }
                     />
                     {scrutiny.returns.map((sendBack) => (
                       <Step
                         key={sendBack.round}
-                        label={t("registerCaseScreen_roundRound", { round: String(sendBack.round) })}
+                        label={t("registerCaseScreen_roundRound", {
+                          round: String(sendBack.round),
+                        })}
                         note={sendBack.label}
                         date={
                           <time dateTime={sendBack.sentBackOn}>
@@ -799,9 +784,7 @@ function ScrutinyPanel({ scrutiny }: { scrutiny: CaseScrutiny | undefined }) {
                     <Step
                       label={t("registerCaseScreen_cleared")}
                       date={
-                        <time dateTime={scrutiny.clearedOn}>
-                          {scrutiny.clearedOnShortLabel}
-                        </time>
+                        <time dateTime={scrutiny.clearedOn}>{scrutiny.clearedOnShortLabel}</time>
                       }
                     />
                   </Timeline>
@@ -889,10 +872,10 @@ function TimelinePanel({ summary }: { summary: CaseSummary }) {
                  column has one edge. Scrutiny's other end is its note. */
               <Step
                 label={SUMMARY_TERMS.scrutiny}
-                date={
-                  <time dateTime={scrutiny.clearedOn}>{scrutiny.clearedOnShortLabel}</time>
-                }
-                note={t("registerCaseScreen_takenUpTakenUpOnShort", { takenUpOnShortLabel: scrutiny.takenUpOnShortLabel })}
+                date={<time dateTime={scrutiny.clearedOn}>{scrutiny.clearedOnShortLabel}</time>}
+                note={t("registerCaseScreen_takenUpTakenUpOnShort", {
+                  takenUpOnShortLabel: scrutiny.takenUpOnShortLabel,
+                })}
               />
             ) : null}
             {/* The one step with no date of its own: it is still happening. How long it
@@ -907,7 +890,9 @@ function TimelinePanel({ summary }: { summary: CaseSummary }) {
                   ? undefined
                   : scrutiny.daysWaiting === 0
                     ? t("registerCaseScreen_clearedByScrutinyToday")
-                    : t("registerCaseScreen_daysSinceScrutinyClearedIt", { days: days(scrutiny.daysWaiting) })
+                    : t("registerCaseScreen_daysSinceScrutinyClearedIt", {
+                        days: days(scrutiny.daysWaiting),
+                      })
               }
             />
           </StepGroup>
@@ -994,27 +979,27 @@ function Step({
           to a line of its own under the step and the date keeps the far corner. */}
       <div className="pb-4 group-last/timeline-item:pb-0">
         <div className="-mx-3 -my-2 grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-6 rounded-lg px-3 py-2 transition-colors hover:bg-surface-sunken @xl:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_6.5rem]">
-        {/* Regular weight: the group's heading is the one semibold line in the column, and
+          {/* Regular weight: the group's heading is the one semibold line in the column, and
             the date's muted ink is what separates it from the step's name. */}
-        <span className="col-start-1 row-start-1 min-w-0">{label}</span>
-        <span className="col-start-2 row-start-1 shrink-0 text-right tabular-nums text-muted-foreground @xl:col-start-3">
-          {date}
-        </span>
-        {note ? (
-          <span
-            className={cn(
-              "col-span-2 col-start-1 row-start-2 min-w-0 @xl:col-span-1 @xl:col-start-2 @xl:row-start-1",
-              tone === "warning" ? "text-warning-ink" : "text-muted-foreground",
-            )}
-          >
-            {note}
-            {aside ? (
-              <span className={cn("block", tone === "warning" && "text-muted-foreground")}>
-                {aside}
-              </span>
-            ) : null}
+          <span className="col-start-1 row-start-1 min-w-0">{label}</span>
+          <span className="col-start-2 row-start-1 shrink-0 text-right tabular-nums text-muted-foreground @xl:col-start-3">
+            {date}
           </span>
-        ) : null}
+          {note ? (
+            <span
+              className={cn(
+                "col-span-2 col-start-1 row-start-2 min-w-0 @xl:col-span-1 @xl:col-start-2 @xl:row-start-1",
+                tone === "warning" ? "text-warning-ink" : "text-muted-foreground",
+              )}
+            >
+              {note}
+              {aside ? (
+                <span className={cn("block", tone === "warning" && "text-muted-foreground")}>
+                  {aside}
+                </span>
+              ) : null}
+            </span>
+          ) : null}
         </div>
       </div>
     </TimelineItem>
@@ -1083,7 +1068,10 @@ const ACT_TITLE: Record<Act, { asking: string; settled: string }> = {
     asking: "registerCaseScreen_sendBackToScrutinyAsking",
     settled: "registerCaseScreen_sentBackToScrutiny",
   },
-  register: { asking: "registerCaseScreen_registerThisComplaint", settled: "registerCaseScreen_complaintRegistered" },
+  register: {
+    asking: "registerCaseScreen_registerThisComplaint",
+    settled: "registerCaseScreen_complaintRegistered",
+  },
 };
 
 /**
@@ -1208,12 +1196,18 @@ function ActBody({
             key={settled ? "settled" : "asking"}
             className="inline-block animate-in fade-in-0 slide-in-from-bottom-1 duration-500 motion-reduce:animate-none"
           >
-            {settled ? translateText(t, ACT_TITLE[act].settled) : translateText(t, ACT_TITLE[act].asking)}
+            {settled
+              ? translateText(t, ACT_TITLE[act].settled)
+              : translateText(t, ACT_TITLE[act].asking)}
           </span>
         </DialogTitle>
         <DialogDescription className="text-body-compact text-muted-foreground">
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={complaint.filingNumber} label={t("registerCaseScreen_filingNumber")} copyable={false} />
+          <Identifier
+            value={complaint.filingNumber}
+            label={t("registerCaseScreen_filingNumber")}
+            copyable={false}
+          />
           {" · "}
           {causeTitle(complaint)}
         </DialogDescription>
@@ -1243,7 +1237,9 @@ function ActBody({
                   setTouched(true);
                 }}
               />
-              {touched && empty ? <FieldError>{t("registerCaseScreen_writeAReasonFirst")}</FieldError> : null}
+              {touched && empty ? (
+                <FieldError>{t("registerCaseScreen_writeAReasonFirst")}</FieldError>
+              ) : null}
             </Field>
           )
         ) : (
@@ -1253,7 +1249,6 @@ function ActBody({
               : t("registerCaseScreen_registeringPutsTheComplaintOnThe")}
           </p>
         )}
-
       </div>
 
       <DialogFooter className="mx-0 mb-0 shrink-0 border-hairline bg-card">
@@ -1266,10 +1261,7 @@ function ActBody({
             </Button>
             {next ? (
               <Button asChild>
-                <Link
-                  href={`${QUEUE_HREF}/${next.id}`}
-                  onClick={() => markArrival("next")}
-                >
+                <Link href={`${QUEUE_HREF}/${next.id}`} onClick={() => markArrival("next")}>
                   {t("registerCaseScreen_nextComplaint")}
                 </Link>
               </Button>
@@ -1281,7 +1273,9 @@ function ActBody({
               {t("common_cancel")}
             </Button>
             <Button type="button" onClick={confirm}>
-              {sending ? t("registerCaseScreen_sendBack") : t("registerCaseScreen_confirmRegistration")}
+              {sending
+                ? t("registerCaseScreen_sendBack")
+                : t("registerCaseScreen_confirmRegistration")}
             </Button>
           </>
         )}

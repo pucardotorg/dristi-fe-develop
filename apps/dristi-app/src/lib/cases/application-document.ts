@@ -23,11 +23,7 @@ import { applicationsFile, submissionTypeLabel } from "./applications";
 import { caseLitigants } from "./application-options";
 import { formatCaseDate, type CaseRecord } from "./types";
 import type { Address } from "@/lib/filing/types";
-import {
-  ACCUSED_ENTITY_TYPES,
-  ENTITY_TYPES,
-  GENDER_OPTIONS,
-} from "@/lib/filing/options";
+import { ACCUSED_ENTITY_TYPES, ENTITY_TYPES, GENDER_OPTIONS } from "@/lib/filing/options";
 import { localizeForDownload, voicedForDownload } from "@/lib/court/browser";
 
 type Row = { term: string; value: string };
@@ -94,7 +90,7 @@ export function datedThis(display: string): string {
   const suffix =
     day % 100 >= 11 && day % 100 <= 13
       ? "th"
-      : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[day % 10] ?? "th";
+      : (({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[day % 10] ?? "th");
   return `Dated this ${day}${suffix} day of ${match[2]} ${match[3]}`;
 }
 
@@ -114,10 +110,7 @@ function fileNames(files: File[]): string {
   return files.map((file) => file.name).join(", ");
 }
 
-function optionLabel(
-  options: readonly { value: string; label: string }[],
-  value: string
-): string {
+function optionLabel(options: readonly { value: string; label: string }[], value: string): string {
   return options.find((option) => option.value === value)?.label ?? value;
 }
 
@@ -128,10 +121,7 @@ const YES_NO_LABEL: Record<string, string> = { yes: "Yes", no: "No" };
  * each field. A field left empty is left out: the list says what was
  * entered, not what was asked.
  */
-export function applicationEntries(
-  draft: ApplicationDraft,
-  record: CaseRecord
-): Row[] {
+export function applicationEntries(draft: ApplicationDraft, record: CaseRecord): Row[] {
   const rows: Row[] = [];
   /* The form is read back from storage, so a value is not always the string its type
      says — a draft saved by an older build, or a number. Text and numbers are shown;
@@ -156,7 +146,10 @@ export function applicationEntries(
 
   switch (draft.type) {
     case "bail":
-      add("Type of bail", draft.bailType === "cash" ? "Cash" : draft.bailType === "surety" ? "Surety" : "");
+      add(
+        "Type of bail",
+        draft.bailType === "cash" ? "Cash" : draft.bailType === "surety" ? "Surety" : "",
+      );
       add("Bail amount (Rs.)", draft.bailAmount);
       if (draft.bailType === "surety") {
         add("Number of sureties", draft.suretyCount);
@@ -182,7 +175,7 @@ export function applicationEntries(
           ? "Institution"
           : draft.litigantType === "individual"
             ? "Individual"
-            : ""
+            : "",
       );
       if (edited) {
         litigantEntries(draft.litigant, edited.side, draft.litigantType === "institution", add);
@@ -210,17 +203,12 @@ export function applicationEntries(
 
     case "advancement-reschedule":
     case "postpone":
-      add(
-        "Initial hearing date",
-        record.nextHearing ? formatCaseDate(record.nextHearing.on) : ""
-      );
+      add("Initial hearing date", record.nextHearing ? formatCaseDate(record.nextHearing.on) : "");
       add("Purpose of hearing", record.nextHearing?.purpose);
       add("Reason for rescheduling", draft.rescheduleReason);
       add(
         "Proposed hearing date",
-        draft.proposedHearingDate
-          ? formatCaseDate(draft.proposedHearingDate.toISOString())
-          : ""
+        draft.proposedHearingDate ? formatCaseDate(draft.proposedHearingDate.toISOString()) : "",
       );
       break;
 
@@ -230,12 +218,12 @@ export function applicationEntries(
         draft.poaLitigantIds
           .map((id) => litigant(id)?.name)
           .filter(Boolean)
-          .join(", ")
+          .join(", "),
       );
       for (const id of draft.poaLitigantIds) {
         add(
           `Authorization document — ${litigant(id)?.name ?? id}`,
-          fileNames(draft.poaAuthorizations[id] ?? [])
+          fileNames(draft.poaAuthorizations[id] ?? []),
         );
       }
       break;
@@ -258,11 +246,9 @@ export function applicationEntries(
         add(`${n} — email ID`, witness.email);
         witness.addresses.forEach((row, addressIndex) =>
           add(
-            witness.addresses.length > 1
-              ? `${n} — address ${addressIndex + 1}`
-              : `${n} — address`,
-            addressLine(row.addr)
-          )
+            witness.addresses.length > 1 ? `${n} — address ${addressIndex + 1}` : `${n} — address`,
+            addressLine(row.addr),
+          ),
         );
       });
       break;
@@ -279,16 +265,14 @@ export function applicationEntries(
       break;
 
     case "objection": {
-      const target = file?.submissions.find(
-        (item) => item.id === draft.objectionToId
-      );
+      const target = file?.submissions.find((item) => item.id === draft.objectionToId);
       add(
         "Objection to",
         target
           ? [submissionTypeLabel(target.type), target.applicationNumber ?? target.temporaryId]
               .filter(Boolean)
               .join(" · ")
-          : ""
+          : "",
       );
       break;
     }
@@ -297,7 +281,7 @@ export function applicationEntries(
   draft.supportingDocuments.forEach((row, index) => {
     add(
       `Supporting document ${index + 1}`,
-      [trimmed(row.name), fileNames(row.files)].filter(Boolean).join(" — ")
+      [trimmed(row.name), fileNames(row.files)].filter(Boolean).join(" — "),
     );
   });
   return rows;
@@ -308,7 +292,7 @@ function litigantEntries(
   l: LitigantDetailsDraft,
   side: "complainant" | "accused",
   institution: boolean,
-  add: (term: string, value: string | undefined) => void
+  add: (term: string, value: string | undefined) => void,
 ) {
   const gender = (value: string) => optionLabel(GENDER_OPTIONS, value);
   if (side === "complainant" && !institution) {
@@ -321,7 +305,7 @@ function litigantEntries(
     add("Permanent address", addressLine(l.permanentAddress));
     add(
       "Is the current address the same as the permanent address?",
-      YES_NO_LABEL[l.currentSameAsPermanent]
+      YES_NO_LABEL[l.currentSameAsPermanent],
     );
     if (l.currentSameAsPermanent === "no") {
       add("Current address", addressLine(l.currentAddress));
@@ -367,26 +351,22 @@ export function buildGeneratedApplication(
   record: CaseRecord,
   /** The side filing it, where the draft does not say (the court's task
    *  screens pass it). The draft's own side wins. */
-  side?: "complainant" | "accused"
+  side?: "complainant" | "accused",
 ): GeneratedApplication | null {
-  const draft =
-    side && !given.filedForSide ? { ...given, filedForSide: side } : given;
+  const draft = side && !given.filedForSide ? { ...given, filedForSide: side } : given;
   if (!draft.type) return null;
 
   const complainant = record.parties.complainant;
   const accused = record.parties.accused;
   const file = safeFile(record);
-  const person = (id: string) =>
-    id ? file?.people.find((item) => item.id === id) : undefined;
+  const person = (id: string) => (id ? file?.people.find((item) => item.id === id) : undefined);
   /* An objection answers the other side's application, so it is filed for
      whichever side did not raise that one. */
   const objectionTarget =
     draft.type === "objection"
       ? file?.submissions.find((item) => item.id === draft.objectionToId)
       : undefined;
-  const targetFiler = objectionTarget
-    ? person(objectionTarget.submittedById)
-    : undefined;
+  const targetFiler = objectionTarget ? person(objectionTarget.submittedById) : undefined;
   const filedFor =
     person(draft.litigantId)?.name ??
     (objectionTarget
@@ -417,7 +397,7 @@ export function buildGeneratedApplication(
               ? "Party in person"
               : "",
         },
-      ])
+      ]),
   );
   parties.push([{ term: "Offence", value: APPLICATION_OFFENCE }]);
 
@@ -502,7 +482,7 @@ function safeFile(record: CaseRecord) {
 export function generatedApplicationText(
   generated: GeneratedApplication,
   /** The application's date, as `formatCaseDate` writes it. Today by default. */
-  dated: string = formatCaseDate(new Date().toISOString())
+  dated: string = formatCaseDate(new Date().toISOString()),
 ): string {
   return [
     generated.court,
@@ -541,19 +521,16 @@ export function generatedApplicationFilename(record: CaseRecord): string {
 export function downloadGeneratedApplication(
   draft: ApplicationDraft,
   record: CaseRecord,
-  side?: "complainant" | "accused"
+  side?: "complainant" | "accused",
 ): void {
   const generated = buildGeneratedApplication(draft, record, side);
   if (generated) downloadApplicationText(generated, record);
 }
 
 /** The same text copy, for an application already set out (the detail view). */
-export function downloadApplicationText(
-  generated: GeneratedApplication,
-  record: CaseRecord
-): void {
+export function downloadApplicationText(generated: GeneratedApplication, record: CaseRecord): void {
   const url = URL.createObjectURL(
-    new Blob([localizeForDownload(generatedApplicationText(generated))], { type: "text/plain" })
+    new Blob([localizeForDownload(generatedApplicationText(generated))], { type: "text/plain" }),
   );
   const anchor = document.createElement("a");
   anchor.href = url;

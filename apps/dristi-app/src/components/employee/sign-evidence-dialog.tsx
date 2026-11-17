@@ -3,10 +3,7 @@
 import * as React from "react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 
 import { ReviewRow } from "@/components/cases/filing-form-shared";
 import { Badge } from "@/components/ui/badge";
@@ -14,12 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DescriptionList } from "@/components/ui/description-list";
 import { Dialog, DialogDescription } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -173,9 +165,7 @@ function SignEvidenceBody({
   const [markedThrough, setMarkedThrough] = React.useState(row.markedThrough);
   const [serial, setSerial] = React.useState(String(row.serial));
 
-  const witness =
-    row.witnesses.find((entry) => entry.id === markedThrough) ??
-    row.witnesses[0];
+  const witness = row.witnesses.find((entry) => entry.id === markedThrough) ?? row.witnesses[0];
   const series = exhibitSeries(witness.series);
   const parsed = parseEvidenceSerial(serial);
   const taken = takenSerials(rows, row, series);
@@ -187,7 +177,11 @@ function SignEvidenceBody({
     parsed === null
       ? t("signEvidenceDialog_enterTheExhibitNumberAsA")
       : taken.has(parsed)
-        ? t("signEvidenceDialog_seriesParsedIsAlreadyMarkedIn", { series, parsed: String(parsed), courtText: courtText(row.caseNumber) })
+        ? t("signEvidenceDialog_seriesParsedIsAlreadyMarkedIn", {
+            series,
+            parsed: String(parsed),
+            courtText: courtText(row.caseNumber),
+          })
         : undefined;
 
   const line = businessOfTheDay(row);
@@ -196,8 +190,7 @@ function SignEvidenceBody({
   /* The business of the day is written to the row as it is typed; the marking is held
      here until Proceed, so that is what a close would lose. */
   const guard = useDiscardGuard(
-    flow.stage === "edit" &&
-      (markedThrough !== row.markedThrough || serial !== String(row.serial)),
+    flow.stage === "edit" && (markedThrough !== row.markedThrough || serial !== String(row.serial)),
     onClose,
   );
 
@@ -229,7 +222,11 @@ function SignEvidenceBody({
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(row)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={row.caseNumber} label={t("signEvidenceDialog_caseNumber")} copyable={false} />
+          <Identifier
+            value={row.caseNumber}
+            label={t("signEvidenceDialog_caseNumber")}
+            copyable={false}
+          />
         </DialogDescription>
       }
       sceneKey={flow.sceneKey}
@@ -237,11 +234,7 @@ function SignEvidenceBody({
       footer={
         flow.stage === "details" ? (
           <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => flow.go("edit")}
-            >
+            <Button type="button" variant="outline" onClick={() => flow.go("edit")}>
               {t("signEvidenceDialog_editDetails")}
             </Button>
             <Button type="button" disabled={blank} onClick={() => onSign(row)}>
@@ -253,11 +246,7 @@ function SignEvidenceBody({
             <Button type="button" variant="outline" onClick={cancel}>
               {t("common_cancel")}
             </Button>
-            <Button
-              type="submit"
-              form="mark-as-evidence"
-              disabled={Boolean(error)}
-            >
+            <Button type="submit" form="mark-as-evidence" disabled={Boolean(error)}>
               {t("signEvidenceDialog_proceed")}
             </Button>
           </>
@@ -354,7 +343,10 @@ function DetailsStage({
               {witnessLabel(markedThroughWitness(row))}
             </ReviewRow>
             <ReviewRow term={t("signEvidenceDialog_evidenceNumber")}>
-              <Identifier value={evidenceNumber(row)} label={t("signEvidenceDialog_evidenceNumberLabel")} />
+              <Identifier
+                value={evidenceNumber(row)}
+                label={t("signEvidenceDialog_evidenceNumberLabel")}
+              />
             </ReviewRow>
           </DescriptionList>
         </CardContent>
@@ -363,14 +355,14 @@ function DetailsStage({
       <Card variant="raised" size="sm">
         <CardContent>
           <Field data-invalid={blank}>
-            <FieldLabel className="text-body">{t("signEvidenceDialog_businessOfTheDay")}</FieldLabel>
+            <FieldLabel className="text-body">
+              {t("signEvidenceDialog_businessOfTheDay")}
+            </FieldLabel>
             <Textarea
               rows={2}
               value={line}
               aria-invalid={blank || undefined}
-              onChange={(event) =>
-                onBusinessOfTheDayChange(row.id, event.target.value)
-              }
+              onChange={(event) => onBusinessOfTheDayChange(row.id, event.target.value)}
             />
             {blank ? (
               <FieldError className="text-body-compact">
@@ -492,9 +484,7 @@ function MarkAsEvidenceStage({
             <FieldDescription className="text-body-compact">
               {t("signEvidenceDialog_theSeriesFollowsTheWitnessP")}
             </FieldDescription>
-            {error ? (
-              <FieldError className="text-body-compact">{error}</FieldError>
-            ) : null}
+            {error ? <FieldError className="text-body-compact">{error}</FieldError> : null}
           </Field>
         </form>
       </CardContent>

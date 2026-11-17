@@ -3,10 +3,7 @@ import { notFound } from "next/navigation";
 
 import { CaseBreadcrumbs } from "@/components/cases/case-breadcrumbs";
 import { RaiseApplicationEntry } from "@/components/cases/raise-application-form";
-import {
-  applicationsFile,
-  findDraftSubmission,
-} from "@/lib/cases/applications";
+import { applicationsFile, findDraftSubmission } from "@/lib/cases/applications";
 import { PAGE_GROUND, PAGE_GUTTER } from "@/components/shell/page-frame";
 import { findCaseRecord } from "@/lib/cases/party-cases";
 import { Breadcrumbs } from "@/components/shell/chrome";
@@ -34,12 +31,8 @@ function objectionTarget(caseId: string, applicationId: string | undefined) {
   const record = findCase(caseId);
   if (!record || !applicationId) return undefined;
   try {
-    const target = applicationsFile(record).submissions.find(
-      (item) => item.id === applicationId
-    );
-    return target &&
-      target.status === "pending-decision" &&
-      target.objectionsInvited === true
+    const target = applicationsFile(record).submissions.find((item) => item.id === applicationId);
+    return target && target.status === "pending-decision" && target.objectionsInvited === true
       ? target.id
       : undefined;
   } catch {
@@ -93,10 +86,7 @@ export default async function RaiseApplicationPage({
   return (
     <main className="flex flex-1 flex-col">
       {fromOutsideCases ? (
-        <Breadcrumbs
-          root={door}
-          crumbs={[{ label: record.caseNumber, mono: true }]}
-        />
+        <Breadcrumbs root={door} crumbs={[{ label: record.caseNumber, mono: true }]} />
       ) : (
         <CaseBreadcrumbs
           caseId={record.id}

@@ -7,24 +7,14 @@ import { rectStyle } from "@/lib/employee/scrutiny/field";
 import { replacedDocs } from "@/lib/employee/scrutiny/returns";
 import type { BundleDoc, Rect } from "@/lib/employee/scrutiny/types";
 import { formatDuration, getFileUrl } from "@/lib/filing/files";
-import {
-  useLocalStorageValue,
-  writeLocalStorageValue,
-} from "@/hooks/use-local-storage-value";
+import { useLocalStorageValue, writeLocalStorageValue } from "@/hooks/use-local-storage-value";
 import { cn } from "@/lib/utils";
 import { GENERATED_PAGES } from "@/components/employee/scrutiny/generated-pages";
 import { PageSheet, SHEET_BOX } from "@/components/employee/page-facsimile";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { Button } from "@/components/ui/button";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations } from "next-intl";
 
 const ZOOM_STEPS = [50, 67, 80, 100, 125, 150, 200, 300, 400];
@@ -130,8 +120,7 @@ export function BundleView({
     const sc = scrollRef.current;
     if (!sc) return;
     const cs = getComputedStyle(sc);
-    const avail =
-      sc.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const avail = sc.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     setZoomBase(Math.max(320, Math.min(940, Math.round(avail * 0.96))));
   }, []);
 
@@ -175,8 +164,7 @@ export function BundleView({
       ZOOM_STEPS.forEach((z, n) => {
         if (Math.abs(z - zoom) < Math.abs(ZOOM_STEPS[i] - zoom)) i = n;
       });
-      const next =
-        ZOOM_STEPS[Math.min(ZOOM_STEPS.length - 1, Math.max(0, i + delta))];
+      const next = ZOOM_STEPS[Math.min(ZOOM_STEPS.length - 1, Math.max(0, i + delta))];
       zoomTo(next, cx, cy);
     },
     [zoom, zoomTo],
@@ -190,11 +178,7 @@ export function BundleView({
       if (!(event.ctrlKey || event.metaKey)) return;
       event.preventDefault();
       const box = sc.getBoundingClientRect();
-      stepZoom(
-        event.deltaY < 0 ? 1 : -1,
-        event.clientX - box.left,
-        event.clientY - box.top,
-      );
+      stepZoom(event.deltaY < 0 ? 1 : -1, event.clientX - box.left, event.clientY - box.top);
     };
     sc.addEventListener("wheel", onWheel, { passive: false });
     return () => sc.removeEventListener("wheel", onWheel);
@@ -221,9 +205,7 @@ export function BundleView({
   /* ── navigation ────────────────────────────────────────────────────────── */
 
   const goToDoc = React.useCallback((docId: string) => {
-    document
-      .getElementById(`doc-${docId}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById(`doc-${docId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
   const play = React.useCallback(
@@ -285,7 +267,10 @@ export function BundleView({
           {t("bundleView_caseBundle")}
           {onlyDocs ? (
             <span className="font-normal text-muted-foreground tabular-nums">
-              {t("bundleView_lengthOfLength2Documents", { length: String(shown.length), length2: String(bundle.length) })}
+              {t("bundleView_lengthOfLength2Documents", {
+                length: String(shown.length),
+                length2: String(bundle.length),
+              })}
             </span>
           ) : null}
         </b>
@@ -352,11 +337,7 @@ export function BundleView({
             const item = replaced[doc.id];
             const before = !!item && !!showPrevious[doc.id];
             return (
-              <div
-                className="flex scroll-mt-3 flex-col gap-1.5"
-                id={`doc-${doc.id}`}
-                key={doc.id}
-              >
+              <div className="flex scroll-mt-3 flex-col gap-1.5" id={`doc-${doc.id}`} key={doc.id}>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3">
                   {/* The only navigational anchor in a scroll this long, so it reads
                       as one: caption size, but foreground ink at 600 rather than grey. */}
@@ -377,7 +358,9 @@ export function BundleView({
                       aria-label={t("bundleView_whichUploadOfName", { name: doc.name })}
                     >
                       <SegmentedControlItem value="now">{t("bundleView_now")}</SegmentedControlItem>
-                      <SegmentedControlItem value="before">{t("bundleView_before")}</SegmentedControlItem>
+                      <SegmentedControlItem value="before">
+                        {t("bundleView_before")}
+                      </SegmentedControlItem>
                     </SegmentedControl>
                   ) : null}
                 </div>
@@ -415,10 +398,7 @@ export function BundleView({
  * explicit aspect ratio from the kind's own `SHEET_BOX`, the same frame the read-only
  * scroller uses.
  */
-function renderPage(
-  doc: BundleDoc,
-  spot: { doc: string; rect: Rect } | null,
-) {
+function renderPage(doc: BundleDoc, spot: { doc: string; rect: Rect } | null) {
   const sheet = doc.kind === "facsimile" ? doc.sheet : undefined;
   const box = sheet ? SHEET_BOX[sheet] : null;
   const Generated = sheet ? undefined : GENERATED_PAGES[doc.id];

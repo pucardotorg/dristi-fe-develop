@@ -23,9 +23,7 @@ export function CausePostingNote({ set }: { set: boolean }) {
   const t = useTranslations();
   return (
     <p className="text-body-compact text-muted-foreground">
-      {set
-        ? t("causePosting_setOnTheCauseList")
-        : t("causePosting_notSetYetItIsSet")}
+      {set ? t("causePosting_setOnTheCauseList") : t("causePosting_notSetYetItIsSet")}
     </p>
   );
 }

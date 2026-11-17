@@ -18,11 +18,7 @@ import {
   decidedOnLabel,
   waitClass,
 } from "@/components/employee/approve-registrations-table";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,11 +30,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  PAGE_SIZE,
-  formatListingDate,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { PAGE_SIZE, formatListingDate, type HearingsPageSize } from "@/lib/employee/hearings";
 import {
   ACCOUNT_TYPE_OPTIONS,
   DECIDED_REGISTRATIONS,
@@ -118,9 +110,7 @@ export function ApproveRegistrationsScreen() {
   const [tab, setTab] = React.useState<RegistrationsTab>("pending");
   /* One state, filtered as typed; every change resets to page one, so a narrowed list
      never leaves the reader on page three of nothing. */
-  const [filters, setFilters] = React.useState<RegistrationsFilters>(
-    EMPTY_REGISTRATIONS_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<RegistrationsFilters>(EMPTY_REGISTRATIONS_FILTERS);
   const [pendingSort, setPendingSort] = React.useState<PendingSort>("longest");
   const [decidedSort, setDecidedSort] = React.useState<DecidedSort>("recent");
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
@@ -132,13 +122,8 @@ export function ApproveRegistrationsScreen() {
   const searchRef = React.useRef<HTMLInputElement>(null);
 
   const decidedIds = new Set(decided.map((entry) => entry.request.id));
-  const remaining = REGISTRATIONS_QUEUE.filter(
-    (request) => !decidedIds.has(request.id),
-  );
-  const pendingRows = sortPending(
-    filterRegistrations(remaining, filters),
-    pendingSort,
-  );
+  const remaining = REGISTRATIONS_QUEUE.filter((request) => !decidedIds.has(request.id));
+  const pendingRows = sortPending(filterRegistrations(remaining, filters), pendingSort);
   const record = [...decided, ...DECIDED_REGISTRATIONS];
   const decidedRows =
     tab === "pending"
@@ -161,9 +146,7 @@ export function ApproveRegistrationsScreen() {
   const isFiltered =
     filters.query.trim() !== "" ||
     filters.accountType !== "all" ||
-    (tab === "pending" &&
-      (filters.requestType !== "all" ||
-        filters.wait !== "all"));
+    (tab === "pending" && (filters.requestType !== "all" || filters.wait !== "all"));
 
   function changeFilters(next: Partial<RegistrationsFilters>) {
     setFilters((current) => ({ ...current, ...next }));
@@ -219,13 +202,13 @@ export function ApproveRegistrationsScreen() {
       <header className="flex flex-col gap-2">
         {/* `APPROVE_REGISTRATIONS_TITLE` is shared with the rail and the tab, so the
             three can never disagree. */}
-        <h1 className="text-title text-balance font-semibold">
-          {APPROVE_REGISTRATIONS_TITLE}
-        </h1>
+        <h1 className="text-title text-balance font-semibold">{APPROVE_REGISTRATIONS_TITLE}</h1>
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
             ? t("approveRegistrationsScreen_1RegistrationIsWaitingForApproval")
-            : t("approveRegistrationsScreen_lengthRegistrationsAreWaitingForApproval", { length: String(remaining.length) })}
+            : t("approveRegistrationsScreen_lengthRegistrationsAreWaitingForApproval", {
+                length: String(remaining.length),
+              })}
         </p>
       </header>
 
@@ -284,11 +267,7 @@ export function ApproveRegistrationsScreen() {
                 <QueueAnnouncer from={start + 1} to={start + shown} total={total} />
 
                 {shown === 0 ? (
-                  <RegistrationsEmpty
-                    tab={tab}
-                    isFiltered={isFiltered}
-                    onClear={clearFilters}
-                  />
+                  <RegistrationsEmpty tab={tab} isFiltered={isFiltered} onClear={clearFilters} />
                 ) : (
                   <div className="flex min-w-0 flex-col gap-4">
                     {/* The table swaps to stacked items below `xl`: measured on the render,
@@ -395,8 +374,7 @@ function RegistrationFilters({
       all: "all",
       allLabel: t("approveRegistrationsScreen_allAccountTypes"),
       options: ACCOUNT_TYPE_OPTIONS,
-      onApply: (value) =>
-        onChange({ accountType: value as RegistrationsFilters["accountType"] }),
+      onApply: (value) => onChange({ accountType: value as RegistrationsFilters["accountType"] }),
     },
   ];
   if (tab === "pending") {
@@ -408,8 +386,7 @@ function RegistrationFilters({
         all: "all",
         allLabel: "All request types",
         options: REQUEST_TYPE_OPTIONS,
-        onApply: (value) =>
-          onChange({ requestType: value as RegistrationsFilters["requestType"] }),
+        onApply: (value) => onChange({ requestType: value as RegistrationsFilters["requestType"] }),
       },
       {
         id: "registrations-wait",
@@ -492,7 +469,9 @@ function RegistrationsEmpty({
           {isFiltered ? <SearchXIcon aria-hidden /> : <UserCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? t("approveRegistrationsScreen_noRegistrationsMatch") : translateText(t, EMPTY_COPY[tab].title)}
+          {isFiltered
+            ? t("approveRegistrationsScreen_noRegistrationsMatch")
+            : translateText(t, EMPTY_COPY[tab].title)}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
@@ -545,13 +524,13 @@ function RegistrationItemList({
             <Badge variant={accountTypeVariant(request.registrantKind)}>
               {roleLabel(request.registrantKind)}
             </Badge>
-            <Identifier value={request.registrationNumber} label={t("approveRegistrationsScreen_registrationNumber")} />
+            <Identifier
+              value={request.registrationNumber}
+              label={t("approveRegistrationsScreen_registrationNumber")}
+            />
             <span aria-hidden>·</span>
             <span
-              className={cn(
-                "tabular-nums",
-                waitClass[registrationWaitTone(request.daysWaiting)],
-              )}
+              className={cn("tabular-nums", waitClass[registrationWaitTone(request.daysWaiting)])}
             >
               {formatDaysWaitingSpoken(request.daysWaiting)}
             </span>

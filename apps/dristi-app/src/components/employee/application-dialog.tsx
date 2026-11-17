@@ -11,28 +11,15 @@ import { ApplicationDecisionPanel } from "@/components/employee/application-deci
 import { ApplicationFacsimile } from "@/components/employee/application-review-dialog";
 import { Badge } from "@/components/ui/badge";
 import { DescriptionList } from "@/components/ui/description-list";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { Separator } from "@/components/ui/separator";
 import { decodeDraft } from "@/lib/applications/form-codec";
 import type { LifecycleApplication } from "@/lib/applications/lifecycle";
 import { today, useLifecycleApplications } from "@/lib/applications/store";
 import { formatCaseDate, partiesLabel } from "@/lib/cases/types";
 import { CURRENT_STAFF } from "@/lib/employee/content";
-import {
-  objectionLine,
-  queueOf,
-  shortDate,
-  statusLine,
-} from "@/lib/employee/application-queue";
+import { objectionLine, queueOf, shortDate, statusLine } from "@/lib/employee/application-queue";
 import {
   caseOf,
   causeTitleOf,
@@ -84,9 +71,7 @@ export function ApplicationDialog({
   onReturnFocus: () => void;
 }) {
   const apps = useLifecycleApplications();
-  const app = applicationId
-    ? apps.find((item) => item.id === applicationId)
-    : undefined;
+  const app = applicationId ? apps.find((item) => item.id === applicationId) : undefined;
   return (
     <Dialog open={Boolean(app)} onOpenChange={onOpenChange}>
       {app ? (
@@ -130,9 +115,7 @@ function ApplicationDialogBody({
   const on = today();
   const record = caseOf(app);
   const document = React.useMemo(() => courtDocumentOf(app), [app]);
-  const objection = app.objectionId
-    ? all.find((item) => item.id === app.objectionId)
-    : undefined;
+  const objection = app.objectionId ? all.find((item) => item.id === app.objectionId) : undefined;
 
   /* The application first, then what is linked to it: its objection, and the orders
      passed on it, latest last — the order the case file reads them in. */
@@ -160,7 +143,12 @@ function ApplicationDialogBody({
           objectionDocument && objectionDocument.paragraphs.length > 0 ? (
             <ApplicationFacsimile document={objectionDocument} />
           ) : (
-            <ObjectionPaper objection={objection} court={courtText(t("applicationDialog_beforeTheCourt", { court: CURRENT_STAFF.court }))} />
+            <ObjectionPaper
+              objection={objection}
+              court={courtText(
+                t("applicationDialog_beforeTheCourt", { court: CURRENT_STAFF.court }),
+              )}
+            />
           ),
       });
     }
@@ -297,7 +285,6 @@ function ApplicationDialogBody({
   );
 }
 
-
 function StageBadge({ app, on }: { app: LifecycleApplication; on: string }) {
   const t = useTranslations();
   const queue = queueOf(app, on);
@@ -316,7 +303,9 @@ function StageBadge({ app, on }: { app: LifecycleApplication; on: string }) {
       </Badge>
     );
   }
-  return <Badge variant="info">{t(QUEUE_LABEL[queue ?? "all"]) ?? t("applicationDialog_open")}</Badge>;
+  return (
+    <Badge variant="info">{t(QUEUE_LABEL[queue ?? "all"]) ?? t("applicationDialog_open")}</Badge>
+  );
 }
 
 /**
@@ -342,29 +331,48 @@ function Facts({ app, on }: { app: LifecycleApplication; on: string }) {
       <ReviewRow term={closed ? t("applicationDialog_outcome") : t("applicationDialog_due")}>
         <span className="flex flex-wrap items-center gap-2">
           {due}
-          {!closed && line.due === "overdue" ? <Badge variant="destructive">{t("applicationDialog_overdue")}</Badge> : null}
-          {!closed && line.due === "today" ? <Badge variant="warning">{t("applicationDialog_dueToday")}</Badge> : null}
+          {!closed && line.due === "overdue" ? (
+            <Badge variant="destructive">{t("applicationDialog_overdue")}</Badge>
+          ) : null}
+          {!closed && line.due === "today" ? (
+            <Badge variant="warning">{t("applicationDialog_dueToday")}</Badge>
+          ) : null}
         </span>
       </ReviewRow>
       <ReviewRow term={t("applicationDialog_objection")}>{objectionLine(app, on)}</ReviewRow>
-      <ReviewRow term={t("applicationDialog_nextHearing")}>{hearing ? shortDate(hearing) : t("applicationDialog_noneListed")}</ReviewRow>
-      <ReviewRow term={app.applicationNumber ? t("applicationDialog_applicationNo") : t("applicationDialog_temporaryNo")}>
+      <ReviewRow term={t("applicationDialog_nextHearing")}>
+        {hearing ? shortDate(hearing) : t("applicationDialog_noneListed")}
+      </ReviewRow>
+      <ReviewRow
+        term={
+          app.applicationNumber
+            ? t("applicationDialog_applicationNo")
+            : t("applicationDialog_temporaryNo")
+        }
+      >
         {number ? (
           <Identifier
             value={number}
-            label={app.applicationNumber ? t("applicationDialog_applicationNumber") : t("applicationDialog_temporaryNumber")}
+            label={
+              app.applicationNumber
+                ? t("applicationDialog_applicationNumber")
+                : t("applicationDialog_temporaryNumber")
+            }
           />
         ) : (
           "—"
         )}
       </ReviewRow>
       <ReviewRow term={t("applicationDialog_filed")}>
-        {t("applicationDialog_formatCaseDateByValueFor", { formatCaseDate: formatCaseDate(app.submittedOn ?? app.createdOn), value: app.raisedBy ?? app.createdByName, side: app.side })}
+        {t("applicationDialog_formatCaseDateByValueFor", {
+          formatCaseDate: formatCaseDate(app.submittedOn ?? app.createdOn),
+          value: app.raisedBy ?? app.createdByName,
+          side: app.side,
+        })}
       </ReviewRow>
     </>
   );
 }
-
 
 /** An order passed on the application, set as paper, as the application is. */
 function OrderPaper({
@@ -389,10 +397,17 @@ function OrderPaper({
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{court}</p>
-        {caseNumber ? <p className="text-body font-semibold">{t("applicationDialog_caseNoCaseNumber", { caseNumber })}</p> : null}
+        {caseNumber ? (
+          <p className="text-body font-semibold">
+            {t("applicationDialog_caseNoCaseNumber", { caseNumber })}
+          </p>
+        ) : null}
         <p className="text-body font-semibold">{matter}</p>
         <p className="text-body-compact text-paper-muted-foreground">
-          {t("applicationDialog_orderIdFormatCaseDate", { id, formatCaseDate: formatCaseDate(signedOn) })}
+          {t("applicationDialog_orderIdFormatCaseDate", {
+            id,
+            formatCaseDate: formatCaseDate(signedOn),
+          })}
         </p>
       </header>
       {title ? <h3 className="text-center text-body font-semibold">{title}</h3> : null}
@@ -401,7 +416,9 @@ function OrderPaper({
       </p>
       <footer className="flex flex-col items-end gap-2">
         <p className="text-body-compact text-paper-muted-foreground">
-          {t("applicationDialog_signedByTheJudicialMagistrateOf", { formatCaseDate: formatCaseDate(signedOn) })}
+          {t("applicationDialog_signedByTheJudicialMagistrateOf", {
+            formatCaseDate: formatCaseDate(signedOn),
+          })}
         </p>
       </footer>
     </article>
@@ -409,13 +426,7 @@ function OrderPaper({
 }
 
 /** An objection whose filing carries only its grounds. */
-function ObjectionPaper({
-  objection,
-  court,
-}: {
-  objection: LifecycleApplication;
-  court: string;
-}) {
+function ObjectionPaper({ objection, court }: { objection: LifecycleApplication; court: string }) {
   const t = useTranslations();
   const reason = decodeDraft(objection.form).applicationDetails.text.trim();
   return (
@@ -424,16 +435,22 @@ function ObjectionPaper({
         <p className="text-body font-semibold">{court}</p>
         <p className="text-body font-semibold">{causeTitleOf(objection)}</p>
         <p className="text-body-compact text-paper-muted-foreground">
-          {t("applicationDialog_receivedFormatCaseDate", { formatCaseDate: formatCaseDate(objection.submittedOn ?? objection.createdOn) })}
+          {t("applicationDialog_receivedFormatCaseDate", {
+            formatCaseDate: formatCaseDate(objection.submittedOn ?? objection.createdOn),
+          })}
         </p>
       </header>
       <h3 className="text-center text-body font-semibold">
         {t("applicationDialog_objectionOnBehalfOfTheSide", { side: objection.side })}
       </h3>
-      <p className="text-body whitespace-pre-wrap">{reason || t("applicationDialog_noGroundsWereEntered")}</p>
+      <p className="text-body whitespace-pre-wrap">
+        {reason || t("applicationDialog_noGroundsWereEntered")}
+      </p>
       <footer className="flex flex-col items-end gap-2">
         <p className="text-body-compact text-paper-muted-foreground">
-          {t("applicationDialog_filedByValue", { value: objection.raisedBy ?? objection.createdByName })}
+          {t("applicationDialog_filedByValue", {
+            value: objection.raisedBy ?? objection.createdByName,
+          })}
         </p>
       </footer>
     </article>
@@ -447,7 +464,10 @@ function NoObjection({ app, on }: { app: LifecycleApplication; on: string }) {
   const text = !app.objectionsInvited
     ? t("applicationDialog_objectionsWereNotCalledForThe", { other })
     : app.objectionDueBy && app.objectionDueBy >= on
-      ? t("applicationDialog_noObjectionYetTheOtherMay", { other, formatCaseDate: formatCaseDate(app.objectionDueBy) })
+      ? t("applicationDialog_noObjectionYetTheOtherMay", {
+          other,
+          formatCaseDate: formatCaseDate(app.objectionDueBy),
+        })
       : `No objection was received from the ${other}${
           app.objectionDueBy ? ` by ${formatCaseDate(app.objectionDueBy)}` : ""
         }.`;

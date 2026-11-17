@@ -30,13 +30,8 @@ type FilterShape = Record<string, string | null>;
  * field and a deliberately picked today are the same request, and only the screen knows
  * that. Those screens pass resolved objects in (`resolveRange`, `resolveADiaryDay`).
  */
-export function isPendingFilterChange<T extends FilterShape>(
-  draft: T,
-  applied: T,
-): boolean {
-  return Object.keys(draft).some(
-    (key) => settled(draft[key]) !== settled(applied[key]),
-  );
+export function isPendingFilterChange<T extends FilterShape>(draft: T, applied: T): boolean {
+  return Object.keys(draft).some((key) => settled(draft[key]) !== settled(applied[key]));
 }
 
 function settled(value: string | null | undefined): string {
@@ -62,10 +57,7 @@ function settled(value: string | null | undefined): string {
  * Pass the row's words as they are *shown* — the cause title, not the two parties — so
  * what is on screen is what can be found.
  */
-export function matchesQuery(
-  query: string,
-  ...parts: (string | undefined)[]
-): boolean {
+export function matchesQuery(query: string, ...parts: (string | undefined)[]): boolean {
   const tokens = caseSearchKey(query).split(/\s+/).filter(Boolean);
   // An empty box is not a filter; it asks for everything.
   if (tokens.length === 0) return true;

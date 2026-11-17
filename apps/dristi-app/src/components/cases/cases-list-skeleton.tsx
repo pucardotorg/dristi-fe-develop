@@ -10,10 +10,7 @@ import { useTranslations } from "next-intl";
 export function CasesResultsSkeleton() {
   const t = useTranslations();
   return (
-    <div
-      className="overflow-hidden rounded-xl border border-hairline bg-card"
-      aria-busy
-    >
+    <div className="overflow-hidden rounded-xl border border-hairline bg-card" aria-busy>
       <span className="sr-only" role="status">
         {t("casesListSkeleton_sortingCases")}
       </span>

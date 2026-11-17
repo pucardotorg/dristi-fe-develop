@@ -15,7 +15,12 @@ import {
 describe("order shortcuts", () => {
   it("Insert puts a shortcut at the end of the order, or starts an empty one with it", () => {
     const line = { id: "a", name: "Adjourned", text: "Adjourned at the accused's request." };
-    const formatted = { id: "b", name: "Bail", text: "Bail granted", html: "<p>Bail <b>granted</b></p>" };
+    const formatted = {
+      id: "b",
+      name: "Bail",
+      text: "Bail granted",
+      html: "<p>Bail <b>granted</b></p>",
+    };
     assert.deepEqual(appendShortcut({ html: "<p><br></p>", text: "" }, line), {
       html: "<p>Adjourned at the accused's request.</p>",
       text: "Adjourned at the accused's request.",
@@ -59,10 +64,10 @@ describe("order shortcuts", () => {
     assert.ok(!isFormatted("Case transferred<br>"));
     assert.ok(isFormatted("<b>Allowed.</b>"));
     assert.ok(isFormatted("<div>One</div><div>Two</div>"));
-    assert.deepEqual(
-      shortcutInsertion({ id: "a", name: "A", text: "Plain", html: "Plain" }),
-      { kind: "inline", text: "Plain" },
-    );
+    assert.deepEqual(shortcutInsertion({ id: "a", name: "A", text: "Plain", html: "Plain" }), {
+      kind: "inline",
+      text: "Plain",
+    });
     assert.deepEqual(shortcutInsertion({ id: "a", name: "A", text: "Old" }), {
       kind: "inline",
       text: "Old",
@@ -75,14 +80,14 @@ describe("order shortcuts", () => {
       "<p>Witnesses:</p><table><tr><td>A</td></tr></table>",
     );
     assert.equal(leadInParagraph("<p>One</p><ul><li>a</li></ul>"), "<p>One</p><ul><li>a</li></ul>");
-    assert.equal(leadInParagraph("<b>Heard.</b><br><div>Two</div>"), "<p><b>Heard.</b></p><div>Two</div>");
+    assert.equal(
+      leadInParagraph("<b>Heard.</b><br><div>Two</div>"),
+      "<p><b>Heard.</b></p><div>Two</div>",
+    );
   });
 
   it("opens a shortcut saved before formatting as its text, escaped", () => {
-    assert.equal(
-      shortcutHtml({ id: "a", name: "A", text: "a < b\nc" }),
-      "a &lt; b<br>c",
-    );
+    assert.equal(shortcutHtml({ id: "a", name: "A", text: "a < b\nc" }), "a &lt; b<br>c");
   });
 
   it("ranks a name that starts with the query above one that only contains it", () => {
@@ -95,7 +100,10 @@ describe("order shortcuts", () => {
       matchOrderShortcuts(list, "case").map((entry) => entry.id),
       ["b", "a"],
     );
-    assert.deepEqual(matchOrderShortcuts(list, "DIS").map((entry) => entry.id), ["c"]);
+    assert.deepEqual(
+      matchOrderShortcuts(list, "DIS").map((entry) => entry.id),
+      ["c"],
+    );
     assert.deepEqual(matchOrderShortcuts(list, "zzz"), []);
   });
 

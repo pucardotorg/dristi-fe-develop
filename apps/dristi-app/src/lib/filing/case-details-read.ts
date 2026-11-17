@@ -18,13 +18,16 @@
 
 import { blankAdr, blankCheque, blankJurisdiction, blankNotice } from "./blank";
 import type { CaseRead, EvidenceRead } from "./data/cases-api";
-import {
-  chequeFromEvidence,
-  noticeFromEvidence,
-  returnMemoFromEvidence,
-} from "./evidence";
+import { chequeFromEvidence, noticeFromEvidence, returnMemoFromEvidence } from "./evidence";
 import { complaintFilingDate, derivedCauseDate } from "./selectors";
-import type { AdrPrayer, ChequeDetails, DemandNotice, FilingDraft, Jurisdiction, OtherCase } from "./types";
+import type {
+  AdrPrayer,
+  ChequeDetails,
+  DemandNotice,
+  FilingDraft,
+  Jurisdiction,
+  OtherCase,
+} from "./types";
 
 /** The details sections as the backend names them (`/cases/{id}/details/{section}`). */
 export const JURISDICTION_SECTION = "jurisdiction_limitation";
@@ -63,7 +66,7 @@ function mergeRows<T extends { id: string }, R>(
     rebuild: (remote: R, base: T | undefined) => T;
     unlink: (row: T) => T;
     blank: () => T;
-  }
+  },
 ): T[] {
   const taken = new Set<number>();
   const rows = local.map((row) => {
@@ -90,9 +93,7 @@ type ChequePair = { cheque?: EvidenceRead; memo?: EvidenceRead };
 function chequePairs(read: CaseRead): ChequePair[] {
   const cheques = ofType(read, "CHEQUE");
   const memos = ofType(read, "RETURN_MEMO");
-  const ordinals = [...new Set([...cheques, ...memos].map((e) => e.ordinal))].sort(
-    (a, b) => a - b
-  );
+  const ordinals = [...new Set([...cheques, ...memos].map((e) => e.ordinal))].sort((a, b) => a - b);
   return ordinals.map((n) => ({
     cheque: cheques.find((e) => e.ordinal === n),
     memo: memos.find((e) => e.ordinal === n),
@@ -124,7 +125,7 @@ export function chequesFromCase(read: CaseRead, local: ChequeDetails[]): ChequeD
       rebuild: chequeFrom,
       unlink: (c) => ({ ...c, chequeEvidenceId: undefined, returnMemoEvidenceId: undefined }),
       blank: blankCheque,
-    }
+    },
   );
 }
 
@@ -148,7 +149,7 @@ export function noticesFromCase(read: CaseRead, local: DemandNotice[]): DemandNo
       rebuild: noticeFrom,
       unlink: (n) => ({ ...n, noticeEvidenceId: undefined }),
       blank: blankNotice,
-    }
+    },
   );
 }
 
@@ -157,7 +158,7 @@ export function noticesFromCase(read: CaseRead, local: DemandNotice[]): DemandNo
 function otherCasesFrom(value: unknown): OtherCase[] {
   const cases = Array.isArray(value)
     ? value.flatMap((c) =>
-        isRecord(c) ? [{ court: text(c.court), caseNumber: text(c.case_number) }] : []
+        isRecord(c) ? [{ court: text(c.court), caseNumber: text(c.case_number) }] : [],
       )
     : [];
   return cases.length ? cases : [{ court: "", caseNumber: "" }];

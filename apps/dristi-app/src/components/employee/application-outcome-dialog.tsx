@@ -13,10 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import {
   Select,
   SelectContent,
@@ -77,7 +74,10 @@ export function ApplicationOutcomeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90dvh] flex-col gap-4 sm:max-w-2xl" onInteractOutside={(event) => event.preventDefault()}>
+      <DialogContent
+        className="flex max-h-[90dvh] flex-col gap-4 sm:max-w-2xl"
+        onInteractOutside={(event) => event.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
             {t("applicationOutcomeDialog_applicationLabel", { label: subject.label })}
@@ -106,10 +106,7 @@ export function ApplicationOutcomeDialog({
           {answers.decided === "yes" ? (
             <>
               <div className="flex min-w-0 flex-col gap-2">
-                <span
-                  id={`${id}-decision`}
-                  className="text-body-compact font-medium"
-                >
+                <span id={`${id}-decision`} className="text-body-compact font-medium">
                   {t("applicationOutcomeDialog_whatWasDecided")}
                 </span>
                 <Select
@@ -120,14 +117,10 @@ export function ApplicationOutcomeDialog({
                     })
                   }
                 >
-                  <SelectTrigger
-                    aria-labelledby={`${id}-decision`}
-                    className="w-full"
-                  >
+                  <SelectTrigger aria-labelledby={`${id}-decision`} className="w-full">
                     <SelectValue placeholder={t("applicationOutcomeDialog_chooseOne")}>
-                      {APPLICATION_DECISIONS.find(
-                        (entry) => entry.id === answers.decision,
-                      )?.label ?? null}
+                      {APPLICATION_DECISIONS.find((entry) => entry.id === answers.decision)
+                        ?.label ?? null}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -145,9 +138,7 @@ export function ApplicationOutcomeDialog({
                   label={t("applicationOutcomeDialog_wasTheWorkflowForThisApplication")}
                   note={subject.workflow}
                   value={answers.workflowTriggered}
-                  onChange={(workflowTriggered) =>
-                    change({ workflowTriggered })
-                  }
+                  onChange={(workflowTriggered) => change({ workflowTriggered })}
                 />
               ) : null}
             </>
@@ -165,10 +156,7 @@ export function ApplicationOutcomeDialog({
                 <OrderDatePicker
                   id={`${id}-respond-by`}
                   label={
-                    <span
-                      id={`${id}-respond-by-label`}
-                      className="text-body-compact font-medium"
-                    >
+                    <span id={`${id}-respond-by-label`} className="text-body-compact font-medium">
                       {t("applicationOutcomeDialog_respondBy")}
                     </span>
                   }
@@ -181,10 +169,7 @@ export function ApplicationOutcomeDialog({
               <OrderDatePicker
                 id={`${id}-forward`}
                 label={
-                  <span
-                    id={`${id}-forward-label`}
-                    className="text-body-compact font-medium"
-                  >
+                  <span id={`${id}-forward-label`} className="text-body-compact font-medium">
                     {t("applicationOutcomeDialog_bringTheApplicationForwardAgainOn")}
                   </span>
                 }
@@ -249,9 +234,7 @@ function YesNoQuestion({
     <div className="flex min-w-0 flex-col gap-2">
       <span id={id} className="flex flex-col gap-0.5">
         <span className="text-body-compact font-medium">{label}</span>
-        {note ? (
-          <span className="text-caption text-muted-foreground">{note}</span>
-        ) : null}
+        {note ? <span className="text-caption text-muted-foreground">{note}</span> : null}
       </span>
       <SegmentedControl
         type="single"

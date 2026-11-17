@@ -71,7 +71,12 @@ const NUMBER_FIELD: Record<ApprovedRole, string> = {
   advocateClerk: "clerk_registration_number",
 };
 
-const BACKEND_ROLES: readonly BackendRole[] = ["LITIGANT", "POWER_OF_ATTORNEY", "ADVOCATE", "CLERK"];
+const BACKEND_ROLES: readonly BackendRole[] = [
+  "LITIGANT",
+  "POWER_OF_ATTORNEY",
+  "ADVOCATE",
+  "CLERK",
+];
 const APPROVAL_STATUSES: readonly ApprovalStatus[] = ["PENDING", "ACCEPTED", "REJECTED"];
 
 type AccountStateBody = {
@@ -120,10 +125,7 @@ function toAccountState(body: AccountStateBody, name: string | null = null): Acc
  * 401 is a wrong code on one endpoint and wrong credentials on another. Anything not
  * listed, and every network failure or timeout, is `unavailable`.
  */
-function translate(
-  error: unknown,
-  byStatus: Partial<Record<number, AuthErrorCode>>,
-): AuthError {
+function translate(error: unknown, byStatus: Partial<Record<number, AuthErrorCode>>): AuthError {
   if (error instanceof AuthError) return error;
   if (!isApiError(error) || error.kind !== "http") {
     return new AuthError("unavailable", { cause: error });
@@ -201,7 +203,11 @@ export class HttpAuthService implements AuthService {
       });
       return toAccountState(body);
     } catch (error) {
-      throw translate(error, { 400: "invalid-code", 401: "invalid-code", 409: "already-registered" });
+      throw translate(error, {
+        400: "invalid-code",
+        401: "invalid-code",
+        409: "already-registered",
+      });
     }
   }
 
@@ -308,7 +314,11 @@ export class HttpAuthService implements AuthService {
     try {
       body = await this.client.get<RejectedRegistrationBody>("registrations/current");
     } catch (error) {
-      throw translate(error, { 401: "session-expired", 403: "session-expired", 409: "nothing-to-resubmit" });
+      throw translate(error, {
+        401: "session-expired",
+        403: "session-expired",
+        409: "nothing-to-resubmit",
+      });
     }
 
     const role: ApprovedRole | null =
@@ -337,7 +347,10 @@ export class HttpAuthService implements AuthService {
     const email = details.email?.trim() || undefined;
     const registrationNumber = details.registrationNumber.trim();
     // Multipart: a fresh bar ID document is required with every resubmission.
-    const body = formBody({ name, email, registration_number: registrationNumber }, details.document);
+    const body = formBody(
+      { name, email, registration_number: registrationNumber },
+      details.document,
+    );
 
     try {
       const response = await this.client.post<{ application_number?: unknown }>(

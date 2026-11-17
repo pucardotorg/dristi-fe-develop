@@ -3,11 +3,7 @@
 import * as React from "react";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 
-import {
-  blankAddressBlock,
-  blankContact,
-  blankRepresentative,
-} from "@/lib/filing/blank";
+import { blankAddressBlock, blankContact, blankRepresentative } from "@/lib/filing/blank";
 import { useCourt } from "@/components/court/court-provider";
 import { policeStationsFor } from "@/lib/filing/options";
 import type { AddressBlock, Contact, Representative } from "@/lib/filing/types";
@@ -83,7 +79,11 @@ export function ContactList({
               onChange={(v) => setAt(i, { mobile: v })}
               placeholder={mobilePlaceholder}
             />
-            <FormField label={translateText(t, emailLabel)} name={`contacts.${i}.email`} optional={optional}>
+            <FormField
+              label={translateText(t, emailLabel)}
+              name={`contacts.${i}.email`}
+              optional={optional}
+            >
               <TextField
                 type="email"
                 value={c.email}
@@ -144,10 +144,7 @@ export function AddressBlockList({
   return (
     <div className="flex flex-col gap-4">
       {blocks.map((b, i) => (
-        <div
-          key={i}
-          className="flex flex-col gap-4 rounded-lg bg-surface-sunken p-4"
-        >
+        <div key={i} className="flex flex-col gap-4 rounded-lg bg-surface-sunken p-4">
           <div className="flex items-center justify-between gap-3">
             <FormSubhead>{t("repeatLists_addressValue", { value: String(i + 1) })}</FormSubhead>
             {blocks.length > 1 || optional ? (
@@ -269,7 +266,11 @@ export function RepresentativeList({
             </FormField>
           </FormRow>
           <FormSubhead>{t("repeatLists_addressForService")}</FormSubhead>
-          <AddressFields value={r.addr} onChange={(addr) => setAt(i, { addr })} name={`reps.${i}.addr`} />
+          <AddressFields
+            value={r.addr}
+            onChange={(addr) => setAt(i, { addr })}
+            name={`reps.${i}.addr`}
+          />
           <HalfWidth>
             {/* The summons is served at this address, so it is saved with its station like
                 the entity's own addresses are. */}

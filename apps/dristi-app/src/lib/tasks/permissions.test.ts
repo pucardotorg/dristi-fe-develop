@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { at, junior, kase, makeTask, otherCase, outsider, PEOPLE, senior, senior2 } from "./fixtures";
+import {
+  at,
+  junior,
+  kase,
+  makeTask,
+  otherCase,
+  outsider,
+  PEOPLE,
+  senior,
+  senior2,
+} from "./fixtures";
 import { dueCueOf, outcomeOf, secondLineOf, viewOnlyLineOf, waitingOnOf } from "./format";
 import {
   advocatesOf,
@@ -35,8 +45,14 @@ describe("whoCanActOn — what the Who can act column shows", () => {
   });
 
   it("nobody, once it is closed or with the court", () => {
-    assert.deepEqual(names(makeTask({ kind: "pay", status: "done", completion: { at: at(-1), how: "event" } })), []);
-    assert.deepEqual(names(makeTask({ kind: "file", status: "awaiting-court", dueAt: at(-1) })), []);
+    assert.deepEqual(
+      names(makeTask({ kind: "pay", status: "done", completion: { at: at(-1), how: "event" } })),
+      [],
+    );
+    assert.deepEqual(
+      names(makeTask({ kind: "file", status: "awaiting-court", dueAt: at(-1) })),
+      [],
+    );
   });
 });
 
@@ -71,21 +87,29 @@ describe("canView / canComplete", () => {
     assert.equal(canViewTask(junior, makeTask({ kind: "sign" }), kase), true);
     assert.equal(canViewTask(junior, makeTask({ kind: "sign", visibility: "case" }), kase), true);
     // Kinds everyone acts on stay visible to everyone on the case.
-    assert.equal(canViewTask(junior, makeTask({ kind: "hearing", visibility: "actors" }), kase), true);
+    assert.equal(
+      canViewTask(junior, makeTask({ kind: "hearing", visibility: "actors" }), kase),
+      true,
+    );
     assert.equal(
       canViewTask(
         junior,
-        makeTask({ kind: "file", status: "draft", visibility: "actors", draft: { by: junior.id, savedAt: at(-1) } }),
-        kase
+        makeTask({
+          kind: "file",
+          status: "draft",
+          visibility: "actors",
+          draft: { by: junior.id, savedAt: at(-1) },
+        }),
+        kase,
       ),
-      true
+      true,
     );
   });
 
   it("advocatesOf lists the main advocate first, then the rest", () => {
     assert.deepEqual(
       advocatesOf(kase, PEOPLE).map((p) => p.id),
-      [senior.id, senior2.id, junior.id]
+      [senior.id, senior2.id, junior.id],
     );
   });
 });
@@ -132,7 +156,11 @@ describe("viewOf — viewer-dependent tabs", () => {
   });
 
   it("drafts and hearing tasks: Needs action for anyone on the case", () => {
-    const draft = makeTask({ kind: "file", status: "draft", draft: { by: junior.id, savedAt: at(-1) } });
+    const draft = makeTask({
+      kind: "file",
+      status: "draft",
+      draft: { by: junior.id, savedAt: at(-1) },
+    });
     assert.equal(viewOf(draft, junior, kase), "needs-action");
     assert.equal(viewOf(draft, senior, kase), "needs-action");
     const hearing = makeTask({ kind: "hearing" });
@@ -160,12 +188,16 @@ describe("categoryOf", () => {
   });
   it("an archived task counts by its kind, like any other", () => {
     assert.equal(
-      categoryOf(makeTask({ kind: "file", status: "archived", archived: { at: at(0), from: "draft" } })),
-      "file"
+      categoryOf(
+        makeTask({ kind: "file", status: "archived", archived: { at: at(0), from: "draft" } }),
+      ),
+      "file",
     );
     assert.equal(
-      categoryOf(makeTask({ kind: "sign", status: "archived", archived: { at: at(0), from: "open" } })),
-      "sign"
+      categoryOf(
+        makeTask({ kind: "sign", status: "archived", archived: { at: at(0), from: "open" } }),
+      ),
+      "sign",
     );
   });
   it("kinds fold into the PRD categories", () => {
@@ -217,7 +249,10 @@ describe("canMarkDone / canArchive — outside-the-system completion", () => {
   it("anyone on the case may mark any open-state task done by hand", () => {
     assert.equal(canMarkDone(junior, makeTask({ kind: "pay" }), kase), true);
     assert.equal(canMarkDone(junior, makeTask({ kind: "sign", status: "ready" }), kase), true);
-    assert.equal(canMarkDone(senior, makeTask({ kind: "hearing", systemObservable: true }), kase), true);
+    assert.equal(
+      canMarkDone(senior, makeTask({ kind: "hearing", systemObservable: true }), kase),
+      true,
+    );
     assert.equal(canMarkDone(outsider, makeTask({ kind: "pay" }), kase), false);
     assert.equal(canMarkDone(senior, makeTask({ status: "awaiting-court" }), kase), false);
     assert.equal(canMarkDone(senior, makeTask({ status: "done" }), kase), false);
@@ -228,8 +263,12 @@ describe("canMarkDone / canArchive — outside-the-system completion", () => {
     assert.equal(canArchive(junior, makeTask({ status: "awaiting-court" }), kase), true);
     assert.equal(canArchive(senior, makeTask({ status: "done" }), kase), false);
     assert.equal(
-      canArchive(senior, makeTask({ status: "archived", archived: { at: at(0), from: "open" } }), kase),
-      false
+      canArchive(
+        senior,
+        makeTask({ status: "archived", archived: { at: at(0), from: "open" } }),
+        kase,
+      ),
+      false,
     );
     assert.equal(canArchive(outsider, makeTask({ kind: "pay" }), kase), false);
   });
@@ -259,7 +298,10 @@ describe("format — fixed vocabulary", () => {
       date: "20 Aug",
       overdue: false,
     });
-    assert.deepEqual(dueCueOf(makeTask({ dueKind: "none" }), NOW), { primary: "No date", overdue: false });
+    assert.deepEqual(dueCueOf(makeTask({ dueKind: "none" }), NOW), {
+      primary: "No date",
+      overdue: false,
+    });
   });
 
   it("settled tasks recall the absolute date, never ink", () => {
@@ -269,52 +311,78 @@ describe("format — fixed vocabulary", () => {
     assert.equal(waiting.date, undefined);
     const archived = dueCueOf(
       makeTask({ dueAt: at(-3), status: "archived", archived: { at: at(0), from: "open" } }),
-      NOW
+      NOW,
     );
     assert.equal(archived.overdue, false);
   });
 
   it("waiting-on: one phrase naming the wait", () => {
-    assert.equal(waitingOnOf(makeTask({ status: "awaiting-court" }), kase, PEOPLE), "The court — scrutiny");
-    assert.equal(waitingOnOf(makeTask({ status: "payment-confirming" }), kase, PEOPLE), "Payment confirming");
+    assert.equal(
+      waitingOnOf(makeTask({ status: "awaiting-court" }), kase, PEOPLE),
+      "The court — scrutiny",
+    );
+    assert.equal(
+      waitingOnOf(makeTask({ status: "payment-confirming" }), kase, PEOPLE),
+      "Payment confirming",
+    );
     assert.equal(waitingOnOf(makeTask({ kind: "sign" }), kase, PEOPLE), "Anjali Nair — signature");
-    assert.equal(waitingOnOf(makeTask({ kind: "pay", status: "ready" }), kase, PEOPLE), "Anjali Nair — payment");
+    assert.equal(
+      waitingOnOf(makeTask({ kind: "pay", status: "ready" }), kase, PEOPLE),
+      "Anjali Nair — payment",
+    );
   });
 
   it("outcomes on Completed and Archived rows", () => {
-    assert.match(outcomeOf(makeTask({ status: "done", completion: { at: at(-2), how: "event" } })), /^Done \d+ \w+$/);
+    assert.match(
+      outcomeOf(makeTask({ status: "done", completion: { at: at(-2), how: "event" } })),
+      /^Done \d+ \w+$/,
+    );
     assert.equal(
       outcomeOf(makeTask({ status: "expired", statusNote: "cure window lapsed" })),
-      "Expired — cure window lapsed"
+      "Expired — cure window lapsed",
     );
     assert.equal(
       outcomeOf(makeTask({ status: "obsolete", statusNote: "order withdrawn" })),
-      "No longer needed — order withdrawn"
+      "No longer needed — order withdrawn",
     );
     assert.match(
       outcomeOf(makeTask({ status: "archived", archived: { at: at(-1), from: "open" } })),
-      /^Archived \d+ \w+$/
+      /^Archived \d+ \w+$/,
     );
   });
 
   it("second lines: the status note, or who holds the draft", () => {
     assert.equal(
-      secondLineOf(makeTask({ status: "draft", draft: { by: junior.id, savedAt: at(0) } }), senior, PEOPLE),
-      "Draft · S. Prakash"
+      secondLineOf(
+        makeTask({ status: "draft", draft: { by: junior.id, savedAt: at(0) } }),
+        senior,
+        PEOPLE,
+      ),
+      "Draft · S. Prakash",
     );
     assert.equal(
-      secondLineOf(makeTask({ status: "draft", draft: { by: junior.id, savedAt: at(0) } }), junior, PEOPLE),
-      "Draft · you"
+      secondLineOf(
+        makeTask({ status: "draft", draft: { by: junior.id, savedAt: at(0) } }),
+        junior,
+        PEOPLE,
+      ),
+      "Draft · you",
     );
     assert.equal(
       secondLineOf(makeTask({ statusNote: "Payment failed — try again" }), senior, PEOPLE),
-      "Payment failed — try again"
+      "Payment failed — try again",
     );
     assert.equal(secondLineOf(makeTask({}), senior, PEOPLE), undefined);
   });
 
   it("the view-only line names every vakalatnama holder", () => {
-    assert.equal(viewOnlyLineOf(kase, PEOPLE), "You can view this task. Anjali Nair and R. Manoj hold the vakalatnama.");
-    assert.equal(viewOnlyLineOf(otherCase, PEOPLE), "You can view this task. Deepa Varghese holds the vakalatnama.");
+    assert.equal(
+      viewOnlyLineOf(kase, PEOPLE),
+      "You can view this task. Anjali Nair and R. Manoj hold the vakalatnama.",
+    );
+    assert.equal(
+      viewOnlyLineOf(otherCase, PEOPLE),
+      "You can view this task. Deepa Varghese holds the vakalatnama.",
+    );
   });
 });

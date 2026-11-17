@@ -1,15 +1,7 @@
 import type { Copy } from "@/lib/onboarding/content";
 import { CASES } from "@/lib/cases/fixtures";
-import {
-  ACTIVE_STAGES,
-  partiesLabel,
-  type ActiveStage,
-  type CounselSide,
-} from "@/lib/cases/types";
-import {
-  viewerAccess as recordViewerAccess,
-  viewerRepresentation,
-} from "@/lib/cases/viewer";
+import { ACTIVE_STAGES, partiesLabel, type ActiveStage, type CounselSide } from "@/lib/cases/types";
+import { viewerAccess as recordViewerAccess, viewerRepresentation } from "@/lib/cases/viewer";
 
 export { fill as fillCopy } from "@/lib/join/content";
 
@@ -367,16 +359,42 @@ export const ACCESS_PEOPLE: AccessPerson[] = [
     grants: [
       ...joinedGrants(
         [
-          "c-847", "c-612", "c-410", "c-721", "c-698", "c-655", "c-590", "c-564",
-          "c-501", "c-478", "c-452", "c-399", "c-376", "c-341", "c-318",
+          "c-847",
+          "c-612",
+          "c-410",
+          "c-721",
+          "c-698",
+          "c-655",
+          "c-590",
+          "c-564",
+          "c-501",
+          "c-478",
+          "c-452",
+          "c-399",
+          "c-376",
+          "c-341",
+          "c-318",
         ],
         "vakalat",
         "3 Jul 2026",
       ),
       ...joinedGrants(
         [
-          "c-533", "c-289", "c-266", "c-241", "c-218", "c-194", "c-173", "c-151",
-          "c-129", "c-108", "c-087", "c-066", "c-045", "c-024", "c-011",
+          "c-533",
+          "c-289",
+          "c-266",
+          "c-241",
+          "c-218",
+          "c-194",
+          "c-173",
+          "c-151",
+          "c-129",
+          "c-108",
+          "c-087",
+          "c-066",
+          "c-045",
+          "c-024",
+          "c-011",
         ],
         "junior",
         "6 Aug 2026",
@@ -401,9 +419,26 @@ export const ACCESS_PEOPLE: AccessPerson[] = [
     allCases: true,
     grants: joinedGrants(
       [
-        "c-847", "c-612", "c-533", "c-410", "c-289", "c-721", "c-698", "c-655",
-        "c-590", "c-564", "c-501", "c-478", "c-452", "c-399", "c-376", "c-341",
-        "c-318", "c-266", "c-241", "c-218",
+        "c-847",
+        "c-612",
+        "c-533",
+        "c-410",
+        "c-289",
+        "c-721",
+        "c-698",
+        "c-655",
+        "c-590",
+        "c-564",
+        "c-501",
+        "c-478",
+        "c-452",
+        "c-399",
+        "c-376",
+        "c-341",
+        "c-318",
+        "c-266",
+        "c-241",
+        "c-218",
       ],
       "clerk",
       "4 Jul 2026",
@@ -455,9 +490,24 @@ export const ACCESS_PEOPLE: AccessPerson[] = [
     addedBy: null,
     grants: joinedGrants(
       [
-        "c-847", "c-612", "c-533", "c-410", "c-721", "c-698", "c-655", "c-590",
-        "c-564", "c-501", "c-478", "c-452", "c-399", "c-376", "c-341", "c-318",
-        "c-266", "c-241",
+        "c-847",
+        "c-612",
+        "c-533",
+        "c-410",
+        "c-721",
+        "c-698",
+        "c-655",
+        "c-590",
+        "c-564",
+        "c-501",
+        "c-478",
+        "c-452",
+        "c-399",
+        "c-376",
+        "c-341",
+        "c-318",
+        "c-266",
+        "c-241",
       ],
       "vakalat",
       "9 May 2026",
@@ -470,8 +520,20 @@ export const ACCESS_PEOPLE: AccessPerson[] = [
     addedBy: "self",
     grants: joinedGrants(
       [
-        "c-847", "c-612", "c-533", "c-410", "c-289", "c-721", "c-698", "c-655",
-        "c-590", "c-564", "c-501", "c-478", "c-452", "c-399",
+        "c-847",
+        "c-612",
+        "c-533",
+        "c-410",
+        "c-289",
+        "c-721",
+        "c-698",
+        "c-655",
+        "c-590",
+        "c-564",
+        "c-501",
+        "c-478",
+        "c-452",
+        "c-399",
       ],
       "clerk",
       "15 Jul 2026",
@@ -486,12 +548,12 @@ export const ACCESS_PEOPLE: AccessPerson[] = [
     addedBy: "self",
     grants: [
       ...joinedGrants(["c-847", "c-533", "c-721", "c-590", "c-501"], "vakalat", "7 Jun 2026"),
-      ...joinedGrants(
-        ["c-612", "c-410", "c-289", "c-698", "c-655"],
-        "junior",
-        "19 Jul 2026",
-        ["self", "Adv. Thomas K. George", "Adv. Priya Nair", "Adv. Meera Pillai"],
-      ),
+      ...joinedGrants(["c-612", "c-410", "c-289", "c-698", "c-655"], "junior", "19 Jul 2026", [
+        "self",
+        "Adv. Thomas K. George",
+        "Adv. Priya Nair",
+        "Adv. Meera Pillai",
+      ]),
     ],
   },
   {
@@ -512,12 +574,11 @@ export const ACCESS_PEOPLE: AccessPerson[] = [
     phone: "94951 66778",
     barId: "K/3105/2022",
     addedBy: "self",
-    grants: joinedGrants(
-      ["c-847", "c-612", "c-533", "c-410", "c-289"],
-      "junior",
-      "28 Jul 2026",
-      ["self", "Adv. Thomas K. George", "Adv. Meera Pillai"],
-    ),
+    grants: joinedGrants(["c-847", "c-612", "c-533", "c-410", "c-289"], "junior", "28 Jul 2026", [
+      "self",
+      "Adv. Thomas K. George",
+      "Adv. Meera Pillai",
+    ]),
   },
   {
     id: "p-sreeja",
@@ -602,28 +663,19 @@ export const inviteFieldCopy = {
   suggested: t("access_yourOffice", "നിങ്ങളുടെ ഓഫീസ്"),
   inOffice: t("access_inYourOffice", "നിങ്ങളുടെ ഓഫീസിൽ"),
   alreadyInOffice: t("access_alreadyInYourOffice", "ഇതിനകം നിങ്ങളുടെ ഓഫീസിൽ"),
-  newNumber: t(
-    "access_theyllGetAnAccessLinkBy",
-    "അവർക്ക് SMS വഴിയും DRISTI-യിലും ആക്‌സസ് ലിങ്ക് ലഭിക്കും.",
-  ),
+  newNumber: t("access_theyllGetAnAccessLinkBy", "അവർക്ക് SMS വഴിയും DRISTI-യിലും ആക്‌സസ് ലിങ്ക് ലഭിക്കും."),
   keepTyping: t(
     "access_noRegisteredAdvocateOrClerkMatches",
     "രജിസ്റ്റർ ചെയ്ത അഭിഭാഷകരോ ക്ലർക്കുമാരോ പൊരുത്തപ്പെടുന്നില്ല. DRISTI-യിൽ രജിസ്റ്റർ ചെയ്തവരെ മാത്രമേ ചേർക്കാനാകൂ.",
   ),
-  fullNumber: t(
-    "access_typeTheFull10DigitMobile",
-    "മുഴുവൻ 10 അക്ക മൊബൈൽ നമ്പർ ടൈപ്പ് ചെയ്യുക.",
-  ),
+  fullNumber: t("access_typeTheFull10DigitMobile", "മുഴുവൻ 10 അക്ക മൊബൈൽ നമ്പർ ടൈപ്പ് ചെയ്യുക."),
   typeAdvocate: t("access_advocate", "അഭിഭാഷകൻ"),
   typeClerk: t("access_clerk", "ക്ലർക്ക്"),
 };
 
 /* The end-of-join office step (OFC-40 to OFC-43). Malayalam drafted — needs review. */
 export const joinOfficeCopy = {
-  alreadyAdded: t(
-    "access_alreadyHaveAccessAsTheyAre",
-    "'എല്ലാ കേസുകളും' ആയതിനാൽ ഇതിനകം ആക്‌സസ് ഉണ്ട്:",
-  ),
+  alreadyAdded: t("access_alreadyHaveAccessAsTheyAre", "'എല്ലാ കേസുകളും' ആയതിനാൽ ഇതിനകം ആക്‌സസ് ഉണ്ട്:"),
 };
 
 export const accessShell = {
@@ -723,10 +775,7 @@ export const peopleCopy = {
   /* "Office access", never "administrative access" (user, Sept 2): admin
      reads as all-access elsewhere, which is the opposite of what this is. */
   staffCasesHeading: t("access_officeAccess", "ഓഫീസ് ആക്‌സസ്"),
-  staffTooltipLabel: t(
-    "access_whatOfficeAccessMeans",
-    "ഓഫീസ് ആക്‌സസ് എന്നതിന്റെ അർത്ഥം",
-  ),
+  staffTooltipLabel: t("access_whatOfficeAccessMeans", "ഓഫീസ് ആക്‌സസ് എന്നതിന്റെ അർത്ഥം"),
   staffTooltip: t(
     "access_peopleWhoAreNotOnThe",
     "വക്കാലത്ത്നാമയിൽ ഇല്ലെങ്കിലും കേസിൽ പ്രവർത്തിക്കാൻ ആക്‌സസ് നൽകിയ ക്ലർക്കുമാരും ജൂനിയർ അഭിഭാഷകരും പോലുള്ള ആളുകൾ.",
@@ -759,7 +808,10 @@ export const peopleCopy = {
   removeOneTitle: t("access_removeNameFromCase", "{name}-നെ {case}-ൽ നിന്ന് നീക്കം ചെയ്യണോ?"),
   removeTheseTitle: t("access_removeNameFromTheseCases", "{name}-നെ ഈ കേസുകളിൽ നിന്ന് നീക്കം ചെയ്യണോ?"),
   selectCaseAria: t("access_selectCaseNumber", "{caseNumber} തിരഞ്ഞെടുക്കുക"),
-  removeAllTitle: t("access_removeNameFromYourOffice", "{name}-നെ നിങ്ങളുടെ ഓഫീസിൽ നിന്ന് നീക്കം ചെയ്യണോ?"),
+  removeAllTitle: t(
+    "access_removeNameFromYourOffice",
+    "{name}-നെ നിങ്ങളുടെ ഓഫീസിൽ നിന്ന് നീക്കം ചെയ്യണോ?",
+  ),
   removeAllBody: t(
     "access_theyWillLoseAccessToCount",
     "അവർക്ക് {count} കേസുകളിലെ ആക്‌സസ് ഉടൻ നഷ്ടപ്പെടും, അവർ നിങ്ങളുടെ ഓഫീസിൽ നിന്ന് പുറത്താകും. എപ്പോൾ വേണമെങ്കിലും വീണ്ടും ചേർക്കാം.",
@@ -840,10 +892,7 @@ export const personAccessCopy = {
   addConfirmTitle: t("access_addCountPeopleToYourOffice", "{count} പേരെ നിങ്ങളുടെ ഓഫീസിൽ ചേർക്കണോ?"),
   addedToastOne: t("access_1PersonAddedToYourOffice", "1 ആളെ നിങ്ങളുടെ ഓഫീസിൽ ചേർത്തു."),
   addedToast: t("access_countPeopleAddedToYourOffice", "{count} പേരെ നിങ്ങളുടെ ഓഫീസിൽ ചേർത്തു."),
-  leaveBodyAdd: t(
-    "access_thePeopleYouPickedHaveNot",
-    "നിങ്ങൾ തിരഞ്ഞെടുത്തവരെ ഇതുവരെ ചേർത്തിട്ടില്ല.",
-  ),
+  leaveBodyAdd: t("access_thePeopleYouPickedHaveNot", "നിങ്ങൾ തിരഞ്ഞെടുത്തവരെ ഇതുവരെ ചേർത്തിട്ടില്ല."),
   moreActions: t("access_moreActions", "കൂടുതൽ പ്രവർത്തനങ്ങൾ"),
   groupHeld: t("access_hasAccess", "ആക്‌സസ് ഉണ്ട്"),
   groupOther: t("access_noAccessYet", "ഇതുവരെ ആക്‌സസ് ഇല്ല"),
@@ -893,10 +942,7 @@ export const personAccessCopy = {
   save: t("access_saveChanges", "മാറ്റങ്ങൾ സേവ് ചെയ്യുക"),
   confirmTitle: t("access_saveChangesToNameSAccess", "{name}-ന്റെ ആക്‌സസിലെ മാറ്റങ്ങൾ സേവ് ചെയ്യണോ?"),
   pointAddAll: t("access_getsAccessToAllCasesCount", "എല്ലാ കേസുകളിലേക്കും ആക്‌സസ് ലഭിക്കും ({count})"),
-  confirmFutureOn: t(
-    "access_newCasesAreSharedAutomatically",
-    "പുതിയ കേസുകൾ സ്വയമേവ പങ്കിടും",
-  ),
+  confirmFutureOn: t("access_newCasesAreSharedAutomatically", "പുതിയ കേസുകൾ സ്വയമേവ പങ്കിടും"),
   confirmOutsideFilter: t(
     "access_someFiltersWereOnSoNot",
     "ചില ഫിൽട്ടറുകൾ ഓണായിരുന്നു, തിരഞ്ഞെടുക്കുമ്പോൾ എല്ലാ കേസുകളും കാണിച്ചിരുന്നില്ല. സ്ഥിരീകരിക്കുന്നതിന് മുമ്പ് ശ്രദ്ധയോടെ പരിശോധിക്കുക.",
@@ -926,32 +972,17 @@ export const personAccessCopy = {
   casesTabs: t("access_casesByAccess", "ആക്‌സസ് അനുസരിച്ച് കേസുകൾ"),
   /* "Yet" softens it: access can still be given (owner, Oct 26). */
   tabOther: t("access_noAccessYet", "ഇതുവരെ ആക്‌സസ് ഇല്ല"),
-  selectHintHeld: t(
-    "access_selectCasesToRemoveAccess",
-    "ആക്‌സസ് നീക്കാൻ കേസുകൾ തിരഞ്ഞെടുക്കുക.",
-  ),
-  selectHintOther: t(
-    "access_selectCasesToGiveAccess",
-    "ആക്‌സസ് നൽകാൻ കേസുകൾ തിരഞ്ഞെടുക്കുക.",
-  ),
+  selectHintHeld: t("access_selectCasesToRemoveAccess", "ആക്‌സസ് നീക്കാൻ കേസുകൾ തിരഞ്ഞെടുക്കുക."),
+  selectHintOther: t("access_selectCasesToGiveAccess", "ആക്‌സസ് നൽകാൻ കേസുകൾ തിരഞ്ഞെടുക്കുക."),
   selectedOne: t("access_1Selected", "1 തിരഞ്ഞെടുത്തു"),
   selectedMany: t("access_countSelected", "{count} തിരഞ്ഞെടുത്തു"),
   clearSelection: t("access_clear", "മായ്ക്കുക"),
-  selectAllShown: t(
-    "access_selectAllCount",
-    "എല്ലാ {count} എണ്ണവും തിരഞ്ഞെടുക്കുക",
-  ),
+  selectAllShown: t("access_selectAllCount", "എല്ലാ {count} എണ്ണവും തിരഞ്ഞെടുക്കുക"),
   selectRow: t("access_selectCase", "{case} തിരഞ്ഞെടുക്കുക"),
   removeAccess: t("access_removeAccess", "ആക്‌സസ് നീക്കുക"),
   giveAccess: t("access_giveAccess", "ആക്‌സസ് നൽകുക"),
-  allAction: t(
-    "access_giveAccessToAllCases",
-    "എല്ലാ കേസുകളിലേക്കും ആക്‌സസ് നൽകുക",
-  ),
-  emptyOtherTitle: t(
-    "access_nameHasEveryCaseYouHave",
-    "നിങ്ങളുടെ എല്ലാ കേസുകളും {name}-ന് ഉണ്ട്",
-  ),
+  allAction: t("access_giveAccessToAllCases", "എല്ലാ കേസുകളിലേക്കും ആക്‌സസ് നൽകുക"),
+  emptyOtherTitle: t("access_nameHasEveryCaseYouHave", "നിങ്ങളുടെ എല്ലാ കേസുകളും {name}-ന് ഉണ്ട്"),
   emptyOtherBody: t(
     "access_newCasesAreNotSharedWith",
     "പുതിയ കേസുകൾ അവരുമായി പങ്കിടില്ല. അവയും പങ്കിടാൻ, എല്ലാ കേസുകളും തിരഞ്ഞെടുക്കുക.",
@@ -964,18 +995,12 @@ export const personAccessCopy = {
   clearFilters: t("access_clearFilters", "ഫിൽട്ടറുകൾ മായ്ക്കുക"),
   removeTitle: t("access_removeNameSAccess", "{name}-ന്റെ ആക്‌സസ് നീക്കണോ?"),
   giveTitle: t("access_giveNameAccess", "{name}-ന് ആക്‌സസ് നൽകണോ?"),
-  allTitle: t(
-    "access_giveNameAccessToAllCases",
-    "{name}-ന് എല്ലാ കേസുകളിലേക്കും ആക്‌സസ് നൽകണോ?",
-  ),
+  allTitle: t("access_giveNameAccessToAllCases", "{name}-ന് എല്ലാ കേസുകളിലേക്കും ആക്‌സസ് നൽകണോ?"),
   specificTitle: t(
     "access_changeNameSAccessToSpecific",
     "{name}-ന്റെ ആക്‌സസ് തിരഞ്ഞെടുത്ത കേസുകളിലേക്ക് മാറ്റണോ?",
   ),
-  pointKeep: t(
-    "access_keepsAccessToTheCountCases",
-    "ഇപ്പോഴുള്ള {count} കേസുകളിലെ ആക്‌സസ് തുടരും",
-  ),
+  pointKeep: t("access_keepsAccessToTheCountCases", "ഇപ്പോഴുള്ള {count} കേസുകളിലെ ആക്‌സസ് തുടരും"),
   specificAction: t("access_changeToSpecificCases", "തിരഞ്ഞെടുത്ത കേസുകളിലേക്ക് മാറ്റുക"),
   leaveTitle: t("access_discardYourChanges", "നിങ്ങളുടെ മാറ്റങ്ങൾ ഉപേക്ഷിക്കണോ?"),
   leaveBody: t(
@@ -990,14 +1015,8 @@ export const personAccessCopy = {
    In-app only in the prototype; the SMS is not shown. */
 export const officeNoticeCopy = {
   addedTitle: t("access_advocateAddedYouToTheirOffice", "{advocate} നിങ്ങളെ അവരുടെ ഓഫീസിൽ ചേർത്തു"),
-  addedSpecificOne: t(
-    "access_youCanNowWorkOn1",
-    "അവരുടെ 1 കേസിൽ ഇനി നിങ്ങൾക്ക് പ്രവർത്തിക്കാം.",
-  ),
-  addedSpecific: t(
-    "access_youCanNowWorkOnCount",
-    "അവരുടെ {count} കേസുകളിൽ ഇനി നിങ്ങൾക്ക് പ്രവർത്തിക്കാം.",
-  ),
+  addedSpecificOne: t("access_youCanNowWorkOn1", "അവരുടെ 1 കേസിൽ ഇനി നിങ്ങൾക്ക് പ്രവർത്തിക്കാം."),
+  addedSpecific: t("access_youCanNowWorkOnCount", "അവരുടെ {count} കേസുകളിൽ ഇനി നിങ്ങൾക്ക് പ്രവർത്തിക്കാം."),
   addedAll: t(
     "access_youCanNowWorkOnAll",
     "അവരുടെ എല്ലാ കേസുകളിലും, ഇപ്പോഴും ഭാവിയിലും, നിങ്ങൾക്ക് പ്രവർത്തിക്കാം.",

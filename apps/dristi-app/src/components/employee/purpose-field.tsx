@@ -8,10 +8,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
-import {
-  COURT_HEARING_PURPOSES,
-  type CourtHearingPurposeId,
-} from "@/lib/employee/hearings";
+import { COURT_HEARING_PURPOSES, type CourtHearingPurposeId } from "@/lib/employee/hearings";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
 

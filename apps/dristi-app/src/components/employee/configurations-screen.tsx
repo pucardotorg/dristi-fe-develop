@@ -107,8 +107,7 @@ function InsertVariableMenu({
             >
               <span
                 className={cn("size-2 shrink-0 rounded-full", {
-                  "bg-success-muted-foreground":
-                    gv.resolution === "auto-fill",
+                  "bg-success-muted-foreground": gv.resolution === "auto-fill",
                   "bg-info-muted-foreground": gv.resolution === "select",
                   "bg-warning-muted-foreground": gv.resolution === "input",
                 })}
@@ -141,12 +140,9 @@ function InsertVariableMenu({
                 >
                   <span
                     className={cn("size-2 shrink-0 rounded-full", {
-                      "bg-success-muted-foreground":
-                        lv.resolution === "auto-fill",
-                      "bg-info-muted-foreground":
-                        lv.resolution === "select",
-                      "bg-warning-muted-foreground":
-                        lv.resolution === "input",
+                      "bg-success-muted-foreground": lv.resolution === "auto-fill",
+                      "bg-info-muted-foreground": lv.resolution === "select",
+                      "bg-warning-muted-foreground": lv.resolution === "input",
                     })}
                   />
                   <span className="min-w-0 flex-1">{lv.name}</span>
@@ -179,10 +175,8 @@ function InsertVariableMenu({
                 >
                   <span
                     className={cn("size-2 shrink-0 rounded-full", {
-                      "bg-info-muted-foreground":
-                        ov.resolution === "select",
-                      "bg-warning-muted-foreground":
-                        ov.resolution === "input",
+                      "bg-info-muted-foreground": ov.resolution === "select",
+                      "bg-warning-muted-foreground": ov.resolution === "input",
                     })}
                   />
                   <span className="min-w-0 flex-1">{ov.name}</span>
@@ -207,9 +201,7 @@ function VariableList({ template }: { template: OrderTemplate }) {
   const tr = useTranslations();
   const detected = allDetectedVariables(template);
   // Locked vars not in the text are still shown — they're required by the workflow
-  const lockedNotInText = template.lockedVars.filter(
-    (lv) => !detected.includes(lv.name),
-  );
+  const lockedNotInText = template.lockedVars.filter((lv) => !detected.includes(lv.name));
   const total = detected.length + lockedNotInText.length;
 
   if (total === 0 && !template.freeText) {
@@ -231,19 +223,15 @@ function VariableList({ template }: { template: OrderTemplate }) {
           >
             <span
               className={cn("size-2 shrink-0 rounded-full", {
-                "bg-success-muted-foreground":
-                  info.resolution === "auto-fill",
-                "bg-info-muted-foreground":
-                  info.resolution === "select",
+                "bg-success-muted-foreground": info.resolution === "auto-fill",
+                "bg-info-muted-foreground": info.resolution === "select",
                 "bg-warning-muted-foreground":
                   info.resolution === "input" && info.scope !== "unknown",
                 "bg-muted-foreground": info.scope === "unknown",
               })}
             />
             <span className="font-mono text-caption font-medium">{name}</span>
-            <span className="text-caption text-muted-foreground">
-              {resolutionLabel(info)}
-            </span>
+            <span className="text-caption text-muted-foreground">{resolutionLabel(info)}</span>
             <span className="flex-1" />
             {info.scope === "general" && (
               <Badge variant="success" className="h-5 px-1.5 text-caption">
@@ -261,10 +249,7 @@ function VariableList({ template }: { template: OrderTemplate }) {
               </Badge>
             )}
             {info.scope === "unknown" && (
-              <Badge
-                variant="outline"
-                className="h-5 border-dashed px-1.5 text-caption"
-              >
+              <Badge variant="outline" className="h-5 border-dashed px-1.5 text-caption">
                 {tr("configurationsScreen_notRecognised")}
               </Badge>
             )}
@@ -285,9 +270,7 @@ function VariableList({ template }: { template: OrderTemplate }) {
             })}
           />
           <span className="font-mono text-caption font-medium">{lv.name}</span>
-          <span className="text-caption text-muted-foreground">
-            {resolutionLabel(lv)}
-          </span>
+          <span className="text-caption text-muted-foreground">{resolutionLabel(lv)}</span>
           <span className="flex-1" />
           <Badge variant="secondary" className="h-5 px-1.5 text-caption">
             {tr("configurationsScreen_locked")}
@@ -404,32 +387,23 @@ function TemplateEditor({
 }) {
   const tr = useTranslations();
   // Track which textarea is active for variable insertion
-  const [activeField, setActiveField] = React.useState<
-    "botdText" | "orderText"
-  >("orderText");
+  const [activeField, setActiveField] = React.useState<"botdText" | "orderText">("orderText");
   const botdRef = React.useRef<HTMLTextAreaElement>(null);
   const orderRef = React.useRef<HTMLTextAreaElement>(null);
 
   function insertVariable(name: string) {
     const fieldKey = activeField;
-    const ta =
-      fieldKey === "botdText" ? botdRef.current : orderRef.current;
+    const ta = fieldKey === "botdText" ? botdRef.current : orderRef.current;
     const current = template[fieldKey] || "";
     const pos = ta?.selectionStart ?? current.length;
     const before = current.slice(0, pos);
     const after = current.slice(pos);
-    const spacer =
-      before.length &&
-      !before.endsWith(" ") &&
-      !before.endsWith("\n")
-        ? " "
-        : "";
+    const spacer = before.length && !before.endsWith(" ") && !before.endsWith("\n") ? " " : "";
     const insert = spacer + "[" + name + "]";
     onUpdate({ [fieldKey]: before + insert + after });
     // Restore cursor position
     setTimeout(() => {
-      const ref =
-        fieldKey === "botdText" ? botdRef.current : orderRef.current;
+      const ref = fieldKey === "botdText" ? botdRef.current : orderRef.current;
       if (ref) {
         const p = pos + insert.length;
         ref.focus();
@@ -446,9 +420,7 @@ function TemplateEditor({
 
   function toggleHearingPurpose(hpId: number) {
     const current = template.hearingPurposeIds ?? [];
-    const next = current.includes(hpId)
-      ? current.filter((id) => id !== hpId)
-      : [...current, hpId];
+    const next = current.includes(hpId) ? current.filter((id) => id !== hpId) : [...current, hpId];
     onUpdate({ hearingPurposeIds: next });
   }
 
@@ -472,9 +444,7 @@ function TemplateEditor({
             <span
               className={cn(
                 "font-semibold",
-                template.workflow
-                  ? "text-primary"
-                  : "text-muted-foreground italic",
+                template.workflow ? "text-primary" : "text-muted-foreground italic",
               )}
             >
               {template.workflow || tr("configurationsScreen_none")}
@@ -503,9 +473,7 @@ function TemplateEditor({
                 >
                   <LockIcon aria-hidden className="size-2.5" />
                   {lv.name}
-                  <span className="text-caption opacity-70">
-                    {lv.inputType || lv.source || ""}
-                  </span>
+                  <span className="text-caption opacity-70">{lv.inputType || lv.source || ""}</span>
                 </span>
               ))}
             </div>
@@ -562,10 +530,7 @@ function TemplateEditor({
             {tr("configurationsScreen_variables")}
           </Label>
           <VariableList template={template} />
-          <InsertVariableMenu
-            template={template}
-            onInsert={insertVariable}
-          />
+          <InsertVariableMenu template={template} onInsert={insertVariable} />
         </section>
 
         <Separator />
@@ -578,9 +543,7 @@ function TemplateEditor({
             </Label>
             <Select
               value={template.category ?? ""}
-              onValueChange={(v) =>
-                onUpdate({ category: v as OrderCategory })
-              }
+              onValueChange={(v) => onUpdate({ category: v as OrderCategory })}
             >
               <SelectTrigger className="w-full max-w-xs">
                 <SelectValue placeholder={tr("configurationsScreen_noCategory")} />
@@ -676,12 +639,10 @@ function TemplateEditor({
 
 export function ConfigurationsScreen() {
   const tr = useTranslations();
-  const [templates, setTemplates] = React.useState<OrderTemplate[]>(
-    () => initHearingPurposeIds([...INITIAL_TEMPLATES]),
+  const [templates, setTemplates] = React.useState<OrderTemplate[]>(() =>
+    initHearingPurposeIds([...INITIAL_TEMPLATES]),
   );
-  const [selectedId, setSelectedId] = React.useState<string | null>(
-    templates[0]?.id ?? null,
-  );
+  const [selectedId, setSelectedId] = React.useState<string | null>(templates[0]?.id ?? null);
 
   const selected = React.useMemo(
     () => templates.find((t) => t.id === selectedId) ?? null,
@@ -689,9 +650,7 @@ export function ConfigurationsScreen() {
   );
 
   function updateTemplate(patch: Partial<OrderTemplate>) {
-    setTemplates((prev) =>
-      prev.map((t) => (t.id === selectedId ? { ...t, ...patch } : t)),
-    );
+    setTemplates((prev) => prev.map((t) => (t.id === selectedId ? { ...t, ...patch } : t)));
   }
 
   function createNew() {
@@ -739,7 +698,9 @@ export function ConfigurationsScreen() {
           {tr("configurationsScreen_orderTemplateConfiguration")}
         </h1>
         <p className="text-body text-muted-foreground">
-          {tr("configurationsScreen_configureTemplatesVariablesAndWorkflowAssociations", { length: String(templates.length) })}
+          {tr("configurationsScreen_configureTemplatesVariablesAndWorkflowAssociations", {
+            length: String(templates.length),
+          })}
         </p>
       </header>
 

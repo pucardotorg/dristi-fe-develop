@@ -12,7 +12,11 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 const WEEKDAY = new Intl.DateTimeFormat("en-IN", { weekday: "short" });
-const SPOKEN_DAY = new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long" });
+const SPOKEN_DAY = new Intl.DateTimeFormat("en-IN", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
 
 /** The Monday of the week `day` falls in. */
 function mondayOf(day: string): string {
@@ -73,11 +77,12 @@ export function CauseListWeek({
     onSelectDay(next);
   }
 
-
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       <ul
-        aria-label={t("causeListWeek_weekOfFormat", { format: SPOKEN_DAY.format(parseIsoDay(weekStart)) })}
+        aria-label={t("causeListWeek_weekOfFormat", {
+          format: SPOKEN_DAY.format(parseIsoDay(weekStart)),
+        })}
         className="order-first grid basis-full grid-cols-7 gap-1"
       >
         {week.map((cell) => {
@@ -118,7 +123,10 @@ export function CauseListWeek({
                   {sits ? (
                     <>
                       {count}
-                      <span className="hidden sm:inline"> {count === 1 ? t("causeListWeek_case") : t("causeListWeek_cases")}</span>
+                      <span className="hidden sm:inline">
+                        {" "}
+                        {count === 1 ? t("causeListWeek_case") : t("causeListWeek_cases")}
+                      </span>
                     </>
                   ) : (
                     "–"

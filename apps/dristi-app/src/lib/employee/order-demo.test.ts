@@ -25,7 +25,9 @@ describe("initialOrderDraft", () => {
     const draft = initialOrderDraft(hearing, "completed", today);
     assert.deepEqual(
       Object.keys(draft.marks).sort(),
-      appearancesFor(hearing).map((row) => row.id).sort(),
+      appearancesFor(hearing)
+        .map((row) => row.id)
+        .sort(),
     );
   });
 
@@ -37,11 +39,7 @@ describe("initialOrderDraft", () => {
       assert.equal(draft.applications[application.id], "allowed");
     }
     const decided = draft.blocks.slice(0, applications.length);
-    assert.ok(
-      decided.every(
-        (block) => block.kind === "item" && block.applicationId !== undefined,
-      ),
-    );
+    assert.ok(decided.every((block) => block.kind === "item" && block.applicationId !== undefined));
   });
 
   it("gives a cognizance listing the finding and the summons", () => {

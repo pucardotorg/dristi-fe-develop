@@ -62,9 +62,7 @@ export type PartySideId = CounselSide;
  * No `?tab=` any more. An old one is simply an unread query param — nothing
  * parses it, so nothing can fail on it.
  */
-export function parseSelectedId(
-  value: string | string[] | undefined
-): string | undefined {
+export function parseSelectedId(value: string | string[] | undefined): string | undefined {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw && raw.length > 0 ? raw : undefined;
 }
@@ -72,9 +70,7 @@ export function parseSelectedId(
 /** The default selection stays off the URL, so the section link is canonical. */
 export function participantHref(caseId: string, selectedId?: string): string {
   const base = caseSectionHref(caseId, "parties");
-  return selectedId
-    ? `${base}&selected=${encodeURIComponent(selectedId)}`
-    : base;
+  return selectedId ? `${base}&selected=${encodeURIComponent(selectedId)}` : base;
 }
 
 /* ------------------------------------------------------------------ */
@@ -410,9 +406,7 @@ function normalize(name: string): string {
 function registerRow(name: string): { kind: PartyKind; entityType?: string } {
   const row = REGISTER[name];
   if (!row) {
-    throw new Error(
-      `No party register row for "${name}" — add it to parties-dummy.json`
-    );
+    throw new Error(`No party register row for "${name}" — add it to parties-dummy.json`);
   }
   if (row.kind !== "individual" && row.kind !== "entity") {
     throw new Error(`Unknown party kind "${row.kind}" for "${name}"`);
@@ -435,32 +429,26 @@ function assertCauseTitle(record: CaseRecord, parties: CaseParty[]): void {
     /* A cause title may close on "and 1 other": the lead party is the one named. */
     const expected = normalize(record.parties[side]).replace(/ and \d+ others?$/, "");
     const found = parties.some(
-      (party) => party.side === side && normalize(party.name) === expected
+      (party) => party.side === side && normalize(party.name) === expected,
     );
     if (!found) {
       throw new Error(
-        `${record.id}: the parties pack has no ${side} named "${record.parties[side]}"`
+        `${record.id}: the parties pack has no ${side} named "${record.parties[side]}"`,
       );
     }
   }
 }
 
-function assertWitnessNumbering(
-  caseId: string,
-  witness: DummyWitness,
-  side: WitnessSideId
-): void {
+function assertWitnessNumbering(caseId: string, witness: DummyWitness, side: WitnessSideId): void {
   const expected = PREFIX_FOR_SIDE[side];
   if (witness.numberPrefix !== expected) {
     throw new Error(
       `${caseId}: witness ${witness.name} is on the ${side} side but numbered ` +
-        `${witness.numberPrefix} — expected ${expected}`
+        `${witness.numberPrefix} — expected ${expected}`,
     );
   }
   if (!Number.isInteger(witness.numberIndex) || witness.numberIndex < 1) {
-    throw new Error(
-      `${caseId}: witness ${witness.name} has a non-positive number index`
-    );
+    throw new Error(`${caseId}: witness ${witness.name} has a non-positive number index`);
   }
 }
 
@@ -473,7 +461,7 @@ function assertRepresentation(caseId: string, party: CaseParty): void {
   if (party.partyInPerson && party.advocates.length > 0) {
     throw new Error(
       `${caseId}: ${party.name} is marked party-in-person but has ` +
-        `${party.advocates.join(", ")} on record`
+        `${party.advocates.join(", ")} on record`,
     );
   }
 }
@@ -533,14 +521,13 @@ function packParties(record: CaseRecord, entry: DummyCase): CaseParty[] {
       if (!entity) {
         throw new Error(
           `${record.id}: ${authored.name} represents unknown party ` +
-            `"${authored.representsPartyId}"`
+            `"${authored.representsPartyId}"`,
         );
       }
       party.represents = {
         partyId: entity.id,
         name: entity.name,
-        isEntityRepresentative:
-          entity.entityRepresentative?.partyId === party.id,
+        isEntityRepresentative: entity.entityRepresentative?.partyId === party.id,
       };
     }
 
@@ -548,7 +535,7 @@ function packParties(record: CaseRecord, entry: DummyCase): CaseParty[] {
     if (linkedId && !byId.has(linkedId)) {
       throw new Error(
         `${record.id}: ${authored.name} names unknown entity representative ` +
-          `party "${linkedId}"`
+          `party "${linkedId}"`,
       );
     }
   }
@@ -570,7 +557,7 @@ function packParties(record: CaseRecord, entry: DummyCase): CaseParty[] {
 function legalTeams(
   record: CaseRecord,
   parties: CaseParty[],
-  entry: DummyCase | undefined
+  entry: DummyCase | undefined,
 ): LegalTeam[] {
   const byId = new Map(parties.map((party) => [party.id, party]));
   const authored = entry?.legalTeams ?? [];
@@ -586,32 +573,28 @@ function legalTeams(
       if (missing.length > 0) {
         throw new Error(
           `${record.id}: ${side} counsel ${missing.join(", ")} has no legal ` +
-            `team in the parties pack — author every team or none`
+            `team in the parties pack — author every team or none`,
         );
       }
     }
 
     for (const team of sideTeams) {
-      const isOnRecord = onRecord.some(
-        (name) => normalize(name) === normalize(team.advocate)
-      );
+      const isOnRecord = onRecord.some((name) => normalize(name) === normalize(team.advocate));
       if (!isOnRecord) {
         throw new Error(
           `${record.id}: ${team.advocate} leads a ${side} team but is not ` +
-            `counsel on record for that side`
+            `counsel on record for that side`,
         );
       }
       const clients = team.clientPartyIds.map((id) => {
         const party = byId.get(id);
         if (!party) {
-          throw new Error(
-            `${record.id}: ${team.advocate} is briefed by unknown party "${id}"`
-          );
+          throw new Error(`${record.id}: ${team.advocate} is briefed by unknown party "${id}"`);
         }
         if (party.side !== side) {
           throw new Error(
             `${record.id}: ${team.advocate} appears for ${side} but ` +
-              `${party.name} is on the ${party.side} side`
+              `${party.name} is on the ${party.side} side`,
           );
         }
         return { id: party.id, name: party.name };
@@ -631,9 +614,7 @@ function legalTeams(
     if (sideTeams.length === 0) {
       /* A party conducting their own case is not a client of anybody, so a
          derived team never sweeps them in alongside the parties who are. */
-      const sideParties = parties.filter(
-        (party) => party.side === side && !party.partyInPerson
-      );
+      const sideParties = parties.filter((party) => party.side === side && !party.partyInPerson);
       for (const [index, advocate] of onRecord.entries()) {
         teams.push({
           id: `${record.id}-${side}-team-${index}`,
@@ -657,7 +638,7 @@ function legalTeams(
 function caseWitnesses(
   record: CaseRecord,
   parties: CaseParty[],
-  entry: DummyCase | undefined
+  entry: DummyCase | undefined,
 ): CaseWitness[] {
   const byId = new Map(parties.map((party) => [party.id, party]));
 
@@ -676,7 +657,7 @@ function caseWitnesses(
       if (!party) {
         throw new Error(
           `${record.id}: witness ${witness.name} is linked to unknown party ` +
-            `"${witness.linkedPartyId}"`
+            `"${witness.linkedPartyId}"`,
         );
       }
       linkedParty = { id: party.id, name: party.name };
@@ -763,7 +744,7 @@ function formatNames(names: string[]): string {
  * holds no office — a fact, not a fallback.
  */
 export function partyStanding(party: CaseParty): string {
-  const kind = party.kind === "entity" ? party.entityType ?? "Entity" : "Individual";
+  const kind = party.kind === "entity" ? (party.entityType ?? "Entity") : "Individual";
   return [kind, party.designation].filter(Boolean).join(" · ");
 }
 
@@ -806,8 +787,8 @@ export function participantsFile(record: CaseRecord): ParticipantsFile {
     personsInCharge: personsInCharge(party, parties),
     supportPeople: support.filter((person) =>
       person.advocates.some((advocate) =>
-        party.advocates.some((onRecord) => normalize(onRecord) === normalize(advocate))
-      )
+        party.advocates.some((onRecord) => normalize(onRecord) === normalize(advocate)),
+      ),
     ),
   }));
 
@@ -851,7 +832,7 @@ export function participantIds(file: ParticipantsFile): string[] {
  */
 export function resolveSelection(
   file: ParticipantsFile,
-  requested: string | undefined
+  requested: string | undefined,
 ): string | undefined {
   const ids = participantIds(file);
   if (ids.length === 0) return undefined;
@@ -866,12 +847,6 @@ export function resolveSelection(
  * of the master list, and a reader on a party can jump straight to the person
  * giving evidence about them.
  */
-export function witnessesForLitigant(
-  file: ParticipantsFile,
-  litigantId: string
-): CaseWitness[] {
-  return file.witnesses.filter(
-    (witness) => witness.linkedParty?.id === litigantId
-  );
+export function witnessesForLitigant(file: ParticipantsFile, litigantId: string): CaseWitness[] {
+  return file.witnesses.filter((witness) => witness.linkedParty?.id === litigantId);
 }
-

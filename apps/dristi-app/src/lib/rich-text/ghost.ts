@@ -111,10 +111,7 @@ export function pickSuggestion<Answer extends { key: string }>(
  * same order the shortcuts are ranked in: the start of the name, then the start of a
  * word, then anywhere. `null` when the query is empty or not in the name.
  */
-export function matchSpan(
-  name: string,
-  query: string,
-): { start: number; end: number } | null {
+export function matchSpan(name: string, query: string): { start: number; end: number } | null {
   const wanted = query.trim().toLowerCase();
   if (!wanted) return null;
   const lower = name.toLowerCase();

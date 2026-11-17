@@ -129,7 +129,5 @@ function activateRow(event: React.MouseEvent<HTMLElement>) {
   });
   if (!allowed) return;
 
-  event.currentTarget
-    .querySelector<HTMLElement>(ROW_OPENER_SELECTOR)
-    ?.click();
+  event.currentTarget.querySelector<HTMLElement>(ROW_OPENER_SELECTOR)?.click();
 }

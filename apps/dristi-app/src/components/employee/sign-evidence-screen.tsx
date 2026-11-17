@@ -8,10 +8,7 @@ import { QueueAnnouncer } from "@/components/employee/queue-announcer";
 import { SignEvidenceDialog } from "@/components/employee/sign-evidence-dialog";
 import { SignEvidenceTable } from "@/components/employee/sign-evidence-table";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { ConfirmDialog } from "@/components/shell/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,11 +20,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  causeTitle,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { causeTitle, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import {
   EMPTY_SIGN_EVIDENCE_FILTERS,
   EVIDENCE_DOCUMENTS,
@@ -48,12 +41,7 @@ import {
   CourtSortSelect,
   type CourtFilterField,
 } from "@/components/employee/court-filters";
-import {
-  caseSorts,
-  sortOptions,
-  sortRows,
-  type CourtSortSpec,
-} from "@/lib/employee/court-sort";
+import { caseSorts, sortOptions, sortRows, type CourtSortSpec } from "@/lib/employee/court-sort";
 import {
   applyColumnFilters,
   columnFilterFields,
@@ -136,14 +124,10 @@ export function SignEvidenceScreen() {
      the table is showing disagree. Every change resets to page one — the old Search
      button did that, and a keystroke that narrows the list to four rows must not leave
      the reader on page three of nothing. */
-  const [filters, setFilters] = React.useState<SignEvidenceFilters>(
-    EMPTY_SIGN_EVIDENCE_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<SignEvidenceFilters>(EMPTY_SIGN_EVIDENCE_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [picked, setPicked] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [picked, setPicked] = React.useState<ReadonlySet<string>>(() => new Set());
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   /* The open marking is held by id, not by row: Edit details replaces the row object, and
      a dialog holding the old one would go on showing the number it used to have. */
@@ -151,9 +135,7 @@ export function SignEvidenceScreen() {
   const [announcement, setAnnouncement] = React.useState("");
   const searchRef = React.useRef<HTMLInputElement>(null);
 
-  const [columns, setColumns] = React.useState(() =>
-    emptyColumnFilters(EVIDENCE_COLUMN_FILTERS),
-  );
+  const [columns, setColumns] = React.useState(() => emptyColumnFilters(EVIDENCE_COLUMN_FILTERS));
   const [sort, setSort] = React.useState<EvidenceSort>("oldest");
 
   const visible = sortRows(
@@ -226,17 +208,17 @@ export function SignEvidenceScreen() {
   function signSelected() {
     const count = selectedIds.size;
     setConfirmOpen(false);
-    sign(
-      selectedIds,
-      `${count} ${plural(count, "document", "documents")} left the signing queue.`,
-    );
+    sign(selectedIds, `${count} ${plural(count, "document", "documents")} left the signing queue.`);
   }
 
   function signOne(row: SignEvidence) {
     setOpenId(null);
     sign(
       new Set([row.id]),
-      t("signEvidenceScreen_evidenceDocumentLabelEvidenceNumberLeft", { evidenceDocumentLabel: evidenceDocumentLabel(row.document), evidenceNumber: evidenceNumber(row) }),
+      t("signEvidenceScreen_evidenceDocumentLabelEvidenceNumberLeft", {
+        evidenceDocumentLabel: evidenceDocumentLabel(row.document),
+        evidenceNumber: evidenceNumber(row),
+      }),
     );
   }
 
@@ -257,7 +239,9 @@ export function SignEvidenceScreen() {
           <p className="text-body text-muted-foreground">
             {rows.length === 1
               ? t("signEvidenceScreen_1DocumentMarkedAsEvidenceIs")
-              : t("signEvidenceScreen_lengthDocumentsMarkedAsEvidenceAre", { length: String(rows.length) })}
+              : t("signEvidenceScreen_lengthDocumentsMarkedAsEvidenceAre", {
+                  length: String(rows.length),
+                })}
           </p>
         </header>
 
@@ -288,11 +272,7 @@ export function SignEvidenceScreen() {
           />
 
           {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-          <QueueAnnouncer
-            from={start + 1}
-            to={start + pageRows.length}
-            total={rows.length}
-          />
+          <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
           {pageRows.length === 0 ? (
             <SignEvidenceEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -403,7 +383,9 @@ export function SignEvidenceScreen() {
         description={
           selectedIds.size === 1
             ? t("signEvidenceScreen_yourSignatureEndorsesTheMarkingAnd")
-            : t("signEvidenceScreen_yourSignatureEndorsesAllSizeMarkings", { size: String(selectedIds.size) })
+            : t("signEvidenceScreen_yourSignatureEndorsesAllSizeMarkings", {
+                size: String(selectedIds.size),
+              })
         }
         cancelLabel={t("common_cancel")}
         confirmLabel={t("signEvidenceScreen_proceedToESign")}
@@ -473,13 +455,7 @@ function SignEvidenceFilters({
  * the same good-empty the sibling queues use. Borderless and unpadded; the panel is
  * already the frame.
  */
-function SignEvidenceEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function SignEvidenceEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
   const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
@@ -488,7 +464,9 @@ function SignEvidenceEmpty({
           {isFiltered ? <SearchXIcon aria-hidden /> : <StampIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? t("signEvidenceScreen_noEvidenceMatchesThisSearch") : t("signEvidenceScreen_nothingLeftToSign")}
+          {isFiltered
+            ? t("signEvidenceScreen_noEvidenceMatchesThisSearch")
+            : t("signEvidenceScreen_nothingLeftToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
@@ -538,17 +516,18 @@ function SignEvidenceItemList({
         const document = evidenceDocumentLabel(row.document);
         const exhibit = evidenceNumber(row);
         return (
-          <QueueItemRow
-            key={row.id}
-            className="flex items-start gap-3"
-          >
+          <QueueItemRow key={row.id} className="flex items-start gap-3">
             {/* The DS box expands its own hit area to 40×40; the name it carries is the
                 marking and its case, not the column, because a row read aloud has no
                 column header. */}
             <Checkbox
               checked={selectedIds.has(row.id)}
               onCheckedChange={() => onToggle(row)}
-              aria-label={t("signEvidenceScreen_selectDocumentExhibitInCourtText", { document, exhibit, courtText: courtText(row.caseNumber) })}
+              aria-label={t("signEvidenceScreen_selectDocumentExhibitInCourtText", {
+                document,
+                exhibit,
+                courtText: courtText(row.caseNumber),
+              })}
               className="mt-1"
             />
             <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -562,7 +541,11 @@ function SignEvidenceItemList({
                 {document}
                 {", "}
                 {/* The mark is inside the row's opener — the face, no second control. */}
-                <Identifier value={exhibit} label={t("signEvidenceScreen_evidenceNumber")} copyable={false} />
+                <Identifier
+                  value={exhibit}
+                  label={t("signEvidenceScreen_evidenceNumber")}
+                  copyable={false}
+                />
               </button>
               <p className="min-w-0 text-body-compact">{causeTitle(row)}</p>
               <Identifier

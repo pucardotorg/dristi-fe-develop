@@ -38,21 +38,14 @@ import {
 
 /** Every fact row the overlay renders, for a request — the groups, in order. */
 function allRows(request: RegistrationRequest): FactRow[] {
-  return [
-    ...requestRows(request),
-    ...identityRows(request),
-    ...rejectionRows(request),
-  ];
+  return [...requestRows(request), ...identityRows(request), ...rejectionRows(request)];
 }
 
 describe("REGISTRATIONS_QUEUE", () => {
   it("is long enough to page, and the count the rail shows is the list's own", () => {
     // 14 advocates and 3 advocate clerks — the queue is both kinds now.
     assert.equal(REGISTRATIONS_QUEUE.length, 17);
-    assert.equal(
-      REGISTRATIONS_QUEUE_COUNT,
-      REGISTRATIONS_QUEUE.length,
-    );
+    assert.equal(REGISTRATIONS_QUEUE_COUNT, REGISTRATIONS_QUEUE.length);
   });
 
   it("gives every row, application number and Bar registration ID its own identity", () => {
@@ -67,9 +60,7 @@ describe("REGISTRATIONS_QUEUE", () => {
     for (const row of REGISTRATIONS_QUEUE) {
       assert.match(
         row.applicationNumber,
-        row.registrantKind === "clerk"
-          ? /^KL-CLERK-\d{6}-\d{4}$/
-          : /^KL-ADV-\d{6}-\d{4}$/,
+        row.registrantKind === "clerk" ? /^KL-CLERK-\d{6}-\d{4}$/ : /^KL-ADV-\d{6}-\d{4}$/,
         `${row.applicationNumber} is not in its kind's series`,
       );
     }
@@ -77,10 +68,7 @@ describe("REGISTRATIONS_QUEUE", () => {
 
   it("carries the three kinds of request the lifecycle actually has", () => {
     const kinds = new Set(REGISTRATIONS_QUEUE.map((r) => r.requestKind));
-    assert.deepEqual(
-      [...kinds].sort(),
-      ["edited", "first", "resubmission"].sort(),
-    );
+    assert.deepEqual([...kinds].sort(), ["edited", "first", "resubmission"].sort());
   });
 
   it("exercises the wait escalation at both thresholds and below them", () => {
@@ -105,16 +93,12 @@ describe("REGISTRATIONS_QUEUE", () => {
   });
 
   it("holds a name long enough to wrap the column it sits in", () => {
-    const longest = Math.max(
-      ...REGISTRATIONS_QUEUE.map((r) => r.fullName.length),
-    );
+    const longest = Math.max(...REGISTRATIONS_QUEUE.map((r) => r.fullName.length));
     assert.ok(longest >= 36, `the longest name is only ${longest} characters`);
   });
 
   it("holds Bar registration IDs from more than one state bar, so the column is not sized off Kerala", () => {
-    const prefixes = new Set(
-      REGISTRATIONS_QUEUE.map((r) => r.registrationNumber.split("/")[0]),
-    );
+    const prefixes = new Set(REGISTRATIONS_QUEUE.map((r) => r.registrationNumber.split("/")[0]));
     assert.ok(
       prefixes.size >= 4,
       `only ${prefixes.size} bar prefixes: ${[...prefixes].join(", ")}`,
@@ -160,7 +144,10 @@ describe("REGISTRATIONS_QUEUE", () => {
         rounds.map((_, index) => index + 1),
       );
       const ages = rounds.map((round) => round.daysAgo);
-      assert.deepEqual(ages, [...ages].sort((a, b) => b - a));
+      assert.deepEqual(
+        ages,
+        [...ages].sort((a, b) => b - a),
+      );
     }
   });
 
@@ -176,9 +163,7 @@ describe("REGISTRATIONS_QUEUE", () => {
   });
 
   it("holds one photograph that will not open, so the well's failure state is reachable", () => {
-    const missing = REGISTRATIONS_QUEUE.filter((r) =>
-      r.photo.src.includes("not-uploaded"),
-    );
+    const missing = REGISTRATIONS_QUEUE.filter((r) => r.photo.src.includes("not-uploaded"));
     assert.equal(missing.length, 1);
   });
 });
@@ -186,7 +171,10 @@ describe("REGISTRATIONS_QUEUE", () => {
 describe("sortByLongestWait", () => {
   it("puts the longest wait first — the queue is a work list", () => {
     const days = REGISTRATIONS_QUEUE.map((r) => r.daysWaiting);
-    assert.deepEqual(days, [...days].sort((a, b) => b - a));
+    assert.deepEqual(
+      days,
+      [...days].sort((a, b) => b - a),
+    );
   });
 
   it("breaks a tie on the application number, so the order is stable between renders", () => {
@@ -202,10 +190,7 @@ describe("sortByLongestWait", () => {
   });
 
   it("does not reorder the array it was handed", () => {
-    const input = [
-      row({ id: "a", daysWaiting: 1 }),
-      row({ id: "b", daysWaiting: 9 }),
-    ];
+    const input = [row({ id: "a", daysWaiting: 1 }), row({ id: "b", daysWaiting: 9 })];
     sortByLongestWait(input);
     assert.deepEqual(
       input.map((r) => r.id),
@@ -218,11 +203,11 @@ describe("filterRegistrations", () => {
   const all = REGISTRATIONS_QUEUE;
 
   it("asks for everything when the box is empty", () => {
+    assert.equal(filterRegistrations(all, EMPTY_REGISTRATIONS_FILTERS).length, all.length);
     assert.equal(
-      filterRegistrations(all, EMPTY_REGISTRATIONS_FILTERS).length,
+      filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "   " }).length,
       all.length,
     );
-    assert.equal(filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "   " }).length, all.length);
   });
 
   it("finds a request by the name the officer was given", () => {
@@ -234,7 +219,10 @@ describe("filterRegistrations", () => {
   });
 
   it("finds a request by the Bar registration ID the bar quoted", () => {
-    const rows = filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "KAR/12453/2018" });
+    const rows = filterRegistrations(all, {
+      ...EMPTY_REGISTRATIONS_FILTERS,
+      query: "KAR/12453/2018",
+    });
     assert.deepEqual(
       rows.map((r) => r.applicationNumber),
       ["KL-ADV-000203-2026"],
@@ -242,7 +230,10 @@ describe("filterRegistrations", () => {
   });
 
   it("does not search the application number, which the court side never shows", () => {
-    const rows = filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "KL-ADV-000207-2026" });
+    const rows = filterRegistrations(all, {
+      ...EMPTY_REGISTRATIONS_FILTERS,
+      query: "KL-ADV-000207-2026",
+    });
     assert.equal(rows.length, 0);
   });
 
@@ -259,13 +250,22 @@ describe("filterRegistrations", () => {
       filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "mathew   joseph" }).length,
       1,
     );
-    assert.equal(filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "joseph vaidya" }).length, 0);
+    assert.equal(
+      filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "joseph vaidya" }).length,
+      0,
+    );
   });
 
   it("does not reach the contact details — a queue is not a directory", () => {
-    assert.equal(filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "9605178432" }).length, 0);
     assert.equal(
-      filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "meera.suresh@example.com" }).length,
+      filterRegistrations(all, { ...EMPTY_REGISTRATIONS_FILTERS, query: "9605178432" }).length,
+      0,
+    );
+    assert.equal(
+      filterRegistrations(all, {
+        ...EMPTY_REGISTRATIONS_FILTERS,
+        query: "meera.suresh@example.com",
+      }).length,
       0,
     );
   });
@@ -291,7 +291,10 @@ describe("removing a decided request from the queue", () => {
     assert.equal(rows.length, REGISTRATIONS_QUEUE.length - 1);
     assert.ok(!rows.some((r) => r.id === first.id));
     const days = rows.map((r) => r.daysWaiting);
-    assert.deepEqual(days, [...days].sort((a, b) => b - a));
+    assert.deepEqual(
+      days,
+      [...days].sort((a, b) => b - a),
+    );
   });
 
   it("takes the count down with it — the header and the rail read the same list", () => {
@@ -321,17 +324,13 @@ describe("registrationWaitTone", () => {
 
 describe("what the row and the overlay call things", () => {
   it("leaves a first registration unmarked — the norm gets no badge", () => {
-    const first = REGISTRATIONS_QUEUE.find(
-      (r) => r.requestKind === "first",
-    );
+    const first = REGISTRATIONS_QUEUE.find((r) => r.requestKind === "first");
     assert.ok(first);
     assert.equal(requestKindLabel(first), null);
   });
 
   it("marks an edited pre-created account, and a resubmission with its round", () => {
-    const edited = REGISTRATIONS_QUEUE.find(
-      (r) => r.requestKind === "edited",
-    );
+    const edited = REGISTRATIONS_QUEUE.find((r) => r.requestKind === "edited");
     assert.ok(edited);
     // The queue chip and the overlay row say the same thing: one fact, one name.
     assert.equal(requestKindLabel(edited), "Profile update");
@@ -370,10 +369,7 @@ describe("what the row and the overlay call things", () => {
     // type of the request — the owner read "Edited Bar Council account" as nonsense.
     assert.equal(requestTypeValue(edited), "Profile update");
     assert.equal(requestTypeValue(back), "Resubmitted · round 5");
-    assert.equal(
-      requestTypeValue({ ...edited, registrantKind: "clerk" }),
-      "Profile update",
-    );
+    assert.equal(requestTypeValue({ ...edited, registrantKind: "clerk" }), "Profile update");
     assert.equal(requestKindLabel(edited), requestTypeValue(edited));
   });
 
@@ -607,17 +603,12 @@ describe("shape two: two values, side by side", () => {
 });
 
 describe("an advocate clerk's request", () => {
-  const clerks = REGISTRATIONS_QUEUE.filter(
-    (r) => r.registrantKind === "clerk",
-  );
+  const clerks = REGISTRATIONS_QUEUE.filter((r) => r.registrantKind === "clerk");
 
   it("is in the queue, mixed in by wait rather than filed separately", () => {
     assert.equal(clerks.length, 3);
     // The queue stays one list in wait order; there is no clerks-first or clerks-last.
-    assert.deepEqual(
-      REGISTRATIONS_QUEUE,
-      sortByLongestWait(REGISTRATIONS_QUEUE),
-    );
+    assert.deepEqual(REGISTRATIONS_QUEUE, sortByLongestWait(REGISTRATIONS_QUEUE));
   });
 
   it("says what it is registering as in one word that differs from the other at once", () => {
@@ -691,9 +682,7 @@ describe("the next request after a decision", () => {
 });
 
 /** A minimal row, for the sort tests — only the fields those tests read are meaningful. */
-function row(
-  over: Partial<RegistrationRequest> & { id: string },
-): RegistrationRequest {
+function row(over: Partial<RegistrationRequest> & { id: string }): RegistrationRequest {
   return {
     applicationNumber: "KL-ADV-000100-2026",
     fullName: "Test Advocate",
@@ -728,7 +717,9 @@ describe("the Pending filters and order", () => {
     assert.ok(f({ wait: "destructive" }).every((r) => r.daysWaiting >= 14));
     assert.ok(f({ wait: "plain" }).every((r) => r.daysWaiting < 7));
     const banded =
-      f({ wait: "destructive" }).length + f({ wait: "warning" }).length + f({ wait: "plain" }).length;
+      f({ wait: "destructive" }).length +
+      f({ wait: "warning" }).length +
+      f({ wait: "plain" }).length;
     assert.equal(banded, all.length);
   });
 
@@ -737,7 +728,10 @@ describe("the Pending filters and order", () => {
     assert.ok(shortest.every((r, i) => i === 0 || shortest[i - 1].daysWaiting <= r.daysWaiting));
     assert.deepEqual(sortPending(all, "longest"), all);
     const named = sortPending(all, "name").map((r) => r.fullName);
-    assert.deepEqual(named, [...named].sort((a, b) => a.localeCompare(b, "en-IN")));
+    assert.deepEqual(
+      named,
+      [...named].sort((a, b) => a.localeCompare(b, "en-IN")),
+    );
   });
 });
 
@@ -762,7 +756,10 @@ describe("the decided record", () => {
   });
 
   it("is searched by name and registration number, and narrowed by account type", () => {
-    assert.equal(filterDecided(DECIDED_REGISTRATIONS, { query: "KL/3155", accountType: "all" }).length, 1);
+    assert.equal(
+      filterDecided(DECIDED_REGISTRATIONS, { query: "KL/3155", accountType: "all" }).length,
+      1,
+    );
     assert.ok(
       filterDecided(DECIDED_REGISTRATIONS, { query: "", accountType: "clerk" }).every(
         (d) => d.request.registrantKind === "clerk",

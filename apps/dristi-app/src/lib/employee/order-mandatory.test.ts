@@ -26,7 +26,10 @@ describe("mandatory fields only", () => {
       ["mode", "endDate"],
     );
     const half = setItemValue(adr, "mode", "mediation", context);
-    assert.deepEqual(missingMandatory(half, context).map((gap) => gap.key), ["endDate"]);
+    assert.deepEqual(
+      missingMandatory(half, context).map((gap) => gap.key),
+      ["endDate"],
+    );
   });
 
   it("never counts an optional field", () => {

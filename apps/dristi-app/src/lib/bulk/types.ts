@@ -8,11 +8,7 @@
  * deliberately, which moves the cases into a new batch and closes the originals.
  */
 
-import type {
-  FilingDraft,
-  SignInstrument,
-  StoredFileRef,
-} from "@/lib/filing/types";
+import type { FilingDraft, SignInstrument, StoredFileRef } from "@/lib/filing/types";
 
 export type BatchSourceKind = "api" | "excel" | "documents" | "clubbed";
 

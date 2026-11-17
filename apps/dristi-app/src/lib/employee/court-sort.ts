@@ -73,10 +73,7 @@ const title = (row: CaseRow) => `${row.parties.complainant} v. ${row.parties.acc
  * The three orders every case list shares: newest case first (the default where a list
  * has no clock of its own), oldest first, and by cause title.
  */
-export function caseSorts<T extends CaseRow>(): CourtSortSpec<
-  T,
-  "newest" | "oldest" | "name"
->[] {
+export function caseSorts<T extends CaseRow>(): CourtSortSpec<T, "newest" | "oldest" | "name">[] {
   return [
     {
       id: "newest",

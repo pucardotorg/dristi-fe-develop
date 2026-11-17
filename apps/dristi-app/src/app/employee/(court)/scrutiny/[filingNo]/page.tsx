@@ -34,8 +34,7 @@ export default async function EmployeeScrutinyCasePage({
   if (!caseData) notFound();
 
   const { ai } = await searchParams;
-  const mode: AiMode =
-    ai === "on" || ai === "unavailable" || ai === "off" ? ai : profile.aiMode;
+  const mode: AiMode = ai === "on" || ai === "unavailable" || ai === "off" ? ai : profile.aiMode;
 
   return <CaseWorkbench caseData={caseData} ai={mode} />;
 }

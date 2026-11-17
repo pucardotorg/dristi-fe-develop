@@ -11,7 +11,13 @@
  * for the court's own services behind the same signatures.
  */
 
-export type IfscResult = { ifsc: string; bank: string; branch: string; city: string; state: string };
+export type IfscResult = {
+  ifsc: string;
+  bank: string;
+  branch: string;
+  city: string;
+  state: string;
+};
 
 const ifscCache = new Map<string, Promise<IfscResult | null>>();
 

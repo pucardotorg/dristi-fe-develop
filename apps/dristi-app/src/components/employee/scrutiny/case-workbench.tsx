@@ -1,11 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  ClockIcon,
-  FilesIcon,
-  PencilIcon,
-  } from "lucide-react";
+import { ClockIcon, FilesIcon, PencilIcon } from "lucide-react";
 
 import { useRoomInRem } from "@/hooks/use-min-width";
 import { nextFilingAfter } from "@/lib/employee/scrutiny/queue";
@@ -18,10 +14,7 @@ import { Identifier } from "@/components/chrome/identifier";
 import { ARRIVAL } from "@/components/chrome/motion";
 import { useArrival } from "@/components/employee/use-arrival";
 import { cn } from "@/lib/utils";
-import {
-  BundleView,
-  type BundleHandle,
-} from "@/components/employee/scrutiny/bundle-view";
+import { BundleView, type BundleHandle } from "@/components/employee/scrutiny/bundle-view";
 import { ChecksPopover } from "@/components/employee/scrutiny/checks-popover";
 import {
   FieldsPanel,
@@ -29,29 +22,14 @@ import {
   type FieldsView,
 } from "@/components/employee/scrutiny/fields-panel";
 import { HistorySheet } from "@/components/employee/scrutiny/history-sheet";
-import {
-  ReviewDialog,
-  type Decision,
-} from "@/components/employee/scrutiny/review-dialog";
-import {
-  IndexRail,
-  IndexSheet,
-} from "@/components/employee/scrutiny/index-rail";
+import { ReviewDialog, type Decision } from "@/components/employee/scrutiny/review-dialog";
+import { IndexRail, IndexSheet } from "@/components/employee/scrutiny/index-rail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { scrutinyRegistersIn } from "@/lib/employee/court-role";
 import { StatusLine } from "@/components/feedback";
@@ -132,15 +110,12 @@ export function CaseWorkbench({
      the full filing. */
   /* Not walking the whole file again is the point of a re-scrutiny (owner, 2026-10-28,
      after trying a full-filing-only layout). */
-  const [view, setView] = React.useState<FieldsView>(
-    returned ? "changes" : "full",
-  );
+  const [view, setView] = React.useState<FieldsView>(returned ? "changes" : "full");
   const [indexOpen, setIndexOpen] = React.useState(false);
   /* On the Changes tab the bundle and the index hold only the documents behind the
      returned items — the officer is checking those, not re-reading the file (owner,
      2026-10-28). The full filing brings the whole bundle back. */
-  const focusDocs =
-    view === "changes" && returned ? returnedDocIds(returned, fieldById) : null;
+  const focusDocs = view === "changes" && returned ? returnedDocIds(returned, fieldById) : null;
 
   // The case title is the officer's to correct (a mis-spelt party name is exactly the
   // kind of thing scrutiny exists to catch). Local until a case service owns it.
@@ -158,16 +133,11 @@ export function CaseWorkbench({
   );
   const [editingTitle, setEditingTitle] = React.useState(false);
 
-  const goToDoc = React.useCallback(
-    (docId: string) => bundle.current?.goToDoc(docId),
-    [],
-  );
+  const goToDoc = React.useCallback((docId: string) => bundle.current?.goToDoc(docId), []);
 
   /** Selecting a field scrolls the bundle to the page it was read from. */
   React.useEffect(() => {
-    const field = controller.selectedId
-      ? fieldById[controller.selectedId]
-      : null;
+    const field = controller.selectedId ? fieldById[controller.selectedId] : null;
     // An oath row plays its recording in the centre panel (`SCR-14`).
     if (field?.video) {
       bundle.current?.play(field.video);
@@ -177,16 +147,12 @@ export function CaseWorkbench({
     if (target) goToDoc(target);
   }, [controller.selectedId, goToDoc, fieldById]);
 
-  const selected = controller.selectedId
-    ? fieldById[controller.selectedId]
-    : null;
+  const selected = controller.selectedId ? fieldById[controller.selectedId] : null;
   const relatedDocId = selected
     ? (selected.doc ?? selected.thumb ?? selected.docrow ?? selected.video ?? null)
     : null;
   const spot: { doc: string; rect: Rect } | null =
-    selected?.region && relatedDocId
-      ? { doc: relatedDocId, rect: selected.region }
-      : null;
+    selected?.region && relatedDocId ? { doc: relatedDocId, rect: selected.region } : null;
 
   /**
    * A history item is a way back into the work, not a dead record.
@@ -257,134 +223,131 @@ export function CaseWorkbench({
      * tooltips brings its own. The bundle's zoom controls are the ones that need it.
      */
     <ScrutinyCaseProvider value={caseData}>
-    <TooltipProvider>
-    {/*
-     * A bounded height, not a floor. The court page is `min-h-svh` (app-chrome's
-     * `ChromePage`), which is right for a document that grows — but this screen is an
-     * app frame: the case bar and the decision bar are meant to stay put while the
-     * three panes scroll inside themselves. Under a floor, `flex-1` panes grow to their
-     * tallest content and the whole document scrolls instead (measured: 5,835px against
-     * a 900px viewport). Subtracting the chrome bar's `h-14` is a real coupling to
-     * `BAR` in `components/chrome/app-chrome.tsx`; if that bar's height changes, this
-     * follows. And no `flex-1` alongside it: in a flex column `flex: 1 1 0%` overrides
-     * an explicit height, which is why the first attempt still measured 5,780px.
-     */}
-    <div
-      className={cn(
-        "flex h-[calc(100svh-3.5rem)] min-h-0 flex-col overflow-hidden",
-        // The workbench rises when it is opened from the queue — the file laid on the
-        // desk, the same arrival Register cases and Take cognizance use (`motion.ts`).
-        arrival && ARRIVAL[arrival],
-      )}
-    >
-      {/* The page's own bar, on the page's own ladder: `py-2.5` is a micro step and
+      <TooltipProvider>
+        {/*
+         * A bounded height, not a floor. The court page is `min-h-svh` (app-chrome's
+         * `ChromePage`), which is right for a document that grows — but this screen is an
+         * app frame: the case bar and the decision bar are meant to stay put while the
+         * three panes scroll inside themselves. Under a floor, `flex-1` panes grow to their
+         * tallest content and the whole document scrolls instead (measured: 5,835px against
+         * a 900px viewport). Subtracting the chrome bar's `h-14` is a real coupling to
+         * `BAR` in `components/chrome/app-chrome.tsx`; if that bar's height changes, this
+         * follows. And no `flex-1` alongside it: in a flex column `flex: 1 1 0%` overrides
+         * an explicit height, which is why the first attempt still measured 5,780px.
+         */}
+        <div
+          className={cn(
+            "flex h-[calc(100svh-3.5rem)] min-h-0 flex-col overflow-hidden",
+            // The workbench rises when it is opened from the queue — the file laid on the
+            // desk, the same arrival Register cases and Take cognizance use (`motion.ts`).
+            arrival && ARRIVAL[arrival],
+          )}
+        >
+          {/* The page's own bar, on the page's own ladder: `py-2.5` is a micro step and
           micro steps belong inside controls, not under a screen's title. */}
-      <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-hairline bg-card px-6 py-4 md:px-8">
-        {/* `basis-full` until `lg`: below the room for the title and its controls on one
+          <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-hairline bg-card px-6 py-4 md:px-8">
+            {/* `basis-full` until `lg`: below the room for the title and its controls on one
             line, the controls drop to their own line rather than squeezing the cause into
             a four-line stack beside them — the registry reads this on a tablet. From `lg`
             they share the line again. */}
-        <div className="flex min-w-0 flex-1 basis-full flex-col gap-2 lg:basis-auto">
-          {/* The eyebrow, above the title and as one sentence: three spans with `·`
+            <div className="flex min-w-0 flex-1 basis-full flex-col gap-2 lg:basis-auto">
+              {/* The eyebrow, above the title and as one sentence: three spans with `·`
               between them stranded the separators at the head of a wrapped line. The
               trail stops at the queue, so the filing number is named here — it is how
               the officer knows which of the queue's rows they are inside. */}
-          {/* The filing number and when it came in — the two facts that place this file.
+              {/* The filing number and when it came in — the two facts that place this file.
               The advocate is in the fields and on the queue row; it does not need a third
               home in the eyebrow. */}
-          <p className="text-body-compact font-medium text-muted-foreground">
-            <Identifier value={filingNo} label={tr("caseWorkbench_filingNumber")} />
-            {returned
-              ? tr("caseWorkbench_resubmittedResubmittedByResubmittedBy", { resubmitted: returned.resubmitted, resubmittedBy: returned.resubmittedBy })
-              : ` · ${translateText(tr, party.submitted)}`}
-          </p>
-          {editingTitle ? (
-            <TitleEditor
-              value={title}
-              onCancel={() => setEditingTitle(false)}
-              onSave={(next) => {
-                setTitle(next);
-                setEditingTitle(false);
-              }}
-            />
-          ) : (
-            /* `items-start` and a `shrink-0` button: on a long cause the title wraps to
+              <p className="text-body-compact font-medium text-muted-foreground">
+                <Identifier value={filingNo} label={tr("caseWorkbench_filingNumber")} />
+                {returned
+                  ? tr("caseWorkbench_resubmittedResubmittedByResubmittedBy", {
+                      resubmitted: returned.resubmitted,
+                      resubmittedBy: returned.resubmittedBy,
+                    })
+                  : ` · ${translateText(tr, party.submitted)}`}
+              </p>
+              {editingTitle ? (
+                <TitleEditor
+                  value={title}
+                  onCancel={() => setEditingTitle(false)}
+                  onSave={(next) => {
+                    setTitle(next);
+                    setEditingTitle(false);
+                  }}
+                />
+              ) : (
+                /* `items-start` and a `shrink-0` button: on a long cause the title wraps to
                two lines and a centred pencil floated in the middle of them. */
-            <div className="flex items-start gap-1">
-              <h1 className="text-title font-semibold">{title}</h1>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 text-muted-foreground"
-                    aria-label={tr("caseWorkbench_editCaseTitle")}
-                    onClick={() => setEditingTitle(true)}
-                  >
-                    <PencilIcon />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{tr("caseWorkbench_editCaseTitle")}</TooltipContent>
-              </Tooltip>
+                <div className="flex items-start gap-1">
+                  <h1 className="text-title font-semibold">{title}</h1>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 text-muted-foreground"
+                        aria-label={tr("caseWorkbench_editCaseTitle")}
+                        onClick={() => setEditingTitle(true)}
+                      >
+                        <PencilIcon />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{tr("caseWorkbench_editCaseTitle")}</TooltipContent>
+                  </Tooltip>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        <div className="ms-auto flex shrink-0 flex-wrap items-center gap-3">
-          {/* Below the room for three panes the two document surfaces share one slot,
+            <div className="ms-auto flex shrink-0 flex-wrap items-center gap-3">
+              {/* Below the room for three panes the two document surfaces share one slot,
               and the switch between them lives in the bar that already owns this case —
               rather than a second chrome band above a pane that has its own. */}
-          {threePane ? null : (
-            <>
-              <ToggleGroup
-                type="single"
-                value={pane}
-                onValueChange={(value) =>
-                  value && setPane(value as "fields" | "bundle")
-                }
-                spacing={0}
-                variant="outline"
-                className="bg-surface-sunken"
-                aria-label={tr("caseWorkbench_whatToRead")}
-              >
-                {/* These only exist at the widths a tablet is held at, so they take the
+              {threePane ? null : (
+                <>
+                  <ToggleGroup
+                    type="single"
+                    value={pane}
+                    onValueChange={(value) => value && setPane(value as "fields" | "bundle")}
+                    spacing={0}
+                    variant="outline"
+                    className="bg-surface-sunken"
+                    aria-label={tr("caseWorkbench_whatToRead")}
+                  >
+                    {/* These only exist at the widths a tablet is held at, so they take the
                     touch floor rather than the toggle's own 32px. */}
-                <ToggleGroupItem
-                  value="fields"
-                  className="[@media(pointer:coarse)]:h-10"
-                >
-                  {tr("caseWorkbench_fields")}
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="bundle"
-                  className="[@media(pointer:coarse)]:h-10"
-                >
-                  {tr("caseWorkbench_bundle")}
-                </ToggleGroupItem>
-              </ToggleGroup>
-              <Button variant="outline" onClick={() => setIndexOpen(true)}>
-                <FilesIcon />
-                {tr("caseWorkbench_documents")}
+                    <ToggleGroupItem value="fields" className="[@media(pointer:coarse)]:h-10">
+                      {tr("caseWorkbench_fields")}
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="bundle" className="[@media(pointer:coarse)]:h-10">
+                      {tr("caseWorkbench_bundle")}
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                  <Button variant="outline" onClick={() => setIndexOpen(true)}>
+                    <FilesIcon />
+                    {tr("caseWorkbench_documents")}
+                  </Button>
+                </>
+              )}
+              {/* The round count does triage work at rest; the button opens the detour. */}
+              <Button variant="outline" onClick={() => setHistoryOpen(true)}>
+                <ClockIcon />
+                {tr("caseWorkbench_caseHistoryRoundHistoryRound", {
+                  historyRound: String(historyRound),
+                })}
               </Button>
-            </>
-          )}
-          {/* The round count does triage work at rest; the button opens the detour. */}
-          <Button variant="outline" onClick={() => setHistoryOpen(true)}>
-            <ClockIcon />
-            {tr("caseWorkbench_caseHistoryRoundHistoryRound", { historyRound: String(historyRound) })}
-          </Button>
-          <ChecksPopover />
-        </div>
-      </div>
+              <ChecksPopover />
+            </div>
+          </div>
 
-      {/* A standing condition, said still (skill `feedback-states`). */}
-      {ai === "unavailable" ? (
-        <StatusLine tone="warning" still>
-          {tr("caseWorkbench_aiAssistanceUnavailableNoDocumentReadings")}
-        </StatusLine>
-      ) : null}
+          {/* A standing condition, said still (skill `feedback-states`). */}
+          {ai === "unavailable" ? (
+            <StatusLine tone="warning" still>
+              {tr("caseWorkbench_aiAssistanceUnavailableNoDocumentReadings")}
+            </StatusLine>
+          ) : null}
 
-      {threePane ? (
-        /* The floors are in `rem`, not percentages: a percentage floor is a floor on
+          {threePane ? (
+            /* The floors are in `rem`, not percentages: a percentage floor is a floor on
            nothing, which is how the index rail reached 135px.
  
            **Full bleed, no side inset.** A `px-4` here left a 16px strip of the page's
@@ -393,146 +356,139 @@ export function CaseWorkbench({
            1.5% step, close enough to read as a smudge rather than as an edge (owner,
            2026-09-17: *"what is this slight difference of color… shouldn't it look
            seamless?"*). The panes carry their own insets, so the frame wants none. */
-        <ResizablePanelGroup className="min-h-0 flex-1">
-          <ResizablePanel
-            defaultSize="34%"
-            minSize="18rem"
-            className="flex flex-col"
-          >
-            <FieldsPanel
-              ref={fields}
-              controller={controller}
-              aiOn={aiOn}
-              onGoToItem={goToItem}
-              view={view}
-              onViewChange={setView}
-              onShowItem={showItem}
-            />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize="52%" minSize="22rem">
-            <BundleView ref={bundle} aiOn={aiOn} spot={spot} onlyDocs={focusDocs} />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          {/* A document index is a short list, so it takes a rail's width, not a pane's:
+            <ResizablePanelGroup className="min-h-0 flex-1">
+              <ResizablePanel defaultSize="34%" minSize="18rem" className="flex flex-col">
+                <FieldsPanel
+                  ref={fields}
+                  controller={controller}
+                  aiOn={aiOn}
+                  onGoToItem={goToItem}
+                  view={view}
+                  onViewChange={setView}
+                  onShowItem={showItem}
+                />
+              </ResizablePanel>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize="52%" minSize="22rem">
+                <BundleView ref={bundle} aiOn={aiOn} spot={spot} onlyDocs={focusDocs} />
+              </ResizablePanel>
+              <ResizableHandle withHandle />
+              {/* A document index is a short list, so it takes a rail's width, not a pane's:
               the room it does not need goes to the bundle, which is the thing being read. */}
-          <ResizablePanel defaultSize="14%" minSize="10rem" maxSize="20rem">
-            <IndexRail
-              onlyDocs={focusDocs}
-              relatedDocId={aiOn ? relatedDocId : null}
-              aiOn={aiOn}
-              onGoToDoc={goToDoc}
-            />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      ) : (
-        /* One surface at a time. Only the chosen pane is mounted — both would put two
+              <ResizablePanel defaultSize="14%" minSize="10rem" maxSize="20rem">
+                <IndexRail
+                  onlyDocs={focusDocs}
+                  relatedDocId={aiOn ? relatedDocId : null}
+                  aiOn={aiOn}
+                  onGoToDoc={goToDoc}
+                />
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          ) : (
+            /* One surface at a time. Only the chosen pane is mounted — both would put two
            copies of every `doc-*` anchor in the document and the bundle's own scrolling
            would land on whichever came first. */
-        <div className="flex min-h-0 flex-1 flex-col">
-          {pane === "fields" ? (
-            <FieldsPanel
-              ref={fields}
-              controller={controller}
-              aiOn={aiOn}
-              onGoToItem={goToItem}
-              view={view}
-              onViewChange={setView}
-              onShowItem={showItem}
-            />
-          ) : (
-            <BundleView ref={bundle} aiOn={aiOn} spot={spot} onlyDocs={focusDocs} />
+            <div className="flex min-h-0 flex-1 flex-col">
+              {pane === "fields" ? (
+                <FieldsPanel
+                  ref={fields}
+                  controller={controller}
+                  aiOn={aiOn}
+                  onGoToItem={goToItem}
+                  view={view}
+                  onViewChange={setView}
+                  onShowItem={showItem}
+                />
+              ) : (
+                <BundleView ref={bundle} aiOn={aiOn} spot={spot} onlyDocs={focusDocs} />
+              )}
+            </div>
           )}
-        </div>
-      )}
 
-      {/* The house sticky band: hairline top rule, card fill, no shadow of its own. */}
-      <div className="flex shrink-0 items-center gap-4 border-t border-hairline bg-card px-6 py-3 md:px-8 md:py-4">
-        {/*
-         * The one place the raised count lives (the section tabs no longer carry
-         * numbers). Red because it is the officer's own error tally, and it has to
-         * be findable from anywhere on the screen.
-         */}
-        <span
-          id="decision-tally"
-          className="text-body-compact text-muted-foreground"
-        >
-          {returned ? (
-            <>
-              <b className="font-semibold text-foreground tabular-nums">
-                {`${returnedTotal} ${returnedTotal === 1 ? "error" : "errors"} marked`}
-              </b>
-              {tally.length > 0 ? " · " : null}
-            </>
-          ) : null}
-          {tally.length > 0 ? (
-            <>
-              {tally.map((t, i) => (
-                <React.Fragment key={t}>
-                  {i > 0 ? " · " : null}
-                  <b className="font-semibold text-destructive-ink">{t}</b>
-                </React.Fragment>
-              ))}
-              {tr("caseWorkbench_forAdvocate", { advocate: party.advocate })}
-            </>
-          ) : null}
-        </span>
-        <span className="flex-1" />
-        {raised > 0 ? (
-          <Button variant="outline" onClick={() => setDecision("send-back")}>
-            {tr("caseWorkbench_sendBackToAdvocate")}
-          </Button>
-        ) : null}
-        {/* Register where this court registers at scrutiny. Forward only where a
+          {/* The house sticky band: hairline top rule, card fill, no shadow of its own. */}
+          <div className="flex shrink-0 items-center gap-4 border-t border-hairline bg-card px-6 py-3 md:px-8 md:py-4">
+            {/*
+             * The one place the raised count lives (the section tabs no longer carry
+             * numbers). Red because it is the officer's own error tally, and it has to
+             * be findable from anywhere on the screen.
+             */}
+            <span id="decision-tally" className="text-body-compact text-muted-foreground">
+              {returned ? (
+                <>
+                  <b className="font-semibold text-foreground tabular-nums">
+                    {`${returnedTotal} ${returnedTotal === 1 ? "error" : "errors"} marked`}
+                  </b>
+                  {tally.length > 0 ? " · " : null}
+                </>
+              ) : null}
+              {tally.length > 0 ? (
+                <>
+                  {tally.map((t, i) => (
+                    <React.Fragment key={t}>
+                      {i > 0 ? " · " : null}
+                      <b className="font-semibold text-destructive-ink">{t}</b>
+                    </React.Fragment>
+                  ))}
+                  {tr("caseWorkbench_forAdvocate", { advocate: party.advocate })}
+                </>
+              ) : null}
+            </span>
+            <span className="flex-1" />
+            {raised > 0 ? (
+              <Button variant="outline" onClick={() => setDecision("send-back")}>
+                {tr("caseWorkbench_sendBackToAdvocate")}
+              </Button>
+            ) : null}
+            {/* Register where this court registers at scrutiny. Forward only where a
             separate Case registerer takes the file (`SCR-06`, `SCR-11`). */}
-        {canRegister ? (
-          <Button
-            aria-describedby={returned ? "decision-tally" : undefined}
-            onClick={() => setDecision("register")}
-          >
-            {tr("caseWorkbench_registerCase")}
-          </Button>
-        ) : (
-          <Button
-            aria-describedby={returned ? "decision-tally" : undefined}
-            onClick={() => setDecision("forward")}
-          >
-            {tr("caseWorkbench_forwardForRegistration")}
-          </Button>
-        )}
-      </div>
+            {canRegister ? (
+              <Button
+                aria-describedby={returned ? "decision-tally" : undefined}
+                onClick={() => setDecision("register")}
+              >
+                {tr("caseWorkbench_registerCase")}
+              </Button>
+            ) : (
+              <Button
+                aria-describedby={returned ? "decision-tally" : undefined}
+                onClick={() => setDecision("forward")}
+              >
+                {tr("caseWorkbench_forwardForRegistration")}
+              </Button>
+            )}
+          </div>
 
-      <HistorySheet
-        open={historyOpen}
-        onOpenChange={setHistoryOpen}
-        aiOn={aiOn}
-        onGoToItem={goToItem}
-      />
-      {/* The index, as a detour, only where there is no room for it as a column. */}
-      {threePane ? null : (
-        <IndexSheet
-          onlyDocs={focusDocs}
-          open={indexOpen}
-          onOpenChange={setIndexOpen}
-          relatedDocId={aiOn ? relatedDocId : null}
-          aiOn={aiOn}
-          onGoToDoc={(docId) => {
-            setIndexOpen(false);
-            showDoc(docId);
-          }}
-        />
-      )}
-      <ReviewDialog
-        decision={decision}
-        flags={controller.flags}
-        onGoToItem={goToItem}
-        onOpenChange={(open) => !open && setDecision(null)}
-        /* The settled stage offers the next file rather than the queue, and navigates
+          <HistorySheet
+            open={historyOpen}
+            onOpenChange={setHistoryOpen}
+            aiOn={aiOn}
+            onGoToItem={goToItem}
+          />
+          {/* The index, as a detour, only where there is no room for it as a column. */}
+          {threePane ? null : (
+            <IndexSheet
+              onlyDocs={focusDocs}
+              open={indexOpen}
+              onOpenChange={setIndexOpen}
+              relatedDocId={aiOn ? relatedDocId : null}
+              aiOn={aiOn}
+              onGoToDoc={(docId) => {
+                setIndexOpen(false);
+                showDoc(docId);
+              }}
+            />
+          )}
+          <ReviewDialog
+            decision={decision}
+            flags={controller.flags}
+            onGoToItem={goToItem}
+            onOpenChange={(open) => !open && setDecision(null)}
+            /* The settled stage offers the next file rather than the queue, and navigates
            with a `Link` of its own — so nothing is pushed from here. */
-        nextFiling={nextFilingAfter(filingNo) ?? null}
-      />
-    </div>
-    </TooltipProvider>
+            nextFiling={nextFilingAfter(filingNo) ?? null}
+          />
+        </div>
+      </TooltipProvider>
     </ScrutinyCaseProvider>
   );
 }

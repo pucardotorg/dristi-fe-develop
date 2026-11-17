@@ -292,7 +292,9 @@
      one warm hair off white, the chrome step. */
   --surface: #ffffff;
   --surface-raised: var(--neutral-2);
-  --track: var(--neutral-6); /* tiny countable marks ONLY — progress, slider, skeleton. Control-sized wells (tabs list, segmented) are surface-sunken + hairline instead: separation is a whisper stroke, not a block of colour. */
+  --track: var(
+    --neutral-6
+  ); /* tiny countable marks ONLY — progress, slider, skeleton. Control-sized wells (tabs list, segmented) are surface-sunken + hairline instead: separation is a whisper stroke, not a block of colour. */
   --prefilled: var(--warning-2); /* machine-prefilled, human-unverified field fill */
 
   /* Brand — teal. Confirmed against the live "Rajini 2.0" Figma file. */
@@ -387,8 +389,10 @@
   --radius: 0.625rem; /* the single 10px knob the whole ladder is derived from */
 
   --shadow-raised: 0 1px 2px var(--elevation-raised-a), 0 1px 3px var(--elevation-raised-b);
-  --shadow-overlay: 0 4px 8px -2px var(--elevation-overlay-a), 0 2px 4px -2px var(--elevation-overlay-b);
-  --shadow-modal: 0 16px 32px -8px var(--elevation-modal-a), 0 6px 12px -6px var(--elevation-modal-b);
+  --shadow-overlay:
+    0 4px 8px -2px var(--elevation-overlay-a), 0 2px 4px -2px var(--elevation-overlay-b);
+  --shadow-modal:
+    0 16px 32px -8px var(--elevation-modal-a), 0 6px 12px -6px var(--elevation-modal-b);
 
   --sidebar: var(--neutral-2);
   --sidebar-foreground: var(--neutral-12);
@@ -592,8 +596,10 @@
   --chart-5: #ff8dab;
 
   --shadow-raised: 0 1px 2px var(--elevation-raised-a), 0 1px 3px var(--elevation-raised-b);
-  --shadow-overlay: 0 4px 8px -2px var(--elevation-overlay-a), 0 2px 4px -2px var(--elevation-overlay-b);
-  --shadow-modal: 0 16px 32px -8px var(--elevation-modal-a), 0 6px 12px -6px var(--elevation-modal-b);
+  --shadow-overlay:
+    0 4px 8px -2px var(--elevation-overlay-a), 0 2px 4px -2px var(--elevation-overlay-b);
+  --shadow-modal:
+    0 16px 32px -8px var(--elevation-modal-a), 0 6px 12px -6px var(--elevation-modal-b);
 
   --sidebar: var(--neutral-2);
   --sidebar-foreground: var(--neutral-12);

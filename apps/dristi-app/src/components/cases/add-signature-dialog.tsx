@@ -1,21 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ClockIcon,
-  DownloadIcon,
-  SignatureIcon,
-} from "lucide-react";
+import { ClockIcon, DownloadIcon, SignatureIcon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 
-import {
-  ChoiceCard,
-  DscLookup,
-  InstrumentChoice,
-  OtpEntry,
-} from "@/components/filing/sign-stages";
+import { ChoiceCard, DscLookup, InstrumentChoice, OtpEntry } from "@/components/filing/sign-stages";
 import { PaperFallbackLink } from "@/components/filing/paper-fallback";
 import {
   GATEWAY_MS,
@@ -25,16 +16,8 @@ import {
   PaymentProcessing,
   PaymentFacts,
 } from "@/components/payment/payment-steps";
-import {
-  OutcomeAmount,
-  OutcomeHeader,
-  OutcomeSummary,
-  StatusLine,
-} from "@/components/feedback";
-import {
-  UPLOAD_HELP,
-  UploadedDocField,
-} from "@/components/cases/uploaded-doc-field";
+import { OutcomeAmount, OutcomeHeader, OutcomeSummary, StatusLine } from "@/components/feedback";
+import { UPLOAD_HELP, UploadedDocField } from "@/components/cases/uploaded-doc-field";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,22 +26,9 @@ import {
   DescriptionRow,
   DescriptionTerm,
 } from "@/components/ui/description-list";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
-import {
-  COURT_FEE,
-  CourtFeeSummary,
-} from "@/components/cases/submission-payment-dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { COURT_FEE, CourtFeeSummary } from "@/components/cases/submission-payment-dialog";
 import { downloadGeneratedApplication } from "@/lib/cases/application-document";
 import { newPaymentRef } from "@/lib/filing/data";
 import { type ApplicationDraft } from "@/lib/cases/application-draft";
@@ -355,57 +325,66 @@ export function AddSignatureDialog({
             />
 
             <div className="px-6 py-6">
-            <OutcomeSummary>
-            <dl className="flex flex-col text-body-compact">
-              <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5">
-                <dt className="text-muted-foreground">{Noun}</dt>
-                <dd className="min-w-0 text-right font-medium">
-                  {objection
-                    ? objection.target
-                    : applicationTypeGuide(draft.type || "application-others")
-                        .label}
-                </dd>
-              </div>
-              <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5">
-                <dt className="text-muted-foreground">{t("addSignatureDialog_case")}</dt>
-                <dd className="font-medium">
-                  <Identifier value={record.caseNumber} label={t("addSignatureDialog_caseNumber")} />
-                </dd>
-              </div>
-              <div className="flex items-center justify-between gap-4 py-2.5">
-                <dt className="text-muted-foreground">{t("addSignatureDialog_status")}</dt>
-                <dd>
-                  <Badge variant="warning">{t("addSignatureDialog_pendingSignature")}</Badge>
-                </dd>
-              </div>
-            </dl>
-            </OutcomeSummary>
+              <OutcomeSummary>
+                <dl className="flex flex-col text-body-compact">
+                  <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5">
+                    <dt className="text-muted-foreground">{Noun}</dt>
+                    <dd className="min-w-0 text-right font-medium">
+                      {objection
+                        ? objection.target
+                        : applicationTypeGuide(draft.type || "application-others").label}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5">
+                    <dt className="text-muted-foreground">{t("addSignatureDialog_case")}</dt>
+                    <dd className="font-medium">
+                      <Identifier
+                        value={record.caseNumber}
+                        label={t("addSignatureDialog_caseNumber")}
+                      />
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 py-2.5">
+                    <dt className="text-muted-foreground">{t("addSignatureDialog_status")}</dt>
+                    <dd>
+                      <Badge variant="warning">{t("addSignatureDialog_pendingSignature")}</Badge>
+                    </dd>
+                  </div>
+                </dl>
+              </OutcomeSummary>
             </div>
           </div>
         ) : (
           <>
             {step === "receipt" ? (
-              <OutcomeHeader key="receipt" compact titleFrom="dialog" focusTitle title={stepTitle} body={stepDescription}>
+              <OutcomeHeader
+                key="receipt"
+                compact
+                titleFrom="dialog"
+                focusTitle
+                title={stepTitle}
+                body={stepDescription}
+              >
                 <OutcomeAmount label={t("addSignatureDialog_amountPaid")} value={COURT_FEE} />
               </OutcomeHeader>
             ) : (
-            <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-4 pr-12 text-left">
-              {/* The chip is the step's own status, so only the two steps that
+              <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-4 pr-12 text-left">
+                {/* The chip is the step's own status, so only the two steps that
                   report one carry it. */}
-              <div className="flex flex-wrap items-center gap-2">
-                <DialogTitle
-                  ref={titleRef}
-                  tabIndex={-1}
-                  className="text-body font-semibold text-balance outline-none"
-                >
-                  {stepTitle}
-                </DialogTitle>
-                {step === "signed" ? (
-                  <Badge variant="success">{t("addSignatureDialog_signed")}</Badge>
-                ) : null}
-              </div>
-              <DialogDescription>{stepDescription}</DialogDescription>
-            </DialogHeader>
+                <div className="flex flex-wrap items-center gap-2">
+                  <DialogTitle
+                    ref={titleRef}
+                    tabIndex={-1}
+                    className="text-body font-semibold text-balance outline-none"
+                  >
+                    {stepTitle}
+                  </DialogTitle>
+                  {step === "signed" ? (
+                    <Badge variant="success">{t("addSignatureDialog_signed")}</Badge>
+                  ) : null}
+                </div>
+                <DialogDescription>{stepDescription}</DialogDescription>
+              </DialogHeader>
             )}
 
             <div
@@ -483,12 +462,19 @@ export function AddSignatureDialog({
                   {/* Where e-filing keeps it: the unsigned copy is only needed to
                       sign on paper, so it is offered on the paper path. */}
                   <p className="flex flex-wrap items-center gap-1 text-body-compact">
-                    {t.rich("addSignatureDialog_needTheUnsignedNounToSign", { noun, button: (chunks) => <Button
-                      type="button"
-                      variant="link"
-                      className="h-auto p-0 underline"
-                      onClick={() => downloadGeneratedApplication(draft, record)}
-                    >{chunks}</Button> })}
+                    {t.rich("addSignatureDialog_needTheUnsignedNounToSign", {
+                      noun,
+                      button: (chunks) => (
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="h-auto p-0 underline"
+                          onClick={() => downloadGeneratedApplication(draft, record)}
+                        >
+                          {chunks}
+                        </Button>
+                      ),
+                    })}
                   </p>
                 </>
               ) : null}
@@ -513,11 +499,21 @@ export function AddSignatureDialog({
                   rows={[
                     {
                       label: t("addSignatureDialog_case"),
-                      value: <Identifier value={record.caseNumber} label={t("addSignatureDialog_caseNumber")} />,
+                      value: (
+                        <Identifier
+                          value={record.caseNumber}
+                          label={t("addSignatureDialog_caseNumber")}
+                        />
+                      ),
                     },
                     {
                       label: t("addSignatureDialog_paymentReference"),
-                      value: <Identifier value={paymentRef} label={t("addSignatureDialog_paymentReferenceLabel")} />,
+                      value: (
+                        <Identifier
+                          value={paymentRef}
+                          label={t("addSignatureDialog_paymentReferenceLabel")}
+                        />
+                      ),
                     },
                   ]}
                 />
@@ -726,55 +722,64 @@ function SuccessContent({
         focusTitle
         tone={paid ? "success" : "neutral"}
         icon={paid ? undefined : ClockIcon}
-        title={paid ? t("addSignatureDialog_nounSubmitted", { noun }) : t("addSignatureDialog_signedWaitingForPayment")}
-        body={
+        title={
           paid
-            ? next
-            : t("addSignatureDialog_nothingReachesTheCourtUntilThe")
+            ? t("addSignatureDialog_nounSubmitted", { noun })
+            : t("addSignatureDialog_signedWaitingForPayment")
         }
+        body={paid ? next : t("addSignatureDialog_nothingReachesTheCourtUntilThe")}
       />
 
       <div className="flex flex-col gap-4 px-6 py-6">
         <OutcomeSummary>
-        <DescriptionList>
-          <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-            <DescriptionTerm className="text-body-compact">
-              {paid ? t("addSignatureDialog_submissionDate") : t("addSignatureDialog_signedOn")}
-            </DescriptionTerm>
-            <DescriptionDetails className="text-body-compact">
-              {formatCaseDate(new Date().toISOString())}
-            </DescriptionDetails>
-          </DescriptionRow>
-          {paid ? (
+          <DescriptionList>
             <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
               <DescriptionTerm className="text-body-compact">
-                {objection ? t("addSignatureDialog_filingId") : t("addSignatureDialog_temporaryId")}
+                {paid ? t("addSignatureDialog_submissionDate") : t("addSignatureDialog_signedOn")}
               </DescriptionTerm>
-              {/* The value is its own copy control now, so the icon button beside it
+              <DescriptionDetails className="text-body-compact">
+                {formatCaseDate(new Date().toISOString())}
+              </DescriptionDetails>
+            </DescriptionRow>
+            {paid ? (
+              <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
+                <DescriptionTerm className="text-body-compact">
+                  {objection
+                    ? t("addSignatureDialog_filingId")
+                    : t("addSignatureDialog_temporaryId")}
+                </DescriptionTerm>
+                {/* The value is its own copy control now, so the icon button beside it
                   went with the conversion — same confirmation, one thing to hit. */}
-              <DescriptionDetails className="flex items-center gap-2 text-body-compact font-medium">
-                <Identifier value={temporaryId} label={t("addSignatureDialog_temporaryIdLabel")} />
-              </DescriptionDetails>
-            </DescriptionRow>
-          ) : null}
-          {paid ? (
-            /* One mark on the screen: the fee is a fact here, as on the bail filing's
+                <DescriptionDetails className="flex items-center gap-2 text-body-compact font-medium">
+                  <Identifier
+                    value={temporaryId}
+                    label={t("addSignatureDialog_temporaryIdLabel")}
+                  />
+                </DescriptionDetails>
+              </DescriptionRow>
+            ) : null}
+            {paid ? (
+              /* One mark on the screen: the fee is a fact here, as on the bail filing's
                outcome, not a second green line. */
-            <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-              <DescriptionTerm className="text-body-compact">{t("addSignatureDialog_courtFee")}</DescriptionTerm>
-              <DescriptionDetails className="text-body-compact tabular-nums">
-                {t("addSignatureDialog_courtFeePaid", { COURT_FEE })}
-              </DescriptionDetails>
-            </DescriptionRow>
-          ) : (
-            <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-              <DescriptionTerm className="text-body-compact">{t("addSignatureDialog_status")}</DescriptionTerm>
-              <DescriptionDetails>
-                <Badge variant="warning">{t("addSignatureDialog_pendingPayment")}</Badge>
-              </DescriptionDetails>
-            </DescriptionRow>
-          )}
-        </DescriptionList>
+              <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
+                <DescriptionTerm className="text-body-compact">
+                  {t("addSignatureDialog_courtFee")}
+                </DescriptionTerm>
+                <DescriptionDetails className="text-body-compact tabular-nums">
+                  {t("addSignatureDialog_courtFeePaid", { COURT_FEE })}
+                </DescriptionDetails>
+              </DescriptionRow>
+            ) : (
+              <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
+                <DescriptionTerm className="text-body-compact">
+                  {t("addSignatureDialog_status")}
+                </DescriptionTerm>
+                <DescriptionDetails>
+                  <Badge variant="warning">{t("addSignatureDialog_pendingPayment")}</Badge>
+                </DescriptionDetails>
+              </DescriptionRow>
+            )}
+          </DescriptionList>
         </OutcomeSummary>
       </div>
     </>

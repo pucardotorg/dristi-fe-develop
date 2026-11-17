@@ -106,7 +106,11 @@ export function NextDateField({
             aria-label={
               labelledBy
                 ? undefined
-                : t("nextHearingFields_nextHearingDateForItemItem", { item: String(hearing.item), causeTitle: causeTitle(hearing), shown })
+                : t("nextHearingFields_nextHearingDateForItemItem", {
+                    item: String(hearing.item),
+                    causeTitle: causeTitle(hearing),
+                    shown,
+                  })
             }
             className={cn(
               "w-full justify-start gap-2 text-left font-normal tabular-nums",
@@ -130,11 +134,7 @@ export function NextDateField({
               <div className="grid gap-4 p-4 md:grid-cols-[auto_minmax(0,16rem)]">
                 <LoadCalendar
                   today={today}
-                  chosen={
-                    listed && posting.nextDate
-                      ? parseIsoDay(posting.nextDate)
-                      : undefined
-                  }
+                  chosen={listed && posting.nextDate ? parseIsoDay(posting.nextDate) : undefined}
                   disabled={!listed}
                   load={load}
                   /* Stays open: the chosen day's breakdown is what the reader checks
@@ -143,9 +143,7 @@ export function NextDateField({
                 />
                 <DayBreakdown
                   day={listed ? posting.nextDate : null}
-                  load={
-                    listed && posting.nextDate ? load.get(posting.nextDate) : undefined
-                  }
+                  load={listed && posting.nextDate ? load.get(posting.nextDate) : undefined}
                 />
               </div>
               <div className="flex min-h-14 items-center gap-2 border-t border-hairline px-4">
@@ -166,11 +164,7 @@ export function NextDateField({
                 >
                   {t("nextHearingFields_notListedAgain")}
                 </Label>
-                <Button
-                  type="button"
-                  className="ml-auto"
-                  onClick={() => setOpen(false)}
-                >
+                <Button type="button" className="ml-auto" onClick={() => setOpen(false)}>
                   {t("nextHearingFields_done")}
                 </Button>
               </div>
@@ -201,9 +195,14 @@ export function NextPurposeField({
         value={listed ? posting.nextPurpose : null}
         disabled={!listed}
         onChange={(nextPurpose) => change({ nextPurpose })}
-        placeholder={listed ? t("nextHearingFields_chooseAPurpose") : t("nextHearingFields_notListed")}
+        placeholder={
+          listed ? t("nextHearingFields_chooseAPurpose") : t("nextHearingFields_notListed")
+        }
         labelledBy={labelledBy}
-        ariaLabel={t("nextHearingFields_nextHearingPurposeForItemItem", { item: String(hearing.item), causeTitle: causeTitle(hearing) })}
+        ariaLabel={t("nextHearingFields_nextHearingPurposeForItemItem", {
+          item: String(hearing.item),
+          causeTitle: causeTitle(hearing),
+        })}
       />
     </div>
   );
@@ -267,13 +266,7 @@ export function LoadCalendar({
 }
 
 /** The chosen day, broken down by purpose — the number under the date, opened up. */
-export function DayBreakdown({
-  day,
-  load,
-}: {
-  day: string | null;
-  load: DayLoad | undefined;
-}) {
+export function DayBreakdown({ day, load }: { day: string | null; load: DayLoad | undefined }) {
   const t = useTranslations();
   return (
     <section
@@ -284,7 +277,9 @@ export function DayBreakdown({
         <>
           <div className="flex flex-col gap-1">
             <h3 className="text-body-compact font-semibold">
-              {t("nextHearingFields_alreadyListedOnFormatCourtDay", { formatCourtDay: formatCourtDay(day) })}
+              {t("nextHearingFields_alreadyListedOnFormatCourtDay", {
+                formatCourtDay: formatCourtDay(day),
+              })}
             </h3>
             <p className="text-body-compact text-muted-foreground tabular-nums">
               {load
@@ -300,9 +295,7 @@ export function DayBreakdown({
                   className="flex items-baseline justify-between gap-4 text-body-compact"
                 >
                   <span className="min-w-0">{entry.label}</span>
-                  <span className="shrink-0 font-medium tabular-nums">
-                    {entry.count}
-                  </span>
+                  <span className="shrink-0 font-medium tabular-nums">{entry.count}</span>
                 </li>
               ))}
             </ul>

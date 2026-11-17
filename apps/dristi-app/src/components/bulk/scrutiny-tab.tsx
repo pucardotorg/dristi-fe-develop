@@ -3,12 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  ChevronRightIcon,
-  CircleAlertIcon,
-  OctagonAlertIcon,
-  Undo2Icon,
-} from "lucide-react";
+import { ChevronRightIcon, CircleAlertIcon, OctagonAlertIcon, Undo2Icon } from "lucide-react";
 
 import type { Flag } from "@/lib/bulk/scrutiny";
 import { money } from "@/lib/filing/format";
@@ -25,8 +20,7 @@ import { StatusLine } from "@/components/feedback";
 import { useTranslations } from "next-intl";
 
 type Kind = "hold" | "check";
-const kindOf = (f: Flag): Kind =>
-  f.level === "hold" ? "hold" : "check";
+const kindOf = (f: Flag): Kind => (f.level === "hold" ? "hold" : "check");
 
 /** Glyph, tint and name per kind. Colour is never alone: the glyph and the words differ too. */
 const KIND: Record<
@@ -61,10 +55,7 @@ export function FlagLine({ flag }: { flag: Flag }) {
   return (
     <div className="flex items-start gap-2 text-body-compact">
       <span
-        className={cn(
-          "flex size-6 shrink-0 items-center justify-center rounded-full",
-          k.disc,
-        )}
+        className={cn("flex size-6 shrink-0 items-center justify-center rounded-full", k.disc)}
         title={k.name}
       >
         <k.Icon className="size-3.5" aria-hidden />
@@ -72,10 +63,7 @@ export function FlagLine({ flag }: { flag: Flag }) {
       <span className="min-w-0 pt-0.5">
         <span className="sr-only">{k.name}: </span>
         {flag.message}{" "}
-        <Badge
-          variant="outline"
-          className="ml-1 align-middle font-normal text-muted-foreground"
-        >
+        <Badge variant="outline" className="ml-1 align-middle font-normal text-muted-foreground">
           {flag.where}
         </Badge>
       </span>
@@ -86,10 +74,7 @@ export function FlagLine({ flag }: { flag: Flag }) {
 /** A case's flags about its details; missing documents are shown on the Documents tab. */
 export const detailFlags = (c: CaseView) =>
   c.flags.filter(
-    (f) =>
-      f.section !== "documents" &&
-      f.fix?.kind !== "upload" &&
-      f.fix?.kind !== "documents",
+    (f) => f.section !== "documents" && f.fix?.kind !== "upload" && f.fix?.kind !== "documents",
   );
 
 /** Fixing first, then checking, then ready. */
@@ -117,18 +102,12 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
   // The case the filer came back from, marked so they can find their place.
   const last = params.get("case");
 
-  const open = batch.cases.filter(
-    (c) => c.stage === "held" || c.stage === "ready",
-  );
+  const open = batch.cases.filter((c) => c.stage === "held" || c.stage === "ready");
   const ordered = [...open].sort((a, b) => rankOf(a) - rankOf(b));
   const [show, setShow] = React.useState<Show>("all");
-  const listed = ordered.filter(
-    (c) => show === "all" || RANK[rankOf(c)] === show,
-  );
+  const listed = ordered.filter((c) => show === "all" || RANK[rankOf(c)] === show);
   const count = (s: Show) =>
-    s === "all"
-      ? open.length
-      : ordered.filter((c) => RANK[rankOf(c)] === s).length;
+    s === "all" ? open.length : ordered.filter((c) => RANK[rankOf(c)] === s).length;
 
   const act = async (body: Record<string, unknown>) => {
     setBusy(true);
@@ -143,9 +122,7 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
   };
 
   // Complete: ready, with nothing left to fix or check. What Sign offers.
-  const ready = batch.cases.filter(
-    (c) => c.stage === "ready" && c.flags.length === 0,
-  ).length;
+  const ready = batch.cases.filter((c) => c.stage === "ready" && c.flags.length === 0).length;
   const skipped = open.flatMap((c) => c.skipped.map((f) => ({ c, f })));
 
   const chips: { id: Show; label: string; ink?: string }[] = [
@@ -159,11 +136,13 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
     return (
       /* Nothing to do here is not news: neutral. */
       <StatusLine tone="neutral" still>
-        {t.rich("scrutinyTab_nothingOpenHereGoToSign", { button: (chunks) => <button
-          type="button"
-          className="underline"
-          onClick={() => go("sign")}
-        >{chunks}</button> })}
+        {t.rich("scrutinyTab_nothingOpenHereGoToSign", {
+          button: (chunks) => (
+            <button type="button" className="underline" onClick={() => go("sign")}>
+              {chunks}
+            </button>
+          ),
+        })}
       </StatusLine>
     );
 
@@ -184,18 +163,14 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
             className="rounded-full aria-pressed:border-primary aria-pressed:bg-accent-strong"
           >
             {c.label}
-            <span
-              className={cn("tabular-nums", c.ink ?? "text-muted-foreground")}
-            >
+            <span className={cn("tabular-nums", c.ink ?? "text-muted-foreground")}>
               {count(c.id)}
             </span>
           </Button>
         ))}
       </div>
 
-      {error ? (
-        <StatusLine tone="error">{error}</StatusLine>
-      ) : null}
+      {error ? <StatusLine tone="error">{error}</StatusLine> : null}
 
       <Card variant="raised" className="gap-0 py-1">
         <ul className="flex flex-col divide-y divide-hairline">
@@ -211,26 +186,25 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
                   className="flex min-h-10 items-center gap-4 px-4 py-3 transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-focus-ring focus-visible:outline-none focus-visible:ring-inset aria-[current=true]:bg-accent"
                 >
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-body-compact font-medium">
-                      {c.title}
-                    </span>
+                    <span className="text-body-compact font-medium">{c.title}</span>
                     <span className="flex flex-wrap gap-x-2 text-caption text-muted-foreground tabular-nums">
                       <span>{c.reference}</span>
-                      {c.cheque ? <span>{t("scrutinyTab_chequeCheque", { cheque: c.cheque })}</span> : null}
+                      {c.cheque ? (
+                        <span>{t("scrutinyTab_chequeCheque", { cheque: c.cheque })}</span>
+                      ) : null}
                       {c.amount ? <span>· {money(c.amount)}</span> : null}
                     </span>
                     {first ? (
                       <span className="mt-1 text-caption text-muted-foreground">
                         {first.where}: {first.message}
-                        {f.length > 1 ? t("scrutinyTab_andValueMore", { value: String(f.length - 1) }) : ""}
+                        {f.length > 1
+                          ? t("scrutinyTab_andValueMore", { value: String(f.length - 1) })
+                          : ""}
                       </span>
                     ) : null}
                   </span>
                   <CaseStateBadge holds={holds} checks={f.length - holds} />
-                  <ChevronRightIcon
-                    aria-hidden
-                    className="size-4 shrink-0 text-muted-foreground"
-                  />
+                  <ChevronRightIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
                 </Link>
               </li>
             );
@@ -249,17 +223,13 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
                   className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center"
                 >
                   <div className="min-w-0 flex-1">
-                    <span className="text-body-compact font-medium">
-                      {c.title}
-                    </span>
+                    <span className="text-body-compact font-medium">{c.title}</span>
                     <FlagLine flag={f} />
                   </div>
                   <Button
                     variant="ghost"
                     disabled={busy || closed}
-                    onClick={() =>
-                      void act({ action: "unskip", caseId: c.id, flagId: f.id })
-                    }
+                    onClick={() => void act({ action: "unskip", caseId: c.id, flagId: f.id })}
                   >
                     <Undo2Icon data-icon="inline-start" aria-hidden />
                     {t("scrutinyTab_undoSkip")}
@@ -276,9 +246,7 @@ export function ScrutinyTab({ batch, setBatch, go }: BatchCtx) {
         // Signing never waits for the whole batch: once any case is complete it can go
         // ahead on its own, and the rest stay here.
         continueLabel={
-          ready
-            ? `Sign ${ready} complete case${ready === 1 ? "" : "s"}`
-            : t("scrutinyTab_sign")
+          ready ? `Sign ${ready} complete case${ready === 1 ? "" : "s"}` : t("scrutinyTab_sign")
         }
         continueBlocked={!ready}
         continueHint={t("scrutinyTab_noCaseIsCompleteYet")}

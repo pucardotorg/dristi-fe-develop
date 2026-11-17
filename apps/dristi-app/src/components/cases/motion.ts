@@ -26,8 +26,7 @@ function easeOut(t: number) {
  * loses the reader; seeing the list travel tells them where their row went.
  */
 export function glideToTop(scroller: HTMLElement, node: HTMLElement) {
-  const offset = () =>
-    node.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+  const offset = () => node.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
 
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     scroller.scrollTop += offset();

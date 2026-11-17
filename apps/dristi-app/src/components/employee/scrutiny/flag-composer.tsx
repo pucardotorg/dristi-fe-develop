@@ -3,24 +3,14 @@
 import * as React from "react";
 import { CheckIcon, FileUpIcon } from "lucide-react";
 
-import {
-  canSaveDraft,
-  docName,
-  isDraftDirty,
-  saysSomething,
-} from "@/lib/employee/scrutiny/field";
+import { canSaveDraft, docName, isDraftDirty, saysSomething } from "@/lib/employee/scrutiny/field";
 import { DOC_REASONS } from "@/lib/employee/scrutiny/sections";
 import type { FlatField } from "@/lib/employee/scrutiny/types";
 import type { ScrutinyController } from "@/lib/employee/scrutiny/use-scrutiny-state";
 import { cn } from "@/lib/utils";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useTranslations } from "next-intl";
@@ -109,23 +99,21 @@ export function FlagComposer({
          * listed accessibility defect, and a voice user says the label.
          */}
         <FieldLabel>
-          {isDocRow ? t("flagComposer_whatsWrongWithThisDocument") : t("flagComposer_noteForTheAdvocate")}
+          {isDocRow
+            ? t("flagComposer_whatsWrongWithThisDocument")
+            : t("flagComposer_noteForTheAdvocate")}
         </FieldLabel>
 
         <Textarea
           ref={noteRef}
           className="max-h-32 min-h-16"
           placeholder={
-            isDocRow
-              ? t("flagComposer_eGOnlyTheAddressSide")
-              : t("flagComposer_eGTheAmountDoesNot")
+            isDocRow ? t("flagComposer_eGOnlyTheAddressSide") : t("flagComposer_eGTheAmountDoesNot")
           }
           value={draft.text}
           onClick={(event) => event.stopPropagation()}
           onKeyDown={onKeyDown}
-          onChange={(event) =>
-            controller.updateDraft({ text: event.target.value })
-          }
+          onChange={(event) => controller.updateDraft({ text: event.target.value })}
         />
 
         {/* Structured reasons qualify the note; the note comes first. */}
@@ -159,11 +147,7 @@ export function FlagComposer({
        * card the switch wraps above and the pair stays at the end.
        */}
       <div className="flex flex-wrap items-center gap-2">
-        <DocSwitch
-          field={field}
-          controller={controller}
-          onGoToItem={onGoToItem}
-        />
+        <DocSwitch field={field} controller={controller} onGoToItem={onGoToItem} />
         <div className="ms-auto flex items-center gap-2">
           <Button variant="ghost" onClick={() => controller.closeComposer()}>
             {t("common_cancel")}
@@ -174,12 +158,14 @@ export function FlagComposer({
            */}
           <Button
             disabled={!canSave}
-            aria-label={
-              draft.linked ? t("flagComposer_saveTheFlagAndTheDocument") : undefined
-            }
+            aria-label={draft.linked ? t("flagComposer_saveTheFlagAndTheDocument") : undefined}
             onClick={() => controller.saveFlag()}
           >
-            {draft.linked ? t("flagComposer_saveBoth") : isDocRow ? t("flagComposer_saveIssue") : t("flagComposer_saveFlag")}
+            {draft.linked
+              ? t("flagComposer_saveBoth")
+              : isDocRow
+                ? t("flagComposer_saveIssue")
+                : t("flagComposer_saveFlag")}
           </Button>
         </div>
       </div>
@@ -227,9 +213,7 @@ function ReasonChips({
           className="h-10 gap-1.5 bg-transparent data-[state=on]:bg-secondary data-[state=on]:font-medium"
           onClick={(event) => event.stopPropagation()}
         >
-          {value === reason ? (
-            <CheckIcon className="size-3.5" aria-hidden="true" />
-          ) : null}
+          {value === reason ? <CheckIcon className="size-3.5" aria-hidden="true" /> : null}
           {reason}
         </ToggleGroupItem>
       ))}
@@ -310,9 +294,7 @@ function DocSwitch({
         // first reason — rather than falling to the page.
         requestAnimationFrame(() =>
           composer
-            ?.querySelector<HTMLElement>(
-              "[data-linked-block] [data-slot=toggle-group-item]",
-            )
+            ?.querySelector<HTMLElement>("[data-linked-block] [data-slot=toggle-group-item]")
             ?.focus(),
         );
       }}
@@ -344,17 +326,13 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
      * above and the re-upload header row — glyph, item name, Undo — say a second item
      * starts here, so the two textareas never read as one note.
      */
-    <div
-      className="flex flex-col gap-2 pt-1"
-      data-linked-block=""
-    >
+    <div className="flex flex-col gap-2 pt-1" data-linked-block="">
       <div className="flex flex-wrap items-center gap-2">
-        <FileUpIcon
-          className="size-3.5 shrink-0 text-muted-foreground"
-          aria-hidden="true"
-        />
+        <FileUpIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span className="min-w-0 flex-1 text-body-compact font-medium">
-          {t("flagComposer_alsoRaisingDocNameReUpload", { docName: docName(linked.docId, docById) })}
+          {t("flagComposer_alsoRaisingDocNameReUpload", {
+            docName: docName(linked.docId, docById),
+          })}
         </span>
         <Button
           variant="ghost"
@@ -395,9 +373,7 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
           placeholder={t("flagComposer_noteForTheAdvocateOptional")}
           value={linked.note}
           onClick={(event) => event.stopPropagation()}
-          onChange={(event) =>
-            controller.updateLinked({ note: event.target.value })
-          }
+          onChange={(event) => controller.updateLinked({ note: event.target.value })}
         />
         {/*
          * A description, not an error: the officer just chose to open this block and
@@ -406,9 +382,7 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
          * announcement already happened when the question appeared.
          */}
         {missing ? (
-          <FieldDescription>
-            {t("flagComposer_pickWhatsWrongToEnableSave")}
-          </FieldDescription>
+          <FieldDescription>{t("flagComposer_pickWhatsWrongToEnableSave")}</FieldDescription>
         ) : null}
       </Field>
     </div>

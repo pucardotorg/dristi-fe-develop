@@ -82,11 +82,7 @@ import {
   type PendingOrder,
   type PendingOrderStage,
 } from "@/lib/employee/pending-orders";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { ConfirmMark, IrreversibleNote, notify } from "@/components/feedback";
 import { useTranslations } from "next-intl";
@@ -139,12 +135,8 @@ export function PendingOrdersScreen({
   const pending = usePendingOrders();
   const signing = useOrderSigning();
   const move = pendingOrderStageFor(seat, court);
-  const [tab, setTab] = React.useState<Tab>(
-    () => initialTab ?? openingTab(seat, court),
-  );
-  const [selected, setSelected] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [tab, setTab] = React.useState<Tab>(() => initialTab ?? openingTab(seat, court));
+  const [selected, setSelected] = React.useState<ReadonlySet<string>>(() => new Set());
   const [askSign, setAskSign] = React.useState(false);
   const [askItems, setAskItems] = React.useState(false);
   const [itemsOpening, setItemsOpening] = React.useState(0);
@@ -165,19 +157,13 @@ export function PendingOrdersScreen({
      triggered — signed and its order data complete (order-types `RZN-01`). Listed after
      the orders. */
   const companionRows: Row[] = orderRows
-    .filter(
-      (row) =>
-        row.stage === "triggered" && companionSignedEach(row.type, rules),
-    )
+    .filter((row) => row.stage === "triggered" && companionSignedEach(row.type, rules))
     .map((row) => ({
       ...row,
       key: companionKey(row.key),
       companionOf: row.key,
       typeLabel: rules.companion?.label ?? t("pendingOrdersScreen_roznama"),
-      stage:
-        signing[companionKey(row.key)] === "signed"
-          ? "triggered"
-          : "awaiting-signature",
+      stage: signing[companionKey(row.key)] === "signed" ? "triggered" : "awaiting-signature",
     }));
   const all: Row[] = [...orderRows, ...companionRows];
   /* A sent order sits in Awaiting signature and Order data to fill at once (`PND-02`).
@@ -189,8 +175,7 @@ export function PendingOrdersScreen({
     return inPendingStage(row, signing, stage);
   };
   const rows = all.filter((row) => inTab(row, tab));
-  const count = (stage: PendingOrderStage) =>
-    all.filter((row) => inTab(row, stage)).length;
+  const count = (stage: PendingOrderStage) => all.filter((row) => inTab(row, stage)).length;
   /* Who can pick rows, and which: the magistrate the orders awaiting a signature, to sign
      them; the steno every order with order data to fill, signed or not, to add items to
      them in bulk (`ITM-10`, `PND-07`) — the two are worked in parallel (`SND-07`; owner,
@@ -318,31 +303,20 @@ export function PendingOrdersScreen({
                             : t("pendingOrdersScreen_selectTheOrdersWithOrderData")
                         }
                         disabled={signable.length === 0}
-                        checked={
-                          signable.length > 0 &&
-                          chosen.length === signable.length
-                        }
+                        checked={signable.length > 0 && chosen.length === signable.length}
                         onCheckedChange={(checked) =>
-                          setSelected(
-                            checked
-                              ? new Set(signable.map((row) => row.key))
-                              : new Set(),
-                          )
+                          setSelected(checked ? new Set(signable.map((row) => row.key)) : new Set())
                         }
                       />
                     </TableHead>
                   ) : null}
-                  <TableHead
-                    className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}
-                  >
+                  <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
                     {t("pendingOrdersScreen_caseName")}
                   </TableHead>
                   <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
                     {t("pendingOrdersScreen_caseNumber")}
                   </TableHead>
-                  <TableHead
-                    className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}
-                  >
+                  <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
                     {t("pendingOrdersScreen_title")}
                   </TableHead>
                   {showType ? (
@@ -351,9 +325,7 @@ export function PendingOrdersScreen({
                     </TableHead>
                   ) : null}
                   {showText ? (
-                    <TableHead
-                      className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}
-                    >
+                    <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
                       {t("pendingOrdersScreen_order")}
                     </TableHead>
                   ) : null}
@@ -379,16 +351,16 @@ export function PendingOrdersScreen({
                       <TableCell className={cn(TABLE_CELL, "w-px")}>
                         {pickable(row) ? (
                           <Checkbox
-                            aria-label={t("pendingOrdersScreen_selectHeading", { heading: row.heading })}
+                            aria-label={t("pendingOrdersScreen_selectHeading", {
+                              heading: row.heading,
+                            })}
                             checked={selected.has(row.key)}
                             onCheckedChange={() => toggle(row.key)}
                           />
                         ) : null}
                       </TableCell>
                     ) : null}
-                    <TableCell
-                      className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
                       <button
                         type="button"
                         {...rowOpener}
@@ -399,11 +371,12 @@ export function PendingOrdersScreen({
                       </button>
                     </TableCell>
                     <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                      <Identifier value={row.caseNumber} label={t("pendingOrdersScreen_caseNumberLabel")} />
+                      <Identifier
+                        value={row.caseNumber}
+                        label={t("pendingOrdersScreen_caseNumberLabel")}
+                      />
                     </TableCell>
-                    <TableCell
-                      className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}>
                       {/* The order's title (`PND-03`, `TIT-06`) — where it came from is no
                           longer shown. */}
                       {row.title ?? t("pendingOrdersScreen_order")}
@@ -420,38 +393,35 @@ export function PendingOrdersScreen({
                           "min-w-56 whitespace-normal text-muted-foreground",
                         )}
                       >
-                        {orderTextPreview(
-                          drafts[editorDraftKey(row.key)]?.body?.text ?? "",
-                        ) || t("pendingOrdersScreen_noTextYet")}
+                        {orderTextPreview(drafts[editorDraftKey(row.key)]?.body?.text ?? "") ||
+                          t("pendingOrdersScreen_noTextYet")}
                       </TableCell>
                     ) : null}
                     {/* Signature and order data, two pills side by side in one column
                         (owner, 2026-10-15). Each pill says which it is. */}
                     <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
                       <div className="flex items-center gap-1.5">
-                      <SignatureBadge stage={row.stage} />
-                      {row.companionOf ? null : (
-                      <Badge
-                        variant={
-                          row.stage === "triggered"
-                            ? "success"
-                            : row.workflowComplete
-                              ? "info"
-                              : "secondary"
-                        }
-                      >
-                        {row.stage === "triggered"
-                          ? t("pendingOrdersScreen_dataTriggered")
-                          : row.workflowComplete
-                            ? t("pendingOrdersScreen_dataComplete")
-                            : t("pendingOrdersScreen_dataToFill")}
-                      </Badge>
-                      )}
+                        <SignatureBadge stage={row.stage} />
+                        {row.companionOf ? null : (
+                          <Badge
+                            variant={
+                              row.stage === "triggered"
+                                ? "success"
+                                : row.workflowComplete
+                                  ? "info"
+                                  : "secondary"
+                            }
+                          >
+                            {row.stage === "triggered"
+                              ? t("pendingOrdersScreen_dataTriggered")
+                              : row.workflowComplete
+                                ? t("pendingOrdersScreen_dataComplete")
+                                : t("pendingOrdersScreen_dataToFill")}
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
-                    <TableCell
-                      className={cn(TABLE_CELL, "w-px whitespace-nowrap")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "w-px whitespace-nowrap")}>
                       <Button
                         type="button"
                         variant="outline"
@@ -476,10 +446,7 @@ export function PendingOrdersScreen({
 
         {filler && (signable.length > 0 || notice) ? (
           <div className="flex flex-col gap-3 border-t border-hairline pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p
-              className="text-body-compact text-muted-foreground"
-              aria-live="polite"
-            >
+            <p className="text-body-compact text-muted-foreground" aria-live="polite">
               {notice ||
                 (chosen.length
                   ? t("pendingOrdersScreen_lengthSelected", { length: String(chosen.length) })
@@ -505,11 +472,7 @@ export function PendingOrdersScreen({
                 ? t("pendingOrdersScreen_lengthSelected", { length: String(chosen.length) })
                 : t("pendingOrdersScreen_selectTheOrdersToSignOr")}
             </p>
-            <Button
-              type="button"
-              disabled={chosen.length === 0}
-              onClick={() => setAskSign(true)}
-            >
+            <Button type="button" disabled={chosen.length === 0} onClick={() => setAskSign(true)}>
               {chosen.length === 0
                 ? t("pendingOrdersScreen_sign")
                 : t("pendingOrdersScreen_signChosenWhat", { chosenWhat })}
@@ -536,13 +499,19 @@ export function PendingOrdersScreen({
           if (!open) setReading(null);
         }}
       >
-        <DialogContent className="sm:max-w-2xl" onInteractOutside={(event) => event.preventDefault()}>
+        <DialogContent
+          className="sm:max-w-2xl"
+          onInteractOutside={(event) => event.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>
               {companionName} · {reading?.heading}
             </DialogTitle>
             <DialogDescription>
-              {t("pendingOrdersScreen_caseNumberFromItsOrderValue", { caseNumber: (reading?.caseNumber) ?? "", value: reading?.title ? ` “${reading.title}”` : "" })}
+              {t("pendingOrdersScreen_caseNumberFromItsOrderValue", {
+                caseNumber: reading?.caseNumber ?? "",
+                value: reading?.title ? ` “${reading.title}”` : "",
+              })}
             </DialogDescription>
           </DialogHeader>
           {/* Editable until it is signed, by the order data filler or the order signer
@@ -565,9 +534,7 @@ export function PendingOrdersScreen({
           ) : (
             <div className="max-h-[50vh] overflow-y-auto whitespace-pre-wrap rounded-lg border border-hairline bg-muted p-4 text-body">
               {companionText(
-                reading?.companionOf
-                  ? drafts[editorDraftKey(reading.companionOf)]
-                  : undefined,
+                reading?.companionOf ? drafts[editorDraftKey(reading.companionOf)] : undefined,
               ) || t("pendingOrdersScreen_noText")}
             </div>
           )}
@@ -606,10 +573,9 @@ export function PendingOrdersScreen({
             <AlertDialogDescription>
               {chosenOrders ? (
                 <span className="block">
-                  Your signature issues{" "}
-                  {chosenOrders === 1 ? "the order" : "each order"}. Its order
-                  data is triggered once it is complete — at once, for any the
-                  steno has already completed.
+                  Your signature issues {chosenOrders === 1 ? "the order" : "each order"}. Its order
+                  data is triggered once it is complete — at once, for any the steno has already
+                  completed.
                 </span>
               ) : null}
               {chosenCompanions ? (
@@ -642,8 +608,7 @@ function headline(
   move: PendingOrderStage | null,
   count: (stage: PendingOrderStage) => number,
 ): string {
-  const plural = (n: number, one: string, many: string) =>
-    `${n} ${n === 1 ? one : many}`;
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   if (move === "awaiting-signature")
     return `${plural(count("awaiting-signature"), "order is", "orders are")} awaiting your signature.`;
   if (move === "workflow-to-fill")
@@ -653,7 +618,8 @@ function headline(
 
 function SignatureBadge({ stage }: { stage: PendingOrderStage }) {
   const t = useTranslations();
-  if (stage === "drafting") return <Badge variant="secondary">{t("pendingOrdersScreen_notSent")}</Badge>;
+  if (stage === "drafting")
+    return <Badge variant="secondary">{t("pendingOrdersScreen_notSent")}</Badge>;
   if (stage === "awaiting-signature")
     return <Badge variant="warning">{t("pendingOrdersScreen_awaitingSignature")}</Badge>;
   return <Badge variant="success">{t("pendingOrdersScreen_signed")}</Badge>;
@@ -664,11 +630,7 @@ function SignatureBadge({ stage }: { stage: PendingOrderStage }) {
  * awaiting signature is signed by an order signer and filled by an order data filler —
  * the same row offers each their own act.
  */
-function actionLabel(
-  move: PendingOrderStage | null,
-  tab: Tab,
-  stage: PendingOrderStage,
-): string {
+function actionLabel(move: PendingOrderStage | null, tab: Tab, stage: PendingOrderStage): string {
   if (stage === "drafting") return "Continue typing";
   if (stage === "triggered") return "View";
   if (move === "awaiting-signature" && stage === "awaiting-signature" && tab !== "workflow-to-fill")

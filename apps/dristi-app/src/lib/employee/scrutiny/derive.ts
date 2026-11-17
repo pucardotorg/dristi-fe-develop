@@ -239,8 +239,7 @@ export function deriveScrutinyCase(filing: Filing): DerivedCase {
         ...(lowConfidence
           ? {
               ocrfail: true,
-              failnote:
-                "Not on the uploaded ID — only the address side was uploaded",
+              failnote: "Not on the uploaded ID — only the address side was uploaded",
             }
           : {}),
       },
@@ -562,7 +561,11 @@ export function deriveHistory(
     return {
       history: [
         filed,
-        { status: "past", title: "Scrutiny started", meta: `${filedShort} · ${filing.who === "—" ? "Registry" : filing.who}` },
+        {
+          status: "past",
+          title: "Scrutiny started",
+          meta: `${filedShort} · ${filing.who === "—" ? "Registry" : filing.who}`,
+        },
         {
           status: "current",
           title: `Sent back with ${items} item${items > 1 ? "s" : ""}`,

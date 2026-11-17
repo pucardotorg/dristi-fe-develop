@@ -64,20 +64,27 @@ export function FeesStep({ vak: stored }: { vak: Vakalatnama }) {
     return (
       <div className="flex flex-col gap-6">
         <StatusLine tone="success" title={t("stepsFees_vakalatnamaExecuted")}>
-            {t("stepsFees_feesPaidAndAllPartiesSigned")}
-            {vak.boundCaseNumber ? (
-              <>
-                {t("stepsFees_andCarriesCaseNumber")}
-                {/* Inside a `role="alert"` sentence — the face, not a control. */}
-                <Identifier value={vak.boundCaseNumber} label={t("stepsFees_caseNumber")} copyable={false} />
-              </>
-            ) : null}
-            .
+          {t("stepsFees_feesPaidAndAllPartiesSigned")}
+          {vak.boundCaseNumber ? (
+            <>
+              {t("stepsFees_andCarriesCaseNumber")}
+              {/* Inside a `role="alert"` sentence — the face, not a control. */}
+              <Identifier
+                value={vak.boundCaseNumber}
+                label={t("stepsFees_caseNumber")}
+                copyable={false}
+              />
+            </>
+          ) : null}
+          .
         </StatusLine>
 
         <VakalatnamaDocument vak={vak} />
 
-        <FormCard title={t("stepsFees_auditTrail")} description={t("stepsFees_whatWasSignedHowAndWhen")}>
+        <FormCard
+          title={t("stepsFees_auditTrail")}
+          description={t("stepsFees_whatWasSignedHowAndWhen")}
+        >
           <div className="divide-y divide-hairline">
             {board.map((s) => (
               <div key={s.id} className="flex items-baseline justify-between gap-4 py-2">
@@ -115,9 +122,7 @@ export function FeesStep({ vak: stored }: { vak: Vakalatnama }) {
         <Alert>
           <InfoIcon aria-hidden />
           <AlertTitle>{t("stepsFees_amountsToBeConfirmed")}</AlertTitle>
-          <AlertDescription>
-            {t("stepsFees_theseFiguresAreIndicativeTheCourt")}
-          </AlertDescription>
+          <AlertDescription>{t("stepsFees_theseFiguresAreIndicativeTheCourt")}</AlertDescription>
         </Alert>
 
         <div className="flex items-center gap-3">

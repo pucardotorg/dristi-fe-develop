@@ -9,7 +9,17 @@
  * everything.
  */
 
-import type { Case, Person, PersonId, Task, TaskCategory, TaskKind, TaskStatus, TaskView, Verb } from "./types";
+import type {
+  Case,
+  Person,
+  PersonId,
+  Task,
+  TaskCategory,
+  TaskKind,
+  TaskStatus,
+  TaskView,
+  Verb,
+} from "./types";
 
 function idOf(user: Person | PersonId): PersonId {
   return typeof user === "string" ? user : user.id;
@@ -49,7 +59,10 @@ export function mainAdvocateOf(kase: Case): PersonId | undefined {
 
 /** The case's advocates as people, main advocate first, then the rest in case order. */
 export function advocatesOf(kase: Case, people: Person[]): Person[] {
-  const ids = [...kase.signatories, ...kase.advocates.filter((id) => !kase.signatories.includes(id))];
+  const ids = [
+    ...kase.signatories,
+    ...kase.advocates.filter((id) => !kase.signatories.includes(id)),
+  ];
   return ids.map((id) => people.find((p) => p.id === id)).filter(Boolean) as Person[];
 }
 
@@ -75,7 +88,15 @@ export function isBinding(task: Task): boolean {
   return !TERMINAL.has(task.status) && !WAITING.has(task.status) && task.status !== "archived";
 }
 /** Verbs that make a task this viewer's move — the Needs-action test. */
-const ACTING: ReadonlySet<Verb> = new Set(["Sign", "Pay", "File", "Re-file", "Continue", "Respond", "Mark done"]);
+const ACTING: ReadonlySet<Verb> = new Set([
+  "Sign",
+  "Pay",
+  "File",
+  "Re-file",
+  "Continue",
+  "Respond",
+  "Mark done",
+]);
 
 /**
  * Which tab a task belongs to — viewer-dependent. Needs action means this viewer holds
@@ -134,7 +155,13 @@ const CATEGORY_OF_KIND: Record<TaskKind, TaskCategory> = {
 };
 
 /** Kinds that have their own act flow. Hearing tasks are done in court. */
-export const PAGED_KINDS: ReadonlySet<Task["kind"]> = new Set(["sign", "pay", "file", "returned", "draft"]);
+export const PAGED_KINDS: ReadonlySet<Task["kind"]> = new Set([
+  "sign",
+  "pay",
+  "file",
+  "returned",
+  "draft",
+]);
 
 /**
  * Any open-state task may be marked done by hand by anyone on the case — work gets

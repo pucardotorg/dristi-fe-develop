@@ -1,22 +1,14 @@
 "use client";
 
 import * as React from "react";
-import {
-  BookCheckIcon,
-  CalendarDaysIcon,
-  CalendarXIcon,
-  NotebookPenIcon,
-} from "lucide-react";
+import { BookCheckIcon, CalendarDaysIcon, CalendarXIcon, NotebookPenIcon } from "lucide-react";
 
 import { ListFooter } from "@/components/employee/list-footer";
 import { QueueAnnouncer } from "@/components/employee/queue-announcer";
 import { SignADiaryDayDialog } from "@/components/employee/sign-a-diary-day-dialog";
 import { SignADiaryDialog } from "@/components/employee/sign-a-diary-dialog";
 import { SignADiaryTable } from "@/components/employee/sign-a-diary-table";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
@@ -96,25 +88,17 @@ const readToday = () => isoDay(new Date());
  */
 export function SignADiaryScreen() {
   const t = useTranslations();
-  const today = React.useSyncExternalStore(
-    NEVER_CHANGES,
-    readToday,
-    readToday,
-  );
+  const today = React.useSyncExternalStore(NEVER_CHANGES, readToday, readToday);
 
   /* The register is state because both acts change it: Save rewrites an entry's business,
      Sign drops the day. One list, so the table, the count on the page and the dialog
      can never disagree about what is still unsigned. */
-  const [register, setRegister] = React.useState<ADiaryEntry[]>(() =>
-    aDiaryEntries(today),
-  );
+  const [register, setRegister] = React.useState<ADiaryEntry[]>(() => aDiaryEntries(today));
   /* One state, not a draft and an applied one: picking a day shows that day's register.
      A calendar hands over a whole date or nothing — there is no half-typed day whose
      intermediate state would be meaningless — so there was never anything for a Search
      button to wait for. Every change resets to page one. */
-  const [filters, setFilters] = React.useState<ADiaryFilters>(
-    DEFAULT_A_DIARY_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<ADiaryFilters>(DEFAULT_A_DIARY_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
   /* The open entry is held by id, not by value: Save changes the entry under the dialog,
@@ -160,7 +144,9 @@ export function SignADiaryScreen() {
     setRegister((current) => signADiaryDay(current, day));
     setSignedDays((current) => [...current, day]);
     setSigningDay(null);
-    setAnnouncement(t("signADiaryScreen_theADiaryForFormatCourt", { formatCourtDay: formatCourtDay(day) }));
+    setAnnouncement(
+      t("signADiaryScreen_theADiaryForFormatCourt", { formatCourtDay: formatCourtDay(day) }),
+    );
   }
 
   /**
@@ -196,7 +182,9 @@ export function SignADiaryScreen() {
               ? t("signADiaryScreen_nothingIsWaitingForYourSignature")
               : waitingDays.length === 1
                 ? t("signADiaryScreen_1DayOfThisCourtsA")
-                : t("signADiaryScreen_lengthDaysOfThisCourtsA", { length: String(waitingDays.length) })}
+                : t("signADiaryScreen_lengthDaysOfThisCourtsA", {
+                    length: String(waitingDays.length),
+                  })}
         </p>
       </header>
 
@@ -215,7 +203,9 @@ export function SignADiaryScreen() {
           />
           {rows.length === 0 ? null : canSignADiaryDay(shownDay, today) ? (
             <Button onClick={() => setSigningDay(shownDay)}>
-              {t("signADiaryScreen_signTheADiaryForFormat", { formatADiaryDate: formatADiaryDate(shownDay) })}
+              {t("signADiaryScreen_signTheADiaryForFormat", {
+                formatADiaryDate: formatADiaryDate(shownDay),
+              })}
             </Button>
           ) : (
             /* Today, said in words rather than as a disabled button: what the bench
@@ -227,11 +217,7 @@ export function SignADiaryScreen() {
         </div>
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <SignADiaryEmpty
@@ -254,10 +240,7 @@ export function SignADiaryScreen() {
                 <SignADiaryTable rows={pageRows} onOpen={(entry) => setOpenId(entry.id)} />
               </div>
               <div className="md:hidden">
-                <SignADiaryItemList
-                  rows={pageRows}
-                  onOpen={(entry) => setOpenId(entry.id)}
-                />
+                <SignADiaryItemList rows={pageRows} onOpen={(entry) => setOpenId(entry.id)} />
               </div>
             </div>
 
@@ -335,10 +318,7 @@ function SignADiaryFilters({
   const unsigned = React.useMemo(() => unsignedDays.map(parseIsoDay), [unsignedDays]);
 
   return (
-    <form
-      className="flex min-w-0 flex-col gap-2"
-      onSubmit={(event) => event.preventDefault()}
-    >
+    <form className="flex min-w-0 flex-col gap-2" onSubmit={(event) => event.preventDefault()}>
       <Label htmlFor="sign-a-diary-date" className="w-fit text-body-compact font-medium">
         {t("signADiaryScreen_aDiaryDated")}
       </Label>
@@ -390,10 +370,7 @@ function SignADiaryFilters({
  * module level so the focused day is not remounted on every render — the same reason
  * `DashboardDatePicker` gives for its own.
  */
-function UnsignedDayButton({
-  children,
-  ...props
-}: React.ComponentProps<typeof DayButton>) {
+function UnsignedDayButton({ children, ...props }: React.ComponentProps<typeof DayButton>) {
   return (
     <CalendarDayButton {...props}>
       {children}
@@ -441,7 +418,9 @@ function SignADiaryEmpty({
             <BookCheckIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            {t("signADiaryScreen_theADiaryForFormatAdiary", { formatADiaryDate: formatADiaryDate(day) })}
+            {t("signADiaryScreen_theADiaryForFormatAdiary", {
+              formatADiaryDate: formatADiaryDate(day),
+            })}
           </EmptyTitle>
           <EmptyDescription className="text-body">
             {t("signADiaryScreen_itsEntriesCanNoLongerBe")}
@@ -480,21 +459,21 @@ function SignADiaryEmpty({
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isToday ? (
-            <NotebookPenIcon aria-hidden />
-          ) : (
-            <CalendarXIcon aria-hidden />
-          )}
+          {isToday ? <NotebookPenIcon aria-hidden /> : <CalendarXIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isToday
             ? t("signADiaryScreen_nothingInTodaysDiaryYet")
-            : t("signADiaryScreen_noEntryForFormatAdiaryDate", { formatADiaryDate: formatADiaryDate(day) })}
+            : t("signADiaryScreen_noEntryForFormatAdiaryDate", {
+                formatADiaryDate: formatADiaryDate(day),
+              })}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isToday
             ? t("signADiaryScreen_entriesAppearHereAsThisCourt")
-            : t("signADiaryScreen_thisCourtsRegisterHoldsNoUnsigned", { formatCourtDay: formatCourtDay(day) })}
+            : t("signADiaryScreen_thisCourtsRegisterHoldsNoUnsigned", {
+                formatCourtDay: formatCourtDay(day),
+              })}
         </EmptyDescription>
       </EmptyHeader>
       {isToday ? null : (
@@ -533,16 +512,21 @@ function SignADiaryItemList({
             type="button"
             onClick={() => onOpen(entry)}
             {...rowOpener}
-                className={rowOpenerClass}
+            className={rowOpenerClass}
           >
             <span className="sr-only">
-              {t("signADiaryScreen_readAndCorrectTheEntryIn", { courtText: courtText(entry.caseNumber) })}
+              {t("signADiaryScreen_readAndCorrectTheEntryIn", {
+                courtText: courtText(entry.caseNumber),
+              })}
             </span>
             <span className="line-clamp-4">{entry.business}</span>
           </button>
           <p className="text-caption text-muted-foreground">
             <Identifier value={entry.caseNumber} label={t("signADiaryScreen_caseNumber")} />
-            {t.rich("signADiaryScreen_nextHearingFormatAdiaryDate", { formatADiaryDate: formatADiaryDate(entry.nextHearing), span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+            {t.rich("signADiaryScreen_nextHearingFormatAdiaryDate", {
+              formatADiaryDate: formatADiaryDate(entry.nextHearing),
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
         </QueueItemRow>
       ))}

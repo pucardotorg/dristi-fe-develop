@@ -12,12 +12,7 @@ import {
 } from "lucide-react";
 
 import { draftProgress, sectionState, type SectionState } from "@/lib/filing/selectors";
-import {
-  FILING_STEPS,
-  stepFromPathname,
-  stepGroups,
-  type FilingStep,
-} from "@/lib/filing/steps";
+import { FILING_STEPS, stepFromPathname, stepGroups, type FilingStep } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -34,10 +29,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { TOP_BAR_HEIGHT, useFilingChrome } from "@/components/filing/chrome";
 import { useFieldPolicy, type HostStep } from "@/components/filing/field-policy";
 import { useLeaveBlocked } from "@/components/filing/leave-guard";
-import {
-  UploadedCountBadge,
-  UploadedDocsDrawer,
-} from "@/components/filing/uploaded-docs-drawer";
+import { UploadedCountBadge, UploadedDocsDrawer } from "@/components/filing/uploaded-docs-drawer";
 import { useCourtText } from "@/components/court/court-provider";
 import { useTranslations } from "next-intl";
 
@@ -149,7 +141,8 @@ function StepRow({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right">
-            {courtText(step.title)}: {PLACEHOLDER_NOTE[step.id] ?? t("sectionsRail_notAScreenOfItsOwn")}
+            {courtText(step.title)}:{" "}
+            {PLACEHOLDER_NOTE[step.id] ?? t("sectionsRail_notAScreenOfItsOwn")}
           </TooltipContent>
         </Tooltip>
       </li>
@@ -175,7 +168,11 @@ function StepRow({
       >
         <Icon aria-hidden className={active ? undefined : "text-muted-foreground"} />
         <span className="min-w-0 truncate">{courtText(step.title)}</span>
-        {issues ? <IssueMark count={issues} /> : <SectionMark state={sectionState(draft, step.id)} />}
+        {issues ? (
+          <IssueMark count={issues} />
+        ) : (
+          <SectionMark state={sectionState(draft, step.id)} />
+        )}
       </Link>
     </Button>
   );
@@ -190,7 +187,12 @@ function HostStepRow({ step, onNavigate }: { step: HostStep; onNavigate: () => v
   if (step.disabled) {
     return (
       <li>
-        <Button type="button" variant="ghost" aria-disabled="true" className={cn(ROW, ROW_PLACEHOLDER)}>
+        <Button
+          type="button"
+          variant="ghost"
+          aria-disabled="true"
+          className={cn(ROW, ROW_PLACEHOLDER)}
+        >
           <Icon aria-hidden />
           <span className="min-w-0 truncate">{step.title}</span>
           <span className="sr-only">{t("sectionsRail_notReachedYet")}</span>
@@ -214,15 +216,11 @@ function HostStepRow({ step, onNavigate }: { step: HostStep; onNavigate: () => v
 function DocsRow({ onOpen }: { onOpen: () => void }) {
   const t = useTranslations();
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      onClick={onOpen}
-      aria-haspopup="dialog"
-      className={ROW}
-    >
+    <Button type="button" variant="ghost" onClick={onOpen} aria-haspopup="dialog" className={ROW}>
       <FilesIcon aria-hidden className="text-muted-foreground" />
-      <span className="min-w-0 flex-1 truncate text-left">{t("sectionsRail_viewUploadedDocuments")}</span>
+      <span className="min-w-0 flex-1 truncate text-left">
+        {t("sectionsRail_viewUploadedDocuments")}
+      </span>
       <UploadedCountBadge />
     </Button>
   );
@@ -230,13 +228,7 @@ function DocsRow({ onOpen }: { onOpen: () => void }) {
 
 /* ───────────────────────────── Rail body ───────────────────────────── */
 
-function StepList({
-  onNavigate,
-  onOpenDocs,
-}: {
-  onNavigate: () => void;
-  onOpenDocs: () => void;
-}) {
+function StepList({ onNavigate, onOpenDocs }: { onNavigate: () => void; onOpenDocs: () => void }) {
   const t = useTranslations();
   const courtText = useCourtText();
   const active = useActiveStep();
@@ -258,12 +250,7 @@ function StepList({
           </h2>
           <ul className="flex flex-col gap-1">
             {g.steps.map((s) => (
-              <StepRow
-                key={s.id}
-                step={s}
-                active={active?.id === s.id}
-                onNavigate={onNavigate}
-              />
+              <StepRow key={s.id} step={s} active={active?.id === s.id} onNavigate={onNavigate} />
             ))}
           </ul>
         </div>
@@ -331,7 +318,9 @@ export function SectionsRail() {
         className="sticky hidden w-72 shrink-0 flex-col self-start overflow-y-auto border-r border-hairline bg-sidebar lg:pointer-fine:flex lg:landscape:flex"
       >
         <div className="flex flex-col gap-3 px-4 py-4">
-          <span className="text-body font-medium text-foreground">{t("sectionsRail_sections")}</span>
+          <span className="text-body font-medium text-foreground">
+            {t("sectionsRail_sections")}
+          </span>
           <ProgressBlock />
         </div>
 
@@ -343,7 +332,9 @@ export function SectionsRail() {
       <Sheet open={sectionsSheetOpen} onOpenChange={setSectionsSheetOpen}>
         <SheetContent side="left" className="w-full overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="text-title-s font-semibold">{t("sectionsRail_sections")}</SheetTitle>
+            <SheetTitle className="text-title-s font-semibold">
+              {t("sectionsRail_sections")}
+            </SheetTitle>
             <SheetDescription className="text-body-compact">
               {t("sectionsRail_everyPartOfThisFilingIn")}
             </SheetDescription>
@@ -459,7 +450,7 @@ export function SectionsTrigger() {
           onBlur={() => setFocused(false)}
           className={cn(
             "pointer-events-auto justify-start gap-0 overflow-hidden bg-card shadow-raised transition-[width] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none sm:w-auto",
-            shrink ? "w-12" : "w-full"
+            shrink ? "w-12" : "w-full",
           )}
         >
           <PanelLeftOpenIcon aria-hidden />
@@ -467,7 +458,10 @@ export function SectionsTrigger() {
             {t("sectionsRail_sections")}
             {position ? (
               <span className="ml-auto pl-3 text-caption font-normal tabular-nums text-muted-foreground">
-                {t("sectionsRail_stepPositionOfLength", { position: String(position), length: String(walked.length) })}
+                {t("sectionsRail_stepPositionOfLength", {
+                  position: String(position),
+                  length: String(walked.length),
+                })}
               </span>
             ) : null}
             <ChevronRightIcon aria-hidden className="text-muted-foreground" />

@@ -3,11 +3,7 @@ import { redirect } from "next/navigation";
 
 import { CasesListScreen } from "@/components/cases/cases-list-screen";
 import { CASES, FIXTURE_TODAY } from "@/lib/cases/fixtures";
-import {
-  buildCasesHref,
-  initialBookmarks,
-  parseCasesQuery,
-} from "@/lib/cases/query";
+import { buildCasesHref, initialBookmarks, parseCasesQuery } from "@/lib/cases/query";
 import { bucketLabel } from "@/lib/cases/types";
 
 export async function generateMetadata({

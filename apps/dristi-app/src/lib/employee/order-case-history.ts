@@ -137,17 +137,15 @@ export function orderCaseHistory(
     ...sittings
       .filter((sitting) => sitting.directed)
       .toReversed()
-      .map(
-        (sitting): OrderHistoryEntry => ({
-          id: `order-${sitting.on}`,
-          on: sitting.on,
-          /* The catalogue's event for an order the magistrate passed. */
-          label: "employeeOrderCaseHistory_orderIssued",
-          kind: "order",
-          type: "orders",
-          text: sitting.order,
-        }),
-      ),
+      .map((sitting): OrderHistoryEntry => ({
+        id: `order-${sitting.on}`,
+        on: sitting.on,
+        /* The catalogue's event for an order the magistrate passed. */
+        label: "employeeOrderCaseHistory_orderIssued",
+        kind: "order",
+        type: "orders",
+        text: sitting.order,
+      })),
   ];
 
   /* Oldest first; on one day, an order after the events that led to it. The sort is
@@ -157,18 +155,12 @@ export function orderCaseHistory(
     .sort(
       (a, b) =>
         a.entry.on.localeCompare(b.entry.on) ||
-        (a.entry.kind === b.entry.kind
-          ? a.index - b.index
-          : a.entry.kind === "order"
-            ? 1
-            : -1),
+        (a.entry.kind === b.entry.kind ? a.index - b.index : a.entry.kind === "order" ? 1 : -1),
     )
     .map(({ entry }) => entry);
 
   const last = sorted.findLast((entry) => entry.kind === "order");
-  return sorted.map((entry) =>
-    entry === last ? { ...entry, last: true } : entry,
-  );
+  return sorted.map((entry) => (entry === last ? { ...entry, last: true } : entry));
 }
 
 /**
@@ -183,9 +175,6 @@ export function orderExcerpt(
   if (whole.length <= limit) return { text: whole, cut: false };
   const head = whole.slice(0, limit);
   const space = head.lastIndexOf(" ");
-  const kept = (space > limit / 2 ? head.slice(0, space) : head).replace(
-    /[\s,;:.–-]+$/,
-    "",
-  );
+  const kept = (space > limit / 2 ? head.slice(0, space) : head).replace(/[\s,;:.–-]+$/, "");
   return { text: `${kept}…`, cut: true };
 }

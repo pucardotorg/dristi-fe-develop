@@ -85,7 +85,9 @@ function SignADiaryDayBody({
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           <span className="tabular-nums">{formatADiaryDate(day)}</span> ·{" "}
-          {count === 1 ? t("signADiaryDayDialog_1Entry") : t("signADiaryDayDialog_countEntries", { count: String(count) })}
+          {count === 1
+            ? t("signADiaryDayDialog_1Entry")
+            : t("signADiaryDayDialog_countEntries", { count: String(count) })}
         </DialogDescription>
       }
       sceneKey="day"
@@ -96,11 +98,7 @@ function SignADiaryDayBody({
           <p className="text-caption text-muted-foreground sm:mr-auto sm:text-left">
             {t("signADiaryDayDialog_youSignTheWholeDayAs")}
           </p>
-          <Button
-            type="button"
-            className="sm:self-center"
-            onClick={() => onSign(day)}
-          >
+          <Button type="button" className="sm:self-center" onClick={() => onSign(day)}>
             {t("signADiaryDayDialog_signTheADiary")}
           </Button>
         </>
@@ -122,7 +120,9 @@ function SignADiaryDayBody({
           surface="card"
           className="min-h-96 shadow-raised lg:min-h-0 lg:flex-1"
           height="fill"
-          title={t("signADiaryDayDialog_aDiaryFormatAdiaryDate", { formatADiaryDate: formatADiaryDate(day) })}
+          title={t("signADiaryDayDialog_aDiaryFormatAdiaryDate", {
+            formatADiaryDate: formatADiaryDate(day),
+          })}
           source={{
             kind: "composed",
             content: <ADiaryDayFacsimile document={document} />,
@@ -143,11 +143,7 @@ function SignADiaryDayBody({
  * block that signs the whole of it. Drawn with the paper palette, like the order beside
  * an entry, rather than the DS `Table`: this is a facsimile of a court paper.
  */
-function ADiaryDayFacsimile({
-  document: storedDocument,
-}: {
-  document: ADiaryDayDocument;
-}) {
+function ADiaryDayFacsimile({ document: storedDocument }: { document: ADiaryDayDocument }) {
   const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   const cell = "border border-paper-border px-3 py-2 align-top text-body-compact";
@@ -156,18 +152,30 @@ function ADiaryDayFacsimile({
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <h3 className="text-body font-semibold">{t("signADiaryDayDialog_aDiary")}</h3>
-        <p className="text-body font-semibold">{t("signADiaryDayDialog_datedDated", { dated: document.dated })}</p>
+        <p className="text-body font-semibold">
+          {t("signADiaryDayDialog_datedDated", { dated: document.dated })}
+        </p>
       </header>
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-xl border-collapse text-left">
-          <caption className="sr-only">{t("signADiaryDayDialog_aDiaryDatedDated", { dated: document.dated })}</caption>
+          <caption className="sr-only">
+            {t("signADiaryDayDialog_aDiaryDatedDated", { dated: document.dated })}
+          </caption>
           <thead>
             <tr>
-              <th scope="col" className={cn(cell, "font-semibold")}>{t("signADiaryDayDialog_case")}</th>
-              <th scope="col" className={cn(cell, "font-semibold")}>{t("signADiaryDayDialog_hearing")}</th>
-              <th scope="col" className={cn(cell, "font-semibold")}>{t("signADiaryDayDialog_proceedings")}</th>
-              <th scope="col" className={cn(cell, "font-semibold")}>{t("signADiaryDayDialog_nextHearing")}</th>
+              <th scope="col" className={cn(cell, "font-semibold")}>
+                {t("signADiaryDayDialog_case")}
+              </th>
+              <th scope="col" className={cn(cell, "font-semibold")}>
+                {t("signADiaryDayDialog_hearing")}
+              </th>
+              <th scope="col" className={cn(cell, "font-semibold")}>
+                {t("signADiaryDayDialog_proceedings")}
+              </th>
+              <th scope="col" className={cn(cell, "font-semibold")}>
+                {t("signADiaryDayDialog_nextHearing")}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -180,7 +188,9 @@ function ADiaryDayFacsimile({
                 </td>
                 <td className={cn(cell, "w-1/6")}>
                   {entry.hearing ?? (
-                    <span className="sr-only">{t("signADiaryDayDialog_passedOutsideAHearing")}</span>
+                    <span className="sr-only">
+                      {t("signADiaryDayDialog_passedOutsideAHearing")}
+                    </span>
                   )}
                 </td>
                 <td className={cell}>

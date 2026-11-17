@@ -81,8 +81,9 @@ const editable = (c: CaseView) => c.stage === "held" || c.stage === "ready";
 /** The next case, after this one and round to the start, that still has something to fix. */
 function nextToFix(cases: CaseView[], at: number): CaseView | null {
   return (
-    [...cases.slice(at + 1), ...cases.slice(0, at)].find((x) => editable(x) && x.flags.length > 0) ??
-    null
+    [...cases.slice(at + 1), ...cases.slice(0, at)].find(
+      (x) => editable(x) && x.flags.length > 0,
+    ) ?? null
   );
 }
 
@@ -183,7 +184,10 @@ export function BulkCaseFlow({
       };
     }
     const cases = batch.cases;
-    const toFix = nextToFix(cases, cases.findIndex((x) => x.id === c.id));
+    const toFix = nextToFix(
+      cases,
+      cases.findIndex((x) => x.id === c.id),
+    );
     const left = cases.filter((x) => x.id !== c.id && editable(x) && x.flags.length > 0).length;
     const status = (
       <span className="inline-flex items-center gap-2 text-body-compact text-success-ink">
@@ -202,14 +206,16 @@ export function BulkCaseFlow({
           href: caseFlowHref(batchId, toFix, firstFlaggedStep(toFix.flags), aiParam),
           status,
         }
-      : { label: t("caseFlow_backToAllCases"), href: batchHref(batchId, "scrutiny", aiParam, c.id), status };
+      : {
+          label: t("caseFlow_backToAllCases"),
+          href: batchHref(batchId, "scrutiny", aiParam, c.id),
+          status,
+        };
   }, [batch, c, step, batchId, aiParam, courtText, t]);
 
   const policy = React.useMemo<FieldPolicy>(() => {
     const flags = c?.flags ?? [];
-    const here = flags
-      .map((f) => ({ f, at: flagPlace(f) }))
-      .filter(({ at }) => at.step === step);
+    const here = flags.map((f) => ({ f, at: flagPlace(f) })).filter(({ at }) => at.step === step);
     return {
       step,
       issueAt: (instance, name) => {
@@ -251,7 +257,9 @@ export function BulkCaseFlow({
               <EmptyMedia variant="icon">
                 <FileQuestionIcon aria-hidden />
               </EmptyMedia>
-              <EmptyTitle className="text-body font-semibold">{t("caseFlow_thisCaseIsntInTheBatch")}</EmptyTitle>
+              <EmptyTitle className="text-body font-semibold">
+                {t("caseFlow_thisCaseIsntInTheBatch")}
+              </EmptyTitle>
               <EmptyDescription className="text-body">
                 {t("caseFlow_itMayHaveBeenClubbedInto")}
               </EmptyDescription>
@@ -348,7 +356,9 @@ function CaseBar({
   if (error && !batch)
     return frame(
       /* Already true when the page opened: it stands still. */
-      <StatusLine tone="error" still>{error}</StatusLine>,
+      <StatusLine tone="error" still>
+        {error}
+      </StatusLine>,
     );
   if (!batch || !c) return frame(<Skeleton className="h-16 w-full rounded-xl" />);
 
@@ -384,7 +394,11 @@ function CaseBar({
           </span>
           <span className="flex flex-wrap gap-x-2 text-caption text-muted-foreground tabular-nums">
             <span>
-              {t("caseFlow_caseValueOfLengthInNumber", { value: String(at + 1), length: String(cases.length), number: batch.number })}
+              {t("caseFlow_caseValueOfLengthInNumber", {
+                value: String(at + 1),
+                length: String(cases.length),
+                number: batch.number,
+              })}
             </span>
             <span>· {c.reference}</span>
             {c.cheque ? <span>{t("caseFlow_chequeCheque", { cheque: c.cheque })}</span> : null}
@@ -395,7 +409,10 @@ function CaseBar({
             </span>
           ) : null}
         </div>
-        <nav aria-label={t("caseFlow_casesInThisBatch")} className="flex flex-wrap items-center gap-2">
+        <nav
+          aria-label={t("caseFlow_casesInThisBatch")}
+          className="flex flex-wrap items-center gap-2"
+        >
           {prev ? (
             <Button asChild variant="outline">
               <Link href={sameStep(prev)}>
@@ -454,7 +471,10 @@ function CaseBar({
               </span>
               {elsewhere.map(({ s, n }, i) => (
                 <span key={s} className="tabular-nums">
-                  <Link href={caseFlowHref(batchId, c, s, aiParam)} className="font-medium text-foreground underline">
+                  <Link
+                    href={caseFlowHref(batchId, c, s, aiParam)}
+                    className="font-medium text-foreground underline"
+                  >
                     {courtText(getStep(s).title)}
                   </Link>{" "}
                   ({n}){i < elsewhere.length - 1 ? "," : ""}
@@ -462,9 +482,7 @@ function CaseBar({
               ))}
             </p>
           ) : null}
-          {problem ? (
-            <StatusLine tone="error">{problem}</StatusLine>
-          ) : null}
+          {problem ? <StatusLine tone="error">{problem}</StatusLine> : null}
           {/* Demo: fills every date (consistent, filable today) and every empty required field. */}
           <Button
             variant="outline"
@@ -496,7 +514,8 @@ function FlagRow({
 }) {
   const t = useTranslations();
   const fix = f.fix;
-  const valueFix = fix && (fix.kind === "text" || fix.kind === "date" || fix.kind === "select") ? fix : null;
+  const valueFix =
+    fix && (fix.kind === "text" || fix.kind === "date" || fix.kind === "select") ? fix : null;
   return (
     <li className="flex flex-col gap-2">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
@@ -508,7 +527,9 @@ function FlagRow({
             variant="outline"
             className="ml-8 w-fit shrink-0 sm:ml-0"
             disabled={busy}
-            onClick={() => void act({ action: "declare-no-contact", caseId, accusedId: fix.accusedId })}
+            onClick={() =>
+              void act({ action: "declare-no-contact", caseId, accusedId: fix.accusedId })
+            }
           >
             {t("caseFlow_declareNeitherIsKnown")}
           </Button>
@@ -560,7 +581,12 @@ function BatchFix({
           {translateText(t, fix.label)}
         </FieldLabel>
         {fix.kind === "select" ? (
-          <NativeSelect id={id} value={value} onChange={(e) => setValue(e.target.value)} className="w-full">
+          <NativeSelect
+            id={id}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="w-full"
+          >
             <NativeSelectOption value="">{t("caseFlow_select")}</NativeSelectOption>
             {fix.options.map((o) => (
               <NativeSelectOption key={o.value} value={o.value}>

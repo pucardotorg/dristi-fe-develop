@@ -25,27 +25,14 @@ import { formatCaseDate } from "@/lib/cases/types";
 
 import { caseOf, causeTitleOf, dueState, type DueState } from "./application-tasks";
 
-export type ApplicationQueueId =
-  | "onboard"
-  | "decide"
-  | "signing"
-  | "later"
-  | "closed"
-  | "archive";
+export type ApplicationQueueId = "onboard" | "decide" | "signing" | "later" | "closed" | "archive";
 
 /** Closed applications stay in Closed this long, then move to the archive. */
 export const ARCHIVE_AFTER_DAYS = 30;
 
 /** Where an application stands, or `null` for one the court has nothing to do with yet. */
-export function queueOf(
-  app: LifecycleApplication,
-  today: string,
-): ApplicationQueueId | null {
-  if (
-    app.status === "accepted" ||
-    app.status === "rejected" ||
-    app.status === "dismissed"
-  ) {
+export function queueOf(app: LifecycleApplication, today: string): ApplicationQueueId | null {
+  if (app.status === "accepted" || app.status === "rejected" || app.status === "dismissed") {
     const closedOn = app.linkedOrder?.signedOn ?? app.updatedOn;
     return closedOn < addDays(today, -ARCHIVE_AFTER_DAYS) ? "archive" : "closed";
   }
@@ -204,11 +191,7 @@ export function statusLine(app: LifecycleApplication, today: string): StatusLine
   const queue = queueOf(app, today);
   if (queue === "closed" || queue === "archive") {
     const word =
-      app.status === "accepted"
-        ? "Accepted"
-        : app.status === "rejected"
-          ? "Rejected"
-          : "Dismissed";
+      app.status === "accepted" ? "Accepted" : app.status === "rejected" ? "Rejected" : "Dismissed";
     return {
       word,
       detail: app.linkedOrder
@@ -224,7 +207,10 @@ export function statusLine(app: LifecycleApplication, today: string): StatusLine
   }
   if (app.status === "pending-review" && app.review) {
     if (queue === "later") {
-      return { word: `Review deferred to ${shortDate(app.review.dueOn)}`, detail: "Not onboarded yet" };
+      return {
+        word: `Review deferred to ${shortDate(app.review.dueOn)}`,
+        detail: "Not onboarded yet",
+      };
     }
     /* The list it is in already says "to onboard", so the line leads with the day; only
        a review that was deferred says so. */
@@ -245,11 +231,7 @@ export function statusLine(app: LifecycleApplication, today: string): StatusLine
 }
 
 export function orderKindLabel(kind: "dismiss" | "accept" | "reject"): string {
-  return kind === "dismiss"
-    ? "Dismissal"
-    : kind === "accept"
-      ? "Accepting"
-      : "Rejecting";
+  return kind === "dismiss" ? "Dismissal" : kind === "accept" ? "Accepting" : "Rejecting";
 }
 
 /** The objection, as the list and the facts say it (`ALC-11`–`ALC-13`, `ALC-23`). */
@@ -258,7 +240,9 @@ export function objectionLine(app: LifecycleApplication, today: string): string 
   if (app.decide?.mode === "now" || !app.objectionsInvited) return "No objection called for";
   if (app.objectionId) return "Objection received";
   if (app.objectionDueBy && app.objectionDueBy < today) return "No objection received";
-  return app.objectionDueBy ? `Objection due by ${shortDate(app.objectionDueBy)}` : "No objection called for";
+  return app.objectionDueBy
+    ? `Objection due by ${shortDate(app.objectionDueBy)}`
+    : "No objection called for";
 }
 
 /** "Wednesday, 7 October 2026" — the day the bench is working, beside the title. */

@@ -53,7 +53,7 @@ export function MaskedOtp({
             index={index}
             className={cn(
               "h-12 w-auto flex-1 text-body font-semibold",
-              !revealed && "text-transparent"
+              !revealed && "text-transparent",
             )}
           />
         ))}

@@ -52,11 +52,7 @@ type AccessContextValue = {
   /** Give office access to every registered user in `phones`: `caseIds` as
    *  specific cases, idempotent per (person, case); or, with `allCases: true`,
    *  every shareable case now and in future (OFC-24, OFC-25). */
-  invite: (
-    phones: string[],
-    caseIds: string[],
-    options?: { allCases?: boolean },
-  ) => InviteResult;
+  invite: (phones: string[], caseIds: string[], options?: { allCases?: boolean }) => InviteResult;
   removeGrant: (personId: string, caseId: string) => void;
   /** Remove from the office: every grant this advocate gave, whichever access they had. */
   removeAll: (personId: string) => void;
@@ -117,9 +113,7 @@ export function formatPhone(digits: string): string {
 /** Office access the signed-in advocate gave (OFC-09) — not a vakalatnama,
     and not access a co-advocate gave on a shared case. */
 export function isOwnOfficeGrant(grant: AccessPerson["grants"][number]): boolean {
-  return (
-    grant.role !== "vakalat" && grant.addedBy === "self" && viewerHoldsVakalat(grant.caseId)
-  );
+  return grant.role !== "vakalat" && grant.addedBy === "self" && viewerHoldsVakalat(grant.caseId);
 }
 
 /** Has this advocate given the person access to this case? A co-advocate may
@@ -180,11 +174,7 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
   );
 
   const invite = React.useCallback(
-    (
-      phones: string[],
-      caseIds: string[],
-      options?: { allCases?: boolean },
-    ): InviteResult => {
+    (phones: string[], caseIds: string[], options?: { allCases?: boolean }): InviteResult => {
       // Pure computation over the current state — no side effects inside the
       // setState updater (StrictMode runs updaters twice and would double them).
       const today = displayToday();
@@ -207,9 +197,7 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
 
         if (index >= 0) {
           const person = next[index];
-          const missing = targetCases.filter(
-            (caseId) => !hasOwnGrant(person, caseId),
-          );
+          const missing = targetCases.filter((caseId) => !hasOwnGrant(person, caseId));
           missing.forEach((caseId) => casesTouched.add(caseId));
           // Already in this office: told about the new cases (N3). Not yet in it
           // (only a co-advocate's access, or none of ours left): told they joined.
@@ -296,9 +284,7 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
             // same case is theirs and stays (OFC-09).
             {
               ...person,
-              grants: person.grants.filter(
-                (g) => !(g.caseId === caseId && g.addedBy === "self"),
-              ),
+              grants: person.grants.filter((g) => !(g.caseId === caseId && g.addedBy === "self")),
             }
           : person,
       ),
@@ -328,9 +314,7 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
         if (person.id !== personId) return person;
         if (!on) return { ...person, allCases: false };
         const role = person.grants.find((g) => g.role !== "vakalat")?.role ?? "clerk";
-        const missing = shareableCaseIds().filter(
-          (caseId) => !hasOwnGrant(person, caseId),
-        );
+        const missing = shareableCaseIds().filter((caseId) => !hasOwnGrant(person, caseId));
         return {
           ...person,
           allCases: true,
@@ -471,9 +455,7 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
 export function noticeToShell(notice: OfficeNotice, locale: Locale): ShellNotification {
   const advocate = SELF.name;
   const one =
-    notice.caseIds.length === 1
-      ? ACCESS_CASES.find((c) => c.id === notice.caseIds[0])
-      : undefined;
+    notice.caseIds.length === 1 ? ACCESS_CASES.find((c) => c.id === notice.caseIds[0]) : undefined;
   if (notice.kind === "shared") {
     const named = one
       ? one.title

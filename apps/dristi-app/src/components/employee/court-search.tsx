@@ -60,10 +60,7 @@ type CourtSearchRow = {
   family: string | null;
 };
 
-function courtSearchRows(
-  court: CourtId,
-  seat: CourtRole,
-): CourtSearchRow[] {
+function courtSearchRows(court: CourtId, seat: CourtRole): CourtSearchRow[] {
   return [
     ...COURT_NAV_LINKS.map((item) => ({ item, family: null })),
     ...courtNavGroupsForCourt(COURT_NAV_GROUPS, court).flatMap((group) =>
@@ -119,14 +116,8 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
             {rows.map((row) => {
               const Icon = row.item.icon;
               return (
-                <CommandItem
-                  key={row.item.id}
-                  value={row.item.id}
-                  onSelect={() => open(row)}
-                >
-                  {Icon ? (
-                    <Icon aria-hidden className="text-muted-foreground" />
-                  ) : null}
+                <CommandItem key={row.item.id} value={row.item.id} onSelect={() => open(row)}>
+                  {Icon ? <Icon aria-hidden className="text-muted-foreground" /> : null}
                   <span className="min-w-0 flex-1 truncate text-body-compact font-medium text-foreground">
                     {row.item.label}
                   </span>
@@ -198,11 +189,7 @@ export function useCourtSearch(): CourtSearchValue {
 }
 
 /** Holds the dialog and the ⌘K binding for the whole court area. */
-export function CourtSearchProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function CourtSearchProvider({ children }: { children: React.ReactNode }) {
   const t = useTranslations();
   const [open, setOpen] = React.useState(false);
   const shortcut = useShortcutLabel();

@@ -95,12 +95,7 @@ describe("hearing controls (order-generation §10)", () => {
       { ...c, status: "passed-over" },
       { ...d, status: "completed" },
     ]).map((row) => row.status);
-    assert.deepEqual(closed, [
-      "abandoned",
-      "abandoned",
-      "abandoned",
-      "completed",
-    ]);
+    assert.deepEqual(closed, ["abandoned", "abandoned", "abandoned", "completed"]);
   });
 
   it("shows the last worked day closed, and nothing for any other past day", () => {
@@ -118,11 +113,7 @@ describe("hearing controls (order-generation §10)", () => {
     const rows = boardForDay(yesterday, TODAY, session);
     assert.equal(rows.find((row) => row.id === a.id)?.status, "abandoned");
     assert.equal(rows.find((row) => row.id === b.id)?.status, "completed");
-    assert.ok(
-      rows.every(
-        (row) => row.status === "abandoned" || row.status === "completed",
-      ),
-    );
+    assert.ok(rows.every((row) => row.status === "abandoned" || row.status === "completed"));
     assert.deepEqual(boardForDay("2000-01-04", TODAY, session), []);
   });
 
@@ -170,15 +161,10 @@ describe("cause list filters (CLS-07)", () => {
     nextHearingSet: (hearing: CourtHearing) => hearing.id === "y3",
   };
   const ids = (filters: Partial<typeof EMPTY_FILTERS>) =>
-    filterHearings(rows(), { ...EMPTY_FILTERS, ...filters }, facts).map(
-      (row) => row.id,
-    );
+    filterHearings(rows(), { ...EMPTY_FILTERS, ...filters }, facts).map((row) => row.id);
 
   it("takes several statuses at once", () => {
-    assert.deepEqual(ids({ statuses: ["scheduled", "completed"] }), [
-      "y1",
-      "y3",
-    ]);
+    assert.deepEqual(ids({ statuses: ["scheduled", "completed"] }), ["y1", "y3"]);
   });
 
   it("filters on the Orders column", () => {

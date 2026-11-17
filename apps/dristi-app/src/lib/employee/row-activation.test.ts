@@ -24,25 +24,16 @@ test("shouldActivateRow", async (t) => {
 
   await t.test("refuses a click that landed inside another control", () => {
     // The signing queues: ticking fifteen boxes must not open fifteen overlays.
-    assert.equal(
-      shouldActivateRow({ ...plainClick, insideControl: true }),
-      false,
-    );
+    assert.equal(shouldActivateRow({ ...plainClick, insideControl: true }), false);
   });
 
   await t.test("refuses a click something else has already handled", () => {
-    assert.equal(
-      shouldActivateRow({ ...plainClick, defaultPrevented: true }),
-      false,
-    );
+    assert.equal(shouldActivateRow({ ...plainClick, defaultPrevented: true }), false);
   });
 
   await t.test("refuses when the reader is holding a text selection", () => {
     // Dragging across a case number is copying it, not opening it.
-    assert.equal(
-      shouldActivateRow({ ...plainClick, selection: "KL-ADV-000118-2026" }),
-      false,
-    );
+    assert.equal(shouldActivateRow({ ...plainClick, selection: "KL-ADV-000118-2026" }), false);
   });
 
   await t.test("treats whitespace as no selection", () => {
@@ -73,13 +64,8 @@ test("ROW_INTERACTIVE_SELECTOR", async (t) => {
 
   for (const control of mustCover) {
     await t.test(`covers ${control}`, () => {
-      const parts = ROW_INTERACTIVE_SELECTOR.split(",").map((part) =>
-        part.trim(),
-      );
-      assert.ok(
-        parts.includes(control),
-        `${control} must own its own click inside a row`,
-      );
+      const parts = ROW_INTERACTIVE_SELECTOR.split(",").map((part) => part.trim());
+      assert.ok(parts.includes(control), `${control} must own its own click inside a row`);
     });
   }
 

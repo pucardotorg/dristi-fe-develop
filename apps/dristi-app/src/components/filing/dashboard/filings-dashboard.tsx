@@ -24,12 +24,7 @@ import { BatchFilingDialog } from "./batch-filing-dialog";
 import { BulkImportCard, type BulkBatch } from "./bulk-import-card";
 import { FilingsQueue, type QueueData } from "./filings-queue";
 import { StartFilingCard } from "./start-filing-card";
-import {
-  PAGE_GROUND,
-  PAGE_GUTTER,
-  PAGE_SUBTITLE,
-  PAGE_TITLE,
-} from "@/components/shell/page-frame";
+import { PAGE_GROUND, PAGE_GUTTER, PAGE_SUBTITLE, PAGE_TITLE } from "@/components/shell/page-frame";
 import { cn } from "@/lib/utils";
 import { useCourt } from "@/components/court/court-provider";
 import { bulkFetch, type BatchSummary } from "@/components/bulk/api";
@@ -57,7 +52,14 @@ function useLatestBatch(): { batch: BulkBatch | null; needAction: number } {
           client: b.client,
           what: `${b.total} × cheque bounce (S-138, NI Act)`,
           receivedOn: toLongDate(b.createdAt.slice(0, 10)),
-          via: b.source.kind === "api" ? `${b.source.system} API` : b.source.kind === "excel" ? t("filingsDashboard_excelUpload") : b.source.kind === "documents" ? "case documents" : "clubbing",
+          via:
+            b.source.kind === "api"
+              ? `${b.source.system} API`
+              : b.source.kind === "excel"
+                ? t("filingsDashboard_excelUpload")
+                : b.source.kind === "documents"
+                  ? "case documents"
+                  : "clubbing",
           counts: b.counts,
         });
       })
@@ -89,9 +91,7 @@ export function FilingsDashboard() {
   const [confirmIds, setConfirmIds] = React.useState<string[]>([]);
   // The rows a bulk sign or bulk pay is about to act on — from the tab's own selection,
   // never restated. Empty (null) means the dialog is closed.
-  const [batch, setBatch] = React.useState<{ kind: "sign" | "pay"; rows: QueueRow[] } | null>(
-    null
-  );
+  const [batch, setBatch] = React.useState<{ kind: "sign" | "pay"; rows: QueueRow[] } | null>(null);
 
   const showData = mounted && ready;
   const firstName = firstNameOf(profile?.name ?? "");
@@ -106,18 +106,18 @@ export function FilingsDashboard() {
       returned: returnedRows(tasks, taskCases),
       registered: registeredRows(today),
     }),
-    [drafts, profile, courtFees, tasks, taskCases, today]
+    [drafts, profile, courtFees, tasks, taskCases, today],
   );
 
   return (
     <div className={cn("flex w-full flex-1 flex-col gap-6", PAGE_GROUND, PAGE_GUTTER)}>
       <header className="flex flex-col gap-1">
         <h1 className={cn(PAGE_TITLE, "text-foreground")}>
-          {firstName ? t("filingsDashboard_fileACaseFirstName", { firstName }) : t("filingsDashboard_fileACase")}
+          {firstName
+            ? t("filingsDashboard_fileACaseFirstName", { firstName })
+            : t("filingsDashboard_fileACase")}
         </h1>
-        <p className={PAGE_SUBTITLE}>
-          {t("filingsDashboard_startANewFilingImportMany")}
-        </p>
+        <p className={PAGE_SUBTITLE}>{t("filingsDashboard_startANewFilingImportMany")}</p>
       </header>
 
       {error ? <StatusLine tone="error">{error}</StatusLine> : null}
@@ -151,10 +151,14 @@ export function FilingsDashboard() {
         description={
           confirmIds.length === 1
             ? t("filingsDashboard_everythingEnteredAndUploadedForThis")
-            : t("filingsDashboard_everythingEnteredAndUploadedForThese", { length: String(confirmIds.length) })
+            : t("filingsDashboard_everythingEnteredAndUploadedForThese", {
+                length: String(confirmIds.length),
+              })
         }
         confirmLabel={
-          confirmIds.length === 1 ? t("filingsDashboard_discardDraft") : t("filingsDashboard_discardLengthDrafts", { length: String(confirmIds.length) })
+          confirmIds.length === 1
+            ? t("filingsDashboard_discardDraft")
+            : t("filingsDashboard_discardLengthDrafts", { length: String(confirmIds.length) })
         }
         onConfirm={() => {
           for (const id of confirmIds) void discard(id);

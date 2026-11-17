@@ -10,13 +10,7 @@ import { useFiling } from "@/lib/filing/store";
 import type { IntakeSlot } from "@/lib/filing/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemMedia,
-  ItemTitle,
-} from "@/components/ui/item";
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import {
   Sheet,
   SheetContent,
@@ -64,10 +58,7 @@ function DrawerRow({
   );
   return img ? (
     <Item asChild className="bg-surface-sunken hover:bg-accent">
-      <button
-        type="button"
-        onClick={() => onOpen(img, `Uploaded ${slot.label.toLowerCase()}`)}
-      >
+      <button type="button" onClick={() => onOpen(img, `Uploaded ${slot.label.toLowerCase()}`)}>
         {body}
       </button>
     </Item>

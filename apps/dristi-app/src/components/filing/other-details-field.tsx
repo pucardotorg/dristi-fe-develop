@@ -47,10 +47,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DetailFieldMenu } from "@/components/filing/detail-field-menu";
-import {
-  RichTextEditor,
-  type RichTextEditorHandle,
-} from "@/components/filing/rich-text-editor";
+import { RichTextEditor, type RichTextEditorHandle } from "@/components/filing/rich-text-editor";
 import { useTranslations } from "next-intl";
 
 /** Where the formats this box starts from are set up. */
@@ -74,7 +71,9 @@ function FormatMenu({
       <DropdownMenuTrigger asChild>
         <Button type="button" variant="ghost" size="sm" className="max-w-56">
           <FileTextIcon data-icon="inline-start" aria-hidden />
-          <span className="truncate">{current ? current.name : t("otherDetailsField_chooseAFormat")}</span>
+          <span className="truncate">
+            {current ? current.name : t("otherDetailsField_chooseAFormat")}
+          </span>
           <ChevronDownIcon data-icon="inline-end" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
@@ -127,7 +126,6 @@ export function OtherDetailsField({
   const current = formats.find((f) => f.id === formatId);
   const fallback = defaultFormat(formats);
 
-
   const generate = (format: DetailsFormat) =>
     onGenerate(format.id, generateDetails(formatForFiler(format), draft, courtText));
 
@@ -166,7 +164,9 @@ export function OtherDetailsField({
               onPick={(field) =>
                 editor.current?.insertText(courtText(field.resolve(draft)) || `[${field.name}]`)
               }
-              describe={(field) => courtText(field.resolve(draft)) || t("otherDetailsField_notEnteredYet")}
+              describe={(field) =>
+                courtText(field.resolve(draft)) || t("otherDetailsField_notEnteredYet")
+              }
             />
           </>
         }
@@ -190,9 +190,11 @@ export function OtherDetailsField({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pending?.id === current?.id
-                ? t("otherDetailsField_writeTheTextAgainWithThe")
-                : <>{t("otherDetailsField_replaceTheTextWithName", { name: (pending?.name) ?? "" })}</>}
+              {pending?.id === current?.id ? (
+                t("otherDetailsField_writeTheTextAgainWithThe")
+              ) : (
+                <>{t("otherDetailsField_replaceTheTextWithName", { name: pending?.name ?? "" })}</>
+              )}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {t("otherDetailsField_whatIsInTheBoxNow")}

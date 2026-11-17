@@ -22,10 +22,7 @@ import {
   type CourtHearingStatus,
 } from "./hearings";
 import { applicationsForListing } from "./listing-applications";
-import {
-  createItemBlock,
-  type ComposerBlock,
-} from "./order-composer";
+import { createItemBlock, type ComposerBlock } from "./order-composer";
 import { composerContextFor, decisionBlock } from "./order-context";
 import {
   appearancesFor,
@@ -99,10 +96,7 @@ const ITEM_TYPES: Record<CourtHearingPurposeId, (OrderTemplateId | null)[]> = {
  * `null` is a real answer and not a gap: after judgement there is no next date, which is
  * what the composer's own "no next date" choice says.
  */
-const NEXT_PURPOSE: Record<
-  CourtHearingPurposeId,
-  CourtHearingPurposeId | null
-> = {
+const NEXT_PURPOSE: Record<CourtHearingPurposeId, CourtHearingPurposeId | null> = {
   admission: "cognizance",
   appearance: "plea",
   arguments: "judgement",
@@ -161,12 +155,7 @@ export function initialOrderDraft(
      balance to be taken later is allowed, and an order that recorded the opposite would
      be a screen arguing with itself. Disposals first, then the directions. */
   const decisions: ComposerBlock[] = applications.map((application) =>
-    decisionBlock(
-      application,
-      "allowed",
-      context,
-      `${hearing.id}-decision-${application.id}`,
-    ),
+    decisionBlock(application, "allowed", context, `${hearing.id}-decision-${application.id}`),
   );
   const items: ComposerBlock[] = ITEM_TYPES[hearing.purpose].map((type, index) => {
     const id = `${hearing.id}-block-${index + 1}`;

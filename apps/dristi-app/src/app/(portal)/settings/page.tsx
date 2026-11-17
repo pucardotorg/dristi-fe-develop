@@ -3,10 +3,7 @@
 import * as React from "react";
 
 import type { SubmittedId } from "@/components/home/add-id-dialog";
-import {
-  ProfileSettings,
-  type AdvocateRequestDetails,
-} from "@/components/home/profile-settings";
+import { ProfileSettings, type AdvocateRequestDetails } from "@/components/home/profile-settings";
 import { useLocale } from "@/components/shell/locale";
 import { useProfile } from "@/components/shell/profile";
 import { VIEWER_CLERK_NAME } from "@/lib/cases/viewer";
@@ -28,8 +25,7 @@ export default function Page() {
 
   const [idSubmitted, setIdSubmitted] = React.useState(true);
   const [submittedId, setSubmittedId] = React.useState<SubmittedId | null>(null);
-  const [advocateRequest, setAdvocateRequest] =
-    React.useState<AdvocateRequestDetails | null>(null);
+  const [advocateRequest, setAdvocateRequest] = React.useState<AdvocateRequestDetails | null>(null);
 
   // The demo clerk is someone else (see `profile.tsx`): his name, as the rail shows it.
   const profileName = profileRole === "clerk" ? VIEWER_CLERK_NAME : accountName;

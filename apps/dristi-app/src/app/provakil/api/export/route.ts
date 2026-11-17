@@ -17,7 +17,8 @@ import {
 } from "@/provakil/lib/saras-template";
 import { ADVOCATES, allMatters, type Matter } from "@/provakil/lib/matters";
 
-const label = (list: ListName, value: string) => LISTS[list].find((o) => o.value === value)?.label ?? value;
+const label = (list: ListName, value: string) =>
+  LISTS[list].find((o) => o.value === value)?.label ?? value;
 const yn = (b: boolean) => (b ? "Yes" : "No");
 
 /** Provakil's own case report: its column names and values, not the court's. */
@@ -26,10 +27,34 @@ async function provakilReport(matters: Matter[]): Promise<Response> {
   wb.creator = "Provakil";
   const ws = wb.addWorksheet("Section 138 cases");
   const cols = [
-    "LAN", "Borrower Name", "Constitution", "Product", "Branch", "Mobile", "Email", "Address", "City", "Pincode",
-    "Cheque No", "Cheque Date", "Cheque Amount", "Drawee IFSC", "Drawer A/c No", "Deposit Date", "Collecting IFSC",
-    "Return Date", "Return Reason", "Notice Date", "Dispatch Mode", "Consignment No", "Notice Status", "Status Date",
-    "Reply Received", "Amount Received After Notice", "Advocate", "Enrolment No",
+    "LAN",
+    "Borrower Name",
+    "Constitution",
+    "Product",
+    "Branch",
+    "Mobile",
+    "Email",
+    "Address",
+    "City",
+    "Pincode",
+    "Cheque No",
+    "Cheque Date",
+    "Cheque Amount",
+    "Drawee IFSC",
+    "Drawer A/c No",
+    "Deposit Date",
+    "Collecting IFSC",
+    "Return Date",
+    "Return Reason",
+    "Notice Date",
+    "Dispatch Mode",
+    "Consignment No",
+    "Notice Status",
+    "Status Date",
+    "Reply Received",
+    "Amount Received After Notice",
+    "Advocate",
+    "Enrolment No",
   ];
   ws.columns = cols.map((h) => ({ header: h, key: h, width: Math.max(14, h.length + 4) }));
   ws.getRow(1).font = { bold: true };
@@ -68,7 +93,9 @@ async function provakilReport(matters: Matter[]): Promise<Response> {
       "Enrolment No": m.advocate?.enrolment ?? "",
     });
   }
-  ["Cheque Date", "Deposit Date", "Return Date", "Notice Date", "Status Date"].forEach((h) => (ws.getColumn(h).numFmt = "dd-mmm-yyyy"));
+  ["Cheque Date", "Deposit Date", "Return Date", "Notice Date", "Status Date"].forEach(
+    (h) => (ws.getColumn(h).numFmt = "dd-mmm-yyyy"),
+  );
   const buf = await wb.xlsx.writeBuffer();
   const stamp = new Date().toISOString().slice(0, 10);
   return new Response(new Uint8Array(buf as ArrayBuffer), {
@@ -96,7 +123,8 @@ export async function GET(req: Request) {
   // The template's columns, with as many cheques, accused and addresses as the busiest
   // matter has: further instances are numbered as the template numbers them.
   const mapped = matters.map((m) => mapMatter(m, docBase));
-  const most = (f: (c: (typeof mapped)[number]) => number, floor = 1) => Math.max(floor, ...mapped.map(f));
+  const most = (f: (c: (typeof mapped)[number]) => number, floor = 1) =>
+    Math.max(floor, ...mapped.map(f));
   const all = templateColumns({
     ...TEMPLATE_COUNTS,
     accused: most((c) => c.accused.length, TEMPLATE_COUNTS.accused),
@@ -109,11 +137,15 @@ export async function GET(req: Request) {
   const wb = new ExcelJS.Workbook();
   wb.creator = "Provakil";
   const cases = wb.addWorksheet(CASES_SHEET);
-  cases.columns = all.map((t) => ({ header: t.header, key: t.header, width: Math.max(14, t.header.length + 4) }));
+  cases.columns = all.map((t) => ({
+    header: t.header,
+    key: t.header,
+    width: Math.max(14, t.header.length + 4),
+  }));
   cases.getRow(1).font = { bold: true };
 
   for (const c of mapped) {
-    const at = <T,>(list: T[] | undefined, i: Instance, k = 0) => list?.[(i[k] ?? 1) - 1];
+    const at = <T>(list: T[] | undefined, i: Instance, k = 0) => list?.[(i[k] ?? 1) - 1];
     const value = (key: string, i: Instance): string | number => {
       const a = at(c.accused, i);
       const ad = a ? at(a.addresses, i, 1) : undefined;
@@ -123,50 +155,92 @@ export async function GET(req: Request) {
       const first = i[0] === 1;
       const j = c.jurisdiction;
       switch (key) {
-        case "reference": return c.reference;
-        case "accusedType": return a ? label("accusedType", a.type) : "";
-        case "accusedName": return a?.name ?? "";
-        case "accusedAge": return a?.age ?? "";
-        case "accusedEntity": return a?.institutionType ? label("accusedEntity", a.institutionType) : "";
-        case "accusedMobile": return a?.mobile ?? "";
-        case "accusedEmail": return a?.email ?? "";
-        case "accusedAddress": return ad?.line1 ?? "";
-        case "accusedCity": return ad?.city ?? "";
-        case "accusedPin": return ad?.pin ?? "";
-        case "accusedPolice": return ad?.policeStation ?? "";
-        case "personName": return p?.name ?? "";
-        case "personDesignation": return p?.designation ?? "";
-        case "personMobile": return p?.mobile ?? "";
-        case "personEmail": return p?.email ?? "";
-        case "personAddress": return p?.address?.line1 ?? "";
-        case "personCity": return p?.address?.city ?? "";
-        case "personPin": return p?.address?.pin ?? "";
-        case "personPolice": return p?.address?.policeStation ?? "";
-        case "chequeNumber": return q?.number ?? "";
-        case "chequeDate": return q ? toSheetDate(q.date) : "";
-        case "chequeAmount": return q?.amount ?? "";
-        case "chequeIfsc": return q?.ifsc ?? "";
-        case "chequeAccount": return q?.accountNumber ?? "";
-        case "presentDate": return q ? toSheetDate(q.presentedOn) : "";
-        case "returnDate": return q ? toSheetDate(q.returnedOn) : "";
-        case "returnReason": return q ? label("returnReason", q.returnReason) : "";
+        case "reference":
+          return c.reference;
+        case "accusedType":
+          return a ? label("accusedType", a.type) : "";
+        case "accusedName":
+          return a?.name ?? "";
+        case "accusedAge":
+          return a?.age ?? "";
+        case "accusedEntity":
+          return a?.institutionType ? label("accusedEntity", a.institutionType) : "";
+        case "accusedMobile":
+          return a?.mobile ?? "";
+        case "accusedEmail":
+          return a?.email ?? "";
+        case "accusedAddress":
+          return ad?.line1 ?? "";
+        case "accusedCity":
+          return ad?.city ?? "";
+        case "accusedPin":
+          return ad?.pin ?? "";
+        case "accusedPolice":
+          return ad?.policeStation ?? "";
+        case "personName":
+          return p?.name ?? "";
+        case "personDesignation":
+          return p?.designation ?? "";
+        case "personMobile":
+          return p?.mobile ?? "";
+        case "personEmail":
+          return p?.email ?? "";
+        case "personAddress":
+          return p?.address?.line1 ?? "";
+        case "personCity":
+          return p?.address?.city ?? "";
+        case "personPin":
+          return p?.address?.pin ?? "";
+        case "personPolice":
+          return p?.address?.policeStation ?? "";
+        case "chequeNumber":
+          return q?.number ?? "";
+        case "chequeDate":
+          return q ? toSheetDate(q.date) : "";
+        case "chequeAmount":
+          return q?.amount ?? "";
+        case "chequeIfsc":
+          return q?.ifsc ?? "";
+        case "chequeAccount":
+          return q?.accountNumber ?? "";
+        case "presentDate":
+          return q ? toSheetDate(q.presentedOn) : "";
+        case "returnDate":
+          return q ? toSheetDate(q.returnedOn) : "";
+        case "returnReason":
+          return q ? label("returnReason", q.returnReason) : "";
         // One set of jurisdiction bank details per case: written against the first cheque.
-        case "payeeIfsc": return q && first ? (j.complainantBranchIfsc ?? "") : "";
-        case "natureDebt": return n ? label("natureOfDebt", n.natureOfDebt) : "";
-        case "dispatchDate": return n ? toSheetDate(n.dispatchedOn) : "";
-        case "mode": return n ? label("modeOfService", n.mode) : "";
-        case "tracking": return n?.trackingNumber ?? "";
-        case "delivered": return !n || n.delivered === null ? "" : yn(n.delivered);
-        case "deliveryDate": return n?.deliveredOn ? toSheetDate(n.deliveredOn) : "";
-        case "noticeReturnDate": return n?.returnedOn ? toSheetDate(n.returnedOn) : "";
-        case "nonDelivery": return n?.nonDeliveryReason ? label("nonDelivery", n.nonDeliveryReason) : "";
-        case "replied": return n && n.replied != null ? yn(n.replied) : "";
-        case "payment": return n ? label("payment", n.payment.status) : "";
-        case "paidAmount": return n?.payment.amount ?? "";
-        case "deposited": return j.depositedInOwnAccount == null ? "" : yn(j.depositedInOwnAccount);
-        case "condonation": return c.condonationReason ?? "";
+        case "payeeIfsc":
+          return q && first ? (j.complainantBranchIfsc ?? "") : "";
+        case "natureDebt":
+          return n ? label("natureOfDebt", n.natureOfDebt) : "";
+        case "dispatchDate":
+          return n ? toSheetDate(n.dispatchedOn) : "";
+        case "mode":
+          return n ? label("modeOfService", n.mode) : "";
+        case "tracking":
+          return n?.trackingNumber ?? "";
+        case "delivered":
+          return !n || n.delivered === null ? "" : yn(n.delivered);
+        case "deliveryDate":
+          return n?.deliveredOn ? toSheetDate(n.deliveredOn) : "";
+        case "noticeReturnDate":
+          return n?.returnedOn ? toSheetDate(n.returnedOn) : "";
+        case "nonDelivery":
+          return n?.nonDeliveryReason ? label("nonDelivery", n.nonDeliveryReason) : "";
+        case "replied":
+          return n && n.replied != null ? yn(n.replied) : "";
+        case "payment":
+          return n ? label("payment", n.payment.status) : "";
+        case "paidAmount":
+          return n?.payment.amount ?? "";
+        case "deposited":
+          return j.depositedInOwnAccount == null ? "" : yn(j.depositedInOwnAccount);
+        case "condonation":
+          return c.condonationReason ?? "";
         // Provakil holds nothing for the rest; the filer completes them on SARAS 2.0.
-        default: return "";
+        default:
+          return "";
       }
     };
     cases.addRow(Object.fromEntries(all.map((t) => [t.header, value(t.column.key, t.instance)])));

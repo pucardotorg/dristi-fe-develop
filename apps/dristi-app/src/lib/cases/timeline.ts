@@ -60,13 +60,10 @@ const FEATURED_CASE_ID = "c-1001";
  * Hearings, not in this history. Other fixture cases only use facts already
  * present on their CaseRecord.
  */
-export function caseTimelineModel(
-  record: CaseRecord,
-  now: number
-): CaseTimelineModel {
+export function caseTimelineModel(record: CaseRecord, now: number): CaseTimelineModel {
   const events = withBusinessOfTheDay(
     record,
-    record.id === FEATURED_CASE_ID ? featuredEvents(record) : recordEvents(record)
+    record.id === FEATURED_CASE_ID ? featuredEvents(record) : recordEvents(record),
   ).filter((event) => hasOccurred(event.on, now));
   const grouped = groupByDate(events);
   const currentDate = latestOccurredDate(grouped, now);
@@ -258,14 +255,11 @@ function recordEvents(record: CaseRecord): DatedEvent[] {
  * hearing event of that day, read off the same hearing record the case peek
  * reads, so the two never tell different stories.
  */
-function withBusinessOfTheDay(
-  record: CaseRecord,
-  events: DatedEvent[]
-): DatedEvent[] {
+function withBusinessOfTheDay(record: CaseRecord, events: DatedEvent[]): DatedEvent[] {
   const botdByDay = new Map(
     hearingRecords(record)
       .filter((hearing) => hearing.summary)
-      .map((hearing) => [hearing.on, hearing.summary!])
+      .map((hearing) => [hearing.on, hearing.summary!]),
   );
   const given = new Set<string>();
   return events.map((event) => {
@@ -297,9 +291,6 @@ function hasOccurred(on: string, now: number): boolean {
   return new Date(`${on}T00:00:00`).getTime() <= now;
 }
 
-function latestOccurredDate(
-  days: Omit<CaseTimelineDay, "status">[],
-  now: number
-): string | null {
+function latestOccurredDate(days: Omit<CaseTimelineDay, "status">[], now: number): string | null {
   return days.find((day) => hasOccurred(day.on, now))?.on ?? null;
 }

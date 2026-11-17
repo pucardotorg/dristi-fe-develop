@@ -17,18 +17,8 @@ import { PencilIcon } from "lucide-react";
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import {
@@ -36,10 +26,7 @@ import {
   PartySignatureDialog,
   type CaseRef,
 } from "@/components/cases/party-application";
-import {
-  UPLOAD_HELP,
-  UploadedDocField,
-} from "@/components/cases/uploaded-doc-field";
+import { UPLOAD_HELP, UploadedDocField } from "@/components/cases/uploaded-doc-field";
 import {
   Attachment,
   AttachmentActions,
@@ -48,10 +35,7 @@ import {
   AttachmentMedia,
   AttachmentTitle,
 } from "@/components/ui/attachment";
-import {
-  DocumentPreviewDialog,
-  DocumentThumbnailButton,
-} from "@/components/document-preview";
+import { DocumentPreviewDialog, DocumentThumbnailButton } from "@/components/document-preview";
 import {
   formatStructuredAddress,
   structuredAddressComplete,
@@ -211,15 +195,12 @@ function EditLitigantDialog({
   const recordMobile = litigant.mobile ?? demoMobile(litigant.name);
   // The record's address is prefilled in the selected court's places (`CourtSwitch`).
   const recordAddress = useCourtLocalized(litigant.address ?? demoAddress(litigant.name));
-  const recordId =
-    litigant.idProof === undefined ? demoIdProof(litigant.name) : litigant.idProof;
+  const recordId = litigant.idProof === undefined ? demoIdProof(litigant.name) : litigant.idProof;
 
   const [step, setStep] = useState<1 | 2>(1);
   const courtText = useCourtText();
   const [name, setName] = useState(() => courtText(litigant.name));
-  const [representative, setRepresentative] = useState(
-    litigant.entityRepresentative ?? ""
-  );
+  const [representative, setRepresentative] = useState(litigant.entityRepresentative ?? "");
   const [address, setAddress] = useState<EditableAddress>(recordAddress);
   /* An ID already on record shows as itself; Replace opens the pick-and-
      upload the empty state uses. */
@@ -260,7 +241,7 @@ function EditLitigantDialog({
 
   const isDirty = useMemo(
     () => changes.length > 0 || Boolean(idType || docFile || replacingId),
-    [changes, idType, docFile, replacingId]
+    [changes, idType, docFile, replacingId],
   );
 
   function resetForm() {
@@ -293,9 +274,7 @@ function EditLitigantDialog({
       { term: tr("editLitigantDialog_party"), value: litigant.name },
       ...changes.map((change) => ({
         term: change.term,
-        value: change.was
-          ? `${change.value} (recorded as ${change.was})`
-          : change.value,
+        value: change.was ? `${change.value} (recorded as ${change.was})` : change.value,
       })),
       ...(docFile
         ? [
@@ -341,263 +320,245 @@ function EditLitigantDialog({
       >
         <FlowDialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
           <>
-              {/* No stepper: two steps do not earn one. Heading stays put so
+            {/* No stepper: two steps do not earn one. Heading stays put so
                   the review does not read as a different task (owner, Sept 2). */}
-              <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
-                <DialogTitle className="text-title-s font-semibold text-balance">
-                  {tr("editLitigantDialog_editDetailsForName", { name: litigant.name })}
-                </DialogTitle>
-                <DialogDescription>
-                  {step === 1
-                    ? tr("editLitigantDialog_correctWhatTheRecordHoldsAbout")
-                    : tr("editLitigantDialog_reviewTheApplicationThenContinueTo")}
-                </DialogDescription>
-              </DialogHeader>
+            <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
+              <DialogTitle className="text-title-s font-semibold text-balance">
+                {tr("editLitigantDialog_editDetailsForName", { name: litigant.name })}
+              </DialogTitle>
+              <DialogDescription>
+                {step === 1
+                  ? tr("editLitigantDialog_correctWhatTheRecordHoldsAbout")
+                  : tr("editLitigantDialog_reviewTheApplicationThenContinueTo")}
+              </DialogDescription>
+            </DialogHeader>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-                <form
-                  id="edit-litigant-form"
-                  noValidate
-                  onSubmit={handleSubmit}
-                  className="flex flex-col gap-6"
-                >
-                  {step === 1 ? (
-                    <>
-                      <Field data-invalid={Boolean(errors.name)}>
-                        <FieldLabel
-                          className="block w-full text-body font-semibold leading-snug"
-                          htmlFor="edit-litigant-name"
-                        >
-                          {tr("editLitigantDialog_name")}
-                        </FieldLabel>
-                        <Input
-                          id="edit-litigant-name"
-                          value={name}
-                          onChange={(event) => {
-                            setName(event.target.value);
-                            setErrors((c) => ({
-                              ...c,
-                              name: undefined,
-                              changes: undefined,
-                            }));
-                          }}
-                        />
-                        <FieldError>{errors.name}</FieldError>
-                      </Field>
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+              <form
+                id="edit-litigant-form"
+                noValidate
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-6"
+              >
+                {step === 1 ? (
+                  <>
+                    <Field data-invalid={Boolean(errors.name)}>
+                      <FieldLabel
+                        className="block w-full text-body font-semibold leading-snug"
+                        htmlFor="edit-litigant-name"
+                      >
+                        {tr("editLitigantDialog_name")}
+                      </FieldLabel>
+                      <Input
+                        id="edit-litigant-name"
+                        value={name}
+                        onChange={(event) => {
+                          setName(event.target.value);
+                          setErrors((c) => ({
+                            ...c,
+                            name: undefined,
+                            changes: undefined,
+                          }));
+                        }}
+                      />
+                      <FieldError>{errors.name}</FieldError>
+                    </Field>
 
-                      {isEntity ? (
-                        <Field>
-                          <FieldLabel
-                            className="block w-full text-body font-semibold leading-snug"
-                            htmlFor="edit-litigant-rep"
-                          >
-                            {tr("editLitigantDialog_representedBy")}
-                          </FieldLabel>
-                          <FieldDescription>
-                            {tr("editLitigantDialog_thePersonWhoSpeaksForThe")}
-                          </FieldDescription>
-                          <Input
-                            id="edit-litigant-rep"
-                            value={representative}
-                            onChange={(event) => {
-                              setRepresentative(event.target.value);
-                              setErrors((c) => ({ ...c, changes: undefined }));
-                            }}
-                          />
-                        </Field>
-                      ) : null}
-
+                    {isEntity ? (
                       <Field>
                         <FieldLabel
                           className="block w-full text-body font-semibold leading-snug"
-                          htmlFor="edit-litigant-mobile"
+                          htmlFor="edit-litigant-rep"
                         >
-                          {tr("editLitigantDialog_mobileNumber")}
+                          {tr("editLitigantDialog_representedBy")}
                         </FieldLabel>
                         <FieldDescription>
-                          {tr("editLitigantDialog_theNumberThisPartySignsIn")}
+                          {tr("editLitigantDialog_thePersonWhoSpeaksForThe")}
                         </FieldDescription>
                         <Input
-                          id="edit-litigant-mobile"
-                          value={recordMobile}
-                          disabled
-                          readOnly
-                          className="tabular-nums"
-                        />
-                      </Field>
-
-                      {/* The app's one structured address grammar,
-                          pre-filled from the record. */}
-                      <div className="flex flex-col gap-3">
-                        <p className="text-body font-semibold leading-snug">
-                          {tr("editLitigantDialog_address")}
-                        </p>
-                        <StructuredAddressFields
-                          idPrefix="edit-litigant-addr"
-                          value={address}
-                          onChange={(next) => {
-                            setAddress(next);
-                            setErrors((c) => ({
-                              ...c,
-                              changes: undefined,
-                              address: undefined,
-                            }));
+                          id="edit-litigant-rep"
+                          value={representative}
+                          onChange={(event) => {
+                            setRepresentative(event.target.value);
+                            setErrors((c) => ({ ...c, changes: undefined }));
                           }}
                         />
-                        {errors.address ? (
-                          <p className="text-body-compact text-destructive-ink">
-                            {errors.address}
-                          </p>
-                        ) : null}
-                      </div>
+                      </Field>
+                    ) : null}
 
-                      {errors.changes ? (
-                        <p className="text-body-compact text-destructive-ink">
-                          {errors.changes}
-                        </p>
+                    <Field>
+                      <FieldLabel
+                        className="block w-full text-body font-semibold leading-snug"
+                        htmlFor="edit-litigant-mobile"
+                      >
+                        {tr("editLitigantDialog_mobileNumber")}
+                      </FieldLabel>
+                      <FieldDescription>
+                        {tr("editLitigantDialog_theNumberThisPartySignsIn")}
+                      </FieldDescription>
+                      <Input
+                        id="edit-litigant-mobile"
+                        value={recordMobile}
+                        disabled
+                        readOnly
+                        className="tabular-nums"
+                      />
+                    </Field>
+
+                    {/* The app's one structured address grammar,
+                          pre-filled from the record. */}
+                    <div className="flex flex-col gap-3">
+                      <p className="text-body font-semibold leading-snug">
+                        {tr("editLitigantDialog_address")}
+                      </p>
+                      <StructuredAddressFields
+                        idPrefix="edit-litigant-addr"
+                        value={address}
+                        onChange={(next) => {
+                          setAddress(next);
+                          setErrors((c) => ({
+                            ...c,
+                            changes: undefined,
+                            address: undefined,
+                          }));
+                        }}
+                      />
+                      {errors.address ? (
+                        <p className="text-body-compact text-destructive-ink">{errors.address}</p>
                       ) : null}
+                    </div>
 
-                      <Field>
-                        <FieldLabel
-                          className="block w-full text-body font-semibold leading-snug"
-                          htmlFor="edit-litigant-id-type"
-                        >
-                          {recordId && !replacingId
-                            ? tr("editLitigantDialog_idProof")
-                            : tr("editLitigantDialog_idProofOptional")}
-                        </FieldLabel>
-                        {recordId && !replacingId ? (
-                          <>
-                            {/* The ID the party already submitted — empty
+                    {errors.changes ? (
+                      <p className="text-body-compact text-destructive-ink">{errors.changes}</p>
+                    ) : null}
+
+                    <Field>
+                      <FieldLabel
+                        className="block w-full text-body font-semibold leading-snug"
+                        htmlFor="edit-litigant-id-type"
+                      >
+                        {recordId && !replacingId
+                          ? tr("editLitigantDialog_idProof")
+                          : tr("editLitigantDialog_idProofOptional")}
+                      </FieldLabel>
+                      {recordId && !replacingId ? (
+                        <>
+                          {/* The ID the party already submitted — empty
                                 only when the record holds none. The same
                                 Attachment grammar every upload wears:
                                 thumbnail opening the full viewer, so the
                                 person can SEE which ID is on record.
                                 Replaceable, never removable: a record doc
                                 is not this dialog's to delete. */}
-                            <FieldDescription>
-                              {tr("editLitigantDialog_theIdOnRecordForThis")}
-                            </FieldDescription>
-                            <Attachment className="w-full">
-                              <AttachmentMedia className="w-14">
-                                <DocumentThumbnailButton
-                                  file={RECORD_ID_DOC}
-                                  url={RECORD_ID_URL}
-                                  locale="en"
-                                  onOpen={() => setIdPreviewOpen(true)}
-                                  className="size-full rounded-md"
-                                />
-                              </AttachmentMedia>
-                              <AttachmentContent>
-                                <AttachmentTitle>
-                                  {recordId.typeLabel}
-                                </AttachmentTitle>
-                                <AttachmentDescription>
-                                  {recordId.fileName}
-                                </AttachmentDescription>
-                              </AttachmentContent>
-                              <AttachmentActions className="gap-4 pr-2">
-                                <Button
-                                  type="button"
-                                  variant="link"
-                                  className="h-auto p-0"
-                                  onClick={() => setReplacingId(true)}
-                                >
-                                  {tr("editLitigantDialog_replace")}
-                                </Button>
-                              </AttachmentActions>
-                            </Attachment>
-                            <DocumentPreviewDialog
-                              open={idPreviewOpen}
-                              onOpenChange={setIdPreviewOpen}
-                              file={RECORD_ID_DOC}
-                              url={RECORD_ID_URL}
-                              locale="en"
-                              copy={{
-                                title: `${recordId.typeLabel} on record`,
-                                description:
-                                  tr("editLitigantDialog_theIdThisPartySubmittedTo"),
-                                alt: recordId.typeLabel,
-                              }}
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <FieldDescription>
-                              {tr("editLitigantDialog_anOfficialIdThatShowsThe")}
-                            </FieldDescription>
-                            <Select value={idType} onValueChange={setIdType}>
-                              <SelectTrigger
-                                id="edit-litigant-id-type"
-                                className="w-full"
+                          <FieldDescription>
+                            {tr("editLitigantDialog_theIdOnRecordForThis")}
+                          </FieldDescription>
+                          <Attachment className="w-full">
+                            <AttachmentMedia className="w-14">
+                              <DocumentThumbnailButton
+                                file={RECORD_ID_DOC}
+                                url={RECORD_ID_URL}
+                                locale="en"
+                                onOpen={() => setIdPreviewOpen(true)}
+                                className="size-full rounded-md"
+                              />
+                            </AttachmentMedia>
+                            <AttachmentContent>
+                              <AttachmentTitle>{recordId.typeLabel}</AttachmentTitle>
+                              <AttachmentDescription>{recordId.fileName}</AttachmentDescription>
+                            </AttachmentContent>
+                            <AttachmentActions className="gap-4 pr-2">
+                              <Button
+                                type="button"
+                                variant="link"
+                                className="h-auto p-0"
+                                onClick={() => setReplacingId(true)}
                               >
-                                <SelectValue placeholder={tr("editLitigantDialog_typeOfId")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {ID_TYPES.map((option) => (
-                                  <SelectItem
-                                    key={option.value}
-                                    value={option.value}
-                                  >
-                                    {option.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <UploadedDocField
-                              label={tr("editLitigantDialog_idProof")}
-                              file={docFile}
-                              onFileChange={setDocFile}
-                            />
-                            <FieldDescription>{tr(UPLOAD_HELP)}</FieldDescription>
-                            {recordId ? (
-                              <div>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setReplacingId(false);
-                                    setIdType(undefined);
-                                    setDocFile(null);
-                                  }}
-                                >
-                                  {tr("editLitigantDialog_keepTheIdOnRecord")}
-                                </Button>
-                              </div>
-                            ) : null}
-                          </>
-                        )}
-                      </Field>
-                    </>
-                  ) : (
-                    <PartyApplicationDocument
-                      caseRef={caseRef}
-                      doc={applicationDoc}
-                    />
-                  )}
-                </form>
-              </div>
+                                {tr("editLitigantDialog_replace")}
+                              </Button>
+                            </AttachmentActions>
+                          </Attachment>
+                          <DocumentPreviewDialog
+                            open={idPreviewOpen}
+                            onOpenChange={setIdPreviewOpen}
+                            file={RECORD_ID_DOC}
+                            url={RECORD_ID_URL}
+                            locale="en"
+                            copy={{
+                              title: `${recordId.typeLabel} on record`,
+                              description: tr("editLitigantDialog_theIdThisPartySubmittedTo"),
+                              alt: recordId.typeLabel,
+                            }}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <FieldDescription>
+                            {tr("editLitigantDialog_anOfficialIdThatShowsThe")}
+                          </FieldDescription>
+                          <Select value={idType} onValueChange={setIdType}>
+                            <SelectTrigger id="edit-litigant-id-type" className="w-full">
+                              <SelectValue placeholder={tr("editLitigantDialog_typeOfId")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ID_TYPES.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <UploadedDocField
+                            label={tr("editLitigantDialog_idProof")}
+                            file={docFile}
+                            onFileChange={setDocFile}
+                          />
+                          <FieldDescription>{tr(UPLOAD_HELP)}</FieldDescription>
+                          {recordId ? (
+                            <div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setReplacingId(false);
+                                  setIdType(undefined);
+                                  setDocFile(null);
+                                }}
+                              >
+                                {tr("editLitigantDialog_keepTheIdOnRecord")}
+                              </Button>
+                            </div>
+                          ) : null}
+                        </>
+                      )}
+                    </Field>
+                  </>
+                ) : (
+                  <PartyApplicationDocument caseRef={caseRef} doc={applicationDoc} />
+                )}
+              </form>
+            </div>
 
-              <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-                {step > 1 ? (
-                  <Button type="button" variant="outline" onClick={() => setStep(1)}>
-                    {tr("common_back")}
-                  </Button>
-                ) : (
-                  <span aria-hidden className="hidden sm:block" />
-                )}
-                {step === 1 ? (
-                  <Button type="submit" form="edit-litigant-form">
-                    {tr("editLitigantDialog_continue")}
-                  </Button>
-                ) : (
-                  <Button type="button" onClick={() => setSignOpen(true)}>
-                    {tr("editLitigantDialog_continueToSign")}
-                  </Button>
-                )}
-              </footer>
-            </>
+            <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              {step > 1 ? (
+                <Button type="button" variant="outline" onClick={() => setStep(1)}>
+                  {tr("common_back")}
+                </Button>
+              ) : (
+                <span aria-hidden className="hidden sm:block" />
+              )}
+              {step === 1 ? (
+                <Button type="submit" form="edit-litigant-form">
+                  {tr("editLitigantDialog_continue")}
+                </Button>
+              ) : (
+                <Button type="button" onClick={() => setSignOpen(true)}>
+                  {tr("editLitigantDialog_continueToSign")}
+                </Button>
+              )}
+            </footer>
+          </>
           <DiscardQuestion guard={guard} />
         </FlowDialogContent>
       </Dialog>
@@ -617,4 +578,3 @@ function EditLitigantDialog({
     </>
   );
 }
-

@@ -10,10 +10,7 @@ import { CourtFilters, CourtSortSelect } from "@/components/employee/court-filte
 import { NotBuiltDialog } from "@/components/employee/not-built-dialog";
 import { ScheduleTable } from "@/components/employee/schedule-table";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,12 +21,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  causeTitle,
-  counselFor,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { causeTitle, counselFor, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import {
   caseStageLabel,
   filterSchedulingCases,
@@ -40,12 +32,7 @@ import {
   type SchedulingCase,
 } from "@/lib/employee/schedule";
 import { Identifier } from "@/components/chrome/identifier";
-import {
-  caseSorts,
-  sortOptions,
-  sortRows,
-  type CourtSortSpec,
-} from "@/lib/employee/court-sort";
+import { caseSorts, sortOptions, sortRows, type CourtSortSpec } from "@/lib/employee/court-sort";
 import { useTranslations } from "next-intl";
 
 type ScheduleSort = "newest" | "oldest" | "name";
@@ -79,9 +66,7 @@ export function ScheduleScreen() {
      one and a deferred one. Every change resets to page one; the old Search button did
      that, and a keystroke that narrows the list to four rows must not leave the reader
      on page three of nothing. */
-  const [filters, setFilters] = React.useState<ScheduleFilters>(
-    EMPTY_SCHEDULE_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<ScheduleFilters>(EMPTY_SCHEDULE_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
   /* The row a clerk opened. Scheduling itself is not built, so opening a matter lands on
@@ -119,7 +104,9 @@ export function ScheduleScreen() {
         <p className="text-body text-muted-foreground">
           {SCHEDULING_QUEUE.length === 1
             ? t("scheduleScreen_1MatterIsWaitingForA")
-            : t("scheduleScreen_lengthMattersAreWaitingForA", { length: String(SCHEDULING_QUEUE.length) })}
+            : t("scheduleScreen_lengthMattersAreWaitingForA", {
+                length: String(SCHEDULING_QUEUE.length),
+              })}
         </p>
       </header>
 
@@ -145,11 +132,7 @@ export function ScheduleScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <ScheduleEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -244,8 +227,7 @@ function ScheduleFiltersRow({
             value: stage.id,
             label: stage.label,
           })),
-          onApply: (value) =>
-            onChange({ ...filters, stage: value as ScheduleFilters["stage"] }),
+          onApply: (value) => onChange({ ...filters, stage: value as ScheduleFilters["stage"] }),
         },
       ]}
       trailing={trailing}
@@ -263,26 +245,18 @@ function ScheduleFiltersRow({
  * that way rather than as a failure. Borderless and unpadded; the panel is already the
  * frame.
  */
-function ScheduleEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function ScheduleEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
   const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <CalendarCheck2Icon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <CalendarCheck2Icon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? t("scheduleScreen_noMattersMatchTheseFilters") : t("scheduleScreen_everythingIsListed")}
+          {isFiltered
+            ? t("scheduleScreen_noMattersMatchTheseFilters")
+            : t("scheduleScreen_everythingIsListed")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
@@ -319,10 +293,7 @@ function ScheduleItemList({
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((matter) => (
-        <QueueItemRow
-          key={matter.id}
-          className="flex flex-col gap-2"
-        >
+        <QueueItemRow key={matter.id} className="flex flex-col gap-2">
           <button
             type="button"
             onClick={() => onOpen(matter)}
@@ -339,12 +310,8 @@ function ScheduleItemList({
           {/* Comfortable, not dense: on a phone the +N chip gets the full 40×40 target,
               and a tap opens the same list the pointer hover does. */}
           <CounselCell
-            complainant={counselFor(matter, "complainant").map(
-              (counsel) => counsel.name,
-            )}
-            accused={counselFor(matter, "accused").map(
-              (counsel) => counsel.name,
-            )}
+            complainant={counselFor(matter, "complainant").map((counsel) => counsel.name)}
+            accused={counselFor(matter, "accused").map((counsel) => counsel.name)}
           />
         </QueueItemRow>
       ))}

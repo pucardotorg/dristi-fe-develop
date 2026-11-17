@@ -69,7 +69,7 @@ export type TableColumnId = (typeof TABLE_COLUMNS)[number]["id"];
 export type ToggleableTableColumnId = Exclude<TableColumnId, "caseNumber">;
 
 export const DEFAULT_COLUMN_ORDER: readonly TableColumnId[] = TABLE_COLUMNS.map(
-  (column) => column.id
+  (column) => column.id,
 );
 
 export const DEFAULT_TOGGLEABLE_VISIBLE: readonly ToggleableTableColumnId[] = [
@@ -81,7 +81,7 @@ export const DEFAULT_TOGGLEABLE_VISIBLE: readonly ToggleableTableColumnId[] = [
 
 /** Every column that can be shown — what "Show all" turns on. */
 export const ALL_TOGGLEABLE: readonly ToggleableTableColumnId[] = TABLE_COLUMNS.filter(
-  (column) => !column.locked
+  (column) => !column.locked,
 ).map((column) => column.id as ToggleableTableColumnId);
 
 /** Advocates sat before Stage. Same columns, old sequence — treat as default. */
@@ -111,31 +111,24 @@ function resolveStoredId(value: string): string {
   return MERGED_COLUMN_IDS[value] ?? value;
 }
 
-const COLUMN_IDS: ReadonlySet<string> = new Set(
-  TABLE_COLUMNS.map((column) => column.id)
-);
+const COLUMN_IDS: ReadonlySet<string> = new Set(TABLE_COLUMNS.map((column) => column.id));
 
 const TOGGLEABLE_IDS: ReadonlySet<string> = new Set(
-  TABLE_COLUMNS.filter((column) => !column.locked).map((column) => column.id)
+  TABLE_COLUMNS.filter((column) => !column.locked).map((column) => column.id),
 );
 
 export function isTableColumnId(value: string): value is TableColumnId {
   return COLUMN_IDS.has(value);
 }
 
-export function isToggleableTableColumn(
-  value: string
-): value is ToggleableTableColumnId {
+export function isToggleableTableColumn(value: string): value is ToggleableTableColumnId {
   return TOGGLEABLE_IDS.has(value);
 }
 
-export function canonicalToggleable(
-  ids: readonly string[]
-): readonly ToggleableTableColumnId[] {
+export function canonicalToggleable(ids: readonly string[]): readonly ToggleableTableColumnId[] {
   const stored = ids.map(resolveStoredId);
   return TABLE_COLUMNS.map((column) => column.id).filter(
-    (id): id is ToggleableTableColumnId =>
-      isToggleableTableColumn(id) && stored.includes(id)
+    (id): id is ToggleableTableColumnId => isToggleableTableColumn(id) && stored.includes(id),
   );
 }
 
@@ -156,9 +149,7 @@ export function canonicalOrder(ids: readonly string[]): TableColumnId[] {
 }
 
 /** Stored order from before Stage sat third. Custom orders are left alone. */
-export function migrateStoredColumnOrder(
-  ids: readonly TableColumnId[]
-): TableColumnId[] {
+export function migrateStoredColumnOrder(ids: readonly TableColumnId[]): TableColumnId[] {
   if (ids.length !== LEGACY_DEFAULT_COLUMN_ORDER.length) return [...ids];
   if (LEGACY_DEFAULT_COLUMN_ORDER.every((id, index) => ids[index] === id)) {
     return [...DEFAULT_COLUMN_ORDER];
@@ -166,9 +157,7 @@ export function migrateStoredColumnOrder(
   return [...ids];
 }
 
-export function isDefaultToggleableVisible(
-  ids: readonly ToggleableTableColumnId[]
-): boolean {
+export function isDefaultToggleableVisible(ids: readonly ToggleableTableColumnId[]): boolean {
   if (ids.length !== DEFAULT_TOGGLEABLE_VISIBLE.length) return false;
   return DEFAULT_TOGGLEABLE_VISIBLE.every((id, index) => ids[index] === id);
 }
@@ -192,11 +181,9 @@ export function listTableColumns(
     hideStage?: boolean;
     defaultsOnly?: boolean;
     order?: readonly TableColumnId[];
-  } = {}
+  } = {},
 ) {
-  const sequence = options.order
-    ? canonicalOrder(options.order).map(columnById)
-    : TABLE_COLUMNS;
+  const sequence = options.order ? canonicalOrder(options.order).map(columnById) : TABLE_COLUMNS;
   return sequence.filter((column) => {
     if (options.hideStage && column.id === "stage") return false;
     if (options.defaultsOnly) return column.defaultVisible;
@@ -207,7 +194,7 @@ export function listTableColumns(
 function showInDisplay(
   id: TableColumnId,
   isVisible: (id: TableColumnId) => boolean,
-  hideStage?: boolean
+  hideStage?: boolean,
 ) {
   if (hideStage && id === "stage") return false;
   return isVisible(id);
@@ -229,7 +216,7 @@ export function moveVisibleColumn(
   to: TableColumnId,
   isVisible: (id: TableColumnId) => boolean,
   hideStage?: boolean,
-  side?: DropSide
+  side?: DropSide,
 ): TableColumnId[] {
   const full = canonicalOrder(order);
   const visible = full.filter((id) => showInDisplay(id, isVisible, hideStage));
@@ -241,9 +228,7 @@ export function moveVisibleColumn(
   const insertAt = nextVisible.indexOf(to) + (place === "after" ? 1 : 0);
   nextVisible.splice(insertAt, 0, from);
   let index = 0;
-  return full.map((id) =>
-    showInDisplay(id, isVisible, hideStage) ? nextVisible[index++] : id
-  );
+  return full.map((id) => (showInDisplay(id, isVisible, hideStage) ? nextVisible[index++] : id));
 }
 
 export function shiftVisibleColumn(
@@ -251,10 +236,10 @@ export function shiftVisibleColumn(
   id: TableColumnId,
   delta: -1 | 1,
   isVisible: (id: TableColumnId) => boolean,
-  hideStage?: boolean
+  hideStage?: boolean,
 ): TableColumnId[] {
   const visible = canonicalOrder(order).filter((columnId) =>
-    showInDisplay(columnId, isVisible, hideStage)
+    showInDisplay(columnId, isVisible, hideStage),
   );
   const fromIndex = visible.indexOf(id);
   const to = visible[fromIndex + delta];

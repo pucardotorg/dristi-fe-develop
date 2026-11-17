@@ -31,9 +31,7 @@ export function ExecutantStep({ vak }: { vak: Vakalatnama }) {
         <Alert>
           <InfoIcon aria-hidden />
           <AlertTitle>{t("executant_filedAsYourself")}</AlertTitle>
-          <AlertDescription>
-            {t("executant_youAreTheLitigantOnThis")}
-          </AlertDescription>
+          <AlertDescription>{t("executant_youAreTheLitigantOnThis")}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -138,13 +136,20 @@ export function ExecutantStep({ vak }: { vak: Vakalatnama }) {
               placeholder="10-digit mobile"
             />
           </FormField>
-          <FormField label={t("executant_idCard")} required help={t("executant_proofOfIdentityForTheSigner")}>
+          <FormField
+            label={t("executant_idCard")}
+            required
+            help={t("executant_proofOfIdentityForTheSigner")}
+          >
             <IdUpload value={e.idDoc} onChange={(v) => set({ idDoc: v })} />
           </FormField>
         </FormRow>
       </FormCard>
 
-      <FormCard title={t("executant_address")} description={t("executant_theLitigantsAddressForTheRecord")}>
+      <FormCard
+        title={t("executant_address")}
+        description={t("executant_theLitigantsAddressForTheRecord")}
+      >
         <AddressFields value={e.address} onChange={setAddress} idPrefix="vak-exec" />
       </FormCard>
     </div>

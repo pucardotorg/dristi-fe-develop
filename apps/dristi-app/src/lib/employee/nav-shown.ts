@@ -50,9 +50,7 @@ function restore(): void {
     if (stored === null) return;
     const parsed: unknown = JSON.parse(stored);
     if (Array.isArray(parsed)) {
-      shown = parsed.filter(
-        (id): id is string => typeof id === "string" && OPTIONAL_IDS.has(id),
-      );
+      shown = parsed.filter((id): id is string => typeof id === "string" && OPTIONAL_IDS.has(id));
     }
   } catch {
     // Private mode, a cleared quota or a malformed value. The default stands.

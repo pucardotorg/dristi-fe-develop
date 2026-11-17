@@ -11,11 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import {
-  counselFor,
-  type CaseRecord,
-  type CounselSide,
-} from "@/lib/cases/types";
+import { counselFor, type CaseRecord, type CounselSide } from "@/lib/cases/types";
 import { displayName } from "@/lib/cases/names";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
@@ -23,10 +19,7 @@ import type { MessageKey } from "@/i18n/messages";
 
 const SIDES: readonly CounselSide[] = ["complainant", "accused"];
 
-const SIDE_COPY: Record<
-  CounselSide,
-  { mark: string; one: string; many: string; list: string }
-> = {
+const SIDE_COPY: Record<CounselSide, { mark: string; one: string; many: string; list: string }> = {
   complainant: {
     mark: "(C)",
     one: "complainant advocate",
@@ -77,7 +70,7 @@ export function CaseAdvocatesPair({
           />
         ) : (
           <NoCounsel key={side} side={side} />
-        )
+        ),
       )}
     </div>
   );
@@ -198,17 +191,12 @@ export function CaseAdvocates({
      occupy the same band and the table keeps one row rhythm. */
   return (
     <div className="relative z-10 flex min-h-6 min-w-0 items-center gap-1">
-      <span
-        className={cn("truncate text-body-compact text-foreground", className)}
-      >
+      <span className={cn("truncate text-body-compact text-foreground", className)}>
         {displayName(names[0])}
       </span>
       {markSide ? (
         <>
-          <span
-            aria-hidden
-            className="shrink-0 text-body-compact text-muted-foreground"
-          >
+          <span aria-hidden className="shrink-0 text-body-compact text-muted-foreground">
             {copy.mark}
           </span>
           <span className="sr-only">{`, ${copy.one}`}</span>
@@ -231,7 +219,11 @@ export function CaseAdvocates({
                  behind it. The `after:` inset carries the 40px target. */
               <button
                 type="button"
-                aria-label={t("caseAdvocates_namesAndExtraMoreValue", { names: names[0], extra: String(extra), value: extra === 1 ? copy.one : copy.many })}
+                aria-label={t("caseAdvocates_namesAndExtraMoreValue", {
+                  names: names[0],
+                  extra: String(extra),
+                  value: extra === 1 ? copy.one : copy.many,
+                })}
                 className={cn(
                   "relative shrink-0 cursor-pointer rounded-sm text-muted-foreground underline decoration-dotted underline-offset-4 outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
                   /* A step down in the dense table, where it trails a name in
@@ -242,7 +234,7 @@ export function CaseAdvocates({
                      24px line box is the target, as it was for the chip. */
                   dense
                     ? "after:absolute after:-inset-x-1.5 after:inset-y-0"
-                    : "after:absolute after:-inset-x-1.5 after:-inset-y-2"
+                    : "after:absolute after:-inset-x-1.5 after:-inset-y-2",
                 )}
                 onClick={(event) => event.stopPropagation()}
               >
@@ -260,13 +252,16 @@ export function CaseAdvocates({
                   /* overflow-visible: the primitive clips to the pill, which
                      would swallow the `after:` target. Nothing but text is in
                      the chip, so there is nothing left to clip. */
-                  !dense &&
-                    "overflow-visible after:absolute after:-inset-x-1.5 after:-inset-y-2"
+                  !dense && "overflow-visible after:absolute after:-inset-x-1.5 after:-inset-y-2",
                 )}
               >
                 <button
                   type="button"
-                  aria-label={t("caseAdvocates_namesAndExtraMoreValue", { names: names[0], extra: String(extra), value: extra === 1 ? copy.one : copy.many })}
+                  aria-label={t("caseAdvocates_namesAndExtraMoreValue", {
+                    names: names[0],
+                    extra: String(extra),
+                    value: extra === 1 ? copy.one : copy.many,
+                  })}
                   onClick={(event) => event.stopPropagation()}
                 >
                   +{extra}
@@ -291,10 +286,7 @@ export function CaseAdvocates({
             </PopoverHeader>
             <ul className="flex max-h-64 flex-col gap-2 overflow-y-auto">
               {names.slice(1).map((name, index) => (
-                <li
-                  key={`${name}-${index}`}
-                  className="text-body-compact text-foreground"
-                >
+                <li key={`${name}-${index}`} className="text-body-compact text-foreground">
                   {displayName(name)}
                 </li>
               ))}

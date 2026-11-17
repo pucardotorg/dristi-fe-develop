@@ -12,11 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { useTranslations } from "next-intl";
 
@@ -189,7 +185,9 @@ function IndexRows({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge variant="info" className="shrink-0">
-                    {t.rich("indexRail_newUploadThisRound", { span: (chunks) => <span className="sr-only">{chunks}</span> })}
+                    {t.rich("indexRail_newUploadThisRound", {
+                      span: (chunks) => <span className="sr-only">{chunks}</span>,
+                    })}
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -205,9 +203,7 @@ function IndexRows({
                     <span className="sr-only">{t("indexRail_poorScan")}</span>
                   </Badge>
                 </TooltipTrigger>
-                <TooltipContent>
-                  {t("indexRail_poorScanMayBeBlurredOr")}
-                </TooltipContent>
+                <TooltipContent>{t("indexRail_poorScanMayBeBlurredOr")}</TooltipContent>
               </Tooltip>
             ) : null}
           </Button>

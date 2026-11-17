@@ -4,10 +4,7 @@ import * as React from "react";
 import { CircleCheckIcon, TriangleAlertIcon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 import { Identifier } from "@/components/chrome/identifier";
 import { RESOLVE_IN_PLACE } from "@/components/chrome/motion";
 import { DocumentPreview } from "@/components/cases/document-preview";
@@ -17,10 +14,7 @@ import {
   outcomeOf,
   type ReturnMark,
 } from "@/components/employee/record-returns-dialog";
-import {
-  SignatureActions,
-  SignatureStage,
-} from "@/components/employee/sign-method-stage";
+import { SignatureActions, SignatureStage } from "@/components/employee/sign-method-stage";
 import { useSignatureChoice } from "@/components/employee/sign-signature-fields";
 import { ProcessStatusText } from "@/components/employee/sign-process-table";
 import { useHeldRecord } from "@/components/employee/use-held-record";
@@ -161,17 +155,12 @@ function SignProcessBody({
   const courtText = useCourtText();
   const flow = useStagedFlow<Stage>({ order: STAGES, scene: SCENES });
   const choice = useSignatureChoice(NOUN);
-  const document = React.useMemo(
-    () => buildProcessDocument(process),
-    [process],
-  );
+  const document = React.useMemo(() => buildProcessDocument(process), [process]);
   const [mode, setMode] = React.useState<Mode>("read");
   /* The quick act being asked about in the footer, and the act that has just run. */
   const [asking, setAsking] = React.useState<ProcessAct | null>(null);
   const [settled, setSettled] = React.useState<ProcessAct | null>(null);
-  const [returnedOn, setReturnedOn] = React.useState<Date | undefined>(
-    () => new Date(),
-  );
+  const [returnedOn, setReturnedOn] = React.useState<Date | undefined>(() => new Date());
   const [mark, setMark] = React.useState<ReturnMark | undefined>(undefined);
   const guard = useDiscardGuard(!settled && (choice.entered || mark !== undefined), onClose);
 
@@ -183,9 +172,7 @@ function SignProcessBody({
   const act = actId ? processAct(actId) : undefined;
   const available = act && actTakes(act, process) ? act : undefined;
   const inline = courtProcessTypeInline(process.type);
-  const marked =
-    mark?.served === true || (mark?.served === false && !!mark.reason);
-
+  const marked = mark?.served === true || (mark?.served === false && !!mark.reason);
 
   /** Back to reading — and, after an act, its success in the footer. */
   function settle(ran?: ProcessAct) {
@@ -386,9 +373,7 @@ function SignProcessBody({
                   <ReturnRow
                     process={process}
                     mark={mark}
-                    onMark={(next) =>
-                      setMark((current) => ({ ...current, ...next }))
-                    }
+                    onMark={(next) => setMark((current) => ({ ...current, ...next }))}
                   />
                 </ul>
               </section>
@@ -464,10 +449,7 @@ function ProcessFacts({ process }: { process: CourtProcess }) {
     <div className="rounded-lg bg-surface-sunken px-4">
       <DescriptionList>
         {rows.map(([term, value]) => (
-          <DescriptionRow
-            key={term}
-            className="grid-cols-[minmax(7rem,9rem)_1fr] border-hairline"
-          >
+          <DescriptionRow key={term} className="grid-cols-[minmax(7rem,9rem)_1fr] border-hairline">
             <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
             <DescriptionDetails className="min-w-0 text-body-compact tabular-nums">
               {value}
@@ -499,12 +481,8 @@ function ProcessFacsimile({ document: storedDocument }: { document: ProcessDocum
       </header>
 
       <div className="flex flex-col gap-2">
-        <h3 className="text-center text-body font-semibold">
-          {document.title}
-        </h3>
-        {document.addressee ? (
-          <p className="text-body">{document.addressee}</p>
-        ) : null}
+        <h3 className="text-center text-body font-semibold">{document.title}</h3>
+        {document.addressee ? <p className="text-body">{document.addressee}</p> : null}
       </div>
 
       <ol className="flex list-decimal flex-col gap-3 ps-6">
@@ -517,12 +495,12 @@ function ProcessFacsimile({ document: storedDocument }: { document: ProcessDocum
 
       <div className="flex flex-col gap-2">
         <p className="text-body">{document.channel}</p>
-        <p className="text-body">{t("signProcessDialog_datedThisTheDated", { dated: document.dated })}</p>
+        <p className="text-body">
+          {t("signProcessDialog_datedThisTheDated", { dated: document.dated })}
+        </p>
       </div>
 
-      <p className="text-body text-paper-muted-foreground">
-        {document.signature}
-      </p>
+      <p className="text-body text-paper-muted-foreground">{document.signature}</p>
     </article>
   );
 }

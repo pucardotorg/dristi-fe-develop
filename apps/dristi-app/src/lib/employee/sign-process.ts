@@ -60,12 +60,7 @@ import type { CourtId } from "@/lib/court/profiles";
  * imported because the employee area stays self-contained (`content.ts`).
  */
 export type CourtProcessTypeId =
-  | "summons"
-  | "section-223-notice"
-  | "dca-notice"
-  | "warrant"
-  | "proclamation"
-  | "attachment";
+  "summons" | "section-223-notice" | "dca-notice" | "warrant" | "proclamation" | "attachment";
 
 export const COURT_PROCESS_TYPES: {
   id: CourtProcessTypeId;
@@ -142,14 +137,7 @@ export function courtProcessTypeInline(id: CourtProcessTypeId): string {
  *   holds both roles for e-Post (court-roles §3).
  */
 export type ProcessChannelId =
-  | "rpad"
-  | "e-post"
-  | "police-rpad"
-  | "police-nstep"
-  | "police-icops"
-  | "sms"
-  | "email"
-  | "by-hand";
+  "rpad" | "e-post" | "police-rpad" | "police-nstep" | "police-icops" | "sms" | "email" | "by-hand";
 
 export type ProcessChannel = {
   id: ProcessChannelId;
@@ -335,8 +323,7 @@ export const PROCESS_STATUSES: ProcessStatus[] = [
     pile: { noun: "covers in hand" },
     empty: {
       title: "No covers to collect",
-      description:
-        "Every registered-post process this court has issued has its cover.",
+      description: "Every registered-post process this court has issued has its cover.",
     },
   },
   {
@@ -448,10 +435,7 @@ export type ProcessStatusLine = {
   warn: boolean;
 };
 
-export function processOutcomeWord(
-  process: Pick<CourtProcess, "type">,
-  served: boolean,
-): string {
+export function processOutcomeWord(process: Pick<CourtProcess, "type">, served: boolean): string {
   const executed = processType(process.type).executed;
   if (executed) return served ? "Executed" : "Not executed";
   return served ? "Delivered" : "Not delivered";
@@ -556,8 +540,7 @@ export const PROCESS_TABS: ProcessTab[] = [
     countedStatuses: ["to-sign", "to-post", "to-hand", "to-send", "send-failed"],
     dateColumn: "Status",
     outcomeFilters: false,
-    allHint:
-      "signProcess_everythingStillWithTheCourtTo",
+    allHint: "signProcess_everythingStillWithTheCourtTo",
     empty: {
       title: "Nothing is waiting on the court",
       description: "Everything this court has issued is signed and on its way.",
@@ -669,8 +652,7 @@ export function scopeLine(rows: CourtProcess[], scope: ProcessScope): CourtProce
   if (!channels && !hidden?.length) return rows;
   return rows.filter(
     (process) =>
-      (!channels || channels.includes(process.channel)) &&
-      !hidden?.includes(process.status),
+      (!channels || channels.includes(process.channel)) && !hidden?.includes(process.status),
   );
 }
 
@@ -681,14 +663,7 @@ export function hasPills(tab: ProcessTab): boolean {
 
 /* ───────────────────────────── acts ───────────────────────────── */
 
-export type ProcessActId =
-  | "collect"
-  | "sign"
-  | "post"
-  | "hand"
-  | "send"
-  | "resend"
-  | "record";
+export type ProcessActId = "collect" | "sign" | "post" | "hand" | "send" | "resend" | "record";
 
 /**
  * What moves a row on, and the words it is said in.
@@ -720,8 +695,7 @@ export const PROCESS_ACTS: ProcessAct[] = [
   {
     id: "collect",
     from: "awaiting-cover",
-    bar: (count) =>
-      `Send ${count} ${plural(count, "process", "processes")} for signature`,
+    bar: (count) => `Send ${count} ${plural(count, "process", "processes")} for signature`,
     idle: "signProcess_sendSelectedForSignature",
     confirm: "signProcess_sendForSignature",
     question: (subject) => `Send ${subject} for signature?`,
@@ -949,10 +923,7 @@ export function recordProcessReturns(
 }
 
 /** Where an act sends one row. Signing forks: registered post waits to be posted. */
-function destinationOf(
-  actId: ProcessActId,
-  process: CourtProcess,
-): ProcessStatusId {
+function destinationOf(actId: ProcessActId, process: CourtProcess): ProcessStatusId {
   switch (actId) {
     case "collect":
       return "to-sign";
@@ -1027,7 +998,6 @@ export function moveLine(actId: ProcessActId, rows: CourtProcess[]): string {
     .map(([id, count]) => `${count} ${count === 1 ? "moves" : "move"} to ${place(id)}`)
     .join(", ")}.`;
 }
-
 
 /* ───────────────────────────── the line ───────────────────────────── */
 
@@ -1740,10 +1710,7 @@ export const PROCESS_LINE: CourtProcess[] = [
 ];
 
 /** Everything at one status. */
-export function processesAt(
-  rows: CourtProcess[],
-  status: ProcessStatusId,
-): CourtProcess[] {
+export function processesAt(rows: CourtProcess[], status: ProcessStatusId): CourtProcess[] {
   return rows.filter((process) => process.status === status);
 }
 
@@ -1754,9 +1721,7 @@ export function processesIn(
   view: ProcessView,
 ): CourtProcess[] {
   return rows.filter((process) =>
-    view === "all"
-      ? tab.statuses.includes(process.status)
-      : process.status === view,
+    view === "all" ? tab.statuses.includes(process.status) : process.status === view,
   );
 }
 
@@ -1791,13 +1756,8 @@ export function spansStatuses(rows: CourtProcess[]): boolean {
  * and back again. Ordering by band first means a page break falls inside a band at most
  * once, and the bands read top to bottom in the tab's own order.
  */
-export function orderForView(
-  rows: CourtProcess[],
-  tab: ProcessTab,
-): CourtProcess[] {
-  return tab.statuses.flatMap((id) =>
-    rows.filter((process) => process.status === id),
-  );
+export function orderForView(rows: CourtProcess[], tab: ProcessTab): CourtProcess[] {
+  return tab.statuses.flatMap((id) => rows.filter((process) => process.status === id));
 }
 
 /** The paper this view is matched against, if it is a view that has any. */
@@ -1806,15 +1766,10 @@ export function pileFor(view: ProcessView): ProcessPile | undefined {
 }
 
 /** The rows a pile can take: the view's own, narrowed to paper where only paper counts. */
-export function pilePool(
-  rows: CourtProcess[],
-  view: ProcessView,
-): CourtProcess[] {
+export function pilePool(rows: CourtProcess[], view: ProcessView): CourtProcess[] {
   const pile = pileFor(view);
   if (!pile || view === "all") return [];
-  return processesAt(rows, view).filter(
-    (process) => !pile.postOnly || recordedByCourt(process),
-  );
+  return processesAt(rows, view).filter((process) => !pile.postOnly || recordedByCourt(process));
 }
 
 /** One envelope's worth of selection: a case, and the process picked out of it. */
@@ -1876,19 +1831,12 @@ export function singleCaseMatch(
   const matches = filterProcesses(rows, filters);
   const first = matches[0];
   if (!first) return null;
-  return matches.every((process) => process.caseNumber === first.caseNumber)
-    ? matches
-    : null;
+  return matches.every((process) => process.caseNumber === first.caseNumber) ? matches : null;
 }
 
 /** Every id in `rows` belonging to one case — what removing an envelope takes out. */
-export function processIdsForCase(
-  rows: CourtProcess[],
-  caseNumber: string,
-): string[] {
-  return rows
-    .filter((process) => process.caseNumber === caseNumber)
-    .map((process) => process.id);
+export function processIdsForCase(rows: CourtProcess[], caseNumber: string): string[] {
+  return rows.filter((process) => process.caseNumber === caseNumber).map((process) => process.id);
 }
 
 /** The statuses that wait on the court — what the rail's badge counts. */
@@ -1907,8 +1855,7 @@ const WAITING_ON_COURT: ProcessStatusId[] = [
  * counted it would send the bench to a screen with less work on it than it promised.
  */
 export function processQueueCount(rows: CourtProcess[]): number {
-  return rows.filter((process) => WAITING_ON_COURT.includes(process.status))
-    .length;
+  return rows.filter((process) => WAITING_ON_COURT.includes(process.status)).length;
 }
 
 export const PROCESS_QUEUE_COUNT = processQueueCount(PROCESS_LINE);
@@ -1916,8 +1863,7 @@ export const PROCESS_QUEUE_COUNT = processQueueCount(PROCESS_LINE);
 /** A tab's count: what is standing in it, or nothing where the tab is not counted. */
 /** A tab's count: the work standing in it. */
 export function tabCount(rows: CourtProcess[], tab: ProcessTab): number {
-  return rows.filter((process) => tab.countedStatuses.includes(process.status))
-    .length;
+  return rows.filter((process) => tab.countedStatuses.includes(process.status)).length;
 }
 
 /** Whether the All pill counts — only where every status in the tab is work. */
@@ -1974,11 +1920,7 @@ export const DEFAULT_PROCESS_SORT: ProcessSort = "hearing-soonest";
 /** The last day anything happened to a row — what "Last updated" orders by. */
 export function lastActivityDay(process: CourtProcess): string {
   return (
-    process.returnedOn ??
-    process.sentOn ??
-    process.signedOn ??
-    process.issuedOn ??
-    process.paidOn
+    process.returnedOn ?? process.sentOn ?? process.signedOn ?? process.issuedOn ?? process.paidOn
   );
 }
 
@@ -1986,24 +1928,16 @@ export function lastActivityDay(process: CourtProcess): string {
  * Order rows, ties broken by case number so the order is stable. ISO days compare as
  * strings. A new array; the line is not touched.
  */
-export function sortProcesses(
-  rows: CourtProcess[],
-  sort: ProcessSort,
-): CourtProcess[] {
+export function sortProcesses(rows: CourtProcess[], sort: ProcessSort): CourtProcess[] {
   const key = (process: CourtProcess) =>
     sort === "recent" ? lastActivityDay(process) : process.hearingDate;
   const direction = sort === "hearing-soonest" ? 1 : -1;
   return [...rows].sort(
-    (a, b) =>
-      direction * key(a).localeCompare(key(b)) ||
-      a.caseNumber.localeCompare(b.caseNumber),
+    (a, b) => direction * key(a).localeCompare(key(b)) || a.caseNumber.localeCompare(b.caseNumber),
   );
 }
 
-export function filterProcesses(
-  rows: CourtProcess[],
-  filters: ProcessFilters,
-): CourtProcess[] {
+export function filterProcesses(rows: CourtProcess[], filters: ProcessFilters): CourtProcess[] {
   return rows.filter((process) => {
     if (filters.type !== "all" && process.type !== filters.type) return false;
     if (filters.channel !== "all" && process.channel !== filters.channel) {
@@ -2061,19 +1995,15 @@ export function processesElsewhere(
 ): { tab: ProcessTab; status: ProcessStatus; count: number }[] {
   const here = processTab(from.tab);
   return PROCESS_STATUSES.filter((status) =>
-    status.tab === from.tab
-      ? from.view !== "all" && status.id !== from.view
-      : true,
+    status.tab === from.tab ? from.view !== "all" && status.id !== from.view : true,
   )
     .map((status) => {
       const tab = processTab(status.tab);
       return {
         tab,
         status,
-        count: filterProcesses(
-          processesAt(rows, status.id),
-          rebaseFilters(filters, here, tab),
-        ).length,
+        count: filterProcesses(processesAt(rows, status.id), rebaseFilters(filters, here, tab))
+          .length,
       };
     })
     .filter((entry) => entry.count > 0);
@@ -2218,9 +2148,7 @@ export function processDocumentText(document: ProcessDocument): string {
     document.title,
     ...(document.addressee ? [document.addressee] : []),
     "",
-    ...document.paragraphs.map(
-      (paragraph, index) => `${index + 1}. ${paragraph}`,
-    ),
+    ...document.paragraphs.map((paragraph, index) => `${index + 1}. ${paragraph}`),
     "",
     document.channel,
     `Dated this the ${document.dated}.`,
@@ -2269,4 +2197,3 @@ export function downloadProcessBundle(rows: CourtProcess[]): void {
   anchor.click();
   URL.revokeObjectURL(url);
 }
-

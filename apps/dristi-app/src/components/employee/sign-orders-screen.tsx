@@ -14,18 +14,12 @@ import {
 import { useOrderSigning } from "@/components/employee/use-order-signing";
 import { ListFooter } from "@/components/employee/list-footer";
 import { QueueAnnouncer } from "@/components/employee/queue-announcer";
-import {
-  SignOrderFlow,
-  type SignOrderFlowRequest,
-} from "@/components/employee/sign-order-flow";
+import { SignOrderFlow, type SignOrderFlowRequest } from "@/components/employee/sign-order-flow";
 import { SignOrdersTable } from "@/components/employee/sign-orders-table";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { useHearingSession } from "@/components/employee/use-hearing-session";
 import { useOrderDrafts } from "@/components/employee/use-order-draft";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -37,10 +31,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  ordersForSitting,
-  type HearingOrder,
-} from "@/lib/employee/hearing-orders";
+import { ordersForSitting, type HearingOrder } from "@/lib/employee/hearing-orders";
 import {
   causeTitle,
   hearingsForDay,
@@ -170,18 +161,12 @@ export function SignOrdersScreen() {
      one and a deferred one. Every change resets to page one; the old Search button did
      that, and a keystroke that narrows the list to four rows must not leave the reader
      on page three of nothing. */
-  const [filters, setFilters] = React.useState<SignOrderFilters>(
-    DEFAULT_SIGN_ORDER_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<SignOrderFilters>(DEFAULT_SIGN_ORDER_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [selectedIds, setSelectedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [selectedIds, setSelectedIds] = React.useState<ReadonlySet<string>>(() => new Set());
   /* The signing window: one order read and signed, or a selection signed in bulk. */
-  const [signing, setSigning] = React.useState<SignOrderFlowRequest | null>(
-    null,
-  );
+  const [signing, setSigning] = React.useState<SignOrderFlowRequest | null>(null);
   const [notice, setNotice] = React.useState("");
   const searchRef = React.useRef<HTMLInputElement>(null);
   /* The bulk confirmation hands focus back here on the way out — see its `triggerRef`. */
@@ -195,9 +180,7 @@ export function SignOrdersScreen() {
    * waiting for a signature, so that is what the screen opens on — a tab that landed on
    * today's drafts would answer a question the rail did not ask.
    */
-  const [tab, setTab] = React.useState<"pending" | "signed" | "drafts">(
-    "pending",
-  );
+  const [tab, setTab] = React.useState<"pending" | "signed" | "drafts">("pending");
 
   /**
    * The orders drawn up at today's sitting and not yet sent for signature.
@@ -220,13 +203,9 @@ export function SignOrdersScreen() {
     today,
   ).filter((order) => order.status === "draft");
 
-  const pending = orders.filter(
-    (order) => order.status === "pending-signature",
-  );
+  const pending = orders.filter((order) => order.status === "pending-signature");
   const signedCount = orders.length - pending.length;
-  const [columns, setColumns] = React.useState(() =>
-    emptyColumnFilters(SIGN_ORDER_COLUMN_FILTERS),
-  );
+  const [columns, setColumns] = React.useState(() => emptyColumnFilters(SIGN_ORDER_COLUMN_FILTERS));
   const [sort, setSort] = React.useState<SignOrderSort>("oldest");
 
   const rows = sortRows(
@@ -246,10 +225,7 @@ export function SignOrdersScreen() {
   const currentPage = Math.min(page, pageCount);
   const start = (currentPage - 1) * pageSize;
   const pageRows = rows.slice(start, start + pageSize);
-  const isFiltered =
-    filters.addedOn !== "" ||
-    filters.query !== "" ||
-    hasColumnFilters(columns);
+  const isFiltered = filters.addedOn !== "" || filters.query !== "" || hasColumnFilters(columns);
 
   /* What the bar will actually sign: the selection, minus anything that has since been
      signed or filtered out of existence. A stale id is dropped rather than counted. */
@@ -263,9 +239,7 @@ export function SignOrdersScreen() {
     };
     return at(a) - at(b);
   });
-  const signableInView = pageRows.filter(
-    (order) => order.status === "pending-signature",
-  ).length;
+  const signableInView = pageRows.filter((order) => order.status === "pending-signature").length;
 
   function changeFilters(next: SignOrderFilters) {
     setFilters(next);
@@ -345,14 +319,20 @@ export function SignOrdersScreen() {
           {tab === "pending"
             ? pending.length === 1
               ? t("signOrdersScreen_1OrderIsWaitingForYour")
-              : t("signOrdersScreen_lengthOrdersAreWaitingForYour", { length: String(pending.length) })
+              : t("signOrdersScreen_lengthOrdersAreWaitingForYour", {
+                  length: String(pending.length),
+                })
             : tab === "signed"
               ? signedCount === 1
                 ? t("signOrdersScreen_1OrderIsSignedAndIssued")
-                : t("signOrdersScreen_signedCountOrdersAreSignedAnd", { signedCount: String(signedCount) })
-            : draftRows.length === 1
-              ? t("signOrdersScreen_1OrderFromTodaysSittingHas")
-              : t("signOrdersScreen_lengthOrdersFromTodaysSittingHave", { length: String(draftRows.length) })}
+                : t("signOrdersScreen_signedCountOrdersAreSignedAnd", {
+                    signedCount: String(signedCount),
+                  })
+              : draftRows.length === 1
+                ? t("signOrdersScreen_1OrderFromTodaysSittingHas")
+                : t("signOrdersScreen_lengthOrdersFromTodaysSittingHave", {
+                    length: String(draftRows.length),
+                  })}
         </p>
       </header>
 
@@ -439,11 +419,7 @@ export function SignOrdersScreen() {
               {/* Mounted whatever the list is doing, including empty — see
                   `QueueAnnouncer`. One per tab, because switching tabs changes the answer
                   and the inactive pane is unmounted. */}
-              <QueueAnnouncer
-                from={start + 1}
-                to={start + pageRows.length}
-                total={rows.length}
-              />
+              <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
               {pageRows.length === 0 ? (
                 <SignOrdersEmpty
@@ -499,17 +475,10 @@ export function SignOrdersScreen() {
             </TabsContent>
           ))}
 
-          <TabsContent
-            value="drafts"
-            className="flex min-w-0 flex-col gap-4 outline-none"
-          >
+          <TabsContent value="drafts" className="flex min-w-0 flex-col gap-4 outline-none">
             {/* Mounted whatever the list holds, including nothing — a live region has to
                 be in the DOM before the change to be read out at all. */}
-            <QueueAnnouncer
-              from={1}
-              to={draftRows.length}
-              total={draftRows.length}
-            />
+            <QueueAnnouncer from={1} to={draftRows.length} total={draftRows.length} />
 
             {draftRows.length === 0 ? (
               <DraftOrdersEmpty />
@@ -541,9 +510,7 @@ export function SignOrdersScreen() {
         <SignBar
           count={selected.length}
           notice={notice}
-          onRequestSign={() =>
-            setSigning({ orders: inListOrder, start: "confirm" })
-          }
+          onRequestSign={() => setSigning({ orders: inListOrder, start: "confirm" })}
           signRef={signRef}
         />
       ) : null}
@@ -557,9 +524,7 @@ export function SignOrdersScreen() {
           if (!open) setSigning(null);
         }}
         onSign={sign}
-        onReturnFocus={() =>
-          selected.length > 0 ? signRef.current?.focus() : returnFocus()
-        }
+        onReturnFocus={() => (selected.length > 0 ? signRef.current?.focus() : returnFocus())}
       />
     </div>
   );
@@ -605,8 +570,7 @@ function SignOrderFiltersForm({
         chipLabel: filters.addedOn ? formatListingDate(filters.addedOn) : "",
         draftActive: (value) => !!value,
         cleared: undefined,
-        onApply: (value) =>
-          onChange({ ...filters, addedOn: value ? isoDay(value) : "" }),
+        onApply: (value) => onChange({ ...filters, addedOn: value ? isoDay(value) : "" }),
       }}
       trailing={trailing}
       onClearAll={onClear}
@@ -696,11 +660,7 @@ function SignOrdersEmpty({
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FileSignatureIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FileSignatureIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isFiltered
@@ -768,7 +728,10 @@ function SignOrdersItemList({
                 <Checkbox
                   checked={selectedIds.has(order.id)}
                   onCheckedChange={() => onToggle(order)}
-                  aria-label={t("signOrdersScreen_selectTitleInCourtText", { title, courtText: courtText(order.caseNumber) })}
+                  aria-label={t("signOrdersScreen_selectTitleInCourtText", {
+                    title,
+                    courtText: courtText(order.caseNumber),
+                  })}
                 />
               </span>
             ) : (
@@ -794,9 +757,7 @@ function SignOrdersItemList({
                 <Identifier value={order.caseNumber} label={t("signOrdersScreen_caseNumber")} />
                 {signed ? t("signOrdersScreen_signed") : t("signOrdersScreen_added")}
                 <span className="tabular-nums">
-                  {formatSignOrderDate(
-                    signed ? (order.signedOn ?? order.addedOn) : order.addedOn,
-                  )}
+                  {formatSignOrderDate(signed ? (order.signedOn ?? order.addedOn) : order.addedOn)}
                 </span>
               </p>
             </div>

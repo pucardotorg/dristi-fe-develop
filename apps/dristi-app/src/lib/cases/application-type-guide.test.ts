@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  APPLICATION_TYPE_MATCH_FLOOR,
-  searchApplicationTypes,
-} from "./application-type-guide";
+import { APPLICATION_TYPE_MATCH_FLOOR, searchApplicationTypes } from "./application-type-guide";
 
 /** What a filer types, in their own words, and the type they mean. */
 const ASKS: [string, string][] = [

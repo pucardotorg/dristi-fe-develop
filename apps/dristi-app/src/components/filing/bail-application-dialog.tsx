@@ -11,9 +11,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 
-import {
-  ChromeDialogContent,
-} from "@/components/chrome/app-chrome";
+import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { useBackCloses, useFlowWindow } from "@/components/chrome/flow-window";
@@ -27,18 +25,8 @@ import {
   DescriptionTerm,
   DescriptionDetails,
 } from "@/components/ui/description-list";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -80,7 +68,6 @@ import { useCourtText } from "@/components/court/court-provider";
 import { UploadedDocField as SharedUploadedDocField } from "@/components/cases/uploaded-doc-field";
 import { useTranslations } from "next-intl";
 
-
 /**
  * Raise an application → bail. Staged dialog, same shell as the join flows:
  * details → sureties → (generate) review → signature → court fee → submitted.
@@ -92,14 +79,7 @@ import { useTranslations } from "next-intl";
  */
 
 type Stage =
-  | "details"
-  | "sureties"
-  | "review"
-  | "sign"
-  | "payment"
-  | "processing"
-  | "paid"
-  | "done";
+  "details" | "sureties" | "review" | "sign" | "payment" | "processing" | "paid" | "done";
 type YesNo = "yes" | "no";
 
 export type BailApplicationResult = {
@@ -138,7 +118,8 @@ export function UploadedDocField({
         changeFile: pick(bailDialog.changeFile, locale),
         remove: pick(bailDialog.removeFile, locale),
         optional: pick(bailDialog.optional, locale),
-        noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : t("bailApplicationDialog_noFileChosenYet"),
+        noFile:
+          locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : t("bailApplicationDialog_noFileChosenYet"),
         chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : t("bailApplicationDialog_chooseFile"),
         previewDescription: pick(bailDialog.docPreviewBody, locale),
         previewAlt: pick(bailDialog.docPreviewAlt, locale),
@@ -293,12 +274,8 @@ function ApplicationDraft({
         ) : null}
         {prayer.trim() ? (
           <div className="flex flex-col gap-1">
-            <p className="text-body-compact font-medium">
-              {pick(bailDialog.prayerLabel, locale)}
-            </p>
-            <p className="text-body-compact text-pretty text-muted-foreground">
-              {prayer.trim()}
-            </p>
+            <p className="text-body-compact font-medium">{pick(bailDialog.prayerLabel, locale)}</p>
+            <p className="text-body-compact text-pretty text-muted-foreground">{prayer.trim()}</p>
           </div>
         ) : null}
       </article>
@@ -340,9 +317,9 @@ export function BailApplicationDialog({
   /* Until the advocate types, the offered wording follows the language. */
   const prayer = prayerPrefilled ? pick(bailDialog.prayerDefault, locale) : typedPrayer;
   const [documents, setDocuments] = React.useState<BailDocument[]>([]);
-  const [documentErrors, setDocumentErrors] = React.useState<
-    Record<number, BailDocumentErrors>
-  >({});
+  const [documentErrors, setDocumentErrors] = React.useState<Record<number, BailDocumentErrors>>(
+    {},
+  );
   const [detailsTouched, setDetailsTouched] = React.useState(false);
   const addDocumentButton = (
     <Button
@@ -541,9 +518,12 @@ export function BailApplicationDialog({
      and e-filing do (owner, 2026-10-12); the application is filed after it. */
   const [paymentRef, setPaymentRef] = React.useState("");
   const payTimerRef = React.useRef<number | null>(null);
-  React.useEffect(() => () => {
-    if (payTimerRef.current !== null) window.clearTimeout(payTimerRef.current);
-  }, []);
+  React.useEffect(
+    () => () => {
+      if (payTimerRef.current !== null) window.clearTimeout(payTimerRef.current);
+    },
+    [],
+  );
 
   function pay() {
     setStage("processing");
@@ -568,9 +548,15 @@ export function BailApplicationDialog({
     stage === "details"
       ? { title: pick(bailDialog.title, locale), body: pick(bailDialog.detailsBody, locale) }
       : stage === "sureties"
-        ? { title: pick(bailDialog.suretiesTitle, locale), body: pick(bailDialog.suretiesBody, locale) }
+        ? {
+            title: pick(bailDialog.suretiesTitle, locale),
+            body: pick(bailDialog.suretiesBody, locale),
+          }
         : stage === "review"
-          ? { title: pick(bailDialog.reviewTitle, locale), body: pick(bailDialog.reviewBody, locale) }
+          ? {
+              title: pick(bailDialog.reviewTitle, locale),
+              body: pick(bailDialog.reviewBody, locale),
+            }
           : stage === "sign"
             ? { title: pick(bailDialog.signTitle, locale), body: pick(bailDialog.signBody, locale) }
             : { title: pick(bailDialog.payTitle, locale), body: pick(bailDialog.payBody, locale) };
@@ -584,60 +570,77 @@ export function BailApplicationDialog({
 
   return (
     <>
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <FlowDialogContent
-        ownBack
-        lang={locale}
-        className={cn(
-          "flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl",
-          stage === "processing" && "[&_[data-slot=dialog-close]]:hidden",
-        )}
-      >
-        {/* The act's outcome takes over the top of the window (skill `feedback-states`):
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <FlowDialogContent
+          ownBack
+          lang={locale}
+          className={cn(
+            "flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl",
+            stage === "processing" && "[&_[data-slot=dialog-close]]:hidden",
+          )}
+        >
+          {/* The act's outcome takes over the top of the window (skill `feedback-states`):
             the fee paid, then the application filed. */}
-        {stage === "done" ? (
-          <OutcomeHeader
-            key="done"
-            titleFrom="dialog"
-            focusTitle
-            title={pick(bailDialog.doneTitle, locale)}
-            body={pick(bailDialog.doneBody, locale)}
-          />
-        ) : stage === "paid" ? (
-          <OutcomeHeader key="paid" titleFrom="dialog" focusTitle title={headerCopy.title} body={headerCopy.body}>
-            <OutcomeAmount label={pick(advDialog.paidAmount, locale)} value={BAIL_FEE} />
-            {/* The case this filing belongs to, as on every other stage. */}
-            <p className="pt-2 text-caption text-muted-foreground">
-              <Identifier value={accessCase.caseNumber} label={t("bailApplicationDialog_caseNumber")} />
-              <span aria-hidden> · </span>
-              {accessCase.title}
-            </p>
-          </OutcomeHeader>
-        ) : (
-          <DialogHeader className="shrink-0 border-b border-hairline px-6 py-5 pr-14 text-left">
-            <DialogTitle className="text-title-s font-semibold text-balance">
-              {headerCopy.title}
-            </DialogTitle>
-            <DialogDescription className="text-pretty">{headerCopy.body}</DialogDescription>
-            {/* Where the terms already are, while they are being entered. */}
-            {stage === "details" || stage === "sureties" ? (
-              <p className="text-body-compact text-pretty text-muted-foreground">
-                {pick(bailDialog.fromSummons, locale)}
+          {stage === "done" ? (
+            <OutcomeHeader
+              key="done"
+              titleFrom="dialog"
+              focusTitle
+              title={pick(bailDialog.doneTitle, locale)}
+              body={pick(bailDialog.doneBody, locale)}
+            />
+          ) : stage === "paid" ? (
+            <OutcomeHeader
+              key="paid"
+              titleFrom="dialog"
+              focusTitle
+              title={headerCopy.title}
+              body={headerCopy.body}
+            >
+              <OutcomeAmount label={pick(advDialog.paidAmount, locale)} value={BAIL_FEE} />
+              {/* The case this filing belongs to, as on every other stage. */}
+              <p className="pt-2 text-caption text-muted-foreground">
+                <Identifier
+                  value={accessCase.caseNumber}
+                  label={t("bailApplicationDialog_caseNumber")}
+                />
+                <span aria-hidden> · </span>
+                {accessCase.title}
               </p>
-            ) : null}
-            {/* The case this filing belongs to is constant across stages. */}
-            <p className="text-caption text-muted-foreground">
-              <Identifier value={accessCase.caseNumber} label={t("bailApplicationDialog_caseNumber")} />
-              <span aria-hidden> · </span>
-              {accessCase.title}
-            </p>
-          </DialogHeader>
-        )}
+            </OutcomeHeader>
+          ) : (
+            <DialogHeader className="shrink-0 border-b border-hairline px-6 py-5 pr-14 text-left">
+              <DialogTitle className="text-title-s font-semibold text-balance">
+                {headerCopy.title}
+              </DialogTitle>
+              <DialogDescription className="text-pretty">{headerCopy.body}</DialogDescription>
+              {/* Where the terms already are, while they are being entered. */}
+              {stage === "details" || stage === "sureties" ? (
+                <p className="text-body-compact text-pretty text-muted-foreground">
+                  {pick(bailDialog.fromSummons, locale)}
+                </p>
+              ) : null}
+              {/* The case this filing belongs to is constant across stages. */}
+              <p className="text-caption text-muted-foreground">
+                <Identifier
+                  value={accessCase.caseNumber}
+                  label={t("bailApplicationDialog_caseNumber")}
+                />
+                <span aria-hidden> · </span>
+                {accessCase.title}
+              </p>
+            </DialogHeader>
+          )}
 
-        <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-          {/* -------------------------------------------- application details */}
-          {stage === "details" ? (
-            <form id="bail-details" noValidate className="flex flex-col gap-6" onSubmit={submitDetails}>
+          <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            {/* -------------------------------------------- application details */}
+            {stage === "details" ? (
+              <form
+                id="bail-details"
+                noValidate
+                className="flex flex-col gap-6"
+                onSubmit={submitDetails}
+              >
                 <>
                   <Field data-invalid={detailsTouched && !petitionerId}>
                     <FieldLabel>{pick(bailDialog.petitionerLabel, locale)}</FieldLabel>
@@ -732,10 +735,7 @@ export function BailApplicationDialog({
                       grammar: a sunken well per document as per surety, and
                       the dialog's upload slot (thumbnail preview, change,
                       remove). One file to a document. */}
-                  <section
-                    aria-labelledby="bail-documents-heading"
-                    className="flex flex-col gap-4"
-                  >
+                  <section aria-labelledby="bail-documents-heading" className="flex flex-col gap-4">
                     {/* Empty, the add button rides the heading's row; once a
                         document is added it follows the list, still at the
                         right edge (owner, Oct 8). */}
@@ -820,7 +820,9 @@ export function BailApplicationDialog({
                                 locale={locale}
                               />
                               {!doc.file ? (
-                                <FieldDescription>{pick(bailDialog.docHelp, locale)}</FieldDescription>
+                                <FieldDescription>
+                                  {pick(bailDialog.docHelp, locale)}
+                                </FieldDescription>
                               ) : null}
                             </div>
                             <FieldError>{errors.file}</FieldError>
@@ -846,728 +848,759 @@ export function BailApplicationDialog({
                     />
                   </Field>
                 </>
-            </form>
-          ) : null}
+              </form>
+            ) : null}
 
-          {/* ----------------------------------------------------- sureties */}
-          {stage === "sureties" ? (
-            <form id="bail-sureties" noValidate className="flex flex-col gap-6" onSubmit={submitSureties}>
-              <Field>
-                <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                  {pick(bailDialog.suretyQuestion, locale)}
-                </FieldLabel>
-                <RadioGroup
-                  value={suretyChoice}
-                  onValueChange={(value) => {
-                    setSuretyChoice(value as YesNo);
-                    setSuretiesTouched(false);
-                  }}
-                  className="flex flex-col gap-1"
-                >
-                  <div className="flex min-h-10 items-center gap-2">
-                    <RadioGroupItem value="yes" id="bail-surety-yes" />
-                    <Label htmlFor="bail-surety-yes">{pick(bailDialog.yes, locale)}</Label>
-                  </div>
-                  <div className="flex min-h-10 items-center gap-2">
-                    <RadioGroupItem value="no" id="bail-surety-no" />
-                    <Label htmlFor="bail-surety-no">{pick(bailDialog.no, locale)}</Label>
-                  </div>
-                </RadioGroup>
-              </Field>
+            {/* ----------------------------------------------------- sureties */}
+            {stage === "sureties" ? (
+              <form
+                id="bail-sureties"
+                noValidate
+                className="flex flex-col gap-6"
+                onSubmit={submitSureties}
+              >
+                <Field>
+                  <FieldLabel className="block w-full text-body font-semibold leading-snug">
+                    {pick(bailDialog.suretyQuestion, locale)}
+                  </FieldLabel>
+                  <RadioGroup
+                    value={suretyChoice}
+                    onValueChange={(value) => {
+                      setSuretyChoice(value as YesNo);
+                      setSuretiesTouched(false);
+                    }}
+                    className="flex flex-col gap-1"
+                  >
+                    <div className="flex min-h-10 items-center gap-2">
+                      <RadioGroupItem value="yes" id="bail-surety-yes" />
+                      <Label htmlFor="bail-surety-yes">{pick(bailDialog.yes, locale)}</Label>
+                    </div>
+                    <div className="flex min-h-10 items-center gap-2">
+                      <RadioGroupItem value="no" id="bail-surety-no" />
+                      <Label htmlFor="bail-surety-no">{pick(bailDialog.no, locale)}</Label>
+                    </div>
+                  </RadioGroup>
+                </Field>
 
-              {suretyChoice === "yes" ? (
-                <>
-                  {/* One consolidated note instead of legacy's per-field warning:
+                {suretyChoice === "yes" ? (
+                  <>
+                    {/* One consolidated note instead of legacy's per-field warning:
                       what the contact details are for, and the caution. */}
-                  <Banner variant="info">{pick(bailDialog.contactNote, locale)}</Banner>
+                    <Banner variant="info">{pick(bailDialog.contactNote, locale)}</Banner>
 
-                  {sureties.map((surety, index) => {
-                    const n = String(index + 1);
-                    const showInvalid = suretiesTouched;
-                    return (
-                      /* A sunken well per surety, not a bordered card-in-card.
+                    {sureties.map((surety, index) => {
+                      const n = String(index + 1);
+                      const showInvalid = suretiesTouched;
+                      return (
+                        /* A sunken well per surety, not a bordered card-in-card.
                          depth is fill, and each well groups one person's fields.
                          min-w-0 overrides the fieldset default min-inline-size:
                          min-content, which otherwise blocks phone-width shrink. */
-                      <fieldset
-                        key={surety.id}
-                        className="flex min-w-0 flex-col gap-5 rounded-lg bg-surface-sunken p-4"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <legend className="float-left text-body font-semibold">
-                            {fillCopy(bailDialog.suretyTitle, locale, { n })}
-                          </legend>
-                          {sureties.length > 1 ? (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive-ink hover:text-destructive-ink"
-                              aria-label={fillCopy(bailDialog.removeSurety, locale, { n })}
-                              onClick={() =>
-                                setSureties((current) =>
-                                  current.filter((entry) => entry.id !== surety.id),
-                                )
-                              }
-                            >
-                              <Trash2Icon aria-hidden />
-                            </Button>
-                          ) : null}
-                        </div>
+                        <fieldset
+                          key={surety.id}
+                          className="flex min-w-0 flex-col gap-5 rounded-lg bg-surface-sunken p-4"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <legend className="float-left text-body font-semibold">
+                              {fillCopy(bailDialog.suretyTitle, locale, { n })}
+                            </legend>
+                            {sureties.length > 1 ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive-ink hover:text-destructive-ink"
+                                aria-label={fillCopy(bailDialog.removeSurety, locale, { n })}
+                                onClick={() =>
+                                  setSureties((current) =>
+                                    current.filter((entry) => entry.id !== surety.id),
+                                  )
+                                }
+                              >
+                                <Trash2Icon aria-hidden />
+                              </Button>
+                            ) : null}
+                          </div>
 
-                        <Field data-invalid={showInvalid && !surety.name.trim()}>
-                          <FieldLabel htmlFor={`surety-${surety.id}-name`}>
-                            {pick(bailDialog.fullNameLabel, locale)}
-                          </FieldLabel>
-                          <Input
-                            id={`surety-${surety.id}-name`}
-                            value={surety.name}
-                            onChange={(event) => updateSurety(surety.id, { name: event.target.value })}
-                          />
-                          <FieldError>
-                            {showInvalid && !surety.name.trim()
-                              ? pick(bailDialog.requiredError, locale)
-                              : null}
-                          </FieldError>
-                        </Field>
-
-                        <Field data-invalid={showInvalid && !surety.father.trim()}>
-                          <FieldLabel htmlFor={`surety-${surety.id}-father`}>
-                            {pick(bailDialog.suretyFatherLabel, locale)}
-                          </FieldLabel>
-                          <Input
-                            id={`surety-${surety.id}-father`}
-                            value={surety.father}
-                            onChange={(event) => updateSurety(surety.id, { father: event.target.value })}
-                          />
-                          <FieldError>
-                            {showInvalid && !surety.father.trim()
-                              ? pick(bailDialog.requiredError, locale)
-                              : null}
-                          </FieldError>
-                        </Field>
-
-                        <div className="grid gap-5 sm:grid-cols-2">
-                          <Field data-invalid={showInvalid && surety.phone.length !== 10}>
-                            <FieldLabel htmlFor={`surety-${surety.id}-phone`}>
-                              {pick(bailDialog.phoneLabel, locale)}
+                          <Field data-invalid={showInvalid && !surety.name.trim()}>
+                            <FieldLabel htmlFor={`surety-${surety.id}-name`}>
+                              {pick(bailDialog.fullNameLabel, locale)}
                             </FieldLabel>
                             <Input
-                              id={`surety-${surety.id}-phone`}
-                              type="tel"
-                              inputMode="numeric"
-                              autoComplete="off"
-                              value={surety.phone}
+                              id={`surety-${surety.id}-name`}
+                              value={surety.name}
                               onChange={(event) =>
-                                updateSurety(surety.id, {
-                                  phone: event.target.value.replace(/\D/g, "").slice(0, 10),
-                                })
+                                updateSurety(surety.id, { name: event.target.value })
                               }
                             />
                             <FieldError>
-                              {showInvalid && surety.phone.length !== 10
-                                ? pick(bailDialog.phoneError, locale)
+                              {showInvalid && !surety.name.trim()
+                                ? pick(bailDialog.requiredError, locale)
                                 : null}
                             </FieldError>
                           </Field>
 
-                          <Field>
-                            <FieldLabel htmlFor={`surety-${surety.id}-email`}>
-                              {pick(bailDialog.emailLabel, locale)}{" "}
-                              <span className="font-normal text-muted-foreground">
-                                ({pick(bailDialog.optional, locale)})
-                              </span>
+                          <Field data-invalid={showInvalid && !surety.father.trim()}>
+                            <FieldLabel htmlFor={`surety-${surety.id}-father`}>
+                              {pick(bailDialog.suretyFatherLabel, locale)}
                             </FieldLabel>
                             <Input
-                              id={`surety-${surety.id}-email`}
-                              type="email"
-                              autoComplete="off"
-                              value={surety.email}
-                              onChange={(event) => updateSurety(surety.id, { email: event.target.value })}
-                            />
-                          </Field>
-                        </div>
-
-                        <div className="flex flex-col gap-5">
-                          <p className="text-caption font-semibold text-muted-foreground">
-                            {pick(bailDialog.addressHeading, locale)}
-                          </p>
-
-                          <Field data-invalid={showInvalid && !surety.address1.trim()}>
-                            <FieldLabel htmlFor={`surety-${surety.id}-address1`}>
-                              {pick(bailDialog.address1Label, locale)}
-                            </FieldLabel>
-                            <Input
-                              id={`surety-${surety.id}-address1`}
-                              value={surety.address1}
+                              id={`surety-${surety.id}-father`}
+                              value={surety.father}
                               onChange={(event) =>
-                                updateSurety(surety.id, { address1: event.target.value })
+                                updateSurety(surety.id, { father: event.target.value })
                               }
                             />
                             <FieldError>
-                              {showInvalid && !surety.address1.trim()
+                              {showInvalid && !surety.father.trim()
                                 ? pick(bailDialog.requiredError, locale)
                                 : null}
                             </FieldError>
                           </Field>
 
                           <div className="grid gap-5 sm:grid-cols-2">
-                            <Field data-invalid={showInvalid && !surety.city.trim()}>
-                              <FieldLabel htmlFor={`surety-${surety.id}-city`}>
-                                {pick(bailDialog.cityLabel, locale)}
+                            <Field data-invalid={showInvalid && surety.phone.length !== 10}>
+                              <FieldLabel htmlFor={`surety-${surety.id}-phone`}>
+                                {pick(bailDialog.phoneLabel, locale)}
                               </FieldLabel>
                               <Input
-                                id={`surety-${surety.id}-city`}
-                                value={surety.city}
-                                onChange={(event) => updateSurety(surety.id, { city: event.target.value })}
-                              />
-                              <FieldError>
-                                {showInvalid && !surety.city.trim()
-                                  ? pick(bailDialog.requiredError, locale)
-                                  : null}
-                              </FieldError>
-                            </Field>
-
-                            <Field data-invalid={showInvalid && surety.pincode.length !== 6}>
-                              <FieldLabel htmlFor={`surety-${surety.id}-pincode`}>
-                                {pick(bailDialog.pincodeLabel, locale)}
-                              </FieldLabel>
-                              <Input
-                                id={`surety-${surety.id}-pincode`}
+                                id={`surety-${surety.id}-phone`}
+                                type="tel"
                                 inputMode="numeric"
-                                value={surety.pincode}
+                                autoComplete="off"
+                                value={surety.phone}
                                 onChange={(event) =>
                                   updateSurety(surety.id, {
-                                    pincode: event.target.value.replace(/\D/g, "").slice(0, 6),
+                                    phone: event.target.value.replace(/\D/g, "").slice(0, 10),
                                   })
                                 }
                               />
                               <FieldError>
-                                {showInvalid && surety.pincode.length !== 6
-                                  ? pick(bailDialog.pincodeError, locale)
+                                {showInvalid && surety.phone.length !== 10
+                                  ? pick(bailDialog.phoneError, locale)
                                   : null}
                               </FieldError>
                             </Field>
-                          </div>
 
-                          <div className="grid gap-5 sm:grid-cols-2">
-                            <Field data-invalid={showInvalid && !surety.district.trim()}>
-                              <FieldLabel htmlFor={`surety-${surety.id}-district`}>
-                                {pick(bailDialog.districtLabel, locale)}
+                            <Field>
+                              <FieldLabel htmlFor={`surety-${surety.id}-email`}>
+                                {pick(bailDialog.emailLabel, locale)}{" "}
+                                <span className="font-normal text-muted-foreground">
+                                  ({pick(bailDialog.optional, locale)})
+                                </span>
                               </FieldLabel>
                               <Input
-                                id={`surety-${surety.id}-district`}
-                                value={surety.district}
+                                id={`surety-${surety.id}-email`}
+                                type="email"
+                                autoComplete="off"
+                                value={surety.email}
                                 onChange={(event) =>
-                                  updateSurety(surety.id, { district: event.target.value })
+                                  updateSurety(surety.id, { email: event.target.value })
+                                }
+                              />
+                            </Field>
+                          </div>
+
+                          <div className="flex flex-col gap-5">
+                            <p className="text-caption font-semibold text-muted-foreground">
+                              {pick(bailDialog.addressHeading, locale)}
+                            </p>
+
+                            <Field data-invalid={showInvalid && !surety.address1.trim()}>
+                              <FieldLabel htmlFor={`surety-${surety.id}-address1`}>
+                                {pick(bailDialog.address1Label, locale)}
+                              </FieldLabel>
+                              <Input
+                                id={`surety-${surety.id}-address1`}
+                                value={surety.address1}
+                                onChange={(event) =>
+                                  updateSurety(surety.id, { address1: event.target.value })
                                 }
                               />
                               <FieldError>
-                                {showInvalid && !surety.district.trim()
+                                {showInvalid && !surety.address1.trim()
                                   ? pick(bailDialog.requiredError, locale)
                                   : null}
                               </FieldError>
                             </Field>
 
-                            <Field data-invalid={showInvalid && !surety.state.trim()}>
-                              <FieldLabel htmlFor={`surety-${surety.id}-state`}>
-                                {pick(bailDialog.stateLabel, locale)}
-                              </FieldLabel>
-                              <Input
-                                id={`surety-${surety.id}-state`}
-                                value={surety.state}
-                                onChange={(event) => updateSurety(surety.id, { state: event.target.value })}
+                            <div className="grid gap-5 sm:grid-cols-2">
+                              <Field data-invalid={showInvalid && !surety.city.trim()}>
+                                <FieldLabel htmlFor={`surety-${surety.id}-city`}>
+                                  {pick(bailDialog.cityLabel, locale)}
+                                </FieldLabel>
+                                <Input
+                                  id={`surety-${surety.id}-city`}
+                                  value={surety.city}
+                                  onChange={(event) =>
+                                    updateSurety(surety.id, { city: event.target.value })
+                                  }
+                                />
+                                <FieldError>
+                                  {showInvalid && !surety.city.trim()
+                                    ? pick(bailDialog.requiredError, locale)
+                                    : null}
+                                </FieldError>
+                              </Field>
+
+                              <Field data-invalid={showInvalid && surety.pincode.length !== 6}>
+                                <FieldLabel htmlFor={`surety-${surety.id}-pincode`}>
+                                  {pick(bailDialog.pincodeLabel, locale)}
+                                </FieldLabel>
+                                <Input
+                                  id={`surety-${surety.id}-pincode`}
+                                  inputMode="numeric"
+                                  value={surety.pincode}
+                                  onChange={(event) =>
+                                    updateSurety(surety.id, {
+                                      pincode: event.target.value.replace(/\D/g, "").slice(0, 6),
+                                    })
+                                  }
+                                />
+                                <FieldError>
+                                  {showInvalid && surety.pincode.length !== 6
+                                    ? pick(bailDialog.pincodeError, locale)
+                                    : null}
+                                </FieldError>
+                              </Field>
+                            </div>
+
+                            <div className="grid gap-5 sm:grid-cols-2">
+                              <Field data-invalid={showInvalid && !surety.district.trim()}>
+                                <FieldLabel htmlFor={`surety-${surety.id}-district`}>
+                                  {pick(bailDialog.districtLabel, locale)}
+                                </FieldLabel>
+                                <Input
+                                  id={`surety-${surety.id}-district`}
+                                  value={surety.district}
+                                  onChange={(event) =>
+                                    updateSurety(surety.id, { district: event.target.value })
+                                  }
+                                />
+                                <FieldError>
+                                  {showInvalid && !surety.district.trim()
+                                    ? pick(bailDialog.requiredError, locale)
+                                    : null}
+                                </FieldError>
+                              </Field>
+
+                              <Field data-invalid={showInvalid && !surety.state.trim()}>
+                                <FieldLabel htmlFor={`surety-${surety.id}-state`}>
+                                  {pick(bailDialog.stateLabel, locale)}
+                                </FieldLabel>
+                                <Input
+                                  id={`surety-${surety.id}-state`}
+                                  value={surety.state}
+                                  onChange={(event) =>
+                                    updateSurety(surety.id, { state: event.target.value })
+                                  }
+                                />
+                                <FieldError>
+                                  {showInvalid && !surety.state.trim()
+                                    ? pick(bailDialog.requiredError, locale)
+                                    : null}
+                                </FieldError>
+                              </Field>
+                            </div>
+                          </div>
+
+                          <Field data-invalid={showInvalid && !surety.idProof}>
+                            <div className="flex flex-col gap-2">
+                              <UploadedDocField
+                                label={pick(bailDialog.idProofLabel, locale)}
+                                required
+                                file={surety.idProof}
+                                onFileChange={(file) => updateSurety(surety.id, { idProof: file })}
+                                locale={locale}
                               />
-                              <FieldError>
-                                {showInvalid && !surety.state.trim()
-                                  ? pick(bailDialog.requiredError, locale)
-                                  : null}
-                              </FieldError>
-                            </Field>
-                          </div>
-                        </div>
+                              {!surety.idProof ? (
+                                <FieldDescription>
+                                  {pick(bailDialog.docHelp, locale)}
+                                </FieldDescription>
+                              ) : null}
+                            </div>
+                            <FieldError>
+                              {showInvalid && !surety.idProof
+                                ? pick(bailDialog.idProofError, locale)
+                                : null}
+                            </FieldError>
+                          </Field>
 
-                        <Field data-invalid={showInvalid && !surety.idProof}>
-                          <div className="flex flex-col gap-2">
+                          <Field data-invalid={showInvalid && !surety.solvency}>
+                            <div className="flex flex-col gap-2">
+                              <UploadedDocField
+                                label={pick(bailDialog.solvencyLabel, locale)}
+                                required
+                                file={surety.solvency}
+                                onFileChange={(file) => updateSurety(surety.id, { solvency: file })}
+                                locale={locale}
+                              />
+                              {!surety.solvency ? (
+                                <FieldDescription>
+                                  {pick(bailDialog.solvencyHint, locale)}
+                                </FieldDescription>
+                              ) : null}
+                            </div>
+                            <FieldError>
+                              {showInvalid && !surety.solvency
+                                ? pick(bailDialog.solvencyError, locale)
+                                : null}
+                            </FieldError>
+                          </Field>
+
+                          <Field>
                             <UploadedDocField
-                              label={pick(bailDialog.idProofLabel, locale)}
-                              required
-                              file={surety.idProof}
-                              onFileChange={(file) => updateSurety(surety.id, { idProof: file })}
+                              label={pick(bailDialog.otherDocsLabel, locale)}
+                              file={surety.other}
+                              onFileChange={(file) => updateSurety(surety.id, { other: file })}
                               locale={locale}
                             />
-                            {!surety.idProof ? (
-                              <FieldDescription>{pick(bailDialog.docHelp, locale)}</FieldDescription>
-                            ) : null}
-                          </div>
-                          <FieldError>
-                            {showInvalid && !surety.idProof
-                              ? pick(bailDialog.idProofError, locale)
-                              : null}
-                          </FieldError>
-                        </Field>
+                          </Field>
+                        </fieldset>
+                      );
+                    })}
 
-                        <Field data-invalid={showInvalid && !surety.solvency}>
-                          <div className="flex flex-col gap-2">
-                            <UploadedDocField
-                              label={pick(bailDialog.solvencyLabel, locale)}
-                              required
-                              file={surety.solvency}
-                              onFileChange={(file) => updateSurety(surety.id, { solvency: file })}
-                              locale={locale}
-                            />
-                            {!surety.solvency ? (
-                              <FieldDescription>{pick(bailDialog.solvencyHint, locale)}</FieldDescription>
-                            ) : null}
-                          </div>
-                          <FieldError>
-                            {showInvalid && !surety.solvency
-                              ? pick(bailDialog.solvencyError, locale)
-                              : null}
-                          </FieldError>
-                        </Field>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="self-end"
+                      data-icon="inline-start"
+                      onClick={() => setSureties((current) => [...current, blankSurety()])}
+                    >
+                      <PlusIcon aria-hidden />
+                      {pick(bailDialog.addSurety, locale)}
+                    </Button>
+                  </>
+                ) : null}
+              </form>
+            ) : null}
 
-                        <Field>
-                          <UploadedDocField
-                            label={pick(bailDialog.otherDocsLabel, locale)}
-                            file={surety.other}
-                            onFileChange={(file) => updateSurety(surety.id, { other: file })}
-                            locale={locale}
-                          />
-                        </Field>
-                      </fieldset>
-                    );
-                  })}
+            {/* ------------------------------------------------------- review */}
+            {stage === "review" ? (
+              generating ? (
+                <div className="flex min-h-32 flex-col items-center justify-center gap-3 text-center">
+                  <Spinner className="size-6 text-primary" />
+                  <p className="text-body-compact font-medium">
+                    {pick(bailDialog.generating, locale)}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-5">
+                  <DescriptionList>
+                    <DescriptionRow className="border-hairline">
+                      <DescriptionTerm>{pick(bailDialog.summaryType, locale)}</DescriptionTerm>
+                      <DescriptionDetails>
+                        {pick(
+                          APPLICATION_TYPES.find((entry) => entry.id === "bail")!.label,
+                          locale,
+                        )}
+                      </DescriptionDetails>
+                    </DescriptionRow>
+                    <DescriptionRow className="border-hairline">
+                      <DescriptionTerm>{pick(bailDialog.summaryDate, locale)}</DescriptionTerm>
+                      <DescriptionDetails className="tabular-nums">
+                        {BAIL_SUBMISSION_DATE}
+                      </DescriptionDetails>
+                    </DescriptionRow>
+                    <DescriptionRow className="border-hairline">
+                      <DescriptionTerm>
+                        {pick(bailDialog.summaryPetitioner, locale)}
+                      </DescriptionTerm>
+                      <DescriptionDetails>{petitioner?.name}</DescriptionDetails>
+                    </DescriptionRow>
+                    <DescriptionRow className="border-hairline">
+                      <DescriptionTerm>{pick(bailDialog.summarySureties, locale)}</DescriptionTerm>
+                      <DescriptionDetails>
+                        {activeSureties.length
+                          ? fillCopy(bailDialog.suretiesCount, locale, {
+                              count: String(activeSureties.length),
+                            })
+                          : pick(bailDialog.suretiesNone, locale)}
+                      </DescriptionDetails>
+                    </DescriptionRow>
+                  </DescriptionList>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="self-end"
-                    data-icon="inline-start"
-                    onClick={() => setSureties((current) => [...current, blankSurety()])}
+                  <ApplicationDraft
+                    accessCase={accessCase}
+                    grounds={groundsRich}
+                    prayer={prayer}
+                    documents={documents}
+                    locale={locale}
+                    onExpand={() => setReviewFullscreen(true)}
+                  />
+
+                  <Dialog open={reviewFullscreen} onOpenChange={setReviewFullscreen}>
+                    <ChromeDialogContent
+                      mobileSheet
+                      lang={locale}
+                      className="inset-0 flex h-dvh w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none p-0 sm:max-w-none"
+                      onInteractOutside={(event) => event.preventDefault()}
+                    >
+                      <DialogHeader className="shrink-0 border-b border-hairline px-6 py-5 pr-14 text-left">
+                        <DialogTitle className="text-title-s font-semibold text-balance">
+                          {pick(bailDialog.reviewTitle, locale)}
+                        </DialogTitle>
+                        <DialogDescription className="text-pretty">
+                          {pick(bailDialog.reviewBody, locale)}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <ApplicationDraft
+                        accessCase={accessCase}
+                        grounds={groundsRich}
+                        prayer={prayer}
+                        documents={documents}
+                        locale={locale}
+                        expanded
+                      />
+                    </ChromeDialogContent>
+                  </Dialog>
+                </div>
+              )
+            ) : null}
+
+            {/* ---------------------------------------------------- signature */}
+            {stage === "sign" ? (
+              <form id="bail-sign" noValidate className="flex flex-col gap-5" onSubmit={submitSign}>
+                {/* The signed confirmation lives inside the tab it happened in,
+                  never on a replacement screen — the upload slot must stay in
+                  reach so a wrong file can be changed or removed. */}
+                <Field data-invalid={signTouched && !signed}>
+                  <Tabs
+                    value={signTab}
+                    onValueChange={(value) => {
+                      setSignTab(value as "esign" | "upload");
+                      setSignTouched(false);
+                    }}
                   >
-                    <PlusIcon aria-hidden />
-                    {pick(bailDialog.addSurety, locale)}
-                  </Button>
-                </>
-              ) : null}
-            </form>
-          ) : null}
+                    <TabsList className="w-full border border-hairline bg-surface-sunken">
+                      <TabsTrigger value="esign" className="flex-1">
+                        {pick(bailDialog.tabEsign, locale)}
+                      </TabsTrigger>
+                      <TabsTrigger value="upload" className="flex-1">
+                        {pick(bailDialog.tabUploadSigned, locale)}
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="esign" className="flex flex-col gap-4 pt-3">
+                      {officeAccess ? (
+                        <Banner variant="info">{t(OFFICE_NO_ESIGN)}</Banner>
+                      ) : esigned ? (
+                        <StatusLine tone="success">
+                          {fillCopy(bailDialog.signedNote, locale, { name: ADVOCATE_PROFILE_NAME })}
+                        </StatusLine>
+                      ) : (
+                        <Banner variant="info">{pick(bailDialog.esignNote, locale)}</Banner>
+                      )}
+                    </TabsContent>
+                    <TabsContent value="upload" className="flex flex-col gap-4 pt-3">
+                      {signedFile ? (
+                        <StatusLine tone="success">
+                          {fillCopy(bailDialog.signedNote, locale, { name: ADVOCATE_PROFILE_NAME })}
+                        </StatusLine>
+                      ) : (
+                        <>
+                          {/* The download step belongs to this path only — the
+                            Aadhaar tab signs the document in place. */}
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <p className="text-body-compact font-medium text-pretty text-foreground">
+                              {pick(bailDialog.uploadSignedHint, locale)}
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="shrink-0"
+                              data-icon="inline-start"
+                              onClick={() => setDownloadNotice(true)}
+                            >
+                              <DownloadIcon aria-hidden />
+                              {pick(bailDialog.downloadDraft, locale)}
+                            </Button>
+                          </div>
+                          {downloadNotice ? (
+                            <Banner variant="info">
+                              {pick(bailDialog.downloadDraftPrototype, locale)}
+                            </Banner>
+                          ) : null}
+                        </>
+                      )}
+                      <div className="flex flex-col gap-2">
+                        <UploadedDocField
+                          label={pick(bailDialog.signedDocLabel, locale)}
+                          required
+                          file={signedFile}
+                          onFileChange={(file) => {
+                            setSignedFile(file);
+                            setSignTouched(false);
+                          }}
+                          locale={locale}
+                        />
+                        {/* Format guidance is for choosing a file — once one is
+                          in, it has done its job. */}
+                        {!signedFile ? (
+                          <FieldDescription>{pick(bailDialog.docHelp, locale)}</FieldDescription>
+                        ) : null}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                  <FieldError>
+                    {signTouched && !signed ? pick(bailDialog.signError, locale) : null}
+                  </FieldError>
+                </Field>
+              </form>
+            ) : null}
 
-          {/* ------------------------------------------------------- review */}
-          {stage === "review" ? (
-            generating ? (
-              <div className="flex min-h-32 flex-col items-center justify-center gap-3 text-center">
-                <Spinner className="size-6 text-primary" />
-                <p className="text-body-compact font-medium">
-                  {pick(bailDialog.generating, locale)}
-                </p>
-              </div>
-            ) : (
+            {/* ------------------------------------------------------ court fee */}
+            {stage === "payment" ? (
               <div className="flex flex-col gap-5">
                 <DescriptionList>
                   <DescriptionRow className="border-hairline">
-                    <DescriptionTerm>{pick(bailDialog.summaryType, locale)}</DescriptionTerm>
-                    <DescriptionDetails>
-                      {pick(APPLICATION_TYPES.find((entry) => entry.id === "bail")!.label, locale)}
+                    <DescriptionTerm>{pick(bailDialog.feeLine, locale)}</DescriptionTerm>
+                    <DescriptionDetails className="text-right tabular-nums">
+                      {BAIL_FEE}
                     </DescriptionDetails>
                   </DescriptionRow>
                   <DescriptionRow className="border-hairline">
-                    <DescriptionTerm>{pick(bailDialog.summaryDate, locale)}</DescriptionTerm>
+                    <DescriptionTerm className="font-medium text-foreground">
+                      {pick(bailDialog.totalLine, locale)}
+                    </DescriptionTerm>
+                    <DescriptionDetails className="text-right font-medium tabular-nums">
+                      {BAIL_FEE}
+                    </DescriptionDetails>
+                  </DescriptionRow>
+                </DescriptionList>
+                <Banner variant="info">{pick(bailDialog.offlineNote, locale)}</Banner>
+              </div>
+            ) : null}
+
+            {/* ---------------------------------------------- the gateway round trip */}
+            {stage === "processing" ? <PaymentProcessing /> : null}
+
+            {/* ------------------------------------------------------- receipt */}
+            {stage === "paid" ? (
+              <PaymentFacts
+                rows={[
+                  {
+                    label: pick(advDialog.payFeeHead, locale),
+                    value: pick(bailDialog.feeLine, locale),
+                  },
+                  {
+                    label: pick(advDialog.paidRef, locale),
+                    value: (
+                      <Identifier
+                        value={paymentRef}
+                        label={t("bailApplicationDialog_paymentReference")}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            ) : null}
+
+            {/* ------------------------------------------------------ submitted */}
+            {stage === "done" ? (
+              <div className="flex flex-col gap-4">
+                <DescriptionList>
+                  <DescriptionRow className="border-hairline">
+                    <DescriptionTerm>{pick(bailDialog.submittedOn, locale)}</DescriptionTerm>
                     <DescriptionDetails className="tabular-nums">
                       {BAIL_SUBMISSION_DATE}
                     </DescriptionDetails>
                   </DescriptionRow>
-                  <DescriptionRow className="border-hairline">
-                    <DescriptionTerm>{pick(bailDialog.summaryPetitioner, locale)}</DescriptionTerm>
-                    <DescriptionDetails>{petitioner?.name}</DescriptionDetails>
+                  {/* items-center so the label and the ID share one midline. The ID
+                    is its own copy control now, so the icon button beside it went
+                    with the conversion. */}
+                  <DescriptionRow className="items-center border-hairline">
+                    <DescriptionTerm>{pick(bailDialog.submissionIdLabel, locale)}</DescriptionTerm>
+                    <DescriptionDetails className="flex items-center gap-2">
+                      <Identifier
+                        value={BAIL_SUBMISSION_ID}
+                        label={t("bailApplicationDialog_submissionId")}
+                      />
+                    </DescriptionDetails>
                   </DescriptionRow>
                   <DescriptionRow className="border-hairline">
-                    <DescriptionTerm>{pick(bailDialog.summarySureties, locale)}</DescriptionTerm>
+                    <DescriptionTerm>{pick(bailDialog.paymentLabel, locale)}</DescriptionTerm>
                     <DescriptionDetails>
-                      {activeSureties.length
-                        ? fillCopy(bailDialog.suretiesCount, locale, {
-                            count: String(activeSureties.length),
-                          })
-                        : pick(bailDialog.suretiesNone, locale)}
+                      {paid
+                        ? fillCopy(bailDialog.paymentPaid, locale, { fee: BAIL_FEE })
+                        : pick(bailDialog.paymentDeferred, locale)}
                     </DescriptionDetails>
                   </DescriptionRow>
                 </DescriptionList>
 
-                <ApplicationDraft
-                  accessCase={accessCase}
-                  grounds={groundsRich}
-                  prayer={prayer}
-                  documents={documents}
-                  locale={locale}
-                  onExpand={() => setReviewFullscreen(true)}
-                />
+                {!paid ? (
+                  <Banner variant="info">
+                    {fillCopy(bailDialog.feeTaskNote, locale, { fee: BAIL_FEE })}
+                  </Banner>
+                ) : null}
 
-                <Dialog open={reviewFullscreen} onOpenChange={setReviewFullscreen}>
-                  <ChromeDialogContent mobileSheet
-                    lang={locale}
-                    className="inset-0 flex h-dvh w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none p-0 sm:max-w-none"
-                    onInteractOutside={(event) => event.preventDefault()}
-                  >
-                    <DialogHeader className="shrink-0 border-b border-hairline px-6 py-5 pr-14 text-left">
-                      <DialogTitle className="text-title-s font-semibold text-balance">
-                        {pick(bailDialog.reviewTitle, locale)}
-                      </DialogTitle>
-                      <DialogDescription className="text-pretty">
-                        {pick(bailDialog.reviewBody, locale)}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ApplicationDraft
-                      accessCase={accessCase}
-                      grounds={groundsRich}
-                      prayer={prayer}
-                      documents={documents}
-                      locale={locale}
-                      expanded
-                    />
-                  </ChromeDialogContent>
-                </Dialog>
+                {activeSureties.length ? (
+                  <p className="text-body-compact text-pretty text-muted-foreground">
+                    {pick(bailDialog.suretySentNote, locale)}
+                  </p>
+                ) : null}
+
+                {doneDownloadNotice ? (
+                  <Banner variant="info">
+                    {pick(bailDialog.downloadApplicationPrototype, locale)}
+                  </Banner>
+                ) : null}
               </div>
-            )
-          ) : null}
+            ) : null}
+          </div>
 
-          {/* ---------------------------------------------------- signature */}
-          {stage === "sign" ? (
-            <form id="bail-sign" noValidate className="flex flex-col gap-5" onSubmit={submitSign}>
-              {/* The signed confirmation lives inside the tab it happened in,
-                  never on a replacement screen — the upload slot must stay in
-                  reach so a wrong file can be changed or removed. */}
-              <Field data-invalid={signTouched && !signed}>
-                <Tabs
-                  value={signTab}
-                  onValueChange={(value) => {
-                    setSignTab(value as "esign" | "upload");
-                    setSignTouched(false);
-                  }}
-                >
-                  <TabsList className="w-full border border-hairline bg-surface-sunken">
-                    <TabsTrigger value="esign" className="flex-1">
-                      {pick(bailDialog.tabEsign, locale)}
-                    </TabsTrigger>
-                    <TabsTrigger value="upload" className="flex-1">
-                      {pick(bailDialog.tabUploadSigned, locale)}
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="esign" className="flex flex-col gap-4 pt-3">
-                    {officeAccess ? (
-                      <Banner variant="info">{t(OFFICE_NO_ESIGN)}</Banner>
-                    ) : esigned ? (
-                      <StatusLine tone="success">
-                        {fillCopy(bailDialog.signedNote, locale, { name: ADVOCATE_PROFILE_NAME })}
-                      </StatusLine>
-                    ) : (
-                      <Banner variant="info">{pick(bailDialog.esignNote, locale)}</Banner>
-                    )}
-                  </TabsContent>
-                  <TabsContent value="upload" className="flex flex-col gap-4 pt-3">
-                    {signedFile ? (
-                      <StatusLine tone="success">
-                        {fillCopy(bailDialog.signedNote, locale, { name: ADVOCATE_PROFILE_NAME })}
-                      </StatusLine>
-                    ) : (
-                      <>
-                        {/* The download step belongs to this path only — the
-                            Aadhaar tab signs the document in place. */}
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <p className="text-body-compact font-medium text-pretty text-foreground">
-                            {pick(bailDialog.uploadSignedHint, locale)}
-                          </p>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="shrink-0"
-                            data-icon="inline-start"
-                            onClick={() => setDownloadNotice(true)}
-                          >
-                            <DownloadIcon aria-hidden />
-                            {pick(bailDialog.downloadDraft, locale)}
-                          </Button>
-                        </div>
-                        {downloadNotice ? (
-                          <Banner variant="info">
-                            {pick(bailDialog.downloadDraftPrototype, locale)}
-                          </Banner>
-                        ) : null}
-                      </>
-                    )}
-                    <div className="flex flex-col gap-2">
-                      <UploadedDocField
-                        label={pick(bailDialog.signedDocLabel, locale)}
-                        required
-                        file={signedFile}
-                        onFileChange={(file) => {
-                          setSignedFile(file);
-                          setSignTouched(false);
-                        }}
-                        locale={locale}
-                      />
-                      {/* Format guidance is for choosing a file — once one is
-                          in, it has done its job. */}
-                      {!signedFile ? (
-                        <FieldDescription>{pick(bailDialog.docHelp, locale)}</FieldDescription>
-                      ) : null}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-                <FieldError>
-                  {signTouched && !signed ? pick(bailDialog.signError, locale) : null}
-                </FieldError>
-              </Field>
-            </form>
-          ) : null}
-
-          {/* ------------------------------------------------------ court fee */}
-          {stage === "payment" ? (
-            <div className="flex flex-col gap-5">
-              <DescriptionList>
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>{pick(bailDialog.feeLine, locale)}</DescriptionTerm>
-                  <DescriptionDetails className="text-right tabular-nums">
-                    {BAIL_FEE}
-                  </DescriptionDetails>
-                </DescriptionRow>
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm className="font-medium text-foreground">
-                    {pick(bailDialog.totalLine, locale)}
-                  </DescriptionTerm>
-                  <DescriptionDetails className="text-right font-medium tabular-nums">
-                    {BAIL_FEE}
-                  </DescriptionDetails>
-                </DescriptionRow>
-              </DescriptionList>
-              <Banner variant="info">{pick(bailDialog.offlineNote, locale)}</Banner>
-            </div>
-          ) : null}
-
-          {/* ---------------------------------------------- the gateway round trip */}
-          {stage === "processing" ? <PaymentProcessing /> : null}
-
-          {/* ------------------------------------------------------- receipt */}
-          {stage === "paid" ? (
-            <PaymentFacts
-              rows={[
-                { label: pick(advDialog.payFeeHead, locale), value: pick(bailDialog.feeLine, locale) },
-                {
-                  label: pick(advDialog.paidRef, locale),
-                  value: <Identifier value={paymentRef} label={t("bailApplicationDialog_paymentReference")} />,
-                },
-              ]}
-            />
-          ) : null}
-
-          {/* ------------------------------------------------------ submitted */}
-          {stage === "done" ? (
-            <div className="flex flex-col gap-4">
-              <DescriptionList>
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>{pick(bailDialog.submittedOn, locale)}</DescriptionTerm>
-                  <DescriptionDetails className="tabular-nums">
-                    {BAIL_SUBMISSION_DATE}
-                  </DescriptionDetails>
-                </DescriptionRow>
-                {/* items-center so the label and the ID share one midline. The ID
-                    is its own copy control now, so the icon button beside it went
-                    with the conversion. */}
-                <DescriptionRow className="items-center border-hairline">
-                  <DescriptionTerm>{pick(bailDialog.submissionIdLabel, locale)}</DescriptionTerm>
-                  <DescriptionDetails className="flex items-center gap-2">
-                    <Identifier value={BAIL_SUBMISSION_ID} label={t("bailApplicationDialog_submissionId")} />
-                  </DescriptionDetails>
-                </DescriptionRow>
-                <DescriptionRow className="border-hairline">
-                  <DescriptionTerm>{pick(bailDialog.paymentLabel, locale)}</DescriptionTerm>
-                  <DescriptionDetails>
-                    {paid
-                      ? fillCopy(bailDialog.paymentPaid, locale, { fee: BAIL_FEE })
-                      : pick(bailDialog.paymentDeferred, locale)}
-                  </DescriptionDetails>
-                </DescriptionRow>
-              </DescriptionList>
-
-              {!paid ? (
-                <Banner variant="info">
-                  {fillCopy(bailDialog.feeTaskNote, locale, { fee: BAIL_FEE })}
-                </Banner>
-              ) : null}
-
-              {activeSureties.length ? (
-                <p className="text-body-compact text-pretty text-muted-foreground">
-                  {pick(bailDialog.suretySentNote, locale)}
-                </p>
-              ) : null}
-
-              {doneDownloadNotice ? (
-                <Banner variant="info">
-                  {pick(bailDialog.downloadApplicationPrototype, locale)}
-                </Banner>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-
-        {/* ------------------------------------------------------------ footer */}
-        <footer
-          className={cn(
-            "flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:items-center sm:justify-between",
-            stage === "processing" && "hidden",
-          )}
-        >
-          {stage === "details" ? (
-            <>
-              <span aria-hidden className="hidden sm:block" />
-              <Button type="submit" form="bail-details" data-icon="inline-end">
-                {pick(joinDialog.continue, locale)}
-                <ArrowRightIcon aria-hidden />
-              </Button>
-            </>
-          ) : null}
-
-          {stage === "sureties" ? (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                data-icon="inline-start"
-                onClick={() => {
-                  setSuretiesTouched(false);
-                  setStage("details");
-                }}
-              >
-                <ArrowLeftIcon aria-hidden />
-                {pick(joinDialog.back, locale)}
-              </Button>
-              <Button type="submit" form="bail-sureties" data-icon="inline-end">
-                {pick(bailDialog.generateApplication, locale)}
-                <ArrowRightIcon aria-hidden />
-              </Button>
-            </>
-          ) : null}
-
-          {stage === "review" ? (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={generating}
-                data-icon="inline-start"
-                onClick={() => setStage("sureties")}
-              >
-                <ArrowLeftIcon aria-hidden />
-                {pick(joinDialog.back, locale)}
-              </Button>
-              <Button
-                type="button"
-                disabled={generating}
-                data-icon="inline-end"
-                onClick={() => setStage("sign")}
-              >
-                {pick(bailDialog.signTitle, locale)}
-                <ArrowRightIcon aria-hidden />
-              </Button>
-            </>
-          ) : null}
-
-          {stage === "sign" ? (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                data-icon="inline-start"
-                onClick={() => {
-                  setSignTouched(false);
-                  setStage("review");
-                }}
-              >
-                <ArrowLeftIcon aria-hidden />
-                {pick(joinDialog.back, locale)}
-              </Button>
-              {signTab === "esign" && !esigned ? (
-                <Button
-                  type="button"
-                  disabled={officeAccess}
-                  data-icon="inline-start"
-                  onClick={() => {
-                    // Prototype: the Aadhaar e-sign round trip succeeds.
-                    setEsigned(true);
-                    setSignTouched(false);
-                  }}
-                >
-                  <PenLineIcon aria-hidden />
-                  {pick(bailDialog.esignAction, locale)}
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  form="bail-sign"
-                  disabled={!signed}
-                  data-icon="inline-end"
-                >
+          {/* ------------------------------------------------------------ footer */}
+          <footer
+            className={cn(
+              "flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:items-center sm:justify-between",
+              stage === "processing" && "hidden",
+            )}
+          >
+            {stage === "details" ? (
+              <>
+                <span aria-hidden className="hidden sm:block" />
+                <Button type="submit" form="bail-details" data-icon="inline-end">
                   {pick(joinDialog.continue, locale)}
                   <ArrowRightIcon aria-hidden />
                 </Button>
-              )}
-            </>
-          ) : null}
+              </>
+            ) : null}
 
-          {stage === "payment" ? (
-            <>
+            {stage === "sureties" ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-icon="inline-start"
+                  onClick={() => {
+                    setSuretiesTouched(false);
+                    setStage("details");
+                  }}
+                >
+                  <ArrowLeftIcon aria-hidden />
+                  {pick(joinDialog.back, locale)}
+                </Button>
+                <Button type="submit" form="bail-sureties" data-icon="inline-end">
+                  {pick(bailDialog.generateApplication, locale)}
+                  <ArrowRightIcon aria-hidden />
+                </Button>
+              </>
+            ) : null}
+
+            {stage === "review" ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={generating}
+                  data-icon="inline-start"
+                  onClick={() => setStage("sureties")}
+                >
+                  <ArrowLeftIcon aria-hidden />
+                  {pick(joinDialog.back, locale)}
+                </Button>
+                <Button
+                  type="button"
+                  disabled={generating}
+                  data-icon="inline-end"
+                  onClick={() => setStage("sign")}
+                >
+                  {pick(bailDialog.signTitle, locale)}
+                  <ArrowRightIcon aria-hidden />
+                </Button>
+              </>
+            ) : null}
+
+            {stage === "sign" ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-icon="inline-start"
+                  onClick={() => {
+                    setSignTouched(false);
+                    setStage("review");
+                  }}
+                >
+                  <ArrowLeftIcon aria-hidden />
+                  {pick(joinDialog.back, locale)}
+                </Button>
+                {signTab === "esign" && !esigned ? (
+                  <Button
+                    type="button"
+                    disabled={officeAccess}
+                    data-icon="inline-start"
+                    onClick={() => {
+                      // Prototype: the Aadhaar e-sign round trip succeeds.
+                      setEsigned(true);
+                      setSignTouched(false);
+                    }}
+                  >
+                    <PenLineIcon aria-hidden />
+                    {pick(bailDialog.esignAction, locale)}
+                  </Button>
+                ) : (
+                  <Button type="submit" form="bail-sign" disabled={!signed} data-icon="inline-end">
+                    {pick(joinDialog.continue, locale)}
+                    <ArrowRightIcon aria-hidden />
+                  </Button>
+                )}
+              </>
+            ) : null}
+
+            {stage === "payment" ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-icon="inline-start"
+                  onClick={() => setStage("sign")}
+                >
+                  <ArrowLeftIcon aria-hidden />
+                  {pick(joinDialog.back, locale)}
+                </Button>
+                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+                  <Button type="button" variant="outline" onClick={() => finish(false)}>
+                    {pick(bailDialog.payLater, locale)}
+                  </Button>
+                  <Button type="button" onClick={pay}>
+                    {fillCopy(bailDialog.payNow, locale, { fee: BAIL_FEE })}
+                  </Button>
+                </div>
+              </>
+            ) : null}
+
+            {stage === "paid" ? (
               <Button
                 type="button"
-                variant="outline"
-                data-icon="inline-start"
-                onClick={() => setStage("sign")}
+                className="sm:ml-auto"
+                onClick={() => finish(true)}
+                data-icon="inline-end"
               >
-                <ArrowLeftIcon aria-hidden />
-                {pick(joinDialog.back, locale)}
+                {pick(joinDialog.continue, locale)}
+                <ArrowRightIcon aria-hidden />
               </Button>
-              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
-                <Button type="button" variant="outline" onClick={() => finish(false)}>
-                  {pick(bailDialog.payLater, locale)}
-                </Button>
-                <Button type="button" onClick={pay}>
-                  {fillCopy(bailDialog.payNow, locale, { fee: BAIL_FEE })}
-                </Button>
-              </div>
-            </>
-          ) : null}
+            ) : null}
 
-          {stage === "paid" ? (
-            <Button
-              type="button"
-              className="sm:ml-auto"
-              onClick={() => finish(true)}
-              data-icon="inline-end"
-            >
-              {pick(joinDialog.continue, locale)}
-              <ArrowRightIcon aria-hidden />
-            </Button>
-          ) : null}
-
-          {stage === "done" ? (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                data-icon="inline-start"
-                onClick={() => setDoneDownloadNotice(true)}
-              >
-                <DownloadIcon aria-hidden />
-                {pick(bailDialog.downloadApplication, locale)}
-              </Button>
-              <Button type="button" onClick={() => handleOpenChange(false)}>
-                {pick(bailDialog.doneClose, locale)}
-              </Button>
-            </>
-          ) : null}
-        </footer>
-        <DiscardQuestion guard={guard} locale={locale} />
-      </FlowDialogContent>
-    </Dialog>
+            {stage === "done" ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-icon="inline-start"
+                  onClick={() => setDoneDownloadNotice(true)}
+                >
+                  <DownloadIcon aria-hidden />
+                  {pick(bailDialog.downloadApplication, locale)}
+                </Button>
+                <Button type="button" onClick={() => handleOpenChange(false)}>
+                  {pick(bailDialog.doneClose, locale)}
+                </Button>
+              </>
+            ) : null}
+          </footer>
+          <DiscardQuestion guard={guard} locale={locale} />
+        </FlowDialogContent>
+      </Dialog>
     </>
   );
 }

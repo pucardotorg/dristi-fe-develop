@@ -11,7 +11,13 @@ import {
   XIcon,
 } from "lucide-react";
 
-import { OFFICERS, causeOfAction, formatDate, formatINR, type Matter } from "@/provakil/lib/matters";
+import {
+  OFFICERS,
+  causeOfAction,
+  formatDate,
+  formatINR,
+  type Matter,
+} from "@/provakil/lib/matters";
 
 import { provakilFetch } from "@/provakil/lib/workspace";
 import type { Row } from "./cases-screen";
@@ -71,7 +77,9 @@ export function PushDialog({
   onClose: () => void;
   onSent: () => void;
 }) {
-  const [step, setStep] = React.useState<"court" | "assign" | "sending" | "done" | "error">("court");
+  const [step, setStep] = React.useState<"court" | "assign" | "sending" | "done" | "error">(
+    "court",
+  );
   const [court, setCourt] = React.useState("saras");
   const [advocates, setAdvocates] = React.useState<Advocate[] | null>(null);
   const [loadError, setLoadError] = React.useState<string | null>(null);
@@ -109,7 +117,8 @@ export function PushDialog({
   const value = list.reduce((s, r) => s + r.instruments.reduce((a, i) => a + i.amount, 0), 0);
   const regionCount = new Map<Matter["region"], number>();
   list.forEach((m) => regionCount.set(m.region, (regionCount.get(m.region) ?? 0) + 1));
-  const officer = OFFICERS[[...regionCount.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Ahmedabad West"];
+  const officer =
+    OFFICERS[[...regionCount.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Ahmedabad West"];
   const unassigned = list.filter((m) => !assigned[m.id]).length;
   const perAdvocate = (advocates ?? [])
     .map((a) => ({ a, n: list.filter((m) => assigned[m.id] === a.enrolment).length }))
@@ -123,13 +132,20 @@ export function PushDialog({
       const res = await provakilFetch(`/api/court-advocates?court=${court}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Could not load the court's advocates.");
-      const advs: Advocate[] = json.advocates.map((a: { name: string; barNumber: string }) => ({ name: a.name, enrolment: a.barNumber }));
+      const advs: Advocate[] = json.advocates.map((a: { name: string; barNumber: string }) => ({
+        name: a.name,
+        enrolment: a.barNumber,
+      }));
       setAdvocates(advs);
       // Start from the advocate already on each matter, where they are registered on this court.
       setAssigned(
         Object.fromEntries(
-          list.flatMap((m) => (m.advocate && advs.some((a) => a.enrolment === m.advocate!.enrolment) ? [[m.id, m.advocate.enrolment]] : []))
-        )
+          list.flatMap((m) =>
+            m.advocate && advs.some((a) => a.enrolment === m.advocate!.enrolment)
+              ? [[m.id, m.advocate.enrolment]]
+              : [],
+          ),
+        ),
       );
     } catch (e) {
       setLoadError((e as Error).message);
@@ -168,7 +184,12 @@ export function PushDialog({
   const stepIndex = step === "court" ? 0 : step === "done" ? 2 : 1;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-(--pv-navy)/40 p-4" role="dialog" aria-modal="true" aria-labelledby="push-title">
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-(--pv-navy)/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="push-title"
+    >
       <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl">
         <div className="flex items-center gap-3 border-b border-(--pv-line) px-5 py-4">
           <span className="flex size-9 items-center justify-center rounded-md bg-(--pv-plum-50) text-(--pv-plum)">
@@ -176,17 +197,32 @@ export function PushDialog({
           </span>
           <div>
             <h2 id="push-title" className="text-[16px] font-medium">
-              {step === "done" ? `Filed on ${chosenCourt.name}` : `File ${list.length} case${list.length === 1 ? "" : "s"} in court`}
+              {step === "done"
+                ? `Filed on ${chosenCourt.name}`
+                : `File ${list.length} case${list.length === 1 ? "" : "s"} in court`}
             </h2>
             <ol className="mt-0.5 flex gap-3 text-[12px]" aria-label="Steps">
               {STEPS.map((s, i) => (
-                <li key={s} className={i === stepIndex ? "font-medium text-(--pv-blue)" : i < stepIndex ? "text-(--pv-slate)" : "text-(--pv-muted)"}>
+                <li
+                  key={s}
+                  className={
+                    i === stepIndex
+                      ? "font-medium text-(--pv-blue)"
+                      : i < stepIndex
+                        ? "text-(--pv-slate)"
+                        : "text-(--pv-muted)"
+                  }
+                >
                   {i + 1}. {s}
                 </li>
               ))}
             </ol>
           </div>
-          <button onClick={onClose} className="ml-auto rounded-full p-1.5 text-(--pv-muted) hover:bg-(--pv-ground)" aria-label="Close">
+          <button
+            onClick={onClose}
+            className="ml-auto rounded-full p-1.5 text-(--pv-muted) hover:bg-(--pv-ground)"
+            aria-label="Close"
+          >
             <XIcon className="size-5" />
           </button>
         </div>
@@ -195,20 +231,39 @@ export function PushDialog({
           {step === "court" ? (
             <div className="flex flex-col gap-3">
               <p className="text-[13px] text-(--pv-slate)">
-                {list.length} cases · {formatINR(value)} · Tata Capital Ltd, through {officer.name}. Choose the court to file in.
+                {list.length} cases · {formatINR(value)} · Tata Capital Ltd, through {officer.name}.
+                Choose the court to file in.
               </p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Court">
+              <div
+                className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+                role="radiogroup"
+                aria-label="Court"
+              >
                 {COURTS.map((c) => (
                   <label
                     key={c.id}
                     className={`flex items-start gap-3 rounded-md border px-3 py-3 ${
-                      !c.open ? "cursor-not-allowed border-(--pv-line) opacity-40" : court === c.id ? "cursor-pointer border-(--pv-blue) bg-(--pv-blue-50)" : "cursor-pointer border-(--pv-line)"
+                      !c.open
+                        ? "cursor-not-allowed border-(--pv-line) opacity-40"
+                        : court === c.id
+                          ? "cursor-pointer border-(--pv-blue) bg-(--pv-blue-50)"
+                          : "cursor-pointer border-(--pv-line)"
                     }`}
                   >
-                    <input type="radio" name="court" value={c.id} checked={court === c.id} disabled={!c.open} onChange={() => setCourt(c.id)} className="mt-1 accent-(--pv-blue)" />
+                    <input
+                      type="radio"
+                      name="court"
+                      value={c.id}
+                      checked={court === c.id}
+                      disabled={!c.open}
+                      onChange={() => setCourt(c.id)}
+                      className="mt-1 accent-(--pv-blue)"
+                    />
                     <span className="flex flex-col">
                       <span className="text-[14px] font-medium">{c.name}</span>
-                      <span className="text-[12px] text-(--pv-muted)">{c.open ? c.where : `${c.where} · no jurisdiction over these cases`}</span>
+                      <span className="text-[12px] text-(--pv-muted)">
+                        {c.open ? c.where : `${c.where} · no jurisdiction over these cases`}
+                      </span>
                     </span>
                   </label>
                 ))}
@@ -234,7 +289,9 @@ export function PushDialog({
                     {`${advocates.length} advocates are registered on ${chosenCourt.name} for Tata Capital. Each advocate's cases go to their own login as one batch.`}
                   </p>
                   <div className="flex flex-wrap items-center gap-2 rounded-md bg-(--pv-ground) px-3 py-2 text-[13px]">
-                    <span className="font-medium">{ticked.size ? `${ticked.size} ticked` : "Tick cases to assign them together"}</span>
+                    <span className="font-medium">
+                      {ticked.size ? `${ticked.size} ticked` : "Tick cases to assign them together"}
+                    </span>
                     <select
                       value={bulkTo}
                       onChange={(e) => setBulkTo(e.target.value)}
@@ -252,13 +309,20 @@ export function PushDialog({
                       variant="outline"
                       disabled={!ticked.size || !bulkTo}
                       onClick={() => {
-                        setAssigned((prev) => ({ ...prev, ...Object.fromEntries([...ticked].map((id) => [id, bulkTo])) }));
+                        setAssigned((prev) => ({
+                          ...prev,
+                          ...Object.fromEntries([...ticked].map((id) => [id, bulkTo])),
+                        }));
                         setTicked(new Set());
                       }}
                     >
                       Assign
                     </Button>
-                    <span className="num ml-auto text-(--pv-muted)">{unassigned ? `${unassigned} without an advocate` : "Every case has an advocate"}</span>
+                    <span className="num ml-auto text-(--pv-muted)">
+                      {unassigned
+                        ? `${unassigned} without an advocate`
+                        : "Every case has an advocate"}
+                    </span>
                   </div>
                   <table className="w-full text-left text-[13px]">
                     <thead className="text-[11px] text-(--pv-muted) uppercase">
@@ -268,7 +332,9 @@ export function PushDialog({
                             type="checkbox"
                             aria-label="Tick every case"
                             checked={allTicked}
-                            onChange={() => setTicked(allTicked ? new Set() : new Set(list.map((m) => m.id)))}
+                            onChange={() =>
+                              setTicked(allTicked ? new Set() : new Set(list.map((m) => m.id)))
+                            }
                             className="size-4 accent-(--pv-blue)"
                           />
                         </th>
@@ -302,11 +368,15 @@ export function PushDialog({
                             </td>
                             <td className="num py-2 pr-3 font-medium whitespace-nowrap">{m.lan}</td>
                             <td className="py-2 pr-3">{m.borrower.name}</td>
-                            <td className="num py-2 pr-3 text-right">{formatINR(m.instruments.reduce((s, i) => s + i.amount, 0))}</td>
+                            <td className="num py-2 pr-3 text-right">
+                              {formatINR(m.instruments.reduce((s, i) => s + i.amount, 0))}
+                            </td>
                             <td className="py-2 pr-3">
                               <select
                                 value={assigned[m.id] ?? ""}
-                                onChange={(e) => setAssigned((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                                onChange={(e) =>
+                                  setAssigned((prev) => ({ ...prev, [m.id]: e.target.value }))
+                                }
                                 className={`w-full rounded-md border bg-white px-2 py-1 ${assigned[m.id] ? "border-(--pv-line)" : "border-(--pv-amber)"}`}
                                 aria-label={`Advocate for ${m.lan}`}
                               >
@@ -345,28 +415,45 @@ export function PushDialog({
             <div className="flex flex-col gap-4">
               {sent.map((b) => (
                 <section key={b.pushId} className="flex gap-3 rounded-md bg-(--pv-teal-50) p-4">
-                  <CheckCircle2Icon className="mt-0.5 size-5 shrink-0 text-(--pv-teal)" aria-hidden />
+                  <CheckCircle2Icon
+                    className="mt-0.5 size-5 shrink-0 text-(--pv-teal)"
+                    aria-hidden
+                  />
                   <div className="text-[13px]">
                     <div className="text-[15px] font-medium">
-                      {b.response.cases.length} case{b.response.cases.length === 1 ? "" : "s"} to {b.advocate.name}
+                      {b.response.cases.length} case{b.response.cases.length === 1 ? "" : "s"} to{" "}
+                      {b.advocate.name}
                     </div>
                     <div className="text-(--pv-slate)">
-                      Batch <span className="num">{b.response.batchNumber}</span> in their {chosenCourt.name} login.
+                      Batch <span className="num">{b.response.batchNumber}</span> in their{" "}
+                      {chosenCourt.name} login.
                     </div>
-                    <a href={b.response.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-(--pv-blue) underline">
+                    <a
+                      href={b.response.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 inline-flex items-center gap-1 text-(--pv-blue) underline"
+                    >
                       Open on {chosenCourt.name}
                       <ExternalLinkIcon className="size-3.5" aria-hidden />
                     </a>
                   </div>
                 </section>
               ))}
-              <button onClick={() => setShowJson((v) => !v)} className="flex items-center gap-1.5 self-start text-[13px] text-(--pv-blue)">
+              <button
+                onClick={() => setShowJson((v) => !v)}
+                className="flex items-center gap-1.5 self-start text-[13px] text-(--pv-blue)"
+              >
                 <CodeIcon className="size-4" aria-hidden />
                 {showJson ? "Hide API request" : "Show API request"}
               </button>
               {showJson ? (
                 <pre className="max-h-80 overflow-auto rounded-md bg-(--pv-navy) p-3 text-[11px] leading-relaxed text-[#cfe3ff]">
-                  {sent.map((b) => `POST /api/bulk/v1/batches\n\n${JSON.stringify(b.request, null, 2)}`).join("\n\n")}
+                  {sent
+                    .map(
+                      (b) => `POST /api/bulk/v1/batches\n\n${JSON.stringify(b.request, null, 2)}`,
+                    )
+                    .join("\n\n")}
                 </pre>
               ) : null}
             </div>
@@ -377,7 +464,9 @@ export function PushDialog({
               <TriangleAlertIcon className="mt-0.5 size-5 shrink-0" aria-hidden />
               <div>
                 <div className="font-medium">{error.error}</div>
-                {error.details?.map((d) => <div key={d}>{d}</div>)}
+                {error.details?.map((d) => (
+                  <div key={d}>{d}</div>
+                ))}
               </div>
             </div>
           ) : null}
@@ -385,7 +474,9 @@ export function PushDialog({
 
         <div className="flex flex-wrap items-center gap-2 border-t border-(--pv-line) px-5 py-3">
           {step === "assign" && perAdvocate.length ? (
-            <span className="text-[12px] text-(--pv-muted)">{perAdvocate.map(({ a, n }) => `${a.name} ${n}`).join(" · ")}</span>
+            <span className="text-[12px] text-(--pv-muted)">
+              {perAdvocate.map(({ a, n }) => `${a.name} ${n}`).join(" · ")}
+            </span>
           ) : null}
           {step === "done" ? (
             <Button onClick={onClose} className="ml-auto">
@@ -402,11 +493,21 @@ export function PushDialog({
             </>
           ) : (
             <>
-              <Button variant="outline" onClick={() => setStep("court")} className="ml-auto" disabled={step === "sending"}>
+              <Button
+                variant="outline"
+                onClick={() => setStep("court")}
+                className="ml-auto"
+                disabled={step === "sending"}
+              >
                 Back
               </Button>
-              <Button onClick={() => void send()} disabled={step === "sending" || !advocates || unassigned > 0}>
-                {step === "sending" ? <Loader2Icon className="size-4 animate-spin" aria-hidden /> : null}
+              <Button
+                onClick={() => void send()}
+                disabled={step === "sending" || !advocates || unassigned > 0}
+              >
+                {step === "sending" ? (
+                  <Loader2Icon className="size-4 animate-spin" aria-hidden />
+                ) : null}
                 {step === "sending"
                   ? `Filing ${list.length} cases…`
                   : step === "error"

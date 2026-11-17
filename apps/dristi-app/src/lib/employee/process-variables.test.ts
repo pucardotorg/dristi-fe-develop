@@ -2,12 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { casePeopleFor } from "./case-people";
-import {
-  createItemBlock,
-  setItemRecipients,
-  setItemValue,
-  blockGaps,
-} from "./order-composer";
+import { createItemBlock, setItemRecipients, setItemValue, blockGaps } from "./order-composer";
 import {
   channelsFor,
   defaultProcessRecipients,
@@ -73,19 +68,13 @@ describe("channels", () => {
   it("keeps a notice off every police channel, and a warrant on police or By hand", () => {
     assert.ok(channelsFor("issue-of-notice").every((id) => !id.startsWith("police")));
     assert.ok(
-      channelsFor("issue-of-warrants").every(
-        (id) => id.startsWith("police") || id === "by-hand",
-      ),
+      channelsFor("issue-of-warrants").every((id) => id.startsWith("police") || id === "by-hand"),
     );
     assert.ok(channelsFor("issue-of-warrants").includes("by-hand"));
   });
 
   it("offers By hand to warrant and proclamation only", () => {
-    for (const type of [
-      "issue-of-summons",
-      "issue-of-notice",
-      "issue-of-attachment",
-    ] as const) {
+    for (const type of ["issue-of-summons", "issue-of-notice", "issue-of-attachment"] as const) {
       assert.ok(!channelsFor(type).includes("by-hand"), type);
     }
   });
@@ -172,11 +161,7 @@ describe("police stations", () => {
   it("bring a new person's addresses and stations, and move the steps with them", () => {
     const context = casePeopleFor(NOT_JOINED);
     let warrant = createItemBlock("issue-of-warrants", context);
-    warrant = setItemRecipients(
-      warrant,
-      { ...warrant.recipients!, person: "accused-2" },
-      context,
-    );
+    warrant = setItemRecipients(warrant, { ...warrant.recipients!, person: "accused-2" }, context);
     assert.deepEqual(warrant.recipients?.destinations, [
       "accused-2-address-1",
       "accused-2-mobile-1",

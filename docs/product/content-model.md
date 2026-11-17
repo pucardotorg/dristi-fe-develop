@@ -15,14 +15,14 @@ notice, limitation, sentencing, constitutional).
 ## Case law
 
 Supreme/High Court judgments that fix how provisions are read (42 in the §138 profile as
-of this snapshot). Landmark cases such as *Rangappa*, *Dashrath Rupsingh*,
-*Damodar S. Prabhu*, *Expeditious Trial (2021)*, *Sanjabij Tari (2025)* are flagged in the
+of this snapshot). Landmark cases such as _Rangappa_, _Dashrath Rupsingh_,
+_Damodar S. Prabhu_, _Expeditious Trial (2021)_, _Sanjabij Tari (2025)_ are flagged in the
 data as **not yet in the corpus** — treat citations as incomplete, not exhaustive.
 
 ## Policy
 
 National instruments governing how courts run generally (not case-specific), e.g. the
-Supreme Court's draft *Regulations for Use of AI in Courts, 2026* (published for comment
+Supreme Court's draft _Regulations for Use of AI in Courts, 2026_ (published for comment
 June 2026, not yet in force). See [standards/ai-policy.md](standards/ai-policy.md).
 
 ## The story
@@ -43,7 +43,7 @@ exist (91 national terms in this profile). See also [terminology.md](terminology
 
 ## Requirements
 
-Normative layer: what a system *must* do to run a case lawfully, each statement traced to
+Normative layer: what a system _must_ do to run a case lawfully, each statement traced to
 the provision that requires it, testable, scoped to National + whichever state is active.
 See [standards/requirements.md](standards/requirements.md).
 
@@ -54,8 +54,8 @@ usability/testing. See [standards/adherence.md](standards/adherence.md).
 
 ## AI policy compliance
 
-Sub-tab of Standards: clause-by-clause read of draft SC AI regulations for a court *and
-its vendor*. See [standards/ai-policy.md](standards/ai-policy.md).
+Sub-tab of Standards: clause-by-clause read of draft SC AI regulations for a court _and
+its vendor_. See [standards/ai-policy.md](standards/ai-policy.md).
 
 ## How the domain site packages this
 

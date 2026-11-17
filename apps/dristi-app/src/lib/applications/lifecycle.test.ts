@@ -94,12 +94,7 @@ describe("raising an application", () => {
 
   it("ends an objection at Submitted, with no review task", () => {
     const objection = draft({ type: "objection", side: "accused" });
-    const signed = sign(
-      proceedToSign(objection, THU),
-      OTHER_ADVOCATE,
-      "P. Balachandran",
-      THU,
-    );
+    const signed = sign(proceedToSign(objection, THU), OTHER_ADVOCATE, "P. Balachandran", THU);
     const done = pay(signed, OTHER_ADVOCATE, "TMP-2", THU);
     assert.equal(done.status, "submitted");
     assert.equal(done.review, undefined);
@@ -107,8 +102,7 @@ describe("raising an application", () => {
 });
 
 describe("taken up now, then listed after all", () => {
-  const takenNow = () =>
-    onboard(filed(), "magistrate", "CMP/402/2026", { mode: "now" }, FRI);
+  const takenNow = () => onboard(filed(), "magistrate", "CMP/402/2026", { mode: "now" }, FRI);
 
   it("keeps it onboarded and lists it, with or without an objection", () => {
     const listed = listForLater(takenNow(), "magistrate", "2026-10-21", true, FRI);
@@ -222,16 +216,9 @@ describe("the second gate", () => {
 
   it("asks for the new hearing date when accepting a postponement", () => {
     const app = { ...onboarded(), type: "postpone" };
-    assert.throws(() =>
-      draftOrder(app, "magistrate", { kind: "accept", text: "x" }, FRI),
-    );
+    assert.throws(() => draftOrder(app, "magistrate", { kind: "accept", text: "x" }, FRI));
     const done = signOrder(
-      draftOrder(
-        app,
-        "magistrate",
-        { kind: "accept", text: "x", newHearingOn: "2026-11-02" },
-        FRI,
-      ),
+      draftOrder(app, "magistrate", { kind: "accept", text: "x", newHearingOn: "2026-11-02" }, FRI),
       "magistrate",
       "O-3",
       FRI,

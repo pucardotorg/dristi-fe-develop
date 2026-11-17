@@ -19,7 +19,12 @@ export function at(days: number, hour = 17): string {
 export const senior: Person = { id: "p-sen", name: "Anjali Nair", initials: "AN", role: "senior" };
 export const senior2: Person = { id: "p-sen2", name: "R. Manoj", initials: "RM", role: "senior" };
 export const junior: Person = { id: "p-jun", name: "S. Prakash", initials: "SP", role: "junior" };
-export const outsider: Person = { id: "p-out", name: "Deepa Varghese", initials: "DV", role: "senior" };
+export const outsider: Person = {
+  id: "p-out",
+  name: "Deepa Varghese",
+  initials: "DV",
+  role: "senior",
+};
 export const PEOPLE = [senior, senior2, junior, outsider];
 
 /** Two signatories (senior is the main advocate), one junior on the case, one outsider. */

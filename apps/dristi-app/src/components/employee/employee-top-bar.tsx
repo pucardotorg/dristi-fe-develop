@@ -11,15 +11,8 @@ import {
   useFoldFocusHandoff,
   useRailCollapsed,
 } from "@/components/chrome/app-chrome";
-import {
-  useApplicationsReady,
-  useLifecycleApplications,
-} from "@/lib/applications/store";
-import {
-  courtTrail,
-  type CourtCrumb,
-  type CourtRecordResolver,
-} from "@/lib/employee/navigation";
+import { useApplicationsReady, useLifecycleApplications } from "@/lib/applications/store";
+import { courtTrail, type CourtCrumb, type CourtRecordResolver } from "@/lib/employee/navigation";
 import { cn } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -75,9 +68,7 @@ function CourtTopBar({ query }: { query: string }) {
   // Derived here rather than inside the trail because the divider beside the trigger has
   // to know whether anything follows it. On the court home nothing does.
   return (
-    <ChromeTopBar
-      leading={<CourtNavTrigger hasTrail={crumbs.length > 0} />}
-    >
+    <ChromeTopBar leading={<CourtNavTrigger hasTrail={crumbs.length > 0} />}>
       {crumbs.length > 0 ? <CourtTrail crumbs={crumbs} /> : null}
     </ChromeTopBar>
   );
@@ -144,10 +135,8 @@ const CRUMB_LINK = [
  * right at first paint. Keeping the folded clause on the same mechanism is the point: two
  * gates in two languages is how a state ends up with two controls, or none.
  */
-const TRIGGER_VISIBILITY =
-  "md:hidden md:group-data-[rail-folded=true]/chrome-page:inline-flex";
-const DIVIDER_VISIBILITY =
-  "md:hidden md:group-data-[rail-folded=true]/chrome-page:block";
+const TRIGGER_VISIBILITY = "md:hidden md:group-data-[rail-folded=true]/chrome-page:inline-flex";
+const DIVIDER_VISIBILITY = "md:hidden md:group-data-[rail-folded=true]/chrome-page:block";
 
 /**
  * The way back into the rail, whenever the rail cannot offer one itself.
@@ -191,7 +180,9 @@ function CourtNavTrigger({ hasTrail }: { hasTrail: boolean }) {
         {...CHROME_FOLD_TRIGGER}
         {...handoff}
         aria-label={
-          collapsed ? t("employeeTopBar_expandCourtNavigation") : t("employeeTopBar_openCourtNavigation")
+          collapsed
+            ? t("employeeTopBar_expandCourtNavigation")
+            : t("employeeTopBar_openCourtNavigation")
         }
         /* The guarded selector, not the plain `[&_svg]:size-5`: `Button` declares its own
            `[&_svg:not([class*='size-'])]:size-4`, which tailwind-merge treats as a
@@ -256,8 +247,7 @@ function CourtNavTrigger({ hasTrail }: { hasTrail: boolean }) {
  * The identifier face, for a step that names a record by its number. No copy affordance:
  * the crumb is already a link, and a control cannot hold another one.
  */
-const crumbFace = (crumb: CourtCrumb) =>
-  crumb.mono ? "font-mono tabular-nums" : undefined;
+const crumbFace = (crumb: CourtCrumb) => (crumb.mono ? "font-mono tabular-nums" : undefined);
 
 function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
   const t = useTranslations();
@@ -278,9 +268,7 @@ function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
             <React.Fragment key={crumb.label}>
               {index > 0 ? (
                 <BreadcrumbSeparator
-                  className={
-                    dropped ? "hidden shrink-0 md:inline-flex" : "shrink-0"
-                  }
+                  className={dropped ? "hidden shrink-0 md:inline-flex" : "shrink-0"}
                 />
               ) : null}
               <BreadcrumbItem
@@ -305,9 +293,7 @@ function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
                      complaint's file, a listing or a scrutiny workbench it is the
                      record's number, which is the one thing the page's own heading does
                      not already say. */
-                  <BreadcrumbPage
-                    className={cn("truncate", crumbFace(crumb))}
-                  >
+                  <BreadcrumbPage className={cn("truncate", crumbFace(crumb))}>
                     {translateText(t, crumb.label)}
                   </BreadcrumbPage>
                 ) : (

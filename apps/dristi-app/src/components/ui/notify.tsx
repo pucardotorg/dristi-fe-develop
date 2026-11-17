@@ -67,7 +67,12 @@ function forget(id: string | number) {
 }
 
 function showError(title: React.ReactNode, options: Options = {}) {
-  const key = options.id != null ? `id:${String(options.id)}` : typeof title === "string" ? `title:${title}` : undefined;
+  const key =
+    options.id != null
+      ? `id:${String(options.id)}`
+      : typeof title === "string"
+        ? `title:${title}`
+        : undefined;
   const raise = () => {
     /* A fresh id every time, so sonner plays the entrance rather than updating in place. */
     const id = show("error", title, { ...options, id: undefined });
@@ -146,12 +151,18 @@ function whenNoModal(run: () => void) {
     if (!modalOpen()) finish();
   });
   const timeout = window.setTimeout(finish, MODAL_WAIT_MS);
-  observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["data-state"] });
+  observer.observe(document.body, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["data-state"],
+  });
 }
 
 export const notify = {
   success: (title: React.ReactNode, options?: Options) => show("success", title, options),
-  error: (title: React.ReactNode, options?: Options) => whenNoModal(() => showError(title, options)),
+  error: (title: React.ReactNode, options?: Options) =>
+    whenNoModal(() => showError(title, options)),
   warning: (title: React.ReactNode, options?: Options) => show("warning", title, options),
   neutral: (title: React.ReactNode, options?: Options) => show("neutral", title, options),
 };
@@ -206,15 +217,28 @@ function ToastCard({
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <p className="text-body-compact font-semibold text-pretty">{title}</p>
-        {description ? <p className="text-body-compact text-pretty text-muted-foreground">{description}</p> : null}
+        {description ? (
+          <p className="text-body-compact text-pretty text-muted-foreground">{description}</p>
+        ) : null}
       </div>
       {action ? (
-        <Button size="sm" variant="outline" className={cn("shrink-0", HIT)} onClick={action.onClick}>
+        <Button
+          size="sm"
+          variant="outline"
+          className={cn("shrink-0", HIT)}
+          onClick={action.onClick}
+        >
           {action.label}
         </Button>
       ) : null}
       {persistent ? (
-        <Button size="icon-sm" variant="ghost" className={cn("shrink-0 self-start text-muted-foreground", HIT)} aria-label={tr("common_close")} onClick={onClose}>
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          className={cn("shrink-0 self-start text-muted-foreground", HIT)}
+          aria-label={tr("common_close")}
+          onClick={onClose}
+        >
           <XIcon aria-hidden />
         </Button>
       ) : (
@@ -222,7 +246,11 @@ function ToastCard({
           aria-hidden
           className={cn(
             "fb-drain absolute inset-x-0 bottom-0 h-0.5",
-            tone === "neutral" ? "bg-muted-foreground" : tone === "warning" ? "bg-warning" : "bg-success",
+            tone === "neutral"
+              ? "bg-muted-foreground"
+              : tone === "warning"
+                ? "bg-warning"
+                : "bg-success",
           )}
           style={{ ["--fb-life" as string]: `${TOAST_LIFE_MS}ms` }}
         />

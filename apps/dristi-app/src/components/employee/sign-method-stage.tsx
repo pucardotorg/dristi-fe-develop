@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  SignatureFields,
-  type SignatureChoice,
-} from "@/components/employee/sign-signature-fields";
+import { SignatureFields, type SignatureChoice } from "@/components/employee/sign-signature-fields";
 import { Button } from "@/components/ui/button";
 import { IrreversibleNote } from "@/components/feedback";
 import { useTranslations } from "next-intl";
@@ -93,12 +90,7 @@ export function SignatureStage({
 }) {
   return (
     <div className="mx-auto my-auto flex w-full max-w-xl flex-col gap-4">
-      <SignatureFields
-        choice={choice}
-        noun={noun}
-        subject={subject}
-        download={download}
-      />
+      <SignatureFields choice={choice} noun={noun} subject={subject} download={download} />
 
       {warning ? (
         /* The irreversible line, with its lock, so it is read (skill `feedback-states`). */

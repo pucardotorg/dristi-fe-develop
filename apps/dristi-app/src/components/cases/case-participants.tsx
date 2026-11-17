@@ -176,27 +176,27 @@ export function CaseParticipants({
           what it added, the Representation sections render it live. The
           section itself stays a server component. */}
       <PartiesLiveProvider>
-      <RestingCard className="min-w-0">
-        <CardContent className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex min-w-0 flex-col gap-2">
-            <h2 id={HEADING_ID} className="text-body font-semibold">
-              {t("caseParticipants_parties")}
-            </h2>
-            {/* Both counts as plain muted text. The mockup put the litigant
+        <RestingCard className="min-w-0">
+          <CardContent className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-w-0 flex-col gap-2">
+              <h2 id={HEADING_ID} className="text-body font-semibold">
+                {t("caseParticipants_parties")}
+              </h2>
+              {/* Both counts as plain muted text. The mockup put the litigant
                 count in a filled chip and the witness count in plain text —
                 one data type, two presentations, which is the inconsistency
                 ui-craft names outright. */}
-            <p className="text-caption font-medium text-muted-foreground">
-              <span className="tabular-nums">
-                {plural(file.counts.litigants, "litigant", "litigants")}
-              </span>
-              {" · "}
-              <span className="tabular-nums">
-                {plural(file.counts.witnesses, "witness", "witnesses")}
-              </span>
-            </p>
-          </div>
-          {/* The one teal in the region (Ration teal). The universal
+              <p className="text-caption font-medium text-muted-foreground">
+                <span className="tabular-nums">
+                  {plural(file.counts.litigants, "litigant", "litigants")}
+                </span>
+                {" · "}
+                <span className="tabular-nums">
+                  {plural(file.counts.witnesses, "witness", "witnesses")}
+                </span>
+              </p>
+            </div>
+            {/* The one teal in the region (Ration teal). The universal
               Add-people entry (advocate, witness, PoA-holder), with the
               party options built here, on the server, so the dialogs never
               import the authored pack.
@@ -207,23 +207,23 @@ export function CaseParticipants({
               case's own record (`viewerSide`), so an accused-side brief
               flips these pools; the real seam is the signed-in user's
               brief on this case. */}
-          <CaseAddPeople
-            caseRef={caseRef}
-            litigants={file.litigants
-              .filter((row) => row.side === viewerSide)
-              .map((row) => ({
-                id: row.id,
-                name: row.name,
-                side: row.side,
-                poaHolder: row.powerOfAttorneyHolder,
-              }))}
-            casePeople={casePeopleOptions(file, viewerSide)}
-          />
-        </CardContent>
+            <CaseAddPeople
+              caseRef={caseRef}
+              litigants={file.litigants
+                .filter((row) => row.side === viewerSide)
+                .map((row) => ({
+                  id: row.id,
+                  name: row.name,
+                  side: row.side,
+                  poaHolder: row.powerOfAttorneyHolder,
+                }))}
+              casePeople={casePeopleOptions(file, viewerSide)}
+            />
+          </CardContent>
 
-        <Separator />
+          <Separator />
 
-        {/* Master and detail, divided by a rule on the card fill rather than
+          {/* Master and detail, divided by a rule on the card fill rather than
             boxed — a panel per pane would be the box-in-box the elevation
             foundation rules out.
 
@@ -233,35 +233,35 @@ export function CaseParticipants({
             already returns the reader wherever they came from, and a stacked
             list keeps the other participants one scroll away rather than one
             navigation away (RESPONSIVE — stack before splitting). */}
-        <CardContent className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,18rem)_auto_minmax(0,1fr)]">
-          <MasterList
-            file={file}
-            caseId={caseId}
-            pendingWitnesses={pendingWitnesses}
-            selectedId={selectedId}
-            chosen={chosen}
-          />
-          <PartyDetailSlot
-            title={litigant?.name ?? witness?.name ?? t("caseParticipants_participant")}
-            chosen={chosen}
-          >
-          {litigant ? (
-            <LitigantDetail
+          <CardContent className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,18rem)_auto_minmax(0,1fr)]">
+            <MasterList
               file={file}
-              litigant={litigant}
               caseId={caseId}
-              caseRef={caseRef}
-              viewerSide={viewerSide}
-              viewerCanAct={viewerCanAct}
+              pendingWitnesses={pendingWitnesses}
+              selectedId={selectedId}
+              chosen={chosen}
             />
-          ) : witness ? (
-            <WitnessDetail witness={witness} viewerSide={viewerSide} />
-          ) : (
-            <SectionNote>{t("caseParticipants_selectAParticipantToSeeTheir")}</SectionNote>
-          )}
-          </PartyDetailSlot>
-        </CardContent>
-      </RestingCard>
+            <PartyDetailSlot
+              title={litigant?.name ?? witness?.name ?? t("caseParticipants_participant")}
+              chosen={chosen}
+            >
+              {litigant ? (
+                <LitigantDetail
+                  file={file}
+                  litigant={litigant}
+                  caseId={caseId}
+                  caseRef={caseRef}
+                  viewerSide={viewerSide}
+                  viewerCanAct={viewerCanAct}
+                />
+              ) : witness ? (
+                <WitnessDetail witness={witness} viewerSide={viewerSide} />
+              ) : (
+                <SectionNote>{t("caseParticipants_selectAParticipantToSeeTheir")}</SectionNote>
+              )}
+            </PartyDetailSlot>
+          </CardContent>
+        </RestingCard>
       </PartiesLiveProvider>
     </section>
   );
@@ -290,9 +290,7 @@ function Eyebrow({ id, children }: { id?: string; children: ReactNode }) {
 }
 
 function SectionNote({ children }: { children: ReactNode }) {
-  return (
-    <p className="text-body-compact text-muted-foreground">{children}</p>
-  );
+  return <p className="text-body-compact text-muted-foreground">{children}</p>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -326,11 +324,7 @@ function MasterList({
               <MasterRow
                 href={participantHref(caseId, row.id)}
                 name={row.name}
-                badge={
-                  <SidePill side={row.side}>
-                    {PARTY_ROLE_LABEL[row.side]}
-                  </SidePill>
-                }
+                badge={<SidePill side={row.side}>{PARTY_ROLE_LABEL[row.side]}</SidePill>}
                 selected={row.id === selectedId}
                 quietDefault={!chosen}
               />
@@ -424,13 +418,7 @@ const SIDE_PILL: Record<
   neither: { variant: "info", stroke: "border-info" },
 };
 
-function SidePill({
-  side,
-  children,
-}: {
-  side: WitnessSideId;
-  children: ReactNode;
-}) {
+function SidePill({ side, children }: { side: WitnessSideId; children: ReactNode }) {
   const { variant, stroke } = SIDE_PILL[side];
   return (
     <Badge variant={variant} className={stroke}>
@@ -483,11 +471,7 @@ function MasterRow({
            outlined card with a chevron, the look of something that opens. */
         "max-lg:rounded-lg max-lg:border max-lg:border-hairline max-lg:bg-card max-lg:py-3 max-lg:active:bg-accent",
         "focus-visible:ring-3 focus-visible:ring-focus-ring focus-visible:outline-1 focus-visible:outline-ring",
-        selected
-          ? quietDefault
-            ? "lg:bg-accent-strong"
-            : "bg-accent-strong"
-          : "hover:bg-accent"
+        selected ? (quietDefault ? "lg:bg-accent-strong" : "bg-accent-strong") : "hover:bg-accent",
       )}
     >
       <span className="flex min-w-0 flex-1 flex-col items-start gap-1">
@@ -496,10 +480,7 @@ function MasterRow({
         </span>
         {badge}
       </span>
-      <ChevronRightIcon
-        aria-hidden
-        className="size-4 shrink-0 text-muted-foreground lg:hidden"
-      />
+      <ChevronRightIcon aria-hidden className="size-4 shrink-0 text-muted-foreground lg:hidden" />
     </Link>
   );
 }
@@ -522,10 +503,7 @@ function DetailHeader({
   return (
     <div className="flex min-w-0 items-start justify-between gap-3">
       <div className="min-w-0">
-        <h3
-          id={DETAIL_HEADING_ID}
-          className="text-body font-semibold text-foreground"
-        >
+        <h3 id={DETAIL_HEADING_ID} className="text-body font-semibold text-foreground">
           {name}
         </h3>
         <p className="mt-1 text-body-compact text-muted-foreground">{subline}</p>
@@ -560,10 +538,7 @@ function DetailSection({
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col gap-2", wide && "@lg:col-span-2")}>
-      <h4
-        id={id}
-        className="text-caption font-semibold text-muted-foreground"
-      >
+      <h4 id={id} className="text-caption font-semibold text-muted-foreground">
         {title}
       </h4>
       {children}
@@ -572,20 +547,9 @@ function DetailSection({
 }
 
 /** The wells under one eyebrow — two up only when the section has the row. */
-function FactList({
-  wide = false,
-  children,
-}: {
-  wide?: boolean;
-  children: ReactNode;
-}) {
+function FactList({ wide = false, children }: { wide?: boolean; children: ReactNode }) {
   return (
-    <div
-      className={cn(
-        "grid min-w-0 items-start gap-2",
-        wide && "@lg:grid-cols-2"
-      )}
-    >
+    <div className={cn("grid min-w-0 items-start gap-2", wide && "@lg:grid-cols-2")}>
       {children}
     </div>
   );
@@ -635,16 +599,11 @@ function FactWell({
       <span className="block text-body-compact font-medium text-foreground">
         {displayName(primary)}
         {primarySuffix ? (
-          <span className="font-normal text-muted-foreground">
-            {" "}
-            {primarySuffix}
-          </span>
+          <span className="font-normal text-muted-foreground"> {primarySuffix}</span>
         ) : null}
       </span>
       {secondary ? (
-        <span className="block text-caption font-medium text-muted-foreground">
-          {secondary}
-        </span>
+        <span className="block text-caption font-medium text-muted-foreground">{secondary}</span>
       ) : null}
     </>
   );
@@ -701,11 +660,7 @@ function LitigantDetail({
      well the record's advocates get — the add flow's list update. Own-side
      only by construction: the add dialog offers only the viewer's parties. */
   const liveWells = (
-    <LiveAdvocateWells
-      partyId={litigant.id}
-      partyName={litigant.name}
-      caseRef={caseRef}
-    />
+    <LiveAdvocateWells partyId={litigant.id} partyName={litigant.name} caseRef={caseRef} />
   );
 
   sections.push({
@@ -725,9 +680,7 @@ function LitigantDetail({
              says "(you)" — and every row when the viewer holds office
              access only (owner, Sept 3). */
           litigant.advocates.map((advocate) =>
-            litigant.side === viewerSide &&
-            viewerCanAct &&
-            !isViewer(advocate) ? (
+            litigant.side === viewerSide && viewerCanAct && !isViewer(advocate) ? (
               <RepresentationWell
                 key={advocate}
                 advocate={advocate}
@@ -740,7 +693,7 @@ function LitigantDetail({
                 primary={advocate}
                 primarySuffix={isViewer(advocate) ? "(you)" : undefined}
               />
-            )
+            ),
           )
         ) : (
           <SectionNote>{t("caseParticipants_noAdvocateOnRecord")}</SectionNote>
@@ -766,7 +719,7 @@ function LitigantDetail({
             partyName={litigant.name}
             caseRef={caseRef}
             existingPeople={casePeopleOptions(file, viewerSide).filter(
-              (person) => person.key !== `party:${litigant.id}`
+              (person) => person.key !== `party:${litigant.id}`,
             )}
           />
         ) : (
@@ -817,7 +770,11 @@ function LitigantDetail({
           primary={witness.name}
           secondary={
             /* The well is a link — the face without a nested control. */
-            <Identifier value={witness.number} label={t("caseParticipants_witnessNumber")} copyable={false} />
+            <Identifier
+              value={witness.number}
+              label={t("caseParticipants_witnessNumber")}
+              copyable={false}
+            />
           }
           href={participantHref(caseId, witness.id)}
         />
@@ -851,15 +808,9 @@ function LitigantDetail({
 
       <div className="grid min-w-0 items-start gap-6 @lg:grid-cols-2">
         {sections.map((section, index) => {
-          const wide =
-            sections.length % 2 === 1 && index === sections.length - 1;
+          const wide = sections.length % 2 === 1 && index === sections.length - 1;
           return (
-            <DetailSection
-              key={section.id}
-              id={section.id}
-              title={section.title}
-              wide={wide}
-            >
+            <DetailSection key={section.id} id={section.id} title={section.title} wide={wide}>
               <FactList wide={wide}>{section.facts}</FactList>
             </DetailSection>
           );
@@ -891,9 +842,7 @@ function litigantSubline(litigant: Litigant): string {
   if (litigant.kind === "entity") {
     return [
       litigant.entityType,
-      litigant.entityRepresentative
-        ? `represented by ${litigant.entityRepresentative.name}`
-        : null,
+      litigant.entityRepresentative ? `represented by ${litigant.entityRepresentative.name}` : null,
     ]
       .filter(Boolean)
       .join(" · ");
@@ -907,13 +856,7 @@ function litigantSubline(litigant: Litigant): string {
 }
 
 /** A witness, in the same grammar as a litigant. */
-function WitnessDetail({
-  witness,
-  viewerSide,
-}: {
-  witness: CaseWitness;
-  viewerSide: PartySideId;
-}) {
+function WitnessDetail({ witness, viewerSide }: { witness: CaseWitness; viewerSide: PartySideId }) {
   const t = useTranslations();
   return (
     <div className="@container flex min-w-0 flex-col gap-6">
@@ -930,7 +873,11 @@ function WitnessDetail({
         }
         badge={
           <Badge variant="secondary" className="shrink-0">
-            <Identifier value={witness.number} label={t("caseParticipants_witnessNumber")} copyable={false} />
+            <Identifier
+              value={witness.number}
+              label={t("caseParticipants_witnessNumber")}
+              copyable={false}
+            />
           </Badge>
         }
       />
@@ -942,16 +889,15 @@ function WitnessDetail({
         <DescriptionList className="grid min-w-0 items-start gap-2 @sm:grid-cols-2 @lg:grid-cols-3">
           <WitnessFact
             term={t("caseParticipants_side")}
-            value={
-              witness.side === "neither"
-                ? "Neither party"
-                : PARTY_ROLE_LABEL[witness.side]
-            }
+            value={witness.side === "neither" ? "Neither party" : PARTY_ROLE_LABEL[witness.side]}
           />
           {/* The noun form. This is a value in a label→value well sitting
               beside "Side | Complainant" — the inline register would put two
               forms of one word on adjacent facts. */}
-          <WitnessFact term={t("caseParticipants_addedBy")} value={ADDED_BY_LABEL[witness.addedBy]} />
+          <WitnessFact
+            term={t("caseParticipants_addedBy")}
+            value={ADDED_BY_LABEL[witness.addedBy]}
+          />
           <WitnessFact term={t("caseParticipants_linkedParty")} value={witness.linkedParty?.name} />
         </DescriptionList>
       </DetailSection>
@@ -980,9 +926,7 @@ function WitnessFact({ term, value }: { term: string; value?: string }) {
       {/* Body, not caption: typography names Body Medium as the role for field
           labels, and caption is 12px — chrome weight for a label the reader is
           here to read. The same term treatment the service pane uses. */}
-      <DescriptionTerm>
-        {term}
-      </DescriptionTerm>
+      <DescriptionTerm>{term}</DescriptionTerm>
       <DescriptionDetails className="min-w-0 font-medium">
         {value ?? <span className="text-muted-foreground">{t("caseParticipants_none")}</span>}
       </DescriptionDetails>

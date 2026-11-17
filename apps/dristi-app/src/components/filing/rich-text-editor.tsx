@@ -1,13 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  AlignLeftIcon,
-  BoldIcon,
-  ItalicIcon,
-  ListIcon,
-  ListOrderedIcon,
-} from "lucide-react";
+import { AlignLeftIcon, BoldIcon, ItalicIcon, ListIcon, ListOrderedIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,13 +10,14 @@ import { translateText } from "@/i18n/translate-text";
 
 type Command = "bold" | "italic" | "insertOrderedList" | "insertUnorderedList" | "justifyLeft";
 
-const TOOLS: { cmd: Command; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { cmd: "bold", label: "richTextEditor_bold", icon: BoldIcon },
-  { cmd: "italic", label: "richTextEditor_italic", icon: ItalicIcon },
-  { cmd: "insertOrderedList", label: "richTextEditor_numberedList", icon: ListOrderedIcon },
-  { cmd: "insertUnorderedList", label: "richTextEditor_bulletedList", icon: ListIcon },
-  { cmd: "justifyLeft", label: "richTextEditor_alignLeft", icon: AlignLeftIcon },
-];
+const TOOLS: { cmd: Command; label: string; icon: React.ComponentType<{ className?: string }> }[] =
+  [
+    { cmd: "bold", label: "richTextEditor_bold", icon: BoldIcon },
+    { cmd: "italic", label: "richTextEditor_italic", icon: ItalicIcon },
+    { cmd: "insertOrderedList", label: "richTextEditor_numberedList", icon: ListOrderedIcon },
+    { cmd: "insertUnorderedList", label: "richTextEditor_bulletedList", icon: ListIcon },
+    { cmd: "justifyLeft", label: "richTextEditor_alignLeft", icon: AlignLeftIcon },
+  ];
 
 /** What a caller can do to the text from outside it — a picker that is not in the box. */
 export type RichTextEditorHandle = {
@@ -126,7 +121,7 @@ export function RichTextEditor({
     <div
       className={cn(
         "flex flex-col overflow-hidden rounded-lg border border-input bg-background focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
-        className
+        className,
       )}
     >
       {/* Five packed controls: the buttons stay 36px so the strip reads as chrome, and
@@ -152,7 +147,9 @@ export function RichTextEditor({
           </Button>
         ))}
         {toolbarEnd ? (
-          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">{toolbarEnd}</div>
+          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+            {toolbarEnd}
+          </div>
         ) : null}
       </div>
       <div className="relative">
@@ -176,7 +173,7 @@ export function RichTextEditor({
           onBlur={emit}
           className={cn(
             "prose-p:my-2 px-4 py-3 text-body-compact leading-relaxed text-foreground outline-none [&_li]:ml-4 [&_ol]:list-decimal [&_p]:mb-3 [&_p:last-child]:mb-0 [&_ul]:list-disc",
-            minHeightClassName
+            minHeightClassName,
           )}
         />
       </div>

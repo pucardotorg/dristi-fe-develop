@@ -12,11 +12,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useTranslations } from "next-intl";
 
 /**
@@ -47,11 +43,7 @@ export type ShellNotification = {
  */
 function NotificationStatusIcon({ tone }: { tone: ShellNotification["tone"] }) {
   const Icon =
-    tone === "success"
-      ? CircleCheckIcon
-      : tone === "warning"
-        ? CircleAlertIcon
-        : InfoIcon;
+    tone === "success" ? CircleCheckIcon : tone === "warning" ? CircleAlertIcon : InfoIcon;
   return (
     <span
       aria-hidden
@@ -146,12 +138,7 @@ export function NotificationsBell({
         <div className="flex min-h-12 items-center justify-between gap-3 border-b border-hairline px-4 py-2">
           <p className="text-body-compact font-semibold">{t("notifications_notifications")}</p>
           {notifications.length > 0 ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={!hasClearable}
-              onClick={onClearAll}
-            >
+            <Button variant="ghost" size="sm" disabled={!hasClearable} onClick={onClearAll}>
               {t("notifications_clearAll")}
             </Button>
           ) : null}
@@ -171,24 +158,17 @@ export function NotificationsBell({
                     <p
                       className={cn(
                         "text-body-compact",
-                        n.unread
-                          ? "font-semibold text-foreground"
-                          : "font-medium text-foreground",
+                        n.unread ? "font-semibold text-foreground" : "font-medium text-foreground",
                       )}
                     >
                       {n.title}
                     </p>
-                    <p className="text-caption text-muted-foreground">
-                      {n.body}
-                    </p>
+                    <p className="text-caption text-muted-foreground">{n.body}</p>
                   </div>
                 </>
               );
               return (
-                <li
-                  key={n.id}
-                  className="border-b border-hairline last:border-b-0"
-                >
+                <li key={n.id} className="border-b border-hairline last:border-b-0">
                   {/* A row that carries a task is that task's doorway: the
                       whole row is the link, and it lands on the task open in
                       Pending tasks, where the action (Respond, pay, upload)

@@ -131,7 +131,11 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
                     autoComplete="name"
                   />
                 </FormField>
-                <FormField label={t("attestation_relation")} required help={t("attestation_howTheyKnowTheParty")}>
+                <FormField
+                  label={t("attestation_relation")}
+                  required
+                  help={t("attestation_howTheyKnowTheParty")}
+                >
                   <TextField
                     value={a.relation}
                     onChange={(v) => set({ relation: v })}
@@ -149,7 +153,11 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
                 />
               </FormField>
 
-              <FormField label={t("attestation_idCard")} required help={t("attestation_proofOfTheWitnesssIdentity")}>
+              <FormField
+                label={t("attestation_idCard")}
+                required
+                help={t("attestation_proofOfTheWitnesssIdentity")}
+              >
                 <IdUpload value={a.idDoc} onChange={(v) => set({ idDoc: v })} />
               </FormField>
 

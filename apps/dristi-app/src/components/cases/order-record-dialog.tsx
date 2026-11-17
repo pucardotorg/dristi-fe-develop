@@ -5,18 +5,8 @@ import { DownloadIcon, XIcon } from "lucide-react";
 import { PdfViewer } from "@/components/cases/pdf-viewer";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogClose, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { type OrderRecord } from "@/lib/cases/orders";
 import { formatCaseDate } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
@@ -49,7 +39,7 @@ export function OrderRecordDialog({
           "flex flex-col gap-0 overflow-hidden p-0",
           doc?.href
             ? "h-[calc(100dvh---spacing(12))] sm:max-w-5xl"
-            : "max-h-[calc(100dvh---spacing(12))] sm:max-w-2xl"
+            : "max-h-[calc(100dvh---spacing(12))] sm:max-w-2xl",
         )}
       >
         {order ? (

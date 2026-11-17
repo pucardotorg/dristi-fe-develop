@@ -11,9 +11,5 @@ import {
 
 /** Which demo day this browser is on (`demo-seed.ts`). Switch it with `loadDemoSeed`. */
 export function useDemoSeed(): DemoSeed {
-  return React.useSyncExternalStore(
-    subscribeToDemoSeed,
-    readDemoSeed,
-    serverDemoSeed,
-  );
+  return React.useSyncExternalStore(subscribeToDemoSeed, readDemoSeed, serverDemoSeed);
 }

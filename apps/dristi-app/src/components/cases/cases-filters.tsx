@@ -81,9 +81,7 @@ export function CheckGroup<T extends string>({
   const [expanded, setExpanded] = React.useState(false);
   const searching = searchable && Boolean(needle.trim());
   const filtered = searching
-    ? options.filter((option) =>
-        option.label.toLowerCase().includes(needle.trim().toLowerCase())
-      )
+    ? options.filter((option) => option.label.toLowerCase().includes(needle.trim().toLowerCase()))
     : options;
   // Cap the list only when it is long, not searched, and not already opened out. Ticked
   // rows float to the top of the capped slice so a prior selection is never hidden.
@@ -91,10 +89,7 @@ export function CheckGroup<T extends string>({
     collapseAfter !== undefined && !searching && !expanded && filtered.length > collapseAfter;
   const shown = collapsed
     ? [...filtered]
-        .sort(
-          (a, b) =>
-            Number(value.includes(b.value)) - Number(value.includes(a.value))
-        )
+        .sort((a, b) => Number(value.includes(b.value)) - Number(value.includes(a.value)))
         .slice(0, collapseAfter)
     : filtered;
   const hiddenCount = collapsed ? filtered.length - shown.length : 0;
@@ -116,7 +111,9 @@ export function CheckGroup<T extends string>({
               value={needle}
               onChange={(event) => setNeedle(event.target.value)}
               placeholder={t("casesFilters_findAName")}
-              aria-label={t("casesFilters_findInToLowerCase", { toLowerCase: legend.toLowerCase() })}
+              aria-label={t("casesFilters_findInToLowerCase", {
+                toLowerCase: legend.toLowerCase(),
+              })}
               autoComplete="off"
               className="h-full text-body-compact"
             />
@@ -139,7 +136,7 @@ export function CheckGroup<T extends string>({
                   /* Option labels at the button-label size (14px), so the sheet reads
                      as controls beside the list, not as body copy. */
                   "flex min-h-10 items-center gap-3 rounded-md px-2 text-body-compact font-normal",
-                  locked ? "cursor-default" : "cursor-pointer hover:bg-accent"
+                  locked ? "cursor-default" : "cursor-pointer hover:bg-accent",
                 )}
               >
                 <Checkbox
@@ -169,18 +166,15 @@ export function CheckGroup<T extends string>({
           className="h-auto w-fit px-2 py-1"
           onClick={() => setExpanded((open) => !open)}
         >
-          {collapsed ? t("casesFilters_showAllLength", { length: String(filtered.length) }) : t("casesFilters_showFewer")}
+          {collapsed
+            ? t("casesFilters_showAllLength", { length: String(filtered.length) })
+            : t("casesFilters_showFewer")}
           {collapsed ? (
-            <span className="text-muted-foreground tabular-nums">
-              {" "}
-              ({hiddenCount} more)
-            </span>
+            <span className="text-muted-foreground tabular-nums"> ({hiddenCount} more)</span>
           ) : null}
         </Button>
       ) : null}
-      {note ? (
-        <p className="px-2 text-caption text-muted-foreground">{note}</p>
-      ) : null}
+      {note ? <p className="px-2 text-caption text-muted-foreground">{note}</p> : null}
     </FieldSet>
   );
 }
@@ -258,13 +252,11 @@ export function CasesFiltersButton({
       </SheetTrigger>
       {/* The DS sheet slides in full from the right with no dissolve, as the case peek
           does (owner, Sept 11). `aria-describedby` is cleared since the how-to copy is gone. */}
-      <SheetContent
-        side="right"
-        aria-describedby={undefined}
-        className="w-full sm:max-w-sm"
-      >
+      <SheetContent side="right" aria-describedby={undefined} className="w-full sm:max-w-sm">
         <SheetHeader>
-          <SheetTitle className="text-title-s font-semibold">{t("casesFilters_filters")}</SheetTitle>
+          <SheetTitle className="text-title-s font-semibold">
+            {t("casesFilters_filters")}
+          </SheetTitle>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
@@ -288,11 +280,7 @@ export function CasesFiltersButton({
             value={draft.type}
             onChange={(type) => set("type", type)}
             locked={CASE_TYPES.length === 1}
-            note={
-              CASE_TYPES.length === 1
-                ? t("casesFilters_theOnlyCaseTypeThisCourt")
-                : undefined
-            }
+            note={CASE_TYPES.length === 1 ? t("casesFilters_theOnlyCaseTypeThisCourt") : undefined}
           />
           <CheckGroup<BucketKey>
             id="cases-filter-stage"
@@ -316,9 +304,7 @@ export function CasesFiltersButton({
           {draftCount ? (
             <Button
               variant="ghost"
-              onClick={() =>
-                setDraft({ status: [], type: query.type, stage: [], advocates: [] })
-              }
+              onClick={() => setDraft({ status: [], type: query.type, stage: [], advocates: [] })}
             >
               {t("casesFilters_clearFilters")}
             </Button>
@@ -382,13 +368,15 @@ export function CasesAppliedFilters({
     chips.push({
       key: `adv-${name}`,
       label: name,
-      clear: () =>
-        onChange({ advocates: query.advocates.filter((entry) => entry !== name) }),
+      clear: () => onChange({ advocates: query.advocates.filter((entry) => entry !== name) }),
     });
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2" aria-label={t("casesFilters_appliedFilters")}>
+    <div
+      className="flex flex-wrap items-center gap-2"
+      aria-label={t("casesFilters_appliedFilters")}
+    >
       {chips.map((chip) => (
         <AppliedChip key={chip.key} label={chip.label} onClear={chip.clear} />
       ))}

@@ -75,10 +75,7 @@ export function listingLoad(
       const purposes = [...byPurpose]
         .map(([id, count]) => ({ id, label: courtHearingPurposeLabel(id), count }))
         .sort((a, b) => b.count - a.count || ORDER.get(a.id)! - ORDER.get(b.id)!);
-      return [
-        day,
-        { total: purposes.reduce((sum, entry) => sum + entry.count, 0), purposes },
-      ];
+      return [day, { total: purposes.reduce((sum, entry) => sum + entry.count, 0), purposes }];
     }),
   );
 }

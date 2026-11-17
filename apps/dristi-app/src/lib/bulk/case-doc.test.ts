@@ -59,7 +59,10 @@ test("a case document is read section by section, by label", () => {
 });
 
 test("what no label names is found by pattern and marked to check", () => {
-  const x = extractCase("note.pdf", "Matter regarding loan TCL-AHD-PL-1004. Cheque no. 560921 for Rs. 76,400 drawn on KKBK0002561.");
+  const x = extractCase(
+    "note.pdf",
+    "Matter regarding loan TCL-AHD-PL-1004. Cheque no. 560921 for Rs. 76,400 drawn on KKBK0002561.",
+  );
   assert.equal(x.fields["Cheque number"].value, "560921");
   assert.equal(x.fields["Cheque number"].confidence, "check");
   assert.equal(x.fields["Drawer bank IFSC"].value, "KKBK0002561");

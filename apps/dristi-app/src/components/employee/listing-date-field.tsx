@@ -6,12 +6,7 @@ import { labelDayButton, type Matcher } from "react-day-picker";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   formatListingDate,
@@ -85,7 +80,9 @@ export function ListingDateField({
     ? hearingDay
       ? day === hearingDay
         ? t("listingDateField_nextDateOfHearingInThe")
-        : t("listingDateField_nextDateOfHearingInTheCase", { formatListingDate: formatListingDate(hearingDay) })
+        : t("listingDateField_nextDateOfHearingInTheCase", {
+            formatListingDate: formatListingDate(hearingDay),
+          })
       : t("listingDateField_noDateOfHearingIsFixed")
     : null;
   const description = [hearingLine, hint].filter(Boolean).join(" ");
@@ -103,9 +100,7 @@ export function ListingDateField({
             type="button"
             variant="outline"
             aria-labelledby={`${labelId} ${triggerId}`}
-            aria-describedby={
-              invalid ? `${id}-error` : description ? descriptionId : undefined
-            }
+            aria-describedby={invalid ? `${id}-error` : description ? descriptionId : undefined}
             aria-invalid={invalid || undefined}
             className={cn(
               "w-full justify-start gap-2 font-normal",
@@ -145,7 +140,9 @@ export function ListingDateField({
         </PopoverContent>
       </Popover>
       {invalid ? (
-        <FieldError id={`${id}-error`}>{t("listingDateField_chooseASittingDayAfterToday")}</FieldError>
+        <FieldError id={`${id}-error`}>
+          {t("listingDateField_chooseASittingDayAfterToday")}
+        </FieldError>
       ) : description ? (
         <FieldDescription id={descriptionId}>{description}</FieldDescription>
       ) : null}

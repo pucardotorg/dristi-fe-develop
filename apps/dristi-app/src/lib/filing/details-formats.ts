@@ -52,12 +52,14 @@ export function mappedByHand(format: DetailsFormat, variable: string): boolean {
 
 /** The format as the filer's starting text: mapped variables become their fields. */
 export function formatForFiler(format: DetailsFormat): string {
-  return format.html.replace(/(^|>)([^<]*)/g, (_, open: string, text: string) =>
-    open +
-    text.replace(/\[([^\]\n]+)\]/g, (whole, name: string) => {
-      const field = mappedField(format, name);
-      return field ? `[${field.name}]` : whole;
-    }),
+  return format.html.replace(
+    /(^|>)([^<]*)/g,
+    (_, open: string, text: string) =>
+      open +
+      text.replace(/\[([^\]\n]+)\]/g, (whole, name: string) => {
+        const field = mappedField(format, name);
+        return field ? `[${field.name}]` : whole;
+      }),
   );
 }
 

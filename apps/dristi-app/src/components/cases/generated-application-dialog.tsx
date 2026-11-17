@@ -3,10 +3,7 @@
 import { Fragment, useMemo } from "react";
 import { DownloadIcon, XIcon } from "lucide-react";
 
-import {
-  Fact,
-  FactGroup,
-} from "@/components/cases/application-record-dialog";
+import { Fact, FactGroup } from "@/components/cases/application-record-dialog";
 import { ReviewRow } from "@/components/cases/filing-form-shared";
 import { RichTextValueView } from "@/components/cases/rich-text-field";
 import { ComposedDocumentViewer } from "@/components/cases/pdf-viewer";
@@ -14,18 +11,8 @@ import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { Identifier } from "@/components/chrome/identifier";
 import { Button } from "@/components/ui/button";
 import { DescriptionList } from "@/components/ui/description-list";
-import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Dialog, DialogClose, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   buildGeneratedApplication,
   datedThis,
@@ -72,7 +59,7 @@ export function GeneratedApplicationDialog({
   const t = useTranslations();
   const document = useMemo(
     () => buildGeneratedApplication(draft, record, side),
-    [draft, record, side]
+    [draft, record, side],
   );
   // Day precision, so recomputing per render never changes the text.
   const generatedOn = formatCaseDate(new Date().toISOString());
@@ -96,7 +83,9 @@ export function GeneratedApplicationDialog({
         <div className="flex shrink-0 items-center gap-2 border-b border-hairline py-3 pr-3 pl-6">
           <div className="min-w-0 flex-1">
             <DialogTitle className="text-body-compact font-semibold text-pretty sm:truncate">
-              {objection ? t("generatedApplicationDialog_generatedObjection") : t("generatedApplicationDialog_generatedApplication")}
+              {objection
+                ? t("generatedApplicationDialog_generatedObjection")
+                : t("generatedApplicationDialog_generatedApplication")}
             </DialogTitle>
             <DialogDescription className="sr-only">
               {t("generatedApplicationDialog_checkTheGeneratedDocumentBeforeAdding")}
@@ -116,7 +105,9 @@ export function GeneratedApplicationDialog({
                   <DownloadIcon aria-hidden />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">{t("generatedApplicationDialog_download")}</TooltipContent>
+              <TooltipContent side="bottom">
+                {t("generatedApplicationDialog_download")}
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <DialogClose asChild>
@@ -132,13 +123,22 @@ export function GeneratedApplicationDialog({
             <div className="flex max-h-72 shrink-0 flex-col overflow-y-auto border-b border-hairline p-4 @3xl/record:max-h-none @3xl/record:w-80 @3xl/record:border-r @3xl/record:border-b-0">
               <div className="flex flex-col divide-y divide-hairline">
                 <FactGroup>
-                  <Fact label={objection ? t("generatedApplicationDialog_filing") : t("generatedApplicationDialog_applicationType")}>
+                  <Fact
+                    label={
+                      objection
+                        ? t("generatedApplicationDialog_filing")
+                        : t("generatedApplicationDialog_applicationType")
+                    }
+                  >
                     {submissionTypeLabel(draft.type)}
                   </Fact>
                 </FactGroup>
                 <FactGroup columns={2}>
                   <Fact label={t("generatedApplicationDialog_case")}>
-                    <Identifier value={record.caseNumber} label={t("generatedApplicationDialog_caseNumber")} />
+                    <Identifier
+                      value={record.caseNumber}
+                      label={t("generatedApplicationDialog_caseNumber")}
+                    />
                   </Fact>
                   <Fact label={t("generatedApplicationDialog_generatedOn")}>
                     <span className="tabular-nums">{generatedOn}</span>
@@ -152,10 +152,7 @@ export function GeneratedApplicationDialog({
               title={document.title}
               className="min-h-64 min-w-0 flex-1 rounded-none"
             >
-              <GeneratedApplicationDocument
-                document={document}
-                generatedOn={generatedOn}
-              />
+              <GeneratedApplicationDocument document={document} generatedOn={generatedOn} />
             </ComposedDocumentViewer>
           </div>
         </div>
@@ -205,13 +202,19 @@ export function GeneratedApplicationDocument({
         <p className="text-body font-semibold text-balance">{document.court}</p>
         <div className="flex flex-col gap-1">
           <p className="text-body font-semibold">
-            {t.rich("generatedApplicationDialog_caseNoCaseNumber", { caseNumber: document.caseNumber, span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+            {t.rich("generatedApplicationDialog_caseNoCaseNumber", {
+              caseNumber: document.caseNumber,
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
           <p className="text-body font-semibold">
             {t("generatedApplicationDialog_inTheMatterOfMatter", { matter: document.matter })}
           </p>
           <p className="text-body font-semibold">
-            {t.rich("generatedApplicationDialog_dateGeneratedOn", { generatedOn, span: (chunks) => <span className="tabular-nums">{chunks}</span> })}
+            {t.rich("generatedApplicationDialog_dateGeneratedOn", {
+              generatedOn,
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
         </div>
       </header>
@@ -234,9 +237,7 @@ export function GeneratedApplicationDocument({
                   >
                     {row.term}
                   </th>
-                  <td className="border border-paper-border px-3 py-2 align-top">
-                    {row.value}
-                  </td>
+                  <td className="border border-paper-border px-3 py-2 align-top">{row.value}</td>
                 </tr>
               ))}
             </Fragment>
@@ -255,7 +256,9 @@ export function GeneratedApplicationDocument({
           ))}
         </DescriptionList>
       ) : document.details.text.trim() ? null : (
-        <p className="text-body text-paper-muted-foreground">{t("generatedApplicationDialog_nothingEntered")}</p>
+        <p className="text-body text-paper-muted-foreground">
+          {t("generatedApplicationDialog_nothingEntered")}
+        </p>
       )}
 
       {/* Application details is the body of the application, so it reads as
@@ -272,7 +275,9 @@ export function GeneratedApplicationDocument({
           {signedBy ? (
             <div className="mb-2 flex h-16 w-56 max-w-full flex-col items-center justify-center rounded-lg border border-paper-border">
               <p className="text-body-compact font-semibold">{signedBy}</p>
-              <p className="text-caption text-paper-muted-foreground">{t("generatedApplicationDialog_signed")}</p>
+              <p className="text-caption text-paper-muted-foreground">
+                {t("generatedApplicationDialog_signed")}
+              </p>
             </div>
           ) : (
             <div className="mb-2 flex h-16 w-56 max-w-full items-center justify-center rounded-lg border border-dashed border-paper-border">

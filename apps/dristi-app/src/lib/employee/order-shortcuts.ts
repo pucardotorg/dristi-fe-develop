@@ -117,20 +117,14 @@ function restore(): void {
       /* Samples added since this browser saved its list join the end of it, once — a
          browser that saved before the longer orders existed would otherwise never see
          them. A sample it was given and removed is not given back. */
-      const seenStored = JSON.parse(
-        window.localStorage.getItem(SEEN_KEY) ?? "null",
-      );
+      const seenStored = JSON.parse(window.localStorage.getItem(SEEN_KEY) ?? "null");
       const seen = new Set<string>(
-        Array.isArray(seenStored)
-          ? seenStored
-          : CATALOGUE_SHORTCUTS.map((entry) => entry.id),
+        Array.isArray(seenStored) ? seenStored : CATALOGUE_SHORTCUTS.map((entry) => entry.id),
       );
       const held = new Set(stored.map((entry) => entry.id));
       shortcuts = [
         ...stored,
-        ...SAMPLE_SHORTCUTS.filter(
-          (entry) => !seen.has(entry.id) && !held.has(entry.id),
-        ),
+        ...SAMPLE_SHORTCUTS.filter((entry) => !seen.has(entry.id) && !held.has(entry.id)),
       ];
     }
     window.localStorage.setItem(
@@ -171,10 +165,7 @@ export function serverOrderShortcuts(): readonly OrderShortcut[] {
   return SAMPLE_SHORTCUTS;
 }
 
-export function addOrderShortcut(
-  name: string,
-  body: { text: string; html: string },
-): void {
+export function addOrderShortcut(name: string, body: { text: string; html: string }): void {
   const id = `shortcut-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
   write([
     ...readOrderShortcuts(),
@@ -205,9 +196,7 @@ export function shortcutHtml(entry: OrderShortcut): string {
   if (entry.html) return entry.html;
   return entry.text
     .split("\n")
-    .map((line) =>
-      line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
-    )
+    .map((line) => line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"))
     .join("<br>");
 }
 
@@ -224,7 +213,10 @@ export function appendShortcut(
   const html = insertion.kind === "block" ? insertion.html : `<p>${shortcutHtml(entry)}</p>`;
   const blank =
     !/<(table|li|hr|img)[\s>]/i.test(body.html) &&
-    !body.html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+    !body.html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .trim();
   return blank
     ? { html, text: entry.text }
     : { html: `${body.html}${html}`, text: `${body.text}\n${entry.text}` };
@@ -241,9 +233,7 @@ export function shortcutNameTaken(
   except?: string,
 ): boolean {
   const wanted = name.trim().toLowerCase();
-  return list.some(
-    (entry) => entry.id !== except && entry.name.trim().toLowerCase() === wanted,
-  );
+  return list.some((entry) => entry.id !== except && entry.name.trim().toLowerCase() === wanted);
 }
 
 /**

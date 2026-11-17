@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { canSaveDraft } from "@/lib/employee/scrutiny/field"
+import { canSaveDraft } from "@/lib/employee/scrutiny/field";
 import type {
   Draft,
   FlagMap,
@@ -10,19 +10,19 @@ import type {
   ReturnRound,
   ScrutinyCase,
   ScrutinyLookups,
-} from "@/lib/employee/scrutiny/types"
+} from "@/lib/employee/scrutiny/types";
 
 /** Whether the note box takes the caret when the composer opens — resolved once. */
-export type PendingFocus = "note" | null
+export type PendingFocus = "note" | null;
 
 export interface ScrutinyState {
-  flags: FlagMap
+  flags: FlagMap;
   /** Returned items the officer has accepted as answered, by field id. */
-  accepted: Record<string, true>
-  selectedId: string | null
-  composeField: string | null
-  draft: Draft | null
-  pendingFocus: PendingFocus
+  accepted: Record<string, true>;
+  selectedId: string | null;
+  composeField: string | null;
+  draft: Draft | null;
+  pendingFocus: PendingFocus;
 }
 
 const EMPTY: ScrutinyState = {
@@ -32,13 +32,13 @@ const EMPTY: ScrutinyState = {
   composeField: null,
   draft: null,
   pendingFocus: null,
-}
+};
 
 /** What the composer leaves behind when it closes, however it closes. */
 const CLOSED = {
   composeField: null,
   draft: null,
-} as const
+} as const;
 
 /* ── pure transitions ────────────────────────────────────────────────────── */
 /*
@@ -52,21 +52,21 @@ const CLOSED = {
  * because they were composed as one thought.
  */
 export function applySaveFlag(s: ScrutinyState, look: ScrutinyLookups): ScrutinyState {
-  const id = s.composeField
-  const draft = s.draft
-  if (!id || !draft) return s
-  const field = look.fieldById[id]
-  if (!field || !canSaveDraft(field, draft)) return s
+  const id = s.composeField;
+  const draft = s.draft;
+  if (!id || !draft) return s;
+  const field = look.fieldById[id];
+  if (!field || !canSaveDraft(field, draft)) return s;
 
-  const flags: FlagMap = { ...s.flags }
-  const previous = flags[id]
-  const linked = draft.linked
+  const flags: FlagMap = { ...s.flags };
+  const previous = flags[id];
+  const linked = draft.linked;
 
   // "Don't flag the upload" on an item that had one: the partner goes at save time, not
   // at the click — nothing is destroyed until the officer commits.
-  const dropped = previous?.linkedTo
+  const dropped = previous?.linkedTo;
   if (dropped && dropped !== linked?.rowId && flags[dropped]?.linkedFrom === id) {
-    delete flags[dropped]
+    delete flags[dropped];
   }
 
   flags[id] = {
@@ -74,7 +74,7 @@ export function applySaveFlag(s: ScrutinyState, look: ScrutinyLookups): Scrutiny
     comment: draft.text.trim() || null,
     linkedTo: linked ? linked.rowId : null,
     linkedFrom: previous?.linkedFrom ?? null,
-  }
+  };
 
   if (linked) {
     flags[linked.rowId] = {
@@ -85,10 +85,10 @@ export function applySaveFlag(s: ScrutinyState, look: ScrutinyLookups): Scrutiny
       comment: linked.note.trim() || null,
       linkedTo: null,
       linkedFrom: id,
-    }
+    };
   }
 
-  return { ...s, flags, ...CLOSED }
+  return { ...s, flags, ...CLOSED };
 }
 
 /**
@@ -96,27 +96,27 @@ export function applySaveFlag(s: ScrutinyState, look: ScrutinyLookups): Scrutiny
  * field flag goes; the link is what is cut, not the other grant.
  */
 export function applyRemoveFlag(s: ScrutinyState, id: string): ScrutinyState {
-  const removed = s.flags[id]
-  if (!removed) return s
+  const removed = s.flags[id];
+  if (!removed) return s;
 
-  const flags: FlagMap = { ...s.flags }
-  delete flags[id]
+  const flags: FlagMap = { ...s.flags };
+  delete flags[id];
 
   for (const partnerId of [removed.linkedTo, removed.linkedFrom]) {
-    const partner = partnerId ? flags[partnerId] : undefined
-    if (!partnerId || !partner) continue
+    const partner = partnerId ? flags[partnerId] : undefined;
+    if (!partnerId || !partner) continue;
     flags[partnerId] = {
       ...partner,
       linkedTo: partner.linkedTo === id ? null : partner.linkedTo,
       linkedFrom: partner.linkedFrom === id ? null : partner.linkedFrom,
-    }
+    };
   }
 
   return {
     ...s,
     flags,
     ...(s.composeField === id ? CLOSED : null),
-  }
+  };
 }
 
 /**
@@ -124,8 +124,8 @@ export function applyRemoveFlag(s: ScrutinyState, id: string): ScrutinyState {
  * honest about. Removing the document item strands nothing, so it answers null.
  */
 export function survivingPartner(flags: FlagMap, id: string): string | null {
-  const partnerId = flags[id]?.linkedTo
-  return partnerId && flags[partnerId] ? partnerId : null
+  const partnerId = flags[id]?.linkedTo;
+  return partnerId && flags[partnerId] ? partnerId : null;
 }
 
 /** Open the linked sub-composer for a document. Nothing is created until Save. */
@@ -134,17 +134,16 @@ export function applyLinkDoc(
   docId: string,
   look: ScrutinyLookups,
 ): ScrutinyState {
-  const rowId = look.docRow[docId]
-  if (!s.draft || !rowId) return s
+  const rowId = look.docRow[docId];
+  if (!s.draft || !rowId) return s;
   return {
     ...s,
     draft: {
       ...s.draft,
-      linked: s.draft.linked?.rowId === rowId
-        ? s.draft.linked
-        : { rowId, docId, reason: null, note: "" },
+      linked:
+        s.draft.linked?.rowId === rowId ? s.draft.linked : { rowId, docId, reason: null, note: "" },
     },
-  }
+  };
 }
 
 /* ── re-scrutiny: the officer's answer to each returned item ─────────────── */
@@ -154,14 +153,11 @@ export function applyLinkDoc(
  * so the send-back path, the review dialog and the advocate's screen need nothing new;
  * a flag outranks an acceptance, because the two cannot both be the officer's answer.
  */
-export type Verdict = "unchecked" | "accepted" | "raised"
+export type Verdict = "unchecked" | "accepted" | "raised";
 
-export function verdictOf(
-  s: Pick<ScrutinyState, "flags" | "accepted">,
-  fieldId: string,
-): Verdict {
-  if (s.flags[fieldId]) return "raised"
-  return s.accepted[fieldId] ? "accepted" : "unchecked"
+export function verdictOf(s: Pick<ScrutinyState, "flags" | "accepted">, fieldId: string): Verdict {
+  if (s.flags[fieldId]) return "raised";
+  return s.accepted[fieldId] ? "accepted" : "unchecked";
 }
 
 /** Returned items with no answer from the officer yet — what holds forwarding back. */
@@ -169,21 +165,19 @@ export function uncheckedCount(
   s: Pick<ScrutinyState, "flags" | "accepted">,
   round: ReturnRound | null,
 ): number {
-  return (round?.items ?? []).filter(
-    (item) => verdictOf(s, item.fieldId) === "unchecked",
-  ).length
+  return (round?.items ?? []).filter((item) => verdictOf(s, item.fieldId) === "unchecked").length;
 }
 
 export function applyAccept(s: ScrutinyState, id: string): ScrutinyState {
-  if (s.flags[id]) return s
-  return { ...s, accepted: { ...s.accepted, [id]: true } }
+  if (s.flags[id]) return s;
+  return { ...s, accepted: { ...s.accepted, [id]: true } };
 }
 
 export function applyUndoAccept(s: ScrutinyState, id: string): ScrutinyState {
-  if (!s.accepted[id]) return s
-  const accepted = { ...s.accepted }
-  delete accepted[id]
-  return { ...s, accepted }
+  if (!s.accepted[id]) return s;
+  const accepted = { ...s.accepted };
+  delete accepted[id];
+  return { ...s, accepted };
 }
 
 /**
@@ -197,15 +191,15 @@ export function applyRaiseAgain(
   note: string,
   look: ScrutinyLookups,
 ): ScrutinyState {
-  if (!look.fieldById[id] || s.flags[id]) return s
-  const settled = applyUndoAccept(s, id)
+  if (!look.fieldById[id] || s.flags[id]) return s;
+  const settled = applyUndoAccept(s, id);
   return {
     ...settled,
     selectedId: id,
     composeField: id,
     pendingFocus: "note",
     draft: { text: note, reason: null, linked: null },
-  }
+  };
 }
 
 /* ── the hook ────────────────────────────────────────────────────────────── */
@@ -216,42 +210,39 @@ export function applyRaiseAgain(
  * the two in a single script and paid for it in re-render bugs.
  */
 export function useScrutinyState(caseData: ScrutinyCase) {
-  const [state, setState] = React.useState<ScrutinyState>(EMPTY)
+  const [state, setState] = React.useState<ScrutinyState>(EMPTY);
 
   /* The two id→record maps the pure transitions resolve against, from this case. Built
      once per case so the callbacks below keep a stable identity between renders. */
-  const { fieldById, docRow } = caseData
-  const look = React.useMemo<ScrutinyLookups>(
-    () => ({ fieldById, docRow }),
-    [fieldById, docRow],
-  )
+  const { fieldById, docRow } = caseData;
+  const look = React.useMemo<ScrutinyLookups>(() => ({ fieldById, docRow }), [fieldById, docRow]);
 
   const patch = React.useCallback(
     (next: Partial<ScrutinyState>) => setState((s) => ({ ...s, ...next })),
-    []
-  )
+    [],
+  );
 
   /* ── selection ─────────────────────────────────────────────────────────── */
 
   const selectField = React.useCallback((id: string) => {
-    setState((s) => ({ ...s, selectedId: id }))
-  }, [])
+    setState((s) => ({ ...s, selectedId: id }));
+  }, []);
 
   /* ── composer ──────────────────────────────────────────────────────────── */
 
   const openComposer = React.useCallback(
     (id: string) => {
       setState((s) => {
-        const field = fieldById[id]
-        if (!field) return s
-        const existing = s.flags[id]
+        const field = fieldById[id];
+        if (!field) return s;
+        const existing = s.flags[id];
 
         if (existing) {
           // Editing something already raised — start from what is there, never blank.
           // That includes the linked document item, restored to its saved state so
           // "Don't flag the upload" is a decision the officer can still take back.
-          const partnerId = existing.linkedTo
-          const partner = partnerId ? s.flags[partnerId] : undefined
+          const partnerId = existing.linkedTo;
+          const partner = partnerId ? s.flags[partnerId] : undefined;
           const linked: LinkedDoc | null =
             partnerId && partner
               ? {
@@ -260,7 +251,7 @@ export function useScrutinyState(caseData: ScrutinyCase) {
                   reason: partner.reason,
                   note: partner.comment ?? "",
                 }
-              : null
+              : null;
 
           return {
             ...s,
@@ -272,7 +263,7 @@ export function useScrutinyState(caseData: ScrutinyCase) {
               reason: existing.reason,
               linked,
             },
-          }
+          };
         }
 
         // The officer says what is wrong; the advocate enters the right value. There is
@@ -287,27 +278,27 @@ export function useScrutinyState(caseData: ScrutinyCase) {
             reason: null,
             linked: null,
           },
-        }
-      })
+        };
+      });
     },
-    [fieldById]
-  )
+    [fieldById],
+  );
 
   const closeComposer = React.useCallback(() => {
-    patch({ ...CLOSED })
-  }, [patch])
+    patch({ ...CLOSED });
+  }, [patch]);
 
   const updateDraft = React.useCallback((next: Partial<Draft>) => {
-    setState((s) => (s.draft ? { ...s, draft: { ...s.draft, ...next } } : s))
-  }, [])
+    setState((s) => (s.draft ? { ...s, draft: { ...s.draft, ...next } } : s));
+  }, []);
 
   const clearPendingFocus = React.useCallback(() => {
-    setState((s) => (s.pendingFocus ? { ...s, pendingFocus: null } : s))
-  }, [])
+    setState((s) => (s.pendingFocus ? { ...s, pendingFocus: null } : s));
+  }, []);
 
   const saveFlag = React.useCallback(() => {
-    setState((s) => applySaveFlag(s, look))
-  }, [look])
+    setState((s) => applySaveFlag(s, look));
+  }, [look]);
 
   /**
    * Answers with the document item left standing, so the caller can say so. A removal
@@ -315,54 +306,53 @@ export function useScrutinyState(caseData: ScrutinyCase) {
    */
   const removeFlag = React.useCallback(
     (id: string): string | null => {
-      const partner = survivingPartner(state.flags, id)
-      setState((s) => applyRemoveFlag(s, id))
-      return partner
+      const partner = survivingPartner(state.flags, id);
+      setState((s) => applyRemoveFlag(s, id));
+      return partner;
     },
-    [state.flags]
-  )
+    [state.flags],
+  );
 
   /* ── the linked document item ──────────────────────────────────────────── */
 
   /** Open the linked sub-composer — from the question, or from the standing link. */
-  const linkDoc = React.useCallback((docId: string) => {
-    setState((s) => applyLinkDoc(s, docId, look))
-  }, [look])
+  const linkDoc = React.useCallback(
+    (docId: string) => {
+      setState((s) => applyLinkDoc(s, docId, look));
+    },
+    [look],
+  );
 
   const updateLinked = React.useCallback((next: Partial<LinkedDoc>) => {
     setState((s) =>
-      s.draft?.linked
-        ? { ...s, draft: { ...s.draft, linked: { ...s.draft.linked, ...next } } }
-        : s
-    )
-  }, [])
+      s.draft?.linked ? { ...s, draft: { ...s.draft, linked: { ...s.draft.linked, ...next } } } : s,
+    );
+  }, []);
 
   const clearLinked = React.useCallback(() => {
-    setState((s) =>
-      s.draft ? { ...s, draft: { ...s.draft, linked: null } } : s
-    )
-  }, [])
+    setState((s) => (s.draft ? { ...s, draft: { ...s.draft, linked: null } } : s));
+  }, []);
 
   /* ── re-scrutiny ───────────────────────────────────────────────────────── */
 
   const accept = React.useCallback((id: string) => {
-    setState((s) => applyAccept(s, id))
-  }, [])
+    setState((s) => applyAccept(s, id));
+  }, []);
 
   const undoAccept = React.useCallback((id: string) => {
-    setState((s) => applyUndoAccept(s, id))
-  }, [])
+    setState((s) => applyUndoAccept(s, id));
+  }, []);
 
   const raiseAgain = React.useCallback(
     (id: string, note: string) => {
-      setState((s) => applyRaiseAgain(s, id, note, look))
+      setState((s) => applyRaiseAgain(s, id, note, look));
     },
-    [look]
-  )
+    [look],
+  );
 
   const reset = React.useCallback(() => {
-    setState(EMPTY)
-  }, [])
+    setState(EMPTY);
+  }, []);
 
   return {
     ...state,
@@ -380,7 +370,7 @@ export function useScrutinyState(caseData: ScrutinyCase) {
     undoAccept,
     raiseAgain,
     reset,
-  }
+  };
 }
 
-export type ScrutinyController = ReturnType<typeof useScrutinyState>
+export type ScrutinyController = ReturnType<typeof useScrutinyState>;

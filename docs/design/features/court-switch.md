@@ -1,4 +1,5 @@
 # Court switch
+
 Updated: 2026-10-08
 Status: implemented on `feature/court-switch`; switch moved to an icon on Settings and brands renamed (render check pending, see Verification)
 
@@ -41,28 +42,28 @@ The choice re-voices the existing screens. No screen, step or field is added.
 - **How it is wired.** Fixtures stay in Kerala's terms; this is a display transform only.
   It is applied at a few shared points: `Identifier`, the brand marks, the document
   components (`useCourtLocalized`), court-name cells (`useCourtText`), `feeBill(draft,
-  schedule)` and the downloads (`localizeForDownload`).
+schedule)` and the downloads (`localizeForDownload`).
 
 ## Decisions
 
-| Date | Decision and reason | Source | Status |
-|---|---|---|---|
-| 2026-10-05 | Court name and logo must be swappable from the UI. | Stakeholder, relayed by owner | Superseded by the next row |
-| 2026-10-08 | The swap lives in Settings and covers logo, case numbers, documents and so on, not just branding. | Owner | Built |
-| 2026-10-08 | Kerala is already designed and stays as it is. The switch adds the other states; the interface stays the same and only what the stakeholder docs list changes. | Owner | Built |
-| 2026-10-08 | Use a placeholder logo or the plain state name until the states send assets. Documents show the state in place of Kollam and similar. | Owner | Built |
-| 2026-10-08 | Punjab and Haryana are separate states, so they get separate options. | Owner | Built. Both use schedule 3, since the doc has one schedule for P&H. |
-| 2026-10-08 | Payment Logic schedule 1 is Kerala, 2 is Gujarat, 3 is Punjab and Haryana. | Owner | Built |
-| 2026-10-08 | Leave Kerala's current fees alone, even though they differ from schedule 1. | Owner | Built |
-| 2026-10-08 | Punjab only: the step is "Sign", not "Sign and oath". | Owner | Built. Label only; `ADVOCATE_OATH` is already off for everyone. |
-| 2026-10-08 | Gujarat's case type is carried by the sample case; no new type picker at scrutiny. | Proposed by Claude, not explicitly confirmed | Built as proposed |
-| 2026-10-08 | Branch `feature/court-switch` from `origin/main`. The owner wrote "feature-court-switch"; the repo convention `feature/<kebab>` was used. | Owner request / CLAUDE.md | Done |
+| Date       | Decision and reason                                                                                                                                            | Source                                       | Status                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
+| 2026-10-05 | Court name and logo must be swappable from the UI.                                                                                                             | Stakeholder, relayed by owner                | Superseded by the next row                                          |
+| 2026-10-08 | The swap lives in Settings and covers logo, case numbers, documents and so on, not just branding.                                                              | Owner                                        | Built                                                               |
+| 2026-10-08 | Kerala is already designed and stays as it is. The switch adds the other states; the interface stays the same and only what the stakeholder docs list changes. | Owner                                        | Built                                                               |
+| 2026-10-08 | Use a placeholder logo or the plain state name until the states send assets. Documents show the state in place of Kollam and similar.                          | Owner                                        | Built                                                               |
+| 2026-10-08 | Punjab and Haryana are separate states, so they get separate options.                                                                                          | Owner                                        | Built. Both use schedule 3, since the doc has one schedule for P&H. |
+| 2026-10-08 | Payment Logic schedule 1 is Kerala, 2 is Gujarat, 3 is Punjab and Haryana.                                                                                     | Owner                                        | Built                                                               |
+| 2026-10-08 | Leave Kerala's current fees alone, even though they differ from schedule 1.                                                                                    | Owner                                        | Built                                                               |
+| 2026-10-08 | Punjab only: the step is "Sign", not "Sign and oath".                                                                                                          | Owner                                        | Built. Label only; `ADVOCATE_OATH` is already off for everyone.     |
+| 2026-10-08 | Gujarat's case type is carried by the sample case; no new type picker at scrutiny.                                                                             | Proposed by Claude, not explicitly confirmed | Built as proposed                                                   |
+| 2026-10-08 | Branch `feature/court-switch` from `origin/main`. The owner wrote "feature-court-switch"; the repo convention `feature/<kebab>` was used.                      | Owner request / CLAUDE.md                    | Done                                                                |
 
 | 2026-10-08 | Owner review: "too many places where things are not updated." A full capture review found Kerala still on 385 of 798 Gujarat captures and 51 of 100 in Punjab and Haryana: places, "Kerala", Bar numbers, PINs, Malayalam-script names, numbers in prose. | Owner, review | Fixed, see below |
 | 2026-10-08 | Kerala's sample geography moves with the court: each Kerala town maps to a real town in the state (Kollam → Ahmedabad / Ludhiana / Panchkula), as do PINs, Bar Council prefixes, "Kerala" and "Malayalam". People's names stay. | Implementation choice under the owner's "Gujarat instead of Kollam" | Built |
 | 2026-10-08 | For any state but Kerala, a render layer (`court-text-layer.tsx`) re-voices all shown text and labels; switching courts reloads the page. Replaces chasing render sites one at a time. Inputs, editors and Settings' court cards are left alone. | Implementation choice after the review | Built |
 | 2026-10-08 | Keep the switch subtle: a court icon that opens the choice, not a Settings section of cards. | Owner | Built, render check pending |
-| 2026-10-08 | The icon belongs on the Settings page, not the left rail (a first build put it in the rail). A corner of the page was tried, then moved beside the Settings title in the top bar. | Owner |  Built, render check pending |
+| 2026-10-08 | The icon belongs on the Settings page, not the left rail (a first build put it in the rail). A corner of the page was tried, then moved beside the Settings title in the top bar. | Owner | Built, render check pending |
 | 2026-10-08 | Gujarat's product is called Saras; the rail's header says "Saras". | Owner | Built. Only the product name changes; the court stays "Gujarat Court". |
 | 2026-10-08 | Punjab and Haryana are ON Courts: same marks and names as Kerala. | Owner | Built |
 

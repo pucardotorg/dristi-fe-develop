@@ -27,10 +27,7 @@ import { translateText } from "@/i18n/translate-text";
  * collapse onto the same module rather than the two drifting apart.
  */
 
-const SIDE_COPY: Record<
-  CounselSide,
-  { mark: string; one: string; many: string; list: string }
-> = {
+const SIDE_COPY: Record<CounselSide, { mark: string; one: string; many: string; list: string }> = {
   complainant: {
     mark: "(C)",
     one: "complainant advocate",
@@ -125,13 +122,8 @@ function CounselLine({
      without one occupy the same band and the table keeps one row rhythm. */
   return (
     <div className="relative flex min-h-6 min-w-0 items-center gap-1">
-      <span className="min-w-0 truncate text-body-compact text-foreground">
-        {names[0]}
-      </span>
-      <span
-        aria-hidden
-        className="shrink-0 text-body-compact text-muted-foreground"
-      >
+      <span className="min-w-0 truncate text-body-compact text-foreground">{names[0]}</span>
+      <span aria-hidden className="shrink-0 text-body-compact text-muted-foreground">
         {copy.mark}
       </span>
       <span className="sr-only">{`, ${copy.one}`}</span>
@@ -151,13 +143,16 @@ function CounselLine({
                 /* overflow-visible: the primitive clips to the pill, which would swallow
                    the `after:` target. Nothing but text is in the chip, so there is
                    nothing left to clip. */
-                !dense &&
-                  "overflow-visible after:absolute after:-inset-x-1.5 after:-inset-y-2",
+                !dense && "overflow-visible after:absolute after:-inset-x-1.5 after:-inset-y-2",
               )}
             >
               <button
                 type="button"
-                aria-label={t("counselCell_namesAndExtraMoreValue", { names: names[0], extra: String(extra), value: extra === 1 ? copy.one : copy.many })}
+                aria-label={t("counselCell_namesAndExtraMoreValue", {
+                  names: names[0],
+                  extra: String(extra),
+                  value: extra === 1 ? copy.one : copy.many,
+                })}
                 onClick={(event) => event.stopPropagation()}
               >
                 +{extra}
@@ -181,10 +176,7 @@ function CounselLine({
             </PopoverHeader>
             <ul className="flex max-h-64 flex-col gap-2 overflow-y-auto">
               {names.slice(1).map((name, index) => (
-                <li
-                  key={`${name}-${index}`}
-                  className="text-body-compact text-foreground"
-                >
+                <li key={`${name}-${index}`} className="text-body-compact text-foreground">
                   {name}
                 </li>
               ))}

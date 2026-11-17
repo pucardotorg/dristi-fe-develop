@@ -3,15 +3,18 @@
 import { isIndianMobile, toNationalMobile } from "@/lib/auth/mobile";
 import { signingRules } from "./config";
 import { mobileFieldCopy } from "./content";
-import { addDays, addMonths, addressToString, daysBetween, nameList, toLongDate, todayIso } from "./format";
+import {
+  addDays,
+  addMonths,
+  addressToString,
+  daysBetween,
+  nameList,
+  toLongDate,
+  todayIso,
+} from "./format";
 import { CHEQUE_NUMBER_PATTERN } from "./lookups";
 import { KERALA_FEES, type FeeSchedule } from "@/lib/court/fees";
-import {
-  CHANNEL_FEE,
-  defaultProcessRounds,
-  DELIVERY_MIN_ROUNDS,
-  PROCESS_OPTIONS,
-} from "./options";
+import { CHANNEL_FEE, defaultProcessRounds, DELIVERY_MIN_ROUNDS, PROCESS_OPTIONS } from "./options";
 import { WALK_ORDER } from "./steps";
 import type {
   Accused,
@@ -82,7 +85,7 @@ export function rowForSlot(groups: DocumentGroup[], slotKey: string): CaseDocume
  */
 export function documentGroupForParty(
   groups: DocumentGroup[],
-  party: IntakeGroup
+  party: IntakeGroup,
 ): DocumentGroup | undefined {
   const keys = new Set(party.slots.map((s) => s.key));
   return groups.find((g) => g.docs.some((d) => !!d.intakeKey && keys.has(d.intakeKey)));
@@ -174,10 +177,7 @@ export function advocateNamed(a: Advocate): boolean {
 }
 
 /** The advocates put on record for one complainant, by that complainant's index. */
-export function advocatesForComplainant(
-  advocates: Advocate[],
-  index: number
-): Advocate[] {
+export function advocatesForComplainant(advocates: Advocate[], index: number): Advocate[] {
   return advocates.filter((a) => advocateNamed(a) && a.forComplainants.includes(index));
 }
 
@@ -269,7 +269,8 @@ export function chequeReturnIssue(c: ChequeDetails): string | undefined {
 export function chequeNumberIssue(c: ChequeDetails): string | undefined {
   const number = c.chequeNumber.trim();
   if (!number) return undefined;
-  if (!CHEQUE_NUMBER_PATTERN.test(number)) return "Enter the six-digit cheque number (digits only).";
+  if (!CHEQUE_NUMBER_PATTERN.test(number))
+    return "Enter the six-digit cheque number (digits only).";
   return undefined;
 }
 
@@ -340,7 +341,7 @@ export function signatories(
   /** Whether complainants record the oath — the deployment's rule unless a test says otherwise. */
   oath: boolean = signingRules().oath,
   /** Whether every advocate signs as themselves, or one per complainant (`config.ts`). */
-  everyAdvocate: boolean = signingRules().everyAdvocate
+  everyAdvocate: boolean = signingRules().everyAdvocate,
 ): { complainants: Signatory[]; advocates: Signatory[] } {
   const signedOf = (id: string): Signatory["status"] =>
     draft.sign.signed[id] ? "signed" : "pending";
@@ -419,7 +420,7 @@ function everyAdvocateRows(
   draft: FilingDraft,
   myBar: string,
   signedOf: (id: string) => Signatory["status"],
-  signedWith: (id: string) => SignInstrument | undefined
+  signedWith: (id: string) => SignInstrument | undefined,
 ): Signatory[] {
   const represented = draft.complainants
     .map((c, i) => ({ c, i }))
@@ -475,7 +476,7 @@ export function oathTakerRole(draft: FilingDraft, signatoryId: string): string {
  */
 export function carryOverOaths(
   oaths: FilingDraft["sign"]["oaths"],
-  flagged: readonly string[] = []
+  flagged: readonly string[] = [],
 ): FilingDraft["sign"]["oaths"] {
   const drop = new Set(flagged);
   return Object.fromEntries(Object.entries(oaths).filter(([id]) => !drop.has(id)));
@@ -508,7 +509,7 @@ export function signingComplete(
   draft: FilingDraft,
   profile: UserProfile | null,
   oath: boolean = signingRules().oath,
-  everyAdvocate: boolean = signingRules().everyAdvocate
+  everyAdvocate: boolean = signingRules().everyAdvocate,
 ): boolean {
   const { complainants, advocates } = signatories(draft, profile, oath, everyAdvocate);
   const everyone = [...complainants, ...advocates];
@@ -583,7 +584,7 @@ export function phoneConfirmed(draft: FilingDraft, person: PhoneConfirmer): bool
 export function confirmationComplete(
   draft: FilingDraft,
   person: PhoneConfirmer,
-  oath: boolean = signingRules().oath
+  oath: boolean = signingRules().oath,
 ): boolean {
   return phoneConfirmed(draft, person) && (!oath || !!draft.sign.oaths[confirmerSlot(person.id)]);
 }
@@ -628,8 +629,7 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
       return (
         draft.notices.length > 0 &&
         draft.notices.every(
-          (n, i) =>
-            noticeComplete(n) && !noticeDispatchIssue(draft, i) && !noticeServiceIssue(n)
+          (n, i) => noticeComplete(n) && !noticeDispatchIssue(draft, i) && !noticeServiceIssue(n),
         )
       );
     case "jurisdiction": {
@@ -655,7 +655,7 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
       return true;
     case "preview":
       return WALK_ORDER.filter((s) => s !== "preview" && s !== "sign").every((s) =>
-        sectionComplete(draft, s)
+        sectionComplete(draft, s),
       );
     case "sign":
       return draft.status === "filed";
@@ -719,7 +719,7 @@ export function draftProgress(draft: FilingDraft): number {
 export function chequeSourceSlot(
   draft: FilingDraft,
   index: number,
-  docType: "cheque-front" | "return-memo"
+  docType: "cheque-front" | "return-memo",
 ): IntakeSlot | undefined {
   return draft.intake.cheques[index]?.slots.find((s) => s.docType === docType);
 }
@@ -728,7 +728,7 @@ export function chequeSourceSlot(
 export function noticeSourceSlot(
   draft: FilingDraft,
   index: number,
-  docType: "demand-notice" | "dispatch-proof" | "delivery-proof" | "notice-reply"
+  docType: "demand-notice" | "dispatch-proof" | "delivery-proof" | "notice-reply",
 ): IntakeSlot | undefined {
   return draft.intake.notices[index]?.slots.find((s) => s.docType === docType);
 }
@@ -737,7 +737,7 @@ export function noticeSourceSlot(
 export function partySourceSlot(
   draft: FilingDraft,
   index: number,
-  docType: "id-proof" | "poa" | "vakalatnama"
+  docType: "id-proof" | "poa" | "vakalatnama",
 ): IntakeSlot | undefined {
   return draft.intake.parties[index]?.slots.find((s) => s.docType === docType);
 }
@@ -848,10 +848,7 @@ export function processPlan(draft: FilingDraft): AccusedPlan[] {
     const deliveryRaw = Number.isFinite(stored.delivery)
       ? Math.trunc(stored.delivery as number)
       : rounds.summons;
-    const delivery = Math.min(
-      rounds.summons,
-      Math.max(DELIVERY_MIN_ROUNDS, deliveryRaw)
-    );
+    const delivery = Math.min(rounds.summons, Math.max(DELIVERY_MIN_ROUNDS, deliveryRaw));
 
     return {
       accusedId: accused.id,
@@ -889,10 +886,7 @@ function unitNote(rounds: number, addresses: number | null): string {
  * each accused's own selected addresses. Lines name the accused only when there is more
  * than one, so the ordinary single-accused bill does not repeat a name on every row.
  */
-export function feeBill(
-  draft: FilingDraft,
-  schedule: FeeSchedule = KERALA_FEES
-): FeeBill {
+export function feeBill(draft: FilingDraft, schedule: FeeSchedule = KERALA_FEES): FeeBill {
   const delayed = isDelayed(draft);
   const advocates = draft.advocates.filter(advocateNamed).length;
   // One affidavit goes with every complaint (`draft.affidavit`).
@@ -901,8 +895,7 @@ export function feeBill(
   const court: BilledLine[] = [];
   for (const l of schedule.court) {
     if (l.needsAdvocate && advocates === 0) continue;
-    const units =
-      l.per === "advocate" ? advocates : l.per === "affidavit" ? affidavits : 1;
+    const units = l.per === "advocate" ? advocates : l.per === "affidavit" ? affidavits : 1;
     if (units < 1) continue;
     court.push({
       key: l.key,
@@ -1019,7 +1012,10 @@ export const NOTICE_WINDOW_DAYS = 30;
  */
 export function noticeDispatchIssue(draft: FilingDraft, index: number): string | undefined {
   const dispatch = draft.notices[index]?.dispatchDate;
-  const returns = draft.cheques.map((c) => c.returnDate).filter(Boolean).sort();
+  const returns = draft.cheques
+    .map((c) => c.returnDate)
+    .filter(Boolean)
+    .sort();
   if (!dispatch || returns.length === 0 || returns[0] <= dispatch) return undefined;
   return returns.length === 1
     ? `Cannot be before the cheque was returned on ${toLongDate(returns[0])}.`

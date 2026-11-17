@@ -34,8 +34,13 @@ export type Row = Matter & {
   dristi: { status: "draft" | "filed"; caseFileNumber: string | null } | null;
 };
 
-
-const STAGES: (Stage | "All")[] = ["All", "Notice Sent", "Notice Served", "Ready for Filing", "Filed"];
+const STAGES: (Stage | "All")[] = [
+  "All",
+  "Notice Sent",
+  "Notice Served",
+  "Ready for Filing",
+  "Filed",
+];
 const WORKFLOWS = ["Section 138/25", "SARFAESI", "Arbitration", "DRT", "Vehicle Repossession"];
 
 /** A matter can be acted on until it is filed. */
@@ -104,7 +109,7 @@ export function CasesScreen() {
       },
       (error: unknown) => {
         if (live) fail(error);
-      }
+      },
     );
     return () => {
       live = false;
@@ -126,7 +131,7 @@ export function CasesScreen() {
       (!q ||
         `${r.lan} ${r.borrower.name} ${r.branch} ${r.instruments.map((i) => i.chequeNo).join(" ")}`
           .toLowerCase()
-          .includes(q.toLowerCase()))
+          .includes(q.toLowerCase())),
   );
   const pages = Math.max(1, Math.ceil(shown.length / PAGE));
   const at = Math.min(page, pages - 1);
@@ -135,7 +140,10 @@ export function CasesScreen() {
   const chosen = all.filter((r) => selected.has(r.id));
   const allTicked = selectable.length > 0 && selectable.every((r) => selected.has(r.id));
   const unassigned = chosen.filter((r) => !r.advocate).length;
-  const chosenValue = chosen.reduce((s, r) => s + r.instruments.reduce((a, i) => a + i.amount, 0), 0);
+  const chosenValue = chosen.reduce(
+    (s, r) => s + r.instruments.reduce((a, i) => a + i.amount, 0),
+    0,
+  );
 
   /*
    * Selection as Gmail does it: a click ticks one case; Shift + click ticks (or unticks)
@@ -148,7 +156,8 @@ export function CasesScreen() {
     const ids = pageRows.filter(pushable).map((r) => r.id);
     const from = anchor.current ? ids.indexOf(anchor.current) : -1;
     const to = ids.indexOf(id);
-    const span = range && from >= 0 && to >= 0 ? ids.slice(Math.min(from, to), Math.max(from, to) + 1) : [id];
+    const span =
+      range && from >= 0 && to >= 0 ? ids.slice(Math.min(from, to), Math.max(from, to) + 1) : [id];
     setSelected((prev) => {
       const next = new Set(prev);
       for (const x of span) {
@@ -165,7 +174,10 @@ export function CasesScreen() {
       {/* Title */}
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <nav className="flex items-center gap-1 text-[12px] text-(--pv-muted)" aria-label="Breadcrumb">
+          <nav
+            className="flex items-center gap-1 text-[12px] text-(--pv-muted)"
+            aria-label="Breadcrumb"
+          >
             <span>Legal Collections</span>
             <ChevronRightIcon className="size-3" aria-hidden />
             <span>Litigation</span>
@@ -178,16 +190,32 @@ export function CasesScreen() {
             Refresh
           </Button>
           <div className="relative">
-            <Button variant="outline" onClick={() => setExporting((v) => !v)} aria-haspopup="menu" aria-expanded={exporting}>
+            <Button
+              variant="outline"
+              onClick={() => setExporting((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={exporting}
+            >
               <DownloadIcon className="size-4" aria-hidden />
               {chosen.length ? `Export ${chosen.length}` : "Export"}
               <ChevronDownIcon className="size-4" aria-hidden />
             </Button>
             {exporting ? (
-              <div role="menu" className="absolute right-0 top-full z-30 mt-2 w-72 overflow-hidden rounded-md border border-(--pv-line) bg-white py-1 shadow-xl">
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-30 mt-2 w-72 overflow-hidden rounded-md border border-(--pv-line) bg-white py-1 shadow-xl"
+              >
                 {[
-                  { format: "saras", title: "SARAS 2.0 bulk filing template", sub: "Uploads on SARAS 2.0 without matching" },
-                  { format: "provakil", title: "Provakil case report", sub: "Provakil's own columns" },
+                  {
+                    format: "saras",
+                    title: "SARAS 2.0 bulk filing template",
+                    sub: "Uploads on SARAS 2.0 without matching",
+                  },
+                  {
+                    format: "provakil",
+                    title: "Provakil case report",
+                    sub: "Provakil's own columns",
+                  },
                 ].map((o) => (
                   <a
                     key={o.format}
@@ -218,7 +246,9 @@ export function CasesScreen() {
             disabled={i !== 0}
             title={i === 0 ? undefined : "Not part of this demo"}
             className={`-mb-px border-b-2 pb-2 text-[13px] font-medium ${
-              i === 0 ? "border-(--pv-blue) text-(--pv-blue)" : "cursor-not-allowed border-transparent text-(--pv-muted) opacity-40"
+              i === 0
+                ? "border-(--pv-blue) text-(--pv-blue)"
+                : "cursor-not-allowed border-transparent text-(--pv-muted) opacity-40"
             }`}
           >
             {w}
@@ -244,11 +274,15 @@ export function CasesScreen() {
               setPage(0);
             }}
             className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] ${
-              stage === s ? "border-(--pv-blue) bg-(--pv-blue) text-white" : "border-(--pv-line) bg-white text-(--pv-slate) hover:border-(--pv-blue)/40"
+              stage === s
+                ? "border-(--pv-blue) bg-(--pv-blue) text-white"
+                : "border-(--pv-line) bg-white text-(--pv-slate) hover:border-(--pv-blue)/40"
             }`}
           >
             {s}
-            <span className={`num rounded-full px-1.5 text-[11px] ${stage === s ? "bg-white/20" : "bg-(--pv-ground)"}`}>
+            <span
+              className={`num rounded-full px-1.5 text-[11px] ${stage === s ? "bg-white/20" : "bg-(--pv-ground)"}`}
+            >
               {counts[s] ?? 0}
             </span>
           </button>
@@ -272,13 +306,29 @@ export function CasesScreen() {
             />
           </div>
           <FilterIcon className="size-4 text-(--pv-muted)" aria-hidden />
-          <select value={region} onChange={(e) => { setRegion(e.target.value); setPage(0); }} className="rounded-md border border-(--pv-line) bg-white px-2 py-1.5 text-[13px]" aria-label="Region">
+          <select
+            value={region}
+            onChange={(e) => {
+              setRegion(e.target.value);
+              setPage(0);
+            }}
+            className="rounded-md border border-(--pv-line) bg-white px-2 py-1.5 text-[13px]"
+            aria-label="Region"
+          >
             <option value="">All regions</option>
             <option>Ahmedabad West</option>
             <option>Ahmedabad East</option>
             <option>Gandhinagar</option>
           </select>
-          <select value={advocate} onChange={(e) => { setAdvocate(e.target.value); setPage(0); }} className="rounded-md border border-(--pv-line) bg-white px-2 py-1.5 text-[13px]" aria-label="Advocate">
+          <select
+            value={advocate}
+            onChange={(e) => {
+              setAdvocate(e.target.value);
+              setPage(0);
+            }}
+            className="rounded-md border border-(--pv-line) bg-white px-2 py-1.5 text-[13px]"
+            aria-label="Advocate"
+          >
             <option value="">All advocates</option>
             {[...new Set(all.map((r) => r.advocate?.name ?? "Unassigned"))].map((a) => (
               <option key={a}>{a}</option>
@@ -326,9 +376,17 @@ export function CasesScreen() {
             <tbody>
               {rows === null && loadFailed ? (
                 <tr>
-                  <td colSpan={12} className="px-3 py-10 text-center text-(--pv-muted)" role="alert">
+                  <td
+                    colSpan={12}
+                    className="px-3 py-10 text-center text-(--pv-muted)"
+                    role="alert"
+                  >
                     Cases couldn&apos;t be loaded.{" "}
-                    <button type="button" className="text-(--pv-blue) underline" onClick={() => void load()}>
+                    <button
+                      type="button"
+                      className="text-(--pv-blue) underline"
+                      onClick={() => void load()}
+                    >
                       Try again
                     </button>
                   </td>
@@ -378,7 +436,9 @@ export function CasesScreen() {
                           className="size-4 accent-(--pv-blue) disabled:opacity-30"
                         />
                       </td>
-                      <td className="num whitespace-nowrap px-3 py-2.5 font-medium text-(--pv-blue)">{r.lan}</td>
+                      <td className="num whitespace-nowrap px-3 py-2.5 font-medium text-(--pv-blue)">
+                        {r.lan}
+                      </td>
                       <td className="px-3 py-2.5">
                         <div className="font-medium">{r.borrower.name}</div>
                         <div className="text-[11px] text-(--pv-muted)">
@@ -391,25 +451,53 @@ export function CasesScreen() {
                       </td>
                       <td className="num px-3 py-2.5 text-right">
                         {formatINR(r.instruments.reduce((s, i) => s + i.amount, 0))}
-                        {r.instruments.length > 1 ? <div className="text-[11px] text-(--pv-muted)">{r.instruments.length} cheques</div> : null}
+                        {r.instruments.length > 1 ? (
+                          <div className="text-[11px] text-(--pv-muted)">
+                            {r.instruments.length} cheques
+                          </div>
+                        ) : null}
                       </td>
                       <td className="num px-3 py-2.5">
                         <div>{formatDate(r.instruments[0].returnDate)}</div>
-                        <div className="text-[11px] text-(--pv-muted)">{r.instruments[0].returnReason.slice(5)}</div>
+                        <div className="text-[11px] text-(--pv-muted)">
+                          {r.instruments[0].returnReason.slice(5)}
+                        </div>
                       </td>
                       <td className="px-3 py-2.5">
-                        <Chip tone={r.notice.status === "Delivered" ? "teal" : r.notice.status === "In Transit" ? "grey" : "amber"}>
+                        <Chip
+                          tone={
+                            r.notice.status === "Delivered"
+                              ? "teal"
+                              : r.notice.status === "In Transit"
+                                ? "grey"
+                                : "amber"
+                          }
+                        >
                           {r.notice.status}
                         </Chip>
-                        <div className="num mt-0.5 text-[11px] text-(--pv-muted)">{formatDate(r.notice.statusDate ?? r.notice.dispatchDate)}</div>
+                        <div className="num mt-0.5 text-[11px] text-(--pv-muted)">
+                          {formatDate(r.notice.statusDate ?? r.notice.dispatchDate)}
+                        </div>
                       </td>
                       <td className="num px-3 py-2.5">{formatDate(coa)}</td>
-                      <td className={`num px-3 py-2.5 ${overdue ? "font-medium text-(--pv-red)" : ""}`}>{formatDate(fileBy)}</td>
+                      <td
+                        className={`num px-3 py-2.5 ${overdue ? "font-medium text-(--pv-red)" : ""}`}
+                      >
+                        {formatDate(fileBy)}
+                      </td>
                       <td className="px-3 py-2.5">
-                        {r.advocate ? r.advocate.name : <span className="font-medium text-(--pv-amber)">Unassigned</span>}
+                        {r.advocate ? (
+                          r.advocate.name
+                        ) : (
+                          <span className="font-medium text-(--pv-amber)">Unassigned</span>
+                        )}
                       </td>
                       <td className="num px-3 py-2.5">
-                        <span className={missing.length ? "font-medium text-(--pv-amber)" : "text-(--pv-slate)"}>
+                        <span
+                          className={
+                            missing.length ? "font-medium text-(--pv-amber)" : "text-(--pv-slate)"
+                          }
+                        >
                           {docsHave}/{REQUIRED_TAGS.length}
                         </span>
                       </td>
@@ -421,7 +509,9 @@ export function CasesScreen() {
                             {r.push ? <span className="num"> · {r.push.batchNumber}</span> : null}
                           </div>
                         ) : null}
-                        {r.stage === "Filed" && r.cnr ? <div className="num mt-0.5 text-[11px] text-(--pv-muted)">{r.cnr}</div> : null}
+                        {r.stage === "Filed" && r.cnr ? (
+                          <div className="num mt-0.5 text-[11px] text-(--pv-muted)">{r.cnr}</div>
+                        ) : null}
                       </td>
                     </tr>
                   );
@@ -454,14 +544,25 @@ export function CasesScreen() {
             <span className="text-[14px] font-medium">
               {chosen.length} case{chosen.length === 1 ? "" : "s"} selected
             </span>
-            <span className="num text-[13px] text-(--pv-muted)">Cheque value {formatINR(chosenValue)}</span>
-            {unassigned ? <span className="text-[13px] font-medium text-(--pv-amber)">{unassigned} without an advocate</span> : null}
-            <button onClick={() => setSelected(new Set())} className="flex items-center gap-1 text-[13px] text-(--pv-muted) hover:text-(--pv-slate)">
+            <span className="num text-[13px] text-(--pv-muted)">
+              Cheque value {formatINR(chosenValue)}
+            </span>
+            {unassigned ? (
+              <span className="text-[13px] font-medium text-(--pv-amber)">
+                {unassigned} without an advocate
+              </span>
+            ) : null}
+            <button
+              onClick={() => setSelected(new Set())}
+              className="flex items-center gap-1 text-[13px] text-(--pv-muted) hover:text-(--pv-slate)"
+            >
               <XIcon className="size-4" aria-hidden />
               Clear
             </button>
             <div className="ml-auto flex gap-2">
-              <Button variant="outline" disabled title="Not part of this demo">Add label</Button>
+              <Button variant="outline" disabled title="Not part of this demo">
+                Add label
+              </Button>
               <Button variant="outline" onClick={() => setAssigning(true)}>
                 Assign advocate
               </Button>

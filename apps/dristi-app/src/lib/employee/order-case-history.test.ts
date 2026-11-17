@@ -1,11 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import {
-  ORDER_EXCERPT_LIMIT,
-  orderCaseHistory,
-  orderExcerpt,
-} from "./order-case-history";
+import { ORDER_EXCERPT_LIMIT, orderCaseHistory, orderExcerpt } from "./order-case-history";
 import { translateMessage } from "@/i18n/messages";
 
 /** A message key read back as its English, so expectations read the way the screen does. */
@@ -26,13 +22,7 @@ test("orders and events merge oldest first, and the newest order is the last ord
   );
   assert.deepEqual(
     entries.map((entry) => entry.id),
-    [
-      "case-filed",
-      "cognizance-taken",
-      "accused-joined",
-      "order-2026-05-25",
-      "order-2026-08-19",
-    ],
+    ["case-filed", "cognizance-taken", "accused-joined", "order-2026-05-25", "order-2026-08-19"],
   );
   assert.equal(entries.filter((entry) => entry.last).length, 1);
   assert.equal(entries.at(-1)?.last, true);
@@ -40,10 +30,7 @@ test("orders and events merge oldest first, and the newest order is the last ord
   assert.equal(inEnglish(entries.at(-1)?.label ?? ""), "Order Issued");
   assert.equal(entries.at(-1)?.type, "orders");
   assert.equal(entries.find((e) => e.id === "cognizance-taken")?.kind, "order");
-  assert.equal(
-    entries.find((e) => e.id === "cognizance-taken")?.caseFileDoc,
-    "order-cognizance",
-  );
+  assert.equal(entries.find((e) => e.id === "cognizance-taken")?.caseFileDoc, "order-cognizance");
 });
 
 test("the demo listing's example events follow its last order", () => {

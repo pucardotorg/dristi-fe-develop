@@ -41,7 +41,15 @@ import { FilterRow, KIND_PILLS_ONLY } from "@/components/tasks/filter-row";
 import { useFilters } from "@/components/tasks/filters";
 import { KindPills } from "@/components/tasks/kind-pills";
 import { TasksTable, TasksTableSkeleton } from "@/components/tasks/tasks-table";
-import { type ActMode, type Flow, actModeOf, draftFlowOf, FLOW_DIALOG, flowPathOf, useTaskActions } from "@/components/tasks/use-task-actions";
+import {
+  type ActMode,
+  type Flow,
+  actModeOf,
+  draftFlowOf,
+  FLOW_DIALOG,
+  flowPathOf,
+  useTaskActions,
+} from "@/components/tasks/use-task-actions";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
 
@@ -69,7 +77,6 @@ function useNow(): Date {
   return now;
 }
 
-
 /**
  * Pending tasks — the command centre. A dated header, four ability-based tabs, then one
  * controls line (the kind pills, the search and Filters) and ONE lifted table, its rows
@@ -92,7 +99,7 @@ export function TasksScreen() {
 
   const world = React.useMemo<World>(
     () => ({ people, cases, tasks, user, now }),
-    [people, cases, tasks, user, now]
+    [people, cases, tasks, user, now],
   );
 
   const rows = React.useMemo(() => applyFilters(world, filters), [world, filters]);
@@ -116,14 +123,14 @@ export function TasksScreen() {
   const [responding, setResponding] = React.useState<Task | null>(null);
   const actingTask = React.useMemo(
     () => (acting ? (tasks.find((t) => t.id === acting.taskId) ?? null) : null),
-    [acting, tasks]
+    [acting, tasks],
   );
   const actingCase = actingTask ? (caseOf(world, actingTask) ?? null) : null;
 
   const focusRow = React.useCallback((id: TaskId) => {
     window.requestAnimationFrame(() => {
       const el = document.querySelector<HTMLButtonElement>(
-        `[data-task-row][data-task-id="${CSS.escape(id)}"] [data-task-title]`
+        `[data-task-row][data-task-id="${CSS.escape(id)}"] [data-task-title]`,
       );
       if (el) {
         el.focus();
@@ -147,12 +154,9 @@ export function TasksScreen() {
     focusRow(arrivedWith);
   }, [state, arrivedWith, requestHighlight, focusRow]);
 
-  const openAct = React.useCallback(
-    (task: Task, mode: ActMode | null) => {
-      if (mode) setActing({ taskId: task.id, mode });
-    },
-    []
-  );
+  const openAct = React.useCallback((task: Task, mode: ActMode | null) => {
+    if (mode) setActing({ taskId: task.id, mode });
+  }, []);
 
   const handleVerb = React.useCallback(
     (task: Task, verb: Verb) => {
@@ -187,7 +191,10 @@ export function TasksScreen() {
           setConfirmDone([task]);
           return;
         case "Unarchive":
-          void act(task.id, unarchive, { title: tr("tasksScreen_restoredFromTheArchive"), icon: ArchiveRestoreIcon });
+          void act(task.id, unarchive, {
+            title: tr("tasksScreen_restoredFromTheArchive"),
+            icon: ArchiveRestoreIcon,
+          });
           return;
         default:
           // "View" — a task waiting on someone else, closed, or held by a vakalatnama
@@ -197,7 +204,7 @@ export function TasksScreen() {
           setViewingId(task.id);
       }
     },
-    [act, openAct, tr]
+    [act, openAct, tr],
   );
 
   const setView = React.useCallback(
@@ -205,17 +212,17 @@ export function TasksScreen() {
       setSelected(new Set());
       setFilters({ view });
     },
-    [setFilters]
+    [setFilters],
   );
 
   const selectKind = React.useCallback(
     (kinds: TaskCategory[]) => setFilters((prev: Filters) => ({ ...prev, kinds })),
-    [setFilters]
+    [setFilters],
   );
 
   const clearFilters = React.useCallback(
     () => setFilters({ ...DEFAULT_FILTERS, view: filters.view }),
-    [filters.view, setFilters]
+    [filters.view, setFilters],
   );
 
   /** The listed rows a checkbox can reach — what the header's select-all answers for. */
@@ -225,7 +232,7 @@ export function TasksScreen() {
         const k = caseOf(world, r);
         return !!k && canArchive(user, r, k);
       }),
-    [rows, world, user]
+    [rows, world, user],
   );
 
   // Only rows in the current table count as selected; ids that scrolled out of the
@@ -236,13 +243,16 @@ export function TasksScreen() {
         const k = caseOf(world, r);
         return selected.has(r.id) && k && canArchive(user, r, k);
       }),
-    [rows, selected, world, user]
+    [rows, selected, world, user],
   );
-  const visibleSelected = React.useMemo(() => new Set(selectedTasks.map((t) => t.id)), [selectedTasks]);
+  const visibleSelected = React.useMemo(
+    () => new Set(selectedTasks.map((t) => t.id)),
+    [selectedTasks],
+  );
   // Mark as done needs an open-state task; a filed one waiting on the court does not.
   const doableSelected = React.useMemo(
     () => selectedTasks.filter((t) => ACTIONABLE.has(t.status)),
-    [selectedTasks]
+    [selectedTasks],
   );
 
   /**
@@ -276,7 +286,9 @@ export function TasksScreen() {
   }, [selectedTasks, world, user]);
 
   /** Set when the batch dialog is open, so the set it is acting on cannot change under it. */
-  const [batching, setBatching] = React.useState<{ kind: "sign" | "pay"; tasks: Task[] } | null>(null);
+  const [batching, setBatching] = React.useState<{ kind: "sign" | "pay"; tasks: Task[] } | null>(
+    null,
+  );
 
   const markAllDone = async (batch: Task[]) => {
     let ok = 0;
@@ -308,7 +320,11 @@ export function TasksScreen() {
           <h1 className="text-title-s font-semibold text-foreground">{headerDate(now)}</h1>
           <p className="text-body-compact text-muted-foreground tabular-nums">
             {state === "ready"
-              ? tr("tasksScreen_actionNeedActionWaitingWaitingOn", { action: String(summary.action), waiting: String(summary.waiting), overdue: String(summary.overdue) })
+              ? tr("tasksScreen_actionNeedActionWaitingWaitingOn", {
+                  action: String(summary.action),
+                  waiting: String(summary.waiting),
+                  overdue: String(summary.overdue),
+                })
               : tr("tasksScreen_loading")}
           </p>
         </header>
@@ -384,9 +400,7 @@ export function TasksScreen() {
         </div>
 
         {!online ? (
-          <StatusLine tone="warning">
-            {tr("tasksScreen_youAreOfflineTheTableIs")}
-          </StatusLine>
+          <StatusLine tone="warning">{tr("tasksScreen_youAreOfflineTheTableIs")}</StatusLine>
         ) : null}
 
         {state === "error" ? (
@@ -470,7 +484,6 @@ export function TasksScreen() {
             }
           />
         )}
-
       </div>
 
       <TaskActModal
@@ -536,7 +549,9 @@ export function TasksScreen() {
         open={!!flowNotice}
         onOpenChange={(open) => !open && setFlowNotice(null)}
         title={flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].title) : ""}
-        description={flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].description) : undefined}
+        description={
+          flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].description) : undefined
+        }
         confirmLabel={tr("tasksScreen_continue")}
         destructive={false}
         icon={ArrowRightIcon}
@@ -620,9 +635,7 @@ function SelectionBar({
     count === 0
       ? tr("tasksScreen_selectTasksToPaySignMark")
       : `${count} task${count === 1 ? "" : "s"} selected.` +
-    (!batch && hasPayOrSign && count > 1
-      ? tr("tasksScreen_payingOrSigningNeedsOneKind")
-      : "");
+        (!batch && hasPayOrSign && count > 1 ? tr("tasksScreen_payingOrSigningNeedsOneKind") : "");
 
   return (
     <div
@@ -640,31 +653,34 @@ function SelectionBar({
       className="@container sticky top-14 z-20 rounded-lg border border-hairline bg-card px-4 py-3"
     >
       <div className="flex flex-col gap-3 @3xl:flex-row @3xl:items-center">
-      <p className="flex min-w-0 flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground @3xl:mr-auto" aria-live="polite">
-        <span className="tabular-nums">{summary}</span>
-        {count ? (
-          <Button variant="link" className="h-auto p-0 font-normal underline" onClick={onClear}>
-            {tr("tasksScreen_clear")}
-          </Button>
-        ) : null}
-      </p>
+        <p
+          className="flex min-w-0 flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground @3xl:mr-auto"
+          aria-live="polite"
+        >
+          <span className="tabular-nums">{summary}</span>
+          {count ? (
+            <Button variant="link" className="h-auto p-0 font-normal underline" onClick={onClear}>
+              {tr("tasksScreen_clear")}
+            </Button>
+          ) : null}
+        </p>
 
-      <div className="flex flex-wrap gap-2 @3xl:flex-nowrap @3xl:justify-end [&>button]:flex-1 @3xl:[&>button]:flex-none">
-      <Button variant="outline" disabled={disabled || count === 0} onClick={onArchive}>
-        {tr("tasksScreen_archive")}
-      </Button>
-      <Button variant="outline" disabled={disabled || !canMarkDone} onClick={onMarkDone}>
-        {tr("tasksScreen_markAsDoneConfirmLabel")}
-      </Button>
-      {batch && label ? (
-        <Button disabled={disabled} onClick={() => onBatch(batch)} className="tabular-nums">
-          {label}
-        </Button>
-      ) : count === 0 ? (
-        /* The primary act, named before there is anything for it to act on. */
-        <Button disabled>{tr("tasksScreen_payOrSignSelected")}</Button>
-      ) : null}
-      </div>
+        <div className="flex flex-wrap gap-2 @3xl:flex-nowrap @3xl:justify-end [&>button]:flex-1 @3xl:[&>button]:flex-none">
+          <Button variant="outline" disabled={disabled || count === 0} onClick={onArchive}>
+            {tr("tasksScreen_archive")}
+          </Button>
+          <Button variant="outline" disabled={disabled || !canMarkDone} onClick={onMarkDone}>
+            {tr("tasksScreen_markAsDoneConfirmLabel")}
+          </Button>
+          {batch && label ? (
+            <Button disabled={disabled} onClick={() => onBatch(batch)} className="tabular-nums">
+              {label}
+            </Button>
+          ) : count === 0 ? (
+            /* The primary act, named before there is anything for it to act on. */
+            <Button disabled>{tr("tasksScreen_payOrSignSelected")}</Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

@@ -47,7 +47,9 @@ const SKIP = [
   "[contenteditable='true']",
   "[data-court-raw]",
 ].join(",");
-const ATTR_SKIP = ["[contenteditable='']", "[contenteditable='true']", "[data-court-raw]"].join(",");
+const ATTR_SKIP = ["[contenteditable='']", "[contenteditable='true']", "[data-court-raw]"].join(
+  ",",
+);
 
 /**
  * Whether React has taken this node over yet. Hydration stamps every node it adopts with

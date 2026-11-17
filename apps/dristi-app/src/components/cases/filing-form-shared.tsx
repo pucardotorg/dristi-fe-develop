@@ -7,7 +7,9 @@ import {
   FileTextIcon,
   PlusIcon,
   Trash2Icon,
-  UserRoundIcon, FileXIcon } from "lucide-react";
+  UserRoundIcon,
+  FileXIcon,
+} from "lucide-react";
 
 import { ChromeAlertDialogContent } from "@/components/chrome/app-chrome";
 
@@ -56,8 +58,7 @@ import { ConfirmMark } from "@/components/feedback";
 import { useTranslations } from "next-intl";
 
 const PREVIEWABLE_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png"];
-const ACCEPTED_FILE_TYPES =
-  ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
+const ACCEPTED_FILE_TYPES = ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
 
 function fileExtension(file: File): string {
   return file.name.split(".").pop()?.toLowerCase() ?? "";
@@ -92,9 +93,7 @@ export function validateSelectedFiles(files: File[]): string | null {
 
 export function focusFirstInvalid(container: HTMLElement | null) {
   requestAnimationFrame(() => {
-    container
-      ?.querySelector<HTMLElement>("[aria-invalid='true']")
-      ?.focus();
+    container?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus();
   });
 }
 
@@ -172,7 +171,7 @@ export function FilingFrame({
     <div
       className={cn(
         "mx-auto flex w-full flex-col gap-8",
-        contentWidth === "wide" ? "max-w-6xl" : "max-w-4xl"
+        contentWidth === "wide" ? "max-w-6xl" : "max-w-4xl",
       )}
     >
       <div>
@@ -184,9 +183,7 @@ export function FilingFrame({
 
       <header>
         <h1 className="text-title-l font-semibold">{title}</h1>
-        <p className="mt-2 max-w-2xl text-body text-muted-foreground">
-          {description}
-        </p>
+        <p className="mt-2 max-w-2xl text-body text-muted-foreground">{description}</p>
       </header>
 
       {showCaseContext && caseNumber ? (
@@ -195,10 +192,13 @@ export function FilingFrame({
             <UserRoundIcon className="mt-0.5 size-5 shrink-0" aria-hidden />
             <div>
               <p className="text-body-compact text-muted-foreground">
-                {t("filingFormShared_case")} <Identifier value={caseNumber} label={t("filingFormShared_caseNumber")} />
+                {t("filingFormShared_case")}{" "}
+                <Identifier value={caseNumber} label={t("filingFormShared_caseNumber")} />
               </p>
               <p className="text-body font-medium">
-                {t("filingFormShared_filingForComplainantComplainantName", { complainantName: (complainantName) ?? "" })}
+                {t("filingFormShared_filingForComplainantComplainantName", {
+                  complainantName: complainantName ?? "",
+                })}
               </p>
             </div>
           </CardContent>
@@ -294,7 +294,9 @@ export function FileField({
                   <AttachmentContent>
                     <AttachmentTitle>{file.name}</AttachmentTitle>
                     <AttachmentDescription>
-                      {t("filingFormShared_formatFileSizeSelectedLocally", { formatFileSize: formatFileSize(file.size) })}
+                      {t("filingFormShared_formatFileSizeSelectedLocally", {
+                        formatFileSize: formatFileSize(file.size),
+                      })}
                     </AttachmentDescription>
                   </AttachmentContent>
                   <AttachmentActions>
@@ -304,9 +306,7 @@ export function FileField({
                       size="icon"
                       aria-label={t("filingFormShared_removeName", { name: file.name })}
                       onClick={() =>
-                        onFilesChange(
-                          files.filter((item) => fileKey(item) !== fileKey(file))
-                        )
+                        onFilesChange(files.filter((item) => fileKey(item) !== fileKey(file)))
                       }
                     >
                       <Trash2Icon aria-hidden />
@@ -372,13 +372,7 @@ export function FileField({
  * alt is empty on purpose: every caller shows the filename as visible text
  * beside or beneath the image, so alt would only repeat it.
  */
-export function FilePreviewImage({
-  file,
-  className,
-}: {
-  file: File;
-  className?: string;
-}) {
+export function FilePreviewImage({ file, className }: { file: File; className?: string }) {
   const imageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
@@ -481,10 +475,7 @@ function ChoicePills<Value extends string>({
           if (match) onChange(match.id);
         }}
         aria-labelledby={legendId}
-        className={cn(
-          "flex gap-2",
-          orientation === "column" ? "flex-col" : "flex-row flex-wrap"
-        )}
+        className={cn("flex gap-2", orientation === "column" ? "flex-col" : "flex-row flex-wrap")}
       >
         {options.map((option) => {
           const id = `${fieldProps.id}-${option.id}`;
@@ -495,7 +486,7 @@ function ChoicePills<Value extends string>({
               className={cn(
                 "min-h-10 w-full max-w-full items-center gap-3 rounded-lg border border-input bg-card px-4 py-2 text-body has-[:focus-visible]:border-ring has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50",
                 // A column fills its rail; a row lets short heads sit together.
-                orientation === "row" && "sm:w-auto"
+                orientation === "row" && "sm:w-auto",
               )}
             >
               <RadioGroupItem id={id} value={option.id} />
@@ -520,16 +511,9 @@ export function ReviewRow({
   children: ReactNode;
 }) {
   return (
-    <DescriptionRow
-      className={cn(
-        "grid-cols-1 sm:grid-cols-[minmax(8rem,11rem)_1fr]",
-        className
-      )}
-    >
+    <DescriptionRow className={cn("grid-cols-1 sm:grid-cols-[minmax(8rem,11rem)_1fr]", className)}>
       <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
-      <DescriptionDetails className="min-w-0 text-body-compact">
-        {children}
-      </DescriptionDetails>
+      <DescriptionDetails className="min-w-0 text-body-compact">{children}</DescriptionDetails>
     </DescriptionRow>
   );
 }
@@ -557,21 +541,11 @@ export function PrototypeActions({
   return (
     <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={onCancel}
-        >
+        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCancel}>
           {t("common_cancel")}
         </Button>
         {review ? (
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full sm:w-auto"
-            onClick={onBack}
-          >
+          <Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={onBack}>
             {t("common_back")}
           </Button>
         ) : null}
@@ -596,12 +570,7 @@ export function PrototypeActions({
         </div>
       ) : (
         <div className="flex flex-col-reverse gap-3 sm:flex-row">
-          <Button
-            type="button"
-            variant="outline"
-            disabled
-            className="w-full sm:w-auto"
-          >
+          <Button type="button" variant="outline" disabled className="w-full sm:w-auto">
             {t("filingFormShared_saveDraft")}
           </Button>
           <Button type="submit" className="w-full sm:w-auto">
@@ -643,7 +612,9 @@ export function DiscardFilingDialog({
       <AlertDialog open={open} onOpenChange={onOpenChange}>
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("filingFormShared_saveThisNounAsADraft", { noun })}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("filingFormShared_saveThisNounAsADraft", { noun })}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t("filingFormShared_finishItLaterFromFinishIn", { finishIn })}
             </AlertDialogDescription>

@@ -10,7 +10,11 @@ import "@/provakil/provakil.css";
  * through the court's Bulk Filing API (`provakil/lib/saras-link.ts`).
  */
 
-const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-roboto" });
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-roboto",
+});
 
 export const metadata: Metadata = {
   title: { default: "Provakil", template: "%s | Provakil" },

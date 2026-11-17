@@ -1,21 +1,13 @@
 "use client";
 
 import * as React from "react";
-import {
-  PencilIcon,
-  PlusIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { FRAMED_BODY, FRAMED_HEAD } from "@/components/employee/order-sections";
 import { OrderItemFields } from "@/components/employee/order-item-fields";
 import { QueueSearchField } from "@/components/employee/queue-search-field";
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -90,9 +82,7 @@ export function ItemsCard({
           <ol className="flex min-w-0 flex-col divide-y divide-hairline rounded-xl border border-hairline">
             {pinned ? (
               <li className="flex min-h-12 min-w-0 items-center gap-2 py-1 pr-1 pl-3">
-                <span className="text-body-compact tabular-nums text-muted-foreground">
-                  1.
-                </span>
+                <span className="text-body-compact tabular-nums text-muted-foreground">1.</span>
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="text-body-compact">{pinned.label}</span>
                   {pinned.gaps > 0 ? (
@@ -167,11 +157,7 @@ export function ItemsCard({
         ) : null}
 
         {disabled ? null : (
-          <ItemSearch
-            purpose={purpose}
-            reasonFor={reasonFor}
-            onChoose={onChoose}
-          />
+          <ItemSearch purpose={purpose} reasonFor={reasonFor} onChoose={onChoose} />
         )}
       </div>
     </Card>
@@ -241,8 +227,7 @@ function ItemSearch({
   React.useEffect(() => {
     const node = scrollerRef.current;
     if (!open || !node) return;
-    const measure = () =>
-      setMore(node.scrollHeight - node.scrollTop - node.clientHeight > 1);
+    const measure = () => setMore(node.scrollHeight - node.scrollTop - node.clientHeight > 1);
     const observer = new ResizeObserver(measure);
     observer.observe(node);
     measure();
@@ -257,8 +242,7 @@ function ItemSearch({
     if (!field) return;
     const below = window.innerHeight - field.getBoundingClientRect().bottom;
     const footer =
-      window.document.querySelector("footer.sticky")?.getBoundingClientRect()
-        .height ?? 0;
+      window.document.querySelector("footer.sticky")?.getBoundingClientRect().height ?? 0;
     if (below - footer >= 360) return;
     const headers = [...window.document.querySelectorAll("header")]
       .filter((node) => getComputedStyle(node).position === "sticky")
@@ -266,9 +250,7 @@ function ItemSearch({
     const top = Math.max(0, ...headers) + 16;
     window.scrollBy({
       top: field.getBoundingClientRect().top - top,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
     });
   }, [open]);
 
@@ -298,9 +280,7 @@ function ItemSearch({
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
     const stops = [
       inputRef.current,
-      ...(listRef.current?.querySelectorAll<HTMLButtonElement>(
-        "button:not([disabled])",
-      ) ?? []),
+      ...(listRef.current?.querySelectorAll<HTMLButtonElement>("button:not([disabled])") ?? []),
     ].filter((node): node is HTMLInputElement | HTMLButtonElement => !!node);
     const at = stops.indexOf(window.document.activeElement as never);
     if (at < 0) return;
@@ -311,10 +291,7 @@ function ItemSearch({
   }
 
   function inside(node: Node | null) {
-    return (
-      !!node &&
-      (!!anchorRef.current?.contains(node) || !!listRef.current?.contains(node))
-    );
+    return !!node && (!!anchorRef.current?.contains(node) || !!listRef.current?.contains(node));
   }
 
   return (
@@ -339,8 +316,7 @@ function ItemSearch({
             onBlur={(event) => {
               /* Tabbing out of the field and the panel closes it; moving between them
                  does not. A press outside is handled by the panel itself. */
-              if (event.relatedTarget && !inside(event.relatedTarget as Node))
-                close();
+              if (event.relatedTarget && !inside(event.relatedTarget as Node)) close();
             }}
           >
             <QueueSearchField
@@ -374,8 +350,7 @@ function ItemSearch({
             close();
           }}
           onBlur={(event) => {
-            if (event.relatedTarget && !inside(event.relatedTarget as Node))
-              close();
+            if (event.relatedTarget && !inside(event.relatedTarget as Node)) close();
           }}
           className="relative max-h-[min(24rem,var(--radix-popover-content-available-height))] w-(--radix-popover-trigger-width) min-w-72 gap-0 overflow-hidden p-0"
         >
@@ -388,9 +363,7 @@ function ItemSearch({
             ref={scrollerRef}
             onScroll={(event) => {
               const node = event.currentTarget;
-              setMore(
-                node.scrollHeight - node.scrollTop - node.clientHeight > 1,
-              );
+              setMore(node.scrollHeight - node.scrollTop - node.clientHeight > 1);
             }}
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1"
           >
@@ -435,14 +408,8 @@ function ItemSearch({
       </Popover>
 
       {likely.length > 0 ? (
-        <section
-          aria-labelledby="catalogue-suggested"
-          className="flex min-w-0 flex-col gap-1"
-        >
-          <h3
-            id="catalogue-suggested"
-            className="text-body-compact text-muted-foreground"
-          >
+        <section aria-labelledby="catalogue-suggested" className="flex min-w-0 flex-col gap-1">
+          <h3 id="catalogue-suggested" className="text-body-compact text-muted-foreground">
             {t("orderItems_likelyAtThisHearing")}
           </h3>
           <ul className="-mx-2 flex min-w-0 flex-col">
@@ -481,18 +448,11 @@ function CatalogueRow({
       >
         <PlusIcon
           aria-hidden
-          className={cn(
-            "mt-0.5 size-4 shrink-0 text-muted-foreground",
-            reason && "invisible",
-          )}
+          className={cn("mt-0.5 size-4 shrink-0 text-muted-foreground", reason && "invisible")}
         />
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className={cn(reason && "text-muted-foreground")}>
-            {template.label}
-          </span>
-          {reason ? (
-            <span className="text-muted-foreground">{reason}</span>
-          ) : null}
+          <span className={cn(reason && "text-muted-foreground")}>{template.label}</span>
+          {reason ? <span className="text-muted-foreground">{reason}</span> : null}
         </span>
       </button>
     </li>
@@ -565,12 +525,9 @@ export function ItemDialog({
         {...guard.outsideProps}
       >
         <DialogHeader>
-          <DialogTitle className="text-title-s font-semibold">
-            {label}
-          </DialogTitle>
+          <DialogTitle className="text-title-s font-semibold">{label}</DialogTitle>
           <DialogDescription>
-            {description ??
-              t("orderItems_recordedInThisOrdersDataNothing")}
+            {description ?? t("orderItems_recordedInThisOrdersDataNothing")}
           </DialogDescription>
         </DialogHeader>
         {block ? (
@@ -581,12 +538,8 @@ export function ItemDialog({
               context={context}
               today={today}
               disabled={false}
-              onValue={(key, value) =>
-                onChange(setItemValue(block, key, value, context))
-              }
-              onRecipients={(recipients) =>
-                onChange(setItemRecipients(block, recipients, context))
-              }
+              onValue={(key, value) => onChange(setItemValue(block, key, value, context))}
+              onRecipients={(recipients) => onChange(setItemRecipients(block, recipients, context))}
             />
           </div>
         ) : null}
@@ -601,11 +554,7 @@ export function ItemDialog({
           >
             {t("common_cancel")}
           </Button>
-          <Button
-            type="button"
-            className="w-full sm:w-auto"
-            onClick={onConfirm}
-          >
+          <Button type="button" className="w-full sm:w-auto" onClick={onConfirm}>
             {shown?.mode === "edit" ? t("common_save") : t("orderItems_addToOrder")}
           </Button>
           {gaps.length > 0 ? (
@@ -622,4 +571,3 @@ export function ItemDialog({
     </Dialog>
   );
 }
-

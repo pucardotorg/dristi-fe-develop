@@ -52,12 +52,7 @@ export function PersonAvatar({
   label?: string;
 }) {
   return (
-    <Avatar
-      size={size}
-      title={label ? undefined : person.name}
-      className={className}
-      {...props}
-    >
+    <Avatar size={size} title={label ? undefined : person.name} className={className} {...props}>
       <AvatarFallback
         className={cn(
           "font-medium",
@@ -68,7 +63,7 @@ export function PersonAvatar({
               ? "bg-card text-muted-foreground ring-1 ring-inset ring-border"
               : surface === "card"
                 ? "bg-surface-sunken text-foreground"
-                : "bg-card text-foreground"
+                : "bg-card text-foreground",
         )}
       >
         {person.initials}

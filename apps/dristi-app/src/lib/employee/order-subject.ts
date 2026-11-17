@@ -22,16 +22,8 @@
  * data does not render; no mode flag decides it, so the two cannot drift apart.
  */
 
-import {
-  COGNIZANCE_ACTS,
-  hasDelay,
-  type CognizanceAct,
-  type CognizanceCase,
-} from "./cognizance";
-import {
-  applicationsForListing,
-  type ListingApplication,
-} from "./listing-applications";
+import { COGNIZANCE_ACTS, hasDelay, type CognizanceAct, type CognizanceCase } from "./cognizance";
+import { applicationsForListing, type ListingApplication } from "./listing-applications";
 import {
   causeTitle,
   courtHearingPurposeLabel,
@@ -97,9 +89,7 @@ export function subjectAppearances(subject: OrderSubject): Appearance[] {
  * composition itself (`cognizance-order.ts`). It is answered, not offered.
  */
 export function subjectApplications(subject: OrderSubject): ListingApplication[] {
-  return subject.kind === "hearing"
-    ? applicationsForListing(subject.hearing.id)
-    : [];
+  return subject.kind === "hearing" ? applicationsForListing(subject.hearing.id) : [];
 }
 
 /**

@@ -58,7 +58,10 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
     const evidenceInfo = returnMemoEvidenceInfo(cheque);
     const caseDocumentId = chequeSourceSlot(draft, index, "return-memo")?.caseDocumentId ?? null;
     if (cheque.returnMemoEvidenceId) {
-      await caseFilingApi.updateEvidence(cheque.returnMemoEvidenceId, { evidenceInfo, caseDocumentId });
+      await caseFilingApi.updateEvidence(cheque.returnMemoEvidenceId, {
+        evidenceInfo,
+        caseDocumentId,
+      });
     } else {
       const saved = await caseFilingApi.addEvidence(caseId, {
         evidenceType: "RETURN_MEMO",
@@ -74,7 +77,9 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
 }
 
 /** Take a removed cheque's evidence rows off the case. A failure leaves them on it. */
-export function removeChequeEvidence(cheque: Pick<ChequeDetails, "chequeEvidenceId" | "returnMemoEvidenceId">) {
+export function removeChequeEvidence(
+  cheque: Pick<ChequeDetails, "chequeEvidenceId" | "returnMemoEvidenceId">,
+) {
   for (const id of [cheque.chequeEvidenceId, cheque.returnMemoEvidenceId]) {
     if (!id) continue;
     caseFilingApi.deleteEvidence(id).catch((error) => {

@@ -46,7 +46,10 @@ describe("ordersForSitting", () => {
 
   it("takes a listing added to the signing list with no draft key", () => {
     const rows = ordersForSitting([hearing()], {}, { "h-1": "ready" }, TODAY);
-    assert.deepEqual(rows.map((row) => row.hearing.id), ["h-1"]);
+    assert.deepEqual(
+      rows.map((row) => row.hearing.id),
+      ["h-1"],
+    );
   });
 
   it("reads what is left to fill off the text, once per placeholder", () => {
@@ -62,9 +65,13 @@ describe("ordersForSitting", () => {
   });
 
   it("carries the next date only when the order lists the matter", () => {
-    const listed = { [editorDraftKey("h-1")]: draft("Heard.", { next: "list", nextDate: "2026-11-16" }) };
+    const listed = {
+      [editorDraftKey("h-1")]: draft("Heard.", { next: "list", nextDate: "2026-11-16" }),
+    };
     assert.equal(ordersForSitting([hearing()], listed, {}, TODAY)[0].nextDate, "2026-11-16");
-    const closed = { [editorDraftKey("h-1")]: draft("Heard.", { next: "none", nextDate: "2026-11-16" }) };
+    const closed = {
+      [editorDraftKey("h-1")]: draft("Heard.", { next: "none", nextDate: "2026-11-16" }),
+    };
     assert.equal(ordersForSitting([hearing()], closed, {}, TODAY)[0].nextDate, null);
   });
 
@@ -75,6 +82,9 @@ describe("ordersForSitting", () => {
       {},
       TODAY,
     );
-    assert.deepEqual(rows.map((row) => row.hearing.id), ["a", "b"]);
+    assert.deepEqual(
+      rows.map((row) => row.hearing.id),
+      ["a", "b"],
+    );
   });
 });

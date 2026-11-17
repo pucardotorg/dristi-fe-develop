@@ -99,7 +99,7 @@ export function useTaskAct() {
           setViewing(task);
       }
     },
-    [store.cases, store.user]
+    [store.cases, store.user],
   );
 
   const actingCase = acting ? (caseOf({ cases: store.cases }, acting.task) ?? null) : null;
@@ -141,7 +141,9 @@ export function useTaskAct() {
         open={!!flowNotice}
         onOpenChange={(open) => !open && setFlowNotice(null)}
         title={flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].title) : ""}
-        description={flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].description) : undefined}
+        description={
+          flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].description) : undefined
+        }
         confirmLabel={tr("taskActLayer_continue")}
         destructive={false}
         icon={ArrowRightIcon}

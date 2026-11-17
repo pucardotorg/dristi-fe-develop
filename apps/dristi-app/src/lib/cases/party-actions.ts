@@ -53,8 +53,7 @@ export const ADVOCATE_LOOKUP: Record<string, { name: string; barId: string }> = 
   "9446301188": { name: "Adv. Meera Suresh", barId: "K/0873/2009" },
 };
 
-export const ADVOCATE_DEMO_NUMBERS =
-  "partyActions_tryRegisteredAdvocates984701234598470";
+export const ADVOCATE_DEMO_NUMBERS = "partyActions_tryRegisteredAdvocates984701234598470";
 
 /** "98470 12345" — the same 5-5 grouping the access surfaces use. */
 export function formatAdvocatePhone(digits: string): string {

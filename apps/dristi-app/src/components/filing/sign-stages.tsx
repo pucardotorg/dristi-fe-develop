@@ -8,12 +8,7 @@
  */
 
 import * as React from "react";
-import {
-  CheckIcon,
-  ChevronRightIcon,
-  ShieldCheckIcon,
-  SignatureIcon,
-} from "lucide-react";
+import { CheckIcon, ChevronRightIcon, ShieldCheckIcon, SignatureIcon } from "lucide-react";
 
 import type { Signatory } from "@/lib/filing/types";
 import { OutcomeHeader, OutcomeSummary } from "@/components/feedback";
@@ -36,9 +31,7 @@ import { useTranslations } from "next-intl";
  * (2026-09-24). Each stage takes its own height now, with the same 24px around it.
  */
 export function StageColumn({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-4">{children}</div>
-  );
+  return <div className="mx-auto flex w-full max-w-xl flex-col gap-4">{children}</div>;
 }
 
 /**
@@ -103,7 +96,9 @@ export function SettledCard({
                   <p className="text-body-compact font-semibold text-foreground">
                     {s.name}
                     {s.you ? (
-                      <span className="ps-2 font-medium text-muted-foreground">{t("signStages_you")}</span>
+                      <span className="ps-2 font-medium text-muted-foreground">
+                        {t("signStages_you")}
+                      </span>
                     ) : null}
                   </p>
                   <p className="text-body-compact text-muted-foreground">{s.role}</p>
@@ -159,10 +154,7 @@ export function ChoiceCard({
     >
       <span
         aria-hidden
-        className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded-lg",
-          tone
-        )}
+        className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", tone)}
       >
         {icon}
       </span>

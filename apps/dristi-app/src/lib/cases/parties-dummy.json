@@ -669,9 +669,7 @@
           "id": "team-1001-0",
           "advocate": "Adv. Anjali Nair",
           "side": "complainant",
-          "clientPartyIds": [
-            "pty-1001-c1"
-          ],
+          "clientPartyIds": ["pty-1001-c1"],
           "juniors": [],
           "clerks": []
         },
@@ -679,58 +677,33 @@
           "id": "team-1001-1",
           "advocate": "Adv. Ramesh Menon",
           "side": "complainant",
-          "clientPartyIds": [
-            "pty-1001-c1"
-          ],
+          "clientPartyIds": ["pty-1001-c1"],
           "juniors": [],
-          "clerks": [
-            "Suresh Kumar"
-          ]
+          "clerks": ["Suresh Kumar"]
         },
         {
           "id": "team-1001-2",
           "advocate": "Adv. Suresh Menon",
           "side": "complainant",
-          "clientPartyIds": [
-            "pty-1001-c1"
-          ],
-          "juniors": [
-            "Adv. Joel Mathew"
-          ],
-          "clerks": [
-            "Latha S."
-          ]
+          "clientPartyIds": ["pty-1001-c1"],
+          "juniors": ["Adv. Joel Mathew"],
+          "clerks": ["Latha S."]
         },
         {
           "id": "team-1001-3",
           "advocate": "Adv. P. Balachandran",
           "side": "accused",
-          "clientPartyIds": [
-            "pty-1001-a1",
-            "pty-1001-a2",
-            "pty-1001-a3"
-          ],
-          "juniors": [
-            "Adv. Nikhil Raj"
-          ],
-          "clerks": [
-            "Binu George"
-          ]
+          "clientPartyIds": ["pty-1001-a1", "pty-1001-a2", "pty-1001-a3"],
+          "juniors": ["Adv. Nikhil Raj"],
+          "clerks": ["Binu George"]
         },
         {
           "id": "team-1001-4",
           "advocate": "Adv. Asha Nair",
           "side": "accused",
-          "clientPartyIds": [
-            "pty-1001-a1",
-            "pty-1001-a2"
-          ],
-          "juniors": [
-            "Adv. Devika Menon"
-          ],
-          "clerks": [
-            "Reji K."
-          ]
+          "clientPartyIds": ["pty-1001-a1", "pty-1001-a2"],
+          "juniors": ["Adv. Devika Menon"],
+          "clerks": ["Reji K."]
         }
       ],
       "witnesses": [
@@ -842,9 +815,7 @@
           "id": "team-847-0",
           "advocate": "Adv. Meera Pillai",
           "side": "complainant",
-          "clientPartyIds": [
-            "pty-847-c1"
-          ],
+          "clientPartyIds": ["pty-847-c1"],
           "juniors": [],
           "clerks": []
         },
@@ -852,9 +823,7 @@
           "id": "team-847-1",
           "advocate": "Adv. Anjali Nair",
           "side": "accused",
-          "clientPartyIds": [
-            "pty-847-a1"
-          ],
+          "clientPartyIds": ["pty-847-a1"],
           "juniors": [],
           "clerks": []
         }

@@ -9,11 +9,7 @@ import { RichTextField } from "@/components/cases/rich-text-field";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -45,10 +41,7 @@ import {
   type CaseLitigant,
   type PersonOption,
 } from "@/lib/cases/application-options";
-import {
-  applicationsFile,
-  submissionTypeLabel,
-} from "@/lib/cases/applications";
+import { applicationsFile, submissionTypeLabel } from "@/lib/cases/applications";
 import { formatCaseDate, type CaseRecord } from "@/lib/cases/types";
 import {
   ACCUSED_ENTITY_TYPES,
@@ -63,10 +56,7 @@ import { useTranslations } from "next-intl";
 
 export type FieldActions = {
   /** Sets a draft field and clears the errors filed under it. */
-  update: <Key extends keyof ApplicationDraft>(
-    key: Key,
-    value: ApplicationDraft[Key],
-  ) => void;
+  update: <Key extends keyof ApplicationDraft>(key: Key, value: ApplicationDraft[Key]) => void;
   /** Sets or clears one error by its key (see `ApplicationErrors`). */
   setError: (key: string, error: string | undefined) => void;
 };
@@ -169,13 +159,7 @@ function FieldName({ label, optional }: { label: string; optional?: boolean }) {
  * readOnly rather than disabled so it stays keyboard reachable, selectable and
  * read by assistive tech; the fill and ink are the disabled control's.
  */
-export function PrefilledField({
-  label,
-  value: stored,
-}: {
-  label: string;
-  value: string;
-}) {
+export function PrefilledField({ label, value: stored }: { label: string; value: string }) {
   // Read-only, so it can show the record in the selected court's terms (`CourtSwitch`).
   const value = useCourtText()(stored);
   const id = useId();
@@ -566,7 +550,9 @@ function EveryApplicationTop({
         value={draft.litigantId}
         options={peopleOptions(litigantOptions)}
         placeholder={
-          draft.raisedById ? t("applicationTypeFields_chooseTheLitigant") : t("applicationTypeFields_chooseRaisedByFirst")
+          draft.raisedById
+            ? t("applicationTypeFields_chooseTheLitigant")
+            : t("applicationTypeFields_chooseRaisedByFirst")
         }
         error={errors.fields.litigantId}
         onChange={(value) => actions.update("litigantId", value)}
@@ -594,15 +580,15 @@ function EveryApplicationBottom({ draft, errors, actions }: FieldsProps) {
         addLabel={t("applicationTypeFields_addADocument")}
         emptyLabel={t("applicationTypeFields_noSupportingDocumentsAdded")}
         count={rows.length}
-        onAdd={() =>
-          actions.update("supportingDocuments", [...rows, emptyNamedDocument()])
-        }
+        onAdd={() => actions.update("supportingDocuments", [...rows, emptyNamedDocument()])}
       >
         {rows.map((row, index) => (
           <RowWell
             key={row.id}
             legend={t("applicationTypeFields_documentValue", { value: String(index + 1) })}
-            removeLabel={t("applicationTypeFields_removeDocumentValue", { value: String(index + 1) })}
+            removeLabel={t("applicationTypeFields_removeDocumentValue", {
+              value: String(index + 1),
+            })}
             onRemove={() =>
               actions.update(
                 "supportingDocuments",
@@ -704,9 +690,7 @@ function BailFields({ draft, errors, actions }: FieldsProps) {
           value={draft.bailAmount}
           inputMode="decimal"
           error={errors.fields.bailAmount}
-          onChange={(value) =>
-            actions.update("bailAmount", value.replace(/[^\d.,]/g, ""))
-          }
+          onChange={(value) => actions.update("bailAmount", value.replace(/[^\d.,]/g, ""))}
         />
       ) : null}
       {surety ? (
@@ -723,7 +707,10 @@ function BailFields({ draft, errors, actions }: FieldsProps) {
             }}
           />
           {sureties.map((item, index) => (
-            <RowWell key={item.id} legend={t("applicationTypeFields_suretyValue", { value: String(index + 1) })}>
+            <RowWell
+              key={item.id}
+              legend={t("applicationTypeFields_suretyValue", { value: String(index + 1) })}
+            >
               <div className="grid gap-6 md:grid-cols-2">
                 <TextField
                   label={t("applicationTypeFields_suretyName")}
@@ -766,9 +753,7 @@ function BailFields({ draft, errors, actions }: FieldsProps) {
                 files={item.identityProof}
                 error={errors.fields[`${item.id}.identityProof`]}
                 onFilesChange={(identityProof) => updateSurety(item.id, { identityProof })}
-                onErrorChange={(error) =>
-                  actions.setError(`${item.id}.identityProof`, error)
-                }
+                onErrorChange={(error) => actions.setError(`${item.id}.identityProof`, error)}
               />
               <FileField
                 required
@@ -776,9 +761,7 @@ function BailFields({ draft, errors, actions }: FieldsProps) {
                 files={item.solvencyProof}
                 error={errors.fields[`${item.id}.solvencyProof`]}
                 onFilesChange={(solvencyProof) => updateSurety(item.id, { solvencyProof })}
-                onErrorChange={(error) =>
-                  actions.setError(`${item.id}.solvencyProof`, error)
-                }
+                onErrorChange={(error) => actions.setError(`${item.id}.solvencyProof`, error)}
               />
             </RowWell>
           ))}
@@ -809,10 +792,8 @@ export function litigantDetailsFrom(
   details.institutionName = litigant.name;
   const types = litigant.side === "accused" ? ACCUSED_ENTITY_TYPES : ENTITY_TYPES;
   details.institutionType =
-    types.find(
-      (option) =>
-        option.label.toLowerCase() === litigant.entityType?.toLowerCase(),
-    )?.value ?? "";
+    types.find((option) => option.label.toLowerCase() === litigant.entityType?.toLowerCase())
+      ?.value ?? "";
   return details;
 }
 
@@ -881,10 +862,7 @@ function EditLitigantFields(props: FieldsProps) {
 /** One field of the litigant record, wired to `litigant.<key>`. */
 function useLitigant({ draft, errors, actions }: FieldsProps) {
   const l = draft.litigant;
-  function set<Key extends keyof LitigantDetailsDraft>(
-    key: Key,
-    value: LitigantDetailsDraft[Key],
-  ) {
+  function set<Key extends keyof LitigantDetailsDraft>(key: Key, value: LitigantDetailsDraft[Key]) {
     actions.update("litigant", { ...l, [key]: value });
     actions.setError(`litigant.${key}`, undefined);
   }
@@ -1158,7 +1136,9 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
           <RowWell
             key={row.id}
             legend={t("applicationTypeFields_addressValue", { value: String(index + 1) })}
-            removeLabel={t("applicationTypeFields_removeAddressValue", { value: String(index + 1) })}
+            removeLabel={t("applicationTypeFields_removeAddressValue", {
+              value: String(index + 1),
+            })}
             onRemove={() =>
               set(
                 "addresses",
@@ -1206,7 +1186,10 @@ function TransferFields({ draft, errors, record, actions }: FieldsProps) {
   const courtText = useCourtText();
   return (
     <>
-      <PrefilledField label={t("applicationTypeFields_currentCourt")} value={courtText(record.court)} />
+      <PrefilledField
+        label={t("applicationTypeFields_currentCourt")}
+        value={courtText(record.court)}
+      />
       <TextField
         label={t("applicationTypeFields_requestedCourt")}
         value={draft.requestedCourt}
@@ -1290,7 +1273,9 @@ function PoaChangeFields({ draft, errors, record, actions }: FieldsProps) {
   return (
     <>
       <Field data-invalid={Boolean(errors.fields.poaLitigantIds)}>
-        <FieldLabel id={labelId}>{t("applicationTypeFields_litigantsAppointingTheApplicant")}</FieldLabel>
+        <FieldLabel id={labelId}>
+          {t("applicationTypeFields_litigantsAppointingTheApplicant")}
+        </FieldLabel>
         <div role="group" aria-labelledby={labelId} className="flex flex-col">
           {litigants.map((item) => {
             const id = `${labelId}-${item.id}`;
@@ -1306,7 +1291,10 @@ function PoaChangeFields({ draft, errors, record, actions }: FieldsProps) {
                   {item.name}
                   <span className="text-muted-foreground">
                     {" "}
-                    · {item.side === "accused" ? t("applicationTypeFields_accused") : t("applicationTypeFields_complainant")}
+                    ·{" "}
+                    {item.side === "accused"
+                      ? t("applicationTypeFields_accused")
+                      : t("applicationTypeFields_complainant")}
                   </span>
                 </Label>
               </div>
@@ -1348,15 +1336,15 @@ function ProductionFields({ draft, errors, actions }: FieldsProps) {
         emptyLabel={t("applicationTypeFields_noDocumentsAdded")}
         count={rows.length}
         error={errors.fields.productionDocuments}
-        onAdd={() =>
-          actions.update("productionDocuments", [...rows, emptyTypedDocument()])
-        }
+        onAdd={() => actions.update("productionDocuments", [...rows, emptyTypedDocument()])}
       >
         {rows.map((row, index) => (
           <RowWell
             key={row.id}
             legend={t("applicationTypeFields_documentValue", { value: String(index + 1) })}
-            removeLabel={t("applicationTypeFields_removeDocumentValue", { value: String(index + 1) })}
+            removeLabel={t("applicationTypeFields_removeDocumentValue", {
+              value: String(index + 1),
+            })}
             onRemove={() =>
               actions.update(
                 "productionDocuments",
@@ -1513,7 +1501,9 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
                   }
                 >
                   <Trash2Icon data-icon="inline-start" aria-hidden />
-                  {t("applicationTypeFields_removeAddressValue", { value: String(addressIndex + 1) })}
+                  {t("applicationTypeFields_removeAddressValue", {
+                    value: String(addressIndex + 1),
+                  })}
                 </Button>
               ) : null}
             </div>
@@ -1571,9 +1561,7 @@ function WarrantByHandFields({ draft, errors, record, actions }: FieldsProps) {
           <FieldLabel id={`${pickId}-label`}>{t("applicationTypeFields_prefillFrom")}</FieldLabel>
           <RadioGroup
             aria-labelledby={`${pickId}-label`}
-            onValueChange={(index) =>
-              actions.update("deliveryAddress", onFile[Number(index)])
-            }
+            onValueChange={(index) => actions.update("deliveryAddress", onFile[Number(index)])}
             className="flex flex-col gap-1"
           >
             {onFile.map((address, index) => (
@@ -1619,10 +1607,7 @@ function ObjectionFields({ draft, record }: FieldsProps) {
 
   return (
     <>
-      <PrefilledField
-        label={t("applicationTypeFields_objectionTo")}
-        value={targetLabel}
-      />
+      <PrefilledField label={t("applicationTypeFields_objectionTo")} value={targetLabel} />
     </>
   );
 }

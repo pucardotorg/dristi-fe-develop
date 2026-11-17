@@ -19,31 +19,17 @@
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { displayName } from "@/lib/cases/names";
 import { useMemo, useState } from "react";
-import {
-  EllipsisVerticalIcon,
-  Trash2Icon,
-  UserRoundPenIcon,
-} from "lucide-react";
+import { EllipsisVerticalIcon, Trash2Icon, UserRoundPenIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -55,10 +41,7 @@ import {
   PartySignatureDialog,
   type CaseRef,
 } from "@/components/cases/party-application";
-import {
-  UPLOAD_HELP,
-  UploadedDocField,
-} from "@/components/cases/uploaded-doc-field";
+import { UPLOAD_HELP, UploadedDocField } from "@/components/cases/uploaded-doc-field";
 import { POA_REASON_MAX_LENGTH } from "@/lib/cases/party-actions";
 import { useTranslations } from "next-intl";
 
@@ -95,9 +78,7 @@ export function PoaHolderWell({
             {displayName(holder)}
           </span>
           {pending ? (
-            <span className="block truncate text-caption text-muted-foreground">
-              {pending}
-            </span>
+            <span className="block truncate text-caption text-muted-foreground">{pending}</span>
           ) : null}
         </span>
         {!pending ? (
@@ -118,10 +99,7 @@ export function PoaHolderWell({
                 <UserRoundPenIcon aria-hidden />
                 {t("poaHolderActions_replaceHolder")}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={() => setOpen("remove")}
-              >
+              <DropdownMenuItem variant="destructive" onSelect={() => setOpen("remove")}>
                 <Trash2Icon aria-hidden />
                 {t("poaHolderActions_removeHolder")}
               </DropdownMenuItem>
@@ -145,9 +123,7 @@ export function PoaHolderWell({
         caseRef={caseRef}
         existingPeople={existingPeople}
         onRequested={(newHolder) =>
-          setPending(
-            `Replacement by ${newHolder || "a new holder"} requested · awaiting order`
-          )
+          setPending(`Replacement by ${newHolder || "a new holder"} requested · awaiting order`)
         }
       />
     </>
@@ -162,8 +138,7 @@ const REMOVE_STEPS = [
   {
     step: 1,
     title: "Grounds",
-    description:
-      "State why the PoA-holder should be removed and attach proof.",
+    description: "State why the PoA-holder should be removed and attach proof.",
   },
   {
     step: 2,
@@ -193,9 +168,7 @@ function RemovePoaDialog({
   const [reason, setReason] = useState("");
   const [docFile, setDocFile] = useState<File | null>(null);
   const [signOpen, setSignOpen] = useState(false);
-  const [errors, setErrors] = useState<{ reason?: string; document?: string }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{ reason?: string; document?: string }>({});
 
   const current = REMOVE_STEPS.find((item) => item.step === step) ?? REMOVE_STEPS[0];
   const isDirty = useMemo(() => Boolean(reason || docFile), [reason, docFile]);
@@ -255,104 +228,97 @@ function RemovePoaDialog({
       >
         <FlowDialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
           <>
-              {/* No stepper: two steps do not earn one. Heading stays put so
+            {/* No stepper: two steps do not earn one. Heading stays put so
                   the review does not read as a different task (owner, Sept 2). */}
-              <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
-                <DialogTitle className="text-title-s font-semibold text-balance">
-                  {t("poaHolderActions_removeHolder2", { holder })}
-                </DialogTitle>
-                <DialogDescription>
-                  {step === 2
-                    ? t("poaHolderActions_onceTheMagistrateOrdersItHolder", { holder, partyName })
-                    : current.description}
-                </DialogDescription>
-              </DialogHeader>
+            <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
+              <DialogTitle className="text-title-s font-semibold text-balance">
+                {t("poaHolderActions_removeHolder2", { holder })}
+              </DialogTitle>
+              <DialogDescription>
+                {step === 2
+                  ? t("poaHolderActions_onceTheMagistrateOrdersItHolder", { holder, partyName })
+                  : current.description}
+              </DialogDescription>
+            </DialogHeader>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-                <form
-                  id="remove-poa-form"
-                  noValidate
-                  onSubmit={handleSubmit}
-                  className="flex flex-col gap-6"
-                >
-                  {step === 1 ? (
-                    <>
-                      <Field data-invalid={Boolean(errors.reason)}>
-                        <FieldLabel
-                          className="block w-full text-body font-semibold leading-snug"
-                          htmlFor="remove-poa-reason"
-                        >
-                          {t("poaHolderActions_whyShouldTheyBeRemoved")}
-                        </FieldLabel>
-                        <FieldDescription>
-                          {t("poaHolderActions_theMagistrateReadsThisToDecide")}
-                        </FieldDescription>
-                        <Textarea
-                          id="remove-poa-reason"
-                          className="min-h-24"
-                          maxLength={POA_REASON_MAX_LENGTH}
-                          value={reason}
-                          onChange={(event) => {
-                            setReason(event.target.value);
-                            setErrors((c) => ({ ...c, reason: undefined }));
-                          }}
-                        />
-                        <FieldDescription className="flex justify-end">
-                          {reason.length.toLocaleString("en-IN")} /{" "}
-                          {POA_REASON_MAX_LENGTH.toLocaleString("en-IN")}
-                        </FieldDescription>
-                        <FieldError>{errors.reason}</FieldError>
-                      </Field>
-
-                      <Field data-invalid={Boolean(errors.document)}>
-                        <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                          {t("poaHolderActions_supportingDocument")}
-                        </FieldLabel>
-                        <UploadedDocField
-                          label={t("poaHolderActions_supportingDocument")}
-                          required
-                          file={docFile}
-                          onFileChange={(file) => {
-                            setDocFile(file);
-                            setErrors((c) => ({ ...c, document: undefined }));
-                          }}
-                        />
-                        <FieldDescription>{t(UPLOAD_HELP)}</FieldDescription>
-                        <FieldError>{errors.document}</FieldError>
-                      </Field>
-                    </>
-                  ) : (
-                    <PartyApplicationDocument
-                      caseRef={caseRef}
-                      doc={applicationDoc}
-                    />
-                  )}
-                </form>
-              </div>
-
-              <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-                {step > 1 ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(1)}
-                  >
-                    {t("common_back")}
-                  </Button>
-                ) : (
-                  <span aria-hidden className="hidden sm:block" />
-                )}
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+              <form
+                id="remove-poa-form"
+                noValidate
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-6"
+              >
                 {step === 1 ? (
-                  <Button type="submit" form="remove-poa-form">
-                    {t("poaHolderActions_continue")}
-                  </Button>
+                  <>
+                    <Field data-invalid={Boolean(errors.reason)}>
+                      <FieldLabel
+                        className="block w-full text-body font-semibold leading-snug"
+                        htmlFor="remove-poa-reason"
+                      >
+                        {t("poaHolderActions_whyShouldTheyBeRemoved")}
+                      </FieldLabel>
+                      <FieldDescription>
+                        {t("poaHolderActions_theMagistrateReadsThisToDecide")}
+                      </FieldDescription>
+                      <Textarea
+                        id="remove-poa-reason"
+                        className="min-h-24"
+                        maxLength={POA_REASON_MAX_LENGTH}
+                        value={reason}
+                        onChange={(event) => {
+                          setReason(event.target.value);
+                          setErrors((c) => ({ ...c, reason: undefined }));
+                        }}
+                      />
+                      <FieldDescription className="flex justify-end">
+                        {reason.length.toLocaleString("en-IN")} /{" "}
+                        {POA_REASON_MAX_LENGTH.toLocaleString("en-IN")}
+                      </FieldDescription>
+                      <FieldError>{errors.reason}</FieldError>
+                    </Field>
+
+                    <Field data-invalid={Boolean(errors.document)}>
+                      <FieldLabel className="block w-full text-body font-semibold leading-snug">
+                        {t("poaHolderActions_supportingDocument")}
+                      </FieldLabel>
+                      <UploadedDocField
+                        label={t("poaHolderActions_supportingDocument")}
+                        required
+                        file={docFile}
+                        onFileChange={(file) => {
+                          setDocFile(file);
+                          setErrors((c) => ({ ...c, document: undefined }));
+                        }}
+                      />
+                      <FieldDescription>{t(UPLOAD_HELP)}</FieldDescription>
+                      <FieldError>{errors.document}</FieldError>
+                    </Field>
+                  </>
                 ) : (
-                  <Button type="button" onClick={() => setSignOpen(true)}>
-                    {t("poaHolderActions_continueToSign")}
-                  </Button>
+                  <PartyApplicationDocument caseRef={caseRef} doc={applicationDoc} />
                 )}
-              </footer>
-            </>
+              </form>
+            </div>
+
+            <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              {step > 1 ? (
+                <Button type="button" variant="outline" onClick={() => setStep(1)}>
+                  {t("common_back")}
+                </Button>
+              ) : (
+                <span aria-hidden className="hidden sm:block" />
+              )}
+              {step === 1 ? (
+                <Button type="submit" form="remove-poa-form">
+                  {t("poaHolderActions_continue")}
+                </Button>
+              ) : (
+                <Button type="button" onClick={() => setSignOpen(true)}>
+                  {t("poaHolderActions_continueToSign")}
+                </Button>
+              )}
+            </footer>
+          </>
           <DiscardQuestion guard={guard} />
         </FlowDialogContent>
       </Dialog>
@@ -432,17 +398,16 @@ function ReplacePoaDialog({
     deed?: string;
   }>({});
 
-  const current =
-    REPLACE_STEPS.find((item) => item.step === step) ?? REPLACE_STEPS[0];
+  const current = REPLACE_STEPS.find((item) => item.step === step) ?? REPLACE_STEPS[0];
   const isDirty = useMemo(
     () => Boolean(newName || newPhone || existingKey || reason || deedFile),
-    [newName, newPhone, existingKey, reason, deedFile]
+    [newName, newPhone, existingKey, reason, deedFile],
   );
 
   const newHolderName =
     holderMode === "new"
       ? newName.trim()
-      : existingPeople.find((person) => person.key === existingKey)?.name ?? "";
+      : (existingPeople.find((person) => person.key === existingKey)?.name ?? "");
 
   function resetForm() {
     setStep(1);
@@ -504,9 +469,7 @@ function ReplacePoaDialog({
       {
         term: t("poaHolderActions_newHolder"),
         value:
-          holderMode === "existing"
-            ? `${newHolderName} (already on this case)`
-            : newHolderName,
+          holderMode === "existing" ? `${newHolderName} (already on this case)` : newHolderName,
       },
       { term: t("poaHolderActions_for"), value: partyName },
       ...(holderMode === "new" && newPhone
@@ -531,7 +494,7 @@ function ReplacePoaDialog({
         }}
       >
         <FlowDialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
-          {(
+          {
             <>
               <div className="shrink-0 border-b border-hairline px-6 pt-6 pb-4">
                 <FlowStepper
@@ -574,13 +537,12 @@ function ReplacePoaDialog({
                         >
                           <div className="flex min-h-10 items-center gap-2">
                             <RadioGroupItem id="replace-poa-new" value="new" />
-                            <Label htmlFor="replace-poa-new">{t("poaHolderActions_someoneNew")}</Label>
+                            <Label htmlFor="replace-poa-new">
+                              {t("poaHolderActions_someoneNew")}
+                            </Label>
                           </div>
                           <div className="flex min-h-10 items-center gap-2">
-                            <RadioGroupItem
-                              id="replace-poa-existing"
-                              value="existing"
-                            />
+                            <RadioGroupItem id="replace-poa-existing" value="existing" />
                             <Label htmlFor="replace-poa-existing">
                               {t("poaHolderActions_someoneAlreadyOnThisCase")}
                             </Label>
@@ -620,11 +582,7 @@ function ReplacePoaDialog({
                               maxLength={10}
                               value={newPhone}
                               onChange={(event) => {
-                                setNewPhone(
-                                  event.target.value
-                                    .replace(/\D/g, "")
-                                    .slice(0, 10)
-                                );
+                                setNewPhone(event.target.value.replace(/\D/g, "").slice(0, 10));
                                 setErrors((c) => ({
                                   ...c,
                                   holderPhone: undefined,
@@ -654,10 +612,7 @@ function ReplacePoaDialog({
                             className="flex flex-col gap-1"
                           >
                             {existingPeople.map((person) => (
-                              <div
-                                key={person.key}
-                                className="flex min-h-10 items-center gap-2"
-                              >
+                              <div key={person.key} className="flex min-h-10 items-center gap-2">
                                 <RadioGroupItem
                                   id={`replace-poa-${person.key}`}
                                   value={person.key}
@@ -711,8 +666,8 @@ function ReplacePoaDialog({
                           {t("poaHolderActions_newPowerOfAttorneyDeed")}
                         </FieldLabel>
                         <FieldDescription>
-                          The executed deed naming{" "}
-                          {newHolderName || "the new holder"} for {partyName}.
+                          The executed deed naming {newHolderName || "the new holder"} for{" "}
+                          {partyName}.
                         </FieldDescription>
                         <UploadedDocField
                           label={t("poaHolderActions_newPowerOfAttorneyDeed")}
@@ -728,10 +683,7 @@ function ReplacePoaDialog({
                       </Field>
                     </>
                   ) : (
-                    <PartyApplicationDocument
-                      caseRef={caseRef}
-                      doc={applicationDoc}
-                    />
+                    <PartyApplicationDocument caseRef={caseRef} doc={applicationDoc} />
                   )}
                 </form>
               </div>
@@ -759,7 +711,7 @@ function ReplacePoaDialog({
                 )}
               </footer>
             </>
-          )}
+          }
           <DiscardQuestion guard={guard} />
         </FlowDialogContent>
       </Dialog>
@@ -783,4 +735,3 @@ function ReplacePoaDialog({
 /* ------------------------------------------------------------------ */
 /* Shared bits                                                          */
 /* ------------------------------------------------------------------ */
-

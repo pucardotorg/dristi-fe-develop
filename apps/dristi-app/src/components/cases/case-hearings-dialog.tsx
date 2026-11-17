@@ -3,19 +3,11 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { ArrowLeftIcon } from "lucide-react";
 
-import {
-  HearingDetail,
-  HearingsList,
-} from "@/components/cases/hearings-register";
+import { HearingDetail, HearingsList } from "@/components/cases/hearings-register";
 import { useRecentRow } from "@/components/cases/register-controls";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { hearingRecords } from "@/lib/cases/hearing-record";
 import { orderHref } from "@/lib/cases/sections";
 import type { CaseRecord } from "@/lib/cases/types";
@@ -105,11 +97,7 @@ export function CaseHearingsDialog({
           {openHearing ? (
             <HearingDetail
               hearing={openHearing}
-              orderHref={
-                openHearing.order
-                  ? orderHref(record.id, openHearing.order.id)
-                  : undefined
-              }
+              orderHref={openHearing.order ? orderHref(record.id, openHearing.order.id) : undefined}
               headingRef={headingRef}
             />
           ) : (

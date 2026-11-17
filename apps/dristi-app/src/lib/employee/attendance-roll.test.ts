@@ -65,7 +65,10 @@ describe("the attendance roll", () => {
       "accused-2": "absent",
     });
     assert.deepEqual(lines, [
-      { label: "Present", value: "Priya Menon, the complainant; Arun Menon, PoA holder for Priya Menon." },
+      {
+        label: "Present",
+        value: "Priya Menon, the complainant; Arun Menon, PoA holder for Priya Menon.",
+      },
       { label: "Absent", value: "Ramesh Kumar, the accused." },
     ]);
   });

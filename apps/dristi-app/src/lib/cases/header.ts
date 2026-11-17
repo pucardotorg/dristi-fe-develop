@@ -9,11 +9,7 @@ import type { CaseRecord } from "./types";
 
 /** The five secondary stages the legacy product carries under a main stage. */
 export type SecondaryStage =
-  | "delay-condonation"
-  | "notice"
-  | "proclamation-attachment"
-  | "summons"
-  | "warrant";
+  "delay-condonation" | "notice" | "proclamation-attachment" | "summons" | "warrant";
 
 const SECONDARY_STAGE_LABEL: Record<SecondaryStage, string> = {
   "delay-condonation": "Delay condonation",

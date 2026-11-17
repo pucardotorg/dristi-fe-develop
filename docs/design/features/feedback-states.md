@@ -1,4 +1,5 @@
 # Feedback states (success, failure, warning)
+
 Updated: 29 Oct 2026
 Status: shared pieces implemented and verified · flows not yet moved · design-system PR not opened
 
@@ -29,41 +30,41 @@ size and context. The rules and reasons are listed below.
 
 ## Decisions
 
-| Date | Decision and reason | Source | Status |
-|---|---|---|---|
-| 29 Oct | Today and proposed are shown side by side for every state, each with its own motion replay. | Owner | done |
-| 29 Oct | Keep today's copy word for word, and never add a button that was not there. | Owner | rule |
-| 29 Oct | Toasts are white with a 22px solid mark and a 14px semibold title. The rail is straight, full height and flush left, so the corner radius clips it rather than bending it. | Owner | rule |
-| 29 Oct | Toasts last **2.75s** (today 4s), and any click on the page dismisses them. Error toasts stay until closed. 2.5s was considered too fast for full-sentence toasts. | Lead designer, owner | rule |
-| 29 Oct | Outcome labels on summary cards use success green, not teal. Teal is the action colour and reads as clickable. | Owner, Claude | rule |
-| 29 Oct | Warning is used only where today is already a warning. Gates, questions and dead ends use a **neutral** grey-ring mark carrying the act's own icon. | Owner | rule |
-| 29 Oct | Removal buttons stay **soft red** (today's destructive variant), never solid red. | Owner | rule |
-| 29 Oct | Irreversible but normal acts (sign, pay, file) are not warnings. "Cannot be undone / reversed" gets its own line with a lock. | Owner | rule |
-| 29 Oct | Cross motion: spring (both strokes, 140ms apart). Warning icon: a slim exclamation (filled bar plus dot), not a triangle. Warning motion: a small sway with a soft pulse, never a bell-like swing. Picked from a lane of options on the board. | Owner | rule |
-| 29 Oct | Motion is budgeted by size. Heroes (44px and up) play the full mark, about 600ms. Toasts, inline lines and tallies pop the disc and then scale the glyph in, the same beat as the gate toast's lock. Badges and field errors move only when they change in view. **Ticks updated 30 Oct, see below.** | Owner, Claude review | rule |
-| 29 Oct | Shake only when the person's own input was refused (wrong OTP, the first invalid field), never on system failures. A shake reads as "you did it wrong". | Claude review, owner | rule |
-| 29 Oct | Within one real screen, one mark animates; marks that belong together play in order. Separate examples on the board each play. | Owner | rule |
-| 29 Oct | Missing input points at the field. The red ring grows in, then the error line opens its room and the cross and words drop in together from under the field. A repeat press shakes the field once and replays the line. Instant text and a plain fade were both tried and rejected. | Owner | rule |
-| 29 Oct | A disc inside a pill is concentric: equal inset at the top, bottom and end. The badge has a 1px border, so a 16px disc in a 24px badge needs 3px of padding. | Owner | rule |
-| 29 Oct | Colour-blind cues: glyphs must read at 16–20px without colour. The failed share of a tally bar carries fine stripes. | Owner | rule |
-| 29 Oct | Full-page states get a very subtle radial glow in their tone. Neutral dead ends stay flat. | Owner | rule |
-| 29 Oct | Dark mode: the toast lifts to the raised surface with a full border. Otherwise it disappears into the page. | Claude, dark pass | rule |
-| 30 Oct | **Small success ticks draw themselves,** like the hero's, only quicker: the disc pops (250ms), the tick draws inside it (280ms, from 120ms). Covers toasts, inline lines, tally lines, badges and footer bands. Crosses, "!" and icon marks still scale in. Replaces the 29 Oct scale-in for ticks. | Owner | rule |
-| 30 Oct | **Hero marks wait 160ms and hold until painted;** the outcome's words wait with them. Fired at mount, the motion was over before eyes came back from the spinner. | Owner | rule |
-| 30 Oct | **The success ring pulses once.** Tried and dropped the same day: an endless loop, and three pulses (also slowing and fading). Both read as too busy. | Owner | rule |
-| 30 Oct | **Approve registrations ends on the inline line,** not the tinted strip. It stays until the dialog closes or moves on. Rejected uses the soft red danger mark. | Owner | decided |
-| 30 Oct | **Order editor missing-input toasts stay toasts.** Another designer chose them; their call is kept. | Owner | decided |
-| 30 Oct | **A repeated error re-enters, never stacks.** Error toasts stay until closed, so a retry that fails again would pile up copies. The old card leaves and the same error comes up from the bottom afresh, so it reads as new news. Different errors still stack. Before the redesign errors left after 4s with no close button. | Owner | rule |
-| 29 Oct | **Order of work: flows first, design system later.** The new pieces are built once in the app, composed only from existing design-system parts and tokens, and rolled into every flow. The same pieces go to the design system as a PR for discussion. On approval they move there, and the screens look identical. | Lead designer, owner | decided |
+| Date   | Decision and reason                                                                                                                                                                                                                                                                                                           | Source               | Status  |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ------- |
+| 29 Oct | Today and proposed are shown side by side for every state, each with its own motion replay.                                                                                                                                                                                                                                   | Owner                | done    |
+| 29 Oct | Keep today's copy word for word, and never add a button that was not there.                                                                                                                                                                                                                                                   | Owner                | rule    |
+| 29 Oct | Toasts are white with a 22px solid mark and a 14px semibold title. The rail is straight, full height and flush left, so the corner radius clips it rather than bending it.                                                                                                                                                    | Owner                | rule    |
+| 29 Oct | Toasts last **2.75s** (today 4s), and any click on the page dismisses them. Error toasts stay until closed. 2.5s was considered too fast for full-sentence toasts.                                                                                                                                                            | Lead designer, owner | rule    |
+| 29 Oct | Outcome labels on summary cards use success green, not teal. Teal is the action colour and reads as clickable.                                                                                                                                                                                                                | Owner, Claude        | rule    |
+| 29 Oct | Warning is used only where today is already a warning. Gates, questions and dead ends use a **neutral** grey-ring mark carrying the act's own icon.                                                                                                                                                                           | Owner                | rule    |
+| 29 Oct | Removal buttons stay **soft red** (today's destructive variant), never solid red.                                                                                                                                                                                                                                             | Owner                | rule    |
+| 29 Oct | Irreversible but normal acts (sign, pay, file) are not warnings. "Cannot be undone / reversed" gets its own line with a lock.                                                                                                                                                                                                 | Owner                | rule    |
+| 29 Oct | Cross motion: spring (both strokes, 140ms apart). Warning icon: a slim exclamation (filled bar plus dot), not a triangle. Warning motion: a small sway with a soft pulse, never a bell-like swing. Picked from a lane of options on the board.                                                                                | Owner                | rule    |
+| 29 Oct | Motion is budgeted by size. Heroes (44px and up) play the full mark, about 600ms. Toasts, inline lines and tallies pop the disc and then scale the glyph in, the same beat as the gate toast's lock. Badges and field errors move only when they change in view. **Ticks updated 30 Oct, see below.**                         | Owner, Claude review | rule    |
+| 29 Oct | Shake only when the person's own input was refused (wrong OTP, the first invalid field), never on system failures. A shake reads as "you did it wrong".                                                                                                                                                                       | Claude review, owner | rule    |
+| 29 Oct | Within one real screen, one mark animates; marks that belong together play in order. Separate examples on the board each play.                                                                                                                                                                                                | Owner                | rule    |
+| 29 Oct | Missing input points at the field. The red ring grows in, then the error line opens its room and the cross and words drop in together from under the field. A repeat press shakes the field once and replays the line. Instant text and a plain fade were both tried and rejected.                                            | Owner                | rule    |
+| 29 Oct | A disc inside a pill is concentric: equal inset at the top, bottom and end. The badge has a 1px border, so a 16px disc in a 24px badge needs 3px of padding.                                                                                                                                                                  | Owner                | rule    |
+| 29 Oct | Colour-blind cues: glyphs must read at 16–20px without colour. The failed share of a tally bar carries fine stripes.                                                                                                                                                                                                          | Owner                | rule    |
+| 29 Oct | Full-page states get a very subtle radial glow in their tone. Neutral dead ends stay flat.                                                                                                                                                                                                                                    | Owner                | rule    |
+| 29 Oct | Dark mode: the toast lifts to the raised surface with a full border. Otherwise it disappears into the page.                                                                                                                                                                                                                   | Claude, dark pass    | rule    |
+| 30 Oct | **Small success ticks draw themselves,** like the hero's, only quicker: the disc pops (250ms), the tick draws inside it (280ms, from 120ms). Covers toasts, inline lines, tally lines, badges and footer bands. Crosses, "!" and icon marks still scale in. Replaces the 29 Oct scale-in for ticks.                           | Owner                | rule    |
+| 30 Oct | **Hero marks wait 160ms and hold until painted;** the outcome's words wait with them. Fired at mount, the motion was over before eyes came back from the spinner.                                                                                                                                                             | Owner                | rule    |
+| 30 Oct | **The success ring pulses once.** Tried and dropped the same day: an endless loop, and three pulses (also slowing and fading). Both read as too busy.                                                                                                                                                                         | Owner                | rule    |
+| 30 Oct | **Approve registrations ends on the inline line,** not the tinted strip. It stays until the dialog closes or moves on. Rejected uses the soft red danger mark.                                                                                                                                                                | Owner                | decided |
+| 30 Oct | **Order editor missing-input toasts stay toasts.** Another designer chose them; their call is kept.                                                                                                                                                                                                                           | Owner                | decided |
+| 30 Oct | **A repeated error re-enters, never stacks.** Error toasts stay until closed, so a retry that fails again would pile up copies. The old card leaves and the same error comes up from the bottom afresh, so it reads as new news. Different errors still stack. Before the redesign errors left after 4s with no close button. | Owner                | rule    |
+| 29 Oct | **Order of work: flows first, design system later.** The new pieces are built once in the app, composed only from existing design-system parts and tokens, and rolled into every flow. The same pieces go to the design system as a PR for discussion. On approval they move there, and the screens look identical.           | Lead designer, owner | decided |
 
 ## Branches (all of them, so none is forgotten)
 
-| # | Repo | Branch | Job | When |
-|---|---|---|---|---|
-| 1 | dristi-fe-design | `feature/states-board` | The before-and-after board, kept as the reference. Never merged into the product. | exists |
-| 2 | dristi-fe-design | `feature/feedback-states-rollout` | The pieces, the skill, and every flow moved onto them, in five batches (commits, not branches). One PR into `main`. | exists |
-| 3 | dristi-design-system | `feature/feedback-states` | The design-system PR for discussion: foundations, components, docs, rules, deprecations (plan step 2). | **to make** after the rollout PR, when the owner says start |
-| 4 | dristi-fe-design | a `ds:bump` branch from `origin/main` | Moves the app's DS pin to the approved version, on its own as repo rules require; then the flows switch to the DS copies (plan step 3). | **to make** only after #3 is approved and merged |
+| #   | Repo                 | Branch                                | Job                                                                                                                                     | When                                                        |
+| --- | -------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| 1   | dristi-fe-design     | `feature/states-board`                | The before-and-after board, kept as the reference. Never merged into the product.                                                       | exists                                                      |
+| 2   | dristi-fe-design     | `feature/feedback-states-rollout`     | The pieces, the skill, and every flow moved onto them, in five batches (commits, not branches). One PR into `main`.                     | exists                                                      |
+| 3   | dristi-design-system | `feature/feedback-states`             | The design-system PR for discussion: foundations, components, docs, rules, deprecations (plan step 2).                                  | **to make** after the rollout PR, when the owner says start |
+| 4   | dristi-fe-design     | a `ds:bump` branch from `origin/main` | Moves the app's DS pin to the approved version, on its own as repo rules require; then the flows switch to the DS copies (plan step 3). | **to make** only after #3 is approved and merged            |
 
 ## The plan
 
@@ -112,11 +113,12 @@ size and context. The rules and reasons are listed below.
 **Decided during the rollout. Carry every one into the DS PR** (owner, Oct 29). Each is
 already in `components/feedback` and the skill. In the DS they become component defaults
 and documented rules:
+
 - **The title always sits under the mark,** never in a header above it. That includes
   staged overlays: their settled stage drops the header (`StagedOverlay outcome`). This
   supersedes the "header on every stage" rule for the outcome stage.
 - **Every outcome closes on the warm footer band:** `border-t border-hairline
-  bg-surface-sunken`, with the buttons on it, never loose in the body. The DS
+bg-surface-sunken`, with the buttons on it, never loose in the body. The DS
   `DialogFooter` default is `bg-muted`; the DS should settle which one is the outcome band.
 - **Dialogs pin their header and footer; only the middle scrolls.**
 - **On a phone the takeover is compact:** a 60px mark and a `title-s` title, with the
@@ -168,6 +170,7 @@ DS was never touched, so there is nothing to undo.
 ## Progress
 
 **29 Oct · shared pieces (branch `feature/feedback-states-rollout`).**
+
 - **Built:** `components/feedback` (mark, outcome header, summary, tally, page outcome,
   status line, field error with refusal, confirm mark, `notify` toasts), the motion in
   `app/feedback.css`, and click-away plus the 380px measure in `AppToaster`. Every piece
@@ -205,6 +208,7 @@ DS was never touched, so there is nothing to undo.
   removal was tested with frames stood in by a timer.
 
 **29 Oct · batch 1, filing (commits 9206b0f, 5c4b453).**
+
 - **Moved onto the shared pieces:** filing notices, both confirm dialogs (with the lock
   note), bail application and bail bond outcomes, bond edit confirm, signing outcomes
   (`SettledCard`), e-filing payment success, batch sign and pay success, documents
@@ -229,6 +233,7 @@ DS was never touched, so there is nothing to undo.
   pay and sign tabs have the same `flex-1` phone bug (batch 4).
 
 **29 Oct · batch 2, cases and join.**
+
 - **Moved onto the shared pieces:**
   - Raise application signing (signed line, payment, submitted, sign later).
   - The e-sign outcome shared by the party applications.
@@ -261,6 +266,7 @@ DS was never touched, so there is nothing to undo.
   - The load-error lines.
 
 **29 Oct · owner round on the live screens, sandbox copy, batch 3 (tasks).**
+
 - **Owner fixes:**
   - The title sits under the mark in every outcome. StagedOverlay gains `outcome`; the "header on every stage" rule no longer applies to the settled stage.
   - Outcomes close on the warm footer band with its divider.
@@ -289,6 +295,7 @@ DS was never touched, so there is nothing to undo.
 - **Open for the owner:** the act window keeps its actions in cards inside the body, with no footer band. Moving them is a layout change.
 
 **29 Oct · batch 4 (access and bulk), batch 5 (court side), final sweep.**
+
 - **Batch 4:**
   - Bulk signing and payment outcomes moved to the takeover with the footer band. The phone button collapse is fixed.
   - The "not ready to sign" gate is neutral. "N of M filed" (partial) is neutral with a checklist.

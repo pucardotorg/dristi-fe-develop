@@ -42,7 +42,7 @@ export function raisingOptions(
     role: string | null;
     side?: "complainant" | "accused";
     personId?: string;
-  }
+  },
 ): {
   raisedBy: PersonOption[];
   litigantsFor: (raisedById: string) => PersonOption[];
@@ -54,9 +54,7 @@ export function raisingOptions(
     people = [];
   }
   const side = seat.side;
-  const parties = people.filter(
-    (person) => person.kind === "party" && person.side === side
-  );
+  const parties = people.filter((person) => person.kind === "party" && person.side === side);
   const self = people.find((person) => person.id === seat.personId);
   const raisedBy: PersonOption[] =
     seat.role === "pip" && self
@@ -85,7 +83,7 @@ export function raisingOptions(
  */
 export function preselectedRaiser(
   options: PersonOption[],
-  seat: { role: string | null; personId?: string; signerId?: string }
+  seat: { role: string | null; personId?: string; signerId?: string },
 ): string {
   if (seat.role === "clerk") {
     if (seat.signerId && options.some((option) => option.id === seat.signerId)) {
@@ -93,9 +91,7 @@ export function preselectedRaiser(
     }
     return options.length === 1 ? options[0].id : "";
   }
-  return options.some((option) => option.id === seat.personId)
-    ? (seat.personId ?? "")
-    : "";
+  return options.some((option) => option.id === seat.personId) ? (seat.personId ?? "") : "";
 }
 
 /** The case's litigants, in cause-title order. */
@@ -126,10 +122,7 @@ export function caseLitigants(record: CaseRecord): CaseLitigant[] {
 }
 
 /** Where a warrant for this accused can be delivered, from the case file. */
-export function accusedAddresses(
-  record: CaseRecord,
-  accusedName: string
-): Address[] {
+export function accusedAddresses(record: CaseRecord, accusedName: string): Address[] {
   return accusedAddressesOnFile(record.id)
     .filter((entry) => entry.name === accusedName)
     .map((entry) => entry.address);

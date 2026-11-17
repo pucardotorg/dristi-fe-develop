@@ -105,9 +105,7 @@ export function FilingMain({
   const body = locked ? <PolicyLock reason={locked}>{children}</PolicyLock> : children;
 
   if (inCorrection) {
-    return (
-      <div className={cn("flex w-full min-w-0 flex-col gap-6", className)}>{body}</div>
-    );
+    return <div className={cn("flex w-full min-w-0 flex-col gap-6", className)}>{body}</div>;
   }
 
   return (
@@ -119,7 +117,7 @@ export function FilingMain({
            field is exactly as wide as it was. */
         "flex-1 bg-muted px-6 pb-8 pt-6 max-sm:[&_[data-slot=card]]:[--card-spacing:--spacing(4)] dark:bg-background",
         sourceOpen ? "lg:px-6" : "lg:px-12",
-        className
+        className,
       )}
     >
       <div
@@ -127,7 +125,7 @@ export function FilingMain({
           "flex w-full flex-col gap-6",
           width === "default" && "max-w-4xl",
           width === "wide" && "max-w-5xl",
-          width === "narrow" && "mx-auto max-w-2xl"
+          width === "narrow" && "mx-auto max-w-2xl",
         )}
       >
         {body}

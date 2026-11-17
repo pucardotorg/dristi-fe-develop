@@ -38,12 +38,7 @@ export type DocumentTypeId =
   | "court-record";
 
 /** Where a document came from, shown under its title (DSB-22). */
-export type DocumentSourceId =
-  | "complaint"
-  | "application"
-  | "submission"
-  | "deposition"
-  | "court";
+export type DocumentSourceId = "complaint" | "application" | "submission" | "deposition" | "court";
 
 /**
  * Held for every document, never shown as a column (DSB-05). A draft or one
@@ -51,11 +46,7 @@ export type DocumentSourceId =
  * evidence is read off `evidenceNumber`. Pending review is the bail bond's
  * own step (with the magistrate), outside this PRD.
  */
-export type DocumentStatus =
-  | "draft"
-  | "pending-signature"
-  | "submitted"
-  | "pending-review";
+export type DocumentStatus = "draft" | "pending-signature" | "submitted" | "pending-review";
 
 export const DOCUMENT_KINDS: { id: DocumentKind; label: string }[] = [
   { id: "documents", label: "Documents" },
@@ -78,9 +69,7 @@ export const DOCUMENT_TYPES: {
 ];
 
 /** The Type filter: the six of DSB-11, in the PRD's order. */
-export const DOCUMENT_FILTER_TYPES = DOCUMENT_TYPES.filter(
-  (item) => item.kind === "documents"
-);
+export const DOCUMENT_FILTER_TYPES = DOCUMENT_TYPES.filter((item) => item.kind === "documents");
 
 export const DOCUMENT_SOURCES: { id: DocumentSourceId; label: string }[] = [
   { id: "complaint", label: "Complaint" },
@@ -178,7 +167,7 @@ export function personIdentity(person: DocumentPerson): string {
 
 export function submittedByName(
   document: CaseDocument,
-  peopleById: Map<string, DocumentPerson>
+  peopleById: Map<string, DocumentPerson>,
 ): string {
   const person = peopleById.get(document.submittedById);
   return person ? personIdentity(person) : document.submittedById;
@@ -186,7 +175,7 @@ export function submittedByName(
 
 export function submittedByRole(
   document: CaseDocument,
-  peopleById: Map<string, DocumentPerson>
+  peopleById: Map<string, DocumentPerson>,
 ): string {
   return peopleById.get(document.submittedById)?.role ?? "";
 }
@@ -197,10 +186,9 @@ export function submittedByRole(
  */
 export function submittedBySideLabel(
   document: CaseDocument,
-  peopleById: Map<string, DocumentPerson>
+  peopleById: Map<string, DocumentPerson>,
 ): string {
-  const role =
-    peopleById.get(document.submittedById)?.role.toLowerCase() ?? "";
+  const role = peopleById.get(document.submittedById)?.role.toLowerCase() ?? "";
   if (role.includes("accused")) return "Accused";
   if (role.includes("complainant")) return "Complainant";
   return submittedByName(document, peopleById);
@@ -213,9 +201,7 @@ export function documentSrc(document: CaseDocument): string | undefined {
 
 function typeFromPack(label: string): DocumentTypeId {
   const normalized = label.trim().toLowerCase();
-  const match = DOCUMENT_TYPES.find(
-    (item) => item.label.toLowerCase() === normalized
-  );
+  const match = DOCUMENT_TYPES.find((item) => item.label.toLowerCase() === normalized);
   if (!match) {
     throw new Error(`Unknown document type in dummy pack: ${label}`);
   }
@@ -224,9 +210,7 @@ function typeFromPack(label: string): DocumentTypeId {
 
 function sourceFromPack(label: string): DocumentSourceId {
   const normalized = label.trim().toLowerCase();
-  const match = DOCUMENT_SOURCES.find(
-    (item) => item.label.toLowerCase() === normalized
-  );
+  const match = DOCUMENT_SOURCES.find((item) => item.label.toLowerCase() === normalized);
   if (!match) {
     throw new Error(`Unknown document source in dummy pack: ${label}`);
   }
@@ -235,18 +219,14 @@ function sourceFromPack(label: string): DocumentSourceId {
 
 function submissionStatusFromPack(value: string): DocumentStatus {
   const normalized = value.trim().toLowerCase();
-  const match = DOCUMENT_STATUSES.find(
-    (item) => item.label.toLowerCase() === normalized
-  );
+  const match = DOCUMENT_STATUSES.find((item) => item.label.toLowerCase() === normalized);
   if (!match) {
     throw new Error(`Unknown document status in dummy pack: ${value}`);
   }
   return match.id;
 }
 
-function linkedFromPack(
-  value: { id: string; label: string } | undefined
-): LinkedRecord | null {
+function linkedFromPack(value: { id: string; label: string } | undefined): LinkedRecord | null {
   if (!value) return null;
   return { id: value.id, label: value.label };
 }
@@ -322,10 +302,7 @@ function featuredFile(record: CaseRecord): DocumentsFile {
  * `<case>-counsel-c-0`, …), so populating a case here needs no people
  * authoring — the fixture's own cause title and counsel stay the one source.
  */
-const EXTRA_PACKS = pack.extraCases as Record<
-  string,
-  PackDocumentRow[] | undefined
->;
+const EXTRA_PACKS = pack.extraCases as Record<string, PackDocumentRow[] | undefined>;
 
 function peopleFrom(record: CaseRecord): DocumentPerson[] {
   const people: DocumentPerson[] = [
@@ -380,9 +357,7 @@ export const DOCUMENTS_PAGE_SIZES = [10, 20, 30, 40, 50] as const;
 export type DocumentsPageSize = (typeof DOCUMENTS_PAGE_SIZES)[number];
 export const DOCUMENTS_PAGE_SIZE: DocumentsPageSize = 10;
 
-export function isDocumentsPageSize(
-  value: number
-): value is DocumentsPageSize {
+export function isDocumentsPageSize(value: number): value is DocumentsPageSize {
   return (DOCUMENTS_PAGE_SIZES as readonly number[]).includes(value);
 }
 
@@ -411,18 +386,15 @@ export function selectDocuments(options: {
 }): DocumentsSelection {
   const query = options.filingQuery?.trim().toLowerCase() ?? "";
   const shared = options.documents.filter((document) => {
-    if (
-      options.submittedById &&
-      document.submittedById !== options.submittedById
-    ) {
+    if (options.submittedById && document.submittedById !== options.submittedById) {
       return false;
     }
     // The search spans both registers, like the submitter filter, so the
     // group-tab counts answer "where did my match land".
     if (
       query &&
-      ![document.title, document.provisionalId, document.evidenceNumber].some(
-        (value) => value?.toLowerCase().includes(query)
+      ![document.title, document.provisionalId, document.evidenceNumber].some((value) =>
+        value?.toLowerCase().includes(query),
       )
     ) {
       return false;
@@ -430,12 +402,8 @@ export function selectDocuments(options: {
     return true;
   });
 
-  const documentsCount = shared.filter(
-    (item) => documentKind(item.type) === "documents"
-  ).length;
-  const bailBondsCount = shared.filter(
-    (item) => documentKind(item.type) === "bail-bonds"
-  ).length;
+  const documentsCount = shared.filter((item) => documentKind(item.type) === "documents").length;
+  const bailBondsCount = shared.filter((item) => documentKind(item.type) === "bail-bonds").length;
 
   const matched = shared.filter((document) => {
     if (documentKind(document.type) !== options.kind) return false;
@@ -466,10 +434,7 @@ export function selectDocuments(options: {
   };
 }
 
-export function documentPageWindow(
-  page: number,
-  pageCount: number
-): (number | "gap")[] {
+export function documentPageWindow(page: number, pageCount: number): (number | "gap")[] {
   if (pageCount <= 7) {
     return Array.from({ length: pageCount }, (_, index) => index + 1);
   }
@@ -479,9 +444,7 @@ export function documentPageWindow(
     .sort((a, b) => a - b);
 
   return visible.flatMap((entry, index) =>
-    index > 0 && entry - visible[index - 1] > 1
-      ? ["gap" as const, entry]
-      : [entry]
+    index > 0 && entry - visible[index - 1] > 1 ? ["gap" as const, entry] : [entry],
   );
 }
 
@@ -492,7 +455,7 @@ export function documentPageWindow(
  */
 export function documentFromFiling(item: ApplicationRecord): CaseDocument {
   const files = item.documents.flatMap((doc) =>
-    doc.src ? [{ label: doc.label, src: doc.src }] : []
+    doc.src ? [{ label: doc.label, src: doc.src }] : [],
   );
   const file = files[0];
   return {
@@ -528,7 +491,7 @@ export function documentsFromApplication(item: ApplicationRecord): CaseDocument[
   const row = (
     id: string,
     title: string,
-    files: { label: string; src: string }[]
+    files: { label: string; src: string }[],
   ): CaseDocument => ({
     id,
     filingId: id,
@@ -550,9 +513,9 @@ export function documentsFromApplication(item: ApplicationRecord): CaseDocument[
       `${item.id}:attachment-${index}`,
       attachment.label,
       attachment.files.flatMap((file) =>
-        file.href ? [{ label: file.label, src: file.href }] : []
-      )
-    )
+        file.href ? [{ label: file.label, src: file.href }] : [],
+      ),
+    ),
   );
 }
 
@@ -568,9 +531,7 @@ export function documentsFromCourt(saved: SavedDocumentSubmission[]): {
   documents: CaseDocument[];
   people: DocumentPerson[];
 } {
-  const mine = saved.filter(
-    (item) => item.byCourt && item.status === "submitted"
-  );
+  const mine = saved.filter((item) => item.byCourt && item.status === "submitted");
   const seat = mine[0]?.byCourt;
   return {
     documents: mine.flatMap((item) =>
@@ -592,7 +553,7 @@ export function documentsFromCourt(saved: SavedDocumentSubmission[]): {
           href: files[0]?.src,
           files,
         };
-      })
+      }),
     ),
     people: seat
       ? [
@@ -614,13 +575,12 @@ const FILING_TYPE: Record<string, DocumentTypeId> = {
 };
 
 /** Who filed them, in this register's people shape. */
-export function documentPeopleFromFilings(
-  items: ApplicationRecord[]
-): DocumentPerson[] {
+export function documentPeopleFromFilings(items: ApplicationRecord[]): DocumentPerson[] {
   const seen = new Map<string, DocumentPerson>();
   for (const item of items) {
     if (seen.has(item.filedById)) continue;
-    const side = item.side === "court" ? "Court" : item.side === "accused" ? "Accused" : "Complainant";
+    const side =
+      item.side === "court" ? "Court" : item.side === "accused" ? "Accused" : "Complainant";
     seen.set(item.filedById, {
       id: item.filedById,
       name: item.filedBy,
@@ -633,20 +593,13 @@ export function documentPeopleFromFilings(
 
 /** No payment for a document (DSB-19): it is a draft, waits for its
  *  signature, or is on the record. */
-function documentStatusFromFiling(
-  status: ApplicationRecord["status"]
-): DocumentStatus {
-  return status === "draft" || status === "pending-signature"
-    ? status
-    : "submitted";
+function documentStatusFromFiling(status: ApplicationRecord["status"]): DocumentStatus {
+  return status === "draft" || status === "pending-signature" ? status : "submitted";
 }
 
 /** Still the filer's to finish: nothing has gone to the court yet. */
 export function documentNotSubmitted(document: CaseDocument): boolean {
-  return (
-    document.submissionStatus === "draft" ||
-    document.submissionStatus === "pending-signature"
-  );
+  return document.submissionStatus === "draft" || document.submissionStatus === "pending-signature";
 }
 
 /**
@@ -659,14 +612,9 @@ export function documentNotSubmitted(document: CaseDocument): boolean {
 export function withProvisionalIds(documents: CaseDocument[]): CaseDocument[] {
   const order = documents
     .filter(
-      (document) =>
-        !documentNotSubmitted(document) &&
-        documentKind(document.type) === "documents"
+      (document) => !documentNotSubmitted(document) && documentKind(document.type) === "documents",
     )
-    .sort(
-      (a, b) =>
-        a.submittedOn.localeCompare(b.submittedOn) || a.id.localeCompare(b.id)
-    );
+    .sort((a, b) => a.submittedOn.localeCompare(b.submittedOn) || a.id.localeCompare(b.id));
   const ids = new Map(order.map((document, index) => [document.id, `DOC-${index + 1}`]));
   return documents.map((document) => ({
     ...document,

@@ -30,7 +30,7 @@ export class BulkCaseRepository implements FilingRepository {
 
   constructor(
     private readonly batchId: string,
-    private readonly caseId: string
+    private readonly caseId: string,
   ) {}
 
   private get caseUrl() {
@@ -71,7 +71,10 @@ export class BulkCaseRepository implements FilingRepository {
   async putFile(file: StoredFile): Promise<void> {
     const form = new FormData();
     form.set("file", new File([file.blob], file.name, { type: file.type }));
-    const res = await bulkFetch(`/api/bulk/files/${encodeURIComponent(file.id)}`, { method: "PUT", body: form });
+    const res = await bulkFetch(`/api/bulk/files/${encodeURIComponent(file.id)}`, {
+      method: "PUT",
+      body: form,
+    });
     if (!res.ok) throw new Error(`The file could not be stored (${res.status})`);
   }
 
@@ -79,8 +82,9 @@ export class BulkCaseRepository implements FilingRepository {
     const res = await bulkFetch(`/api/bulk/files/${encodeURIComponent(id)}`);
     if (!res.ok) return null;
     const blob = await res.blob();
-    const name =
-      decodeURIComponent(/filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? id);
+    const name = decodeURIComponent(
+      /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? id,
+    );
     const ext = (name.split(".").pop() || "").toUpperCase().slice(0, 5) || "FILE";
     return { id, name, size: blob.size, type: blob.type, ext, blob, createdAt: "" };
   }

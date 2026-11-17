@@ -40,8 +40,8 @@ export function emptyStructuredAddress(): StructuredAddress {
 
 /** Everything but the building name — the one optional field. */
 export function structuredAddressComplete(a: StructuredAddress): boolean {
-  return (["door", "locality", "city", "district", "state", "pin"] as const).every(
-    (key) => a[key].trim()
+  return (["door", "locality", "city", "district", "state", "pin"] as const).every((key) =>
+    a[key].trim(),
   );
 }
 
@@ -91,10 +91,7 @@ export function StructuredAddressFields({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {FIELDS.map((field) => (
-        <Field
-          key={field.key}
-          className={field.wide ? "sm:col-span-2" : undefined}
-        >
+        <Field key={field.key} className={field.wide ? "sm:col-span-2" : undefined}>
           <FieldLabel htmlFor={`${idPrefix}-${field.key}`}>
             {translateText(t, field.label)} {field.required ? REQUIRED_MARK : null}
           </FieldLabel>
@@ -103,9 +100,7 @@ export function StructuredAddressFields({
             inputMode={field.numeric ? "numeric" : undefined}
             maxLength={field.numeric ? 6 : undefined}
             value={value[field.key]}
-            onChange={(event) =>
-              onChange({ ...value, [field.key]: event.target.value })
-            }
+            onChange={(event) => onChange({ ...value, [field.key]: event.target.value })}
           />
         </Field>
       ))}

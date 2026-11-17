@@ -20,15 +20,15 @@ import {
   unsavedDocuments,
   unsavedRows,
 } from "./case-documents";
-import type {
-  CaseDocument,
-  FilingDraft,
-  IntakeDocType,
-  IntakeSlot,
-  StoredFileRef,
-} from "./types";
+import type { CaseDocument, FilingDraft, IntakeDocType, IntakeSlot, StoredFileRef } from "./types";
 
-const FILE: StoredFileRef = { id: "f1", name: "scan.pdf", size: 10, type: "application/pdf", ext: "PDF" };
+const FILE: StoredFileRef = {
+  id: "f1",
+  name: "scan.pdf",
+  size: 10,
+  type: "application/pdf",
+  ext: "PDF",
+};
 
 /** A draft with two cheques, its list of documents built as the store builds it. */
 function twoChequeDraft(): FilingDraft {
@@ -72,7 +72,9 @@ describe("caseUploadFor", () => {
     const draft = twoChequeDraft();
     rowNamed(draft, "Cheque 2").digital = true;
     assert.deepEqual(caseUploadFor(draft, { kind: "slot", key: "c2f" })?.meta, { isDigital: true });
-    assert.deepEqual(caseUploadFor(draft, { kind: "slot", key: "c1f" })?.meta, { isDigital: false });
+    assert.deepEqual(caseUploadFor(draft, { kind: "slot", key: "c1f" })?.meta, {
+      isDigital: false,
+    });
   });
 
   it("leaves the tick out for a slot the list does not show", () => {
@@ -189,7 +191,7 @@ describe("complainant document links", () => {
         l.caseDocumentId,
         l.participantId,
       ]),
-      [["d-vak", "p-new"]]
+      [["d-vak", "p-new"]],
     );
   });
 });
@@ -255,12 +257,13 @@ describe("demand notice papers and scans", () => {
     ]);
     // Ids just saved, before the draft holds them: notice 1 was saved again as ev-9.
     assert.deepEqual(
-      pendingLinks(draft, { evidenceIdOf: (n) => (n.id === draft.notices[0].id ? "ev-9" : undefined) })
-        .map((l) => [l.caseDocumentId, l.evidenceId]),
+      pendingLinks(draft, {
+        evidenceIdOf: (n) => (n.id === draft.notices[0].id ? "ev-9" : undefined),
+      }).map((l) => [l.caseDocumentId, l.evidenceId]),
       [
         ["d-dispatch", "ev-9"],
         ["d-pod", "ev-9"],
-      ]
+      ],
     );
   });
 
@@ -294,7 +297,7 @@ describe("unsavedDocuments", () => {
       [
         { label: slot.label, error: "Offline" },
         { label: "Other document", error: "Too large" },
-      ]
+      ],
     );
   });
 
@@ -320,7 +323,7 @@ describe("unsavedRows", () => {
 
     assert.deepEqual(
       unsavedRows(draft, draft.documents).map(({ label, target }) => ({ label, target })),
-      [{ label: "Cheque 2", target: { kind: "slot", key: cheque2.key } }]
+      [{ label: "Cheque 2", target: { kind: "slot", key: cheque2.key } }],
     );
     // A group the step hides is not offered either.
     assert.deepEqual(unsavedRows(draft, draft.documents.slice(1)), []);
@@ -382,10 +385,13 @@ describe("removing a complainant", () => {
   it("takes the complainant's slots and custom rows with them", () => {
     const draft = threeComplainantDraft();
     const targets = caseRecordTargets(draft, "party", 1);
-    assert.deepEqual(targets.filter((t) => t.kind === "row"), [{ kind: "row", id: "custom-2" }]);
+    assert.deepEqual(
+      targets.filter((t) => t.kind === "row"),
+      [{ kind: "row", id: "custom-2" }],
+    );
     assert.deepEqual(
       targets.filter((t) => t.kind === "slot").map((t) => (t.kind === "slot" ? t.key : "")),
-      draft.intake.parties[1].slots.map((s) => s.key)
+      draft.intake.parties[1].slots.map((s) => s.key),
     );
   });
 

@@ -74,25 +74,16 @@ function JoinFlow() {
       // Session-lite: remember the role + whether an advocate profile exists, so the
       // shell opens as this account. A base litigant has no advocate profile until they
       // elevate (Settings); an advocate account has one.
-      window.localStorage.setItem(
-        PROFILE_ROLE_KEY,
-        advocate ? "advocate" : "litigant",
-      );
-      window.localStorage.setItem(
-        ADVOCATE_AVAILABLE_KEY,
-        advocate ? "true" : "false",
-      );
+      window.localStorage.setItem(PROFILE_ROLE_KEY, advocate ? "advocate" : "litigant");
+      window.localStorage.setItem(ADVOCATE_AVAILABLE_KEY, advocate ? "true" : "false");
       // The account's name is fixed here; switching profile later changes the role,
       // not the person. A backend sign-in does not return the name yet, so the number
       // stands in for it rather than another person's demo name.
-      window.localStorage.setItem(
-        ACCOUNT_NAME_KEY,
-        options.name || `+91 ${options.mobile}`,
-      );
+      window.localStorage.setItem(ACCOUNT_NAME_KEY, options.name || `+91 ${options.mobile}`);
       // The litigant opens as a new account: no complaints from earlier signing links on
       // its home (owner, 2026-10-14).
       setNewAccountShell(!advocate);
-      setSignedInMobile(advocate ? null : options?.mobile ?? null);
+      setSignedInMobile(advocate ? null : (options?.mobile ?? null));
 
       if (!token) {
         // Land on the role home, not the task list. Pending Tasks stays a nav
@@ -105,8 +96,7 @@ function JoinFlow() {
       query.set("token", token);
       if (searchParams.get("nocase") === "1") query.set("nocase", "1");
       if (!advocate && options.idSkipped) query.set("noid", "1");
-      if (!advocate && options.profileIncomplete)
-        query.set("profile", "missing");
+      if (!advocate && options.profileIncomplete) query.set("profile", "missing");
       if (locale !== "en") query.set("lang", locale);
       const qs = query.toString();
       router.push(`${advocate ? "/advocate" : "/home"}${qs ? `?${qs}` : ""}`);

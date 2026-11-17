@@ -1,13 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CircleAlertIcon,
-  EyeIcon,
-  EyeOffIcon,
-} from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, CircleAlertIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 
 import { BrandLockup } from "@/components/brand-lockup";
 import { MaskedOtp, OTP_LENGTH } from "@/components/registration/masked-otp";
@@ -18,16 +12,8 @@ import {
 import { ResubmissionFlow } from "@/components/registration/resubmission-flow";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -98,7 +84,6 @@ const SLIDE_FORWARD =
 const SLIDE_BACK =
   "animate-in fade-in-0 slide-in-from-left-8 duration-200 motion-reduce:animate-none";
 
-
 /**
  * The §138 explainer entry. Rendered twice, and only ever one at a time: on the canvas
  * from `lg` up, and inline in the form column below that. `display:none` takes the
@@ -124,21 +109,14 @@ function HelpEntry({
   onCanvas?: boolean;
 }) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-4",
-        onCanvas ? "items-start" : "items-center",
-      )}
-    >
+    <div className={cn("flex flex-col gap-4", onCanvas ? "items-start" : "items-center")}>
       <div
         className={cn(
           "flex flex-col gap-2",
           onCanvas ? "items-start text-left" : "items-center text-center",
         )}
       >
-        <h3 className="text-body font-semibold text-balance">
-          {pick(entry.title, locale)}
-        </h3>
+        <h3 className="text-body font-semibold text-balance">{pick(entry.title, locale)}</h3>
         <p
           className={cn(
             "text-body-compact",
@@ -223,8 +201,7 @@ export function SignInBlock({
   /* A rejected registration on the signed-in number routes into its
      correction round instead of the portal — the SMS told them to sign in
      again, and this is where signing in lands them. */
-  const [resubmission, setResubmission] =
-    React.useState<RejectedRegistration | null>(null);
+  const [resubmission, setResubmission] = React.useState<RejectedRegistration | null>(null);
   /* An advocate or clerk the court has not approved yet: the backend refuses them a
      session, and they see the same awaiting-approval screen registration ended on. */
   const [awaitingApproval, setAwaitingApproval] = React.useState(false);
@@ -256,9 +233,9 @@ export function SignInBlock({
   const [pending, setPending] = React.useState(false);
   /* What the backend said, as a copy key: `noMatch` sits on the credential field,
      `unavailable` above the button. Cleared by any change to what is being submitted. */
-  const [serverError, setServerError] = React.useState<"noMatch" | "unavailable" | "codeUsed" | null>(
-    null,
-  );
+  const [serverError, setServerError] = React.useState<
+    "noMatch" | "unavailable" | "codeUsed" | null
+  >(null);
 
   const auth = getAuthService();
   const badMobile = touched && !isIndianMobile(mobile);
@@ -446,12 +423,7 @@ export function SignInBlock({
           {summoned ? (
             <>
               <Separator className="bg-brand-canvas-muted-foreground/40" />
-              <HelpEntry
-                locale={locale}
-                entry={help.summoned}
-                onSeekHelp={onSeekHelp}
-                onCanvas
-              />
+              <HelpEntry locale={locale} entry={help.summoned} onSeekHelp={onSeekHelp} onCanvas />
             </>
           ) : null}
         </div>
@@ -480,12 +452,8 @@ export function SignInBlock({
               {/* The full Malayalam line pushed the language toggle off a phone's
                   edge, so below sm the arrow carries "back" and the label names
                   only the destination. */}
-              <span className="sm:hidden">
-                {pick(registrationUi.backToSignInShort, locale)}
-              </span>
-              <span className="max-sm:hidden">
-                {pick(registrationUi.backToSignIn, locale)}
-              </span>
+              <span className="sm:hidden">{pick(registrationUi.backToSignInShort, locale)}</span>
+              <span className="max-sm:hidden">{pick(registrationUi.backToSignIn, locale)}</span>
             </Button>
           ) : (
             <BrandLockup className="h-8 lg:hidden" />
@@ -494,7 +462,8 @@ export function SignInBlock({
           {/* Two locales, so a segmented toggle beats a dropdown: it costs one tap
               instead of two, and — the reason it matters here — it shows മലയാളം in its
               own script, findable by someone who cannot read the word "Language". */}
-          <SegmentedControl size="compact"
+          <SegmentedControl
+            size="compact"
             className="shrink-0 lg:ml-auto"
             type="single"
             value={locale}
@@ -502,10 +471,7 @@ export function SignInBlock({
             aria-label={pick(ui.language, locale)}
           >
             {LOCALES.map((l) => (
-              <SegmentedControlItem
-                key={l.value}
-                value={l.value}
-              >
+              <SegmentedControlItem key={l.value} value={l.value}>
                 {l.label}
               </SegmentedControlItem>
             ))}
@@ -515,9 +481,7 @@ export function SignInBlock({
         <main
           className={cn(
             "flex flex-1 items-start justify-center overflow-y-auto px-6 pb-10 lg:min-h-0 lg:px-12",
-            awayFromSignIn
-              ? "pt-4 md:pt-8 lg:pt-32 lg:pb-12"
-              : "pt-8 lg:items-center lg:py-12",
+            awayFromSignIn ? "pt-4 md:pt-8 lg:pt-32 lg:pb-12" : "pt-8 lg:items-center lg:py-12",
           )}
         >
           {awaitingApproval ? (
@@ -536,127 +500,116 @@ export function SignInBlock({
               onFinish={onRegistered}
             />
           ) : (
-          /* Centred in the column at every width (owner, Sept 18). On phones the
+            /* Centred in the column at every width (owner, Sept 18). On phones the
              centre is OPTICAL: the space splits 2:3 above:below, because a block at
              the true middle reads as sitting low. Growing spacers rather than
              `items-center` or a translate: they fall to zero when a step outgrows
              the column, so the top stays reachable by scroll instead of clipped. */
-          <div className="mx-auto flex w-full max-w-100 flex-col self-stretch before:grow-2 after:grow-3 lg:before:grow lg:after:grow">
-          <div className="flex w-full flex-col gap-6 lg:-translate-y-2">
-            {step === "number" ? (
-              <div
-                className={cn(
-                  "flex flex-col gap-6",
-                  direction === "back" && SLIDE_BACK,
-                )}
-              >
-                {/* One token down the scale on phones — `title-s` and `body-compact`.
+            <div className="mx-auto flex w-full max-w-100 flex-col self-stretch before:grow-2 after:grow-3 lg:before:grow lg:after:grow">
+              <div className="flex w-full flex-col gap-6 lg:-translate-y-2">
+                {step === "number" ? (
+                  <div className={cn("flex flex-col gap-6", direction === "back" && SLIDE_BACK)}>
+                    {/* One token down the scale on phones — `title-s` and `body-compact`.
                     Type steps; controls do not, because 40px is the touch-target floor
                     and shrinking a field to buy air is how a form becomes unusable in
                     exactly the hands that need it most. */}
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <h1 className="text-title-s text-balance font-semibold sm:text-title">
-                    {pick(form.title, locale)}
-                  </h1>
-                  <p className="text-body-compact text-muted-foreground sm:text-body">
-                    {pick(form.subtitle, locale)}
-                  </p>
-                </div>
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <h1 className="text-title-s text-balance font-semibold sm:text-title">
+                        {pick(form.title, locale)}
+                      </h1>
+                      <p className="text-body-compact text-muted-foreground sm:text-body">
+                        {pick(form.subtitle, locale)}
+                      </p>
+                    </div>
 
-                <div className="flex flex-col gap-4">
-                  <form
-                    onSubmit={submitNumber}
-                    noValidate
-                    aria-label={pick(form.title, locale)}
-                    className="flex flex-col gap-4"
-                  >
-                    <Field data-invalid={badMobile}>
-                      <FieldLabel>{pick(form.mobileLabel, locale)}</FieldLabel>
-                      <InputGroup>
-                        <InputGroupAddon variant="field">
-                          <InputGroupText>+91</InputGroupText>
-                        </InputGroupAddon>
-                        <InputGroupInput
-                          type="tel"
-                          inputMode="numeric"
-                          autoComplete="tel-national"
-                          maxLength={10}
-                          placeholder={pick(form.mobilePlaceholder, locale)}
-                          value={mobile}
-                          onChange={(event) => {
-                            setMobile(
-                              event.target.value.replace(DIGITS, "").slice(0, 10),
-                            );
-                            invalidate();
+                    <div className="flex flex-col gap-4">
+                      <form
+                        onSubmit={submitNumber}
+                        noValidate
+                        aria-label={pick(form.title, locale)}
+                        className="flex flex-col gap-4"
+                      >
+                        <Field data-invalid={badMobile}>
+                          <FieldLabel>{pick(form.mobileLabel, locale)}</FieldLabel>
+                          <InputGroup>
+                            <InputGroupAddon variant="field">
+                              <InputGroupText>+91</InputGroupText>
+                            </InputGroupAddon>
+                            <InputGroupInput
+                              type="tel"
+                              inputMode="numeric"
+                              autoComplete="tel-national"
+                              maxLength={10}
+                              placeholder={pick(form.mobilePlaceholder, locale)}
+                              value={mobile}
+                              onChange={(event) => {
+                                setMobile(event.target.value.replace(DIGITS, "").slice(0, 10));
+                                invalidate();
+                              }}
+                            />
+                          </InputGroup>
+                          <FieldError>
+                            {badMobile
+                              ? pick(
+                                  mobile.length !== 10 ? form.mobileError : form.mobileInvalid,
+                                  locale,
+                                )
+                              : null}
+                          </FieldError>
+                        </Field>
+
+                        <Button type="submit" size="lg" className="w-full">
+                          {pick(form.continue, locale)}
+                        </Button>
+                      </form>
+
+                      <div className="flex flex-wrap items-center justify-center gap-2 text-body-compact text-muted-foreground">
+                        {pick(form.registerPrompt, locale)}
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="h-auto p-0"
+                          onClick={() => {
+                            setRegistrationOpen(true);
+                            onRegister?.();
                           }}
-                        />
-                      </InputGroup>
-                      <FieldError>
-                        {badMobile
-                          ? pick(
-                              mobile.length !== 10 ? form.mobileError : form.mobileInvalid,
-                              locale,
-                            )
-                          : null}
-                      </FieldError>
-                    </Field>
+                        >
+                          {pick(form.registerAction, locale)}
+                        </Button>
+                      </div>
+                    </div>
 
-                    <Button type="submit" size="lg" className="w-full">
-                      {pick(form.continue, locale)}
-                    </Button>
-                  </form>
-
-                  <div className="flex flex-wrap items-center justify-center gap-2 text-body-compact text-muted-foreground">
-                    {pick(form.registerPrompt, locale)}
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="h-auto p-0"
-                      onClick={() => {
-                        setRegistrationOpen(true);
-                        onRegister?.();
-                      }}
-                    >
-                      {pick(form.registerAction, locale)}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* The phone half of the explainer. Same content, page type, a rule
+                    {/* The phone half of the explainer. Same content, page type, a rule
                     instead of a gradient plate. Only one of the two is ever in the
                     accessibility tree — the other is `display:none`. */}
-                {summoned ? (
-                  <div className="mt-2 flex flex-col gap-10 lg:hidden">
-                    <Separator />
-                    <HelpEntry
-                      locale={locale}
-                      entry={help.summoned}
-                      onSeekHelp={onSeekHelp}
-                    />
+                    {summoned ? (
+                      <div className="mt-2 flex flex-col gap-10 lg:hidden">
+                        <Separator />
+                        <HelpEntry locale={locale} entry={help.summoned} onSeekHelp={onSeekHelp} />
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </div>
-            ) : (
-              <div
-                className={cn(
-                  "flex flex-col gap-6",
-                  direction === "forward" ? SLIDE_FORWARD : SLIDE_BACK,
-                )}
-              >
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <h1 className="text-title-s text-balance font-semibold sm:text-title">
-                    {pick(form.title, locale)}
-                  </h1>
-                </div>
+                ) : (
+                  <div
+                    className={cn(
+                      "flex flex-col gap-6",
+                      direction === "forward" ? SLIDE_FORWARD : SLIDE_BACK,
+                    )}
+                  >
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <h1 className="text-title-s text-balance font-semibold sm:text-title">
+                        {pick(form.title, locale)}
+                      </h1>
+                    </div>
 
-                <form
-                  onSubmit={submitCredential}
-                  noValidate
-                  aria-label={pick(form.title, locale)}
-                  aria-busy={pending}
-                  className="flex flex-col gap-4"
-                >
-                    {/* The way back, then the method — one plane under the heading.
+                    <form
+                      onSubmit={submitCredential}
+                      noValidate
+                      aria-label={pick(form.title, locale)}
+                      aria-busy={pending}
+                      className="flex flex-col gap-4"
+                    >
+                      {/* The way back, then the method — one plane under the heading.
                         The locked number has left the step (owner, Sept 11): the OTP
                         well still prints the number it sent to, and the password path
                         never needed it on screen. The method strip fills the whole block,
@@ -664,229 +617,201 @@ export function SignInBlock({
                         outside that block on its left rather than eating into it — inline
                         on a phone where there is no gutter, hung in the gutter from `sm`
                         up where there is (owner, Sept 11). */}
-                    <div className="relative flex items-center gap-2 sm:block">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0 sm:absolute sm:top-1/2 sm:right-full sm:mr-1 sm:-translate-y-1/2"
-                        onClick={changeNumber}
-                        aria-label={pick(form.changeNumber, locale)}
-                      >
-                        <ArrowLeftIcon aria-hidden />
-                      </Button>
-                      <SegmentedControl
-                        className="w-full flex-1 sm:flex-none"
-                        type="single"
-                        value={method}
-                        onValueChange={(value) => {
-                          if (!value) return;
-                          setMethod(value as Method);
-                          resetCode();
-                          invalidate();
-                        }}
-                        aria-label={pick(form.methodLegend, locale)}
-                      >
-                        {METHOD_ORDER.map((m) => (
-                          <SegmentedControlItem
-                            key={m}
-                            value={m}
-                            className="flex-1"
-                          >
-                            {pick(methods[m], locale)}
-                          </SegmentedControlItem>
-                        ))}
-                      </SegmentedControl>
-                    </div>
+                      <div className="relative flex items-center gap-2 sm:block">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0 sm:absolute sm:top-1/2 sm:right-full sm:mr-1 sm:-translate-y-1/2"
+                          onClick={changeNumber}
+                          aria-label={pick(form.changeNumber, locale)}
+                        >
+                          <ArrowLeftIcon aria-hidden />
+                        </Button>
+                        <SegmentedControl
+                          className="w-full flex-1 sm:flex-none"
+                          type="single"
+                          value={method}
+                          onValueChange={(value) => {
+                            if (!value) return;
+                            setMethod(value as Method);
+                            resetCode();
+                            invalidate();
+                          }}
+                          aria-label={pick(form.methodLegend, locale)}
+                        >
+                          {METHOD_ORDER.map((m) => (
+                            <SegmentedControlItem key={m} value={m} className="flex-1">
+                              {pick(methods[m], locale)}
+                            </SegmentedControlItem>
+                          ))}
+                        </SegmentedControl>
+                      </div>
 
-                    {method === "password" ? (
-                      <Field data-invalid={badPassword}>
-                        <div className="flex items-center justify-between gap-4">
-                          <FieldLabel>
-                            {pick(form.passwordLabel, locale)}
-                          </FieldLabel>
-                          <Button
-                            type="button"
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0"
-                          >
-                            {pick(form.forgot, locale)}
-                          </Button>
-                        </div>
-                        <InputGroup>
-                          <InputGroupInput
-                            type={revealed ? "text" : "password"}
-                            autoComplete="current-password"
-                            autoFocus
-                            placeholder={pick(form.passwordPlaceholder, locale)}
-                            value={password}
-                            onChange={(event) => {
-                              setPassword(event.target.value);
-                              invalidate();
-                            }}
-                          />
-                          <InputGroupAddon align="inline-end">
-                            <InputGroupButton
-                              size="icon-sm"
-                              aria-label={pick(
-                                revealed
-                                  ? form.passwordHide
-                                  : form.passwordShow,
-                                locale,
-                              )}
-                              aria-pressed={revealed}
-                              onClick={() => setRevealed((value) => !value)}
-                            >
-                              {revealed ? (
-                                <EyeOffIcon aria-hidden />
-                              ) : (
-                                <EyeIcon aria-hidden />
-                              )}
-                            </InputGroupButton>
-                          </InputGroupAddon>
-                        </InputGroup>
-                        <FieldError>
-                          {noMatch
-                            ? pick(form.noMatch, locale)
-                            : badPassword
-                              ? pick(form.passwordError, locale)
-                              : null}
-                        </FieldError>
-                      </Field>
-                    ) : null}
+                      {method === "password" ? (
+                        <Field data-invalid={badPassword}>
+                          <div className="flex items-center justify-between gap-4">
+                            <FieldLabel>{pick(form.passwordLabel, locale)}</FieldLabel>
+                            <Button type="button" variant="link" size="sm" className="h-auto p-0">
+                              {pick(form.forgot, locale)}
+                            </Button>
+                          </div>
+                          <InputGroup>
+                            <InputGroupInput
+                              type={revealed ? "text" : "password"}
+                              autoComplete="current-password"
+                              autoFocus
+                              placeholder={pick(form.passwordPlaceholder, locale)}
+                              value={password}
+                              onChange={(event) => {
+                                setPassword(event.target.value);
+                                invalidate();
+                              }}
+                            />
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupButton
+                                size="icon-sm"
+                                aria-label={pick(
+                                  revealed ? form.passwordHide : form.passwordShow,
+                                  locale,
+                                )}
+                                aria-pressed={revealed}
+                                onClick={() => setRevealed((value) => !value)}
+                              >
+                                {revealed ? <EyeOffIcon aria-hidden /> : <EyeIcon aria-hidden />}
+                              </InputGroupButton>
+                            </InputGroupAddon>
+                          </InputGroup>
+                          <FieldError>
+                            {noMatch
+                              ? pick(form.noMatch, locale)
+                              : badPassword
+                                ? pick(form.passwordError, locale)
+                                : null}
+                          </FieldError>
+                        </Field>
+                      ) : null}
 
-                    {/* OTP, once the code is out: the same panel the registration contact
+                      {/* OTP, once the code is out: the same panel the registration contact
                         step shows — a sunken well with the code field, masked at rest,
                         the reveal under the boxes on the left and the countdown / resend
                         on the right. It opens in place, so the number, the method toggle
                         and Change number all stay where they were. */}
-                    {method === "otp" && codeSent ? (
-                      <Field
-                        data-invalid={badCode}
-                        className={cn("rounded-lg bg-surface-sunken p-4", SLIDE_FORWARD)}
-                      >
-                        {/* The description already says "a 6-digit code" — the label
+                      {method === "otp" && codeSent ? (
+                        <Field
+                          data-invalid={badCode}
+                          className={cn("rounded-lg bg-surface-sunken p-4", SLIDE_FORWARD)}
+                        >
+                          {/* The description already says "a 6-digit code" — the label
                             above it only repeated the phrase (owner, Sept 11). Kept for
                             screen readers, dropped from view. */}
-                        <FieldLabel className="sr-only">
-                          {pick(otp.label, locale)}
-                        </FieldLabel>
-                        <FieldDescription>
-                          {pick(otp.subtitle, locale).replace("{number}", mobile)}
-                        </FieldDescription>
-                        <MaskedOtp
-                          value={code}
-                          revealed={codeRevealed}
-                          onChange={(value) => {
-                            setCode(value);
-                            setTouched(false);
-                            setAccepted(false);
-                            setServerError(null);
-                          }}
-                        />
-                        <FieldError>
-                          {noMatch
-                            ? pick(form.noMatch, locale)
-                            : badCode
-                              ? pick(otp.error, locale)
-                              : null}
-                        </FieldError>
-                        <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-4 gap-y-1">
-                      <Button
-                        type="button"
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0"
-                        aria-pressed={codeRevealed}
-                        onClick={() => setCodeRevealed((value) => !value)}
-                      >
-                        {codeRevealed ? (
-                          <EyeOffIcon data-icon="inline-start" aria-hidden />
-                        ) : (
-                          <EyeIcon data-icon="inline-start" aria-hidden />
-                        )}
-                        {pick(codeRevealed ? otp.hide : otp.show, locale)}
-                      </Button>
-                      {resendIn > 0 ? (
-                        <p className="text-body-compact whitespace-nowrap text-muted-foreground tabular-nums">
-                          {pick(otp.resendIn, locale).replace(
-                            "{seconds}",
-                            String(resendIn),
-                          )}
-                        </p>
-                      ) : (
-                        <Button
-                          type="button"
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0"
-                          disabled={pending}
-                          onClick={() => {
-                            void sendCode();
-                          }}
-                        >
-                          {pick(otp.resend, locale)}
-                        </Button>
-                      )}
-                    </div>
-                      </Field>
-                    ) : null}
+                          <FieldLabel className="sr-only">{pick(otp.label, locale)}</FieldLabel>
+                          <FieldDescription>
+                            {pick(otp.subtitle, locale).replace("{number}", mobile)}
+                          </FieldDescription>
+                          <MaskedOtp
+                            value={code}
+                            revealed={codeRevealed}
+                            onChange={(value) => {
+                              setCode(value);
+                              setTouched(false);
+                              setAccepted(false);
+                              setServerError(null);
+                            }}
+                          />
+                          <FieldError>
+                            {noMatch
+                              ? pick(form.noMatch, locale)
+                              : badCode
+                                ? pick(otp.error, locale)
+                                : null}
+                          </FieldError>
+                          <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                            <Button
+                              type="button"
+                              variant="link"
+                              size="sm"
+                              className="h-auto p-0"
+                              aria-pressed={codeRevealed}
+                              onClick={() => setCodeRevealed((value) => !value)}
+                            >
+                              {codeRevealed ? (
+                                <EyeOffIcon data-icon="inline-start" aria-hidden />
+                              ) : (
+                                <EyeIcon data-icon="inline-start" aria-hidden />
+                              )}
+                              {pick(codeRevealed ? otp.hide : otp.show, locale)}
+                            </Button>
+                            {resendIn > 0 ? (
+                              <p className="text-body-compact whitespace-nowrap text-muted-foreground tabular-nums">
+                                {pick(otp.resendIn, locale).replace("{seconds}", String(resendIn))}
+                              </p>
+                            ) : (
+                              <Button
+                                type="button"
+                                variant="link"
+                                size="sm"
+                                className="h-auto p-0"
+                                disabled={pending}
+                                onClick={() => {
+                                  void sendCode();
+                                }}
+                              >
+                                {pick(otp.resend, locale)}
+                              </Button>
+                            )}
+                          </div>
+                        </Field>
+                      ) : null}
 
-                    {/* The hint belongs to the button, not to the field above it. Left
+                      {/* The hint belongs to the button, not to the field above it. Left
                         in the form's own rhythm it sat equidistant between the two and
                         read as a caption on the wrong element. Once the code is out the
                         hint is gone and the button verifies. */}
-                    {serverError === "codeUsed" ? (
-                      <Alert variant="destructive">
-                        <CircleAlertIcon aria-hidden />
-                        <AlertDescription>{pick(form.codeUsed, locale)}</AlertDescription>
-                      </Alert>
-                    ) : null}
-                    {serverError === "unavailable" ? (
-                      <Alert variant="destructive">
-                        <CircleAlertIcon aria-hidden />
-                        <AlertDescription>{pick(form.unavailable, locale)}</AlertDescription>
-                      </Alert>
-                    ) : null}
-
-                    <div className="flex flex-col gap-2">
-                      {method === "otp" && !codeSent ? (
-                        <FieldDescription>
-                          {pick(form.otpHint, locale)}
-                        </FieldDescription>
+                      {serverError === "codeUsed" ? (
+                        <Alert variant="destructive">
+                          <CircleAlertIcon aria-hidden />
+                          <AlertDescription>{pick(form.codeUsed, locale)}</AlertDescription>
+                        </Alert>
                       ) : null}
-                      {/* aria-disabled, not disabled: a disabled button drops keyboard
+                      {serverError === "unavailable" ? (
+                        <Alert variant="destructive">
+                          <CircleAlertIcon aria-hidden />
+                          <AlertDescription>{pick(form.unavailable, locale)}</AlertDescription>
+                        </Alert>
+                      ) : null}
+
+                      <div className="flex flex-col gap-2">
+                        {method === "otp" && !codeSent ? (
+                          <FieldDescription>{pick(form.otpHint, locale)}</FieldDescription>
+                        ) : null}
+                        {/* aria-disabled, not disabled: a disabled button drops keyboard
                           focus, and the person would land back at the top of the page
                           when the answer came. The handler ignores repeat presses. */}
-                      <Button
-                        type="submit"
-                        size="lg"
-                        className="w-full"
-                        aria-disabled={pending || undefined}
-                      >
-                        {pending ? <Spinner data-icon="inline-start" aria-hidden /> : null}
-                        {pick(
-                          method === "password"
-                            ? form.submitPassword
-                            : codeSent
-                              ? otp.verify
-                              : form.submitOtp,
-                          locale,
-                        )}
-                      </Button>
-                    </div>
+                        <Button
+                          type="submit"
+                          size="lg"
+                          className="w-full"
+                          aria-disabled={pending || undefined}
+                        >
+                          {pending ? <Spinner data-icon="inline-start" aria-hidden /> : null}
+                          {pick(
+                            method === "password"
+                              ? form.submitPassword
+                              : codeSent
+                                ? otp.verify
+                                : form.submitOtp,
+                            locale,
+                          )}
+                        </Button>
+                      </div>
 
-                    <PrototypeNotice
-                      show={accepted}
-                      mobile={mobile}
-                      method={method}
-                    />
-                </form>
+                      <PrototypeNotice show={accepted} mobile={mobile} method={method} />
+                    </form>
+                  </div>
+                )}
               </div>
-            )}
-           </div>
-          </div>
+            </div>
           )}
         </main>
       </div>
@@ -902,11 +827,7 @@ export function SignInBlock({
           // the end of a line — which is exactly what happens at 375px.
           <span key={item.href} className="flex items-center gap-2">
             {index > 0 ? <span aria-hidden>·</span> : null}
-            <Button
-              variant="link"
-              asChild
-              className="h-10 px-0 text-caption text-muted-foreground"
-            >
+            <Button variant="link" asChild className="h-10 px-0 text-caption text-muted-foreground">
               <a href={item.href}>{pick(item.label, locale)}</a>
             </Button>
           </span>

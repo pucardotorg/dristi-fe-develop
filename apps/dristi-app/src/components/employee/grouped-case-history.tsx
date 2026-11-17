@@ -3,18 +3,11 @@
 import * as React from "react";
 import { ChevronDownIcon, ExternalLinkIcon, HistoryIcon } from "lucide-react";
 
-import {
-  HistoryTypeFilter,
-  type TypeOption,
-} from "@/components/employee/order-case-history";
+import { HistoryTypeFilter, type TypeOption } from "@/components/employee/order-case-history";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Empty,
   EmptyDescription,
@@ -116,16 +109,12 @@ export function CaseHistoryList({
   /* Bring a line into view in the tab's own scroll — not `scrollIntoView`, which would
      move the sheet too. A third of the way down, so what came after it shows above. */
   const reveal = React.useCallback((id: string, focus: boolean) => {
-    const target = listRef.current?.querySelector<HTMLElement>(
-      `[data-row="${CSS.escape(id)}"]`,
-    );
+    const target = listRef.current?.querySelector<HTMLElement>(`[data-row="${CSS.escape(id)}"]`);
     const scroller = target?.closest<HTMLElement>('[data-slot="tabs-content"]');
     if (!target || !scroller) return;
-    const offset =
-      target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+    const offset = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
     scroller.scrollTop += offset - scroller.clientHeight / 3;
-    if (focus)
-      target.querySelector<HTMLElement>("[data-focus-target]")?.focus();
+    if (focus) target.querySelector<HTMLElement>("[data-focus-target]")?.focus();
   }, []);
 
   /* A press on a link to another line: after the list has re-rendered with it shown
@@ -141,8 +130,7 @@ export function CaseHistoryList({
     if (!row) return;
     /* The target may be filtered out; showing everything is the way to it. */
     if (types.length && !types.includes(row.type)) setTypes([]);
-    if (row.kind === "thread")
-      setExpanded((current) => new Set(current).add(id));
+    if (row.kind === "thread") setExpanded((current) => new Set(current).add(id));
     jumpTo.current = id;
     /* A re-render to run the jump even when nothing else changed. */
     setTick((tick) => tick + 1);
@@ -175,8 +163,7 @@ export function CaseHistoryList({
     );
   }
 
-  const shown =
-    types.length === 0 ? rows : rows.filter((row) => types.includes(row.type));
+  const shown = types.length === 0 ? rows : rows.filter((row) => types.includes(row.type));
 
   return (
     <section
@@ -188,11 +175,7 @@ export function CaseHistoryList({
         {t("employeeGroupedCaseHistory_caseHistory")}
       </h2>
       {filter ? (
-        <HistoryTypeFilter
-          options={typeOptions}
-          value={types}
-          onValueChange={setTypes}
-        />
+        <HistoryTypeFilter options={typeOptions} value={types} onValueChange={setTypes} />
       ) : null}
 
       {shown.length === 0 ? (
@@ -216,9 +199,7 @@ export function CaseHistoryList({
                     : "past"
               }
               className="pb-0"
-              aria-current={
-                row.kind === "order" && row.last ? "true" : undefined
-              }
+              aria-current={row.kind === "order" && row.last ? "true" : undefined}
             >
               {/* Spacing inside the item, so the rail runs on to the next dot. */}
               <div className="pb-4 group-last/timeline-item:pb-0">
@@ -248,10 +229,7 @@ function Head({ on, children }: { on: string; children: React.ReactNode }) {
   return (
     <div className="flex min-w-0 items-baseline justify-between gap-4">
       <div className="min-w-0">{children}</div>
-      <time
-        dateTime={on}
-        className="shrink-0 tabular-nums text-muted-foreground"
-      >
+      <time dateTime={on} className="shrink-0 tabular-nums text-muted-foreground">
         {formatTimelineDate(on)}
       </time>
     </div>
@@ -287,21 +265,14 @@ function EventLine({ row }: { row: Extract<HistoryRow, { kind: "event" }> }) {
  * browser tab — and the process or application it started or decided. The last order sits
  * on a sunken well with its badge, as before.
  */
-function OrderLine({
-  row,
-  onGo,
-}: {
-  row: OrderRow;
-  onGo: (id: string) => void;
-}) {
+function OrderLine({ row, onGo }: { row: OrderRow; onGo: (id: string) => void }) {
   const t = useTranslations();
   const summaryId = `${row.id}-summary`;
   return (
     <div
       className={cn(
         "flex min-w-0 flex-col gap-1",
-        row.last &&
-          "-my-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2",
+        row.last && "-my-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2",
       )}
     >
       <Head on={row.on}>
@@ -413,11 +384,20 @@ function ThreadLine({
             {/* With one step, the day it began is the day on the right. */}
             {count > 1 ? (
               <>
-                {t.rich("employeeGroupedCaseHistory_startedFormatTimelineDate", { formatTimelineDate: formatTimelineDate(row.on), time: (chunks) => <time dateTime={row.on} className="tabular-nums">{chunks}</time> })}
+                {t.rich("employeeGroupedCaseHistory_startedFormatTimelineDate", {
+                  formatTimelineDate: formatTimelineDate(row.on),
+                  time: (chunks) => (
+                    <time dateTime={row.on} className="tabular-nums">
+                      {chunks}
+                    </time>
+                  ),
+                })}
               </>
             ) : null}
             <span className="tabular-nums">{count}</span>{" "}
-            {STEPS_PLURAL.select(count) === "one" ? t("employeeGroupedCaseHistory_update") : t("employeeGroupedCaseHistory_updates")}
+            {STEPS_PLURAL.select(count) === "one"
+              ? t("employeeGroupedCaseHistory_update")
+              : t("employeeGroupedCaseHistory_updates")}
           </span>
           <NewTabLink href={row.href}>
             {row.entity === "Process"
@@ -431,14 +411,8 @@ function ThreadLine({
             className="mt-2 flex flex-col gap-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2"
           >
             {row.steps.toReversed().map((step, index) => (
-              <li
-                key={index}
-                className="grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] gap-x-3"
-              >
-                <time
-                  dateTime={step.on}
-                  className="tabular-nums text-muted-foreground"
-                >
+              <li key={index} className="grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] gap-x-3">
+                <time dateTime={step.on} className="tabular-nums text-muted-foreground">
                   {formatTimelineDate(step.on)}
                 </time>
                 <span className="min-w-0">

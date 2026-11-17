@@ -116,14 +116,20 @@ describe("provenance comes from the readings on the draft", () => {
     for (const f of S138) {
       const c = open(f.no);
       assert.ok(!c.sections.some((section) => section.id === "sign"), f.no);
-      assert.ok(!c.allFields.some((field) => /^s-(mode|paper|sig|conf|proc|paid)/.test(field.id)), f.no);
+      assert.ok(
+        !c.allFields.some((field) => /^s-(mode|paper|sig|conf|proc|paid)/.test(field.id)),
+        f.no,
+      );
     }
   });
 
   it("reads the oath under the affidavit where the court records one", () => {
     const aff = hero.sections.find((section) => section.id === "aff");
     assert.equal(aff?.title, "Affidavit and oath");
-    assert.deepEqual(aff?.groups.map((g) => g.title), ["Affidavit", "Oath"]);
+    assert.deepEqual(
+      aff?.groups.map((g) => g.title),
+      ["Affidavit", "Oath"],
+    );
     assert.ok(aff?.groups[1].fields.length);
   });
 
@@ -148,7 +154,10 @@ describe("provenance comes from the readings on the draft", () => {
 
   it("shows why a paper-signed case was not e-signed, and when that was said", () => {
     const reason = hero.fieldById["aff-paper-reason"];
-    assert.match(reason.value, /^The OTP didn.t arrive · given \d{2}\/\d{2}\/2026 · \d{2}:\d{2} IST$/);
+    assert.match(
+      reason.value,
+      /^The OTP didn.t arrive · given \d{2}\/\d{2}\/2026 · \d{2}:\d{2} IST$/,
+    );
     assert.equal(open("F/AHM/2026/00338").fieldById["aff-paper-reason"], undefined);
   });
 
@@ -160,7 +169,11 @@ describe("provenance comes from the readings on the draft", () => {
         (section) => section.id === "aff",
       );
       assert.equal(aff?.title, "Affidavit", court);
-      assert.deepEqual(aff?.groups.map((g) => g.title), ["Affidavit"], court);
+      assert.deepEqual(
+        aff?.groups.map((g) => g.title),
+        ["Affidavit"],
+        court,
+      );
     }
   });
 });

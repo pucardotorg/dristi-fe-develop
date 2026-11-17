@@ -11,6 +11,8 @@ import { cmsLoadFailure } from "@/lib/cms/cms-page";
 import { getCmsPage } from "@/lib/cms/data/http";
 import type { CmsPage, CmsSlug } from "@/lib/cms/types";
 
+import { CmsContentBody } from "./cms-content-body";
+
 type CmsContentPageProps = {
   slug: CmsSlug;
 };
@@ -89,8 +91,7 @@ function CmsPageBody({ page }: { page: CmsPage }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={page.imageUrl} alt="" className="max-h-80 w-full object-contain" />
       ) : null}
-      {/* Shown as written until the markdown renderer lands (content_type to be confirmed). */}
-      <div className="text-body whitespace-pre-wrap break-words">{page.content}</div>
+      <CmsContentBody contentType={page.contentType} content={page.content} />
     </article>
   );
 }

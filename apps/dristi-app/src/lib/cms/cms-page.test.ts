@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 
 import { ApiError } from "@/lib/api";
 
-import { cmsLoadFailure, toCmsPage, type CmsPageResponse } from "./cms-page";
+import { cmsLoadFailure, toCmsPage, toContentType, type CmsPageResponse } from "./cms-page";
 
 const response: CmsPageResponse = {
   id: "p1",
@@ -49,7 +49,45 @@ describe("toCmsPage", () => {
 
   it("reads the content type without regard to case, and keeps others as unknown", () => {
     assert.equal(toCmsPage({ ...response, content_type: "Markdown" }).contentType, "markdown");
-    assert.equal(toCmsPage({ ...response, content_type: "html" }).contentType, "unknown");
+    assert.equal(toCmsPage({ ...response, content_type: "html" }).contentType, "html");
+  });
+});
+
+describe("toCmsPage content", () => {
+  it("keeps string content as it is", () => {
+    assert.equal(toCmsPage(response).content, response.content);
+  });
+
+  it("turns structured content into formatted JSON, never an object", () => {
+    const content = { blocks: [{ type: "paragraph", text: "Hi" }] };
+    assert.equal(
+      toCmsPage({ ...response, content_type: "json", content }).content,
+      JSON.stringify(content, null, 2),
+    );
+  });
+
+  it("treats missing content as empty", () => {
+    assert.equal(toCmsPage({ ...response, content: null }).content, "");
+    assert.equal(toCmsPage({ ...response, content: undefined }).content, "");
+  });
+});
+
+describe("toContentType", () => {
+  it("recognises markdown, html and json", () => {
+    assert.equal(toContentType("markdown"), "markdown");
+    assert.equal(toContentType("html"), "html");
+    assert.equal(toContentType("json"), "json");
+  });
+
+  it("ignores case and surrounding space", () => {
+    assert.equal(toContentType("  HTML "), "html");
+    assert.equal(toContentType("Json"), "json");
+  });
+
+  it("calls anything else unknown", () => {
+    for (const value of ["", "text", "text/markdown", "rich-text"]) {
+      assert.equal(toContentType(value), "unknown");
+    }
   });
 });
 

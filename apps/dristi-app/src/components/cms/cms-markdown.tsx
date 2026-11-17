@@ -78,9 +78,7 @@ const COMPONENTS: Components = {
     </div>
   ),
   th: ({ children }) => (
-    <th className="border border-border bg-muted px-3 py-2 text-left font-semibold">
-      {children}
-    </th>
+    <th className="border border-border bg-muted px-3 py-2 text-left font-semibold">{children}</th>
   ),
   td: ({ children }) => <td className="border border-border px-3 py-2 align-top">{children}</td>,
 };

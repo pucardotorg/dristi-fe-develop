@@ -104,7 +104,10 @@ describe("cmsLoadFailure", () => {
   });
 
   it("calls everything else a failure", () => {
-    assert.equal(cmsLoadFailure(new ApiError({ kind: "http", status: 500, message: "x" })), "failed");
+    assert.equal(
+      cmsLoadFailure(new ApiError({ kind: "http", status: 500, message: "x" })),
+      "failed",
+    );
     assert.equal(cmsLoadFailure(new ApiError({ kind: "network", message: "x" })), "failed");
     assert.equal(cmsLoadFailure(new ApiError({ kind: "timeout", message: "x" })), "failed");
     assert.equal(cmsLoadFailure(new Error("boom")), "failed");

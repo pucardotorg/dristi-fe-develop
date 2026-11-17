@@ -10,9 +10,8 @@ import { toCmsPage, type CmsPageResponse } from "../cms-page";
 import type { CmsPage, CmsSlug } from "../types";
 
 export async function getCmsPage(slug: CmsSlug, signal?: AbortSignal): Promise<CmsPage> {
-  const response = await api.get<CmsPageResponse>(
-    `cms/pages/slug/${encodeURIComponent(slug)}`,
-    { signal },
-  );
+  const response = await api.get<CmsPageResponse>(`cms/pages/slug/${encodeURIComponent(slug)}`, {
+    signal,
+  });
   return toCmsPage(response);
 }

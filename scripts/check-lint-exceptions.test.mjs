@@ -53,11 +53,31 @@ describe("check-lint-exceptions", () => {
     ]);
   });
 
-  it("reports a list the base didn't have without failing", () => {
+  it("reports new lists without failing when the base has no lists yet", () => {
     const current = parseExceptionLists(config({ LIB_STILL_USE_STORAGE: ["x.ts", "y.ts"] }));
     assert.deepEqual(findGrowth(new Map(), current), {
       added: [],
       newLists: [{ list: "LIB_STILL_USE_STORAGE", count: 2 }],
     });
+  });
+
+  it("fails on every file of a new list once the base has lists", () => {
+    const base = parseExceptionLists(config({ STILL_USE_STORAGE: ["a.tsx"] }));
+    const current = parseExceptionLists(
+      config({ STILL_USE_STORAGE: ["a.tsx"], MORE_STILL_USE_STORAGE: ["new.tsx"] }),
+    );
+    assert.deepEqual(findGrowth(base, current), {
+      added: [{ list: "MORE_STILL_USE_STORAGE", file: "new.tsx" }],
+      newLists: [],
+    });
+  });
+
+  it("reads entries in single quotes and backticks", () => {
+    const text = "const STILL_USE_STORAGE = [\n  'a.tsx',\n  `b.tsx`,\n  \"c.tsx\",\n];";
+    assert.deepEqual(parseExceptionLists(text).get("STILL_USE_STORAGE"), [
+      "a.tsx",
+      "b.tsx",
+      "c.tsx",
+    ]);
   });
 });

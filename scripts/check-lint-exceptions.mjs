@@ -8,8 +8,9 @@
  * `apps/dristi-app/eslint.config.mjs` excuses files that broke the data rules before
  * the rules existed (the `*STILL_*` lists). A file comes off its list when it is fixed;
  * none is ever added, so new code is always checked in full. This fails when a list
- * holds a file the base branch's list doesn't. A list the base doesn't have at all comes
- * with a new rule and is reported, not failed.
+ * holds a file the base branch's list doesn't, including every file on a list the base
+ * doesn't have. Only when the base has no lists at all (the PR that adds the rules) are
+ * new lists reported instead of failed.
  *
  * CI runs it on pull requests. Locally, when the base ref can't be read, it says so and
  * passes.
@@ -23,7 +24,8 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const CONFIG_PATH = "apps/dristi-app/eslint.config.mjs";
 
 const LIST = /^const (\w*STILL_\w+) = \[([\s\S]*?)\];/gm;
-const ENTRY = /"([^"]+)"/g;
+// A path in double, single or backtick quotes.
+const ENTRY = /(["'`])([^"'`]+)\1/g;
 
 /** Every exception list in the config's text, by name. */
 export function parseExceptionLists(text) {
@@ -31,23 +33,27 @@ export function parseExceptionLists(text) {
   for (const [, name, body] of text.matchAll(LIST)) {
     lists.set(
       name,
-      [...body.matchAll(ENTRY)].map(([, file]) => file),
+      [...body.matchAll(ENTRY)].map(([, , file]) => file),
     );
   }
   return lists;
 }
 
-/** Files added to lists the base already had, and lists the base didn't have. */
+/**
+ * Files that joined an exception list since the base. A list the base doesn't have counts
+ * in full, unless the base has no lists at all: then the lists arrive with their rules and
+ * are reported in `newLists`.
+ */
 export function findGrowth(base, current) {
   const added = [];
   const newLists = [];
   for (const [name, files] of current) {
     const before = base.get(name);
-    if (!before) {
+    if (!before && base.size === 0) {
       newLists.push({ list: name, count: files.length });
       continue;
     }
-    for (const file of files) if (!before.includes(file)) added.push({ list: name, file });
+    for (const file of files) if (!before?.includes(file)) added.push({ list: name, file });
   }
   return { added, newLists };
 }

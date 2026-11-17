@@ -47,13 +47,14 @@ Two words used below:
    sessionStorage in a screen for data. UI preferences (a chosen filter, a collapsed
    panel) use `useLocalStorageValue` from
    `apps/dristi-app/src/hooks/use-local-storage-value.ts`. `npm run lint` catches modules
-   named `fixtures`, `data/indexeddb`, `data/sandbox` or `data/http`, the API and server
-   code, and browser storage; demo modules with other names (`party-cases`,
-   `*-dummy.json`, `demo-*`) are on you. In `lib/`, lint also rejects browser storage and
-   `idb` outside a feature's `data/indexeddb.ts` or `data/sandbox.ts`. Files that broke
-   these rules before they existed are listed in `apps/dristi-app/eslint.config.mjs` and
-   come off the list when they are fixed. The lists only shrink: CI fails a PR that adds
-   a file to one (`npm run check:lint-exceptions`).
+   named `fixtures`, `data/indexeddb`, `sandbox` (in `data/` or not) or `data/http`, the
+   API and server code, `idb`, and browser storage; demo modules with other names
+   (`party-cases`, `*-dummy.json`, `demo-*`) are on you. In `lib/`, lint also rejects
+   browser storage and `idb` outside a feature's `data/indexeddb.ts` or `data/sandbox.ts`.
+   Files that broke these rules before they existed are listed in
+   `apps/dristi-app/eslint.config.mjs` and come off the list when they are fixed. The
+   lists only shrink: CI fails a PR that adds a file to one, or adds a new list
+   (`npm run check:lint-exceptions`).
    Prefer that a screen (a route's page or its `*-screen.tsx`) reads the store, hook or
    `getRepository()`, and that the components it renders take data and callbacks as
    props: a component used by more than one screen must, so it works with any source.

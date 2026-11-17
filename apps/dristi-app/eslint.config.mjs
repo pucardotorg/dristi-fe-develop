@@ -21,15 +21,23 @@ const BACKEND_IMPORTS = {
   message:
     "Screens get data from the feature's repository or store, not the API. See AGENTS.md, Data.",
 };
+const SANDBOX_MESSAGE =
+  "Fixtures and sandbox code belong behind the feature's repository. Use getRepository() or the feature's store/hook. See AGENTS.md, Data.";
+// `**/sandbox` covers a feature's `data/sandbox` and its demo data module (`lib/tasks/sandbox`).
 const SANDBOX_IMPORTS = {
-  group: appLib("**/fixtures", "**/data/indexeddb", "**/data/sandbox"),
-  message:
-    "Fixtures and sandbox code belong behind the feature's repository. Use getRepository() or the feature's store/hook. See AGENTS.md, Data.",
+  group: appLib("**/fixtures", "**/data/indexeddb", "**/sandbox"),
+  message: SANDBOX_MESSAGE,
+};
+// The same without fixtures, for the screens still excused from the fixtures rule only.
+const SANDBOX_CODE_IMPORTS = {
+  group: appLib("**/data/indexeddb", "**/sandbox"),
+  message: SANDBOX_MESSAGE,
 };
 const STORAGE_MESSAGE =
   "Screens don't keep data in browser storage: data goes through a repository, UI preferences through useLocalStorageValue (@/hooks/use-local-storage-value).";
 const STORAGE_APIS = ["localStorage", "sessionStorage", "indexedDB"];
 const STORAGE_GLOBALS = STORAGE_APIS.map((name) => ({ name, message: STORAGE_MESSAGE }));
+const SCREEN_IDB = [{ name: "idb", message: STORAGE_MESSAGE }];
 const STORAGE_PROPERTIES = ["window", "globalThis", "self"].flatMap((object) =>
   STORAGE_APIS.map((property) => ({
     object,
@@ -119,15 +127,23 @@ const eslintConfig = defineConfig([
     files: SCREENS,
     ignores: NOT_SCREENS,
     rules: {
-      "no-restricted-imports": ["error", { patterns: [BACKEND_IMPORTS, SANDBOX_IMPORTS] }],
+      "no-restricted-imports": [
+        "error",
+        { paths: SCREEN_IDB, patterns: [BACKEND_IMPORTS, SANDBOX_IMPORTS] },
+      ],
       "no-restricted-globals": ["error", ...STORAGE_GLOBALS],
       "no-restricted-properties": ["error", ...STORAGE_PROPERTIES],
     },
   },
-  // Rule options replace rather than merge, so this keeps the backend ban for these files.
+  // Rule options replace rather than merge, so this keeps every ban but fixtures for these files.
   {
     files: STILL_IMPORT_FIXTURES,
-    rules: { "no-restricted-imports": ["error", { patterns: [BACKEND_IMPORTS] }] },
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { paths: SCREEN_IDB, patterns: [BACKEND_IMPORTS, SANDBOX_CODE_IMPORTS] },
+      ],
+    },
   },
   {
     files: STILL_USE_STORAGE,

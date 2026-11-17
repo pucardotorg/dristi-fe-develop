@@ -110,7 +110,12 @@ function toSavedEvidence(body: CaseEvidenceBody | null): SavedEvidence {
   };
 }
 
-export function createCaseFilingApi(client: ApiClient = api): CaseFilingRepository {
+/**
+ * The backend case calls. `satisfies Partial<...>` rather than a return type, so a method
+ * design adds to the contract answers "not connected yet" until it is built here, instead
+ * of failing the type check in this file. `index.ts` checks it adds no methods of its own.
+ */
+export function createCaseFilingApi(client: ApiClient = api) {
   return {
     /** Open a cheque bounce draft. Nothing is stored on the server until the first save. */
     async startDraft(): Promise<{ caseId: string }> {
@@ -384,5 +389,5 @@ export function createCaseFilingApi(client: ApiClient = api): CaseFilingReposito
         affidavit: typeof body.affidavit === "string" ? body.affidavit : null,
       };
     },
-  };
+  } satisfies Partial<CaseFilingRepository>;
 }

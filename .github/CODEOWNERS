@@ -4,7 +4,8 @@
 
 # Shared by default: either team can approve. This covers the contracts
 # (lib/**/data/repository.ts, lib/**/types.ts), stores, data/index.ts choosers,
-# root AGENTS.md / CLAUDE.md, package.json and the lockfile.
+# root AGENTS.md / CLAUDE.md, the lockfile and the messages catalogs (messages/*.json:
+# copy is design's, but engineering's localization scripts write them too).
 *                                                   @pucardotorg/frontend @pucardotorg/design
 
 # Design: screens, copy, the sandbox and its demo data, the demo-server routes and the
@@ -43,6 +44,14 @@
 /apps/dristi-app/src/lib/**/data/http*.ts           @pucardotorg/frontend
 /apps/dristi-app/src/lib/auth/http*.ts              @pucardotorg/frontend
 /apps/dristi-app/scripts/copy-runtime-assets.mjs    @pucardotorg/frontend
+/apps/dristi-app/scripts/extract-messages.mts       @pucardotorg/frontend
+/apps/dristi-app/scripts/not-dristi.mjs             @pucardotorg/frontend
+/apps/dristi-app/scripts/extraction-report.md       @pucardotorg/frontend
+# CI runs npm scripts and the type check, so what they do is engineering's to approve.
+/package.json                                       @pucardotorg/frontend
+/apps/dristi-app/package.json                       @pucardotorg/frontend
+/apps/dristi-app/tsconfig.json                      @pucardotorg/frontend
+/.prettierignore                                    @pucardotorg/frontend
 /apps/dristi-app/eslint.config.mjs                  @pucardotorg/frontend
 /scripts/check-lint-exceptions*.mjs                 @pucardotorg/frontend
 /scripts/check-data-moves*.mjs                      @pucardotorg/frontend

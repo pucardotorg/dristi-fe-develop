@@ -46,8 +46,13 @@ jobs:
       - name: Unit tests
         run: npm run test:app
 
+      # Run directly rather than through verify:agents, so the check list design keeps in
+      # .agents/verification.json can't change what CI runs.
       - name: Agent rails
-        run: npm run verify:agents
+        run: npm run check:rails
+
+      - name: Script tests (rails, new:data, data rules)
+        run: npm run test:rails
 
       # Nothing set: data and sign-in default to the backend, as a production build does.
       - name: Build

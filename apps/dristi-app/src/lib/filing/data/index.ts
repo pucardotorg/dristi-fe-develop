@@ -55,7 +55,11 @@ export function getCaseFilingRepository(): CaseFilingRepository {
     "caseFiling",
     {
       sandbox: browserOnly("caseFiling", () => new IndexedDbCaseFilingRepository()),
-      http: () => createCaseFilingApi(),
+      http: () =>
+        createCaseFilingApi() satisfies OnlyContract<
+          ReturnType<typeof createCaseFilingApi>,
+          CaseFilingRepository
+        >,
     },
   );
   return caseFiling;

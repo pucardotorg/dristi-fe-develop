@@ -1,0 +1,69 @@
+---
+name: review-ui-ds
+description: "Independently review Dristi UI against agreed behavior, the pinned DS, accessibility, responsive usability, and affected sibling patterns. Report evidence and fixes without modifying the implementation."
+---
+
+# Review behavior and UI quality
+
+Inputs: current task agreement, stable diff, relevant current product sources, and
+verification evidence. Never require an archived proposal or its attributes table.
+
+1. Follow `.agents/policies/pucar-design-system.md`. Establish the DS version and read
+   the full DS `ACCESSIBILITY.md`, Laws, design principles, applicable rules, and
+   affected primitives. Reuse material already read for this state.
+2. Map acceptance criteria to the actual implementation. Look for missing behavior,
+   incorrect action scope, unsupported system claims, and relevant failure/recovery states.
+   A visual-only request adds no new information.
+3. Review semantic tokens, typography, composition, labels, focus, keyboard access, touch,
+   language/long-label behavior, and affected sibling consistency. Load the compact
+   `ui-craft` checklist; select detailed references only when their subject applies.
+   For each important text region, map the owner-finalized intent or direct request to
+   the DS named role, then compare the implementation class/token with its rendered
+   computed size and line-height. Repeat for controls, spacing, surfaces, and status
+   treatment when affected. A valid DS token used for the wrong role is a discrepancy when the
+   owner-finalized design or current DS establishes another role. Report expected
+   role/value, observed role/value, source, and consequence. If no clear DS mapping
+   exists, report a governance gap rather than a fabricated violation. If owner intent
+   conflicts with a pinned DS rule, report the conflict for resolution. Never infer an
+   expected size from taste or a past example.
+4. Check the data rules (`.agents/policies/data-seam.md`):
+   - no screen imports fixtures, seeds, sandbox code, `data/http` or `@/lib/api`, or uses
+     browser storage for data (`npm run lint` reports these);
+   - every contract change is additive; anything else is listed under "Contract changes";
+   - new data goes through the feature's repository: a feature that had no `data/` folder
+     gained one from `npm run new:data`, nothing new was added to an old browser-storage
+     store (`npm run check:data-moves`), and lint reports no browser storage in `lib/`
+     outside a sandbox;
+   - a data move (from `new:data --move`) adds no fields and no visual change, only
+     loading and error states, per its PR template;
+   - contract methods take no signed-in person's id;
+   - components used by more than one screen take data as props;
+   - new and changed screens handle loading, empty, error and "not connected yet", and
+     show the last as itself (not a failure to retry), also when it comes from another
+     feature the screen reads.
+5. Follow `.agents/policies/verification.md` for check evidence and render coverage.
+   Reuse valid checks for the exact state, but inspect independently. If read-only
+   browser/screenshot tools are available, capture the assigned screens yourself from
+   the checked checkout. Otherwise inspect the coordinator's labeled screenshot
+   packet; request a missing state once and mark it pending. Do not sync, edit,
+   install, start a server, or change fixtures during review.
+
+For a structural UX concern, selectively consult
+`.agents/skills/design-ui/references/staff-ux-thinking.md`; do not impose a full redesign
+audit on a small correction.
+
+## Findings and decision
+
+- **Required fix:** unmet acceptance criterion, DS requirement, accessibility floor,
+  behavior regression, or misleading product claim. Explain consequence and evidence.
+- **Suggestion:** supported improvement that does not block the agreed outcome. Label
+  visual judgment as judgment; subjective flatness is not automatically critical.
+- **Unverified:** missing evidence or unavailable environment. State what is needed.
+
+Each finding includes file/location, observed issue, affected criterion or sourced rule,
+consequence, and concrete correction. Group repeated causes; do not invent findings or
+require removing a decoration. Return **ready**, **needs fixes**, or **verification
+pending**. Missing required render evidence prevents a ready verdict.
+
+Send required findings to the coordinator for the builder, then recheck affected criteria
+after changes. Do not reopen settled choices without a demonstrated conflict.

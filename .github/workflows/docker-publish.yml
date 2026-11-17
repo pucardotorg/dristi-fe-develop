@@ -50,5 +50,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # Demo data with real sign-in, as before the data-source switch. Change data
+          # to api once the features this image serves are connected to the backend.
           build-args: |
             GIT_COMMIT_SHA=${{ github.sha }}
+            NEXT_PUBLIC_DATA_SOURCE=sandbox
+            NEXT_PUBLIC_AUTH_SOURCE=api

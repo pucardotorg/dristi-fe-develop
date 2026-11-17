@@ -47,6 +47,7 @@ import { formatCaseDate, type CaseRecord } from "@/lib/cases/types";
 import { rupees } from "@/lib/tasks/format";
 import { file, recordPayment } from "@/lib/tasks/transitions";
 import type { Case, PaymentResult, Task } from "@/lib/tasks/types";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { useTranslations } from "next-intl";
 import { translateText } from "@/i18n/translate-text";
 
@@ -313,39 +314,43 @@ export function TaskPaymentDialog({
               {tr("taskFlows_payLater")}
             </Button>
             <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <DropdownMenu>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          aria-label={tr("taskFlows_sandboxChooseTheGatewayResult")}
-                          className="text-muted-foreground"
-                        >
-                          <FlaskConicalIcon aria-hidden />
-                        </Button>
-                      </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>{tr("taskFlows_sandboxChooseTheGatewayResult")}</TooltipContent>
-                  </Tooltip>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>{tr("taskFlows_sandboxGatewayResult")}</DropdownMenuLabel>
-                    <DropdownMenuRadioGroup
-                      value={outcome}
-                      onValueChange={(value) => setOutcome(value as PaymentResult)}
-                    >
-                      {OUTCOMES.map((option) => (
-                        <DropdownMenuRadioItem key={option.value} value={option.value}>
-                          {translateText(tr, option.label)}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TooltipProvider>
+              {IS_SANDBOX ? (
+                <TooltipProvider>
+                  <DropdownMenu>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label={tr("taskFlows_sandboxChooseTheGatewayResult")}
+                            className="text-muted-foreground"
+                          >
+                            <FlaskConicalIcon aria-hidden />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {tr("taskFlows_sandboxChooseTheGatewayResult")}
+                      </TooltipContent>
+                    </Tooltip>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>{tr("taskFlows_sandboxGatewayResult")}</DropdownMenuLabel>
+                      <DropdownMenuRadioGroup
+                        value={outcome}
+                        onValueChange={(value) => setOutcome(value as PaymentResult)}
+                      >
+                        {OUTCOMES.map((option) => (
+                          <DropdownMenuRadioItem key={option.value} value={option.value}>
+                            {translateText(tr, option.label)}
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TooltipProvider>
+              ) : null}
               <Button
                 type="button"
                 disabled={!online || Boolean(busy)}

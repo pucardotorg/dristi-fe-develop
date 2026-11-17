@@ -75,8 +75,11 @@ Before you start:
 3. Start the dev server:
 
    ```bash
-   npm run dev
+   npm run dev:sandbox   # everything in the browser, no backend (design work, demos)
+   npm run dev           # sandbox data with sign-in against a local backend
    ```
+
+   Where screens get their data is explained in [AGENTS.md](AGENTS.md) ("Data").
 
 4. Check that everything works:
    - App: http://localhost:3000/
@@ -142,21 +145,26 @@ git checkout -b docs/readme-setup origin/main
 
 5. **Add tests** for bug fixes and new logic:
    - Put them next to the code as `*.test.ts` under `apps/dristi-app/src/lib/`
-   - If you add a new folder, add its pattern to the `test` script in
-     [apps/dristi-app/package.json](apps/dristi-app/package.json)
+   - `npm run test:app` finds every `*.test.ts` under `apps/dristi-app/src/lib/`, so a
+     new folder needs no change to the `test` script
 
 ### 6. Verify Application Functionality
 
 Before opening a pull request:
 
-1. **Run lint and tests:**
+1. **Run the format check, lint, the type check and tests:**
 
    ```bash
+   npm run format:check
    npm run lint
+   npm run typecheck
    npm run test:app
    ```
 
-2. **Test your changes in the running app** (`npm run dev`):
+   If you changed `.agents/`, also run `npm run sync:rails` and `npm run verify:agents`.
+
+2. **Test your changes in the running app** (`npm run dev:sandbox`, or `npm run dev`
+   against a backend):
    - [ ] The app runs without errors in the browser console or the terminal
    - [ ] The flow you changed works from start to finish for each role it affects
    - [ ] Empty, loading, error and long-content states look right
@@ -226,8 +234,9 @@ git commit -m "Update README with setup and demo accounts"
 
 ## PR Review Process
 
-1. **Automated checks:** CI doesn't yet run lint or unit tests on PRs. Reviewers expect
-   `npm run lint` and `npm run test:app` to pass locally.
+1. **Automated checks:** CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs
+   lint, the type check, unit tests, the agent rails and a production build on every PR;
+   all must pass. [.github/CODEOWNERS](.github/CODEOWNERS) requests the right team's review.
 
 2. **Code review:**
    - A maintainer reviews the change. For UI, the review covers consistency with the

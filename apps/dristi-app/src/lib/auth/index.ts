@@ -2,10 +2,11 @@
  * Public surface of the auth layer. Import from `@/lib/auth`.
  *
  * `getAuthService()` is the single place that chooses who answers — the backend or the
- * in-browser sandbox — from `AUTH_SOURCE` (`lib/config.ts`).
+ * in-browser sandbox — from `AUTH_SOURCE` (`lib/data/source.ts`): `NEXT_PUBLIC_AUTH_SOURCE`
+ * when set, otherwise the app's data source.
  */
 
-import { AUTH_SOURCE } from "@/lib/config";
+import { AUTH_SOURCE } from "@/lib/data/source";
 
 import { HttpAuthService } from "./http";
 import { SandboxAuthService } from "./sandbox";

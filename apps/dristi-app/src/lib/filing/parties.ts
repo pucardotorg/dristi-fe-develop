@@ -24,7 +24,6 @@ import { isIndianMobile, toBackendMobile, toNationalMobile } from "@/lib/auth/mo
 
 import type {
   AddressInput,
-  CaseFilingApi,
   ContactLists,
   InstitutionInput,
   ParticipantPatch,
@@ -34,6 +33,7 @@ import type {
   PoaHolderInput,
   WitnessInput,
 } from "./data/cases-api";
+import type { CaseFilingRepository } from "./data/repository";
 import { mobileFieldCopy } from "./content";
 import { ENTITY_TYPE_CODES, GENDER_CODES } from "./options";
 import { accusedContactUnknownDeclared, isCinOrPan, normaliseCinPan } from "./selectors";
@@ -553,7 +553,10 @@ function withoutCompany(patch: ParticipantPatch): ParticipantPatch {
   return { ...patch, institution: undefined, institution_contacts: undefined };
 }
 
-export type PartyApi = Pick<CaseFilingApi, "addParty" | "updateParticipant" | "removeParticipant">;
+export type PartyApi = Pick<
+  CaseFilingRepository,
+  "addParty" | "updateParticipant" | "removeParticipant"
+>;
 
 /**
  * A saved body for a participant added as `self` whose follow-up PATCH has not gone
@@ -717,7 +720,10 @@ function poaHolderPatch(body: PoaHolderBody, before?: PoaHolderBody): Participan
   };
 }
 
-export type PoaApi = Pick<CaseFilingApi, "addPoaHolder" | "revokePoaMandate" | "updateParticipant">;
+export type PoaApi = Pick<
+  CaseFilingRepository,
+  "addPoaHolder" | "revokePoaMandate" | "updateParticipant"
+>;
 
 export type PoaSaveResult = { saved?: SavedPoaHolder; error?: unknown };
 

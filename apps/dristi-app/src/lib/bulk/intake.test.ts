@@ -7,7 +7,13 @@ import { buildBatch } from "./intake";
 function oneCase(over: Partial<ApiCase> = {}): ApiCase {
   return {
     reference: "R-1",
-    accused: [{ type: "individual", name: "A One", addresses: [{ line1: "x", city: "Mumbai", pin: "400013" }] }],
+    accused: [
+      {
+        type: "individual",
+        name: "A One",
+        addresses: [{ line1: "x", city: "Mumbai", pin: "400013" }],
+      },
+    ],
     cheques: [
       {
         number: "123456",
@@ -47,14 +53,19 @@ function oneCase(over: Partial<ApiCase> = {}): ApiCase {
 
 const request = (c: ApiCase, adr?: ApiBatchRequest["adr"]): ApiBatchRequest => ({
   source: { system: "Test" },
-  complainant: { type: "institution", name: "Lender Ltd", address: { line1: "x", city: "Mumbai", pin: "400013" } },
+  complainant: {
+    type: "institution",
+    name: "Lender Ltd",
+    address: { line1: "x", city: "Mumbai", pin: "400013" },
+  },
   advocates: [],
   adr,
   cases: [c],
 });
 
 const draftOf = async (c: ApiCase, adr?: ApiBatchRequest["adr"]) =>
-  (await buildBatch(request(c, adr), { kind: "api", system: "Test" }, async () => null)).cases[0].draft;
+  (await buildBatch(request(c, adr), { kind: "api", system: "Test" }, async () => null)).cases[0]
+    .draft;
 
 test("bank names sent are kept when the register does not know the IFSC", async () => {
   const d = await draftOf(oneCase());

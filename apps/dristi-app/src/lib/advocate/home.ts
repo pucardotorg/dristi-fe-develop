@@ -57,7 +57,7 @@ export type WeekCell = {
 export function weekOf(
   world: World,
   now: number | Date = Date.now(),
-  anchor: number | Date = now
+  anchor: number | Date = now,
 ): WeekCell[] {
   const base = new Date(anchor);
   base.setHours(12, 0, 0, 0);
@@ -150,7 +150,8 @@ function liveCaseIn(world: World, court: string, dayKey: string, now: number): s
   for (const c of world.cases) {
     if (c.court !== court || !c.nextHearingAt || dayKeyOf(c.nextHearingAt) !== dayKey) continue;
     if (statusOf(c.nextHearingAt, now) !== "now") continue;
-    if (!live || new Date(c.nextHearingAt).getTime() < new Date(live.nextHearingAt!).getTime()) live = c;
+    if (!live || new Date(c.nextHearingAt).getTime() < new Date(live.nextHearingAt!).getTime())
+      live = c;
   }
   return live?.id ?? null;
 }
@@ -161,7 +162,7 @@ function hearingsFrom(
   cases: Case[],
   court: string,
   dayKey: string,
-  now: number
+  now: number,
 ): HomeHearing[] {
   const liveId = liveCaseIn(world, court, dayKey, now);
   const listedHere = (c: Case) =>
@@ -172,7 +173,10 @@ function hearingsFrom(
   /* The item is the matter's place in its court's published cause list — the whole
      docket — so the board and the cause list give a matter the same number. */
   const itemOf = new Map(
-    world.cases.filter(listedHere).sort(byListing).map((c, index) => [c.id, index + 1])
+    world.cases
+      .filter(listedHere)
+      .sort(byListing)
+      .map((c, index) => [c.id, index + 1]),
   );
   return cases
     .filter(listedHere)
@@ -188,7 +192,9 @@ function hearingsFrom(
       const timed = statusOf(at, now);
       const clock: HearingStatus = timed === "now" && kase.id !== liveId ? "upcoming" : timed;
       const status: HearingStatus =
-        kase.passedOver === true && clock === "concluded" && dayKey === dayKeyOf(new Date(now).toISOString())
+        kase.passedOver === true &&
+        clock === "concluded" &&
+        dayKey === dayKeyOf(new Date(now).toISOString())
           ? "upcoming"
           : clock;
       return {
@@ -210,7 +216,7 @@ export function hearingsOn(
   world: World,
   court: string,
   dayKey: string,
-  now: number = Date.now()
+  now: number = Date.now(),
 ): HomeHearing[] {
   return hearingsFrom(world, viewableCases(world), court, dayKey, now);
 }
@@ -220,12 +226,7 @@ export function hearingsOn(
  * the advocate's own, numbered across all of them the way the court publishes it.
  * The board reads `hearingsOn` (her matters); the cause list reads this.
  */
-function docketHearingsOn(
-  world: World,
-  court: string,
-  dayKey: string,
-  now: number
-): HomeHearing[] {
+function docketHearingsOn(world: World, court: string, dayKey: string, now: number): HomeHearing[] {
   return hearingsFrom(world, world.cases, court, dayKey, now);
 }
 
@@ -268,11 +269,7 @@ export type CourtRoom = {
  * each with its day count and whether it is live at the moment. The board stacks
  * one section per court that has matters; the rest are named in one line.
  */
-export function courtRooms(
-  world: World,
-  dayKey: string,
-  now: number = Date.now()
-): CourtRoom[] {
+export function courtRooms(world: World, dayKey: string, now: number = Date.now()): CourtRoom[] {
   const courts = [...new Set(viewableCases(world).map((c) => c.court))].sort((a, b) => {
     const aOn = a.startsWith("24×7") ? 0 : 1;
     const bOn = b.startsWith("24×7") ? 0 : 1;
@@ -333,8 +330,7 @@ export function courtLabelsOf(courts: string[]): CourtLabels {
   const suffix = `, ${establishment}`;
   return {
     establishment,
-    shortOf: (court) =>
-      court.endsWith(suffix) ? court.slice(0, -suffix.length) : court,
+    shortOf: (court) => (court.endsWith(suffix) ? court.slice(0, -suffix.length) : court),
   };
 }
 
@@ -363,10 +359,9 @@ export type AdvocateOption = {
 export function advocateRosterOn(
   world: World,
   dayKey: string,
-  now: number = Date.now()
+  now: number = Date.now(),
 ): AdvocateOption[] {
-  const meId: PersonId =
-    typeof world.user === "string" ? world.user : world.user.id;
+  const meId: PersonId = typeof world.user === "string" ? world.user : world.user.id;
   const tally = new Map<PersonId, { person: Person; count: number }>();
 
   for (const room of courtRooms(world, dayKey, now)) {
@@ -383,8 +378,7 @@ export function advocateRosterOn(
   // The viewer is on the control even on a day that lists nothing of theirs —
   // it is the default, and a switcher missing its own default cannot reset.
   const me =
-    world.people.find((p) => p.id === meId) ??
-    (typeof world.user === "string" ? null : world.user);
+    world.people.find((p) => p.id === meId) ?? (typeof world.user === "string" ? null : world.user);
   const self = tally.get(meId) ?? (me ? { person: me, count: 0 } : null);
 
   return [
@@ -415,7 +409,7 @@ export function boardOf(
   world: World,
   court: string,
   dayKey: string,
-  now: number = Date.now()
+  now: number = Date.now(),
 ): Board {
   const listed = hearingsOn(world, court, dayKey, now);
   const live = listed.find((h) => h.status === "now") ?? null;
@@ -498,7 +492,7 @@ function timelineHearingsFor(
   world: World,
   dayKey: string,
   now: number,
-  courts?: readonly string[]
+  courts?: readonly string[],
 ): TimelineHearing[] {
   const rooms = courtRooms(world, dayKey, now);
   const labels = courtLabelsOf(rooms.map((r) => r.court));
@@ -561,7 +555,7 @@ function groupByTimeSlots(hearings: TimelineHearing[], now: number): DayTimeline
   }
 
   const slots = [...byKey.values()].sort(
-    (a, b) => new Date(a.at).getTime() - new Date(b.at).getTime()
+    (a, b) => new Date(a.at).getTime() - new Date(b.at).getTime(),
   );
 
   // "Now" is one moment, not every hearing inside a window. The court calls one
@@ -580,12 +574,10 @@ function groupByTimeSlots(hearings: TimelineHearing[], now: number): DayTimeline
     slot.conflict = slot.hearings.length > 1;
     slot.courts = [...new Set(slot.hearings.map((h) => h.court))];
     const at = new Date(slot.at).getTime();
-    slot.phase =
-      slot.key === nowKey ? "now" : at > now ? "upcoming" : "concluded";
+    slot.phase = slot.key === nowKey ? "now" : at > now ? "upcoming" : "concluded";
     // Upcoming slots read as approximate unless every matter in them holds a
     // court-given fixed slot; concluded and now slots are always exact.
-    slot.approx =
-      slot.phase === "upcoming" && !slot.hearings.every((h) => h.kase.timeFixed);
+    slot.approx = slot.phase === "upcoming" && !slot.hearings.every((h) => h.kase.timeFixed);
   }
 
   return assembleTimeline(slots);
@@ -603,7 +595,7 @@ function buildFlatBoard(hearings: TimelineHearing[]): DayTimeline {
     (a, b) =>
       new Date(a.at).getTime() - new Date(b.at).getTime() ||
       a.court.localeCompare(b.court) ||
-      a.item - b.item
+      a.item - b.item,
   );
   // Each concluded/upcoming matter is a slot of one, so the existing slot
   // renderers draw it as a single flat row.
@@ -674,7 +666,7 @@ export function timelineOn(
   world: World,
   dayKey: string,
   now: number = Date.now(),
-  courts?: readonly string[]
+  courts?: readonly string[],
 ): DayTimeline {
   return groupByTimeSlots(timelineHearingsFor(world, dayKey, now, courts), now);
 }
@@ -744,7 +736,12 @@ export const NO_SLOT_FILTER: SlotFilter = { courts: [], scope: "all", people: []
 
 /** Whether a filter narrows anything. */
 export function isFiltered(filter: SlotFilter): boolean {
-  return filter.courts.length > 0 || filter.scope !== "all" || filter.people.length > 0 || filter.hidden.length > 0;
+  return (
+    filter.courts.length > 0 ||
+    filter.scope !== "all" ||
+    filter.people.length > 0 ||
+    filter.hidden.length > 0
+  );
 }
 
 function meOf(world: World): PersonId {
@@ -764,7 +761,7 @@ function inScope(world: World, hearings: TimelineHearing[], scope: PeopleScope):
 export function filterSlotHearings(
   world: World,
   hearings: TimelineHearing[],
-  filter: SlotFilter
+  filter: SlotFilter,
 ): TimelineHearing[] {
   const courts = filter.courts.length ? new Set(filter.courts) : null;
   const people = filter.people.length ? new Set(filter.people) : null;
@@ -774,7 +771,7 @@ export function filterSlotHearings(
     (h) =>
       (!courts || courts.has(h.court)) &&
       (!people || h.kase.signatories.some((id) => people.has(id))) &&
-      (!hidden || h.kase.signatories.some((id) => id === me || !hidden.has(id)))
+      (!hidden || h.kase.signatories.some((id) => id === me || !hidden.has(id))),
   );
 }
 
@@ -792,7 +789,7 @@ export function peopleOptionsOf(
   hearings: TimelineHearing[],
   scope: PeopleScope,
   /** Lead with the viewer as a "Me" option (the single people menu offers it). */
-  includeMe = false
+  includeMe = false,
 ): PeopleOption[] {
   const me = meOf(world);
   const tally = new Map<PersonId, PeopleOption>();
@@ -884,19 +881,15 @@ export function daySlotsOn(
   dayKey: string,
   now: number,
   config: AdvocateHomeConfig,
-  filters?: Readonly<Record<string, SlotFilter>>
+  filters?: Readonly<Record<string, SlotFilter>>,
 ): DaySlot[] {
   const hearings = timelineHearingsFor(world, dayKey, now);
-  const sittings = config.sittings.length
-    ? config.sittings
-    : [{ start: "00:00", end: "23:59" }];
+  const sittings = config.sittings.length ? config.sittings : [{ start: "00:00", end: "23:59" }];
 
   const buckets: TimelineHearing[][] = sittings.map(() => []);
   for (const h of hearings) {
     const t = localMinutes(h.at);
-    let idx = sittings.findIndex(
-      (s) => t >= minutesOf(s.start) && t <= minutesOf(s.end)
-    );
+    let idx = sittings.findIndex((s) => t >= minutesOf(s.start) && t <= minutesOf(s.end));
     if (idx === -1) idx = nearestSitting(sittings, t);
     buckets[idx].push(h);
   }
@@ -928,9 +921,7 @@ export function daySlotsOn(
     const shown = filterSlotHearings(world, buckets[i], filter);
     const hiddenByAccess =
       buckets[i].length - filterSlotHearings(world, buckets[i], { ...filter, courts: [] }).length;
-    const board = config.groupByTime
-      ? groupByTimeSlots(shown, now)
-      : buildFlatBoard(shown);
+    const board = config.groupByTime ? groupByTimeSlots(shown, now) : buildFlatBoard(shown);
     return {
       key,
       window,
@@ -939,10 +930,7 @@ export function daySlotsOn(
       endLabel: formatClock(window.end),
       hearings: buckets[i],
       ended: ended(i),
-      live:
-        isToday &&
-        nowMinutes >= minutesOf(window.start) &&
-        nowMinutes <= minutesOf(window.end),
+      live: isToday && nowMinutes >= minutesOf(window.start) && nowMinutes <= minutesOf(window.end),
       board,
       hiddenByAccess,
     };
@@ -986,13 +974,12 @@ export function causeListOn(
   world: World,
   dayKey: string,
   now: number = Date.now(),
-  courts?: readonly string[]
+  courts?: readonly string[],
 ): CauseListRow[] {
   const docketCourts = docketCourtsOn(world, dayKey);
   const labels = courtLabelsOf(docketCourts);
   const wanted = courts && courts.length ? new Set(courts) : null;
-  const nameOf = (id: PersonId) =>
-    world.people.find((p) => p.id === id)?.name ?? id;
+  const nameOf = (id: PersonId) => world.people.find((p) => p.id === id)?.name ?? id;
 
   const rows: CauseListRow[] = [];
   for (const court of docketCourts) {
@@ -1021,9 +1008,7 @@ export function causeListOn(
       });
     }
   }
-  rows.sort(
-    (a, b) => a.courtLabel.localeCompare(b.courtLabel) || a.item - b.item
-  );
+  rows.sort((a, b) => a.courtLabel.localeCompare(b.courtLabel) || a.item - b.item);
   return rows;
 }
 
@@ -1043,7 +1028,7 @@ export function queueOf(
   court: string,
   dayKey: string,
   item: number,
-  now: number = Date.now()
+  now: number = Date.now(),
 ): HearingQueue {
   const docket = docketHearingsOn(world, court, dayKey, now);
   return {
@@ -1052,11 +1037,7 @@ export function queueOf(
 }
 
 /** Total listed matters on a day across every court — the greeting's number. */
-export function matterCountOn(
-  world: World,
-  dayKey: string,
-  now: number = Date.now()
-): number {
+export function matterCountOn(world: World, dayKey: string, now: number = Date.now()): number {
   return courtRooms(world, dayKey, now).reduce((sum, c) => sum + c.count, 0);
 }
 
@@ -1066,7 +1047,7 @@ export function matterCountOn(
  */
 export function nextHearingDayAfter(
   world: World,
-  fromKey: string
+  fromKey: string,
 ): { key: string; count: number } | null {
   const days = new Map<string, number>();
   for (const c of viewableCases(world)) {

@@ -31,12 +31,7 @@ import {
 import { PAGE_TITLE } from "@/components/shell/page-frame";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Empty,
   EmptyContent,
@@ -61,11 +56,7 @@ import {
   type ApplicationDraft,
   type ApplicationErrors,
 } from "@/lib/cases/application-draft";
-import {
-  caseLitigants,
-  preselectedRaiser,
-  raisingOptions,
-} from "@/lib/cases/application-options";
+import { caseLitigants, preselectedRaiser, raisingOptions } from "@/lib/cases/application-options";
 import {
   type ApplicationTypeId,
   type FilingStatus,
@@ -100,13 +91,9 @@ import {
   savedDraftSubmission,
   savedDraftsKey,
 } from "@/lib/cases/saved-application-drafts";
-import {
-  formatCaseDate,
-  partiesLabel,
-  stageLabel,
-  type CaseRecord,
-} from "@/lib/cases/types";
+import { formatCaseDate, partiesLabel, stageLabel, type CaseRecord } from "@/lib/cases/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * Raise application.
@@ -172,6 +159,7 @@ export function RaiseApplicationForm({
    */
   filer?: ApplicationViewer;
 }) {
+  const t = useTranslations();
   const formRef = useRef<HTMLFormElement>(null);
   const formId = useId();
   const router = useRouter();
@@ -198,7 +186,7 @@ export function RaiseApplicationForm({
         ? file.people.find((person) => person.id === self.officeOf)
         : undefined;
       const party = file.people.find(
-        (person) => person.kind === "party" && person.side === viewer?.side
+        (person) => person.kind === "party" && person.side === viewer?.side,
       );
       return {
         role: viewer?.role ?? null,
@@ -221,8 +209,7 @@ export function RaiseApplicationForm({
     }
   }, [record, profileRole, accountName, filer]);
   const filedForSide: ApplicationDraft["filedForSide"] = seat.side ?? "";
-  const canRaise =
-    seat.role === "advocate" || seat.role === "pip" || seat.role === "clerk";
+  const canRaise = seat.role === "advocate" || seat.role === "pip" || seat.role === "clerk";
   /* PRD "Every application": who can raise it, and for whom. */
   const raising = useMemo(() => raisingOptions(record, seat), [record, seat]);
   /* Each type's "Available when" (PRD "Application types"): bail for the
@@ -232,7 +219,7 @@ export function RaiseApplicationForm({
   const available = useCallback(
     (type: ApplicationTypeId) =>
       !seat.side || typeAvailable(type, { side: seat.side, hearingScheduled }),
-    [seat.side, hearingScheduled]
+    [seat.side, hearingScheduled],
   );
   /*
     A resumed draft arrives with its type already chosen, so it opens on the
@@ -257,20 +244,16 @@ export function RaiseApplicationForm({
     they follow the profile as it settles after hydration and a choice the
     filer made is never overwritten.
   */
-  const raisedById =
-    draft.raisedById || preselectedRaiser(raising.raisedBy, seat);
+  const raisedById = draft.raisedById || preselectedRaiser(raising.raisedBy, seat);
   const litigantChoices = raising.litigantsFor(raisedById);
   const litigantId =
-    draft.litigantId ||
-    (litigantChoices.length === 1 ? litigantChoices[0].id : "");
-  const raisedByPerson = raising.raisedBy.find(
-    (person) => person.id === raisedById
-  );
+    draft.litigantId || (litigantChoices.length === 1 ? litigantChoices[0].id : "");
+  const raisedByPerson = raising.raisedBy.find((person) => person.id === raisedById);
   /* The side is read from who is filing at render time, not frozen into
      the draft, because the profile settles only after hydration. */
   const filedDraft = useMemo<ApplicationDraft>(
     () => ({ ...draft, filedForSide, raisedById, litigantId }),
-    [draft, filedForSide, raisedById, litigantId]
+    [draft, filedForSide, raisedById, litigantId],
   );
   /* Only the person selected in Raised by signs (ALC-28). Anyone else —
      a clerk, or an advocate raising it for a colleague — hands it to them. */
@@ -285,60 +268,44 @@ export function RaiseApplicationForm({
       : undefined;
   /* Edit Litigant Details checks the fields of the side the edited
      litigant is on. */
-  const editSide = caseLitigants(record).find(
-    (item) => item.id === draft.editLitigantId
-  )?.side;
+  const editSide = caseLitigants(record).find((item) => item.id === draft.editLitigantId)?.side;
 
-  const [errors, setErrors] = useState<ApplicationErrors>(
-    EMPTY_APPLICATION_ERRORS
-  );
+  const [errors, setErrors] = useState<ApplicationErrors>(EMPTY_APPLICATION_ERRORS);
   /** Choosing the type is step one; its fields are step two. */
   const [stage, setStage] = useState<"type" | "details">(
-    (resume || objectTo || initialType) && draft.type ? "details" : "type"
+    (resume || objectTo || initialType) && draft.type ? "details" : "type",
   );
   const objecting = draft.type === "objection";
   /* The application an objection answers, for the dialog's header. */
   const objectionTarget = useMemo(() => {
     if (!objecting) return null;
     const target = applicationsFile(record).submissions.find(
-      (item) => item.id === draft.objectionToId
+      (item) => item.id === draft.objectionToId,
     );
     if (!target) return null;
     return {
-      label: [
-        submissionTypeLabel(target.type),
-        target.applicationNumber ?? target.temporaryId,
-      ]
+      label: [submissionTypeLabel(target.type), target.applicationNumber ?? target.temporaryId]
         .filter(Boolean)
         .join(" · "),
-      typeLabel:
-        quotedOthersTitle(target) ??
-        `${submissionTypeLabel(target.type)} application`,
+      typeLabel: quotedOthersTitle(target) ?? `${submissionTypeLabel(target.type)} application`,
       /* How a sentence names it: "the other side's bail application", or an
          Others application by its own title, never re-cased. */
       inSentence: quotedOthersTitle(target)
         ? `application ${quotedOthersTitle(target)}`
         : `${submissionTypeLabel(target.type).toLowerCase()} application`,
       decision: target.decisionOn ? formatCaseDate(target.decisionOn) : undefined,
-      due: target.decisionOn
-        ? formatCaseDate(objectionDeadline(target.decisionOn))
-        : undefined,
+      due: target.decisionOn ? formatCaseDate(objectionDeadline(target.decisionOn)) : undefined,
     };
   }, [objecting, record, draft.objectionToId]);
   const [generatedOpen, setGeneratedOpen] = useState(false);
   const [signatureOpen, setSignatureOpen] = useState(false);
   /** What the filer typed into the header search; it re-orders the cards. */
   const [query, setQuery] = useState("");
-  const chosen = applicationTypeGuide(
-    draft.type || "application-others"
-  );
+  const chosen = applicationTypeGuide(draft.type || "application-others");
   const caseHref = caseSectionHref(record.id, "applications");
   /* Anything typed, the chosen type aside: opening a form and closing it
      again untouched should not ask whether to throw work away. */
-  const typedAnything = useMemo(
-    () => isApplicationDirty({ ...draft, type: "" }),
-    [draft]
-  );
+  const typedAnything = useMemo(() => isApplicationDirty({ ...draft, type: "" }), [draft]);
   // Only its leave-page guard is used now; every way out of the flow stays
   // on this page.
   useDraftExit(typedAnything, caseHref);
@@ -362,8 +329,8 @@ export function RaiseApplicationForm({
       setErrors((current) => ({
         fields: Object.fromEntries(
           Object.entries(current.fields).filter(
-            ([name]) => name !== key && !name.startsWith(`${String(key)}.`)
-          )
+            ([name]) => name !== key && !name.startsWith(`${String(key)}.`),
+          ),
         ),
       }));
     },
@@ -401,9 +368,7 @@ export function RaiseApplicationForm({
 
   function returnFocusToGenerate() {
     // The button lives in the dialog's footer, tied to the form by id.
-    document
-      .querySelector<HTMLElement>(`button[form="${CSS.escape(formId)}"]`)
-      ?.focus();
+    document.querySelector<HTMLElement>(`button[form="${CSS.escape(formId)}"]`)?.focus();
   }
 
   const [discardOpen, setDiscardOpen] = useState(false);
@@ -416,9 +381,9 @@ export function RaiseApplicationForm({
    */
   function saveDraft() {
     if (recordFiling({ status: "draft" })) {
-      notify.neutral("Saved as a draft", {
+      notify.neutral(t("raiseApplicationForm_savedAsADraft"), {
         icon: SaveIcon,
-        description: "Finish it later from Applications.",
+        description: t("raiseApplicationForm_finishItLaterFromApplications"),
       });
     }
     closeForm();
@@ -440,39 +405,34 @@ export function RaiseApplicationForm({
   function recordFiling(
     stop:
       | { status: "draft" | "pending-signature" | "pending-payment" }
-      | { status: "paid"; temporaryId: string }
+      | { status: "paid"; temporaryId: string },
   ): boolean {
     if (!draft.type || !seat.personId || !seat.signerId) return false;
     const paid = stop.status === "paid";
     saveApplicationDraft(record.id, {
-        id: resume?.id ?? newSavedDraftId(),
-        type: draft.type,
-        title:
-          draft.type === "application-others" && draft.title.trim()
-            ? draft.title.trim()
-            : submissionTypeLabel(draft.type),
-        request: draftRequestText(filedDraft),
-        objectionToId: draft.objectionToId || null,
-        createdById: resume?.createdById ?? seat.personId,
-        submittedById: raisedById || (resume?.submittedById ?? seat.signerId),
-        onBehalfOfId:
-          litigantId || (resume?.onBehalfOfId ?? seat.partyId ?? seat.personId),
-        addedOn: resume?.addedOn ?? new Date().toISOString(),
-        status: paid
-          ? objecting
-            ? "submitted"
-            : "pending-review"
-          : (stop.status as FilingStatus),
-        submittedOn: paid ? new Date().toISOString().slice(0, 10) : undefined,
-        temporaryId: paid && "temporaryId" in stop ? stop.temporaryId : undefined,
-        attachments: applicationAttachments(draft, personName).map((item) => ({
-          label: item.label,
-          files: item.files.map((file) => ({
-            label: file.name,
-            href: localFileSrc(file),
-          })),
+      id: resume?.id ?? newSavedDraftId(),
+      type: draft.type,
+      title:
+        draft.type === "application-others" && draft.title.trim()
+          ? draft.title.trim()
+          : submissionTypeLabel(draft.type),
+      request: draftRequestText(filedDraft),
+      objectionToId: draft.objectionToId || null,
+      createdById: resume?.createdById ?? seat.personId,
+      submittedById: raisedById || (resume?.submittedById ?? seat.signerId),
+      onBehalfOfId: litigantId || (resume?.onBehalfOfId ?? seat.partyId ?? seat.personId),
+      addedOn: resume?.addedOn ?? new Date().toISOString(),
+      status: paid ? (objecting ? "submitted" : "pending-review") : (stop.status as FilingStatus),
+      submittedOn: paid ? new Date().toISOString().slice(0, 10) : undefined,
+      temporaryId: paid && "temporaryId" in stop ? stop.temporaryId : undefined,
+      attachments: applicationAttachments(draft, personName).map((item) => ({
+        label: item.label,
+        files: item.files.map((file) => ({
+          label: file.name,
+          href: localFileSrc(file),
         })),
-      });
+      })),
+    });
     return true;
   }
 
@@ -523,14 +483,17 @@ export function RaiseApplicationForm({
   const formTitle = objecting
     ? "Objection"
     : draft.type === "application-others"
-      ? "Other application"
+      ? t("raiseApplicationForm_otherApplication")
       : /application$/i.test(chosen.label)
         ? chosen.label
         : `${chosen.label} application`;
   const formDescription = objecting
     ? objectionTarget?.due
-      ? `Object to the other side's ${objectionTarget.inSentence}. File it by the end of ${objectionTarget.due}.`
-      : "Object to the other side's application."
+      ? t("raiseApplicationForm_objectToTheOtherSidesIn", {
+          inSentence: objectionTarget.inSentence,
+          due: objectionTarget.due,
+        })
+      : t("raiseApplicationForm_objectToTheOtherSidesApplication")
     : chosen.description;
 
   if (!canRaise) {
@@ -540,15 +503,19 @@ export function RaiseApplicationForm({
           <div className={PAGE_BACK_COLUMN}>
             <PageBackButton
               href={backHref ?? caseHref}
-              label={backHref ? "Back to cases list" : "Back to case"}
+              label={
+                backHref
+                  ? t("raiseApplicationForm_backToCasesList")
+                  : t("raiseApplicationForm_backToCase")
+              }
             />
           </div>
           <div className="flex min-w-0 flex-col gap-1">
             <h1 className={cn(PAGE_TITLE, "flex min-h-8 items-center")}>
-              Raise application
+              {t("raiseApplicationForm_raiseApplication")}
             </h1>
             <p className="text-body-compact text-muted-foreground">
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={t("raiseApplicationForm_caseNumber")} />
               <span aria-hidden> · </span>
               {partiesLabel(record)}
             </p>
@@ -563,16 +530,15 @@ export function RaiseApplicationForm({
               <FilePenLineIcon className="size-7" aria-hidden />
             </EmptyMedia>
             <EmptyTitle className="text-title-s font-semibold text-foreground">
-              Your advocate raises applications for you
+              {t("raiseApplicationForm_yourAdvocateRaisesApplicationsForYou")}
             </EmptyTitle>
             <EmptyDescription className="text-body-compact">
-              When one is filed on your behalf, you can pay its court fee from
-              the case&apos;s Applications tab.
+              {t("raiseApplicationForm_whenOneIsFiledOnYour")}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button variant="outline" asChild>
-              <Link href={caseHref}>Go to Applications</Link>
+              <Link href={caseHref}>{t("raiseApplicationForm_goToApplications")}</Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -583,57 +549,61 @@ export function RaiseApplicationForm({
   return (
     <>
       {inPlace ? null : (
-      <div className="flex w-full flex-col gap-6">
-        {/* Keyed to the column, not the viewport: on a portrait tablet the rail
+        <div className="flex w-full flex-col gap-6">
+          {/* Keyed to the column, not the viewport: on a portrait tablet the rail
             is still open, and a viewport rule put the search beside a heading
             that then broke onto two lines. */}
-        <header className="@container">
-          <div className="flex flex-col gap-4 @2xl:flex-row @2xl:items-end @2xl:justify-between @2xl:gap-8">
-            {/* The arrow hangs in its own column, so the case line starts on
+          <header className="@container">
+            <div className="flex flex-col gap-4 @2xl:flex-row @2xl:items-end @2xl:justify-between @2xl:gap-8">
+              {/* The arrow hangs in its own column, so the case line starts on
                 the heading's edge, not under the arrow. */}
-            <div className={PAGE_BACK_ROW}>
-              <div className={PAGE_BACK_COLUMN}>
-                <PageBackButton
-                  href={backHref ?? caseHref}
-                  label={backHref ? "Back to cases list" : "Back to case"}
-                />
-              </div>
-              <div className="flex min-w-0 flex-col gap-1">
-                {/* Not "Raise application" again: reached from the rail, the page
+              <div className={PAGE_BACK_ROW}>
+                <div className={PAGE_BACK_COLUMN}>
+                  <PageBackButton
+                    href={backHref ?? caseHref}
+                    label={
+                      backHref
+                        ? t("raiseApplicationForm_backToCasesList")
+                        : t("raiseApplicationForm_backToCase")
+                    }
+                  />
+                </div>
+                <div className="flex min-w-0 flex-col gap-1">
+                  {/* Not "Raise application" again: reached from the rail, the page
                     before this one already carries that name (owner, Sept 21). */}
-                <h1 className={cn(PAGE_TITLE, "flex min-h-8 items-center")}>
-                  Choose application type
-                </h1>
-                {/* Which case this files into. Reached from the rail, nothing
+                  <h1 className={cn(PAGE_TITLE, "flex min-h-8 items-center")}>
+                    {t("raiseApplicationForm_chooseApplicationType")}
+                  </h1>
+                  {/* Which case this files into. Reached from the rail, nothing
                     else on the screen says so. */}
-                <p className="text-body-compact text-muted-foreground">
-                  <Identifier value={record.caseNumber} label="case number" />
-                  <span aria-hidden> · </span>
-                  {partiesLabel(record)}
-                </p>
+                  <p className="text-body-compact text-muted-foreground">
+                    <Identifier
+                      value={record.caseNumber}
+                      label={t("raiseApplicationForm_caseNumber")}
+                    />
+                    <span aria-hidden> · </span>
+                    {partiesLabel(record)}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* A step clear of the heading above and the types below, so it
+          {/* A step clear of the heading above and the types below, so it
             stands alone as the way in (owner, Oct 8). */}
-        <div className="mx-auto w-full max-w-2xl pt-6 pb-6">
-          <ApplicationTypeSearch query={query} onQueryChange={setQuery} />
-        </div>
+          <div className="mx-auto w-full max-w-2xl pt-6 pb-6">
+            <ApplicationTypeSearch query={query} onQueryChange={setQuery} />
+          </div>
 
-        <ApplicationTypePicker
-          value=""
-          query={query}
-          suggested={suggestedApplicationTypes(
-            record.stage,
-            record.disposal !== undefined
-          )}
-          stageName={stageLabel(record.stage)}
-          onChoose={chooseType}
-          available={available}
-        />
-      </div>
+          <ApplicationTypePicker
+            value=""
+            query={query}
+            suggested={suggestedApplicationTypes(record.stage, record.disposal !== undefined)}
+            stageName={stageLabel(record.stage)}
+            onChoose={chooseType}
+            available={available}
+          />
+        </div>
       )}
 
       {/*
@@ -648,7 +618,7 @@ export function RaiseApplicationForm({
         }}
       >
         <FlowDialogContent
-        ownBack
+          ownBack
           className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
         >
           <DialogHeader className="shrink-0 border-b border-hairline px-6 py-4 pr-12 text-left">
@@ -665,9 +635,7 @@ export function RaiseApplicationForm({
                 </Badge>
               ) : null}
             </div>
-            <DialogDescription className="text-pretty">
-              {formDescription}
-            </DialogDescription>
+            <DialogDescription className="text-pretty">{formDescription}</DialogDescription>
             {/* The terms are already on the summons (owner, 2026-10-14). */}
             {chosen.id === "bail" && !objecting ? (
               <p className="text-body-compact text-pretty text-muted-foreground">
@@ -675,10 +643,14 @@ export function RaiseApplicationForm({
               </p>
             ) : null}
             <p className="text-caption text-muted-foreground">
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={t("raiseApplicationForm_caseNumber")} />
               <span aria-hidden> · </span>
               {partiesLabel(record)}
-              {resume ? ` · Started ${formatCaseDate(resume.addedOn)}` : null}
+              {resume
+                ? t("raiseApplicationForm_startedFormatCaseDate", {
+                    formatCaseDate: formatCaseDate(resume.addedOn),
+                  })
+                : null}
             </p>
           </DialogHeader>
 
@@ -701,10 +673,12 @@ export function RaiseApplicationForm({
 
           <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             <Button type="button" variant="outline" onClick={requestCloseForm}>
-              Cancel
+              {t("common_cancel")}
             </Button>
             <Button type="submit" form={formId}>
-              {objecting ? "Generate objection" : "Generate application"}
+              {objecting
+                ? t("raiseApplicationForm_generateObjection")
+                : t("raiseApplicationForm_generateApplication")}
             </Button>
           </footer>
         </FlowDialogContent>
@@ -720,7 +694,7 @@ export function RaiseApplicationForm({
           setSignatureOpen(true);
         }}
         onReturnFocus={returnFocusToGenerate}
-        signLabel={handoffTo ? "Send for signature" : undefined}
+        signLabel={handoffTo ? t("raiseApplicationForm_sendForSignature") : undefined}
       />
 
       <AddSignatureDialog
@@ -782,15 +756,7 @@ export function RaiseApplicationEntry({
 }) {
   const savedRaw = useSessionValue(savedDraftsKey(props.record.id));
   const saved =
-    !resume && draftId
-      ? parseSavedDrafts(savedRaw).find((item) => item.id === draftId)
-      : undefined;
+    !resume && draftId ? parseSavedDrafts(savedRaw).find((item) => item.id === draftId) : undefined;
   const resumed = resume ?? (saved ? savedDraftSubmission(saved) : null);
-  return (
-    <RaiseApplicationForm
-      key={resumed?.id ?? "new"}
-      {...props}
-      resume={resumed}
-    />
-  );
+  return <RaiseApplicationForm key={resumed?.id ?? "new"} {...props} resume={resumed} />;
 }

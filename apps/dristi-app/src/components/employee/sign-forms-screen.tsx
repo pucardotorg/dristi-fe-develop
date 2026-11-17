@@ -10,10 +10,7 @@ import { SignBulkConfirmDialog } from "@/components/employee/sign-bulk-confirm-d
 import { SignFormDialog } from "@/components/employee/sign-form-dialog";
 import { SignFormsTable } from "@/components/employee/sign-forms-table";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -51,6 +48,7 @@ import {
   type CourtSortSpec,
 } from "@/lib/employee/court-sort";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 type SignFormSort = "oldest-created" | "newest-created" | "name";
 
@@ -85,22 +83,17 @@ const SIGN_FORM_SORTS: CourtSortSpec<SignForm, SignFormSort>[] = [
  * no document is written, no provider is called, and nothing persists past a reload.
  */
 export function SignFormsScreen() {
+  const t = useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used — every one of them, so the screen has a single rule rather than a live
      one and a deferred one. Every change resets to page one; the old Search button did
      that, and a keystroke that narrows the list to four rows must not leave the reader
      on page three of nothing. */
-  const [filters, setFilters] = React.useState<SignFormFilters>(
-    EMPTY_SIGN_FORM_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<SignFormFilters>(EMPTY_SIGN_FORM_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [signedIds, setSignedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
-  const [picked, setPicked] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [signedIds, setSignedIds] = React.useState<ReadonlySet<string>>(() => new Set());
+  const [picked, setPicked] = React.useState<ReadonlySet<string>>(() => new Set());
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [open, setOpen] = React.useState<SignForm | null>(null);
   const [announcement, setAnnouncement] = React.useState("");
@@ -117,8 +110,7 @@ export function SignFormsScreen() {
   const currentPage = Math.min(page, pageCount);
   const start = (currentPage - 1) * pageSize;
   const pageRows = rows.slice(start, start + pageSize);
-  const isFiltered =
-    filters.process !== "all" || filters.createdOn !== "" || filters.query !== "";
+  const isFiltered = filters.process !== "all" || filters.createdOn !== "" || filters.query !== "";
 
   /**
    * What is selected *and* still in the list.
@@ -187,14 +179,17 @@ export function SignFormsScreen() {
     removeFromQueue(
       ids,
       ids.length === 1
-        ? "1 form left the signing queue."
-        : `${ids.length} forms left the signing queue.`,
+        ? t("signFormsScreen_1FormLeftTheSigningQueue")
+        : t("signFormsScreen_lengthFormsLeftTheSigningQueue", { length: String(ids.length) }),
     );
   }
 
   function signOne(form: SignForm) {
     setOpen(null);
-    removeFromQueue([form.id], `${causeTitle(form)} left the signing queue.`);
+    removeFromQueue(
+      [form.id],
+      t("signFormsScreen_causeTitleLeftTheSigningQueue", { causeTitle: causeTitle(form) }),
+    );
   }
 
   function returnFocus() {
@@ -206,15 +201,17 @@ export function SignFormsScreen() {
       <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 pb-0 md:p-8 md:pb-0">
         <header className="flex flex-col gap-2">
           <h1 className="text-title text-balance font-semibold">
-            Sign forms
+            {t("signFormsScreen_signForms")}
           </h1>
           {/* The count is the whole point of the queue, so the supporting line carries
               it rather than restating the title. Singular is spelled out because
               "1 forms" is the kind of thing a court notices. */}
           <p className="text-body text-muted-foreground">
             {remaining.length === 1
-              ? "1 form is waiting for your signature."
-              : `${remaining.length} forms are waiting for your signature.`}
+              ? t("signFormsScreen_1FormIsWaitingForYour")
+              : t("signFormsScreen_lengthFormsAreWaitingForYour", {
+                  length: String(remaining.length),
+                })}
           </p>
         </header>
 
@@ -241,11 +238,7 @@ export function SignFormsScreen() {
           />
 
           {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-          <QueueAnnouncer
-            from={start + 1}
-            to={start + pageRows.length}
-            total={rows.length}
-          />
+          <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
           {pageRows.length === 0 ? (
             <SignFormsEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -303,15 +296,12 @@ export function SignFormsScreen() {
           a disabled button and says what to do instead. */}
       <footer className="sticky bottom-0 z-30 mt-8 border-t border-hairline bg-card px-6 py-3 md:px-8 md:py-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <p
-            className="text-body-compact text-muted-foreground sm:mr-auto"
-            aria-live="polite"
-          >
+          <p className="text-body-compact text-muted-foreground sm:mr-auto" aria-live="polite">
             {selectedIds.size === 0
-              ? "Select forms to sign them together."
+              ? t("signFormsScreen_selectFormsToSignThemTogether")
               : selectedIds.size === 1
-                ? "1 form selected."
-                : `${selectedIds.size} forms selected.`}
+                ? t("signFormsScreen_1FormSelected")
+                : t("signFormsScreen_sizeFormsSelected", { size: String(selectedIds.size) })}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             {selectedIds.size > 0 ? (
@@ -321,7 +311,7 @@ export function SignFormsScreen() {
                 className="w-full sm:w-fit"
                 onClick={() => setPicked(new Set())}
               >
-                Clear selection
+                {t("signFormsScreen_clearSelection")}
               </Button>
             ) : null}
             {/* The count rides the label once there is one, the way every signing
@@ -336,7 +326,7 @@ export function SignFormsScreen() {
             >
               {selectedIds.size > 0
                 ? `Sign ${selectedIds.size} ${selectedIds.size === 1 ? "form" : "forms"}`
-                : "Sign selected forms"}
+                : t("signFormsScreen_signSelectedForms")}
             </Button>
           </div>
         </div>
@@ -404,39 +394,38 @@ function SignFormsFilters({
   /** The list's sort control (`CourtSortSelect`), at the end of the row. */
   trailing?: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("signFormsScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: t("signFormsScreen_caseNameNumberOrAdvocate"),
       }}
       searchRef={searchRef}
       fields={[
         {
           id: "sign-forms-process",
-          label: "Process type",
+          label: t("signFormsScreen_processType"),
           value: filters.process,
           all: "all",
-          allLabel: "All process types",
+          allLabel: t("signFormsScreen_allProcessTypes"),
           options: SIGN_FORM_PROCESSES.map((process) => ({
             value: process.id,
             label: process.label,
           })),
-          onApply: (value) =>
-            onChange({ process: value as SignFormFilters["process"] }),
+          onApply: (value) => onChange({ process: value as SignFormFilters["process"] }),
         },
       ]}
       date={{
-        label: "Date created",
+        label: t("signFormsScreen_dateCreated"),
         value: filters.createdOn ? parseIsoDay(filters.createdOn) : undefined,
         active: filters.createdOn !== "",
         chipLabel: filters.createdOn ? formatListingDate(filters.createdOn) : "",
         draftActive: (value) => !!value,
         cleared: undefined,
-        onApply: (value) =>
-          onChange({ createdOn: value ? isoDay(value) : "" }),
+        onApply: (value) => onChange({ createdOn: value ? isoDay(value) : "" }),
       }}
       trailing={trailing}
       onClearAll={onClear}
@@ -452,36 +441,29 @@ function SignFormsFilters({
  * date — the same good-empty the register queue already uses. Borderless and unpadded;
  * the panel is already the frame.
  */
-function SignFormsEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function SignFormsEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FolderCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FolderCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No forms match these filters" : "Nothing left to sign"}
+          {isFiltered
+            ? t("signFormsScreen_noFormsMatchTheseFilters")
+            : t("signFormsScreen_nothingLeftToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No form waiting for signature matches the process, date or search you asked for."
-            : "Every form drawn up by this court has been signed."}
+            ? t("signFormsScreen_noFormWaitingForSignatureMatches")
+            : t("signFormsScreen_everyFormDrawnUpByThis")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
+            {t("signFormsScreen_clearFilters")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -507,18 +489,19 @@ function SignFormsItemList({
   onToggle: (form: SignForm) => void;
   onOpen: (form: SignForm) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((form) => (
-        <QueueItemRow
-          key={form.id}
-          className="flex items-start gap-3"
-        >
+        <QueueItemRow key={form.id} className="flex items-start gap-3">
           <Checkbox
             checked={selectedIds.has(form.id)}
             onCheckedChange={() => onToggle(form)}
-            aria-label={`Select ${causeTitle(form)}, ${courtText(form.caseNumber)}`}
+            aria-label={t("signFormsScreen_selectCauseTitleCourtText", {
+              causeTitle: causeTitle(form),
+              courtText: courtText(form.caseNumber),
+            })}
             className="mt-1"
           />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -526,19 +509,17 @@ function SignFormsItemList({
               type="button"
               onClick={() => onOpen(form)}
               {...rowOpener}
-                className={rowOpenerClass}
+              className={rowOpenerClass}
             >
-              <span className="sr-only">Read and sign </span>
+              <span className="sr-only">{t("signFormsScreen_readAndSign")} </span>
               {causeTitle(form)}
             </button>
             <p className="text-caption text-muted-foreground">
-              <Identifier value={form.caseNumber} label="case number" />
+              <Identifier value={form.caseNumber} label={t("signFormsScreen_caseNumber")} />
               {" · "}
               {signFormProcessLabel(form.process)}
               {" · "}
-              <span className="tabular-nums">
-                {formatSignFormDate(form.createdOn)}
-              </span>
+              <span className="tabular-nums">{formatSignFormDate(form.createdOn)}</span>
             </p>
           </div>
         </QueueItemRow>

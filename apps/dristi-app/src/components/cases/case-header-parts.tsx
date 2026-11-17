@@ -10,12 +10,8 @@ import { useCaseReader } from "./case-reader";
 import { CaseNumberHistory } from "./case-number-history";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 /**
  * Back to the cases list: the product's one page-level back control.
@@ -25,10 +21,11 @@ import {
  * a case in a tab of its own, where there is nothing to go back to.
  */
 export function CaseBackButton() {
+  const t = useTranslations();
   if (useCaseReader() === "court") return null;
   return (
     <div className={PAGE_BACK_COLUMN}>
-      <PageBackButton href="/cases" label="Back to cases" />
+      <PageBackButton href="/cases" label={t("caseHeaderParts_backToCases")} />
     </div>
   );
 }
@@ -50,17 +47,15 @@ export function CaseNumberLine({
   history: PastCaseNumber[];
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <span
       className={cn(
         "flex items-center gap-1 text-body-compact font-medium text-muted-foreground",
-        className
+        className,
       )}
     >
-      <Identifier
-        value={caseNumber}
-        label="case number"
-      />
+      <Identifier value={caseNumber} label={t("caseHeaderParts_caseNumber")} />
       <span className="flex">
         <CaseNumberHistory history={history} />
       </span>
@@ -75,13 +70,8 @@ export function CaseNumberLine({
  * main stage's fill against the secondary stages' outline is the only
  * difference, and the tooltip names it.
  */
-export function CaseStageBadges({
-  stage,
-  subStages,
-}: {
-  stage: ReactNode;
-  subStages: string[];
-}) {
+export function CaseStageBadges({ stage, subStages }: { stage: ReactNode; subStages: string[] }) {
+  const t = useTranslations();
   return (
     <TooltipProvider>
       <span className="flex flex-wrap items-center gap-1.5">
@@ -89,14 +79,14 @@ export function CaseStageBadges({
           <TooltipTrigger asChild>
             <span>{stage}</span>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Case stage</TooltipContent>
+          <TooltipContent side="bottom">{t("caseHeaderParts_caseStage")}</TooltipContent>
         </Tooltip>
         {subStages.map((label) => (
           <Tooltip key={label}>
             <TooltipTrigger asChild>
               <Badge variant="outline">{label}</Badge>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Secondary stage</TooltipContent>
+            <TooltipContent side="bottom">{t("caseHeaderParts_secondaryStage")}</TooltipContent>
           </Tooltip>
         ))}
       </span>

@@ -9,11 +9,7 @@ import {
   type CourtId,
   type CourtProfile,
 } from "@/lib/court/profiles";
-import {
-  localizeCaseNumber,
-  localizeCourtText,
-  localizeDeep,
-} from "@/lib/court/localize";
+import { localizeCaseNumber, localizeCourtText, localizeDeep } from "@/lib/court/localize";
 
 import { setSigningRules } from "@/lib/filing/config";
 
@@ -64,7 +60,7 @@ export function CourtProvider({
         window.location.reload();
       },
     }),
-    [court]
+    [court],
   );
 
   return (

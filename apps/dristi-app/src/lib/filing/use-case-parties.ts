@@ -14,11 +14,9 @@
 
 import * as React from "react";
 
-import { isApiError } from "@/lib/api";
-
 import { accusedFromCase, complainantsFromCase, witnessesFromCase } from "./case-read";
 import { getCaseFilingRepository } from "./data";
-import { caseFilingErrorMessage, type PartyRole } from "./data/cases-api";
+import { caseFilingErrorMessage, isCaseNotYetSaved, type PartyRole } from "./data/cases-api";
 import {
   accusedBodies,
   complainantBodies,
@@ -49,6 +47,7 @@ import type {
 import { syncAdvocates } from "./use-case-advocates";
 import { linkSavedDocuments } from "./use-case-documents";
 import { runStepSave, useStepSync } from "./use-step-sync";
+import { useTranslations } from "next-intl";
 
 export type PartyKind = "complainant" | "accused" | "witness";
 
@@ -117,9 +116,11 @@ export function removePartyFromCase(party: Party) {
   // The backend takes a complainant's PoA holder off with them.
   lastPoa.delete(party.id);
   for (const id of ids) {
-    getCaseFilingRepository().removeParticipant(id).catch((error) => {
-      console.warn("[filing] couldn't remove a party from the case", id, error);
-    });
+    getCaseFilingRepository()
+      .removeParticipant(id)
+      .catch((error) => {
+        console.warn("[filing] couldn't remove a party from the case", id, error);
+      });
   }
 }
 
@@ -134,7 +135,7 @@ async function loadFromCase(
   caseId: string,
   latest: () => FilingDraft,
   update: (recipe: (d: FilingDraft) => void) => void,
-  profile: UserProfile | null
+  profile: UserProfile | null,
 ): Promise<Set<string>> {
   const read = await getCaseFilingRepository().getCase(caseId);
   const caughtUp = (d: FilingDraft) => {
@@ -178,6 +179,7 @@ async function loadFromCase(
 }
 
 export function useCaseParties<K extends PartyKind>(kind: K) {
+  const t = useTranslations();
   const { draft, update } = useFiling();
   const { profile, ready } = useProfile();
   // Read from the case once per visit to the step, before its first save.
@@ -189,7 +191,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
         const party = partiesOf(d, kind).find((p) => p.id === id);
         if (party) patch(party);
       }),
-    [kind, update]
+    [kind, update],
   );
   const recordComplainant = React.useCallback(
     (id: string, patch: (c: Complainant) => void) =>
@@ -197,7 +199,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
         const c = d.complainants.find((x) => x.id === id);
         if (c) patch(c);
       }),
-    [update]
+    [update],
   );
 
   const sync = useStepSync(kind, async (latest, caseId) => {
@@ -211,7 +213,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
       } catch (error) {
         // A case not saved yet has nothing to read: treat it as an empty case
         // (nothing from it) and don't read again on the next save.
-        if (isApiError(error) && error.status === 404) {
+        if (isCaseNotYetSaved(error)) {
           loaded.current = true;
         } else {
           // The browser's copy is still there; the next save tries the case again.
@@ -292,7 +294,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
 
       const missing = body ? poaHolderMissing(body) : [];
       if (missing.length) {
-        setError(missingFieldsMessage(missing, "PoA holder's"));
+        setError(missingFieldsMessage(missing, t("useCaseParties_poAHolders")));
         continue;
       }
       const forId = savedParticipantIds(c)[0];
@@ -319,9 +321,7 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
 
   const unsaved = (
     draft.caseId
-      ? partiesOf(draft, kind).filter(
-          (p) => p.syncError || ("poaSyncError" in p && p.poaSyncError)
-        )
+      ? partiesOf(draft, kind).filter((p) => p.syncError || ("poaSyncError" in p && p.poaSyncError))
       : []
   ) as PartyOf<K>[];
 

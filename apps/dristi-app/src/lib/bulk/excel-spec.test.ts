@@ -13,7 +13,17 @@ import {
   RETURN_REASONS,
 } from "../filing/options";
 
-import { COLUMNS, formatHint, headerFor, isGuideRow, LISTS, listValue, matchTemplateHeader, normHeader, templateColumns } from "./excel-spec";
+import {
+  COLUMNS,
+  formatHint,
+  headerFor,
+  isGuideRow,
+  LISTS,
+  listValue,
+  matchTemplateHeader,
+  normHeader,
+  templateColumns,
+} from "./excel-spec";
 
 test("the template's lists are the form's lists", () => {
   assert.deepEqual(LISTS.accusedType, ACCUSED_TYPES);
@@ -40,9 +50,25 @@ test("the template is the PRD's 79 columns, every repeat numbered", () => {
   assert.equal(all.length, 79);
   const headers = all.map((t) => t.header);
   assert.equal(new Set(headers).size, 79, "no header twice");
-  for (const h of ["Case reference", "Accused 1 name", "Accused 2 name", "Accused 1 address 1 pincode", "Accused 2 person responsible 1 police station", "Cheque 1 complainant branch IFSC", "Demand notice 1 dispatch date", "Other complaint pending between the same parties", "Other pending case 1 case number", "Interim relief", "Affidavit", "Witness 1 address 1 pincode"])
+  for (const h of [
+    "Case reference",
+    "Accused 1 name",
+    "Accused 2 name",
+    "Accused 1 address 1 pincode",
+    "Accused 2 person responsible 1 police station",
+    "Cheque 1 complainant branch IFSC",
+    "Demand notice 1 dispatch date",
+    "Other complaint pending between the same parties",
+    "Other pending case 1 case number",
+    "Interim relief",
+    "Affidavit",
+    "Witness 1 address 1 pincode",
+  ])
     assert.ok(headers.includes(h), h);
-  assert.ok(!headers.some((h) => /complainant (name|type)/i.test(h)), "no complainant columns: they are set on the upload screen");
+  assert.ok(
+    !headers.some((h) => /complainant (name|type)/i.test(h)),
+    "no complainant columns: they are set on the upload screen",
+  );
 });
 
 test("a numbered header names its column and instance; an unnumbered one does not", () => {
@@ -51,7 +77,13 @@ test("a numbered header names its column and instance; an unnumbered one does no
   assert.deepEqual(m.instance, [2, 1]);
   assert.deepEqual(matchTemplateHeader("cheque-3 AMOUNT")!.instance, [3]);
   assert.equal(matchTemplateHeader("Cheque amount"), null);
-  assert.equal(headerFor(COLUMNS.find((c) => c.key === "personName")!, [1, 2]), "Accused 1 person responsible 2 name");
+  assert.equal(
+    headerFor(
+      COLUMNS.find((c) => c.key === "personName")!,
+      [1, 2],
+    ),
+    "Accused 1 person responsible 2 name",
+  );
 });
 
 test("headers and aliases never collide", () => {
@@ -59,7 +91,10 @@ test("headers and aliases never collide", () => {
   for (const c of COLUMNS) {
     for (const h of [c.header, ...c.aliases]) {
       const n = normHeader(h);
-      assert.ok(!seen.has(n) || seen.get(n) === c.key, `"${h}" names both ${seen.get(n)} and ${c.key}`);
+      assert.ok(
+        !seen.has(n) || seen.get(n) === c.key,
+        `"${h}" names both ${seen.get(n)} and ${c.key}`,
+      );
       seen.set(n, c.key);
     }
   }
@@ -77,7 +112,9 @@ test("the template's format and example rows are spotted and discarded; real row
   assert.ok(isGuideRow(example), "example row");
   // Someone overwrote the example's reference but left the rest.
   assert.ok(isGuideRow(["GJ-PL-9999", ...example.slice(1)]), "edited example");
-  const real = example.map((v, i) => (COLUMNS[i].kind === "list" ? v : `${v}`.replace(/\d/g, "7").replace(/[A-Za-z]/g, "q")));
+  const real = example.map((v, i) =>
+    COLUMNS[i].kind === "list" ? v : `${v}`.replace(/\d/g, "7").replace(/[A-Za-z]/g, "q"),
+  );
   real[0] = "TCL-AHD-PL-1001";
   assert.ok(!isGuideRow(real), "a real case");
 });

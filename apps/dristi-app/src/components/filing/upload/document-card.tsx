@@ -19,24 +19,12 @@ import { ChevronDownIcon, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { IntakeSlot } from "@/lib/filing/types";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useInCorrection } from "@/components/filing/posture";
 import { IntakeSlotRow } from "@/components/filing/upload/slot-row";
-import {
-  useDropTarget,
-  type DroppedFiles,
-} from "@/components/filing/upload/use-drop-target";
+import { useDropTarget, type DroppedFiles } from "@/components/filing/upload/use-drop-target";
+import { useTranslations } from "next-intl";
 
 /** Slots a dropped file can still go into, required ones first. */
 function openSlotKeys(slots: IntakeSlot[]): string[] {
@@ -70,6 +58,7 @@ export function DocumentCard({
   /** Rendered at the end of the optional group — e.g. "Add other documents". */
   optionalFooter?: React.ReactNode;
 }) {
+  const t = useTranslations();
   const headingId = React.useId();
 
   const inCorrection = useInCorrection();
@@ -96,12 +85,12 @@ export function DocumentCard({
   const claimRow = React.useCallback(
     (key: string, over: boolean) =>
       setOverRow((current) => (over ? key : current === key ? null : current)),
-    []
+    [],
   );
 
   const cardDrop = React.useCallback(
     (dropped: DroppedFiles) => onDropFiles(openKeys, dropped),
-    [onDropFiles, openKeys]
+    [onDropFiles, openKeys],
   );
   const { isOver, dropProps } = useDropTarget({ onFiles: cardDrop });
 
@@ -120,10 +109,10 @@ export function DocumentCard({
   );
 
   const optionalLabel = open
-    ? "Hide optional documents"
+    ? t("documentCard_hideOptionalDocuments")
     : optionalHasFile
-      ? `Show optional documents (${optional.length})`
-      : `Add optional documents (${optional.length})`;
+      ? t("documentCard_showOptionalDocumentsLength", { length: String(optional.length) })
+      : t("documentCard_addOptionalDocumentsLength", { length: String(optional.length) });
 
   return (
     <Card
@@ -133,7 +122,7 @@ export function DocumentCard({
       {...dropProps}
       className={cn(
         "gap-6 transition-shadow",
-        isOver && overRow === null && "ring-3 ring-focus-ring"
+        isOver && overRow === null && "ring-3 ring-focus-ring",
       )}
     >
       <CardHeader>
@@ -153,10 +142,10 @@ export function DocumentCard({
               type="button"
               variant="ghost"
               onClick={onRemove}
-              aria-label={removeLabel ?? `Remove ${title}`}
+              aria-label={removeLabel ?? t("documentCard_removeTitle", { title })}
               className="text-muted-foreground hover:text-destructive"
             >
-              Remove
+              {t("documentCard_remove")}
             </Button>
           </CardAction>
         ) : null}

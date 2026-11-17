@@ -57,7 +57,10 @@ describe("pending orders", () => {
     const sent = { ...order, sent: true };
     assert.equal(inPendingStage(sent, {}, "awaiting-signature"), true);
     assert.equal(inPendingStage(sent, {}, "workflow-to-fill"), true);
-    assert.equal(inPendingStage({ ...sent, workflowComplete: true }, {}, "workflow-to-fill"), false);
+    assert.equal(
+      inPendingStage({ ...sent, workflowComplete: true }, {}, "workflow-to-fill"),
+      false,
+    );
     assert.equal(inPendingStage(order, {}, "workflow-to-fill"), false);
   });
 

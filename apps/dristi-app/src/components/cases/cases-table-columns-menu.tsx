@@ -14,13 +14,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import {
-  canonicalOrder,
-  isToggleableTableColumn,
-  TABLE_COLUMNS,
-} from "@/lib/cases/table-columns";
+import { canonicalOrder, isToggleableTableColumn, TABLE_COLUMNS } from "@/lib/cases/table-columns";
 
 import { useCasesTableColumns } from "./use-cases-table-columns";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Which columns show. Only that: a tick per column, Show all, Reset. Order is
@@ -43,6 +41,7 @@ export function CasesTableColumnsMenu({
    *  swapping, so it eases with the peek. */
   compact?: boolean;
 }) {
+  const t = useTranslations();
   const { isVisible, toggle, showAll, reset, isDefault, isAllVisible, order } =
     useCasesTableColumns();
   const columns = canonicalOrder(order)
@@ -56,12 +55,14 @@ export function CasesTableColumnsMenu({
           type="button"
           variant="outline"
           className={"shrink-0 gap-0 duration-300 " + (compact ? "px-2.5" : "px-4")}
-          aria-label={compact ? "Edit columns" : undefined}
+          aria-label={compact ? t("casesTableColumnsMenu_editColumns") : undefined}
         >
           <Columns3Icon aria-hidden />
           {/* A verb, like Share access beside it: "Columns" named a thing and
               left what the button does to be guessed (owner, Sept 18). */}
-          <CollapsibleLabel show={!compact}>Edit columns</CollapsibleLabel>
+          <CollapsibleLabel show={!compact}>
+            {t("casesTableColumnsMenu_editColumns")}
+          </CollapsibleLabel>
         </Button>
       </PopoverTrigger>
       {/* align="start" hangs the menu under the trigger's left edge so it sits under
@@ -73,7 +74,7 @@ export function CasesTableColumnsMenu({
             more air above the title than the content padding alone gives. */}
         <PopoverHeader className="px-2 pt-1">
           <PopoverTitle className="text-body-compact font-medium">
-            Show or hide columns
+            {t("casesTableColumnsMenu_showOrHideColumns")}
           </PopoverTitle>
         </PopoverHeader>
         <ul className="flex flex-col">
@@ -93,7 +94,7 @@ export function CasesTableColumnsMenu({
                       if (isToggleableTableColumn(column.id)) toggle(column.id);
                     }}
                   />
-                  {column.label}
+                  {translateText(t, column.label)}
                 </Label>
               </li>
             );
@@ -113,7 +114,7 @@ export function CasesTableColumnsMenu({
             disabled={isAllVisible}
             onClick={() => showAll()}
           >
-            Show all
+            {t("casesTableColumnsMenu_showAll")}
           </Button>
           <Button
             type="button"
@@ -123,7 +124,7 @@ export function CasesTableColumnsMenu({
             disabled={isDefault}
             onClick={() => reset()}
           >
-            Reset to default
+            {t("casesTableColumnsMenu_resetToDefault")}
           </Button>
         </div>
       </PopoverContent>

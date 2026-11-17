@@ -18,8 +18,10 @@ import { updateVak } from "@/lib/vakalatnama/store";
 import { NOTARY_REGISTRY, type Notary } from "@/lib/vakalatnama/data";
 import type { Address, Attestation, Vakalatnama, WitnessKind } from "@/lib/vakalatnama/types";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 export function AttestationStep({ vak }: { vak: Vakalatnama }) {
+  const t = useTranslations();
   const a = vak.attestation;
   const set = (patch: Partial<Attestation>) =>
     updateVak(vak.id, (p) => ({ ...p, attestation: { ...p.attestation, ...patch } }));
@@ -30,44 +32,44 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
   return (
     <div className="flex flex-col gap-6">
       <FormCard
-        title="Add a witness?"
-        description="A witness confirms the signing. It’s optional."
+        title={t("attestation_addAWitness")}
+        description={t("attestation_aWitnessConfirmsTheSigningIts")}
       >
-        <FormField label="Witness" asGroup>
+        <FormField label={t("attestation_witness")} asGroup>
           <Segmented
             size="compact"
             value={a.hasWitness ? "yes" : "no"}
             onValueChange={(v) => set({ hasWitness: v === "yes" })}
             options={[
-              { value: "no", label: "No witness" },
-              { value: "yes", label: "Add a witness" },
+              { value: "no", label: t("attestation_noWitness") },
+              { value: "yes", label: t("attestation_addAWitnessLabel") },
             ]}
-            ariaLabel="Add a witness"
+            ariaLabel={t("attestation_addAWitnessLabel")}
           />
         </FormField>
       </FormCard>
 
       {a.hasWitness ? (
-        <FormCard title="Witness details">
-          <FormField label="Type of witness" asGroup>
+        <FormCard title={t("attestation_witnessDetails")}>
+          <FormField label={t("attestation_typeOfWitness")} asGroup>
             <Segmented
               size="compact"
               value={a.kind}
               onValueChange={(v) => set({ kind: v as WitnessKind })}
               options={[
-                { value: "notary", label: "Registered notary" },
-                { value: "other", label: "Other" },
+                { value: "notary", label: t("attestation_registeredNotary") },
+                { value: "other", label: t("attestation_other") },
               ]}
-              ariaLabel="Type of witness"
+              ariaLabel={t("attestation_typeOfWitness")}
             />
           </FormField>
 
           {a.kind === "notary" ? (
             <>
               <FormField
-                label="Find the notary"
+                label={t("attestation_findTheNotary")}
                 asGroup
-                help="Search the registered notaries."
+                help={t("attestation_searchTheRegisteredNotaries")}
               >
                 <ComboField
                   value={notaryQuery}
@@ -84,7 +86,7 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
                           {/* A combobox row is an option — no control nested inside it. */}
                           <Identifier
                             value={nt.registration}
-                            label="registration number"
+                            label={t("attestation_registrationNumber")}
                             copyable={false}
                           />
                           <span aria-hidden> · </span>
@@ -98,9 +100,9 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
                     set({ name: nt.name, registration: nt.registration });
                     setNotaryQuery(nt.name);
                   }}
-                  placeholder="Search by name or registration number"
-                  emptyLabel="No matching notary found."
-                  ariaLabel="Search registered notaries"
+                  placeholder={t("attestation_searchByNameOrRegistrationNumber")}
+                  emptyLabel={t("attestation_noMatchingNotaryFound")}
+                  ariaLabel={t("attestation_searchRegisteredNotaries")}
                 />
               </FormField>
 
@@ -111,7 +113,7 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
                     <span className="text-body-compact">{a.name}</span>
                     <Identifier
                       value={a.registration}
-                      label="registration number"
+                      label={t("attestation_registrationNumber")}
                       className="self-start text-caption text-muted-foreground"
                     />
                   </div>
@@ -121,24 +123,28 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
           ) : (
             <>
               <FormRow>
-                <FormField label="Name" required>
+                <FormField label={t("attestation_name")} required>
                   <TextField
                     value={a.name}
                     onChange={(v) => set({ name: v })}
-                    placeholder="Witness’s full name"
+                    placeholder={t("attestation_witnesssFullName")}
                     autoComplete="name"
                   />
                 </FormField>
-                <FormField label="Relation" required help="How they know the party.">
+                <FormField
+                  label={t("attestation_relation")}
+                  required
+                  help={t("attestation_howTheyKnowTheParty")}
+                >
                   <TextField
                     value={a.relation}
                     onChange={(v) => set({ relation: v })}
-                    placeholder="e.g. colleague, neighbour"
+                    placeholder={t("attestation_eGColleagueNeighbour")}
                   />
                 </FormField>
               </FormRow>
 
-              <FormField label="Mobile number" required>
+              <FormField label={t("attestation_mobileNumber")} required>
                 <MobileInput
                   value={a.mobile}
                   onChange={(v) => set({ mobile: v })}
@@ -147,12 +153,16 @@ export function AttestationStep({ vak }: { vak: Vakalatnama }) {
                 />
               </FormField>
 
-              <FormField label="ID card" required help="Proof of the witness’s identity.">
+              <FormField
+                label={t("attestation_idCard")}
+                required
+                help={t("attestation_proofOfTheWitnesssIdentity")}
+              >
                 <IdUpload value={a.idDoc} onChange={(v) => set({ idDoc: v })} />
               </FormField>
 
               <div className="flex flex-col gap-2">
-                <span className="text-body-compact font-medium">Address</span>
+                <span className="text-body-compact font-medium">{t("attestation_address")}</span>
                 <AddressFields value={a.address} onChange={setAddress} idPrefix="vak-witness" />
               </div>
             </>

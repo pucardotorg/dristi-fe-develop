@@ -38,10 +38,17 @@ async function writeAll(batches: Batch[]): Promise<void> {
   await (await db()).put("batches", batches, "all");
 }
 
-async function saveFileAs(id: string, bytes: Uint8Array, name: string, type: string): Promise<StoredFileRef> {
+async function saveFileAs(
+  id: string,
+  bytes: Uint8Array,
+  name: string,
+  type: string,
+): Promise<StoredFileRef> {
   if (!FILE_ID.test(id)) throw new Error("Not a file id.");
   const meta = metaFor(name, bytes.byteLength, type);
-  await (await db()).put("files", { blob: new Blob([bytes as BlobPart], { type: meta.type }), meta }, id);
+  await (
+    await db()
+  ).put("files", { blob: new Blob([bytes as BlobPart], { type: meta.type }), meta }, id);
   return { id, ...meta };
 }
 

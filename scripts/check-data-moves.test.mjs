@@ -15,7 +15,7 @@ const LIB = "apps/dristi-app/src/lib";
 const lists = (storage, idb = []) =>
   parseExceptionLists(
     `const LIB_STILL_USE_STORAGE = [${storage.map((f) => `"${f}"`).join(", ")}];\n` +
-      `const LIB_STILL_IMPORT_IDB = [${idb.map((f) => `"${f}"`).join(", ")}];`
+      `const LIB_STILL_IMPORT_IDB = [${idb.map((f) => `"${f}"`).join(", ")}];`,
   );
 
 const STORE = `${LIB}/vak/store.ts`;
@@ -24,8 +24,17 @@ const BASE_TYPES = `export type Vak = { id: string; status: "draft" | "signed" }
 const BASE_STORE = `import { blank } from "./data";\nimport type { Vak } from "./types";\nlocalStorage.getItem("k");`;
 
 /** A PR against a base where vak keeps data in its old store and has no data layer. */
-function scenario({ files = {}, currentStorage = ["src/lib/vak/store.ts"], dataLayerOnBase = false, added = {} } = {}) {
-  const base = { [STORE]: BASE_STORE, [TYPES]: BASE_TYPES, [`${LIB}/vak/data.ts`]: "export const blank = 1;" };
+function scenario({
+  files = {},
+  currentStorage = ["src/lib/vak/store.ts"],
+  dataLayerOnBase = false,
+  added = {},
+} = {}) {
+  const base = {
+    [STORE]: BASE_STORE,
+    [TYPES]: BASE_TYPES,
+    [`${LIB}/vak/data.ts`]: "export const blank = 1;",
+  };
   const current = { ...base, ...files };
   return checkDataMoves({
     baseLists: lists(["src/lib/vak/store.ts"]),
@@ -44,11 +53,21 @@ describe("typeMembers", () => {
       `export type A = { id: string; meta: { by: string }; tags: { name: string }[] };
        export interface B { kind: "x" | "y"; run(): void }
        type Private = { secret: string };
-       export const value = { notAType: 1 };`
+       export const value = { notAType: 1 };`,
     );
     assert.deepEqual(
       [...members].sort(),
-      ["A.id", "A.meta", "A.meta.by", "A.tags", "A.tags.name", "B.kind", 'B.kind="x"', 'B.kind="y"', "B.run"].sort()
+      [
+        "A.id",
+        "A.meta",
+        "A.meta.by",
+        "A.tags",
+        "A.tags.name",
+        "B.kind",
+        'B.kind="x"',
+        'B.kind="y"',
+        "B.run",
+      ].sort(),
     );
   });
 
@@ -63,32 +82,51 @@ describe("localImports and watchedTypeFiles", () => {
   it("follows the old store's same-folder imports to the files that exist", () => {
     assert.deepEqual(localImports(BASE_STORE, STORE), [`${LIB}/vak/data`, `${LIB}/vak/types`]);
     const base = { [STORE]: BASE_STORE, [`${LIB}/vak/data.ts`]: "", [TYPES]: "" };
-    assert.deepEqual(watchedTypeFiles("vak", [STORE], (p) => base[p] ?? null).sort(), [`${LIB}/vak/data.ts`, TYPES].sort());
+    assert.deepEqual(
+      watchedTypeFiles("vak", [STORE], (p) => base[p] ?? null).sort(),
+      [`${LIB}/vak/data.ts`, TYPES].sort(),
+    );
   });
 
   it("groups old stores by feature", () => {
-    const byFeature = oldStoresByFeature(lists(["src/lib/a/store.ts", "src/lib/a/prefs.ts"], ["src/lib/b/x.ts"]));
-    assert.deepEqual([...byFeature], [
-      ["a", [`${LIB}/a/store.ts`, `${LIB}/a/prefs.ts`]],
-      ["b", [`${LIB}/b/x.ts`]],
-    ]);
+    const byFeature = oldStoresByFeature(
+      lists(["src/lib/a/store.ts", "src/lib/a/prefs.ts"], ["src/lib/b/x.ts"]),
+    );
+    assert.deepEqual(
+      [...byFeature],
+      [
+        ["a", [`${LIB}/a/store.ts`, `${LIB}/a/prefs.ts`]],
+        ["b", [`${LIB}/b/x.ts`]],
+      ],
+    );
   });
 });
 
 describe("checkDataMoves", () => {
   it("lock 1: a new field on an older feature's record fails while its data layer isn't on the base", () => {
-    const { newData } = scenario({ files: { [TYPES]: `export type Vak = { id: string; urgent?: boolean; status: "draft" | "signed" };` } });
+    const { newData } = scenario({
+      files: {
+        [TYPES]: `export type Vak = { id: string; urgent?: boolean; status: "draft" | "signed" };`,
+      },
+    });
     assert.deepEqual(newData, [{ feature: "vak", path: TYPES, members: ["Vak.urgent"] }]);
   });
 
   it("lock 1: a new union value counts as new data", () => {
-    const { newData } = scenario({ files: { [TYPES]: `export type Vak = { id: string; status: "draft" | "signed" | "urgent" };` } });
+    const { newData } = scenario({
+      files: {
+        [TYPES]: `export type Vak = { id: string; status: "draft" | "signed" | "urgent" };`,
+      },
+    });
     assert.deepEqual(newData[0].members, ['Vak.status="urgent"']);
   });
 
   it("lock 1: also fails in the move PR itself (move and feature together)", () => {
     const { newData } = scenario({
-      files: { [TYPES]: `export type Vak = { id: string; urgent: boolean; status: "draft" | "signed" };`, [STORE]: "moved" },
+      files: {
+        [TYPES]: `export type Vak = { id: string; urgent: boolean; status: "draft" | "signed" };`,
+        [STORE]: "moved",
+      },
       currentStorage: [],
     });
     assert.equal(newData.length, 1);
@@ -96,7 +134,9 @@ describe("checkDataMoves", () => {
 
   it("lock 1: passes once the data layer is on the base", () => {
     const { newData } = scenario({
-      files: { [TYPES]: `export type Vak = { id: string; urgent?: boolean; status: "draft" | "signed" };` },
+      files: {
+        [TYPES]: `export type Vak = { id: string; urgent?: boolean; status: "draft" | "signed" };`,
+      },
       dataLayerOnBase: true,
     });
     assert.deepEqual(newData, []);
@@ -108,17 +148,27 @@ describe("checkDataMoves", () => {
   });
 
   it("lock 2: an old store that gains lines while still excused fails", () => {
-    const { frozen } = scenario({ files: { [STORE]: `${BASE_STORE}\nlocalStorage.setItem("urgent", "1");` }, added: { [STORE]: 1 } });
+    const { frozen } = scenario({
+      files: { [STORE]: `${BASE_STORE}\nlocalStorage.setItem("urgent", "1");` },
+      added: { [STORE]: 1 },
+    });
     assert.deepEqual(frozen, [{ feature: "vak", path: STORE }]);
   });
 
   it("lock 2: shrinking an old store passes", () => {
-    const { frozen } = scenario({ files: { [STORE]: "localStorage.getItem('k');" }, added: { [STORE]: 0 } });
+    const { frozen } = scenario({
+      files: { [STORE]: "localStorage.getItem('k');" },
+      added: { [STORE]: 0 },
+    });
     assert.deepEqual(frozen, []);
   });
 
   it("lock 2: the move PR passes, because it takes the store off its list", () => {
-    const { frozen, newData } = scenario({ files: { [STORE]: "getRepository()" }, currentStorage: [], added: { [STORE]: 12 } });
+    const { frozen, newData } = scenario({
+      files: { [STORE]: "getRepository()" },
+      currentStorage: [],
+      added: { [STORE]: 12 },
+    });
     assert.deepEqual({ frozen, newData }, { frozen: [], newData: [] });
   });
 
@@ -138,7 +188,15 @@ describe("checkDataMoves", () => {
 
 describe("countAddedCodeLines", () => {
   it("counts added code, not blanks, comments or the file header", () => {
-    const diff = ["+++ b/store.ts", "+", "+// note", "+ * doc", "+const x = 1;", "-const y = 2;", " context"].join("\n");
+    const diff = [
+      "+++ b/store.ts",
+      "+",
+      "+// note",
+      "+ * doc",
+      "+const x = 1;",
+      "-const y = 2;",
+      " context",
+    ].join("\n");
     assert.equal(countAddedCodeLines(diff), 1);
   });
 });

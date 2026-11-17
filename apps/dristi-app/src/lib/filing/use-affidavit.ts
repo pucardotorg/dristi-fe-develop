@@ -48,7 +48,7 @@ export function useAffidavit(standardOf: (draft: FilingDraft) => string) {
         setSaving(false);
       }
     },
-    [draft]
+    [draft],
   );
 
   return { save, saving, error, clearError: () => setError(null) };

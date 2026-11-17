@@ -1,16 +1,8 @@
 "use client";
 
-import {
-  CheckIcon,
-  EyeIcon,
-  Redo2Icon,
-  XIcon,
-} from "lucide-react";
+import { CheckIcon, EyeIcon, Redo2Icon, XIcon } from "lucide-react";
 
-import {
-  CausePostingNote,
-  useFromCauseList,
-} from "@/components/employee/cause-posting";
+import { CausePostingNote, useFromCauseList } from "@/components/employee/cause-posting";
 import { OrderDatePicker } from "@/components/employee/order-item-fields";
 import { PurposeField } from "@/components/employee/purpose-field";
 import { Badge } from "@/components/ui/badge";
@@ -18,20 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-} from "@/components/ui/select";
+import {} from "@/components/ui/select";
 import {
   courtHearingPurposeLabel,
   formatListingDate,
   type CourtHearingPurposeId,
 } from "@/lib/employee/hearings";
 import type { ListingApplicationDecision } from "@/lib/employee/listing-applications";
-import type {
-  Appearance,
-  AttendanceMark,
-  NextListingChoice,
-} from "@/lib/employee/order-draft";
+import type { Appearance, AttendanceMark, NextListingChoice } from "@/lib/employee/order-draft";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /*
  * The order screen's hearing sections — Attendance, Applications and Next hearing — and
@@ -114,6 +102,7 @@ export function AttendanceSection({
   attendance: ComposerAttendance;
   disabled: boolean;
 }) {
+  const t = useTranslations();
   return (
     <section
       id="order-attendance"
@@ -122,11 +111,8 @@ export function AttendanceSection({
       className="flex min-w-0 scroll-mt-40 flex-col gap-3 outline-none"
     >
       <div className="flex min-h-10 items-center justify-between gap-4">
-        <h2
-          id="order-attendance-heading"
-          className="text-body-compact font-semibold"
-        >
-          Attendance
+        <h2 id="order-attendance-heading" className="text-body-compact font-semibold">
+          {t("orderSections_attendance")}
         </h2>
         {disabled ? null : (
           <Button
@@ -135,7 +121,7 @@ export function AttendanceSection({
             className="-mr-3 text-body-compact"
             onClick={attendance.onMarkAllPresent}
           >
-            Mark all present
+            {t("orderSections_markAllPresent")}
           </Button>
         )}
       </div>
@@ -164,31 +150,25 @@ export function AttendanceSection({
                   className="grid shrink-0 grid-cols-3 gap-1 @min-[24rem]:w-72"
                 >
                   <MarkButton
-                    label="Present"
+                    label={t("orderSections_present")}
                     checked={mark === "present"}
                     tone="present"
                     disabled={disabled}
                     onClick={() =>
-                      attendance.onMark(
-                        appearance.id,
-                        mark === "present" ? undefined : "present",
-                      )
+                      attendance.onMark(appearance.id, mark === "present" ? undefined : "present")
                     }
                   />
                   <MarkButton
-                    label="Absent"
+                    label={t("orderSections_absent")}
                     checked={mark === "absent"}
                     tone="absent"
                     disabled={disabled}
                     onClick={() =>
-                      attendance.onMark(
-                        appearance.id,
-                        mark === "absent" ? undefined : "absent",
-                      )
+                      attendance.onMark(appearance.id, mark === "absent" ? undefined : "absent")
                     }
                   />
                   <MarkButton
-                    label="Skip"
+                    label={t("orderSections_skip")}
                     checked={mark === "not-required"}
                     tone="not-required"
                     disabled={disabled}
@@ -209,7 +189,7 @@ export function AttendanceSection({
           still follows from leaving someone unmarked — so the roll is never incomplete,
           and attendance never holds up sending for signing (`ATT-04`). */}
       <p className="text-caption text-muted-foreground">
-        Skipped and unmarked people are not printed on the order.
+        {t("orderSections_skippedAndUnmarkedPeopleAreNot")}
       </p>
     </section>
   );
@@ -268,22 +248,17 @@ export function ApplicationsSection({
   /** Standing as its own card, with a head band (the order data). */
   framed?: boolean;
 }) {
+  const t = useTranslations();
   return (
     <section
       id="order-applications"
       tabIndex={-1}
       aria-labelledby="order-applications-heading"
-      className={cn(
-        "flex min-w-0 scroll-mt-40 flex-col outline-none",
-        !framed && "gap-3",
-      )}
+      className={cn("flex min-w-0 scroll-mt-40 flex-col outline-none", !framed && "gap-3")}
     >
       <div className={framed ? FRAMED_HEAD : "flex min-h-10 items-center"}>
-        <h2
-          id="order-applications-heading"
-          className="text-body-compact font-semibold"
-        >
-          Applications
+        <h2 id="order-applications-heading" className="text-body-compact font-semibold">
+          {t("orderSections_applications")}
         </h2>
       </div>
       <div className="min-w-0">
@@ -301,9 +276,7 @@ export function ApplicationsSection({
                   runs on the same line, at the row's end. */}
               <div className="flex min-w-0 flex-1 items-start justify-between gap-3 @min-[36rem]:items-center">
                 <div className="flex min-w-0 flex-col gap-1">
-                  <p className="text-body-compact font-medium">
-                    {application.type}
-                  </p>
+                  <p className="text-body-compact font-medium">{application.type}</p>
                   <p className="flex min-w-0 flex-col text-body-compact text-muted-foreground">
                     <span className="font-mono">{application.number}</span>
                     <span>{application.filed}</span>
@@ -313,37 +286,32 @@ export function ApplicationsSection({
                   type="button"
                   variant="ghost"
                   className="-my-2 -mr-2 shrink-0 text-body-compact @min-[36rem]:my-0 @min-[36rem]:mr-0"
-                  aria-label={`View ${application.type} ${application.number}`}
+                  aria-label={t("orderSections_viewTypeNumber", {
+                    type: application.type,
+                    number: application.number,
+                  })}
                   onClick={() => applications.onOpen(application.id)}
                 >
                   <EyeIcon data-icon="inline-start" aria-hidden />
-                  View
+                  {t("orderSections_view")}
                 </Button>
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 {application.decision ? (
                   <>
-                    <Badge
-                      variant={
-                        application.decision === "allowed"
-                          ? "success"
-                          : "destructive"
-                      }
-                    >
+                    <Badge variant={application.decision === "allowed" ? "success" : "destructive"}>
                       {application.decision === "allowed"
-                        ? "Accepted"
-                        : "Rejected"}
+                        ? t("orderSections_accepted")
+                        : t("orderSections_rejected")}
                     </Badge>
                     {disabled ? null : (
                       <Button
                         type="button"
                         variant="ghost"
                         className="text-body-compact"
-                        onClick={() =>
-                          applications.onDecide(application.id, null)
-                        }
+                        onClick={() => applications.onDecide(application.id, null)}
                       >
-                        Undo
+                        {t("orderSections_undo")}
                       </Button>
                     )}
                   </>
@@ -353,20 +321,16 @@ export function ApplicationsSection({
                       type="button"
                       variant="outline"
                       className="text-destructive-ink"
-                      onClick={() =>
-                        applications.onDecide(application.id, "dismissed")
-                      }
+                      onClick={() => applications.onDecide(application.id, "dismissed")}
                     >
-                      Reject
+                      {t("orderSections_reject")}
                     </Button>
                     <Button
                       type="button"
                       variant="success"
-                      onClick={() =>
-                        applications.onDecide(application.id, "allowed")
-                      }
+                      onClick={() => applications.onDecide(application.id, "allowed")}
                     >
-                      Accept
+                      {t("orderSections_accept")}
                     </Button>
                   </>
                 )}
@@ -388,6 +352,7 @@ export function NextHearingSection({
   today: string;
   disabled: boolean;
 }) {
+  const t = useTranslations();
   const id = "order-next";
   const listed = nextHearing.next !== "none";
   /* A hearing's order shows the posting the cause list set and does not take one
@@ -409,25 +374,22 @@ export function NextHearingSection({
     >
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         <h2 id={`${id}-heading`} className="text-body-compact font-semibold">
-          Next hearing
+          {t("orderSections_nextHearing")}
         </h2>
         {fromCauseList ? null : (
-        <div className="flex min-h-10 items-center gap-2">
-          <Checkbox
-            id={`${id}-none`}
-            checked={nextHearing.next === "none"}
-            disabled={off}
-            onCheckedChange={(checked) =>
-              nextHearing.onChange({ next: checked === true ? "none" : "list" })
-            }
-          />
-          <Label
-            htmlFor={`${id}-none`}
-            className="cursor-pointer text-body-compact font-normal"
-          >
-            Not listed again
-          </Label>
-        </div>
+          <div className="flex min-h-10 items-center gap-2">
+            <Checkbox
+              id={`${id}-none`}
+              checked={nextHearing.next === "none"}
+              disabled={off}
+              onCheckedChange={(checked) =>
+                nextHearing.onChange({ next: checked === true ? "none" : "list" })
+              }
+            />
+            <Label htmlFor={`${id}-none`} className="cursor-pointer text-body-compact font-normal">
+              {t("orderSections_notListedAgain")}
+            </Label>
+          </div>
         )}
       </div>
       {hasBody ? (
@@ -441,37 +403,31 @@ export function NextHearingSection({
               purpose={nextHearing.purpose}
             />
           ) : listed ? (
-        <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-          <OrderDatePicker
-            id={`${id}-date`}
-            label={
-              <span
-                id={`${id}-date-label`}
-                className="text-body-compact font-medium"
-              >
-                Date
-              </span>
-            }
-            value={nextHearing.date ?? ""}
-            today={today}
-            disabled={off}
-            onChange={(date) => nextHearing.onChange({ date: date || null })}
-          />
-          <div className="flex min-w-0 flex-col gap-1">
-            <span
-              id={`${id}-purpose-label`}
-              className="text-body-compact font-medium"
-            >
-              Purpose
-            </span>
-            <PurposeField
-              value={nextHearing.purpose}
-              disabled={off}
-              onChange={(purpose) => nextHearing.onChange({ purpose })}
-              labelledBy={`${id}-purpose-label`}
-            />
-          </div>
-        </div>
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+              <OrderDatePicker
+                id={`${id}-date`}
+                label={
+                  <span id={`${id}-date-label`} className="text-body-compact font-medium">
+                    {t("orderSections_date")}
+                  </span>
+                }
+                value={nextHearing.date ?? ""}
+                today={today}
+                disabled={off}
+                onChange={(date) => nextHearing.onChange({ date: date || null })}
+              />
+              <div className="flex min-w-0 flex-col gap-1">
+                <span id={`${id}-purpose-label`} className="text-body-compact font-medium">
+                  {t("orderSections_purpose")}
+                </span>
+                <PurposeField
+                  value={nextHearing.purpose}
+                  disabled={off}
+                  onChange={(purpose) => nextHearing.onChange({ purpose })}
+                  labelledBy={`${id}-purpose-label`}
+                />
+              </div>
+            </div>
           ) : null}
         </div>
       ) : null}
@@ -495,35 +451,31 @@ function CausePostingValues({
   date: string | null;
   purpose: CourtHearingPurposeId | "";
 }) {
+  const t = useTranslations();
   const listed = next !== "none";
   return (
     <div className="grid min-w-0 gap-4 sm:grid-cols-2">
       <div className="flex min-w-0 flex-col gap-2">
         <Label htmlFor={`${id}-date`} className="text-body-compact font-medium">
-          Date
+          {t("orderSections_date")}
         </Label>
         <Input
           id={`${id}-date`}
           readOnly
-          value={
-            !listed ? "Not listed again" : date ? formatListingDate(date) : ""
-          }
-          placeholder="Not set"
+          value={!listed ? "Not listed again" : date ? formatListingDate(date) : ""}
+          placeholder={t("orderSections_notSet")}
           className="tabular-nums"
         />
       </div>
       <div className="flex min-w-0 flex-col gap-2">
-        <Label
-          htmlFor={`${id}-purpose`}
-          className="text-body-compact font-medium"
-        >
-          Purpose
+        <Label htmlFor={`${id}-purpose`} className="text-body-compact font-medium">
+          {t("orderSections_purpose")}
         </Label>
         <Input
           id={`${id}-purpose`}
           readOnly
           value={listed && purpose ? courtHearingPurposeLabel(purpose) : ""}
-          placeholder={listed ? "Not set" : "Not listed"}
+          placeholder={listed ? t("orderSections_notSet") : t("orderSections_notListed")}
         />
       </div>
     </div>

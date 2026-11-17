@@ -37,12 +37,12 @@ import { caseSearchKey } from "@/lib/court/localize";
 
 /** Tab names say what the filing is waiting on, in the advocate's words (owner, 2026-10-09). */
 export const QUEUE_TABS = [
-  { id: "drafts", label: "Drafts" },
-  { id: "pendingSignature", label: "Pending signature" },
-  { id: "pendingPayment", label: "Pending payment" },
-  { id: "scrutiny", label: "Pending with scrutiny" },
-  { id: "returned", label: "Returned from scrutiny" },
-  { id: "registered", label: "Registered" },
+  { id: "drafts", label: "filingQueue_drafts" },
+  { id: "pendingSignature", label: "filingQueue_pendingSignature" },
+  { id: "pendingPayment", label: "filingQueue_pendingPayment" },
+  { id: "scrutiny", label: "filingQueue_pendingWithScrutiny" },
+  { id: "returned", label: "filingQueue_returnedFromScrutiny" },
+  { id: "registered", label: "filingQueue_registered" },
 ] as const;
 
 export type QueueTab = (typeof QUEUE_TABS)[number]["id"];
@@ -96,14 +96,7 @@ export type QueueRow = {
   haystack: string;
 };
 
-export type ColumnId =
-  | "ref"
-  | "parties"
-  | "caseType"
-  | "court"
-  | "info"
-  | "progress"
-  | "action";
+export type ColumnId = "ref" | "parties" | "caseType" | "court" | "info" | "progress" | "action";
 
 /**
  * What each tab actually shows.
@@ -171,28 +164,28 @@ export type SortOption = {
  */
 export const TAB_SORTS: Record<QueueTab, SortOption[]> = {
   drafts: [
-    { value: "deadline", label: "Deadline first", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently saved", key: "recencyAt", dir: "desc" },
+    { value: "deadline", label: "filingQueue_deadlineFirst", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlySaved", key: "recencyAt", dir: "desc" },
   ],
   pendingSignature: [
-    { value: "waiting", label: "Longest waiting", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently sent", key: "recencyAt", dir: "desc" },
+    { value: "waiting", label: "filingQueue_longestWaiting", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlySent", key: "recencyAt", dir: "desc" },
   ],
   pendingPayment: [
-    { value: "waiting", label: "Longest waiting", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently signed", key: "recencyAt", dir: "desc" },
+    { value: "waiting", label: "filingQueue_longestWaiting", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlySigned", key: "recencyAt", dir: "desc" },
   ],
   scrutiny: [
-    { value: "waiting", label: "Longest waiting", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently filed", key: "recencyAt", dir: "desc" },
+    { value: "waiting", label: "filingQueue_longestWaiting", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlyFiled", key: "recencyAt", dir: "desc" },
   ],
   returned: [
-    { value: "cure", label: "Fix-by date first", key: "urgencyAt", dir: "asc" },
-    { value: "recent", label: "Recently returned", key: "recencyAt", dir: "desc" },
+    { value: "cure", label: "filingQueue_fixByDateFirst", key: "urgencyAt", dir: "asc" },
+    { value: "recent", label: "filingQueue_recentlyReturned", key: "recencyAt", dir: "desc" },
   ],
   registered: [
-    { value: "hearing", label: "Next hearing first", key: "urgencyAt", dir: "asc" },
-    { value: "updated", label: "Recently updated", key: "recencyAt", dir: "desc" },
+    { value: "hearing", label: "filingQueue_nextHearingFirst", key: "urgencyAt", dir: "asc" },
+    { value: "updated", label: "filingQueue_recentlyUpdated", key: "recencyAt", dir: "desc" },
   ],
 };
 
@@ -278,33 +271,35 @@ function caseTypeLabel(draft: FilingDraft): string {
 }
 
 export function draftRows(drafts: FilingDraft[]): QueueRow[] {
-  return drafts
-    // A returned filing is corrected from Returned from scrutiny, never continued here.
-    .filter((draft) => !enteredSigning(draft) && !draft.scrutinyReturn)
-    .map((draft) => {
-      const parties = draftTitle(draft);
-      const { dueOn, ...info } = draftClock(draft);
-      // A PSA draft has no filing flow yet, so it opens the placeholder page.
-      const pss = draft.caseType === PSS_CASE_TYPE.code;
-      return {
-        id: draft.id,
-        parties,
-        court: "",
-        info,
-        caseType: caseTypeLabel(draft),
-        progress: { savedOn: toDisplayDate(draft.updatedAt.slice(0, 10)) },
-        action: {
-          label: "Continue filing",
-          href: pss ? NEW_PSS_FILING : stepHref(draft.id, draft.lastStep),
-        },
-        // A draft past its window keeps its real date rather than being pushed to the end:
-        // it is the most pressing row on the tab, not a finished one.
-        urgencyAt: dueOn || NO_URGENCY,
-        recencyAt: draft.updatedAt.slice(0, 10),
-        discardable: true,
-        haystack: `${parties} ${pss ? PSS_CASE_TYPE.label : CASE_TYPE.label}`.toLowerCase(),
-      };
-    });
+  return (
+    drafts
+      // A returned filing is corrected from Returned from scrutiny, never continued here.
+      .filter((draft) => !enteredSigning(draft) && !draft.scrutinyReturn)
+      .map((draft) => {
+        const parties = draftTitle(draft);
+        const { dueOn, ...info } = draftClock(draft);
+        // A PSA draft has no filing flow yet, so it opens the placeholder page.
+        const pss = draft.caseType === PSS_CASE_TYPE.code;
+        return {
+          id: draft.id,
+          parties,
+          court: "",
+          info,
+          caseType: caseTypeLabel(draft),
+          progress: { savedOn: toDisplayDate(draft.updatedAt.slice(0, 10)) },
+          action: {
+            label: "Continue filing",
+            href: pss ? NEW_PSS_FILING : stepHref(draft.id, draft.lastStep),
+          },
+          // A draft past its window keeps its real date rather than being pushed to the end:
+          // it is the most pressing row on the tab, not a finished one.
+          urgencyAt: dueOn || NO_URGENCY,
+          recencyAt: draft.updatedAt.slice(0, 10),
+          discardable: true,
+          haystack: `${parties} ${pss ? PSS_CASE_TYPE.label : CASE_TYPE.label}`.toLowerCase(),
+        };
+      })
+  );
 }
 
 /** Who is still asked to sign, read from the filer's own point of view. */
@@ -349,7 +344,7 @@ function pendingSummary(everyone: Signatory[]): {
  */
 export function pendingSignatureRows(
   drafts: FilingDraft[],
-  profile: UserProfile | null
+  profile: UserProfile | null,
 ): QueueRow[] {
   return drafts.flatMap((draft) => {
     if (!enteredSigning(draft)) return [];
@@ -386,7 +381,7 @@ export function pendingSignatureRows(
 export function pendingPaymentRows(
   drafts: FilingDraft[],
   profile: UserProfile | null,
-  schedule?: FeeSchedule
+  schedule?: FeeSchedule,
 ): QueueRow[] {
   return drafts.flatMap((draft) => {
     if (draft.sign.paid) return [];
@@ -458,7 +453,7 @@ export function returnedRows(tasks: Task[], cases: TaskCase[]): QueueRow[] {
         // Only filings made in DRISTI have a draft to correct. A returned application
         // with no draft would open on a dead end, so it stays on the task list alone.
         !!task.draftId &&
-        (task.status === "open" || task.status === "draft" || task.status === "ready")
+        (task.status === "open" || task.status === "draft" || task.status === "ready"),
     )
     .map((task) => {
       const c = byId.get(task.caseId);
@@ -481,8 +476,7 @@ export function returnedRows(tasks: Task[], cases: TaskCase[]): QueueRow[] {
         urgencyAt: due || NO_URGENCY,
         recencyAt: task.returned?.at.slice(0, 10) ?? task.createdAt.slice(0, 10),
         caseType: CASE_TYPE.label,
-        haystack:
-          `${parties} ${c?.stNumber ?? ""} ${c?.cnr ?? ""} ${c?.court ?? ""}`.toLowerCase(),
+        haystack: `${parties} ${c?.stNumber ?? ""} ${c?.cnr ?? ""} ${c?.court ?? ""}`.toLowerCase(),
       };
     });
 }
@@ -541,8 +535,7 @@ export function applyQueueFilters(rows: QueueRow[], filters: QueueFilters): Queu
   const { key, dir } = filters.sort;
   return rows
     .filter(
-      (row) =>
-        (!q || row.haystack.includes(q)) && (!filters.court || row.court === filters.court)
+      (row) => (!q || row.haystack.includes(q)) && (!filters.court || row.court === filters.court),
     )
     .sort((a, b) => {
       const primary = dir === "asc" ? a[key].localeCompare(b[key]) : b[key].localeCompare(a[key]);
@@ -560,6 +553,6 @@ export function pageWindow(page: number, pageCount: number): (number | "gap")[] 
   const pages = new Set([1, pageCount, page, page - 1, page + 1]);
   const visible = [...pages].filter((p) => p >= 1 && p <= pageCount).sort((a, b) => a - b);
   return visible.flatMap((entry, index) =>
-    index > 0 && entry - visible[index - 1] > 1 ? (["gap", entry] as const) : [entry]
+    index > 0 && entry - visible[index - 1] > 1 ? (["gap", entry] as const) : [entry],
   );
 }

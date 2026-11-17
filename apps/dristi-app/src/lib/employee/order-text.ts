@@ -16,18 +16,12 @@ export const ORDER_ITEM_ATTRIBUTE = "data-order-item";
  * A plain sentence as the editor's own markup. `item` marks the paragraph as the words
  * one order item contributed — see `ORDER_ITEM_ATTRIBUTE`.
  */
-export function richTextFromPlain(
-  value: string,
-  item?: string,
-): RichTextValue {
+export function richTextFromPlain(value: string, item?: string): RichTextValue {
   if (!value) return { html: "", text: "" };
   const mark = item ? ` ${ORDER_ITEM_ATTRIBUTE}="${item}"` : "";
   return { html: `<p${mark}>${escapeText(value)}</p>`, text: value };
 }
 
 function escapeText(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

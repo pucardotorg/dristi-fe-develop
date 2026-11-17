@@ -34,8 +34,10 @@ import { SectionNotice } from "@/components/filing/notices";
 import { RichTextEditor } from "@/components/filing/rich-text-editor";
 import { richTextHasContent } from "@/lib/filing/details";
 import { affidavitHtml } from "@/components/filing/sections/preview/derive";
+import { useTranslations } from "next-intl";
 
 export function AffidavitSection() {
+  const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("affidavit");
   const router = useRouter();
@@ -73,35 +75,29 @@ export function AffidavitSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="Affidavit"
-          description="The sworn statement that goes on the record with the complaint."
+          title={t("affidavitSection_affidavit")}
+          description={t("affidavitSection_theSwornStatementThatGoesOn")}
           actions={
             touched ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setResetOpen(true)}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => setResetOpen(true)}>
                 <RotateCcwIcon data-icon="inline-start" aria-hidden />
-                Restore standard text
+                {t("affidavitSection_restoreStandardText")}
               </Button>
             ) : null
           }
         />
 
         {/* Sworn evidence, so what it is gets said before the box, not after. */}
-        <SectionNotice variant="warning" title="This is sworn evidence">
-          Sworn under Section 225 of the Bharatiya Nagarik Suraksha Sanhita, 2023. Read
-          it through and change anything that does not match the case.
+        <SectionNotice variant="warning" title={t("affidavitSection_thisIsSwornEvidence")}>
+          {t("affidavitSection_swornUnderSection225OfThe")}
         </SectionNotice>
 
         <FormCard
-          title="Affidavit of fact"
+          title={t("affidavitSection_affidavitOfFact")}
           description={
             touched
-              ? "Your wording. It no longer follows the rest of the filing."
-              : "Written from the case details, and follows them until you edit it."
+              ? t("affidavitSection_yourWordingItNoLongerFollows")
+              : t("affidavitSection_writtenFromTheCaseDetailsAnd")
           }
         >
           <RichTextEditor
@@ -112,13 +108,16 @@ export function AffidavitSection() {
                 d.affidavit = html;
               });
             }}
-            ariaLabel="Affidavit of fact"
+            ariaLabel={t("affidavitSection_affidavitOfFact")}
             minHeightClassName="min-h-96"
           />
         </FormCard>
 
         {error ? (
-          <SectionNotice variant="destructive" title="Couldn't save to the court's server">
+          <SectionNotice
+            variant="destructive"
+            title={t("affidavitSection_couldntSaveToTheCourtsServer")}
+          >
             {error}
           </SectionNotice>
         ) : null}
@@ -128,16 +127,16 @@ export function AffidavitSection() {
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
         continueDisabled={saving}
-        continueLabel={saving ? "Saving…" : "Continue"}
+        continueLabel={saving ? t("affidavitSection_saving") : t("affidavitSection_continue")}
       />
 
       <ConfirmDialog
         open={resetOpen}
         onOpenChange={setResetOpen}
         icon={RotateCcwIcon}
-        title="Restore the standard affidavit?"
-        description="Your edits are discarded and the text goes back to the standard wording."
-        confirmLabel="Restore"
+        title={t("affidavitSection_restoreTheStandardAffidavit")}
+        description={t("affidavitSection_yourEditsAreDiscardedAndThe")}
+        confirmLabel={t("affidavitSection_restore")}
         onConfirm={restoreStandard}
       />
     </>

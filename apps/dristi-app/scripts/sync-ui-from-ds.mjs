@@ -39,16 +39,14 @@ function copyOne(slug) {
   console.log(`synced  ${slug}.tsx`);
 
   const text = readFileSync(src, "utf8");
-  const deps = [
-    ...text.matchAll(/from\s+["']@\/components\/ui\/([^"']+)["']/g),
-  ].map((m) => m[1].replace(/\.tsx$/, ""));
+  const deps = [...text.matchAll(/from\s+["']@\/components\/ui\/([^"']+)["']/g)].map((m) =>
+    m[1].replace(/\.tsx$/, ""),
+  );
   const missing = [...new Set(deps)].filter(
-    (d) => d !== slug && !existsSync(join(appUi, `${d}.tsx`))
+    (d) => d !== slug && !existsSync(join(appUi, `${d}.tsx`)),
   );
   if (missing.length) {
-    console.warn(
-      `  note: ${slug} imports ${missing.join(", ")} — sync those too if you use them`
-    );
+    console.warn(`  note: ${slug} imports ${missing.join(", ")} — sync those too if you use them`);
   }
 }
 

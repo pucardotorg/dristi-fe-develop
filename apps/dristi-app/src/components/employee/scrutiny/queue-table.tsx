@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslations } from "next-intl";
 
 /** How many columns the spacer row has to span. */
 const COLUMN_COUNT = 7;
@@ -38,6 +39,7 @@ const COLUMN_COUNT = 7;
  * itself says the thing; the colour only says how loudly.
  */
 export function WaitingCell({ filing }: { filing: Filing }) {
+  const t = useTranslations();
   const tone = waitTone(filing);
   return (
     <span
@@ -48,7 +50,7 @@ export function WaitingCell({ filing }: { filing: Filing }) {
         tone === "muted" && "text-muted-foreground",
       )}
     >
-      {filing.days} d
+      {t("queueTable_daysD", { days: String(filing.days) })}
     </span>
   );
 }
@@ -71,6 +73,7 @@ export function WaitingCell({ filing }: { filing: Filing }) {
  * holding the link, the number is free to be an identifier like everywhere else.
  */
 function CauseLink({ filing }: { filing: Filing }) {
+  const t = useTranslations();
   return (
     <Link
       href={`/employee/scrutiny/${encodeURIComponent(filing.no)}`}
@@ -78,7 +81,7 @@ function CauseLink({ filing }: { filing: Filing }) {
       {...rowOpener}
       className="flex min-h-10 w-full items-center rounded-sm font-medium underline-offset-4 outline-none group-hover/row:underline focus-visible:ring-3 focus-visible:ring-focus-ring focus-visible:underline"
     >
-      <span className="sr-only">Scrutinise </span>
+      <span className="sr-only">{t("queueTable_scrutinise")} </span>
       {filing.parties}
     </Link>
   );
@@ -103,18 +106,19 @@ function CauseLink({ filing }: { filing: Filing }) {
  * is one panel rather than a box inside a box.
  */
 export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
+  const t = useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Parties
+            {t("queueTable_parties")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Filing no.
+            {t("queueTable_filingNo")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
+            {t("queueTable_stage")}
           </TableHead>
           {/* Where Reason used to be. The case type was the quiet second line under the
               parties, which is a column's worth of fact hiding inside another column's
@@ -122,18 +126,16 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
               and "1 item open" was saying in prose what Stage and Waiting already say in
               their own columns. */}
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case type
+            {t("queueTable_caseType")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Advocate
+            {t("queueTable_advocate")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            With
+            {t("queueTable_with")}
           </TableHead>
-          <TableHead
-            className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}
-          >
-            Waiting
+          <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>
+            {t("queueTable_waiting")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -152,20 +154,14 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
               <CauseLink filing={filing} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              <Identifier value={filing.no} label="filing number" />
+              <Identifier value={filing.no} label={t("queueTable_filingNumber")} />
             </TableCell>
-            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              {filing.stage}
-            </TableCell>
+            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>{filing.stage}</TableCell>
             {/* Foreground ink, not muted: as a second line under the parties this was
                 subordinate to them, and as its own column it is a fact of the same
                 standing as Stage. */}
-            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-              {filing.type}
-            </TableCell>
-            <TableCell className={cn(TABLE_CELL, "max-w-44 truncate")}>
-              {filing.advocate}
-            </TableCell>
+            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>{filing.type}</TableCell>
+            <TableCell className={cn(TABLE_CELL, "max-w-44 truncate")}>{filing.advocate}</TableCell>
             <TableCell
               className={cn(
                 TABLE_CELL,
@@ -176,9 +172,7 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
               {filing.who}
             </TableCell>
             {/* Right-aligned because it is a compared number, and it is the sort key. */}
-            <TableCell
-              className={cn(TABLE_CELL, "text-right whitespace-nowrap")}
-            >
+            <TableCell className={cn(TABLE_CELL, "text-right whitespace-nowrap")}>
               <WaitingCell filing={filing} />
             </TableCell>
           </TableRow>
@@ -196,6 +190,7 @@ export function ScrutinyQueueTable({ rows }: { rows: Filing[] }) {
  * spells out what it is.
  */
 export function ScrutinyQueueItemList({ rows }: { rows: Filing[] }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((filing) => (
@@ -204,7 +199,7 @@ export function ScrutinyQueueItemList({ rows }: { rows: Filing[] }) {
             <CauseLink filing={filing} />
           </div>
           <p className="min-w-0 text-body-compact text-muted-foreground">
-            <Identifier value={filing.no} label="filing number" />
+            <Identifier value={filing.no} label={t("queueTable_filingNumber")} />
           </p>
           <p className="text-caption text-muted-foreground">
             {filing.type}
@@ -212,10 +207,7 @@ export function ScrutinyQueueItemList({ rows }: { rows: Filing[] }) {
             {filing.stage}
           </p>
           <p className="text-caption text-muted-foreground">
-            {filing.advocate}
-            {" · with "}
-            {filing.who}
-            {" · waiting "}
+            {t("queueTable_advocateWithWhoWaiting", { advocate: filing.advocate, who: filing.who })}
             <WaitingCell filing={filing} />
           </p>
         </QueueItemRow>

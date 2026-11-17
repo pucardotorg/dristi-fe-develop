@@ -13,7 +13,7 @@ import {
   courtNavClubbedTotal,
   courtNavKeptApart,
   courtNavRowsFor,
-  courtTrail,
+  courtTrail as courtTrailKeys,
   courtWaitingGroups,
   isCourtNavActive,
   isCourtNavCombinedActive,
@@ -21,6 +21,14 @@ import {
   seatHasNavRow,
 } from "./navigation";
 import { REGISTERS_PAGE } from "./registers";
+import { translateMessage } from "@/i18n/messages";
+
+/** A message key read back as its English, so expectations read the way the screen does. */
+const inEnglish = (text: string) => translateMessage("en", text);
+
+/** The trail with its labels read back as English, the way the breadcrumb shows them. */
+const courtTrail = (...args: Parameters<typeof courtTrailKeys>) =>
+  courtTrailKeys(...args).map((crumb) => ({ ...crumb, label: inEnglish(crumb.label) }));
 
 /**
  * Two contracts, set a day apart.
@@ -83,10 +91,10 @@ describe("courtTrail", () => {
       { label: "Order" },
     ]);
     const cognizance = courtTrail("/employee/cognizance/c-2041/order");
-    assert.deepEqual(cognizance.slice(-2).map((crumb) => crumb.href), [
-      "/employee/cognizance/c-2041",
-      undefined,
-    ]);
+    assert.deepEqual(
+      cognizance.slice(-2).map((crumb) => crumb.href),
+      ["/employee/cognizance/c-2041", undefined],
+    );
     assert.equal(cognizance.at(-1)?.label, "Order");
     assert.equal(cognizance.at(-2)?.mono, true);
   });
@@ -118,12 +126,7 @@ describe("courtTrail", () => {
 
   it("keeps the rail on Register cases while the complaint is open", () => {
     /* The row a nested route lights up is the queue the record came from. */
-    assert.ok(
-      isCourtNavActive(
-        "/employee/register-cases/r-1840",
-        "/employee/register-cases",
-      ),
-    );
+    assert.ok(isCourtNavActive("/employee/register-cases/r-1840", "/employee/register-cases"));
   });
 
   it("on an application, ends at its number once the browser can name it", () => {
@@ -142,7 +145,10 @@ describe("courtTrail", () => {
       [...queue, { label: "AP/12/2026", mono: true }],
     );
     /* Not found: still the queue's two steps, never an invented label. */
-    assert.deepEqual(courtTrail(path, () => undefined), queue);
+    assert.deepEqual(
+      courtTrail(path, () => undefined),
+      queue,
+    );
     /* The order on it: one step past the number, which goes back to the workstation —
        and the way back lands on the list it was being worked in (owner, 2026-10-15). */
     const named = (q: string, id: string) =>
@@ -174,14 +180,11 @@ describe("courtTrail", () => {
   it("on a scrutiny workbench, ends with the filing number it decoded", () => {
     /* A filing number carries slashes, so the segment arrives percent-encoded and the
        crumb has to be the decoded form the queue holds — not the escape sequence. */
-    assert.deepEqual(
-      courtTrail(`/employee/scrutiny/${encodeURIComponent("F/AHM/2026/00341")}`),
-      [
-          { label: "Actions", href: "/employee/scrutiny" },
-        { label: "Scrutinise submitted cases", href: "/employee/scrutiny" },
-        { label: "F/AHM/2026/00341", mono: true },
-      ],
-    );
+    assert.deepEqual(courtTrail(`/employee/scrutiny/${encodeURIComponent("F/AHM/2026/00341")}`), [
+      { label: "Actions", href: "/employee/scrutiny" },
+      { label: "Scrutinise submitted cases", href: "/employee/scrutiny" },
+      { label: "F/AHM/2026/00341", mono: true },
+    ]);
   });
 
   it("does not treat an unknown complaint id as nested", () => {
@@ -335,7 +338,7 @@ describe("courtWaitingGroups", () => {
 describe("the combined rail layouts", () => {
   const allIds = COURT_NAV_GROUPS.flatMap((group) => group.items.map((i) => i.id));
 
-  it("keeps hearings a tab of its own under \"actions\", but not under \"schedule\"", () => {
+  it('keeps hearings a tab of its own under "actions", but not under "schedule"', () => {
     assert.deepEqual(
       courtNavKeptApart("actions", "kerala").map((item) => item.id),
       ["todays-hearings", "pending-orders", "sign-process"],
@@ -352,15 +355,16 @@ describe("the combined rail layouts", () => {
       const clubbed = courtNavClubbed(layout, "kerala").map((item) => item.id);
       /* Every id `COURT_NAV_GROUPS` holds except what this layout keeps apart — same
          set, same relative order, nothing dropped and nothing duplicated. */
-      assert.deepEqual(clubbed, allIds.filter((id) => !apart.has(id)));
+      assert.deepEqual(
+        clubbed,
+        allIds.filter((id) => !apart.has(id)),
+      );
       assert.equal(new Set(clubbed).size, clubbed.length);
     }
     /* The one row that tells the two layouts apart: hearings are due work under
        "actions" and are not under "schedule". */
     assert.ok(courtNavClubbed("actions", "kerala").every((item) => item.id !== "todays-hearings"));
-    assert.ok(
-      courtNavClubbed("schedule", "kerala").some((item) => item.id === "todays-hearings"),
-    );
+    assert.ok(courtNavClubbed("schedule", "kerala").some((item) => item.id === "todays-hearings"));
   });
 
   it("totals the combined row from the clubbed rows it stands for", () => {
@@ -384,7 +388,7 @@ describe("the combined rail layouts", () => {
     );
   });
 
-  it("builds \"actions\" as hearings and pending orders, the combined row, then Sign process", () => {
+  it('builds "actions" as hearings and pending orders, the combined row, then Sign process', () => {
     const rows = courtNavRowsFor("actions", "kerala");
     assert.deepEqual(
       rows.map((item) => item.id),
@@ -400,7 +404,7 @@ describe("the combined rail layouts", () => {
     }
   });
 
-  it("builds \"schedule\" as the combined row, then Pending orders and Sign process", () => {
+  it('builds "schedule" as the combined row, then Pending orders and Sign process', () => {
     const rows = courtNavRowsFor("schedule", "kerala");
     assert.deepEqual(
       rows.map((item) => item.id),
@@ -460,9 +464,7 @@ describe("Register cases by who registers", () => {
         groups.flatMap((group) => group.items.map((item) => item.id));
       assert.deepEqual(
         ids(courtNavGroupsForCourt(COURT_NAV_GROUPS, court)),
-        ids(COURT_NAV_GROUPS).filter(
-          (id) => id !== "register-cases" && id !== "sign-a-diary",
-        ),
+        ids(COURT_NAV_GROUPS).filter((id) => id !== "register-cases" && id !== "sign-a-diary"),
       );
       for (const layout of ["actions", "schedule"] as const) {
         assert.ok(courtNavClubbed(layout, court).every((item) => item.id !== "register-cases"));

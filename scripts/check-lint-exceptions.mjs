@@ -29,7 +29,10 @@ const ENTRY = /"([^"]+)"/g;
 export function parseExceptionLists(text) {
   const lists = new Map();
   for (const [, name, body] of text.matchAll(LIST)) {
-    lists.set(name, [...body.matchAll(ENTRY)].map(([, file]) => file));
+    lists.set(
+      name,
+      [...body.matchAll(ENTRY)].map(([, file]) => file),
+    );
   }
   return lists;
 }
@@ -77,10 +80,14 @@ if (isCli) {
   const current = parseExceptionLists(readFileSync(join(REPO_ROOT, CONFIG_PATH), "utf8"));
   const { added, newLists } = findGrowth(parseExceptionLists(baseText), current);
   for (const { list, count } of newLists) {
-    console.log(`New exception list ${list} (${count} file${count === 1 ? "" : "s"}), added with its rule.`);
+    console.log(
+      `New exception list ${list} (${count} file${count === 1 ? "" : "s"}), added with its rule.`,
+    );
   }
   if (added.length) {
-    console.error(`The lint exception lists only shrink. Fix these files instead of excusing them:`);
+    console.error(
+      `The lint exception lists only shrink. Fix these files instead of excusing them:`,
+    );
     for (const { list, file } of added) console.error(`  ${list}: ${file}`);
     process.exit(1);
   }

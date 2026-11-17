@@ -33,16 +33,13 @@ import { orderDraftKey } from "@/lib/employee/order-door";
 import { EMPTY_ORDER_DRAFT, type OrderDraft } from "@/lib/employee/order-draft";
 import { readOrderDraft, writeOrderDraft } from "@/lib/employee/order-drafts";
 import { richTextFromPlain } from "@/lib/employee/order-text";
-import {
-  markOrderReady,
-  markOrdersSigned,
-  readOrderSigning,
-} from "@/lib/employee/order-signing";
+import { markOrderReady, markOrdersSigned, readOrderSigning } from "@/lib/employee/order-signing";
 import {
   noteOrderDraft,
   sendOrderForSigning,
   setOrderWorkflowComplete,
 } from "@/lib/employee/pending-orders";
+import { useTranslations } from "next-intl";
 
 /** What the panel asked for, as the quick order passes it. */
 export type QuickOrderRequest = {
@@ -155,6 +152,7 @@ function QuickOrderContent({
   onClose: () => void;
   onDone: (message: string) => void;
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const textId = React.useId();
   const dateId = React.useId();
@@ -162,10 +160,7 @@ function QuickOrderContent({
   const [nextHearing, setNextHearing] = React.useState<Date | undefined>(undefined);
   const nextDay = nextHearing ? isoDay(nextHearing) : "";
   /* Words changed from the catalogue's, or a next date picked: closing asks first. */
-  const guard = useDiscardGuard(
-    text !== request.text || nextHearing !== undefined,
-    onClose,
-  );
+  const guard = useDiscardGuard(text !== request.text || nextHearing !== undefined, onClose);
   const key = nextApplicationOrderKey(application);
   const href = applicationOrderHref(application.id, undefined, view);
   const outcome = setApplicationOutcome(initialApplicationOutcome(), request.answers);
@@ -193,9 +188,7 @@ function QuickOrderContent({
         html: lines.map((line) => richTextFromPlain(line).html).join(""),
         text: lines.join("\n"),
       },
-      ...(request.needsHearingDate && nextDay
-        ? { next: "list" as const, nextDate: nextDay }
-        : {}),
+      ...(request.needsHearingDate && nextDay ? { next: "list" as const, nextDate: nextDay } : {}),
     };
   }
 
@@ -217,10 +210,10 @@ function QuickOrderContent({
     if (canSign) {
       quietTrigger(key);
       markOrdersSigned([key]);
-      onDone("Order signed.");
+      onDone(t("applicationQuickOrder_orderSigned"));
       return;
     }
-    onDone("Sent to the Magistrate for signing.");
+    onDone(t("applicationQuickOrder_sentToTheMagistrateForSigning"));
   }
 
   function openInOrderScreen() {
@@ -246,7 +239,7 @@ function QuickOrderContent({
 
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-6 pb-6">
         <Field>
-          <FieldLabel htmlFor={textId}>Order</FieldLabel>
+          <FieldLabel htmlFor={textId}>{t("applicationQuickOrder_order")}</FieldLabel>
           <Textarea
             id={textId}
             value={text}
@@ -258,7 +251,7 @@ function QuickOrderContent({
         {request.needsHearingDate ? (
           <ListingDateField
             id={dateId}
-            label="Next hearing"
+            label={t("applicationQuickOrder_nextHearing")}
             value={nextHearing}
             on={on}
             hearing={hearing}
@@ -269,10 +262,12 @@ function QuickOrderContent({
 
       <DialogFooter className="mx-0 mb-0 shrink-0 sm:items-center sm:justify-between">
         <Button type="button" variant="outline" onClick={openInOrderScreen}>
-          Open in order screen
+          {t("applicationQuickOrder_openInOrderScreen")}
         </Button>
         <Button type="button" disabled={!ready} onClick={pass}>
-          {canSign ? "Sign order" : "Send for signing"}
+          {canSign
+            ? t("applicationQuickOrder_signOrder")
+            : t("applicationQuickOrder_sendForSigning")}
         </Button>
       </DialogFooter>
       <DiscardQuestion guard={guard} />

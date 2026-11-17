@@ -1,11 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  canSaveDraft,
-  isLinkedComplete,
-  unlocksSentence as unlocksSentenceRaw,
-} from "./field";
+import { canSaveDraft, isLinkedComplete, unlocksSentence as unlocksSentenceRaw } from "./field";
 import { buildScrutinyCase, HERO_FILING_NO } from "./case";
 import { findFiling } from "./queue";
 import type { Draft, Field } from "./types";
@@ -25,7 +21,6 @@ function draft(over: Partial<Draft> = {}): Draft {
     ...over,
   };
 }
-
 
 describe("unlocksSentence — the sentence printed in three places", () => {
   it("document rows grant re-upload", () => {
@@ -49,17 +44,11 @@ describe("unlocksSentence — the sentence printed in three places", () => {
   it("a field with no uploaded source takes the plain sentence", () => {
     // p-final renders from a generated page — nothing was uploaded,
     // so a boundary against re-upload would be a sentence about nothing.
-    assert.equal(
-      unlocksSentence(FIELD_BY_ID["p-final"]),
-      "Lets the advocate edit this value.",
-    );
+    assert.equal(unlocksSentence(FIELD_BY_ID["p-final"]), "Lets the advocate edit this value.");
   });
 
   it("says the plain phrase for a field with no source document", () => {
-    assert.equal(
-      unlocksSentence(FIELD_BY_ID["c1-mob"]),
-      "Lets the advocate edit this value.",
-    );
+    assert.equal(unlocksSentence(FIELD_BY_ID["c1-mob"]), "Lets the advocate edit this value.");
   });
 });
 
@@ -68,17 +57,11 @@ describe("the save gate — an item has to say what is wrong", () => {
   const docRow = FIELD_BY_ID["d-p1id"];
 
   it("accepts a note", () => {
-    assert.equal(
-      canSaveDraft(field, draft({ text: "  Only the address side.  " })),
-      true,
-    );
+    assert.equal(canSaveDraft(field, draft({ text: "  Only the address side.  " })), true);
   });
 
   it("accepts a document reason chip on its own", () => {
-    assert.equal(
-      canSaveDraft(docRow, draft({ reason: "Blurry / unreadable" })),
-      true,
-    );
+    assert.equal(canSaveDraft(docRow, draft({ reason: "Blurry / unreadable" })), true);
   });
 
   it("refuses an empty draft and a missing one", () => {

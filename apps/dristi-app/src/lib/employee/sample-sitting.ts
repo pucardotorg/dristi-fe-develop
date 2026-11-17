@@ -84,7 +84,9 @@ const ORDERS: SampleOrder[] = [
     caseNumber: "ST/253/2026",
     origin: "Hearing · Examination of accused under S. 351 BNSS",
     stage: "drafting",
-    text: ["Accused examined under Section 351 BNSS. Accused denies the incriminating circumstances."],
+    text: [
+      "Accused examined under Section 351 BNSS. Accused denies the incriminating circumstances.",
+    ],
     marks: {},
   },
   {
@@ -128,10 +130,7 @@ const ORDERS: SampleOrder[] = [
     caseNumber: "ST/251/2026",
     origin: "Hearing · For reports (to be received from forensics, ADR, etc)",
     stage: "triggered",
-    text: [
-      "Both sides present.",
-      "Report from the mediation centre awaited. Call for the report.",
-    ],
+    text: ["Both sides present.", "Report from the mediation centre awaited. Call for the report."],
     marks: {
       complainant: "present",
       "complainant-counsel": "present",
@@ -252,9 +251,7 @@ function seedFrom(orders: readonly SampleOrder[]): SittingSeed {
       passedOverIds: new Set(),
       postings: Object.fromEntries(
         orders.flatMap((order) =>
-          order.posting
-            ? [[order.id, { next: "list" as const, ...order.posting }]]
-            : [],
+          order.posting ? [[order.id, { next: "list" as const, ...order.posting }]] : [],
         ),
       ),
     },
@@ -305,8 +302,7 @@ function seedFrom(orders: readonly SampleOrder[]): SittingSeed {
           origin: order.origin,
           orderHref: `/employee/hearings/${order.id}/order`,
           sent: order.stage !== "drafting",
-          workflowComplete:
-            order.stage === "triggered" || Boolean(order.regular?.dataComplete),
+          workflowComplete: order.stage === "triggered" || Boolean(order.regular?.dataComplete),
         },
       ]),
     ),

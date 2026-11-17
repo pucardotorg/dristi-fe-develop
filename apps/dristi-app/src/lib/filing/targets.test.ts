@@ -48,7 +48,7 @@ describe("every target the type admits is a place the form can show", () => {
         assert.equal(
           typeof readTarget(d, target),
           "string",
-          `${step} › ${field} does not resolve on the draft`
+          `${step} › ${field} does not resolve on the draft`,
         );
         writeTarget(d, target, "corrected");
         assert.equal(readTarget(d, target), "corrected", `${step} › ${field} is not writable`);
@@ -67,13 +67,13 @@ describe("every target the type admits is a place the form can show", () => {
     for (const defect of SCRUTINY_DEFECTS) {
       assert.ok(
         isTargetable(defect.target),
-        `defect ${defect.n} points at something the form cannot show`
+        `defect ${defect.n} points at something the form cannot show`,
       );
       if (defect.target.kind === "field") {
         assert.equal(
           typeof readTarget(draftWith(defect.target), defect.target),
           "string",
-          `defect ${defect.n} does not resolve on a draft`
+          `defect ${defect.n} does not resolve on a draft`,
         );
       }
     }
@@ -88,7 +88,7 @@ describe("every target the type admits is a place the form can show", () => {
         label: "x",
         sectionLabel: "x",
       }),
-      false
+      false,
     );
   });
 });
@@ -117,7 +117,7 @@ describe("the control the inset offers for a corrected value", () => {
         label: "AD card",
         sectionLabel: "Documents",
       }),
-      "text"
+      "text",
     );
   });
 });

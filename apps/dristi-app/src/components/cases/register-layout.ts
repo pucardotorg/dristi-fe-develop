@@ -19,7 +19,7 @@ export const REGISTER_CARDS_ONLY = "md:pointer-fine:hidden md:landscape:hidden";
  */
 export const REGISTER_CARD = cn(
   PANEL_CLASS,
-  "relative flex flex-col gap-3 rounded-xl border bg-card p-4 text-left transition-colors active:bg-accent has-[:focus-visible]:border-ring has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-focus-ring"
+  "relative flex flex-col gap-3 rounded-xl border bg-card p-4 text-left transition-colors active:bg-accent has-[:focus-visible]:border-ring has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-focus-ring",
 );
 
 /** The card's one control: the title, its hit area stretched over the card. */
@@ -28,7 +28,7 @@ export const REGISTER_CARD_TITLE =
 
 /** A fact inside a card that has no record to open (process channels). */
 export const REGISTER_CARD_STATIC = cn(
-  "flex flex-col gap-3 rounded-lg border border-hairline bg-surface-sunken p-4"
+  "flex flex-col gap-3 rounded-lg border border-hairline bg-surface-sunken p-4",
 );
 
 /**

@@ -21,7 +21,7 @@ export const CASE_TYPE = {
   /** "Complaint under …" — the screen-length form of the proceeding's title. */
   proceedingTitleShort: "Complaint under S-138, NI Act",
   /** "Complaint under …" — the full statutory form, for PDFs (the complaint document's heading). */
-  proceedingTitleLong: "Complaint under Section 138 of the Negotiable Instruments Act, 1881",
+  proceedingTitleLong: "options_complaintUnderSection138OfThe",
 } as const;
 
 /**
@@ -35,7 +35,7 @@ export const PSS_CASE_TYPE = {
   /** The case-type column's label (owner, 2026-10-08). */
   label: "S25 of PSA",
   title: "Section 25 of Payment and Settlement Systems Act",
-  offence: "Section 25, Payment and Settlement Systems Act, 2007",
+  offence: "options_section25PaymentAndSettlementSystems",
 } as const;
 
 export const COURT = {
@@ -297,7 +297,7 @@ export const PROCESS_OPTIONS: ProcessOption[] = [
   {
     key: "summons",
     label: "Summons",
-    note: "The court's call to the accused to appear. One round is required, delivered to every address you choose.",
+    note: "options_theCourtsCallToTheAccused",
     billNote: "The court's call to the accused to appear.",
     minRounds: 1,
     maxRounds: 4,
@@ -307,7 +307,7 @@ export const PROCESS_OPTIONS: ProcessOption[] = [
   {
     key: "warrants",
     label: "Warrants",
-    note: "Issued if the accused does not appear after summons.",
+    note: "options_issuedIfTheAccusedDoesNot",
     billNote: "Issued only if the accused does not appear after summons.",
     minRounds: 0,
     maxRounds: 4,
@@ -317,7 +317,7 @@ export const PROCESS_OPTIONS: ProcessOption[] = [
   {
     key: "notice",
     label: "Notice",
-    note: "Issued on the application to condone the delay in filing.",
+    note: "options_issuedOnTheApplicationToCondone",
     billNote: "Issued on the application to condone the delay in filing.",
     minRounds: 0,
     maxRounds: 1,
@@ -412,7 +412,6 @@ export const CHANNEL_FEE: FeeLine = {
  * it, so the count runs 1 … summons rounds and never reaches zero.
  */
 export const DELIVERY_MIN_ROUNDS = 1;
-
 
 /* ───────────────────────────── Police stations ─────────────────────── */
 

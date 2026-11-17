@@ -9,6 +9,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { formatCount } from "@/lib/employee/register-rows";
+import { useTranslations } from "next-intl";
 
 export type CountBar = {
   /** The axis label: "Oct", "8–14". */
@@ -38,6 +39,7 @@ export function CountBarChart({
   unit: string;
   data: CountBar[];
 }) {
+  const t = useTranslations();
   const config = {
     value: { label: unit.charAt(0).toUpperCase() + unit.slice(1), color: "var(--color-chart-1)" },
   } satisfies ChartConfig;
@@ -71,8 +73,18 @@ export function CountBarChart({
               />
             }
           />
-          <Bar dataKey="value" fill="var(--color-value)" radius={[4, 4, 0, 0]} isAnimationActive={false}>
-            <LabelList dataKey="shown" position="top" offset={6} className="fill-foreground tabular-nums" />
+          <Bar
+            dataKey="value"
+            fill="var(--color-value)"
+            radius={[4, 4, 0, 0]}
+            isAnimationActive={false}
+          >
+            <LabelList
+              dataKey="shown"
+              position="top"
+              offset={6}
+              className="fill-foreground tabular-nums"
+            />
           </Bar>
         </BarChart>
       </ChartContainer>
@@ -83,7 +95,7 @@ export function CountBarChart({
           <caption>{title}</caption>
           <thead>
             <tr>
-              <th scope="col">Period</th>
+              <th scope="col">{t("countBarChart_period")}</th>
               <th scope="col">{config.value.label}</th>
             </tr>
           </thead>

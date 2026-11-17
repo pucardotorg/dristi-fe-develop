@@ -47,7 +47,17 @@ import { FilterRow, KIND_PILLS_ONLY } from "@/components/tasks/filter-row";
 import { useFilters } from "@/components/tasks/filters";
 import { KindPills } from "@/components/tasks/kind-pills";
 import { TasksTable, TasksTableSkeleton } from "@/components/tasks/tasks-table";
-import { type ActMode, type Flow, actModeOf, draftFlowOf, FLOW_DIALOG, flowPathOf, useTaskActions } from "@/components/tasks/use-task-actions";
+import {
+  type ActMode,
+  type Flow,
+  actModeOf,
+  draftFlowOf,
+  FLOW_DIALOG,
+  flowPathOf,
+  useTaskActions,
+} from "@/components/tasks/use-task-actions";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 const VIEWS: TaskView[] = ["needs-action", "waiting", "completed", "archived"];
 
@@ -73,7 +83,6 @@ function useNow(): Date {
   return now;
 }
 
-
 /**
  * Pending tasks — the command centre. A dated header, four ability-based tabs, then one
  * controls line (the kind pills, the search and Filters) and ONE lifted table, its rows
@@ -84,9 +93,20 @@ function useNow(): Date {
  * carries its own bulk verb into the batch dialog.
  */
 export function TasksScreen() {
+  const tr = useTranslations();
   const store = useTasks();
-  const { state, error, notConnected, people, cases, tasks, user, online, reload, requestHighlight } =
-    store;
+  const {
+    state,
+    error,
+    notConnected,
+    people,
+    cases,
+    tasks,
+    user,
+    online,
+    reload,
+    requestHighlight,
+  } = store;
   const { act, busy } = useTaskActions();
   const router = useRouter();
   // This list, with the open task and the filters on it — where a flow should return to.
@@ -96,7 +116,7 @@ export function TasksScreen() {
 
   const world = React.useMemo<World>(
     () => ({ people, cases, tasks, user, now }),
-    [people, cases, tasks, user, now]
+    [people, cases, tasks, user, now],
   );
 
   const rows = React.useMemo(() => applyFilters(world, filters), [world, filters]);
@@ -120,14 +140,14 @@ export function TasksScreen() {
   const [responding, setResponding] = React.useState<Task | null>(null);
   const actingTask = React.useMemo(
     () => (acting ? (tasks.find((t) => t.id === acting.taskId) ?? null) : null),
-    [acting, tasks]
+    [acting, tasks],
   );
   const actingCase = actingTask ? (caseOf(world, actingTask) ?? null) : null;
 
   const focusRow = React.useCallback((id: TaskId) => {
     window.requestAnimationFrame(() => {
       const el = document.querySelector<HTMLButtonElement>(
-        `[data-task-row][data-task-id="${CSS.escape(id)}"] [data-task-title]`
+        `[data-task-row][data-task-id="${CSS.escape(id)}"] [data-task-title]`,
       );
       if (el) {
         el.focus();
@@ -151,12 +171,9 @@ export function TasksScreen() {
     focusRow(arrivedWith);
   }, [state, arrivedWith, requestHighlight, focusRow]);
 
-  const openAct = React.useCallback(
-    (task: Task, mode: ActMode | null) => {
-      if (mode) setActing({ taskId: task.id, mode });
-    },
-    []
-  );
+  const openAct = React.useCallback((task: Task, mode: ActMode | null) => {
+    if (mode) setActing({ taskId: task.id, mode });
+  }, []);
 
   const handleVerb = React.useCallback(
     (task: Task, verb: Verb) => {
@@ -191,7 +208,10 @@ export function TasksScreen() {
           setConfirmDone([task]);
           return;
         case "Unarchive":
-          void act(task.id, unarchive, { title: "Restored from the archive", icon: ArchiveRestoreIcon });
+          void act(task.id, unarchive, {
+            title: tr("tasksScreen_restoredFromTheArchive"),
+            icon: ArchiveRestoreIcon,
+          });
           return;
         default:
           // "View" — a task waiting on someone else, closed, or held by a vakalatnama
@@ -201,7 +221,7 @@ export function TasksScreen() {
           setViewingId(task.id);
       }
     },
-    [act, openAct]
+    [act, openAct, tr],
   );
 
   const setView = React.useCallback(
@@ -209,17 +229,17 @@ export function TasksScreen() {
       setSelected(new Set());
       setFilters({ view });
     },
-    [setFilters]
+    [setFilters],
   );
 
   const selectKind = React.useCallback(
     (kinds: TaskCategory[]) => setFilters((prev: Filters) => ({ ...prev, kinds })),
-    [setFilters]
+    [setFilters],
   );
 
   const clearFilters = React.useCallback(
     () => setFilters({ ...DEFAULT_FILTERS, view: filters.view }),
-    [filters.view, setFilters]
+    [filters.view, setFilters],
   );
 
   /** The listed rows a checkbox can reach — what the header's select-all answers for. */
@@ -229,7 +249,7 @@ export function TasksScreen() {
         const k = caseOf(world, r);
         return !!k && canArchive(user, r, k);
       }),
-    [rows, world, user]
+    [rows, world, user],
   );
 
   // Only rows in the current table count as selected; ids that scrolled out of the
@@ -240,13 +260,16 @@ export function TasksScreen() {
         const k = caseOf(world, r);
         return selected.has(r.id) && k && canArchive(user, r, k);
       }),
-    [rows, selected, world, user]
+    [rows, selected, world, user],
   );
-  const visibleSelected = React.useMemo(() => new Set(selectedTasks.map((t) => t.id)), [selectedTasks]);
+  const visibleSelected = React.useMemo(
+    () => new Set(selectedTasks.map((t) => t.id)),
+    [selectedTasks],
+  );
   // Mark as done needs an open-state task; a filed one waiting on the court does not.
   const doableSelected = React.useMemo(
     () => selectedTasks.filter((t) => ACTIONABLE.has(t.status)),
-    [selectedTasks]
+    [selectedTasks],
   );
 
   /**
@@ -280,7 +303,9 @@ export function TasksScreen() {
   }, [selectedTasks, world, user]);
 
   /** Set when the batch dialog is open, so the set it is acting on cannot change under it. */
-  const [batching, setBatching] = React.useState<{ kind: "sign" | "pay"; tasks: Task[] } | null>(null);
+  const [batching, setBatching] = React.useState<{ kind: "sign" | "pay"; tasks: Task[] } | null>(
+    null,
+  );
 
   const markAllDone = async (batch: Task[]) => {
     let ok = 0;
@@ -312,9 +337,13 @@ export function TasksScreen() {
           <h1 className="text-title-s font-semibold text-foreground">{headerDate(now)}</h1>
           <p className="text-body-compact text-muted-foreground tabular-nums">
             {state === "ready"
-              ? `${summary.action} need action · ${summary.waiting} waiting on others · ${summary.overdue} overdue`
+              ? tr("tasksScreen_actionNeedActionWaitingWaitingOn", {
+                  action: String(summary.action),
+                  waiting: String(summary.waiting),
+                  overdue: String(summary.overdue),
+                })
               : state === "loading"
-                ? "Loading…"
+                ? tr("tasksScreen_loading")
                 : null}
           </p>
         </header>
@@ -332,7 +361,7 @@ export function TasksScreen() {
           {/* Four views do not fit a phone, and a row that scrolls sideways hides
               the ones off its edge. The ones that fit stay; the rest sit under More. */}
           <OverflowTabsList
-            aria-label="Task views"
+            aria-label={tr("tasksScreen_taskViews")}
             value={filters.view}
             onSelect={(v) => setView(v as TaskView)}
             className="w-full justify-start gap-4 border-b border-hairline p-0 pb-0 group-data-horizontal/tabs:h-auto sm:gap-6"
@@ -348,7 +377,7 @@ export function TasksScreen() {
                 measure: count,
                 label: (
                   <>
-                    {VIEW_LABELS[v]}
+                    {tr(VIEW_LABELS[v])}
                     <span className="text-caption tabular-nums text-muted-foreground">{count}</span>
                   </>
                 ),
@@ -390,10 +419,7 @@ export function TasksScreen() {
         </div>
 
         {!online ? (
-          <StatusLine tone="warning">
-            You are offline. The table is read-only until the connection returns — nothing is
-            queued, so payments and signatures are never sent twice.
-          </StatusLine>
+          <StatusLine tone="warning">{tr("tasksScreen_youAreOfflineTheTableIs")}</StatusLine>
         ) : null}
 
         {/* Not connected is a known state, not a failure: neutral, and no Retry, since asking
@@ -409,11 +435,11 @@ export function TasksScreen() {
             still={!online}
             action={
               <Button variant="outline" onClick={() => void reload()}>
-                Retry
+                {tr("tasksScreen_retry")}
               </Button>
             }
           >
-            Tasks could not be loaded{error ? ` — ${error}` : ""}.
+            {tr("tasksScreen_tasksCouldNotBeLoadedValue", { value: error ? ` — ${error}` : "" })}
           </StatusLine>
         ) : null}
 
@@ -483,7 +509,6 @@ export function TasksScreen() {
             }
           />
         )}
-
       </div>
 
       <TaskActModal
@@ -548,9 +573,11 @@ export function TasksScreen() {
       <ConfirmDialog
         open={!!flowNotice}
         onOpenChange={(open) => !open && setFlowNotice(null)}
-        title={flowNotice ? FLOW_DIALOG[flowNotice.flow].title : ""}
-        description={flowNotice ? FLOW_DIALOG[flowNotice.flow].description : undefined}
-        confirmLabel="Continue"
+        title={flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].title) : ""}
+        description={
+          flowNotice ? translateText(tr, FLOW_DIALOG[flowNotice.flow].description) : undefined
+        }
+        confirmLabel={tr("tasksScreen_continue")}
         destructive={false}
         icon={ArrowRightIcon}
         onConfirm={() => {
@@ -563,7 +590,7 @@ export function TasksScreen() {
       <ConfirmDialog
         open={!!confirmDone}
         onOpenChange={(open) => !open && setConfirmDone(null)}
-        title="Mark as done?"
+        title={tr("tasksScreen_markAsDone")}
         description={
           confirmDone
             ? `${
@@ -573,7 +600,7 @@ export function TasksScreen() {
               } — this records that it was completed outside DRISTI. Nothing is sent to the court.`
             : undefined
         }
-        confirmLabel="Mark as done"
+        confirmLabel={tr("tasksScreen_markAsDoneConfirmLabel")}
         destructive={false}
         icon={ListChecksIcon}
         onConfirm={() => {
@@ -621,6 +648,7 @@ function SelectionBar({
   onArchive: () => void;
   onClear: () => void;
 }) {
+  const tr = useTranslations();
   const label = batch
     ? batch.kind === "sign"
       ? `Sign ${batch.tasks.length} document${batch.tasks.length === 1 ? "" : "s"}`
@@ -630,16 +658,14 @@ function SelectionBar({
      why there is no Pay or Sign among the acts to the right. */
   const summary =
     count === 0
-      ? "Select tasks to pay, sign, mark as done or archive several at once."
+      ? tr("tasksScreen_selectTasksToPaySignMark")
       : `${count} task${count === 1 ? "" : "s"} selected.` +
-    (!batch && hasPayOrSign && count > 1
-      ? " Paying or signing needs one kind at a time."
-      : "");
+        (!batch && hasPayOrSign && count > 1 ? tr("tasksScreen_payingOrSigningNeedsOneKind") : "");
 
   return (
     <div
       role="region"
-      aria-label="Selected tasks"
+      aria-label={tr("tasksScreen_selectedTasks")}
       /* `top-14` clears the chrome bar exactly, with none of the page air the
          `--chrome-sticky-top` offset adds — a toolbar sits against the chrome. Opaque,
          because rows sliding under a translucent bar would decide the contrast of a
@@ -652,37 +678,41 @@ function SelectionBar({
       className="@container sticky top-14 z-20 rounded-lg border border-hairline bg-card px-4 py-3"
     >
       <div className="flex flex-col gap-3 @3xl:flex-row @3xl:items-center">
-      <p className="flex min-w-0 flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground @3xl:mr-auto" aria-live="polite">
-        <span className="tabular-nums">{summary}</span>
-        {count ? (
-          <Button variant="link" className="h-auto p-0 font-normal underline" onClick={onClear}>
-            Clear
-          </Button>
-        ) : null}
-      </p>
+        <p
+          className="flex min-w-0 flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground @3xl:mr-auto"
+          aria-live="polite"
+        >
+          <span className="tabular-nums">{summary}</span>
+          {count ? (
+            <Button variant="link" className="h-auto p-0 font-normal underline" onClick={onClear}>
+              {tr("tasksScreen_clear")}
+            </Button>
+          ) : null}
+        </p>
 
-      <div className="flex flex-wrap gap-2 @3xl:flex-nowrap @3xl:justify-end [&>button]:flex-1 @3xl:[&>button]:flex-none">
-      <Button variant="outline" disabled={disabled || count === 0} onClick={onArchive}>
-        Archive
-      </Button>
-      <Button variant="outline" disabled={disabled || !canMarkDone} onClick={onMarkDone}>
-        Mark as done
-      </Button>
-      {batch && label ? (
-        <Button disabled={disabled} onClick={() => onBatch(batch)} className="tabular-nums">
-          {label}
-        </Button>
-      ) : count === 0 ? (
-        /* The primary act, named before there is anything for it to act on. */
-        <Button disabled>Pay or sign selected</Button>
-      ) : null}
-      </div>
+        <div className="flex flex-wrap gap-2 @3xl:flex-nowrap @3xl:justify-end [&>button]:flex-1 @3xl:[&>button]:flex-none">
+          <Button variant="outline" disabled={disabled || count === 0} onClick={onArchive}>
+            {tr("tasksScreen_archive")}
+          </Button>
+          <Button variant="outline" disabled={disabled || !canMarkDone} onClick={onMarkDone}>
+            {tr("tasksScreen_markAsDoneConfirmLabel")}
+          </Button>
+          {batch && label ? (
+            <Button disabled={disabled} onClick={() => onBatch(batch)} className="tabular-nums">
+              {label}
+            </Button>
+          ) : count === 0 ? (
+            /* The primary act, named before there is anything for it to act on. */
+            <Button disabled>{tr("tasksScreen_payOrSignSelected")}</Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
 }
 
 export function TasksScreenFallback() {
+  const tr = useTranslations();
   return (
     /* The warm canvas the product defaults to, with the table and the selection bar
        lifted off it as panels (ui-craft §1.0; owner, 2026-09-16). */
@@ -690,7 +720,7 @@ export function TasksScreenFallback() {
       <div className={cn("flex min-w-0 flex-1 flex-col gap-6 px-4 py-6 md:px-6 lg:px-8")}>
         <header className="flex flex-col gap-1">
           <h1 className="text-title-s font-semibold text-foreground">{headerDate(new Date())}</h1>
-          <p className="text-body-compact text-muted-foreground">Loading…</p>
+          <p className="text-body-compact text-muted-foreground">{tr("tasksScreen_loading")}</p>
         </header>
         <TasksTableSkeleton />
       </div>

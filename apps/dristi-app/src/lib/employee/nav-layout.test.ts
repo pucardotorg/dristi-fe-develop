@@ -15,7 +15,7 @@ describe("the court rail layout", () => {
     clearCourtNavLayout();
   });
 
-  it("stands on \"open\" with nothing chosen yet", () => {
+  it('stands on "open" with nothing chosen yet', () => {
     assert.equal(readCourtNavLayout(), "open");
     assert.equal(DEFAULT_COURT_NAV_LAYOUT, "open");
   });

@@ -38,15 +38,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CorrectionScreen } from "@/components/scrutiny/correction-screen";
 import { Breadcrumbs, type Crumb } from "@/components/shell/chrome";
 import { useOrigin } from "@/components/shell/origin";
+import { useTranslations } from "next-intl";
 
 /**
  * Every state of this route, dead ends included, sits under the same trail — rooted at
  * the door it was reached through when the link recorded one.
  */
 function Frame({ children, root }: { children: React.ReactNode; root?: Crumb | null }) {
+  const tr = useTranslations();
   return (
     <main className="flex min-w-0 flex-1 flex-col">
-      <Breadcrumbs root={root} crumbs={[{ label: "Scrutiny return" }]} />
+      <Breadcrumbs root={root} crumbs={[{ label: tr("scrutinyScrutinyPage_scrutinyReturn") }]} />
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 md:px-6 lg:px-8">
         {children}
       </div>
@@ -65,6 +67,7 @@ function Dead({
   taskId?: string;
   origin?: Crumb | null;
 }) {
+  const tr = useTranslations();
   // The way out is the door, when one was recorded — a dead end is the worst place to
   // put someone down in an area they did not come from.
   const back = origin?.href ?? (taskId ? `/tasks?task=${encodeURIComponent(taskId)}` : "/tasks");
@@ -81,7 +84,11 @@ function Dead({
           </EmptyHeader>
           <EmptyContent>
             <Button asChild variant="outline">
-              <Link href={back}>{origin ? `Back to ${origin.label}` : "Back to tasks"}</Link>
+              <Link href={back}>
+                {origin
+                  ? tr("scrutinyScrutinyPage_backToLabel", { label: origin.label })
+                  : tr("scrutinyScrutinyPage_backToTasks")}
+              </Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -101,6 +108,7 @@ function Loading({ root }: { root?: Crumb | null }) {
 }
 
 export function ScrutinyReturnPage() {
+  const tr = useTranslations();
   const params = useParams<{ taskId: string }>();
   const origin = useOrigin();
   const { state, tasks, cases, user, dispatch } = useTasks();
@@ -158,8 +166,8 @@ export function ScrutinyReturnPage() {
   if (!task || !kase) {
     return (
       <Dead
-        title="This task is not here"
-        description="The link may be wrong."
+        title={tr("scrutinyScrutinyPage_thisTaskIsNotHere")}
+        description={tr("scrutinyScrutinyPage_theLinkMayBeWrong")}
         origin={origin}
       />
     );
@@ -167,8 +175,8 @@ export function ScrutinyReturnPage() {
   if (!canView(user, kase)) {
     return (
       <Dead
-        title="Not on your access"
-        description="You are not on this case's vakalatnama or its access list."
+        title={tr("scrutinyScrutinyPage_notOnYourAccess")}
+        description={tr("scrutinyScrutinyPage_youAreNotOnThisCases")}
         taskId={task.id}
         origin={origin}
       />
@@ -177,8 +185,8 @@ export function ScrutinyReturnPage() {
   if (task.kind !== "returned" || !task.returned?.defects.length) {
     return (
       <Dead
-        title="Nothing was returned for correction"
-        description="This task carries no scrutiny defects, so there is nothing to correct here."
+        title={tr("scrutinyScrutinyPage_nothingWasReturnedForCorrection")}
+        description={tr("scrutinyScrutinyPage_thisTaskCarriesNoScrutinyDefects")}
         taskId={task.id}
         origin={origin}
       />
@@ -199,16 +207,15 @@ export function ScrutinyReturnPage() {
               <EmptyMedia variant="icon">
                 <InboxIcon aria-hidden />
               </EmptyMedia>
-              <EmptyTitle>This filing was not made in DRISTI</EmptyTitle>
+              <EmptyTitle>{tr("scrutinyScrutinyPage_thisFilingWasNotMadeIn")}</EmptyTitle>
               <EmptyDescription>
-                Scrutiny&apos;s remarks are on the task, but there is no draft here to
-                correct — the corrected papers go back through the counter.
+                {tr("scrutinyScrutinyPage_scrutinysRemarksAreOnTheTask")}
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button asChild variant="outline">
                 <Link href={`/tasks?task=${encodeURIComponent(task.id)}`}>
-                  Read the remarks
+                  {tr("scrutinyScrutinyPage_readTheRemarks")}
                 </Link>
               </Button>
             </EmptyContent>
@@ -226,8 +233,8 @@ export function ScrutinyReturnPage() {
       fallback={<Loading />}
       notFound={
         <Dead
-          title="We couldn't open the filing"
-          description="The returned filing is not in this browser's storage, so it cannot be corrected here."
+          title={tr("scrutinyScrutinyPage_weCouldntOpenTheFiling")}
+          description={tr("scrutinyScrutinyPage_theReturnedFilingIsNotIn")}
           taskId={task.id}
           origin={origin}
         />

@@ -3,11 +3,7 @@
  * Complaint tab uses, filled from existing dummy packs. A paper with no
  * structured fixture stays undefined; the UI must not invent the filing.
  */
-import {
-  complaintPane,
-  type ComplaintField,
-  type ComplaintPane,
-} from "./complaint";
+import { complaintPane, type ComplaintField, type ComplaintPane } from "./complaint";
 import { CASES } from "./fixtures";
 import {
   documentSourceLabel,
@@ -103,10 +99,7 @@ const ORDER_BY_DOC: Record<string, string> = {
  */
 const FIXTURE_CASE_ID = "c-1001";
 
-export function caseFileDigitalPane(
-  record: CaseRecord,
-  docId: string
-): ComplaintPane | undefined {
+export function caseFileDigitalPane(record: CaseRecord, docId: string): ComplaintPane | undefined {
   const source = CASES.find((item) => item.id === FIXTURE_CASE_ID) ?? record;
 
   const complaintPartId = COMPLAINT_PANE_BY_DOC[docId];
@@ -153,9 +146,7 @@ function idField(term: string, value: string): ComplaintField {
 
 function depositionPane(depositions: WitnessDeposition[]): ComplaintPane {
   const first = depositions[0];
-  const exhibits = [
-    ...new Set(depositions.flatMap((item) => item.exhibits)),
-  ];
+  const exhibits = [...new Set(depositions.flatMap((item) => item.exhibits))];
 
   return {
     title: `${first.witnessNumber} deposition`,
@@ -169,10 +160,7 @@ function depositionPane(depositions: WitnessDeposition[]): ComplaintPane {
       ...(exhibits.length > 0
         ? [
             /* Marks with their descriptions: a list of phrases, not a reference. */
-            field(
-              "Exhibits",
-              exhibits.map((code) => `${code} · ${exhibitLabel(code)}`).join("; ")
-            ),
+            field("Exhibits", exhibits.map((code) => `${code} · ${exhibitLabel(code)}`).join("; ")),
           ]
         : []),
     ],
@@ -192,16 +180,14 @@ function orderPane(court: string, order: OrderRecord): ComplaintPane {
       field("Status", orderStatusLabel(order.status)),
       field("Date issued", formatCaseDate(order.issuedOn)),
       field("Court", court),
-      ...(order.partiesDisplay
-        ? [field("Parties", order.partiesDisplay)]
-        : []),
+      ...(order.partiesDisplay ? [field("Parties", order.partiesDisplay)] : []),
     ],
   };
 }
 
 function documentPane(
   document: CaseDocument,
-  peopleById: Map<string, DocumentPerson>
+  peopleById: Map<string, DocumentPerson>,
 ): ComplaintPane {
   const role = submittedByRole(document, peopleById);
   const submittedBy = role
@@ -217,25 +203,18 @@ function documentPane(
       field("Status", documentStatusLabel(document.submissionStatus)),
       field("Submitted on", formatCaseDate(document.submittedOn)),
       field("Submitted by", submittedBy),
-      ...(document.evidenceNumber
-        ? [idField("Evidence no.", document.evidenceNumber)]
-        : []),
+      ...(document.evidenceNumber ? [idField("Evidence no.", document.evidenceNumber)] : []),
       ...(document.linkedApplication
         ? [
             /* A title with its id in brackets. The sentence is the fact here. */
             field(
               "Filed with",
-              `${document.linkedApplication.label} (${document.linkedApplication.id})`
+              `${document.linkedApplication.label} (${document.linkedApplication.id})`,
             ),
           ]
         : []),
       ...(document.linkedHearing
-        ? [
-            field(
-              "Hearing",
-              `${document.linkedHearing.label} (${document.linkedHearing.id})`
-            ),
-          ]
+        ? [field("Hearing", `${document.linkedHearing.label} (${document.linkedHearing.id})`)]
         : []),
     ],
   };

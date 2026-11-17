@@ -2,11 +2,7 @@ import * as React from "react";
 import { InfoIcon, PhoneIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   DescriptionDetails,
   DescriptionList,
@@ -18,6 +14,7 @@ import { caseDetails, type JoinCase } from "@/lib/join/content";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { OutcomeSummary } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * The one case-details block, shared by the summons modal, the join dialog, and the
@@ -59,13 +56,14 @@ export function CaseIdentity({
   locale: Locale;
   lead: string;
 }) {
+  const t = useTranslations();
   /* Three facts, three rows (owner, Oct 6): run together with dots they read as one
      long line. The same row grid as the full case details, so the step after the
      code shows these facts where this one did. */
   const facts: { label: keyof typeof caseDetails; value: React.ReactNode }[] = [
     {
       label: "caseNumber",
-      value: <Identifier value={joinCase.caseNumber} label="case number" />,
+      value: <Identifier value={joinCase.caseNumber} label={t("caseDetails_caseNumber")} />,
     },
     { label: "court", value: joinCase.court },
     { label: "courtroom", value: joinCase.courtroom },
@@ -103,27 +101,19 @@ export function hasAccusedAdvocate(joinCase: JoinCase) {
  * show the same title the same way (Aug 31 round): wherever a join surface
  * prints the title, "1 other" answers who.
  */
-export function CaseTitleWithOthers({
-  joinCase,
-  locale,
-}: {
-  joinCase: JoinCase;
-  locale: Locale;
-}) {
+export function CaseTitleWithOthers({ joinCase, locale }: { joinCase: JoinCase; locale: Locale }) {
+  const t = useTranslations();
   const otherMarker = " and 1 other";
   const otherAccused = joinCase.accused.slice(1);
-  const hasOtherAccused =
-    joinCase.title.endsWith(otherMarker) && otherAccused.length > 0;
-  const titleLead = hasOtherAccused
-    ? joinCase.title.slice(0, -otherMarker.length)
-    : joinCase.title;
+  const hasOtherAccused = joinCase.title.endsWith(otherMarker) && otherAccused.length > 0;
+  const titleLead = hasOtherAccused ? joinCase.title.slice(0, -otherMarker.length) : joinCase.title;
 
   return (
     <p className="text-body font-semibold text-pretty">
       {titleLead}
       {hasOtherAccused ? (
         <>
-          {" and "}
+          {t("caseDetails_and")}
           <Popover>
             <PopoverTrigger asChild>
               <button
@@ -131,7 +121,7 @@ export function CaseTitleWithOthers({
                 className="inline-flex min-h-10 items-center rounded-sm underline decoration-dotted underline-offset-4 hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 aria-label={pick(caseDetails.otherAccused, locale)}
               >
-                1 other
+                {t("caseDetails_1Other")}
               </button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-64">
@@ -179,7 +169,9 @@ function NextHearing({ value, locale }: { value: string; locale: Locale }) {
         </span>
       ) : null}
       <div className="flex min-w-0 flex-col gap-0.5">
-        <p className="text-body-compact text-muted-foreground">{pick(caseDetails.hearing, locale)}</p>
+        <p className="text-body-compact text-muted-foreground">
+          {pick(caseDetails.hearing, locale)}
+        </p>
         {parts ? (
           <>
             <p className="text-body text-foreground tabular-nums">
@@ -215,6 +207,7 @@ export function CaseDetails({
   outcome?: string;
   className?: string;
 }) {
+  const t = useTranslations();
   /* `idLabel` marks the rows whose value is a registry identifier rather than a
      fact about the case — they carry the identifier face and can be copied. */
   const rows: {
@@ -222,14 +215,14 @@ export function CaseDetails({
     value: string;
     idLabel?: string;
   }[] = [
-    { label: "caseNumber", value: joinCase.caseNumber, idLabel: "case number" },
+    { label: "caseNumber", value: joinCase.caseNumber, idLabel: t("caseDetails_caseNumber") },
     ...(extended
       ? ([
           { label: "cnr", value: joinCase.cnr, idLabel: "CNR" },
           {
             label: "filingNumber",
             value: joinCase.filingNumber,
-            idLabel: "registration number",
+            idLabel: t("caseDetails_registrationNumber"),
           },
         ] as const)
       : []),
@@ -251,42 +244,46 @@ export function CaseDetails({
   ];
   function valueOf(row: (typeof rows)[number]): React.ReactNode {
     return row.label === "complainantAdvocate" ? (
-                  <span className="flex items-center gap-2">
-                    <span>{row.value}</span>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={pick(caseDetails.complainantAdvocateContact, locale)}
-                        >
-                          <InfoIcon aria-hidden />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent align="end" collisionPadding={16} className="flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-3">
-                        <div className="flex flex-col gap-1">
-                          <p className="text-body-compact font-semibold">
-                            {pick(caseDetails.complainantAdvocateContact, locale)}
-                          </p>
-                          <p className="text-body-compact text-pretty text-muted-foreground">
-                            {pick(caseDetails.complainantAdvocateContactBody, locale)}
-                          </p>
-                        </div>
-                        <Button asChild variant="outline" size="sm" className="self-start">
-                          <a href={`tel:${joinCase.complainantAdvocatePhone.replace(/\s/g, "")}`}>
-                            <PhoneIcon data-icon="inline-start" aria-hidden />
-                            {joinCase.complainantAdvocatePhone}
-                          </a>
-                        </Button>
-                      </PopoverContent>
-                    </Popover>
-                  </span>
-                ) : row.idLabel ? (
-                  <Identifier value={row.value} label={row.idLabel} />
-                ) : (
-                  row.value
-                );
+      <span className="flex items-center gap-2">
+        <span>{row.value}</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={pick(caseDetails.complainantAdvocateContact, locale)}
+            >
+              <InfoIcon aria-hidden />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="end"
+            collisionPadding={16}
+            className="flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-3"
+          >
+            <div className="flex flex-col gap-1">
+              <p className="text-body-compact font-semibold">
+                {pick(caseDetails.complainantAdvocateContact, locale)}
+              </p>
+              <p className="text-body-compact text-pretty text-muted-foreground">
+                {pick(caseDetails.complainantAdvocateContactBody, locale)}
+              </p>
+            </div>
+            <Button asChild variant="outline" size="sm" className="self-start">
+              <a href={`tel:${joinCase.complainantAdvocatePhone.replace(/\s/g, "")}`}>
+                <PhoneIcon data-icon="inline-start" aria-hidden />
+                {joinCase.complainantAdvocatePhone}
+              </a>
+            </Button>
+          </PopoverContent>
+        </Popover>
+      </span>
+    ) : row.idLabel ? (
+      <Identifier value={row.value} label={row.idLabel} />
+    ) : (
+      row.value
+    );
   }
 
   /* One card for every join screen (owner, 2026-10-12: the same information was showing
@@ -298,7 +295,7 @@ export function CaseDetails({
       <div className="flex flex-col gap-1">
         <CaseTitleWithOthers joinCase={joinCase} locale={locale} />
         <p className="text-body-compact text-muted-foreground">
-          <Identifier value={joinCase.caseNumber} label="case number" />
+          <Identifier value={joinCase.caseNumber} label={t("caseDetails_caseNumber")} />
           <span aria-hidden> · </span>
           {pick(caseDetails.caseTypeBadge, locale)}
         </p>

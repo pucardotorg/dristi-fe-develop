@@ -79,10 +79,7 @@ export type ProxyOptions = {
 
 /** A proxy-made error, shaped like a DRF error so the browser client parses one format. */
 function proxyError(status: number, code: string, detail: string): Response {
-  return Response.json(
-    { detail, code },
-    { status, headers: { "cache-control": "no-store" } },
-  );
+  return Response.json({ detail, code }, { status, headers: { "cache-control": "no-store" } });
 }
 
 /**

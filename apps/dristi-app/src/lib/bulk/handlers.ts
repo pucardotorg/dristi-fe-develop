@@ -105,7 +105,11 @@ export async function receivePush(store: BulkStore, body: unknown, origin: strin
       const res = await fetch(doc.url, { signal: AbortSignal.timeout(10_000) });
       if (!res.ok) return null;
       const bytes = new Uint8Array(await res.arrayBuffer());
-      const type = (doc.contentType || res.headers.get("content-type") || "application/octet-stream").split(";")[0];
+      const type = (
+        doc.contentType ||
+        res.headers.get("content-type") ||
+        "application/octet-stream"
+      ).split(";")[0];
       const ref = await store.saveFile(bytes, doc.name, type);
       return { ...ref, text: documentText(bytes, type) };
     } catch {
@@ -114,8 +118,13 @@ export async function receivePush(store: BulkStore, body: unknown, origin: strin
   };
   const built = await buildBatch(
     request,
-    { kind: "api", system: request.source.system, reference: request.source.reference, sentBy: request.source.sentBy },
-    fetchDocument
+    {
+      kind: "api",
+      system: request.source.system,
+      reference: request.source.reference,
+      sentBy: request.source.sentBy,
+    },
+    fetchDocument,
   );
   const batch = await store.insertBatch(built);
   const response: ApiBatchResponse = {
@@ -143,13 +152,19 @@ export async function pushedBatches(store: BulkStore): Promise<Reply> {
         caseId: c.id,
         status: c.draft.status,
         // In the deployment's own numbering, as the court's screens show it.
-        caseFileNumber: c.draft.sign.caseFileNumber ? localizeCaseNumber(c.draft.sign.caseFileNumber, "gujarat") : null,
+        caseFileNumber: c.draft.sign.caseFileNumber
+          ? localizeCaseNumber(c.draft.sign.caseFileNumber, "gujarat")
+          : null,
       })),
-    }))
+    })),
   );
 }
 
-export async function getBatchView(store: BulkStore, batchId: string, aiRaw: string | null): Promise<Reply> {
+export async function getBatchView(
+  store: BulkStore,
+  batchId: string,
+  aiRaw: string | null,
+): Promise<Reply> {
   const ai = aiModeFrom(aiRaw);
   const all = await store.listBatches();
   let batch = all.find((b) => b.id === batchId);
@@ -157,7 +172,10 @@ export async function getBatchView(store: BulkStore, batchId: string, aiRaw: str
   // Opening a pushed batch is what clears its notification.
   if (batch.openedAt === null) {
     const at = new Date().toISOString();
-    batch = (await store.updateBatch(batchId, (b) => (b.openedAt === null ? { ...b, openedAt: at } : null))) ?? batch;
+    batch =
+      (await store.updateBatch(batchId, (b) =>
+        b.openedAt === null ? { ...b, openedAt: at } : null,
+      )) ?? batch;
   }
   return ok(batchView(batch, all, ai));
 }
@@ -201,87 +219,100 @@ export type Action =
 
 const METHODS: BulkSignMethod[] = ["mobile-otp", "dsc", "aadhaar", "upload"];
 
-
 /** What the filer does to a batch: fix, skip, declare, add or remove a part, sign, pay. */
-export async function act(store: BulkStore, batchId: string, body: Action & { ai?: string }): Promise<Reply> {
+export async function act(
+  store: BulkStore,
+  batchId: string,
+  body: Action & { ai?: string },
+): Promise<Reply> {
   // The AI setting of the screen that sent this (`?ai=`), returned with the batch.
   const ai = aiModeFrom(body.ai);
   let problem: string | null = null;
 
   // Fixes may need a lookup (IFSC, pincode), so they are prepared before the write.
-  const saved = await store.updateBatch(batchId, (batch) => {
-    if (batch.clubbedInto) {
-      problem = "This batch was clubbed into another and is closed.";
-      return null;
-    }
-    const at = new Date().toISOString();
-    switch (body.action) {
-      case "skip":
-      case "unskip": {
-        const bc = batch.cases.find((c) => c.id === body.caseId);
-        if (!bc) return null;
-        bc.skipped = body.action === "skip"
-          ? [...new Set([...bc.skipped, body.flagId])]
-          : bc.skipped.filter((id) => id !== body.flagId);
-        return batch;
-      }
-      case "skip-rule": {
-        for (const bc of batch.cases) {
-          if (bc.draft.status === "filed" || bc.signedWith) continue;
-          const ids = caseFlags(bc)
-            .filter((f) => f.level === "soft" && f.rule === body.rule)
-            .map((f) => f.id);
-          bc.skipped = [...new Set([...bc.skipped, ...ids])];
-        }
-        return batch;
-      }
-      case "part": {
-        const bc = batch.cases.find((c) => c.id === body.caseId);
-        if (!bc) return null;
-        // A change voids signatures (LIFE-13); signed and filed cases are not offered it.
-        if (bc.signedWith || bc.draft.status === "filed") {
-          problem = "A signed or filed case cannot be changed here.";
-          return null;
-        }
-        problem = changePart(bc.draft, body.op, body.part, body.accused ?? 0);
-        return problem ? null : batch;
-      }
-      case "declare-no-contact": {
-        const bc = batch.cases.find((c) => c.id === body.caseId);
-        if (!bc) return null;
-        bc.noContactDeclared = [...new Set([...bc.noContactDeclared, body.accusedId])];
-        return batch;
-      }
-      case "sign": {
-        if (!METHODS.includes(body.method)) {
-          problem = "Unknown signing method.";
-          return null;
-        }
-        const ready = signable(batch).filter((c) => body.caseIds.includes(c.id));
-        if (ready.length === 0) {
-          problem = "None of these cases can be signed now.";
-          return null;
-        }
-        signCases(ready, body.method, at);
-        batch.signings.push({ method: body.method, at, caseIds: ready.map((c) => c.id), rounds: roundsFor(body.method, ready.length) });
-        return batch;
-      }
-      case "pay": {
-        const cases = batch.cases.filter((c) => body.caseIds.includes(c.id) && c.signedWith && c.draft.status !== "filed");
-        if (cases.length === 0) {
-          problem = "None of these cases is signed and unpaid.";
-          return null;
-        }
-        payCases(batch, cases, at);
-        return batch;
-      }
-      default:
+  const saved = await store
+    .updateBatch(batchId, (batch) => {
+      if (batch.clubbedInto) {
+        problem = "This batch was clubbed into another and is closed.";
         return null;
-    }
-  }).catch((e: Error) => {
-    problem = e.message;
-    return null;
-  });
+      }
+      const at = new Date().toISOString();
+      switch (body.action) {
+        case "skip":
+        case "unskip": {
+          const bc = batch.cases.find((c) => c.id === body.caseId);
+          if (!bc) return null;
+          bc.skipped =
+            body.action === "skip"
+              ? [...new Set([...bc.skipped, body.flagId])]
+              : bc.skipped.filter((id) => id !== body.flagId);
+          return batch;
+        }
+        case "skip-rule": {
+          for (const bc of batch.cases) {
+            if (bc.draft.status === "filed" || bc.signedWith) continue;
+            const ids = caseFlags(bc)
+              .filter((f) => f.level === "soft" && f.rule === body.rule)
+              .map((f) => f.id);
+            bc.skipped = [...new Set([...bc.skipped, ...ids])];
+          }
+          return batch;
+        }
+        case "part": {
+          const bc = batch.cases.find((c) => c.id === body.caseId);
+          if (!bc) return null;
+          // A change voids signatures (LIFE-13); signed and filed cases are not offered it.
+          if (bc.signedWith || bc.draft.status === "filed") {
+            problem = "A signed or filed case cannot be changed here.";
+            return null;
+          }
+          problem = changePart(bc.draft, body.op, body.part, body.accused ?? 0);
+          return problem ? null : batch;
+        }
+        case "declare-no-contact": {
+          const bc = batch.cases.find((c) => c.id === body.caseId);
+          if (!bc) return null;
+          bc.noContactDeclared = [...new Set([...bc.noContactDeclared, body.accusedId])];
+          return batch;
+        }
+        case "sign": {
+          if (!METHODS.includes(body.method)) {
+            problem = "Unknown signing method.";
+            return null;
+          }
+          const ready = signable(batch).filter((c) => body.caseIds.includes(c.id));
+          if (ready.length === 0) {
+            problem = "None of these cases can be signed now.";
+            return null;
+          }
+          signCases(ready, body.method, at);
+          batch.signings.push({
+            method: body.method,
+            at,
+            caseIds: ready.map((c) => c.id),
+            rounds: roundsFor(body.method, ready.length),
+          });
+          return batch;
+        }
+        case "pay": {
+          const cases = batch.cases.filter(
+            (c) => body.caseIds.includes(c.id) && c.signedWith && c.draft.status !== "filed",
+          );
+          if (cases.length === 0) {
+            problem = "None of these cases is signed and unpaid.";
+            return null;
+          }
+          payCases(batch, cases, at);
+          return batch;
+        }
+        default:
+          return null;
+      }
+    })
+    .catch((e: Error) => {
+      problem = e.message;
+      return null;
+    });
 
   if (body.action === "fix") {
     if (!editable(body.path)) return fail("That field cannot be changed here.", 400);
@@ -292,7 +323,7 @@ export async function act(store: BulkStore, batchId: string, body: Action & { ai
       ? batch.cases.filter((c) => c.draft.status !== "filed" && !c.signedWith)
       : batch.cases.filter((c) => c.id === body.caseId);
     // Work out the fixed drafts first (lookups are async), then write them in one go.
-    const fixed = new Map<string, typeof targets[number]["draft"]>();
+    const fixed = new Map<string, (typeof targets)[number]["draft"]>();
     for (const bc of targets) {
       const d = structuredClone(bc.draft);
       await applyFix(d, body.path, body.value);
@@ -377,7 +408,14 @@ export async function putFile(store: BulkStore, fileId: string, file: File | nul
   if (await store.readFile(fileId)) return fail("That file is already stored.", 409);
   if (!file) return fail("No file sent.", 400);
   try {
-    return ok(await store.saveFileAs(fileId, new Uint8Array(await file.arrayBuffer()), file.name, file.type));
+    return ok(
+      await store.saveFileAs(
+        fileId,
+        new Uint8Array(await file.arrayBuffer()),
+        file.name,
+        file.type,
+      ),
+    );
   } catch (e) {
     return fail((e as Error).message, 400);
   }
@@ -409,9 +447,14 @@ export async function attach(
 const MAX_FILES = 200;
 
 /** Case documents for the AI-assisted upload, each read for the sheet's fields and kept. */
-export async function extract(store: BulkStore, files: File[], aiRaw: string | null): Promise<Reply> {
+export async function extract(
+  store: BulkStore,
+  files: File[],
+  aiRaw: string | null,
+): Promise<Reply> {
   // Reading documents is AI: with AI off or unavailable it says so and does nothing.
-  if (aiModeFrom(aiRaw) !== "on") return fail("AI reading is not available. Upload an Excel file instead.", 409);
+  if (aiModeFrom(aiRaw) !== "on")
+    return fail("AI reading is not available. Upload an Excel file instead.", 409);
   if (!files.length) return fail("No files were sent.", 400);
   if (files.length > MAX_FILES) return fail(`At most ${MAX_FILES} documents at a time.`, 413);
   const cases = await Promise.all(

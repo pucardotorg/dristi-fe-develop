@@ -8,14 +8,10 @@ import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DescriptionList } from "@/components/ui/description-list";
-import {
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useCourtLocalized } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * One application, as paper.
@@ -101,6 +97,7 @@ export function ApplicationReviewOverlay({
   onReject?: () => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   return (
     <ChromeDialogContent
       className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl md:h-[85dvh] xl:max-w-6xl"
@@ -111,13 +108,11 @@ export function ApplicationReviewOverlay({
     >
       <DialogHeader className="shrink-0 gap-2 p-6 pr-16">
         <div className="flex flex-wrap items-center gap-2">
-          <DialogTitle className="text-title-s font-semibold">
-            {title}
-          </DialogTitle>
+          <DialogTitle className="text-title-s font-semibold">{title}</DialogTitle>
           {/* The application's own state — waiting on this bench — stated once,
               here. The queue behind it is entirely pending, so a column of chips
               would say the same thing thirty times. */}
-          {badge ?? <Badge variant="warning">Pending review</Badge>}
+          {badge ?? <Badge variant="warning">{t("applicationReviewDialog_pendingReview")}</Badge>}
         </div>
         <DialogDescription className="text-body-compact text-muted-foreground">
           {description}
@@ -149,17 +144,13 @@ export function ApplicationReviewOverlay({
             kind: "composed",
             content: <ApplicationFacsimile document={document} />,
           }}
-          download={
-            onDownload
-              ? { onDownload, label: `Download ${document.title}` }
-              : undefined
-          }
+          download={onDownload ? { onDownload, label: `Download ${document.title}` } : undefined}
         />
       </div>
       {footer ?? (
         <DialogFooter className="mx-0 mb-0 shrink-0">
           <Button type="button" variant="destructive" onClick={onReject}>
-            Reject
+            {t("applicationReviewDialog_reject")}
           </Button>
           <Button type="button" onClick={onApprove}>
             {approveLabel}
@@ -181,17 +172,18 @@ export function ApplicationFacsimile({
 }: {
   document: CourtApplicationDocument;
 }) {
+  const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground [&_[data-slot=description-details]]:text-paper-foreground [&_[data-slot=description-term]]:text-paper-muted-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {t("applicationReviewDialog_caseNoCaseNumber", { caseNumber: document.caseNumber })}
         </p>
         <p className="text-body font-semibold">{document.matter}</p>
         <p className="text-body-compact text-paper-muted-foreground">
-          Date: {document.dated}
+          {t("applicationReviewDialog_dateDated", { dated: document.dated })}
         </p>
       </header>
 
@@ -218,17 +210,17 @@ export function ApplicationFacsimile({
           yet: its content is the values entered, until the text is specified. */}
       {document.prayer ? (
         <section className="flex flex-col gap-2">
-          <h4 className="text-body font-semibold">Prayer</h4>
+          <h4 className="text-body font-semibold">{t("applicationReviewDialog_prayer")}</h4>
           <p className="text-body whitespace-pre-wrap">{document.prayer}</p>
         </section>
       ) : null}
 
       <footer className="flex flex-col items-end gap-2">
         <p className="text-body-compact text-paper-muted-foreground">
-          Filed for {document.filedFor}
+          {t("applicationReviewDialog_filedForFiledFor", { filedFor: document.filedFor })}
         </p>
         <p className="text-body-compact text-paper-muted-foreground">
-          Dated this {document.dated}
+          {t("applicationReviewDialog_datedThisDated", { dated: document.dated })}
         </p>
       </footer>
     </article>

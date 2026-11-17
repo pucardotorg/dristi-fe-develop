@@ -140,7 +140,7 @@ describe("the sandbox case", () => {
     await rejectsWith(api.addParty(caseId, "witnesses", body), 400, "E07032");
     assert.equal(
       caseFilingErrorMessage(await api.addParty(caseId, "witnesses", body).catch((e) => e)),
-      caseFilingCopy.witnessExists
+      caseFilingCopy.witnessExists,
     );
   });
 
@@ -162,7 +162,7 @@ describe("the sandbox case", () => {
         is_party_in_person: false,
         additional_details: {},
       }),
-      400
+      400,
     );
   });
 
@@ -197,11 +197,11 @@ describe("the sandbox case", () => {
     const read = await api.getCase(caseId);
     assert.deepEqual(
       read.participants.map((p) => [p.role, p.ordinal, p.name_at_filing]),
-      [["COMPLAINANT", 1, "Rajan K. Nair"]]
+      [["COMPLAINANT", 1, "Rajan K. Nair"]],
     );
     assert.deepEqual(
       read.representations.map((r) => r.client_participant_id),
-      [second.participantId]
+      [second.participantId],
     );
     assert.deepEqual(read.poa_mandates, []);
   });
@@ -218,7 +218,10 @@ describe("the sandbox case", () => {
     });
     await api.revokePoaMandate(holder.mandateIds[0]);
     const read = await api.getCase(caseId);
-    assert.equal(read.participants.some((p) => p.role === "POA_HOLDER"), false);
+    assert.equal(
+      read.participants.some((p) => p.role === "POA_HOLDER"),
+      false,
+    );
   });
 
   it("numbers evidence per type and never reuses a removed row's number", async () => {
@@ -246,7 +249,7 @@ describe("the sandbox case", () => {
         caseEvidenceId: cheque.caseEvidenceId,
       }),
       400,
-      "E07030"
+      "E07030",
     );
     // A notice paper links only to a demand notice (E07029).
     const paper = api.uploadDocument(caseId, file, "dispatch.png", "PROOF_OF_DISPATCH", {
@@ -275,7 +278,7 @@ describe("the sandbox case", () => {
     assert.deepEqual(await api.searchAdvocates("K"), []);
     assert.deepEqual(
       (await api.searchAdvocates("k/2204")).map((a) => a.name),
-      ["Thomas Kurian"]
+      ["Thomas Kurian"],
     );
   });
 
@@ -297,7 +300,7 @@ describe("the sandbox case", () => {
         "details.jurisdiction_limitation",
         "details.adr_other_prayer",
         "affidavit",
-      ]
+      ],
     );
 
     await api.addAdvocate(caseId, SANDBOX_ADVOCATES[0].id, [c.participantId]);

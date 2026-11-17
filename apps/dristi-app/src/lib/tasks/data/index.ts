@@ -15,7 +15,8 @@ export type { StoredFile, TasksRepository } from "./repository";
 
 export const getRepository = repositoryFor<TasksRepository>("tasks", {
   sandbox: browserOnly("tasks", () => new IndexedDbTasksRepository()),
-  http: () => new HttpTasksRepository() satisfies OnlyContract<HttpTasksRepository, TasksRepository>,
+  http: () =>
+    new HttpTasksRepository() satisfies OnlyContract<HttpTasksRepository, TasksRepository>,
 });
 
 /** Short, URL-safe id for files and rows. */

@@ -20,6 +20,7 @@ import { CORRECTABLE_SECTIONS } from "@/components/scrutiny/section-body";
 import type { StepId } from "@/lib/filing/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 /**
  * `min-h-10` rather than `h-10`, and the label wraps.
@@ -64,6 +65,7 @@ export function SectionRail({
   onlyFlagged?: boolean;
   className?: string;
 }) {
+  const t = useTranslations();
   const groups: { group: string; steps: FilingStep[] }[] = [];
   for (const s of CORRECTION_STEPS) {
     if (onlyFlagged && countFor(s.id) === 0) continue;
@@ -73,7 +75,10 @@ export function SectionRail({
   }
 
   return (
-    <nav aria-label="Filing sections" className={cn("flex flex-col gap-4 px-2", className)}>
+    <nav
+      aria-label={t("sectionRail_filingSections")}
+      className={cn("flex flex-col gap-4 px-2", className)}
+    >
       {groups.map((g) => (
         <div key={g.group} className="flex w-full flex-col gap-1">
           <h2 className="px-2 text-caption font-medium text-muted-foreground">{g.group}</h2>
@@ -107,7 +112,7 @@ export function SectionRail({
                       <span className="text-caption font-medium tabular-nums text-muted-foreground">
                         {count}
                         <span className="sr-only">
-                          {count === 1 ? " defect" : " defects"}
+                          {count === 1 ? t("sectionRail_defect") : t("sectionRail_defects")}
                         </span>
                       </span>
                     ) : null}

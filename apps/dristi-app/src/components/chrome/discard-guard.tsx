@@ -120,15 +120,15 @@ export type DiscardGuard = ReturnType<typeof useDiscardGuard>;
 
 const COPY = {
   title: {
-    en: "Do you want to discard your progress?",
+    en: "discardGuard_doYouWantToDiscardYour",
     ml: "ഇതുവരെ നൽകിയത് ഉപേക്ഷിക്കണോ?",
   },
   body: {
-    en: "What you've entered here will not be saved.",
+    en: "discardGuard_whatYouveEnteredHereWillNot",
     ml: "ഇതുവരെ നൽകിയ വിവരങ്ങൾ സൂക്ഷിക്കില്ല.",
   },
-  keep: { en: "Keep editing", ml: "തിരുത്തൽ തുടരുക" },
-  discard: { en: "Discard", ml: "ഉപേക്ഷിക്കുക" },
+  keep: { en: "discardGuard_keepEditing", ml: "തിരുത്തൽ തുടരുക" },
+  discard: { en: "discardGuard_discard", ml: "ഉപേക്ഷിക്കുക" },
 } satisfies Record<string, Copy>;
 
 /**

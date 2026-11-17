@@ -58,10 +58,7 @@ function short(day: string): string {
 }
 
 /** Whether this order has already been applied to the application. */
-export function orderApplied(
-  app: LifecycleApplication,
-  key: string,
-): boolean {
+export function orderApplied(app: LifecycleApplication, key: string): boolean {
   return (app.orders ?? []).some((order) => order.key === key);
 }
 
@@ -91,9 +88,7 @@ export function applyApplicationOutcome(
     return null;
   }
   const onboarded = app.status === "pending-decision";
-  const answers: ApplicationOutcome = onboarded
-    ? { ...outcome, onboard: "yes" }
-    : outcome;
+  const answers: ApplicationOutcome = onboarded ? { ...outcome, onboard: "yes" } : outcome;
   if (applicationOutcomeGaps(answers, Boolean(workflow)).length > 0) return null;
 
   const on = order.signedOn;
@@ -109,8 +104,7 @@ export function applyApplicationOutcome(
   }
 
   if (answers.decided === "yes") {
-    const status =
-      answers.onboard === "no" ? "dismissed" : CLOSES[answers.decision || "disposed"];
+    const status = answers.onboard === "no" ? "dismissed" : CLOSES[answers.decision || "disposed"];
     const label = decisionLabel(answers.decision);
     Object.assign(patch, {
       status,
@@ -121,8 +115,7 @@ export function applyApplicationOutcome(
       decisionLabel: label,
       linkedOrder: {
         id: order.id,
-        kind:
-          status === "accepted" ? "accept" : status === "rejected" ? "reject" : "dismiss",
+        kind: status === "accepted" ? "accept" : status === "rejected" ? "reject" : "dismiss",
         text: order.text,
         signedOn: on,
       },

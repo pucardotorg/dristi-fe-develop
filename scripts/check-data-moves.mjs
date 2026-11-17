@@ -72,7 +72,8 @@ export function typeMembers(text, fileName = "module.ts") {
     if (!node) return;
     if (ts.isTypeLiteralNode(node) || ts.isInterfaceDeclaration(node)) {
       for (const member of node.members) {
-        if (!(ts.isPropertySignature(member) || ts.isMethodSignature(member)) || !member.name) continue;
+        if (!(ts.isPropertySignature(member) || ts.isMethodSignature(member)) || !member.name)
+          continue;
         const path = `${prefix}.${member.name.getText(source)}`;
         members.add(path);
         if (ts.isPropertySignature(member)) collect(path, member.type);
@@ -86,7 +87,8 @@ export function typeMembers(text, fileName = "module.ts") {
     } else if (ts.isTypeReferenceNode(node)) {
       for (const argument of node.typeArguments ?? []) collect(prefix, argument);
     } else if (ts.isLiteralTypeNode(node) && !ts.isPrefixUnaryExpression(node.literal)) {
-      if (node.literal.kind !== ts.SyntaxKind.NullKeyword) members.add(`${prefix}=${node.literal.getText(source)}`);
+      if (node.literal.kind !== ts.SyntaxKind.NullKeyword)
+        members.add(`${prefix}=${node.literal.getText(source)}`);
     }
   }
 
@@ -171,7 +173,11 @@ export function countAddedCodeLines(diff) {
 
 function git(args) {
   try {
-    return execFileSync("git", args, { cwd: REPO_ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    return execFileSync("git", args, {
+      cwd: REPO_ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
   } catch {
     return null;
   }
@@ -193,14 +199,16 @@ if (isCli) {
   // PR merged onto the base, so the base itself is right.
   const from = git(["merge-base", ref, "HEAD"])?.trim() || ref;
   const readBase = (path) => git(["show", `${from}:${path}`]);
-  const readCurrent = (path) => (existsSync(join(REPO_ROOT, path)) ? readFileSync(join(REPO_ROOT, path), "utf8") : null);
+  const readCurrent = (path) =>
+    existsSync(join(REPO_ROOT, path)) ? readFileSync(join(REPO_ROOT, path), "utf8") : null;
   const changed = new Set((git(["diff", "--name-only", from]) ?? "").split("\n").filter(Boolean));
 
   const { newData, frozen } = checkDataMoves({
     baseLists: parseExceptionLists(readBase(CONFIG_PATH) ?? ""),
     currentLists: parseExceptionLists(readCurrent(CONFIG_PATH) ?? ""),
     changed,
-    hasDataLayerOnBase: (feature) => git(["cat-file", "-e", `${ref}:${APP_DIR}/src/lib/${feature}/data/repository.ts`]) !== null,
+    hasDataLayerOnBase: (feature) =>
+      git(["cat-file", "-e", `${ref}:${APP_DIR}/src/lib/${feature}/data/repository.ts`]) !== null,
     addedCodeLines: (path) => countAddedCodeLines(git(["diff", "-U0", from, "--", path]) ?? ""),
     readBase,
     readCurrent,

@@ -17,39 +17,24 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import {
-  useLocalStorageValue,
-  writeLocalStorageValue,
-} from "@/hooks/use-local-storage-value";
+import { useLocalStorageValue, writeLocalStorageValue } from "@/hooks/use-local-storage-value";
 import { Button } from "@/components/ui/button";
 import { CONTROL_REVEAL } from "@/components/chrome/motion";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Locale } from "@/lib/onboarding/content";
 import { pick } from "@/lib/onboarding/content";
 import { advHome, fillCopy } from "@/lib/advocate/content";
-import {
-  railCaseLineOf,
-  railGroups,
-  railTasks,
-  type RailGroup,
-} from "@/lib/advocate/home";
+import { railCaseLineOf, railGroups, railTasks, type RailGroup } from "@/lib/advocate/home";
 import { dueCueOf } from "@/lib/tasks/format";
 import { caseOf, summaryOf, type World } from "@/lib/tasks/selectors";
 import type { Task, TaskKind } from "@/lib/tasks/types";
 import { cn } from "@/lib/utils";
 import "./mobile-hearing.css";
 import "./companion-rail.css";
+import { useTranslations } from "next-intl";
 
 /**
  * The companion rail — Gmail's model. A persistent icon strip on the far right
@@ -184,10 +169,7 @@ const RAIL_SECTION_KEY = "dristi.advocate-rail-section";
 /** The closed rail, written down — `null` is not a storable value. */
 const CLOSED = "closed";
 
-export function useRailSection(): [
-  RailSection | null,
-  (next: RailSection | null) => void,
-] {
+export function useRailSection(): [RailSection | null, (next: RailSection | null) => void] {
   // Server render and hydration agree on the default (the store's server
   // snapshot is null); the stored choice takes over immediately after.
   const stored = useLocalStorageValue(RAIL_SECTION_KEY);
@@ -253,21 +235,13 @@ const CARD_TITLE =
  *
  * Used by both panels. That is the entire point of it existing.
  */
-function WhenBlock({
-  lead,
-  sub,
-  tone,
-}: {
-  lead: string;
-  sub?: string;
-  tone: "muted" | "overdue";
-}) {
+function WhenBlock({ lead, sub, tone }: { lead: string; sub?: string; tone: "muted" | "overdue" }) {
   return (
     <span className="flex flex-col items-end gap-0.5 text-right">
       <span
         className={cn(
           "text-caption font-medium whitespace-nowrap tabular-nums",
-          tone === "overdue" ? "text-destructive-ink" : "text-muted-foreground"
+          tone === "overdue" ? "text-destructive-ink" : "text-muted-foreground",
         )}
       >
         {lead}
@@ -289,8 +263,10 @@ function caseNumberOf(world: World, task: Task | undefined): string | undefined 
 }
 
 function groupLabel(locale: Locale, group: TaskPanelGroup): string {
-  if (group.key === "related") return pick({ en: "Other tasks for this case", ml: "ഈ കേസിന്റെ മറ്റ് ജോലികൾ" }, locale);
-  if (group.key === "hearing") return pick({ en: "For this case", ml: "ഈ കേസിന്" }, locale);
+  if (group.key === "related")
+    return pick({ en: "companionRail_otherTasksForThisCase", ml: "ഈ കേസിന്റെ മറ്റ് ജോലികൾ" }, locale);
+  if (group.key === "hearing")
+    return pick({ en: "companionRail_forThisCase", ml: "ഈ കേസിന്" }, locale);
   if (group.key === "today") return pick(advHome.groupToday, locale);
   return pick(advHome.groupSoon, locale);
 }
@@ -326,9 +302,7 @@ function PanelHeader({
           <X aria-hidden="true" />
         </Button>
       </div>
-      {caption ? (
-        <p className="text-caption text-muted-foreground">{caption}</p>
-      ) : null}
+      {caption ? <p className="text-caption text-muted-foreground">{caption}</p> : null}
     </div>
   );
 }
@@ -357,7 +331,7 @@ function BucketTrigger({
         "group/bucket flex min-h-10 w-full shrink-0 items-center gap-2 rounded-lg border px-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         lead
           ? "border-warning/20 bg-warning-muted/40 hover:bg-warning-muted/70"
-          : "border-hairline bg-surface-sunken hover:bg-accent-strong"
+          : "border-hairline bg-surface-sunken hover:bg-accent-strong",
       )}
     >
       <span className={cn("flex min-w-0 flex-col items-start", sub && "py-2")}>
@@ -366,7 +340,7 @@ function BucketTrigger({
             className={cn(
               /* Sentence case, as every heading in the product (owner, Oct 8). */
               "text-caption font-semibold",
-              lead ? "text-warning-ink" : "text-muted-foreground"
+              lead ? "text-warning-ink" : "text-muted-foreground",
             )}
           >
             {label}
@@ -374,7 +348,7 @@ function BucketTrigger({
           <span
             className={cn(
               "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-caption font-semibold tabular-nums",
-              lead ? "bg-warning-muted text-warning-ink" : "bg-accent-strong text-muted-foreground"
+              lead ? "bg-warning-muted text-warning-ink" : "bg-accent-strong text-muted-foreground",
             )}
           >
             {count}
@@ -391,7 +365,7 @@ function BucketTrigger({
         aria-hidden="true"
         className={cn(
           "ml-auto size-4 transition-transform group-data-open/bucket:rotate-180",
-          lead ? "text-warning-ink" : "text-muted-foreground"
+          lead ? "text-warning-ink" : "text-muted-foreground",
         )}
       />
     </CollapsibleTrigger>
@@ -433,6 +407,7 @@ function TaskCard({
   /** When set, this card is being traced — the stroke runs, keyed by the nonce. */
   traceNonce?: number | null;
 }) {
+  const t = useTranslations();
   const Icon = KIND_ICON[task.kind];
   const due = dueCueOf(task, new Date(world.now));
   const dense = RAIL_VARIANT === "B";
@@ -442,7 +417,10 @@ function TaskCard({
   if (sheet) {
     return (
       <Collapsible open={open} onOpenChange={setOpen}>
-        <div className={cn(CARD_A, "relative z-10")} data-task-trace={traceNonce != null ? "1" : undefined}>
+        <div
+          className={cn(CARD_A, "relative z-10")}
+          data-task-trace={traceNonce != null ? "1" : undefined}
+        >
           {traceNonce != null ? <TaskTraceRing key={traceNonce} nonce={traceNonce} /> : null}
           <span aria-hidden="true" className={CARD_ICON_A}>
             <Icon className="size-4" />
@@ -460,8 +438,16 @@ function TaskCard({
               </span>
             ) : null}
           </div>
-          <span aria-hidden="true" className="flex size-5 shrink-0 items-center justify-center self-center rounded-full border border-border bg-accent-strong text-muted-foreground">
-            <ChevronDown className={cn("size-3.5 transition-transform duration-200 motion-reduce:transition-none", open && "rotate-180")} />
+          <span
+            aria-hidden="true"
+            className="flex size-5 shrink-0 items-center justify-center self-center rounded-full border border-border bg-accent-strong text-muted-foreground"
+          >
+            <ChevronDown
+              className={cn(
+                "size-3.5 transition-transform duration-200 motion-reduce:transition-none",
+                open && "rotate-180",
+              )}
+            />
           </span>
         </div>
         <CollapsibleContent className="hearing-reveal mx-3 overflow-hidden">
@@ -470,8 +456,13 @@ function TaskCard({
               <span className="truncate">{verb}</span>
             </Button>
             {onArchive ? (
-              <Button variant="outline" className="shrink-0 border-transparent bg-card" onClick={() => onArchive(task)}>
-                <Archive aria-hidden="true" />Archive
+              <Button
+                variant="outline"
+                className="shrink-0 border-transparent bg-card"
+                onClick={() => onArchive(task)}
+              >
+                <Archive aria-hidden="true" />
+                {t("companionRail_archive")}
               </Button>
             ) : null}
           </div>
@@ -481,10 +472,7 @@ function TaskCard({
   }
 
   return (
-    <div
-      className={dense ? ROW_B : CARD_A}
-      data-task-trace={traceNonce != null ? "1" : undefined}
-    >
+    <div className={dense ? ROW_B : CARD_A} data-task-trace={traceNonce != null ? "1" : undefined}>
       {traceNonce != null ? <TaskTraceRing key={traceNonce} nonce={traceNonce} /> : null}
       {dense ? (
         <span aria-hidden="true" className="mt-0.5 shrink-0 text-muted-foreground">
@@ -497,12 +485,7 @@ function TaskCard({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col items-stretch gap-0.5">
-        <button
-          type="button"
-          onClick={() => onAct(task)}
-          title={task.title}
-          className={CARD_TITLE}
-        >
+        <button type="button" onClick={() => onAct(task)} title={task.title} className={CARD_TITLE}>
           {task.title}
         </button>
         <span className="w-full text-caption break-words text-muted-foreground md:truncate md:pointer-coarse:overflow-visible md:pointer-coarse:whitespace-normal">
@@ -555,7 +538,11 @@ function TaskCard({
         </span>
         {/* Touch: no hover, so Archive stands on its own. */}
         {onArchive ? (
-          <ArchiveButton task={task} onArchive={onArchive} className="size-10 md:hidden md:pointer-coarse:flex" />
+          <ArchiveButton
+            task={task}
+            onArchive={onArchive}
+            className="size-10 md:hidden md:pointer-coarse:flex"
+          />
         ) : null}
       </div>
     </div>
@@ -571,18 +558,19 @@ function ArchiveButton({
   onArchive: (task: Task) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <button
       type="button"
-      aria-label={`Archive: ${task.title}`}
-      title="Archive"
+      aria-label={t("companionRail_archiveTitle", { title: task.title })}
+      title={t("companionRail_archive")}
       onClick={(event) => {
         event.stopPropagation();
         onArchive(task);
       }}
       className={cn(
         "relative z-10 flex shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent-strong hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none",
-        className
+        className,
       )}
     >
       <Archive aria-hidden="true" className="size-4" />
@@ -615,10 +603,13 @@ function TaskBucket({
   const traceNonce = hasTrace ? highlight?.nonce : undefined;
   // A reader's choice lasts until a new targeted alert arrives. Deriving this
   // from the request avoids a post-paint reopen and still permits manual collapse.
-  const [manual, setManual] = React.useState<{ nonce: number | undefined; open: boolean } | null>(null);
-  const open = manual && manual.nonce === traceNonce
-    ? manual.open
-    : group.key === "today" || group.key === "hearing" || hasTrace;
+  const [manual, setManual] = React.useState<{ nonce: number | undefined; open: boolean } | null>(
+    null,
+  );
+  const open =
+    manual && manual.nonce === traceNonce
+      ? manual.open
+      : group.key === "today" || group.key === "hearing" || hasTrace;
 
   return (
     <Collapsible
@@ -644,11 +635,7 @@ function TaskBucket({
                 verb={verbOf(task)}
                 onAct={onAct}
                 onArchive={onArchive}
-                traceNonce={
-                  highlight && matchesHighlight(task, highlight)
-                    ? highlight.nonce
-                    : null
-                }
+                traceNonce={highlight && matchesHighlight(task, highlight) ? highlight.nonce : null}
               />
             </li>
           ))}
@@ -680,7 +667,9 @@ function TasksPanel({
   const now = Number(new Date(world.now));
   const baseGroups: TaskPanelGroup[] = railGroups(world, now);
   const visibleIds = new Set(baseGroups.flatMap((group) => group.tasks.map((task) => task.id)));
-  const related = railTasks(world).filter((task) => matchesHighlight(task, highlight) && !visibleIds.has(task.id));
+  const related = railTasks(world).filter(
+    (task) => matchesHighlight(task, highlight) && !visibleIds.has(task.id),
+  );
   const count = summaryOf(world).action;
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const nonce = highlight?.nonce ?? null;
@@ -703,21 +692,24 @@ function TasksPanel({
   React.useEffect(() => {
     if (nonce == null) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => {
-      const box = scrollRef.current;
-      if (box) {
-        box.scrollTop = 0;
-        firstRects.current = reduced
-          ? null
-          : new Map(
-              [...box.querySelectorAll<HTMLElement>("[data-task-id]")].map((el) => [
-                el.dataset.taskId as string,
-                el.getBoundingClientRect(),
-              ])
-            );
-      }
-      setPinned(nonce);
-    }, reduced ? 0 : 450);
+    const timer = window.setTimeout(
+      () => {
+        const box = scrollRef.current;
+        if (box) {
+          box.scrollTop = 0;
+          firstRects.current = reduced
+            ? null
+            : new Map(
+                [...box.querySelectorAll<HTMLElement>("[data-task-id]")].map((el) => [
+                  el.dataset.taskId as string,
+                  el.getBoundingClientRect(),
+                ]),
+              );
+        }
+        setPinned(nonce);
+      },
+      reduced ? 0 : 450,
+    );
     return () => window.clearTimeout(timer);
   }, [nonce]);
 
@@ -735,7 +727,10 @@ function TasksPanel({
         const from = first.get(el.dataset.taskId as string);
         const keyframes = from
           ? [{ transform: `translateY(${from.top - last.top}px)` }, { transform: "translateY(0)" }]
-          : [{ transform: "translateY(16px)", opacity: 0 }, { transform: "translateY(0)", opacity: 1 }];
+          : [
+              { transform: "translateY(16px)", opacity: 0 },
+              { transform: "translateY(0)", opacity: 1 },
+            ];
         if (from && Math.abs(from.top - last.top) < 1) return;
         el.animate(keyframes, { duration: DURATION, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
       });
@@ -765,16 +760,23 @@ function TasksPanel({
       <TaskTraceStyles />
       <PanelHeader
         title={pick(advHome.railTitle, locale)}
-        caption={related.length ? pick({ en: "Due in the next 3 days and tasks for this case", ml: "അടുത്ത 3 ദിവസത്തെ ജോലികളും ഈ കേസിന്റെ ജോലികളും" }, locale) : pick(advHome.railScope, locale)}
+        caption={
+          related.length
+            ? pick(
+                {
+                  en: "companionRail_dueInTheNext3Days",
+                  ml: "അടുത്ത 3 ദിവസത്തെ ജോലികളും ഈ കേസിന്റെ ജോലികളും",
+                },
+                locale,
+              )
+            : pick(advHome.railScope, locale)
+        }
         locale={locale}
         onClose={onClose}
       />
 
       {groups.length ? (
-        <div
-          ref={scrollRef}
-          className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-3 pb-3"
-        >
+        <div ref={scrollRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto px-3 pb-3">
           {groups.map((group) => (
             <TaskBucket
               key={group.key}
@@ -793,9 +795,7 @@ function TasksPanel({
         </div>
       ) : (
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 pb-8 text-center">
-          <p className="text-body-compact font-medium">
-            {pick(advHome.railEmptyTitle, locale)}
-          </p>
+          <p className="text-body-compact font-medium">{pick(advHome.railEmptyTitle, locale)}</p>
           <p className="text-caption text-muted-foreground">
             {pick(advHome.railEmptyBody, locale)}
           </p>
@@ -844,7 +844,7 @@ function StripButton({
             "relative flex size-10 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             active
               ? "bg-brand-muted text-brand-muted-foreground"
-              : "text-muted-foreground hover:bg-accent-strong"
+              : "text-muted-foreground hover:bg-accent-strong",
           )}
         >
           {/* The open section is marked twice over: the tinted tile, and a brand
@@ -867,7 +867,7 @@ function StripButton({
                   : // Substantial hearings ahead is a tally, not a warning. On the
                     // rail's own sunken fill a neutral pill has to rise to read at
                     // all — the card step, with a hairline to hold its edge.
-                    "bg-card font-medium text-muted-foreground ring-1 ring-hairline dark:bg-surface-raised"
+                    "bg-card font-medium text-muted-foreground ring-1 ring-hairline dark:bg-surface-raised",
               )}
             >
               {count}
@@ -912,7 +912,7 @@ function PendingTasksTab({
           onClick={onToggle}
           className={cn(
             "group/tasktab relative flex size-12 items-center justify-center transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-            open ? "text-brand-muted-foreground" : "text-muted-foreground"
+            open ? "text-brand-muted-foreground" : "text-muted-foreground",
           )}
         >
           <TaskTabShape accent={accent} />
@@ -921,7 +921,10 @@ function PendingTasksTab({
           <span className="relative mr-2">
             <ListChecks aria-hidden="true" className="size-5" />
             {count ? (
-              <span aria-hidden="true" className="absolute -top-2 -right-2.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-caption text-destructive-foreground tabular-nums">
+              <span
+                aria-hidden="true"
+                className="absolute -top-2 -right-2.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-caption text-destructive-foreground tabular-nums"
+              >
                 {count}
               </span>
             ) : null}
@@ -989,7 +992,7 @@ function useMediaQuery(query: string): boolean {
       return () => media.removeEventListener("change", callback);
     },
     () => window.matchMedia(query).matches,
-    () => false
+    () => false,
   );
 }
 
@@ -1068,14 +1071,20 @@ export function CompanionRail({
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
     if (e.button !== 0 || !panelRef.current) return;
-    dragFrom.current = { x: e.clientX, width, unit: panelRef.current.getBoundingClientRect().width / width };
+    dragFrom.current = {
+      x: e.clientX,
+      width,
+      unit: panelRef.current.getBoundingClientRect().width / width,
+    };
     setDragging(width);
     e.currentTarget.setPointerCapture(e.pointerId);
   }
   function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!dragFrom.current) return;
     // The panel sits on the right, so dragging left grows it.
-    setDragging(clamp(dragFrom.current.width + (dragFrom.current.x - e.clientX) / dragFrom.current.unit));
+    setDragging(
+      clamp(dragFrom.current.width + (dragFrom.current.x - e.clientX) / dragFrom.current.unit),
+    );
   }
   function onPointerUp() {
     if (dragFrom.current && dragging !== null) commitWidth(dragging);
@@ -1087,10 +1096,16 @@ export function CompanionRail({
     setDragging(null);
   }
   function onHandleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    const next = e.key === "ArrowLeft" ? width + 4
-      : e.key === "ArrowRight" ? width - 4
-      : e.key === "Home" ? MIN_WIDTH
-      : e.key === "End" ? MAX_WIDTH : null;
+    const next =
+      e.key === "ArrowLeft"
+        ? width + 4
+        : e.key === "ArrowRight"
+          ? width - 4
+          : e.key === "Home"
+            ? MIN_WIDTH
+            : e.key === "End"
+              ? MAX_WIDTH
+              : null;
     if (e.key === "Escape") cancelResize();
     if (next !== null) {
       e.preventDefault();
@@ -1128,172 +1143,198 @@ export function CompanionRail({
   const finishClose = () => {
     // The collapsed panel is inert; return a focused close/resize control to
     // the persistent tab before hiding its subtree.
-    if (panelRef.current?.contains(document.activeElement)) taskTabRef.current?.focus({ preventScroll: true });
+    if (panelRef.current?.contains(document.activeElement))
+      taskTabRef.current?.focus({ preventScroll: true });
     onSectionChange(null);
   };
   const close = () => {
     const el = asideRef.current;
     if (!stripless || asSheet || !el || reduced()) return finishClose();
-    el.animate([{ width: `${el.offsetWidth}px` }, { width: "0px" }], { ...slide, duration: 300, fill: "forwards" })
-      .onfinish = (event) => {
-        finishClose();
-        (event.target as Animation).cancel();
-      };
+    el.animate([{ width: `${el.offsetWidth}px` }, { width: "0px" }], {
+      ...slide,
+      duration: 300,
+      fill: "forwards",
+    }).onfinish = (event) => {
+      finishClose();
+      (event.target as Animation).cancel();
+    };
   };
 
   return (
     <>
-    <aside
-      aria-label={pick(advHome.railTitle, locale)}
-      data-closed={stripless && !section}
-      style={{ top: topOffset, height: `calc(100svh - ${topOffset})`, "--rail-peek-duration": `${CONTROL_REVEAL.duration}ms`, "--rail-peek-easing": CONTROL_REVEAL.easing } as React.CSSProperties}
-      // The strip, and the panel pushing the board aside, belong to wide mouse-driven
-      // screens only; a phone or tablet gets the floating button and the sheet.
-      className={cn(
-        "pending-tasks-rail sticky hidden shrink-0 self-start bg-card dark:bg-background",
-        !asSheet && (!stripless || section) && "md:flex",
-        // Stripless, the rail is always there, zero wide while closed, so the
-        // side tab on its left edge rests on the screen edge and rides out with
-        // the panel when it opens.
-        stripless ? !asSheet && "z-20 md:flex" : "border-l border-hairline",
-        stripless && section && "border-l border-hairline"
-      )}
-    >
-      {stripless && !asSheet && section ? (
-        // The lit edge as two runs over the rail's seam, above and below the
-        // side tab; the tab's outline lights in the gap, so the light goes
-        // around the tab rather than through it.
-        <>
-          <span
-            aria-hidden="true"
-            style={{ left: -1, height: tabTop - TASK_TAB_FOOT }}
-            className={cn("pointer-events-none absolute top-0 z-30 w-0.5 transition-colors", edgeHot || dragging !== null ? "bg-brand-accent" : "bg-transparent")}
-          />
-          <span
-            aria-hidden="true"
-            style={{ left: -1, top: tabTop + TASK_TAB_BODY + TASK_TAB_FOOT }}
-            className={cn("pointer-events-none absolute bottom-0 z-30 w-0.5 transition-colors", edgeHot || dragging !== null ? "bg-brand-accent" : "bg-transparent")}
-          />
-        </>
-      ) : null}
-      {stripless && !asSheet ? (
-        // An absolute child is placed from the rail's padding box, which starts
-        // just inside its 1px seam: `right-full` lays the tab's body over the seam
-        // and lands the feet's strokes on the seam's centre line.
-        <div
-          // Above the peek, so the tab covers the peek's edge as it covers the
-          // open panel's seam.
-          className="pending-rail-trigger absolute right-full z-10 cursor-pointer"
-          style={{ top: tabTop, filter: TASK_TAB_SHADOW }}
-          onClick={(event) => {
-            // Keep the original outer-edge hit area clickable after the tab
-            // moves inward. Native button clicks already call onToggle.
-            if (event.target !== event.currentTarget) return;
-            if (section) close();
-            else onSectionChange("tasks");
-          }}
-        >
-          <div className="pending-rail-tab">
-            <PendingTasksTab
-              buttonRef={taskTabRef}
-              count={tasksCount}
-              label={fillCopy(advHome.railOpen, locale, { n: String(tasksCount) })}
-              open={section === "tasks"}
-              accent={(edgeHot || dragging !== null) && section === "tasks"}
-              onToggle={() => (section ? close() : onSectionChange("tasks"))}
-            />
-          </div>
-        </div>
-      ) : null}
-      {stripless && !asSheet && !section ? (
-        // A clipped glimpse of the panel edge. It never reserves layout space,
-        // exposes task actions, or changes the saved open/closed preference.
-        // The clip runs 8px past the sliver so the edge's shadow is not cut off.
-        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-6 overflow-hidden">
-          <div className="pending-rail-peek ml-2 h-full w-4 border-l border-hairline bg-card dark:bg-background" />
-        </div>
-      ) : null}
-      <div
-        ref={asideRef}
-        inert={stripless && !section ? true : undefined}
-        aria-hidden={stripless && !section ? true : undefined}
-        className={cn("flex h-full", stripless && "overflow-hidden")}
-        style={stripless && !section ? { width: 0 } : undefined}
-      >
-      {/* Stripless, the panel stays built while the rail is hidden, so a click
-          starts the slide at once instead of waiting on the list to render. */}
-      {(section || stripless) && !asSheet ? (
-        <div
-          // Keyed by section so opening the strip — or switching panels — plays a
-          // short slide-and-fade rather than snapping in, the same easing the case
-          // peek uses. Motion is suppressed for reduced-motion readers.
-          key={stripless ? "tasks" : section}
-          ref={panelRef}
-          className={cn("relative flex h-full shrink-0", !stripless && "duration-200 ease-out animate-in fade-in-0 slide-in-from-right-4 motion-reduce:animate-none")}
-          style={{ width: `calc(var(--spacing) * ${width})` }}
-        >
-          {/* The resize handle: an invisible grab strip on the panel's edge with
-              a visible thumb on hover — drag, or arrows when focused. */}
-          <div
-            role="separator"
-            aria-orientation="vertical"
-            aria-valuemin={MIN_WIDTH}
-            aria-valuemax={MAX_WIDTH}
-            aria-valuenow={width}
-            aria-label={pick(advHome.railResize, locale)}
-            tabIndex={0}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={cancelResize}
-            onLostPointerCapture={cancelResize}
-            onKeyDown={onHandleKeyDown}
-            onPointerEnter={() => setEdgeHot(true)}
-            onPointerLeave={() => setEdgeHot(dragging !== null)}
-            onFocus={() => setEdgeHot(true)}
-            onBlur={() => setEdgeHot(false)}
-            className="group/handle absolute inset-y-0 left-0 z-10 w-2 touch-none cursor-col-resize outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-          >
-            {stripless ? null : (
-              <span
-                aria-hidden="true"
-                className="absolute inset-y-0 left-0 w-0.5 bg-transparent transition-colors group-hover/handle:bg-brand-accent group-focus-visible/handle:bg-brand-accent"
-              />
-            )}
-          </div>
-
-          <TasksPanel
-            world={world}
-            locale={locale}
-            verbOf={verbOf}
-            onAct={onAct}
-            onArchive={onArchive}
-            onClose={close}
-            onViewAll={onViewAllTasks}
-            highlight={highlight}
-          />
-        </div>
-      ) : null}
-      </div>
-
-      {/* The strip — always present, the one section's icon. The seam only
-          appears once the panel stands beside it. */}
-      {stripless ? null : <div
+      <aside
+        aria-label={pick(advHome.railTitle, locale)}
+        data-closed={stripless && !section}
+        style={
+          {
+            top: topOffset,
+            height: `calc(100svh - ${topOffset})`,
+            "--rail-peek-duration": `${CONTROL_REVEAL.duration}ms`,
+            "--rail-peek-easing": CONTROL_REVEAL.easing,
+          } as React.CSSProperties
+        }
+        // The strip, and the panel pushing the board aside, belong to wide mouse-driven
+        // screens only; a phone or tablet gets the floating button and the sheet.
         className={cn(
-          "flex w-14 flex-col items-center gap-2 pt-4",
-          section && "border-l border-hairline"
+          "pending-tasks-rail sticky hidden shrink-0 self-start bg-card dark:bg-background",
+          !asSheet && (!stripless || section) && "md:flex",
+          // Stripless, the rail is always there, zero wide while closed, so the
+          // side tab on its left edge rests on the screen edge and rides out with
+          // the panel when it opens.
+          stripless ? !asSheet && "z-20 md:flex" : "border-l border-hairline",
+          stripless && section && "border-l border-hairline",
         )}
       >
-        <StripButton
-          icon={ListChecks}
-          label={fillCopy(advHome.railOpen, locale, { n: String(tasksCount) })}
-          count={tasksCount}
-          countTone="destructive"
-          active={section === "tasks"}
-          onClick={() => toggle("tasks")}
-        />
-      </div>}
-    </aside>
+        {stripless && !asSheet && section ? (
+          // The lit edge as two runs over the rail's seam, above and below the
+          // side tab; the tab's outline lights in the gap, so the light goes
+          // around the tab rather than through it.
+          <>
+            <span
+              aria-hidden="true"
+              style={{ left: -1, height: tabTop - TASK_TAB_FOOT }}
+              className={cn(
+                "pointer-events-none absolute top-0 z-30 w-0.5 transition-colors",
+                edgeHot || dragging !== null ? "bg-brand-accent" : "bg-transparent",
+              )}
+            />
+            <span
+              aria-hidden="true"
+              style={{ left: -1, top: tabTop + TASK_TAB_BODY + TASK_TAB_FOOT }}
+              className={cn(
+                "pointer-events-none absolute bottom-0 z-30 w-0.5 transition-colors",
+                edgeHot || dragging !== null ? "bg-brand-accent" : "bg-transparent",
+              )}
+            />
+          </>
+        ) : null}
+        {stripless && !asSheet ? (
+          // An absolute child is placed from the rail's padding box, which starts
+          // just inside its 1px seam: `right-full` lays the tab's body over the seam
+          // and lands the feet's strokes on the seam's centre line.
+          <div
+            // Above the peek, so the tab covers the peek's edge as it covers the
+            // open panel's seam.
+            className="pending-rail-trigger absolute right-full z-10 cursor-pointer"
+            style={{ top: tabTop, filter: TASK_TAB_SHADOW }}
+            onClick={(event) => {
+              // Keep the original outer-edge hit area clickable after the tab
+              // moves inward. Native button clicks already call onToggle.
+              if (event.target !== event.currentTarget) return;
+              if (section) close();
+              else onSectionChange("tasks");
+            }}
+          >
+            <div className="pending-rail-tab">
+              <PendingTasksTab
+                buttonRef={taskTabRef}
+                count={tasksCount}
+                label={fillCopy(advHome.railOpen, locale, { n: String(tasksCount) })}
+                open={section === "tasks"}
+                accent={(edgeHot || dragging !== null) && section === "tasks"}
+                onToggle={() => (section ? close() : onSectionChange("tasks"))}
+              />
+            </div>
+          </div>
+        ) : null}
+        {stripless && !asSheet && !section ? (
+          // A clipped glimpse of the panel edge. It never reserves layout space,
+          // exposes task actions, or changes the saved open/closed preference.
+          // The clip runs 8px past the sliver so the edge's shadow is not cut off.
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 right-0 w-6 overflow-hidden"
+          >
+            <div className="pending-rail-peek ml-2 h-full w-4 border-l border-hairline bg-card dark:bg-background" />
+          </div>
+        ) : null}
+        <div
+          ref={asideRef}
+          inert={stripless && !section ? true : undefined}
+          aria-hidden={stripless && !section ? true : undefined}
+          className={cn("flex h-full", stripless && "overflow-hidden")}
+          style={stripless && !section ? { width: 0 } : undefined}
+        >
+          {/* Stripless, the panel stays built while the rail is hidden, so a click
+          starts the slide at once instead of waiting on the list to render. */}
+          {(section || stripless) && !asSheet ? (
+            <div
+              // Keyed by section so opening the strip — or switching panels — plays a
+              // short slide-and-fade rather than snapping in, the same easing the case
+              // peek uses. Motion is suppressed for reduced-motion readers.
+              key={stripless ? "tasks" : section}
+              ref={panelRef}
+              className={cn(
+                "relative flex h-full shrink-0",
+                !stripless &&
+                  "duration-200 ease-out animate-in fade-in-0 slide-in-from-right-4 motion-reduce:animate-none",
+              )}
+              style={{ width: `calc(var(--spacing) * ${width})` }}
+            >
+              {/* The resize handle: an invisible grab strip on the panel's edge with
+              a visible thumb on hover — drag, or arrows when focused. */}
+              <div
+                role="separator"
+                aria-orientation="vertical"
+                aria-valuemin={MIN_WIDTH}
+                aria-valuemax={MAX_WIDTH}
+                aria-valuenow={width}
+                aria-label={pick(advHome.railResize, locale)}
+                tabIndex={0}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={cancelResize}
+                onLostPointerCapture={cancelResize}
+                onKeyDown={onHandleKeyDown}
+                onPointerEnter={() => setEdgeHot(true)}
+                onPointerLeave={() => setEdgeHot(dragging !== null)}
+                onFocus={() => setEdgeHot(true)}
+                onBlur={() => setEdgeHot(false)}
+                className="group/handle absolute inset-y-0 left-0 z-10 w-2 touch-none cursor-col-resize outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              >
+                {stripless ? null : (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-y-0 left-0 w-0.5 bg-transparent transition-colors group-hover/handle:bg-brand-accent group-focus-visible/handle:bg-brand-accent"
+                  />
+                )}
+              </div>
+
+              <TasksPanel
+                world={world}
+                locale={locale}
+                verbOf={verbOf}
+                onAct={onAct}
+                onArchive={onArchive}
+                onClose={close}
+                onViewAll={onViewAllTasks}
+                highlight={highlight}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* The strip — always present, the one section's icon. The seam only
+          appears once the panel stands beside it. */}
+        {stripless ? null : (
+          <div
+            className={cn(
+              "flex w-14 flex-col items-center gap-2 pt-4",
+              section && "border-l border-hairline",
+            )}
+          >
+            <StripButton
+              icon={ListChecks}
+              label={fillCopy(advHome.railOpen, locale, { n: String(tasksCount) })}
+              count={tasksCount}
+              countTone="destructive"
+              active={section === "tasks"}
+              onClick={() => toggle("tasks")}
+            />
+          </div>
+        )}
+      </aside>
 
       {/* On a phone the rail has no room to stand beside the board, so it becomes a
           bottom-sheet Drawer: opened by a hearing's blocking-task flag (with the
@@ -1303,7 +1344,11 @@ export function CompanionRail({
         aria-label={fillCopy(advHome.railOpen, locale, { n: String(tasksCount) })}
         onClick={() => setMobileOpen(true)}
         style={{ bottom: "calc(env(safe-area-inset-bottom) + var(--spacing) * 4)" }}
-        className={cn("fixed right-4 z-40 flex size-12 items-center justify-center rounded-full border border-hairline bg-card text-muted-foreground shadow-modal transition-colors hover:bg-accent", !asSheet && "md:hidden", mobileOpen && "hidden")}
+        className={cn(
+          "fixed right-4 z-40 flex size-12 items-center justify-center rounded-full border border-hairline bg-card text-muted-foreground shadow-modal transition-colors hover:bg-accent",
+          !asSheet && "md:hidden",
+          mobileOpen && "hidden",
+        )}
       >
         <ListChecks aria-hidden="true" className="size-5" />
         {tasksCount ? (
@@ -1313,24 +1358,21 @@ export function CompanionRail({
         ) : null}
       </button>
 
-      <Drawer
-        open={asSheet && mobileOpen}
-        onOpenChange={setMobileOpen}
-      >
+      <Drawer open={asSheet && mobileOpen} onOpenChange={setMobileOpen}>
         <DrawerContent style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
           <DrawerTitle className="sr-only">{pick(advHome.railTitle, locale)}</DrawerTitle>
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <SheetModeContext.Provider value={true}>
-            <TasksPanel
-              world={world}
-              locale={locale}
-              verbOf={verbOf}
-              onAct={onAct}
-              onArchive={onArchive}
-              onClose={() => setMobileOpen(false)}
-              onViewAll={onViewAllTasks}
-              highlight={highlight}
-            />
+              <TasksPanel
+                world={world}
+                locale={locale}
+                verbOf={verbOf}
+                onAct={onAct}
+                onArchive={onArchive}
+                onClose={() => setMobileOpen(false)}
+                onViewAll={onViewAllTasks}
+                highlight={highlight}
+              />
             </SheetModeContext.Provider>
           </div>
         </DrawerContent>

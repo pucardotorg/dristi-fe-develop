@@ -12,12 +12,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
+import { useTranslations } from "next-intl";
 
 /**
  * The bundle's index.
@@ -47,15 +44,16 @@ export function IndexRail({
   /** Only the documents behind the returned items, on the Changes tab. */
   onlyDocs?: string[] | null;
 }) {
+  const t = useTranslations();
   return (
     <aside
       className="flex h-full flex-col overflow-hidden bg-card"
-      aria-label="Document index"
+      aria-label={t("indexRail_documentIndex")}
     >
       {/* The same chrome bar the bundle and fields panels carry — `h-14`, a hairline
           seam below it — so all three pane headers line up across the workbench. */}
       <div className="flex h-14 shrink-0 items-center border-b border-hairline px-4">
-        <b className="text-body-compact font-semibold">Index</b>
+        <b className="text-body-compact font-semibold">{t("indexRail_index")}</b>
       </div>
       {/* The row content sits on the 16px line — aligned with the "Index" header above and
           the fields panel's own 16px margin — while the row fill is a gentler 8px pill, so
@@ -94,15 +92,15 @@ export function IndexSheet({
   onGoToDoc: (docId: string) => void;
   onlyDocs?: string[] | null;
 }) {
+  const t = useTranslations();
   const { bundle } = useScrutinyCase();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="data-[side=right]:sm:max-w-100">
         <SheetHeader>
-          <SheetTitle>Documents</SheetTitle>
+          <SheetTitle>{t("indexRail_documents")}</SheetTitle>
           <SheetDescription>
-            {bundle.length} documents in this bundle. Picking one opens it in the
-            bundle.
+            {t("indexRail_lengthDocumentsInThisBundlePicking", { length: String(bundle.length) })}
           </SheetDescription>
         </SheetHeader>
 
@@ -134,6 +132,7 @@ function IndexRows({
   onGoToDoc: (docId: string) => void;
   onlyDocs: string[] | null;
 }) {
+  const t = useTranslations();
   const { bundle, returned, fieldById } = useScrutinyCase();
   const replaced = replacedDocs(returned, fieldById);
   const shown = onlyDocs ? bundle.filter((doc) => onlyDocs.includes(doc.id)) : bundle;
@@ -142,7 +141,7 @@ function IndexRows({
       {/* Said, so a short index reads as a choice and not as a bundle gone missing. */}
       {onlyDocs ? (
         <p className="px-2 pb-1 text-caption font-medium text-muted-foreground">
-          Documents behind the errors marked. Full filing shows all {bundle.length}.
+          {t("indexRail_documentsBehindTheErrorsMarkedFull", { length: String(bundle.length) })}
         </p>
       ) : null}
       {shown.map((doc) => {
@@ -186,12 +185,13 @@ function IndexRows({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge variant="info" className="shrink-0">
-                    New
-                    <span className="sr-only"> upload this round</span>
+                    {t.rich("indexRail_newUploadThisRound", {
+                      span: (chunks) => <span className="sr-only">{chunks}</span>,
+                    })}
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Re-uploaded on {replaced[doc.id].answered}
+                  {t("indexRail_reUploadedOnAnswered", { answered: replaced[doc.id].answered })}
                 </TooltipContent>
               </Tooltip>
             ) : null}
@@ -200,12 +200,10 @@ function IndexRows({
                 <TooltipTrigger asChild>
                   <Badge variant="warning" className="shrink-0">
                     <span aria-hidden="true">!</span>
-                    <span className="sr-only">poor scan</span>
+                    <span className="sr-only">{t("indexRail_poorScan")}</span>
                   </Badge>
                 </TooltipTrigger>
-                <TooltipContent>
-                  Poor scan — may be blurred or missing pages
-                </TooltipContent>
+                <TooltipContent>{t("indexRail_poorScanMayBeBlurredOr")}</TooltipContent>
               </Tooltip>
             ) : null}
           </Button>

@@ -57,9 +57,7 @@ function subscribe(cb: () => void): () => void {
 
 function listSnapshot(): Vakalatnama[] {
   if (listCacheVersion !== version) {
-    listCache = Object.values(ensure()).sort((a, b) =>
-      b.updatedAt.localeCompare(a.updatedAt)
-    );
+    listCache = Object.values(ensure()).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     listCacheVersion = version;
   }
   return listCache;
@@ -81,7 +79,7 @@ export function useStoreReady(): boolean {
   return React.useSyncExternalStore(
     subscribe,
     () => db !== null,
-    () => false
+    () => false,
   );
 }
 
@@ -94,7 +92,7 @@ export function createVak(creatorRole: CreatorRole): string {
 
 export function updateVak(
   id: string,
-  patch: Partial<Vakalatnama> | ((prev: Vakalatnama) => Vakalatnama)
+  patch: Partial<Vakalatnama> | ((prev: Vakalatnama) => Vakalatnama),
 ): void {
   const d = ensure();
   const prev = d[id];

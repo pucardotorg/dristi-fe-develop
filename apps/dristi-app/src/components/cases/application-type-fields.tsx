@@ -9,11 +9,7 @@ import { RichTextField } from "@/components/cases/rich-text-field";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -45,10 +41,7 @@ import {
   type CaseLitigant,
   type PersonOption,
 } from "@/lib/cases/application-options";
-import {
-  applicationsFile,
-  submissionTypeLabel,
-} from "@/lib/cases/applications";
+import { applicationsFile, submissionTypeLabel } from "@/lib/cases/applications";
 import { formatCaseDate, type CaseRecord } from "@/lib/cases/types";
 import {
   ACCUSED_ENTITY_TYPES,
@@ -59,13 +52,11 @@ import {
 } from "@/lib/filing/options";
 import type { Address } from "@/lib/filing/types";
 import { useCourt, useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 export type FieldActions = {
   /** Sets a draft field and clears the errors filed under it. */
-  update: <Key extends keyof ApplicationDraft>(
-    key: Key,
-    value: ApplicationDraft[Key],
-  ) => void;
+  update: <Key extends keyof ApplicationDraft>(key: Key, value: ApplicationDraft[Key]) => void;
   /** Sets or clears one error by its key (see `ApplicationErrors`). */
   setError: (key: string, error: string | undefined) => void;
 };
@@ -168,13 +159,7 @@ function FieldName({ label, optional }: { label: string; optional?: boolean }) {
  * readOnly rather than disabled so it stays keyboard reachable, selectable and
  * read by assistive tech; the fill and ink are the disabled control's.
  */
-export function PrefilledField({
-  label,
-  value: stored,
-}: {
-  label: string;
-  value: string;
-}) {
+export function PrefilledField({ label, value: stored }: { label: string; value: string }) {
   // Read-only, so it can show the record in the selected court's terms (`CourtSwitch`).
   const value = useCourtText()(stored);
   const id = useId();
@@ -380,6 +365,7 @@ function DateField({
   error?: string;
   onChange: (value: Date | undefined) => void;
 }) {
+  const t = useTranslations();
   const labelId = useId();
   return (
     <Field data-invalid={Boolean(error)}>
@@ -388,7 +374,7 @@ function DateField({
         <DatePicker
           value={value}
           onValueChange={onChange}
-          placeholder="Pick a date"
+          placeholder={t("applicationTypeFields_pickADate")}
           className="w-full sm:w-60"
         />
       </div>
@@ -548,22 +534,25 @@ function EveryApplicationTop({
   raisedByOptions,
   litigantOptions,
 }: FieldsProps) {
+  const t = useTranslations();
   return (
     <>
       <SelectField
-        label="Raised by"
+        label={t("applicationTypeFields_raisedBy")}
         value={draft.raisedById}
         options={peopleOptions(raisedByOptions)}
-        placeholder="Choose who is raising it"
+        placeholder={t("applicationTypeFields_chooseWhoIsRaisingIt")}
         error={errors.fields.raisedById}
         onChange={(value) => actions.update("raisedById", value)}
       />
       <SelectField
-        label="Litigant"
+        label={t("applicationTypeFields_litigant")}
         value={draft.litigantId}
         options={peopleOptions(litigantOptions)}
         placeholder={
-          draft.raisedById ? "Choose the litigant" : "Choose Raised by first"
+          draft.raisedById
+            ? t("applicationTypeFields_chooseTheLitigant")
+            : t("applicationTypeFields_chooseRaisedByFirst")
         }
         error={errors.fields.litigantId}
         onChange={(value) => actions.update("litigantId", value)}
@@ -580,25 +569,26 @@ function EveryApplicationTop({
  * type.
  */
 function EveryApplicationBottom({ draft, errors, actions }: FieldsProps) {
+  const t = useTranslations();
   const rows = draft.supportingDocuments;
   return (
     <>
       <ApplicationDetailsField draft={draft} errors={errors} actions={actions} />
       <RepeatingSection
-        heading="Supporting documents"
+        heading={t("applicationTypeFields_supportingDocuments")}
         optional
-        addLabel="Add a document"
-        emptyLabel="No supporting documents added."
+        addLabel={t("applicationTypeFields_addADocument")}
+        emptyLabel={t("applicationTypeFields_noSupportingDocumentsAdded")}
         count={rows.length}
-        onAdd={() =>
-          actions.update("supportingDocuments", [...rows, emptyNamedDocument()])
-        }
+        onAdd={() => actions.update("supportingDocuments", [...rows, emptyNamedDocument()])}
       >
         {rows.map((row, index) => (
           <RowWell
             key={row.id}
-            legend={`Document ${index + 1}`}
-            removeLabel={`Remove document ${index + 1}`}
+            legend={t("applicationTypeFields_documentValue", { value: String(index + 1) })}
+            removeLabel={t("applicationTypeFields_removeDocumentValue", {
+              value: String(index + 1),
+            })}
             onRemove={() =>
               actions.update(
                 "supportingDocuments",
@@ -607,7 +597,7 @@ function EveryApplicationBottom({ draft, errors, actions }: FieldsProps) {
             }
           >
             <TextField
-              label="Document name"
+              label={t("applicationTypeFields_documentName")}
               value={row.name}
               error={errors.fields[`${row.id}.name`]}
               onChange={(name) => {
@@ -620,7 +610,7 @@ function EveryApplicationBottom({ draft, errors, actions }: FieldsProps) {
             />
             <FileField
               required
-              label="File"
+              label={t("applicationTypeFields_file")}
               files={row.files}
               error={errors.fields[`${row.id}.files`]}
               onFilesChange={(files) =>
@@ -647,11 +637,12 @@ function ApplicationDetailsField({
   errors,
   actions,
 }: Pick<FieldsProps, "draft" | "errors" | "actions">) {
+  const t = useTranslations();
   const labelId = useId();
   return (
     <Field data-invalid={Boolean(errors.fields.applicationDetails)}>
       <FieldLabel id={labelId}>
-        <FieldName label="Application Details" />
+        <FieldName label={t("applicationTypeFields_applicationDetails")} />
       </FieldLabel>
       <RichTextField
         labelId={labelId}
@@ -671,6 +662,7 @@ const BAIL_TYPES = [
 ];
 
 function BailFields({ draft, errors, actions }: FieldsProps) {
+  const t = useTranslations();
   const surety = draft.bailType === "surety";
   const sureties = draft.sureties;
 
@@ -685,28 +677,26 @@ function BailFields({ draft, errors, actions }: FieldsProps) {
   return (
     <>
       <SelectField
-        label="Type of bail"
+        label={t("applicationTypeFields_typeOfBail")}
         value={draft.bailType}
         options={BAIL_TYPES}
-        placeholder="Choose cash or surety"
+        placeholder={t("applicationTypeFields_chooseCashOrSurety")}
         error={errors.fields.bailType}
         onChange={(value) => actions.update("bailType", value as "cash" | "surety")}
       />
       {draft.bailType ? (
         <TextField
-          label="Bail amount (Rs.)"
+          label={t("applicationTypeFields_bailAmountRs")}
           value={draft.bailAmount}
           inputMode="decimal"
           error={errors.fields.bailAmount}
-          onChange={(value) =>
-            actions.update("bailAmount", value.replace(/[^\d.,]/g, ""))
-          }
+          onChange={(value) => actions.update("bailAmount", value.replace(/[^\d.,]/g, ""))}
         />
       ) : null}
       {surety ? (
         <>
           <TextField
-            label="Number of sureties"
+            label={t("applicationTypeFields_numberOfSureties")}
             value={draft.suretyCount}
             inputMode="numeric"
             error={errors.fields.suretyCount}
@@ -717,22 +707,25 @@ function BailFields({ draft, errors, actions }: FieldsProps) {
             }}
           />
           {sureties.map((item, index) => (
-            <RowWell key={item.id} legend={`Surety ${index + 1}`}>
+            <RowWell
+              key={item.id}
+              legend={t("applicationTypeFields_suretyValue", { value: String(index + 1) })}
+            >
               <div className="grid gap-6 md:grid-cols-2">
                 <TextField
-                  label="Surety name"
+                  label={t("applicationTypeFields_suretyName")}
                   value={item.fullName}
                   error={errors.fields[`${item.id}.fullName`]}
                   onChange={(fullName) => updateSurety(item.id, { fullName })}
                 />
                 <TextField
-                  label="Father's / mother's name"
+                  label={t("applicationTypeFields_fathersMothersName")}
                   value={item.parentName}
                   error={errors.fields[`${item.id}.parentName`]}
                   onChange={(parentName) => updateSurety(item.id, { parentName })}
                 />
                 <TextField
-                  label="Surety phone number"
+                  label={t("applicationTypeFields_suretyPhoneNumber")}
                   value={item.phone}
                   inputMode="tel"
                   type="tel"
@@ -740,7 +733,7 @@ function BailFields({ draft, errors, actions }: FieldsProps) {
                   onChange={(phone) => updateSurety(item.id, { phone })}
                 />
                 <TextField
-                  label="Surety email ID"
+                  label={t("applicationTypeFields_suretyEmailId")}
                   optional
                   value={item.email}
                   type="email"
@@ -749,30 +742,26 @@ function BailFields({ draft, errors, actions }: FieldsProps) {
                 />
               </div>
               <AddressField
-                label="Surety address"
+                label={t("applicationTypeFields_suretyAddress")}
                 value={item.address}
                 error={errors.fields[`${item.id}.address`]}
                 onChange={(address) => updateSurety(item.id, { address })}
               />
               <FileField
                 required
-                label="Surety ID proof"
+                label={t("applicationTypeFields_suretyIdProof")}
                 files={item.identityProof}
                 error={errors.fields[`${item.id}.identityProof`]}
                 onFilesChange={(identityProof) => updateSurety(item.id, { identityProof })}
-                onErrorChange={(error) =>
-                  actions.setError(`${item.id}.identityProof`, error)
-                }
+                onErrorChange={(error) => actions.setError(`${item.id}.identityProof`, error)}
               />
               <FileField
                 required
-                label="Proof of solvency"
+                label={t("applicationTypeFields_proofOfSolvency")}
                 files={item.solvencyProof}
                 error={errors.fields[`${item.id}.solvencyProof`]}
                 onFilesChange={(solvencyProof) => updateSurety(item.id, { solvencyProof })}
-                onErrorChange={(error) =>
-                  actions.setError(`${item.id}.solvencyProof`, error)
-                }
+                onErrorChange={(error) => actions.setError(`${item.id}.solvencyProof`, error)}
               />
             </RowWell>
           ))}
@@ -803,14 +792,13 @@ export function litigantDetailsFrom(
   details.institutionName = litigant.name;
   const types = litigant.side === "accused" ? ACCUSED_ENTITY_TYPES : ENTITY_TYPES;
   details.institutionType =
-    types.find(
-      (option) =>
-        option.label.toLowerCase() === litigant.entityType?.toLowerCase(),
-    )?.value ?? "";
+    types.find((option) => option.label.toLowerCase() === litigant.entityType?.toLowerCase())
+      ?.value ?? "";
   return details;
 }
 
 function EditLitigantFields(props: FieldsProps) {
+  const t = useTranslations();
   const { draft, errors, record, actions } = props;
   const litigants = caseLitigants(record);
   const selected = litigants.find((item) => item.id === draft.editLitigantId);
@@ -821,13 +809,13 @@ function EditLitigantFields(props: FieldsProps) {
           (PRD) that is not built here; every litigant on the case is
           offered until it is. */}
       <SelectField
-        label="Litigant to edit"
+        label={t("applicationTypeFields_litigantToEdit")}
         value={draft.editLitigantId}
         options={litigants.map((item) => ({
           value: item.id,
           label: `${item.name} — ${item.side === "accused" ? "Accused" : "Complainant"}`,
         }))}
-        placeholder="Choose a litigant"
+        placeholder={t("applicationTypeFields_chooseALitigant")}
         error={errors.fields.editLitigantId}
         onChange={(value) => {
           const litigant = litigants.find((item) => item.id === value);
@@ -841,7 +829,7 @@ function EditLitigantFields(props: FieldsProps) {
       {selected ? (
         <>
           <RadioField
-            label="Litigant type"
+            label={t("applicationTypeFields_litigantType")}
             value={draft.litigantType}
             options={LITIGANT_TYPES}
             error={errors.fields.litigantType}
@@ -874,10 +862,7 @@ function EditLitigantFields(props: FieldsProps) {
 /** One field of the litigant record, wired to `litigant.<key>`. */
 function useLitigant({ draft, errors, actions }: FieldsProps) {
   const l = draft.litigant;
-  function set<Key extends keyof LitigantDetailsDraft>(
-    key: Key,
-    value: LitigantDetailsDraft[Key],
-  ) {
+  function set<Key extends keyof LitigantDetailsDraft>(key: Key, value: LitigantDetailsDraft[Key]) {
     actions.update("litigant", { ...l, [key]: value });
     actions.setError(`litigant.${key}`, undefined);
   }
@@ -886,12 +871,13 @@ function useLitigant({ draft, errors, actions }: FieldsProps) {
 }
 
 function ComplainantIndividual(props: FieldsProps) {
+  const t = useTranslations();
   const { l, set, error } = useLitigant(props);
   return (
     <>
       <div className="grid gap-6 md:grid-cols-2">
         <TextField
-          label="Phone number"
+          label={t("applicationTypeFields_phoneNumber")}
           value={l.phone}
           inputMode="tel"
           type="tel"
@@ -899,28 +885,28 @@ function ComplainantIndividual(props: FieldsProps) {
           onChange={(value) => set("phone", value)}
         />
         <TextField
-          label="Full name"
+          label={t("applicationTypeFields_fullName")}
           value={l.fullName}
           error={error("fullName")}
           onChange={(value) => set("fullName", value)}
         />
         <TextField
-          label="Age"
+          label={t("applicationTypeFields_age")}
           value={l.age}
           inputMode="numeric"
           error={error("age")}
           onChange={(value) => set("age", value.replace(/\D/g, ""))}
         />
         <SelectField
-          label="Gender"
+          label={t("applicationTypeFields_gender")}
           optional
           value={l.gender}
           options={GENDER_OPTIONS}
-          placeholder="Choose"
+          placeholder={t("applicationTypeFields_choose")}
           onChange={(value) => set("gender", value)}
         />
         <TextField
-          label="Email ID"
+          label={t("applicationTypeFields_emailId")}
           optional
           value={l.email}
           type="email"
@@ -929,27 +915,27 @@ function ComplainantIndividual(props: FieldsProps) {
         />
       </div>
       <RadioField
-        label="Differently abled?"
+        label={t("applicationTypeFields_differentlyAbled")}
         optional
         value={l.differentlyAbled}
         options={YES_NO}
         onChange={(value) => set("differentlyAbled", value)}
       />
       <AddressField
-        label="Permanent address"
+        label={t("applicationTypeFields_permanentAddress")}
         value={l.permanentAddress}
         error={error("permanentAddress")}
         onChange={(value) => set("permanentAddress", value)}
       />
       <RadioField
-        label="Is the current address the same as the permanent address?"
+        label={t("applicationTypeFields_isTheCurrentAddressTheSame")}
         value={l.currentSameAsPermanent}
         options={YES_NO}
         onChange={(value) => set("currentSameAsPermanent", value)}
       />
       {l.currentSameAsPermanent === "no" ? (
         <AddressField
-          label="Current address"
+          label={t("applicationTypeFields_currentAddress")}
           value={l.currentAddress}
           error={error("currentAddress")}
           onChange={(value) => set("currentAddress", value)}
@@ -960,32 +946,33 @@ function ComplainantIndividual(props: FieldsProps) {
 }
 
 function ComplainantInstitution(props: FieldsProps) {
+  const t = useTranslations();
   const { l, set, error } = useLitigant(props);
   return (
     <>
       <div className="grid gap-6 md:grid-cols-2">
         <SelectField
-          label="Type of institution"
+          label={t("applicationTypeFields_typeOfInstitution")}
           value={l.institutionType}
           options={ENTITY_TYPES}
-          placeholder="Choose"
+          placeholder={t("applicationTypeFields_choose")}
           error={error("institutionType")}
           onChange={(value) => set("institutionType", value)}
         />
         <TextField
-          label="Institution name"
+          label={t("applicationTypeFields_institutionName")}
           value={l.institutionName}
           error={error("institutionName")}
           onChange={(value) => set("institutionName", value)}
         />
         <TextField
-          label="CIN or PAN"
+          label={t("applicationTypeFields_cinOrPan")}
           optional
           value={l.cinPan}
           onChange={(value) => set("cinPan", value.toUpperCase())}
         />
         <TextField
-          label="Phone number"
+          label={t("applicationTypeFields_phoneNumber")}
           optional
           value={l.phone}
           inputMode="tel"
@@ -994,7 +981,7 @@ function ComplainantInstitution(props: FieldsProps) {
           onChange={(value) => set("phone", value)}
         />
         <TextField
-          label="Email ID"
+          label={t("applicationTypeFields_emailId")}
           optional
           value={l.email}
           type="email"
@@ -1003,14 +990,14 @@ function ComplainantInstitution(props: FieldsProps) {
         />
       </div>
       <AddressField
-        label="Institution address"
+        label={t("applicationTypeFields_institutionAddress")}
         value={l.institutionAddress}
         error={error("institutionAddress")}
         onChange={(value) => set("institutionAddress", value)}
       />
       <div className="grid gap-6 md:grid-cols-2">
         <TextField
-          label="Authorised representative phone number"
+          label={t("applicationTypeFields_authorisedRepresentativePhoneNumber")}
           value={l.repPhone}
           inputMode="tel"
           type="tel"
@@ -1018,28 +1005,28 @@ function ComplainantInstitution(props: FieldsProps) {
           onChange={(value) => set("repPhone", value)}
         />
         <TextField
-          label="Authorised representative full name"
+          label={t("applicationTypeFields_authorisedRepresentativeFullName")}
           value={l.repName}
           error={error("repName")}
           onChange={(value) => set("repName", value)}
         />
         <TextField
-          label="Authorised representative age"
+          label={t("applicationTypeFields_authorisedRepresentativeAge")}
           value={l.repAge}
           inputMode="numeric"
           error={error("repAge")}
           onChange={(value) => set("repAge", value.replace(/\D/g, ""))}
         />
         <SelectField
-          label="Authorised representative gender"
+          label={t("applicationTypeFields_authorisedRepresentativeGender")}
           optional
           value={l.repGender}
           options={GENDER_OPTIONS}
-          placeholder="Choose"
+          placeholder={t("applicationTypeFields_choose")}
           onChange={(value) => set("repGender", value)}
         />
         <TextField
-          label="Authorised representative email ID"
+          label={t("applicationTypeFields_authorisedRepresentativeEmailId")}
           optional
           value={l.repEmail}
           type="email"
@@ -1047,21 +1034,21 @@ function ComplainantInstitution(props: FieldsProps) {
           onChange={(value) => set("repEmail", value)}
         />
         <TextField
-          label="Authorised representative designation"
+          label={t("applicationTypeFields_authorisedRepresentativeDesignation")}
           value={l.repDesignation}
           error={error("repDesignation")}
           onChange={(value) => set("repDesignation", value)}
         />
       </div>
       <RadioField
-        label="Authorised representative differently abled?"
+        label={t("applicationTypeFields_authorisedRepresentativeDifferentlyAbled")}
         optional
         value={l.repDifferentlyAbled}
         options={YES_NO}
         onChange={(value) => set("repDifferentlyAbled", value)}
       />
       <AddressField
-        label="Authorised representative address"
+        label={t("applicationTypeFields_authorisedRepresentativeAddress")}
         value={l.repAddress}
         error={error("repAddress")}
         onChange={(value) => set("repAddress", value)}
@@ -1071,6 +1058,7 @@ function ComplainantInstitution(props: FieldsProps) {
 }
 
 function AccusedDetails(props: FieldsProps & { institution: boolean }) {
+  const t = useTranslations();
   const { court } = useCourt();
   const { institution } = props;
   const { l, set, error } = useLitigant(props);
@@ -1082,15 +1070,15 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
         {institution ? (
           <>
             <SelectField
-              label="Type of institution"
+              label={t("applicationTypeFields_typeOfInstitution")}
               value={l.institutionType}
               options={ACCUSED_ENTITY_TYPES}
-              placeholder="Choose"
+              placeholder={t("applicationTypeFields_choose")}
               error={error("institutionType")}
               onChange={(value) => set("institutionType", value)}
             />
             <TextField
-              label="Institution name"
+              label={t("applicationTypeFields_institutionName")}
               value={l.institutionName}
               error={error("institutionName")}
               onChange={(value) => set("institutionName", value)}
@@ -1099,13 +1087,13 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
         ) : (
           <>
             <TextField
-              label="Full name"
+              label={t("applicationTypeFields_fullName")}
               value={l.fullName}
               error={error("fullName")}
               onChange={(value) => set("fullName", value)}
             />
             <TextField
-              label="Age"
+              label={t("applicationTypeFields_age")}
               optional
               value={l.age}
               inputMode="numeric"
@@ -1113,7 +1101,7 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
               onChange={(value) => set("age", value.replace(/\D/g, ""))}
             />
             <TextField
-              label="Designation"
+              label={t("applicationTypeFields_designation")}
               optional
               value={l.designation}
               onChange={(value) => set("designation", value)}
@@ -1121,7 +1109,7 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
           </>
         )}
         <TextField
-          label="Mobile number"
+          label={t("applicationTypeFields_mobileNumber")}
           value={l.phone}
           inputMode="tel"
           type="tel"
@@ -1129,7 +1117,7 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
           onChange={(value) => set("phone", value)}
         />
         <TextField
-          label="Email ID"
+          label={t("applicationTypeFields_emailId")}
           value={l.email}
           type="email"
           error={error("email")}
@@ -1137,9 +1125,9 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
         />
       </div>
       <RepeatingSection
-        heading="Addresses"
-        addLabel="Add an address"
-        emptyLabel="No addresses added."
+        heading={t("applicationTypeFields_addresses")}
+        addLabel={t("applicationTypeFields_addAnAddress")}
+        emptyLabel={t("applicationTypeFields_noAddressesAdded")}
         count={rows.length}
         error={error("addresses")}
         onAdd={() => set("addresses", [...rows, emptyAddressWithPolice()])}
@@ -1147,8 +1135,10 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
         {rows.map((row, index) => (
           <RowWell
             key={row.id}
-            legend={`Address ${index + 1}`}
-            removeLabel={`Remove address ${index + 1}`}
+            legend={t("applicationTypeFields_addressValue", { value: String(index + 1) })}
+            removeLabel={t("applicationTypeFields_removeAddressValue", {
+              value: String(index + 1),
+            })}
             onRemove={() =>
               set(
                 "addresses",
@@ -1157,7 +1147,7 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
             }
           >
             <AddressField
-              label="Address"
+              label={t("applicationTypeFields_address")}
               value={row.addr}
               error={props.errors.fields[row.id]}
               onChange={(addr) => {
@@ -1169,10 +1159,10 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
               }}
             />
             <SelectField
-              label="Police station"
+              label={t("applicationTypeFields_policeStation")}
               value={row.police}
               options={asOptions(policeStationsFor(court))}
-              placeholder="Choose the police station"
+              placeholder={t("applicationTypeFields_chooseThePoliceStation")}
               error={props.errors.fields[`${row.id}.police`]}
               onChange={(police) => {
                 set(
@@ -1192,12 +1182,16 @@ function AccusedDetails(props: FieldsProps & { institution: boolean }) {
 /* ------------------------------------------------------------ transfer -- */
 
 function TransferFields({ draft, errors, record, actions }: FieldsProps) {
+  const t = useTranslations();
   const courtText = useCourtText();
   return (
     <>
-      <PrefilledField label="Current court" value={courtText(record.court)} />
+      <PrefilledField
+        label={t("applicationTypeFields_currentCourt")}
+        value={courtText(record.court)}
+      />
       <TextField
-        label="Requested court"
+        label={t("applicationTypeFields_requestedCourt")}
         value={draft.requestedCourt}
         error={errors.fields.requestedCourt}
         onChange={(value) => actions.update("requestedCourt", value)}
@@ -1209,10 +1203,11 @@ function TransferFields({ draft, errors, record, actions }: FieldsProps) {
 /* ------------------------------------------------------------- generic -- */
 
 function GenericFields({ draft, errors, actions }: FieldsProps) {
+  const t = useTranslations();
   return (
     <>
       <TextField
-        label="Application title"
+        label={t("applicationTypeFields_applicationTitle")}
         value={draft.title}
         error={errors.fields.title}
         onChange={(value) => actions.update("title", value)}
@@ -1224,29 +1219,30 @@ function GenericFields({ draft, errors, actions }: FieldsProps) {
 /* ------------------------------------------------ advance / postpone ---- */
 
 function RescheduleFields({ draft, errors, record, actions }: FieldsProps) {
+  const t = useTranslations();
   const hearing = record.nextHearing;
   return (
     <>
       <div className="grid gap-6 md:grid-cols-2">
         <PrefilledField
-          label="Initial hearing date"
+          label={t("applicationTypeFields_initialHearingDate")}
           value={hearing ? formatCaseDate(hearing.on) : "No hearing is scheduled"}
         />
         <PrefilledField
-          label="Purpose of hearing"
+          label={t("applicationTypeFields_purposeOfHearing")}
           value={hearing?.purpose ?? "—"}
         />
       </div>
       <SelectField
-        label="Reason for rescheduling"
+        label={t("applicationTypeFields_reasonForRescheduling")}
         value={draft.rescheduleReason}
         options={asOptions(RESCHEDULE_REASONS)}
-        placeholder="Choose a reason"
+        placeholder={t("applicationTypeFields_chooseAReason")}
         error={errors.fields.rescheduleReason}
         onChange={(value) => actions.update("rescheduleReason", value)}
       />
       <DateField
-        label="Proposed hearing date"
+        label={t("applicationTypeFields_proposedHearingDate")}
         value={draft.proposedHearingDate}
         error={errors.fields.proposedHearingDate}
         onChange={(value) => actions.update("proposedHearingDate", value)}
@@ -1258,6 +1254,7 @@ function RescheduleFields({ draft, errors, record, actions }: FieldsProps) {
 /* ---------------------------------------------------------- poa change -- */
 
 function PoaChangeFields({ draft, errors, record, actions }: FieldsProps) {
+  const t = useTranslations();
   const litigants = caseLitigants(record);
   const labelId = useId();
   const chosen = litigants.filter((item) => draft.poaLitigantIds.includes(item.id));
@@ -1276,7 +1273,9 @@ function PoaChangeFields({ draft, errors, record, actions }: FieldsProps) {
   return (
     <>
       <Field data-invalid={Boolean(errors.fields.poaLitigantIds)}>
-        <FieldLabel id={labelId}>Litigants appointing the applicant</FieldLabel>
+        <FieldLabel id={labelId}>
+          {t("applicationTypeFields_litigantsAppointingTheApplicant")}
+        </FieldLabel>
         <div role="group" aria-labelledby={labelId} className="flex flex-col">
           {litigants.map((item) => {
             const id = `${labelId}-${item.id}`;
@@ -1292,7 +1291,10 @@ function PoaChangeFields({ draft, errors, record, actions }: FieldsProps) {
                   {item.name}
                   <span className="text-muted-foreground">
                     {" "}
-                    · {item.side === "accused" ? "Accused" : "Complainant"}
+                    ·{" "}
+                    {item.side === "accused"
+                      ? t("applicationTypeFields_accused")
+                      : t("applicationTypeFields_complainant")}
                   </span>
                 </Label>
               </div>
@@ -1305,7 +1307,7 @@ function PoaChangeFields({ draft, errors, record, actions }: FieldsProps) {
         <FileField
           key={item.id}
           required
-          label={`Authorization document — ${item.name}`}
+          label={t("applicationTypeFields_authorizationDocumentName", { name: item.name })}
           files={draft.poaAuthorizations[item.id] ?? []}
           error={errors.fields[`poa.${item.id}`]}
           onFilesChange={(files) =>
@@ -1324,24 +1326,25 @@ function PoaChangeFields({ draft, errors, record, actions }: FieldsProps) {
 /* ------------------------------------------------ production of documents -- */
 
 function ProductionFields({ draft, errors, actions }: FieldsProps) {
+  const t = useTranslations();
   const rows = draft.productionDocuments;
   return (
     <>
       <RepeatingSection
-        heading="Documents"
-        addLabel="Add a document"
-        emptyLabel="No documents added."
+        heading={t("applicationTypeFields_documents")}
+        addLabel={t("applicationTypeFields_addADocument")}
+        emptyLabel={t("applicationTypeFields_noDocumentsAdded")}
         count={rows.length}
         error={errors.fields.productionDocuments}
-        onAdd={() =>
-          actions.update("productionDocuments", [...rows, emptyTypedDocument()])
-        }
+        onAdd={() => actions.update("productionDocuments", [...rows, emptyTypedDocument()])}
       >
         {rows.map((row, index) => (
           <RowWell
             key={row.id}
-            legend={`Document ${index + 1}`}
-            removeLabel={`Remove document ${index + 1}`}
+            legend={t("applicationTypeFields_documentValue", { value: String(index + 1) })}
+            removeLabel={t("applicationTypeFields_removeDocumentValue", {
+              value: String(index + 1),
+            })}
             onRemove={() =>
               actions.update(
                 "productionDocuments",
@@ -1350,7 +1353,7 @@ function ProductionFields({ draft, errors, actions }: FieldsProps) {
             }
           >
             <TextField
-              label="Document type"
+              label={t("applicationTypeFields_documentType")}
               value={row.type}
               error={errors.fields[`${row.id}.type`]}
               onChange={(type) => {
@@ -1363,7 +1366,7 @@ function ProductionFields({ draft, errors, actions }: FieldsProps) {
             />
             <FileField
               required
-              label="File"
+              label={t("applicationTypeFields_file")}
               files={row.files}
               error={errors.fields[`${row.id}.files`]}
               onFilesChange={(files) =>
@@ -1384,6 +1387,7 @@ function ProductionFields({ draft, errors, actions }: FieldsProps) {
 /* ------------------------------------------------------ addition of witness -- */
 
 function WitnessFields({ draft, errors, actions }: FieldsProps) {
+  const t = useTranslations();
   const witnesses = draft.witnesses;
 
   function updateWitness(id: string, patch: Partial<(typeof witnesses)[number]>) {
@@ -1396,9 +1400,9 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
 
   return (
     <RepeatingSection
-      heading="Witnesses"
-      addLabel="Add a witness"
-      emptyLabel="No witnesses added."
+      heading={t("applicationTypeFields_witnesses")}
+      addLabel={t("applicationTypeFields_addAWitness")}
+      emptyLabel={t("applicationTypeFields_noWitnessesAdded")}
       count={witnesses.length}
       error={errors.fields.witnesses}
       onAdd={() => actions.update("witnesses", [...witnesses, emptyWitness()])}
@@ -1406,8 +1410,8 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
       {witnesses.map((witness, index) => (
         <RowWell
           key={witness.id}
-          legend={`Witness ${index + 1}`}
-          removeLabel={`Remove witness ${index + 1}`}
+          legend={t("applicationTypeFields_witnessValue", { value: String(index + 1) })}
+          removeLabel={t("applicationTypeFields_removeWitnessValue", { value: String(index + 1) })}
           onRemove={() =>
             actions.update(
               "witnesses",
@@ -1417,14 +1421,14 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
         >
           <div className="grid gap-6 md:grid-cols-2">
             <TextField
-              label="Full name"
+              label={t("applicationTypeFields_fullName")}
               optional
               value={witness.fullName}
               error={errors.fields[`${witness.id}.fullName`]}
               onChange={(fullName) => updateWitness(witness.id, { fullName })}
             />
             <TextField
-              label="Designation"
+              label={t("applicationTypeFields_designation")}
               optional
               value={witness.designation}
               onChange={(designation) => {
@@ -1433,7 +1437,7 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
               }}
             />
             <TextField
-              label="Age"
+              label={t("applicationTypeFields_age")}
               optional
               value={witness.age}
               inputMode="numeric"
@@ -1441,7 +1445,7 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
               onChange={(age) => updateWitness(witness.id, { age: age.replace(/\D/g, "") })}
             />
             <TextField
-              label="Mobile number"
+              label={t("applicationTypeFields_mobileNumber")}
               optional
               value={witness.mobile}
               inputMode="tel"
@@ -1450,7 +1454,7 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
               onChange={(mobile) => updateWitness(witness.id, { mobile })}
             />
             <TextField
-              label="Email ID"
+              label={t("applicationTypeFields_emailId")}
               optional
               value={witness.email}
               type="email"
@@ -1459,7 +1463,7 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
             />
           </div>
           <TextAreaField
-            label="What will the witness prove"
+            label={t("applicationTypeFields_whatWillTheWitnessProve")}
             optional
             rows={3}
             value={witness.proves}
@@ -1470,8 +1474,8 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
               <AddressField
                 label={
                   witness.addresses.length > 1
-                    ? `Address ${addressIndex + 1}`
-                    : "Address"
+                    ? t("applicationTypeFields_addressValue", { value: String(addressIndex + 1) })
+                    : t("applicationTypeFields_address")
                 }
                 value={row.addr}
                 error={errors.fields[row.id]}
@@ -1497,7 +1501,9 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
                   }
                 >
                   <Trash2Icon data-icon="inline-start" aria-hidden />
-                  Remove address {addressIndex + 1}
+                  {t("applicationTypeFields_removeAddressValue", {
+                    value: String(addressIndex + 1),
+                  })}
                 </Button>
               ) : null}
             </div>
@@ -1518,7 +1524,7 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
             }
           >
             <PlusIcon data-icon="inline-start" aria-hidden />
-            Add another address
+            {t("applicationTypeFields_addAnotherAddress")}
           </Button>
         </RowWell>
       ))}
@@ -1529,6 +1535,7 @@ function WitnessFields({ draft, errors, actions }: FieldsProps) {
 /* ----------------------------------------------------- warrant by hand -- */
 
 function WarrantByHandFields({ draft, errors, record, actions }: FieldsProps) {
+  const t = useTranslations();
   const accused = caseLitigants(record).filter((item) => item.side === "accused");
   const chosen = accused.find((item) => item.id === draft.warrantAccusedId);
   const onFile = chosen ? accusedAddresses(record, chosen.name) : [];
@@ -1537,10 +1544,10 @@ function WarrantByHandFields({ draft, errors, record, actions }: FieldsProps) {
   return (
     <>
       <SelectField
-        label="Accused"
+        label={t("applicationTypeFields_accused")}
         value={draft.warrantAccusedId}
         options={accused.map((item) => ({ value: item.id, label: item.name }))}
-        placeholder="Choose the accused"
+        placeholder={t("applicationTypeFields_chooseTheAccused")}
         error={errors.fields.warrantAccusedId}
         onChange={(value) => {
           actions.update("warrantAccusedId", value);
@@ -1551,12 +1558,10 @@ function WarrantByHandFields({ draft, errors, record, actions }: FieldsProps) {
       />
       {onFile.length > 1 ? (
         <Field>
-          <FieldLabel id={`${pickId}-label`}>Prefill from</FieldLabel>
+          <FieldLabel id={`${pickId}-label`}>{t("applicationTypeFields_prefillFrom")}</FieldLabel>
           <RadioGroup
             aria-labelledby={`${pickId}-label`}
-            onValueChange={(index) =>
-              actions.update("deliveryAddress", onFile[Number(index)])
-            }
+            onValueChange={(index) => actions.update("deliveryAddress", onFile[Number(index)])}
             className="flex flex-col gap-1"
           >
             {onFile.map((address, index) => (
@@ -1572,7 +1577,7 @@ function WarrantByHandFields({ draft, errors, record, actions }: FieldsProps) {
       ) : null}
       {draft.warrantAccusedId ? (
         <AddressField
-          label="Address for delivery"
+          label={t("applicationTypeFields_addressForDelivery")}
           value={draft.deliveryAddress}
           error={errors.fields.deliveryAddress}
           onChange={(value) => actions.update("deliveryAddress", value)}
@@ -1590,6 +1595,7 @@ function WarrantByHandFields({ draft, errors, record, actions }: FieldsProps) {
  * rather than chosen.
  */
 function ObjectionFields({ draft, record }: FieldsProps) {
+  const t = useTranslations();
   const target = applicationsFile(record).submissions.find(
     (item) => item.id === draft.objectionToId,
   );
@@ -1601,10 +1607,7 @@ function ObjectionFields({ draft, record }: FieldsProps) {
 
   return (
     <>
-      <PrefilledField
-        label="Objection to"
-        value={targetLabel}
-      />
+      <PrefilledField label={t("applicationTypeFields_objectionTo")} value={targetLabel} />
     </>
   );
 }

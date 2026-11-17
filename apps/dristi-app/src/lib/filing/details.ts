@@ -34,7 +34,12 @@ export function otherComplaintsBody(j: Jurisdiction): OtherComplaintBody[] {
 
 /** Whether rich-text (HTML) editor output has any real content, not just empty markup. */
 export function richTextHasContent(html: string): boolean {
-  return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/gi, " ").trim().length > 0;
+  return (
+    html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/gi, " ")
+      .trim().length > 0
+  );
 }
 
 /**
@@ -54,7 +59,8 @@ export function jurisdictionReady(
   if (late && !j.condonationReason.trim()) return false;
   // When another complaint is pending, the backend requires at least one with a court and
   // case number, so every listed complaint must be filled in before the section can save.
-  if (j.otherPending === "yes" && otherComplaintsBody(j).length !== j.otherCases.length) return false;
+  if (j.otherPending === "yes" && otherComplaintsBody(j).length !== j.otherCases.length)
+    return false;
   if (j.otherPending === "yes" && otherComplaintsBody(j).length === 0) return false;
   // The police station of the branch that grounds jurisdiction is always required: the
   // payee's when they deposited the cheque, otherwise the drawer's.

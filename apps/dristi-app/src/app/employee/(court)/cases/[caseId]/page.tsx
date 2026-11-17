@@ -4,10 +4,7 @@ import { notFound } from "next/navigation";
 import { CaseDetail } from "@/components/cases/case-detail";
 import { ProfileProvider } from "@/components/shell/profile";
 import { findCaseRecord } from "@/lib/cases/party-cases";
-import {
-  cognizanceCaseById,
-  cognizanceCaseRecord,
-} from "@/lib/employee/cognizance";
+import { cognizanceCaseById, cognizanceCaseRecord } from "@/lib/employee/cognizance";
 import { isoDay } from "@/lib/employee/hearings";
 
 const DEMO_LISTING_ORDER_HREF = "/employee/hearings/h-241/order";

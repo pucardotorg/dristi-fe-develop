@@ -17,11 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { causeTitle } from "@/lib/employee/hearings";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import {
   evidenceDocumentLabel,
   evidenceNumber,
@@ -30,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * The evidence signing queue as a table: which markings are picked for signature, the
@@ -71,6 +68,7 @@ export function SignEvidenceTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (row: SignEvidence) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const selectedOnPage = rows.filter((row) => selectedIds.has(row.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
@@ -82,9 +80,7 @@ export function SignEvidenceTable({
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "w-12")}>
             <Checkbox
-              checked={
-                allSelected ? true : someSelected ? "indeterminate" : false
-              }
+              checked={allSelected ? true : someSelected ? "indeterminate" : false}
               onCheckedChange={(next) => onToggleAll(next === true)}
               /* Names what the control does to what is on screen, not to the whole
                  queue — the header checkbox reaches this page of rows only, and a label
@@ -92,22 +88,22 @@ export function SignEvidenceTable({
                  once the list is paged. */
               aria-label={
                 allSelected
-                  ? "Clear the documents on this page"
-                  : "Select the documents on this page"
+                  ? t("signEvidenceTable_clearTheDocumentsOnThisPage")
+                  : t("signEvidenceTable_selectTheDocumentsOnThisPage")
               }
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
+            {t("signEvidenceTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("signEvidenceTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
-            Document
+            {t("signEvidenceTable_document")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Evidence number
+            {t("signEvidenceTable_evidenceNumber")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -133,7 +129,11 @@ export function SignEvidenceTable({
                 <Checkbox
                   checked={selected}
                   onCheckedChange={() => onToggle(row)}
-                  aria-label={`Select ${document}, ${exhibit}, in ${courtText(row.caseNumber)}`}
+                  aria-label={t("signEvidenceTable_selectDocumentExhibitInCourtText", {
+                    document,
+                    exhibit,
+                    courtText: courtText(row.caseNumber),
+                  })}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -143,32 +143,28 @@ export function SignEvidenceTable({
                   on instead. The underline now arrives on the *row's* hover, wherever
                   the pointer sits, and on this control's own focus — see
                   `rowOpenerClass`. */}
-              <TableCell
-                className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}
-              >
+              <TableCell className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}>
                 <button
                   type="button"
                   onClick={() => onOpen(row)}
                   {...rowOpener}
-                className={rowOpenerClass}
+                  className={rowOpenerClass}
                 >
-                  <span className="sr-only">{`Read and sign ${document}, ${exhibit}, in `}</span>
+                  <span className="sr-only">
+                    {t("signEvidenceTable_readAndSignDocumentExhibitIn", { document, exhibit })}
+                  </span>
                   {causeTitle(row)}
                 </button>
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "whitespace-nowrap")}
-              >
-                <Identifier value={row.caseNumber} label="case number" />
+              <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
+                <Identifier value={row.caseNumber} label={t("signEvidenceTable_caseNumberLabel")} />
               </TableCell>
               {/* Plain text, not a chip. Ten document heads tinted down a column is
                   decoration, and the words are already the whole fact (ui-craft §4). */}
               <TableCell className={cn(TABLE_CELL, "min-w-56 whitespace-normal")}>
                 {document}
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}
-              >
+              <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>
                 {exhibit}
               </TableCell>
             </TableRow>

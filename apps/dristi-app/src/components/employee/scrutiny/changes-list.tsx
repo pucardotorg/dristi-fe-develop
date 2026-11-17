@@ -7,21 +7,15 @@ import type { ScrutinyController } from "@/lib/employee/scrutiny/use-scrutiny-st
 import { cn } from "@/lib/utils";
 import { RaisedItem } from "@/components/employee/scrutiny/field-row";
 import { FlagComposer } from "@/components/employee/scrutiny/flag-composer";
-import {
-  RecordList,
-  RecordRow,
-} from "@/components/employee/scrutiny/record-rows";
+import { RecordList, RecordRow } from "@/components/employee/scrutiny/record-rows";
 import { ReturnedValue } from "@/components/employee/scrutiny/returned-value";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { SHEET } from "@/components/employee/scrutiny/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 /**
  * Re-scrutiny: the items that went back, and what came back for each.
@@ -48,6 +42,7 @@ export function ChangesList({
   onShowItem: (fieldId: string) => void;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const t = useTranslations();
   const { returned } = useScrutinyCase();
   if (!returned) return null;
 
@@ -60,7 +55,7 @@ export function ChangesList({
       >
         {/* Not "returned": in these cases that already means the cheque that came back
             unpaid (Anshumanth, 2026-10-29: "They are 'errors marked.'"). */}
-        <span>Errors marked</span>
+        <span>{t("changesList_errorsMarked")}</span>
       </h2>
       <ul className="flex flex-col gap-4">
         {returned.items.map((item) => (
@@ -89,6 +84,7 @@ function ChangeCard({
   onShowItem: (fieldId: string) => void;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const t = useTranslations();
   const { fieldById } = useScrutinyCase();
   const field = fieldById[item.fieldId];
   if (!field) return null;
@@ -138,7 +134,7 @@ function ChangeCard({
           </p>
         </div>
         {/* With no per-item Accept, only a re-raise earns a badge. */}
-        {flag ? <Badge variant="destructive">Raised again</Badge> : null}
+        {flag ? <Badge variant="destructive">{t("changesList_raisedAgain")}</Badge> : null}
         {/* Raise again is the flag the full filing's row carries, in the header where
             the row keeps it — not a button row under the record (owner, 2026-10-28). */}
         <Tooltip>
@@ -157,7 +153,9 @@ function ChangeCard({
               <FlagIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{flag ? "Edit this flag" : "Raise again"}</TooltipContent>
+          <TooltipContent>
+            {flag ? t("changesList_editThisFlag") : t("changesList_raiseAgain")}
+          </TooltipContent>
         </Tooltip>
       </div>
 
@@ -170,11 +168,11 @@ function ChangeCard({
         </div>
         {/* Same stacked record as the full-filing returned well (`RecordList`). */}
         <RecordList>
-          <RecordRow label="You asked">{item.note}</RecordRow>
+          <RecordRow label={t("changesList_youAsked")}>{item.note}</RecordRow>
           {/* A corrected value shows its before in the band; a document's before is a
               file, so it is said here. */}
           {item.answer === "replaced" ? (
-            <RecordRow label="Before">
+            <RecordRow label={t("changesList_before")}>
               <span className="text-muted-foreground line-through decoration-muted-foreground">
                 {item.was}
               </span>
@@ -183,18 +181,9 @@ function ChangeCard({
         </RecordList>
 
         {composing ? (
-          <FlagComposer
-            field={field}
-            controller={controller}
-            onGoToItem={onGoToItem}
-          />
+          <FlagComposer field={field} controller={controller} onGoToItem={onGoToItem} />
         ) : flag ? (
-          <RaisedItem
-            field={field}
-            flag={flag}
-            controller={controller}
-            onGoToItem={onGoToItem}
-          />
+          <RaisedItem field={field} flag={flag} controller={controller} onGoToItem={onGoToItem} />
         ) : null}
       </div>
     </Card>

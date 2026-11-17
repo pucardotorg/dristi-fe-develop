@@ -3,11 +3,7 @@
 import * as React from "react";
 
 import type { CourtRole } from "@/lib/employee/content";
-import {
-  readCourtRole,
-  serverCourtRole,
-  subscribeToCourtRole,
-} from "@/lib/employee/court-role";
+import { readCourtRole, serverCourtRole, subscribeToCourtRole } from "@/lib/employee/court-role";
 import {
   readCourtSession,
   serverCourtSession,
@@ -30,11 +26,7 @@ import {
  * hydration mismatch to suppress.
  */
 export function useCourtRole(): CourtRole {
-  return React.useSyncExternalStore(
-    subscribeToCourtRole,
-    readCourtRole,
-    serverCourtRole,
-  );
+  return React.useSyncExternalStore(subscribeToCourtRole, readCourtRole, serverCourtRole);
 }
 
 /**
@@ -44,9 +36,5 @@ export function useCourtRole(): CourtRole {
  * alone and should use `useCourtRole`.
  */
 export function useCourtSession(): CourtSession {
-  return React.useSyncExternalStore(
-    subscribeToCourtSession,
-    readCourtSession,
-    serverCourtSession,
-  );
+  return React.useSyncExternalStore(subscribeToCourtSession, readCourtSession, serverCourtSession);
 }

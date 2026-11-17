@@ -3,7 +3,13 @@
 import * as React from "react";
 import { FileTextIcon, XIcon } from "lucide-react";
 
-import { causeOfAction, formatDate, formatINR, limitationEnds, isoDaysAgo } from "@/provakil/lib/matters";
+import {
+  causeOfAction,
+  formatDate,
+  formatINR,
+  limitationEnds,
+  isoDaysAgo,
+} from "@/provakil/lib/matters";
 
 import type { Row } from "./cases-screen";
 import { Chip, STAGE_TONE } from "./ui";
@@ -28,12 +34,19 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
 
   const activity = [
     { at: m.npaDate, text: "Account classified NPA" },
-    { at: m.instruments[0].returnDate, text: `Cheque ${m.instruments[0].chequeNo} returned: ${m.instruments[0].returnReason.slice(5)}` },
+    {
+      at: m.instruments[0].returnDate,
+      text: `Cheque ${m.instruments[0].chequeNo} returned: ${m.instruments[0].returnReason.slice(5)}`,
+    },
     { at: m.notice.dispatchDate, text: `Demand notice dispatched by ${m.notice.mode}` },
-    ...(m.notice.statusDate ? [{ at: m.notice.statusDate, text: `Notice ${m.notice.status.toLowerCase()}` }] : []),
+    ...(m.notice.statusDate
+      ? [{ at: m.notice.statusDate, text: `Notice ${m.notice.status.toLowerCase()}` }]
+      : []),
     { at: isoDaysAgo(3), text: `Case assigned to Legal Manager ${m.legalManager}` },
     ...m.notes.map((n) => ({ at: n.at, text: `Note added by ${n.by}` })),
-    ...(m.push ? [{ at: m.push.at.slice(0, 10), text: `Filed on SARAS 2.0 in ${m.push.batchNumber}` }] : []),
+    ...(m.push
+      ? [{ at: m.push.at.slice(0, 10), text: `Filed on SARAS 2.0 in ${m.push.batchNumber}` }]
+      : []),
     ...(m.stage === "Filed" && m.cnr ? [{ at: isoDaysAgo(1), text: `Filed. CNR ${m.cnr}` }] : []),
   ].sort((a, c) => (a.at < c.at ? 1 : -1));
 
@@ -47,7 +60,9 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
         <div className="border-b border-(--pv-line) px-5 pt-4">
           <div className="flex items-start gap-3">
             <div>
-              <div className="num text-[12px] text-(--pv-muted)">{m.lan} · {m.product}</div>
+              <div className="num text-[12px] text-(--pv-muted)">
+                {m.lan} · {m.product}
+              </div>
               <h2 className="text-[18px] font-medium">Tata Capital Ltd vs {b.name}</h2>
               <div className="mt-1 flex flex-wrap gap-1.5">
                 <Chip tone={STAGE_TONE[m.stage]}>{m.stage}</Chip>
@@ -59,7 +74,11 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
                 ))}
               </div>
             </div>
-            <button onClick={onClose} className="ml-auto rounded-full p-1.5 text-(--pv-muted) hover:bg-(--pv-ground)" aria-label="Close">
+            <button
+              onClick={onClose}
+              className="ml-auto rounded-full p-1.5 text-(--pv-muted) hover:bg-(--pv-ground)"
+              aria-label="Close"
+            >
               <XIcon className="size-5" />
             </button>
           </div>
@@ -87,7 +106,8 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
                 <Field label="Addresses">
                   {b.addresses.map((a) => (
                     <div key={a.line}>
-                      <span className="text-(--pv-muted)">{a.type}:</span> {a.line}, {a.city} {a.pincode}
+                      <span className="text-(--pv-muted)">{a.type}:</span> {a.line}, {a.city}{" "}
+                      {a.pincode}
                     </div>
                   ))}
                 </Field>
@@ -103,12 +123,15 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
                   </Field>
                 </div>
               ) : null}
-              <Field label="Branch">{m.branch} · {m.region}</Field>
+              <Field label="Branch">
+                {m.branch} · {m.region}
+              </Field>
               <Field label="Legal manager">{m.legalManager}</Field>
               <Field label="Advocate">
                 {m.advocate ? (
                   <>
-                    {m.advocate.name} <span className="num text-(--pv-muted)">{m.advocate.enrolment}</span>
+                    {m.advocate.name}{" "}
+                    <span className="num text-(--pv-muted)">{m.advocate.enrolment}</span>
                   </>
                 ) : (
                   <span className="font-medium text-(--pv-amber)">Unassigned</span>
@@ -125,7 +148,12 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
               <Field label="File by">{formatDate(limitationEnds(m))}</Field>
               {m.push ? (
                 <Field label="SARAS 2.0 batch">
-                  <a href={m.push.url} target="_blank" rel="noreferrer" className="num text-(--pv-blue) underline">
+                  <a
+                    href={m.push.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="num text-(--pv-blue) underline"
+                  >
                     {m.push.batchNumber}
                   </a>
                 </Field>
@@ -138,14 +166,26 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
             <div className="flex flex-col gap-5">
               {m.instruments.map((q, i) => (
                 <section key={q.chequeNo}>
-                  <h3 className="mb-2 font-medium">Cheque {m.instruments.length > 1 ? i + 1 : ""}</h3>
+                  <h3 className="mb-2 font-medium">
+                    Cheque {m.instruments.length > 1 ? i + 1 : ""}
+                  </h3>
                   <dl className="grid grid-cols-2 gap-4">
-                    <Field label="Cheque no."><span className="num">{q.chequeNo}</span></Field>
-                    <Field label="Amount"><span className="num">{formatINR(q.amount)}</span></Field>
+                    <Field label="Cheque no.">
+                      <span className="num">{q.chequeNo}</span>
+                    </Field>
+                    <Field label="Amount">
+                      <span className="num">{formatINR(q.amount)}</span>
+                    </Field>
                     <Field label="Cheque date">{formatDate(q.chequeDate)}</Field>
-                    <Field label="Drawee IFSC"><span className="num">{q.draweeIfsc}</span></Field>
-                    <Field label="Drawer account"><span className="num">{q.drawerAccount}</span></Field>
-                    <Field label="Deposited">{formatDate(q.depositDate)} at <span className="num">{q.collectingIfsc}</span></Field>
+                    <Field label="Drawee IFSC">
+                      <span className="num">{q.draweeIfsc}</span>
+                    </Field>
+                    <Field label="Drawer account">
+                      <span className="num">{q.drawerAccount}</span>
+                    </Field>
+                    <Field label="Deposited">
+                      {formatDate(q.depositDate)} at <span className="num">{q.collectingIfsc}</span>
+                    </Field>
                     <Field label="Returned">{formatDate(q.returnDate)}</Field>
                     <Field label="Return reason">{q.returnReason}</Field>
                   </dl>
@@ -156,10 +196,17 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
                 <dl className="grid grid-cols-2 gap-4">
                   <Field label="Dispatched">{formatDate(m.notice.dispatchDate)}</Field>
                   <Field label="Mode">{m.notice.mode}</Field>
-                  <Field label="Consignment no."><span className="num">{m.notice.consignmentNo}</span></Field>
-                  <Field label="Status">{m.notice.status}{m.notice.statusDate ? `, ${formatDate(m.notice.statusDate)}` : ""}</Field>
+                  <Field label="Consignment no.">
+                    <span className="num">{m.notice.consignmentNo}</span>
+                  </Field>
+                  <Field label="Status">
+                    {m.notice.status}
+                    {m.notice.statusDate ? `, ${formatDate(m.notice.statusDate)}` : ""}
+                  </Field>
                   <Field label="Reply received">{m.notice.replyReceived ? "Yes" : "No"}</Field>
-                  <Field label="Received after notice"><span className="num">{formatINR(m.receivedAfterNotice)}</span></Field>
+                  <Field label="Received after notice">
+                    <span className="num">{formatINR(m.receivedAfterNotice)}</span>
+                  </Field>
                 </dl>
               </section>
               {m.notes.length ? (
@@ -168,7 +215,8 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
                   {m.notes.map((n) => (
                     <div key={n.at} className="rounded-md bg-(--pv-ground) p-3">
                       <div className="text-[11px] text-(--pv-muted)">
-                        {n.by} · {formatDate(n.at)} {n.tag ? <Chip tone="plum">{n.tag}</Chip> : null}
+                        {n.by} · {formatDate(n.at)}{" "}
+                        {n.tag ? <Chip tone="plum">{n.tag}</Chip> : null}
                       </div>
                       <p className="mt-1">{n.text}</p>
                     </div>
@@ -183,11 +231,18 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
               {m.documents.map((d) => (
                 <li key={d.id} className="flex items-center gap-3 px-3 py-2.5">
                   <FileTextIcon className="size-4 text-(--pv-red)" aria-hidden />
-                  <a href={`/provakil/api/documents/${encodeURIComponent(d.id)}`} target="_blank" rel="noreferrer" className="flex-1 hover:underline">
+                  <a
+                    href={`/provakil/api/documents/${encodeURIComponent(d.id)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 hover:underline"
+                  >
                     {d.name}
                   </a>
                   <Chip>{d.tag}</Chip>
-                  <span className="num text-[11px] text-(--pv-muted)">{formatDate(d.uploadedOn)}</span>
+                  <span className="num text-[11px] text-(--pv-muted)">
+                    {formatDate(d.uploadedOn)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -197,7 +252,9 @@ export function MatterDrawer({ row, onClose }: { row: Row | null; onClose: () =>
             <ol className="relative ml-2 border-l border-(--pv-line)">
               {activity.map((a, i) => (
                 <li key={`${a.at}-${i}`} className="mb-4 ml-4">
-                  <span className={`absolute -left-1.5 mt-1 size-3 rounded-full border-2 border-white ${i === 0 ? "bg-(--pv-blue)" : "bg-(--pv-muted)/50"}`} />
+                  <span
+                    className={`absolute -left-1.5 mt-1 size-3 rounded-full border-2 border-white ${i === 0 ? "bg-(--pv-blue)" : "bg-(--pv-muted)/50"}`}
+                  />
                   <div className="num text-[11px] text-(--pv-muted)">{formatDate(a.at)}</div>
                   <div>{a.text}</div>
                 </li>

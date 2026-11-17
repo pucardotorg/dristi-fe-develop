@@ -21,17 +21,10 @@ import {
 } from "@/components/chrome/table-plate";
 import { Identifier } from "@/components/chrome/identifier";
 import { CounselCell } from "@/components/employee/counsel-cell";
-import {
-  NextDateField,
-  NextPurposeField,
-} from "@/components/employee/next-hearing-fields";
+import { NextDateField, NextPurposeField } from "@/components/employee/next-hearing-fields";
 import { useOrderDrafts } from "@/components/employee/use-order-draft";
 import { hasDraftFor } from "@/lib/employee/order-drafts";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -50,17 +43,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { CourtRole } from "@/lib/employee/content";
-import {
-  seatHasBenchControls,
-  seatPostsNextHearing,
-} from "@/lib/employee/court-role";
+import { seatHasBenchControls, seatPostsNextHearing } from "@/lib/employee/court-role";
 import {
   canDraftOrder,
   canEndHearing,
@@ -82,6 +67,8 @@ import {
   type DropSide,
 } from "@/lib/employee/cause-list-columns";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Start hearing and End hearing live in the Action column, as one labelled outline
@@ -211,6 +198,7 @@ export function HearingCaseButton({
   onOpen: (hearing: CourtHearing) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <button
       type="button"
@@ -221,7 +209,7 @@ export function HearingCaseButton({
       {/* The cause title alone is the whole of what a sighted reader needs under a
           column headed "Case name"; out of that column it is a control named after two
           parties and nothing else. */}
-      <span className="sr-only">Open case overview for </span>
+      <span className="sr-only">{t("hearingsTable_openCaseOverviewFor")} </span>
       {causeTitle(hearing)}
     </button>
   );
@@ -255,6 +243,7 @@ export function HearingSessionButton({
   onPassOver: (hearing: CourtHearing) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   const { court } = useCourt();
   /* One ref for whichever of Start and End is showing, so focus can land on the control
      after Pass over takes the chevron away (`PassOverMenu`). */
@@ -328,43 +317,44 @@ export function HearingSessionButton({
         )}
         onClick={() => onStartHearing(hearing)}
       >
-        Start hearing
+        {t("hearingsTable_startHearing")}
       </Button>
     );
   } else if (canEndHearing(hearing.status)) {
-    session = (
-      /**
-       * Destructive and filled, wherever it appears (owner, 2026-09-12).
-       *
-       * The slot it replaces is a teal-edged outline button, so the change of state is a
-       * change of everything: edge to fill, brand to destructive, wait to stop. It used
-       * to be the same outline box with one word swapped, which is what the owner was
-       * looking at — and the hazard behind it is real, because the two live in one box
-       * one press apart and ending a sitting cannot be undone.
-       *
-       * `destructive` and not `destructive-solid`. Every one of the nine solid
-       * destructives in this app sits in an `AlertDialogAction` — the button you press
-       * *after* confirming a discard or a removal — and the DS reserves that weight for
-       * exactly that. This one is pressed straight off the row with nothing in between,
-       * which is the soft variant's job here and in the registrations overlay's Reject.
-       *
-       * Recorded because it was argued: ending a hearing is the ordinary and correct
-       * close of a sitting rather than a rejection, and the reading offered was a fill
-       * that says *stop* without borrowing the ink the product rejects people with. The
-       * owner heard it and chose this, which settles it — the act is irreversible, it is
-       * the one thing on the board that stops something, and the fill says so.
-       */
-      <Button
-        ref={sessionRef}
-        type="button"
-        variant="destructive"
-        {...SESSION_CONTROL}
-        className={cn(SESSION_SLOT_CLASS, "flex-1", split && "border-r-0")}
-        onClick={() => onEndHearing(hearing)}
-      >
-        End hearing
-      </Button>
-    );
+    session =
+      (
+        /**
+         * Destructive and filled, wherever it appears (owner, 2026-09-12).
+         *
+         * The slot it replaces is a teal-edged outline button, so the change of state is a
+         * change of everything: edge to fill, brand to destructive, wait to stop. It used
+         * to be the same outline box with one word swapped, which is what the owner was
+         * looking at — and the hazard behind it is real, because the two live in one box
+         * one press apart and ending a sitting cannot be undone.
+         *
+         * `destructive` and not `destructive-solid`. Every one of the nine solid
+         * destructives in this app sits in an `AlertDialogAction` — the button you press
+         * *after* confirming a discard or a removal — and the DS reserves that weight for
+         * exactly that. This one is pressed straight off the row with nothing in between,
+         * which is the soft variant's job here and in the registrations overlay's Reject.
+         *
+         * Recorded because it was argued: ending a hearing is the ordinary and correct
+         * close of a sitting rather than a rejection, and the reading offered was a fill
+         * that says *stop* without borrowing the ink the product rejects people with. The
+         * owner heard it and chose this, which settles it — the act is irreversible, it is
+         * the one thing on the board that stops something, and the fill says so.
+         */
+        <Button
+          ref={sessionRef}
+          type="button"
+          variant="destructive"
+          {...SESSION_CONTROL}
+          className={cn(SESSION_SLOT_CLASS, "flex-1", split && "border-r-0")}
+          onClick={() => onEndHearing(hearing)}
+        >
+          {t("hearingsTable_endHearing")}
+        </Button>
+      );
   }
   if (session) {
     /* Start's dress, or End's, carried onto the chevron so the pair reads as one
@@ -374,7 +364,10 @@ export function HearingSessionButton({
        to land. */
     const dress = canEndHearing(hearing.status) ? "destructive" : variant;
     return (
-      <ButtonGroup aria-label={`Hearing, item ${hearing.item}`} className={className}>
+      <ButtonGroup
+        aria-label={t("hearingsTable_hearingItemItem", { item: String(hearing.item) })}
+        className={className}
+      >
         {session}
         {split ? (
           <PassOverMenu
@@ -400,13 +393,8 @@ export function HearingSessionButton({
        an *act* and there is no act here. A spent slot painted teal would be the one
        primary on the overlay spent on a control that does nothing, and the dimming
        would be doing the work colour is supposed to do. */
-    <Button
-      type="button"
-      disabled
-      variant="outline"
-      className={cn(SESSION_SLOT_CLASS, className)}
-    >
-      Hearing ended
+    <Button type="button" disabled variant="outline" className={cn(SESSION_SLOT_CLASS, className)}>
+      {t("hearingsTable_hearingEnded")}
     </Button>
   );
 }
@@ -469,6 +457,7 @@ function PassOverMenu({
   /** The session control beside the chevron — focus's place when the row stays put. */
   sessionRef: React.RefObject<HTMLButtonElement | null>;
 }) {
+  const t = useTranslations();
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   /* Where the row stood when Pass over was chosen; `undefined` while the menu closes
      any other way, and Radix's own return to the trigger is left alone. */
@@ -481,13 +470,15 @@ function PassOverMenu({
           type="button"
           variant={dress}
           size="icon"
-          aria-label={`Pass over item ${hearing.item}, ${causeTitle(hearing)}`}
+          aria-label={t("hearingsTable_passOverItemItemCauseTitle", {
+            item: String(hearing.item),
+            causeTitle: causeTitle(hearing),
+          })}
           className={cn(
             "relative before:absolute before:top-1/2 before:left-0 before:h-4 before:w-px before:-translate-y-1/2",
             dress === "outline" &&
               "border-2 border-primary text-primary before:bg-primary hover:bg-brand-muted hover:text-brand-muted-foreground aria-expanded:bg-brand-muted aria-expanded:text-brand-muted-foreground dark:hover:bg-brand-muted dark:aria-expanded:bg-brand-muted",
-            dress === "default" &&
-              "before:bg-primary-foreground aria-expanded:bg-primary-hover",
+            dress === "default" && "before:bg-primary-foreground aria-expanded:bg-primary-hover",
             dress === "destructive" &&
               "before:bg-destructive-muted-foreground aria-expanded:bg-destructive-muted-hover",
           )}
@@ -507,9 +498,7 @@ function PassOverMenu({
           if (from === undefined) return;
           passedFrom.current = undefined;
           event.preventDefault();
-          requestAnimationFrame(() =>
-            sessionControlAfterPassOver(from, sessionRef)?.focus(),
-          );
+          requestAnimationFrame(() => sessionControlAfterPassOver(from, sessionRef)?.focus());
         }}
       >
         <DropdownMenuItem
@@ -519,7 +508,7 @@ function PassOverMenu({
           }}
         >
           <UserRoundXIcon aria-hidden />
-          Pass over
+          {t("hearingsTable_passOver")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -553,10 +542,7 @@ function sessionControlAfterPassOver(
   if (!from) return sessionRef.current;
   if (!from.list.isConnected) return null;
   const rows = Array.from(from.list.children);
-  const order = [
-    ...rows.slice(from.index),
-    ...rows.slice(0, from.index).reverse(),
-  ];
+  const order = [...rows.slice(from.index), ...rows.slice(0, from.index).reverse()];
   for (const row of order) {
     const control = row.querySelector<HTMLElement>("[data-session-control]");
     if (control) return control;
@@ -682,10 +668,17 @@ export function HearingOrdersButton({
   onOpen?: (hearing: CourtHearing) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   const { court } = useCourt();
   const label = drafted
-    ? `Resume draft order for item ${hearing.item}, ${causeTitle(hearing)}`
-    : `Order for item ${hearing.item}, ${causeTitle(hearing)}`;
+    ? t("hearingsTable_resumeDraftOrderForItemItem", {
+        item: String(hearing.item),
+        causeTitle: causeTitle(hearing),
+      })
+    : t("hearingsTable_orderForItemItemCauseTitle", {
+        item: String(hearing.item),
+        causeTitle: causeTitle(hearing),
+      });
   /* One column, two preconditions — see above — and neither of them is asked about an
      order that has already been drawn up. */
   const open =
@@ -739,9 +732,9 @@ export function HearingOrdersButton({
       );
   const content = named ? (
     drafted ? (
-      "Resume draft"
+      t("hearingsTable_resumeDraft")
     ) : (
-      "Open order"
+      t("hearingsTable_openOrder")
     )
   ) : drafted ? (
     <FilePenLineIcon aria-hidden />
@@ -787,7 +780,7 @@ export function HearingOrdersButton({
            colour is never allowed to be the only carrier (`ACCESSIBILITY.md` — status
            without colour-alone). The tick is the third carrier: it survives greyscale
            and every form of colour blindness, which the green on its own does not. */
-        aria-label={recorded ? `${label} (order recorded)` : label}
+        aria-label={recorded ? t("hearingsTable_labelOrderRecorded", { label }) : label}
         onClick={() => onOpen?.(hearing)}
       >
         {content}
@@ -821,7 +814,7 @@ export function HearingOrdersButton({
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>{control}</TooltipTrigger>
-        <TooltipContent>Draft</TooltipContent>
+        <TooltipContent>{t("hearingsTable_draft")}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -874,24 +867,24 @@ export function HearingRowActions({
           <NextPurposeField hearing={hearing} />
         </div>
       ) : null}
-    <div className="flex items-center gap-2">
-      <HearingSessionButton
-        hearing={hearing}
-        seat={seat}
-        onStartHearing={onStartHearing}
-        onEndHearing={onEndHearing}
-        onPassOver={onPassOver}
-        className="min-w-0 flex-1"
-      />
-      <HearingOrdersButton
-        hearing={hearing}
-        seat={seat}
-        named={ordersIsTheRow}
-        drafted={drafted}
-        onOpen={onOpenOrder}
-        className={ordersIsTheRow ? "min-w-0 flex-1" : undefined}
-      />
-    </div>
+      <div className="flex items-center gap-2">
+        <HearingSessionButton
+          hearing={hearing}
+          seat={seat}
+          onStartHearing={onStartHearing}
+          onEndHearing={onEndHearing}
+          onPassOver={onPassOver}
+          className="min-w-0 flex-1"
+        />
+        <HearingOrdersButton
+          hearing={hearing}
+          seat={seat}
+          named={ordersIsTheRow}
+          drafted={drafted}
+          onOpen={onOpenOrder}
+          className={ordersIsTheRow ? "min-w-0 flex-1" : undefined}
+        />
+      </div>
     </div>
   );
 }
@@ -957,11 +950,7 @@ export function HearingsTable({
   };
   /** The columns on screen, in order. */
   columns: readonly CauseListColumn[];
-  onMoveColumn: (
-    from: CauseListColumnId,
-    to: CauseListColumnId,
-    side?: DropSide,
-  ) => void;
+  onMoveColumn: (from: CauseListColumnId, to: CauseListColumnId, side?: DropSide) => void;
   onShiftColumn: (id: CauseListColumnId, delta: -1 | 1) => void;
   onOpenCase: (hearing: CourtHearing) => void;
   onStartHearing: (hearing: CourtHearing) => void;
@@ -969,6 +958,7 @@ export function HearingsTable({
   onPassOver: (hearing: CourtHearing) => void;
   onOpenOrder?: (hearing: CourtHearing) => void;
 }) {
+  const t = useTranslations();
   const drafts = useOrderDrafts();
   const [dragging, setDragging] = React.useState<CauseListColumnId | null>(null);
   const [over, setOver] = React.useState<{
@@ -976,10 +966,7 @@ export function HearingsTable({
     side: DropSide;
   } | null>(null);
 
-  function onDragStart(
-    event: React.DragEvent<HTMLTableCellElement>,
-    id: CauseListColumnId,
-  ) {
+  function onDragStart(event: React.DragEvent<HTMLTableCellElement>, id: CauseListColumnId) {
     event.dataTransfer.setData("text/plain", id);
     event.dataTransfer.effectAllowed = "move";
     setDragging(id);
@@ -1000,24 +987,15 @@ export function HearingsTable({
     }
   }
 
-  function onDragOver(
-    event: React.DragEvent<HTMLTableCellElement>,
-    id: CauseListColumnId,
-  ) {
+  function onDragOver(event: React.DragEvent<HTMLTableCellElement>, id: CauseListColumnId) {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
     const rect = event.currentTarget.getBoundingClientRect();
-    const side: DropSide =
-      event.clientX < rect.left + rect.width / 2 ? "before" : "after";
-    setOver((current) =>
-      current?.id === id && current.side === side ? current : { id, side },
-    );
+    const side: DropSide = event.clientX < rect.left + rect.width / 2 ? "before" : "after";
+    setOver((current) => (current?.id === id && current.side === side ? current : { id, side }));
   }
 
-  function onDrop(
-    event: React.DragEvent<HTMLTableCellElement>,
-    id: CauseListColumnId,
-  ) {
+  function onDrop(event: React.DragEvent<HTMLTableCellElement>, id: CauseListColumnId) {
     event.preventDefault();
     const from = event.dataTransfer.getData("text/plain");
     if (isCauseListColumnId(from)) {
@@ -1056,22 +1034,16 @@ export function HearingsTable({
            without calling the matter. `rowOpenerClass` fills the cell so the target is
            the row's height (`ACCESSIBILITY.md` §8). */
         return (
-          <HearingCaseButton
-            hearing={hearing}
-            onOpen={onOpenCase}
-            className="flex items-center"
-          />
+          <HearingCaseButton hearing={hearing} onOpen={onOpenCase} className="flex items-center" />
         );
       case "caseNumber":
         /* The product's one identifier treatment; it stops its own click from reaching
            the row opener. */
-        return <Identifier value={hearing.caseNumber} label="case number" />;
+        return <Identifier value={hearing.caseNumber} label={t("hearingsTable_caseNumber")} />;
       case "advocates":
         return (
           <CounselCell
-            complainant={counselFor(hearing, "complainant").map(
-              (counsel) => counsel.name,
-            )}
+            complainant={counselFor(hearing, "complainant").map((counsel) => counsel.name)}
             accused={counselFor(hearing, "accused").map((counsel) => counsel.name)}
             dense
           />
@@ -1082,10 +1054,7 @@ export function HearingsTable({
         return courtCaseStageLabel(hearing.stage);
       case "status":
         return (
-          <Badge
-            variant={courtHearingStatusVariant(hearing.status)}
-            className="w-fit"
-          >
+          <Badge variant={courtHearingStatusVariant(hearing.status)} className="w-fit">
             {courtHearingStatusLabel(hearing.status)}
           </Badge>
         );
@@ -1124,19 +1093,14 @@ export function HearingsTable({
   return (
     <>
       <p id={COLUMNS_HINT_ID} className="sr-only">
-        Drag a column heading to change its order. With a heading focused, press Alt
-        and Left arrow or Alt and Right arrow to move it. Show, hide or reset columns
-        from Edit columns.
+        {t("hearingsTable_dragAColumnHeadingToChange")}
       </p>
       <Table
         className="w-full border-separate border-spacing-0 text-body-compact"
         aria-describedby={COLUMNS_HINT_ID}
       >
         <TableHeader>
-          <TableRow
-            className={TABLE_HEAD_ROW}
-            onDragOver={dragging ? autoScroll : undefined}
-          >
+          <TableRow className={TABLE_HEAD_ROW} onDragOver={dragging ? autoScroll : undefined}>
             {selection ? (
               <TableHead className={cn(TABLE_HEAD, "w-12")}>
                 <Checkbox
@@ -1144,17 +1108,15 @@ export function HearingsTable({
                   onCheckedChange={(next) => selection.onToggleAll(next === true)}
                   aria-label={
                     selection.all === true
-                      ? "Clear the selection"
-                      : "Select every hearing in this list"
+                      ? t("hearingsTable_clearTheSelection")
+                      : t("hearingsTable_selectEveryHearingInThisList")
                   }
                 />
               </TableHead>
             ) : null}
             {columns.map((column) => {
               const landing =
-                dragging && dragging !== column.id && over?.id === column.id
-                  ? over.side
-                  : null;
+                dragging && dragging !== column.id && over?.id === column.id ? over.side : null;
               return (
                 <TableHead
                   key={column.id}
@@ -1189,7 +1151,7 @@ export function HearingsTable({
                     aria-hidden
                     className="absolute top-1/2 left-0.5 size-3.5 -translate-y-1/2 text-muted-foreground"
                   />
-                  {column.label}
+                  {translateText(t, column.label)}
                 </TableHead>
               );
             })}
@@ -1199,20 +1161,13 @@ export function HearingsTable({
           {/* The header is a well, not a band welded to the rows (ui-craft §4);
               `border-separate` has no per-edge row gap, so the gap is one inert row. */}
           <tr aria-hidden="true">
-            <td
-              colSpan={columns.length + (selection ? 1 : 0)}
-              className="h-2 p-0"
-            />
+            <td colSpan={columns.length + (selection ? 1 : 0)} className="h-2 p-0" />
           </tr>
           {rows.map((hearing) => (
             <TableRow
               key={hearing.id}
-              data-state={
-                selection?.selected.has(hearing.id) ? "selected" : undefined
-              }
-              {...rowActivation(
-                tableRowClass({ selectable: Boolean(selection) }),
-              )}
+              data-state={selection?.selected.has(hearing.id) ? "selected" : undefined}
+              {...rowActivation(tableRowClass({ selectable: Boolean(selection) }))}
             >
               {selection ? (
                 <TableCell className={cn(TABLE_CELL, "w-12")}>
@@ -1220,7 +1175,10 @@ export function HearingsTable({
                     checked={selection.selected.has(hearing.id)}
                     onCheckedChange={() => selection.onToggle(hearing.id)}
                     onClick={(event) => event.stopPropagation()}
-                    aria-label={`Select item ${hearing.item}, ${causeTitle(hearing)}`}
+                    aria-label={t("hearingsTable_selectItemItemCauseTitle", {
+                      item: String(hearing.item),
+                      causeTitle: causeTitle(hearing),
+                    })}
                   />
                 </TableCell>
               ) : null}

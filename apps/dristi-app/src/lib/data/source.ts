@@ -25,7 +25,10 @@ function asSource(raw: string | undefined): DataSource | null {
  * was the whole app's switch before this one existed). Everything else is `api`, so a
  * build with nothing set never shows demo data.
  */
-export function parseDataSource(dataEnv: string | undefined, authEnv: string | undefined): DataSource {
+export function parseDataSource(
+  dataEnv: string | undefined,
+  authEnv: string | undefined,
+): DataSource {
   return asSource(dataEnv) ?? (asSource(authEnv) === "sandbox" ? "sandbox" : "api");
 }
 
@@ -40,10 +43,13 @@ export function parseAuthSource(authEnv: string | undefined, dataSource: DataSou
 
 export const DATA_SOURCE: DataSource = parseDataSource(
   process.env.NEXT_PUBLIC_DATA_SOURCE,
-  process.env.NEXT_PUBLIC_AUTH_SOURCE
+  process.env.NEXT_PUBLIC_AUTH_SOURCE,
 );
 
-export const AUTH_SOURCE: DataSource = parseAuthSource(process.env.NEXT_PUBLIC_AUTH_SOURCE, DATA_SOURCE);
+export const AUTH_SOURCE: DataSource = parseAuthSource(
+  process.env.NEXT_PUBLIC_AUTH_SOURCE,
+  DATA_SOURCE,
+);
 
 /**
  * This build serves sandbox data. Gates demo-only behaviour: seeding, "Reset sandbox
@@ -105,7 +111,7 @@ const NOT_METHODS = new Set(["then", "toJSON", "$$typeof"]);
 export function selectRepository<T extends object>(
   source: DataSource,
   feature: string,
-  make: RepositoryFactories<T>
+  make: RepositoryFactories<T>,
 ): T {
   if (source === "sandbox") return make.sandbox();
   const http = make.http();
@@ -147,7 +153,10 @@ export function selectRepository<T extends object>(
  *     http: () => new HttpTasksRepository() satisfies OnlyContract<HttpTasksRepository, TasksRepository>,
  *   });
  */
-export function repositoryFor<T extends object>(feature: string, make: RepositoryFactories<T>): () => T {
+export function repositoryFor<T extends object>(
+  feature: string,
+  make: RepositoryFactories<T>,
+): () => T {
   let instance: T | null = null;
   return () => (instance ??= selectRepository(DATA_SOURCE, feature, make));
 }

@@ -22,19 +22,14 @@ describe("SIGN_BAIL_BOND_QUEUE", () => {
   });
 
   it("shows the rail the number of bonds actually waiting", () => {
-    const pending = SIGN_BAIL_BOND_QUEUE.filter(
-      (bond) => bond.status === "pending-signature",
-    );
+    const pending = SIGN_BAIL_BOND_QUEUE.filter((bond) => bond.status === "pending-signature");
     assert.equal(SIGN_BAIL_BOND_QUEUE_COUNT, pending.length);
   });
 
   it("carries a case with two bonds under different litigants", () => {
     const byCase = new Map<string, string[]>();
     for (const bond of SIGN_BAIL_BOND_QUEUE) {
-      byCase.set(bond.caseNumber, [
-        ...(byCase.get(bond.caseNumber) ?? []),
-        bond.litigant,
-      ]);
+      byCase.set(bond.caseNumber, [...(byCase.get(bond.caseNumber) ?? []), bond.litigant]);
     }
     const shared = [...byCase.values()].find((litigants) => litigants.length > 1);
     assert.ok(shared, "no case carries more than one bond");
@@ -63,19 +58,14 @@ describe("SIGN_BAIL_BOND_QUEUE", () => {
 describe("filterSignBailBonds", () => {
   it("lists the pending queue when nothing is searched for", () => {
     assert.equal(
-      filterSignBailBonds(SIGN_BAIL_BOND_QUEUE, EMPTY_SIGN_BAIL_BOND_FILTERS)
-        .length,
+      filterSignBailBonds(SIGN_BAIL_BOND_QUEUE, EMPTY_SIGN_BAIL_BOND_FILTERS).length,
       SIGN_BAIL_BOND_QUEUE_COUNT,
     );
   });
 
   it("finds a bond by case number, case name and litigant alike", () => {
     const bond = SIGN_BAIL_BOND_QUEUE[0];
-    for (const query of [
-      bond.caseNumber,
-      bond.parties.complainant,
-      bond.litigant,
-    ]) {
+    for (const query of [bond.caseNumber, bond.parties.complainant, bond.litigant]) {
       const found = filterSignBailBonds(SIGN_BAIL_BOND_QUEUE, { query });
       assert.ok(
         found.some((row) => row.id === bond.id),
@@ -93,19 +83,12 @@ describe("filterSignBailBonds", () => {
   });
 
   it("returns nothing for a query no bond matches", () => {
-    assert.deepEqual(
-      filterSignBailBonds(SIGN_BAIL_BOND_QUEUE, { query: "zzzz no such case" }),
-      [],
-    );
+    assert.deepEqual(filterSignBailBonds(SIGN_BAIL_BOND_QUEUE, { query: "zzzz no such case" }), []);
   });
 
   it("drops a bond once it is signed or rejected", () => {
     const [first, second] = SIGN_BAIL_BOND_QUEUE;
-    const signed = signSelectedBailBonds(
-      SIGN_BAIL_BOND_QUEUE,
-      new Set([first.id]),
-      "2026-09-03",
-    );
+    const signed = signSelectedBailBonds(SIGN_BAIL_BOND_QUEUE, new Set([first.id]), "2026-09-03");
     const then = rejectBailBond(signed, second.id);
     const listed = filterSignBailBonds(then, EMPTY_SIGN_BAIL_BOND_FILTERS);
     assert.ok(!listed.some((bond) => bond.id === first.id));
@@ -117,11 +100,7 @@ describe("filterSignBailBonds", () => {
 describe("signSelectedBailBonds", () => {
   it("signs the chosen bonds and stamps the day", () => {
     const bond = SIGN_BAIL_BOND_QUEUE[0];
-    const next = signSelectedBailBonds(
-      SIGN_BAIL_BOND_QUEUE,
-      new Set([bond.id]),
-      "2026-09-03",
-    );
+    const next = signSelectedBailBonds(SIGN_BAIL_BOND_QUEUE, new Set([bond.id]), "2026-09-03");
     const signed = next.find((row) => row.id === bond.id);
     assert.equal(signed?.status, "signed");
     assert.equal(signed?.signedOn, "2026-09-03");
@@ -129,11 +108,7 @@ describe("signSelectedBailBonds", () => {
 
   it("leaves every other bond alone", () => {
     const bond = SIGN_BAIL_BOND_QUEUE[0];
-    const next = signSelectedBailBonds(
-      SIGN_BAIL_BOND_QUEUE,
-      new Set([bond.id]),
-      "2026-09-03",
-    );
+    const next = signSelectedBailBonds(SIGN_BAIL_BOND_QUEUE, new Set([bond.id]), "2026-09-03");
     for (const row of next) {
       if (row.id === bond.id) continue;
       assert.equal(row.status, "pending-signature");
@@ -143,35 +118,18 @@ describe("signSelectedBailBonds", () => {
 
   it("signs one of a case's two bonds without touching the other", () => {
     const pairs = SIGN_BAIL_BOND_QUEUE.filter(
-      (bond) =>
-        SIGN_BAIL_BOND_QUEUE.filter((row) => row.caseNumber === bond.caseNumber)
-          .length > 1,
+      (bond) => SIGN_BAIL_BOND_QUEUE.filter((row) => row.caseNumber === bond.caseNumber).length > 1,
     );
     const [one, other] = pairs;
-    const next = signSelectedBailBonds(
-      SIGN_BAIL_BOND_QUEUE,
-      new Set([one.id]),
-      "2026-09-03",
-    );
+    const next = signSelectedBailBonds(SIGN_BAIL_BOND_QUEUE, new Set([one.id]), "2026-09-03");
     assert.equal(next.find((row) => row.id === one.id)?.status, "signed");
-    assert.equal(
-      next.find((row) => row.id === other.id)?.status,
-      "pending-signature",
-    );
+    assert.equal(next.find((row) => row.id === other.id)?.status, "pending-signature");
   });
 
   it("ignores an id the queue has moved on from", () => {
     const bond = SIGN_BAIL_BOND_QUEUE[0];
-    const once = signSelectedBailBonds(
-      SIGN_BAIL_BOND_QUEUE,
-      new Set([bond.id]),
-      "2026-09-03",
-    );
-    const twice = signSelectedBailBonds(
-      once,
-      new Set([bond.id, "no-such-bond"]),
-      "2026-09-10",
-    );
+    const once = signSelectedBailBonds(SIGN_BAIL_BOND_QUEUE, new Set([bond.id]), "2026-09-03");
+    const twice = signSelectedBailBonds(once, new Set([bond.id, "no-such-bond"]), "2026-09-10");
     assert.equal(twice.find((row) => row.id === bond.id)?.signedOn, "2026-09-03");
   });
 });
@@ -181,19 +139,12 @@ describe("rejectBailBond", () => {
     const bond = SIGN_BAIL_BOND_QUEUE[0];
     const next = rejectBailBond(SIGN_BAIL_BOND_QUEUE, bond.id);
     assert.equal(next.find((row) => row.id === bond.id)?.status, "rejected");
-    assert.equal(
-      next.filter((row) => row.status === "rejected").length,
-      1,
-    );
+    assert.equal(next.filter((row) => row.status === "rejected").length, 1);
   });
 
   it("cannot refuse a bond that is already signed", () => {
     const bond = SIGN_BAIL_BOND_QUEUE[0];
-    const signed = signSelectedBailBonds(
-      SIGN_BAIL_BOND_QUEUE,
-      new Set([bond.id]),
-      "2026-09-03",
-    );
+    const signed = signSelectedBailBonds(SIGN_BAIL_BOND_QUEUE, new Set([bond.id]), "2026-09-03");
     const next = rejectBailBond(signed, bond.id);
     assert.equal(next.find((row) => row.id === bond.id)?.status, "signed");
   });
@@ -216,9 +167,7 @@ describe("buildSignBailBondDocument", () => {
 
   it("tells two bonds on one case apart", () => {
     const [one, other] = SIGN_BAIL_BOND_QUEUE.filter(
-      (bond) =>
-        SIGN_BAIL_BOND_QUEUE.filter((row) => row.caseNumber === bond.caseNumber)
-          .length > 1,
+      (bond) => SIGN_BAIL_BOND_QUEUE.filter((row) => row.caseNumber === bond.caseNumber).length > 1,
     );
     assert.notEqual(
       signBailBondDocumentText(buildSignBailBondDocument(one)),
@@ -233,11 +182,7 @@ describe("buildSignBailBondDocument", () => {
 
   it("names the signing magistrate once the bond is signed", () => {
     const bond = SIGN_BAIL_BOND_QUEUE[0];
-    const [signed] = signSelectedBailBonds(
-      [bond],
-      new Set([bond.id]),
-      "2026-09-03",
-    );
+    const [signed] = signSelectedBailBonds([bond], new Set([bond.id]), "2026-09-03");
     const document = buildSignBailBondDocument(signed);
     assert.match(document.signature, /magistrate/i);
     assert.match(document.signature, /3 September 2026/);

@@ -11,11 +11,7 @@ import {
 } from "@/components/chrome/table-plate";
 import { CounselCell } from "@/components/employee/counsel-cell";
 import { markArrival } from "@/components/employee/use-arrival";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import {
   Table,
   TableBody,
@@ -25,13 +21,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { causeTitle, counselFor } from "@/lib/employee/hearings";
-import {
-  delayDays,
-  type CognizanceCase,
-  type CognizanceTab,
-} from "@/lib/employee/cognizance";
+import { delayDays, type CognizanceCase, type CognizanceTab } from "@/lib/employee/cognizance";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /** Where the queue's rows open. */
 export const COGNIZANCE_PATH = "/employee/cognizance";
@@ -51,6 +44,7 @@ export function CognizanceCaseLink({
   matter: CognizanceCase;
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <Link
       href={`${COGNIZANCE_PATH}/${matter.id}`}
@@ -58,7 +52,7 @@ export function CognizanceCaseLink({
       {...rowOpener}
       className={cn(rowOpenerClass, className)}
     >
-      <span className="sr-only">Complaint from </span>
+      <span className="sr-only">{t("cognizanceTable_complaintFrom")} </span>
       {causeTitle(matter)}
     </Link>
   );
@@ -82,16 +76,17 @@ export function DelayCell({
   matter: CognizanceCase;
   standalone?: boolean;
 }) {
+  const t = useTranslations();
   const late = delayDays(matter);
   if (late === null) {
     /* Only reachable standalone: the column exists on the With delay tab alone. */
-    return <span className="text-muted-foreground">In time</span>;
+    return <span className="text-muted-foreground">{t("cognizanceTable_inTime")}</span>;
   }
   if (!standalone) return <span className="tabular-nums">{late}</span>;
   return (
     <span>
       <span className="tabular-nums">{late}</span>{" "}
-      {late === 1 ? "day late" : "days late"}
+      {late === 1 ? t("cognizanceTable_dayLate") : t("cognizanceTable_daysLate")}
     </span>
   );
 }
@@ -111,13 +106,8 @@ export function DelayCell({
  * The panel shell lives on the screen around this, so the table is one panel rather than
  * a box inside a box.
  */
-export function CognizanceTable({
-  rows,
-  tab,
-}: {
-  rows: CognizanceCase[];
-  tab: CognizanceTab;
-}) {
+export function CognizanceTable({ rows, tab }: { rows: CognizanceCase[]; tab: CognizanceTab }) {
+  const t = useTranslations();
   const showDelay = tab === "with-delay";
   const columns = showDelay ? 4 : 3;
   return (
@@ -125,17 +115,17 @@ export function CognizanceTable({
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
+            {t("cognizanceTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("cognizanceTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-48 whitespace-normal")}>
-            Advocates
+            {t("cognizanceTable_advocates")}
           </TableHead>
           {showDelay ? (
             <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap text-right")}>
-              Days of delay
+              {t("cognizanceTable_daysOfDelay")}
             </TableHead>
           ) : null}
         </TableRow>
@@ -152,31 +142,20 @@ export function CognizanceTable({
             <TableCell className={cn(TABLE_CELL, "min-w-64 whitespace-normal")}>
               {/* Fills the cell, so the target is the row's height rather than the line
                   box the text happens to occupy. */}
-              <CognizanceCaseLink
-                matter={matter}
-                className="flex min-h-10 w-full items-center"
-              />
+              <CognizanceCaseLink matter={matter} className="flex min-h-10 w-full items-center" />
             </TableCell>
-            <TableCell
-              className={cn(TABLE_CELL, "whitespace-nowrap")}
-            >
-              <Identifier value={matter.caseNumber} label="case number" />
+            <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
+              <Identifier value={matter.caseNumber} label={t("cognizanceTable_caseNumberLabel")} />
             </TableCell>
             <TableCell className={cn(TABLE_CELL, "min-w-48 whitespace-normal")}>
               <CounselCell
-                complainant={counselFor(matter, "complainant").map(
-                  (counsel) => counsel.name,
-                )}
-                accused={counselFor(matter, "accused").map(
-                  (counsel) => counsel.name,
-                )}
+                complainant={counselFor(matter, "complainant").map((counsel) => counsel.name)}
+                accused={counselFor(matter, "accused").map((counsel) => counsel.name)}
                 dense
               />
             </TableCell>
             {showDelay ? (
-              <TableCell
-                className={cn(TABLE_CELL, "text-right whitespace-nowrap")}
-              >
+              <TableCell className={cn(TABLE_CELL, "text-right whitespace-nowrap")}>
                 <DelayCell matter={matter} />
               </TableCell>
             ) : null}

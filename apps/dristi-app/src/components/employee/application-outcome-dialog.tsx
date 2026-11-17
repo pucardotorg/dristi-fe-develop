@@ -13,10 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import {
   Select,
   SelectContent,
@@ -31,6 +28,7 @@ import {
   type ApplicationOutcome,
   type YesNo,
 } from "@/lib/employee/application-outcome";
+import { useTranslations } from "next-intl";
 
 /** What the order data knows of the application its Application item answers. */
 export type ApplicationOutcomeSubject = {
@@ -61,6 +59,7 @@ export function ApplicationOutcomeDialog({
   onOpenChange: (open: boolean) => void;
   onSave: (outcome: ApplicationOutcome) => void;
 }) {
+  const t = useTranslations();
   const [answers, setAnswers] = React.useState(outcome);
   /* Opened afresh: start from what the order data holds. */
   const [wasOpen, setWasOpen] = React.useState(open);
@@ -75,29 +74,31 @@ export function ApplicationOutcomeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90dvh] flex-col gap-4 sm:max-w-2xl" onInteractOutside={(event) => event.preventDefault()}>
+      <DialogContent
+        className="flex max-h-[90dvh] flex-col gap-4 sm:max-w-2xl"
+        onInteractOutside={(event) => event.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            Application · {subject.label}
+            {t("applicationOutcomeDialog_applicationLabel", { label: subject.label })}
           </DialogTitle>
           <DialogDescription>
-            Recorded in this order&rsquo;s data. The order data cannot be marked
-            complete until this is answered.
+            {t("applicationOutcomeDialog_recordedInThisOrdersDataThe")}
           </DialogDescription>
         </DialogHeader>
         {/* `-mx-1 px-1`: room for the fields' focus rings inside the scroll. */}
         <div className="-mx-1 flex min-h-0 flex-col gap-6 overflow-y-auto px-1 pb-1">
           <YesNoQuestion
             id={`${id}-onboard`}
-            label="Onboard the application?"
-            note={subject.onboarded ? "Already onboarded." : undefined}
+            label={t("applicationOutcomeDialog_onboardTheApplication")}
+            note={subject.onboarded ? t("applicationOutcomeDialog_alreadyOnboarded") : undefined}
             value={answers.onboard}
             disabled={subject.onboarded}
             onChange={(onboard) => change({ onboard })}
           />
           <YesNoQuestion
             id={`${id}-decided`}
-            label="Was a decision passed on the application?"
+            label={t("applicationOutcomeDialog_wasADecisionPassedOnThe")}
             value={answers.decided}
             onChange={(decided) => change({ decided })}
           />
@@ -105,11 +106,8 @@ export function ApplicationOutcomeDialog({
           {answers.decided === "yes" ? (
             <>
               <div className="flex min-w-0 flex-col gap-2">
-                <span
-                  id={`${id}-decision`}
-                  className="text-body-compact font-medium"
-                >
-                  What was decided?
+                <span id={`${id}-decision`} className="text-body-compact font-medium">
+                  {t("applicationOutcomeDialog_whatWasDecided")}
                 </span>
                 <Select
                   value={answers.decision || undefined}
@@ -119,14 +117,10 @@ export function ApplicationOutcomeDialog({
                     })
                   }
                 >
-                  <SelectTrigger
-                    aria-labelledby={`${id}-decision`}
-                    className="w-full"
-                  >
-                    <SelectValue placeholder="Choose one">
-                      {APPLICATION_DECISIONS.find(
-                        (entry) => entry.id === answers.decision,
-                      )?.label ?? null}
+                  <SelectTrigger aria-labelledby={`${id}-decision`} className="w-full">
+                    <SelectValue placeholder={t("applicationOutcomeDialog_chooseOne")}>
+                      {APPLICATION_DECISIONS.find((entry) => entry.id === answers.decision)
+                        ?.label ?? null}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -141,12 +135,10 @@ export function ApplicationOutcomeDialog({
               {subject.workflow ? (
                 <YesNoQuestion
                   id={`${id}-workflow`}
-                  label="Was the workflow for this application triggered?"
+                  label={t("applicationOutcomeDialog_wasTheWorkflowForThisApplication")}
                   note={subject.workflow}
                   value={answers.workflowTriggered}
-                  onChange={(workflowTriggered) =>
-                    change({ workflowTriggered })
-                  }
+                  onChange={(workflowTriggered) => change({ workflowTriggered })}
                 />
               ) : null}
             </>
@@ -156,7 +148,7 @@ export function ApplicationOutcomeDialog({
             <>
               <YesNoQuestion
                 id={`${id}-respond`}
-                label="Does the other party need to respond?"
+                label={t("applicationOutcomeDialog_doesTheOtherPartyNeedTo")}
                 value={answers.responseNeeded}
                 onChange={(responseNeeded) => change({ responseNeeded })}
               />
@@ -164,11 +156,8 @@ export function ApplicationOutcomeDialog({
                 <OrderDatePicker
                   id={`${id}-respond-by`}
                   label={
-                    <span
-                      id={`${id}-respond-by-label`}
-                      className="text-body-compact font-medium"
-                    >
-                      Respond by
+                    <span id={`${id}-respond-by-label`} className="text-body-compact font-medium">
+                      {t("applicationOutcomeDialog_respondBy")}
                     </span>
                   }
                   value={answers.respondBy}
@@ -180,11 +169,8 @@ export function ApplicationOutcomeDialog({
               <OrderDatePicker
                 id={`${id}-forward`}
                 label={
-                  <span
-                    id={`${id}-forward-label`}
-                    className="text-body-compact font-medium"
-                  >
-                    Bring the application forward again on
+                  <span id={`${id}-forward-label`} className="text-body-compact font-medium">
+                    {t("applicationOutcomeDialog_bringTheApplicationForwardAgainOn")}
                   </span>
                 }
                 value={answers.bringForwardOn}
@@ -202,7 +188,7 @@ export function ApplicationOutcomeDialog({
             className="w-full sm:w-auto"
             onClick={() => onOpenChange(false)}
           >
-            Cancel
+            {t("common_cancel")}
           </Button>
           <Button
             type="button"
@@ -210,14 +196,14 @@ export function ApplicationOutcomeDialog({
             disabled={gaps.length > 0}
             onClick={() => onSave(answers)}
           >
-            Save
+            {t("common_save")}
           </Button>
           {gaps.length > 0 ? (
             <Badge
               variant="warning"
               className="self-start tabular-nums sm:order-first sm:mr-auto sm:self-auto"
             >
-              {gaps.length} to fill
+              {t("applicationOutcomeDialog_lengthToFill", { length: String(gaps.length) })}
             </Badge>
           ) : null}
         </DialogFooter>
@@ -243,13 +229,12 @@ function YesNoQuestion({
   disabled?: boolean;
   onChange: (value: YesNo) => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <span id={id} className="flex flex-col gap-0.5">
         <span className="text-body-compact font-medium">{label}</span>
-        {note ? (
-          <span className="text-caption text-muted-foreground">{note}</span>
-        ) : null}
+        {note ? <span className="text-caption text-muted-foreground">{note}</span> : null}
       </span>
       <SegmentedControl
         type="single"
@@ -263,10 +248,10 @@ function YesNoQuestion({
         className="w-full"
       >
         <SegmentedControlItem value="yes" className="flex-1">
-          Yes
+          {t("applicationOutcomeDialog_yes")}
         </SegmentedControlItem>
         <SegmentedControlItem value="no" className="flex-1">
-          No
+          {t("applicationOutcomeDialog_no")}
         </SegmentedControlItem>
       </SegmentedControl>
     </div>

@@ -81,12 +81,16 @@ async function saveOneCheque(caseId: string, draft: FilingDraft, index: number, 
 }
 
 /** Take a removed cheque's evidence rows off the case. A failure leaves them on it. */
-export function removeChequeEvidence(cheque: Pick<ChequeDetails, "chequeEvidenceId" | "returnMemoEvidenceId">) {
+export function removeChequeEvidence(
+  cheque: Pick<ChequeDetails, "chequeEvidenceId" | "returnMemoEvidenceId">,
+) {
   for (const id of [cheque.chequeEvidenceId, cheque.returnMemoEvidenceId]) {
     if (!id) continue;
-    getCaseFilingRepository().deleteEvidence(id).catch((error) => {
-      console.warn("[filing] couldn't remove cheque evidence from the case", id, error);
-    });
+    getCaseFilingRepository()
+      .deleteEvidence(id)
+      .catch((error) => {
+        console.warn("[filing] couldn't remove cheque evidence from the case", id, error);
+      });
   }
 }
 

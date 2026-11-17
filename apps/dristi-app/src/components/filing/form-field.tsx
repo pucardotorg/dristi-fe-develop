@@ -5,18 +5,8 @@ import { InfoIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-  FieldTitle,
-} from "@/components/ui/field";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Field, FieldDescription, FieldError, FieldLabel, FieldTitle } from "@/components/ui/field";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   FieldLock,
   FieldReadOnly,
@@ -25,18 +15,20 @@ import {
 } from "@/components/filing/posture";
 import { useFieldPolicy } from "@/components/filing/field-policy";
 import { defectState } from "@/lib/tasks/defects";
+import { useTranslations } from "next-intl";
 
 /** The `*` / "optional" marker after a label. */
 export function RequiredMark({ optional }: { optional?: boolean }) {
+  const t = useTranslations();
   if (optional) {
-    return <span className="font-normal text-muted-foreground">optional</span>;
+    return <span className="font-normal text-muted-foreground">{t("formField_optional")}</span>;
   }
   return (
     <>
       <span aria-hidden className="text-destructive">
         *
       </span>
-      <span className="sr-only">required</span>
+      <span className="sr-only">{t("formField_required")}</span>
     </>
   );
 }
@@ -47,6 +39,7 @@ export function RequiredMark({ optional }: { optional?: boolean }) {
  * carries a tip is still the height of one that doesn't.
  */
 export function LabelTip({ children }: { children: React.ReactNode }) {
+  const t = useTranslations();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -54,7 +47,7 @@ export function LabelTip({ children }: { children: React.ReactNode }) {
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="More about this field"
+          aria-label={t("formField_moreAboutThisField")}
           className="-my-3 -mr-2.5 -ml-2 align-middle text-muted-foreground"
         >
           <InfoIcon aria-hidden />
@@ -106,21 +99,18 @@ export function FormField({
   className?: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const correction = useCorrection();
   const instance = useCorrectionInstance();
   // A host's check on this field (bulk filing), when the section has nothing of its own to say.
   const policy = useFieldPolicy();
   const error = ownError ?? (policy && name ? policy.issueAt(instance, name) : null) ?? undefined;
-  const defect =
-    correction && name ? correction.defectAt(correction.step, instance, name) : null;
+  const defect = correction && name ? correction.defectAt(correction.step, instance, name) : null;
   const locked = !!correction && !defect;
 
-  const marker =
-    required || optional ? <RequiredMark optional={optional} /> : null;
+  const marker = required || optional ? <RequiredMark optional={optional} /> : null;
 
-  const resolved = defect
-    ? defectState(defect, correction?.valueOf(defect)) === "resolved"
-    : false;
+  const resolved = defect ? defectState(defect, correction?.valueOf(defect)) === "resolved" : false;
   const active = !!defect && correction?.activeDefect === defect.n;
   const hintId = defect ? `flagged-${defect.n}` : undefined;
 
@@ -138,14 +128,14 @@ export function FormField({
       id={hintId}
       className={cn(
         "shrink-0 self-center text-caption font-normal",
-        resolved ? "text-success-ink" : "text-muted-foreground"
+        resolved ? "text-success-ink" : "text-muted-foreground",
       )}
     >
-      · {resolved ? "corrected" : "flagged"}
+      · {resolved ? t("formField_corrected") : t("formField_flagged")}
       <span className="sr-only">
         {resolved
-          ? " by scrutiny, and corrected in the corrections panel"
-          : " by scrutiny. Correct it in the corrections panel"}
+          ? t("formField_byScrutinyAndCorrectedInThe")
+          : t("formField_byScrutinyCorrectItInThe")}
       </span>
     </span>
   ) : null;
@@ -169,7 +159,10 @@ export function FormField({
   );
 
   const field = (
-    <Field className={cn(asGroup ? "gap-3" : "gap-2", className)} data-invalid={error ? true : undefined}>
+    <Field
+      className={cn(asGroup ? "gap-3" : "gap-2", className)}
+      data-invalid={error ? true : undefined}
+    >
       {asGroup ? (
         <FieldTitle className="text-body-compact">{labelBody}</FieldTitle>
       ) : (
@@ -198,11 +191,7 @@ export function FormField({
         data-defect={defect.n}
         className={cn(
           "scroll-mt-6 border-l-2 pl-3 transition-colors",
-          resolved
-            ? "border-l-success-ink"
-            : active
-              ? "border-l-primary"
-              : "border-l-border"
+          resolved ? "border-l-success-ink" : active ? "border-l-primary" : "border-l-border",
         )}
       >
         <FieldReadOnly readOnly hintId={hintId}>

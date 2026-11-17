@@ -10,10 +10,7 @@ import { ListFooter } from "@/components/employee/list-footer";
 import { QueueAnnouncer } from "@/components/employee/queue-announcer";
 import { CourtFilters, CourtSortSelect } from "@/components/employee/court-filters";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -33,12 +30,7 @@ import {
   type DelayCondonationCase,
   type DelayCondonationFilters,
 } from "@/lib/employee/delay-condonation";
-import {
-  causeTitle,
-  counselFor,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { causeTitle, counselFor, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import { Identifier } from "@/components/chrome/identifier";
 import {
   caseSorts,
@@ -48,6 +40,7 @@ import {
   sortRows,
   type CourtSortSpec,
 } from "@/lib/employee/court-sort";
+import { useTranslations } from "next-intl";
 
 type DelayCondonationSort = "oldest-applied" | "newest-applied" | "delay" | "name";
 
@@ -61,8 +54,7 @@ const DELAY_CONDONATION_SORTS: CourtSortSpec<DelayCondonationCase, DelayCondonat
   {
     id: "delay",
     label: "Longest delay first",
-    compare: (a, b) =>
-      b.delayDays - a.delayDays || compareCaseNumbers(a.caseNumber, b.caseNumber),
+    compare: (a, b) => b.delayDays - a.delayDays || compareCaseNumbers(a.caseNumber, b.caseNumber),
   },
   caseSorts<DelayCondonationCase>()[2] as CourtSortSpec<DelayCondonationCase, DelayCondonationSort>,
 ];
@@ -89,6 +81,7 @@ const DELAY_CONDONATION_SORTS: CourtSortSpec<DelayCondonationCase, DelayCondonat
  * demo queue; they condone nothing and write no order.
  */
 export function DelayCondonationScreen() {
+  const t = useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used — every one of them, so the screen has a single rule rather than a live
      one and a deferred one. Every change resets to page one; the old Search button did
@@ -99,20 +92,20 @@ export function DelayCondonationScreen() {
   );
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(() => new Set());
   const [open, setOpen] = React.useState<DelayCondonationCase | null>(null);
   const searchRef = React.useRef<HTMLInputElement>(null);
 
   /* Answered rows leave the queue, so the list, the count above it and the
      pagination all shrink together. Nothing is written — see the dialog. */
-  const remaining = DELAY_CONDONATION_QUEUE.filter(
-    (matter) => !decidedIds.has(matter.id),
-  );
+  const remaining = DELAY_CONDONATION_QUEUE.filter((matter) => !decidedIds.has(matter.id));
   const [sort, setSort] = React.useState<DelayCondonationSort>("oldest-applied");
 
-  const rows = sortRows(filterDelayCondonationCases(remaining, filters), DELAY_CONDONATION_SORTS, sort);
+  const rows = sortRows(
+    filterDelayCondonationCases(remaining, filters),
+    DELAY_CONDONATION_SORTS,
+    sort,
+  );
 
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
   const currentPage = Math.min(page, pageCount);
@@ -144,15 +137,17 @@ export function DelayCondonationScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Delay condonation
+          {t("delayCondonationScreen_delayCondonation")}
         </h1>
         {/* The count is the whole point of the queue, so the supporting line
             carries it rather than restating the title. Singular is spelled
             out because "1 applications" is the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 application is waiting for review."
-            : `${remaining.length} applications are waiting for review.`}
+            ? t("delayCondonationScreen_1ApplicationIsWaitingForReview")
+            : t("delayCondonationScreen_lengthApplicationsAreWaitingForReview", {
+                length: String(remaining.length),
+              })}
         </p>
       </header>
 
@@ -179,17 +174,10 @@ export function DelayCondonationScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
-          <DelayCondonationEmpty
-            isFiltered={isFiltered}
-            onClear={clearFilters}
-          />
+          <DelayCondonationEmpty isFiltered={isFiltered} onClear={clearFilters} />
         ) : (
           <div className="flex min-w-0 flex-col gap-4">
             {/* min-w-0 lets this flex item shrink below the table's content
@@ -263,22 +251,23 @@ function DelayCondonationFilters({
   /** The list's sort control (`CourtSortSelect`), at the end of the row. */
   trailing?: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("delayCondonationScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: t("delayCondonationScreen_caseNameNumberOrAdvocate"),
       }}
       searchRef={searchRef}
       fields={[
         {
           id: "delay-condonation-stage",
-          label: "Stage",
+          label: t("delayCondonationScreen_stage"),
           value: filters.stage,
           all: "all",
-          allLabel: "All stages",
+          allLabel: t("delayCondonationScreen_allStages"),
           options: DELAY_CONDONATION_STAGES.map((stage) => ({
             value: stage.id,
             label: stage.label,
@@ -311,29 +300,28 @@ function DelayCondonationEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FolderCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FolderCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match these filters" : "Nothing waiting"}
+          {isFiltered
+            ? t("delayCondonationScreen_noMattersMatchTheseFilters")
+            : t("delayCondonationScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No delay condonation application matches the stage or search you asked for."
-            : "There are no delay condonation applications waiting for this court."}
+            ? t("delayCondonationScreen_noDelayCondonationApplicationMatchesThe")
+            : t("delayCondonationScreen_thereAreNoDelayCondonationApplications")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
+            {t("delayCondonationScreen_clearFilters")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -360,38 +348,31 @@ function DelayCondonationItemList({
   rows: DelayCondonationCase[];
   onOpen: (matter: DelayCondonationCase) => void;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((matter) => (
-        <QueueItemRow
-          key={matter.id}
-          className="flex flex-col gap-2"
-        >
-            <button
-              type="button"
-              onClick={() => onOpen(matter)}
-              {...rowOpener}
-                className={rowOpenerClass}
-            >
-              <span className="sr-only">Review </span>
-              {causeTitle(matter)}
-            </button>
+        <QueueItemRow key={matter.id} className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => onOpen(matter)}
+            {...rowOpener}
+            className={rowOpenerClass}
+          >
+            <span className="sr-only">{t("delayCondonationScreen_review")} </span>
+            {causeTitle(matter)}
+          </button>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={matter.caseNumber} label="case number" />
-            {" · "}
-            {delayCondonationStageLabel(matter.stage)}
-            {" · Applied "}
-            <span className="tabular-nums">
-              {formatDelayCondonationLongDate(matter.appliedOn)}
-            </span>
+            <Identifier value={matter.caseNumber} label={t("delayCondonationScreen_caseNumber")} />
+            {t.rich("delayCondonationScreen_delayCondonationStageLabelAppliedFormat", {
+              delayCondonationStageLabel: delayCondonationStageLabel(matter.stage),
+              formatDelayCondonationLongDate: formatDelayCondonationLongDate(matter.appliedOn),
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
           <CounselCell
-            complainant={counselFor(matter, "complainant").map(
-              (counsel) => counsel.name,
-            )}
-            accused={counselFor(matter, "accused").map(
-              (counsel) => counsel.name,
-            )}
+            complainant={counselFor(matter, "complainant").map((counsel) => counsel.name)}
+            accused={counselFor(matter, "accused").map((counsel) => counsel.name)}
           />
         </QueueItemRow>
       ))}

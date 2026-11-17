@@ -25,13 +25,19 @@ describe("additional details fields", () => {
   });
 
   it("leaves the total in brackets until an amount is typed", () => {
-    assert.equal(generateDetails("[Total Cheque Amount]", createBlankDraft("d7")), "[Total Cheque Amount]");
+    assert.equal(
+      generateDetails("[Total Cheque Amount]", createBlankDraft("d7")),
+      "[Total Cheque Amount]",
+    );
   });
 
   it("never touches markup", () => {
     const draft = createBlankDraft("d2");
     draft.accused[0].name = "Juned M.";
-    assert.equal(generateDetails('<p class="[Accused Name]">x</p>', draft), '<p class="[Accused Name]">x</p>');
+    assert.equal(
+      generateDetails('<p class="[Accused Name]">x</p>', draft),
+      '<p class="[Accused Name]">x</p>',
+    );
   });
 
   it("escapes values typed into the form", () => {
@@ -42,7 +48,10 @@ describe("additional details fields", () => {
 
   it("words values for the court it is given", () => {
     const draft = createBlankDraft("d6");
-    assert.equal(generateDetails("[Court Name]", draft, (t) => t.toUpperCase()), COURT.name.toUpperCase());
+    assert.equal(
+      generateDetails("[Court Name]", draft, (t) => t.toUpperCase()),
+      COURT.name.toUpperCase(),
+    );
   });
 
   it("joins one value per cheque as a sentence", () => {

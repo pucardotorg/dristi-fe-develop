@@ -31,10 +31,7 @@ import {
   sortRows,
   type CourtSortSpec,
 } from "@/lib/employee/court-sort";
-import {
-  rememberCognizanceTab,
-  useReturnedTab,
-} from "@/components/employee/cognizance-return";
+import { rememberCognizanceTab, useReturnedTab } from "@/components/employee/cognizance-return";
 import { useCourt } from "@/components/court/court-provider";
 import { courtProfile } from "@/lib/court/profiles";
 import {
@@ -50,14 +47,11 @@ import {
   type CognizanceNoticeFilter,
   type CognizanceTab,
 } from "@/lib/employee/cognizance";
-import {
-  counselFor,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { counselFor, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * Take cognizance — complaints on the register the magistrate has not yet decided to
@@ -82,15 +76,14 @@ import { Identifier } from "@/components/chrome/identifier";
  * of a complaint's file, not on the list.
  */
 export function CognizanceScreen() {
+  const t = useTranslations();
   /* Returning from a complaint, the queue slides in from the left — the direction it was
      left in, so coming back reads as coming back. */
   const arrival = useArrival();
   /* One state, not a draft and an applied one: the list answers as it is typed, so there
      is never a moment where what the bench has asked for and what the table shows
      disagree. Every change resets to page one. */
-  const [filters, setFilters] = React.useState<CognizanceFilters>(
-    EMPTY_COGNIZANCE_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<CognizanceFilters>(EMPTY_COGNIZANCE_FILTERS);
   /* The tab the magistrate left on, when they are coming back from a complaint; the
      first tab otherwise. Taken once on mount, then this screen's own. */
   /* Kerala splits the queue by delay; Gujarat by the type the case was registered as
@@ -117,8 +110,7 @@ export function CognizanceScreen() {
   const currentPage = Math.min(page, pageCount);
   const start = (currentPage - 1) * pageSize;
   const pageRows = rows.slice(start, start + pageSize);
-  const isFiltered =
-    filters.query !== "" || (filters.notice ?? "all") !== "all";
+  const isFiltered = filters.query !== "" || (filters.notice ?? "all") !== "all";
 
   function changeFilters(next: CognizanceFilters) {
     setFilters(next);
@@ -139,22 +131,21 @@ export function CognizanceScreen() {
 
   return (
     <div
-      className={cn(
-        "flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8",
-        arrival && ARRIVAL[arrival],
-      )}
+      className={cn("flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8", arrival && ARRIVAL[arrival])}
     >
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Take cognizance
+          {t("cognizanceScreen_takeCognizance")}
         </h1>
         {/* The count is the point of a queue, so the supporting line carries it rather
             than restating the title. Singular is spelled out, because "1 complaints" is
             the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {COGNIZANCE_QUEUE.length === 1
-            ? "1 complaint is on the register waiting for cognizance."
-            : `${COGNIZANCE_QUEUE.length} complaints are on the register waiting for cognizance.`}
+            ? t("cognizanceScreen_1ComplaintIsOnTheRegister")
+            : t("cognizanceScreen_lengthComplaintsAreOnTheRegister", {
+                length: String(COGNIZANCE_QUEUE.length),
+              })}
         </p>
       </header>
 
@@ -175,8 +166,8 @@ export function CognizanceScreen() {
             variant="line"
             aria-label={
               courtProfile(court).cognizanceSplit === "delay"
-                ? "Whether the complaint was filed in time"
-                : "The type the case was registered as"
+                ? t("cognizanceScreen_whetherTheComplaintWasFiledIn")
+                : t("cognizanceScreen_theTypeTheCaseWasRegistered")
             }
             className="h-10 w-max min-w-full justify-start rounded-none"
           >
@@ -199,11 +190,7 @@ export function CognizanceScreen() {
         </div>
 
         {tabs.map((queueTab) => (
-          <TabsContent
-            key={queueTab.id}
-            value={queueTab.id}
-            className="min-w-0 outline-none"
-          >
+          <TabsContent key={queueTab.id} value={queueTab.id} className="min-w-0 outline-none">
             {queueTab.id !== tab ? null : (
               /* One panel: filters, list and footer are one unit of work, so they share
                  one lifted sheet. Nothing inside draws a second frame. */
@@ -220,18 +207,10 @@ export function CognizanceScreen() {
                   }}
                 />
 
-                <QueueAnnouncer
-                  from={start + 1}
-                  to={start + pageRows.length}
-                  total={rows.length}
-                />
+                <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
                 {pageRows.length === 0 ? (
-                  <CognizanceEmpty
-                    tab={tab}
-                    isFiltered={isFiltered}
-                    onClear={clearFilters}
-                  />
+                  <CognizanceEmpty tab={tab} isFiltered={isFiltered} onClear={clearFilters} />
                 ) : (
                   <div className="flex min-w-0 flex-col gap-4">
                     {/* min-w-0 lets this flex item shrink below the table's content
@@ -297,26 +276,26 @@ export function CognizanceFiltersRow({
   sort: CognizanceSort;
   onSortChange: (sort: CognizanceSort) => void;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("cognizanceScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: t("cognizanceScreen_caseNameNumberOrAdvocate"),
       }}
       fields={[
         {
           /* Whether the demand notice reached the accused decides how cause of action is
              reckoned, so it is the one fact on the file the bench sorts a pile by. */
           id: "cognizance-notice",
-          label: "Demand notice",
+          label: t("cognizanceScreen_demandNotice"),
           value: filters.notice ?? "all",
           all: "all",
-          allLabel: "Any notice",
+          allLabel: t("cognizanceScreen_anyNotice"),
           options: COGNIZANCE_NOTICE_OPTIONS,
-          onApply: (value) =>
-            onChange({ ...filters, notice: value as CognizanceNoticeFilter }),
+          onApply: (value) => onChange({ ...filters, notice: value as CognizanceNoticeFilter }),
         },
       ]}
       trailing={
@@ -339,7 +318,9 @@ export type CognizanceSort = "oldest" | "newest" | "name" | "delay";
  * "Longest delay first" exists only where there is a delay to read: the late tab, whose
  * Days of delay column it sorts.
  */
-export function cognizanceSorts(tab: CognizanceTab): CourtSortSpec<CognizanceCase, CognizanceSort>[] {
+export function cognizanceSorts(
+  tab: CognizanceTab,
+): CourtSortSpec<CognizanceCase, CognizanceSort>[] {
   const [newest, oldest, name] = caseSorts<CognizanceCase>();
   const base = [oldest, newest, name] as CourtSortSpec<CognizanceCase, CognizanceSort>[];
   if (tab !== "with-delay") return base;
@@ -372,10 +353,11 @@ export function CognizanceEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const t = useTranslations();
   const clear =
     tab === "with-delay"
-      ? "No complaint filed beyond the month is waiting for a decision."
-      : "No complaint filed in time is waiting for a decision.";
+      ? t("cognizanceScreen_noComplaintFiledBeyondTheMonth")
+      : t("cognizanceScreen_noComplaintFiledInTimeIs");
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
@@ -383,18 +365,18 @@ export function CognizanceEmpty({
           {isFiltered ? <SearchXIcon aria-hidden /> : <StampIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No complaints match this search" : "Nothing waiting"}
+          {isFiltered
+            ? t("cognizanceScreen_noComplaintsMatchThisSearch")
+            : t("cognizanceScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
-          {isFiltered
-            ? "No complaint on this tab matches what you have asked for."
-            : clear}
+          {isFiltered ? t("cognizanceScreen_noComplaintOnThisTabMatches") : clear}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
+            {t("cognizanceScreen_clearFilters")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -410,13 +392,8 @@ export function CognizanceEmpty({
  * is spelled out with its unit here — on a phone there is no column header to name it —
  * and only on the tab that has one to show.
  */
-export function CognizanceItemList({
-  rows,
-  tab,
-}: {
-  rows: CognizanceCase[];
-  tab: CognizanceTab;
-}) {
+export function CognizanceItemList({ rows, tab }: { rows: CognizanceCase[]; tab: CognizanceTab }) {
+  const t = useTranslations();
   const showDelay = tab === "with-delay";
   return (
     <ul className="flex flex-col gap-3">
@@ -427,12 +404,9 @@ export function CognizanceItemList({
             "flex flex-col gap-2 rounded-lg bg-surface-sunken p-4 transition-colors hover:bg-accent-strong",
           )}
         >
-          <CognizanceCaseLink
-            matter={matter}
-            className="flex min-h-10 min-w-0 items-center"
-          />
+          <CognizanceCaseLink matter={matter} className="flex min-h-10 min-w-0 items-center" />
           <p className="text-caption text-muted-foreground">
-            <Identifier value={matter.caseNumber} label="case number" />
+            <Identifier value={matter.caseNumber} label={t("cognizanceScreen_caseNumber")} />
             {showDelay ? (
               <>
                 {" · "}
@@ -441,9 +415,7 @@ export function CognizanceItemList({
             ) : null}
           </p>
           <CounselCell
-            complainant={counselFor(matter, "complainant").map(
-              (counsel) => counsel.name,
-            )}
+            complainant={counselFor(matter, "complainant").map((counsel) => counsel.name)}
             accused={counselFor(matter, "accused").map((counsel) => counsel.name)}
           />
         </li>

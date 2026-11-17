@@ -14,6 +14,7 @@ import { useProfile } from "@/lib/filing/profile";
 import { FILINGS_HOME, stepHref } from "@/lib/filing/steps";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useTranslations } from "next-intl";
 
 /**
  * "Start filing" lands here: open a draft on the backend, make a blank draft under its id
@@ -21,6 +22,7 @@ import { Spinner } from "@/components/ui/spinner";
  * draft's own documents step so Back never returns to a page that would create another.
  */
 export function NewFiling() {
+  const t = useTranslations();
   const router = useRouter();
   const { profile, ready } = useProfile();
   const [error, setError] = React.useState<string | null>(null);
@@ -42,12 +44,12 @@ export function NewFiling() {
       try {
         await getRepository().putDraft(draft);
       } catch {
-        setError("We couldn't create a draft in this browser's storage.");
+        setError(t("newFiling_weCouldntCreateADraftIn"));
         return;
       }
       router.replace(stepHref(draft.id, "upload"));
     })();
-  }, [ready, profile, router]);
+  }, [ready, profile, router, t]);
 
   if (error) {
     return (
@@ -60,7 +62,7 @@ export function NewFiling() {
             <Button asChild variant="outline">
               <Link href={FILINGS_HOME}>
                 <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-                Back to dashboard
+                {t("newFiling_backToDashboard")}
               </Link>
             </Button>
           }
@@ -76,7 +78,7 @@ export function NewFiling() {
       className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
     >
       <Spinner className="mr-2 size-4" />
-      Starting a new filing…
+      {t("newFiling_startingANewFiling")}
     </div>
   );
 }

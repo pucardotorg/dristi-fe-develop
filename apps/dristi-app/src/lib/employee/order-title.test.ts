@@ -24,7 +24,10 @@ describe("order title", () => {
   });
 
   it("keeps a typed title", () => {
-    assert.equal(orderTitle({ blocks: [item("referral-to-adr", "b")], title: "Bail and ADR" }), "Bail and ADR");
+    assert.equal(
+      orderTitle({ blocks: [item("referral-to-adr", "b")], title: "Bail and ADR" }),
+      "Bail and ADR",
+    );
     assert.equal(orderTitle({ blocks: [], title: "   " }), "Order");
   });
 });

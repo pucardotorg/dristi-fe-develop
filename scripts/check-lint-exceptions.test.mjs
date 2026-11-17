@@ -8,7 +8,9 @@ import { CONFIG_PATH, findGrowth, parseExceptionLists } from "./check-lint-excep
 
 const config = (lists) =>
   Object.entries(lists)
-    .map(([name, files]) => `const ${name} = [\n${files.map((file) => `  "${file}",`).join("\n")}\n];`)
+    .map(
+      ([name, files]) => `const ${name} = [\n${files.map((file) => `  "${file}",`).join("\n")}\n];`,
+    )
     .join("\n");
 
 describe("check-lint-exceptions", () => {
@@ -19,14 +21,19 @@ describe("check-lint-exceptions", () => {
       [
         ["STILL_USE_STORAGE", ["a.tsx", "b.tsx"]],
         ["LIB_STILL_IMPORT_IDB", ["c.ts"]],
-      ]
+      ],
     );
   });
 
   it("reads the real config's lists", () => {
     const root = join(dirname(fileURLToPath(import.meta.url)), "..");
     const lists = parseExceptionLists(readFileSync(join(root, CONFIG_PATH), "utf8"));
-    for (const name of ["STILL_IMPORT_FIXTURES", "STILL_USE_STORAGE", "LIB_STILL_USE_STORAGE", "LIB_STILL_IMPORT_IDB"]) {
+    for (const name of [
+      "STILL_IMPORT_FIXTURES",
+      "STILL_USE_STORAGE",
+      "LIB_STILL_USE_STORAGE",
+      "LIB_STILL_IMPORT_IDB",
+    ]) {
       assert.ok(lists.get(name)?.length, name);
     }
   });
@@ -41,7 +48,9 @@ describe("check-lint-exceptions", () => {
   it("fails on a file added to a list the base had", () => {
     const base = parseExceptionLists(config({ STILL_USE_STORAGE: ["a.tsx"] }));
     const current = parseExceptionLists(config({ STILL_USE_STORAGE: ["a.tsx", "new.tsx"] }));
-    assert.deepEqual(findGrowth(base, current).added, [{ list: "STILL_USE_STORAGE", file: "new.tsx" }]);
+    assert.deepEqual(findGrowth(base, current).added, [
+      { list: "STILL_USE_STORAGE", file: "new.tsx" },
+    ]);
   });
 
   it("reports a list the base didn't have without failing", () => {

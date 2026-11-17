@@ -30,7 +30,7 @@ export function isViewer(name: string): boolean {
 /** The sides this case's record lists the viewer as counsel for. */
 export function viewerSides(record: CaseRecord): CounselSide[] {
   return (["complainant", "accused"] as const).filter((side) =>
-    counselFor(record, side).some((name) => name.includes(VIEWER_NAME))
+    counselFor(record, side).some((name) => name.includes(VIEWER_NAME)),
   );
 }
 

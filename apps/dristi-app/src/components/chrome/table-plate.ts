@@ -255,10 +255,5 @@ export function tableBodyClass({
   selectable = false,
   marksOpenRow = false,
 }: TableBodyOptions = {}): string {
-  return cn(
-    BODY_REST,
-    hover && BODY_HOVER,
-    selectable && BODY_SELECTED,
-    marksOpenRow && BODY_OPEN,
-  );
+  return cn(BODY_REST, hover && BODY_HOVER, selectable && BODY_SELECTED, marksOpenRow && BODY_OPEN);
 }

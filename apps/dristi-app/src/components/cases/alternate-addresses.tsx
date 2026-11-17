@@ -18,12 +18,7 @@ import { PlusIcon, Trash2Icon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
@@ -33,6 +28,7 @@ import {
   StructuredAddressFields,
   type StructuredAddress,
 } from "@/components/cases/structured-address";
+import { useTranslations } from "next-intl";
 
 export type AlternateAddress = {
   id: string;
@@ -41,6 +37,7 @@ export type AlternateAddress = {
 };
 
 export function AlternateAddresses({ subjectName }: { subjectName: string }) {
+  const t = useTranslations();
   const [addresses, setAddresses] = useState<AlternateAddress[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -73,11 +70,11 @@ export function AlternateAddresses({ subjectName }: { subjectName: string }) {
             variant="ghost"
             size="icon-sm"
             className="shrink-0 text-muted-foreground"
-            aria-label={`Remove the address in ${address.address.locality}`}
+            aria-label={t("alternateAddresses_removeTheAddressInLocality", {
+              locality: address.address.locality,
+            })}
             onClick={() =>
-              setAddresses((current) =>
-                current.filter((item) => item.id !== address.id)
-              )
+              setAddresses((current) => current.filter((item) => item.id !== address.id))
             }
           >
             <Trash2Icon aria-hidden />
@@ -87,8 +84,8 @@ export function AlternateAddresses({ subjectName }: { subjectName: string }) {
 
       <p className="text-body-compact text-muted-foreground">
         {addresses.length === 0
-          ? "Give the court another address to try, beyond what the complaint holds."
-          : "The court tries every address listed here."}
+          ? t("alternateAddresses_giveTheCourtAnotherAddressTo")
+          : t("alternateAddresses_theCourtTriesEveryAddressListed")}
       </p>
       <div>
         <Button
@@ -99,7 +96,7 @@ export function AlternateAddresses({ subjectName }: { subjectName: string }) {
           onClick={() => setOpen(true)}
         >
           <PlusIcon data-icon="inline-start" aria-hidden />
-          Add address
+          {t("alternateAddresses_addAddress")}
         </Button>
       </div>
 
@@ -124,9 +121,8 @@ function AddAddressDialog({
   subjectName: string;
   onAdd: (address: AlternateAddress) => void;
 }) {
-  const [address, setAddress] = useState<StructuredAddress>(
-    emptyStructuredAddress
-  );
+  const t = useTranslations();
+  const [address, setAddress] = useState<StructuredAddress>(emptyStructuredAddress);
   const [policeStation, setPoliceStation] = useState("");
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -147,11 +143,11 @@ function AddAddressDialog({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!structuredAddressComplete(address)) {
-      setError("Complete the address. Only the building name is optional.");
+      setError(t("alternateAddresses_completeTheAddressOnlyTheBuilding"));
       return;
     }
     if (!/^\d{6}$/.test(address.pin.trim())) {
-      setError("PIN codes are 6 digits.");
+      setError(t("alternateAddresses_pinCodesAre6Digits"));
       return;
     }
     onAdd({
@@ -179,11 +175,10 @@ function AddAddressDialog({
       >
         <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
           <DialogTitle className="text-title-s font-semibold text-balance">
-            Add an address for {subjectName}
+            {t("alternateAddresses_addAnAddressForSubjectName", { subjectName })}
           </DialogTitle>
           <DialogDescription>
-            Another address the court can try. No approval is involved; it
-            takes effect at once.
+            {t("alternateAddresses_anotherAddressTheCourtCanTry")}
           </DialogDescription>
         </DialogHeader>
 
@@ -204,17 +199,15 @@ function AddAddressDialog({
                 setError(undefined);
               }}
             />
-            {error ? (
-              <p className="text-body-compact text-destructive-ink">{error}</p>
-            ) : null}
+            {error ? <p className="text-body-compact text-destructive-ink">{error}</p> : null}
 
             <Field>
               <FieldLabel htmlFor="alt-address-station">
-                Police station (optional)
+                {t("alternateAddresses_policeStationOptional")}
               </FieldLabel>
               <Input
                 id="alt-address-station"
-                placeholder="The station this address falls under"
+                placeholder={t("alternateAddresses_theStationThisAddressFallsUnder")}
                 value={policeStation}
                 onChange={(event) => setPoliceStation(event.target.value)}
               />
@@ -224,7 +217,7 @@ function AddAddressDialog({
 
         <footer className="flex shrink-0 justify-end border-t border-hairline px-6 py-4">
           <Button type="submit" form="alternate-address-form">
-            Add address
+            {t("alternateAddresses_addAddress")}
           </Button>
         </footer>
         <DiscardQuestion guard={guard} />

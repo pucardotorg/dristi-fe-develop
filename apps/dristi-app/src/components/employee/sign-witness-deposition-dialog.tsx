@@ -18,6 +18,7 @@ import {
 } from "@/lib/employee/sign-witness-deposition";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtLocalized } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * One deposition, read and then signed — the single-sheet path off the evidence queue.
@@ -82,10 +83,8 @@ function SignWitnessDepositionBody({
   onSign: (deposition: WitnessDeposition) => void;
   onReturnFocus: () => void;
 }) {
-  const document = React.useMemo(
-    () => buildWitnessDepositionDocument(deposition),
-    [deposition],
-  );
+  const t = useTranslations();
+  const document = React.useMemo(() => buildWitnessDepositionDocument(deposition), [deposition]);
   const title = depositionTitle(deposition);
 
   return (
@@ -99,14 +98,21 @@ function SignWitnessDepositionBody({
          case rather than the reference's shouted status. `warning` is the variant the
          sibling overlays already spend on a pending paper, so the court side reports a
          pending state one way. */
-      titleAside={<Badge variant="warning">Pending signature</Badge>}
+      titleAside={
+        <Badge variant="warning">{t("signWitnessDepositionDialog_pendingSignature")}</Badge>
+      }
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(deposition)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={deposition.caseNumber} label="case number" copyable={false} />{" "}
-          · Recorded{" "}
-          {formatDepositionDate(deposition.depositionOn)}
+          <Identifier
+            value={deposition.caseNumber}
+            label={t("signWitnessDepositionDialog_caseNumber")}
+            copyable={false}
+          />
+          {t("signWitnessDepositionDialog_recordedFormatDepositionDate", {
+            formatDepositionDate: formatDepositionDate(deposition.depositionOn),
+          })}
         </DialogDescription>
       }
       /* One stage: reading the deposition is the whole act, and the signature leaves the
@@ -119,17 +125,13 @@ function SignWitnessDepositionBody({
         <>
           {/* What the act means, said at the moment of the act. */}
           <p className="text-caption text-muted-foreground sm:mr-auto sm:text-left">
-            Signing publishes this deposition and cannot be reversed.
+            {t("signWitnessDepositionDialog_signingPublishesThisDepositionAndCannot")}
           </p>
           {/* `sm:self-center` because the frame owns the footer's own classes and this
               row pairs a caption that wraps to two lines with a 40px control: without it
               the button hangs from the top of the tallest child. */}
-          <Button
-            type="button"
-            className="sm:self-center"
-            onClick={() => onSign(deposition)}
-          >
-            Sign and publish
+          <Button type="button" className="sm:self-center" onClick={() => onSign(deposition)}>
+            {t("signWitnessDepositionDialog_signAndPublish")}
           </Button>
         </>
       }
@@ -178,18 +180,17 @@ function DepositionFacsimile({
 }: {
   document: WitnessDepositionDocument;
 }) {
+  const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <h3 className="text-body font-semibold">{document.title}</h3>
-        <p className="text-body-compact text-paper-muted-foreground">
-          ({document.citation})
-        </p>
+        <p className="text-body-compact text-paper-muted-foreground">({document.citation})</p>
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body">{document.jurisdiction}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {t("signWitnessDepositionDialog_caseNoCaseNumber", { caseNumber: document.caseNumber })}
         </p>
         <p className="text-body">{document.matter}</p>
       </header>
@@ -199,9 +200,7 @@ function DepositionFacsimile({
         <dl className="flex flex-col gap-1">
           {document.particulars.map(({ label, value }) => (
             <div key={label} className="flex flex-wrap gap-1">
-              <dt className="text-body text-paper-muted-foreground">
-                {label}:
-              </dt>
+              <dt className="text-body text-paper-muted-foreground">{label}:</dt>
               <dd className="text-body">{value}</dd>
             </div>
           ))}
@@ -209,7 +208,9 @@ function DepositionFacsimile({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h4 className="text-body font-semibold">Examination-in-chief</h4>
+        <h4 className="text-body font-semibold">
+          {t("signWitnessDepositionDialog_examinationInChief")}
+        </h4>
         <ol className="flex list-decimal flex-col gap-3 ps-6">
           {document.chief.map((paragraph, index) => (
             <li key={index} className="text-body">
@@ -220,7 +221,9 @@ function DepositionFacsimile({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h4 className="text-body font-semibold">Cross-examination</h4>
+        <h4 className="text-body font-semibold">
+          {t("signWitnessDepositionDialog_crossExamination")}
+        </h4>
         {document.cross.length > 0 ? (
           <ol className="flex list-decimal flex-col gap-3 ps-6">
             {document.cross.map((paragraph, index) => (
@@ -236,9 +239,7 @@ function DepositionFacsimile({
 
       <p className="text-body">{document.attestation}</p>
 
-      <p className="text-body text-paper-muted-foreground">
-        {document.signature}
-      </p>
+      <p className="text-body text-paper-muted-foreground">{document.signature}</p>
     </article>
   );
 }

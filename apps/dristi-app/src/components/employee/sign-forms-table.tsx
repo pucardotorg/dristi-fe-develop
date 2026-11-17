@@ -17,19 +17,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { causeTitle } from "@/lib/employee/hearings";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
-import {
-  formatSignFormDate,
-  signFormProcessLabel,
-  type SignForm,
-} from "@/lib/employee/sign-forms";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
+import { formatSignFormDate, signFormProcessLabel, type SignForm } from "@/lib/employee/sign-forms";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * The signing queue as a table: which forms are picked for signature, the cause, its
@@ -67,6 +60,7 @@ export function SignFormsTable({
   onToggleAll: (select: boolean) => void;
   onOpen: (form: SignForm) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const selectedOnPage = rows.filter((form) => selectedIds.has(form.id)).length;
   const allSelected = rows.length > 0 && selectedOnPage === rows.length;
@@ -86,22 +80,22 @@ export function SignFormsTable({
                  keep once the list is paged. */
               aria-label={
                 allSelected
-                  ? "Clear the forms on this page"
-                  : "Select the forms on this page"
+                  ? t("signFormsTable_clearTheFormsOnThisPage")
+                  : t("signFormsTable_selectTheFormsOnThisPage")
               }
             />
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
+            {t("signFormsTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("signFormsTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
-            Process type
+            {t("signFormsTable_processType")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Date created
+            {t("signFormsTable_dateCreated")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -125,7 +119,10 @@ export function SignFormsTable({
                 <Checkbox
                   checked={selected}
                   onCheckedChange={() => onToggle(form)}
-                  aria-label={`Select ${causeTitle(form)}, ${courtText(form.caseNumber)}`}
+                  aria-label={t("signFormsTable_selectCauseTitleCourtText", {
+                    causeTitle: causeTitle(form),
+                    courtText: courtText(form.caseNumber),
+                  })}
                 />
               </TableCell>
               {/* The row's one emphasised cell, and its only opener. Quiet
@@ -134,32 +131,26 @@ export function SignFormsTable({
                   underlined teal names down a column is the colour ui-craft §4
                   rations. The underline now arrives on the *row's* hover, wherever the
                   pointer sits, and on this control's own focus — see `rowOpenerClass`. */}
-              <TableCell
-                className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}
-              >
+              <TableCell className={cn(TABLE_CELL, "min-w-64 font-medium whitespace-normal")}>
                 <button
                   type="button"
                   onClick={() => onOpen(form)}
                   {...rowOpener}
-                className={rowOpenerClass}
+                  className={rowOpenerClass}
                 >
-                  <span className="sr-only">Read and sign </span>
+                  <span className="sr-only">{t("signFormsTable_readAndSign")} </span>
                   {causeTitle(form)}
                 </button>
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "whitespace-nowrap")}
-              >
-                <Identifier value={form.caseNumber} label="case number" />
+              <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
+                <Identifier value={form.caseNumber} label={t("signFormsTable_caseNumberLabel")} />
               </TableCell>
               {/* Plain text, not a chip. Three tinted process types down a column is
                   decoration, and the word is already the whole fact (ui-craft §4). */}
               <TableCell className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}>
                 {signFormProcessLabel(form.process)}
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}
-              >
+              <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>
                 {formatSignFormDate(form.createdOn)}
               </TableCell>
             </TableRow>

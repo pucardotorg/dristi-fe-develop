@@ -3,10 +3,7 @@
 import * as React from "react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 import { DocumentPreview } from "@/components/cases/document-preview";
 import {
   SIGN_SCENES,
@@ -15,10 +12,7 @@ import {
   SignatureStage,
   type SignStage,
 } from "@/components/employee/sign-method-stage";
-import {
-  signatureSubject,
-  useSignatureChoice,
-} from "@/components/employee/sign-signature-fields";
+import { signatureSubject, useSignatureChoice } from "@/components/employee/sign-signature-fields";
 import { useHeldRecord } from "@/components/employee/use-held-record";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +29,7 @@ import { Identifier } from "@/components/chrome/identifier";
 import { DialogDescription } from "@/components/ui/dialog";
 import { useCourtLocalized } from "@/components/court/court-provider";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * One form, read and then signed — the single-document path off the signing queue.
@@ -103,6 +98,7 @@ function SignFormBody({
   onReturnFocus: () => void;
   onClose: () => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const flow = useStagedFlow<SignStage>({
     order: SIGN_STAGES,
@@ -120,19 +116,23 @@ function SignFormBody({
       /* The width and the height the *document* needs, held for both stages — see
          `SignOrderDialog` for why the height is definite at every width. */
       className="h-[85dvh] sm:max-w-4xl"
-      title={reading ? signFormProcessLabel(form.process) : "Add signature"}
+      title={reading ? signFormProcessLabel(form.process) : t("signFormDialog_addSignature")}
       titleRef={flow.titleRef}
       /* The form's own state — waiting for this bench's signature — in the DS's sentence
          case rather than the reference's `PENDING_REVIEW`. `warning` is the variant
          `ReschedulingRequestDialog` already spends on a pending application, so the two
          court-side review overlays report a pending state the same way. It stands on both
          stages, because nothing has been signed until Submit. */
-      titleAside={<Badge variant="warning">Pending signature</Badge>}
+      titleAside={<Badge variant="warning">{t("signFormDialog_pendingSignature")}</Badge>}
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(form)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={form.caseNumber} label="case number" copyable={false} />
+          <Identifier
+            value={form.caseNumber}
+            label={t("signFormDialog_caseNumber")}
+            copyable={false}
+          />
         </DialogDescription>
       }
       sceneKey={flow.sceneKey}
@@ -144,7 +144,7 @@ function SignFormBody({
       footer={
         reading ? (
           <Button type="button" onClick={() => flow.go("sign")}>
-            Proceed to sign
+            {t("signFormDialog_proceedToSign")}
           </Button>
         ) : (
           <SignatureActions
@@ -178,7 +178,7 @@ function SignFormBody({
           noun="form"
           subject={courtText(signatureSubject([form]))}
           download={{
-            prompt: "Want to read the form again?",
+            prompt: t("signFormDialog_wantToReadTheFormAgain"),
             onDownload: () => downloadSignFormDocument(form),
           }}
           choice={choice}
@@ -194,13 +194,14 @@ function SignFormBody({
  * overlay uses, bound to this form's own particulars.
  */
 function FormFacsimile({ document: storedDocument }: { document: SignFormDocument }) {
+  const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {t("signFormDialog_caseNoCaseNumber", { caseNumber: document.caseNumber })}
         </p>
         <p className="text-body font-semibold">{document.matter}</p>
       </header>
@@ -216,10 +217,12 @@ function FormFacsimile({ document: storedDocument }: { document: SignFormDocumen
       </ol>
 
       <p className="text-body">{document.closing}</p>
-      <p className="text-body">Dated this the {document.dated}.</p>
+      <p className="text-body">
+        {t("signFormDialog_datedThisTheDated", { dated: document.dated })}
+      </p>
 
       <section className="flex flex-col gap-1">
-        <h4 className="text-body font-semibold">Deponent</h4>
+        <h4 className="text-body font-semibold">{t("signFormDialog_deponent")}</h4>
         <p className="text-body">{document.deponent.name}</p>
         <p className="text-body-compact text-paper-muted-foreground">
           {document.deponent.capacity}
@@ -230,7 +233,7 @@ function FormFacsimile({ document: storedDocument }: { document: SignFormDocumen
 
       {document.advocate ? (
         <section className="flex flex-col gap-1">
-          <h4 className="text-body font-semibold">Advocate</h4>
+          <h4 className="text-body font-semibold">{t("signFormDialog_advocate")}</h4>
           <p className="text-body">{document.advocate}</p>
         </section>
       ) : null}

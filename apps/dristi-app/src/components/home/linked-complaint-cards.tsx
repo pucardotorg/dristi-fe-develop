@@ -30,6 +30,8 @@ import {
   signatories,
 } from "@/lib/filing/selectors";
 import type { FilingDraft } from "@/lib/filing/types";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 type Loaded = { link: LinkedComplaint; draft: FilingDraft };
 
@@ -43,17 +45,24 @@ function standing({ link, draft }: Loaded) {
   const onPaper = draft.sign.mode === "upload";
   // On paper this person confirms by OTP on their own device instead of e-signing (`SIG-05`).
   const confirmer = phoneConfirmers(draft).find((p) => confirmerSlot(p.id) === link.signatoryId);
-  const unconfirmed = onPaper && !!confirmer && me?.status !== "signed" && !phoneConfirmed(draft, confirmer);
+  const unconfirmed =
+    onPaper && !!confirmer && me?.status !== "signed" && !phoneConfirmed(draft, confirmer);
   // Only a complainant's slot carries an oath (`OTH-3`); `false` means it is still owed.
   const owed =
     !!me && ((!onPaper && me.status !== "signed") || unconfirmed || me.oathTaken === false);
   return owed
     ? {
-        badge: onPaper ? "Your confirmation needed" : "Your e-signature needed",
+        badge: onPaper
+          ? "linkedComplaintCards_yourConfirmationNeeded"
+          : "linkedComplaintCards_yourESignatureNeeded",
         variant: "warning" as const,
         action: onPaper ? "Review and confirm" : "Review and sign",
       }
-    : { badge: "Signed · being filed", variant: "secondary" as const, action: "View complaint" };
+    : {
+        badge: "linkedComplaintCards_signedBeingFiled",
+        variant: "secondary" as const,
+        action: "View complaint",
+      };
 }
 
 /**
@@ -100,6 +109,7 @@ export function useLinkedComplaints(): Loaded[] {
 }
 
 export function LinkedComplaintCard({ item }: { item: Loaded }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const { badge, variant, action } = standing(item);
   const filer = item.draft.advocates[0]?.name.trim();
@@ -107,18 +117,20 @@ export function LinkedComplaintCard({ item }: { item: Loaded }) {
     <Card size="sm" className="h-full max-w-sm">
       <CardContent className="flex h-full flex-col gap-4">
         <div className="flex flex-col items-start gap-3">
-          <Badge variant={variant}>{badge}</Badge>
+          <Badge variant={variant}>{translateText(t, badge)}</Badge>
           <p className="text-body font-semibold text-pretty">{draftTitle(item.draft)}</p>
         </div>
         <div className="flex flex-col gap-2 text-caption text-muted-foreground">
           <p>
-            <span className="font-medium text-foreground">Court</span>
+            <span className="font-medium text-foreground">{t("linkedComplaintCards_court")}</span>
             <br />
             {courtText(COURT.name)}
           </p>
           {filer ? (
             <p>
-              <span className="font-medium text-foreground">Filed by</span>
+              <span className="font-medium text-foreground">
+                {t("linkedComplaintCards_filedBy")}
+              </span>
               <br />
               {filer}
             </p>

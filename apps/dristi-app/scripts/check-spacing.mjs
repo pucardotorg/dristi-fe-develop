@@ -43,8 +43,20 @@ const UPDATE = process.argv.includes("--update");
 /** CLAUDE.md: `0.5 · 1 · 1.5 · 2 · 2.5 · 3 · 4 · 6 · 8 · 12 · 16`, plus Tailwind's own
  *  zero/hairline/auto, which are not rungs and never were the problem. */
 const LADDER = new Set([
-  "0", "px", "auto",
-  "0.5", "1", "1.5", "2", "2.5", "3", "4", "6", "8", "12", "16",
+  "0",
+  "px",
+  "auto",
+  "0.5",
+  "1",
+  "1.5",
+  "2",
+  "2.5",
+  "3",
+  "4",
+  "6",
+  "8",
+  "12",
+  "16",
 ]);
 
 /** Padding, margin, gap and space only. Sizing (`w-`, `h-`, `size-`) is a different
@@ -91,7 +103,7 @@ if (UPDATE) {
   const total = Object.values(baseline).reduce((n, list) => n + list.length, 0);
   writeFileSync(BASELINE, `${JSON.stringify(baseline, null, 2)}\n`);
   console.log(
-    `Spacing baseline updated: ${total} tolerated in ${Object.keys(baseline).length} files.`
+    `Spacing baseline updated: ${total} tolerated in ${Object.keys(baseline).length} files.`,
   );
   process.exit(0);
 }
@@ -102,7 +114,7 @@ try {
 } catch {
   console.error(
     `No spacing baseline at ${relative(APP_ROOT, BASELINE)}.\n` +
-      "Create one with: npm run check:spacing -- --update"
+      "Create one with: npm run check:spacing -- --update",
   );
   process.exit(1);
 }
@@ -133,7 +145,7 @@ if (added.length) {
   console.error(
     "\nThe ladder is 0.5 · 1 · 1.5 · 2 · 2.5 · 3 · 4 · 6 · 8 · 12 · 16 — snap to the " +
       "nearest rung (controls h-10/rounded-lg, containers p-6/rounded-xl).\n" +
-      `Keep ${ALLOW} for reviewed exceptions only.`
+      `Keep ${ALLOW} for reviewed exceptions only.`,
   );
   process.exit(1);
 }
@@ -144,7 +156,7 @@ if (cleaned.length) {
   const fixed = cleaned.reduce((n, entry) => n + entry.count, 0);
   console.log(
     `Spacing check passed — and ${fixed} baselined value(s) are gone. ` +
-      "Lock that in: npm run check:spacing -- --update"
+      "Lock that in: npm run check:spacing -- --update",
   );
 } else {
   console.log(`Spacing check passed (${tolerated} pre-existing values baselined).`);

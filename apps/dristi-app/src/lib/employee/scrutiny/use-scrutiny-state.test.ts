@@ -25,8 +25,7 @@ const DOC_ROW = HERO.docRow;
 /** The authored case's own maps — the fixture these transitions were written against. */
 const LOOK: ScrutinyLookups = { fieldById: FIELD_BY_ID, docRow: DOC_ROW };
 const applySaveFlag = (s: ScrutinyState) => applySaveFlagRaw(s, LOOK);
-const applyLinkDoc = (s: ScrutinyState, docId: string) =>
-  applyLinkDocRaw(s, docId, LOOK);
+const applyLinkDoc = (s: ScrutinyState, docId: string) => applyLinkDocRaw(s, docId, LOOK);
 
 function draft(over: Partial<Draft> = {}): Draft {
   return {
@@ -211,13 +210,17 @@ describe("re-scrutiny verdicts", () => {
   it("attaches the round to a resubmitted filing and none to a fresh one", () => {
     assert.equal(RESUB.returned?.items.length, 3);
     assert.equal(RESUB.historyRound, RESUB.returned?.round);
-    for (const item of RESUB.returned!.items) assert.ok(RESUB.fieldById[item.fieldId], item.fieldId);
+    for (const item of RESUB.returned!.items)
+      assert.ok(RESUB.fieldById[item.fieldId], item.fieldId);
     assert.equal(buildScrutinyCase(findFiling("F/AHM/2026/00319")!).returned, null);
   });
 
   it("names every returned item in the derived history", () => {
     const sent = RESUB.history.find((e) => e.items);
-    assert.deepEqual(sent?.items?.map((i) => i.ref), ["q1-amt", "c1-name", "d-n1ad"]);
+    assert.deepEqual(
+      sent?.items?.map((i) => i.ref),
+      ["q1-amt", "c1-name", "d-n1ad"],
+    );
   });
 
   it("the hero round names a real row", () => {
@@ -247,7 +250,10 @@ describe("re-scrutiny verdicts", () => {
 
   it("a saved re-raise is a flag, outranks acceptance, and counts as checked", () => {
     const note = RESUB.returned!.items[1].note;
-    const raised = applySaveFlagRaw(applyRaiseAgain(state(), "c1-name", note, RESUB_LOOK), RESUB_LOOK);
+    const raised = applySaveFlagRaw(
+      applyRaiseAgain(state(), "c1-name", note, RESUB_LOOK),
+      RESUB_LOOK,
+    );
     assert.equal(verdictOf(raised, "c1-name"), "raised");
     assert.equal(uncheckedCount(raised, RESUB.returned), 2);
     // Accept is refused while the item stands raised.

@@ -23,14 +23,9 @@ describe("DELAY_CONDONATION_QUEUE", () => {
   });
 
   it("offers a row for every stage the filter lists", () => {
-    const stagesInQueue = new Set(
-      DELAY_CONDONATION_QUEUE.map((row) => row.stage),
-    );
+    const stagesInQueue = new Set(DELAY_CONDONATION_QUEUE.map((row) => row.stage));
     for (const stage of DELAY_CONDONATION_STAGES) {
-      assert.ok(
-        stagesInQueue.has(stage.id),
-        `filter offers ${stage.id} but the queue has none`,
-      );
+      assert.ok(stagesInQueue.has(stage.id), `filter offers ${stage.id} but the queue has none`);
     }
   });
 });
@@ -105,34 +100,22 @@ describe("the particulars the review overlay reads", () => {
   it("states the delay as a sentence, and counts a single day as one", () => {
     const row = DELAY_CONDONATION_QUEUE.find((entry) => entry.id === "dc-1213")!;
     assert.equal(delayLine(row), "27 days in filing the complaint");
-    assert.equal(
-      delayLine({ ...row, delayDays: 1 }),
-      "1 day in filing the complaint",
-    );
+    assert.equal(delayLine({ ...row, delayDays: 1 }), "1 day in filing the complaint");
   });
 });
 
 describe("who filed the application", () => {
   it("names counsel on record for the applying side", () => {
     const row = DELAY_CONDONATION_QUEUE.find((entry) => entry.id === "dc-1213")!;
-    assert.equal(
-      delayCondonationFiler(row),
-      "Adv. Suresh Menon, counsel for the complainant",
-    );
+    assert.equal(delayCondonationFiler(row), "Adv. Suresh Menon, counsel for the complainant");
   });
 
   it("names the applying side's own counsel, never the other side's", () => {
     for (const row of DELAY_CONDONATION_QUEUE) {
-      const onRecord = row.counsel.filter(
-        (counsel) => counsel.side === row.filedFor,
-      );
+      const onRecord = row.counsel.filter((counsel) => counsel.side === row.filedFor);
       const filer = delayCondonationFiler(row);
       if (onRecord.length) {
-        assert.equal(
-          filer,
-          `${onRecord[0]!.name}, counsel for the ${row.filedFor}`,
-          row.id,
-        );
+        assert.equal(filer, `${onRecord[0]!.name}, counsel for the ${row.filedFor}`, row.id);
       } else {
         assert.equal(
           filer,
@@ -146,10 +129,7 @@ describe("who filed the application", () => {
   it("reads an accused-filed application off the accused's own vakalat", () => {
     const row = DELAY_CONDONATION_QUEUE.find((entry) => entry.id === "dc-403")!;
     assert.equal(row.filedFor, "accused");
-    assert.equal(
-      delayCondonationFiler(row),
-      "Adv. Saurabh Verma, counsel for the accused",
-    );
+    assert.equal(delayCondonationFiler(row), "Adv. Saurabh Verma, counsel for the accused");
   });
 
   it("says so plainly when there is no vakalat at all", () => {
@@ -180,8 +160,7 @@ describe("buildDelayCondonationDocument", () => {
     assert.ok(document.paragraphs.some((line) => line.includes(row.reason)));
     assert.ok(
       document.facts.some(
-        (fact) =>
-          fact.term === "Delay to be condoned" && fact.value === delayLine(row),
+        (fact) => fact.term === "Delay to be condoned" && fact.value === delayLine(row),
       ),
     );
     assert.equal(document.dated, "8 October 2025");
@@ -189,9 +168,7 @@ describe("buildDelayCondonationDocument", () => {
 
   it("names only the counsel a row actually has on record", () => {
     const row = DELAY_CONDONATION_QUEUE.find((entry) => entry.id === "dc-1235")!;
-    const terms = buildDelayCondonationDocument(row).facts.map(
-      (fact) => fact.term,
-    );
+    const terms = buildDelayCondonationDocument(row).facts.map((fact) => fact.term);
     assert.ok(!terms.includes("Complainant counsel"));
     assert.ok(!terms.includes("Accused counsel"));
   });

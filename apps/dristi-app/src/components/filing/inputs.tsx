@@ -31,6 +31,8 @@ import {
   useFieldReadOnlyHint,
   useLockedDisabled,
 } from "@/components/filing/posture";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * A flagged field's value, shown but not editable — for the controls that have no
@@ -114,7 +116,7 @@ export function PrefixInput({
            restores full opacity; see its centre pane). */
         disabled && "bg-surface-sunken!",
         readOnly && "bg-muted",
-        className
+        className,
       )}
     >
       <InputGroupAddon variant="field">
@@ -173,9 +175,7 @@ export function OptionSelect({
   className?: string;
   id?: string;
 }) {
-  const opts: Option[] = options.map((o) =>
-    typeof o === "string" ? { value: o, label: o } : o
-  );
+  const opts: Option[] = options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
   const isDisabled = useLockedDisabled(disabled);
   const readOnly = useFieldReadOnly();
   /* A Select has no read-only state — a flagged one therefore shows its chosen option as
@@ -202,7 +202,12 @@ export function OptionSelect({
         form card that reads as the menu having eaten the label and the field below it.
         Inside a form a menu belongs under the control it belongs to, at its width.
       */}
-      <SelectContent position="popper" align="start" sideOffset={4} className="w-(--radix-select-trigger-width)">
+      <SelectContent
+        position="popper"
+        align="start"
+        sideOffset={4}
+        className="w-(--radix-select-trigger-width)"
+      >
         {opts.map((o) => (
           <SelectItem key={o.value} value={o.value}>
             {o.label}
@@ -226,8 +231,8 @@ export function ComboField({
   onChange,
   items,
   onSelect,
-  placeholder = "Search or type",
-  emptyLabel = "No match. What you typed is kept.",
+  placeholder = "inputs_searchOrType",
+  emptyLabel = "inputs_noMatchWhatYouTypedIs",
   renderItem,
   itemKey = (item) => String(item),
   itemLabel = (item) => String(item),
@@ -259,6 +264,7 @@ export function ComboField({
   ariaLabel?: string;
   id?: string;
 }) {
+  const t = useTranslations();
   const locked = useLockedDisabled(disabled);
   const readOnly = useFieldReadOnly();
   if (readOnly) {
@@ -281,7 +287,7 @@ export function ComboField({
       <ComboboxInput
         id={id}
         aria-label={ariaLabel}
-        placeholder={placeholder}
+        placeholder={translateText(t, placeholder)}
         className="w-full"
         autoComplete="off"
       />
@@ -291,7 +297,7 @@ export function ComboField({
           advocate join dialog's combobox carries. No effect on the filing
           pages, which have no modal. */}
       <ComboboxContent className="pointer-events-auto">
-        <ComboboxEmpty>{emptyLabel}</ComboboxEmpty>
+        <ComboboxEmpty>{translateText(t, emptyLabel)}</ComboboxEmpty>
         <ComboboxList>
           {(item: unknown) => (
             <ComboboxItem key={itemKey(item)} value={item}>

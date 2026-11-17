@@ -2,11 +2,7 @@
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  ChevronRightIcon,
-  FlagIcon,
-  WalletIcon,
-} from "lucide-react";
+import { ChevronRightIcon, FlagIcon, WalletIcon } from "lucide-react";
 
 import { money } from "@/lib/filing/format";
 import { cn } from "@/lib/utils";
@@ -22,13 +18,7 @@ import {
 import { OutcomeAmount, OutcomeHeader, StatusLine } from "@/components/feedback";
 import { PaymentFacts } from "@/components/payment/payment-steps";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,6 +35,7 @@ import { bulkApi, type BatchView } from "./api";
 import { PaymentGateway } from "./payment-gateway";
 import type { BatchCtx } from "./batch-screen";
 import { CaseBadge } from "./stage";
+import { useTranslations } from "next-intl";
 
 const ist = (iso: string) =>
   `${new Date(iso).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" })} IST`;
@@ -59,23 +50,24 @@ function Receipts({
   /** The per-case fee. Off in the payment window, which states the total above. */
   fees?: boolean;
 }) {
+  const t = useTranslations();
   const cases = batch.cases.filter((c) => payment.caseIds.includes(c.id));
   return (
     <div className="overflow-x-auto">
       <Table
         className="border-separate border-spacing-0"
-        aria-label={`Receipts for ${payment.ref}`}
+        aria-label={t("payTab_receiptsForRef", { ref: payment.ref })}
       >
         <TableHeader>
           <TableRow className={TABLE_HEAD_ROW}>
-            <TableHead className={cn(TABLE_HEAD, "pl-4")}>Reference</TableHead>
-            <TableHead className={TABLE_HEAD}>Receipt</TableHead>
+            <TableHead className={cn(TABLE_HEAD, "pl-4")}>{t("payTab_reference")}</TableHead>
+            <TableHead className={TABLE_HEAD}>{t("payTab_receipt")}</TableHead>
             <TableHead className={cn(TABLE_HEAD, !fees && "pr-4")}>
-              Case file number
+              {t("payTab_caseFileNumber")}
             </TableHead>
             {fees ? (
               <TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
-                Paid
+                {t("payTab_paid")}
               </TableHead>
             ) : null}
           </TableRow>
@@ -83,23 +75,15 @@ function Receipts({
         <TableBody className={tableBodyClass({ hover: false })}>
           {cases.map((c) => (
             <TableRow key={c.id} className={tableRowClass({ hover: false })}>
-              <TableCell
-                className={cn(TABLE_CELL, "pl-4 font-medium tabular-nums")}
-              >
+              <TableCell className={cn(TABLE_CELL, "pl-4 font-medium tabular-nums")}>
                 {c.reference}
               </TableCell>
-              <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
-                {c.receiptNumber}
-              </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "tabular-nums", !fees && "pr-4")}
-              >
+              <TableCell className={cn(TABLE_CELL, "tabular-nums")}>{c.receiptNumber}</TableCell>
+              <TableCell className={cn(TABLE_CELL, "tabular-nums", !fees && "pr-4")}>
                 {c.caseFileNumber}
               </TableCell>
               {fees ? (
-                <TableCell
-                  className={cn(TABLE_CELL, "pr-4 text-right tabular-nums")}
-                >
+                <TableCell className={cn(TABLE_CELL, "pr-4 text-right tabular-nums")}>
                   {money(c.fee)}
                 </TableCell>
               ) : null}
@@ -117,6 +101,7 @@ function Receipts({
  * exactly as it does for a single filing.
  */
 export function PayTab({ batch, setBatch, go }: BatchCtx) {
+  const t = useTranslations();
   const due = batch.cases.filter((c) => c.stage === "signed");
   // Arriving from signing, only the cases just signed are ticked; otherwise every one due.
   const asked = useSearchParams().get("case")?.split(",").filter(Boolean) ?? [];
@@ -125,9 +110,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
     return new Set((only.length ? only : due).map((c) => c.id));
   };
   const [picked, setPicked] = React.useState<Set<string>>(start);
-  const [dialog, setDialog] = React.useState<
-    "confirm" | "processing" | "done" | null
-  >(null);
+  const [dialog, setDialog] = React.useState<"confirm" | "processing" | "done" | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   // Re-select everything when the set on offer changes — adjusted during render, not in
@@ -177,30 +160,26 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
 
   return (
     <div className="flex flex-col gap-6">
-      {error ? (
-        <StatusLine tone="error">{error}</StatusLine>
-      ) : null}
+      {error ? <StatusLine tone="error">{error}</StatusLine> : null}
 
       {due.length === 0 ? (
         <Card variant="raised">
           <CardContent className="text-body-compact text-muted-foreground">
-            Nothing to pay yet. Sign the cases first.
+            {t("payTab_nothingToPayYetSignThe")}
           </CardContent>
         </Card>
       ) : (
         <Card variant="raised" className="gap-0 py-0">
           <CardHeader className="px-6 py-4">
             <CardTitle className="text-body font-semibold">
-              Signed, waiting for payment
+              {t("payTab_signedWaitingForPayment")}
             </CardTitle>
-            <CardDescription>
-              Fees for each case. One payment covers every case you tick.
-            </CardDescription>
+            <CardDescription>{t("payTab_feesForEachCaseOnePayment")}</CardDescription>
           </CardHeader>
           <div className="overflow-x-auto px-2">
             <Table
               className="border-separate border-spacing-0"
-              aria-label="Cases to pay for"
+              aria-label={t("payTab_casesToPayFor")}
             >
               <TableHeader>
                 <TableRow className={TABLE_HEAD_ROW}>
@@ -214,19 +193,15 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                             : false
                       }
                       onCheckedChange={(v) =>
-                        setPicked(
-                          v === true
-                            ? new Set(due.map((c) => c.id))
-                            : new Set(),
-                        )
+                        setPicked(v === true ? new Set(due.map((c) => c.id)) : new Set())
                       }
-                      aria-label="Select every case"
+                      aria-label={t("payTab_selectEveryCase")}
                     />
                   </TableHead>
-                  <TableHead className={TABLE_HEAD}>Reference</TableHead>
-                  <TableHead className={TABLE_HEAD}>Parties</TableHead>
+                  <TableHead className={TABLE_HEAD}>{t("payTab_reference")}</TableHead>
+                  <TableHead className={TABLE_HEAD}>{t("payTab_parties")}</TableHead>
                   <TableHead className={cn(TABLE_HEAD, "pr-4 text-right")}>
-                    Fees
+                    {t("payTab_fees")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -248,20 +223,14 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                             return next;
                           })
                         }
-                        aria-label={`Select ${c.reference}`}
+                        aria-label={t("payTab_selectReference", { reference: c.reference })}
                       />
                     </TableCell>
-                    <TableCell
-                      className={cn(TABLE_CELL, "font-medium tabular-nums")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "font-medium tabular-nums")}>
                       {c.reference}
                     </TableCell>
-                    <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>
-                      {c.title}
-                    </TableCell>
-                    <TableCell
-                      className={cn(TABLE_CELL, "pr-4 text-right tabular-nums")}
-                    >
+                    <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>{c.title}</TableCell>
+                    <TableCell className={cn(TABLE_CELL, "pr-4 text-right tabular-nums")}>
                       {money(c.fee)}
                     </TableCell>
                   </TableRow>
@@ -275,9 +244,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                 <span className="tabular-nums">{chosen.length}</span> case
                 {chosen.length === 1 ? "" : "s"}, one transaction
               </span>
-              <span className="text-title-s font-semibold tabular-nums">
-                {money(total)}
-              </span>
+              <span className="text-title-s font-semibold tabular-nums">{money(total)}</span>
             </div>
             <Button
               size="lg"
@@ -286,7 +253,7 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
               onClick={() => setDialog("confirm")}
             >
               <WalletIcon data-icon="inline-start" aria-hidden />
-              Pay {money(total)}
+              {t("payTab_payMoney", { money: money(total) })}
             </Button>
           </div>
         </Card>
@@ -294,15 +261,15 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
 
       {batch.counts.filed ? (
         <p className="text-body-compact text-muted-foreground">
-          <span className="tabular-nums">{batch.counts.filed}</span> already
-          paid and filed.{" "}
-          <button
-            type="button"
-            className="underline"
-            onClick={() => go("filed")}
-          >
-            See them under Filed
-          </button>
+          {t.rich("payTab_filedAlreadyPaidAndFiledSee", {
+            filed: String(batch.counts.filed),
+            span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            button: (chunks) => (
+              <button type="button" className="underline" onClick={() => go("filed")}>
+                {chunks}
+              </button>
+            ),
+          })}
         </p>
       ) : null}
 
@@ -327,26 +294,30 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                 compact
                 titleFrom="dialog"
                 focusTitle
-                title="Payment successful"
+                title={t("payTab_paymentSuccessful")}
                 body={
                   <>
-                    <span className="tabular-nums">{last.caseIds.length}</span>{" "}
-                    case file{last.caseIds.length === 1 ? " is" : "s are"}{" "}
-                    complete.
+                    <span className="tabular-nums">{last.caseIds.length}</span> case file
+                    {last.caseIds.length === 1 ? " is" : "s are"} complete.
                   </>
                 }
               >
-                <OutcomeAmount label="Amount paid" value={money(last.amount)} />
+                <OutcomeAmount label={t("payTab_amountPaid")} value={money(last.amount)} />
               </OutcomeHeader>
 
               <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
                 <PaymentFacts
                   rows={[
                     {
-                      label: "Payment reference",
-                      value: <Identifier value={last.ref} label="payment reference" />,
+                      label: t("payTab_paymentReference"),
+                      value: (
+                        <Identifier value={last.ref} label={t("payTab_paymentReferenceLabel")} />
+                      ),
                     },
-                    { label: "Filed on", value: <span className="tabular-nums">{ist(last.at)}</span> },
+                    {
+                      label: t("payTab_filedOn"),
+                      value: <span className="tabular-nums">{ist(last.at)}</span>,
+                    },
                   ]}
                 />
 
@@ -354,17 +325,17 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                 <Tabs defaultValue="filed" className="gap-3">
                   <TabsList variant="line">
                     <TabsTrigger value="filed">
-                      Filed{" "}
-                      <span className="tabular-nums">
-                        {last.caseIds.length}
-                      </span>
+                      {t.rich("payTab_filedLength", {
+                        length: String(last.caseIds.length),
+                        span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                      })}
                     </TabsTrigger>
                     {pendingAfter.length ? (
                       <TabsTrigger value="pending">
-                        Still pending{" "}
-                        <span className="tabular-nums">
-                          {pendingAfter.length}
-                        </span>
+                        {t.rich("payTab_stillPendingLength", {
+                          length: String(pendingAfter.length),
+                          span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                        })}
                       </TabsTrigger>
                     ) : null}
                   </TabsList>
@@ -403,8 +374,8 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                                       )}
                                       aria-label={
                                         f.level === "hold"
-                                          ? "Needs fixing"
-                                          : "To check"
+                                          ? t("payTab_needsFixing")
+                                          : t("payTab_toCheck")
                                       }
                                     />
                                     {f.message}
@@ -412,7 +383,9 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
                                 ))}
                                 {c.flags.length > 2 ? (
                                   <span className="text-caption text-muted-foreground tabular-nums">
-                                    and {c.flags.length - 2} more
+                                    {t("payTab_andValueMore", {
+                                      value: String(c.flags.length - 2),
+                                    })}
                                   </span>
                                 ) : null}
                               </span>
@@ -431,39 +404,36 @@ export function PayTab({ batch, setBatch, go }: BatchCtx) {
 
               {/* The warm band every outcome closes on; it stays put while the lists scroll. */}
               <footer className="flex shrink-0 flex-col gap-3 border-t border-hairline bg-surface-sunken px-6 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] sm:flex-row">
-                  {pendingAfter.length ? (
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="sm:flex-1"
-                      onClick={() => {
-                        setDialog(null);
-                        go(
-                          pendingAfter.some((c) => c.stage === "signed")
-                            ? "pay"
-                            : pendingAfter.some(
-                                  (c) => c.stage === "ready" && !c.flags.length,
-                                )
-                              ? "sign"
-                              : "scrutiny",
-                        );
-                      }}
-                    >
-                      Finish the pending{" "}
-                      {pendingAfter.length === 1 ? "case" : "cases"}
-                    </Button>
-                  ) : null}
+                {pendingAfter.length ? (
                   <Button
                     variant="outline"
                     size="lg"
                     className="sm:flex-1"
                     onClick={() => {
                       setDialog(null);
-                      go("filed");
+                      go(
+                        pendingAfter.some((c) => c.stage === "signed")
+                          ? "pay"
+                          : pendingAfter.some((c) => c.stage === "ready" && !c.flags.length)
+                            ? "sign"
+                            : "scrutiny",
+                      );
                     }}
                   >
-                    See filed cases
+                    Finish the pending {pendingAfter.length === 1 ? "case" : "cases"}
                   </Button>
+                ) : null}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="sm:flex-1"
+                  onClick={() => {
+                    setDialog(null);
+                    go("filed");
+                  }}
+                >
+                  {t("payTab_seeFiledCases")}
+                </Button>
               </footer>
             </>
           ) : (

@@ -6,35 +6,19 @@ import { ArchiveIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardAction, CardDescription, CardHeader } from "@/components/ui/card";
 import {
   DescriptionDetails,
   DescriptionRow,
   DescriptionTerm,
 } from "@/components/ui/description-list";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemTitle,
-} from "@/components/ui/item";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Item, ItemActions, ItemContent, ItemTitle } from "@/components/ui/item";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { type DueRamp, type DueStatusView } from "@/lib/cases/peek";
 import { cn } from "@/lib/utils";
 import { RegisterTrayCard } from "@/components/cases/register-card";
-import {
-  REGISTER_CARDS_ONLY,
-  REGISTER_TABLE_ONLY,
-} from "@/components/cases/register-layout";
+import { REGISTER_CARDS_ONLY, REGISTER_TABLE_ONLY } from "@/components/cases/register-layout";
+import { useTranslations } from "next-intl";
 
 /**
  * The card shell every Overview region is built from. Shared rather than
@@ -70,23 +54,14 @@ export function OverviewSection({
               own height, so the title centres against it instead of the two
               sitting on different baselines. Without one, nothing should
               pad the header. */}
-          <div
-            className={cn(
-              "flex flex-wrap items-center gap-2",
-              action ? "min-h-10" : undefined,
-            )}
-          >
+          <div className={cn("flex flex-wrap items-center gap-2", action ? "min-h-10" : undefined)}>
             <h2 className="text-body font-semibold">{title}</h2>
             {count === undefined ? null : (
-              <span className="text-body-compact tabular-nums text-muted-foreground">
-                {count}
-              </span>
+              <span className="text-body-compact tabular-nums text-muted-foreground">{count}</span>
             )}
           </div>
           {description ? (
-            <CardDescription className="text-caption">
-              {description}
-            </CardDescription>
+            <CardDescription className="text-caption">{description}</CardDescription>
           ) : null}
           {action ? <CardAction>{action}</CardAction> : null}
         </CardHeader>
@@ -114,13 +89,9 @@ export function OverviewRow({
   children: ReactNode;
 }) {
   return (
-    <DescriptionRow
-      className={narrow ? "max-sm:grid-cols-1 max-sm:gap-y-1" : undefined}
-    >
+    <DescriptionRow className={narrow ? "max-sm:grid-cols-1 max-sm:gap-y-1" : undefined}>
       <DescriptionTerm>{term}</DescriptionTerm>
-      <DescriptionDetails className="font-medium">
-        {children}
-      </DescriptionDetails>
+      <DescriptionDetails className="font-medium">{children}</DescriptionDetails>
     </DescriptionRow>
   );
 }
@@ -143,6 +114,7 @@ export function PendingTaskRow({
   /** The lines under the title: deadline, owner, note. */
   children?: ReactNode;
 }) {
+  const t = useTranslations();
   const [trayOpen, setTrayOpen] = useState(false);
   return (
     <>
@@ -161,90 +133,87 @@ export function PendingTaskRow({
               {onArchive ? (
                 <Button type="button" variant="outline" onClick={onArchive}>
                   <ArchiveIcon data-icon="inline-start" aria-hidden />
-                  Archive
+                  {t("caseOverviewCard_archive")}
                 </Button>
               ) : null}
               {"href" in respond ? (
                 <Button asChild>
-                  <Link href={respond.href}>Respond</Link>
+                  <Link href={respond.href}>{t("caseOverviewCard_respond")}</Link>
                 </Button>
               ) : (
                 <Button type="button" onClick={respond.onClick}>
-                  Respond
+                  {t("caseOverviewCard_respond")}
                 </Button>
               )}
             </>
           }
         >
-          {children ? (
-            <div className="-mt-1 flex flex-col gap-1.5">{children}</div>
-          ) : null}
+          {children ? <div className="-mt-1 flex flex-col gap-1.5">{children}</div> : null}
         </RegisterTrayCard>
       </div>
-    <Item
-      role="listitem"
-      size="sm"
-      className={cn(
-        "items-start px-0 py-2.5 hover:bg-transparent",
-        REGISTER_TABLE_ONLY,
-        "md:pointer-fine:flex md:landscape:flex"
-      )}
-    >
-      <ItemContent className="gap-1.5">
-        <ItemTitle className="line-clamp-none min-w-0">{title}</ItemTitle>
-        {children}
-      </ItemContent>
-      <ItemActions className="shrink-0 gap-1 max-sm:basis-full">
-        {"href" in respond ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="max-sm:h-10 max-sm:flex-1"
-            asChild
-          >
-            <Link href={respond.href}>
-              Respond<span className="sr-only">: {title}</span>
-            </Link>
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="max-sm:h-10 max-sm:flex-1"
-            onClick={respond.onClick}
-          >
-            Respond<span className="sr-only">: {title}</span>
-          </Button>
+      <Item
+        role="listitem"
+        size="sm"
+        className={cn(
+          "items-start px-0 py-2.5 hover:bg-transparent",
+          REGISTER_TABLE_ONLY,
+          "md:pointer-fine:flex md:landscape:flex",
         )}
-        {onArchive ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground max-sm:size-10"
-                aria-label={`Archive task: ${title}`}
-                onClick={onArchive}
-              >
-                <ArchiveIcon aria-hidden />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Archive</TooltipContent>
-          </Tooltip>
-        ) : null}
-      </ItemActions>
-    </Item>
+      >
+        <ItemContent className="gap-1.5">
+          <ItemTitle className="line-clamp-none min-w-0">{title}</ItemTitle>
+          {children}
+        </ItemContent>
+        <ItemActions className="shrink-0 gap-1 max-sm:basis-full">
+          {"href" in respond ? (
+            <Button variant="outline" size="sm" className="max-sm:h-10 max-sm:flex-1" asChild>
+              <Link href={respond.href}>
+                {t.rich("caseOverviewCard_respondTitle", {
+                  title,
+                  span: (chunks) => <span className="sr-only">{chunks}</span>,
+                })}
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="max-sm:h-10 max-sm:flex-1"
+              onClick={respond.onClick}
+            >
+              {t.rich("caseOverviewCard_respondTitle", {
+                title,
+                span: (chunks) => <span className="sr-only">{chunks}</span>,
+              })}
+            </Button>
+          )}
+          {onArchive ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground max-sm:size-10"
+                  aria-label={t("caseOverviewCard_archiveTaskTitle", { title })}
+                  onClick={onArchive}
+                >
+                  <ArchiveIcon aria-hidden />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{t("caseOverviewCard_archive")}</TooltipContent>
+            </Tooltip>
+          ) : null}
+        </ItemActions>
+      </Item>
     </>
   );
 }
 
 /** The quiet line under a task title: who holds it, or what it is about. */
 export function TaskNote({ children }: { children: ReactNode }) {
-  return (
-    <p className="text-caption font-medium text-muted-foreground">{children}</p>
-  );
+  return <p className="text-caption font-medium text-muted-foreground">{children}</p>;
 }
 
 /**
@@ -255,13 +224,7 @@ export function TaskNote({ children }: { children: ReactNode }) {
  * padding, and a second card component would be a second set of decisions
  * about border, radius, and hover.
  */
-export function RestingCard({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
+export function RestingCard({ className, children }: { className?: string; children: ReactNode }) {
   return (
     <Card variant="raised" className={cn("hover:bg-card", className)}>
       {children}
@@ -313,9 +276,7 @@ export function DueStatusLine({ relative, on, ramp }: DueStatusView) {
     <div className="flex flex-wrap items-center gap-2">
       <Badge variant={DUE_BADGE[ramp]}>{relative}</Badge>
       {/* The badge holds the interval, this holds the date it falls on. */}
-      <span className="text-body-compact tabular-nums text-muted-foreground">
-        {on}
-      </span>
+      <span className="text-body-compact tabular-nums text-muted-foreground">{on}</span>
     </div>
   );
 }

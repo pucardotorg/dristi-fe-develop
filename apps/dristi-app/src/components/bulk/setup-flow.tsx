@@ -43,6 +43,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 
 import { useGujarat } from "./court-guard";
+import { useTranslations } from "next-intl";
 
 /** The sections the setup walks, in order. */
 const SETUP_STEPS: StepId[] = ["complainant", "advocate", "documents"];
@@ -88,6 +89,7 @@ export function BulkSetupFlow({
   setupId: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const ready = useGujarat();
   const pathname = usePathname();
   const step = stepFromPathname(pathname);
@@ -100,7 +102,7 @@ export function BulkSetupFlow({
     documents: false,
   });
   const onFile = pathname.endsWith("/file");
-  const uploadStep = (onFile ? params.get("step") ?? "file" : null) as UploadStep | null;
+  const uploadStep = (onFile ? (params.get("step") ?? "file") : null) as UploadStep | null;
 
   const repository = React.useMemo(() => new BulkSetupRepository(setupId), [setupId]);
 
@@ -130,21 +132,39 @@ export function BulkSetupFlow({
         steps: [
           {
             id: "file",
-            title: upload.documents ? "Case documents" : "Excel file",
+            title: upload.documents ? t("setupFlow_caseDocuments") : t("setupFlow_excelFile"),
             icon: FileSpreadsheetIcon,
             href: uploadHref(setupId, "file", ai),
             active: uploadStep === "file",
             done: upload.read && uploadStep !== "file",
           },
           ...(upload.matchColumns
-            ? [{ id: "map", title: "Match columns", icon: Columns3Icon, href: uploadHref(setupId, "map", ai), active: uploadStep === "map", disabled: !upload.read }]
+            ? [
+                {
+                  id: "map",
+                  title: t("setupFlow_matchColumns"),
+                  icon: Columns3Icon,
+                  href: uploadHref(setupId, "map", ai),
+                  active: uploadStep === "map",
+                  disabled: !upload.read,
+                },
+              ]
             : []),
           ...(upload.matchValues
-            ? [{ id: "values", title: "Match values", icon: ListChecksIcon, href: uploadHref(setupId, "values", ai), active: uploadStep === "values", disabled: !upload.read }]
+            ? [
+                {
+                  id: "values",
+                  title: t("setupFlow_matchValues"),
+                  icon: ListChecksIcon,
+                  href: uploadHref(setupId, "values", ai),
+                  active: uploadStep === "values",
+                  disabled: !upload.read,
+                },
+              ]
             : []),
           {
             id: "review",
-            title: "Review",
+            title: t("setupFlow_review"),
             icon: ClipboardCheckIcon,
             href: uploadHref(setupId, "review", ai),
             active: uploadStep === "review",
@@ -153,7 +173,7 @@ export function BulkSetupFlow({
         ],
       },
     }),
-    [step, upload, uploadStep, setupId, ai],
+    [step, upload, uploadStep, setupId, ai, t],
   );
 
   if (!ready) return null;
@@ -171,7 +191,7 @@ export function BulkSetupFlow({
           className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
         >
           <Spinner className="mr-2 size-4" />
-          Opening the upload…
+          {t("setupFlow_openingTheUpload")}
         </div>
       }
       notFound={
@@ -182,23 +202,24 @@ export function BulkSetupFlow({
                 <FileQuestionIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="text-body font-semibold">
-                This upload has expired
+                {t("setupFlow_thisUploadHasExpired")}
               </EmptyTitle>
               <EmptyDescription className="text-body">
-                An upload that was not finished is kept only in the browser tab it was
-                started in. Start a new one.
+                {t("setupFlow_anUploadThatWasNotFinished")}
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button asChild>
-                <Link href="/filings/bulk/upload">Start a new upload</Link>
+                <Link href="/filings/bulk/upload">{t("setupFlow_startANewUpload")}</Link>
               </Button>
             </EmptyContent>
           </Empty>
         </div>
       }
     >
-      <DraftBreadcrumbLabel label={ai === "on" ? "Upload cases" : "Upload Excel"} />
+      <DraftBreadcrumbLabel
+        label={ai === "on" ? t("setupFlow_uploadCases") : t("setupFlow_uploadExcel")}
+      />
       <UploadStateContext.Provider value={setUpload}>
         <FieldPolicyProvider value={policy}>
           <FilingShell banner={<SetupBar />}>{children}</FilingShell>
@@ -210,6 +231,7 @@ export function BulkSetupFlow({
 
 /** Above every section: what this part of the upload is for. */
 function SetupBar() {
+  const t = useTranslations();
   return (
     <div className="bg-muted px-6 pt-6 lg:px-12 dark:bg-background">
       <div className="flex w-full max-w-4xl flex-col gap-3">
@@ -218,12 +240,10 @@ function SetupBar() {
           className="flex w-fit items-center gap-1 text-body-compact text-muted-foreground hover:text-foreground"
         >
           <ArrowLeftIcon className="size-4" aria-hidden />
-          Bulk filing
+          {t("setupFlow_bulkFiling")}
         </Link>
         <SectionNotice variant="neutral">
-          The complainants and advocates, and their documents, are entered once and go on
-          every case in the file. Once the batch is created, each case can change them on
-          its own.
+          {t("setupFlow_theComplainantsAndAdvocatesAndTheir")}
         </SectionNotice>
       </div>
     </div>

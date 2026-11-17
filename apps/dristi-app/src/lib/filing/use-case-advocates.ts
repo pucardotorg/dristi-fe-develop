@@ -15,12 +15,10 @@
 
 import * as React from "react";
 
-import { isApiError } from "@/lib/api";
-
 import { advocateChanged, advocateClientIds, endAdvocate, saveAdvocate } from "./advocates";
 import { advocatesFromCase } from "./case-read";
 import { getCaseFilingRepository } from "./data";
-import { caseFilingErrorMessage } from "./data/cases-api";
+import { caseFilingErrorMessage, isCaseNotYetSaved } from "./data/cases-api";
 import { useFiling } from "./store";
 import type { Advocate, Complainant, FilingDraft, SavedAdvocate } from "./types";
 import { savedParticipantIds } from "./use-case-parties";
@@ -61,7 +59,7 @@ export async function syncAdvocates(
   latest: () => FilingDraft,
   caseId: string,
   update: Update,
-  fromCase: ReadonlySet<string> = new Set()
+  fromCase: ReadonlySet<string> = new Set(),
 ) {
   const record = (id: string, patch: (advocate: SavedAdvocate) => void) =>
     update((d) => {
@@ -118,7 +116,7 @@ export async function syncAdvocates(
       caseId,
       advocate.advocateId,
       ids,
-      saved
+      saved,
     );
     lastSaved.set(advocate.id, {
       savedAdvocateId: result.savedAdvocateId,
@@ -144,7 +142,7 @@ export async function syncAdvocates(
 async function loadFromCase(
   caseId: string,
   latest: () => FilingDraft,
-  update: Update
+  update: Update,
 ): Promise<Set<string>> {
   const read = await getCaseFilingRepository().getCase(caseId);
   const apply = (d: FilingDraft) => {
@@ -183,7 +181,7 @@ export function useCaseAdvocates() {
       } catch (error) {
         // A case not saved yet has nothing to read: treat it as an empty case
         // (nothing from it) and don't read again on the next save.
-        if (isApiError(error) && error.status === 404) {
+        if (isCaseNotYetSaved(error)) {
           loaded.current = true;
         } else {
           // The browser's copy is still there; the next save tries the case again.

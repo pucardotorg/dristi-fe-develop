@@ -9,6 +9,7 @@ import { PAGED_KINDS } from "@/lib/tasks/permissions";
 import { useTasks } from "@/lib/tasks/store";
 import { type Transition, TransitionError } from "@/lib/tasks/transitions";
 import type { Task, TaskId } from "@/lib/tasks/types";
+import { useTranslations } from "next-intl";
 
 /**
  * The act-modal flavours. Only paying and uploading documents act in the modal (the
@@ -46,18 +47,16 @@ export type Flow = "sign" | "scrutiny" | "filing";
 
 export const FLOW_DIALOG: Record<Flow, { title: string; description: string }> = {
   sign: {
-    title: "Continuing in the signing flow",
-    description: "Signing happens in its own flow. We'll bring you back here when it's done.",
+    title: "useTaskActions_continuingInTheSigningFlow",
+    description: "useTaskActions_signingHappensInItsOwnFlow",
   },
   scrutiny: {
-    title: "Continuing in the scrutiny flow",
-    description:
-      "Correcting the defects happens in the scrutiny flow, on the filing itself. We'll bring you back here when the corrections have gone to the Registry.",
+    title: "useTaskActions_continuingInTheScrutinyFlow",
+    description: "useTaskActions_correctingTheDefectsHappensInThe",
   },
   filing: {
-    title: "Continuing in the filing flow",
-    description:
-      "Drafting and filing happens in the e-filing flow, which is not built yet — this is an interim screen. We'll bring you back here when it's done.",
+    title: "useTaskActions_continuingInTheFilingFlow",
+    description: "useTaskActions_draftingAndFilingHappensInThe",
   },
 };
 
@@ -82,6 +81,7 @@ export function draftFlowOf(task: Task): Flow | null {
  * message, and the transition's own words when it refuses.
  */
 export function useTaskActions({ inDialog = false }: { inDialog?: boolean } = {}) {
+  const t = useTranslations();
   const { dispatch, online } = useTasks();
   const [busy, setBusy] = React.useState<TaskId | null>(null);
   /* Inside a dialog a failure is never a toast (it would sit behind the dialog, unclosable):
@@ -102,7 +102,7 @@ export function useTaskActions({ inDialog = false }: { inDialog?: boolean } = {}
     ): Promise<Task | null> => {
       setError(null);
       if (!online) {
-        fail("You are offline. Nothing was changed.");
+        fail(t("useTaskActions_youAreOfflineNothingWasChanged"));
         return null;
       }
       setBusy(taskId);
@@ -113,14 +113,16 @@ export function useTaskActions({ inDialog = false }: { inDialog?: boolean } = {}
         return task;
       } catch (e) {
         const message =
-          e instanceof TransitionError ? e.message : "Something went wrong. Nothing was changed.";
+          e instanceof TransitionError
+            ? e.message
+            : t("useTaskActions_somethingWentWrongNothingWasChanged");
         fail(message);
         return null;
       } finally {
         setBusy(null);
       }
     },
-    [dispatch, online, fail]
+    [dispatch, online, fail, t],
   );
 
   return { act, busy, online, error };

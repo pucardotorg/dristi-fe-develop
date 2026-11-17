@@ -38,7 +38,7 @@ async function saveOneNotice(
   caseId: string,
   draft: FilingDraft,
   index: number,
-  update: Update
+  update: Update,
 ): Promise<string | undefined> {
   const notice = draft.notices[index];
   if (!demandNoticeReady(notice)) return notice.noticeEvidenceId;
@@ -69,9 +69,15 @@ async function saveOneNotice(
 /** Take a removed notice's evidence row off the case. A failure leaves it on it. */
 export function removeNoticeEvidence(notice: Pick<DemandNotice, "noticeEvidenceId">) {
   if (!notice.noticeEvidenceId) return;
-  getCaseFilingRepository().deleteEvidence(notice.noticeEvidenceId).catch((error) => {
-    console.warn("[filing] couldn't remove demand-notice evidence from the case", notice.noticeEvidenceId, error);
-  });
+  getCaseFilingRepository()
+    .deleteEvidence(notice.noticeEvidenceId)
+    .catch((error) => {
+      console.warn(
+        "[filing] couldn't remove demand-notice evidence from the case",
+        notice.noticeEvidenceId,
+        error,
+      );
+    });
 }
 
 export function useDemandNoticeEvidence() {

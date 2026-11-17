@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
 
 import { BrandLockup } from "@/components/brand-lockup";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 export const metadata: Metadata = { title: "24×7 ON Courts" };
 
@@ -27,8 +29,8 @@ export const metadata: Metadata = { title: "24×7 ON Courts" };
 const ENTRANCES = [
   {
     href: "/citizen",
-    title: "Advocates, litigants and clerks",
-    who: "File and follow a case — including as a party in person or a power-of-attorney holder.",
+    title: "page_advocatesLitigantsAndClerks",
+    who: "page_fileAndFollowACaseIncluding",
   },
   {
     href: "/employee/login",
@@ -38,29 +40,28 @@ const ENTRANCES = [
 ];
 
 const POLICIES = [
-  { label: "Terms of use", href: "/terms" },
+  { label: "page_termsOfUse", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
   { label: "Support", href: "/support" },
 ];
 
 export default function LandingPage() {
+  const t = useTranslations();
   return (
     <div className="flex min-h-dvh flex-col bg-linear-160 from-brand-canvas to-brand-canvas-deep text-brand-canvas-foreground">
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center gap-12 px-6 py-12 md:px-8">
         <div className="flex flex-col gap-8">
           {/* Says what this page is, so nobody mistakes it for the finished site. */}
           <p className="rounded-lg bg-card px-4 py-3 text-body-compact text-foreground">
-            This is a placeholder page. The 24×7 ON Courts website will appear here.
+            {t("page_thisIsAPlaceholderPageThe")}
           </p>
           <BrandLockup onDark className="h-12" />
           <div className="flex max-w-2xl flex-col gap-4">
             <h1 className="text-title-l font-semibold tracking-tight text-balance sm:text-display-s">
-              The district courts, online.
+              {t("page_theDistrictCourtsOnline")}
             </h1>
             <p className="text-body text-brand-canvas-muted-foreground">
-              Bring a cheque-bounce case to court, follow it through every hearing, and
-              receive the court&rsquo;s orders — start to finish, without a trip to the
-              filing counter.
+              {t("page_bringAChequeBounceCaseTo")}
             </p>
           </div>
         </div>
@@ -69,7 +70,7 @@ export default function LandingPage() {
             doorways on the dark plate: the whole panel is the link, "Sign in" and the
             chevron name the act, and the citizen door leads because that is who almost
             everyone arriving here is. Not a grid of cards — two entrances. */}
-        <nav aria-label="Sign in" className="flex flex-col gap-4">
+        <nav aria-label={t("page_signIn")} className="flex flex-col gap-4">
           {ENTRANCES.map((entrance) => (
             <Link
               key={entrance.href}
@@ -77,13 +78,15 @@ export default function LandingPage() {
               className="group flex items-center justify-between gap-6 rounded-xl bg-card p-6 text-foreground transition-shadow hover:shadow-overlay focus-visible:ring-2 focus-visible:ring-brand-canvas-foreground focus-visible:outline-none"
             >
               <span className="flex min-w-0 flex-col gap-1">
-                <span className="text-title-s font-semibold">{entrance.title}</span>
+                <span className="text-title-s font-semibold">
+                  {translateText(t, entrance.title)}
+                </span>
                 <span className="text-body-compact text-muted-foreground">
-                  {entrance.who}
+                  {translateText(t, entrance.who)}
                 </span>
               </span>
               <span className="flex shrink-0 items-center gap-1.5 text-body-compact font-medium text-primary">
-                Sign in
+                {t("page_signIn")}
                 <ChevronRightIcon
                   aria-hidden
                   className="size-4 transition-transform group-hover:translate-x-0.5"
@@ -95,14 +98,14 @@ export default function LandingPage() {
       </main>
 
       <footer className="mx-auto flex w-full max-w-4xl flex-col gap-3 px-6 pb-8 text-caption text-brand-canvas-muted-foreground md:px-8">
-        <nav aria-label="About this site" className="flex flex-wrap gap-x-6 gap-y-2">
+        <nav aria-label={t("page_aboutThisSite")} className="flex flex-wrap gap-x-6 gap-y-2">
           {POLICIES.map((item) => (
             <a
               key={item.href}
               href={item.href}
               className="transition-colors hover:text-brand-canvas-foreground"
             >
-              {item.label}
+              {translateText(t, item.label)}
             </a>
           ))}
         </nav>

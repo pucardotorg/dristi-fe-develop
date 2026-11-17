@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { StatusLine } from "@/components/feedback";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 const NOTICE_ROLE = {
   none: undefined,
@@ -21,12 +22,7 @@ const NOTICE_ROLE = {
   assertive: "alert",
 } as const;
 
-export type NoticeVariant =
-  | "neutral"
-  | "info"
-  | "warning"
-  | "success"
-  | "destructive";
+export type NoticeVariant = "neutral" | "info" | "warning" | "success" | "destructive";
 
 /**
  * A notice that carries a status wears that status: the DS `Alert` variants ship the
@@ -107,6 +103,7 @@ export function SectionNotice({
   onDismiss?: () => void;
   className?: string;
 }) {
+  const t = useTranslations();
   /* A notice that reports a status (it worked, it failed, it needs a look) is a feedback
      line: the same shape as every other success, failure and warning in the product
      (`components/feedback`, skill `feedback-states`). Info and neutral notices are
@@ -122,7 +119,14 @@ export function SectionNotice({
         className={className}
         action={
           onDismiss ? (
-            <Button type="button" variant="ghost" size="icon" aria-label="Dismiss" onClick={onDismiss} className="text-muted-foreground">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={t("filingNotices_dismiss")}
+              onClick={onDismiss}
+              className="text-muted-foreground"
+            >
               <XIcon aria-hidden />
             </Button>
           ) : undefined
@@ -147,7 +151,7 @@ export function SectionNotice({
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="Dismiss"
+          aria-label={t("filingNotices_dismiss")}
           onClick={onDismiss}
           className={cn("absolute right-1 top-1", dismiss)}
         >
@@ -176,18 +180,19 @@ export function UnsavedNotice({
   noun: "file" | "details";
   onRetry: () => void;
 }) {
+  const t = useTranslations();
   const one = labels.length === 1;
   const kept =
     noun === "file"
       ? `The file${one ? " is" : "s are"} still in this browser.`
-      : "The details are still in this browser.";
+      : t("filingNotices_theDetailsAreStillInThis");
   return (
     <SectionNotice
       variant="destructive"
       announce="assertive"
       title={
         one
-          ? `${labels[0]} wasn’t saved to your case`
+          ? t("filingNotices_labelsWasntSavedToYourCase", { labels: labels[0] })
           : `${labels.length} ${noun === "file" ? "documents" : "parties"} weren’t saved to your case`
       }
     >
@@ -196,7 +201,7 @@ export function UnsavedNotice({
           {error} {kept}
         </span>
         <Button type="button" variant="outline" size="sm" onClick={onRetry}>
-          Try again
+          {t("filingNotices_tryAgain")}
         </Button>
       </span>
     </SectionNotice>
@@ -215,7 +220,7 @@ export function InfoWell({
     <div
       className={cn(
         "flex flex-wrap items-center gap-4 rounded-lg bg-surface-sunken p-4 text-body-compact text-muted-foreground",
-        className
+        className,
       )}
     >
       {children}

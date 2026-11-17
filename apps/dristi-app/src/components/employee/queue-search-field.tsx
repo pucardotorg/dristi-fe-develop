@@ -11,6 +11,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * The free-text box every court-side queue carries.
@@ -69,6 +70,7 @@ export function QueueSearchField({
   labelClassName?: string;
   ref?: React.Ref<HTMLInputElement>;
 }) {
+  const t = useTranslations();
   const typed = value !== "";
 
   return (
@@ -79,9 +81,7 @@ export function QueueSearchField({
           input's regular-weight text rather than shouting a size larger than the data it
           filters (owner, 2026-09-14). `labelClassName` is the one surface where even that
           is too loud; see the prop. */}
-      <FieldLabel className={cn("text-body-compact", labelClassName)}>
-        {label}
-      </FieldLabel>
+      <FieldLabel className={cn("text-body-compact", labelClassName)}>{label}</FieldLabel>
       <InputGroup>
         <InputGroupAddon>
           <SearchIcon aria-hidden />
@@ -109,7 +109,7 @@ export function QueueSearchField({
                 one does more. */}
             <InputGroupButton
               size="icon-xs"
-              aria-label="Clear search"
+              aria-label={t("queueSearchField_clearSearch")}
               onClick={() => onChange("")}
               className="relative after:absolute after:-inset-2 after:content-['']"
             >

@@ -10,6 +10,7 @@ requests, documentation improvements, and code.
 Set up the project locally first. Follow the [README](README.md) quick start.
 
 **Prerequisites:**
+
 - Node.js 22 or later, and npm
 - Git
 - Basic familiarity with React, Next.js (App Router), TypeScript and Tailwind CSS
@@ -60,20 +61,24 @@ Before you start:
 ### 3. Set Up Your Development Environment
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. (Optional) Configure the environment:
+
    ```bash
    cp apps/dristi-app/.env.example apps/dristi-app/.env.local
    ```
 
 3. Start the dev server:
+
    ```bash
    npm run dev:sandbox   # everything in the browser, no backend (design work, demos)
    npm run dev           # sandbox data with sign-in against a local backend
    ```
+
    Where screens get their data is explained in [AGENTS.md](AGENTS.md) ("Data").
 
 4. Check that everything works:
@@ -95,6 +100,7 @@ git checkout -b type/brief-description origin/main
 **Branch name format:** `type/brief-description`, in kebab-case.
 
 **Type** can be:
+
 - `feature` — a new feature or screen
 - `fix` — a bug fix
 - `chore` — tooling, CI, dependencies, maintenance
@@ -102,6 +108,7 @@ git checkout -b type/brief-description origin/main
 - `spec` — specifications for agents and fellow developers
 
 **Examples:**
+
 ```bash
 git checkout -b feature/scrutiny-trim-and-filing-samples origin/main
 git checkout -b fix/hearing-date-overflow origin/main
@@ -122,14 +129,16 @@ git checkout -b docs/readme-setup origin/main
    - TypeScript throughout, matching the style of the surrounding code
    - Put domain logic, fixtures and copy in `apps/dristi-app/src/lib/`, and components in
      `apps/dristi-app/src/components/<feature>/`
-   - Use clear names, and explain *why* in comments where the reason isn't obvious
+   - Use clear names, and explain _why_ in comments where the reason isn't obvious
 
 3. **Lint:**
+
    ```bash
    npm run lint
    ```
 
 4. **Run the tests:**
+
    ```bash
    npm run test:app
    ```
@@ -143,12 +152,15 @@ git checkout -b docs/readme-setup origin/main
 
 Before opening a pull request:
 
-1. **Run lint, the type check and tests:**
+1. **Run the format check, lint, the type check and tests:**
+
    ```bash
+   npm run format:check
    npm run lint
    npm run typecheck
    npm run test:app
    ```
+
    If you changed `.agents/`, also run `npm run sync:rails` and `npm run verify:agents`.
 
 2. **Test your changes in the running app** (`npm run dev:sandbox`, or `npm run dev`
@@ -177,6 +189,7 @@ Optional longer description explaining what and why.
 ```
 
 **Examples:**
+
 ```bash
 git commit -m "Add CIN/PAN skip to the filing form"
 git commit -m "Fix hearing date overflowing on phone widths"
@@ -184,6 +197,7 @@ git commit -m "Update README with setup and demo accounts"
 ```
 
 **Commit message rules:**
+
 - Use the imperative mood ("Add feature", not "Added feature" or "Adds feature")
 - Keep the first line under 70 characters
 - Group related changes into one commit, and keep unrelated changes apart
@@ -192,12 +206,14 @@ git commit -m "Update README with setup and demo accounts"
 ### 8. Push and Open a Pull Request
 
 1. **Sync with `main`:**
+
    ```bash
    git fetch origin            # or: git fetch upstream (fork)
    git rebase origin/main      # or: git rebase upstream/main
    ```
 
 2. **Push your branch:**
+
    ```bash
    git push origin your-branch-name
    ```
@@ -237,6 +253,7 @@ git commit -m "Update README with setup and demo accounts"
 ## Questions?
 
 If you have questions:
+
 - Check the [README](README.md) and [docs/](docs/README.md) first
 - Search [existing issues](https://github.com/pucardotorg/dristi-fe-develop/issues)
 - Contact the maintainers
@@ -246,6 +263,7 @@ If you have questions:
 ## Code of Conduct
 
 By participating in this project, you agree to:
+
 - Be respectful and inclusive
 - Welcome newcomers and help them get started
 - Accept constructive criticism gracefully

@@ -46,12 +46,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 /**
  * The court side's one filter surface — search inline, everything else behind a Filters
@@ -155,6 +151,7 @@ export function CourtSortSelect<T extends string>({
    */
   iconOnly?: boolean;
 }) {
+  const t = useTranslations();
   if (iconOnly) {
     const current = options.find((option) => option.id === value)?.label ?? "";
     return (
@@ -168,22 +165,21 @@ export function CourtSortSelect<T extends string>({
                   type="button"
                   variant="outline"
                   size="icon"
-                  aria-label={`Sort by, ${current}`}
+                  aria-label={t("courtFilters_sortByCurrent", { current })}
                   className="shrink-0"
                 >
                   <ArrowDownUpIcon aria-hidden />
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Sort: {current}</TooltipContent>
+            <TooltipContent side="bottom">
+              {t("courtFilters_sortCurrent", { current })}
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <DropdownMenuContent align="end" className="min-w-52">
-          <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            value={value}
-            onValueChange={(next) => onChange(next as T)}
-          >
+          <DropdownMenuLabel>{t("courtFilters_sortBy")}</DropdownMenuLabel>
+          <DropdownMenuRadioGroup value={value} onValueChange={(next) => onChange(next as T)}>
             {options.map((option) => (
               <DropdownMenuRadioItem key={option.id} value={option.id}>
                 {option.label}
@@ -197,7 +193,7 @@ export function CourtSortSelect<T extends string>({
   return (
     <div className="flex min-w-0 flex-col max-sm:w-full">
       <Label htmlFor={id} className="sr-only">
-        Sort by
+        {t("courtFilters_sortBy")}
       </Label>
       <Select value={value} onValueChange={(next) => onChange(next as T)}>
         <SelectTrigger
@@ -218,7 +214,6 @@ export function CourtSortSelect<T extends string>({
     </div>
   );
 }
-
 
 export function CourtFilters({
   leading,
@@ -279,11 +274,11 @@ export function CourtFilters({
   /** Reset every filter (fields, date and the search) back to the screen's default. */
   onClearAll: () => void;
 }) {
+  const t = useTranslations();
   const labelHidden = search.labelHidden ?? true;
   const appliedFields = fields.filter((field) => field.value !== field.all);
   const appliedMulti = multi.filter((field) => field.values.length > 0);
-  const applied =
-    appliedFields.length + appliedMulti.length + (date?.active ? 1 : 0);
+  const applied = appliedFields.length + appliedMulti.length + (date?.active ? 1 : 0);
   const controls = fields.length + multi.length + (date ? 1 : 0);
 
   /* Wrapped in a form only where Enter is a fast path — a lone search input inside a
@@ -336,10 +331,7 @@ export function CourtFilters({
           <div className="flex min-w-0 flex-col gap-2">
             {/* Hidden with the search's, so the two controls share a top edge; the select's
                 own value ("All process types") still says what it filters. */}
-            <Label
-              htmlFor={only.id}
-              className={labelHidden ? "sr-only" : "text-body-compact"}
-            >
+            <Label htmlFor={only.id} className={labelHidden ? "sr-only" : "text-body-compact"}>
               {only.label}
             </Label>
             <Select value={only.value} onValueChange={only.onApply}>
@@ -360,11 +352,7 @@ export function CourtFilters({
           <div className="flex min-w-0 flex-col gap-2">
             <span
               id="court-filter-date"
-              className={
-                labelHidden
-                  ? "sr-only"
-                  : "w-fit text-body-compact font-medium"
-              }
+              className={labelHidden ? "sr-only" : "w-fit text-body-compact font-medium"}
             >
               {date.label}
             </span>
@@ -381,7 +369,7 @@ export function CourtFilters({
         {trailing}
         {applied > 0 || search.value !== "" ? (
           <Button type="button" variant="ghost" onClick={onClearAll}>
-            Clear filters
+            {t("courtFilters_clearFilters")}
           </Button>
         ) : null}
         {end ? <div className="ml-auto flex items-end gap-3">{end}</div> : null}
@@ -410,12 +398,7 @@ export function CourtFilters({
         ) : null}
         <div className="flex min-w-0 items-end gap-3 max-sm:w-full max-sm:flex-col max-sm:items-stretch">
           {searchNode}
-          <CourtFiltersSheet
-            fields={fields}
-            multi={multi}
-            date={date}
-            applied={applied}
-          />
+          <CourtFiltersSheet fields={fields} multi={multi} date={date} applied={applied} />
           {trailing}
         </div>
         {end ? <div className="ml-auto flex items-end gap-3">{end}</div> : null}
@@ -426,14 +409,13 @@ export function CourtFilters({
       {applied > 0 ? (
         <div
           className="flex flex-wrap items-center gap-2"
-          aria-label="Applied filters"
+          aria-label={t("courtFilters_appliedFilters")}
         >
           {appliedFields.map((field) => (
             <AppliedChip
               key={field.id}
               label={
-                field.options.find((option) => option.value === field.value)
-                  ?.label ?? field.value
+                field.options.find((option) => option.value === field.value)?.label ?? field.value
               }
               onClear={() => field.onApply(field.all)}
             />
@@ -442,21 +424,13 @@ export function CourtFilters({
             field.values.map((value) => (
               <AppliedChip
                 key={`${field.id}-${value}`}
-                label={
-                  field.options.find((option) => option.value === value)?.label ??
-                  value
-                }
-                onClear={() =>
-                  field.onApply(field.values.filter((entry) => entry !== value))
-                }
+                label={field.options.find((option) => option.value === value)?.label ?? value}
+                onClear={() => field.onApply(field.values.filter((entry) => entry !== value))}
               />
             )),
           )}
           {date?.active ? (
-            <AppliedChip
-              label={date.chipLabel}
-              onClear={() => date.onApply(undefined)}
-            />
+            <AppliedChip label={date.chipLabel} onClear={() => date.onApply(undefined)} />
           ) : null}
           <Button
             type="button"
@@ -465,7 +439,7 @@ export function CourtFilters({
             className="text-muted-foreground"
           >
             <XIcon data-icon="inline-start" aria-hidden />
-            Clear all
+            {t("courtFilters_clearAll")}
           </Button>
         </div>
       ) : null}
@@ -484,12 +458,14 @@ function CourtFiltersSheet({
   date?: CourtFilterDate;
   applied: number;
 }) {
+  const t = useTranslations();
   const seed = React.useCallback(
     () => ({
       fields: Object.fromEntries(fields.map((field) => [field.id, field.value])),
-      multi: Object.fromEntries(
-        multi.map((field) => [field.id, [...field.values]]),
-      ) as Record<string, string[]>,
+      multi: Object.fromEntries(multi.map((field) => [field.id, [...field.values]])) as Record<
+        string,
+        string[]
+      >,
       date: date?.value,
     }),
     [fields, multi, date],
@@ -504,9 +480,7 @@ function CourtFiltersSheet({
   const draftFieldCount = fields.filter(
     (field) => (draft.fields[field.id] ?? field.all) !== field.all,
   ).length;
-  const draftMultiCount = multi.filter(
-    (field) => (draft.multi[field.id] ?? []).length > 0,
-  ).length;
+  const draftMultiCount = multi.filter((field) => (draft.multi[field.id] ?? []).length > 0).length;
   const draftCount =
     draftFieldCount + draftMultiCount + (date && date.draftActive(draft.date) ? 1 : 0);
 
@@ -541,7 +515,7 @@ function CourtFiltersSheet({
           aria-label={`Filters${applied ? `, ${applied} applied` : ""}`}
         >
           <SlidersHorizontalIcon data-icon="inline-start" aria-hidden />
-          Filters
+          {t("courtFilters_filters")}
           {applied ? (
             <span className="ms-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-caption font-medium tabular-nums text-primary-foreground">
               {applied}
@@ -549,13 +523,11 @@ function CourtFiltersSheet({
           ) : null}
         </Button>
       </SheetTrigger>
-      <SheetContent
-        side="right"
-        aria-describedby={undefined}
-        className="w-full sm:max-w-sm"
-      >
+      <SheetContent side="right" aria-describedby={undefined} className="w-full sm:max-w-sm">
         <SheetHeader>
-          <SheetTitle className="text-title-s font-semibold">Filters</SheetTitle>
+          <SheetTitle className="text-title-s font-semibold">
+            {t("courtFilters_filters")}
+          </SheetTitle>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
@@ -606,10 +578,7 @@ function CourtFiltersSheet({
             // `DatePicker` owns its trigger and takes no `id`, so the label names a group
             // around it rather than pointing `htmlFor` at a control that does not exist.
             <div className="flex min-w-0 flex-col gap-2">
-              <span
-                id="court-filter-date"
-                className="w-fit text-body-compact font-medium"
-              >
+              <span id="court-filter-date" className="w-fit text-body-compact font-medium">
                 {date.label}
               </span>
               <div role="group" aria-labelledby="court-filter-date">
@@ -629,14 +598,14 @@ function CourtFiltersSheet({
         <SheetFooter className="flex-row items-center justify-between border-t border-hairline">
           {draftCount ? (
             <Button type="button" variant="ghost" onClick={clearDraft}>
-              Clear filters
+              {t("courtFilters_clearFilters")}
             </Button>
           ) : (
             <span />
           )}
           <SheetClose asChild>
             <Button type="button" onClick={apply}>
-              Apply filters
+              {t("courtFilters_applyFilters")}
             </Button>
           </SheetClose>
         </SheetFooter>
@@ -655,6 +624,7 @@ function MultiSelectField({
   value: readonly string[];
   onChange: (next: string[]) => void;
 }) {
+  const t = useTranslations();
   const anchor = useComboboxAnchor();
   const labelId = `${field.id}-label`;
   const picked = field.options.filter((option) => value.includes(option.value));
@@ -668,12 +638,8 @@ function MultiSelectField({
         items={field.options}
         value={picked}
         itemToStringLabel={(option: CourtFilterOption) => option.label}
-        isItemEqualToValue={(a: CourtFilterOption, b: CourtFilterOption) =>
-          a.value === b.value
-        }
-        onValueChange={(next: CourtFilterOption[]) =>
-          onChange(next.map((option) => option.value))
-        }
+        isItemEqualToValue={(a: CourtFilterOption, b: CourtFilterOption) => a.value === b.value}
+        onValueChange={(next: CourtFilterOption[]) => onChange(next.map((option) => option.value))}
       >
         <ComboboxChips ref={anchor}>
           <ComboboxValue>
@@ -693,7 +659,7 @@ function MultiSelectField({
         {/* The sheet is modal and freezes the body's pointer events; the list, portalled
             there, re-enables its own. */}
         <ComboboxContent anchor={anchor} className="pointer-events-auto">
-          <ComboboxEmpty>Nothing matches.</ComboboxEmpty>
+          <ComboboxEmpty>{t("courtFilters_nothingMatches")}</ComboboxEmpty>
           <ComboboxList>
             {(option: CourtFilterOption) => (
               <ComboboxItem key={option.value} value={option}>

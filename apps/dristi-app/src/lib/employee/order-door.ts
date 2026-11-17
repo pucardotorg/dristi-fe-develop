@@ -55,8 +55,6 @@ function foldScheduling(
     blocks: initial.blocks.filter((block) => block !== scheduling),
     next: "list",
     nextDate: scheduling.values.date || initial.nextDate,
-    nextPurpose:
-      (scheduling.values.purpose as OrderDraft["nextPurpose"]) ||
-      initial.nextPurpose,
+    nextPurpose: (scheduling.values.purpose as OrderDraft["nextPurpose"]) || initial.nextPurpose,
   };
 }

@@ -19,14 +19,8 @@ import { execFileSync } from "node:child_process";
 import { writeFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-const {
-  DS_LOCK_PATH,
-  VENDOR_DS_PATH,
-  readDsLock,
-  resolveDsRoot,
-  dsResolveHint,
-  REPO_ROOT,
-} = await import("../apps/dristi-app/scripts/resolve-ds.mjs");
+const { DS_LOCK_PATH, VENDOR_DS_PATH, readDsLock, resolveDsRoot, dsResolveHint, REPO_ROOT } =
+  await import("../apps/dristi-app/scripts/resolve-ds.mjs");
 
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
@@ -39,7 +33,7 @@ if (!ds) {
 }
 if (ds !== VENDOR_DS_PATH) {
   console.error(
-    `Refusing to bump from ${ds}.\nThe pin must be set from the vendored clone, not a PUCAR_DS_ROOT override —\notherwise you pin the repo to a commit that only exists on your machine.`
+    `Refusing to bump from ${ds}.\nThe pin must be set from the vendored clone, not a PUCAR_DS_ROOT override —\notherwise you pin the repo to a commit that only exists on your machine.`,
   );
   process.exit(1);
 }
@@ -77,7 +71,9 @@ if (from === to) {
 
 /* Show the range first. A bump nobody read is a bump nobody can review. */
 const range = from ? `${from}..${to}` : null;
-console.log(`\nDesign system bump\n  from  ${from ? from.slice(0, 12) : "(unpinned)"}\n  to    ${to.slice(0, 12)}\n`);
+console.log(
+  `\nDesign system bump\n  from  ${from ? from.slice(0, 12) : "(unpinned)"}\n  to    ${to.slice(0, 12)}\n`,
+);
 
 if (range) {
   const logOf = (r) => {
@@ -106,12 +102,14 @@ if (range) {
     } catch {
       return "";
     }
-  })().split("\n").filter(Boolean);
+  })()
+    .split("\n")
+    .filter(Boolean);
 
   const primitives = touched.filter((f) => f.startsWith("src/components/ui/"));
   const tokens = touched.includes("src/app/globals.css");
   console.log(
-    `Affects this app: ${primitives.length} primitive${primitives.length === 1 ? "" : "s"}${tokens ? " + the token file" : ""}`
+    `Affects this app: ${primitives.length} primitive${primitives.length === 1 ? "" : "s"}${tokens ? " + the token file" : ""}`,
   );
   if (primitives.length) {
     for (const f of primitives) console.log(`  ${f.replace("src/components/ui/", "")}`);
@@ -119,7 +117,7 @@ if (range) {
   console.log(
     "\nRead the changelog for this range before committing — a token whose *meaning*\nchanged shows up in no file diff:\n  " +
       join(ds, "CHANGELOG.md") +
-      "\n"
+      "\n",
   );
 }
 
@@ -153,7 +151,7 @@ const names = existsSync(appUi)
 execFileSync(
   "node",
   [join(REPO_ROOT, "apps/dristi-app/scripts/sync-ui-from-ds.mjs"), "--tokens", ...names],
-  { stdio: "inherit", cwd: join(REPO_ROOT, "apps/dristi-app") }
+  { stdio: "inherit", cwd: join(REPO_ROOT, "apps/dristi-app") },
 );
 
 console.log(
@@ -166,5 +164,5 @@ console.log(
     "",
     "Then tell the others. They pick it up with npm run setup:ds after their next",
     "pull — the pin means nobody is dragged onto it mid-feature.",
-  ].join("\n")
+  ].join("\n"),
 );

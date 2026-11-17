@@ -7,13 +7,9 @@ import { Separator } from "@/components/ui/separator";
 import { XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useTranslations } from "next-intl";
 
 /** Beside the list from `lg`; under it, the pane has no room of its own. */
 const STACKED_QUERY = "(max-width: 1023.98px)";
@@ -42,6 +38,7 @@ export function PartyDetailSlot({
   chosen: boolean;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const stacked = useMediaQuery(STACKED_QUERY);
   const router = useRouter();
   const pathname = usePathname();
@@ -89,15 +86,13 @@ export function PartyDetailSlot({
               variant="ghost"
               size="icon"
               className="text-muted-foreground"
-              aria-label="Close"
+              aria-label={t("common_close")}
             >
               <XIcon aria-hidden />
             </Button>
           </DrawerClose>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 @container">
-          {children}
-        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 @container">{children}</div>
       </DrawerContent>
     </Drawer>
   );

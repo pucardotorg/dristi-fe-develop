@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { blankComplainant } from "./blank";
-import { cinPanAnswered, complainantsMissingCinPan, isCinOrPan, normaliseCinPan } from "./selectors";
+import {
+  cinPanAnswered,
+  complainantsMissingCinPan,
+  isCinOrPan,
+  normaliseCinPan,
+} from "./selectors";
 
 describe("CIN / PAN", () => {
   it("accepts a CIN and a PAN, however they were typed", () => {

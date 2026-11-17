@@ -111,13 +111,7 @@ export const COURT_ACCOUNTS: Record<CourtRole, CourtAccount> = {
     /* The one seat that covers many: the officer scrutinises for the whole
        establishment, so the account carries every court room in it. Court 1 leads,
        because that is where this build's cases sit. */
-    courtrooms: [
-      jmfcCourt(1),
-      jmfcCourt(2),
-      jmfcCourt(3),
-      jmfcCourt(4),
-      jmfcCourt(5),
-    ],
+    courtrooms: [jmfcCourt(1), jmfcCourt(2), jmfcCourt(3), jmfcCourt(4), jmfcCourt(5)],
   },
   typist: {
     username: "sreelathaTypist",
@@ -162,11 +156,8 @@ const PUNJAB_HARYANA_USERNAMES: Partial<Record<CourtRole, string>> = {
 export function courtAccounts(court: CourtId): Partial<Record<CourtRole, CourtAccount>> {
   const accounts: Partial<Record<CourtRole, CourtAccount>> = {};
   for (const seat of seatsIn(court)) {
-    const username =
-      court === "punjab-haryana" ? PUNJAB_HARYANA_USERNAMES[seat] : undefined;
-    accounts[seat] = username
-      ? { ...COURT_ACCOUNTS[seat], username }
-      : COURT_ACCOUNTS[seat];
+    const username = court === "punjab-haryana" ? PUNJAB_HARYANA_USERNAMES[seat] : undefined;
+    accounts[seat] = username ? { ...COURT_ACCOUNTS[seat], username } : COURT_ACCOUNTS[seat];
   }
   return accounts;
 }
@@ -177,10 +168,7 @@ export function courtAccounts(court: CourtId): Partial<Record<CourtRole, CourtAc
  * Case-insensitive: a username is an identifier the court issued, not a password, and a
  * staff member typing `MichaelGeorgeJudge` has not made a mistake worth a dead end.
  */
-export function accountFor(
-  username: string,
-  court: CourtId = "kerala",
-): CourtAccount | undefined {
+export function accountFor(username: string, court: CourtId = "kerala"): CourtAccount | undefined {
   const typed = username.trim().toLowerCase();
   if (!typed) return undefined;
   return Object.values(courtAccounts(court)).find(

@@ -24,6 +24,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useTranslations } from "next-intl";
 
 /**
  * The court side's search — a spotlight over the page, not a filter inside the rail.
@@ -59,10 +60,7 @@ type CourtSearchRow = {
   family: string | null;
 };
 
-function courtSearchRows(
-  court: CourtId,
-  seat: CourtRole,
-): CourtSearchRow[] {
+function courtSearchRows(court: CourtId, seat: CourtRole): CourtSearchRow[] {
   return [
     ...COURT_NAV_LINKS.map((item) => ({ item, family: null })),
     ...courtNavGroupsForCourt(COURT_NAV_GROUPS, court).flatMap((group) =>
@@ -84,6 +82,7 @@ function haystack(row: CourtSearchRow): string {
 }
 
 function Results({ onNavigate }: { onNavigate: () => void }) {
+  const t = useTranslations();
   const router = useRouter();
   const [query, setQuery] = React.useState("");
 
@@ -102,29 +101,23 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
   return (
     /* Filtering is ours, not cmdk's: a queue is found by its family's name as well as its
        own, which is not the text on the row. */
-    <Command shouldFilter={false} label="Search this court">
+    <Command shouldFilter={false} label={t("courtSearch_searchThisCourt")}>
       <CommandInput
         value={query}
         onValueChange={setQuery}
-        placeholder="Search queues and screens"
+        placeholder={t("courtSearch_searchQueuesAndScreens")}
       />
       <CommandList>
         <CommandEmpty className="text-body-compact text-muted-foreground">
-          Nothing here is called that.
+          {t("courtSearch_nothingHereIsCalledThat")}
         </CommandEmpty>
         {rows.length > 0 ? (
-          <CommandGroup heading="Go to">
+          <CommandGroup heading={t("courtSearch_goTo")}>
             {rows.map((row) => {
               const Icon = row.item.icon;
               return (
-                <CommandItem
-                  key={row.item.id}
-                  value={row.item.id}
-                  onSelect={() => open(row)}
-                >
-                  {Icon ? (
-                    <Icon aria-hidden className="text-muted-foreground" />
-                  ) : null}
+                <CommandItem key={row.item.id} value={row.item.id} onSelect={() => open(row)}>
+                  {Icon ? <Icon aria-hidden className="text-muted-foreground" /> : null}
                   <span className="min-w-0 flex-1 truncate text-body-compact font-medium text-foreground">
                     {row.item.label}
                   </span>
@@ -196,11 +189,8 @@ export function useCourtSearch(): CourtSearchValue {
 }
 
 /** Holds the dialog and the ⌘K binding for the whole court area. */
-export function CourtSearchProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function CourtSearchProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations();
   const [open, setOpen] = React.useState(false);
   const shortcut = useShortcutLabel();
 
@@ -226,8 +216,8 @@ export function CourtSearchProvider({
       <CommandDialog
         open={open}
         onOpenChange={setOpen}
-        title="Search this court"
-        description="Find a queue or a screen by name, or by the part of the court it belongs to."
+        title={t("courtSearch_searchThisCourt")}
+        description={t("courtSearch_findAQueueOrAScreen")}
       >
         <Results onNavigate={() => setOpen(false)} />
       </CommandDialog>

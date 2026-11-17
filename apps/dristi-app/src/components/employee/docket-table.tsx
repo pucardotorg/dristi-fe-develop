@@ -36,6 +36,7 @@ import {
   type StatusTone,
 } from "@/lib/employee/register-rows";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * The generated court for the reader's today (`court-docket.ts`).
@@ -49,13 +50,14 @@ export function useCourtDocket(): CourtDocket {
   return courtDocket(useCourtToday());
 }
 
-const TONE_VARIANT: Record<StatusTone, "success" | "warning" | "info" | "outline" | "destructive"> = {
-  success: "success",
-  warning: "warning",
-  info: "info",
-  neutral: "outline",
-  destructive: "destructive",
-};
+const TONE_VARIANT: Record<StatusTone, "success" | "warning" | "info" | "outline" | "destructive"> =
+  {
+    success: "success",
+    warning: "warning",
+    info: "info",
+    neutral: "outline",
+    destructive: "destructive",
+  };
 
 /** A status in its DS fill pair, always with its word — and an alert mark when it warns. */
 export function StatusBadge({ text, tone }: { text: string; tone: StatusTone }) {
@@ -69,6 +71,7 @@ export function StatusBadge({ text, tone }: { text: string; tone: StatusTone }) 
 
 /** One register cell, drawn for what it holds. */
 export function CellView({ value }: { value: CellValue }) {
+  const t = useTranslations();
   switch (value.kind) {
     case "text":
       return <span className={value.strong ? "font-semibold" : undefined}>{value.text}</span>;
@@ -79,7 +82,7 @@ export function CellView({ value }: { value: CellValue }) {
         <span className="flex min-w-0 flex-col gap-0.5">
           <Identifier
             value={value.number}
-            label="case number"
+            label={t("docketTable_caseNumber")}
             className="w-fit text-muted-foreground"
           />
           <span className="font-medium">{value.title}</span>
@@ -105,7 +108,7 @@ export function CellView({ value }: { value: CellValue }) {
       return (
         <span className="text-muted-foreground">
           <span aria-hidden>—</span>
-          <span className="sr-only">None</span>
+          <span className="sr-only">{t("docketTable_none")}</span>
         </span>
       );
   }
@@ -132,6 +135,7 @@ export function DocketTable({
   /** Lead with the register's "Sl. no." column. */
   serial?: boolean;
 }) {
+  const t = useTranslations();
   const span = columns.length + (serial ? 1 : 0);
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
@@ -139,7 +143,9 @@ export function DocketTable({
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
           {serial ? (
-            <TableHead className={cn(TABLE_HEAD, "w-px text-right whitespace-nowrap")}>Sl. no.</TableHead>
+            <TableHead className={cn(TABLE_HEAD, "w-px text-right whitespace-nowrap")}>
+              {t("docketTable_slNo")}
+            </TableHead>
           ) : null}
           {columns.map((column) => (
             <TableHead
@@ -169,7 +175,12 @@ export function DocketTable({
         {rows.map((row, index) => (
           <TableRow key={firstIndex + index} className={tableRowClass({ hover: false })}>
             {serial ? (
-              <TableCell className={cn(TABLE_CELL, "text-right text-muted-foreground tabular-nums whitespace-nowrap")}>
+              <TableCell
+                className={cn(
+                  TABLE_CELL,
+                  "text-right text-muted-foreground tabular-nums whitespace-nowrap",
+                )}
+              >
                 {formatCount(firstIndex + index + 1)}
               </TableCell>
             ) : null}
@@ -214,6 +225,7 @@ export function DocketCaseList({
   rows: CaseListRow[];
   daysHeader: string;
 }) {
+  const t = useTranslations();
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -231,17 +243,23 @@ export function DocketCaseList({
         return { kind: "case", number: c.caseNumber, title: c.title };
       },
     },
-    { header: "Stage", cell: (row) => ({ kind: "text", text: stageLabel((row as CaseListRow).case) }) },
+    {
+      header: "Stage",
+      cell: (row) => ({ kind: "text", text: stageLabel((row as CaseListRow).case) }),
+    },
     {
       header: daysHeader,
       numeric: true,
       cell: (row) => ({ kind: "number", value: (row as CaseListRow).days }),
     },
-    { header: "Next hearing", cell: (row) => nextHearingCell((row as CaseListRow).case) },
+    {
+      header: t("docketTable_nextHearing"),
+      cell: (row) => nextHearingCell((row as CaseListRow).case),
+    },
   ];
 
   if (rows.length === 0) {
-    return <p className="text-body-compact text-muted-foreground">No cases.</p>;
+    return <p className="text-body-compact text-muted-foreground">{t("docketTable_noCases")}</p>;
   }
 
   return (

@@ -28,11 +28,7 @@ import {
 } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
-import {
-  CASE_FILE_TREE,
-  caseFilePdfSrc,
-  findNode,
-} from "@/lib/cases/case-file";
+import { CASE_FILE_TREE, caseFilePdfSrc, findNode } from "@/lib/cases/case-file";
 import {
   caseTimeline,
   formatCaseWeekday,
@@ -48,6 +44,8 @@ import {
   type OrderHistoryEntry,
 } from "@/lib/employee/order-case-history";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 export type TypeOption = { value: string; label: string };
 
@@ -62,6 +60,7 @@ export type TypeOption = { value: string; label: string };
  * Case file tab (`ORD-16`): Back, or Escape, returns to the line it was opened from.
  */
 export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
+  const t = useTranslations();
   const today = useCourtToday();
   const entries = React.useMemo(() => {
     const extras = hearingCaseExtras(hearing.id);
@@ -78,10 +77,10 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
     return [
       ...HISTORY_TYPES.filter((type) => present.has(type.value)),
       ...(present.has("other")
-        ? [{ value: "other", label: "Other events" }]
+        ? [{ value: "other", label: t("employeeOrderCaseHistory_otherEvents") }]
         : []),
     ];
-  }, [entries]);
+  }, [entries, t]);
   const [types, setTypes] = React.useState<string[]>([]);
   const lastRef = React.useRef<HTMLLIElement>(null);
   const [reading, setReading] = React.useState<OrderHistoryEntry | null>(null);
@@ -96,8 +95,7 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
     const target = lastRef.current;
     const scroller = target?.closest<HTMLElement>('[data-slot="tabs-content"]');
     if (!target || !scroller) return;
-    const offset =
-      target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+    const offset = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
     scroller.scrollTop += offset - scroller.clientHeight / 3;
   }, [types]);
 
@@ -106,9 +104,7 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
       headRef.current?.focus();
     } else if (returnTo.current) {
       listRef.current
-        ?.querySelector<HTMLElement>(
-          `[data-opens="${CSS.escape(returnTo.current)}"]`,
-        )
+        ?.querySelector<HTMLElement>(`[data-opens="${CSS.escape(returnTo.current)}"]`)
         ?.focus();
       returnTo.current = null;
     }
@@ -120,13 +116,7 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
   }
 
   if (reading) {
-    return (
-      <OrderReader
-        entry={reading}
-        headRef={headRef}
-        onBack={() => setReading(null)}
-      />
-    );
+    return <OrderReader entry={reading} headRef={headRef} onBack={() => setReading(null)} />;
   }
 
   if (entries.length === 0) {
@@ -137,10 +127,10 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
             <HistoryIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body-compact font-semibold tracking-normal">
-            No case history yet
+            {t("employeeOrderCaseHistory_noCaseHistoryYet")}
           </EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            Events and orders on this case will appear here.
+            {t("employeeOrderCaseHistory_eventsAndOrdersOnThisCase")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -148,9 +138,7 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
   }
 
   const shown =
-    types.length === 0
-      ? entries
-      : entries.filter((entry) => types.includes(entry.type));
+    types.length === 0 ? entries : entries.filter((entry) => types.includes(entry.type));
 
   return (
     <section
@@ -159,22 +147,18 @@ export function OrderCaseHistory({ hearing }: { hearing: CourtHearing }) {
       className="flex min-w-0 flex-col gap-4"
     >
       <h2 id="order-case-history" className="sr-only">
-        Case history
+        {t("employeeOrderCaseHistory_caseHistory")}
       </h2>
-      <HistoryTypeFilter
-        options={typeOptions}
-        value={types}
-        onValueChange={setTypes}
-      />
+      <HistoryTypeFilter options={typeOptions} value={types} onValueChange={setTypes} />
 
       {shown.length === 0 ? (
         <p className="text-body-compact text-muted-foreground">
-          Nothing of these types on this case.
+          {t("employeeOrderCaseHistory_nothingOfTheseTypesOnThis")}
         </p>
       ) : (
         <Timeline
           className="text-body-compact"
-          aria-label="Case history, oldest first"
+          aria-label={t("employeeOrderCaseHistory_caseHistoryOldestFirst")}
         >
           {shown.map((entry) => (
             <HistoryEntry
@@ -208,6 +192,7 @@ export function HistoryTypeFilter({
   /** Held at the top of a scrolling tab; off where the page itself scrolls. */
   pinned?: boolean;
 }) {
+  const t = useTranslations();
   const anchor = useComboboxAnchor();
   const filterId = React.useId();
   const picked = typeOptions.filter((option) => types.includes(option.value));
@@ -215,24 +200,19 @@ export function HistoryTypeFilter({
     <div
       className={cn(
         "flex min-w-0 flex-col gap-2",
-        pinned &&
-          "sticky -top-4 z-20 -mx-4 -mt-4 border-b border-hairline bg-card px-4 pt-4 pb-3",
+        pinned && "sticky -top-4 z-20 -mx-4 -mt-4 border-b border-hairline bg-card px-4 pt-4 pb-3",
       )}
     >
       <Label id={filterId} className="text-body-compact">
-        Show
+        {t("employeeOrderCaseHistory_show")}
       </Label>
       <Combobox
         multiple
         items={typeOptions}
         value={picked}
         itemToStringLabel={(option: TypeOption) => option.label}
-        isItemEqualToValue={(a: TypeOption, b: TypeOption) =>
-          a.value === b.value
-        }
-        onValueChange={(next: TypeOption[]) =>
-          setTypes(next.map((option) => option.value))
-        }
+        isItemEqualToValue={(a: TypeOption, b: TypeOption) => a.value === b.value}
+        onValueChange={(next: TypeOption[]) => setTypes(next.map((option) => option.value))}
       >
         <ComboboxChips ref={anchor}>
           <ComboboxValue>
@@ -243,7 +223,9 @@ export function HistoryTypeFilter({
                 ))}
                 <ComboboxChipsInput
                   aria-labelledby={filterId}
-                  placeholder={chosen.length ? undefined : "All event types"}
+                  placeholder={
+                    chosen.length ? undefined : t("employeeOrderCaseHistory_allEventTypes")
+                  }
                 />
               </>
             )}
@@ -253,7 +235,7 @@ export function HistoryTypeFilter({
               (`CLS-11`) the body is frozen with pointer-events:none, so the list
               re-enables its own. Inert on the order screen, which is no dialog. */}
         <ComboboxContent anchor={anchor} className="pointer-events-auto">
-          <ComboboxEmpty>No event type matches.</ComboboxEmpty>
+          <ComboboxEmpty>{t("employeeOrderCaseHistory_noEventTypeMatches")}</ComboboxEmpty>
           <ComboboxList>
             {(option: TypeOption) => (
               <ComboboxItem key={option.value} value={option}>
@@ -281,6 +263,7 @@ function HistoryEntry({
   onOpen: () => void;
   ref?: React.Ref<HTMLLIElement>;
 }) {
+  const t = useTranslations();
   const excerpt = entry.text ? orderExcerpt(entry.text) : null;
   const opens = entry.kind === "order" && (excerpt?.cut || entry.caseFileDoc);
   const textId = `${entry.id}-text`;
@@ -298,8 +281,7 @@ function HistoryEntry({
           className={cn(
             "flex min-w-0 flex-col gap-1",
             /* The well starts right of the rail, so the dot stays on the line. */
-            entry.last &&
-              "-my-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2",
+            entry.last && "-my-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2",
           )}
         >
           <div className="flex min-w-0 items-baseline justify-between gap-4">
@@ -311,30 +293,25 @@ function HistoryEntry({
                   rel="noopener"
                   className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
-                  {entry.label}
-                  <span className="sr-only"> (opens in a new tab)</span>
+                  {translateText(t, entry.label)}
+                  <span className="sr-only"> {t("employeeOrderCaseHistory_opensInANewTab")}</span>
                 </a>
               ) : (
                 <span className={cn(entry.kind === "order" && "font-medium")}>
-                  {entry.label}
+                  {translateText(t, entry.label)}
                 </span>
               )}
             </span>
-            <time
-              dateTime={entry.on}
-              className="shrink-0 tabular-nums text-muted-foreground"
-            >
+            <time dateTime={entry.on} className="shrink-0 tabular-nums text-muted-foreground">
               {formatTimelineDate(entry.on)}
             </time>
           </div>
           {entry.last ? (
             <Badge variant="info" className="mb-1">
-              Last order
+              {t("employeeOrderCaseHistory_lastOrder")}
             </Badge>
           ) : null}
-          {entry.note ? (
-            <p className="text-muted-foreground">{entry.note}</p>
-          ) : null}
+          {entry.note ? <p className="text-muted-foreground">{entry.note}</p> : null}
           {excerpt ? (
             <p id={textId} className="text-muted-foreground">
               {excerpt.text}
@@ -350,7 +327,9 @@ function HistoryEntry({
               className="h-10 w-fit px-0"
               onClick={onOpen}
             >
-              {entry.caseFileDoc ? "Open the order" : "Read the full order"}
+              {entry.caseFileDoc
+                ? t("employeeOrderCaseHistory_openTheOrder")
+                : t("employeeOrderCaseHistory_readTheFullOrder")}
             </Button>
           ) : null}
         </div>
@@ -372,9 +351,8 @@ export function OrderReader({
   headRef: React.RefObject<HTMLHeadingElement | null>;
   onBack: () => void;
 }) {
-  const node = entry.caseFileDoc
-    ? findNode(CASE_FILE_TREE, entry.caseFileDoc)
-    : undefined;
+  const t = useTranslations();
+  const node = entry.caseFileDoc ? findNode(CASE_FILE_TREE, entry.caseFileDoc) : undefined;
   const src = node ? caseFilePdfSrc(node) : undefined;
 
   return (
@@ -387,14 +365,9 @@ export function OrderReader({
         }
       }}
     >
-      <Button
-        type="button"
-        variant="ghost"
-        className="-ml-3 w-fit"
-        onClick={onBack}
-      >
+      <Button type="button" variant="ghost" className="-ml-3 w-fit" onClick={onBack}>
         <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-        Case history
+        {t("employeeOrderCaseHistory_caseHistory")}
       </Button>
       <div className="flex min-w-0 flex-col gap-1">
         <h3
@@ -402,14 +375,14 @@ export function OrderReader({
           tabIndex={-1}
           className="min-w-0 text-body font-semibold break-words focus-visible:outline-none"
         >
-          {node?.label ?? entry.label}
+          {node?.label ?? translateText(t, entry.label)}
         </h3>
         <p className="text-body-compact tabular-nums text-muted-foreground">
           <time dateTime={entry.on}>{formatCaseWeekday(entry.on)}</time>
         </p>
       </div>
       {src ? (
-        <CaseFileOrder src={src} title={node?.label ?? entry.label} />
+        <CaseFileOrder src={src} title={node?.label ?? translateText(t, entry.label)} />
       ) : entry.text ? (
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-lg border border-hairline bg-surface-sunken p-4">
           <article className="rounded-lg border border-hairline bg-card p-6 shadow-raised">
@@ -418,7 +391,7 @@ export function OrderReader({
         </div>
       ) : (
         <p className="text-body-compact text-muted-foreground">
-          This order has no copy in the case file to show.
+          {t("employeeOrderCaseHistory_thisOrderHasNoCopyIn")}
         </p>
       )}
     </div>

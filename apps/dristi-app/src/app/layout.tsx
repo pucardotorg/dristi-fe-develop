@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 
 import { AccessProvider } from "@/components/access/access-state";
 import { CourtProvider } from "@/components/court/court-provider";
@@ -20,8 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const product = courtText("DRISTI");
   return {
     title: { default: product, template: `%s · ${product}` },
-    description:
-      "PUCAR's platform for NI Act §138 (cheque-dishonour) cases through Indian courts.",
+    description: "PUCAR's platform for NI Act §138 (cheque-dishonour) cases through Indian courts.",
   };
 }
 
@@ -34,10 +34,13 @@ export default async function RootLayout({
   // state's names and numbers from the first paint; see `CourtProvider`.
   const court = await serverCourt();
   const hue = await serverBrandHue(court);
+  // From the NEXT_LOCALE cookie via `i18n/request.ts`, so the server-rendered page,
+  // the client provider and <html lang> all start in the same language.
+  const locale = await getLocale();
 
   return (
     <html
-      lang="en"
+      lang={locale}
       dir="ltr"
       suppressHydrationWarning
       // Another state's court is drawn hidden until its text layer has run once
@@ -54,7 +57,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LocaleProvider>
+          <LocaleProvider initialLocale={locale}>
             <CourtProvider initialCourt={court}>
               {/* Above both route groups, so office access given on a case
                   (/cases) is still there on the People page (/people). */}

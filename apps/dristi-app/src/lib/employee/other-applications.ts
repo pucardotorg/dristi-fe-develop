@@ -62,11 +62,7 @@ import { localizeForDownload, voicedForDownload } from "@/lib/court/browser";
  * filter opens in that order and the deviation is deliberate.
  */
 export type OtherApplicationStage =
-  | "filing"
-  | "scrutiny"
-  | DelayCondonationStage
-  | "post-judgement"
-  | "long-pending-register";
+  "filing" | "scrutiny" | DelayCondonationStage | "post-judgement" | "long-pending-register";
 
 export const OTHER_APPLICATION_STAGES: {
   id: OtherApplicationStage;
@@ -86,9 +82,7 @@ export const OTHER_APPLICATION_STAGES: {
 ];
 
 export function otherApplicationStageLabel(stage: OtherApplicationStage): string {
-  return (
-    OTHER_APPLICATION_STAGES.find((entry) => entry.id === stage)?.label ?? stage
-  );
+  return OTHER_APPLICATION_STAGES.find((entry) => entry.id === stage)?.label ?? stage;
 }
 
 /**
@@ -229,8 +223,7 @@ export const OTHER_APPLICATIONS_QUEUE: OtherApplication[] = [
     type: "change-power-of-attorney",
     appliedOn: "2025-11-07",
     filedFor: "complainant",
-    reason:
-      "The power of attorney holder who signed the complaint has left the company's service.",
+    reason: "The power of attorney holder who signed the complaint has left the company's service.",
   },
   {
     id: "oa-2109",
@@ -292,8 +285,7 @@ export const OTHER_APPLICATIONS_QUEUE: OtherApplication[] = [
     type: "profile-correction",
     appliedOn: "2025-11-25",
     filedFor: "complainant",
-    reason:
-      "The address recorded at filing is of the complainant's former place of business.",
+    reason: "The address recorded at filing is of the complainant's former place of business.",
   },
   {
     id: "oa-2131",
@@ -328,8 +320,7 @@ export const OTHER_APPLICATIONS_QUEUE: OtherApplication[] = [
     type: "change-power-of-attorney",
     appliedOn: "2025-12-05",
     filedFor: "complainant",
-    reason:
-      "The firm has replaced the partner authorised to conduct this case.",
+    reason: "The firm has replaced the partner authorised to conduct this case.",
   },
   {
     id: "oa-2147",
@@ -346,8 +337,7 @@ export const OTHER_APPLICATIONS_QUEUE: OtherApplication[] = [
     type: "document",
     appliedOn: "2025-12-09",
     filedFor: "complainant",
-    reason:
-      "The complainant seeks a copy of the registration entry to produce before the bank.",
+    reason: "The complainant seeks a copy of the registration entry to produce before the bank.",
   },
   {
     id: "oa-2153",
@@ -382,8 +372,7 @@ export const OTHER_APPLICATIONS_QUEUE: OtherApplication[] = [
     type: "reschedule-adjournment",
     appliedOn: "2026-02-06",
     filedFor: "complainant",
-    reason:
-      "Counsel for the complainant is before another bench on the date fixed for cognizance.",
+    reason: "Counsel for the complainant is before another bench on the date fixed for cognizance.",
   },
   {
     id: "oa-958",
@@ -566,8 +555,7 @@ export const OTHER_APPLICATIONS_QUEUE: OtherApplication[] = [
     type: "extension-of-submission-deadline",
     appliedOn: "2026-05-25",
     filedFor: "complainant",
-    reason:
-      "The complainant asks for further time to file the affidavit of the bank witness.",
+    reason: "The complainant asks for further time to file the affidavit of the bank witness.",
   },
   {
     id: "oa-548",
@@ -596,8 +584,7 @@ export const OTHER_APPLICATIONS_QUEUE: OtherApplication[] = [
     type: "reschedule-adjournment",
     appliedOn: "2026-06-01",
     filedFor: "complainant",
-    reason:
-      "The complainant's witness is outside the district on the date fixed for evidence.",
+    reason: "The complainant's witness is outside the district on the date fixed for evidence.",
   },
   {
     id: "oa-556",
@@ -638,8 +625,7 @@ export const OTHER_APPLICATIONS_QUEUE: OtherApplication[] = [
     type: "document",
     appliedOn: "2026-06-22",
     filedFor: "accused",
-    reason:
-      "The accused seeks a copy of the written arguments already filed by the complainant.",
+    reason: "The accused seeks a copy of the written arguments already filed by the complainant.",
   },
   {
     id: "oa-566",
@@ -721,8 +707,7 @@ export const OTHER_APPLICATIONS_QUEUE: OtherApplication[] = [
     type: "document",
     appliedOn: "2026-07-23",
     filedFor: "accused",
-    reason:
-      "The accused seeks a copy of the complainant's deposition for the appeal.",
+    reason: "The accused seeks a copy of the complainant's deposition for the appeal.",
   },
   /* The long pending register: filed long ago, and still moving. The older year on these
      numbers is the whole of what the register means — none of them is dormant. */
@@ -980,18 +965,14 @@ export function buildOtherApplicationDocument(
     { term: "Complainant", value: application.parties.complainant },
     { term: "Accused", value: application.parties.accused },
   ];
-  const complainantCounsel = counselFor(application, "complainant").map(
-    (counsel) => counsel.name,
-  );
+  const complainantCounsel = counselFor(application, "complainant").map((counsel) => counsel.name);
   if (complainantCounsel.length) {
     facts.push({
       term: "Complainant counsel",
       value: complainantCounsel.join(", "),
     });
   }
-  const accusedCounsel = counselFor(application, "accused").map(
-    (counsel) => counsel.name,
-  );
+  const accusedCounsel = counselFor(application, "accused").map((counsel) => counsel.name);
   if (accusedCounsel.length) {
     facts.push({ term: "Accused counsel", value: accusedCounsel.join(", ") });
   }
@@ -1026,9 +1007,7 @@ export function buildOtherApplicationDocument(
   };
 }
 
-export function otherApplicationDocumentText(
-  document: OtherApplicationDocument,
-): string {
+export function otherApplicationDocumentText(document: OtherApplicationDocument): string {
   return [
     document.court,
     `Case no. ${document.caseNumber}`,
@@ -1038,9 +1017,7 @@ export function otherApplicationDocumentText(
     "",
     ...document.facts.map((fact) => `${fact.term}: ${fact.value}`),
     "",
-    ...document.paragraphs.map(
-      (paragraph, index) => `${index + 1}. ${paragraph}`,
-    ),
+    ...document.paragraphs.map((paragraph, index) => `${index + 1}. ${paragraph}`),
     "",
     `Prayer: ${document.prayer}`,
     "",
@@ -1049,15 +1026,11 @@ export function otherApplicationDocumentText(
   ].join("\n");
 }
 
-export function otherApplicationDocumentFilename(
-  application: OtherApplication,
-): string {
+export function otherApplicationDocumentFilename(application: OtherApplication): string {
   return `${application.caseNumber.replace(/\//g, "-")}-${application.type}.txt`;
 }
 
-export function downloadOtherApplicationDocument(
-  application: OtherApplication,
-): void {
+export function downloadOtherApplicationDocument(application: OtherApplication): void {
   const document = buildOtherApplicationDocument(application);
   const url = URL.createObjectURL(
     new Blob([localizeForDownload(otherApplicationDocumentText(document))], { type: "text/plain" }),

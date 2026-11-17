@@ -4,7 +4,13 @@ import * as React from "react";
 import { FlaskConicalIcon, ListChecksIcon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import { IrreversibleNote, OutcomeHeader, OutcomeSummary, OutcomeTally, notify } from "@/components/feedback";
+import {
+  IrreversibleNote,
+  OutcomeHeader,
+  OutcomeSummary,
+  OutcomeTally,
+  notify,
+} from "@/components/feedback";
 import { Identifier } from "@/components/chrome/identifier";
 import { useStageFade } from "@/components/chrome/stage-fade";
 import { StagedOverlay } from "@/components/chrome/staged-overlay";
@@ -21,18 +27,15 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { rupees } from "@/lib/tasks/format";
 import { useTasks } from "@/lib/tasks/store";
 import { recordPayment, sign, TransitionError } from "@/lib/tasks/transitions";
 import type { Case, PaymentResult, Person, Task, TaskId } from "@/lib/tasks/types";
 import { IS_SANDBOX } from "@/lib/data/source";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * **Signing or paying a selected set — the court side's bulk signing, for the
@@ -63,9 +66,9 @@ type Mark = "done" | "confirming" | "failed";
 type Outcome = { task: Task; mark: Mark; note: string };
 
 const GATEWAY: { value: PaymentResult; label: string }[] = [
-  { value: "success", label: "Success" },
-  { value: "pending", label: "Still confirming" },
-  { value: "failed", label: "Failed" },
+  { value: "success", label: "batchActDialog_success" },
+  { value: "pending", label: "batchActDialog_stillConfirming" },
+  { value: "failed", label: "batchActDialog_failed" },
 ];
 
 export function BatchActDialog({
@@ -147,6 +150,7 @@ function BatchBody({
   onClose: () => void;
   onFinished: (closed: TaskId[]) => void;
 }) {
+  const tr = useTranslations();
   const { dispatch, cases } = useTasks();
   const flow = useStageFade<Stage>("confirm", ORDER);
   const titleRef = React.useRef<HTMLHeadingElement>(null);
@@ -189,10 +193,16 @@ function BatchBody({
     for (const task of batch) {
       try {
         const next = await dispatch(task.id, (t, ctx) =>
-          kind === "sign" ? sign(t, ctx) : recordPayment(t, ctx, gateway)
+          kind === "sign" ? sign(t, ctx) : recordPayment(t, ctx, gateway),
         );
         const mark: Mark =
-          kind === "pay" ? (gateway === "failed" ? "failed" : gateway === "pending" ? "confirming" : "done") : "done";
+          kind === "pay"
+            ? gateway === "failed"
+              ? "failed"
+              : gateway === "pending"
+                ? "confirming"
+                : "done"
+            : "done";
         done.push({
           task,
           mark,
@@ -222,7 +232,7 @@ function BatchBody({
       onSettled(
         kind === "sign"
           ? `${through.length} ${through.length === 1 ? "document" : "documents"} signed`
-          : `${through.length} ${through.length === 1 ? "fee" : "fees"} paid`
+          : `${through.length} ${through.length === 1 ? "fee" : "fees"} paid`,
       );
     }
     flow.setStage("done");
@@ -232,29 +242,29 @@ function BatchBody({
   const title = {
     confirm: kind === "sign" ? `Sign ${n} ${noun}` : `Pay ${total} for ${n} ${noun}`,
     sign: `Sign ${n} ${noun}`,
-    otp: "Enter the OTP",
-    dsc: "Sign with your DSC",
+    otp: tr("batchActDialog_enterTheOtp"),
+    dsc: tr("batchActDialog_signWithYourDsc"),
     processing: "Processing payment…",
     done:
       kind === "sign"
         ? through.length
           ? `${through.length} ${through.length === 1 ? "document" : "documents"} signed`
-          : "Nothing was signed"
+          : tr("batchActDialog_nothingWasSigned")
         : /* A payment's outcome leads with the amount, as every payment in the product
              does ("₹452 paid"); the count labels the list under it. */
           through.length
           ? `${rupees(through.reduce((sum, o) => sum + (o.task.amountPaise ?? 0), 0))} paid`
-          : "Nothing was paid",
+          : tr("batchActDialog_nothingWasPaid"),
   }[flow.stage];
 
   const description = {
     confirm:
       kind === "sign"
-        ? "One signature goes on every document selected."
-        : "One transaction, with a receipt against each fee.",
-    sign: "Either one is your own signature — use whichever you have.",
-    otp: "Sent to your Aadhaar-linked mobile.",
-    dsc: "Your certificate has to be plugged in, with the signing utility running on this computer.",
+        ? tr("batchActDialog_oneSignatureGoesOnEveryDocument")
+        : tr("batchActDialog_oneTransactionWithAReceiptAgainst"),
+    sign: tr("batchActDialog_eitherOneIsYourOwnSignature"),
+    otp: tr("batchActDialog_sentToYourAadhaarLinkedMobile"),
+    dsc: tr("batchActDialog_yourCertificateHasToBePlugged"),
     processing: null,
     done: null,
   }[flow.stage];
@@ -263,51 +273,55 @@ function BatchBody({
     confirm: (
       <>
         <Button type="button" variant="outline" onClick={onClose}>
-          Back
+          {tr("common_back")}
         </Button>
         {kind === "pay" ? (
           <div className="flex items-center gap-2">
             <GatewayMenu value={gateway} onChange={setGateway} />
             <Button type="button" disabled={running} onClick={() => void run()}>
-              Pay {total}
+              {tr("batchActDialog_payTotal", { total })}
             </Button>
           </div>
         ) : (
           <Button type="button" onClick={() => flow.setStage("sign")}>
-            Sign {n} {noun}
+            {tr("batchActDialog_signNNoun", { n: String(n), noun })}
           </Button>
         )}
       </>
     ),
     sign: (
       <Button type="button" variant="outline" onClick={() => flow.setStage("confirm")}>
-        Back
+        {tr("common_back")}
       </Button>
     ),
     otp: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.setStage("sign")}>
-          Back
+          {tr("common_back")}
         </Button>
-        <Button type="button" disabled={otp.length < 6 || running} onClick={() => void run("aadhaar")}>
-          Verify and sign
+        <Button
+          type="button"
+          disabled={otp.length < 6 || running}
+          onClick={() => void run("aadhaar")}
+        >
+          {tr("batchActDialog_verifyAndSign")}
         </Button>
       </>
     ),
     dsc: (
       <>
         <Button type="button" variant="outline" onClick={() => flow.setStage("sign")}>
-          Back
+          {tr("common_back")}
         </Button>
         <Button type="button" disabled={!dscFound || running} onClick={() => void run("dsc")}>
-          Sign with this certificate
+          {tr("batchActDialog_signWithThisCertificate")}
         </Button>
       </>
     ),
     processing: null,
     done: (
       <Button type="button" onClick={onClose}>
-        Done
+        {tr("batchActDialog_done")}
       </Button>
     ),
   }[flow.stage];
@@ -352,40 +366,41 @@ function BatchBody({
             ok={through.length > 0}
           />
         ) : (
-        <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
-          {flow.stage === "confirm" ? (
-            <TaskList tasks={batch} caseOf={caseOf} pay={kind === "pay"} total={total} />
-          ) : flow.stage === "sign" ? (
-            <>
-              <InstrumentChoice
-                onAadhaar={() => {
-                  setOtp("");
-                  flow.setStage("otp");
-                }}
-                onDsc={() => {
-                  setDscFound(false);
-                  flow.setStage("dsc");
-                }}
+          <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
+            {flow.stage === "confirm" ? (
+              <TaskList tasks={batch} caseOf={caseOf} pay={kind === "pay"} total={total} />
+            ) : flow.stage === "sign" ? (
+              <>
+                <InstrumentChoice
+                  onAadhaar={() => {
+                    setOtp("");
+                    flow.setStage("otp");
+                  }}
+                  onDsc={() => {
+                    setDscFound(false);
+                    flow.setStage("dsc");
+                  }}
+                />
+                <p className="text-body-compact text-muted-foreground">
+                  {tr.rich("batchActDialog_signingAppliesToEveryDocumentSelected", {
+                    irreversiblenote: (chunks) => <IrreversibleNote>{chunks}</IrreversibleNote>,
+                  })}
+                </p>
+              </>
+            ) : flow.stage === "otp" ? (
+              <OtpEntry
+                id="batch-sign-otp"
+                value={otp}
+                onChange={setOtp}
+                resent={resent}
+                onResend={() => setResent(true)}
               />
-              <p className="text-body-compact text-muted-foreground">
-                Signing applies to every document selected.
-                <IrreversibleNote>It cannot be reversed.</IrreversibleNote>
-              </p>
-            </>
-          ) : flow.stage === "otp" ? (
-            <OtpEntry
-              id="batch-sign-otp"
-              value={otp}
-              onChange={setOtp}
-              resent={resent}
-              onResend={() => setResent(true)}
-            />
-          ) : flow.stage === "dsc" ? (
-            <DscLookup found={dscFound} holder="" />
-          ) : (
-            <PaymentProcessing />
-          )}
-        </div>
+            ) : flow.stage === "dsc" ? (
+              <DscLookup found={dscFound} holder="" />
+            ) : (
+              <PaymentProcessing />
+            )}
+          </div>
         )}
       </div>
       <DiscardQuestion guard={guard} />
@@ -401,6 +416,7 @@ function GatewayMenu({
   value: PaymentResult;
   onChange: (value: PaymentResult) => void;
 }) {
+  const tr = useTranslations();
   if (!IS_SANDBOX) return null;
   return (
     <TooltipProvider>
@@ -412,21 +428,24 @@ function GatewayMenu({
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Sandbox: choose the gateway result"
+                aria-label={tr("batchActDialog_sandboxChooseTheGatewayResult")}
                 className="text-muted-foreground"
               >
                 <FlaskConicalIcon aria-hidden />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent>Sandbox: choose the gateway result</TooltipContent>
+          <TooltipContent>{tr("batchActDialog_sandboxChooseTheGatewayResult")}</TooltipContent>
         </Tooltip>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Sandbox gateway result</DropdownMenuLabel>
-          <DropdownMenuRadioGroup value={value} onValueChange={(next) => onChange(next as PaymentResult)}>
+          <DropdownMenuLabel>{tr("batchActDialog_sandboxGatewayResult")}</DropdownMenuLabel>
+          <DropdownMenuRadioGroup
+            value={value}
+            onValueChange={(next) => onChange(next as PaymentResult)}
+          >
             {GATEWAY.map((option) => (
               <DropdownMenuRadioItem key={option.value} value={option.value}>
-                {option.label}
+                {translateText(tr, option.label)}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
@@ -446,6 +465,7 @@ function TaskRow({
   kase: Case | undefined;
   trailing?: React.ReactNode;
 }) {
+  const tr = useTranslations();
   const courtText = useCourtText();
   return (
     <li className="flex min-w-0 items-center gap-3 border-b border-hairline py-3 last:border-b-0">
@@ -457,7 +477,11 @@ function TaskRow({
             {kase.stNumber ? (
               <>
                 <span aria-hidden> · </span>
-                <Identifier value={kase.stNumber} label="case number" copyable={false} />
+                <Identifier
+                  value={kase.stNumber}
+                  label={tr("batchActDialog_caseNumber")}
+                  copyable={false}
+                />
               </>
             ) : null}
             <span aria-hidden> · </span>
@@ -482,9 +506,10 @@ function TaskList({
   pay: boolean;
   total: string;
 }) {
+  const tr = useTranslations();
   return (
     <div className="overflow-hidden rounded-xl border border-hairline bg-card shadow-raised">
-      <ul aria-label="Selected" className="flex flex-col px-4">
+      <ul aria-label={tr("batchActDialog_selected")} className="flex flex-col px-4">
         {tasks.map((task) => (
           <TaskRow
             key={task.id}
@@ -492,7 +517,9 @@ function TaskList({
             kase={caseOf(task)}
             trailing={
               pay && task.amountPaise !== undefined ? (
-                <span className="shrink-0 text-body-compact tabular-nums">{rupees(task.amountPaise)}</span>
+                <span className="shrink-0 text-body-compact tabular-nums">
+                  {rupees(task.amountPaise)}
+                </span>
               ) : undefined
             }
           />
@@ -500,7 +527,7 @@ function TaskList({
       </ul>
       {pay ? (
         <p className="flex items-baseline justify-between gap-4 border-t border-hairline px-4 py-3 text-body-compact font-semibold">
-          <span>Total</span>
+          <span>{tr("batchActDialog_total")}</span>
           <span className="tabular-nums">{total}</span>
         </p>
       ) : null}
@@ -525,6 +552,7 @@ function OutcomeCard({
   headline: string;
   ok: boolean;
 }) {
+  const tr = useTranslations();
   /* The window's title says only what fully happened; any that did not go through are
      named in the list under it, in red with why (skill `feedback-states`). */
   const failedCount = outcomes.filter((o) => o.mark === "failed").length;
@@ -563,39 +591,41 @@ function OutcomeCard({
              A partial result already carries it on the tally above. */
           label={!ok || partial || headline === title ? undefined : headline}
         >
-      <ul className="flex flex-col">
-        {outcomes.map((o) => (
-          <TaskRow
-            key={o.task.id}
-            task={o.task}
-            kase={caseOf(o.task)}
-            trailing={
-              <span
-                className={cn(
-                  /* On a phone the note wraps ("Receipt" over the number) so the task's
+          <ul className="flex flex-col">
+            {outcomes.map((o) => (
+              <TaskRow
+                key={o.task.id}
+                task={o.task}
+                kase={caseOf(o.task)}
+                trailing={
+                  <span
+                    className={cn(
+                      /* On a phone the note wraps ("Receipt" over the number) so the task's
                      own name keeps the width. */
-                  "max-w-32 shrink-0 text-right text-body-compact text-pretty sm:max-w-none",
-                  o.mark === "failed"
-                    ? "text-destructive-ink"
-                    : o.mark === "confirming"
-                      ? "text-warning-ink"
-                      : "text-muted-foreground"
-                )}
-              >
-                {/* A reference never breaks inside itself: the label wraps above it. */}
-                {o.note.startsWith("Receipt ") ? (
-                  <>
-                    Receipt{" "}
-                    <span className="whitespace-nowrap">{o.note.slice("Receipt ".length)}</span>
-                  </>
-                ) : (
-                  o.note
-                )}
-              </span>
-            }
-          />
-        ))}
-      </ul>
+                      "max-w-32 shrink-0 text-right text-body-compact text-pretty sm:max-w-none",
+                      o.mark === "failed"
+                        ? "text-destructive-ink"
+                        : o.mark === "confirming"
+                          ? "text-warning-ink"
+                          : "text-muted-foreground",
+                    )}
+                  >
+                    {/* A reference never breaks inside itself: the label wraps above it. */}
+                    {o.note.startsWith("Receipt ") ? (
+                      <>
+                        {tr.rich("batchActDialog_receiptSlice", {
+                          slice: o.note.slice("Receipt ".length),
+                          span: (chunks) => <span className="whitespace-nowrap">{chunks}</span>,
+                        })}
+                      </>
+                    ) : (
+                      o.note
+                    )}
+                  </span>
+                }
+              />
+            ))}
+          </ul>
         </OutcomeSummary>
       </div>
     </>

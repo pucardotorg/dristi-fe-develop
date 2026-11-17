@@ -24,30 +24,19 @@ describe("OTHER_APPLICATIONS_QUEUE", () => {
   it("offers a row for every stage the filter lists", () => {
     const stagesInQueue = new Set(OTHER_APPLICATIONS_QUEUE.map((row) => row.stage));
     for (const stage of OTHER_APPLICATION_STAGES) {
-      assert.ok(
-        stagesInQueue.has(stage.id),
-        `filter offers ${stage.id} but the queue has none`,
-      );
+      assert.ok(stagesInQueue.has(stage.id), `filter offers ${stage.id} but the queue has none`);
     }
   });
 
   it("offers a row for every application type the filter lists", () => {
     const typesInQueue = new Set(OTHER_APPLICATIONS_QUEUE.map((row) => row.type));
     for (const type of OTHER_APPLICATION_TYPES) {
-      assert.ok(
-        typesInQueue.has(type.id),
-        `filter offers ${type.id} but the queue has none`,
-      );
+      assert.ok(typesInQueue.has(type.id), `filter offers ${type.id} but the queue has none`);
     }
   });
 
   it("numbers a matter the way its stage does — CMP before cognizance is taken, ST after", () => {
-    const beforeCognizance = new Set([
-      "filing",
-      "scrutiny",
-      "registration",
-      "cognizance",
-    ]);
+    const beforeCognizance = new Set(["filing", "scrutiny", "registration", "cognizance"]);
     for (const row of OTHER_APPLICATIONS_QUEUE) {
       const prefix = beforeCognizance.has(row.stage) ? "CMP/" : "ST/";
       assert.ok(
@@ -60,10 +49,7 @@ describe("OTHER_APPLICATIONS_QUEUE", () => {
 
 describe("filterOtherApplications", () => {
   it("returns the queue unchanged when the filters are empty", () => {
-    const rows = filterOtherApplications(
-      OTHER_APPLICATIONS_QUEUE,
-      EMPTY_OTHER_APPLICATION_FILTERS,
-    );
+    const rows = filterOtherApplications(OTHER_APPLICATIONS_QUEUE, EMPTY_OTHER_APPLICATION_FILTERS);
     assert.equal(rows.length, OTHER_APPLICATIONS_QUEUE.length);
   });
 
@@ -159,10 +145,7 @@ describe("the vocabulary this screen names", () => {
   });
 
   it("names the long pending register in the court's own words", () => {
-    assert.equal(
-      otherApplicationStageLabel("long-pending-register"),
-      "Long pending register",
-    );
+    assert.equal(otherApplicationStageLabel("long-pending-register"), "Long pending register");
   });
 
   it("renders human labels rather than the reference's backend enums", () => {
@@ -196,16 +179,10 @@ describe("the particulars the review overlay reads", () => {
 describe("who filed the application", () => {
   it("names the applying side's own counsel, never the other side's", () => {
     for (const row of OTHER_APPLICATIONS_QUEUE) {
-      const onRecord = row.counsel.filter(
-        (counsel) => counsel.side === row.filedFor,
-      );
+      const onRecord = row.counsel.filter((counsel) => counsel.side === row.filedFor);
       const filer = otherApplicationFiler(row);
       if (onRecord.length) {
-        assert.equal(
-          filer,
-          `${onRecord[0]!.name}, counsel for the ${row.filedFor}`,
-          row.id,
-        );
+        assert.equal(filer, `${onRecord[0]!.name}, counsel for the ${row.filedFor}`, row.id);
       } else {
         assert.equal(
           filer,
@@ -232,16 +209,12 @@ describe("buildOtherApplicationDocument", () => {
     const asks = new Set<string>();
     const prayers = new Set<string>();
     for (const type of OTHER_APPLICATION_TYPES) {
-      const row = OTHER_APPLICATIONS_QUEUE.find(
-        (entry) => entry.type === type.id,
-      )!;
+      const row = OTHER_APPLICATIONS_QUEUE.find((entry) => entry.type === type.id)!;
       const document = buildOtherApplicationDocument(row);
       assert.equal(document.title, type.label);
       assert.ok(document.prayer.length > 0, type.id);
       assert.ok(
-        document.paragraphs.some((line) =>
-          line.includes(otherApplicationAsk(row)),
-        ),
+        document.paragraphs.some((line) => line.includes(otherApplicationAsk(row))),
         `${type.id} never says what it asks for`,
       );
       asks.add(otherApplicationAsk(row));
@@ -267,9 +240,7 @@ describe("buildOtherApplicationDocument", () => {
   it("names only the counsel a row actually has on record", () => {
     const row = OTHER_APPLICATIONS_QUEUE.find((entry) => entry.id === "oa-2109")!;
     assert.equal(row.counsel.length, 0);
-    const terms = buildOtherApplicationDocument(row).facts.map(
-      (fact) => fact.term,
-    );
+    const terms = buildOtherApplicationDocument(row).facts.map((fact) => fact.term);
     assert.ok(!terms.includes("Complainant counsel"));
     assert.ok(!terms.includes("Accused counsel"));
   });

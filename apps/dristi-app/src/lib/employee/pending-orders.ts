@@ -73,10 +73,7 @@ export type PendingOrder = PendingOrderMeta & {
 export type PendingOrders = Readonly<Record<string, PendingOrder>>;
 
 export type PendingOrderStage =
-  | "drafting"
-  | "awaiting-signature"
-  | "workflow-to-fill"
-  | "triggered";
+  "drafting" | "awaiting-signature" | "workflow-to-fill" | "triggered";
 
 /** The stages, in the order an order moves through them, with whose move each is. */
 export const PENDING_ORDER_STAGES: {
@@ -229,10 +226,7 @@ export function setOrderWorkflowComplete(
 }
 
 /** Where one order stands. */
-export function pendingOrderStage(
-  order: PendingOrder,
-  signing: OrderSigning,
-): PendingOrderStage {
+export function pendingOrderStage(order: PendingOrder, signing: OrderSigning): PendingOrderStage {
   const signed = signing[order.key] === "signed";
   if (signed && order.workflowComplete) return "triggered";
   if (signed) return "workflow-to-fill";
@@ -275,9 +269,7 @@ export function nextDraftOrder(
   const at = list.findIndex((order) => order.key === key);
   const after = at < 0 ? list : [...list.slice(at + 1), ...list.slice(0, at)];
   return (
-    after.find(
-      (order) => order.key !== key && inPendingStage(order, signing, "drafting"),
-    ) ?? null
+    after.find((order) => order.key !== key && inPendingStage(order, signing, "drafting")) ?? null
   );
 }
 
@@ -315,10 +307,7 @@ export function pendingOrderCountFor(
  * order signer's is Awaiting signature, an order data filler's Order data to fill. A
  * seat holding both opens on signing — which one wins is still open in the gap report.
  */
-export function pendingOrderStageFor(
-  seat: CourtRole,
-  court: CourtId,
-): PendingOrderStage | null {
+export function pendingOrderStageFor(seat: CourtRole, court: CourtId): PendingOrderStage | null {
   if (seatHolds(seat, court, "order-signer")) return "awaiting-signature";
   if (seatHolds(seat, court, "order-data-filler")) return "workflow-to-fill";
   return null;

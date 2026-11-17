@@ -19,17 +19,20 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 export function DetailFieldMenu({
   onPick,
   describe,
-  label = "Insert field",
+  label = "detailFieldMenu_insertField",
 }: {
   onPick: (field: DetailField) => void;
   /** A second line under each field — its value in this filing, or its section. */
   describe: (field: DetailField) => string;
   label?: string;
 }) {
+  const t = useTranslations();
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -43,16 +46,16 @@ export function DetailFieldMenu({
           onMouseDown={(e) => e.preventDefault()}
         >
           <BracesIcon data-icon="inline-start" aria-hidden />
-          {label}
+          {translateText(t, label)}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <Command>
-          <CommandInput placeholder="Search fields" />
+          <CommandInput placeholder={t("detailFieldMenu_searchFields")} />
           <CommandList className="max-h-80">
-            <CommandEmpty>No field by that name.</CommandEmpty>
+            <CommandEmpty>{t("detailFieldMenu_noFieldByThatName")}</CommandEmpty>
             {DETAIL_FIELD_GROUPS.map((group) => (
-              <CommandGroup key={group.label} heading={group.label}>
+              <CommandGroup key={group.label} heading={translateText(t, group.label)}>
                 {group.fields.map((field) => (
                   <CommandItem
                     key={field.name}

@@ -8,19 +8,20 @@ Orientation for this repo. Docs describe the product; they are
 
 ## Sections
 
-| Section | What it holds | Start here |
-|---|---|---|
-| **Product** | What DRISTI is — domain, journey, standards, open questions | [product/README.md](product/README.md) |
-| **Principles** | Cross-cutting PUCAR design principles — convictions that resolve conflicts between good outcomes. Org-wide, not DRISTI-specific | [principles/](principles/) |
-| **Feedback** | How reviewers comment on the running app; feedback → GitHub issues | [feedback-widget.md](feedback-widget.md) |
+| Section          | What it holds                                                                                                                   | Start here                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **Product**      | What DRISTI is — domain, journey, standards, open questions                                                                     | [product/README.md](product/README.md)   |
+| **Principles**   | Cross-cutting PUCAR design principles — convictions that resolve conflicts between good outcomes. Org-wide, not DRISTI-specific | [principles/](principles/)               |
+| **Feedback**     | How reviewers comment on the running app; feedback → GitHub issues                                                              | [feedback-widget.md](feedback-widget.md) |
+| **Localization** | Rules for adding and translating UI text                                                                                        | [localization.md](localization.md)       |
 
 ## Repo layers (outside `docs/`)
 
-| Path | Role |
-|---|---|
-| `apps/dristi-app` | Dristi App (main product) |
-| `docker/` | Production Dockerfile for the Dristi App (standalone Next.js server); no compose file |
-| `.github/workflows/docker-publish.yml` | Builds `docker/Dockerfile` and pushes it to GHCR on pushes to `main` |
+| Path                                   | Role                                                                                  |
+| -------------------------------------- | ------------------------------------------------------------------------------------- |
+| `apps/dristi-app`                      | Dristi App (main product)                                                             |
+| `docker/`                              | Production Dockerfile for the Dristi App (standalone Next.js server); no compose file |
+| `.github/workflows/docker-publish.yml` | Builds `docker/Dockerfile` and pushes it to GHCR on pushes to `main`                  |
 
 ## Intentionally not here
 

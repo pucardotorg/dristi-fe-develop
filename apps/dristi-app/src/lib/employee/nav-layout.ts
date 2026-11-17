@@ -45,12 +45,7 @@ export type CourtNavLayout = "open" | "grouped" | "actions" | "schedule";
  */
 export const DEFAULT_COURT_NAV_LAYOUT: CourtNavLayout = "open";
 
-const COURT_NAV_LAYOUTS: readonly CourtNavLayout[] = [
-  "open",
-  "grouped",
-  "actions",
-  "schedule",
-];
+const COURT_NAV_LAYOUTS: readonly CourtNavLayout[] = ["open", "grouped", "actions", "schedule"];
 
 function isCourtNavLayout(value: string | null): value is CourtNavLayout {
   return (COURT_NAV_LAYOUTS as readonly (string | null)[]).includes(value);

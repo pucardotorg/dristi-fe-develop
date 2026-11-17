@@ -1,4 +1,4 @@
-import type { HistoryEvent } from "@/lib/employee/scrutiny/types"
+import type { HistoryEvent } from "@/lib/employee/scrutiny/types";
 
 /**
  * Case history — advocate ↔ registry, append-only.
@@ -31,7 +31,7 @@ export const HISTORY: HistoryEvent[] = [
       {
         ref: "c1-name",
         what: "Complainant full name · flag",
-        was: "Aadhaar address side uploaded",
+        was: "history_aadhaarAddressSideUploaded",
         status: "answered 13 Jul",
       },
       {
@@ -46,9 +46,9 @@ export const HISTORY: HistoryEvent[] = [
   {
     status: "past",
     title: "Resubmitted",
-    meta: "13 Jul 2026 · Adv. Bijini Rejen · 2 of 3 items answered",
+    meta: "history_13Jul2026AdvBijiniRejen",
   },
-  { status: "past", title: "Returned to scrutiny", meta: "13 Jul 2026 · 1 item contested" },
+  { status: "past", title: "Returned to scrutiny", meta: "history_13Jul20261ItemContested" },
   { status: "past", title: "Scrutiny started", meta: "14 Jul 2026 · Biju B" },
   {
     status: "past",
@@ -65,12 +65,12 @@ export const HISTORY: HistoryEvent[] = [
     ],
   },
   { status: "past", title: "Resubmitted", meta: "30 Jul 2026 · Adv. Bijini Rejen" },
-  { status: "past", title: "Returned to scrutiny", meta: "30 Jul 2026 · 1 item contested" },
+  { status: "past", title: "Returned to scrutiny", meta: "history_30Jul20261ItemContested" },
   { status: "current", title: "Scrutiny started", meta: "3 Aug 2026 · Biju B" },
-]
+];
 
-export const HISTORY_SUMMARY = "3 rounds · 1 item open since 7 Jul"
-export const HISTORY_ROUND = 3
+export const HISTORY_SUMMARY = "3 rounds · 1 item open since 7 Jul";
+export const HISTORY_ROUND = 3;
 
 /** The one case with a bundle behind it in this prototype. */
 export const CASE = {
@@ -79,4 +79,4 @@ export const CASE = {
   accused: "Deepak Choudhary",
   submitted: "Submitted 4 Jul 2026",
   advocate: "Adv. Bijini Rejen",
-}
+};

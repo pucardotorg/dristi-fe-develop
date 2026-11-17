@@ -8,12 +8,7 @@ import { BrandLockup } from "@/components/brand-lockup";
 import { useCourt } from "@/components/court/court-provider";
 import { CHARCOAL_PLATE } from "@/components/chrome/rail-plate";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -36,6 +31,7 @@ import {
   COURT_SIGN_IN_ROLES,
   courtroomsFor,
 } from "@/lib/employee/sign-in";
+import { useTranslations } from "next-intl";
 
 /**
  * `/employee/login` — the court's own door.
@@ -86,6 +82,7 @@ const AFTER_SIGN_IN_FOR: Partial<Record<CourtRole, string>> = {
 };
 
 export function CourtSignInBlock() {
+  const t = useTranslations();
   const router = useRouter();
 
   const [username, setUsername] = React.useState("");
@@ -114,8 +111,7 @@ export function CourtSignInBlock() {
      simply falls back — and a single-room account needs no pick, it lands on its one room.
      No effect syncs this; the fallback is the whole of it. */
   const [courtroomName, setCourtroomName] = React.useState<string | null>(null);
-  const courtroom =
-    courtrooms.find((room) => room.name === courtroomName) ?? courtrooms[0] ?? null;
+  const courtroom = courtrooms.find((room) => room.name === courtroomName) ?? courtrooms[0] ?? null;
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -164,14 +160,12 @@ export function CourtSignInBlock() {
             because this plate is now the front of house, not a side note. */}
         <div className="relative flex flex-1 flex-col justify-center gap-4">
           <h2 className="text-title-l font-semibold tracking-tight text-balance sm:text-display-s">
-            Every stage of a case, on one bench.
+            {t("courtSignInBlock_everyStageOfACaseOn")}
           </h2>
           <p className="max-w-md text-body text-(--rail-muted)">
-            Secure access for the magistrates, bench clerks, scrutiny officers and
-            typists of the district courts.
+            {t("courtSignInBlock_secureAccessForTheMagistratesBench")}
           </p>
         </div>
-
       </aside>
 
       {/* Form column. */}
@@ -186,16 +180,16 @@ export function CourtSignInBlock() {
                 do not step: 40px is the touch-target floor. */}
             <div className="flex flex-col items-center gap-2 text-center">
               <h1 className="text-title-s text-balance font-semibold sm:text-title">
-                Sign in to your court account
+                {t("courtSignInBlock_signInToYourCourtAccount")}
               </h1>
               <p className="text-body-compact text-muted-foreground sm:text-body">
-                Use the username the court issued you.
+                {t("courtSignInBlock_useTheUsernameTheCourtIssued")}
               </p>
             </div>
 
             <form onSubmit={submit} noValidate className="flex flex-col gap-4">
               <Field data-invalid={badUsername || unknownUsername}>
-                <FieldLabel htmlFor="court-username">Username</FieldLabel>
+                <FieldLabel htmlFor="court-username">{t("courtSignInBlock_username")}</FieldLabel>
                 <Input
                   id="court-username"
                   name="username"
@@ -203,7 +197,7 @@ export function CourtSignInBlock() {
                   autoCapitalize="none"
                   spellCheck={false}
                   autoFocus
-                  placeholder="Enter your username"
+                  placeholder={t("courtSignInBlock_enterYourUsername")}
                   value={username}
                   onChange={(event) => {
                     setUsername(event.target.value);
@@ -212,22 +206,22 @@ export function CourtSignInBlock() {
                 />
                 <FieldError>
                   {badUsername
-                    ? "Enter your username."
+                    ? t("courtSignInBlock_enterYourUsernameSentence")
                     : unknownUsername
-                      ? "No court account has that username."
+                      ? t("courtSignInBlock_noCourtAccountHasThatUsername")
                       : null}
                 </FieldError>
               </Field>
 
               <Field data-invalid={badPassword}>
-                <FieldLabel htmlFor="court-password">Password</FieldLabel>
+                <FieldLabel htmlFor="court-password">{t("courtSignInBlock_password")}</FieldLabel>
                 <InputGroup>
                   <InputGroupInput
                     id="court-password"
                     name="password"
                     type={revealed ? "text" : "password"}
                     autoComplete="current-password"
-                    placeholder="Enter your password"
+                    placeholder={t("courtSignInBlock_enterYourPassword")}
                     value={password}
                     onChange={(event) => {
                       setPassword(event.target.value);
@@ -237,7 +231,11 @@ export function CourtSignInBlock() {
                   <InputGroupAddon align="inline-end">
                     <InputGroupButton
                       size="icon-sm"
-                      aria-label={revealed ? "Hide password" : "Show password"}
+                      aria-label={
+                        revealed
+                          ? t("courtSignInBlock_hidePassword")
+                          : t("courtSignInBlock_showPassword")
+                      }
                       aria-pressed={revealed}
                       onClick={() => setRevealed((value) => !value)}
                     >
@@ -246,7 +244,7 @@ export function CourtSignInBlock() {
                   </InputGroupAddon>
                 </InputGroup>
                 <FieldError>
-                  {badPassword ? "Enter your password." : null}
+                  {badPassword ? t("courtSignInBlock_enterYourPasswordSentence") : null}
                 </FieldError>
               </Field>
 
@@ -258,11 +256,8 @@ export function CourtSignInBlock() {
               {account ? (
                 courtrooms.length > 1 ? (
                   <Field>
-                    <FieldLabel htmlFor="court-room">Court room</FieldLabel>
-                    <Select
-                      value={courtroom?.name ?? undefined}
-                      onValueChange={setCourtroomName}
-                    >
+                    <FieldLabel htmlFor="court-room">{t("courtSignInBlock_courtRoom")}</FieldLabel>
+                    <Select value={courtroom?.name ?? undefined} onValueChange={setCourtroomName}>
                       <SelectTrigger id="court-room" className="w-full">
                         <SelectValue />
                       </SelectTrigger>
@@ -275,34 +270,32 @@ export function CourtSignInBlock() {
                       </SelectContent>
                     </Select>
                     <FieldDescription>
-                      You cover {courtrooms.length} court rooms. Pick the one you are
-                      working in today.
+                      {t("courtSignInBlock_youCoverLengthCourtRoomsPick", {
+                        length: String(courtrooms.length),
+                      })}
                     </FieldDescription>
                   </Field>
                 ) : (
                   <Field>
-                    <FieldLabel>Court room</FieldLabel>
+                    <FieldLabel>{t("courtSignInBlock_courtRoom")}</FieldLabel>
                     {/* A settled fact, not a control: a room the account holds alone has
                         nothing to choose (REG-36). Shown so the person knows which bench
                         they are about to enter, styled as a value at rest. */}
                     <div className="flex items-center gap-2.5 rounded-md border border-input bg-surface-sunken px-3 py-2.5">
-                      <LandmarkIcon
-                        aria-hidden
-                        className="size-4 shrink-0 text-muted-foreground"
-                      />
+                      <LandmarkIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 truncate text-body-compact font-medium">
                         {courtroom?.name}
                       </span>
                     </div>
                     <FieldDescription>
-                      You are mapped to this court room.
+                      {t("courtSignInBlock_youAreMappedToThisCourt")}
                     </FieldDescription>
                   </Field>
                 )
               ) : null}
 
               <Button type="submit" size="lg" className="w-full">
-                Sign in
+                {t("courtSignInBlock_signIn")}
               </Button>
             </form>
 
@@ -316,21 +309,17 @@ export function CourtSignInBlock() {
           never strands a dot at the end of a line, which is exactly what happens at
           375px. The separators are decorative, so they stay out of the tree. */}
       <footer
-        aria-label="About this site"
+        aria-label={t("courtSignInBlock_aboutThisSite")}
         className="flex flex-wrap items-center justify-center gap-x-2 border-t border-border px-6 py-2 text-caption text-muted-foreground lg:col-start-2 lg:px-12"
       >
         {[
-          { label: "Terms of use", href: "/terms" },
-          { label: "Privacy", href: "/privacy" },
-          { label: "Support", href: "/support" },
+          { label: t("courtSignInBlock_termsOfUse"), href: "/terms" },
+          { label: t("courtSignInBlock_privacy"), href: "/privacy" },
+          { label: t("courtSignInBlock_support"), href: "/support" },
         ].map((item, index) => (
           <span key={item.href} className="flex items-center gap-2">
             {index > 0 ? <span aria-hidden>·</span> : null}
-            <Button
-              variant="link"
-              asChild
-              className="h-10 px-0 text-caption text-muted-foreground"
-            >
+            <Button variant="link" asChild className="h-10 px-0 text-caption text-muted-foreground">
               <a href={item.href}>{item.label}</a>
             </Button>
           </span>
@@ -353,12 +342,13 @@ export function CourtSignInBlock() {
  * chooser that was just taken out, one screen lower down.
  */
 function PrototypeAccounts({ onPick }: { onPick: (username: string) => void }) {
+  const t = useTranslations();
   const { court } = useCourt();
   const accounts = courtAccounts(court);
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-4">
       <p className="text-caption text-muted-foreground">
-        Prototype — any password works. Demo accounts:
+        {t("courtSignInBlock_prototypeAnyPasswordWorksDemoAccounts")}
       </p>
       <div className="flex flex-wrap gap-2">
         {COURT_SIGN_IN_ROLES.flatMap((role) => {

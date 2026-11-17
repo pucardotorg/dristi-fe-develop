@@ -141,7 +141,7 @@ export type ApplicationRecord = {
 
 /** The number a row is cited by: the court's once allotted, else the temporary one. */
 export function applicationNumberLabel(
-  application: Pick<ApplicationRecord, "applicationNumber" | "temporaryId">
+  application: Pick<ApplicationRecord, "applicationNumber" | "temporaryId">,
 ): string | undefined {
   return application.applicationNumber ?? application.temporaryId;
 }
@@ -197,10 +197,9 @@ export type ObjectionTask = {
  */
 export function filingNoun(
   items: Pick<ApplicationRecord, "source">[],
-  count = items.length
+  count = items.length,
 ): string {
-  const documents =
-    items.length > 0 && items.every((item) => item.source.kind === "document");
+  const documents = items.length > 0 && items.every((item) => item.source.kind === "document");
   const noun = documents ? "document" : "application";
   return count === 1 ? noun : `${noun}s`;
 }
@@ -231,15 +230,11 @@ export function movesKey(caseId: string): string {
   return `applications-moves:${caseId}`;
 }
 
-export function parseMoves(
-  raw: string | null
-): ReadonlyMap<string, ApplicationMove> {
+export function parseMoves(raw: string | null): ReadonlyMap<string, ApplicationMove> {
   if (!raw) return new Map();
   try {
     const value: unknown = JSON.parse(raw);
-    return Array.isArray(value)
-      ? new Map(value as [string, ApplicationMove][])
-      : new Map();
+    return Array.isArray(value) ? new Map(value as [string, ApplicationMove][]) : new Map();
   } catch {
     return new Map();
   }
@@ -265,7 +260,7 @@ export function applicationsRegister(
     moves?: ReadonlyMap<string, ApplicationMove>;
     /** Filed from the form during this visit (see `saved-application-drafts.ts`). */
     saved?: Submission[];
-  }
+  },
 ): ApplicationsRegister {
   const base = applicationsFile(record);
   const file: ApplicationsFile = {
@@ -273,21 +268,15 @@ export function applicationsRegister(
     /* A saved draft that reopened a pack draft carries its id and replaces it. */
     submissions: [
       ...(options.saved ?? []),
-      ...base.submissions.filter(
-        (item) => !options.saved?.some((saved) => saved.id === item.id)
-      ),
+      ...base.submissions.filter((item) => !options.saved?.some((saved) => saved.id === item.id)),
     ].map((original) => applyMove(original, options.moves?.get(original.id))),
   };
   const { viewer, today } = options;
-  if (!viewer)
-    return { applications: [], documents: [], people: [], objectionTasks: [] };
+  if (!viewer) return { applications: [], documents: [], people: [], objectionTasks: [] };
 
   const byId = new Map(file.submissions.map((item) => [item.id, item]));
   const invitations = new Map(
-    objectionInvitations(viewer, file, today).map((item) => [
-      item.application.id,
-      item,
-    ])
+    objectionInvitations(viewer, file, today).map((item) => [item.application.id, item]),
   );
   const toRecord = (source: Submission): ApplicationRecord =>
     recordFor(source, file, viewer, byId, today, invitations.get(source.id));
@@ -295,12 +284,8 @@ export function applicationsRegister(
   const visible = file.submissions
     .filter((source) => canSeeApplication(viewer, source, file))
     .map(toRecord)
-    .sort((a, b) =>
-      (b.submittedOn ?? b.createdOn).localeCompare(a.submittedOn ?? a.createdOn)
-    );
-  const applications = visible.filter(
-    (item) => item.source.kind === "application"
-  );
+    .sort((a, b) => (b.submittedOn ?? b.createdOn).localeCompare(a.submittedOn ?? a.createdOn));
+  const applications = visible.filter((item) => item.source.kind === "application");
   const documents = visible.filter((item) => item.source.kind === "document");
 
   const seen = new Set(visible.map((item) => item.filedById));
@@ -322,10 +307,7 @@ export function applicationsRegister(
   return { applications, documents, people, objectionTasks };
 }
 
-function applyMove(
-  original: Submission,
-  move: ApplicationMove | undefined
-): Submission {
+function applyMove(original: Submission, move: ApplicationMove | undefined): Submission {
   if (!move) return original;
   const next: Submission = { ...original, status: move.status };
   if (isSubmittedToCourt(move.status) && !original.submittedOn) {
@@ -363,9 +345,8 @@ function linkedFrom(source: Submission): LinkedApplication {
 
 function daysBetween(from: string, to: string): number {
   return Math.round(
-    (Date.parse(`${to.slice(0, 10)}T00:00:00Z`) -
-      Date.parse(`${from.slice(0, 10)}T00:00:00Z`)) /
-      86_400_000
+    (Date.parse(`${to.slice(0, 10)}T00:00:00Z`) - Date.parse(`${from.slice(0, 10)}T00:00:00Z`)) /
+      86_400_000,
   );
 }
 
@@ -375,19 +356,15 @@ function recordFor(
   viewer: ApplicationViewer,
   byId: Map<string, Submission>,
   today: string,
-  invite?: ObjectionInvitation
+  invite?: ObjectionInvitation,
 ): ApplicationRecord {
   const peopleById = new Map(file.people.map((person) => [person.id, person]));
   const step = applicationStepFor(viewer, source, file);
   const drafter =
-    source.createdById !== source.submittedById
-      ? peopleById.get(source.createdById)
-      : undefined;
+    source.createdById !== source.submittedById ? peopleById.get(source.createdById) : undefined;
   const party = peopleById.get(source.onBehalfOfId);
   const objection = objectionAgainst(source, file);
-  const objectionTarget = source.objectionToId
-    ? byId.get(source.objectionToId)
-    : undefined;
+  const objectionTarget = source.objectionToId ? byId.get(source.objectionToId) : undefined;
   const invited = source.objectionsInvited === true && source.decisionOn;
   const dueOn = invited ? objectionDeadline(source.decisionOn!) : undefined;
 
@@ -415,9 +392,7 @@ function recordFor(
     decisionOn: source.decisionOn ?? undefined,
     created: formatCaseDate(source.addedOn),
     submitted: source.submittedOn ? formatCaseDate(source.submittedOn) : undefined,
-    onboarded: source.onboardedOn
-      ? formatCaseDate(source.onboardedOn)
-      : undefined,
+    onboarded: source.onboardedOn ? formatCaseDate(source.onboardedOn) : undefined,
     decision: source.decisionOn ? formatCaseDate(source.decisionOn) : undefined,
     createdShort: shortDate(source.addedOn),
     submittedShort: source.submittedOn ? shortDate(source.submittedOn) : undefined,
@@ -429,13 +404,8 @@ function recordFor(
        the signing advocate's application (the PRD's "Raised By"), and who
        drafted it is theirs to know. */
     draftedBy:
-      drafter && !isSubmittedToCourt(source.status)
-        ? displayName(drafter.name)
-        : undefined,
-    onBehalfOf:
-      party && party.id !== source.submittedById
-        ? displayName(party.name)
-        : undefined,
+      drafter && !isSubmittedToCourt(source.status) ? displayName(drafter.name) : undefined,
+    onBehalfOf: party && party.id !== source.submittedById ? displayName(party.name) : undefined,
     side: submissionSide(source, peopleById),
     fromOtherSide: submissionSide(source, peopleById) !== viewer.side,
     temporaryId: source.temporaryId ?? undefined,
@@ -444,15 +414,11 @@ function recordFor(
     objectionDueOn: dueOn,
     objectionDue: dueOn ? formatCaseDate(dueOn) : undefined,
     objection:
-      objection && canSeeApplication(viewer, objection, file)
-        ? linkedFrom(objection)
-        : undefined,
+      objection && canSeeApplication(viewer, objection, file) ? linkedFrom(objection) : undefined,
     objectionTo: objectionTarget ? linkedFrom(objectionTarget) : undefined,
     expiresOn: source.expiresOn ?? undefined,
     expiresShort: source.expiresOn ? shortDate(source.expiresOn) : undefined,
-    expiresInDays: source.expiresOn
-      ? daysBetween(today, source.expiresOn)
-      : undefined,
+    expiresInDays: source.expiresOn ? daysBetween(today, source.expiresOn) : undefined,
     objectionInvite: invite
       ? {
           dueOn: invite.dueOn,
@@ -474,7 +440,7 @@ function recordFor(
 function waitingFor(
   viewer: ApplicationViewer,
   source: Submission,
-  file: ApplicationsFile
+  file: ApplicationsFile,
 ): string | undefined {
   const signer = waitingOn(viewer, source, file);
   return signer ? `Waiting for ${displayName(signer.name)} to sign` : undefined;
@@ -509,7 +475,7 @@ export type ActionEntry =
  */
 export function groupActions(
   rows: ApplicationRecord[],
-  objectionTasks: ObjectionTask[] = []
+  objectionTasks: ObjectionTask[] = [],
 ): ActionEntry[] {
   const buckets = new Map<string, ApplicationRecord[]>();
   for (const row of rows) {

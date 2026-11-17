@@ -106,11 +106,7 @@ export interface CaseFilingRepository {
   revokePoaMandate(mandateId: string): Promise<void>;
 
   /** Add a cheque, return memo or demand notice (creating the case on its first save). */
-  addEvidence(
-    caseId: string,
-    input: NewEvidence,
-    signal?: AbortSignal,
-  ): Promise<SavedEvidence>;
+  addEvidence(caseId: string, input: NewEvidence, signal?: AbortSignal): Promise<SavedEvidence>;
   /** Change an evidence row's fields or linked document (`null` unlinks it). */
   updateEvidence(
     caseEvidenceId: string,

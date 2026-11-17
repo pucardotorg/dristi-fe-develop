@@ -7,24 +7,15 @@ import { rectStyle } from "@/lib/employee/scrutiny/field";
 import { replacedDocs } from "@/lib/employee/scrutiny/returns";
 import type { BundleDoc, Rect } from "@/lib/employee/scrutiny/types";
 import { formatDuration, getFileUrl } from "@/lib/filing/files";
-import {
-  useLocalStorageValue,
-  writeLocalStorageValue,
-} from "@/hooks/use-local-storage-value";
+import { useLocalStorageValue, writeLocalStorageValue } from "@/hooks/use-local-storage-value";
 import { cn } from "@/lib/utils";
 import { GENERATED_PAGES } from "@/components/employee/scrutiny/generated-pages";
 import { PageSheet, SHEET_BOX } from "@/components/employee/page-facsimile";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { Button } from "@/components/ui/button";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 const ZOOM_STEPS = [50, 67, 80, 100, 125, 150, 200, 300, 400];
 const ZOOM_KEY = "employee-scrutiny-zoom";
@@ -41,6 +32,7 @@ export interface BundleHandle {
  * frame says so rather than standing in a video that was never made.
  */
 function OathRecording({ doc }: { doc: BundleDoc }) {
+  const t = useTranslations();
   const [url, setUrl] = React.useState<string | null>(null);
   React.useEffect(() => {
     if (!doc.fileId) return;
@@ -67,7 +59,7 @@ function OathRecording({ doc }: { doc: BundleDoc }) {
     <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 bg-surface-sunken p-6 text-center">
       <VideoIcon aria-hidden className="size-8 text-muted-foreground" />
       <p className="text-body-compact font-medium text-foreground">
-        Oath recording
+        {t("bundleView_oathRecording")}
         {doc.durationSeconds ? (
           <span className="tabular-nums"> · {formatDuration(doc.durationSeconds)}</span>
         ) : null}
@@ -94,6 +86,7 @@ export function BundleView({
   onlyDocs?: string[] | null;
   ref?: React.Ref<BundleHandle>;
 }) {
+  const t = useTranslations();
   const { bundle, returned, fieldById } = useScrutinyCase();
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [zoomBase, setZoomBase] = React.useState(880);
@@ -127,8 +120,7 @@ export function BundleView({
     const sc = scrollRef.current;
     if (!sc) return;
     const cs = getComputedStyle(sc);
-    const avail =
-      sc.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const avail = sc.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     setZoomBase(Math.max(320, Math.min(940, Math.round(avail * 0.96))));
   }, []);
 
@@ -172,8 +164,7 @@ export function BundleView({
       ZOOM_STEPS.forEach((z, n) => {
         if (Math.abs(z - zoom) < Math.abs(ZOOM_STEPS[i] - zoom)) i = n;
       });
-      const next =
-        ZOOM_STEPS[Math.min(ZOOM_STEPS.length - 1, Math.max(0, i + delta))];
+      const next = ZOOM_STEPS[Math.min(ZOOM_STEPS.length - 1, Math.max(0, i + delta))];
       zoomTo(next, cx, cy);
     },
     [zoom, zoomTo],
@@ -187,11 +178,7 @@ export function BundleView({
       if (!(event.ctrlKey || event.metaKey)) return;
       event.preventDefault();
       const box = sc.getBoundingClientRect();
-      stepZoom(
-        event.deltaY < 0 ? 1 : -1,
-        event.clientX - box.left,
-        event.clientY - box.top,
-      );
+      stepZoom(event.deltaY < 0 ? 1 : -1, event.clientX - box.left, event.clientY - box.top);
     };
     sc.addEventListener("wheel", onWheel, { passive: false });
     return () => sc.removeEventListener("wheel", onWheel);
@@ -218,9 +205,7 @@ export function BundleView({
   /* ── navigation ────────────────────────────────────────────────────────── */
 
   const goToDoc = React.useCallback((docId: string) => {
-    document
-      .getElementById(`doc-${docId}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById(`doc-${docId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
   const play = React.useCallback(
@@ -279,10 +264,13 @@ export function BundleView({
          * floor keeps the title readable and the subtitle drops out first.
          */}
         <b className="me-auto min-w-0 flex-1 truncate text-body-compact font-semibold">
-          Case bundle
+          {t("bundleView_caseBundle")}
           {onlyDocs ? (
             <span className="font-normal text-muted-foreground tabular-nums">
-              {` · ${shown.length} of ${bundle.length} documents`}
+              {t("bundleView_lengthOfLength2Documents", {
+                length: String(shown.length),
+                length2: String(bundle.length),
+              })}
             </span>
           ) : null}
         </b>
@@ -296,18 +284,18 @@ export function BundleView({
               size="icon"
               onClick={() => stepZoom(-1)}
               disabled={zoom <= ZOOM_STEPS[0]}
-              aria-label="Zoom out"
+              aria-label={t("bundleView_zoomOut")}
             >
               <ZoomOutIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Zoom out</TooltipContent>
+          <TooltipContent>{t("bundleView_zoomOut")}</TooltipContent>
         </Tooltip>
         <Button
           variant="ghost"
           className="tabular-nums"
           onClick={() => zoomTo(100)}
-          aria-label={`Zoom is ${zoom} percent — reset to 100 percent`}
+          aria-label={t("bundleView_zoomIsZoomPercentResetTo", { zoom: String(zoom) })}
         >
           {zoom}%
         </Button>
@@ -318,12 +306,12 @@ export function BundleView({
               size="icon"
               onClick={() => stepZoom(1)}
               disabled={zoom >= ZOOM_STEPS[ZOOM_STEPS.length - 1]}
-              aria-label="Zoom in"
+              aria-label={t("bundleView_zoomIn")}
             >
               <ZoomInIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Zoom in</TooltipContent>
+          <TooltipContent>{t("bundleView_zoomIn")}</TooltipContent>
         </Tooltip>
       </div>
 
@@ -349,11 +337,7 @@ export function BundleView({
             const item = replaced[doc.id];
             const before = !!item && !!showPrevious[doc.id];
             return (
-              <div
-                className="flex scroll-mt-3 flex-col gap-1.5"
-                id={`doc-${doc.id}`}
-                key={doc.id}
-              >
+              <div className="flex scroll-mt-3 flex-col gap-1.5" id={`doc-${doc.id}`} key={doc.id}>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3">
                   {/* The only navigational anchor in a scroll this long, so it reads
                       as one: caption size, but foreground ink at 600 rather than grey. */}
@@ -371,10 +355,12 @@ export function BundleView({
                         value &&
                         setShowPrevious((open) => ({ ...open, [doc.id]: value === "before" }))
                       }
-                      aria-label={`Which upload of ${doc.name}`}
+                      aria-label={t("bundleView_whichUploadOfName", { name: doc.name })}
                     >
-                      <SegmentedControlItem value="now">Now</SegmentedControlItem>
-                      <SegmentedControlItem value="before">Before</SegmentedControlItem>
+                      <SegmentedControlItem value="now">{t("bundleView_now")}</SegmentedControlItem>
+                      <SegmentedControlItem value="before">
+                        {t("bundleView_before")}
+                      </SegmentedControlItem>
                     </SegmentedControl>
                   ) : null}
                 </div>
@@ -383,7 +369,7 @@ export function BundleView({
                     {/* A full page can scroll its title row and switch out of view, so
                         the old scan names itself. No date: that lives in case history. */}
                     <span className="text-caption font-medium text-muted-foreground">
-                      Previous upload
+                      {t("bundleView_previousUpload")}
                     </span>
                     {/* The upload that went back. The demo keeps one file per document,
                         so it is drawn from the same page, softened to stand in for the
@@ -412,10 +398,7 @@ export function BundleView({
  * explicit aspect ratio from the kind's own `SHEET_BOX`, the same frame the read-only
  * scroller uses.
  */
-function renderPage(
-  doc: BundleDoc,
-  spot: { doc: string; rect: Rect } | null,
-) {
+function renderPage(doc: BundleDoc, spot: { doc: string; rect: Rect } | null) {
   const sheet = doc.kind === "facsimile" ? doc.sheet : undefined;
   const box = sheet ? SHEET_BOX[sheet] : null;
   const Generated = sheet ? undefined : GENERATED_PAGES[doc.id];

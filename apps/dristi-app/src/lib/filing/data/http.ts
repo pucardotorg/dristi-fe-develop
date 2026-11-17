@@ -132,31 +132,23 @@ export function createCaseFilingApi(client: ApiClient = api): CaseFilingReposito
       const form = new FormData();
       form.append("file", file, fileName);
       form.append("document_type", documentType);
-      if (meta.isDigital !== undefined)
-        form.append("is_digital", String(meta.isDigital));
+      if (meta.isDigital !== undefined) form.append("is_digital", String(meta.isDigital));
       const displayName = meta.displayName?.trim();
       if (displayName) form.append("display_name", displayName);
-      if (meta.caseParticipantId)
-        form.append("case_participant_id", meta.caseParticipantId);
+      if (meta.caseParticipantId) form.append("case_participant_id", meta.caseParticipantId);
       if (meta.caseEvidenceId) form.append("case_evidence_id", meta.caseEvidenceId);
       const body = await client.post<CaseDocumentBody>(
         `cases/${encodeURIComponent(caseId)}/documents`,
         form,
         { timeoutMs: UPLOAD_TIMEOUT_MS },
       );
-      if (
-        typeof body?.case_id !== "string" ||
-        typeof body.case_document_id !== "string"
-      ) {
+      if (typeof body?.case_id !== "string" || typeof body.case_document_id !== "string") {
         throw unexpected("document");
       }
       return {
         caseId: body.case_id,
         caseDocumentId: body.case_document_id,
-        documentType:
-          typeof body.document_type === "string"
-            ? body.document_type
-            : documentType,
+        documentType: typeof body.document_type === "string" ? body.document_type : documentType,
       };
     },
 
@@ -164,28 +156,20 @@ export function createCaseFilingApi(client: ApiClient = api): CaseFilingReposito
      * Change a saved document's link or details. The file and its type cannot change, so
      * this is how a document uploaded before its complainant was saved is linked to them.
      */
-    async updateDocument(
-      caseDocumentId: string,
-      patch: CaseDocumentPatch,
-    ): Promise<void> {
-      await client.patch(
-        `case-documents/${encodeURIComponent(caseDocumentId)}`,
-        patch,
-      );
+    async updateDocument(caseDocumentId: string, patch: CaseDocumentPatch): Promise<void> {
+      await client.patch(`case-documents/${encodeURIComponent(caseDocumentId)}`, patch);
     },
 
     /** Remove a document from the case. The stored file itself is kept by the backend. */
     async deleteDocument(caseDocumentId: string): Promise<void> {
-      await client.delete(
-        `case-documents/${encodeURIComponent(caseDocumentId)}`,
-      );
+      await client.delete(`case-documents/${encodeURIComponent(caseDocumentId)}`);
     },
 
     /** Add a complainant, an accused or a witness (creating the case on its first save). */
     async addParty(
       caseId: string,
       role: PartyRole,
-      party: PartyInput | WitnessInput
+      party: PartyInput | WitnessInput,
     ): Promise<AddedParty> {
       const body = await client.post<ParticipantBody>(
         `cases/${encodeURIComponent(caseId)}/${role}`,
@@ -198,31 +182,20 @@ export function createCaseFilingApi(client: ApiClient = api): CaseFilingReposito
       };
     },
 
-    async updateParticipant(
-      caseParticipantId: string,
-      patch: ParticipantPatch,
-    ): Promise<void> {
-      await client.patch(
-        `case-participants/${encodeURIComponent(caseParticipantId)}`,
-        patch,
-      );
+    async updateParticipant(caseParticipantId: string, patch: ParticipantPatch): Promise<void> {
+      await client.patch(`case-participants/${encodeURIComponent(caseParticipantId)}`, patch);
     },
 
     /** Remove a party; the backend renumbers the rest of the role. */
     async removeParticipant(caseParticipantId: string): Promise<void> {
-      await client.delete(
-        `case-participants/${encodeURIComponent(caseParticipantId)}`,
-      );
+      await client.delete(`case-participants/${encodeURIComponent(caseParticipantId)}`);
     },
 
     /**
      * Approved advocates whose name or bar number contains `query`. The backend refuses
      * fewer than `ADVOCATE_SEARCH_MIN_LENGTH` characters, so a shorter query is not sent.
      */
-    async searchAdvocates(
-      query: string,
-      signal?: AbortSignal,
-    ): Promise<FoundAdvocate[]> {
+    async searchAdvocates(query: string, signal?: AbortSignal): Promise<FoundAdvocate[]> {
       const q = query.trim();
       if (q.length < ADVOCATE_SEARCH_MIN_LENGTH) return [];
       const body = await client.get<Page<AdvocateSearchRow>>(
@@ -265,16 +238,11 @@ export function createCaseFilingApi(client: ApiClient = api): CaseFilingReposito
 
     /** End a representation. The backend keeps the row as the record of who acted when. */
     async endRepresentation(representationId: string): Promise<void> {
-      await client.delete(
-        `representations/${encodeURIComponent(representationId)}`,
-      );
+      await client.delete(`representations/${encodeURIComponent(representationId)}`);
     },
 
     /** Put a PoA holder on the case, with one mandate per party they act for. */
-    async addPoaHolder(
-      caseId: string,
-      holder: PoaHolderInput,
-    ): Promise<AddedPoaHolder> {
+    async addPoaHolder(caseId: string, holder: PoaHolderInput): Promise<AddedPoaHolder> {
       const body = await client.post<PoaHolderCreatedBody>(
         `cases/${encodeURIComponent(caseId)}/poa-holders`,
         holder,
@@ -301,7 +269,11 @@ export function createCaseFilingApi(client: ApiClient = api): CaseFilingReposito
      */
     async addEvidence(
       caseId: string,
-      input: { evidenceType: EvidenceType; evidenceInfo: EvidenceInfo; caseDocumentId?: string | null },
+      input: {
+        evidenceType: EvidenceType;
+        evidenceInfo: EvidenceInfo;
+        caseDocumentId?: string | null;
+      },
       signal?: AbortSignal,
     ): Promise<SavedEvidence> {
       const body: Record<string, unknown> = {
@@ -311,7 +283,9 @@ export function createCaseFilingApi(client: ApiClient = api): CaseFilingReposito
       // Left out when there is no linked document yet; a scan can be attached later.
       if (input.caseDocumentId != null) body.case_document_id = input.caseDocumentId;
       return toSavedEvidence(
-        await client.post<CaseEvidenceBody>(`cases/${encodeURIComponent(caseId)}/evidence`, body, { signal }),
+        await client.post<CaseEvidenceBody>(`cases/${encodeURIComponent(caseId)}/evidence`, body, {
+          signal,
+        }),
       );
     },
 
@@ -379,7 +353,8 @@ export function createCaseFilingApi(client: ApiClient = api): CaseFilingReposito
       );
       const errors: ValidationError[] = Array.isArray(body?.errors)
         ? body.errors.flatMap((e) =>
-            e && typeof e === "object" &&
+            e &&
+            typeof e === "object" &&
             typeof (e as ValidationError).field === "string" &&
             typeof (e as ValidationError).message === "string"
               ? [{ field: (e as ValidationError).field, message: (e as ValidationError).message }]

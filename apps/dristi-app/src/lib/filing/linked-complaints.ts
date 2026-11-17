@@ -57,7 +57,7 @@ export type LinkedComplaint = { draftId: string; signatoryId: string };
 export function complaintsNaming(
   drafts: FilingDraft[],
   mobile: string,
-  same: (a: string, b: string) => boolean
+  same: (a: string, b: string) => boolean,
 ): LinkedComplaint[] {
   if (!mobile) return [];
   return drafts
@@ -65,7 +65,7 @@ export function complaintsNaming(
     .flatMap((d) =>
       d.complainants
         .filter((c) => !!c.mobile && same(c.mobile, mobile))
-        .map((c) => ({ draftId: d.id, signatoryId: `sig-c-${c.id}` }))
+        .map((c) => ({ draftId: d.id, signatoryId: `sig-c-${c.id}` })),
     );
 }
 
@@ -76,7 +76,7 @@ export function parseLinkedComplaints(raw: string | null): LinkedComplaint[] {
     return Array.isArray(list)
       ? list.filter(
           (x): x is LinkedComplaint =>
-            !!x && typeof x.draftId === "string" && typeof x.signatoryId === "string"
+            !!x && typeof x.draftId === "string" && typeof x.signatoryId === "string",
         )
       : [];
   } catch {

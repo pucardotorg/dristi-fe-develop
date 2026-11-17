@@ -41,15 +41,13 @@ const ALLOW = "table-plate-allow";
 function plateConstants() {
   const source = readFileSync(PLATE, "utf8");
   /* `\s*` spans the newline, so this covers both the one-line and wrapped forms. */
-  const found = [
-    ...source.matchAll(/export const (TABLE_[A-Z_]+) =\s*"([^"]+)";/g),
-  ];
+  const found = [...source.matchAll(/export const (TABLE_[A-Z_]+) =\s*"([^"]+)";/g)];
   if (!found.length) {
     console.error(
       "check:table-rows could not read any exported class string from\n  " +
         relative(APP_ROOT, PLATE) +
         "\nThe gate derives its rules from those exports, so it cannot run. If the " +
-        "plate\nnow builds them differently, teach this script the new shape."
+        "plate\nnow builds them differently, teach this script the new shape.",
     );
     process.exit(1);
   }
@@ -117,8 +115,7 @@ for (const file of sourceFiles(SRC)) {
   const lines = source.split("\n");
   const rel = relative(APP_ROOT, file);
   const lineAt = (index) => source.slice(0, index).split("\n").length;
-  const allowed = (line) =>
-    lines[line - 1]?.includes(ALLOW) || lines[line - 2]?.includes(ALLOW);
+  const allowed = (line) => lines[line - 1]?.includes(ALLOW) || lines[line - 2]?.includes(ALLOW);
 
   const add = (line, rule, detail) => {
     if (!allowed(line)) findings.push({ rel, line, rule, detail });
@@ -131,7 +128,7 @@ for (const file of sourceFiles(SRC)) {
       add(
         lineAt(at),
         `import ${name} from the table plate instead of restating it`,
-        `${value.slice(0, 44)}…`
+        `${value.slice(0, 44)}…`,
       );
     }
   }
@@ -140,11 +137,7 @@ for (const file of sourceFiles(SRC)) {
   lines.forEach((line, index) => {
     for (const pattern of HAND_ROLLED) {
       if (pattern.test(line)) {
-        add(
-          index + 1,
-          "row/header banding belongs to the table plate",
-          line.trim().slice(0, 60)
-        );
+        add(index + 1, "row/header banding belongs to the table plate", line.trim().slice(0, 60));
         break;
       }
     }
@@ -159,7 +152,7 @@ for (const file of sourceFiles(SRC)) {
     add(
       lineAt(source.indexOf("<TableRow")),
       `a border-separate table takes its treatment from ${PLATE_IMPORT}`,
-      "no table-plate import"
+      "no table-plate import",
     );
   }
 
@@ -170,7 +163,7 @@ for (const file of sourceFiles(SRC)) {
         add(
           lineAt(tag.index),
           "a row's fill must go on its cells (tableRowClass), never the <tr>",
-          literal[1].slice(0, 60)
+          literal[1].slice(0, 60),
         );
       }
     }
@@ -182,7 +175,7 @@ for (const file of sourceFiles(SRC)) {
       add(
         lineAt(tag.index),
         "pair the rows with tableBodyClass(), or the rule above a lit row cuts its corners",
-        tag.text.replace(/\s+/g, " ").slice(0, 60)
+        tag.text.replace(/\s+/g, " ").slice(0, 60),
       );
     }
   }
@@ -197,11 +190,9 @@ if (findings.length) {
     "\nThe treatment lives in src/components/chrome/table-plate.ts: TABLE_HEAD, " +
       "TABLE_CELL,\nTABLE_HEAD_ROW, tableRowClass() and tableBodyClass(). A row fill on " +
       "the <tr> cannot\nbe rounded — `border-radius` is ignored on a table row — which is " +
-      `why the plate\nputs it on the cells. Keep ${ALLOW} for reviewed exceptions only.`
+      `why the plate\nputs it on the cells. Keep ${ALLOW} for reviewed exceptions only.`,
   );
   process.exit(1);
 }
 
-console.log(
-  `Table-row check passed (one treatment, ${constants.length} shared strings).`
-);
+console.log(`Table-row check passed (one treatment, ${constants.length} shared strings).`);

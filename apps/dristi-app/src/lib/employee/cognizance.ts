@@ -37,12 +37,7 @@
 
 import type { CaseRecord } from "@/lib/cases/types";
 import { COURT_DISTRICT, CURRENT_STAFF } from "./content";
-import {
-  formatListingDate,
-  isoDay,
-  parseIsoDay,
-  type CourtCounsel,
-} from "./hearings";
+import { formatListingDate, isoDay, parseIsoDay, type CourtCounsel } from "./hearings";
 import { caseSearchKey } from "@/lib/court/localize";
 import { courtProfile, DEFAULT_COURT, type CourtId } from "@/lib/court/profiles";
 
@@ -178,7 +173,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     /* The payee's branch is in Ernakulam, not this court's district — §142(2)(a) puts the
        complaint where that branch lies, so the jurisdiction check fires. */
     branch: { bank: "South Indian Bank", branch: "Ernakulam South", place: "Ernakulam" },
-    cheques: [{ presentedAfterDays: 21, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 21, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-2038",
@@ -223,7 +220,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "State Bank of India", branch: "Asramam", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 33, returnReason: "Exceeds arrangement", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 33, returnReason: "Exceeds arrangement", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-2022",
@@ -239,7 +238,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "Canara Bank", branch: "Kottiyam", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 8, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 8, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-2015",
@@ -257,7 +258,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
        the jurisdiction check the file carries against the branch. */
     depositedByComplainant: false,
     branch: { bank: "IDFC First Bank", branch: "Bandra West", place: "Mumbai" },
-    cheques: [{ presentedAfterDays: 19, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 19, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-2009",
@@ -274,7 +277,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: "Addressee moved from the address on record",
     depositedByComplainant: true,
     branch: { bank: "Union Bank of India", branch: "Punalur", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 27, returnReason: "Account closed", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 27, returnReason: "Account closed", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1998",
@@ -290,7 +295,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "South Indian Bank", branch: "Karunagappally", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 12, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 12, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1987",
@@ -307,7 +314,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "Federal Bank", branch: "Chinnakada", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 16, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 16, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1975",
@@ -323,7 +332,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "Canara Bank", branch: "Kottiyam", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 41, returnReason: "Exceeds arrangement", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 41, returnReason: "Exceeds arrangement", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1966",
@@ -342,7 +353,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "State Bank of India", branch: "Asramam", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 23, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 23, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1954",
@@ -359,7 +372,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: false,
     branch: { bank: "Bank of Baroda", branch: "Kaloor", place: "Ernakulam" },
-    cheques: [{ presentedAfterDays: 17, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 17, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1943",
@@ -375,7 +390,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "South Indian Bank", branch: "Mundakkal", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 9, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 9, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1931",
@@ -392,7 +409,13 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: "Refused to accept",
     depositedByComplainant: true,
     branch: { bank: "Federal Bank", branch: "Punalur", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 30, returnReason: "Payment stopped by drawer", returnedAfterFirstDays: 0 }],
+    cheques: [
+      {
+        presentedAfterDays: 30,
+        returnReason: "Payment stopped by drawer",
+        returnedAfterFirstDays: 0,
+      },
+    ],
   },
   {
     id: "c-1920",
@@ -408,7 +431,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "Canara Bank", branch: "Chinnakada", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 11, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 11, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1912",
@@ -426,7 +451,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "Union Bank of India", branch: "Kottiyam", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 25, returnReason: "Exceeds arrangement", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 25, returnReason: "Exceeds arrangement", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1904",
@@ -442,7 +469,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "South Indian Bank", branch: "Karunagappally", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 6, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 6, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1893",
@@ -459,7 +488,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "Federal Bank", branch: "Asramam", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 13, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 13, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1885",
@@ -475,7 +506,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "State Bank of India", branch: "Chathannoor", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 20, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 20, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1877",
@@ -491,7 +524,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: "Door locked on three attempts",
     depositedByComplainant: true,
     branch: { bank: "Canara Bank", branch: "Mundakkal", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 15, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 15, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1866",
@@ -508,7 +543,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "Union Bank of India", branch: "Chinnakada", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 18, returnReason: "Exceeds arrangement", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 18, returnReason: "Exceeds arrangement", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1858",
@@ -524,7 +561,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "South Indian Bank", branch: "Kottiyam", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 7, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 7, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1847",
@@ -543,7 +582,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: false,
     branch: { bank: "Indian Bank", branch: "Vazhuthacaud", place: "Thiruvananthapuram" },
-    cheques: [{ presentedAfterDays: 10, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 10, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1836",
@@ -560,7 +601,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "Federal Bank", branch: "Kadappakada", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 24, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 24, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
   {
     id: "c-1825",
@@ -576,7 +619,9 @@ export const COGNIZANCE_QUEUE: CognizanceCase[] = [
     nonDeliveryReason: null,
     depositedByComplainant: true,
     branch: { bank: "Canara Bank", branch: "Asramam", place: "Sample District" },
-    cheques: [{ presentedAfterDays: 5, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 }],
+    cheques: [
+      { presentedAfterDays: 5, returnReason: "Funds insufficient", returnedAfterFirstDays: 0 },
+    ],
   },
 ];
 
@@ -728,9 +773,7 @@ export const NOTICE_DISPATCHED_TERM = "Date of dispatch of demand notice";
 
 /** The branch term changes with whose account the cheque went into. */
 export function branchTerm(matter: CognizanceCase): string {
-  return matter.depositedByComplainant
-    ? "Bank branch (complainant)"
-    : "Bank branch (accused)";
+  return matter.depositedByComplainant ? "Bank branch (complainant)" : "Bank branch (accused)";
 }
 
 /**
@@ -747,8 +790,7 @@ export function findingsFor(matter: CognizanceCase): CognizanceFinding[] {
     findings.push({
       id: "notice-window",
       weight: "critical",
-      statement:
-        "Demand notice not issued within 30 days of the return of the cheque as unpaid.",
+      statement: "Demand notice not issued within 30 days of the return of the cheque as unpaid.",
       consequence: `The notice went out ${matter.noticeAfterDays} days after the date on the return memo.`,
       term: NOTICE_DISPATCHED_TERM,
     });
@@ -947,8 +989,7 @@ export function summaryChunksFor(
       term: "Date of return of demand notice",
       value: formatListingDate(chain.noticeReturnedOn),
       source: "demand-notice",
-      tooltip:
-        "Date on which the demand notice was returned to the post office as undelivered.",
+      tooltip: "Date on which the demand notice was returned to the post office as undelivered.",
     });
     if (matter.nonDeliveryReason) {
       notice.push({
@@ -1059,11 +1100,7 @@ export function cognizanceDocumentsFor(
  * PRD does not ask for it either.
  */
 export type CognizanceTab =
-  | "without-delay"
-  | "with-delay"
-  | "criminal-case"
-  | "criminal-inquiry"
-  | "criminal-misc";
+  "without-delay" | "with-delay" | "criminal-case" | "criminal-inquiry" | "criminal-misc";
 
 export type CognizanceTabSpec = {
   id: CognizanceTab;
@@ -1121,10 +1158,7 @@ export function cognizanceTabSpec(tab: CognizanceTab): CognizanceTabSpec {
 }
 
 /** Which tab a complaint stands on. The one fact the split is made of. */
-export function tabFor(
-  matter: CognizanceCase,
-  court: CourtId = DEFAULT_COURT,
-): CognizanceTab {
+export function tabFor(matter: CognizanceCase, court: CourtId = DEFAULT_COURT): CognizanceTab {
   if (courtProfile(court).cognizanceSplit === "case-type") {
     /* Jurisdiction first where both apply: a complaint in the wrong court is an inquiry
        whatever its delay. */
@@ -1151,10 +1185,7 @@ export function casesOnTab(
  * Counted over the whole queue and never over what the search box has left, so the
  * number beside a tab's name does not move as the bench types.
  */
-export function cognizanceTabCount(
-  tab: CognizanceTab,
-  court: CourtId = DEFAULT_COURT,
-): number {
+export function cognizanceTabCount(tab: CognizanceTab, court: CourtId = DEFAULT_COURT): number {
   return casesOnTab(COGNIZANCE_QUEUE, tab, court).length;
 }
 
@@ -1174,7 +1205,10 @@ export const EMPTY_COGNIZANCE_FILTERS: CognizanceFilters = {
   notice: "all",
 };
 
-export const COGNIZANCE_NOTICE_OPTIONS: { value: Exclude<CognizanceNoticeFilter, "all">; label: string }[] = [
+export const COGNIZANCE_NOTICE_OPTIONS: {
+  value: Exclude<CognizanceNoticeFilter, "all">;
+  label: string;
+}[] = [
   { value: "delivered", label: "Notice delivered" },
   { value: "returned", label: "Notice returned" },
 ];
@@ -1247,10 +1281,7 @@ export function primaryActFor(
  * case-type split it is all three: the tab's recommendation, the other positive act,
  * and Dismiss (owner, 2026-10-13).
  */
-export function actsFor(
-  matter: CognizanceCase,
-  court: CourtId = DEFAULT_COURT,
-): CognizanceAct[] {
+export function actsFor(matter: CognizanceCase, court: CourtId = DEFAULT_COURT): CognizanceAct[] {
   const recommended = primaryActFor(matter, court);
   if (courtProfile(court).cognizanceSplit !== "case-type") return [recommended, "dismiss"];
   const other: CognizanceAct = recommended === "cognizance" ? "notice" : "cognizance";
@@ -1329,10 +1360,7 @@ export const COGNIZANCE_ACTS: Record<
  * the stage is the one every row here is at. Nothing is added that the row does not carry —
  * no hearing, no disposal, no update beyond waiting for this act.
  */
-export function cognizanceCaseRecord(
-  matter: CognizanceCase,
-  today: string,
-): CaseRecord {
+export function cognizanceCaseRecord(matter: CognizanceCase, today: string): CaseRecord {
   const { filedOn } = chainFor(matter, today);
   const counselOf = (side: CourtCounsel["side"]) =>
     matter.counsel.filter((entry) => entry.side === side).map((entry) => entry.name);

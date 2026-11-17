@@ -1,11 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  EyeIcon,
-  FilesIcon,
-  SearchXIcon,
-} from "lucide-react";
+import { EyeIcon, FilesIcon, SearchXIcon } from "lucide-react";
 
 import { DocumentScroller } from "@/components/employee/document-scroller";
 import { zoneFor, type ZoneRect } from "@/lib/employee/document-zones";
@@ -46,6 +42,8 @@ import {
   type CaseReview,
 } from "@/lib/employee/case-review";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * The case file — everything the complaint was filed with, for a magistrate who is not
@@ -70,15 +68,14 @@ import { cn } from "@/lib/utils";
  *   source without leaving the line you were on. Below 1280px the same panel is a sheet.
  */
 export function CaseFileView({ review }: { review: CaseReview }) {
+  const t = useTranslations();
   const bundle = React.useMemo(() => caseBundleFor(review), [review]);
   const [query, setQuery] = React.useState("");
   const [selected, setSelected] = React.useState<{
     key: string;
     rowId?: string;
     zone?: ZoneRect | null;
-  } | null>(
-    null,
-  );
+  } | null>(null);
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const wide = useMinWidth(1280);
   const asideRef = React.useRef<HTMLElement>(null);
@@ -117,9 +114,7 @@ export function CaseFileView({ review }: { review: CaseReview }) {
     if (!wide) setSheetOpen(true);
   };
 
-  const panel = (
-    <DocumentPanel bundle={bundle} selected={selected} query={needle} />
-  );
+  const panel = <DocumentPanel bundle={bundle} selected={selected} query={needle} />;
 
   const visibleGroups = groups.map((view) => view.group);
 
@@ -131,8 +126,8 @@ export function CaseFileView({ review }: { review: CaseReview }) {
       <div className="flex min-w-0 flex-col gap-8">
         <div className="flex flex-wrap items-end gap-3">
           <QueueSearchField
-            label="Search the case file"
-            placeholder="A name, a number, a date or a document"
+            label={t("registerCaseFile_searchTheCaseFile")}
+            placeholder={t("registerCaseFile_aNameANumberADate")}
             value={query}
             onChange={setQuery}
             className="w-full max-w-md"
@@ -145,19 +140,23 @@ export function CaseFileView({ review }: { review: CaseReview }) {
             onClick={() => setSheetOpen(true)}
           >
             <FilesIcon aria-hidden />
-            Documents
+            {t("registerCaseFile_documents")}
           </Button>
         </div>
 
         {needle && (matchCount > 0 || docMatches > 0) ? (
           <p role="status" className="-mt-4 text-body-compact text-muted-foreground">
             <span className="tabular-nums">{matchCount}</span>{" "}
-            {matchCount === 1 ? "particular" : "particulars"}
+            {matchCount === 1
+              ? t("registerCaseFile_particular")
+              : t("registerCaseFile_particulars")}
             {docMatches > 0 ? (
               <>
                 {" · "}
                 <span className="tabular-nums">{docMatches}</span>{" "}
-                {docMatches === 1 ? "document, in the list" : "documents, in the list"}
+                {docMatches === 1
+                  ? t("registerCaseFile_documentInTheList")
+                  : t("registerCaseFile_documentsInTheList")}
               </>
             ) : null}
           </p>
@@ -170,15 +169,14 @@ export function CaseFileView({ review }: { review: CaseReview }) {
                 <SearchXIcon aria-hidden />
               </EmptyMedia>
               <EmptyTitle className="font-semibold text-title-s">
-                Nothing in this file matches “{query.trim()}”
+                {t("registerCaseFile_nothingInThisFileMatchesTrim", { trim: query.trim() })}
               </EmptyTitle>
               <EmptyDescription className="text-body-compact">
-                Try part of a name, a number or a date, or clear the search to see the
-                whole file.
+                {t("registerCaseFile_tryPartOfANameA")}
               </EmptyDescription>
             </EmptyHeader>
             <Button type="button" variant="outline" onClick={() => setQuery("")}>
-              Clear search
+              {t("registerCaseFile_clearSearch")}
             </Button>
           </Empty>
         ) : (
@@ -220,7 +218,7 @@ export function CaseFileView({ review }: { review: CaseReview }) {
           less that, so the panel's foot lands on the fold. */}
       <aside
         ref={asideRef}
-        aria-label="Documents"
+        aria-label={t("registerCaseFile_documents")}
         /* The fill runs to the window's edge; the contents stop where the page's own
            right margin is, so "18 filed" and the document numbers line up with the
            Register button above them (owner, 2026-09-12). */
@@ -232,8 +230,10 @@ export function CaseFileView({ review }: { review: CaseReview }) {
       <Sheet open={sheetOpen && !wide} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="gap-0 p-0 data-[side=right]:sm:max-w-md">
           <SheetHeader className="sr-only">
-            <SheetTitle>Documents</SheetTitle>
-            <SheetDescription>The documents this complaint was filed with.</SheetDescription>
+            <SheetTitle>{t("registerCaseFile_documents")}</SheetTitle>
+            <SheetDescription>
+              {t("registerCaseFile_theDocumentsThisComplaintWasFiled")}
+            </SheetDescription>
           </SheetHeader>
           <div className="flex min-h-0 flex-1 flex-col pt-12">{panel}</div>
         </SheetContent>
@@ -343,6 +343,7 @@ function GroupCard({
   selected: { key: string; rowId?: string } | null;
   onShow: (key: string | null, rowId?: string, term?: string) => void;
 }) {
+  const t = useTranslations();
   const { group } = view;
   const Icon = group.icon;
   const docNo = (key: string) => bundle.docs.find((doc) => doc.key === key);
@@ -386,8 +387,10 @@ function GroupCard({
       {group.empty && !needle ? (
         <Band gutter={gutter}>
           <p className="py-2 text-body-compact text-muted-foreground">
-            {group.empty.explanation ??
-              (group.empty.reason === "none-named" ? "None named" : "None on record")}
+            {translateText(t, group.empty.explanation) ??
+              (group.empty.reason === "none-named"
+                ? t("registerCaseFile_noneNamed")
+                : t("registerCaseFile_noneOnRecord"))}
           </p>
         </Band>
       ) : null}
@@ -395,7 +398,7 @@ function GroupCard({
       {many ? (
         <Band gutter={gutter}>
           <MatrixBand
-            rowHeading="Name"
+            rowHeading={t("registerCaseFile_name")}
             records
             columns={recordColumns(view.records)}
             rows={view.records.map((record) => ({
@@ -509,13 +512,7 @@ type RowProps = {
  * The lit row takes the tables' lighter tone on hover and `accent` while its page is the
  * one on show — the same pair the queues use.
  */
-function FactRow({
-  item,
-  needle,
-  docNo,
-  selected,
-  onShow,
-}: RowProps & { item: FactItem }) {
+function FactRow({ item, needle, docNo, selected, onShow }: RowProps & { item: FactItem }) {
   const { id, fact, label } = item;
   const source = fact.source ? docNo(fact.source) : undefined;
   const current = selected?.rowId === id;
@@ -549,6 +546,7 @@ function FactRow({
 
 /** A value as filed — or, where the form was left empty, the words for that. */
 function Value({ fact, needle }: { fact: CaseFact; needle: string }) {
+  const t = useTranslations();
   return (
     <span
       className={cn(
@@ -564,7 +562,11 @@ function Value({ fact, needle }: { fact: CaseFact; needle: string }) {
         fact.exception && "text-warning-ink",
       )}
     >
-      {fact.value ? <Marked text={fact.value} needle={needle} /> : "Not provided"}
+      {fact.value ? (
+        <Marked text={fact.value} needle={needle} />
+      ) : (
+        t("registerCaseFile_notProvided")
+      )}
     </span>
   );
 }
@@ -583,6 +585,7 @@ function EyeButton({
   onClick: () => void;
   group?: "row" | "cell";
 }) {
+  const t = useTranslations();
   return (
     <Button
       type="button"
@@ -593,7 +596,7 @@ function EyeButton({
         group === "row" ? "group-hover/row:opacity-100" : "group-hover/cell:opacity-100",
         shown && "opacity-100",
       )}
-      aria-label={`Show ${title}, document ${no}`}
+      aria-label={t("registerCaseFile_showTitleDocumentNo", { title, no: String(no) })}
       onClick={(event) => {
         event.stopPropagation();
         onClick();
@@ -695,6 +698,7 @@ function MatrixCell({
   selected,
   onShow,
 }: RowProps & { column: string; cell: FactItem | undefined }) {
+  const t = useTranslations();
   const source = cell?.fact.source ? docNo(cell.fact.source) : undefined;
   const current = !!cell && selected?.rowId === cell.id;
   return (
@@ -711,7 +715,7 @@ function MatrixCell({
       {cell ? (
         <Value fact={cell.fact} needle={needle} />
       ) : (
-        <span className="text-muted-foreground">Not provided</span>
+        <span className="text-muted-foreground">{t("registerCaseFile_notProvided")}</span>
       )}
       {source && cell ? (
         <EyeButton
@@ -738,6 +742,7 @@ function MatrixCell({
  * screen reader hears a list of them. The ticks are only its picture.
  */
 function ContentsRail({ groups }: { groups: CaseGroup[] }) {
+  const t = useTranslations();
   const [active, setActive] = React.useState(groups[0]?.id ?? "");
 
   React.useEffect(() => {
@@ -769,7 +774,10 @@ function ContentsRail({ groups }: { groups: CaseGroup[] }) {
   if (groups.length < 2) return null;
 
   return (
-    <nav aria-label="Case file contents" className="group/toc sticky top-32 w-4">
+    <nav
+      aria-label={t("registerCaseFile_caseFileContents")}
+      className="group/toc sticky top-32 w-4"
+    >
       <div aria-hidden className="flex flex-col items-end gap-3 py-2">
         {groups.map((group) => (
           <span
@@ -852,30 +860,27 @@ function DocumentPanel({
   selected: { key: string; rowId?: string; zone?: ZoneRect | null } | null;
   query: string;
 }) {
+  const t = useTranslations();
   const docs = bundle.docs.filter((candidate) => !query || hit(candidate.title, query));
-  const absent = bundle.absent.filter(
-    (candidate) => !query || hit(candidate.title, query),
-  );
+  const absent = bundle.absent.filter((candidate) => !query || hit(candidate.title, query));
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-baseline justify-between gap-3 border-b border-hairline px-8 py-4">
-        <h2 className="text-body font-semibold">Documents</h2>
+        <h2 className="text-body font-semibold">{t("registerCaseFile_documents")}</h2>
         <span className="text-body-compact tabular-nums text-muted-foreground">
-          {bundle.docs.length} filed
+          {t("registerCaseFile_lengthFiled", { length: String(bundle.docs.length) })}
         </span>
       </div>
       {docs.length === 0 && absent.length === 0 ? (
         <p className="px-8 py-4 text-body-compact text-muted-foreground">
-          No document matches.
+          {t("registerCaseFile_noDocumentMatches")}
         </p>
       ) : (
         <DocumentScroller
           docs={docs}
           absent={absent}
-          active={
-            selected ? { doc: selected.key, zone: selected.zone ?? null } : null
-          }
+          active={selected ? { doc: selected.key, zone: selected.zone ?? null } : null}
         />
       )}
     </div>

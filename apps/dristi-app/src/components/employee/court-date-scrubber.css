@@ -1,7 +1,9 @@
 /* The date square's scrubber — the advocate home's (`advocate/date-scrubber.css`), under
    the court's own names so the two stylesheets never meet. The square covers the strip
    as its bars tuck upward; transitions retarget from the displayed position. */
-.court-scrubber { container-type: inline-size; }
+.court-scrubber {
+  container-type: inline-size;
+}
 .court-scrubber-bar {
   opacity: 0;
   transform: translateY(calc(-100% - var(--spacing)));
@@ -13,17 +15,24 @@
   opacity: 1;
   transform: translateY(0);
 }
-.court-scrubber-tick, .court-scrubber-cursor {
+.court-scrubber-tick,
+.court-scrubber-cursor {
   transition: transform var(--scrub-duration) var(--scrub-easing);
 }
 /* Keep the bubble inside the square's width. cqw reads this control's width;
    percentages read the bubble's own width. */
 .court-scrubber-badge {
-  --scrub-shift: clamp(calc(var(--scrub-anchor) * -1cqw), -50%, calc((100 - var(--scrub-anchor)) * 1cqw - 100%));
+  --scrub-shift: clamp(
+    calc(var(--scrub-anchor) * -1cqw),
+    -50%,
+    calc((100 - var(--scrub-anchor)) * 1cqw - 100%)
+  );
   transform: translateX(var(--scrub-shift));
   transition: transform var(--scrub-duration) var(--scrub-easing);
 }
-.court-scrubber-pointer { left: calc(var(--scrub-shift) * -1); }
+.court-scrubber-pointer {
+  left: calc(var(--scrub-shift) * -1);
+}
 .court-scrubber-bubble {
   opacity: 0;
   transition-property: opacity;
@@ -56,7 +65,8 @@
   transition-delay: 0ms !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  .court-scrubber *, .court-scrubber-weekday {
+  .court-scrubber *,
+  .court-scrubber-weekday {
     transition-duration: 0ms !important;
     transition-delay: 0ms !important;
   }

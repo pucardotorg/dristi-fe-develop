@@ -77,6 +77,7 @@ import {
   ViewSourceButton,
   useSourceOpenState,
 } from "@/components/filing/source-panel";
+import { useTranslations } from "next-intl";
 
 /** The documents uploaded for a complainant, in the order the panel offers them. */
 const PARTY_DOCS = ["id-proof", "poa", "vakalatnama"] as const;
@@ -95,6 +96,7 @@ const COMPLAINANT_TYPES: { value: ComplainantType; label: string }[] = [
 ];
 
 export function ComplainantSection() {
+  const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("complainant");
   const { unsaved, retryUnsaved } = useCaseParties("complainant");
@@ -187,7 +189,7 @@ export function ComplainantSection() {
 
   const cinPanError =
     cinPanVisited[c.id] && c.entCinPan && !isCinOrPan(c.entCinPan)
-      ? "Enter a 21-character CIN or a 10-character PAN."
+      ? t("complainantSection_enterA21CharacterCinOr")
       : undefined;
 
   /* ── writes ──────────────────────────────────────────────────────────────── */
@@ -240,13 +242,10 @@ export function ComplainantSection() {
   }));
   /* Only documents actually uploaded are offered; with none there is no rail at all. */
   const uploadedDocs = partySlots.filter((s) => s.slot?.file);
-  const shownDoc = uploadedDocs.some((s) => s.doc === sourceDoc)
-    ? sourceDoc
-    : uploadedDocs[0]?.doc;
+  const shownDoc = uploadedDocs.some((s) => s.doc === sourceDoc) ? sourceDoc : uploadedDocs[0]?.doc;
   const sourceSlot = partySlots.find((s) => s.doc === shownDoc)?.slot;
   /** The document in the rail, named as a person would name it, not by its file name. */
-  const sourceDocLabel =
-    sourceSlot?.label ?? PARTY_DOC_LABELS[shownDoc ?? "id-proof"];
+  const sourceDocLabel = sourceSlot?.label ?? PARTY_DOC_LABELS[shownDoc ?? "id-proof"];
   /** Appearing in person settles the PoA question — see the note on the control. */
   const inPerson = c.pip === "yes";
 
@@ -284,8 +283,8 @@ export function ComplainantSection() {
     <>
       <FilingMain sourceOpen={sourceOpen}>
         <FilingPageHeader
-          title="Complainant details"
-          description="Who is bringing this complaint, and where the court can reach them."
+          title={t("complainantSection_complainantDetails")}
+          description={t("complainantSection_whoIsBringingThisComplaintAnd")}
         />
 
         {unsaved.length > 0 ? (
@@ -313,404 +312,389 @@ export function ComplainantSection() {
             const i = complainants.findIndex((cp) => cp.id === id);
             if (i >= 0) setPendingRemove(i);
           }}
-          addLabel="Add complainant"
+          addLabel={t("complainantSection_addComplainant")}
           onAdd={addComplainant}
-          trailing={
-            !sourceOpen ? (
-              <ViewSourceButton onClick={() => setSourceOpen(true)} />
-            ) : null
-          }
+          trailing={!sourceOpen ? <ViewSourceButton onClick={() => setSourceOpen(true)} /> : null}
         />
 
         <CorrectionInstance value={active}>
-        {/* Representation & type */}
-        <FormCard title="Representation & type">
-          <FormField
-            asGroup
-            label="Is this complainant appearing in person (party-in-person)?"
-          >
-            <YesNoSegmented
-              value={c.pip}
-              onValueChange={(v) => set("pip", v)}
-              ariaLabel="Is this complainant appearing in person (party-in-person)?"
-            />
-          </FormField>
-          <FormField asGroup label="Complainant type">
-            <Segmented
-              value={c.type}
-              onValueChange={(v) => set("type", v)}
-              options={COMPLAINANT_TYPES}
-              ariaLabel="Complainant type"
-            />
-          </FormField>
-        </FormCard>
+          {/* Representation & type */}
+          <FormCard title={t("complainantSection_representationType")}>
+            <FormField asGroup label={t("complainantSection_isThisComplainantAppearingInPerson")}>
+              <YesNoSegmented
+                value={c.pip}
+                onValueChange={(v) => set("pip", v)}
+                ariaLabel={t("complainantSection_isThisComplainantAppearingInPerson")}
+              />
+            </FormField>
+            <FormField asGroup label={t("complainantSection_complainantType")}>
+              <Segmented
+                value={c.type}
+                onValueChange={(v) => set("type", v)}
+                options={COMPLAINANT_TYPES}
+                ariaLabel={t("complainantSection_complainantType")}
+              />
+            </FormField>
+          </FormCard>
 
-        {c.type === "individual" ? (
-          <>
-            {/* Contact */}
-            <FormCard
-              title="Contact"
-              description="Use the complainant's own number and email, not the advocate's."
-            >
-              {/* Why the number matters, said before it is typed. An Alert-based notice,
+          {c.type === "individual" ? (
+            <>
+              {/* Contact */}
+              <FormCard
+                title={t("complainantSection_contact")}
+                description={t("complainantSection_useTheComplainantsOwnNumberAnd")}
+              >
+                {/* Why the number matters, said before it is typed. An Alert-based notice,
                   not a Banner: the DS keeps Banner for page-wide conditions, and this
                   explains one field. Not dismissible; it governs a required field. */}
-              <SectionNotice variant="info">
-                The complainant verifies this number when signing the complaint. All case
-                updates are sent to it, and it is how they log in to see the case.
-              </SectionNotice>
-              {/* Email sat under Basic details, two cards from the number it belongs
+                <SectionNotice variant="info">
+                  {t("complainantSection_theComplainantVerifiesThisNumberWhen")}
+                </SectionNotice>
+                {/* Email sat under Basic details, two cards from the number it belongs
                   beside. Both are how this person is reached; they are asked together. */}
-              <FormRow>
-                <MobileField
-                  label="Mobile number"
-                  name="mobile"
-                  required
-                  value={c.mobile}
-                  onChange={setMobile}
-                />
-                <FormField label="Email address" name="email" optional>
-                  <TextField
-                    type="email"
-                    value={c.email}
-                    onChange={(v) => set("email", v)}
-                    placeholder="optional@example.com"
-                    autoComplete="email"
+                <FormRow>
+                  <MobileField
+                    label={t("complainantSection_mobileNumber")}
+                    name="mobile"
+                    required
+                    value={c.mobile}
+                    onChange={setMobile}
                   />
-                </FormField>
-              </FormRow>
-
-              {/* Verify & fetch details removed — the phone number is collected as
-                 contact information, not as a lookup key. */}
-            </FormCard>
-
-            {/* Basic details */}
-            {/* Who this person is; how to reach them is the card above. */}
-            <FormCard title="Basic details">
-              <FormRow>
-                <FormField label="Full name" name="name" required>
-                  <TextField
-                    value={c.name}
-                    onChange={(v) => set("name", v)}
-                    placeholder="As printed on the cheque"
-                    autoComplete="name"
-                  />
-                </FormField>
-                <FormField label="Age" name="age" required>
-                  <TextField
-                    value={c.age}
-                    onChange={(v) => set("age", v)}
-                    placeholder="e.g. 47"
-                    inputMode="numeric"
-                  />
-                </FormField>
-              </FormRow>
-              <FormRow>
-                <FormField label="Gender" name="gender" optional>
-                  <OptionSelect
-                    value={c.gender}
-                    onValueChange={(v) => set("gender", v as Complainant["gender"])}
-                    options={GENDER_OPTIONS}
-                    placeholder="Select"
-                  />
-                </FormField>
-                <FormField
-                  asGroup
-                  label="Differently abled?"
-                  optional
-                >
-                  <YesNoChoice
-                    value={c.differentlyAbled}
-                    onValueChange={(v) => set("differentlyAbled", v as Complainant["differentlyAbled"])}
-                    ariaLabel="Is the complainant differently abled?"
-                    name={`complainant-${c.id}-differently-abled`}
-                  />
-                </FormField>
-              </FormRow>
-            </FormCard>
-
-            {/* Residential address */}
-            <FormCard
-              title="Residential address"
-              description="Where the complainant currently lives."
-            >
-              <AddressFields
-                name="res"
-                value={c.res}
-                onChange={setRes}
-              />
-              <FormField
-                asGroup
-                label="Is the permanent address the same as the residential address?"
-              >
-                <YesNoSegmented
-                  value={c.permSame}
-                  onValueChange={(v) => set("permSame", v)}
-                  ariaLabel="Is the permanent address the same as the residential address?"
-                />
-              </FormField>
-            </FormCard>
-
-            {c.permSame === "no" ? (
-              <FormCard title="Permanent address">
-                <AddressFields name="perm" value={c.perm} onChange={(v) => set("perm", v)} />
-              </FormCard>
-            ) : null}
-
-            {/* Power of attorney */}
-            <FormCard title="Power of attorney (PoA)">
-              <FormField
-                asGroup
-                label="Has the complainant authorised any person as their power of attorney in this case?"
-                help={
-                  inPerson
-                    ? "Answered by the complainant appearing in person: conducting the case in person and authorising someone else to conduct it are alternatives, not both."
-                    : undefined
-                }
-              >
-                <YesNoSegmented
-                  value={inPerson ? "no" : c.poa}
-                  onValueChange={(v) => set("poa", v)}
-                  ariaLabel="Has the complainant authorised any person as their power of attorney in this case?"
-                  disabled={inPerson}
-                />
-              </FormField>
-
-              {!inPerson && c.poa === "yes" ? (
-                <>
-                  <FormDivider />
-                  <FormSubhead>PoA holder details</FormSubhead>
-                  <HalfWidth>
-                    <MobileField
-                      label="PoA holder mobile number"
-                      required
-                      value={c.poaHolder.mobile}
-                      onChange={(v) => setPoa("mobile", v)}
-                    />
-                  </HalfWidth>
-                  <FormRow>
-                    <FormField label="PoA holder full name" required>
-                      <TextField
-                        value={c.poaHolder.name}
-                        onChange={(v) => setPoa("name", v)}
-                        placeholder="Full name"
-                      />
-                    </FormField>
-                    <FormField label="PoA holder age" required>
-                      <TextField
-                        value={c.poaHolder.age}
-                        onChange={(v) => setPoa("age", v)}
-                        placeholder="e.g. 52"
-                        inputMode="numeric"
-                      />
-                    </FormField>
-                  </FormRow>
-                  <FormSubhead>PoA holder&apos;s residential address</FormSubhead>
-                  <AddressFields
-                    name="poaHolder.res"
-                    value={c.poaHolder.res}
-                    onChange={(v) => setPoa("res", v)}
-                  />
-                  <FormField
-                    asGroup
-                    label="Is the PoA holder's permanent address the same as residential?"
-                  >
-                    <YesNoSegmented
-                      value={c.poaHolder.permSame}
-                      onValueChange={(v) => setPoa("permSame", v)}
-                      ariaLabel="Is the PoA holder's permanent address the same as residential?"
+                  <FormField label={t("complainantSection_emailAddress")} name="email" optional>
+                    <TextField
+                      type="email"
+                      value={c.email}
+                      onChange={(v) => set("email", v)}
+                      placeholder="optional@example.com"
+                      autoComplete="email"
                     />
                   </FormField>
-                  {c.poaHolder.permSame === "no" ? (
-                    <>
-                      <FormSubhead>PoA holder&apos;s permanent address</FormSubhead>
-                      <AddressFields
-                        name="poaHolder.perm"
-                        value={c.poaHolder.perm}
-                        onChange={(v) => setPoa("perm", v)}
-                      />
-                    </>
-                  ) : null}
-                </>
+                </FormRow>
+
+                {/* Verify & fetch details removed — the phone number is collected as
+                 contact information, not as a lookup key. */}
+              </FormCard>
+
+              {/* Basic details */}
+              {/* Who this person is; how to reach them is the card above. */}
+              <FormCard title={t("complainantSection_basicDetails")}>
+                <FormRow>
+                  <FormField label={t("complainantSection_fullName")} name="name" required>
+                    <TextField
+                      value={c.name}
+                      onChange={(v) => set("name", v)}
+                      placeholder={t("complainantSection_asPrintedOnTheCheque")}
+                      autoComplete="name"
+                    />
+                  </FormField>
+                  <FormField label={t("complainantSection_age")} name="age" required>
+                    <TextField
+                      value={c.age}
+                      onChange={(v) => set("age", v)}
+                      placeholder={t("complainantSection_eG47")}
+                      inputMode="numeric"
+                    />
+                  </FormField>
+                </FormRow>
+                <FormRow>
+                  <FormField label={t("complainantSection_gender")} name="gender" optional>
+                    <OptionSelect
+                      value={c.gender}
+                      onValueChange={(v) => set("gender", v as Complainant["gender"])}
+                      options={GENDER_OPTIONS}
+                      placeholder={t("complainantSection_select")}
+                    />
+                  </FormField>
+                  <FormField asGroup label={t("complainantSection_differentlyAbled")} optional>
+                    <YesNoChoice
+                      value={c.differentlyAbled}
+                      onValueChange={(v) =>
+                        set("differentlyAbled", v as Complainant["differentlyAbled"])
+                      }
+                      ariaLabel={t("complainantSection_isTheComplainantDifferentlyAbled")}
+                      name={`complainant-${c.id}-differently-abled`}
+                    />
+                  </FormField>
+                </FormRow>
+              </FormCard>
+
+              {/* Residential address */}
+              <FormCard
+                title={t("complainantSection_residentialAddress")}
+                description={t("complainantSection_whereTheComplainantCurrentlyLives")}
+              >
+                <AddressFields name="res" value={c.res} onChange={setRes} />
+                <FormField asGroup label={t("complainantSection_isThePermanentAddressTheSame")}>
+                  <YesNoSegmented
+                    value={c.permSame}
+                    onValueChange={(v) => set("permSame", v)}
+                    ariaLabel={t("complainantSection_isThePermanentAddressTheSame")}
+                  />
+                </FormField>
+              </FormCard>
+
+              {c.permSame === "no" ? (
+                <FormCard title={t("complainantSection_permanentAddress")}>
+                  <AddressFields name="perm" value={c.perm} onChange={(v) => set("perm", v)} />
+                </FormCard>
               ) : null}
-            </FormCard>
-          </>
-        ) : (
-          <>
-            {/* Institution details */}
-            <FormCard title="Institution details">
-              <FormRow>
-                <FormField label="Type of entity" name="entType" required>
-                  <OptionSelect
-                    value={c.entType}
-                    onValueChange={(v) => set("entType", v)}
-                    options={ENTITY_TYPES}
-                    placeholder="Select type"
-                  />
-                </FormField>
-                <FormField label="Entity name" name="entName" required>
-                  <TextField
-                    value={c.entName}
-                    onChange={(v) => set("entName", v)}
-                    placeholder="Registered name"
-                  />
-                </FormField>
-              </FormRow>
-              <FormRow>
-                <FormField label="Contact number" optional>
-                  <MobileInput value={c.entPhone} onChange={(v) => set("entPhone", v)} />
-                </FormField>
-                <FormField label="Email address" optional>
-                  <TextField
-                    type="email"
-                    value={c.entEmail}
-                    onChange={(v) => set("entEmail", v)}
-                    placeholder="optional@example.com"
-                    autoComplete="email"
-                  />
-                </FormField>
-              </FormRow>
-              <HalfWidth className="flex flex-col gap-3">
-                <FormField
-                  label="CIN or PAN"
-                  name="entCinPan"
-                  required
-                  help="This will be used to identify cases belonging to the same complainant."
-                  error={c.entCinPanSkippedAt ? undefined : cinPanError}
-                >
-                  <TextField
-                    ref={cinPanInput}
-                    value={c.entCinPan}
-                    onChange={(v) => set("entCinPan", normaliseCinPan(v))}
-                    onBlur={() => setCinPanVisited((v) => ({ ...v, [c.id]: true }))}
-                    placeholder="21-character CIN or 10-character PAN"
-                    autoCapitalize="characters"
-                    autoComplete="off"
-                    spellCheck={false}
-                    disabled={!!c.entCinPanSkippedAt}
-                  />
-                </FormField>
-                {/* Mandatory, but skippable by declaration (`LIT-18a`). The declaration is
-                    the skip — it is recorded on the filing, and it turns the field off.
-                    An option of the field, so it sits in the field's column, quietly. */}
-                <Label
-                  htmlFor={`${skipCinPanId}-${c.id}`}
-                  className="items-start gap-2 text-body-compact font-normal text-muted-foreground"
-                >
-                  <Checkbox
-                    id={`${skipCinPanId}-${c.id}`}
-                    checked={!!c.entCinPanSkippedAt}
-                    onCheckedChange={(checked) =>
-                      update((d) => {
-                        const target = d.complainants[active];
-                        target.entCinPanSkippedAt =
-                          checked === true ? new Date().toISOString() : null;
-                        if (checked === true) target.entCinPan = "";
-                      })
-                    }
-                    className="mt-0.5"
-                  />
-                  {/* Wraps to several lines — the Label's own leading-none would collide. */}
-                  <span className="leading-normal">
-                    Skip — I understand this case won&apos;t be linked to the
-                    complainant&apos;s other cases.
-                  </span>
-                </Label>
-              </HalfWidth>
-            </FormCard>
 
-            {/* Registered address */}
-            <FormCard title="Registered address">
-              <AddressFields name="entAddr" value={c.entAddr} onChange={(v) => set("entAddr", v)} />
-            </FormCard>
-
-            {/* Authorised representative */}
-            <FormCard
-              title="Authorised representative"
-              description="The person authorised to act for the institution in this case."
-            >
-              <HalfWidth>
-                <MobileField
-                  label="Mobile number"
-                  name="rep.mobile"
-                  required
-                  value={c.rep.mobile}
-                  onChange={(v) => setRep("mobile", v)}
-                />
-              </HalfWidth>
-              <FormRow>
-                <FormField label="Full name" name="rep.name" required>
-                  <TextField
-                    value={c.rep.name}
-                    onChange={(v) => setRep("name", v)}
-                    placeholder="Full name"
-                  />
-                </FormField>
-                <FormField label="Age" name="rep.age" required>
-                  <TextField
-                    value={c.rep.age}
-                    onChange={(v) => setRep("age", v)}
-                    placeholder="e.g. 47"
-                    inputMode="numeric"
-                  />
-                </FormField>
-              </FormRow>
-              <HalfWidth>
-                <FormField label="Email address" name="rep.email" optional>
-                  <TextField
-                    type="email"
-                    value={c.rep.email}
-                    onChange={(v) => setRep("email", v)}
-                    placeholder="optional@example.com"
-                    autoComplete="email"
-                  />
-                </FormField>
-              </HalfWidth>
-              <FormRow>
-                <FormField label="Gender" name="repGender" optional>
-                  <OptionSelect
-                    value={c.rep.gender}
-                    onValueChange={(v) => setRep("gender", v as Representative["gender"])}
-                    options={GENDER_OPTIONS}
-                    placeholder="Select"
-                  />
-                </FormField>
+              {/* Power of attorney */}
+              <FormCard title={t("complainantSection_powerOfAttorneyPoA")}>
                 <FormField
                   asGroup
-                  label="Differently abled?"
-                  optional
+                  label={t("complainantSection_hasTheComplainantAuthorisedAnyPerson")}
+                  help={
+                    inPerson
+                      ? t("complainantSection_answeredByTheComplainantAppearingIn")
+                      : undefined
+                  }
                 >
-                  <YesNoChoice
-                    value={c.rep.differentlyAbled}
-                    onValueChange={(v) => setRep("differentlyAbled", v as Representative["differentlyAbled"])}
-                    ariaLabel="Is the representative differently abled?"
-                    name={`complainant-${c.id}-rep-differently-abled`}
+                  <YesNoSegmented
+                    value={inPerson ? "no" : c.poa}
+                    onValueChange={(v) => set("poa", v)}
+                    ariaLabel={t("complainantSection_hasTheComplainantAuthorisedAnyPerson")}
+                    disabled={inPerson}
                   />
                 </FormField>
-              </FormRow>
-              <FormSubhead>Representative&apos;s address</FormSubhead>
-              <AddressFields
-                name="rep.addr"
-                value={c.rep.addr}
-                onChange={(v) => setRep("addr", v)}
+
+                {!inPerson && c.poa === "yes" ? (
+                  <>
+                    <FormDivider />
+                    <FormSubhead>{t("complainantSection_poAHolderDetails")}</FormSubhead>
+                    <HalfWidth>
+                      <MobileField
+                        label={t("complainantSection_poAHolderMobileNumber")}
+                        required
+                        value={c.poaHolder.mobile}
+                        onChange={(v) => setPoa("mobile", v)}
+                      />
+                    </HalfWidth>
+                    <FormRow>
+                      <FormField label={t("complainantSection_poAHolderFullName")} required>
+                        <TextField
+                          value={c.poaHolder.name}
+                          onChange={(v) => setPoa("name", v)}
+                          placeholder={t("complainantSection_fullName")}
+                        />
+                      </FormField>
+                      <FormField label={t("complainantSection_poAHolderAge")} required>
+                        <TextField
+                          value={c.poaHolder.age}
+                          onChange={(v) => setPoa("age", v)}
+                          placeholder={t("complainantSection_eG52")}
+                          inputMode="numeric"
+                        />
+                      </FormField>
+                    </FormRow>
+                    <FormSubhead>
+                      {t("complainantSection_poAHoldersResidentialAddress")}
+                    </FormSubhead>
+                    <AddressFields
+                      name="poaHolder.res"
+                      value={c.poaHolder.res}
+                      onChange={(v) => setPoa("res", v)}
+                    />
+                    <FormField asGroup label={t("complainantSection_isThePoAHoldersPermanent")}>
+                      <YesNoSegmented
+                        value={c.poaHolder.permSame}
+                        onValueChange={(v) => setPoa("permSame", v)}
+                        ariaLabel={t("complainantSection_isThePoAHoldersPermanent")}
+                      />
+                    </FormField>
+                    {c.poaHolder.permSame === "no" ? (
+                      <>
+                        <FormSubhead>
+                          {t("complainantSection_poAHoldersPermanentAddress")}
+                        </FormSubhead>
+                        <AddressFields
+                          name="poaHolder.perm"
+                          value={c.poaHolder.perm}
+                          onChange={(v) => setPoa("perm", v)}
+                        />
+                      </>
+                    ) : null}
+                  </>
+                ) : null}
+              </FormCard>
+            </>
+          ) : (
+            <>
+              {/* Institution details */}
+              <FormCard title={t("complainantSection_institutionDetails")}>
+                <FormRow>
+                  <FormField label={t("complainantSection_typeOfEntity")} name="entType" required>
+                    <OptionSelect
+                      value={c.entType}
+                      onValueChange={(v) => set("entType", v)}
+                      options={ENTITY_TYPES}
+                      placeholder={t("complainantSection_selectType")}
+                    />
+                  </FormField>
+                  <FormField label={t("complainantSection_entityName")} name="entName" required>
+                    <TextField
+                      value={c.entName}
+                      onChange={(v) => set("entName", v)}
+                      placeholder={t("complainantSection_registeredName")}
+                    />
+                  </FormField>
+                </FormRow>
+                <FormRow>
+                  <FormField label={t("complainantSection_contactNumber")} optional>
+                    <MobileInput value={c.entPhone} onChange={(v) => set("entPhone", v)} />
+                  </FormField>
+                  <FormField label={t("complainantSection_emailAddress")} optional>
+                    <TextField
+                      type="email"
+                      value={c.entEmail}
+                      onChange={(v) => set("entEmail", v)}
+                      placeholder="optional@example.com"
+                      autoComplete="email"
+                    />
+                  </FormField>
+                </FormRow>
+                <HalfWidth className="flex flex-col gap-3">
+                  <FormField
+                    label={t("complainantSection_cinOrPan")}
+                    name="entCinPan"
+                    required
+                    help={t("complainantSection_thisWillBeUsedToIdentify")}
+                    error={c.entCinPanSkippedAt ? undefined : cinPanError}
+                  >
+                    <TextField
+                      ref={cinPanInput}
+                      value={c.entCinPan}
+                      onChange={(v) => set("entCinPan", normaliseCinPan(v))}
+                      onBlur={() => setCinPanVisited((v) => ({ ...v, [c.id]: true }))}
+                      placeholder={t("complainantSection_21CharacterCinOr10Character")}
+                      autoCapitalize="characters"
+                      autoComplete="off"
+                      spellCheck={false}
+                      disabled={!!c.entCinPanSkippedAt}
+                    />
+                  </FormField>
+                  {/* Mandatory, but skippable by declaration (`LIT-18a`). The declaration is
+                    the skip — it is recorded on the filing, and it turns the field off.
+                    An option of the field, so it sits in the field's column, quietly. */}
+                  <Label
+                    htmlFor={`${skipCinPanId}-${c.id}`}
+                    className="items-start gap-2 text-body-compact font-normal text-muted-foreground"
+                  >
+                    <Checkbox
+                      id={`${skipCinPanId}-${c.id}`}
+                      checked={!!c.entCinPanSkippedAt}
+                      onCheckedChange={(checked) =>
+                        update((d) => {
+                          const target = d.complainants[active];
+                          target.entCinPanSkippedAt =
+                            checked === true ? new Date().toISOString() : null;
+                          if (checked === true) target.entCinPan = "";
+                        })
+                      }
+                      className="mt-0.5"
+                    />
+                    {/* Wraps to several lines — the Label's own leading-none would collide. */}
+                    <span className="leading-normal">
+                      {t("complainantSection_skipIUnderstandThisCaseWont")}
+                    </span>
+                  </Label>
+                </HalfWidth>
+              </FormCard>
+
+              {/* Registered address */}
+              <FormCard title={t("complainantSection_registeredAddress")}>
+                <AddressFields
+                  name="entAddr"
+                  value={c.entAddr}
+                  onChange={(v) => set("entAddr", v)}
+                />
+              </FormCard>
+
+              {/* Authorised representative */}
+              <FormCard
+                title={t("complainantSection_authorisedRepresentative")}
+                description={t("complainantSection_thePersonAuthorisedToActFor")}
+              >
+                <HalfWidth>
+                  <MobileField
+                    label={t("complainantSection_mobileNumber")}
+                    name="rep.mobile"
+                    required
+                    value={c.rep.mobile}
+                    onChange={(v) => setRep("mobile", v)}
+                  />
+                </HalfWidth>
+                <FormRow>
+                  <FormField label={t("complainantSection_fullName")} name="rep.name" required>
+                    <TextField
+                      value={c.rep.name}
+                      onChange={(v) => setRep("name", v)}
+                      placeholder={t("complainantSection_fullName")}
+                    />
+                  </FormField>
+                  <FormField label={t("complainantSection_age")} name="rep.age" required>
+                    <TextField
+                      value={c.rep.age}
+                      onChange={(v) => setRep("age", v)}
+                      placeholder={t("complainantSection_eG47")}
+                      inputMode="numeric"
+                    />
+                  </FormField>
+                </FormRow>
+                <HalfWidth>
+                  <FormField label={t("complainantSection_emailAddress")} name="rep.email" optional>
+                    <TextField
+                      type="email"
+                      value={c.rep.email}
+                      onChange={(v) => setRep("email", v)}
+                      placeholder="optional@example.com"
+                      autoComplete="email"
+                    />
+                  </FormField>
+                </HalfWidth>
+                <FormRow>
+                  <FormField label={t("complainantSection_gender")} name="repGender" optional>
+                    <OptionSelect
+                      value={c.rep.gender}
+                      onValueChange={(v) => setRep("gender", v as Representative["gender"])}
+                      options={GENDER_OPTIONS}
+                      placeholder={t("complainantSection_select")}
+                    />
+                  </FormField>
+                  <FormField asGroup label={t("complainantSection_differentlyAbled")} optional>
+                    <YesNoChoice
+                      value={c.rep.differentlyAbled}
+                      onValueChange={(v) =>
+                        setRep("differentlyAbled", v as Representative["differentlyAbled"])
+                      }
+                      ariaLabel={t("complainantSection_isTheRepresentativeDifferentlyAbled")}
+                      name={`complainant-${c.id}-rep-differently-abled`}
+                    />
+                  </FormField>
+                </FormRow>
+                <FormSubhead>{t("complainantSection_representativesAddress")}</FormSubhead>
+                <AddressFields
+                  name="rep.addr"
+                  value={c.rep.addr}
+                  onChange={(v) => setRep("addr", v)}
+                />
+              </FormCard>
+            </>
+          )}
+
+          {/* Affidavit — only when appearing without an advocate */}
+          {c.pip === "yes" ? (
+            <FormCard
+              title={t("complainantSection_affidavitForAppearingAsPartyIn")}
+              description={t("complainantSection_preFilledFromTheStandardTemplate")}
+            >
+              <RichTextEditor
+                value={c.affidavit}
+                onChange={(html) => set("affidavit", html)}
+                ariaLabel={t("complainantSection_affidavitForAppearingAsPartyIn")}
               />
             </FormCard>
-          </>
-        )}
-
-        {/* Affidavit — only when appearing without an advocate */}
-        {c.pip === "yes" ? (
-          <FormCard
-            title="Affidavit for appearing as party-in-person"
-            description="Pre-filled from the standard template. Edit if needed."
-          >
-            <RichTextEditor
-              value={c.affidavit}
-              onChange={(html) => set("affidavit", html)}
-              ariaLabel="Affidavit for appearing as party-in-person"
-            />
-          </FormCard>
-        ) : null}
+          ) : null}
         </CorrectionInstance>
       </FilingMain>
 
@@ -732,7 +716,7 @@ export function ComplainantSection() {
         file={sourceSlot?.file ?? null}
         uploadHref={hrefFor("upload")}
         imageAlt={`Uploaded ${sourceSlot?.label ?? "document"}`}
-        note="Shown from your uploaded document."
+        note={t("complainantSection_shownFromYourUploadedDocument")}
       />
 
       {/* Mobile verification — the sandbox stand-in, shown as one. Nothing is sent, so the
@@ -744,19 +728,23 @@ export function ComplainantSection() {
           if (!open) setOtp("");
         }}
       >
-        <ChromeDialogContent mobileSheet className="sm:max-w-md" onInteractOutside={(event) => event.preventDefault()}>
+        <ChromeDialogContent
+          mobileSheet
+          className="sm:max-w-md"
+          onInteractOutside={(event) => event.preventDefault()}
+        >
           <DialogHeader>
-            <DialogTitle>Verify &amp; fetch details</DialogTitle>
+            <DialogTitle>{t("complainantSection_verifyFetchDetails")}</DialogTitle>
             <DialogDescription>
-              This confirms the number the court will use to reach{" "}
-              {complainantLabel(c, active)} and, if ON Court already holds a record
-              against it, fills in the name and address it has.
+              {t("complainantSection_thisConfirmsTheNumberTheCourt", {
+                complainantLabel: complainantLabel(c, active),
+              })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="complainant-otp" className="text-body-compact">
-              Enter OTP
+              {t("complainantSection_enterOtp")}
             </Label>
             <InputOTP
               id="complainant-otp"
@@ -784,7 +772,7 @@ export function ComplainantSection() {
             disabled={otp.length < 6}
             onClick={() => void verifyAndFetch()}
           >
-            Verify &amp; fetch details
+            {t("complainantSection_verifyFetchDetails")}
           </Button>
         </ChromeDialogContent>
       </Dialog>
@@ -814,10 +802,8 @@ export function ComplainantSection() {
             >
               <TriangleAlertIcon className="size-5" />
             </span>
-            <DialogTitle>Continue without a CIN or PAN?</DialogTitle>
-            <DialogDescription>
-              The CIN or PAN is used to identify cases belonging to the same complainant.
-            </DialogDescription>
+            <DialogTitle>{t("complainantSection_continueWithoutACinOrPan")}</DialogTitle>
+            <DialogDescription>{t("complainantSection_theCinOrPanIsUsed")}</DialogDescription>
           </DialogHeader>
           {/* The acknowledgement is its own recessed well — a hairline, since it holds a control. */}
           <Label
@@ -832,13 +818,12 @@ export function ComplainantSection() {
             />
             {/* Wraps to several lines — the Label's own leading-none would collide. */}
             <span className="leading-normal">
-              I understand that without it, this case will not be linked to the
-              complainant&apos;s other cases.
+              {t("complainantSection_iUnderstandThatWithoutItThis")}
             </span>
           </Label>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={addCinPan}>
-              Add CIN or PAN
+              {t("complainantSection_addCinOrPan")}
             </Button>
             <Button
               type="button"
@@ -846,24 +831,26 @@ export function ComplainantSection() {
               disabled={!skipCinPanUnderstood}
               aria-disabled={!skipCinPanUnderstood || undefined}
             >
-              Continue without it
+              {t("complainantSection_continueWithoutIt")}
             </Button>
           </DialogFooter>
         </ChromeDialogContent>
       </Dialog>
 
       <ConfirmDialog
-        note="This cannot be undone."
+        note={t("complainantSection_thisCannotBeUndone")}
         open={pendingRemove !== null}
         onOpenChange={(open) => {
           if (!open) setPendingRemove(null);
         }}
         title={
           pendingRemove !== null && complainants[pendingRemove]
-            ? `Remove ${complainantLabel(complainants[pendingRemove], pendingRemove)}`
-            : "Remove complainant"
+            ? t("complainantSection_removeComplainantLabel", {
+                complainantLabel: complainantLabel(complainants[pendingRemove], pendingRemove),
+              })
+            : t("complainantSection_removeComplainant")
         }
-        description="Are you sure you want to delete this complainant and all their details?"
+        description={t("complainantSection_areYouSureYouWantTo")}
         onConfirm={() => {
           if (pendingRemove !== null) removeComplainant(pendingRemove);
           setPendingRemove(null);

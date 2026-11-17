@@ -10,10 +10,7 @@ import { ARRIVAL } from "@/components/chrome/motion";
 import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { markCognizanceTab } from "@/components/employee/cognizance-return";
 import { COGNIZANCE_PATH } from "@/components/employee/cognizance-table";
-import {
-  OrderDoorScreen,
-  type OrderDoor,
-} from "@/components/employee/order-door-screen";
+import { OrderDoorScreen, type OrderDoor } from "@/components/employee/order-door-screen";
 import { markArrival, useArrival } from "@/components/employee/use-arrival";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { Button } from "@/components/ui/button";
@@ -32,10 +29,7 @@ import {
   type CognizanceAct,
   type CognizanceCase,
 } from "@/lib/employee/cognizance";
-import {
-  cognizanceComposition,
-  cognizanceOrderOutcome,
-} from "@/lib/employee/cognizance-order";
+import { cognizanceComposition, cognizanceOrderOutcome } from "@/lib/employee/cognizance-order";
 import { localizeDeep } from "@/lib/court/localize";
 import { CURRENT_STAFF } from "@/lib/employee/content";
 import { formatOrderDate } from "@/lib/employee/hearings";
@@ -48,6 +42,8 @@ import {
   type OrderSubject,
 } from "@/lib/employee/order-subject";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * The order one cognizance act draws up — the composer's **outside-a-hearing** door
@@ -77,22 +73,12 @@ export function CognizanceOrderScreen({
 
   return (
     <div className={cn("min-w-0", arrival && ARRIVAL[arrival])}>
-      <CognizanceOrder
-        key={`${matter.id}:${chosen}`}
-        matter={matter}
-        act={chosen}
-      />
+      <CognizanceOrder key={`${matter.id}:${chosen}`} matter={matter} act={chosen} />
     </div>
   );
 }
 
-function CognizanceOrder({
-  matter,
-  act,
-}: {
-  matter: CognizanceCase;
-  act: CognizanceAct;
-}) {
+function CognizanceOrder({ matter, act }: { matter: CognizanceCase; act: CognizanceAct }) {
   const door = useCognizanceOrderDoor(matter, act);
   return <OrderDoorScreen door={door} />;
 }
@@ -102,10 +88,8 @@ function CognizanceOrder({
  * (`cognizanceComposition`), the act's outcome under the title, and the way back to the
  * complaint.
  */
-export function useCognizanceOrderDoor(
-  matter: CognizanceCase,
-  act: CognizanceAct,
-): OrderDoor {
+export function useCognizanceOrderDoor(matter: CognizanceCase, act: CognizanceAct): OrderDoor {
+  const t = useTranslations();
   const today = useCourtToday();
   const courtText = useCourtText();
   const { court } = useCourt();
@@ -132,7 +116,7 @@ export function useCognizanceOrderDoor(
     fixedIds: [],
     heading: subjectCauseTitle(subject),
     facts: subjectFacts(subject),
-    courtLine: courtText(`Before the ${CURRENT_STAFF.court}`),
+    courtLine: courtText(t("cognizanceOrderScreen_beforeTheCourt", { court: CURRENT_STAFF.court })),
     subLine: `${matter.caseNumber} · ${subjectCauseTitle(subject)} · ${formatOrderDate(today)}`,
     notice: (
       <p className="text-body-compact text-muted-foreground">
@@ -148,7 +132,7 @@ export function useCognizanceOrderDoor(
             markCognizanceTab(tabFor(matter, court));
           }}
         >
-          {back.label}
+          {translateText(t, back.label)}
         </Link>
       </Button>
     ),
@@ -169,6 +153,7 @@ export function cognizanceDraftKey(matter: CognizanceCase, act: CognizanceAct) {
 }
 
 export function OrderMissing() {
+  const t = useTranslations();
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <Empty className="border-0 p-0">
@@ -177,16 +162,15 @@ export function OrderMissing() {
             <FileQuestionIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            This complaint is not waiting for cognizance
+            {t("cognizanceOrderScreen_thisComplaintIsNotWaitingFor")}
           </EmptyTitle>
           <EmptyDescription className="text-body">
-            An order is drawn up from a complaint on the list of those waiting
-            for cognizance. This one is not on it.
+            {t("cognizanceOrderScreen_anOrderIsDrawnUpFrom")}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href={COGNIZANCE_PATH}>Back to take cognizance</Link>
+            <Link href={COGNIZANCE_PATH}>{t("cognizanceOrderScreen_backToTakeCognizance")}</Link>
           </Button>
         </EmptyContent>
       </Empty>

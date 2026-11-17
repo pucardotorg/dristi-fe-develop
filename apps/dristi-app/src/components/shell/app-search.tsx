@@ -22,6 +22,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * The app's search, opened from the rail.
@@ -42,10 +43,7 @@ function haystack(draft: FilingDraft): string {
     ...draft.complainants.flatMap((c) => [c.name, c.entName, c.rep.name, c.poaHolder.name]),
     ...draft.accused.map((a) => a.name),
   ];
-  return [...parties, draft.sign.caseFileNumber ?? ""]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+  return [...parties, draft.sign.caseFileNumber ?? ""].filter(Boolean).join(" ").toLowerCase();
 }
 
 /** A filed case opens at Preview; a draft opens where the person left it. */
@@ -56,6 +54,7 @@ function hrefFor(draft: FilingDraft): string {
 }
 
 function Results({ onNavigate }: { onNavigate: () => void }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const router = useRouter();
   const { ready, drafts, filed } = useDrafts();
@@ -64,7 +63,7 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
   const needle = query.trim().toLowerCase();
   const match = React.useCallback(
     (d: FilingDraft) => !needle || haystack(d).includes(needle),
-    [needle]
+    [needle],
   );
   const matchedDrafts = drafts.filter(match);
   const matchedFiled = filed.filter(match);
@@ -78,11 +77,11 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
   return (
     /* Filtering is ours, not cmdk's: a filing is found by the parties in it and its
        case-file number — neither of which is the label on the row. */
-    <Command shouldFilter={false} label="Search your filings">
+    <Command shouldFilter={false} label={t("appSearch_searchYourFilings")}>
       <CommandInput
         value={query}
         onValueChange={setQuery}
-        placeholder="Search by party name or case number"
+        placeholder={t("appSearch_searchByPartyNameOrCase")}
       />
       <CommandList>
         {!ready ? (
@@ -92,18 +91,16 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
             className="flex items-center justify-center gap-2 py-6 text-body-compact text-muted-foreground"
           >
             <Spinner className="size-4" />
-            Reading your filings…
+            {t("appSearch_readingYourFilings")}
           </div>
         ) : (
           <CommandEmpty className="text-body-compact text-muted-foreground">
-            {nothingStored
-              ? "You haven't started a filing in this browser yet."
-              : "No matches"}
+            {nothingStored ? t("appSearch_youHaventStartedAFilingIn") : t("appSearch_noMatches")}
           </CommandEmpty>
         )}
 
         {matchedDrafts.length > 0 ? (
-          <CommandGroup heading="Drafts">
+          <CommandGroup heading={t("appSearch_drafts")}>
             {matchedDrafts.map((d) => (
               <CommandItem key={d.id} value={d.id} onSelect={() => open(d)}>
                 <FileTextIcon aria-hidden className="text-muted-foreground" />
@@ -112,10 +109,11 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
                     {draftTitle(d)}
                   </span>
                   <span className="truncate text-caption text-muted-foreground">
-                    {courtText(getStep(d.lastStep).title)} · saved{" "}
-                    <span className="tabular-nums">
-                      {toDisplayDate(d.updatedAt.slice(0, 10))}
-                    </span>
+                    {t.rich("appSearch_courtTextSavedToDisplayDate", {
+                      courtText: courtText(getStep(d.lastStep).title),
+                      toDisplayDate: toDisplayDate(d.updatedAt.slice(0, 10)),
+                      span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                    })}
                   </span>
                 </span>
               </CommandItem>
@@ -124,7 +122,7 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
         ) : null}
 
         {matchedFiled.length > 0 ? (
-          <CommandGroup heading="Filed cases">
+          <CommandGroup heading={t("appSearch_filedCases")}>
             {matchedFiled.map((d) => (
               <CommandItem key={d.id} value={d.id} onSelect={() => open(d)}>
                 <FileCheckIcon aria-hidden className="text-muted-foreground" />
@@ -137,18 +135,18 @@ function Results({ onNavigate }: { onNavigate: () => void }) {
                     {d.sign.caseFileNumber ? (
                       <Identifier
                         value={d.sign.caseFileNumber}
-                        label="case number"
+                        label={t("appSearch_caseNumber")}
                         copyable={false}
                       />
                     ) : (
-                      "No case number"
+                      t("appSearch_noCaseNumber")
                     )}
                     {d.filedAt ? (
                       <>
-                        {" · filed "}
-                        <span className="tabular-nums">
-                          {toDisplayDate(d.filedAt.slice(0, 10))}
-                        </span>
+                        {t.rich("appSearch_filedToDisplayDate", {
+                          toDisplayDate: toDisplayDate(d.filedAt.slice(0, 10)),
+                          span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                        })}
                       </>
                     ) : null}
                   </span>
@@ -182,6 +180,7 @@ export function useAppSearch(): AppSearchValue {
 
 /** Holds the dialog and the ⌘K binding for the whole shell. */
 export function AppSearchProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations();
   const [open, setOpen] = React.useState(false);
   const shortcut = useShortcutLabel();
 
@@ -198,7 +197,7 @@ export function AppSearchProvider({ children }: { children: React.ReactNode }) {
 
   const value = React.useMemo<AppSearchValue>(
     () => ({ open: () => setOpen(true), shortcut }),
-    [shortcut]
+    [shortcut],
   );
 
   return (
@@ -207,8 +206,8 @@ export function AppSearchProvider({ children }: { children: React.ReactNode }) {
       <CommandDialog
         open={open}
         onOpenChange={setOpen}
-        title="Search your filings"
-        description="Find a draft or a filed case by party name or case number."
+        title={t("appSearch_searchYourFilings")}
+        description={t("appSearch_findADraftOrAFiled")}
       >
         <Results onNavigate={() => setOpen(false)} />
       </CommandDialog>

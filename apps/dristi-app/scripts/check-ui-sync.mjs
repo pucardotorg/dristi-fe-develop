@@ -30,7 +30,7 @@ for (const file of files) {
   const dsPath = join(dsUi, file);
   if (!existsSync(dsPath)) {
     console.error(
-      `${relative(APP_ROOT, appPath)}  not in DS — remove or promote into pucar-design-system first`
+      `${relative(APP_ROOT, appPath)}  not in DS — remove or promote into pucar-design-system first`,
     );
     failed = true;
     continue;
@@ -39,7 +39,7 @@ for (const file of files) {
   const source = readFileSync(dsPath, "utf8");
   if (app !== source) {
     console.error(
-      `${relative(APP_ROOT, appPath)}  drifts from DS ${basename(file)} — run: npm run sync:ui -w @pucar/dristi-app -- ${basename(file, ".tsx")}`
+      `${relative(APP_ROOT, appPath)}  drifts from DS ${basename(file)} — run: npm run sync:ui -w @pucar/dristi-app -- ${basename(file, ".tsx")}`,
     );
     failed = true;
   }
@@ -50,7 +50,7 @@ const dsTokens = join(ds, "src/app/globals.css");
 if (existsSync(appTokens) && existsSync(dsTokens)) {
   if (readFileSync(appTokens, "utf8") !== readFileSync(dsTokens, "utf8")) {
     console.error(
-      "src/app/globals.css  drifts from DS — run: npm run sync:ui -w @pucar/dristi-app -- --tokens-only"
+      "src/app/globals.css  drifts from DS — run: npm run sync:ui -w @pucar/dristi-app -- --tokens-only",
     );
     failed = true;
   }

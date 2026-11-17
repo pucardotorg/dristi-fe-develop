@@ -57,10 +57,7 @@ export function flattenLeaves(nodes: CaseFileNode[]): CaseFileNode[] {
   return leaves;
 }
 
-export function findNode(
-  nodes: CaseFileNode[],
-  id: string,
-): CaseFileNode | undefined {
+export function findNode(nodes: CaseFileNode[], id: string): CaseFileNode | undefined {
   for (const node of nodes) {
     if (node.id === id) return node;
     if (node.children) {
@@ -110,18 +107,12 @@ export function parseCaseFileDoc(
 
 export type CaseFileView = "pdf" | "digital";
 
-export function parseCaseFileView(
-  value: string | string[] | undefined,
-): CaseFileView {
+export function parseCaseFileView(value: string | string[] | undefined): CaseFileView {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw === "digital" ? "digital" : "pdf";
 }
 
-export function caseFileDocHref(
-  caseId: string,
-  docId: string,
-  view: CaseFileView = "pdf",
-): string {
+export function caseFileDocHref(caseId: string, docId: string, view: CaseFileView = "pdf"): string {
   const base = caseSectionHref(caseId, "case-file");
   const join = base.includes("?") ? "&" : "?";
   const href = `${base}${join}doc=${docId}`;
@@ -419,22 +410,20 @@ export const CASE_FILE_TREE: CaseFileNode[] = [
     label: "Complaint",
     href: CASE_FILE_PDF.complaint,
   },
-  ...REGISTRY.filter((section) => section.items.length > 0).map(
-    (section, index): CaseFileNode => {
-      const number = String(index + 2);
-      return {
-        id: section.id,
-        number,
-        label: section.label,
-        children: section.items.map((item, itemIndex) => ({
-          id: item.id,
-          number: `${number}.${itemIndex + 1}`,
-          label: item.label,
-          href: item.href,
-          page: item.page,
-          docket: item.docket,
-        })),
-      };
-    },
-  ),
+  ...REGISTRY.filter((section) => section.items.length > 0).map((section, index): CaseFileNode => {
+    const number = String(index + 2);
+    return {
+      id: section.id,
+      number,
+      label: section.label,
+      children: section.items.map((item, itemIndex) => ({
+        id: item.id,
+        number: `${number}.${itemIndex + 1}`,
+        label: item.label,
+        href: item.href,
+        page: item.page,
+        docket: item.docket,
+      })),
+    };
+  }),
 ];

@@ -10,10 +10,8 @@ import { cn } from "@/lib/utils";
 import { useCourtText } from "@/components/court/court-provider";
 import { FieldValue } from "@/components/employee/scrutiny/record-rows";
 import { Badge } from "@/components/ui/badge";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
+import { useTranslations } from "next-intl";
 
 /**
  * The change, where the eye already is: in the value. A correction shows the new value
@@ -45,6 +43,7 @@ export function ReturnedValue({
   item: ReturnedItem;
   withReason?: boolean;
 }) {
+  const t = useTranslations();
   const kept = item.answer === "kept";
   return (
     <div className="flex flex-col items-start gap-1">
@@ -58,7 +57,7 @@ export function ReturnedValue({
           {kept ? (
             /* On the info tint, so it takes its own solid as an edge (DS 6a). */
             <Badge variant="warning" className="border-warning">
-              Unchanged
+              {t("returnedValue_unchanged")}
             </Badge>
           ) : (
             /* No chip, but a screen reader still hears the answer. */
@@ -69,7 +68,7 @@ export function ReturnedValue({
                the line says there is none rather than inventing a "contested" claim. */
             <span className="flex items-center gap-1 text-caption font-medium text-warning-muted-foreground">
               <TriangleAlertIcon className="size-3.5 shrink-0" aria-hidden="true" />
-              No reason given
+              {t("returnedValue_noReasonGiven")}
             </span>
           ) : null}
         </div>
@@ -87,6 +86,7 @@ type Version = "now" | "before";
  * to, so it says so in words instead of offering a switch that reveals "Empty".
  */
 function CorrectedValue({ field, was }: { field: FlatField; was: string }) {
+  const t = useTranslations();
   const [version, setVersion] = React.useState<Version>("now");
   const showing = was ? version : "now";
 
@@ -101,15 +101,15 @@ function CorrectedValue({ field, was }: { field: FlatField; was: string }) {
             type="single"
             value={showing}
             onValueChange={(value) => value && setVersion(value as Version)}
-            aria-label={`Which version of ${field.label}`}
+            aria-label={t("returnedValue_whichVersionOfLabel", { label: field.label })}
           >
-            <SegmentedControlItem value="now">Now</SegmentedControlItem>
-            <SegmentedControlItem value="before">Before</SegmentedControlItem>
+            <SegmentedControlItem value="now">{t("returnedValue_now")}</SegmentedControlItem>
+            <SegmentedControlItem value="before">{t("returnedValue_before")}</SegmentedControlItem>
           </SegmentedControl>
         </div>
       ) : (
         <span className="text-caption font-medium text-muted-foreground">
-          Previously empty
+          {t("returnedValue_previouslyEmpty")}
         </span>
       )}
       {showing === "now" ? (
@@ -173,12 +173,13 @@ function MarkedValue({ field, was }: { field: FlatField; was: string }) {
  * so the run names itself.
  */
 function AddedMark({ part }: { part: DiffPart }) {
+  const t = useTranslations();
   const [, lead, words, trail] = /^(\s*)([\s\S]*?)(\s*)$/.exec(part.text) ?? [];
   return (
     <>
       {lead}
       <ins className="font-semibold text-foreground underline decoration-info decoration-2 underline-offset-4">
-        <span className="sr-only">Added: </span>
+        <span className="sr-only">{t("returnedValue_added")} </span>
         {words}
       </ins>
       {trail}
@@ -187,13 +188,8 @@ function AddedMark({ part }: { part: DiffPart }) {
 }
 
 /** Why the advocate kept the filed value, as they wrote it. Nothing for any other answer. */
-export function KeptReason({
-  item,
-  className,
-}: {
-  item: ReturnedItem;
-  className?: string;
-}) {
+export function KeptReason({ item, className }: { item: ReturnedItem; className?: string }) {
+  const t = useTranslations();
   if (item.answer !== "kept" || !item.reason) return null;
   /* Paper on the info tint (change band / returned row): a white well with a hairline so
      the advocate's words lift off the wash instead of sitting in it. Label above the
@@ -206,7 +202,7 @@ export function KeptReason({
       )}
     >
       <p className="text-body-compact font-medium text-muted-foreground">
-        Advocate’s reason
+        {t("returnedValue_advocatesReason")}
       </p>
       <p className="text-body-compact break-words">{item.reason}</p>
     </div>

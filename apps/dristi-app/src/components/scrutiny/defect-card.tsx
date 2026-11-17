@@ -44,6 +44,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { DateField } from "@/components/filing/date-field";
 import { PrefixInput, TextField } from "@/components/filing/inputs";
+import { useTranslations } from "next-intl";
 
 /* ───────────────────────────── Pacing ───────────────────────────── */
 
@@ -89,11 +90,12 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
  * nothing the label does not.
  */
 function WhyFlagged({ defect }: { defect: Defect }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-4">
       {defect.note.trim() ? (
         <div className="flex flex-col gap-1.5">
-          <Eyebrow>Scrutiny officer&apos;s comment</Eyebrow>
+          <Eyebrow>{t("defectCard_scrutinyOfficersComment")}</Eyebrow>
           <p className="rounded-md bg-surface-sunken p-3 text-body-compact text-foreground">
             {defect.note}
           </p>
@@ -171,6 +173,7 @@ export function DefectCard({
   onBlurCapture?: (event: React.FocusEvent<HTMLElement>) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   const resolved = defectState(defect, value) === "resolved";
   const isDoc = defect.target.kind === "doc";
 
@@ -271,7 +274,12 @@ export function DefectCard({
     const ids: number[] = [];
     const steps = 6;
     for (let i = 1; i <= steps; i += 1) {
-      ids.push(window.setTimeout(() => setUploadPct(Math.round((100 / steps) * i)), (UPLOAD_MS / steps) * i));
+      ids.push(
+        window.setTimeout(
+          () => setUploadPct(Math.round((100 / steps) * i)),
+          (UPLOAD_MS / steps) * i,
+        ),
+      );
     }
     ids.push(
       window.setTimeout(() => {
@@ -331,23 +339,27 @@ export function DefectCard({
         tabIndex={-1}
         className={cn(
           "overflow-hidden rounded-lg border border-hairline bg-card shadow-raised outline-none",
-          className
+          className,
         )}
         {...watch}
       >
         {/* Its own element (key), never the open card's reused: the fade preset sets a
             duration, every property then transitions, and the reused wrapper's padding
             slid 0→16px over half a second — the jagged close (owner, 2026-10-13). */}
-        <div key="settled" ref={body} role="status" className={cn("flex items-start gap-2.5 p-4", RESOLVE_IN_PLACE)}>
+        <div
+          key="settled"
+          ref={body}
+          role="status"
+          className={cn("flex items-start gap-2.5 p-4", RESOLVE_IN_PLACE)}
+        >
           <CircleCheckIcon className="mt-0.5 size-4 shrink-0 text-success-ink" aria-hidden />
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <p className="text-body-compact font-semibold text-foreground">
-              {defect.target.label}
-            </p>
+            <p className="text-body-compact font-semibold text-foreground">{defect.target.label}</p>
             {/* The line is held open before the record catches up (it can lag the save by a
                 beat), so the settled card does not grow a line after it has eased shut. */}
             <p className="min-h-5 text-body-compact text-success-ink">
-              {resolutionLabel(defect, value) || (isDoc ? "Document replaced" : "Corrected")}
+              {resolutionLabel(defect, value) ||
+                (isDoc ? t("defectCard_documentReplaced") : t("defectCard_corrected"))}
             </p>
             {/* What the officer will read with the kept value, so the advocate sees their
                 override as it was recorded. */}
@@ -359,9 +371,7 @@ export function DefectCard({
             {/* Which file now stands in for the flagged one, so the replacement is
                 visibly done (owner, 2026-10-12). */}
             {isDoc && file ? (
-              <p className="truncate text-body-compact text-muted-foreground">
-                {file.name}
-              </p>
+              <p className="truncate text-body-compact text-muted-foreground">{file.name}</p>
             ) : null}
           </div>
           {actions.undo ? (
@@ -373,7 +383,7 @@ export function DefectCard({
               className="-my-1 shrink-0 text-muted-foreground"
             >
               <Undo2Icon data-icon="inline-start" aria-hidden />
-              Undo
+              {t("defectCard_undo")}
             </Button>
           ) : null}
         </div>
@@ -387,142 +397,148 @@ export function DefectCard({
       data-defect-card
       className={cn(
         "overflow-hidden rounded-lg border border-hairline bg-card shadow-raised",
-        className
+        className,
       )}
       {...watch}
     >
       <div key="open" ref={body}>
-      <div className={cn("flex items-start gap-2.5 px-4 pt-4", RESOLVE_IN_PLACE)}>
-        <CircleDashedIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden />
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h3 className="text-body font-semibold text-foreground">{defect.target.label}</h3>
-          <p className="text-body-compact text-muted-foreground">
-            {defect.target.kind === "field" && defect.target.instanceLabel
-              ? defect.target.instanceLabel
-              : defect.target.sectionLabel}
-          </p>
+        <div className={cn("flex items-start gap-2.5 px-4 pt-4", RESOLVE_IN_PLACE)}>
+          <CircleDashedIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden />
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <h3 className="text-body font-semibold text-foreground">{defect.target.label}</h3>
+            <p className="text-body-compact text-muted-foreground">
+              {defect.target.kind === "field" && defect.target.instanceLabel
+                ? defect.target.instanceLabel
+                : defect.target.sectionLabel}
+            </p>
+          </div>
+          <span className="shrink-0 text-body-compact tabular-nums text-muted-foreground">
+            {t("defectCard_indexOfTotal", { index: String(index), total: String(total) })}
+          </span>
         </div>
-        <span className="shrink-0 text-body-compact tabular-nums text-muted-foreground">
-          {index} of {total}
-        </span>
-      </div>
 
-      <div className={cn("flex flex-col gap-3.5 p-4", RESOLVE_IN_PLACE)}>
-        <WhyFlagged defect={defect} />
+        <div className={cn("flex flex-col gap-3.5 p-4", RESOLVE_IN_PLACE)}>
+          <WhyFlagged defect={defect} />
 
-        <div data-own-value className="flex flex-col gap-3 border-t border-hairline pt-4">
-          {isDoc && uploading ? (
-            <div role="status" className="flex flex-col gap-2">
-              <p className="truncate text-body-compact text-muted-foreground">
-                Uploading <span className="font-medium text-foreground">{file?.name}</span>…
-              </p>
-              <Progress value={uploadPct} aria-label="Upload progress" />
-            </div>
-          ) : isDoc ? (
-            <>
-              {file ? (
-                <p className="text-body-compact text-muted-foreground">
-                  On file: <span className="text-foreground">{file.name}</span>
+          <div data-own-value className="flex flex-col gap-3 border-t border-hairline pt-4">
+            {isDoc && uploading ? (
+              <div role="status" className="flex flex-col gap-2">
+                <p className="truncate text-body-compact text-muted-foreground">
+                  {t.rich("defectCard_uploadingName", {
+                    name: file?.name ?? "",
+                    span: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+                  })}
                 </p>
-              ) : null}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={actions.replace}
-                data-defect-focus
-                className="w-fit"
-              >
-                <RefreshCwIcon data-icon="inline-start" aria-hidden />
-                Replace this document
-              </Button>
-              <p className="text-body-compact text-muted-foreground">
-                Replacing the scan does not re-read it — no other field changes.
-              </p>
-            </>
-          ) : (
-            <>
-              <OwnValue defect={defect} value={draft} onChange={setDraft} focusTarget />
-              {askingWhy ? (
-                <>
-                  <Field className="gap-2">
-                    <FieldLabel htmlFor={`why-${defect.n}`} className="text-body-compact">
-                      Why the filed value is right
-                    </FieldLabel>
-                    <Textarea
-                      id={`why-${defect.n}`}
-                      ref={reasonRef}
-                      value={reason}
-                      onChange={(event) => setReason(event.target.value)}
-                      rows={3}
-                    />
-                    <FieldDescription>
-                      The scrutiny officer reads this beside the value.
-                    </FieldDescription>
-                  </Field>
+                <Progress value={uploadPct} aria-label={t("defectCard_uploadProgress")} />
+              </div>
+            ) : isDoc ? (
+              <>
+                {file ? (
+                  <p className="text-body-compact text-muted-foreground">
+                    {t.rich("defectCard_onFileName", {
+                      name: file.name,
+                      span: (chunks) => <span className="text-foreground">{chunks}</span>,
+                    })}
+                  </p>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={actions.replace}
+                  data-defect-focus
+                  className="w-fit"
+                >
+                  <RefreshCwIcon data-icon="inline-start" aria-hidden />
+                  {t("defectCard_replaceThisDocument")}
+                </Button>
+                <p className="text-body-compact text-muted-foreground">
+                  {t("defectCard_replacingTheScanDoesNotRe")}
+                </p>
+              </>
+            ) : (
+              <>
+                <OwnValue defect={defect} value={draft} onChange={setDraft} focusTarget />
+                {askingWhy ? (
+                  <>
+                    <Field className="gap-2">
+                      <FieldLabel htmlFor={`why-${defect.n}`} className="text-body-compact">
+                        {t("defectCard_whyTheFiledValueIsRight")}
+                      </FieldLabel>
+                      <Textarea
+                        id={`why-${defect.n}`}
+                        ref={reasonRef}
+                        value={reason}
+                        onChange={(event) => setReason(event.target.value)}
+                        rows={3}
+                      />
+                      <FieldDescription>
+                        {t("defectCard_theScrutinyOfficerReadsThisBeside")}
+                      </FieldDescription>
+                    </Field>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          // Typed back to the filed value after a save: put it back first.
+                          if (dirty) actions.setValue(draft);
+                          actions.keep?.(reason.trim());
+                          setKeeping(false);
+                          finish();
+                        }}
+                        disabled={!reason.trim()}
+                        className="flex-1"
+                      >
+                        {t("defectCard_keepAsFiled")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {
+                          setKeeping(false);
+                          requestAnimationFrame(() => keepRef.current?.focus());
+                        }}
+                        className="shrink-0 text-muted-foreground"
+                      >
+                        {t("common_cancel")}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  /* The act's own full stop. Resolution is derived, so this button changes
+                  no data — it ends the act, which is what lets the card collapse to its
+                  one-line report. Without it the only way to finish was to click
+                  somewhere else, which nobody trusts as "saved". */
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
                       type="button"
                       onClick={() => {
-                        // Typed back to the filed value after a save: put it back first.
-                        if (dirty) actions.setValue(draft);
-                        actions.keep?.(reason.trim());
-                        setKeeping(false);
+                        actions.setValue(draft);
                         finish();
                       }}
-                      disabled={!reason.trim()}
+                      disabled={!dirty || atReturn}
                       className="flex-1"
                     >
-                      Keep as filed
+                      {t("defectCard_saveCorrection")}
                     </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        setKeeping(false);
-                        requestAnimationFrame(() => keepRef.current?.focus());
-                      }}
-                      className="shrink-0 text-muted-foreground"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </>
-              ) : (
-              /* The act's own full stop. Resolution is derived, so this button changes
-                  no data — it ends the act, which is what lets the card collapse to its
-                  one-line report. Without it the only way to finish was to click
-                  somewhere else, which nobody trusts as "saved". */
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  onClick={() => {
-                    actions.setValue(draft);
-                    finish();
-                  }}
-                  disabled={!dirty || atReturn}
-                  className="flex-1"
-                >
-                  Save correction
-                </Button>
-                {/* Never forced to edit a value the advocate believes is right. Only
+                    {/* Never forced to edit a value the advocate believes is right. Only
                     offered while the value is still the one scrutiny saw. */}
-                {!atReturn ? null : (
-                  <Button
-                    ref={keepRef}
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setKeeping(true)}
-                    className="shrink-0 text-muted-foreground"
-                  >
-                    Keep as filed
-                  </Button>
+                    {!atReturn ? null : (
+                      <Button
+                        ref={keepRef}
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setKeeping(true)}
+                        className="shrink-0 text-muted-foreground"
+                      >
+                        {t("defectCard_keepAsFiled")}
+                      </Button>
+                    )}
+                  </div>
                 )}
-              </div>
-              )}
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );

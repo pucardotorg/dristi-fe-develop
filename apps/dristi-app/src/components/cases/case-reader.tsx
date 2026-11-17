@@ -30,9 +30,7 @@ export function useCaseReader(): CaseReader {
 /** `next/link`, with a case link kept inside the reader's own area. */
 export function CaseLink({ href, ...props }: React.ComponentProps<typeof Link>) {
   const reader = useCaseReader();
-  return (
-    <Link {...props} href={typeof href === "string" ? rebaseCaseHref(href, reader) : href} />
-  );
+  return <Link {...props} href={typeof href === "string" ? rebaseCaseHref(href, reader) : href} />;
 }
 
 /** The router, with the same rule for the views that move by `replace`. */

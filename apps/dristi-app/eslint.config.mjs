@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import prettier from "eslint-config-prettier/flat";
 
 /*
  * Screens never touch data sources (AGENTS.md "Data"; .agents/policies/data-seam.md).
@@ -17,7 +18,8 @@ const appLib = (...paths) => paths.flatMap((path) => [`@/lib/${path}`, `.*/**/li
 
 const BACKEND_IMPORTS = {
   group: appLib("api", "api/*", "server", "server/*", "**/data/http"),
-  message: "Screens get data from the feature's repository or store, not the API. See AGENTS.md, Data.",
+  message:
+    "Screens get data from the feature's repository or store, not the API. See AGENTS.md, Data.",
 };
 const SANDBOX_IMPORTS = {
   group: appLib("**/fixtures", "**/data/indexeddb", "**/data/sandbox"),
@@ -33,7 +35,7 @@ const STORAGE_PROPERTIES = ["window", "globalThis", "self"].flatMap((object) =>
     object,
     property,
     message: STORAGE_MESSAGE,
-  }))
+  })),
 );
 
 /*
@@ -42,11 +44,18 @@ const STORAGE_PROPERTIES = ["window", "globalThis", "self"].flatMap((object) =>
  * useLocalStorageValue from @/hooks, which is outside lib/.
  */
 const LIB = ["src/lib/**/*.{ts,tsx}"];
-const LIB_SANDBOXES = ["src/lib/**/data/indexeddb.ts", "src/lib/**/data/sandbox.ts", "src/lib/**/*.test.ts"];
+const LIB_SANDBOXES = [
+  "src/lib/**/data/indexeddb.ts",
+  "src/lib/**/data/sandbox.ts",
+  "src/lib/**/*.test.ts",
+];
 const LIB_STORAGE_MESSAGE =
   "In lib/, keep data in the feature's sandbox (lib/<feature>/data/indexeddb.ts; start one with npm run new:data) and reach it through getRepository(). UI preferences use useLocalStorageValue.";
 const LIB_STORAGE_GLOBALS = STORAGE_APIS.map((name) => ({ name, message: LIB_STORAGE_MESSAGE }));
-const LIB_STORAGE_PROPERTIES = STORAGE_PROPERTIES.map((rule) => ({ ...rule, message: LIB_STORAGE_MESSAGE }));
+const LIB_STORAGE_PROPERTIES = STORAGE_PROPERTIES.map((rule) => ({
+  ...rule,
+  message: LIB_STORAGE_MESSAGE,
+}));
 const LIB_IDB = { paths: [{ name: "idb", message: LIB_STORAGE_MESSAGE }] };
 // lib/ modules that kept data or UI state in browser storage before the rule existed: demo
 // stores and UI preferences. Each comes off when its feature moves behind a repository
@@ -103,6 +112,8 @@ const STILL_USE_STORAGE = [
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Last, so it switches off the style rules above and Prettier alone formats.
+  prettier,
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "public/vendor/**"]),
   {
     files: SCREENS,

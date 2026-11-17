@@ -25,15 +25,15 @@ The pills are the four citizen-side categories of the Pending Tasks PRD (attribu
 "Category") and the Coda task catalogue, in their order and words. `kind` still decides
 the verb and the flow; `categoryOf(task)` folds it into a category.
 
-| Kind | Category | What it is |
-| --- | --- | --- |
-| `pay` | Pay | A fee: process fee, court fee, copying fee |
-| `sign` | Sign | A vakalatnama, affidavit, application or memo needing the advocate's e-sign |
-| `file` | File/Submit | A document or application due with the court |
-| `returned` | File/Submit | A filing sent back for compliance — fix the defects and re-file (the catalogue files "Correct defects" here) |
-| `draft` | File/Submit | A filing or application someone started — counted as the filing it will become |
-| `review` | Others | A decision addressed to this advocate — a request for their removal from the case |
-| `hearing` | Others | Court-initiated, anchored to a posting: the plea, a deposition, the sworn statement, arguments — done in court, marked done by hand |
+| Kind       | Category    | What it is                                                                                                                          |
+| ---------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `pay`      | Pay         | A fee: process fee, court fee, copying fee                                                                                          |
+| `sign`     | Sign        | A vakalatnama, affidavit, application or memo needing the advocate's e-sign                                                         |
+| `file`     | File/Submit | A document or application due with the court                                                                                        |
+| `returned` | File/Submit | A filing sent back for compliance — fix the defects and re-file (the catalogue files "Correct defects" here)                        |
+| `draft`    | File/Submit | A filing or application someone started — counted as the filing it will become                                                      |
+| `review`   | Others      | A decision addressed to this advocate — a request for their removal from the case                                                   |
+| `hearing`  | Others      | Court-initiated, anchored to a posting: the plea, a deposition, the sworn statement, arguments — done in court, marked done by hand |
 
 The category follows **the act still needed**, never how far along the task is: a
 filing left in draft counts under **File/Submit** from the start, and stays there once
@@ -59,13 +59,13 @@ remembers the state it left).
 
 ## Seams (swap these; keep the signatures)
 
-| Seam | Today | Replace with |
-| --- | --- | --- |
+| Seam                                                        | Today                                                                                                                                                                                                                                  | Replace with                                                                                                                                                          |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `data/repository.ts` → `data/indexeddb.ts` / `data/http.ts` | The sandbox: IndexedDB (`dristi-tasks`: `people`, `cases`, `tasks`, `files`) + `sessionStorage` for the current person; it seeds itself from `sandbox.ts` (fresh on each page load, again when the seed stamp in `seed-plan.ts` moves) | Methods added to `data/http.ts` as the tasks/case services arrive. `getRepository()` in `data/index.ts` picks one by `NEXT_PUBLIC_DATA_SOURCE` (`lib/data/source.ts`) |
-| `store.tsx` — `useTasks()` | Loads through the repository, `dispatch(taskId, transition)` applies a pure transition and writes it | The same provider over the HTTP repository; the session replaces `setUser` |
-| `sandbox.ts` | Five advocates, 19 cases, ~38 tasks, dates relative to today | Nothing — delete once the services answer |
-| Pay / sign / court (`components/tasks/act/*`) | Sandbox outcome controls: gateway result, any 6-digit OTP, "Court: accept / return with defects" | Payment gateway, eSign provider, registry scrutiny events driving the same transitions |
-| Cross-tab sync | `BroadcastChannel("dristi-tasks")` | Server push / polling |
+| `store.tsx` — `useTasks()`                                  | Loads through the repository, `dispatch(taskId, transition)` applies a pure transition and writes it                                                                                                                                   | The same provider over the HTTP repository; the session replaces `setUser`                                                                                            |
+| `sandbox.ts`                                                | Five advocates, 19 cases, ~38 tasks, dates relative to today                                                                                                                                                                           | Nothing — delete once the services answer                                                                                                                             |
+| Pay / sign / court (`components/tasks/act/*`)               | Sandbox outcome controls: gateway result, any 6-digit OTP, "Court: accept / return with defects"                                                                                                                                       | Payment gateway, eSign provider, registry scrutiny events driving the same transitions                                                                                |
+| Cross-tab sync                                              | `BroadcastChannel("dristi-tasks")`                                                                                                                                                                                                     | Server push / polling                                                                                                                                                 |
 
 ## State machine (`transitions.ts`)
 
@@ -130,19 +130,19 @@ backend seam, not invented behaviour.
 The owner's WIP "Attributes of a Pending Task" (DRISTI 1.0), mapped to where each
 attribute lives here:
 
-| 1.0 attribute | Here |
-| --- | --- |
-| Task Name | `title` (verb-first, fixed vocabulary) |
-| Due Date | `dueAt` + `dueKind` + `deadlineNote` (provenance). 1.0 windows honoured in the seed: scrutiny cure 3 days · process fees ~1 day · post-e-sign payments immediate · application-response SLAs (bail 2 · rescheduling 2 · settlement / transfer / withdrawal / production / extension / generic 4 · delay condonation 0) |
-| Creation Trigger | `why` (`event` + `at`) |
-| Closure Trigger | event transitions (`transitions.ts`) close it; `closesWhen` declares the rule — auto-closure included ("Closes on payment, or when the hearing passes"; "Closes when the court decides the application"; "Closes when this or any other vakalatnama fee on the case is paid") — and `completion.how` records how it actually closed |
-| Archive Logic | `archive` / `unarchive` (manual, restorable) today; auto-archive rules are a backend seam — open |
-| Users | `Case.signatories` / `Case.advocates` + `verbFor` (per-viewer verb) |
-| Category | `categoryOf(task)` — Pay · Sign · File/Submit · Others |
-| Associated Workflow | verb → surface: Pay / File → the act modal; Sign / Re-file / Continue → the flow pages |
-| Status | ours is richer: open · draft · ready · awaiting-court · payment-confirming · done · expired · obsolete · archived. **Overdue stays derived from the date, never a stored status — it cannot go stale** |
-| Case | `caseId` |
-| Visibility | `visibility` (`"case"` / `"actors"`); courtroom staff out of scope |
+| 1.0 attribute       | Here                                                                                                                                                                                                                                                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Task Name           | `title` (verb-first, fixed vocabulary)                                                                                                                                                                                                                                                                                              |
+| Due Date            | `dueAt` + `dueKind` + `deadlineNote` (provenance). 1.0 windows honoured in the seed: scrutiny cure 3 days · process fees ~1 day · post-e-sign payments immediate · application-response SLAs (bail 2 · rescheduling 2 · settlement / transfer / withdrawal / production / extension / generic 4 · delay condonation 0)              |
+| Creation Trigger    | `why` (`event` + `at`)                                                                                                                                                                                                                                                                                                              |
+| Closure Trigger     | event transitions (`transitions.ts`) close it; `closesWhen` declares the rule — auto-closure included ("Closes on payment, or when the hearing passes"; "Closes when the court decides the application"; "Closes when this or any other vakalatnama fee on the case is paid") — and `completion.how` records how it actually closed |
+| Archive Logic       | `archive` / `unarchive` (manual, restorable) today; auto-archive rules are a backend seam — open                                                                                                                                                                                                                                    |
+| Users               | `Case.signatories` / `Case.advocates` + `verbFor` (per-viewer verb)                                                                                                                                                                                                                                                                 |
+| Category            | `categoryOf(task)` — Pay · Sign · File/Submit · Others                                                                                                                                                                                                                                                                              |
+| Associated Workflow | verb → surface: Pay / File → the act modal; Sign / Re-file / Continue → the flow pages                                                                                                                                                                                                                                              |
+| Status              | ours is richer: open · draft · ready · awaiting-court · payment-confirming · done · expired · obsolete · archived. **Overdue stays derived from the date, never a stored status — it cannot go stale**                                                                                                                              |
+| Case                | `caseId`                                                                                                                                                                                                                                                                                                                            |
+| Visibility          | `visibility` (`"case"` / `"actors"`); courtroom staff out of scope                                                                                                                                                                                                                                                                  |
 
 ## Urgency (`urgency.ts`)
 
@@ -159,27 +159,27 @@ narrows and sorts; `summaryOf` feeds the header; `courtsOf` the Court filter.
 
 **One count contract.** Every count follows the rows the list is showing, except the four
 tab counts, which have to be cross-view to be any use. `categoryCounts(world, filters)`
-applies the whole filter set *except* the kind, so a pill reading 5 always yields five
+applies the whole filter set _except_ the kind, so a pill reading 5 always yields five
 rows; `bandByDue(rows, now)` cuts the sorted list into Overdue / Due today / This week /
 Later / No date set, and a band's number is the rows under it. `readsAsOverdue` is the one
-overdue rule — past its date *and* still binding (`isBinding`) — shared by the Due cell,
+overdue rule — past its date _and_ still binding (`isBinding`) — shared by the Due cell,
 the Overdue filter and the Overdue band, so they cannot disagree.
 
 Banding outranks one part of `compareUrgency`: a task blocking a hearing later in the week
-reads under **This week**, below a deadline due today, because the band answers *when it
-bites*. Inside a band the comparator's order stands.
+reads under **This week**, below a deadline due today, because the band answers _when it
+bites_. Inside a band the comparator's order stands.
 
 ## Vocabulary (`format.ts`, brief D13 v2.1 — fixed)
 
 Titles are verb-first ("Pay the process fee for the summons", "Fix 2 defects and re-file
 the complaint", "Be present for the plea", "Continue the draft complaint"). There is no
 Status column — the verb carries the action. Due cells are one format everywhere: a
-relative primary from today — *{n} days overdue* (ink) · *Due today* · *Due in {n}
-days* · *Before hearing in {n} days* · *No date* — over the absolute date ("18 Aug",
+relative primary from today — _{n} days overdue_ (ink) · _Due today_ · _Due in {n}
+days_ · _Before hearing in {n} days_ · _No date_ — over the absolute date ("18 Aug",
 muted, tabular). Settled tasks recall the absolute date only, no ink. Waiting rows carry
-one *Waiting on* phrase: *{main advocate} — signature/payment/filing* · *The court —
-scrutiny* · *Payment confirming*. Completed and Archived rows carry the outcome: *Done
-{date}* · *Expired — {why}* · *No longer needed — {why}* · *Archived {date}*. A row's
+one _Waiting on_ phrase: _{main advocate} — signature/payment/filing_ · _The court —
+scrutiny_ · _Payment confirming_. Completed and Archived rows carry the outcome: _Done
+{date}_ · _Expired — {why}_ · _No longer needed — {why}_ · _Archived {date}_. A row's
 second line is the status note ("Payment failed — try again", "Prepared by S. Prakash")
-or *Draft · X* (X is "you" for the draft's holder). The page header is today's date —
+or _Draft · X_ (X is "you" for the draft's holder). The page header is today's date —
 the anchor every relative phrase counts from.

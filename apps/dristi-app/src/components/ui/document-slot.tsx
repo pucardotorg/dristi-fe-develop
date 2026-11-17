@@ -1,35 +1,33 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { FileTextIcon, LoaderCircleIcon } from "lucide-react"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { FileTextIcon, LoaderCircleIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
-const documentSlotVariants = cva(
-  "flex w-full items-start gap-4 rounded-lg border p-4",
-  {
-    variants: {
-      status: {
-        filled: "border-transparent bg-surface-sunken",
-        processing: "border-transparent bg-surface-sunken",
-        empty: "border-dashed border-input bg-transparent",
-        "empty-optional": "border-dashed border-input bg-transparent",
-        "filled-poor": "border-transparent bg-surface-sunken",
-      },
-      media: {
-        thumbnail: "",
-        icon: "",
-      },
+const documentSlotVariants = cva("flex w-full items-start gap-4 rounded-lg border p-4", {
+  variants: {
+    status: {
+      filled: "border-transparent bg-surface-sunken",
+      processing: "border-transparent bg-surface-sunken",
+      empty: "border-dashed border-input bg-transparent",
+      "empty-optional": "border-dashed border-input bg-transparent",
+      "filled-poor": "border-transparent bg-surface-sunken",
     },
-    defaultVariants: {
-      status: "empty",
-      media: "icon",
+    media: {
+      thumbnail: "",
+      icon: "",
     },
-  }
-)
+  },
+  defaultVariants: {
+    status: "empty",
+    media: "icon",
+  },
+});
 
 function DocumentSlot({
   className,
@@ -48,33 +46,33 @@ function DocumentSlot({
   ...props
 }: React.ComponentProps<"div"> &
   VariantProps<typeof documentSlotVariants> & {
-    label: React.ReactNode
-    required?: boolean
-    optional?: boolean
-    filename?: string
-    meta?: string
-    quality?: "good" | "poor"
-    thumbnail?: React.ReactNode
-    onChooseFile?: () => void
+    label: React.ReactNode;
+    required?: boolean;
+    optional?: boolean;
+    filename?: string;
+    meta?: string;
+    quality?: "good" | "poor";
+    thumbnail?: React.ReactNode;
+    onChooseFile?: () => void;
     /** Locks the slot while an upload or scan is in flight. */
-    disabled?: boolean
+    disabled?: boolean;
     /**
      * Overrides the slot's built-in strings. A slot that names the document it wants
      * ("Add cheque") reads better than a generic "Choose file", and the scan verdicts
      * need to speak the caller's language.
      */
     copy?: {
-      optional?: string
-      noFile?: string
-      goodScan?: string
-      poorScan?: string
-      chooseFile?: string
-    }
+      optional?: string;
+      noFile?: string;
+      goodScan?: string;
+      poorScan?: string;
+      chooseFile?: string;
+    };
   }) {
-  const isEmpty = status === "empty" || status === "empty-optional"
-  const showOptional = optional || status === "empty-optional"
-  const qualityTone =
-    quality === "poor" || status === "filled-poor" ? "poor" : quality
+  const t = useTranslations();
+  const isEmpty = status === "empty" || status === "empty-optional";
+  const showOptional = optional || status === "empty-optional";
+  const qualityTone = quality === "poor" || status === "filled-poor" ? "poor" : quality;
 
   return (
     <div
@@ -89,7 +87,7 @@ function DocumentSlot({
         data-slot="document-slot-media"
         className={cn(
           "flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground",
-          media === "thumbnail" ? "size-16" : "size-10"
+          media === "thumbnail" ? "size-16" : "size-10",
         )}
       >
         {status === "processing" ? (
@@ -110,7 +108,7 @@ function DocumentSlot({
             </span>
           ) : null}
           {showOptional ? (
-            <Badge variant="secondary">{copy?.optional ?? "Optional"}</Badge>
+            <Badge variant="secondary">{copy?.optional ?? t("documentSlot_optional")}</Badge>
           ) : null}
         </div>
         {(filename || meta) && !isEmpty ? (
@@ -120,17 +118,17 @@ function DocumentSlot({
         ) : null}
         {isEmpty ? (
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {copy?.noFile ?? "No file chosen yet"}
+            {copy?.noFile ?? t("documentSlot_noFileChosenYet")}
           </p>
         ) : null}
         {qualityTone === "good" ? (
           <Badge variant="success" className="mt-2">
-            {copy?.goodScan ?? "Good scan"}
+            {copy?.goodScan ?? t("documentSlot_goodScan")}
           </Badge>
         ) : null}
         {qualityTone === "poor" ? (
           <Badge variant="warning" className="mt-2">
-            {copy?.poorScan ?? "Poor scan"}
+            {copy?.poorScan ?? t("documentSlot_poorScan")}
           </Badge>
         ) : null}
       </div>
@@ -143,11 +141,11 @@ function DocumentSlot({
           disabled={disabled}
           onClick={onChooseFile}
         >
-          {copy?.chooseFile ?? "Choose file"}
+          {copy?.chooseFile ?? t("documentSlot_chooseFile")}
         </Button>
       ) : null}
     </div>
-  )
+  );
 }
 
-export { DocumentSlot, documentSlotVariants }
+export { DocumentSlot, documentSlotVariants };

@@ -45,24 +45,10 @@ import {
   DescriptionRow,
   DescriptionTerm,
 } from "@/components/ui/description-list";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -93,6 +79,7 @@ import {
 } from "@/lib/cases/party-actions";
 import { Identifier } from "@/components/chrome/identifier";
 import { OutcomeHeader } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 type AdvocateStep = 1 | 2 | 3;
 
@@ -111,8 +98,7 @@ const STEPS = [
   {
     step: 3,
     title: "Review",
-    description:
-      "The advocates can act on this case as soon as the vakalatnama is on record.",
+    description: "The advocates can act on this case as soon as the vakalatnama is on record.",
   },
 ] as const;
 
@@ -135,6 +121,7 @@ export function AddAdvocateDialog({
   /** The viewer's own clients only; never the opposing side. */
   litigants: PartyOption[];
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const [step, setStep] = useState<AdvocateStep>(1);
   const [phoneInput, setPhoneInput] = useState("");
@@ -157,19 +144,18 @@ export function AddAdvocateDialog({
     () =>
       Boolean(
         phoneInput ||
-          chips.length > 0 ||
-          pendingInvite ||
-          partyIds.length > 0 ||
-          vakalatFile ||
-          vkSavedId
+        chips.length > 0 ||
+        pendingInvite ||
+        partyIds.length > 0 ||
+        vakalatFile ||
+        vkSavedId,
       ),
-    [phoneInput, chips, pendingInvite, partyIds, vakalatFile, vkSavedId]
+    [phoneInput, chips, pendingInvite, partyIds, vakalatFile, vkSavedId],
   );
 
   const inputValid = /^\d{10}$/.test(phoneInput);
   const alreadyStacked = chips.some((chip) => chip.phone === phoneInput);
-  const lookup =
-    inputValid && !alreadyStacked ? (ADVOCATE_LOOKUP[phoneInput] ?? null) : null;
+  const lookup = inputValid && !alreadyStacked ? (ADVOCATE_LOOKUP[phoneInput] ?? null) : null;
 
   function resetForm() {
     setStep(1);
@@ -198,7 +184,7 @@ export function AddAdvocateDialog({
 
   function stack(chip: SelectedAdvocate) {
     setChips((existing) =>
-      existing.some((c) => c.phone === chip.phone) ? existing : [...existing, chip]
+      existing.some((c) => c.phone === chip.phone) ? existing : [...existing, chip],
     );
     setErrors((c) => ({ ...c, advocates: undefined }));
   }
@@ -218,7 +204,7 @@ export function AddAdvocateDialog({
   function commitInvite() {
     if (!pendingInvite) return;
     if (!inviteName.trim()) {
-      setErrors((c) => ({ ...c, advocates: "Enter the advocate's name." }));
+      setErrors((c) => ({ ...c, advocates: t("addAdvocateDialog_enterTheAdvocatesName") }));
       return;
     }
     stack({ phone: pendingInvite, name: inviteName.trim() });
@@ -233,7 +219,7 @@ export function AddAdvocateDialog({
       // A half-finished invite with a name counts; without one it blocks.
       if (pendingInvite) {
         if (!inviteName.trim()) {
-          setErrors((c) => ({ ...c, advocates: "Enter the advocate's name." }));
+          setErrors((c) => ({ ...c, advocates: t("addAdvocateDialog_enterTheAdvocatesName") }));
           return;
         }
         commitInvite();
@@ -241,10 +227,10 @@ export function AddAdvocateDialog({
       const stacked = pendingInvite && inviteName.trim() ? chips.length + 1 : chips.length;
       const next: Errors = {};
       if (stacked === 0) {
-        next.advocates = "Add at least one advocate by their mobile number.";
+        next.advocates = t("addAdvocateDialog_addAtLeastOneAdvocateBy");
       }
       if (partyIds.length === 0) {
-        next.parties = "Pick at least one party for the advocates to represent.";
+        next.parties = t("addAdvocateDialog_pickAtLeastOnePartyFor");
       }
       setErrors(next);
       if (next.advocates || next.parties) return;
@@ -257,7 +243,7 @@ export function AddAdvocateDialog({
       if (!attached) {
         setErrors((c) => ({
           ...c,
-          vakalatnama: "Attach a vakalatnama to continue.",
+          vakalatnama: t("addAdvocateDialog_attachAVakalatnamaToContinue"),
         }));
         return;
       }
@@ -268,8 +254,7 @@ export function AddAdvocateDialog({
   const chosenParties = litigants.filter((party) => partyIds.includes(party.id));
   const advocateNames = chips.map((chip) => chip.name);
   const savedVakalatnama = VAKALATNAMAS.find((item) => item.id === vkSavedId);
-  const vakalatnamaName =
-    vkTab === "upload" ? vakalatFile?.name : savedVakalatnama?.name;
+  const vakalatnamaName = vkTab === "upload" ? vakalatFile?.name : savedVakalatnama?.name;
 
   return (
     <>
@@ -289,17 +274,21 @@ export function AddAdvocateDialog({
               <OutcomeHeader
                 titleFrom="dialog"
                 focusTitle
-                title={chips.length === 1 ? "Advocate added" : "Advocates added"}
+                title={
+                  chips.length === 1
+                    ? t("addAdvocateDialog_advocateAdded")
+                    : t("addAdvocateDialog_advocatesAdded")
+                }
                 body={
                   <>
                     <NamesWithOthers
                       names={advocateNames}
-                      othersLabel="Other advocates"
-                    />{" "}
-                    can now act on this case for{" "}
+                      othersLabel={t("addAdvocateDialog_otherAdvocates")}
+                    />
+                    {t("addAdvocateDialog_canNowActOnThisCase")}
                     <NamesWithOthers
                       names={chosenParties.map((p) => p.name)}
-                      othersLabel="Other parties"
+                      othersLabel={t("addAdvocateDialog_otherParties")}
                     />
                     .
                   </>
@@ -307,451 +296,455 @@ export function AddAdvocateDialog({
               />
               <footer className="flex shrink-0 justify-end border-t border-hairline bg-surface-sunken px-6 py-4">
                 <Button type="button" onClick={closeClean}>
-                  Done
+                  {t("addAdvocateDialog_done")}
                 </Button>
               </footer>
             </>
           ) : (
             <>
-          {/* The stepper gets its own full-width band with symmetric
+              {/* The stepper gets its own full-width band with symmetric
               padding and a hairline under it: inside the header, the
               close button's pr-14 pushed it off the dialog's center and
               it sat crammed against the step heading (owner, Sept 1). */}
-          <div className="shrink-0 border-b border-hairline px-6 pt-6 pb-4">
-            <FlowStepper
-              steps={STEPS}
-              current={step}
-              label="Add advocates progress"
-            />
-          </div>
-          <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
-            <DialogTitle className="text-title-s font-semibold text-balance">
-              {current.title}
-            </DialogTitle>
-            <DialogDescription className="text-pretty">
-              {/* Step 2's description carries the deed's own facts, so the
+              <div className="shrink-0 border-b border-hairline px-6 pt-6 pb-4">
+                <FlowStepper
+                  steps={STEPS}
+                  current={step}
+                  label={t("addAdvocateDialog_addAdvocatesProgress")}
+                />
+              </div>
+              <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-5 pr-14 text-left">
+                <DialogTitle className="text-title-s font-semibold text-balance">
+                  {current.title}
+                </DialogTitle>
+                <DialogDescription className="text-pretty">
+                  {/* Step 2's description carries the deed's own facts, so the
                   body below needs no second "Vakalatnama" heading over an
                   executed-by line (the heading appeared three deep:
                   stepper, title, section - owner, Sept 1). */}
-              {step === 2 ? (
-                <>
-                  Attach the vakalatnama executed by{" "}
-                  <NamesWithOthers
-                    names={chosenParties.map((p) => p.name)}
-                    othersLabel="Other parties"
-                  />{" "}
-                  in favour of{" "}
-                  <NamesWithOthers
-                    names={advocateNames}
-                    othersLabel="Other advocates"
-                  />
-                  .
-                </>
-              ) : (
-                current.description
-              )}
-            </DialogDescription>
-          </DialogHeader>
+                  {step === 2 ? (
+                    <>
+                      {t("addAdvocateDialog_attachTheVakalatnamaExecutedBy")}
+                      <NamesWithOthers
+                        names={chosenParties.map((p) => p.name)}
+                        othersLabel={t("addAdvocateDialog_otherParties")}
+                      />
+                      {t("addAdvocateDialog_inFavourOf")}
+                      <NamesWithOthers
+                        names={advocateNames}
+                        othersLabel={t("addAdvocateDialog_otherAdvocates")}
+                      />
+                      .
+                    </>
+                  ) : (
+                    current.description
+                  )}
+                </DialogDescription>
+              </DialogHeader>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-            <form
-              id="add-advocates-form"
-              noValidate
-              onSubmit={handleSubmit}
-              className="flex flex-col gap-6"
-            >
-              {step === 1 ? (
-                <>
-                  <Field data-invalid={Boolean(errors.advocates)}>
-                    <FieldLabel
-                      className="block w-full text-body font-semibold leading-snug"
-                      htmlFor="advocate-phone"
-                    >
-                      Advocates
-                    </FieldLabel>
-                    <FieldDescription>
-                      Everyone added here goes on the same vakalatnama.
-                    </FieldDescription>
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+                <form
+                  id="add-advocates-form"
+                  noValidate
+                  onSubmit={handleSubmit}
+                  className="flex flex-col gap-6"
+                >
+                  {step === 1 ? (
+                    <>
+                      <Field data-invalid={Boolean(errors.advocates)}>
+                        <FieldLabel
+                          className="block w-full text-body font-semibold leading-snug"
+                          htmlFor="advocate-phone"
+                        >
+                          {t("addAdvocateDialog_advocates")}
+                        </FieldLabel>
+                        <FieldDescription>
+                          {t("addAdvocateDialog_everyoneAddedHereGoesOnThe")}
+                        </FieldDescription>
 
-                    {chips.length ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        {chips.map((chip) => (
-                          <span
-                            key={chip.phone}
-                            className="inline-flex items-center gap-1.5 rounded-md bg-muted py-1 pr-1 pl-2.5 text-caption text-foreground"
-                          >
-                            <span className="flex flex-col">
-                              <span className="font-medium">{chip.name}</span>
-                              <span className="text-muted-foreground tabular-nums">
-                                {formatAdvocatePhone(chip.phone)}
-                              </span>
-                            </span>
-                            {/* Centered on the chip, not self-start: with
+                        {chips.length ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {chips.map((chip) => (
+                              <span
+                                key={chip.phone}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-muted py-1 pr-1 pl-2.5 text-caption text-foreground"
+                              >
+                                <span className="flex flex-col">
+                                  <span className="font-medium">{chip.name}</span>
+                                  <span className="text-muted-foreground tabular-nums">
+                                    {formatAdvocatePhone(chip.phone)}
+                                  </span>
+                                </span>
+                                {/* Centered on the chip, not self-start: with
                                 two lines of text a top-pinned cross reads
                                 misaligned (owner's call, Sept 1). */}
-                            <button
-                              type="button"
-                              aria-label={`Remove ${chip.name}`}
-                              className="flex size-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
-                              onClick={() =>
-                                setChips((existing) =>
-                                  existing.filter((c) => c.phone !== chip.phone)
-                                )
-                              }
-                            >
-                              <XIcon className="size-3.5" aria-hidden />
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
+                                <button
+                                  type="button"
+                                  aria-label={t("addAdvocateDialog_removeName", {
+                                    name: chip.name,
+                                  })}
+                                  className="flex size-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
+                                  onClick={() =>
+                                    setChips((existing) =>
+                                      existing.filter((c) => c.phone !== chip.phone),
+                                    )
+                                  }
+                                >
+                                  <XIcon className="size-3.5" aria-hidden />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
 
-                    {pendingInvite ? (
-                      /* The picked number keeps its own box, read-only,
+                        {pendingInvite ? (
+                          /* The picked number keeps its own box, read-only,
                          and the name gets its own box beside it. One
                          combined field ran the two together with nothing
                          separating them (owner, Sept 1). */
-                      <div className="flex items-center gap-2">
-                        <Input
-                          readOnly
-                          tabIndex={-1}
-                          aria-label="Mobile number"
-                          className="w-40 shrink-0 text-muted-foreground tabular-nums"
-                          value={`+91 ${formatAdvocatePhone(pendingInvite)}`}
-                        />
-                        <Input
-                          id="advocate-phone"
-                          autoFocus
-                          autoComplete="off"
-                          className="min-w-0 flex-1"
-                          placeholder="Advocate's name"
-                          aria-label={`Name for +91 ${formatAdvocatePhone(pendingInvite)}`}
-                          value={inviteName}
-                          onChange={(event) => {
-                            setInviteName(event.target.value);
-                            setErrors((c) => ({
-                              ...c,
-                              advocates: undefined,
-                            }));
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              event.preventDefault();
-                              commitInvite();
-                            }
-                          }}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={commitInvite}
-                        >
-                          Add
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-muted-foreground"
-                          aria-label="Cancel this invite"
-                          onClick={() => {
-                            setPendingInvite(null);
-                            setInviteName("");
-                            setErrors((c) => ({ ...c, advocates: undefined }));
-                          }}
-                        >
-                          <XIcon aria-hidden />
-                        </Button>
-                      </div>
-                    ) : (
-                    <div className="relative">
-                      <InputGroup>
-                        <InputGroupAddon>
-                          <InputGroupText>+91</InputGroupText>
-                        </InputGroupAddon>
-                        <InputGroupInput
-                          id="advocate-phone"
-                          type="tel"
-                          inputMode="numeric"
-                          autoComplete="off"
-                          maxLength={10}
-                          placeholder="10-digit mobile number"
-                          value={phoneInput}
-                          onFocus={() => setFocused(true)}
-                          onBlur={() => setFocused(false)}
-                          onChange={(event) => {
-                            setPhoneInput(
-                              event.target.value.replace(/\D/g, "").slice(0, 10)
-                            );
-                            setErrors((c) => ({ ...c, advocates: undefined }));
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              event.preventDefault();
-                              takeCandidate();
-                            }
-                          }}
-                        />
-                      </InputGroup>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              readOnly
+                              tabIndex={-1}
+                              aria-label={t("addAdvocateDialog_mobileNumber")}
+                              className="w-40 shrink-0 text-muted-foreground tabular-nums"
+                              value={`+91 ${formatAdvocatePhone(pendingInvite)}`}
+                            />
+                            <Input
+                              id="advocate-phone"
+                              autoFocus
+                              autoComplete="off"
+                              className="min-w-0 flex-1"
+                              placeholder={t("addAdvocateDialog_advocatesName")}
+                              aria-label={t("addAdvocateDialog_nameFor91FormatAdvocatePhone", {
+                                formatAdvocatePhone: formatAdvocatePhone(pendingInvite),
+                              })}
+                              value={inviteName}
+                              onChange={(event) => {
+                                setInviteName(event.target.value);
+                                setErrors((c) => ({
+                                  ...c,
+                                  advocates: undefined,
+                                }));
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                  event.preventDefault();
+                                  commitInvite();
+                                }
+                              }}
+                            />
+                            <Button type="button" variant="outline" onClick={commitInvite}>
+                              {t("addAdvocateDialog_add")}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground"
+                              aria-label={t("addAdvocateDialog_cancelThisInvite")}
+                              onClick={() => {
+                                setPendingInvite(null);
+                                setInviteName("");
+                                setErrors((c) => ({ ...c, advocates: undefined }));
+                              }}
+                            >
+                              <XIcon aria-hidden />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="relative">
+                            <InputGroup>
+                              <InputGroupAddon>
+                                <InputGroupText>+91</InputGroupText>
+                              </InputGroupAddon>
+                              <InputGroupInput
+                                id="advocate-phone"
+                                type="tel"
+                                inputMode="numeric"
+                                autoComplete="off"
+                                maxLength={10}
+                                placeholder="10-digit mobile number"
+                                value={phoneInput}
+                                onFocus={() => setFocused(true)}
+                                onBlur={() => setFocused(false)}
+                                onChange={(event) => {
+                                  setPhoneInput(event.target.value.replace(/\D/g, "").slice(0, 10));
+                                  setErrors((c) => ({ ...c, advocates: undefined }));
+                                }}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter") {
+                                    event.preventDefault();
+                                    takeCandidate();
+                                  }
+                                }}
+                              />
+                            </InputGroup>
 
-                      {/* The tenth digit resolves against the registry; the
+                            {/* The tenth digit resolves against the registry; the
                           dropdown anchors to the input, share-dialog style.
                           A registered advocate chips at once; an unknown
                           number opens the one-time name ask below. */}
-                      {inputValid && !alreadyStacked && focused ? (
-                        <div className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-overlay">
-                          <button
-                            type="button"
-                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted"
-                            onMouseDown={(event) => {
-                              event.preventDefault();
-                              takeCandidate();
-                            }}
-                          >
-                            <Avatar className="size-8 shrink-0">
-                              <AvatarFallback className="text-caption font-medium">
-                                {lookup ? initials(lookup.name) : "#"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="flex min-w-0 flex-1 flex-col">
-                              <span className="truncate text-body-compact font-medium">
-                                {lookup
-                                  ? lookup.name
-                                  : `+91 ${formatAdvocatePhone(phoneInput)}`}
-                              </span>
-                              <span className="truncate text-caption text-muted-foreground">
-                                {lookup ? (
-                                  <>
-                                    <span className="tabular-nums">
-                                      {formatAdvocatePhone(phoneInput)}
+                            {inputValid && !alreadyStacked && focused ? (
+                              <div className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-overlay">
+                                <button
+                                  type="button"
+                                  className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted"
+                                  onMouseDown={(event) => {
+                                    event.preventDefault();
+                                    takeCandidate();
+                                  }}
+                                >
+                                  <Avatar className="size-8 shrink-0">
+                                    <AvatarFallback className="text-caption font-medium">
+                                      {lookup ? initials(lookup.name) : "#"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="flex min-w-0 flex-1 flex-col">
+                                    <span className="truncate text-body-compact font-medium">
+                                      {lookup
+                                        ? lookup.name
+                                        : `+91 ${formatAdvocatePhone(phoneInput)}`}
                                     </span>
-                                    {" · Bar ID "}
-                                    {/* The whole lookup result is the button. */}
-                                    <Identifier
-                                      value={lookup.barId}
-                                      label="bar id"
-                                      copyable={false}
-                                    />
-                                  </>
-                                ) : (
-                                  "Not on DRISTI yet. They'll be asked to register when they join."
-                                )}
-                              </span>
-                            </span>
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                    )}
+                                    <span className="truncate text-caption text-muted-foreground">
+                                      {lookup ? (
+                                        <>
+                                          {t.rich("addAdvocateDialog_formatAdvocatePhoneBarId", {
+                                            formatAdvocatePhone: formatAdvocatePhone(phoneInput),
+                                            span: (chunks) => (
+                                              <span className="tabular-nums">{chunks}</span>
+                                            ),
+                                          })}
+                                          {/* The whole lookup result is the button. */}
+                                          <Identifier
+                                            value={lookup.barId}
+                                            label={t("addAdvocateDialog_barId")}
+                                            copyable={false}
+                                          />
+                                        </>
+                                      ) : (
+                                        t("addAdvocateDialog_notOnDristiYetTheyllBe")
+                                      )}
+                                    </span>
+                                  </span>
+                                </button>
+                              </div>
+                            ) : null}
+                          </div>
+                        )}
 
-                    {alreadyStacked ? (
-                      <FieldDescription>
-                        This advocate is already in the list.
-                      </FieldDescription>
-                    ) : null}
+                        {alreadyStacked ? (
+                          <FieldDescription>
+                            {t("addAdvocateDialog_thisAdvocateIsAlreadyInThe")}
+                          </FieldDescription>
+                        ) : null}
 
-                    <FieldError>{errors.advocates}</FieldError>
-                    {/* While naming an invitee the demo numbers are noise;
+                        <FieldError>{errors.advocates}</FieldError>
+                        {/* While naming an invitee the demo numbers are noise;
                         the line explains the register-on-join instead. */}
-                    <p className="text-caption text-muted-foreground tabular-nums">
-                      {pendingInvite
-                        ? "Not on DRISTI yet. They'll be asked to register when they join."
-                        : ADVOCATE_DEMO_NUMBERS}
-                    </p>
-                  </Field>
+                        <p className="text-caption text-muted-foreground tabular-nums">
+                          {pendingInvite
+                            ? t("addAdvocateDialog_notOnDristiYetTheyllBe")
+                            : t(ADVOCATE_DEMO_NUMBERS)}
+                        </p>
+                      </Field>
 
-                  <Separator />
+                      <Separator />
 
-                  <Field data-invalid={Boolean(errors.parties)}>
-                    <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                      Who will they represent?
-                    </FieldLabel>
-                    <FieldDescription>
-                      Your clients on this case. The vakalatnama must be signed
-                      by every party picked here.
-                    </FieldDescription>
-                    <div className="flex flex-col gap-1">
-                      {litigants.map((party) => (
-                        <div
-                          key={party.id}
-                          className="flex min-h-10 items-center gap-2"
-                        >
-                          <Checkbox
-                            id={`represent-${party.id}`}
-                            checked={partyIds.includes(party.id)}
-                            onCheckedChange={() => {
-                              setPartyIds((existing) =>
-                                existing.includes(party.id)
-                                  ? existing.filter((id) => id !== party.id)
-                                  : [...existing, party.id]
-                              );
-                              setErrors((c) => ({ ...c, parties: undefined }));
-                            }}
-                            aria-invalid={Boolean(errors.parties)}
-                          />
-                          <Label htmlFor={`represent-${party.id}`}>
-                            {party.name}
-                            <span className="font-normal text-muted-foreground">
-                              {" "}
-                              · {PARTY_SIDE_LABEL[party.side]}
-                            </span>
-                          </Label>
+                      <Field data-invalid={Boolean(errors.parties)}>
+                        <FieldLabel className="block w-full text-body font-semibold leading-snug">
+                          {t("addAdvocateDialog_whoWillTheyRepresent")}
+                        </FieldLabel>
+                        <FieldDescription>
+                          {t("addAdvocateDialog_yourClientsOnThisCaseThe")}
+                        </FieldDescription>
+                        <div className="flex flex-col gap-1">
+                          {litigants.map((party) => (
+                            <div key={party.id} className="flex min-h-10 items-center gap-2">
+                              <Checkbox
+                                id={`represent-${party.id}`}
+                                checked={partyIds.includes(party.id)}
+                                onCheckedChange={() => {
+                                  setPartyIds((existing) =>
+                                    existing.includes(party.id)
+                                      ? existing.filter((id) => id !== party.id)
+                                      : [...existing, party.id],
+                                  );
+                                  setErrors((c) => ({ ...c, parties: undefined }));
+                                }}
+                                aria-invalid={Boolean(errors.parties)}
+                              />
+                              <Label htmlFor={`represent-${party.id}`}>
+                                {party.name}
+                                <span className="font-normal text-muted-foreground">
+                                  {" "}
+                                  · {t(PARTY_SIDE_LABEL[party.side])}
+                                </span>
+                              </Label>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                    <FieldError>{errors.parties}</FieldError>
-                  </Field>
-                </>
-              ) : step === 2 ? (
-                <>
-                  <div className="flex flex-col gap-3">
-                    {/* Same three sources as the join flow: upload a signed
+                        <FieldError>{errors.parties}</FieldError>
+                      </Field>
+                    </>
+                  ) : step === 2 ? (
+                    <>
+                      <div className="flex flex-col gap-3">
+                        {/* Same three sources as the join flow: upload a signed
                         copy, pick a generated one, or make one below. The
                         header above already says whose deed this is. */}
-                    <Tabs
-                      value={vkTab}
-                      onValueChange={(value) => {
-                        setVkTab(value as "upload" | "saved");
-                        setErrors((c) => ({ ...c, vakalatnama: undefined }));
-                      }}
-                    >
-                      <TabsList className="w-full border border-hairline bg-surface-sunken">
-                        <TabsTrigger value="upload" className="flex-1">
-                          Upload a file
-                        </TabsTrigger>
-                        <TabsTrigger value="saved" className="flex-1">
-                          Generated vakalatnamas
-                        </TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="upload" className="pt-3">
-                        <Field data-invalid={Boolean(errors.vakalatnama)}>
-                          <UploadedDocField
-                            label="Signed vakalatnama"
-                            required
-                            file={vakalatFile}
-                            onFileChange={(file) => {
-                              setVakalatFile(file);
-                              setErrors((c) => ({
-                                ...c,
-                                vakalatnama: undefined,
-                              }));
-                            }}
-                          />
-                          <FieldDescription>{UPLOAD_HELP}</FieldDescription>
-                          <FieldError>{errors.vakalatnama}</FieldError>
-                        </Field>
-                      </TabsContent>
-                      <TabsContent value="saved" className="flex flex-col gap-2 pt-3">
-                        <Field data-invalid={Boolean(errors.vakalatnama)}>
-                          <VakalatnamaPicker
-                            items={VAKALATNAMAS}
-                            selectedId={vkSavedId}
-                            onSelect={(id) => {
-                              setVkSavedId(id);
-                              setErrors((c) => ({
-                                ...c,
-                                vakalatnama: undefined,
-                              }));
-                            }}
-                            locale="en"
-                          />
-                          <FieldError>{errors.vakalatnama}</FieldError>
-                        </Field>
-                      </TabsContent>
-                    </Tabs>
-                  </div>
+                        <Tabs
+                          value={vkTab}
+                          onValueChange={(value) => {
+                            setVkTab(value as "upload" | "saved");
+                            setErrors((c) => ({ ...c, vakalatnama: undefined }));
+                          }}
+                        >
+                          <TabsList className="w-full border border-hairline bg-surface-sunken">
+                            <TabsTrigger value="upload" className="flex-1">
+                              {t("addAdvocateDialog_uploadAFile")}
+                            </TabsTrigger>
+                            <TabsTrigger value="saved" className="flex-1">
+                              {t("addAdvocateDialog_generatedVakalatnamas")}
+                            </TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="upload" className="pt-3">
+                            <Field data-invalid={Boolean(errors.vakalatnama)}>
+                              <UploadedDocField
+                                label={t("addAdvocateDialog_signedVakalatnama")}
+                                required
+                                file={vakalatFile}
+                                onFileChange={(file) => {
+                                  setVakalatFile(file);
+                                  setErrors((c) => ({
+                                    ...c,
+                                    vakalatnama: undefined,
+                                  }));
+                                }}
+                              />
+                              <FieldDescription>{t(UPLOAD_HELP)}</FieldDescription>
+                              <FieldError>{errors.vakalatnama}</FieldError>
+                            </Field>
+                          </TabsContent>
+                          <TabsContent value="saved" className="flex flex-col gap-2 pt-3">
+                            <Field data-invalid={Boolean(errors.vakalatnama)}>
+                              <VakalatnamaPicker
+                                items={VAKALATNAMAS}
+                                selectedId={vkSavedId}
+                                onSelect={(id) => {
+                                  setVkSavedId(id);
+                                  setErrors((c) => ({
+                                    ...c,
+                                    vakalatnama: undefined,
+                                  }));
+                                }}
+                                locale="en"
+                              />
+                              <FieldError>{errors.vakalatnama}</FieldError>
+                            </Field>
+                          </TabsContent>
+                        </Tabs>
+                      </div>
 
-                  <div className="flex flex-col gap-3 border-t border-hairline pt-5 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-body-compact font-medium">
-                      Don&apos;t have a vakalatnama yet?
-                    </p>
-                    {/* Straight into a fresh e-sign draft, the same way the
+                      <div className="flex flex-col gap-3 border-t border-hairline pt-5 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-body-compact font-medium">
+                          {t("addAdvocateDialog_dontHaveAVakalatnamaYet")}
+                        </p>
+                        {/* Straight into a fresh e-sign draft, the same way the
                         Vakalatnama section's own New button starts one. The
                         dialog draft is lost on navigation, the same trade
                         the person makes by going off to prepare a deed. */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      data-icon="inline-start"
-                      onClick={() =>
-                        router.push(`/vakalatnama/${createVak("advocate")}`)
-                      }
-                    >
-                      <FilePlus2Icon aria-hidden />
-                      Generate one in the portal
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <DescriptionList>
-                  <ReviewRow term={chips.length === 1 ? "Advocate" : "Advocates"}>
-                    <span className="flex flex-col gap-1">
-                      {chips.map((chip) => (
-                        <span key={chip.phone}>
-                          {chip.name}
-                          {chip.barId ? (
-                            <span className="text-muted-foreground">
-                              {" · Bar ID "}
-                              <Identifier value={chip.barId} label="bar id" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          data-icon="inline-start"
+                          onClick={() => router.push(`/vakalatnama/${createVak("advocate")}`)}
+                        >
+                          <FilePlus2Icon aria-hidden />
+                          {t("addAdvocateDialog_generateOneInThePortal")}
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <DescriptionList>
+                      <ReviewRow
+                        term={
+                          chips.length === 1
+                            ? t("addAdvocateDialog_advocate")
+                            : t("addAdvocateDialog_advocates")
+                        }
+                      >
+                        <span className="flex flex-col gap-1">
+                          {chips.map((chip) => (
+                            <span key={chip.phone}>
+                              {chip.name}
+                              {chip.barId ? (
+                                <span className="text-muted-foreground">
+                                  {t("addAdvocateDialog_barId2")}
+                                  <Identifier
+                                    value={chip.barId}
+                                    label={t("addAdvocateDialog_barId")}
+                                  />
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  {t("addAdvocateDialog_notYetRegistered")}
+                                </span>
+                              )}
                             </span>
-                          ) : (
-                            <span className="text-muted-foreground">
-                              {" "}
-                              (not yet registered)
-                            </span>
-                          )}
+                          ))}
                         </span>
-                      ))}
-                    </span>
-                  </ReviewRow>
-                  <ReviewRow term="Representing">
-                    <NamesWithOthers
-                      names={chosenParties.map((p) => p.name)}
-                      othersLabel="Other parties"
-                    />
-                  </ReviewRow>
-                  <ReviewRow term="Vakalatnama">
-                    {vkTab === "upload" ? (
-                      <ReviewDocValue file={vakalatFile} />
-                    ) : (
-                      vakalatnamaName
-                    )}
-                  </ReviewRow>
-                </DescriptionList>
-              )}
-            </form>
-          </div>
+                      </ReviewRow>
+                      <ReviewRow term={t("addAdvocateDialog_representing")}>
+                        <NamesWithOthers
+                          names={chosenParties.map((p) => p.name)}
+                          othersLabel={t("addAdvocateDialog_otherParties")}
+                        />
+                      </ReviewRow>
+                      <ReviewRow term={t("addAdvocateDialog_vakalatnama")}>
+                        {vkTab === "upload" ? (
+                          <ReviewDocValue file={vakalatFile} />
+                        ) : (
+                          vakalatnamaName
+                        )}
+                      </ReviewRow>
+                    </DescriptionList>
+                  )}
+                </form>
+              </div>
 
-          <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-            {step > 1 ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setStep((s) => (s - 1) as AdvocateStep)}
-              >
-                Back
-              </Button>
-            ) : (
-              <span aria-hidden className="hidden sm:block" />
-            )}
-            {step < 3 ? (
-              <Button type="submit" form="add-advocates-form">
-                Continue
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                onClick={() => {
-                  /* Report the addition so the Parties list updates at once
+              <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                {step > 1 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep((s) => (s - 1) as AdvocateStep)}
+                  >
+                    {t("common_back")}
+                  </Button>
+                ) : (
+                  <span aria-hidden className="hidden sm:block" />
+                )}
+                {step < 3 ? (
+                  <Button type="submit" form="add-advocates-form">
+                    {t("addAdvocateDialog_continue")}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      /* Report the addition so the Parties list updates at once
                      (session-local; the participants service is the seam). */
-                  partiesLive?.addAdvocates(advocateNames, partyIds);
-                  setDone(true);
-                }}
-              >
-                {chips.length === 1 ? "Add advocate" : "Add advocates"}
-              </Button>
-            )}
-          </footer>
+                      partiesLive?.addAdvocates(advocateNames, partyIds);
+                      setDone(true);
+                    }}
+                  >
+                    {chips.length === 1
+                      ? t("addAdvocateDialog_addAdvocate")
+                      : t("addAdvocateDialog_addAdvocates")}
+                  </Button>
+                )}
+              </footer>
             </>
           )}
           <DiscardQuestion guard={guard} />
@@ -761,19 +754,11 @@ export function AddAdvocateDialog({
   );
 }
 
-function ReviewRow({
-  term,
-  children,
-}: {
-  term: string;
-  children: React.ReactNode;
-}) {
+function ReviewRow({ term, children }: { term: string; children: React.ReactNode }) {
   return (
     <DescriptionRow className="grid-cols-1 sm:grid-cols-[minmax(7rem,10rem)_1fr]">
       <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
-      <DescriptionDetails className="text-body-compact">
-        {children}
-      </DescriptionDetails>
+      <DescriptionDetails className="text-body-compact">{children}</DescriptionDetails>
     </DescriptionRow>
   );
 }
@@ -791,18 +776,13 @@ function formatNames(names: string[]): string {
  * "N more" popover, the join flow's "and 1 other" pattern. Ten advocates
  * would otherwise turn a one-line sentence into a paragraph.
  */
-function NamesWithOthers({
-  names,
-  othersLabel,
-}: {
-  names: string[];
-  othersLabel: string;
-}) {
+function NamesWithOthers({ names, othersLabel }: { names: string[]; othersLabel: string }) {
+  const t = useTranslations();
   if (names.length <= 2) return <>{formatNames(names)}</>;
   const rest = names.slice(2);
   return (
     <>
-      {names.slice(0, 2).join(", ")} and{" "}
+      {t("addAdvocateDialog_joinAnd", { join: names.slice(0, 2).join(", ") })}
       <Popover>
         <PopoverTrigger asChild>
           <button
@@ -810,13 +790,11 @@ function NamesWithOthers({
             className="inline-flex items-center rounded-sm underline decoration-dotted underline-offset-4 hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             aria-label={othersLabel}
           >
-            {rest.length} more
+            {t("addAdvocateDialog_lengthMore", { length: String(rest.length) })}
           </button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-64">
-          <p className="text-caption font-semibold text-muted-foreground">
-            {othersLabel}
-          </p>
+          <p className="text-caption font-semibold text-muted-foreground">{othersLabel}</p>
           <ul className="mt-2 flex flex-col gap-1 text-body-compact">
             {rest.map((name) => (
               <li key={name}>{name}</li>

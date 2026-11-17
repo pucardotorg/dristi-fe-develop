@@ -9,17 +9,10 @@
  * what has actually been filed.
  */
 import { decodeDraft } from "@/lib/applications/form-codec";
-import {
-  formatCaseDate,
-  partiesLabel,
-  type CaseRecord,
-} from "@/lib/cases/types";
+import { formatCaseDate, partiesLabel, type CaseRecord } from "@/lib/cases/types";
 import { buildGeneratedApplication } from "@/lib/cases/application-document";
 import { CASES } from "@/lib/cases/fixtures";
-import {
-  suggestedDate,
-  type LifecycleApplication,
-} from "@/lib/applications/lifecycle";
+import { suggestedDate, type LifecycleApplication } from "@/lib/applications/lifecycle";
 import { isSittingDay, shiftDay } from "@/lib/employee/hearings";
 
 import type { CourtApplicationDocument } from "@/components/employee/application-review-dialog";
@@ -65,10 +58,7 @@ const NEXT_HEARING_IN_DAYS: Record<string, number | null> = {
  * Cases outside the sample table fall back to the fixture's own next hearing, if it is
  * still ahead.
  */
-export function nextHearingOf(
-  app: LifecycleApplication,
-  on: string,
-): string | undefined {
+export function nextHearingOf(app: LifecycleApplication, on: string): string | undefined {
   if (app.caseId in NEXT_HEARING_IN_DAYS) {
     const days = NEXT_HEARING_IN_DAYS[app.caseId];
     if (days === null) return undefined;
@@ -80,9 +70,7 @@ export function nextHearingOf(
 }
 
 /** The application as paper, from what the filer entered. */
-export function courtDocumentOf(
-  app: LifecycleApplication,
-): CourtApplicationDocument | null {
+export function courtDocumentOf(app: LifecycleApplication): CourtApplicationDocument | null {
   const record = caseOf(app);
   if (!record) return null;
   const generated = buildGeneratedApplication(decodeDraft(app.form), record, app.side);

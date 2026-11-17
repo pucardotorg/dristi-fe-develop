@@ -8,21 +8,11 @@ import { Identifier } from "@/components/chrome/identifier";
 import { useStageFade } from "@/components/chrome/stage-fade";
 import { StagedOverlay } from "@/components/chrome/staged-overlay";
 import { DocumentPreview } from "@/components/cases/document-preview";
-import {
-  useCourtLocalized,
-  useCourtText,
-} from "@/components/court/court-provider";
-import {
-  SignedCopyUpload,
-  useSignatureChoice,
-} from "@/components/employee/sign-signature-fields";
+import { useCourtLocalized, useCourtText } from "@/components/court/court-provider";
+import { SignedCopyUpload, useSignatureChoice } from "@/components/employee/sign-signature-fields";
 import { useHeldRecord } from "@/components/employee/use-held-record";
 import { PaperFallbackLink } from "@/components/filing/paper-fallback";
-import {
-  DscLookup,
-  InstrumentChoice,
-  OtpEntry,
-} from "@/components/filing/sign-stages";
+import { DscLookup, InstrumentChoice, OtpEntry } from "@/components/filing/sign-stages";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogDescription } from "@/components/ui/dialog";
@@ -37,6 +27,7 @@ import {
   type SignOrderDocument,
 } from "@/lib/employee/sign-orders";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * **Signing orders — one window, from the order to its publication** (owner, 2026-10-14).
@@ -111,6 +102,7 @@ export function SignOrderFlow({
   onSign: (ids: ReadonlySet<string>) => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const { held, opening } = useHeldRecord(request);
   /* How many this opening signed, for the toast once the window has gone. */
   const signedCount = React.useRef(0);
@@ -120,7 +112,8 @@ export function SignOrderFlow({
   function close() {
     const count = signedCount.current;
     signedCount.current = 0;
-    if (count > 0) notify.success(`${orders(count)} signed and issued`);
+    if (count > 0)
+      notify.success(t("signOrderFlow_ordersSignedAndIssued", { orders: orders(count) }));
     onOpenChange(false);
   }
 
@@ -160,6 +153,7 @@ function SignOrderFlowBody({
   onClose: () => void;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const { start } = request;
   /* The orders as they were when the window opened: signing takes them out of the queue
@@ -188,10 +182,7 @@ function SignOrderFlowBody({
   const [resent, setResent] = React.useState(false);
   const [dscFound, setDscFound] = React.useState(false);
   const [signedWith, setSignedWith] = React.useState<Instrument | null>(null);
-  const document = React.useMemo(
-    () => (single ? buildSignOrderDocument(single) : null),
-    [single],
-  );
+  const document = React.useMemo(() => (single ? buildSignOrderDocument(single) : null), [single]);
 
   /* The certificate is read off this computer, and the utility takes a beat to answer. */
   React.useEffect(() => {
@@ -214,11 +205,11 @@ function SignOrderFlowBody({
   const title = {
     read: single ? signOrderTypeLabel(single.type) : "",
     confirm: `Sign ${count}`,
-    sign: single ? "Sign and publish" : `Sign ${count}`,
-    otp: "Enter the OTP",
-    dsc: "Sign with your DSC",
-    paper: "Upload the signed order",
-    done: single ? "Order signed and issued" : `${count} signed and issued`,
+    sign: single ? t("signOrderFlow_signAndPublish") : `Sign ${count}`,
+    otp: t("signOrderFlow_enterTheOtp"),
+    dsc: t("signOrderFlow_signWithYourDsc"),
+    paper: t("signOrderFlow_uploadTheSignedOrder"),
+    done: single ? t("signOrderFlow_orderSignedAndIssued") : `${count} signed and issued`,
   }[flow.stage];
 
   /* The record's own line while there is one record: it is what stays put as the stage
@@ -228,13 +219,17 @@ function SignOrderFlowBody({
       {causeTitle(single)} <span aria-hidden>· </span>
       <Identifier
         value={single.caseNumber}
-        label="case number"
+        label={t("signOrderFlow_caseNumber")}
         copyable={false}
       />{" "}
       ·{" "}
       {single.status === "pending-signature"
-        ? `Added ${formatSignOrderDate(single.addedOn)}`
-        : `Signed ${formatSignOrderDate(single.signedOn ?? single.addedOn)}`}
+        ? t("signOrderFlow_addedFormatSignOrderDate", {
+            formatSignOrderDate: formatSignOrderDate(single.addedOn),
+          })
+        : t("signOrderFlow_signedFormatSignOrderDate", {
+            formatSignOrderDate: formatSignOrderDate(single.signedOn ?? single.addedOn),
+          })}
     </DialogDescription>
   ) : null;
 
@@ -242,85 +237,71 @@ function SignOrderFlowBody({
     read: recordLine,
     confirm: (
       <DialogDescription className="text-body-compact text-muted-foreground">
-        <span className="block">
-          Each is signed with your signature and published to its case file.
-        </span>
-        <IrreversibleNote>This cannot be reversed.</IrreversibleNote>
+        <span className="block">{t("signOrderFlow_eachIsSignedWithYourSignature")}</span>
+        <IrreversibleNote>{t("signOrderFlow_thisCannotBeReversed")}</IrreversibleNote>
       </DialogDescription>
     ),
-    sign: single ? recordLine : "One signature goes on every order selected.",
-    otp: "Sent to your Aadhaar-linked mobile.",
-    dsc: "Your certificate has to be plugged in, with the signing utility running on this computer.",
-    paper: "Print the order, sign it by hand, and upload the scan.",
+    sign: single ? recordLine : t("signOrderFlow_oneSignatureGoesOnEveryOrder"),
+    otp: t("signOrderFlow_sentToYourAadhaarLinkedMobile"),
+    dsc: t("signOrderFlow_yourCertificateHasToBePlugged"),
+    paper: t("signOrderFlow_printTheOrderSignItBy"),
     done: null,
   }[flow.stage];
 
   const footer = {
     read: pending ? (
       <Button type="button" onClick={() => go("sign")}>
-        Sign and publish
+        {t("signOrderFlow_signAndPublish")}
       </Button>
     ) : null,
     confirm: (
       <>
         <Button type="button" variant="outline" onClick={onClose}>
-          Back
+          {t("common_back")}
         </Button>
         <Button type="button" onClick={() => go("sign")}>
-          Sign {count}
+          {t("signOrderFlow_signCount", { count })}
         </Button>
       </>
     ),
     sign: (
       <Button type="button" variant="outline" onClick={() => go(before)}>
-        Back
+        {t("common_back")}
       </Button>
     ),
     otp: (
       <>
         <Button type="button" variant="outline" onClick={() => go("sign")}>
-          Back
+          {t("common_back")}
         </Button>
-        <Button
-          type="button"
-          disabled={otp.length < 6}
-          onClick={() => signAll("aadhaar")}
-        >
-          Verify and sign
+        <Button type="button" disabled={otp.length < 6} onClick={() => signAll("aadhaar")}>
+          {t("signOrderFlow_verifyAndSign")}
         </Button>
       </>
     ),
     dsc: (
       <>
         <Button type="button" variant="outline" onClick={() => go("sign")}>
-          Back
+          {t("common_back")}
         </Button>
-        <Button
-          type="button"
-          disabled={!dscFound}
-          onClick={() => signAll("dsc")}
-        >
-          Sign with this certificate
+        <Button type="button" disabled={!dscFound} onClick={() => signAll("dsc")}>
+          {t("signOrderFlow_signWithThisCertificate")}
         </Button>
       </>
     ),
     paper: (
       <>
         <Button type="button" variant="outline" onClick={() => go("sign")}>
-          Back
+          {t("common_back")}
         </Button>
-        <Button
-          type="button"
-          disabled={!choice.file}
-          onClick={() => signAll("paper")}
-        >
-          Submit signed copy
+        <Button type="button" disabled={!choice.file} onClick={() => signAll("paper")}>
+          {t("signOrderFlow_submitSignedCopy")}
         </Button>
       </>
     ),
     done: (
       <Button type="button" onClick={onClose}>
-        Done
+        {t("signOrderFlow_done")}
       </Button>
     ),
   }[flow.stage];
@@ -331,9 +312,7 @@ function SignOrderFlowBody({
       {...guard.outsideProps}
       /* The order is read wide and tall; every other step, a bulk run's list included,
          is the signing width at its own height. */
-      className={
-        flow.stage === "read" ? "h-[85dvh] sm:max-w-4xl" : "sm:max-w-2xl"
-      }
+      className={flow.stage === "read" ? "h-[85dvh] sm:max-w-4xl" : "sm:max-w-2xl"}
       title={title}
       titleRef={titleRef}
       style={flow.panelStyle}
@@ -359,10 +338,7 @@ function SignOrderFlowBody({
       }}
       footer={footer}
     >
-      <div
-        key={flow.stage}
-        className={cn("flex min-h-0 flex-1 flex-col", flow.sceneClassName)}
-      >
+      <div key={flow.stage} className={cn("flex min-h-0 flex-1 flex-col", flow.sceneClassName)}>
         {flow.stage === "read" && single && document ? (
           <DocumentPreview
             className="min-h-0 flex-1"
@@ -372,7 +348,9 @@ function SignOrderFlowBody({
             title={document.title}
             header={
               <h3 className="flex min-w-0 items-center pl-4 text-caption font-semibold text-muted-foreground">
-                {pending ? "Order for your signature" : "Signed order"}
+                {pending
+                  ? t("signOrderFlow_orderForYourSignature")
+                  : t("signOrderFlow_signedOrder")}
               </h3>
             }
             source={{
@@ -405,9 +383,13 @@ function SignOrderFlowBody({
             {single ? <PaperFallbackLink onClick={() => go("paper")} /> : null}
             <p className="text-body-compact text-muted-foreground">
               {single
-                ? courtText(`Signing publishes this order to ${single.caseNumber}.`)
-                : "Signing publishes every order selected."}
-              <IrreversibleNote>It cannot be reversed.</IrreversibleNote>
+                ? courtText(
+                    t("signOrderFlow_signingPublishesThisOrderToCase", {
+                      caseNumber: single.caseNumber,
+                    }),
+                  )
+                : t("signOrderFlow_signingPublishesEveryOrderSelected")}
+              <IrreversibleNote>{t("signOrderFlow_itCannotBeReversed")}</IrreversibleNote>
             </p>
           </Column>
         ) : flow.stage === "otp" ? (
@@ -443,32 +425,21 @@ function SignOrderFlowBody({
 
 /** A step's column at reading width, in the signing window. */
 function Column({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
-      {children}
-    </div>
-  );
+  return <div className="mx-auto flex w-full max-w-xl flex-col gap-4">{children}</div>;
 }
 
 /** One order as a row: which decision it is, then its case. */
-function OrderRow({
-  order,
-  trailing,
-}: {
-  order: SignOrder;
-  trailing?: React.ReactNode;
-}) {
+function OrderRow({ order, trailing }: { order: SignOrder; trailing?: React.ReactNode }) {
+  const t = useTranslations();
   return (
     <li className="flex min-w-0 items-center gap-3 border-b border-hairline py-3 last:border-b-0">
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p className="truncate text-body-compact font-medium">
-          {signOrderTypeLabel(order.type)}
-        </p>
+        <p className="truncate text-body-compact font-medium">{signOrderTypeLabel(order.type)}</p>
         <p className="truncate text-body-compact text-muted-foreground">
           {causeTitle(order)} <span aria-hidden>· </span>
           <Identifier
             value={order.caseNumber}
-            label="case number"
+            label={t("signOrderFlow_caseNumber")}
             copyable={false}
           />
         </p>
@@ -480,9 +451,10 @@ function OrderRow({
 
 /** The orders selected, to check against before signing them. */
 function OrderList({ list }: { list: SignOrder[] }) {
+  const t = useTranslations();
   return (
     <ul
-      aria-label="Orders to sign"
+      aria-label={t("signOrderFlow_ordersToSign")}
       className="flex flex-col rounded-xl border border-hairline bg-card px-4 shadow-raised"
     >
       {list.map((order) => (
@@ -506,6 +478,7 @@ function SignedCard({
   list: SignOrder[];
   headline: string;
 }) {
+  const t = useTranslations();
   return (
     <>
       <OutcomeHeader
@@ -515,8 +488,8 @@ function SignedCard({
         title={title}
         body={
           list.length === 1
-            ? "Published to its case file."
-            : "Each is published to its own case file."
+            ? t("signOrderFlow_publishedToItsCaseFile")
+            : t("signOrderFlow_eachIsPublishedToItsOwn")
         }
       />
       <div className="mx-auto flex w-full max-w-xl flex-col p-4 sm:p-6">
@@ -533,18 +506,15 @@ function SignedCard({
 }
 
 /** The order itself as paper, bound to this order's own particulars. */
-function OrderFacsimile({
-  document: storedDocument,
-}: {
-  document: SignOrderDocument;
-}) {
+function OrderFacsimile({ document: storedDocument }: { document: SignOrderDocument }) {
+  const t = useTranslations();
   const document = useCourtLocalized(storedDocument);
   return (
     <article className="flex flex-col gap-6 p-4 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{document.court}</p>
         <p className="text-body font-semibold">
-          Case no. {document.caseNumber}
+          {t("signOrderFlow_caseNoCaseNumber", { caseNumber: document.caseNumber })}
         </p>
         <p className="text-body font-semibold">{document.matter}</p>
       </header>
@@ -559,11 +529,9 @@ function OrderFacsimile({
         ))}
       </ol>
 
-      <p className="text-body">Dated this the {document.dated}.</p>
+      <p className="text-body">{t("signOrderFlow_datedThisTheDated", { dated: document.dated })}</p>
 
-      <p className="text-body text-paper-muted-foreground">
-        {document.signature}
-      </p>
+      <p className="text-body text-paper-muted-foreground">{document.signature}</p>
     </article>
   );
 }

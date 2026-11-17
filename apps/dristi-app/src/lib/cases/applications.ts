@@ -154,29 +154,19 @@ export function isSubmittedToCourt(status: FilingStatus): boolean {
  * so a dismissed application stays invisible to the other side for good.
  */
 export function isOnboardedStatus(status: FilingStatus): boolean {
-  return (
-    status === "pending-decision" ||
-    status === "accepted" ||
-    status === "rejected"
-  );
+  return status === "pending-decision" || status === "accepted" || status === "rejected";
 }
 
-const APPLICATION_TYPE_IDS = new Set<string>(
-  APPLICATION_TYPES.map((item) => item.id)
-);
+const APPLICATION_TYPE_IDS = new Set<string>(APPLICATION_TYPES.map((item) => item.id));
 const SUBMISSION_DOCUMENT_TYPE_IDS = new Set<string>(
-  SUBMISSION_DOCUMENT_TYPES.map((item) => item.id)
+  SUBMISSION_DOCUMENT_TYPES.map((item) => item.id),
 );
 
-export function isApplicationTypeId(
-  value: string
-): value is ApplicationTypeId {
+export function isApplicationTypeId(value: string): value is ApplicationTypeId {
   return APPLICATION_TYPE_IDS.has(value);
 }
 
-export function isSubmissionDocumentTypeId(
-  value: string
-): value is SubmissionDocumentTypeId {
+export function isSubmissionDocumentTypeId(value: string): value is SubmissionDocumentTypeId {
   return SUBMISSION_DOCUMENT_TYPE_IDS.has(value);
 }
 
@@ -206,9 +196,7 @@ export function submissionTypeLabel(id: SubmissionTypeId): string {
  * an Others filing with no title of its own. Never re-cased: it is free text,
  * and "PW-2 recall" must not become "pW-2 recall" (owner, Sept 24).
  */
-export function quotedOthersTitle(
-  submission: Pick<Submission, "type" | "title">
-): string | null {
+export function quotedOthersTitle(submission: Pick<Submission, "type" | "title">): string | null {
   const title = othersTitle(submission);
   return title ? `\u201c${title}\u201d` : null;
 }
@@ -220,9 +208,7 @@ export function quotedOthersTitle(
  * is about"). Null for every other type, and for an Others filing with no
  * title of its own.
  */
-export function othersTitle(
-  submission: Pick<Submission, "type" | "title">
-): string | null {
+export function othersTitle(submission: Pick<Submission, "type" | "title">): string | null {
   if (submission.type !== "application-others") return null;
   const title = submission.title.trim();
   if (!title || ["others", "generic"].includes(title.toLowerCase())) return null;
@@ -248,7 +234,7 @@ export function filingStatusLabel(status: FilingStatus): string {
  *   still differ at a glance.
  */
 export function filingStatusVariant(
-  status: FilingStatus
+  status: FilingStatus,
 ): "warning" | "destructive" | "secondary" | "success" | "info" | "outline" {
   switch (status) {
     case "pending-review":
@@ -312,12 +298,9 @@ export type BatchAction = {
 const BATCH_ACTIONS: Partial<Record<FilingStatus, BatchAction>> = {
   "pending-signature": {
     title: (count) =>
-      count === 1
-        ? "1 application needs a signature"
-        : `${count} applications need a signature`,
+      count === 1 ? "1 application needs a signature" : `${count} applications need a signature`,
     cta: "Add signatures",
-    confirm: (count) =>
-      count === 1 ? "Add signature" : `Add signatures to ${count} applications`,
+    confirm: (count) => (count === 1 ? "Add signature" : `Add signatures to ${count} applications`),
   },
 };
 
@@ -338,9 +321,7 @@ export type AttentionEntry =
 export type AttentionGroupEntry = Extract<AttentionEntry, { kind: "group" }>;
 
 function attentionEntryDate(entry: AttentionEntry): string {
-  return entry.kind === "single"
-    ? entry.submission.addedOn
-    : entry.submissions[0].addedOn;
+  return entry.kind === "single" ? entry.submission.addedOn : entry.submissions[0].addedOn;
 }
 
 /**
@@ -386,11 +367,7 @@ export function groupAttention(rows: Submission[]): AttentionEntry[] {
 }
 
 /** What a person is on the case, for who may see and do what (PRD "Users and actions"). */
-export type SubmissionPersonKind =
-  | "party"
-  | "advocate"
-  | "clerk"
-  | "poa-holder";
+export type SubmissionPersonKind = "party" | "advocate" | "clerk" | "poa-holder";
 
 export type SubmissionPerson = {
   id: string;
@@ -513,7 +490,7 @@ export function personIdentity(person: SubmissionPerson): string {
 
 export function submittedByName(
   submission: Submission,
-  peopleById: Map<string, SubmissionPerson>
+  peopleById: Map<string, SubmissionPerson>,
 ): string {
   const person = peopleById.get(submission.submittedById);
   return person ? personIdentity(person) : submission.submittedById;
@@ -526,10 +503,9 @@ export function submittedByName(
  */
 export function submittedBySideLabel(
   submission: Submission,
-  peopleById: Map<string, SubmissionPerson>
+  peopleById: Map<string, SubmissionPerson>,
 ): string {
-  const role =
-    peopleById.get(submission.submittedById)?.role.toLowerCase() ?? "";
+  const role = peopleById.get(submission.submittedById)?.role.toLowerCase() ?? "";
   if (role.includes("accused")) return "Accused";
   if (role.includes("complainant")) return "Complainant";
   return submittedByName(submission, peopleById);
@@ -538,7 +514,7 @@ export function submittedBySideLabel(
 export function submittedByOnBehalf(
   submission: Submission,
   peopleById: Map<string, SubmissionPerson>,
-  parties: Parties
+  parties: Parties,
 ): string {
   const name = submittedByName(submission, peopleById);
   const side = submittedBySideLabel(submission, peopleById);
@@ -551,9 +527,7 @@ export function submittedByOnBehalf(
   return name;
 }
 
-export function submissionDocumentSrc(
-  doc: SubmissionDocument
-): string | undefined {
+export function submissionDocumentSrc(doc: SubmissionDocument): string | undefined {
   if (!doc.href) return undefined;
   return doc.page ? `${doc.href}#page=${doc.page}` : doc.href;
 }
@@ -571,11 +545,8 @@ function kindFromPack(value: string): SubmissionKind {
 
 function typeFromPack(kind: SubmissionKind, label: string): SubmissionTypeId {
   const normalized = label.trim().toLowerCase();
-  const catalogue =
-    kind === "application" ? APPLICATION_TYPES : SUBMISSION_DOCUMENT_TYPES;
-  const match = catalogue.find(
-    (item) => item.label.toLowerCase() === normalized
-  );
+  const catalogue = kind === "application" ? APPLICATION_TYPES : SUBMISSION_DOCUMENT_TYPES;
+  const match = catalogue.find((item) => item.label.toLowerCase() === normalized);
   if (!match) {
     throw new Error(`Unknown ${kind} type in dummy pack: ${label}`);
   }
@@ -584,9 +555,7 @@ function typeFromPack(kind: SubmissionKind, label: string): SubmissionTypeId {
 
 function statusFromPack(value: string): FilingStatus {
   const normalized = value.trim().toLowerCase();
-  const match = FILING_STATUSES.find(
-    (item) => item.label.toLowerCase() === normalized
-  );
+  const match = FILING_STATUSES.find((item) => item.label.toLowerCase() === normalized);
   if (!match) {
     throw new Error(`Unknown filing status in dummy pack: ${value}`);
   }
@@ -602,16 +571,8 @@ type PackPerson = {
   holdsPoaFor?: string;
 };
 
-function personKindFromPack(
-  value: string | undefined,
-  role: string
-): SubmissionPersonKind {
-  if (
-    value === "party" ||
-    value === "advocate" ||
-    value === "clerk" ||
-    value === "poa-holder"
-  ) {
+function personKindFromPack(value: string | undefined, role: string): SubmissionPersonKind {
+  if (value === "party" || value === "advocate" || value === "clerk" || value === "poa-holder") {
     return value;
   }
   const lower = role.toLowerCase();
@@ -635,10 +596,7 @@ function personFromPack(item: PackPerson): SubmissionPerson {
     role,
     filterLabel: item.label,
     kind: personKindFromPack(item.kind, role),
-    side:
-      item.side === "accused" || item.side === "complainant"
-        ? item.side
-        : sideFromRole(role),
+    side: item.side === "accused" || item.side === "complainant" ? item.side : sideFromRole(role),
     officeOf: item.officeOf,
     holdsPoaFor: item.holdsPoaFor,
   };
@@ -684,17 +642,12 @@ type PackSubmissionRow = {
   documents: { label: string; href?: string; page?: number }[];
 };
 
-function submissionFromPack(
-  row: PackSubmissionRow,
-  people: SubmissionPerson[]
-): Submission {
+function submissionFromPack(row: PackSubmissionRow, people: SubmissionPerson[]): Submission {
   const kind = kindFromPack(row.kind);
   const type = typeFromPack(kind, row.type);
   const status = statusFromPack(row.status);
   const filer = people.find((person) => person.id === row.submittedById);
-  const party = people.find(
-    (person) => person.kind === "party" && person.side === filer?.side
-  );
+  const party = people.find((person) => person.kind === "party" && person.side === filer?.side);
   const submitted = isSubmittedToCourt(status);
   const onboarded = isOnboardedStatus(status);
   return {
@@ -710,9 +663,7 @@ function submissionFromPack(
     temporaryId: submitted ? row.temporaryId : null,
     applicationNumber: onboarded ? (row.applicationNumber ?? null) : null,
     submittedOn: submitted ? (row.submittedOn ?? dayOf(row.addedOn)) : null,
-    onboardedOn: onboarded
-      ? (row.onboardedOn ?? row.submittedOn ?? dayOf(row.addedOn))
-      : null,
+    onboardedOn: onboarded ? (row.onboardedOn ?? row.submittedOn ?? dayOf(row.addedOn)) : null,
     decisionOn: row.decisionOn ?? null,
     objectionsInvited: row.objectionsInvited ?? null,
     objectionToId: row.objectionToId ?? null,
@@ -742,7 +693,7 @@ function featuredFile(record: CaseRecord): ApplicationsFile {
     court: pack.case.court,
     people,
     submissions: (pack.submissions as PackSubmissionRow[]).map((row) =>
-      submissionFromPack(row, people)
+      submissionFromPack(row, people),
     ),
   };
 }
@@ -755,10 +706,7 @@ function featuredFile(record: CaseRecord): ApplicationsFile {
  * People the cause title cannot supply (a clerk, a PoA holder) come from
  * `extraPeople`.
  */
-const EXTRA_PACKS = pack.extraCases as Record<
-  string,
-  PackSubmissionRow[] | undefined
->;
+const EXTRA_PACKS = pack.extraCases as Record<string, PackSubmissionRow[] | undefined>;
 const EXTRA_PEOPLE = pack.extraPeople as Record<string, PackPerson[] | undefined>;
 
 function peopleFrom(record: CaseRecord): SubmissionPerson[] {
@@ -805,9 +753,7 @@ function peopleFrom(record: CaseRecord): SubmissionPerson[] {
   /* The signed-in advocate's clerk, on every case the advocate holds a
      vakalatnama in, so the clerk profile has a seat wherever its advocate
      does. The featured case names its clerk in the pack instead. */
-  const office = people.find(
-    (person) => person.kind === "advocate" && isViewer(person.name)
-  );
+  const office = people.find((person) => person.kind === "advocate" && isViewer(person.name));
   if (office) {
     people.push({
       id: `${record.id}-clerk`,
@@ -838,9 +784,7 @@ export function applicationsFile(record: CaseRecord): ApplicationsFile {
     parties: record.parties,
     court: record.court,
     people,
-    submissions: (EXTRA_PACKS[record.id] ?? []).map((row) =>
-      submissionFromPack(row, people)
-    ),
+    submissions: (EXTRA_PACKS[record.id] ?? []).map((row) => submissionFromPack(row, people)),
   };
 }
 
@@ -852,10 +796,7 @@ export function applicationsFile(record: CaseRecord): ApplicationsFile {
  * Anything that is not a draft has no form to go back to — it has been filed
  * — and belongs on the record instead, which is what the null tells callers.
  */
-export function resumeDraftHref(
-  caseId: string,
-  submission: Submission
-): string | null {
+export function resumeDraftHref(caseId: string, submission: Submission): string | null {
   if (submission.status !== "draft") return null;
   const base = `/cases/${caseId}/filings`;
   return submission.kind === "application"
@@ -869,9 +810,7 @@ export function resumeDraftHref(
  * is never offered in the type picker (ALC-12), so this is its only way in.
  */
 export function objectionHref(caseId: string, applicationId: string): string {
-  return `/cases/${caseId}/filings/application?objectTo=${encodeURIComponent(
-    applicationId
-  )}`;
+  return `/cases/${caseId}/filings/application?objectTo=${encodeURIComponent(applicationId)}`;
 }
 
 /**
@@ -881,7 +820,7 @@ export function objectionHref(caseId: string, applicationId: string): string {
  */
 export function findDraftSubmission(
   file: ApplicationsFile,
-  id: string | undefined
+  id: string | undefined,
 ): Submission | null {
   if (!id) return null;
   const match = file.submissions.find((item) => item.id === id);
@@ -892,9 +831,7 @@ export const APPLICATIONS_PAGE_SIZES = [10, 20, 30, 40, 50] as const;
 export type ApplicationsPageSize = (typeof APPLICATIONS_PAGE_SIZES)[number];
 export const APPLICATIONS_PAGE_SIZE: ApplicationsPageSize = 10;
 
-export function isApplicationsPageSize(
-  value: number
-): value is ApplicationsPageSize {
+export function isApplicationsPageSize(value: number): value is ApplicationsPageSize {
   return (APPLICATIONS_PAGE_SIZES as readonly number[]).includes(value);
 }
 
@@ -927,10 +864,7 @@ export function selectApplications(options: {
 }): ApplicationsSelection {
   const query = options.submissionQuery?.trim().toLowerCase() ?? "";
   const matched = options.submissions.filter((submission) => {
-    if (
-      options.submittedById &&
-      submission.submittedById !== options.submittedById
-    ) {
+    if (options.submittedById && submission.submittedById !== options.submittedById) {
       return false;
     }
     if (options.typeId && submission.type !== options.typeId) return false;
@@ -940,7 +874,7 @@ export function selectApplications(options: {
     if (
       query &&
       ![submission.applicationNumber, submission.temporaryId].some((id) =>
-        (id ?? "").toLowerCase().includes(query)
+        (id ?? "").toLowerCase().includes(query),
       )
     ) {
       return false;
@@ -948,12 +882,8 @@ export function selectApplications(options: {
     return true;
   });
 
-  const attention = sortSubmissions(
-    matched.filter((item) => needsAttention(item.status))
-  );
-  const rest = sortSubmissions(
-    matched.filter((item) => !needsAttention(item.status))
-  );
+  const attention = sortSubmissions(matched.filter((item) => needsAttention(item.status)));
+  const rest = sortSubmissions(matched.filter((item) => !needsAttention(item.status)));
 
   const pageSize = options.pageSize;
   const pageCount = Math.max(1, Math.ceil(rest.length / pageSize));
@@ -972,10 +902,7 @@ export function selectApplications(options: {
   };
 }
 
-export function applicationPageWindow(
-  page: number,
-  pageCount: number
-): (number | "gap")[] {
+export function applicationPageWindow(page: number, pageCount: number): (number | "gap")[] {
   if (pageCount <= 7) {
     return Array.from({ length: pageCount }, (_, index) => index + 1);
   }
@@ -985,8 +912,6 @@ export function applicationPageWindow(
     .sort((a, b) => a - b);
 
   return visible.flatMap((entry, index) =>
-    index > 0 && entry - visible[index - 1] > 1
-      ? ["gap" as const, entry]
-      : [entry]
+    index > 0 && entry - visible[index - 1] > 1 ? ["gap" as const, entry] : [entry],
   );
 }

@@ -20,6 +20,7 @@ import { tasksForCourt } from "./court-tasks";
 import { loadFailure } from "./load-failure";
 import { type Ctx, type Transition, TransitionError } from "./transitions";
 import type { Case, Person, PersonId, Task, TaskId } from "./types";
+import { useTranslations } from "next-intl";
 
 const CHANNEL = "dristi-tasks";
 
@@ -70,11 +71,12 @@ function useOnline(): boolean {
   return React.useSyncExternalStore(
     subscribe,
     () => navigator.onLine,
-    () => true
+    () => true,
   );
 }
 
 export function TasksProvider({ children }: { children: React.ReactNode }) {
+  const tr = useTranslations();
   const [state, setState] = React.useState<LoadState>("loading");
   const [error, setError] = React.useState<string | null>(null);
   const [notConnected, setNotConnected] = React.useState(false);
@@ -95,7 +97,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
 
   const user = React.useMemo(
     () => people.find((p) => p.id === userId) ?? FALLBACK_USER,
-    [people, userId]
+    [people, userId],
   );
 
   // The first load starts from the initial "loading" state; `reload` re-enters it.
@@ -115,12 +117,12 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       setUserId(uid !== null && ppl.some((p) => p.id === uid) ? uid : DEFAULT_USER_ID);
       setState("ready");
     } catch (e) {
-      const failure = loadFailure(e);
+      const failure = loadFailure(e, tr("tasksStore_couldNotLoadTasks"));
       setError(failure.message);
       setNotConnected(failure.notConnected);
       setState("error");
     }
-  }, []);
+  }, [tr]);
 
   React.useEffect(() => {
     // Deferred a tick: the effect only starts the read; every setState happens when
@@ -202,10 +204,16 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       const closed = changed
         .filter((t) => ["done", "expired", "obsolete"].includes(t.status))
         .map((t) => t.id);
-      announce({ type: "changed", ids: changed.map((t) => t.id), byId: user.id, byName: user.name, closed });
+      announce({
+        type: "changed",
+        ids: changed.map((t) => t.id),
+        byId: user.id,
+        byName: user.name,
+        closed,
+      });
       return "created" in result ? result.task : result;
     },
-    [announce, cases, people, user]
+    [announce, cases, people, user],
   );
 
   const setUser = React.useCallback(async (id: PersonId) => {
@@ -252,7 +260,24 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       requestHighlight,
       dismissGhost,
     }),
-    [state, error, notConnected, people, cases, courtTasks, user, online, ghosts, highlight, reload, setUser, resetSandbox, dispatch, requestHighlight, dismissGhost]
+    [
+      state,
+      error,
+      notConnected,
+      people,
+      cases,
+      courtTasks,
+      user,
+      online,
+      ghosts,
+      highlight,
+      reload,
+      setUser,
+      resetSandbox,
+      dispatch,
+      requestHighlight,
+      dismissGhost,
+    ],
   );
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;

@@ -21,13 +21,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  filingStatusLabel,
-  filingStatusVariant,
-  type Submission,
-} from "@/lib/cases/applications";
+import { filingStatusLabel, filingStatusVariant, type Submission } from "@/lib/cases/applications";
 import { formatCaseDate } from "@/lib/cases/types";
 import { OutcomeHeader } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /** Dummy court fee, from the legacy portal's payment screen. */
 export const COURT_FEE = "₹20";
@@ -39,21 +36,22 @@ export const COURT_FEE = "₹20";
  * one the product has confirmed.
  */
 export function CourtFeeSummary() {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-4">
-      <Banner variant="info">
-        Please visit the Nyay Mitra to make this payment offline.
-      </Banner>
+      <Banner variant="info">{t("submissionPaymentDialog_pleaseVisitTheNyayMitraTo")}</Banner>
 
       {/* The View Case payment dialog's sheet: white, hairline, 14px, figures
           tabular. The dialog around it supplies the well. */}
       <dl className="flex flex-col rounded-lg border border-hairline bg-card px-4 py-1 text-body-compact">
         <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-2.5">
-          <dt className="min-w-0 text-muted-foreground">Court fees</dt>
+          <dt className="min-w-0 text-muted-foreground">
+            {t("submissionPaymentDialog_courtFees")}
+          </dt>
           <dd className="shrink-0 tabular-nums">{COURT_FEE}</dd>
         </div>
         <div className="flex items-baseline justify-between gap-4 py-2.5 font-semibold">
-          <dt>Total</dt>
+          <dt>{t("submissionPaymentDialog_total")}</dt>
           <dd className="shrink-0 tabular-nums">{COURT_FEE}</dd>
         </div>
       </dl>
@@ -110,6 +108,7 @@ function PaymentBody({
   onPaid: (submissionId: string) => void;
   onClose: () => void;
 }) {
+  const t = useTranslations();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [paid, setPaid] = useState(false);
 
@@ -128,7 +127,10 @@ function PaymentBody({
   }
 
   return (
-    <ChromeDialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg" onInteractOutside={(event) => event.preventDefault()}>
+    <ChromeDialogContent
+      className="max-h-[85dvh] overflow-y-auto sm:max-w-lg"
+      onInteractOutside={(event) => event.preventDefault()}
+    >
       {paid ? (
         /* The payment's outcome takes the window over (skill `feedback-states`); the
            negative inset carries the band to the dialog's edges. */
@@ -137,32 +139,28 @@ function PaymentBody({
           titleFrom="dialog"
           focusTitle
           className="-mx-6 -mt-6"
-          title="Payment"
-          body={<>Court fee of {COURT_FEE} paid.</>}
+          title={t("submissionPaymentDialog_payment")}
+          body={<>{t("submissionPaymentDialog_courtFeeOfCourtFeePaid", { COURT_FEE })}</>}
         >
-          <Badge variant="success">Paid</Badge>
+          <Badge variant="success">{t("submissionPaymentDialog_paid")}</Badge>
           <span className="pt-1 text-body-compact text-muted-foreground">{submission.title}</span>
         </OutcomeHeader>
       ) : (
-      <DialogHeader>
-        <div className="flex flex-wrap items-center gap-2">
-          <DialogTitle
-            ref={titleRef}
-            tabIndex={-1}
-            className="text-title-s font-semibold outline-none"
-          >
-            Payment
-          </DialogTitle>
-          <Badge
-            variant={paid ? "success" : filingStatusVariant(submission.status)}
-          >
-            {paid ? "Paid" : filingStatusLabel(submission.status)}
-          </Badge>
-        </div>
-        <DialogDescription className="text-body-compact">
-          {submission.title}
-        </DialogDescription>
-      </DialogHeader>
+        <DialogHeader>
+          <div className="flex flex-wrap items-center gap-2">
+            <DialogTitle
+              ref={titleRef}
+              tabIndex={-1}
+              className="text-title-s font-semibold outline-none"
+            >
+              {t("submissionPaymentDialog_payment")}
+            </DialogTitle>
+            <Badge variant={paid ? "success" : filingStatusVariant(submission.status)}>
+              {paid ? t("submissionPaymentDialog_paid") : filingStatusLabel(submission.status)}
+            </Badge>
+          </div>
+          <DialogDescription className="text-body-compact">{submission.title}</DialogDescription>
+        </DialogHeader>
       )}
 
       {paid ? (
@@ -170,7 +168,7 @@ function PaymentBody({
           <DescriptionList className="rounded-lg bg-surface-sunken px-4 py-1">
             <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
               <DescriptionTerm className="text-body">
-                Payment date
+                {t("submissionPaymentDialog_paymentDate")}
               </DescriptionTerm>
               <DescriptionDetails className="text-body">
                 {formatCaseDate(new Date().toISOString())}
@@ -178,10 +176,10 @@ function PaymentBody({
             </DescriptionRow>
             <DescriptionRow className="grid-cols-[1fr_auto] items-center">
               <DescriptionTerm className="text-body">
-                Filing status
+                {t("submissionPaymentDialog_filingStatus")}
               </DescriptionTerm>
               <DescriptionDetails className="text-body font-medium">
-                Completed
+                {t("submissionPaymentDialog_completed")}
               </DescriptionDetails>
             </DescriptionRow>
           </DescriptionList>
@@ -193,17 +191,17 @@ function PaymentBody({
       <DialogFooter>
         {paid ? (
           <Button type="button" onClick={finish}>
-            Done
+            {t("submissionPaymentDialog_done")}
           </Button>
         ) : (
           <>
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Cancel
+                {t("common_cancel")}
               </Button>
             </DialogClose>
             <Button type="button" onClick={() => setPaid(true)}>
-              Make payment
+              {t("submissionPaymentDialog_makePayment")}
             </Button>
           </>
         )}

@@ -3,16 +3,14 @@ import { notFound } from "next/navigation";
 
 import { CaseBreadcrumbs } from "@/components/cases/case-breadcrumbs";
 import { RaiseApplicationEntry } from "@/components/cases/raise-application-form";
-import {
-  applicationsFile,
-  findDraftSubmission,
-} from "@/lib/cases/applications";
+import { applicationsFile, findDraftSubmission } from "@/lib/cases/applications";
 import { PAGE_GROUND, PAGE_GUTTER } from "@/components/shell/page-frame";
 import { findCaseRecord } from "@/lib/cases/party-cases";
 import { Breadcrumbs } from "@/components/shell/chrome";
 import { areaOf, originCrumb, safeOrigin } from "@/lib/nav/origin";
 import { cn } from "@/lib/utils";
 import { serverCourtText } from "@/lib/court/server";
+import { getTranslations } from "next-intl/server";
 
 function findCase(caseId: string) {
   return findCaseRecord(caseId);
@@ -33,12 +31,8 @@ function objectionTarget(caseId: string, applicationId: string | undefined) {
   const record = findCase(caseId);
   if (!record || !applicationId) return undefined;
   try {
-    const target = applicationsFile(record).submissions.find(
-      (item) => item.id === applicationId
-    );
-    return target &&
-      target.status === "pending-decision" &&
-      target.objectionsInvited === true
+    const target = applicationsFile(record).submissions.find((item) => item.id === applicationId);
+    return target && target.status === "pending-decision" && target.objectionsInvited === true
       ? target.id
       : undefined;
   } catch {
@@ -76,6 +70,7 @@ export default async function RaiseApplicationPage({
   params: Promise<{ caseId: string }>;
   searchParams: Promise<{ draft?: string; from?: string; objectTo?: string }>;
 }) {
+  const t = await getTranslations();
   const { caseId } = await params;
   const { draft, from, objectTo } = await searchParams;
   const record = findCase(caseId);
@@ -91,15 +86,12 @@ export default async function RaiseApplicationPage({
   return (
     <main className="flex flex-1 flex-col">
       {fromOutsideCases ? (
-        <Breadcrumbs
-          root={door}
-          crumbs={[{ label: record.caseNumber, mono: true }]}
-        />
+        <Breadcrumbs root={door} crumbs={[{ label: record.caseNumber, mono: true }]} />
       ) : (
         <CaseBreadcrumbs
           caseId={record.id}
           caseNumber={record.caseNumber}
-          trail={[{ label: "Raise application" }]}
+          trail={[{ label: t("applicationPage_raiseApplication") }]}
         />
       )}
       {/* View Case's ground, so this reads as the same place and the white

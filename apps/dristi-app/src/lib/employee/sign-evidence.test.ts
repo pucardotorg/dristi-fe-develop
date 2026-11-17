@@ -40,18 +40,14 @@ describe("SIGN_EVIDENCE_QUEUE", () => {
   });
 
   it("carries one case with several markings, so the cause alone cannot name a row", () => {
-    const rows = SIGN_EVIDENCE_QUEUE.filter(
-      (row) => row.caseNumber === CROWDED_CASE,
-    );
+    const rows = SIGN_EVIDENCE_QUEUE.filter((row) => row.caseNumber === CROWDED_CASE);
     assert.equal(rows.length, 5);
     assert.equal(new Set(rows.map((row) => row.document)).size, 5);
   });
 
   it("exercises all three exhibit series", () => {
     const series = new Set(
-      SIGN_EVIDENCE_QUEUE.map((row) =>
-        exhibitSeries(markedThroughWitness(row).series),
-      ),
+      SIGN_EVIDENCE_QUEUE.map((row) => exhibitSeries(markedThroughWitness(row).series)),
     );
     assert.deepEqual([...series].sort(), ["C", "D", "P"]);
   });
@@ -93,8 +89,7 @@ describe("evidenceNumber", () => {
     assert.equal(evidenceNumber(row), "P1");
 
     const defence = SIGN_EVIDENCE_QUEUE.find(
-      (entry) =>
-        entry.caseNumber === "ST/705/2026" && entry.markedThrough === "dw1",
+      (entry) => entry.caseNumber === "ST/705/2026" && entry.markedThrough === "dw1",
     )!;
     assert.equal(evidenceNumber(defence), "D1");
   });
@@ -114,10 +109,7 @@ describe("businessOfTheDay", () => {
   const row = SIGN_EVIDENCE_QUEUE[0];
 
   it("offers the court's draft line until the bench writes one", () => {
-    assert.equal(
-      businessOfTheDay(row),
-      "Document marked as evidence exhibit number P1",
-    );
+    assert.equal(businessOfTheDay(row), "Document marked as evidence exhibit number P1");
   });
 
   it("keeps the draft in step with a renumbered exhibit", () => {
@@ -146,11 +138,7 @@ describe("businessOfTheDay", () => {
   });
 
   it("treats writing the draft back verbatim as no line of the bench's own", () => {
-    const same = applyBusinessOfTheDay(
-      [row],
-      row.id,
-      `  ${draftBusinessOfTheDay(row)}  `,
-    )[0];
+    const same = applyBusinessOfTheDay([row], row.id, `  ${draftBusinessOfTheDay(row)}  `)[0];
     assert.equal(same.botd, undefined);
   });
 });
@@ -159,7 +147,10 @@ describe("takenSerials", () => {
   it("reports the numbers already used in this case's series, not the row's own", () => {
     const row = SIGN_EVIDENCE_QUEUE.find((entry) => entry.id.endsWith("702-2026-b"))!;
     const taken = takenSerials(SIGN_EVIDENCE_QUEUE, row, "P");
-    assert.deepEqual([...taken].sort((a, b) => a - b), [1, 3, 4, 5]);
+    assert.deepEqual(
+      [...taken].sort((a, b) => a - b),
+      [1, 3, 4, 5],
+    );
     assert.ok(!taken.has(2), "a marking must not collide with itself");
   });
 
@@ -178,11 +169,7 @@ describe("parseEvidenceSerial", () => {
 
   it("rejects what an exhibit number never is", () => {
     for (const value of ["", "0", "-3", "1.5", "P1", "1000", "٢"]) {
-      assert.equal(
-        parseEvidenceSerial(value),
-        null,
-        `${value} is not an exhibit number`,
-      );
+      assert.equal(parseEvidenceSerial(value), null, `${value} is not an exhibit number`);
     }
   });
 });
@@ -196,14 +183,8 @@ describe("filterSignEvidence", () => {
   });
 
   it("finds a case by number and a party by name, either case", () => {
-    assert.equal(
-      filterSignEvidence(SIGN_EVIDENCE_QUEUE, { query: CROWDED_CASE }).length,
-      5,
-    );
-    assert.equal(
-      filterSignEvidence(SIGN_EVIDENCE_QUEUE, { query: "mustanki" }).length,
-      5,
-    );
+    assert.equal(filterSignEvidence(SIGN_EVIDENCE_QUEUE, { query: CROWDED_CASE }).length, 5);
+    assert.equal(filterSignEvidence(SIGN_EVIDENCE_QUEUE, { query: "mustanki" }).length, 5);
   });
 
   it("reaches the two columns the reference's label does not name", () => {
@@ -217,10 +198,7 @@ describe("filterSignEvidence", () => {
   });
 
   it("matches nothing rather than everything when there is no hit", () => {
-    assert.deepEqual(
-      filterSignEvidence(SIGN_EVIDENCE_QUEUE, { query: "no such case" }),
-      [],
-    );
+    assert.deepEqual(filterSignEvidence(SIGN_EVIDENCE_QUEUE, { query: "no such case" }), []);
   });
 });
 

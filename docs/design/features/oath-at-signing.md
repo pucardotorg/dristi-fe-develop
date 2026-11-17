@@ -1,4 +1,5 @@
 # Oath at signing
+
 Updated: 2026-10-19
 Status: implemented — desktop render checked; review not independent
 
@@ -24,12 +25,12 @@ The prototype follows e-filing handover v46 §18 / §18.2 and scrutiny handover 
 
 ## Decisions
 
-Date | Decision and reason | Source | Status
---- | --- | --- | ---
-2026-10-19 | Oath per complainant, never advocate; recorded not uploaded; 2-minute stop | Handover `OTH-1`, `OTH-3` | implemented
-2026-10-19 | Upload-mode OTP moves to the party's own device; oath recorded there | Handover `SIG-05`, §18.3 | implemented
-2026-10-19 | Oath flag uses the ordinary field flag with a comment, not the document-issue flag (no re-upload applies) | Coordinator judgment | implemented
-2026-10-19 | `signing.oath` values in court profiles kept as prototype settings, not a state decision; `signWithOath` removed so one switch drives label and behaviour | Handover `OTH-2`, `Q-6` | implemented
+| Date       | Decision and reason                                                                                                                                       | Source                    | Status      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ----------- |
+| 2026-10-19 | Oath per complainant, never advocate; recorded not uploaded; 2-minute stop                                                                                | Handover `OTH-1`, `OTH-3` | implemented |
+| 2026-10-19 | Upload-mode OTP moves to the party's own device; oath recorded there                                                                                      | Handover `SIG-05`, §18.3  | implemented |
+| 2026-10-19 | Oath flag uses the ordinary field flag with a comment, not the document-issue flag (no re-upload applies)                                                 | Coordinator judgment      | implemented |
+| 2026-10-19 | `signing.oath` values in court profiles kept as prototype settings, not a state decision; `signWithOath` removed so one switch drives label and behaviour | Handover `OTH-2`, `Q-6`   | implemented |
 
 ## Changes and tradeoffs
 

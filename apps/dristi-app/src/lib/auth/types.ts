@@ -122,6 +122,4 @@ export type ResubmissionDetails = {
 };
 
 /** A national (10-digit) mobile number plus exactly one credential. */
-export type Credentials =
-  | { mobile: string; otp: string }
-  | { mobile: string; password: string };
+export type Credentials = { mobile: string; otp: string } | { mobile: string; password: string };

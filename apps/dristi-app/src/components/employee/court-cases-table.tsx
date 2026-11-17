@@ -23,14 +23,11 @@ import {
   type CourtCase,
 } from "@/lib/employee/cases";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { courtCaseStageLabel, formatListingDate } from "@/lib/employee/hearings";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * This court's register as a table: the file, the cause, where it has reached, when it is
@@ -65,6 +62,7 @@ export function CourtCasesTable({
   today: string;
   onOpen: (record: CourtCase) => void;
 }) {
+  const t = useTranslations();
   return (
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
@@ -73,19 +71,19 @@ export function CourtCasesTable({
               exception here cost the screen its copy affordance, because the number was
               the row's opener and a control cannot nest another (owner, 2026-09-18). */}
           <TableHead className={cn(TABLE_HEAD, "min-w-64 whitespace-normal")}>
-            Case name
+            {t("courtCasesTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("courtCasesTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
+            {t("courtCasesTable_stage")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Next hearing
+            {t("courtCasesTable_nextHearing")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
-            Priority
+            {t("courtCasesTable_priority")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -102,21 +100,22 @@ export function CourtCasesTable({
           return (
             <TableRow key={record.id} {...rowActivation(tableRowClass())}>
               {/* The cause is the opener; the number beside it is a value to take. */}
-              <TableCell
-                className={cn(TABLE_CELL, "min-w-64 whitespace-normal")}
-              >
+              <TableCell className={cn(TABLE_CELL, "min-w-64 whitespace-normal")}>
                 <button
                   type="button"
                   onClick={() => onOpen(record)}
                   {...rowOpener}
                   className={cn(rowOpenerClass, "font-medium")}
                 >
-                  <span className="sr-only">Open </span>
+                  <span className="sr-only">{t("courtCasesTable_open")} </span>
                   {courtCaseTitle(record)}
                 </button>
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                <Identifier value={record.caseNumber} label="case number" />
+                <Identifier
+                  value={record.caseNumber}
+                  label={t("courtCasesTable_caseNumberLabel")}
+                />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
                 {courtCaseStageLabel(record.stage)}
@@ -124,13 +123,11 @@ export function CourtCasesTable({
               {/* "No date fixed" rather than a dash: a case waiting for cognizance has
                   no date because none has been given, which is a fact about it and not
                   a hole in the row. */}
-              <TableCell
-                className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}
-              >
+              <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>
                 {next ? (
                   formatListingDate(next)
                 ) : (
-                  <span className="text-muted-foreground">No date fixed</span>
+                  <span className="text-muted-foreground">{t("courtCasesTable_noDateFixed")}</span>
                 )}
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "min-w-40 whitespace-normal")}>
@@ -138,7 +135,7 @@ export function CourtCasesTable({
                   <span className="flex flex-wrap gap-1.5">
                     {record.flags.map((flag) => (
                       <Badge key={flag} variant="outline">
-                        {COURT_CASE_FLAG_LABEL[flag]}
+                        {t(COURT_CASE_FLAG_LABEL[flag])}
                       </Badge>
                     ))}
                   </span>
@@ -169,15 +166,13 @@ export function CourtCaseItemList({
   today: string;
   onOpen: (record: CourtCase) => void;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((record) => {
         const next = nextHearingDay(record, today);
         return (
-          <QueueItemRow
-            key={record.id}
-            className="flex flex-col gap-2"
-          >
+          <QueueItemRow key={record.id} className="flex flex-col gap-2">
             {/* Same order as the table above it: the cause opens the record, the number
                 sits under it as a value to take. */}
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -187,7 +182,7 @@ export function CourtCaseItemList({
                 {...rowOpener}
                 className={cn(rowOpenerClass, "w-fit text-body font-semibold")}
               >
-                <span className="sr-only">Open </span>
+                <span className="sr-only">{t("courtCasesTable_open")} </span>
                 {courtCaseTitle(record)}
               </button>
               <span className="text-body-compact text-muted-foreground">
@@ -195,16 +190,20 @@ export function CourtCaseItemList({
               </span>
             </div>
             <span className="text-body-compact text-muted-foreground">
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={t("courtCasesTable_caseNumberLabel")} />
             </span>
             <span className="text-body-compact text-muted-foreground tabular-nums">
-              {next ? `Next hearing ${formatListingDate(next)}` : "No date fixed"}
+              {next
+                ? t("courtCasesTable_nextHearingFormatListingDate", {
+                    formatListingDate: formatListingDate(next),
+                  })
+                : t("courtCasesTable_noDateFixed")}
             </span>
             {record.flags.length === 0 ? null : (
               <div className="flex flex-wrap gap-1.5">
                 {record.flags.map((flag) => (
                   <Badge key={flag} variant="outline">
-                    {COURT_CASE_FLAG_LABEL[flag]}
+                    {t(COURT_CASE_FLAG_LABEL[flag])}
                   </Badge>
                 ))}
               </div>

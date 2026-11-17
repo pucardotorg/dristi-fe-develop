@@ -15,7 +15,7 @@ describe("stepForValidationField", () => {
     // from the complainant.
     assert.equal(
       stepForValidationField("participants.3f1c2a9e-7b4d-4e8a-9c61-2d5f8a0b7e14"),
-      "complainant"
+      "complainant",
     );
   });
 

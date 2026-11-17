@@ -18,6 +18,7 @@ import { CasesItemList } from "./cases-item-list";
 import { CARDS_ONLY, TABLE_ONLY } from "./cases-layout";
 import { CasesPageSizeSelect } from "./cases-page-size";
 import { CasesTable } from "./cases-table";
+import { useTranslations } from "next-intl";
 
 export type PageLink = {
   href: string;
@@ -34,9 +35,7 @@ function pageWindow(page: number, pageCount: number): (number | "gap")[] {
     .sort((a, b) => a - b);
 
   return visible.flatMap((entry, index) =>
-    index > 0 && entry - visible[index - 1] > 1
-      ? ["gap" as const, entry]
-      : [entry]
+    index > 0 && entry - visible[index - 1] > 1 ? ["gap" as const, entry] : [entry],
   );
 }
 
@@ -75,7 +74,7 @@ export function CasesListResults({
           // of pushing the page horizontally.
           "min-w-0",
           framed && "overflow-x-auto rounded-xl border border-hairline bg-card shadow-raised",
-          !framed && "overflow-x-auto"
+          !framed && "overflow-x-auto",
         )}
       >
         <div className={TABLE_ONLY}>
@@ -137,6 +136,7 @@ export function CasesPager({
   onPageSizeChange: (pageSize: CasesPageSize) => void;
   pageLink: (page: number) => PageLink;
 }) {
+  const t = useTranslations();
   // On a phone the count and the page size hold the two ends of one line and
   // the pager centres under them. Left-stacked, the three read as dropped there
   // (owner, Sept 21).
@@ -145,16 +145,14 @@ export function CasesPager({
       <div className="flex flex-wrap items-center justify-between gap-3 md:justify-start">
         {/* The page's slice of the matched set. The card heading above says how
             many matched out of the whole book, so this line only names rows. */}
-        <p
-          className="text-body-compact text-muted-foreground tabular-nums"
-          aria-live="polite"
-        >
-          Rows {from}–{to} of {total}
+        <p className="text-body-compact text-muted-foreground tabular-nums" aria-live="polite">
+          {t("casesListResults_rowsFromToOfTotal", {
+            from: String(from),
+            to: String(to),
+            total: String(total),
+          })}
         </p>
-        <CasesPageSizeSelect
-          value={pageSize}
-          onChange={onPageSizeChange}
-        />
+        <CasesPageSizeSelect value={pageSize} onChange={onPageSizeChange} />
       </div>
       {pageCount > 1 ? (
         <Pagination className="mx-0 w-full justify-center md:w-auto md:justify-end">
@@ -164,23 +162,21 @@ export function CasesPager({
                 <PaginationPrevious {...pageLink(page - 1)} />
               </PaginationItem>
             ) : null}
-            {pageWindow(page, pageCount).map(
-              (entry, index) => (
-                <PaginationItem key={`${entry}-${index}`}>
-                  {entry === "gap" ? (
-                    <PaginationEllipsis />
-                  ) : (
-                    <PaginationLink
-                      {...pageLink(entry)}
-                      isActive={entry === page}
-                      aria-label={`Go to page ${entry}`}
-                    >
-                      {entry}
-                    </PaginationLink>
-                  )}
-                </PaginationItem>
-              )
-            )}
+            {pageWindow(page, pageCount).map((entry, index) => (
+              <PaginationItem key={`${entry}-${index}`}>
+                {entry === "gap" ? (
+                  <PaginationEllipsis />
+                ) : (
+                  <PaginationLink
+                    {...pageLink(entry)}
+                    isActive={entry === page}
+                    aria-label={t("casesListResults_goToPageEntry", { entry: String(entry) })}
+                  >
+                    {entry}
+                  </PaginationLink>
+                )}
+              </PaginationItem>
+            ))}
             {page < pageCount ? (
               <PaginationItem>
                 <PaginationNext {...pageLink(page + 1)} />

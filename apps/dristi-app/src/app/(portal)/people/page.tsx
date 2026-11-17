@@ -7,14 +7,16 @@ import { UsersIcon } from "lucide-react";
 import { PeoplePage } from "@/components/access/people-page";
 import { useLocale } from "@/components/shell/locale";
 import { ProfileScopedEmpty } from "@/components/shell/profile-scoped-empty";
+import { useTranslations } from "next-intl";
 
 /** People — the office. Opening a person goes to their own page. */
 export default function Page() {
+  const t = useTranslations();
   const { locale } = useLocale();
   return (
     <ProfileScopedEmpty
-      title="No one has access yet"
-      description="People you share your cases with — advocates and office staff — appear here."
+      title={t("peoplePage_noOneHasAccessYet")}
+      description={t("peoplePage_peopleYouShareYourCasesWith")}
       icon={<UsersIcon aria-hidden />}
     >
       <PeoplePage locale={locale} />

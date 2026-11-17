@@ -10,13 +10,7 @@ import { useFiling } from "@/lib/filing/store";
 import type { IntakeSlot } from "@/lib/filing/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemMedia,
-  ItemTitle,
-} from "@/components/ui/item";
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import {
   Sheet,
   SheetContent,
@@ -27,6 +21,7 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Lightbox } from "@/components/filing/lightbox";
+import { useTranslations } from "next-intl";
 
 function DrawerRow({
   slot,
@@ -35,6 +30,7 @@ function DrawerRow({
   slot: IntakeSlot;
   onOpen: (src: string, alt: string) => void;
 }) {
+  const t = useTranslations();
   const preview = useFilePreview(slot.file);
   const img = preview.status === "ready" ? preview.imageUrl : null;
   const body = (
@@ -50,7 +46,7 @@ function DrawerRow({
           <img src={img} alt="" />
         ) : (
           <span className="text-caption font-semibold text-muted-foreground">
-            {slot.file?.ext ?? "FILE"}
+            {slot.file?.ext ?? t("uploadedDocsDrawer_file")}
           </span>
         )}
       </ItemMedia>
@@ -62,10 +58,7 @@ function DrawerRow({
   );
   return img ? (
     <Item asChild className="bg-surface-sunken hover:bg-accent">
-      <button
-        type="button"
-        onClick={() => onOpen(img, `Uploaded ${slot.label.toLowerCase()}`)}
-      >
+      <button type="button" onClick={() => onOpen(img, `Uploaded ${slot.label.toLowerCase()}`)}>
         {body}
       </button>
     </Item>
@@ -85,6 +78,7 @@ export function UploadedDocsDrawer({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations();
   const { draft, hrefFor } = useFiling();
   const files = uploadedIntakeSlots(draft.intake);
   const [lightbox, setLightbox] = React.useState<{ src: string; alt: string } | null>(null);
@@ -94,14 +88,14 @@ export function UploadedDocsDrawer({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="right" className="w-full data-[side=right]:w-full sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>Uploaded documents</SheetTitle>
-            <SheetDescription>Read in your browser to pre-fill your form</SheetDescription>
+            <SheetTitle>{t("uploadedDocsDrawer_uploadedDocuments")}</SheetTitle>
+            <SheetDescription>{t("uploadedDocsDrawer_readInYourBrowserToPre")}</SheetDescription>
           </SheetHeader>
 
           <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-4">
             {files.length === 0 ? (
               <p className="text-body-compact text-muted-foreground">
-                Nothing uploaded yet.
+                {t("uploadedDocsDrawer_nothingUploadedYet")}
               </p>
             ) : (
               files.map((slot) => (
@@ -118,13 +112,13 @@ export function UploadedDocsDrawer({
             <Button asChild className="w-full">
               <Link href={hrefFor("upload")}>
                 <UploadIcon data-icon="inline-start" aria-hidden />
-                Upload more documents
+                {t("uploadedDocsDrawer_uploadMoreDocuments")}
               </Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
               <Link href={hrefFor("upload")}>
                 <FileTextIcon data-icon="inline-start" aria-hidden />
-                Manage documents
+                {t("uploadedDocsDrawer_manageDocuments")}
               </Link>
             </Button>
           </SheetFooter>
@@ -142,12 +136,13 @@ export function UploadedDocsDrawer({
 
 /** Small count chip used next to the drawer trigger. */
 export function UploadedCountBadge() {
+  const t = useTranslations();
   const { draft } = useFiling();
   const n = uploadedIntakeSlots(draft.intake).length;
   return (
     <Badge variant="secondary" className="tabular-nums">
       {n}
-      <span className="sr-only">uploaded</span>
+      <span className="sr-only">{t("uploadedDocsDrawer_uploaded")}</span>
     </Badge>
   );
 }

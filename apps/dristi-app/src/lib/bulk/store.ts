@@ -24,7 +24,10 @@ export interface BulkStore {
   /** Add a new batch, numbering it. */
   insertBatch(batch: Omit<Batch, "number">): Promise<Batch>;
   /** Change one batch in place; `change` returns the new one, or `null` to leave it. */
-  updateBatch(id: string, change: (batch: Batch, all: Batch[]) => Batch | null): Promise<Batch | null>;
+  updateBatch(
+    id: string,
+    change: (batch: Batch, all: Batch[]) => Batch | null,
+  ): Promise<Batch | null>;
   /** Replace several batches at once: clubbing closes the originals and opens a new one. */
   applyBatches(change: (all: Batch[]) => { all: Batch[]; result: Batch }): Promise<Batch>;
   saveFile(bytes: Uint8Array, name: string, type: string): Promise<StoredFileRef>;

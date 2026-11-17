@@ -1,4 +1,5 @@
 # Take cognizance — PRD alignment and View case
+
 Updated: 2026-10-13
 Status: implemented
 
@@ -17,16 +18,16 @@ the court's case view: the advocate's case screen, from the same code, read as t
 
 ## Decisions
 
-| Date | Decision and reason | Source | Status |
-|---|---|---|---|
-| 2026-10-13 | Fix PRD mismatches 1–6: filing date on both tabs; drop date of receipt of information (PRD v3); notice check from the return memo date with the v4 sentence; label "Reason for return of cheque"; PRD tooltip on date of return of demand notice; cheque facts and files repeat per cheque | Owner | Implemented |
-| 2026-10-13 | Leave the extra jurisdiction check and the case summary strip (not in the PRD) as they are for now | Owner | Open |
-| 2026-10-13 | View case leaves the cognizance screen exactly as it is and opens the case in a new tab | Owner | Implemented |
-| 2026-10-13 | The court's case view is the advocate's, minus Share access, with Generate order in place of Make filings — same code, conditional on who the user is, never duplicated | Owner | Implemented |
-| 2026-10-13 | Several cheques are captioned "Cheque n of N"; one-cheque files keep the unnamed chunks (owner, 2026-09-15) | Implementation choice | Implemented |
-| 2026-10-13 | The court view drops the advocate's back arrow; the court top bar's trail is the way back, and a new tab has nothing to go back to | Implementation choice | Implemented |
-| 2026-10-13 | Order variant C opens outside a hearing instead of silently falling back to A: no attendance, applications or automatic template chooser; the act's items fixed as in A and B | Owner | Implemented |
-| 2026-10-13 | In C, a pre-loaded *Scheduling of hearing date* item becomes C's Next hearing section, so the date is asked for once | Implementation choice | Implemented |
+| Date       | Decision and reason                                                                                                                                                                                                                                                                        | Source                | Status      |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- | ----------- |
+| 2026-10-13 | Fix PRD mismatches 1–6: filing date on both tabs; drop date of receipt of information (PRD v3); notice check from the return memo date with the v4 sentence; label "Reason for return of cheque"; PRD tooltip on date of return of demand notice; cheque facts and files repeat per cheque | Owner                 | Implemented |
+| 2026-10-13 | Leave the extra jurisdiction check and the case summary strip (not in the PRD) as they are for now                                                                                                                                                                                         | Owner                 | Open        |
+| 2026-10-13 | View case leaves the cognizance screen exactly as it is and opens the case in a new tab                                                                                                                                                                                                    | Owner                 | Implemented |
+| 2026-10-13 | The court's case view is the advocate's, minus Share access, with Generate order in place of Make filings — same code, conditional on who the user is, never duplicated                                                                                                                    | Owner                 | Implemented |
+| 2026-10-13 | Several cheques are captioned "Cheque n of N"; one-cheque files keep the unnamed chunks (owner, 2026-09-15)                                                                                                                                                                                | Implementation choice | Implemented |
+| 2026-10-13 | The court view drops the advocate's back arrow; the court top bar's trail is the way back, and a new tab has nothing to go back to                                                                                                                                                         | Implementation choice | Implemented |
+| 2026-10-13 | Order variant C opens outside a hearing instead of silently falling back to A: no attendance, applications or automatic template chooser; the act's items fixed as in A and B                                                                                                              | Owner                 | Implemented |
+| 2026-10-13 | In C, a pre-loaded _Scheduling of hearing date_ item becomes C's Next hearing section, so the date is asked for once                                                                                                                                                                       | Implementation choice | Implemented |
 
 ## Changes and tradeoffs
 

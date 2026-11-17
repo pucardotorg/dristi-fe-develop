@@ -29,6 +29,19 @@
     "check:lint-exceptions": "node scripts/check-lint-exceptions.mjs",
     "check:data-moves": "node scripts/check-data-moves.mjs",
     "verify:agents": "node scripts/verify-agent-work.mjs agents",
-    "verify:ui": "node scripts/verify-agent-work.mjs ui"
+    "verify:ui": "node scripts/verify-agent-work.mjs ui",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "simple-git-hooks"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*": "prettier --write --ignore-unknown"
+  },
+  "devDependencies": {
+    "lint-staged": "^17.6.1",
+    "simple-git-hooks": "^2.14.0"
   }
 }

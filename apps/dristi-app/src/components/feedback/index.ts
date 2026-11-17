@@ -6,7 +6,19 @@
  * sets its own inset when it holds a `StatusMark`.
  */
 export { StatusMark, type MarkSize, type MarkTone } from "@/components/ui/status-mark";
-export { OutcomeAmount, OutcomeHeader, OutcomeSummary, OutcomeTally, PageOutcome } from "@/components/ui/outcome";
-export { LANDING, StatusFieldControl, StatusFieldError, StatusLine, useRefusal } from "@/components/ui/status-line";
+export {
+  OutcomeAmount,
+  OutcomeHeader,
+  OutcomeSummary,
+  OutcomeTally,
+  PageOutcome,
+} from "@/components/ui/outcome";
+export {
+  LANDING,
+  StatusFieldControl,
+  StatusFieldError,
+  StatusLine,
+  useRefusal,
+} from "@/components/ui/status-line";
 export { ConfirmMark, IrreversibleNote } from "@/components/ui/confirm-mark";
 export { notify, TOAST_LIFE_MS } from "@/components/ui/notify";

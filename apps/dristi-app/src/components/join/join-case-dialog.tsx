@@ -4,28 +4,31 @@ import { SUMMONS_FACTS } from "@/lib/summons/content";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { ArrowLeftIcon, ArrowRightIcon, ExternalLinkIcon, FileTextIcon, SearchIcon, SearchXIcon, UserCheckIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ExternalLinkIcon,
+  FileTextIcon,
+  SearchIcon,
+  SearchXIcon,
+  UserCheckIcon,
+} from "lucide-react";
 
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { JOIN_DEMO_CASE_ID } from "@/lib/cases/party-cases";
 import { useStageFade } from "@/components/chrome/stage-fade";
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DocumentSlot } from "@/components/ui/document-slot";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
@@ -62,6 +65,7 @@ import {
   type JoinCase,
 } from "@/lib/join/content";
 import { OutcomeHeader, StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * Post-login join-a-case dialog.
@@ -136,6 +140,7 @@ export function JoinCaseDialog({
   locale: Locale;
   onJoined: (result: JoinResult) => void;
 }) {
+  const t = useTranslations();
   /* From the summons the case is known but the code is still asked, as on every other
      way in: a link alone is not proof of holding the summons (owner, 2026-10-14). */
   const initialStage: Stage =
@@ -352,723 +357,732 @@ export function JoinCaseDialog({
 
   return (
     <>
-    <Dialog open={open && !bailOpen} onOpenChange={handleOpenChange}>
-      <FlowDialogContent
-        lang={locale}
-        rise
-        sheet
-        style={panelStyle}
-        className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl"
-        // A click outside never closes it (FlowDialogContent), which also keeps the PoA
-        // party combobox's portalled list clickable. Escape closes the list first.
-        onEscapeKeyDown={(event) => {
-          if (document.querySelector('[data-slot="combobox-content"]')) event.preventDefault();
-        }}
-      >
-        {/* The same header on every stage (owner, Oct 6), except the outcome: that takes
+      <Dialog open={open && !bailOpen} onOpenChange={handleOpenChange}>
+        <FlowDialogContent
+          lang={locale}
+          rise
+          sheet
+          style={panelStyle}
+          className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl"
+          // A click outside never closes it (FlowDialogContent), which also keeps the PoA
+          // party combobox's portalled list clickable. Escape closes the list first.
+          onEscapeKeyDown={(event) => {
+            if (document.querySelector('[data-slot="combobox-content"]')) event.preventDefault();
+          }}
+        >
+          {/* The same header on every stage (owner, Oct 6), except the outcome: that takes
             the window over, as the owner approved on the states board (Oct 29, skill
             `feedback-states`). */}
-        {stage === "done" && !leaving ? (
-          <OutcomeHeader
-            titleFrom="dialog"
-            focusTitle
-            title={pick(joinDialog.joinedTitle, locale)}
-            body={fill(
-              kind === "poa" ? joinDialog.poaJoinedBody : joinDialog.joinedBody,
-              locale,
-              {
-                name:
-                  kind === "poa"
-                    ? poaSelected.map((entry) => entry.name).join(", ")
-                    : (party?.name ?? ""),
-              },
-            )}
-          />
-        ) : (
-        <DialogHeader className="shrink-0 gap-2 border-b border-hairline p-6 pr-16 text-left">
-          <DialogTitle
-            ref={titleRef}
-            tabIndex={-1}
-            className="text-title-s font-semibold text-balance outline-none"
-          >
-            {leaving ? (
-              pick(joinDialog.leaveTitle, locale)
-            ) : (
-              <>
-                {stage === "done"
-                  ? pick(joinDialog.joinedTitle, locale)
-                  : isSummonsIntro
-                    ? pick(summonsModal.heading, locale)
-                    : pick(joinDialog.title, locale)}
-              </>
-            )}
-          </DialogTitle>
-          <DialogDescription className="text-body-compact text-pretty text-muted-foreground">
-            {leaving ? (
-              pick(joinDialog.leaveBody, locale)
-            ) : (
-              <>
-                {stage === "done"
-                  ? fill(
-                      kind === "poa" ? joinDialog.poaJoinedBody : joinDialog.joinedBody,
-                      locale,
-                      {
-                        name:
-                          kind === "poa"
-                            ? poaSelected.map((entry) => entry.name).join(", ")
-                            : (party?.name ?? ""),
-                      },
-                    )
-                  : isSummonsIntro
-                    ? pick(summonsModal.body, locale)
-                    : stage === "lookup"
-                      ? pick(joinDialog.lookupBody, locale)
-                      : stage === "code"
-                        ? pick(
-                            mode === "summons" ? joinDialog.codeSummonsBody : joinDialog.codeBody,
-                            locale,
-                          )
-                        : stage === "details"
-                          ? pick(joinDialog.detailsBody, locale)
-                          : pick(joinDialog.identityBody, locale)}
-              </>
-            )}
-          </DialogDescription>
-        </DialogHeader>
-        )}
-
-        {/* The stage: warm canvas, white panels. It hugs each step's height, which
-            changes while the window is faded out (`useStageFade`). */}
-        <div
-          className={cn(
-            "relative flex min-h-0 flex-col overflow-hidden bg-muted dark:bg-background",
-            "shrink",
-          )}
-        >
-        <div
-          key={stage}
-          className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-y-auto",
-            sceneClassName,
-          )}
-        >
-        <div className="flex flex-col p-4 sm:p-6">
-          {/* ------------------------------------------------------- lookup */}
-          {stage === "lookup" ? (
-            <form
-              id="join-lookup"
-              noValidate
-              className={JOIN_PANEL}
-              onSubmit={submitLookup}
-            >
-              <Field data-invalid={queryTouched && query.trim().length < 4}>
-                <FieldLabel>{pick(joinDialog.lookupLabel, locale)}</FieldLabel>
-                <Input
-                  autoFocus
-                  value={query}
-                  placeholder={pick(joinDialog.lookupPlaceholder, locale)}
-                  onChange={(event) => {
-                    setQuery(event.target.value);
-                    setQueryTouched(false);
-                    setLookupMiss(false);
-                  }}
-                />
-                <FieldError>
-                  {queryTouched && query.trim().length < 4
-                    ? pick(joinDialog.lookupError, locale)
-                    : null}
-                </FieldError>
-              </Field>
-              {lookupMiss ? (
-                <StatusLine tone="neutral" icon={SearchXIcon}>{pick(joinDialog.lookupMiss, locale)}</StatusLine>
-              ) : null}
-            </form>
-          ) : null}
-
-          {/* --------------------------------------------------- access code */}
-          {stage === "code" && joinCase ? (
-            <form id="join-code" noValidate className="flex flex-col gap-4" onSubmit={submitCode}>
-              {/* Before the code: title, case number and court only — no amount
-                  (JOIN-11). Everything deeper stays behind the code. */}
-              <CaseIdentity
-                joinCase={joinCase}
-                locale={locale}
-                lead={pick(joinDialog.codeCaseLead, locale)}
-              />
-              <Banner variant="info" className="items-start">
-                {pick(mode === "summons" ? joinDialog.codeSummonsNote : joinDialog.codeNote, locale)}
-              </Banner>
-              <div className={JOIN_PANEL}>
-              <Field data-invalid={codeTouched && code.length !== CODE_LENGTH}>
-                <FieldLabel>{pick(joinDialog.codeLabel, locale)}</FieldLabel>
-                <InputOTP
-                  maxLength={CODE_LENGTH}
-                  pattern={REGEXP_ONLY_DIGITS}
-                  inputMode="numeric"
-                  value={code}
-                  onChange={(value) => {
-                    setCode(value);
-                    setCodeTouched(false);
-                  }}
-                >
-                  <InputOTPGroup className="w-full">
-                    {Array.from({ length: CODE_LENGTH }, (_, index) => (
-                      <InputOTPSlot
-                        key={index}
-                        index={index}
-                        className="h-12 w-auto flex-1 text-body font-semibold"
-                      />
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
-                <FieldError>
-                  {codeTouched && code.length !== CODE_LENGTH
-                    ? pick(joinDialog.codeError, locale)
-                    : null}
-                </FieldError>
-              </Field>
-              </div>
-            </form>
-          ) : null}
-
-          {/* ------------------------------------------------------ details */}
-          {stage === "details" && joinCase ? (
-            <div className="flex flex-col gap-4">
-              <CaseDetails joinCase={joinCase} locale={locale} />
-              <Banner variant="info" className="items-start">{pick(joinDialog.acknowledgeNote, locale)}</Banner>
-              {downloadNotice ? (
-                <Banner variant="info" className="items-start">
-                  {pick(joinDialog.downloadCaseFilePrototype, locale)}
-                </Banner>
-              ) : null}
-            </div>
-          ) : null}
-
-          {/* ----------------------------------------------------- identity */}
-          {stage === "identity" && joinCase ? (
-            <form
-              id="join-identity"
-              noValidate
-              className={cn(JOIN_PANEL, "gap-6")}
-              onSubmit={submitIdentity}
-            >
-              <Field data-invalid={identityTouched && !kind}>
-                <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                  {pick(joinDialog.whoLegend, locale)}
-                </FieldLabel>
-                <RadioGroup
-                  value={kind}
-                  onValueChange={(value) => chooseKind(value as JoinerKind)}
-                  className="flex flex-col gap-1"
-                >
-                  <div className="flex min-h-10 items-center gap-2">
-                    <RadioGroupItem value="self" id="join-kind-self" />
-                    <Label htmlFor="join-kind-self">
-                      {pick(joinDialog.whoSelf, locale)}
-                    </Label>
-                  </div>
-                  <div className="flex min-h-10 items-center gap-2">
-                    <RadioGroupItem value="poa" id="join-kind-poa" />
-                    <Label htmlFor="join-kind-poa">
-                      {pick(joinDialog.whoPoa, locale)}
-                    </Label>
-                  </div>
-                </RadioGroup>
-                <FieldError>
-                  {identityTouched && !kind
-                    ? pick(joinDialog.whichError, locale)
-                    : null}
-                </FieldError>
-                <Accordion type="single" collapsible>
-                  <AccordionItem value="accused-explain" className="border-b-0">
-                    <AccordionTrigger className="py-2 text-caption text-muted-foreground">
-                      {pick(joinDialog.accusedExplainTitle, locale)}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-body-compact text-muted-foreground">
-                      {pick(joinDialog.accusedExplainBody, locale)}
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="poa-explain" className="border-b-0">
-                    <AccordionTrigger className="py-2 text-caption text-muted-foreground">
-                      {pick(joinDialog.poaExplainTitle, locale)}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-body-compact text-muted-foreground">
-                      {pick(joinDialog.poaExplainBody, locale)}
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </Field>
-
-              {kind === "self" ? (
-                <Field data-invalid={identityTouched && !partyId}>
-                  <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                    {pick(joinDialog.whichSelfLabel, locale)}
-                  </FieldLabel>
-                  <Select
-                    value={partyId}
-                    onValueChange={(value) => {
-                      setPartyId(value);
-                      setIdentityTouched(false);
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={pick(joinDialog.whichPlaceholder, locale)}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {joinCase.accused.map((entry) => (
-                        <SelectItem key={entry.id} value={entry.id}>
-                          {entry.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FieldError>
-                    {identityTouched && !partyId
-                      ? pick(joinDialog.whichError, locale)
-                      : null}
-                  </FieldError>
-                  {party && !blocked ? (
-                    <FieldDescription>
-                      {fill(joinDialog.mappingNote, locale, { name: party.name })}
-                    </FieldDescription>
-                  ) : null}
-                </Field>
-              ) : null}
-
-              {party && blocked ? (
-                /* A dead end, not bad news: neutral (skill `feedback-states`). */
-                <StatusLine tone="neutral" icon={UserCheckIcon}>
-                  {fill(joinDialog.alreadyJoined, locale, { name: party.name })}
-                </StatusLine>
-              ) : null}
-
-              {kind === "self" && party && !blocked ? (
-                <Field data-invalid={identityTouched && !appearance} className="gap-4">
-                  <FieldLabel className="block w-full text-body font-semibold leading-snug">
-                    {pick(joinDialog.appearLegend, locale)}
-                  </FieldLabel>
-                  <RadioGroup
-                    value={appearance}
-                    onValueChange={(value) => {
-                      setAppearance(value as Appearance);
-                      setIdentityTouched(false);
-                    }}
-                    className="flex flex-col gap-3"
-                  >
-                    <div className="flex items-start gap-2">
-                      <RadioGroupItem value="hire" id="join-appear-hire" className="mt-2.5" />
-                      <div className="flex min-w-0 flex-col items-start gap-0.5">
-                        <div className="flex min-h-10 items-center gap-1">
-                          <Label htmlFor="join-appear-hire" className="text-left leading-snug">
-                            {pick(joinDialog.appearHire, locale)}
-                          </Label>
-                          {/* Straight to free legal aid at the District Legal Services
-                              Authority (owner, 2026-10-14), not a note about it. */}
-                          <Button asChild variant="link" size="sm" className="h-auto px-1">
-                            <a href={joinDialog.findAdvocateHref} target="_blank" rel="noreferrer">
-                              {pick(joinDialog.openBarCouncil, locale)}
-                              <span className="sr-only"> (opens in a new tab)</span>
-                              <ExternalLinkIcon data-icon="inline-end" aria-hidden />
-                            </a>
-                          </Button>
-                        </div>
-                        <Label htmlFor="join-appear-hire" className="text-caption font-normal text-muted-foreground">
-                          {pick(joinDialog.appearHireHint, locale)}
-                        </Label>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <RadioGroupItem
-                        value="advocate"
-                        id="join-appear-advocate"
-                        className="mt-2.5"
-                      />
-                      <Label
-                        htmlFor="join-appear-advocate"
-                        className="flex min-h-10 flex-col items-start justify-center gap-0.5 text-left leading-snug"
-                      >
-                        {pick(joinDialog.appearAdvocate, locale)}
-                        <span className="text-caption font-normal text-muted-foreground">
-                          {pick(joinDialog.appearAdvocateHint, locale)}
-                        </span>
-                      </Label>
-                    </div>
-                    {accusedAdvocateJoined ? null : (
-                      <div className="flex items-start gap-2">
-                        <RadioGroupItem
-                          value="self"
-                          id="join-appear-self"
-                          className="mt-2.5"
-                        />
-                        <Label
-                          htmlFor="join-appear-self"
-                          className="flex min-h-10 flex-col items-start justify-center gap-0.5 text-left leading-snug"
-                        >
-                          {pick(joinDialog.appearSelf, locale)}
-                          <span className="text-caption font-normal text-muted-foreground">
-                            {pick(joinDialog.appearSelfHint, locale)}
-                          </span>
-                        </Label>
-                      </div>
-                    )}
-                  </RadioGroup>
-                  {accusedAdvocateJoined ? (
-                    <FieldDescription>
-                      {pick(joinDialog.appearSelfUnavailable, locale)}
-                    </FieldDescription>
-                  ) : null}
-                  <FieldError>
-                    {identityTouched && !appearance
-                      ? pick(joinDialog.appearError, locale)
-                      : null}
-                  </FieldError>
-                </Field>
-              ) : null}
-
-              {/* JOIN-27: a party in person uploads an affidavit; access is immediate. */}
-              {kind === "self" && party && !blocked && appearance === "self" ? (
-                <Field data-invalid={identityTouched && !pipFile}>
-                  <FieldLabel>{pick(joinDialog.pipDocLabel, locale)}</FieldLabel>
-                  <input
-                    ref={pipInputRef}
-                    type="file"
-                    className="hidden"
-                    tabIndex={-1}
-                    aria-hidden="true"
-                    accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) {
-                        setPipFile(file);
-                        setIdentityTouched(false);
-                      }
-                    }}
-                  />
-                  <DocumentSlot
-                    status={pipFile ? "filled" : "empty"}
-                    media="icon"
-                    label={pick(joinDialog.pipDocLabel, locale)}
-                    required
-                    filename={pipFile?.name}
-                    meta={pipFile ? fileSize(pipFile.size) : undefined}
-                    thumbnail={<FileTextIcon className="size-5" aria-hidden />}
-                    onChooseFile={() => pipInputRef.current?.click()}
-                    copy={{
-                      optional: locale === "ml" ? "നിർബന്ധമല്ല" : "Optional",
-                      noFile:
-                        locale === "ml"
-                          ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല"
-                          : "No file chosen yet",
-                      chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : "Choose file",
-                    }}
-                  />
-                  <FieldDescription>{pick(joinDialog.pipDocHelp, locale)}</FieldDescription>
-                  <FieldError>
-                    {identityTouched && !pipFile ? pick(joinDialog.pipDocError, locale) : null}
-                  </FieldError>
-                </Field>
-              ) : null}
-
-              {kind === "poa" ? (
-                <PoaJoinFields
-                  joinCase={joinCase}
-                  locale={locale}
-                  side={poaSide}
-                  onSideChange={choosePoaSide}
-                  partyIds={poaPartyIds}
-                  onPartyIdsChange={(ids) => {
-                    setPoaPartyIds(ids);
-                    setIdentityTouched(false);
-                  }}
-                  files={poaFiles}
-                  onFileChange={(id, file) => {
-                    setPoaFiles((current) => ({ ...current, [id]: file }));
-                    setIdentityTouched(false);
-                  }}
-                  phones={poaPhones}
-                  onPhoneChange={(id, value) => {
-                    setPoaPhones((current) => ({ ...current, [id]: value }));
-                    setIdentityTouched(false);
-                  }}
-                  touched={identityTouched}
-                />
-              ) : null}
-            </form>
-          ) : null}
-
-          {/* --------------------------------------------------------- done */}
-          {stage === "done" && joinCase ? (
-            <div className="flex flex-col gap-4">
-              {/* JOIN-64: numbers entered for parties are texted; each links on its
-                  owner's confirmation at sign-in, not here. */}
-              {kind === "poa" && poaNeedPhone.length ? (
-                <Banner variant="info" className="items-start">
-                  {fill(joinDialog.smsSentNote, locale, {
-                    numbers: poaNeedPhone.map((entry) => poaPhones[entry.id]).join(", "),
-                  })}
-                </Banner>
-              ) : null}
-              <CaseDetails
-                joinCase={joinCase}
-                locale={locale}
-                compact
-                outcome={fill(
-                  kind === "poa" ? joinDialog.poaJoinedBand : joinDialog.joinedBand,
-                  locale,
-                  {
-                    name:
-                      kind === "poa"
-                        ? poaSelected.map((entry) => entry.name).join(", ")
-                        : (party?.name ?? ""),
-                  },
-                )}
-              />
-
-              {/* What to do next, as a line of guidance (owner, 2026-10-14): an advocate
-                  joins with the access code, so the litigant passes it on. */}
-              {appearance === "advocate" || appearance === "hire" ? (
-                <p className="text-body-compact text-pretty text-muted-foreground">
-                  {fill(
-                    appearance === "advocate" ? joinDialog.nextShareCode : joinDialog.nextFindLawyer,
-                    locale,
-                    /* The code they typed; arriving by the summons link, the summons's own. */
-                    { code: code || SUMMONS_FACTS.accessCode },
-                  )}
-                </p>
-              ) : null}
-
-              {doneNotice ? (
-                <Banner variant="info" className="items-start">
-                  {pick(
-                    joinDialog.addAdvocatePrototype,
-                    locale,
-                  )}
-                </Banner>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-        </div>
-        </div>
-
-        {/* ------------------------------------------------------------ footer */}
-        <footer
-          className={cn(
-            "flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:justify-between",
-            /* Under the outcome, the warm band every outcome dialog closes on. */
-            stage === "done" && !leaving && "bg-surface-sunken",
-          )}
-        >
-          {leaving ? (
-            <>
-              <Button type="button" variant="outline" onClick={() => setLeaving(false)}>
-                {pick(joinDialog.leaveStay, locale)}
-              </Button>
-              <Button type="button" variant="destructive-solid" onClick={discard}>
-                {pick(joinDialog.leaveGo, locale)}
-              </Button>
-            </>
+          {stage === "done" && !leaving ? (
+            <OutcomeHeader
+              titleFrom="dialog"
+              focusTitle
+              title={pick(joinDialog.joinedTitle, locale)}
+              body={fill(
+                kind === "poa" ? joinDialog.poaJoinedBody : joinDialog.joinedBody,
+                locale,
+                {
+                  name:
+                    kind === "poa"
+                      ? poaSelected.map((entry) => entry.name).join(", ")
+                      : (party?.name ?? ""),
+                },
+              )}
+            />
           ) : (
-            <>
-              {stage === "lookup" ? (
-                <>
-                  {mode === "summons" ? (
-                    /* "Not my case?" is not a dead end: back to the summons's own case and its
-                       code (owner, 2026-10-14). */
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setJoinCase(summonsCase);
-                        setSearched(false);
-                        setStage("code");
-                      }}
-                      data-icon="inline-start"
-                    >
-                      <ArrowLeftIcon aria-hidden />
-                      {pick(joinDialog.backToSummonsCase, locale)}
-                    </Button>
-                  ) : (
-                    <span aria-hidden className="hidden sm:block" />
-                  )}
-                  <Button type="submit" form="join-lookup" data-icon="inline-start">
-                    <SearchIcon aria-hidden />
-                    {pick(joinDialog.search, locale)}
-                  </Button>
-                </>
-              ) : null}
-
-              {stage === "code" ? (
-                <>
-                  {mode === "summons" && !searched ? (
-                    /* The wrong summons, or a mistyped link: search for the right case
-                       instead of a dead end. */
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setCode("");
-                        setCodeTouched(false);
-                        setStage("lookup");
-                      }}
-                    >
-                      {pick(joinDialog.notMyCase, locale)}
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setStage("lookup")}
-                      data-icon="inline-start"
-                    >
-                      <ArrowLeftIcon aria-hidden />
-                      {pick(joinDialog.back, locale)}
-                    </Button>
-                  )}
-                  <Button type="submit" form="join-code" data-icon="inline-end">
-                    {pick(joinDialog.codeVerify, locale)}
-                    <ArrowRightIcon aria-hidden />
-                  </Button>
-                </>
-              ) : null}
-
-              {stage === "details" ? (
-                <>
-                  {mode === "manual" ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setStage("code")}
-                      data-icon="inline-start"
-                    >
-                      <ArrowLeftIcon aria-hidden />
-                      {pick(joinDialog.back, locale)}
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleOpenChange(false)}
-                    >
-                      {pick(summonsModal.dismiss, locale)}
-                    </Button>
-                  )}
-                  {/* Download sits next to the primary action as a compact icon; the label
-                      rides in its hover tooltip. */}
-                  <div className="flex items-center gap-2">
-                    <DownloadCaseFileButton
-                      label={pick(joinDialog.downloadCaseFile, locale)}
-                      onClick={() => setDownloadNotice(true)}
-                    />
-                    {/* Stacked footer on a phone: the primary fills the row beside
-                        the icon, as wide as the Back button under it. */}
-                    <Button
-                      type="button"
-                      className="flex-1 sm:flex-none"
-                      onClick={() => setStage("identity")}
-                      data-icon="inline-end"
-                    >
-                      {pick(summonsModal.cta, locale)}
-                      <ArrowRightIcon aria-hidden />
-                    </Button>
-                  </div>
-                </>
-              ) : null}
-
-              {stage === "identity" ? (
-                <>
-                  {mode === "handoff" ? (
-                    <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                      {pick(joinDialog.close, locale)}
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setStage("details")}
-                      data-icon="inline-start"
-                    >
-                      <ArrowLeftIcon aria-hidden />
-                      {pick(joinDialog.back, locale)}
-                    </Button>
-                  )}
-                  <Button
-                    type="submit"
-                    form="join-identity"
-                    disabled={kind === "self" ? blocked : poaBlocked}
-                    data-icon="inline-end"
-                  >
-                    {pick(joinDialog.joinSubmit, locale)}
-                    <ArrowRightIcon aria-hidden />
-                  </Button>
-                </>
-              ) : null}
-
-              {stage === "done" ? (
-                doneAction === "case" ? (
-                  // No further action — Back to home, then View case as the primary.
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleOpenChange(false)}
-                    >
-                      {pick(joinDialog.backHome, locale)}
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={viewCase}
-                      data-icon="inline-end"
-                    >
-                      {pick(joinDialog.viewCase, locale)}
-                      <ArrowRightIcon aria-hidden />
-                    </Button>
-                  </>
+            <DialogHeader className="shrink-0 gap-2 border-b border-hairline p-6 pr-16 text-left">
+              <DialogTitle
+                ref={titleRef}
+                tabIndex={-1}
+                className="text-title-s font-semibold text-balance outline-none"
+              >
+                {leaving ? (
+                  pick(joinDialog.leaveTitle, locale)
                 ) : (
-                  // A next step (bail / add advocate) is the primary; View case is secondary.
                   <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={viewCase}
-                    >
-                      {pick(joinDialog.viewCase, locale)}
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        doneAction === "bail" ? setBailOpen(true) : setDoneNotice(doneAction)
-                      }
-                      data-icon="inline-end"
-                    >
+                    {stage === "done"
+                      ? pick(joinDialog.joinedTitle, locale)
+                      : isSummonsIntro
+                        ? pick(summonsModal.heading, locale)
+                        : pick(joinDialog.title, locale)}
+                  </>
+                )}
+              </DialogTitle>
+              <DialogDescription className="text-body-compact text-pretty text-muted-foreground">
+                {leaving ? (
+                  pick(joinDialog.leaveBody, locale)
+                ) : (
+                  <>
+                    {stage === "done"
+                      ? fill(
+                          kind === "poa" ? joinDialog.poaJoinedBody : joinDialog.joinedBody,
+                          locale,
+                          {
+                            name:
+                              kind === "poa"
+                                ? poaSelected.map((entry) => entry.name).join(", ")
+                                : (party?.name ?? ""),
+                          },
+                        )
+                      : isSummonsIntro
+                        ? pick(summonsModal.body, locale)
+                        : stage === "lookup"
+                          ? pick(joinDialog.lookupBody, locale)
+                          : stage === "code"
+                            ? pick(
+                                mode === "summons"
+                                  ? joinDialog.codeSummonsBody
+                                  : joinDialog.codeBody,
+                                locale,
+                              )
+                            : stage === "details"
+                              ? pick(joinDialog.detailsBody, locale)
+                              : pick(joinDialog.identityBody, locale)}
+                  </>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+          )}
+
+          {/* The stage: warm canvas, white panels. It hugs each step's height, which
+            changes while the window is faded out (`useStageFade`). */}
+          <div
+            className={cn(
+              "relative flex min-h-0 flex-col overflow-hidden bg-muted dark:bg-background",
+              "shrink",
+            )}
+          >
+            <div
+              key={stage}
+              className={cn("flex min-h-0 flex-1 flex-col overflow-y-auto", sceneClassName)}
+            >
+              <div className="flex flex-col p-4 sm:p-6">
+                {/* ------------------------------------------------------- lookup */}
+                {stage === "lookup" ? (
+                  <form id="join-lookup" noValidate className={JOIN_PANEL} onSubmit={submitLookup}>
+                    <Field data-invalid={queryTouched && query.trim().length < 4}>
+                      <FieldLabel>{pick(joinDialog.lookupLabel, locale)}</FieldLabel>
+                      <Input
+                        autoFocus
+                        value={query}
+                        placeholder={pick(joinDialog.lookupPlaceholder, locale)}
+                        onChange={(event) => {
+                          setQuery(event.target.value);
+                          setQueryTouched(false);
+                          setLookupMiss(false);
+                        }}
+                      />
+                      <FieldError>
+                        {queryTouched && query.trim().length < 4
+                          ? pick(joinDialog.lookupError, locale)
+                          : null}
+                      </FieldError>
+                    </Field>
+                    {lookupMiss ? (
+                      <StatusLine tone="neutral" icon={SearchXIcon}>
+                        {pick(joinDialog.lookupMiss, locale)}
+                      </StatusLine>
+                    ) : null}
+                  </form>
+                ) : null}
+
+                {/* --------------------------------------------------- access code */}
+                {stage === "code" && joinCase ? (
+                  <form
+                    id="join-code"
+                    noValidate
+                    className="flex flex-col gap-4"
+                    onSubmit={submitCode}
+                  >
+                    {/* Before the code: title, case number and court only — no amount
+                  (JOIN-11). Everything deeper stays behind the code. */}
+                    <CaseIdentity
+                      joinCase={joinCase}
+                      locale={locale}
+                      lead={pick(joinDialog.codeCaseLead, locale)}
+                    />
+                    <Banner variant="info" className="items-start">
                       {pick(
-                        doneAction === "bail" ? joinDialog.fileBail : joinDialog.addAdvocate,
+                        mode === "summons" ? joinDialog.codeSummonsNote : joinDialog.codeNote,
                         locale,
                       )}
+                    </Banner>
+                    <div className={JOIN_PANEL}>
+                      <Field data-invalid={codeTouched && code.length !== CODE_LENGTH}>
+                        <FieldLabel>{pick(joinDialog.codeLabel, locale)}</FieldLabel>
+                        <InputOTP
+                          maxLength={CODE_LENGTH}
+                          pattern={REGEXP_ONLY_DIGITS}
+                          inputMode="numeric"
+                          value={code}
+                          onChange={(value) => {
+                            setCode(value);
+                            setCodeTouched(false);
+                          }}
+                        >
+                          <InputOTPGroup className="w-full">
+                            {Array.from({ length: CODE_LENGTH }, (_, index) => (
+                              <InputOTPSlot
+                                key={index}
+                                index={index}
+                                className="h-12 w-auto flex-1 text-body font-semibold"
+                              />
+                            ))}
+                          </InputOTPGroup>
+                        </InputOTP>
+                        <FieldError>
+                          {codeTouched && code.length !== CODE_LENGTH
+                            ? pick(joinDialog.codeError, locale)
+                            : null}
+                        </FieldError>
+                      </Field>
+                    </div>
+                  </form>
+                ) : null}
+
+                {/* ------------------------------------------------------ details */}
+                {stage === "details" && joinCase ? (
+                  <div className="flex flex-col gap-4">
+                    <CaseDetails joinCase={joinCase} locale={locale} />
+                    <Banner variant="info" className="items-start">
+                      {pick(joinDialog.acknowledgeNote, locale)}
+                    </Banner>
+                    {downloadNotice ? (
+                      <Banner variant="info" className="items-start">
+                        {pick(joinDialog.downloadCaseFilePrototype, locale)}
+                      </Banner>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {/* ----------------------------------------------------- identity */}
+                {stage === "identity" && joinCase ? (
+                  <form
+                    id="join-identity"
+                    noValidate
+                    className={cn(JOIN_PANEL, "gap-6")}
+                    onSubmit={submitIdentity}
+                  >
+                    <Field data-invalid={identityTouched && !kind}>
+                      <FieldLabel className="block w-full text-body font-semibold leading-snug">
+                        {pick(joinDialog.whoLegend, locale)}
+                      </FieldLabel>
+                      <RadioGroup
+                        value={kind}
+                        onValueChange={(value) => chooseKind(value as JoinerKind)}
+                        className="flex flex-col gap-1"
+                      >
+                        <div className="flex min-h-10 items-center gap-2">
+                          <RadioGroupItem value="self" id="join-kind-self" />
+                          <Label htmlFor="join-kind-self">{pick(joinDialog.whoSelf, locale)}</Label>
+                        </div>
+                        <div className="flex min-h-10 items-center gap-2">
+                          <RadioGroupItem value="poa" id="join-kind-poa" />
+                          <Label htmlFor="join-kind-poa">{pick(joinDialog.whoPoa, locale)}</Label>
+                        </div>
+                      </RadioGroup>
+                      <FieldError>
+                        {identityTouched && !kind ? pick(joinDialog.whichError, locale) : null}
+                      </FieldError>
+                      <Accordion type="single" collapsible>
+                        <AccordionItem value="accused-explain" className="border-b-0">
+                          <AccordionTrigger className="py-2 text-caption text-muted-foreground">
+                            {pick(joinDialog.accusedExplainTitle, locale)}
+                          </AccordionTrigger>
+                          <AccordionContent className="text-body-compact text-muted-foreground">
+                            {pick(joinDialog.accusedExplainBody, locale)}
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="poa-explain" className="border-b-0">
+                          <AccordionTrigger className="py-2 text-caption text-muted-foreground">
+                            {pick(joinDialog.poaExplainTitle, locale)}
+                          </AccordionTrigger>
+                          <AccordionContent className="text-body-compact text-muted-foreground">
+                            {pick(joinDialog.poaExplainBody, locale)}
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </Field>
+
+                    {kind === "self" ? (
+                      <Field data-invalid={identityTouched && !partyId}>
+                        <FieldLabel className="block w-full text-body font-semibold leading-snug">
+                          {pick(joinDialog.whichSelfLabel, locale)}
+                        </FieldLabel>
+                        <Select
+                          value={partyId}
+                          onValueChange={(value) => {
+                            setPartyId(value);
+                            setIdentityTouched(false);
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder={pick(joinDialog.whichPlaceholder, locale)} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {joinCase.accused.map((entry) => (
+                              <SelectItem key={entry.id} value={entry.id}>
+                                {entry.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FieldError>
+                          {identityTouched && !partyId ? pick(joinDialog.whichError, locale) : null}
+                        </FieldError>
+                        {party && !blocked ? (
+                          <FieldDescription>
+                            {fill(joinDialog.mappingNote, locale, { name: party.name })}
+                          </FieldDescription>
+                        ) : null}
+                      </Field>
+                    ) : null}
+
+                    {party && blocked ? (
+                      /* A dead end, not bad news: neutral (skill `feedback-states`). */
+                      <StatusLine tone="neutral" icon={UserCheckIcon}>
+                        {fill(joinDialog.alreadyJoined, locale, { name: party.name })}
+                      </StatusLine>
+                    ) : null}
+
+                    {kind === "self" && party && !blocked ? (
+                      <Field data-invalid={identityTouched && !appearance} className="gap-4">
+                        <FieldLabel className="block w-full text-body font-semibold leading-snug">
+                          {pick(joinDialog.appearLegend, locale)}
+                        </FieldLabel>
+                        <RadioGroup
+                          value={appearance}
+                          onValueChange={(value) => {
+                            setAppearance(value as Appearance);
+                            setIdentityTouched(false);
+                          }}
+                          className="flex flex-col gap-3"
+                        >
+                          <div className="flex items-start gap-2">
+                            <RadioGroupItem value="hire" id="join-appear-hire" className="mt-2.5" />
+                            <div className="flex min-w-0 flex-col items-start gap-0.5">
+                              <div className="flex min-h-10 items-center gap-1">
+                                <Label
+                                  htmlFor="join-appear-hire"
+                                  className="text-left leading-snug"
+                                >
+                                  {pick(joinDialog.appearHire, locale)}
+                                </Label>
+                                {/* Straight to free legal aid at the District Legal Services
+                              Authority (owner, 2026-10-14), not a note about it. */}
+                                <Button asChild variant="link" size="sm" className="h-auto px-1">
+                                  <a
+                                    href={joinDialog.findAdvocateHref}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    {pick(joinDialog.openBarCouncil, locale)}
+                                    <span className="sr-only">
+                                      {" "}
+                                      {t("joinJoinCaseDialog_opensInANewTab")}
+                                    </span>
+                                    <ExternalLinkIcon data-icon="inline-end" aria-hidden />
+                                  </a>
+                                </Button>
+                              </div>
+                              <Label
+                                htmlFor="join-appear-hire"
+                                className="text-caption font-normal text-muted-foreground"
+                              >
+                                {pick(joinDialog.appearHireHint, locale)}
+                              </Label>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <RadioGroupItem
+                              value="advocate"
+                              id="join-appear-advocate"
+                              className="mt-2.5"
+                            />
+                            <Label
+                              htmlFor="join-appear-advocate"
+                              className="flex min-h-10 flex-col items-start justify-center gap-0.5 text-left leading-snug"
+                            >
+                              {pick(joinDialog.appearAdvocate, locale)}
+                              <span className="text-caption font-normal text-muted-foreground">
+                                {pick(joinDialog.appearAdvocateHint, locale)}
+                              </span>
+                            </Label>
+                          </div>
+                          {accusedAdvocateJoined ? null : (
+                            <div className="flex items-start gap-2">
+                              <RadioGroupItem
+                                value="self"
+                                id="join-appear-self"
+                                className="mt-2.5"
+                              />
+                              <Label
+                                htmlFor="join-appear-self"
+                                className="flex min-h-10 flex-col items-start justify-center gap-0.5 text-left leading-snug"
+                              >
+                                {pick(joinDialog.appearSelf, locale)}
+                                <span className="text-caption font-normal text-muted-foreground">
+                                  {pick(joinDialog.appearSelfHint, locale)}
+                                </span>
+                              </Label>
+                            </div>
+                          )}
+                        </RadioGroup>
+                        {accusedAdvocateJoined ? (
+                          <FieldDescription>
+                            {pick(joinDialog.appearSelfUnavailable, locale)}
+                          </FieldDescription>
+                        ) : null}
+                        <FieldError>
+                          {identityTouched && !appearance
+                            ? pick(joinDialog.appearError, locale)
+                            : null}
+                        </FieldError>
+                      </Field>
+                    ) : null}
+
+                    {/* JOIN-27: a party in person uploads an affidavit; access is immediate. */}
+                    {kind === "self" && party && !blocked && appearance === "self" ? (
+                      <Field data-invalid={identityTouched && !pipFile}>
+                        <FieldLabel>{pick(joinDialog.pipDocLabel, locale)}</FieldLabel>
+                        <input
+                          ref={pipInputRef}
+                          type="file"
+                          className="hidden"
+                          tabIndex={-1}
+                          aria-hidden="true"
+                          accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            if (file) {
+                              setPipFile(file);
+                              setIdentityTouched(false);
+                            }
+                          }}
+                        />
+                        <DocumentSlot
+                          status={pipFile ? "filled" : "empty"}
+                          media="icon"
+                          label={pick(joinDialog.pipDocLabel, locale)}
+                          required
+                          filename={pipFile?.name}
+                          meta={pipFile ? fileSize(pipFile.size) : undefined}
+                          thumbnail={<FileTextIcon className="size-5" aria-hidden />}
+                          onChooseFile={() => pipInputRef.current?.click()}
+                          copy={{
+                            optional: locale === "ml" ? "നിർബന്ധമല്ല" : "Optional",
+                            noFile:
+                              locale === "ml"
+                                ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല"
+                                : t("joinJoinCaseDialog_noFileChosenYet"),
+                            chooseFile:
+                              locale === "ml"
+                                ? "ഫയൽ തിരഞ്ഞെടുക്കുക"
+                                : t("joinJoinCaseDialog_chooseFile"),
+                          }}
+                        />
+                        <FieldDescription>{pick(joinDialog.pipDocHelp, locale)}</FieldDescription>
+                        <FieldError>
+                          {identityTouched && !pipFile
+                            ? pick(joinDialog.pipDocError, locale)
+                            : null}
+                        </FieldError>
+                      </Field>
+                    ) : null}
+
+                    {kind === "poa" ? (
+                      <PoaJoinFields
+                        joinCase={joinCase}
+                        locale={locale}
+                        side={poaSide}
+                        onSideChange={choosePoaSide}
+                        partyIds={poaPartyIds}
+                        onPartyIdsChange={(ids) => {
+                          setPoaPartyIds(ids);
+                          setIdentityTouched(false);
+                        }}
+                        files={poaFiles}
+                        onFileChange={(id, file) => {
+                          setPoaFiles((current) => ({ ...current, [id]: file }));
+                          setIdentityTouched(false);
+                        }}
+                        phones={poaPhones}
+                        onPhoneChange={(id, value) => {
+                          setPoaPhones((current) => ({ ...current, [id]: value }));
+                          setIdentityTouched(false);
+                        }}
+                        touched={identityTouched}
+                      />
+                    ) : null}
+                  </form>
+                ) : null}
+
+                {/* --------------------------------------------------------- done */}
+                {stage === "done" && joinCase ? (
+                  <div className="flex flex-col gap-4">
+                    {/* JOIN-64: numbers entered for parties are texted; each links on its
+                  owner's confirmation at sign-in, not here. */}
+                    {kind === "poa" && poaNeedPhone.length ? (
+                      <Banner variant="info" className="items-start">
+                        {fill(joinDialog.smsSentNote, locale, {
+                          numbers: poaNeedPhone.map((entry) => poaPhones[entry.id]).join(", "),
+                        })}
+                      </Banner>
+                    ) : null}
+                    <CaseDetails
+                      joinCase={joinCase}
+                      locale={locale}
+                      compact
+                      outcome={fill(
+                        kind === "poa" ? joinDialog.poaJoinedBand : joinDialog.joinedBand,
+                        locale,
+                        {
+                          name:
+                            kind === "poa"
+                              ? poaSelected.map((entry) => entry.name).join(", ")
+                              : (party?.name ?? ""),
+                        },
+                      )}
+                    />
+
+                    {/* What to do next, as a line of guidance (owner, 2026-10-14): an advocate
+                  joins with the access code, so the litigant passes it on. */}
+                    {appearance === "advocate" || appearance === "hire" ? (
+                      <p className="text-body-compact text-pretty text-muted-foreground">
+                        {fill(
+                          appearance === "advocate"
+                            ? joinDialog.nextShareCode
+                            : joinDialog.nextFindLawyer,
+                          locale,
+                          /* The code they typed; arriving by the summons link, the summons's own. */
+                          { code: code || SUMMONS_FACTS.accessCode },
+                        )}
+                      </p>
+                    ) : null}
+
+                    {doneNotice ? (
+                      <Banner variant="info" className="items-start">
+                        {pick(joinDialog.addAdvocatePrototype, locale)}
+                      </Banner>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          {/* ------------------------------------------------------------ footer */}
+          <footer
+            className={cn(
+              "flex shrink-0 flex-col-reverse gap-2 border-t border-hairline px-6 pt-4 pb-[calc(--spacing(4)+env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:justify-between",
+              /* Under the outcome, the warm band every outcome dialog closes on. */
+              stage === "done" && !leaving && "bg-surface-sunken",
+            )}
+          >
+            {leaving ? (
+              <>
+                <Button type="button" variant="outline" onClick={() => setLeaving(false)}>
+                  {pick(joinDialog.leaveStay, locale)}
+                </Button>
+                <Button type="button" variant="destructive-solid" onClick={discard}>
+                  {pick(joinDialog.leaveGo, locale)}
+                </Button>
+              </>
+            ) : (
+              <>
+                {stage === "lookup" ? (
+                  <>
+                    {mode === "summons" ? (
+                      /* "Not my case?" is not a dead end: back to the summons's own case and its
+                       code (owner, 2026-10-14). */
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setJoinCase(summonsCase);
+                          setSearched(false);
+                          setStage("code");
+                        }}
+                        data-icon="inline-start"
+                      >
+                        <ArrowLeftIcon aria-hidden />
+                        {pick(joinDialog.backToSummonsCase, locale)}
+                      </Button>
+                    ) : (
+                      <span aria-hidden className="hidden sm:block" />
+                    )}
+                    <Button type="submit" form="join-lookup" data-icon="inline-start">
+                      <SearchIcon aria-hidden />
+                      {pick(joinDialog.search, locale)}
+                    </Button>
+                  </>
+                ) : null}
+
+                {stage === "code" ? (
+                  <>
+                    {mode === "summons" && !searched ? (
+                      /* The wrong summons, or a mistyped link: search for the right case
+                       instead of a dead end. */
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setCode("");
+                          setCodeTouched(false);
+                          setStage("lookup");
+                        }}
+                      >
+                        {pick(joinDialog.notMyCase, locale)}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setStage("lookup")}
+                        data-icon="inline-start"
+                      >
+                        <ArrowLeftIcon aria-hidden />
+                        {pick(joinDialog.back, locale)}
+                      </Button>
+                    )}
+                    <Button type="submit" form="join-code" data-icon="inline-end">
+                      {pick(joinDialog.codeVerify, locale)}
                       <ArrowRightIcon aria-hidden />
                     </Button>
                   </>
-                )
-              ) : null}
-            </>
-          )}
-        </footer>
-      </FlowDialogContent>
-    </Dialog>
-    {bailOpen && joinCase && party ? (
-      <JoinedCaseBail
-        joinCase={joinCase}
-        accused={[party.name]}
-        as="pip"
-        onClose={() => {
-          setBailOpen(false);
-          handleOpenChange(false);
-        }}
-        onViewCase={() => router.push(`/cases/${JOIN_DEMO_CASE_ID}`)}
-      />
-    ) : null}
+                ) : null}
+
+                {stage === "details" ? (
+                  <>
+                    {mode === "manual" ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setStage("code")}
+                        data-icon="inline-start"
+                      >
+                        <ArrowLeftIcon aria-hidden />
+                        {pick(joinDialog.back, locale)}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleOpenChange(false)}
+                      >
+                        {pick(summonsModal.dismiss, locale)}
+                      </Button>
+                    )}
+                    {/* Download sits next to the primary action as a compact icon; the label
+                      rides in its hover tooltip. */}
+                    <div className="flex items-center gap-2">
+                      <DownloadCaseFileButton
+                        label={pick(joinDialog.downloadCaseFile, locale)}
+                        onClick={() => setDownloadNotice(true)}
+                      />
+                      {/* Stacked footer on a phone: the primary fills the row beside
+                        the icon, as wide as the Back button under it. */}
+                      <Button
+                        type="button"
+                        className="flex-1 sm:flex-none"
+                        onClick={() => setStage("identity")}
+                        data-icon="inline-end"
+                      >
+                        {pick(summonsModal.cta, locale)}
+                        <ArrowRightIcon aria-hidden />
+                      </Button>
+                    </div>
+                  </>
+                ) : null}
+
+                {stage === "identity" ? (
+                  <>
+                    {mode === "handoff" ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleOpenChange(false)}
+                      >
+                        {pick(joinDialog.close, locale)}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setStage("details")}
+                        data-icon="inline-start"
+                      >
+                        <ArrowLeftIcon aria-hidden />
+                        {pick(joinDialog.back, locale)}
+                      </Button>
+                    )}
+                    <Button
+                      type="submit"
+                      form="join-identity"
+                      disabled={kind === "self" ? blocked : poaBlocked}
+                      data-icon="inline-end"
+                    >
+                      {pick(joinDialog.joinSubmit, locale)}
+                      <ArrowRightIcon aria-hidden />
+                    </Button>
+                  </>
+                ) : null}
+
+                {stage === "done" ? (
+                  doneAction === "case" ? (
+                    // No further action — Back to home, then View case as the primary.
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleOpenChange(false)}
+                      >
+                        {pick(joinDialog.backHome, locale)}
+                      </Button>
+                      <Button type="button" onClick={viewCase} data-icon="inline-end">
+                        {pick(joinDialog.viewCase, locale)}
+                        <ArrowRightIcon aria-hidden />
+                      </Button>
+                    </>
+                  ) : (
+                    // A next step (bail / add advocate) is the primary; View case is secondary.
+                    <>
+                      <Button type="button" variant="outline" onClick={viewCase}>
+                        {pick(joinDialog.viewCase, locale)}
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          doneAction === "bail" ? setBailOpen(true) : setDoneNotice(doneAction)
+                        }
+                        data-icon="inline-end"
+                      >
+                        {pick(
+                          doneAction === "bail" ? joinDialog.fileBail : joinDialog.addAdvocate,
+                          locale,
+                        )}
+                        <ArrowRightIcon aria-hidden />
+                      </Button>
+                    </>
+                  )
+                ) : null}
+              </>
+            )}
+          </footer>
+        </FlowDialogContent>
+      </Dialog>
+      {bailOpen && joinCase && party ? (
+        <JoinedCaseBail
+          joinCase={joinCase}
+          accused={[party.name]}
+          as="pip"
+          onClose={() => {
+            setBailOpen(false);
+            handleOpenChange(false);
+          }}
+          onViewCase={() => router.push(`/cases/${JOIN_DEMO_CASE_ID}`)}
+        />
+      ) : null}
     </>
   );
 }

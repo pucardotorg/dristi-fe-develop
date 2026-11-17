@@ -25,6 +25,7 @@ import { useFilePreview } from "@/lib/filing/files";
 import type { StoredFileRef } from "@/lib/filing/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 /**
  * The control itself, without an opinion about where the picture comes from.
@@ -79,10 +80,11 @@ export function SlotThumbnail({
   label: string;
   onPreview: () => void;
 }) {
+  const t = useTranslations();
   const preview = useFilePreview(file);
   return (
     <ThumbnailButton
-      label={`Preview ${file?.name ?? label}`}
+      label={t("thumbnail_previewValue", { value: file?.name ?? label })}
       onPreview={onPreview}
     >
       {preview.status === "loading" ? (
@@ -92,7 +94,7 @@ export function SlotThumbnail({
         <img src={preview.imageUrl} alt="" className="size-full object-cover" />
       ) : (
         <span className="flex size-full items-center justify-center text-caption font-semibold text-muted-foreground">
-          {file?.ext ?? "File"}
+          {file?.ext ?? t("thumbnail_file")}
         </span>
       )}
     </ThumbnailButton>
@@ -119,7 +121,7 @@ export function ThumbnailWell({
     <div
       className={cn(
         "h-12 w-16 shrink-0 overflow-hidden rounded-md border border-hairline bg-card sm:h-14 sm:w-20",
-        className
+        className,
       )}
     >
       {children}

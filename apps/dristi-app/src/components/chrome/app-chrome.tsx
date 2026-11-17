@@ -22,6 +22,7 @@ import {
   SidebarProvider,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useTranslations } from "next-intl";
 
 /**
  * The app's chrome frame — the rail, the top bar, and the column between them.
@@ -282,10 +283,7 @@ export function useChromePageDialog(): string {
  * is gated at `md`, so below it the window and the page are the same box and the
  * variable goes unread rather than having to say zero.
  */
-export function chromePageInset(
-  folds: boolean,
-  state: "expanded" | "collapsed"
-): string {
+export function chromePageInset(folds: boolean, state: "expanded" | "collapsed"): string {
   return folds && state === "collapsed" ? RAIL_WIDTH_ICON : RAIL_WIDTH;
 }
 
@@ -321,8 +319,13 @@ export function ChromeDialogContent({
 }: React.ComponentProps<typeof DialogContent> & { mobileSheet?: boolean }) {
   const pageDialog = useChromePageDialog();
   const sheet = useBottomSheet();
-  return <DialogContent className={cn(className, pageDialog, mobileSheet && sheet.className)}
-    style={{ ...style, ...(mobileSheet ? sheet.style : undefined) }} {...props} />;
+  return (
+    <DialogContent
+      className={cn(className, pageDialog, mobileSheet && sheet.className)}
+      style={{ ...style, ...(mobileSheet ? sheet.style : undefined) }}
+      {...props}
+    />
+  );
 }
 
 export function ChromeAlertDialogContent({
@@ -343,11 +346,7 @@ export function ChromeAlertDialogContent({
  * or page-column overlays would keep a 17rem left edge against a 4rem strip.
  */
 export function ChromeRailFolds({ children }: { children: React.ReactNode }) {
-  return (
-    <ChromeRailFoldContext.Provider value={true}>
-      {children}
-    </ChromeRailFoldContext.Provider>
-  );
+  return <ChromeRailFoldContext.Provider value={true}>{children}</ChromeRailFoldContext.Provider>;
 }
 
 /**
@@ -411,9 +410,7 @@ export const CHROME_FOLD_TRIGGER = { "data-chrome-fold-trigger": "" } as const;
  * between the two is half media query.
  */
 export function focusChromeFoldTrigger(): void {
-  for (const control of document.querySelectorAll<HTMLElement>(
-    "[data-chrome-fold-trigger]",
-  )) {
+  for (const control of document.querySelectorAll<HTMLElement>("[data-chrome-fold-trigger]")) {
     control.focus();
     if (document.activeElement === control) return;
   }
@@ -586,17 +583,17 @@ function RailBody({
     <>
       {header ? <SidebarHeader className="p-0">{header}</SidebarHeader> : null}
       {/*
-        * **The folded strip scrolls.** The DS turns overflow off when the rail folds
-        * (`SidebarContent`: `group-data-[collapsible=icon]:overflow-hidden`), which is
-        * safe for the stock sidebar's handful of icon rows and is not safe here: the
-        * court's open layout folds to twenty-two squares, about 1050px of column, and in
-        * a 900px window roughly 400px of it — every Sign queue — became unclickable with
-        * no way to reach it. An area whose strip is taller than the viewport has to be
-        * able to move.
-        *
-        * No scrollbar appears: `SidebarContent` already carries `no-scrollbar`, so this
-        * restores the movement without putting a gutter in a 4rem strip.
-        */}
+       * **The folded strip scrolls.** The DS turns overflow off when the rail folds
+       * (`SidebarContent`: `group-data-[collapsible=icon]:overflow-hidden`), which is
+       * safe for the stock sidebar's handful of icon rows and is not safe here: the
+       * court's open layout folds to twenty-two squares, about 1050px of column, and in
+       * a 900px window roughly 400px of it — every Sign queue — became unclickable with
+       * no way to reach it. An area whose strip is taller than the viewport has to be
+       * able to move.
+       *
+       * No scrollbar appears: `SidebarContent` already carries `no-scrollbar`, so this
+       * restores the movement without putting a gutter in a 4rem strip.
+       */}
       <SidebarContent className="group-data-[collapsible=icon]:overflow-y-auto">
         {/* The primitives are all `div`s, so an area that wants one landmark over the
             whole rail asks for it here. An area that labels each group instead — as the
@@ -700,11 +697,7 @@ export function ChromeRail({
       >
         {body}
       </Sidebar>
-      <ChromeRailSheet
-        vars={vars}
-        title={sheetTitle}
-        description={sheetDescription}
-      >
+      <ChromeRailSheet vars={vars} title={sheetTitle} description={sheetDescription}>
         {body}
       </ChromeRailSheet>
     </>
@@ -731,6 +724,7 @@ function ChromeRailSheet({
   description?: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const { openMobile, setOpenMobile } = useSidebar();
   return (
     <Sheet open={openMobile} onOpenChange={setOpenMobile}>
@@ -773,10 +767,8 @@ function ChromeRailSheet({
         ].join(" ")}
       >
         <SheetHeader className="sr-only">
-          <SheetTitle>{title ?? "Navigation"}</SheetTitle>
-          {description ? (
-            <SheetDescription>{description}</SheetDescription>
-          ) : null}
+          <SheetTitle>{title ?? t("appChrome_navigation")}</SheetTitle>
+          {description ? <SheetDescription>{description}</SheetDescription> : null}
         </SheetHeader>
         {children}
       </SheetContent>

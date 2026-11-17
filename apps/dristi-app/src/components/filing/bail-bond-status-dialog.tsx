@@ -18,17 +18,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BondDocument, BondSignerList, type BondSigner } from "@/components/filing/bond-document";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import type { AccessCase } from "@/lib/access/content";
 import { bondCopy, fillCopy, BOND_ID } from "@/lib/bail/content";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * The advocate's view of a bond that is out for signatures: who has signed,
@@ -53,6 +49,7 @@ export function BailBondStatusDialog({
   suretyNames: string[];
   onEdit: () => void;
 }) {
+  const t = useTranslations();
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -67,14 +64,18 @@ export function BailBondStatusDialog({
             {/* The title is the dialog's accessible name — the face, not a control. */}
             <Identifier
               value={BOND_ID}
-              label="bond number"
+              label={t("bailBondStatusDialog_bondNumber")}
               className="text-body-compact font-normal text-muted-foreground"
               copyable={false}
             />
           </DialogTitle>
           <DialogDescription className="text-pretty">
             {/* No copy control inside the dialog's accessible description. */}
-            <Identifier value={accessCase.caseNumber} label="case number" copyable={false} />
+            <Identifier
+              value={accessCase.caseNumber}
+              label={t("bailBondStatusDialog_caseNumber")}
+              copyable={false}
+            />
             <span aria-hidden> · </span>
             {accessCase.title}
           </DialogDescription>

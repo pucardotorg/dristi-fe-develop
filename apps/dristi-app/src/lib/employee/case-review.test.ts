@@ -28,6 +28,10 @@ import {
 } from "./case-review";
 import { formatCaseDate } from "./hearing-overview";
 import { REGISTER_QUEUE, registerCaseById } from "./register-cases";
+import { translateMessage } from "@/i18n/messages";
+
+/** A message key read back as its English, so expectations read the way the screen does. */
+const inEnglish = (text: string) => translateMessage("en", text);
 
 /* A fixed day, so a test asserting on dates is not a test about when it ran. */
 const TODAY = "2026-09-09";
@@ -92,10 +96,7 @@ describe("caseReviewFor", () => {
     for (const id of ["r-1840", "r-714", "r-401"]) {
       const complaint = registerCaseById(id);
       assert.ok(complaint);
-      assert.equal(
-        daysBetween(review(id).submittedOn, TODAY),
-        complaint.daysSinceSubmitted,
-      );
+      assert.equal(daysBetween(review(id).submittedOn, TODAY), complaint.daysSinceSubmitted);
     }
   });
 
@@ -133,11 +134,7 @@ describe("caseReviewFor", () => {
        absent from the file — no group, no absence reason, nothing for the index to
        list. A section that comes back one day comes back with a source. */
     for (const complaint of REGISTER_QUEUE) {
-      assert.equal(
-        groupById(complaint.id, "accused-submissions"),
-        undefined,
-        complaint.id,
-      );
+      assert.equal(groupById(complaint.id, "accused-submissions"), undefined, complaint.id);
     }
   });
 
@@ -172,9 +169,7 @@ describe("terms are attributes the file names", () => {
     /* The other edge of the same rule: a vocabulary nobody checks grows names for
        fields that were cut, and the next reader cannot tell which are live. */
     const printed = new Set(
-      REGISTER_QUEUE.flatMap((complaint) =>
-        facts(complaint.id).map((fact) => fact.term as string),
-      ),
+      REGISTER_QUEUE.flatMap((complaint) => facts(complaint.id).map((fact) => fact.term as string)),
     );
     for (const term of named) {
       assert.ok(printed.has(term), `FACT_TERMS names "${term}", which nothing prints`);
@@ -199,9 +194,7 @@ describe("terms are attributes the file names", () => {
     let rendered = 0;
     for (const path of files) {
       const screen = readFileSync(new URL(path, import.meta.url), "utf8");
-      const terms = [
-        ...screen.matchAll(/<DescriptionTerm\b[^>]*>([\s\S]*?)<\/DescriptionTerm>/g),
-      ];
+      const terms = [...screen.matchAll(/<DescriptionTerm\b[^>]*>([\s\S]*?)<\/DescriptionTerm>/g)];
       for (const term of terms) {
         rendered += 1;
         /* An interpolation of any shape — `{term}`, `{fact.term}`, a `<Marked>` of the
@@ -280,10 +273,7 @@ describe("the scrutiny report", () => {
        but it cannot arise here: every row in this queue has waited at least a day. If
        this starts failing, a fixture's wait went to zero — not the branch appearing. */
     for (const complaint of REGISTER_QUEUE) {
-      assert.ok(
-        scrutinyFor(complaint.id, TODAY),
-        `${complaint.id} has no scrutiny record`,
-      );
+      assert.ok(scrutinyFor(complaint.id, TODAY), `${complaint.id} has no scrutiny record`);
     }
     assert.equal(scrutinyFor("r-nope", TODAY), undefined);
   });
@@ -297,10 +287,7 @@ describe("the scrutiny report", () => {
         scrutiny.clearedOn >= file.submittedOn,
         `${complaint.id} cleared before it was filed`,
       );
-      assert.ok(
-        scrutiny.clearedOn <= TODAY,
-        `${complaint.id} cleared after today`,
-      );
+      assert.ok(scrutiny.clearedOn <= TODAY, `${complaint.id} cleared after today`);
       /* The duration has to fit in the wait as well as the clearing date: the registry
          cannot have spent longer on it than the complaint has existed. */
       assert.ok(
@@ -352,10 +339,7 @@ describe("the scrutiny report", () => {
   });
 
   it("gives the same row the same record every time", () => {
-    assert.deepEqual(
-      scrutinyFor("r-1840", TODAY),
-      scrutinyFor("r-1840", TODAY),
-    );
+    assert.deepEqual(scrutinyFor("r-1840", TODAY), scrutinyFor("r-1840", TODAY));
   });
 
   it("writes the clearing day out the way every other date on the screen is", () => {
@@ -378,10 +362,9 @@ describe("a fact and its source document", () => {
   /** Every fact on a file, with the group it sits in. */
   function sourced(id: string) {
     return groups(id).flatMap((group) =>
-      [
-        ...(group.facts ?? []),
-        ...(group.records ?? []).flatMap((record) => record.facts),
-      ].map((fact) => ({ fact, group })),
+      [...(group.facts ?? []), ...(group.records ?? []).flatMap((record) => record.facts)].map(
+        (fact) => ({ fact, group }),
+      ),
     );
   }
 
@@ -440,11 +423,7 @@ describe("a fact and its source document", () => {
        count does not move. */
     const rows = sourced("r-1840").map(({ fact }) => fact);
     assert.equal(rows.length, 46, "the file's own fact rows");
-    assert.equal(
-      rows.filter((fact) => fact.source === undefined).length,
-      17,
-      "declared-only rows",
-    );
+    assert.equal(rows.filter((fact) => fact.source === undefined).length, 17, "declared-only rows");
   });
 
   it("keeps an advocate's row on that advocate's own card", () => {
@@ -530,11 +509,7 @@ describe("the §138 chain", () => {
         chain.accruedOn,
         chain.submittedOn,
       ];
-      assert.deepEqual(
-        order,
-        [...order].sort(),
-        `${complaint.id} has its chain out of order`,
-      );
+      assert.deepEqual(order, [...order].sort(), `${complaint.id} has its chain out of order`);
     }
   });
 
@@ -609,11 +584,7 @@ describe("the §138 chain", () => {
       .map((fact) => fact.term)
       .filter((term) =>
         (
-          [
-            FACT_TERMS.chequeDated,
-            FACT_TERMS.depositedOn,
-            FACT_TERMS.returnedOn,
-          ] as string[]
+          [FACT_TERMS.chequeDated, FACT_TERMS.depositedOn, FACT_TERMS.returnedOn] as string[]
         ).includes(term),
       );
     assert.deepEqual(dated, [
@@ -649,7 +620,8 @@ describe("the states a file can be in", () => {
   it("keeps the consequence of an absence out of the absence", () => {
     /* The reason is the file's and the clause is the product's voice, so an empty head
        can be counted and translated without re-authoring the sentence around it. */
-    assert.deepEqual(groupById("r-1490", "advocates")?.empty, {
+    const empty = groupById("r-1490", "advocates")?.empty;
+    assert.deepEqual(empty && { ...empty, explanation: inEnglish(empty.explanation ?? "") }, {
       reason: "none-on-record",
       explanation: "The complainant appears in person.",
     });
@@ -672,33 +644,19 @@ describe("the states a file can be in", () => {
     /* `Complainant.type` — "Individual" typed on every complainant is decoration.
        `r-612` is the queue's one complaint filed by an entity. */
     const tags = new Set(
-      REGISTER_QUEUE.map(
-        (complaint) =>
-          groupById(complaint.id, "complainant")?.records?.[0].tag,
-      ),
+      REGISTER_QUEUE.map((complaint) => groupById(complaint.id, "complainant")?.records?.[0].tag),
     );
     assert.deepEqual([...tags].sort(), ["Company", "Individual"]);
-    assert.equal(
-      groupById("r-612", "complainant")?.records?.[0].tag,
-      "Company",
-    );
+    assert.equal(groupById("r-612", "complainant")?.records?.[0].tag, "Company");
     /* And an entity carries a signatory and a registered office where a person carries
        an age — which is what makes the tag worth printing. */
-    assert.ok(
-      factByTerm("r-612", "complainant", FACT_TERMS.authorisedSignatory)?.value,
-    );
-    assert.equal(
-      factByTerm("r-612", "complainant", FACT_TERMS.age),
-      undefined,
-    );
+    assert.ok(factByTerm("r-612", "complainant", FACT_TERMS.authorisedSignatory)?.value);
+    assert.equal(factByTerm("r-612", "complainant", FACT_TERMS.age), undefined);
     /* And the name the tag sits beside is a firm's. It read "Thomas Kurien" until
        2026-09-11 — a person carrying a *Company* tag, an authorised signatory and a
        registered office, which is a fixture contradicting itself in three rows at
        once. */
-    assert.equal(
-      groupById("r-612", "complainant")?.records?.[0].heading,
-      "Kurien Agencies",
-    );
+    assert.equal(groupById("r-612", "complainant")?.records?.[0].heading, "Kurien Agencies");
   });
 
   it("leaves no tag on an advocate, every one being for the complainant", () => {
@@ -710,14 +668,8 @@ describe("the states a file can be in", () => {
   });
 
   it("states a power of attorney only where the complaint is filed through one", () => {
-    assert.equal(
-      factByTerm("r-1104", "complainant", FACT_TERMS.powerOfAttorney)?.value,
-      "Yes",
-    );
-    assert.equal(
-      factByTerm("r-714", "complainant", FACT_TERMS.powerOfAttorney)?.value,
-      "No",
-    );
+    assert.equal(factByTerm("r-1104", "complainant", FACT_TERMS.powerOfAttorney)?.value, "Yes");
+    assert.equal(factByTerm("r-714", "complainant", FACT_TERMS.powerOfAttorney)?.value, "No");
   });
 
   it("answers the three-month deposit against the dates, not the filer's tick", () => {
@@ -725,17 +677,9 @@ describe("the states a file can be in", () => {
        the row has a consequence for whether the court can take cognizance at all. */
     const chain = caseChainFor("r-1333", TODAY);
     assert.ok(chain);
-    assert.ok(
-      daysBetween(chain.chequeOn, chain.depositedOn) > PRESENTATION_WINDOW_DAYS,
-    );
-    assert.equal(
-      factByTerm("r-1333", "cheque", FACT_TERMS.depositedInTime)?.value,
-      "No",
-    );
-    assert.equal(
-      factByTerm("r-1840", "cheque", FACT_TERMS.depositedInTime)?.value,
-      "Yes",
-    );
+    assert.ok(daysBetween(chain.chequeOn, chain.depositedOn) > PRESENTATION_WINDOW_DAYS);
+    assert.equal(factByTerm("r-1333", "cheque", FACT_TERMS.depositedInTime)?.value, "No");
+    assert.equal(factByTerm("r-1840", "cheque", FACT_TERMS.depositedInTime)?.value, "Yes");
   });
 
   it("marks the deposit answer as the exception only where it is no", () => {
@@ -743,10 +687,7 @@ describe("the states a file can be in", () => {
        exception is decided here rather than by a string comparison in the render — the
        same rule that keeps term strings out of the screen. Nothing else on the file
        carries the flag, which is what makes it one mark and not a palette. */
-    assert.equal(
-      factByTerm("r-1333", "cheque", FACT_TERMS.depositedInTime)?.exception,
-      true,
-    );
+    assert.equal(factByTerm("r-1333", "cheque", FACT_TERMS.depositedInTime)?.exception, true);
     for (const complaint of REGISTER_QUEUE) {
       const marked = facts(complaint.id).filter((fact) => fact.exception);
       if (complaint.id === "r-1333") {
@@ -791,14 +732,8 @@ describe("the states a file can be in", () => {
     /* `DemandNotice.replied` is a `YesNo`. The slot used to hold a date on one file and
        the sentence "No reply received" on another — two kinds of thing in one slot,
        which nothing can sort, filter or translate. */
-    assert.equal(
-      factByTerm("r-1722", "demand-notice", FACT_TERMS.replyReceived)?.value,
-      "No",
-    );
-    assert.equal(
-      factByTerm("r-1840", "demand-notice", FACT_TERMS.replyReceived)?.value,
-      "Yes",
-    );
+    assert.equal(factByTerm("r-1722", "demand-notice", FACT_TERMS.replyReceived)?.value, "No");
+    assert.equal(factByTerm("r-1840", "demand-notice", FACT_TERMS.replyReceived)?.value, "Yes");
 
     const reply = groupById("r-1722", "demand-notice")?.documents?.find(
       (document) => document.label === "Reply to the notice",
@@ -813,10 +748,7 @@ describe("the states a file can be in", () => {
       factByTerm("r-1722", "cheque", FACT_TERMS.returnReason)?.value,
       "Payment stopped by drawer",
     );
-    assert.equal(
-      factByTerm("r-1402", "cheque", FACT_TERMS.returnReason)?.value,
-      "Account closed",
-    );
+    assert.equal(factByTerm("r-1402", "cheque", FACT_TERMS.returnReason)?.value, "Account closed");
   });
 
   it("names both police stations the registry holds", () => {
@@ -850,7 +782,7 @@ describe("the states a file can be in", () => {
        same absence must not disagree. */
     assert.equal(registerCaseById("r-1490")?.counsel.length, 0);
     assert.match(
-      groupById("r-1490", "advocates")?.empty?.explanation ?? "",
+      inEnglish(groupById("r-1490", "advocates")?.empty?.explanation ?? ""),
       /appears in person/,
     );
     assert.equal(groupById("r-1588", "advocates")?.records?.length, 2);
@@ -865,9 +797,7 @@ describe("derived numbers", () => {
       const file = review(complaint.id);
       /* Looked up by id rather than by position: the sections were reordered by D4,
          and a test that indexes them asserts the order twice — once here by accident. */
-      const parties = sectionById(file, "litigants").groups.flatMap(
-        (group) => group.records ?? [],
-      );
+      const parties = sectionById(file, "litigants").groups.flatMap((group) => group.records ?? []);
       /* Matched rather than stripped: `replace(/\D/g, "")` swallows the country
          code too, and a ten-digit line then measures twelve. */
       const mobiles = parties
@@ -879,9 +809,8 @@ describe("derived numbers", () => {
           return `${match[1]}${match[2]}`;
         });
       const cheque = (
-        sectionById(file, "case-specific").groups.find(
-          (group) => group.id === "cheque",
-        )?.records?.[0].heading ?? ""
+        sectionById(file, "case-specific").groups.find((group) => group.id === "cheque")
+          ?.records?.[0].heading ?? ""
       ).replace(/\D/g, "");
 
       assert.ok(cheque.length === 6, cheque);
@@ -899,15 +828,10 @@ describe("derived numbers", () => {
          IFSC ended in the last six digits of the complainant's mobile. The mix now
          takes the length as well as the salt. */
       const ifscs = (
-        sectionById(file, "case-specific").groups.find(
-          (group) => group.id === "cheque",
-        )?.records?.[0].facts ?? []
+        sectionById(file, "case-specific").groups.find((group) => group.id === "cheque")
+          ?.records?.[0].facts ?? []
       )
-        .filter(
-          (fact) =>
-            fact.term === FACT_TERMS.payeeIfsc ||
-            fact.term === FACT_TERMS.payerIfsc,
-        )
+        .filter((fact) => fact.term === FACT_TERMS.payeeIfsc || fact.term === FACT_TERMS.payerIfsc)
         .map((fact) => (fact.value ?? "").slice(-6));
       assert.equal(ifscs.length, 2, complaint.id);
       for (const ifsc of ifscs) {
@@ -938,10 +862,7 @@ describe("derived numbers", () => {
           .map((fact) => (fact.value ?? "").slice(4, 6)),
       ),
     );
-    assert.ok(
-      leads.size >= 5,
-      `every mobile in the queue starts ${[...leads].join(" / ")}`,
-    );
+    assert.ok(leads.size >= 5, `every mobile in the queue starts ${[...leads].join(" / ")}`);
   });
 
   it("gives the complainant two addresses that are not the same string", () => {
@@ -1002,11 +923,7 @@ describe("documents", () => {
           (record.documents ?? []).map((doc) => doc.key),
         ),
       ]);
-      assert.equal(
-        new Set(keys).size,
-        keys.length,
-        `${complaint.id} lists a document key twice`,
-      );
+      assert.equal(new Set(keys).size, keys.length, `${complaint.id} lists a document key twice`);
     }
   });
 
@@ -1053,8 +970,14 @@ describe("the case bundle", () => {
         bundle.docs.map((_, index) => index + 1),
         complaint.id,
       );
-      assert.ok(bundle.docs.every((document) => document.state === "filed"), complaint.id);
-      assert.ok(bundle.absent.every((document) => document.state === "absent"), complaint.id);
+      assert.ok(
+        bundle.docs.every((document) => document.state === "filed"),
+        complaint.id,
+      );
+      assert.ok(
+        bundle.absent.every((document) => document.state === "absent"),
+        complaint.id,
+      );
     }
   });
 
@@ -1077,7 +1000,8 @@ describe("the case bundle", () => {
           ...(group.records ?? []).flatMap((record) => record.facts),
         ]);
       for (const fact of facts) {
-        if (fact.source) assert.ok(keys.has(fact.source), `${complaint.id}: ${fact.term} ← ${fact.source}`);
+        if (fact.source)
+          assert.ok(keys.has(fact.source), `${complaint.id}: ${fact.term} ← ${fact.source}`);
       }
     }
   });
@@ -1109,12 +1033,12 @@ describe("the case file's order and chunks", () => {
     for (const complaint of REGISTER_QUEUE) {
       for (const group of caseFileGroups(review(complaint.id))) {
         if (!CASE_FILE_CHUNKS[group.id]) continue;
-        const runs = [
-          ...(group.records ?? []).map((record) => record.facts),
-          group.facts ?? [],
-        ];
+        const runs = [...(group.records ?? []).map((record) => record.facts), group.facts ?? []];
         for (const facts of runs) {
-          const chunks = chunkFacts(group.id, facts.map((fact) => ({ fact })));
+          const chunks = chunkFacts(
+            group.id,
+            facts.map((fact) => ({ fact })),
+          );
           const untitled = chunks.flatMap((chunk) =>
             chunk.kind === "list" && !chunk.title ? chunk.items : [],
           );
@@ -1140,7 +1064,10 @@ describe("the case file's order and chunks", () => {
   it("reads the two banks as one comparison, a column each", () => {
     const cheque = caseFileGroups(review("r-1840")).find((group) => group.id === "cheque");
     assert.ok(cheque?.records?.[0]);
-    const chunks = chunkFacts("cheque", cheque.records[0].facts.map((fact) => ({ fact })));
+    const chunks = chunkFacts(
+      "cheque",
+      cheque.records[0].facts.map((fact) => ({ fact })),
+    );
     const banks = chunks.find((chunk) => chunk.kind === "compare");
     assert.ok(banks && banks.kind === "compare");
     assert.deepEqual(banks.columns, ["Payer's bank", "Payee's bank"]);
@@ -1151,6 +1078,9 @@ describe("the case file's order and chunks", () => {
     const docs = caseBundleFor(review("r-1840")).docs;
     assert.equal(docs[0].group, "complainant");
     const groupOrder = docs.map((doc) => CASE_FILE_ORDER.indexOf(doc.group));
-    assert.deepEqual(groupOrder, [...groupOrder].sort((a, b) => a - b));
+    assert.deepEqual(
+      groupOrder,
+      [...groupOrder].sort((a, b) => a - b),
+    );
   });
 });

@@ -4,10 +4,7 @@ import { cookies } from "next/headers";
 import { TasksProvider } from "@/lib/tasks/store";
 import { ProfileProvider } from "@/lib/filing/profile";
 import { AppShell } from "@/components/shell/app-shell";
-import {
-  FilingChromeProvider,
-  SECTIONS_COOKIE,
-} from "@/components/filing/chrome";
+import { FilingChromeProvider, SECTIONS_COOKIE } from "@/components/filing/chrome";
 import { FilingBreadcrumbs } from "@/components/filing/filing-breadcrumbs";
 
 export const metadata: Metadata = {
@@ -24,15 +21,10 @@ export const metadata: Metadata = {
  * were on. What is left is what is genuinely this area's — the sections-rail state and
  * the draft trail — declared through the channels every other area uses.
  */
-export default async function FilingsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function FilingsLayout({ children }: { children: React.ReactNode }) {
   // Read on the server so the sections rail renders at its remembered width from the
   // first paint, rather than flipping once the client picks the cookie up.
-  const sectionsOpen =
-    (await cookies()).get(SECTIONS_COOKIE)?.value !== "false";
+  const sectionsOpen = (await cookies()).get(SECTIONS_COOKIE)?.value !== "false";
 
   return (
     // The tasks store mounts wherever the shell does: the rail's pending count and the

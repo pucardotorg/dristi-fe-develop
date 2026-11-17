@@ -36,10 +36,7 @@ export type EvidenceKind = "deposition" | "examination";
  * (Anshumanth, 2026-10-28). More types can join this list as court master data; the
  * typing screen stays the same.
  */
-export type StatementType =
-  | "witness-deposition"
-  | "complainant-evidence"
-  | "accused-examination";
+export type StatementType = "witness-deposition" | "complainant-evidence" | "accused-examination";
 
 export const STATEMENT_TYPES: readonly {
   id: StatementType;
@@ -100,9 +97,7 @@ export function statementTypeOf(
   record: Pick<EvidenceRecord, "kind" | "statementType">,
 ): StatementType {
   if (record.statementType) return record.statementType;
-  return record.kind === "examination"
-    ? "accused-examination"
-    : "witness-deposition";
+  return record.kind === "examination" ? "accused-examination" : "witness-deposition";
 }
 
 export function statementTypeLabel(type: StatementType): string {
@@ -171,10 +166,7 @@ export function saveEvidence(record: EvidenceRecord): void {
   records.write({ ...records.current(), [record.id]: record });
 }
 
-export function updateEvidence(
-  id: string,
-  change: Partial<Omit<EvidenceRecord, "id">>,
-): void {
+export function updateEvidence(id: string, change: Partial<Omit<EvidenceRecord, "id">>): void {
   const all = records.current();
   const current = all[id];
   if (!current) return;
@@ -210,10 +202,7 @@ export function newEvidenceRecord(
 }
 
 /** This hearing's records, oldest first — the order they were taken in. */
-export function evidenceAtHearing(
-  all: EvidenceRecords,
-  hearingId: string,
-): EvidenceRecord[] {
+export function evidenceAtHearing(all: EvidenceRecords, hearingId: string): EvidenceRecord[] {
   return Object.values(all)
     .filter((record) => record.hearingId === hearingId)
     .sort((a, b) => a.createdOn.localeCompare(b.createdOn));
@@ -225,18 +214,14 @@ export function unsignedCount(records: readonly EvidenceRecord[]): number {
 }
 
 /** What a new Recorded statements draft opens as: the type the hearing is listed for. */
-export function firstStatementTypeFor(
-  purpose: CourtHearingPurposeId | undefined,
-): StatementType {
+export function firstStatementTypeFor(purpose: CourtHearingPurposeId | undefined): StatementType {
   if (purpose === "examination-of-accused-351") return "accused-examination";
   if (purpose === "evidence-of-complainant") return "complainant-evidence";
   return "witness-deposition";
 }
 
 /** @deprecated Prefer {@link firstStatementTypeFor}. */
-export function firstKindFor(
-  purpose: CourtHearingPurposeId | undefined,
-): EvidenceKind {
+export function firstKindFor(purpose: CourtHearingPurposeId | undefined): EvidenceKind {
   return kindForStatementType(firstStatementTypeFor(purpose));
 }
 
@@ -263,16 +248,10 @@ export function evidenceLabel(
 ): string {
   const type = statementTypeOf(record);
   if (type === "accused-examination") {
-    return (
-      people.find((entry) => entry.id === record.personId)?.name ??
-      "New examination"
-    );
+    return people.find((entry) => entry.id === record.personId)?.name ?? "New examination";
   }
   if (type === "complainant-evidence") {
-    return (
-      people.find((entry) => entry.id === record.personId)?.name ??
-      "New complainant evidence"
-    );
+    return people.find((entry) => entry.id === record.personId)?.name ?? "New complainant evidence";
   }
   const deponent = deponents.find((entry) => entry.id === record.personId);
   if (!deponent) return "New deposition";
@@ -460,18 +439,16 @@ function nextMark(side: WitnessSide, taken: readonly string[]): string {
 }
 
 /** The next free number on a side: after PW-1 and PW-2, "PW-3". */
-export function nextWitnessNumber(
-  side: WitnessSide,
-  deponents: readonly Deponent[],
-): string {
-  return nextMark(side, deponents.flatMap((deponent) => deponent.number ?? []));
+export function nextWitnessNumber(side: WitnessSide, deponents: readonly Deponent[]): string {
+  return nextMark(
+    side,
+    deponents.flatMap((deponent) => deponent.number ?? []),
+  );
 }
 
 /** The side a mark's letters stand for: "DW-2" → the accused's. */
 export function sideOfMark(mark: string): WitnessSide | undefined {
-  return (Object.keys(PREFIX) as WitnessSide[]).find((side) =>
-    mark.startsWith(`${PREFIX[side]}-`),
-  );
+  return (Object.keys(PREFIX) as WitnessSide[]).find((side) => mark.startsWith(`${PREFIX[side]}-`));
 }
 
 /**

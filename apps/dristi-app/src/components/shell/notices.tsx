@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 const NOTICE_ROLE = {
   none: undefined,
@@ -20,8 +21,7 @@ const NOTICE_ROLE = {
   assertive: "alert",
 } as const;
 
-export type NoticeVariant =
-  "neutral" | "info" | "warning" | "success" | "destructive";
+export type NoticeVariant = "neutral" | "info" | "warning" | "success" | "destructive";
 
 /**
  * A notice that carries a status wears that status: the DS `Alert` variants ship the
@@ -98,6 +98,7 @@ export function SectionNotice({
   onDismiss?: () => void;
   className?: string;
 }) {
+  const t = useTranslations();
   const { Icon, alert, surface, icon, dismiss } = NOTICE_STYLE[variant];
   return (
     <Alert
@@ -113,7 +114,7 @@ export function SectionNotice({
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="Dismiss"
+          aria-label={t("shellNotices_dismiss")}
           onClick={onDismiss}
           className={cn("absolute right-1 top-1", dismiss)}
         >

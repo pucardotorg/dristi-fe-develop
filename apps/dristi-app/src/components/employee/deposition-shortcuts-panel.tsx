@@ -16,6 +16,7 @@ import {
   updateDepositionShortcut,
   type DepositionShortcut,
 } from "@/lib/employee/deposition-shortcuts";
+import { useTranslations } from "next-intl";
 
 export function useDepositionShortcuts(): readonly DepositionShortcut[] {
   return React.useSyncExternalStore(
@@ -29,9 +30,7 @@ export function useDepositionShortcuts(): readonly DepositionShortcut[] {
  * The field's `/` completion over the shortcuts, as on the order screen: names only, and
  * the shortcut's text in place of `/` and the query, as paragraphs of its own.
  */
-export function useDepositionSuggestion(
-  kind: "deposition" | "examination",
-): RichTextSuggestion {
+export function useDepositionSuggestion(kind: "deposition" | "examination"): RichTextSuggestion {
   const shortcuts = useDepositionShortcuts();
   return React.useMemo(
     () => ({
@@ -65,6 +64,7 @@ export function DepositionShortcutsPanel({
   /** Put this one in the text and go back to it. */
   onInsert: (entry: DepositionShortcut) => void;
 }) {
+  const t = useTranslations();
   const shortcuts = useDepositionShortcuts();
   const listed = [...shortcuts].sort(
     (a, b) =>
@@ -82,12 +82,7 @@ export function DepositionShortcutsPanel({
       }}
       onRemove={removeDepositionShortcut}
       onInsert={onInsert}
-      textHint={
-        <>
-          Start a line with Q: for a question and A: for its answer. Square brackets
-          mark a blank to fill, like [answer].
-        </>
-      }
+      textHint={<>{t("depositionShortcutsPanel_startALineWithQFor")}</>}
     />
   );
 }

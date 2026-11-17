@@ -22,12 +22,7 @@ import {
   tableBodyClass,
   tableRowClass,
 } from "@/components/chrome/table-plate";
-import {
-  PAGE_GROUND,
-  PAGE_GUTTER,
-  PAGE_SUBTITLE,
-  PAGE_TITLE,
-} from "@/components/shell/page-frame";
+import { PAGE_GROUND, PAGE_GUTTER, PAGE_SUBTITLE, PAGE_TITLE } from "@/components/shell/page-frame";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -57,6 +52,7 @@ import { bulkApi, type BatchSummary } from "./api";
 import { useGujarat } from "./court-guard";
 import { StageBar } from "./stage";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 export async function downloadTemplate() {
   const blob = await buildTemplate();
@@ -79,13 +75,14 @@ export function SourceLabel({
   source: BatchSummary["source"];
   to?: string | null;
 }) {
+  const t = useTranslations();
   const name =
     source.kind === "api"
       ? `${source.system} API`
       : source.kind === "excel"
-        ? "Excel upload"
+        ? t("batchesScreen_excelUpload")
         : source.kind === "documents"
-          ? "Case documents"
+          ? t("batchesScreen_caseDocuments")
           : "Clubbed";
   return (
     <span className="flex min-w-0 items-center gap-3">
@@ -94,15 +91,13 @@ export function SourceLabel({
         className={cn(
           "flex size-9 shrink-0 items-center justify-center rounded-lg",
           source.kind === "api" && "bg-info-muted text-info-muted-foreground",
-          source.kind === "excel" &&
-            "bg-success-muted text-success-muted-foreground",
-          source.kind === "documents" &&
-            "border border-hairline bg-card text-foreground",
+          source.kind === "excel" && "bg-success-muted text-success-muted-foreground",
+          source.kind === "documents" && "border border-hairline bg-card text-foreground",
           source.kind === "clubbed" && "bg-muted text-muted-foreground",
         )}
       >
         {source.kind === "api" ? (
-          <span className="text-caption font-bold tracking-wide">API</span>
+          <span className="text-caption font-bold tracking-wide">{t("batchesScreen_api")}</span>
         ) : source.kind === "excel" ? (
           <FileSpreadsheetIcon className="size-5" />
         ) : source.kind === "documents" ? (
@@ -114,16 +109,13 @@ export function SourceLabel({
       <span className="flex min-w-0 flex-col">
         <span>{name}</span>
         {source.reference ? (
-          <span
-            className="truncate text-caption text-muted-foreground"
-            title={source.reference}
-          >
+          <span className="truncate text-caption text-muted-foreground" title={source.reference}>
             {source.reference}
           </span>
         ) : null}
         {to ? (
           <span className="truncate text-caption text-muted-foreground">
-            To {to}
+            {t("batchesScreen_toTo", { to })}
           </span>
         ) : null}
       </span>
@@ -133,6 +125,7 @@ export function SourceLabel({
 
 /** Every batch, newest first. Batches never mix; clubbing is the filer's deliberate act. */
 export function BatchesScreen() {
+  const t = useTranslations();
   const ready = useGujarat();
   const { profile } = useCourt();
   const params = useSearchParams();
@@ -171,7 +164,7 @@ export function BatchesScreen() {
     chosen.length < 2
       ? null
       : !sameClient
-        ? "Only batches for the same complainant can be clubbed."
+        ? t("batchesScreen_onlyBatchesForTheSameComplainant")
         : null;
 
   const club = async () => {
@@ -193,10 +186,7 @@ export function BatchesScreen() {
       data-state={picked.has(b.id) ? "selected" : undefined}
       onClick={() => router.push(`/filings/bulk/${b.id}`)}
     >
-      <TableCell
-        className={cn(TABLE_CELL, "w-12 pl-6")}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <TableCell className={cn(TABLE_CELL, "w-12 pl-6")} onClick={(e) => e.stopPropagation()}>
         {selectable ? (
           <Checkbox
             checked={picked.has(b.id)}
@@ -208,7 +198,7 @@ export function BatchesScreen() {
                 return next;
               })
             }
-            aria-label={`Select ${b.number}`}
+            aria-label={t("batchesScreen_selectNumber", { number: b.number })}
           />
         ) : null}
       </TableCell>
@@ -222,12 +212,12 @@ export function BatchesScreen() {
         </Link>
         {b.openedAt === null ? (
           <Badge variant="destructive" className="ml-2">
-            New
+            {t("batchesScreen_new")}
           </Badge>
         ) : null}
         {b.clubbedFrom.length ? (
           <div className="text-caption font-normal text-muted-foreground">
-            From {b.clubbedFrom.join(", ")}
+            {t("batchesScreen_fromJoin", { join: b.clubbedFrom.join(", ") })}
           </div>
         ) : null}
       </TableCell>
@@ -237,22 +227,22 @@ export function BatchesScreen() {
           to={b.source.kind === "api" ? b.filingAdvocate?.name : null}
         />
       </TableCell>
-      <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>
-        {b.client}
-      </TableCell>
+      <TableCell className={cn(TABLE_CELL, "whitespace-normal")}>{b.client}</TableCell>
       <TableCell className={cn(TABLE_CELL, "tabular-nums")}>
         {toLongDate(b.createdAt.slice(0, 10))}
       </TableCell>
-      <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
-        {b.total}
-      </TableCell>
+      <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>{b.total}</TableCell>
       <TableCell className={cn(TABLE_CELL, "pr-6 whitespace-normal")}>
         {b.clubbedInto ? (
-          <Badge variant="outline">Clubbed into {b.clubbedIntoNumber}</Badge>
+          <Badge variant="outline">
+            {t("batchesScreen_clubbedIntoClubbedIntoNumber", {
+              clubbedIntoNumber: b.clubbedIntoNumber ?? "",
+            })}
+          </Badge>
         ) : b.total > 0 && b.counts.filed === b.total ? (
           <Badge variant="success">
             <CircleCheckIcon data-icon="inline-start" aria-hidden />
-            Done: all {b.total} filed
+            {t("batchesScreen_doneAllTotalFiled", { total: String(b.total) })}
           </Badge>
         ) : (
           <StageBar counts={b.counts} />
@@ -262,71 +252,52 @@ export function BatchesScreen() {
   );
 
   return (
-    <div
-      className={cn(
-        "flex w-full flex-1 flex-col gap-6",
-        PAGE_GROUND,
-        PAGE_GUTTER,
-      )}
-    >
+    <div className={cn("flex w-full flex-1 flex-col gap-6", PAGE_GROUND, PAGE_GUTTER)}>
       <header className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex flex-col gap-1">
-          <h1 className={cn(PAGE_TITLE, "text-foreground")}>Bulk filing</h1>
-          <p className={PAGE_SUBTITLE}>
-            Each push from a client&apos;s system and each Excel upload is its
-            own batch.
-          </p>
+          <h1 className={cn(PAGE_TITLE, "text-foreground")}>{t("batchesScreen_bulkFiling")}</h1>
+          <p className={PAGE_SUBTITLE}>{t("batchesScreen_eachPushFromAClientsSystem")}</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row md:ml-auto">
           <Button variant="outline" onClick={() => void downloadTemplate()}>
             <DownloadIcon data-icon="inline-start" aria-hidden />
-            Download Excel template
+            {t("batchesScreen_downloadExcelTemplate")}
           </Button>
           <Button asChild>
             <Link href="/filings/bulk/upload">
               <UploadIcon data-icon="inline-start" aria-hidden />
-              {ai === "on" ? "Upload cases" : "Upload Excel"}
+              {ai === "on" ? t("batchesScreen_uploadCases") : t("batchesScreen_uploadExcel")}
             </Link>
           </Button>
         </div>
       </header>
 
-      {error ? (
-        <StatusLine tone="error">{error}</StatusLine>
-      ) : null}
+      {error ? <StatusLine tone="error">{error}</StatusLine> : null}
 
       <Card variant="raised" className="gap-0 py-0">
         <div className="flex flex-wrap items-center gap-3 px-6 py-4">
-          <h2 className="sr-only">Batches</h2>
+          <h2 className="sr-only">{t("batchesScreen_batches")}</h2>
           <Tabs value={view} onValueChange={setView}>
             <TabsList>
               <TabsTrigger value="active">
-                In progress
+                {t("batchesScreen_inProgress")}
                 {batches ? (
-                  <span className="text-muted-foreground tabular-nums">
-                    {open.length}
-                  </span>
+                  <span className="text-muted-foreground tabular-nums">{open.length}</span>
                 ) : null}
               </TabsTrigger>
               <TabsTrigger value="completed">
-                Completed
+                {t("batchesScreen_completed")}
                 {batches ? (
-                  <span className="text-muted-foreground tabular-nums">
-                    {closed.length}
-                  </span>
+                  <span className="text-muted-foreground tabular-nums">{closed.length}</span>
                 ) : null}
               </TabsTrigger>
             </TabsList>
           </Tabs>
           {chosen.length ? (
             <div className="ml-auto flex flex-wrap items-center gap-3">
-              {clubNote ? (
-                <span className="text-caption text-warning-ink">
-                  {clubNote}
-                </span>
-              ) : null}
+              {clubNote ? <span className="text-caption text-warning-ink">{clubNote}</span> : null}
               <span className="text-caption text-muted-foreground tabular-nums">
-                {chosen.length} selected
+                {t("batchesScreen_lengthSelected", { length: String(chosen.length) })}
               </span>
               <Button
                 variant="outline"
@@ -334,7 +305,7 @@ export function BatchesScreen() {
                 onClick={() => void club()}
               >
                 <Layers2Icon data-icon="inline-start" aria-hidden />
-                Club {chosen.length} batches
+                {t("batchesScreen_clubLengthBatches", { length: String(chosen.length) })}
               </Button>
             </div>
           ) : null}
@@ -349,8 +320,8 @@ export function BatchesScreen() {
         ) : batches.length > 0 && shown.length === 0 ? (
           <p className="px-6 pb-6 text-body-compact text-muted-foreground">
             {view === "completed"
-              ? "No completed batches."
-              : "No batches in progress."}
+              ? t("batchesScreen_noCompletedBatches")
+              : t("batchesScreen_noBatchesInProgress")}
           </p>
         ) : batches.length === 0 ? (
           <Empty className="border-0 pb-12">
@@ -358,10 +329,9 @@ export function BatchesScreen() {
               <EmptyMedia variant="icon">
                 <Layers2Icon aria-hidden />
               </EmptyMedia>
-              <EmptyTitle>No batches yet</EmptyTitle>
+              <EmptyTitle>{t("batchesScreen_noBatchesYet")}</EmptyTitle>
               <EmptyDescription>
-                Cases pushed from a client&apos;s system, or uploaded from
-                Excel, arrive here as batches.
+                {t("batchesScreen_casesPushedFromAClientsSystem")}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -370,7 +340,7 @@ export function BatchesScreen() {
             {/* Phones: one stacked card per batch, nothing to scroll sideways. */}
             <ul
               className="flex flex-col divide-y divide-hairline md:hidden"
-              aria-label="Batches"
+              aria-label={t("batchesScreen_batches")}
             >
               {shown.map((b) => {
                 const selectable = !finished(b);
@@ -388,7 +358,7 @@ export function BatchesScreen() {
                               return next;
                             })
                           }
-                          aria-label={`Select ${b.number}`}
+                          aria-label={t("batchesScreen_selectNumber", { number: b.number })}
                         />
                       </span>
                     ) : null}
@@ -401,7 +371,7 @@ export function BatchesScreen() {
                           {b.number}
                         </span>
                         {b.openedAt === null ? (
-                          <Badge variant="destructive">New</Badge>
+                          <Badge variant="destructive">{t("batchesScreen_new")}</Badge>
                         ) : null}
                         <span className="ml-auto text-caption text-muted-foreground tabular-nums">
                           {b.total} case{b.total === 1 ? "" : "s"} ·{" "}
@@ -410,23 +380,18 @@ export function BatchesScreen() {
                       </span>
                       <SourceLabel
                         source={b.source}
-                        to={
-                          b.source.kind === "api"
-                            ? b.filingAdvocate?.name
-                            : null
-                        }
+                        to={b.source.kind === "api" ? b.filingAdvocate?.name : null}
                       />
                       {b.clubbedInto ? (
                         <Badge variant="outline">
-                          Clubbed into {b.clubbedIntoNumber}
+                          {t("batchesScreen_clubbedIntoClubbedIntoNumber", {
+                            clubbedIntoNumber: b.clubbedIntoNumber ?? "",
+                          })}
                         </Badge>
                       ) : b.total > 0 && b.counts.filed === b.total ? (
                         <Badge variant="success">
-                          <CircleCheckIcon
-                            data-icon="inline-start"
-                            aria-hidden
-                          />
-                          Done: all {b.total} filed
+                          <CircleCheckIcon data-icon="inline-start" aria-hidden />
+                          {t("batchesScreen_doneAllTotalFiled", { total: String(b.total) })}
                         </Badge>
                       ) : (
                         <StageBar counts={b.counts} />
@@ -439,22 +404,22 @@ export function BatchesScreen() {
             <div className="hidden overflow-x-auto px-2 pb-2 md:block">
               <Table
                 className="border-separate border-spacing-0"
-                aria-label="Batches"
+                aria-label={t("batchesScreen_batches")}
               >
                 <TableHeader>
                   <TableRow className={TABLE_HEAD_ROW}>
                     <TableHead className={cn(TABLE_HEAD, "w-12 pl-6")}>
-                      <span className="sr-only">Select</span>
+                      <span className="sr-only">{t("batchesScreen_select")}</span>
                     </TableHead>
-                    <TableHead className={TABLE_HEAD}>Batch</TableHead>
-                    <TableHead className={TABLE_HEAD}>Came in by</TableHead>
-                    <TableHead className={TABLE_HEAD}>Complainant</TableHead>
-                    <TableHead className={TABLE_HEAD}>Received</TableHead>
+                    <TableHead className={TABLE_HEAD}>{t("batchesScreen_batch")}</TableHead>
+                    <TableHead className={TABLE_HEAD}>{t("batchesScreen_cameInBy")}</TableHead>
+                    <TableHead className={TABLE_HEAD}>{t("batchesScreen_complainant")}</TableHead>
+                    <TableHead className={TABLE_HEAD}>{t("batchesScreen_received")}</TableHead>
                     <TableHead className={cn(TABLE_HEAD, "text-right")}>
-                      Cases
+                      {t("batchesScreen_cases")}
                     </TableHead>
                     <TableHead className={cn(TABLE_HEAD, "pr-6")}>
-                      Where they stand
+                      {t("batchesScreen_whereTheyStand")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>

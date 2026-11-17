@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useCourt } from "@/components/court/court-provider";
 import { courtProfile } from "@/lib/court/profiles";
+import { useTranslations } from "next-intl";
 
 /**
  * One half of Take cognizance, as its own screen — the "split" reading of
@@ -56,10 +57,9 @@ export function CognizanceTabScreen({ tab }: { tab: CognizanceTab }) {
 }
 
 function SplitQueue({ tab }: { tab: CognizanceTab }) {
+  const t = useTranslations();
   const arrival = useArrival();
-  const [filters, setFilters] = React.useState<CognizanceFilters>(
-    EMPTY_COGNIZANCE_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<CognizanceFilters>(EMPTY_COGNIZANCE_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
 
@@ -74,8 +74,7 @@ function SplitQueue({ tab }: { tab: CognizanceTab }) {
   const currentPage = Math.min(page, pageCount);
   const start = (currentPage - 1) * pageSize;
   const pageRows = rows.slice(start, start + pageSize);
-  const isFiltered =
-    filters.query !== "" || (filters.notice ?? "all") !== "all";
+  const isFiltered = filters.query !== "" || (filters.notice ?? "all") !== "all";
   const total = cognizanceTabCount(tab);
   const label = cognizanceTabSpec(tab).label;
 
@@ -90,19 +89,16 @@ function SplitQueue({ tab }: { tab: CognizanceTab }) {
 
   return (
     <div
-      className={cn(
-        "flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8",
-        arrival && ARRIVAL[arrival],
-      )}
+      className={cn("flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8", arrival && ARRIVAL[arrival])}
     >
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Take cognizance — {label}
+          {t("cognizanceTabScreen_takeCognizanceLabel", { label })}
         </h1>
         <p className="text-body text-muted-foreground">
           {total === 1
-            ? "1 complaint is on the register waiting for cognizance."
-            : `${total} complaints are on the register waiting for cognizance.`}
+            ? t("cognizanceTabScreen_1ComplaintIsOnTheRegister")
+            : t("cognizanceTabScreen_totalComplaintsAreOnTheRegister", { total: String(total) })}
         </p>
       </header>
 
@@ -119,11 +115,7 @@ function SplitQueue({ tab }: { tab: CognizanceTab }) {
           }}
         />
 
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <CognizanceEmpty tab={tab} isFiltered={isFiltered} onClear={clearFilters} />

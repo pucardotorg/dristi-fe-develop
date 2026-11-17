@@ -5,10 +5,7 @@ import Link from "next/link";
 import { FileQuestionIcon } from "lucide-react";
 
 import { useCourtText } from "@/components/court/court-provider";
-import {
-  OrderDoorScreen,
-  type OrderDoor,
-} from "@/components/employee/order-door-screen";
+import { OrderDoorScreen, type OrderDoor } from "@/components/employee/order-door-screen";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,10 +17,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import type { LifecycleApplication } from "@/lib/applications/lifecycle";
-import {
-  useApplicationsReady,
-  useLifecycleApplications,
-} from "@/lib/applications/store";
+import { useApplicationsReady, useLifecycleApplications } from "@/lib/applications/store";
 import { partiesLabel, type CaseRecord } from "@/lib/cases/types";
 import {
   applicationHref,
@@ -34,14 +28,13 @@ import {
   decisionItem,
   nextApplicationOrderKey,
 } from "@/lib/employee/application-order-draft";
-import {
-  applicationWorkflow,
-  initialApplicationOutcome,
-} from "@/lib/employee/application-outcome";
+import { applicationWorkflow, initialApplicationOutcome } from "@/lib/employee/application-outcome";
 import { caseOf, nextHearingOf } from "@/lib/employee/application-tasks";
 import { CURRENT_STAFF } from "@/lib/employee/content";
 import { formatOrderDate } from "@/lib/employee/hearings";
 import { EMPTY_ORDER_DRAFT } from "@/lib/employee/order-draft";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 const APPLICATIONS = "/employee/applications";
 
@@ -51,7 +44,10 @@ const APPLICATIONS = "/employee/applications";
  * from the application's state.
  */
 function backTo(applicationId: string, view?: string): { href: string; label: string } {
-  return { href: applicationHref(applicationId, view), label: "Back to the application" };
+  return {
+    href: applicationHref(applicationId, view),
+    label: "applicationOrderScreen_backToTheApplication",
+  };
 }
 
 /**
@@ -86,12 +82,7 @@ export function ApplicationOrderScreen({
   if (!ready) return null;
   if (!application || !record) return <OrderMissing />;
   return (
-    <ApplicationOrder
-      application={application}
-      record={record}
-      decision={decision}
-      view={view}
-    />
+    <ApplicationOrder application={application} record={record} decision={decision} view={view} />
   );
 }
 
@@ -129,6 +120,7 @@ export function useApplicationOrderDoor(
     orderKey?: string;
   } = {},
 ): OrderDoor {
+  const t = useTranslations();
   const today = useCourtToday();
   const courtText = useCourtText();
   const matter = partiesLabel(record);
@@ -166,19 +158,33 @@ export function useApplicationOrderDoor(
     fixedIds: [],
     heading: matter,
     facts: [
-      { label: "Application", value: application.typeLabel },
-      { label: "Case", value: record.caseNumber, identifier: true },
+      { label: t("applicationOrderScreen_application"), value: application.typeLabel },
+      { label: t("applicationOrderScreen_case"), value: record.caseNumber, identifier: true },
       ...(application.applicationNumber
-        ? [{ label: "Number", value: application.applicationNumber, identifier: true }]
+        ? [
+            {
+              label: t("applicationOrderScreen_number"),
+              value: application.applicationNumber,
+              identifier: true,
+            },
+          ]
         : application.temporaryId
-          ? [{ label: "Temporary ID", value: application.temporaryId, identifier: true }]
+          ? [
+              {
+                label: t("applicationOrderScreen_temporaryId"),
+                value: application.temporaryId,
+                identifier: true,
+              },
+            ]
           : []),
     ],
-    courtLine: courtText(`Before the ${CURRENT_STAFF.court}`),
+    courtLine: courtText(
+      t("applicationOrderScreen_beforeTheCourt", { court: CURRENT_STAFF.court }),
+    ),
     subLine: `${record.caseNumber} · ${matter} · ${formatOrderDate(today)}`,
     navAction: (
       <Button asChild variant="outline" className="w-full shrink-0 sm:w-fit">
-        <Link href={back.href}>{back.label}</Link>
+        <Link href={back.href}>{translateText(t, back.label)}</Link>
       </Button>
     ),
     context,
@@ -188,6 +194,7 @@ export function useApplicationOrderDoor(
 }
 
 function OrderMissing() {
+  const t = useTranslations();
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <Empty className="border-0 p-0">
@@ -196,16 +203,15 @@ function OrderMissing() {
             <FileQuestionIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-title-s font-semibold">
-            This application is not in this browser
+            {t("applicationOrderScreen_thisApplicationIsNotInThis")}
           </EmptyTitle>
           <EmptyDescription className="text-body">
-            Applications are kept in the browser they were filed from. Open the order
-            from the application in the queue.
+            {t("applicationOrderScreen_applicationsAreKeptInTheBrowser")}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href={APPLICATIONS}>Back to applications</Link>
+            <Link href={APPLICATIONS}>{t("applicationOrderScreen_backToApplications")}</Link>
           </Button>
         </EmptyContent>
       </Empty>

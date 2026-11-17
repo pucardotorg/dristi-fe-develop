@@ -47,15 +47,11 @@ export function hearingRecords(record: CaseRecord): HearingRecord[] {
     return [];
   }
   const peopleById = new Map(file.people.map((person) => [person.id, person]));
-  const transcripts = new Map(
-    file.transcripts.map((item) => [item.hearingId, item])
-  );
+  const transcripts = new Map(file.transcripts.map((item) => [item.hearingId, item]));
   const orders = ordersFile(record).orders.filter(
-    (order) => order.status === "published" && order.kind === "order"
+    (order) => order.status === "published" && order.kind === "order",
   );
-  const oldestFirst = file.hearings
-    .slice()
-    .sort((a, b) => a.on.localeCompare(b.on));
+  const oldestFirst = file.hearings.slice().sort((a, b) => a.on.localeCompare(b.on));
 
   return oldestFirst
     .map((hearing, index): HearingRecord => {
@@ -64,9 +60,7 @@ export function hearingRecords(record: CaseRecord): HearingRecord[] {
       const transcript = transcripts.get(hearing.id);
       const next = nextSitting(hearing, oldestFirst.slice(index + 1));
       const order = held
-        ? orders.find(
-            (item) => dayStamp(item.issuedOn) === dayStamp(hearing.on)
-          )
+        ? orders.find((item) => dayStamp(item.issuedOn) === dayStamp(hearing.on))
         : undefined;
       return {
         id: hearing.id,
@@ -98,9 +92,7 @@ export function hearingRecords(record: CaseRecord): HearingRecord[] {
 /** The sitting this one was adjourned to: the named date, else the next one. */
 function nextSitting(hearing: Hearing, later: Hearing[]): Hearing | undefined {
   if (hearing.nextOn) {
-    const named = later.find(
-      (item) => dayStamp(item.on) === dayStamp(hearing.nextOn as string)
-    );
+    const named = later.find((item) => dayStamp(item.on) === dayStamp(hearing.nextOn as string));
     if (named) return named;
   }
   return later.find((item) => dayStamp(item.on) > dayStamp(hearing.on));

@@ -10,12 +10,7 @@ import { useCourtRole } from "@/components/employee/use-court-role";
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { FlowDialogContent } from "@/components/chrome/flow-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   EVIDENCE_SIDES,
   markEvidence,
@@ -23,6 +18,7 @@ import {
   type EvidenceSide,
 } from "@/lib/cases/evidence-marks";
 import { seatHolds } from "@/lib/employee/seat-roles";
+import { useTranslations } from "next-intl";
 
 /**
  * Whether the reader may mark evidence: a member of the court, on the
@@ -54,6 +50,7 @@ export function MarkEvidenceDialog({
   taken: (string | null | undefined)[];
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations();
   const [side, setSide] = useState<EvidenceSide | "">("");
   const [error, setError] = useState<string | undefined>(undefined);
   /* What was open stays drawn while the dialog animates out. */
@@ -71,12 +68,12 @@ export function MarkEvidenceDialog({
   function mark() {
     if (!shown) return;
     if (!side) {
-      setError("Choose the side this document is marked for.");
+      setError(t("markEvidenceDialog_chooseTheSideThisDocumentIs"));
       return;
     }
     const number = nextEvidenceNumber(taken, side);
     markEvidence(caseId, shown.id, number);
-    notify.success(`Marked as ${number}`);
+    notify.success(t("markEvidenceDialog_markedAsNumber", { number }));
     onOpenChange(false);
   }
 
@@ -89,7 +86,7 @@ export function MarkEvidenceDialog({
       >
         <DialogHeader className="shrink-0 border-b border-hairline px-6 py-4 pr-12 text-left">
           <DialogTitle className="text-title-s font-semibold text-balance">
-            Mark as evidence
+            {t("markEvidenceDialog_markAsEvidence")}
           </DialogTitle>
           <DialogDescription className="text-body-compact text-pretty">
             {shown?.title}
@@ -98,7 +95,7 @@ export function MarkEvidenceDialog({
         </DialogHeader>
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-6">
           <ChoicePillGroup
-            legend="Marked for"
+            legend={t("markEvidenceDialog_markedFor")}
             options={options}
             value={side}
             error={error}
@@ -111,20 +108,19 @@ export function MarkEvidenceDialog({
           {/* The number the choice gives, once there is a choice (DSB-14). */}
           {side ? (
             <p className="text-body-compact text-foreground">
-              It becomes{" "}
-              <span className="font-mono font-medium">
-                {nextEvidenceNumber(taken, side)}
-              </span>
-              .
+              {t.rich("markEvidenceDialog_itBecomesNextEvidenceNumber", {
+                nextEvidenceNumber: nextEvidenceNumber(taken, side),
+                span: (chunks) => <span className="font-mono font-medium">{chunks}</span>,
+              })}
             </p>
           ) : null}
         </div>
         <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-hairline bg-surface-sunken px-6 py-4 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" onClick={guard.close}>
-            Cancel
+            {t("common_cancel")}
           </Button>
           <Button type="button" onClick={mark}>
-            Mark as evidence
+            {t("markEvidenceDialog_markAsEvidence")}
           </Button>
         </footer>
         <DiscardQuestion guard={guard} />

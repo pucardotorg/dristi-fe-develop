@@ -14,5 +14,8 @@ export function nearbyDates(dayKey: string): Date[] {
 /** The full date square is the hit area; each segment previews one day. */
 export function nearbyDateIndex(x: number, left: number, width: number): number {
   if (width <= 0) return NEARBY_DATE_RADIUS;
-  return Math.max(0, Math.min(NEARBY_DATE_COUNT - 1, Math.floor(((x - left) / width) * NEARBY_DATE_COUNT)));
+  return Math.max(
+    0,
+    Math.min(NEARBY_DATE_COUNT - 1, Math.floor(((x - left) / width) * NEARBY_DATE_COUNT)),
+  );
 }

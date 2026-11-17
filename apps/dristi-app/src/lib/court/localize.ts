@@ -45,7 +45,20 @@ import { courtProfile, type CourtId, type CourtProfile } from "./profiles";
 import { GUJARAT_CASE_TYPE_BY_CMP } from "./gujarat-case-types";
 
 /** Words that stand before a name without being one. */
-const TITLES = new Set(["Adv", "Advocate", "Mr", "Mrs", "Ms", "Dr", "Sri", "Smt", "Shri", "Before", "In", "Item"]);
+const TITLES = new Set([
+  "Adv",
+  "Advocate",
+  "Mr",
+  "Mrs",
+  "Ms",
+  "Dr",
+  "Sri",
+  "Smt",
+  "Shri",
+  "Before",
+  "In",
+  "Item",
+]);
 
 /**
  * Malayali names, for the selected state (`names.ts`). A name part after another name
@@ -123,9 +136,20 @@ const NAME_RULES: Rule[] = [
   // the Reader, the scrutiny officer the Ahlmad, and the typist the Steno. The case of
   // the first letter is kept, so a label and a sentence both read right. The seat's own
   // title, "Typist / Steno" (court-roles §3.3), is left as it is.
-  [/\b([Bb])ench clerk(s?)\b/g, (p, b, s) => (p.id === "punjab-haryana" ? `${b === "B" ? "R" : "r"}eader${s}` : `${b}ench clerk${s}`)],
-  [/\b([Ss])crutiny officer(s?)\b/g, (p, c, s) => (p.id === "punjab-haryana" ? `${c === "S" ? "A" : "a"}hlmad${s}` : `${c}crutiny officer${s}`)],
-  [/\b([Tt])ypist(s?)\b(?! \/ Steno)/g, (p, t, s) => (p.id === "punjab-haryana" ? `${t === "T" ? "S" : "s"}teno${s}` : `${t}ypist${s}`)],
+  [
+    /\b([Bb])ench clerk(s?)\b/g,
+    (p, b, s) =>
+      p.id === "punjab-haryana" ? `${b === "B" ? "R" : "r"}eader${s}` : `${b}ench clerk${s}`,
+  ],
+  [
+    /\b([Ss])crutiny officer(s?)\b/g,
+    (p, c, s) =>
+      p.id === "punjab-haryana" ? `${c === "S" ? "A" : "a"}hlmad${s}` : `${c}crutiny officer${s}`,
+  ],
+  [
+    /\b([Tt])ypist(s?)\b(?! \/ Steno)/g,
+    (p, t, s) => (p.id === "punjab-haryana" ? `${t === "T" ? "S" : "s"}teno${s}` : `${t}ypist${s}`),
+  ],
   // A bench names its state; one that already names a place is left alone.
   [/\bJMFC Court (\d+)\b(?!,)/g, (p, n) => `JMFC Court ${n}, ${p.state}`],
   [/\bJMFC COURT (\d+)\b(?!,)/g, (p, n) => `JMFC COURT ${n}, ${p.state.toUpperCase()}`],
@@ -146,16 +170,16 @@ const PLACE_RULES: Rule[] = [
   [/\bKerala\b/g, (p) => p.state],
   // The scrutiny queue's sample filings are Ahmedabad's: right for Gujarat as they stand,
   // and moved to the state's demo district everywhere else.
-  [/\bAhmedabad\b/g, (p) => (p.id === "gujarat" ? "Ahmedabad" : (PLACES[p.id]?.Kollam ?? "Ahmedabad"))],
+  [
+    /\bAhmedabad\b/g,
+    (p) => (p.id === "gujarat" ? "Ahmedabad" : (PLACES[p.id]?.Kollam ?? "Ahmedabad")),
+  ],
   [/\bGujarat\b/g, (p) => (p.id === "gujarat" ? "Gujarat" : p.state)],
   // Panchkula is Punjab and Haryana's own — the two share one High Court (owner,
   // 2026-10-12) — so it stays for both, and moves to the state's district elsewhere.
   [
     /\bPanchkula\b/g,
-    (p) =>
-      p.id === "punjab-haryana"
-        ? "Panchkula"
-        : (PLACES[p.id]?.Kollam ?? "Panchkula"),
+    (p) => (p.id === "punjab-haryana" ? "Panchkula" : (PLACES[p.id]?.Kollam ?? "Panchkula")),
   ],
   [/\bKERALA\b/g, (p) => p.state.toUpperCase()],
   [/\bMalayalam\b/g, (p) => COURT_LANGUAGE[p.id] ?? "Malayalam"],
@@ -184,7 +208,6 @@ const PLACE_RULES: Rule[] = [
     new RegExp(`\\b(${Object.keys(HOUSE_NAMES).join("|")})\\b`, "g"),
     (p, house) => HOUSE_NAMES[house]?.[p.id] ?? house,
   ],
-
 ];
 
 const NUMBER_RULES: Rule[] = [
@@ -204,8 +227,7 @@ const NUMBER_RULES: Rule[] = [
   ],
   [
     /\bST[ /](\d+)\/(\d{4})\b/g,
-    (p, seq, year) =>
-      p.numbering.kind === "nact" ? `NACT/${seq}/${year}` : `eCC/${seq}/${year}`,
+    (p, seq, year) => (p.numbering.kind === "nact" ? `NACT/${seq}/${year}` : `eCC/${seq}/${year}`),
   ],
   // A criminal complaint (CC) is an eCC in Gujarat's registry (owner, 2026-10-12):
   // "CC 847/2026" reads "eCC/847/2026". Elsewhere it stays as filed.
@@ -221,7 +243,10 @@ const NUMBER_RULES: Rule[] = [
   // Every other identifier that opens with Kerala's code — application, order and
   // notary numbers, district-coded case numbers (KLKL01-…, KL-KLEK-…), the Gramin
   // Bank's IFSC (KLGB…). First the district code, then the state code before it.
-  [/\bKL([A-Z]{2})(?=[0-9-])/g, (p, district) => `${STATE_CODE[p.id] ?? "KL"}${districtCode(p.id, district)}`],
+  [
+    /\bKL([A-Z]{2})(?=[0-9-])/g,
+    (p, district) => `${STATE_CODE[p.id] ?? "KL"}${districtCode(p.id, district)}`,
+  ],
   [/\bKL(?=[-/][A-Z0-9])/g, (p) => STATE_CODE[p.id] ?? "KL"],
   // A few long-pending numbers in the data are Panchkula's already (HR-PKL-…): right
   // for Punjab & Haryana, the state's demo district everywhere else.
@@ -239,7 +264,16 @@ const NUMBER_RULES: Rule[] = [
 ];
 
 const ROMAN: Record<string, number> = {
-  I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10,
+  I: 1,
+  II: 2,
+  III: 3,
+  IV: 4,
+  V: 5,
+  VI: 6,
+  VII: 7,
+  VIII: 8,
+  IX: 9,
+  X: 10,
 };
 
 /**
@@ -250,7 +284,10 @@ const ROMAN: Record<string, number> = {
  */
 const BENCH_RULES: Rule[] = [
   [/\bJMFC Court (\d+)(?:, (?:Gujarat|Sample District))?/g, (p, n) => `${p.benchName} ${n}`],
-  [/\bJMFC COURT (\d+)(?:, (?:GUJARAT|SAMPLE DISTRICT))?/g, (p, n) => `${p.benchName?.toUpperCase()} ${n}`],
+  [
+    /\bJMFC COURT (\d+)(?:, (?:GUJARAT|SAMPLE DISTRICT))?/g,
+    (p, n) => `${p.benchName?.toUpperCase()} ${n}`,
+  ],
   [/\bJMFC-(X|IX|VIII|VII|VI|V|IV|III|II|I)\b/g, (p, r) => `${p.benchName} ${ROMAN[r] ?? r}`],
   [/\bJMFC Court\b/g, (p) => p.benchName ?? "JMFC Court"],
   // The summons onboarding names the bench in full (owner, 2026-10-14: Gujarat's is the
@@ -265,7 +302,7 @@ function apply(text: string, rules: Rule[], profile: CourtProfile): string {
   let out = text;
   for (const [pattern, to] of rules) {
     out = out.replace(pattern, (_match, ...groups: unknown[]) =>
-      to(profile, ...(groups.filter((g) => typeof g === "string") as string[]))
+      to(profile, ...(groups.filter((g) => typeof g === "string") as string[])),
     );
   }
   return out;
@@ -353,13 +390,15 @@ export function localizeDeep<T>(value: T, court: CourtId): T {
  * is safe whichever state is selected.
  */
 export function caseSearchKey(query: string): string {
-  return query
-    .trim()
-    .toLowerCase()
-    .replace(/\b(?:e\s*cr\s*(?:en|ma)|e\s*cc|nact)\s*\//g, "")
-    // A state code, with or without its district (GJ-…, GJAH01…, HRPK03…, PB/…), is
-    // dropped: what follows it is what the stored Kerala number contains too.
-    // A whole CNR keeps only its sequence and year: the court code differs too.
-    .replace(/\b(?:gj|pb|hr)[a-z]{2}\d{2}(?=\d{10}\b)/g, "")
-    .replace(/\b(?:gj|pb|hr)(?:[a-z]{2})?(?=[-/]?\d)/g, "");
+  return (
+    query
+      .trim()
+      .toLowerCase()
+      .replace(/\b(?:e\s*cr\s*(?:en|ma)|e\s*cc|nact)\s*\//g, "")
+      // A state code, with or without its district (GJ-…, GJAH01…, HRPK03…, PB/…), is
+      // dropped: what follows it is what the stored Kerala number contains too.
+      // A whole CNR keeps only its sequence and year: the court code differs too.
+      .replace(/\b(?:gj|pb|hr)[a-z]{2}\d{2}(?=\d{10}\b)/g, "")
+      .replace(/\b(?:gj|pb|hr)(?:[a-z]{2})?(?=[-/]?\d)/g, "")
+  );
 }

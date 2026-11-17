@@ -3,10 +3,7 @@
 import * as React from "react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 
 import { ReviewRow } from "@/components/cases/filing-form-shared";
 import { Badge } from "@/components/ui/badge";
@@ -14,12 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DescriptionList } from "@/components/ui/description-list";
 import { Dialog, DialogDescription } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -51,6 +43,8 @@ import {
 } from "@/lib/employee/sign-evidence";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
+import type { MessageKey } from "@/i18n/messages";
 
 /**
  * One marking, read and then signed — the single-document path off the evidence queue.
@@ -138,9 +132,9 @@ type Stage = (typeof STAGES)[number];
 const SCENE: Record<Stage, string> = { details: "details", edit: "edit" };
 
 /** The one line that rewrites itself. */
-const TITLE: Record<Stage, string> = {
-  details: "Evidence details",
-  edit: "Mark as evidence",
+const TITLE: Record<Stage, MessageKey> = {
+  details: "signEvidenceDialog_evidenceDetails",
+  edit: "signEvidenceDialog_markAsEvidence",
 };
 
 function SignEvidenceBody({
@@ -160,6 +154,7 @@ function SignEvidenceBody({
   onReturnFocus: () => void;
   onClose: () => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const flow = useStagedFlow({ order: STAGES, scene: SCENE });
 
@@ -170,9 +165,7 @@ function SignEvidenceBody({
   const [markedThrough, setMarkedThrough] = React.useState(row.markedThrough);
   const [serial, setSerial] = React.useState(String(row.serial));
 
-  const witness =
-    row.witnesses.find((entry) => entry.id === markedThrough) ??
-    row.witnesses[0];
+  const witness = row.witnesses.find((entry) => entry.id === markedThrough) ?? row.witnesses[0];
   const series = exhibitSeries(witness.series);
   const parsed = parseEvidenceSerial(serial);
   const taken = takenSerials(rows, row, series);
@@ -182,9 +175,13 @@ function SignEvidenceBody({
      number this case has already given out. */
   const error =
     parsed === null
-      ? "Enter the exhibit number as a whole number, like 1."
+      ? t("signEvidenceDialog_enterTheExhibitNumberAsA")
       : taken.has(parsed)
-        ? `${series}${parsed} is already marked in ${courtText(row.caseNumber)}.`
+        ? t("signEvidenceDialog_seriesParsedIsAlreadyMarkedIn", {
+            series,
+            parsed: String(parsed),
+            courtText: courtText(row.caseNumber),
+          })
         : undefined;
 
   const line = businessOfTheDay(row);
@@ -193,8 +190,7 @@ function SignEvidenceBody({
   /* The business of the day is written to the row as it is typed; the marking is held
      here until Proceed, so that is what a close would lose. */
   const guard = useDiscardGuard(
-    flow.stage === "edit" &&
-      (markedThrough !== row.markedThrough || serial !== String(row.serial)),
+    flow.stage === "edit" && (markedThrough !== row.markedThrough || serial !== String(row.serial)),
     onClose,
   );
 
@@ -214,19 +210,23 @@ function SignEvidenceBody({
       floor
       {...guard.contentProps}
       {...guard.outsideProps}
-      title={TITLE[flow.stage]}
+      title={t(TITLE[flow.stage])}
       titleRef={flow.titleRef}
       /* The marking's own state — waiting for this bench's signature — and it is just as
          true while the bench is correcting the marking, so it stays put across both
          stages rather than blinking out of a header that is meant to hold still.
          `warning` is the variant the other court-side overlays already spend on a pending
          state, so the three report one thing the same way. */
-      titleAside={<Badge variant="warning">Pending signature</Badge>}
+      titleAside={<Badge variant="warning">{t("signEvidenceDialog_pendingSignature")}</Badge>}
       description={
         <DialogDescription className="text-body-compact text-muted-foreground">
           {causeTitle(row)} <span aria-hidden>· </span>
           {/* No copy control inside the dialog's accessible description. */}
-          <Identifier value={row.caseNumber} label="case number" copyable={false} />
+          <Identifier
+            value={row.caseNumber}
+            label={t("signEvidenceDialog_caseNumber")}
+            copyable={false}
+          />
         </DialogDescription>
       }
       sceneKey={flow.sceneKey}
@@ -234,28 +234,20 @@ function SignEvidenceBody({
       footer={
         flow.stage === "details" ? (
           <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => flow.go("edit")}
-            >
-              Edit details
+            <Button type="button" variant="outline" onClick={() => flow.go("edit")}>
+              {t("signEvidenceDialog_editDetails")}
             </Button>
             <Button type="button" disabled={blank} onClick={() => onSign(row)}>
-              E-sign
+              {t("signEvidenceDialog_eSign")}
             </Button>
           </>
         ) : (
           <>
             <Button type="button" variant="outline" onClick={cancel}>
-              Cancel
+              {t("common_cancel")}
             </Button>
-            <Button
-              type="submit"
-              form="mark-as-evidence"
-              disabled={Boolean(error)}
-            >
-              Proceed
+            <Button type="submit" form="mark-as-evidence" disabled={Boolean(error)}>
+              {t("signEvidenceDialog_proceed")}
             </Button>
           </>
         )
@@ -337,20 +329,24 @@ function DetailsStage({
   blank: boolean;
   onBusinessOfTheDayChange: (id: string, botd: string) => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-4">
       <Card variant="raised" size="sm">
         <CardContent>
           <DescriptionList>
-            <ReviewRow term="Document title">
+            <ReviewRow term={t("signEvidenceDialog_documentTitle")}>
               {evidenceDocumentLabel(row.document)}
             </ReviewRow>
-            <ReviewRow term="Uploaded by">{row.uploadedBy}</ReviewRow>
-            <ReviewRow term="Evidence marked through">
+            <ReviewRow term={t("signEvidenceDialog_uploadedBy")}>{row.uploadedBy}</ReviewRow>
+            <ReviewRow term={t("signEvidenceDialog_evidenceMarkedThrough")}>
               {witnessLabel(markedThroughWitness(row))}
             </ReviewRow>
-            <ReviewRow term="Evidence number">
-              <Identifier value={evidenceNumber(row)} label="evidence number" />
+            <ReviewRow term={t("signEvidenceDialog_evidenceNumber")}>
+              <Identifier
+                value={evidenceNumber(row)}
+                label={t("signEvidenceDialog_evidenceNumberLabel")}
+              />
             </ReviewRow>
           </DescriptionList>
         </CardContent>
@@ -359,18 +355,18 @@ function DetailsStage({
       <Card variant="raised" size="sm">
         <CardContent>
           <Field data-invalid={blank}>
-            <FieldLabel className="text-body">Business of the day</FieldLabel>
+            <FieldLabel className="text-body">
+              {t("signEvidenceDialog_businessOfTheDay")}
+            </FieldLabel>
             <Textarea
               rows={2}
               value={line}
               aria-invalid={blank || undefined}
-              onChange={(event) =>
-                onBusinessOfTheDayChange(row.id, event.target.value)
-              }
+              onChange={(event) => onBusinessOfTheDayChange(row.id, event.target.value)}
             />
             {blank ? (
               <FieldError className="text-body-compact">
-                Write what the court did with this document before signing it.
+                {t("signEvidenceDialog_writeWhatTheCourtDidWith")}
               </FieldError>
             ) : null}
           </Field>
@@ -426,6 +422,7 @@ function MarkAsEvidenceStage({
   onSerialChange: (value: string) => void;
   onProceed: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Card variant="raised" size="sm">
       <CardContent>
@@ -438,12 +435,12 @@ function MarkAsEvidenceStage({
           }}
         >
           <Field>
-            <FieldLabel className="text-body">Document title</FieldLabel>
+            <FieldLabel className="text-body">{t("signEvidenceDialog_documentTitle")}</FieldLabel>
             <Input readOnly value={evidenceDocumentLabel(row.document)} />
           </Field>
 
           <Field>
-            <FieldLabel className="text-body">Uploaded by</FieldLabel>
+            <FieldLabel className="text-body">{t("signEvidenceDialog_uploadedBy")}</FieldLabel>
             <Input readOnly value={row.uploadedBy} />
           </Field>
 
@@ -453,7 +450,7 @@ function MarkAsEvidenceStage({
               row uses. */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="evidence-marked-through" className="w-fit text-body">
-              Evidence marked through
+              {t("signEvidenceDialog_evidenceMarkedThrough")}
             </Label>
             <Select value={markedThrough} onValueChange={onMarkedThroughChange}>
               <SelectTrigger id="evidence-marked-through" className="w-full">
@@ -470,7 +467,7 @@ function MarkAsEvidenceStage({
           </div>
 
           <Field data-invalid={Boolean(error)}>
-            <FieldLabel className="text-body">Evidence number</FieldLabel>
+            <FieldLabel className="text-body">{t("signEvidenceDialog_evidenceNumber")}</FieldLabel>
             <InputGroup>
               <InputGroupAddon variant="field">
                 <InputGroupText>{series}</InputGroupText>
@@ -485,12 +482,9 @@ function MarkAsEvidenceStage({
               />
             </InputGroup>
             <FieldDescription className="text-body-compact">
-              The series follows the witness — P for the complainant&apos;s
-              exhibits, D for the accused&apos;s, C for the court&apos;s own.
+              {t("signEvidenceDialog_theSeriesFollowsTheWitnessP")}
             </FieldDescription>
-            {error ? (
-              <FieldError className="text-body-compact">{error}</FieldError>
-            ) : null}
+            {error ? <FieldError className="text-body-compact">{error}</FieldError> : null}
           </Field>
         </form>
       </CardContent>

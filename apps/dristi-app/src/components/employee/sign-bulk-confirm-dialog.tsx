@@ -2,10 +2,7 @@
 
 import * as React from "react";
 
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,6 +14,7 @@ import {
 } from "@/components/ui/description-list";
 import { Dialog, DialogDescription } from "@/components/ui/dialog";
 import { IrreversibleNote, OutcomeHeader, OutcomeSummary } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * What the court is acting on in bulk.
@@ -24,12 +22,7 @@ import { IrreversibleNote, OutcomeHeader, OutcomeSummary } from "@/components/fe
  * Four of the five plurals are a regular `-s`, so the copy builds those and the table
  * below holds only the one that is not.
  */
-export type SignBulkNoun =
-  | "form"
-  | "order"
-  | "bail bond"
-  | "deposition"
-  | "process";
+export type SignBulkNoun = "form" | "order" | "bail bond" | "deposition" | "process";
 
 const IRREGULAR_PLURALS: Partial<Record<SignBulkNoun, string>> = {
   process: "processes",
@@ -75,9 +68,7 @@ function signatureAct(noun: SignBulkNoun): SignBulkAct {
         : `Your signature goes on every ${noun} selected. This cannot be reversed.`,
     done: (phrase) => `${capitalise(phrase)} signed`,
     outcome: (one) =>
-      one
-        ? "It has left the signing queue."
-        : "They have left the signing queue.",
+      one ? "It has left the signing queue." : "They have left the signing queue.",
     confirm: "Sign",
   };
 }
@@ -268,6 +259,7 @@ function SignBulkConfirmBody({
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   /* The stage, the direction it travelled and where focus lands, from the shared frame.
      There is no direction to travel here — both stages share one scene — so what this
      contributes is the settling: no remount, no slide, and focus moved to the header
@@ -340,24 +332,18 @@ function SignBulkConfirmBody({
                 the strong one, the same pair the sticky bar makes — the count is the
                 dialog's own captured one, so it agrees with the heading above it. */}
             {onDownload ? (
-              <Button
-                type="button"
-                variant="outline"
-                className="tabular-nums"
-                onClick={onDownload}
-              >
-                Download {signed.count}{" "}
-                {signed.count === 1 ? "document" : "documents"}
+              <Button type="button" variant="outline" className="tabular-nums" onClick={onDownload}>
+                Download {signed.count} {signed.count === 1 ? "document" : "documents"}
               </Button>
             ) : null}
             <Button type="button" onClick={onClose}>
-              Done
+              {t("signBulkConfirmDialog_done")}
             </Button>
           </>
         ) : (
           <>
             <Button type="button" variant="outline" onClick={onClose}>
-              Back
+              {t("common_back")}
             </Button>
             <Button
               type="button"
@@ -473,6 +459,7 @@ const IRREVERSIBLE = " This cannot be reversed.";
 /** What kinds are in the run and how many cases it touches: the same figures before the
     act and after it. */
 function SignedFigures({ signed }: { signed: Signed }) {
+  const t = useTranslations();
   return (
     <DescriptionList>
       {signed.kinds.map((kind) => (
@@ -481,15 +468,15 @@ function SignedFigures({ signed }: { signed: Signed }) {
           className="grid-cols-[1fr_auto] items-center border-hairline"
         >
           <DescriptionTerm className="text-body">{kind.label}</DescriptionTerm>
-          <DescriptionDetails className="text-body tabular-nums">
-            {kind.count}
-          </DescriptionDetails>
+          <DescriptionDetails className="text-body tabular-nums">{kind.count}</DescriptionDetails>
         </DescriptionRow>
       ))}
       <DescriptionRow className="grid-cols-[1fr_auto] items-center border-hairline">
-        <DescriptionTerm className="text-body">Cases</DescriptionTerm>
+        <DescriptionTerm className="text-body">{t("signBulkConfirmDialog_cases")}</DescriptionTerm>
         <DescriptionDetails className="text-body tabular-nums">
-          {signed.cases === 1 ? "1 case" : `${signed.cases} cases`}
+          {signed.cases === 1
+            ? t("signBulkConfirmDialog_1Case")
+            : t("signBulkConfirmDialog_casesCases", { cases: String(signed.cases) })}
         </DescriptionDetails>
       </DescriptionRow>
     </DescriptionList>

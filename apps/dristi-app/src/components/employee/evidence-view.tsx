@@ -1,12 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  CheckCircle2Icon,
-  HourglassIcon,
-  PlusIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { CheckCircle2Icon, HourglassIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 import {
   DepositionShortcutsPanel,
@@ -49,11 +44,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -105,6 +96,8 @@ import { blankAddressBlock } from "@/lib/filing/blank";
 import type { Address } from "@/lib/filing/types";
 import { cn } from "@/lib/utils";
 import { notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** Where the view sits: the hearing its records belong to, and the case's people. */
 export type EvidenceContext = {
@@ -119,21 +112,13 @@ export type EvidenceContext = {
 };
 
 export function useHearingEvidence(hearingId: string): EvidenceRecord[] {
-  const all = React.useSyncExternalStore(
-    subscribeToEvidence,
-    readEvidence,
-    serverEvidence,
-  );
+  const all = React.useSyncExternalStore(subscribeToEvidence, readEvidence, serverEvidence);
   return evidenceAtHearing(all, hearingId);
 }
 
 /** Who a deposition here can be of: the complainant, the listed witnesses, those added. */
 function useDeponents(context: EvidenceContext): Deponent[] {
-  const all = React.useSyncExternalStore(
-    subscribeToEvidence,
-    readEvidence,
-    serverEvidence,
-  );
+  const all = React.useSyncExternalStore(subscribeToEvidence, readEvidence, serverEvidence);
   const added = React.useSyncExternalStore(
     subscribeToAddedWitnesses,
     readAddedWitnesses,
@@ -148,9 +133,9 @@ const ADD_WITNESS = "add-witness";
 /** The witness picker's headings, in the order a clerk looks: the complainant is
  *  almost always the first to depose. A party on the witness list is a witness. */
 const DEPONENT_GROUPS: readonly { label: string; sources: readonly Deponent["source"][] }[] = [
-  { label: "Complainant", sources: ["complainant"] },
-  { label: "Witnesses", sources: ["listed", "added"] },
-  { label: "Accused", sources: ["accused"] },
+  { label: "evidenceView_complainant", sources: ["complainant"] },
+  { label: "evidenceView_witnesses", sources: ["listed", "added"] },
+  { label: "evidenceView_accused", sources: ["accused"] },
 ];
 
 function statusVariant(record: EvidenceRecord): "success" | "warning" | "info" {
@@ -194,6 +179,7 @@ export function startEvidenceRecord(
  * the order is a draft or already sent for signing.
  */
 export function EvidenceView({ context }: { context: EvidenceContext }) {
+  const t = useTranslations();
   const records = useHearingEvidence(context.hearingId);
   const deponents = useDeponents(context);
   const [activeId, setActiveId] = React.useState<string | null>(null);
@@ -227,17 +213,17 @@ export function EvidenceView({ context }: { context: EvidenceContext }) {
         <Empty className="px-6 py-16">
           <EmptyHeader>
             <EmptyTitle className="text-body font-semibold">
-              Nothing recorded at this hearing yet
+              {t("evidenceView_nothingRecordedAtThisHearingYet")}
             </EmptyTitle>
             <EmptyDescription className="text-body-compact text-pretty">
-              Evidence of the complainant, a witness deposition, or examination of the
-              accused. Choose the type and the person on the next screen. Questions go in
-              with <kbd className="font-mono">/</kbd> shortcuts, as in the order.
+              {t.rich("evidenceView_evidenceOfTheComplainantAWitness", {
+                kbd: (chunks) => <kbd className="font-mono">{chunks}</kbd>,
+              })}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button type="button" variant="outline" onClick={() => start()}>
-              Record a statement
+              {t("evidenceView_recordAStatement")}
             </Button>
           </EmptyContent>
         </Empty>
@@ -252,7 +238,7 @@ export function EvidenceView({ context }: { context: EvidenceContext }) {
       <div
         ref={tabsRef}
         role="group"
-        aria-label="Recorded at this hearing"
+        aria-label={t("evidenceView_recordedAtThisHearing")}
         className="flex min-w-0 items-center gap-1 overflow-x-auto border-b border-hairline px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {records.map((record) => {
@@ -289,7 +275,7 @@ export function EvidenceView({ context }: { context: EvidenceContext }) {
                   variant="destructive-ghost"
                   size="icon-xs"
                   className="mr-1 max-md:size-10"
-                  aria-label={`Discard ${label}`}
+                  aria-label={t("evidenceView_discardLabel", { label })}
                   onClick={() => setDiscarding(record)}
                 >
                   <Trash2Icon aria-hidden className="size-4" />
@@ -305,7 +291,7 @@ export function EvidenceView({ context }: { context: EvidenceContext }) {
           onClick={() => start()}
         >
           <PlusIcon aria-hidden />
-          Record another
+          {t("evidenceView_recordAnother")}
         </Button>
       </div>
 
@@ -330,13 +316,13 @@ export function EvidenceView({ context }: { context: EvidenceContext }) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard this recorded statement?</AlertDialogTitle>
+            <AlertDialogTitle>{t("evidenceView_discardThisRecordedStatement")}</AlertDialogTitle>
             <AlertDialogDescription>
-              What has been typed in it is lost. Nothing has been signed.
+              {t("evidenceView_whatHasBeenTypedInIt")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep it</AlertDialogCancel>
+            <AlertDialogCancel>{t("evidenceView_keepIt")}</AlertDialogCancel>
             <Button
               type="button"
               variant="destructive"
@@ -344,10 +330,10 @@ export function EvidenceView({ context }: { context: EvidenceContext }) {
                 if (discarding) discardEvidence(discarding.id);
                 setDiscarding(null);
                 setActiveId(null);
-                notify.neutral("Discarded.", { icon: Trash2Icon });
+                notify.neutral(t("evidenceView_discarded"), { icon: Trash2Icon });
               }}
             >
-              Discard
+              {t("evidenceView_discard")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -394,6 +380,7 @@ function EvidenceRecordEditor({
   /** Shows another statement at this hearing, in place of this one. */
   onOpenRecord: (id: string) => void;
 }) {
+  const t = useTranslations();
   const type = statementTypeOf(record);
   const suggestion = useDepositionSuggestion(record.kind);
   const typeFieldId = React.useId();
@@ -425,7 +412,8 @@ function EvidenceRecordEditor({
   const all = React.useSyncExternalStore(subscribeToEvidence, readEvidence, serverEvidence);
   const numbered = deponent ? witnessNumberOf(record, deponent, deponents, all) : undefined;
   /* The side their mark stands for: chosen in Witness mark as until the number is fixed. */
-  const markSide = deponent && numbered ? (sideOfMark(numbered.number) ?? deponent.side) : undefined;
+  const markSide =
+    deponent && numbered ? (sideOfMark(numbered.number) ?? deponent.side) : undefined;
   /* Who the sheet and its signing name: the witness with their number, or the accused. */
   const subject: EvidenceSubject | undefined = deponent
     ? {
@@ -442,9 +430,7 @@ function EvidenceRecordEditor({
       : complainant
         ? {
             name: complainant.name,
-            mobile: complainant.mobiles[0]?.value
-              .replace(/^\+91\s*/, "")
-              .replace(/\s/g, ""),
+            mobile: complainant.mobiles[0]?.value.replace(/^\+91\s*/, "").replace(/\s/g, ""),
           }
         : undefined;
 
@@ -499,14 +485,14 @@ function EvidenceRecordEditor({
           grid as that row, so it is exactly as wide as the person field under it. */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <Field>
-          <FieldLabel htmlFor={typeFieldId}>Statement type</FieldLabel>
+          <FieldLabel htmlFor={typeFieldId}>{t("evidenceView_statementType")}</FieldLabel>
           <Select
             value={type}
             disabled={!editable}
             onValueChange={(value) => setStatementType(value as StatementType)}
           >
             <SelectTrigger id={typeFieldId} className="w-full">
-              <SelectValue placeholder="Choose the type" />
+              <SelectValue placeholder={t("evidenceView_chooseTheType")} />
             </SelectTrigger>
             <SelectContent
               position="popper"
@@ -543,7 +529,11 @@ function EvidenceRecordEditor({
               setErrors((current) => ({ ...current, person: undefined }));
             }}
           >
-            <SelectTrigger id={personFieldId} className="w-full" aria-invalid={Boolean(errors.person)}>
+            <SelectTrigger
+              id={personFieldId}
+              className="w-full"
+              aria-invalid={Boolean(errors.person)}
+            >
               <SelectValue placeholder={personPlaceholderFor(type)} />
             </SelectTrigger>
             {/* Items sit in groups: the group, not the content, insets the hover fill.
@@ -557,35 +547,37 @@ function EvidenceRecordEditor({
             >
               {type === "witness-deposition" ? (
                 <>
-                {DEPONENT_GROUPS.map((group) => {
-                  const members = deponents.filter((entry) => group.sources.includes(entry.source));
-                  return members.length === 0 ? null : (
-                    <SelectGroup key={group.label}>
-                      <SelectLabel>{group.label}</SelectLabel>
-                      {members.map((entry) => (
-                        <SelectItem key={entry.id} value={entry.id}>
-                          {/* The number first: a long name is what gets cut in the trigger. */}
-                          {entry.number
-                            ? `${entry.number} · ${entry.name}`
-                            : `${entry.name} · ${
-                                entry.source === "complainant" || entry.source === "accused"
-                                  ? entry.source
-                                  : "no number yet"
-                              }`}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  );
-                })}
-                {/* Someone not on the list is found missing here, so adding them is the
+                  {DEPONENT_GROUPS.map((group) => {
+                    const members = deponents.filter((entry) =>
+                      group.sources.includes(entry.source),
+                    );
+                    return members.length === 0 ? null : (
+                      <SelectGroup key={group.label}>
+                        <SelectLabel>{translateText(t, group.label)}</SelectLabel>
+                        {members.map((entry) => (
+                          <SelectItem key={entry.id} value={entry.id}>
+                            {/* The number first: a long name is what gets cut in the trigger. */}
+                            {entry.number
+                              ? `${entry.number} · ${entry.name}`
+                              : `${entry.name} · ${
+                                  entry.source === "complainant" || entry.source === "accused"
+                                    ? entry.source
+                                    : "no number yet"
+                                }`}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    );
+                  })}
+                  {/* Someone not on the list is found missing here, so adding them is the
                     list's last line (Anshumanth, 2026-10-29: back from beside the label). */}
-                <SelectSeparator />
-                <SelectGroup>
-                  <SelectItem value={ADD_WITNESS} className="text-primary">
-                    <PlusIcon aria-hidden className="text-primary" />
-                    Add a witness
-                  </SelectItem>
-                </SelectGroup>
+                  <SelectSeparator />
+                  <SelectGroup>
+                    <SelectItem value={ADD_WITNESS} className="text-primary">
+                      <PlusIcon aria-hidden className="text-primary" />
+                      {t("evidenceView_addAWitness")}
+                    </SelectItem>
+                  </SelectGroup>
                 </>
               ) : type === "complainant-evidence" ? (
                 <SelectGroup>
@@ -615,7 +607,9 @@ function EvidenceRecordEditor({
             Always shown for a deposition so the row stays paired. */}
         {type === "witness-deposition" ? (
           <Field>
-            <FieldLabel htmlFor={`${personFieldId}-mark`}>Witness mark as</FieldLabel>
+            <FieldLabel htmlFor={`${personFieldId}-mark`}>
+              {t("evidenceView_witnessMarkAs")}
+            </FieldLabel>
             <Select
               value={markSide ?? ""}
               disabled={!editable || !deponent || numbered?.fixed}
@@ -624,7 +618,7 @@ function EvidenceRecordEditor({
               }
             >
               <SelectTrigger id={`${personFieldId}-mark`} className="w-full">
-                <SelectValue placeholder="Choose the witness first" />
+                <SelectValue placeholder={t("evidenceView_chooseTheWitnessFirst")} />
               </SelectTrigger>
               <SelectContent
                 position="popper"
@@ -656,7 +650,9 @@ function EvidenceRecordEditor({
             "Accused 2 · person in charge", not "Accused". */}
         {examined && examined.role !== "Accused" ? (
           <Field>
-            <FieldLabel htmlFor={`${personFieldId}-standing`}>Standing</FieldLabel>
+            <FieldLabel htmlFor={`${personFieldId}-standing`}>
+              {t("evidenceView_standing")}
+            </FieldLabel>
             <Input id={`${personFieldId}-standing`} readOnly value={examined.role} />
           </Field>
         ) : null}
@@ -665,10 +661,7 @@ function EvidenceRecordEditor({
       {editable ? (
         /* Invalid marks the edge, the label and the message; the typed words keep their
            own colour rather than taking the field's red. */
-        <Field
-          data-invalid={Boolean(errors.text)}
-          className="data-[invalid=true]:text-foreground"
-        >
+        <Field data-invalid={Boolean(errors.text)} className="data-[invalid=true]:text-foreground">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <FieldLabel
               id={textLabelId}
@@ -678,10 +671,17 @@ function EvidenceRecordEditor({
             </FieldLabel>
             <div className="flex items-center gap-3">
               <span className="hidden text-body-compact text-muted-foreground sm:inline">
-                Type <kbd className="font-mono">/</kbd> for a shortcut
+                {t.rich("evidenceView_typeForAShortcut", {
+                  kbd: (chunks) => <kbd className="font-mono">{chunks}</kbd>,
+                })}
               </span>
-              <Button type="button" variant="ghost" size="sm" onClick={() => setShortcutsOpen(true)}>
-                Shortcuts
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShortcutsOpen(true)}
+              >
+                {t("evidenceView_shortcuts")}
               </Button>
             </div>
           </div>
@@ -703,7 +703,7 @@ function EvidenceRecordEditor({
           <p className="text-body-compact text-muted-foreground">
             {record.status === "signed"
               ? `${evidenceStatusLabel(record)}${record.signedWith === "paper" ? " on paper" : ""}.`
-              : `Sent to +91 ${record.sentTo ?? ""} to sign.`}
+              : t("evidenceView_sentTo91ValueToSign", { value: record.sentTo ?? "" })}
           </p>
           <RichTextValueView
             value={{ html: record.html, text: record.text }}
@@ -715,10 +715,10 @@ function EvidenceRecordEditor({
       {editable ? (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           <span aria-live="polite" className="text-body-compact text-muted-foreground">
-            Saved
+            {t("evidenceView_saved")}
           </span>
           <Button type="button" variant="outline" onClick={review}>
-            Review and sign
+            {t("evidenceView_reviewAndSign")}
           </Button>
         </div>
       ) : null}
@@ -728,11 +728,12 @@ function EvidenceRecordEditor({
             window scrolls. */}
         <DialogContent className="flex max-h-[90svh] flex-col gap-6 overflow-y-auto sm:max-w-3xl md:max-w-5xl md:overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Shortcuts</DialogTitle>
+            <DialogTitle>{t("evidenceView_shortcuts")}</DialogTitle>
             <DialogDescription>
-              In the {statementTypeLabel(type).toLowerCase()}, type{" "}
-              <kbd className="font-mono">/</kbd> to list them and the start of a name to
-              narrow the list, then press Enter to put one in.
+              {t.rich("evidenceView_inTheToLowerCaseType", {
+                toLowerCase: statementTypeLabel(type).toLowerCase(),
+                kbd: (chunks) => <kbd className="font-mono">{chunks}</kbd>,
+              })}
             </DialogDescription>
           </DialogHeader>
           <DepositionShortcutsPanel
@@ -777,12 +778,12 @@ function EvidenceRecordEditor({
               };
               saveEvidence(next);
               onOpenRecord(next.id);
-              notify.success(`${witness.name} added as a witness, in a new statement.`);
+              notify.success(t("evidenceView_nameAddedAsAWitnessIn", { name: witness.name }));
               return;
             }
             updateEvidence(record.id, { personId: witness.id, witnessSide: undefined });
             setErrors((current) => ({ ...current, person: undefined }));
-            notify.success(`${witness.name} added as a witness.`);
+            notify.success(t("evidenceView_nameAddedAsAWitness", { name: witness.name }));
           }}
         />
       ) : null}
@@ -838,6 +839,7 @@ function EvidenceSignDialog({
   subject: EvidenceSubject;
   context: EvidenceContext;
 }) {
+  const t = useTranslations();
   const person = subject;
   const titleRef = React.useRef<HTMLHeadingElement>(null);
   const mobileId = React.useId();
@@ -864,14 +866,17 @@ function EvidenceSignDialog({
   const type = statementTypeOf(record);
   const sheetTitle =
     type === "accused-examination"
-      ? `Examination of the accused · ${person.name}`
+      ? t("evidenceView_examinationOfTheAccusedName", { name: person.name })
       : type === "complainant-evidence"
-        ? `Evidence of the complainant · ${person.name}`
-        : `Deposition of ${subject.number ?? ""} · ${person.name}`;
+        ? t("evidenceView_evidenceOfTheComplainantName", { name: person.name })
+        : t("evidenceView_depositionOfValueName", {
+            value: subject.number ?? "",
+            name: person.name,
+          });
   /* Titles only: what each stage asks is in the stage itself. */
   const title: Record<Exclude<SignStage, "done">, string> = {
     review: sheetTitle,
-    link: "Send the signing link",
+    link: t("evidenceView_sendTheSigningLink"),
   };
 
   function finish(change: Partial<EvidenceRecord>) {
@@ -925,12 +930,12 @@ function EvidenceSignDialog({
                   className="text-body font-semibold text-balance outline-none"
                 >
                   {record.status === "signed"
-                    ? `Signed by ${person.name}`
-                    : `Sent to ${person.name} to sign`}
+                    ? t("evidenceView_signedByName", { name: person.name })
+                    : t("evidenceView_sentToNameToSign", { name: person.name })}
                 </DialogTitle>
                 {record.status === "signed" ? null : (
                   <p className="text-body-compact text-muted-foreground">
-                    By SMS to +91 {record.sentTo}
+                    {t("evidenceView_bySmsTo91SentTo", { sentTo: record.sentTo ?? "" })}
                   </p>
                 )}
               </div>
@@ -949,11 +954,7 @@ function EvidenceSignDialog({
         )}
 
         {stage !== "done" ? (
-          <div
-            className={cn(
-              "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-6",
-            )}
-          >
+          <div className={cn("flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-6")}>
             {stage === "review" ? (
               <div className="rounded-xl bg-surface-sunken p-4">
                 <article
@@ -963,15 +964,15 @@ function EvidenceSignDialog({
                   <header className="flex flex-col items-center gap-1 text-center">
                     <p className="font-semibold">
                       {type === "accused-examination"
-                        ? "Examination of the accused"
+                        ? t("evidenceView_examinationOfTheAccused")
                         : type === "complainant-evidence"
-                          ? "Evidence of the complainant"
-                          : "Deposition of witnesses"}
+                          ? t("evidenceView_evidenceOfTheComplainant")
+                          : t("evidenceView_depositionOfWitnesses")}
                     </p>
                     <p className="text-body-compact text-paper-muted-foreground">
                       {type === "accused-examination"
-                        ? "(Section 351, Bharatiya Nagarik Suraksha Sanhita, 2023)"
-                        : "(Chapter XXII, Criminal Procedure Code)"}
+                        ? t("evidenceView_section351BharatiyaNagarikSurakshaSanhita")
+                        : t("evidenceView_chapterXxiiCriminalProcedureCode")}
                     </p>
                     <p className="text-body-compact">
                       {context.caseNumber} · {context.matter}
@@ -979,18 +980,24 @@ function EvidenceSignDialog({
                   </header>
                   {type === "accused-examination" ? (
                     <div className="flex flex-col gap-1">
-                      <p className="font-semibold">Examination of {person.name}</p>
+                      <p className="font-semibold">
+                        {t("evidenceView_examinationOfName", { name: person.name })}
+                      </p>
                       <p className="text-paper-muted-foreground">
-                        The accused is not on oath. The evidence against the accused was put as
-                        follows.
+                        {t("evidenceView_theAccusedIsNotOnOath")}
                       </p>
                     </div>
                   ) : type === "complainant-evidence" ? (
                     <div className="flex flex-col gap-1">
-                      <p className="font-semibold">Evidence of {person.name}</p>
+                      <p className="font-semibold">
+                        {t("evidenceView_evidenceOfName", { name: person.name })}
+                      </p>
                       <p>
-                        Solemnly affirmed on{" "}
-                        {formatOrderDate(record.takenOn ?? record.createdOn.slice(0, 10))}
+                        {t("evidenceView_solemnlyAffirmedOnFormatOrderDate", {
+                          formatOrderDate: formatOrderDate(
+                            record.takenOn ?? record.createdOn.slice(0, 10),
+                          ),
+                        })}
                       </p>
                     </div>
                   ) : (
@@ -1001,8 +1008,14 @@ function EvidenceSignDialog({
                           ? "court witness"
                           : `witness for the ${subject.side ?? "complainant"}`}
                       </p>
-                      <p>Name: {person.name}</p>
-                      <p>Solemnly affirmed on {formatOrderDate(record.takenOn ?? record.createdOn.slice(0, 10))}</p>
+                      <p>{t("evidenceView_nameName", { name: person.name })}</p>
+                      <p>
+                        {t("evidenceView_solemnlyAffirmedOnFormatOrderDate", {
+                          formatOrderDate: formatOrderDate(
+                            record.takenOn ?? record.createdOn.slice(0, 10),
+                          ),
+                        })}
+                      </p>
                     </div>
                   )}
                   <RichTextValueView
@@ -1024,7 +1037,7 @@ function EvidenceSignDialog({
                           : "witness"}
                     </span>
                     <span className="min-w-44 border-t border-paper-border pt-2">
-                      Judicial Magistrate of the First Class
+                      {t("evidenceView_judicialMagistrateOfTheFirstClass")}
                     </span>
                   </footer>
                 </article>
@@ -1033,7 +1046,9 @@ function EvidenceSignDialog({
 
             {stage === "link" ? (
               <Field data-invalid={Boolean(mobileError)}>
-                <FieldLabel htmlFor={mobileId}>{person.name}&apos;s mobile number</FieldLabel>
+                <FieldLabel htmlFor={mobileId}>
+                  {t("evidenceView_nameSMobileNumber", { name: person.name })}
+                </FieldLabel>
                 <PrefixInput
                   id={mobileId}
                   prefix="+91"
@@ -1055,10 +1070,10 @@ function EvidenceSignDialog({
         {stage === "review" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Back to editing
+              {t("evidenceView_backToEditing")}
             </Button>
             <Button type="button" onClick={() => setStage("link")}>
-              Continue to signing
+              {t("evidenceView_continueToSigning")}
             </Button>
           </footer>
         ) : null}
@@ -1066,13 +1081,13 @@ function EvidenceSignDialog({
         {stage === "link" ? (
           <footer className={FOOTER}>
             <Button type="button" variant="outline" onClick={() => setStage("review")}>
-              Back
+              {t("common_back")}
             </Button>
             <Button
               type="button"
               onClick={() => {
                 if (mobile.length !== 10) {
-                  setMobileError("Enter a 10-digit mobile number.");
+                  setMobileError(t("evidenceView_enterA10DigitMobileNumber"));
                   window.document.getElementById(mobileId)?.focus();
                   return;
                 }
@@ -1085,7 +1100,7 @@ function EvidenceSignDialog({
                 });
               }}
             >
-              Send link
+              {t("evidenceView_sendLink")}
             </Button>
           </footer>
         ) : null}
@@ -1093,7 +1108,7 @@ function EvidenceSignDialog({
         {stage === "done" ? (
           <footer className={cn(FOOTER, "sm:justify-end")}>
             <Button type="button" onClick={() => onOpenChange(false)}>
-              Done
+              {t("evidenceView_done")}
             </Button>
           </footer>
         ) : null}
@@ -1186,6 +1201,7 @@ function AddWitnessDialog({
   returnFocusTo: string;
   onAdded: (witness: { id: string; name: string }) => void;
 }) {
+  const t = useTranslations();
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [name, setName] = React.useState("");
   const [mobile, setMobile] = React.useState("");
@@ -1208,8 +1224,7 @@ function AddWitnessDialog({
     }
   }
 
-  const dirty =
-    [name, email].some((v) => v.trim()) || Boolean(mobile) || !addressBlank(address);
+  const dirty = [name, email].some((v) => v.trim()) || Boolean(mobile) || !addressBlank(address);
 
   /* A half-filled form is not lost to a stray Escape or a click outside. */
   function requestClose() {
@@ -1262,7 +1277,9 @@ function AddWitnessDialog({
         >
           <form noValidate onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
             <DialogHeader className="shrink-0 gap-1.5 border-b border-hairline px-6 py-4 pr-12 text-left">
-              <DialogTitle className="text-body font-semibold">Add a witness</DialogTitle>
+              <DialogTitle className="text-body font-semibold">
+                {t("evidenceView_addAWitness")}
+              </DialogTitle>
             </DialogHeader>
             <div
               ref={scrollRef}
@@ -1274,19 +1291,19 @@ function AddWitnessDialog({
                 </SectionNotice>
               ) : null}
 
-              <FormField label="Name or designation">
+              <FormField label={t("evidenceView_nameOrDesignation")}>
                 <TextField
                   value={name}
                   onChange={(next) => {
                     setName(next);
                     setError(undefined);
                   }}
-                  placeholder="e.g. Ramesh Nair, or Branch Manager, Federal Bank"
+                  placeholder={t("evidenceView_eGRameshNairOrBranch")}
                   autoComplete="off"
                 />
               </FormField>
               <FormRow>
-                <FormField label="Mobile number">
+                <FormField label={t("evidenceView_mobileNumber")}>
                   <PrefixInput
                     prefix="+91"
                     value={mobile}
@@ -1299,7 +1316,7 @@ function AddWitnessDialog({
                     autoComplete="off"
                   />
                 </FormField>
-                <FormField label="Email ID" optional>
+                <FormField label={t("evidenceView_emailId")} optional>
                   <TextField
                     type="email"
                     value={email}
@@ -1317,7 +1334,7 @@ function AddWitnessDialog({
 
               <section aria-labelledby="witness-address" className="flex flex-col gap-4">
                 <h3 id="witness-address" className="text-body font-semibold leading-snug">
-                  Address <RequiredMark optional />
+                  {t("evidenceView_address")} <RequiredMark optional />
                 </h3>
                 <AddressFields
                   value={address}
@@ -1332,9 +1349,9 @@ function AddWitnessDialog({
             </div>
             <footer className={FOOTER}>
               <Button type="button" variant="outline" onClick={requestClose}>
-                Cancel
+                {t("common_cancel")}
               </Button>
-              <Button type="submit">Add witness</Button>
+              <Button type="submit">{t("evidenceView_addWitness")}</Button>
             </footer>
           </form>
         </FlowDialogContent>
@@ -1343,13 +1360,13 @@ function AddWitnessDialog({
       <AlertDialog open={discarding} onOpenChange={setDiscarding}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard this witness?</AlertDialogTitle>
+            <AlertDialogTitle>{t("evidenceView_discardThisWitness")}</AlertDialogTitle>
             <AlertDialogDescription>
-              What has been typed here is lost. They are not added to the case.
+              {t("evidenceView_whatHasBeenTypedHereIs")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogCancel>{t("evidenceView_keepEditing")}</AlertDialogCancel>
             <Button
               type="button"
               variant="destructive"
@@ -1358,7 +1375,7 @@ function AddWitnessDialog({
                 onOpenChange(false);
               }}
             >
-              Discard
+              {t("evidenceView_discard")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

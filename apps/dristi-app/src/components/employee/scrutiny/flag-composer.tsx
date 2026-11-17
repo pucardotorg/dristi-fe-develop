@@ -3,26 +3,17 @@
 import * as React from "react";
 import { CheckIcon, FileUpIcon } from "lucide-react";
 
-import {
-  canSaveDraft,
-  docName,
-  isDraftDirty,
-  saysSomething,
-} from "@/lib/employee/scrutiny/field";
+import { canSaveDraft, docName, isDraftDirty, saysSomething } from "@/lib/employee/scrutiny/field";
 import { DOC_REASONS } from "@/lib/employee/scrutiny/sections";
 import type { FlatField } from "@/lib/employee/scrutiny/types";
 import type { ScrutinyController } from "@/lib/employee/scrutiny/use-scrutiny-state";
 import { cn } from "@/lib/utils";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useTranslations } from "next-intl";
 
 /**
  * The composer.
@@ -48,6 +39,7 @@ export function FlagComposer({
   controller: ScrutinyController;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const t = useTranslations();
   const { draft, pendingFocus } = controller;
   const noteRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -107,23 +99,21 @@ export function FlagComposer({
          * listed accessibility defect, and a voice user says the label.
          */}
         <FieldLabel>
-          {isDocRow ? "What’s wrong with this document?" : "Note for the advocate"}
+          {isDocRow
+            ? t("flagComposer_whatsWrongWithThisDocument")
+            : t("flagComposer_noteForTheAdvocate")}
         </FieldLabel>
 
         <Textarea
           ref={noteRef}
           className="max-h-32 min-h-16"
           placeholder={
-            isDocRow
-              ? "e.g. Only the address side was uploaded — please upload the front."
-              : "e.g. The amount does not match the cheque — check it against the instrument."
+            isDocRow ? t("flagComposer_eGOnlyTheAddressSide") : t("flagComposer_eGTheAmountDoesNot")
           }
           value={draft.text}
           onClick={(event) => event.stopPropagation()}
           onKeyDown={onKeyDown}
-          onChange={(event) =>
-            controller.updateDraft({ text: event.target.value })
-          }
+          onChange={(event) => controller.updateDraft({ text: event.target.value })}
         />
 
         {/* Structured reasons qualify the note; the note comes first. */}
@@ -141,8 +131,8 @@ export function FlagComposer({
         {speechless ? (
           <FieldError>
             {isDocRow
-              ? "Say what’s wrong — pick a reason or write a line."
-              : "Say what’s wrong — one line is enough."}
+              ? t("flagComposer_sayWhatsWrongPickAReason")
+              : t("flagComposer_sayWhatsWrongOneLineIs")}
           </FieldError>
         ) : null}
       </Field>
@@ -157,14 +147,10 @@ export function FlagComposer({
        * card the switch wraps above and the pair stays at the end.
        */}
       <div className="flex flex-wrap items-center gap-2">
-        <DocSwitch
-          field={field}
-          controller={controller}
-          onGoToItem={onGoToItem}
-        />
+        <DocSwitch field={field} controller={controller} onGoToItem={onGoToItem} />
         <div className="ms-auto flex items-center gap-2">
           <Button variant="ghost" onClick={() => controller.closeComposer()}>
-            Cancel
+            {t("common_cancel")}
           </Button>
           {/*
            * Primary, like the workbench's other inline Save (the case-title editor): the
@@ -172,12 +158,14 @@ export function FlagComposer({
            */}
           <Button
             disabled={!canSave}
-            aria-label={
-              draft.linked ? "Save the flag and the document issue" : undefined
-            }
+            aria-label={draft.linked ? t("flagComposer_saveTheFlagAndTheDocument") : undefined}
             onClick={() => controller.saveFlag()}
           >
-            {draft.linked ? "Save both" : isDocRow ? "Save issue" : "Save flag"}
+            {draft.linked
+              ? t("flagComposer_saveBoth")
+              : isDocRow
+                ? t("flagComposer_saveIssue")
+                : t("flagComposer_saveFlag")}
           </Button>
         </div>
       </div>
@@ -199,6 +187,7 @@ function ReasonChips({
   value: string | null;
   onChange: (reason: string | null) => void;
 }) {
+  const t = useTranslations();
   return (
     /*
      * Selection is a mark, not a fill. The DS on-state for an outline toggle is
@@ -214,7 +203,7 @@ function ReasonChips({
       value={value ?? ""}
       onValueChange={(next) => onChange(next || null)}
       className="flex flex-wrap gap-1.5"
-      aria-label="What is wrong with the document"
+      aria-label={t("flagComposer_whatIsWrongWithTheDocument")}
     >
       {DOC_REASONS.map((reason) => (
         <ToggleGroupItem
@@ -224,9 +213,7 @@ function ReasonChips({
           className="h-10 gap-1.5 bg-transparent data-[state=on]:bg-secondary data-[state=on]:font-medium"
           onClick={(event) => event.stopPropagation()}
         >
-          {value === reason ? (
-            <CheckIcon className="size-3.5" aria-hidden="true" />
-          ) : null}
+          {value === reason ? <CheckIcon className="size-3.5" aria-hidden="true" /> : null}
           {reason}
         </ToggleGroupItem>
       ))}
@@ -251,6 +238,7 @@ function DocSwitch({
   controller: ScrutinyController;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const t = useTranslations();
   const { docById, docRow } = useScrutinyCase();
   const draft = controller.draft;
   if (!draft || draft.linked) return null;
@@ -283,7 +271,7 @@ function DocSwitch({
         }}
       >
         <FileUpIcon data-icon="inline-start" aria-hidden="true" />
-        {`Open the re-upload flag on ${docName(sourceDoc, docById)}`}
+        {t("flagComposer_openTheReUploadFlagOn", { docName: docName(sourceDoc, docById) })}
       </Button>
     );
   }
@@ -306,15 +294,13 @@ function DocSwitch({
         // first reason — rather than falling to the page.
         requestAnimationFrame(() =>
           composer
-            ?.querySelector<HTMLElement>(
-              "[data-linked-block] [data-slot=toggle-group-item]",
-            )
+            ?.querySelector<HTMLElement>("[data-linked-block] [data-slot=toggle-group-item]")
             ?.focus(),
         );
       }}
     >
       <FileUpIcon data-icon="inline-start" aria-hidden="true" />
-      Flag the entire document instead
+      {t("flagComposer_flagTheEntireDocumentInstead")}
     </Button>
   );
 }
@@ -328,6 +314,7 @@ function DocSwitch({
  * the officer's behalf is the machine making the claim.
  */
 function LinkedBlock({ controller }: { controller: ScrutinyController }) {
+  const t = useTranslations();
   const { docById } = useScrutinyCase();
   const linked = controller.draft?.linked;
   if (!linked) return null;
@@ -339,17 +326,13 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
      * above and the re-upload header row — glyph, item name, Undo — say a second item
      * starts here, so the two textareas never read as one note.
      */
-    <div
-      className="flex flex-col gap-2 pt-1"
-      data-linked-block=""
-    >
+    <div className="flex flex-col gap-2 pt-1" data-linked-block="">
       <div className="flex flex-wrap items-center gap-2">
-        <FileUpIcon
-          className="size-3.5 shrink-0 text-muted-foreground"
-          aria-hidden="true"
-        />
+        <FileUpIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span className="min-w-0 flex-1 text-body-compact font-medium">
-          Also raising: {docName(linked.docId, docById)} — re-upload
+          {t("flagComposer_alsoRaisingDocNameReUpload", {
+            docName: docName(linked.docId, docById),
+          })}
         </span>
         <Button
           variant="ghost"
@@ -365,7 +348,7 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
             );
           }}
         >
-          Undo
+          {t("flagComposer_undo")}
         </Button>
       </div>
 
@@ -380,19 +363,17 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
          * One Field for the chip row and the note: the label is visible and belongs to
          * both, which is what keeps the note out of placeholder-only territory.
          */}
-        <FieldLabel>What&rsquo;s wrong with the document?</FieldLabel>
+        <FieldLabel>{t("flagComposer_whatsWrongWithTheDocument")}</FieldLabel>
         <ReasonChips
           value={linked.reason}
           onChange={(reason) => controller.updateLinked({ reason })}
         />
         <Textarea
           className="max-h-32 min-h-16"
-          placeholder="Note for the advocate (optional)"
+          placeholder={t("flagComposer_noteForTheAdvocateOptional")}
           value={linked.note}
           onClick={(event) => event.stopPropagation()}
-          onChange={(event) =>
-            controller.updateLinked({ note: event.target.value })
-          }
+          onChange={(event) => controller.updateLinked({ note: event.target.value })}
         />
         {/*
          * A description, not an error: the officer just chose to open this block and
@@ -401,9 +382,7 @@ function LinkedBlock({ controller }: { controller: ScrutinyController }) {
          * announcement already happened when the question appeared.
          */}
         {missing ? (
-          <FieldDescription>
-            Pick what&rsquo;s wrong to enable Save.
-          </FieldDescription>
+          <FieldDescription>{t("flagComposer_pickWhatsWrongToEnableSave")}</FieldDescription>
         ) : null}
       </Field>
     </div>

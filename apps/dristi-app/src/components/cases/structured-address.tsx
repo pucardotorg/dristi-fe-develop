@@ -11,6 +11,8 @@
 
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 export type StructuredAddress = {
   door: string;
@@ -38,8 +40,8 @@ export function emptyStructuredAddress(): StructuredAddress {
 
 /** Everything but the building name — the one optional field. */
 export function structuredAddressComplete(a: StructuredAddress): boolean {
-  return (["door", "locality", "city", "district", "state", "pin"] as const).every(
-    (key) => a[key].trim()
+  return (["door", "locality", "city", "district", "state", "pin"] as const).every((key) =>
+    a[key].trim(),
   );
 }
 
@@ -66,13 +68,13 @@ const FIELDS: {
   wide?: boolean;
   numeric?: boolean;
 }[] = [
-  { key: "pin", label: "PIN code", required: true, numeric: true },
-  { key: "state", label: "State", required: true },
-  { key: "district", label: "District", required: true },
-  { key: "city", label: "City or town", required: true },
-  { key: "locality", label: "Locality, street or area", required: true, wide: true },
-  { key: "building", label: "Building name (optional)", required: false },
-  { key: "door", label: "Door or house number", required: true },
+  { key: "pin", label: "structuredAddress_pinCode", required: true, numeric: true },
+  { key: "state", label: "structuredAddress_state", required: true },
+  { key: "district", label: "structuredAddress_district", required: true },
+  { key: "city", label: "structuredAddress_cityOrTown", required: true },
+  { key: "locality", label: "structuredAddress_localityStreetOrArea", required: true, wide: true },
+  { key: "building", label: "structuredAddress_buildingNameOptional", required: false },
+  { key: "door", label: "structuredAddress_doorOrHouseNumber", required: true },
 ];
 
 export function StructuredAddressFields({
@@ -85,24 +87,20 @@ export function StructuredAddressFields({
   /** Keeps ids unique when two of these grids share a page. */
   idPrefix: string;
 }) {
+  const t = useTranslations();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {FIELDS.map((field) => (
-        <Field
-          key={field.key}
-          className={field.wide ? "sm:col-span-2" : undefined}
-        >
+        <Field key={field.key} className={field.wide ? "sm:col-span-2" : undefined}>
           <FieldLabel htmlFor={`${idPrefix}-${field.key}`}>
-            {field.label} {field.required ? REQUIRED_MARK : null}
+            {translateText(t, field.label)} {field.required ? REQUIRED_MARK : null}
           </FieldLabel>
           <Input
             id={`${idPrefix}-${field.key}`}
             inputMode={field.numeric ? "numeric" : undefined}
             maxLength={field.numeric ? 6 : undefined}
             value={value[field.key]}
-            onChange={(event) =>
-              onChange({ ...value, [field.key]: event.target.value })
-            }
+            onChange={(event) => onChange({ ...value, [field.key]: event.target.value })}
           />
         </Field>
       ))}

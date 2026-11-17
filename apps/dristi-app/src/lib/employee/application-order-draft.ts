@@ -12,23 +12,12 @@
  * Pure, so it can be tested; nothing here writes to a store.
  */
 
-import {
-  sideLabel,
-  type LifecycleApplication,
-} from "@/lib/applications/lifecycle";
+import { sideLabel, type LifecycleApplication } from "@/lib/applications/lifecycle";
 import { counselFor, partiesLabel, type CaseRecord } from "@/lib/cases/types";
 
 import type { ApplicationOrderDecision } from "./application-order-decision";
-import {
-  formatOrderDate,
-  hearingPurposeFromText,
-  type CourtCounsel,
-} from "./hearings";
-import {
-  createItemBlock,
-  type ComposerContext,
-  type ItemBlock,
-} from "./order-composer";
+import { formatOrderDate, hearingPurposeFromText, type CourtCounsel } from "./hearings";
+import { createItemBlock, type ComposerContext, type ItemBlock } from "./order-composer";
 import { composerContextFor } from "./order-context";
 import { EMPTY_ORDER_DRAFT, type OrderDraft } from "./order-draft";
 import { richTextFromPlain } from "./order-text";
@@ -69,10 +58,7 @@ function counselOf(record: CaseRecord): CourtCounsel[] {
  * The matter the order is on: its people, for the catalogue's items, and the hearing the
  * case is listed for (`listedOn`) — what a *Rescheduling of hearing date* moves.
  */
-export function applicationOrderContext(
-  record: CaseRecord,
-  listedOn?: string,
-): ComposerContext {
+export function applicationOrderContext(record: CaseRecord, listedOn?: string): ComposerContext {
   return {
     ...composerContextFor({
       caseNumber: record.caseNumber,
@@ -115,8 +101,7 @@ export function decisionItem(
     {
       applicationId: application.id,
       values: {
-        applicationNumber:
-          application.applicationNumber ?? application.temporaryId ?? "",
+        applicationNumber: application.applicationNumber ?? application.temporaryId ?? "",
         applicationType: application.typeLabel,
       },
     },
@@ -158,11 +143,7 @@ function bodyOf(text: string, itemId: string) {
  * acceptance that reschedules the hearing (Postpone, Advance) — the date as the order's
  * next hearing, where `application-order-outcome.ts` reads it.
  */
-export function quickOrderDraft(
-  item: ItemBlock,
-  text: string,
-  nextDate?: string,
-): OrderDraft {
+export function quickOrderDraft(item: ItemBlock, text: string, nextDate?: string): OrderDraft {
   const words = text.trim();
   const block: ItemBlock = { ...item, text: words, edited: words !== item.text };
   const draft: OrderDraft = {

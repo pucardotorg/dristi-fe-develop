@@ -8,7 +8,14 @@ function esc(s: string): string {
 }
 
 export function simplePdf(title: string, lines: string[]): Uint8Array {
-  const body: string[] = ["BT", "/F1 18 Tf", "56 780 Td", `(${esc(title)}) Tj`, "/F1 11 Tf", "0 -30 Td"];
+  const body: string[] = [
+    "BT",
+    "/F1 18 Tf",
+    "56 780 Td",
+    `(${esc(title)}) Tj`,
+    "/F1 11 Tf",
+    "0 -30 Td",
+  ];
   for (const line of lines) body.push(`(${esc(line)}) Tj`, "0 -18 Td");
   body.push("ET", "0.8 G", "56 60 m 539 60 l S");
   const stream = body.join("\n");

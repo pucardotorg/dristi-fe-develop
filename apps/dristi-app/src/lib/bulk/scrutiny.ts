@@ -92,8 +92,7 @@ const MOBILE = /^[6-9]\d{9}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME = /^[A-Za-z][A-Za-z .'-]*$/;
 
-const listed = (options: { value: string }[], v: string) =>
-  options.some((o) => o.value === v);
+const listed = (options: { value: string }[], v: string) => options.some((o) => o.value === v);
 
 type Push = (f: Omit<Flag, "id"> & { at: string }) => void;
 
@@ -116,7 +115,7 @@ function addressFlags(
       level: "hold",
       at: `${path}.line1`,
       message: "Address line is missing.",
-      fix: { kind: "text", path: `${path}.line1`, label: "Address", value: "" },
+      fix: { kind: "text", path: `${path}.line1`, label: "scrutiny_address", value: "" },
     });
   if (!a.city.trim())
     push({
@@ -125,7 +124,7 @@ function addressFlags(
       level: "hold",
       at: `${path}.city`,
       message: "City is missing.",
-      fix: { kind: "text", path: `${path}.city`, label: "City", value: "" },
+      fix: { kind: "text", path: `${path}.city`, label: "scrutiny_city", value: "" },
     });
   if (!/^\d{6}$/.test(a.pin))
     push({
@@ -133,13 +132,11 @@ function addressFlags(
       rule: `${base.rule}-pin`,
       level: "hold",
       at: `${path}.pin`,
-      message: a.pin
-        ? `Pincode "${a.pin}" is not 6 digits.`
-        : "Pincode is missing.",
+      message: a.pin ? `Pincode "${a.pin}" is not 6 digits.` : "Pincode is missing.",
       fix: {
         kind: "text",
         path: `${path}.pin`,
-        label: "Pincode",
+        label: "scrutiny_pincode",
         value: a.pin,
         inputMode: "numeric",
       },
@@ -180,8 +177,7 @@ function dateFlag(
 export function caseFlags(bc: BatchCase): Flag[] {
   const d: FilingDraft = bc.draft;
   const out: Flag[] = [];
-  const push: Push = ({ at, ...f }) =>
-    out.push({ ...f, id: `${f.rule}:${at}` });
+  const push: Push = ({ at, ...f }) => out.push({ ...f, id: `${f.rule}:${at}` });
 
   /*
    * ── Complainants (LIT) ── The first is the batch's own, the same on every case, so a
@@ -207,7 +203,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "select",
             path: `complainants.${k}.entType`,
-            label: "Type of institution",
+            label: "scrutiny_typeOfInstitution",
             value: "",
             options: ENTITY_TYPES,
           },
@@ -223,7 +219,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "text",
             path: `complainants.${k}.entName`,
-            label: "Institution name",
+            label: "scrutiny_institutionName",
             value: "",
           },
         });
@@ -234,13 +230,11 @@ export function caseFlags(bc: BatchCase): Flag[] {
           field: "LIT-18a",
           level: "hold",
           at: `c${k}.entCinPan`,
-          message: c.entCinPan
-            ? `"${c.entCinPan}" is not a CIN or PAN.`
-            : "CIN or PAN is missing.",
+          message: c.entCinPan ? `"${c.entCinPan}" is not a CIN or PAN.` : "CIN or PAN is missing.",
           fix: {
             kind: "text",
             path: `complainants.${k}.entCinPan`,
-            label: "CIN or PAN",
+            label: "scrutiny_cinOrPan",
             value: c.entCinPan,
           },
         });
@@ -264,7 +258,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "text",
             path: `complainants.${k}.rep.mobile`,
-            label: "Representative's mobile",
+            label: "scrutiny_representativesMobile",
             value: r.mobile,
             inputMode: "tel",
           },
@@ -280,7 +274,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "text",
             path: `complainants.${k}.rep.name`,
-            label: "Representative's name",
+            label: "scrutiny_representativesName",
             value: "",
           },
         });
@@ -297,7 +291,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "text",
             path: `complainants.${k}.rep.age`,
-            label: "Representative's age",
+            label: "scrutiny_representativesAge",
             value: r.age,
             inputMode: "numeric",
           },
@@ -313,7 +307,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "text",
             path: `complainants.${k}.rep.designation`,
-            label: "Designation",
+            label: "scrutiny_designation",
             value: "",
           },
         });
@@ -335,7 +329,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "text",
             path: `complainants.${k}.name`,
-            label: "Complainant's name",
+            label: "scrutiny_complainantsName",
             value: "",
           },
         });
@@ -350,7 +344,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "text",
             path: `complainants.${k}.mobile`,
-            label: "Complainant's mobile",
+            label: "scrutiny_complainantsMobile",
             value: c.mobile,
             inputMode: "tel",
           },
@@ -362,23 +356,16 @@ export function caseFlags(bc: BatchCase): Flag[] {
           field: "LIT-5",
           level: "hold",
           at: `c${k}.age`,
-          message: c.age
-            ? `Age "${c.age}" is not valid.`
-            : "Complainant's age is missing.",
+          message: c.age ? `Age "${c.age}" is not valid.` : "Complainant's age is missing.",
           fix: {
             kind: "text",
             path: `complainants.${k}.age`,
-            label: "Complainant's age",
+            label: "scrutiny_complainantsAge",
             value: c.age,
             inputMode: "numeric",
           },
         });
-      addressFlags(
-        push,
-        c.res,
-        { rule: "lit-7", field: "LIT-7", ...lit },
-        `complainants.${k}.res`,
-      );
+      addressFlags(push, c.res, { rule: "lit-7", field: "LIT-7", ...lit }, `complainants.${k}.res`);
     }
   });
 
@@ -399,7 +386,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "select",
           path: `advocates.${i}.barNumber`,
-          label: "Advocate",
+          label: "scrutiny_advocate",
           value: "",
           options: OFFICE_ADVOCATES.map((b) => ({
             value: b.barNumber,
@@ -436,7 +423,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         level: "hold",
         at: `${p}.name`,
         message: "Name is missing.",
-        fix: { kind: "text", path: `${p}.name`, label: "Name", value: "" },
+        fix: { kind: "text", path: `${p}.name`, label: "scrutiny_name", value: "" },
       });
     else if (a.type === "individual" && !NAME.test(a.name.trim()))
       push({
@@ -446,7 +433,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         level: "hold",
         at: `${p}.name`,
         message: `Name "${a.name}" has characters other than letters.`,
-        fix: { kind: "text", path: `${p}.name`, label: "Name", value: a.name },
+        fix: { kind: "text", path: `${p}.name`, label: "scrutiny_name", value: a.name },
       });
     if (a.type === "institution" && !listed(ACCUSED_ENTITY_TYPES, a.entType))
       push({
@@ -461,7 +448,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "select",
           path: `${p}.entType`,
-          label: "Type of institution",
+          label: "scrutiny_typeOfInstitution",
           value: "",
           options: ACCUSED_ENTITY_TYPES,
         },
@@ -491,27 +478,23 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "text",
           path: `${p}.contacts.0.mobile`,
-          label: "Mobile",
+          label: "scrutiny_mobile",
           value: contact.mobile,
           inputMode: "tel",
         },
       });
-    if (
-      contact.mobile &&
-      complainantMobiles.some((m) => sameMobile(m, contact.mobile))
-    )
+    if (contact.mobile && complainantMobiles.some((m) => sameMobile(m, contact.mobile)))
       push({
         ...acc,
         rule: "lit-3-unique",
         field: "LIT-3",
         level: "hold",
         at: `${p}.mobile-dup`,
-        message:
-          "Mobile is the same as the complainant's. Each party needs their own number.",
+        message: "Mobile is the same as the complainant's. Each party needs their own number.",
         fix: {
           kind: "text",
           path: `${p}.contacts.0.mobile`,
-          label: "Mobile",
+          label: "scrutiny_mobile",
           value: contact.mobile,
           inputMode: "tel",
         },
@@ -527,7 +510,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "text",
           path: `${p}.contacts.0.email`,
-          label: "Email",
+          label: "scrutiny_email",
           value: contact.email,
           inputMode: "email",
         },
@@ -555,12 +538,11 @@ export function caseFlags(bc: BatchCase): Flag[] {
           field: "ACC-14",
           level: "hold",
           at: `${p}.reps`,
-          message:
-            "No person responsible (S-141) is named for the institution.",
+          message: "No person responsible (S-141) is named for the institution.",
           fix: {
             kind: "text",
             path: `${p}.reps.0.name`,
-            label: "Person responsible, full name",
+            label: "scrutiny_personResponsibleFullName",
             value: "",
           },
         });
@@ -600,7 +582,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "text",
           path: `${p}.amount`,
-          label: "Amount (₹)",
+          label: "scrutiny_amount",
           value: q.amount,
           inputMode: "numeric",
         },
@@ -616,7 +598,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "text",
           path: `${p}.chequeNumber`,
-          label: "Cheque number",
+          label: "scrutiny_chequeNumber",
           value: q.chequeNumber,
           inputMode: "numeric",
         },
@@ -628,13 +610,11 @@ export function caseFlags(bc: BatchCase): Flag[] {
         field: "CHQ-5",
         level: "hold",
         at: `${p}.ifsc`,
-        message: q.ifsc
-          ? `IFSC "${q.ifsc}" is not a valid IFSC.`
-          : "IFSC is missing.",
+        message: q.ifsc ? `IFSC "${q.ifsc}" is not a valid IFSC.` : "IFSC is missing.",
         fix: {
           kind: "text",
           path: `${p}.ifsc`,
-          label: "Drawer bank IFSC",
+          label: "scrutiny_drawerBankIfsc",
           value: q.ifsc,
         },
       });
@@ -649,7 +629,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "text",
           path: `${p}.ifsc`,
-          label: "Drawer bank IFSC",
+          label: "scrutiny_drawerBankIfsc",
           value: q.ifsc,
         },
       });
@@ -680,7 +660,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "date",
             path: `${p}.presentDate`,
-            label: "Presentation date",
+            label: "scrutiny_presentationDate",
             value: q.presentDate,
           },
         });
@@ -708,7 +688,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "date",
             path: `${p}.returnDate`,
-            label: "Return date",
+            label: "scrutiny_returnDate",
             value: q.returnDate,
           },
         });
@@ -724,7 +704,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "select",
           path: `${p}.returnReason`,
-          label: "Return reason",
+          label: "scrutiny_returnReason",
           value: "",
           options: RETURN_REASONS,
         },
@@ -740,7 +720,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "select",
           path: `${p}.returnReason`,
-          label: "Return reason",
+          label: "scrutiny_returnReason",
           value: "",
           options: RETURN_REASONS,
         },
@@ -775,7 +755,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "select",
           path: `${p}.natureDebt`,
-          label: "Nature of debt",
+          label: "scrutiny_natureOfDebt",
           value: "",
           options: NATURE_OF_DEBT,
         },
@@ -800,7 +780,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "date",
             path: `${p}.dispatchDate`,
-            label: "Dispatch date",
+            label: "scrutiny_dispatchDate",
             value: n.dispatchDate,
           },
         });
@@ -818,7 +798,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "select",
           path: `${p}.modeService`,
-          label: "Mode of service",
+          label: "scrutiny_modeOfService",
           value: "",
           options: MODE_OF_SERVICE,
         },
@@ -836,11 +816,11 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "select",
           path: `${p}.delivered`,
-          label: "Was the notice delivered?",
+          label: "scrutiny_wasTheNoticeDelivered",
           value: "",
           options: [
-            { value: "yes", label: "Yes, delivered" },
-            { value: "no", label: "No, returned undelivered" },
+            { value: "yes", label: "scrutiny_yesDelivered" },
+            { value: "no", label: "scrutiny_noReturnedUndelivered" },
           ],
         },
       });
@@ -866,7 +846,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
             fix: {
               kind: "date",
               path: `${p}.deliveryDate`,
-              label: "Delivery date",
+              label: "scrutiny_deliveryDate",
               value: n.deliveryDate,
             },
           });
@@ -893,7 +873,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
             fix: {
               kind: "date",
               path: `${p}.returnDate`,
-              label: "Notice return date",
+              label: "scrutiny_noticeReturnDate",
               value: n.returnDate,
             },
           });
@@ -911,7 +891,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "select",
             path: `${p}.nonDeliveryReason`,
-            label: "Reason for non-delivery",
+            label: "scrutiny_reasonForNonDelivery",
             value: "",
             options: NON_DELIVERY_REASONS,
           },
@@ -928,11 +908,11 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "select",
           path: `${p}.replied`,
-          label: "Has the accused replied?",
+          label: "scrutiny_hasTheAccusedReplied",
           value: "",
           options: [
-            { value: "yes", label: "Yes" },
-            { value: "no", label: "No" },
+            { value: "yes", label: "scrutiny_yes" },
+            { value: "no", label: "scrutiny_no" },
           ],
         },
       });
@@ -949,7 +929,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           fix: {
             kind: "text",
             path: `${p}.partAmount`,
-            label: "Amount paid (₹)",
+            label: "scrutiny_amountPaid",
             value: n.partAmount,
             inputMode: "numeric",
           },
@@ -965,7 +945,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "select",
           path: `${p}.paymentStatus`,
-          label: "Payment after notice",
+          label: "scrutiny_paymentAfterNotice",
           value: "",
           options: PAYMENT_STATUS,
         },
@@ -1013,7 +993,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "text",
           path: `${p}.fullName`,
-          label: "Witness name",
+          label: "scrutiny_witnessName",
           value: "",
         },
       });
@@ -1028,7 +1008,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "text",
           path: `${p}.contacts.0.mobile`,
-          label: "Witness mobile",
+          label: "scrutiny_witnessMobile",
           value: contact.mobile,
           inputMode: "tel",
         },
@@ -1044,18 +1024,13 @@ export function caseFlags(bc: BatchCase): Flag[] {
         fix: {
           kind: "text",
           path: `${p}.contacts.0.email`,
-          label: "Witness email",
+          label: "scrutiny_witnessEmail",
           value: contact.email,
           inputMode: "email",
         },
       });
     if (addr)
-      addressFlags(
-        push,
-        addr,
-        { rule: "wit-7", field: "WIT-7", ...wit },
-        `${p}.addresses.0.addr`,
-      );
+      addressFlags(push, addr, { rule: "wit-7", field: "WIT-7", ...wit }, `${p}.addresses.0.addr`);
   });
 
   /* ── Jurisdiction and limitation (JUR) ── */
@@ -1067,16 +1042,15 @@ export function caseFlags(bc: BatchCase): Flag[] {
       field: "JUR-1",
       level: "hold",
       at: "jurisdiction.deposited",
-      message:
-        "Whether the cheque was deposited in the complainant's own account is not stated.",
+      message: "Whether the cheque was deposited in the complainant's own account is not stated.",
       fix: {
         kind: "select",
         path: "jurisdiction.deposited",
-        label: "Deposited in the complainant's own account?",
+        label: "scrutiny_depositedInTheComplainantsOwnAccount",
         value: "",
         options: [
-          { value: "yes", label: "Yes" },
-          { value: "no", label: "No" },
+          { value: "yes", label: "scrutiny_yes" },
+          { value: "no", label: "scrutiny_no" },
         ],
       },
     });
@@ -1093,7 +1067,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
       fix: {
         kind: "text",
         path: "jurisdiction.ifsc",
-        label: "Complainant branch IFSC",
+        label: "scrutiny_complainantBranchIfsc",
         value: d.jurisdiction.ifsc,
       },
     });
@@ -1108,7 +1082,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
       fix: {
         kind: "text",
         path: "jurisdiction.drawerPolice",
-        label: "Police station",
+        label: "scrutiny_policeStation",
         value: "",
       },
     });
@@ -1118,13 +1092,10 @@ export function caseFlags(bc: BatchCase): Flag[] {
     // Say what to enter, not only what is wrong: a service date in the future is a typing
     // slip; a real but recent one means the case waits, or the date allows filing today.
     const today = new Date().toISOString().slice(0, 10);
-    const latest = new Date(Date.now() - 15 * 86_400_000)
-      .toISOString()
-      .slice(0, 10);
+    const latest = new Date(Date.now() - 15 * 86_400_000).toISOString().slice(0, 10);
     const served =
-      d.notices
-        .map((n) => (n.delivered === "no" ? n.returnDate : n.deliveryDate))
-        .find(Boolean) ?? "";
+      d.notices.map((n) => (n.delivered === "no" ? n.returnDate : n.deliveryDate)).find(Boolean) ??
+      "";
     push({
       ...jur,
       rule: "jur-9-early",
@@ -1136,11 +1107,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
           ? `${toLongDate(served)} is in the future. Enter the day the notice was actually delivered.`
           : `To file today, the notice must have been served on or before ${toLongDate(latest)} (15 days ago). If it was served later, this case can be filed from ${toLongDate(lim.causeDate)}.`,
     });
-  } else if (
-    lim.elapsed !== null &&
-    !lim.withinLimit &&
-    !d.jurisdiction.condonationReason.trim()
-  )
+  } else if (lim.elapsed !== null && !lim.withinLimit && !d.jurisdiction.condonationReason.trim())
     push({
       ...jur,
       rule: "jur-12",
@@ -1151,7 +1118,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
       fix: {
         kind: "text",
         path: "jurisdiction.condonationReason",
-        label: "Reason for condonation of delay",
+        label: "scrutiny_reasonForCondonationOfDelay",
         value: "",
         multiline: true,
       },
@@ -1226,9 +1193,7 @@ export function caseFlags(bc: BatchCase): Flag[] {
 
 /** The flags still standing: every hold, and the soft flags not skipped. */
 export function openFlags(bc: BatchCase): Flag[] {
-  return caseFlags(bc).filter(
-    (f) => f.level === "hold" || !bc.skipped.includes(f.id),
-  );
+  return caseFlags(bc).filter((f) => f.level === "hold" || !bc.skipped.includes(f.id));
 }
 
 /** Where the case stands. Payment completes filing, as in the single flow. */

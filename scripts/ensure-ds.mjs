@@ -14,22 +14,15 @@ import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const {
-  EXPECTED_DS_REMOTE,
-  VENDOR_DS_PATH,
-  isAuthoritativeDs,
-  looksLikeDsTree,
-  readDsLock,
-} = await import(
-  join(dirname(fileURLToPath(import.meta.url)), "../apps/dristi-app/scripts/resolve-ds.mjs")
-);
+const { EXPECTED_DS_REMOTE, VENDOR_DS_PATH, isAuthoritativeDs, looksLikeDsTree, readDsLock } =
+  await import(
+    join(dirname(fileURLToPath(import.meta.url)), "../apps/dristi-app/scripts/resolve-ds.mjs")
+  );
 
 const CLONE_URL = `https://github.com/${EXPECTED_DS_REMOTE}.git`;
 
 function vendorReady() {
-  return (
-    looksLikeDsTree(VENDOR_DS_PATH) && isAuthoritativeDs(VENDOR_DS_PATH)
-  );
+  return looksLikeDsTree(VENDOR_DS_PATH) && isAuthoritativeDs(VENDOR_DS_PATH);
 }
 
 /**
@@ -82,7 +75,7 @@ const pin = readDsLock();
 
 if (vendorReady()) {
   console.log(
-    `DS ready: ${VENDOR_DS_PATH} (${pin ? syncVendorToPin(pin) : "no ds.lock.json — version unmanaged"})`
+    `DS ready: ${VENDOR_DS_PATH} (${pin ? syncVendorToPin(pin) : "no ds.lock.json — version unmanaged"})`,
   );
   process.exit(0);
 }
@@ -95,19 +88,15 @@ if (process.env.PUCAR_DS_ROOT) {
     console.log(`DS ready via PUCAR_DS_ROOT: ${root}`);
     process.exit(0);
   }
+  console.error(`PUCAR_DS_ROOT is set to "${root}" but it is not an authoritative DS.`);
   console.error(
-    `PUCAR_DS_ROOT is set to "${root}" but it is not an authoritative DS.`
-  );
-  console.error(
-    `Fix that path (or unset it) so origin contains ${EXPECTED_DS_REMOTE}, then re-run npm run setup:ds.`
+    `Fix that path (or unset it) so origin contains ${EXPECTED_DS_REMOTE}, then re-run npm run setup:ds.`,
   );
   process.exit(1);
 }
 
 if (existsSync(VENDOR_DS_PATH)) {
-  console.error(
-    `vendor/pucar-design-system exists but is not a valid ${EXPECTED_DS_REMOTE} tree.`
-  );
+  console.error(`vendor/pucar-design-system exists but is not a valid ${EXPECTED_DS_REMOTE} tree.`);
   console.error("Remove or rename it, then re-run npm run setup:ds:");
   console.error(`  mv "${VENDOR_DS_PATH}" "${VENDOR_DS_PATH}-STALE"`);
   process.exit(1);
@@ -118,14 +107,12 @@ console.log(`Fetching ${EXPECTED_DS_REMOTE} → vendor/pucar-design-system`);
 try {
   // Treeless rather than --depth 1: same download weight in practice, but it keeps the
   // full commit history, which is what makes "what changed in the DS?" answerable.
-  execFileSync(
-    "git",
-    ["clone", "--filter=blob:none", CLONE_URL, VENDOR_DS_PATH],
-    { stdio: "inherit" }
-  );
+  execFileSync("git", ["clone", "--filter=blob:none", CLONE_URL, VENDOR_DS_PATH], {
+    stdio: "inherit",
+  });
 } catch {
   console.error(
-    "Could not fetch the design system. Check network/git access to GitHub, then re-run: npm run setup:ds"
+    "Could not fetch the design system. Check network/git access to GitHub, then re-run: npm run setup:ds",
   );
   process.exit(1);
 }
@@ -136,5 +123,5 @@ if (!vendorReady()) {
 }
 
 console.log(
-  `DS ready: ${VENDOR_DS_PATH}${pin ? ` (${syncVendorToPin(pin)})` : " (no ds.lock.json — version unmanaged)"}`
+  `DS ready: ${VENDOR_DS_PATH}${pin ? ` (${syncVendorToPin(pin)})` : " (no ds.lock.json — version unmanaged)"}`,
 );

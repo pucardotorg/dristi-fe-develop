@@ -11,42 +11,32 @@ import { ApplicationDecisionPanel } from "@/components/employee/application-deci
 import { ApplicationFacsimile } from "@/components/employee/application-review-dialog";
 import { Badge } from "@/components/ui/badge";
 import { DescriptionList } from "@/components/ui/description-list";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from "@/components/ui/segmented-control";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { Separator } from "@/components/ui/separator";
 import { decodeDraft } from "@/lib/applications/form-codec";
 import type { LifecycleApplication } from "@/lib/applications/lifecycle";
 import { today, useLifecycleApplications } from "@/lib/applications/store";
 import { formatCaseDate, partiesLabel } from "@/lib/cases/types";
 import { CURRENT_STAFF } from "@/lib/employee/content";
-import {
-  objectionLine,
-  queueOf,
-  shortDate,
-  statusLine,
-} from "@/lib/employee/application-queue";
+import { objectionLine, queueOf, shortDate, statusLine } from "@/lib/employee/application-queue";
 import {
   caseOf,
   causeTitleOf,
   courtDocumentOf,
   nextHearingOf,
 } from "@/lib/employee/application-tasks";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
+import type { MessageKey } from "@/i18n/messages";
 
-const QUEUE_LABEL: Record<string, string> = {
-  onboard: "To onboard",
-  decide: "To decide",
-  signing: "Order awaiting signature",
-  later: "Upcoming",
-  closed: "Closed",
-  archive: "Archive",
+const QUEUE_LABEL: Record<string, MessageKey> = {
+  onboard: "applicationDialog_toOnboard",
+  decide: "applicationDialog_toDecide",
+  signing: "applicationDialog_orderAwaitingSignature",
+  later: "applicationDialog_upcoming",
+  closed: "applicationDialog_closed",
+  archive: "applicationDialog_archive",
 };
 
 /**
@@ -81,9 +71,7 @@ export function ApplicationDialog({
   onReturnFocus: () => void;
 }) {
   const apps = useLifecycleApplications();
-  const app = applicationId
-    ? apps.find((item) => item.id === applicationId)
-    : undefined;
+  const app = applicationId ? apps.find((item) => item.id === applicationId) : undefined;
   return (
     <Dialog open={Boolean(app)} onOpenChange={onOpenChange}>
       {app ? (
@@ -122,13 +110,12 @@ function ApplicationDialogBody({
   onReturnFocus: () => void;
   onDone: (applicationId: string, message: string) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const on = today();
   const record = caseOf(app);
   const document = React.useMemo(() => courtDocumentOf(app), [app]);
-  const objection = app.objectionId
-    ? all.find((item) => item.id === app.objectionId)
-    : undefined;
+  const objection = app.objectionId ? all.find((item) => item.id === app.objectionId) : undefined;
 
   /* The application first, then what is linked to it: its objection, and the orders
      passed on it, latest last — the order the case file reads them in. */
@@ -142,7 +129,7 @@ function ApplicationDialogBody({
         <ApplicationFacsimile document={document} />
       ) : (
         <p className="p-6 text-body text-muted-foreground">
-          The application&rsquo;s text could not be read from what was filed.
+          {t("applicationDialog_theApplicationsTextCouldNotBe")}
         </p>
       ),
     });
@@ -156,7 +143,12 @@ function ApplicationDialogBody({
           objectionDocument && objectionDocument.paragraphs.length > 0 ? (
             <ApplicationFacsimile document={objectionDocument} />
           ) : (
-            <ObjectionPaper objection={objection} court={courtText(`Before the ${CURRENT_STAFF.court}`)} />
+            <ObjectionPaper
+              objection={objection}
+              court={courtText(
+                t("applicationDialog_beforeTheCourt", { court: CURRENT_STAFF.court }),
+              )}
+            />
           ),
       });
     }
@@ -181,11 +173,11 @@ function ApplicationDialogBody({
         title: `Order ${order.id}`,
         content: (
           <OrderPaper
-            court={courtText(`Before the ${CURRENT_STAFF.court}`)}
+            court={courtText(t("applicationDialog_beforeTheCourt", { court: CURRENT_STAFF.court }))}
             caseNumber={record?.caseNumber}
             matter={record ? partiesLabel(record) : causeTitleOf(app)}
             id={order.id}
-            title={order.title}
+            title={translateText(t, order.title)}
             text={order.text}
             signedOn={order.signedOn}
           />
@@ -202,7 +194,7 @@ function ApplicationDialogBody({
         title: `Order ${order.id}`,
         content: (
           <OrderPaper
-            court={courtText(`Before the ${CURRENT_STAFF.court}`)}
+            court={courtText(t("applicationDialog_beforeTheCourt", { court: CURRENT_STAFF.court }))}
             caseNumber={record?.caseNumber}
             matter={record ? partiesLabel(record) : causeTitleOf(app)}
             id={order.id}
@@ -213,7 +205,7 @@ function ApplicationDialogBody({
       });
     }
     return list;
-  }, [app, document, objection, record, courtText, on]);
+  }, [app, document, objection, record, courtText, on, t]);
   const [paperId, setPaperId] = React.useState("application");
   const paper = papers.find((item) => item.id === paperId) ?? papers[0];
 
@@ -235,7 +227,7 @@ function ApplicationDialogBody({
           {record ? (
             <>
               {" · "}
-              <Identifier value={record.caseNumber} label="case number" />
+              <Identifier value={record.caseNumber} label={t("applicationDialog_caseNumber")} />
             </>
           ) : null}
         </DialogDescription>
@@ -260,7 +252,7 @@ function ApplicationDialogBody({
               onValueChange={(next) => {
                 if (next) setPaperId(next);
               }}
-              aria-label="Which paper to read"
+              aria-label={t("applicationDialog_whichPaperToRead")}
               className="w-full overflow-x-auto sm:w-fit"
             >
               {papers.map((item) => (
@@ -293,8 +285,8 @@ function ApplicationDialogBody({
   );
 }
 
-
 function StageBadge({ app, on }: { app: LifecycleApplication; on: string }) {
+  const t = useTranslations();
   const queue = queueOf(app, on);
   if (queue === "closed" || queue === "archive") {
     return (
@@ -311,7 +303,9 @@ function StageBadge({ app, on }: { app: LifecycleApplication; on: string }) {
       </Badge>
     );
   }
-  return <Badge variant="info">{QUEUE_LABEL[queue ?? "all"] ?? "Open"}</Badge>;
+  return (
+    <Badge variant="info">{t(QUEUE_LABEL[queue ?? "all"]) ?? t("applicationDialog_open")}</Badge>
+  );
 }
 
 /**
@@ -319,6 +313,7 @@ function StageBadge({ app, on }: { app: LifecycleApplication; on: string }) {
  * the next hearing, its number, and who filed it when.
  */
 function Facts({ app, on }: { app: LifecycleApplication; on: string }) {
+  const t = useTranslations();
   const queue = queueOf(app, on);
   const closed = queue === "closed" || queue === "archive";
   const line = statusLine(app, on);
@@ -327,39 +322,57 @@ function Facts({ app, on }: { app: LifecycleApplication; on: string }) {
   const due = closed
     ? (app.decisionLabel ?? line.word)
     : app.review
-      ? `Review by ${shortDate(app.review.dueOn)}`
+      ? t("applicationDialog_reviewByShortDate", { shortDate: shortDate(app.review.dueOn) })
       : app.decide
-        ? `Listed for ${shortDate(app.decide.dueOn)}`
+        ? t("applicationDialog_listedForShortDate", { shortDate: shortDate(app.decide.dueOn) })
         : "—";
   return (
     <>
-      <ReviewRow term={closed ? "Outcome" : "Due"}>
+      <ReviewRow term={closed ? t("applicationDialog_outcome") : t("applicationDialog_due")}>
         <span className="flex flex-wrap items-center gap-2">
           {due}
-          {!closed && line.due === "overdue" ? <Badge variant="destructive">Overdue</Badge> : null}
-          {!closed && line.due === "today" ? <Badge variant="warning">Due today</Badge> : null}
+          {!closed && line.due === "overdue" ? (
+            <Badge variant="destructive">{t("applicationDialog_overdue")}</Badge>
+          ) : null}
+          {!closed && line.due === "today" ? (
+            <Badge variant="warning">{t("applicationDialog_dueToday")}</Badge>
+          ) : null}
         </span>
       </ReviewRow>
-      <ReviewRow term="Objection">{objectionLine(app, on)}</ReviewRow>
-      <ReviewRow term="Next hearing">{hearing ? shortDate(hearing) : "None listed"}</ReviewRow>
-      <ReviewRow term={app.applicationNumber ? "Application no." : "Temporary no."}>
+      <ReviewRow term={t("applicationDialog_objection")}>{objectionLine(app, on)}</ReviewRow>
+      <ReviewRow term={t("applicationDialog_nextHearing")}>
+        {hearing ? shortDate(hearing) : t("applicationDialog_noneListed")}
+      </ReviewRow>
+      <ReviewRow
+        term={
+          app.applicationNumber
+            ? t("applicationDialog_applicationNo")
+            : t("applicationDialog_temporaryNo")
+        }
+      >
         {number ? (
           <Identifier
             value={number}
-            label={app.applicationNumber ? "application number" : "temporary number"}
+            label={
+              app.applicationNumber
+                ? t("applicationDialog_applicationNumber")
+                : t("applicationDialog_temporaryNumber")
+            }
           />
         ) : (
           "—"
         )}
       </ReviewRow>
-      <ReviewRow term="Filed">
-        {formatCaseDate(app.submittedOn ?? app.createdOn)} by {app.raisedBy ?? app.createdByName}, for
-        the {app.side}
+      <ReviewRow term={t("applicationDialog_filed")}>
+        {t("applicationDialog_formatCaseDateByValueFor", {
+          formatCaseDate: formatCaseDate(app.submittedOn ?? app.createdOn),
+          value: app.raisedBy ?? app.createdByName,
+          side: app.side,
+        })}
       </ReviewRow>
     </>
   );
 }
-
 
 /** An order passed on the application, set as paper, as the application is. */
 function OrderPaper({
@@ -379,23 +392,33 @@ function OrderPaper({
   text: string;
   signedOn: string;
 }) {
+  const t = useTranslations();
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
       <header className="flex flex-col gap-2 text-center">
         <p className="text-body font-semibold">{court}</p>
-        {caseNumber ? <p className="text-body font-semibold">Case no. {caseNumber}</p> : null}
+        {caseNumber ? (
+          <p className="text-body font-semibold">
+            {t("applicationDialog_caseNoCaseNumber", { caseNumber })}
+          </p>
+        ) : null}
         <p className="text-body font-semibold">{matter}</p>
         <p className="text-body-compact text-paper-muted-foreground">
-          Order {id} · {formatCaseDate(signedOn)}
+          {t("applicationDialog_orderIdFormatCaseDate", {
+            id,
+            formatCaseDate: formatCaseDate(signedOn),
+          })}
         </p>
       </header>
       {title ? <h3 className="text-center text-body font-semibold">{title}</h3> : null}
       <p className="text-body whitespace-pre-wrap">
-        {text.trim() || "The order's words were not recorded."}
+        {text.trim() || t("applicationDialog_theOrdersWordsWereNotRecorded")}
       </p>
       <footer className="flex flex-col items-end gap-2">
         <p className="text-body-compact text-paper-muted-foreground">
-          Signed by the Judicial Magistrate of the First Class on {formatCaseDate(signedOn)}
+          {t("applicationDialog_signedByTheJudicialMagistrateOf", {
+            formatCaseDate: formatCaseDate(signedOn),
+          })}
         </p>
       </footer>
     </article>
@@ -403,13 +426,8 @@ function OrderPaper({
 }
 
 /** An objection whose filing carries only its grounds. */
-function ObjectionPaper({
-  objection,
-  court,
-}: {
-  objection: LifecycleApplication;
-  court: string;
-}) {
+function ObjectionPaper({ objection, court }: { objection: LifecycleApplication; court: string }) {
+  const t = useTranslations();
   const reason = decodeDraft(objection.form).applicationDetails.text.trim();
   return (
     <article className="flex flex-col gap-6 rounded-md bg-paper p-6 text-paper-foreground">
@@ -417,16 +435,22 @@ function ObjectionPaper({
         <p className="text-body font-semibold">{court}</p>
         <p className="text-body font-semibold">{causeTitleOf(objection)}</p>
         <p className="text-body-compact text-paper-muted-foreground">
-          Received {formatCaseDate(objection.submittedOn ?? objection.createdOn)}
+          {t("applicationDialog_receivedFormatCaseDate", {
+            formatCaseDate: formatCaseDate(objection.submittedOn ?? objection.createdOn),
+          })}
         </p>
       </header>
       <h3 className="text-center text-body font-semibold">
-        Objection on behalf of the {objection.side}
+        {t("applicationDialog_objectionOnBehalfOfTheSide", { side: objection.side })}
       </h3>
-      <p className="text-body whitespace-pre-wrap">{reason || "No grounds were entered."}</p>
+      <p className="text-body whitespace-pre-wrap">
+        {reason || t("applicationDialog_noGroundsWereEntered")}
+      </p>
       <footer className="flex flex-col items-end gap-2">
         <p className="text-body-compact text-paper-muted-foreground">
-          Filed by {objection.raisedBy ?? objection.createdByName}
+          {t("applicationDialog_filedByValue", {
+            value: objection.raisedBy ?? objection.createdByName,
+          })}
         </p>
       </footer>
     </article>
@@ -435,11 +459,15 @@ function ObjectionPaper({
 
 /** The Objection tab when there is no objection to read: why, in a line. */
 function NoObjection({ app, on }: { app: LifecycleApplication; on: string }) {
+  const t = useTranslations();
   const other = app.side === "complainant" ? "accused" : "complainant";
   const text = !app.objectionsInvited
-    ? `Objections were not called for. The ${other} has filed none.`
+    ? t("applicationDialog_objectionsWereNotCalledForThe", { other })
     : app.objectionDueBy && app.objectionDueBy >= on
-      ? `No objection yet. The ${other} may file one by ${formatCaseDate(app.objectionDueBy)}.`
+      ? t("applicationDialog_noObjectionYetTheOtherMay", {
+          other,
+          formatCaseDate: formatCaseDate(app.objectionDueBy),
+        })
       : `No objection was received from the ${other}${
           app.objectionDueBy ? ` by ${formatCaseDate(app.objectionDueBy)}` : ""
         }.`;

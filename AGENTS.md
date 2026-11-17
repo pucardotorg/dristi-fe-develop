@@ -26,6 +26,7 @@ system itself is fetched on demand with `npm run setup:ds`.
 ## Stack
 
 - Next.js 16 (App Router), React 19, TypeScript (strict)
+- next-intl for UI text (`messages/en.json`, `docs/localization.md`)
 - Tailwind CSS 4, shadcn-style components on Radix / Base UI, `lucide-react` icons
 - npm workspaces: the app is `apps/dristi-app` (`@pucar/dristi-app`)
 - Tests: Node's built-in test runner via `tsx`
@@ -38,6 +39,7 @@ Run from the repo root.
 npm run dev            # dev server on http://localhost:3000: sandbox data, real sign-in
 npm run dev:sandbox    # everything in the sandbox, no backend needed (design work, demos)
 npm run build          # production build
+npm run format         # Prettier on every file (a pre-commit hook formats staged files)
 npm run lint           # ESLint (next/core-web-vitals + next/typescript + data rules)
 npm run typecheck      # next typegen + tsc --noEmit
 npm run test:app       # unit tests
@@ -45,7 +47,8 @@ npm run verify:agents  # agent rails: after changing .agents/ (then npm run sync
 npm run new:data -- <feature>  # start a feature's data layer (lib/<feature>/data/)
 ```
 
-Before finishing a change, run `npm run lint`, `npm run typecheck` and `npm run test:app`.
+Before finishing a change, run `npm run format:check`, `npm run lint`, `npm run typecheck`
+and `npm run test:app`.
 Run `npm run build` when you touch routing, config, server/client boundaries, or the
 Dockerfile. CI runs all of these on every PR.
 
@@ -200,11 +203,11 @@ reuse or extend what's there; if the same logic appears in 2+ places, extract it
   `SCREAMING_SNAKE_CASE`.
 - Small, focused functions. Pure functions in `lib/` wherever possible — they're easy to
   test.
-- Comments explain *why*, not *what*. Match the comment density of the surrounding code.
+- Comments explain _why_, not _what_. Match the comment density of the surrounding code.
 - Don't leave unused imports, variables, or commented-out code.
-- User-facing copy lives in the feature's `content.ts` / copy module, not scattered in JSX.
-  If the feature has none, create `lib/<feature>/content.ts` for the new copy; move
-  existing inline copy only when you change it.
+- User-facing text lives in `apps/dristi-app/messages/en.json` as keys, never as English in
+  JSX or constants; follow `docs/localization.md`. Malayalam stays in `content.ts` `Copy`
+  objects until it moves to `messages/ml.json`.
 
 ## Tests
 

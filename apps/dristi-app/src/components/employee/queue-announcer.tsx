@@ -1,6 +1,7 @@
 "use client";
 
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useTranslations } from "next-intl";
 
 /**
  * How much of a queue is showing, for someone who cannot see it.
@@ -38,10 +39,17 @@ export function QueueAnnouncer({
   to: number;
   total: number;
 }) {
+  const t = useTranslations();
   /* The same words the footer prints, so what is spoken and what is drawn agree. The
      empty case has no footer to agree with, and says the thing the empty panel says. */
   const sentence =
-    total === 0 ? "No results." : `Showing ${from}–${to} of ${total}.`;
+    total === 0
+      ? t("queueAnnouncer_noResults")
+      : t("queueAnnouncer_showingFromToOfTotal", {
+          from: String(from),
+          to: String(to),
+          total: String(total),
+        });
   const settled = useDebouncedValue(sentence, QUIET_MS);
 
   return (

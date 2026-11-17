@@ -4,6 +4,7 @@ import { BookmarkIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 export function BookmarkButton({
   caseLabel,
@@ -16,6 +17,7 @@ export function BookmarkButton({
   onToggle: () => void;
   className?: string;
 }) {
+  const t = useTranslations();
   return (
     <Button
       type="button"
@@ -33,8 +35,8 @@ export function BookmarkButton({
       <BookmarkIcon className={cn("size-5", bookmarked && "fill-current")} />
       <span className="sr-only">
         {bookmarked
-          ? `Remove bookmark from ${caseLabel}`
-          : `Bookmark ${caseLabel}`}
+          ? t("bookmarkButton_removeBookmarkFromCaseLabel", { caseLabel })
+          : t("bookmarkButton_bookmarkCaseLabel", { caseLabel })}
       </span>
     </Button>
   );

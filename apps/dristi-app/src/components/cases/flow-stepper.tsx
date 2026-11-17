@@ -26,11 +26,7 @@ export function FlowStepper({
             step={item.step}
             title={item.title}
             status={
-              item.step < current
-                ? "complete"
-                : item.step === current
-                  ? "current"
-                  : "upcoming"
+              item.step < current ? "complete" : item.step === current ? "current" : "upcoming"
             }
             aria-current={item.step === current ? "step" : undefined}
           />

@@ -12,11 +12,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Empty,
   EmptyContent,
@@ -48,19 +44,21 @@ import { COLLAPSE_MOTION } from "@/components/cases/motion";
 import { PANEL_CLASS } from "@/components/shell/panel";
 import { AdvocateStack } from "@/components/tasks/advocate-stack";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /* ───────────────────────────── cells ───────────────────────────── */
 
 function CaseCell({ kase }: { kase: Case }) {
+  const tr = useTranslations();
   const courtText = useCourtText();
   return (
     <div className="flex min-w-0 flex-col gap-0.5">
       <span className="text-body-compact text-foreground">{kase.parties}</span>
       <span className="text-caption text-muted-foreground">
         {kase.stNumber ? (
-          <Identifier value={kase.stNumber} label="case number" />
+          <Identifier value={kase.stNumber} label={tr("tasksTable_caseNumber")} />
         ) : (
-          "Not yet numbered"
+          tr("tasksTable_notYetNumbered")
         )}
         <span aria-hidden> · </span>
         {courtText(kase.court)}
@@ -81,12 +79,14 @@ function DueCell({ task, now }: { task: Task; now: Date }) {
             ? "font-medium text-destructive-ink"
             : due.date
               ? "text-foreground"
-              : "text-muted-foreground"
+              : "text-muted-foreground",
         )}
       >
         {due.primary}
       </span>
-      {due.date ? <span className="text-caption tabular-nums text-muted-foreground">{due.date}</span> : null}
+      {due.date ? (
+        <span className="text-caption tabular-nums text-muted-foreground">{due.date}</span>
+      ) : null}
     </div>
   );
 }
@@ -107,6 +107,7 @@ function VerbButton({
   onClick: () => void;
   size?: "xs" | "default";
 }) {
+  const tr = useTranslations();
   const button = (
     <Button
       variant={verb === "View" ? "ghost" : "outline"}
@@ -115,7 +116,7 @@ function VerbButton({
       onClick={onClick}
       className={cn(
         "w-24 justify-center whitespace-nowrap",
-        size === "xs" && "relative after:absolute after:-inset-1"
+        size === "xs" && "relative after:absolute after:-inset-1",
       )}
     >
       {verb}
@@ -130,7 +131,7 @@ function VerbButton({
           {button}
         </span>
       </TooltipTrigger>
-      <TooltipContent>You are offline — read only</TooltipContent>
+      <TooltipContent>{tr("tasksTable_youAreOfflineReadOnly")}</TooltipContent>
     </Tooltip>
   );
 }
@@ -201,7 +202,7 @@ function useFoldedBands(bands: DueBand[] | null) {
   const shown = React.useCallback(
     (rows: Task[]) =>
       bands ? bands.filter((b) => !folded.has(b.bucket)).flatMap((b) => b.tasks) : rows,
-    [bands, folded]
+    [bands, folded],
   );
   return { folded, toggleBand, shown };
 }
@@ -239,6 +240,7 @@ function BandLabel({
   open?: boolean;
   onToggle?: () => void;
 }) {
+  const tr = useTranslations();
   const hot = band.bucket === "overdue";
   const label = (
     <span
@@ -248,7 +250,7 @@ function BandLabel({
         /* Over loose cards the header is the only thing naming the group, so it
            steps up to the compact body size (owner, Sept 21). */
         loose ? "text-body-compact" : "text-caption",
-        hot ? "text-destructive-ink" : "text-foreground"
+        hot ? "text-destructive-ink" : "text-foreground",
       )}
     >
       {band.label}
@@ -267,7 +269,7 @@ function BandLabel({
           <ChevronDownIcon
             className={cn(
               "size-3.5 transition-transform duration-200 motion-reduce:transition-none",
-              !open && "-rotate-90"
+              !open && "-rotate-90",
             )}
           />
         </span>
@@ -276,7 +278,7 @@ function BandLabel({
           aria-hidden
           className={cn(
             "ml-auto size-4 shrink-0 text-muted-foreground transition-transform",
-            !open && "-rotate-90"
+            !open && "-rotate-90",
           )}
         />
       )}
@@ -295,11 +297,13 @@ function BandLabel({
         shell,
         /* A bare `button` inherits the browser's arrow cursor, which undercuts the
            hover fill's whole job of saying this is actionable. */
-        "cursor-pointer outline-none transition-colors hover:bg-surface-sunken focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        "cursor-pointer outline-none transition-colors hover:bg-surface-sunken focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
       )}
     >
       {body}
-      <span className="sr-only">{open ? "Hide these tasks" : "Show these tasks"}</span>
+      <span className="sr-only">
+        {open ? tr("tasksTable_hideTheseTasks") : tr("tasksTable_showTheseTasks")}
+      </span>
     </button>
   );
 }
@@ -344,6 +348,7 @@ export type TasksTableProps = {
  * and they are built from plain rows so they stay out of its row states.
  */
 export function TasksTable(props: TasksTableProps) {
+  const tr = useTranslations();
   const { rows, emptyKind, query, view, onClearFilters } = props;
   // The Cases page's rule: a table with a mouse or on a tablet's side, cards
   // under a finger held upright and on any phone.
@@ -389,16 +394,20 @@ export function TasksTable(props: TasksTableProps) {
               <EmptyMedia variant="icon">
                 <SearchXIcon aria-hidden />
               </EmptyMedia>
-              <EmptyTitle>{query?.trim() ? `Nothing matches “${query.trim()}”` : "No tasks match"}</EmptyTitle>
+              <EmptyTitle>
+                {query?.trim()
+                  ? tr("tasksTable_nothingMatchesTrim", { trim: query.trim() })
+                  : tr("tasksTable_noTasksMatch")}
+              </EmptyTitle>
               <EmptyDescription>
                 {query?.trim()
-                  ? "Try another spelling or a party name, or clear the search."
-                  : "Clear a filter or the chosen kind to see more."}
+                  ? tr("tasksTable_tryAnotherSpellingOrAParty")
+                  : tr("tasksTable_clearAFilterOrTheChosen")}
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               <Button variant="outline" onClick={onClearFilters}>
-                Clear filters
+                {tr("tasksTable_clearFilters")}
               </Button>
             </EmptyContent>
           </Empty>
@@ -410,21 +419,21 @@ export function TasksTable(props: TasksTableProps) {
               </EmptyMedia>
               <EmptyTitle>
                 {view === "needs-action"
-                  ? "Nothing needs you"
+                  ? tr("tasksTable_nothingNeedsYou")
                   : view === "waiting"
-                    ? "Nothing waiting on anyone"
+                    ? tr("tasksTable_nothingWaitingOnAnyone")
                     : view === "completed"
-                      ? "Nothing completed yet"
-                      : "Nothing archived"}
+                      ? tr("tasksTable_nothingCompletedYet")
+                      : tr("tasksTable_nothingArchived")}
               </EmptyTitle>
               <EmptyDescription>
                 {view === "needs-action"
-                  ? "Every case you are on is up to date."
+                  ? tr("tasksTable_everyCaseYouAreOnIs")
                   : view === "waiting"
-                    ? "Filings with the court, payments confirming, and items that need a vakalatnama holder will wait here."
+                    ? tr("tasksTable_filingsWithTheCourtPaymentsConfirming")
                     : view === "completed"
-                      ? "Done, expired and no-longer-needed tasks are kept here with why they closed."
-                      : "Tasks put away with Archive are kept here and can be restored."}
+                      ? tr("tasksTable_doneExpiredAndNoLongerNeeded")
+                      : tr("tasksTable_tasksPutAwayWithArchiveAre")}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -473,7 +482,18 @@ type RowCtx = TasksTableProps & {
 const ACTOR_VIEWS: ReadonlySet<TaskView> = new Set<TaskView>(["needs-action", "waiting"]);
 
 function WideTable(props: TasksTableProps) {
-  const { rows, cases, user, now, view, banded = true, allSelected, someSelected, onToggleAll } = props;
+  const tr = useTranslations();
+  const {
+    rows,
+    cases,
+    user,
+    now,
+    view,
+    banded = true,
+    allSelected,
+    someSelected,
+    onToggleAll,
+  } = props;
   const caseById = React.useMemo(() => new Map(cases.map((c) => [c.id, c])), [cases]);
   // The select column exists wherever a listed task can still be acted on outside the
   // system — marked done by hand or archived. Closed and archived rows have neither.
@@ -517,16 +537,20 @@ function WideTable(props: TasksTableProps) {
                 <Checkbox
                   checked={allSelected ? true : someSelected ? "indeterminate" : false}
                   onCheckedChange={() => onToggleAll(!allSelected)}
-                  aria-label={allSelected ? "Clear the whole list" : "Select the whole list"}
+                  aria-label={
+                    allSelected
+                      ? tr("tasksTable_clearTheWholeList")
+                      : tr("tasksTable_selectTheWholeList")
+                  }
                 />
               </TableHead>
             ) : null}
-            <TableHead className={TABLE_HEAD}>Task</TableHead>
-            <TableHead className={TABLE_HEAD}>Case</TableHead>
+            <TableHead className={TABLE_HEAD}>{tr("tasksTable_task")}</TableHead>
+            <TableHead className={TABLE_HEAD}>{tr("tasksTable_case")}</TableHead>
             {/* The rows are always most-urgent first (`sortTasks`); the headers no longer
                 re-sort — a task queue has one order, and offering others was table
                 convention, not a need (owner, 2026-08-24). */}
-            <TableHead className={TABLE_HEAD}>Due</TableHead>
+            <TableHead className={TABLE_HEAD}>{tr("tasksTable_due")}</TableHead>
             {/* Who may act on this task — never an assignment ("Owners" claimed one the
                 product does not have; owner, 2026-09-15). The cell answers the header
                 exactly: the advocates who hold this task's acting verb, which for a
@@ -535,11 +559,13 @@ function WideTable(props: TasksTableProps) {
                 the push panel narrows the table past the full width this column stands
                 down rather than wrapping every other cell to three lines. */}
             {actorsShown ? (
-              <TableHead className={cn(TABLE_HEAD, "hidden @4xl:table-cell")}>Who can act</TableHead>
+              <TableHead className={cn(TABLE_HEAD, "hidden @4xl:table-cell")}>
+                {tr("tasksTable_whoCanAct")}
+              </TableHead>
             ) : null}
             {fifthHead ? <TableHead className={TABLE_HEAD}>{fifthHead}</TableHead> : null}
             <TableHead className={cn(TABLE_HEAD, "text-right")}>
-              <span className="sr-only">Action</span>
+              <span className="sr-only">{tr("tasksTable_action")}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -549,10 +575,7 @@ function WideTable(props: TasksTableProps) {
              lit row, the rounding of a run of selected rows. Those rules cannot look
              across a `tbody`, so a run of picked rows rounds inside its own band. */
           bands.map((band) => (
-            <TableBody
-              key={band.bucket}
-              className={tableBodyClass({ selectable: true })}
-            >
+            <TableBody key={band.bucket} className={tableBodyClass({ selectable: true })}>
               {/* The label heads the rows below it, not a column — a plain `tr`, so the
                   DS row's own three fills never land on a strip that is not a record.
                   Its rule sits above the label, between this band and the one before, so
@@ -592,7 +615,22 @@ function WideTable(props: TasksTableProps) {
 }
 
 function WideRow({ ctx, task }: { ctx: RowCtx; task: Task }) {
-  const { caseById, anySelectable, fifthHead, actorsShown, indexById, people, user, now, view, selected, offline, onVerb, onToggleSelect } = ctx;
+  const tr = useTranslations();
+  const {
+    caseById,
+    anySelectable,
+    fifthHead,
+    actorsShown,
+    indexById,
+    people,
+    user,
+    now,
+    view,
+    selected,
+    offline,
+    onVerb,
+    onToggleSelect,
+  } = ctx;
   const index = indexById.get(task.id) ?? 0;
   const kase = caseById.get(task.caseId);
   if (!kase) return null;
@@ -612,10 +650,7 @@ function WideRow({ ctx, task }: { ctx: RowCtx; task: Task }) {
          open is a persistent "you are looking at this one" mark and it loses to
          selection, so the precedence is decided here rather than in CSS, where the two
          fills would race on source order. */
-      className={cn(
-        tableRowClass({ selectable: true }),
-        "cursor-pointer"
-      )}
+      className={cn(tableRowClass({ selectable: true }), "cursor-pointer")}
       onClick={(event) => {
         const target = event.target as HTMLElement;
         if (target.closest("button, a, [role=checkbox], label")) return;
@@ -628,7 +663,7 @@ function WideRow({ ctx, task }: { ctx: RowCtx; task: Task }) {
             <Checkbox
               checked={isSelected}
               onCheckedChange={() => onToggleSelect(task)}
-              aria-label={`Select: ${task.title}`}
+              aria-label={tr("tasksTable_selectTitle", { title: task.title })}
             />
           ) : null}
         </TableCell>
@@ -659,7 +694,7 @@ function WideRow({ ctx, task }: { ctx: RowCtx; task: Task }) {
             people={people}
             user={user}
             advocates={whoCanActOn(task, kase, people)}
-            label="Who can act"
+            label={tr("tasksTable_whoCanAct")}
           />
         </TableCell>
       ) : null}
@@ -766,8 +801,22 @@ function TaskCard({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const tr = useTranslations();
   const courtText = useCourtText();
-  const { caseById, indexById, people, user, now, view, selected, offline, fifthHead, actorsShown, onVerb, onToggleSelect } = ctx;
+  const {
+    caseById,
+    indexById,
+    people,
+    user,
+    now,
+    view,
+    selected,
+    offline,
+    fifthHead,
+    actorsShown,
+    onVerb,
+    onToggleSelect,
+  } = ctx;
   const kase = caseById.get(task.caseId);
   if (!kase) return null;
   const verb = verbFor(user, task, kase);
@@ -787,7 +836,7 @@ function TaskCard({
             PANEL_CLASS,
             "relative z-10 flex flex-col gap-3 rounded-xl border bg-card p-4 transition-colors has-[[data-task-title]:active]:bg-accent",
             (isSelected || open) && "border-border",
-            isSelected && "bg-accent-strong"
+            isSelected && "bg-accent-strong",
           )}
         >
           <div className="flex items-start gap-3">
@@ -796,7 +845,7 @@ function TaskCard({
                 <Checkbox
                   checked={isSelected}
                   onCheckedChange={() => onToggleSelect(task)}
-                  aria-label={`Select: ${task.title}`}
+                  aria-label={tr("tasksTable_selectTitle", { title: task.title })}
                   className="size-5"
                 />
               </span>
@@ -822,7 +871,7 @@ function TaskCard({
                       ? "font-medium text-destructive-ink"
                       : due.date
                         ? "font-medium text-foreground"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground",
                   )}
                 >
                   {due.primary}
@@ -841,7 +890,7 @@ function TaskCard({
               aria-hidden
               className={cn(
                 "mt-1 size-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
-                open && "rotate-180"
+                open && "rotate-180",
               )}
             />
           </div>
@@ -851,9 +900,13 @@ function TaskCard({
               <span className="text-body-compact text-foreground">{kase.parties}</span>
               <span className="text-caption text-muted-foreground">
                 {kase.stNumber ? (
-                  <Identifier value={kase.stNumber} label="case number" copyable={false} />
+                  <Identifier
+                    value={kase.stNumber}
+                    label={tr("tasksTable_caseNumber")}
+                    copyable={false}
+                  />
                 ) : (
-                  "Not yet numbered"
+                  tr("tasksTable_notYetNumbered")
                 )}
                 <span aria-hidden> · </span>
                 {courtText(kase.court)}
@@ -871,7 +924,7 @@ function TaskCard({
                   people={people}
                   user={user}
                   advocates={whoCanActOn(task, kase, people)}
-                  label="Who can act"
+                  label={tr("tasksTable_whoCanAct")}
                 />
               </div>
             ) : null}
@@ -899,8 +952,14 @@ function TaskCard({
 
 /** Rows still arriving: chrome intact, the table as calm placeholders. */
 export function TasksTableSkeleton() {
+  const tr = useTranslations();
   return (
-    <Card variant="raised" className="gap-0 py-0" aria-busy="true" aria-label="Loading tasks">
+    <Card
+      variant="raised"
+      className="gap-0 py-0"
+      aria-busy="true"
+      aria-label={tr("tasksTable_loadingTasks")}
+    >
       {/* Inset from `md` — the width at which the rows that arrive are the wide table,
           which its panel insets by the same 16px. Below that the stacked list runs
           full-bleed and so does this, so the rows never shift as they land. */}
@@ -911,17 +970,17 @@ export function TasksTableSkeleton() {
           <Skeleton className="h-3 w-10" />
         </div>
         <ul className="divide-y divide-hairline">
-        {Array.from({ length: 7 }).map((_, i) => (
-          <li key={i} className="flex min-h-16 items-center gap-6 px-4 py-3">
-            <div className="flex flex-1 flex-col gap-2">
-              <Skeleton className="h-4 w-2/3 max-w-96" />
-              <Skeleton className="h-3 w-1/3 max-w-48" />
-            </div>
-            <Skeleton className="hidden h-3 w-20 md:block" />
-            <Skeleton className="hidden size-6 rounded-full md:block" />
-            <Skeleton className="h-8 w-16 rounded-lg" />
-          </li>
-        ))}
+          {Array.from({ length: 7 }).map((_, i) => (
+            <li key={i} className="flex min-h-16 items-center gap-6 px-4 py-3">
+              <div className="flex flex-1 flex-col gap-2">
+                <Skeleton className="h-4 w-2/3 max-w-96" />
+                <Skeleton className="h-3 w-1/3 max-w-48" />
+              </div>
+              <Skeleton className="hidden h-3 w-20 md:block" />
+              <Skeleton className="hidden size-6 rounded-full md:block" />
+              <Skeleton className="h-8 w-16 rounded-lg" />
+            </li>
+          ))}
         </ul>
       </div>
     </Card>

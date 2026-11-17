@@ -63,9 +63,6 @@ describe("matchesQuery", () => {
     /* The other half of the same contract, and the one that survived the Search button:
        once there is something to match on, the screen is filtered and its empty state
        should say so. */
-    assert.equal(
-      isPendingFilterChange({ query: "girija" }, { query: "" }),
-      true,
-    );
+    assert.equal(isPendingFilterChange({ query: "girija" }, { query: "" }), true);
   });
 });

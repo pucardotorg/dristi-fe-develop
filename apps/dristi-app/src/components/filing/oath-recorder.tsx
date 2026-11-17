@@ -16,6 +16,7 @@ import { CircleIcon, SquareIcon } from "lucide-react";
 
 import { formatDuration } from "@/lib/filing/files";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 type Status = "requesting" | "live" | "recording";
 
@@ -31,13 +32,15 @@ const MIME_CANDIDATES = [
 function pickMimeType(): string {
   const supported = window.MediaRecorder?.isTypeSupported;
   if (typeof supported !== "function") return "";
-  return MIME_CANDIDATES.find((candidate) => {
-    try {
-      return supported.call(window.MediaRecorder, candidate);
-    } catch {
-      return false;
-    }
-  }) ?? "";
+  return (
+    MIME_CANDIDATES.find((candidate) => {
+      try {
+        return supported.call(window.MediaRecorder, candidate);
+      } catch {
+        return false;
+      }
+    }) ?? ""
+  );
 }
 
 function messageFor(error: unknown): string {
@@ -79,6 +82,7 @@ export function OathRecorderPanel({
   /** A failure occurred; the camera (if it was ever acquired) has been released. */
   onError: (message: string) => void;
 }) {
+  const t = useTranslations();
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
   const recorderRef = React.useRef<MediaRecorder | null>(null);
@@ -112,7 +116,7 @@ export function OathRecorderPanel({
     let cancelled = false;
 
     if (!isRecordingSupported()) {
-      onError("Recording isn't supported in this browser. Open your signing link in another browser, or on a phone.");
+      onError(t("oathRecorder_recordingIsntSupportedInThisBrowser"));
       return;
     }
 
@@ -140,7 +144,7 @@ export function OathRecorderPanel({
     // Intentionally run once per mount — the panel is remounted (via `key` at the call
     // site) whenever it needs a fresh camera session.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [t]);
 
   const startRecording = () => {
     const stream = streamRef.current;
@@ -152,7 +156,7 @@ export function OathRecorderPanel({
       recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
     } catch {
       stopStream();
-      onError("We couldn't start recording in this browser. Open your signing link in another browser, or on a phone.");
+      onError(t("oathRecorder_weCouldntStartRecordingInThis"));
       return;
     }
     chunksRef.current = [];
@@ -172,7 +176,7 @@ export function OathRecorderPanel({
     recorder.onerror = () => {
       clearTimer();
       stopStream();
-      onError("Recording stopped unexpectedly. Please try again.");
+      onError(t("oathRecorder_recordingStoppedUnexpectedlyPleaseTryAgain"));
     };
 
     recorderRef.current = recorder;
@@ -182,7 +186,7 @@ export function OathRecorderPanel({
       recorder.start();
     } catch {
       stopStream();
-      onError("We couldn't start recording in this browser. Open your signing link in another browser, or on a phone.");
+      onError(t("oathRecorder_weCouldntStartRecordingInThis"));
       return;
     }
     setStatus("recording");
@@ -218,11 +222,16 @@ export function OathRecorderPanel({
       />
 
       {status === "requesting" ? (
-        <p className="text-body-compact text-muted-foreground">Requesting camera access…</p>
+        <p className="text-body-compact text-muted-foreground">
+          {t("oathRecorder_requestingCameraAccess")}
+        </p>
       ) : null}
 
       {status === "recording" ? (
-        <div aria-live="polite" className="inline-flex w-fit items-center gap-1.5 text-body-compact text-destructive">
+        <div
+          aria-live="polite"
+          className="inline-flex w-fit items-center gap-1.5 text-body-compact text-destructive"
+        >
           <span className="size-2 shrink-0 animate-pulse rounded-full bg-destructive" aria-hidden />
           <span className="tabular-nums">
             {formatDuration(elapsed)} / {formatDuration(maxDurationSeconds)}
@@ -234,17 +243,17 @@ export function OathRecorderPanel({
         {status === "live" ? (
           <Button type="button" onClick={startRecording}>
             <CircleIcon data-icon="inline-start" aria-hidden />
-            Start recording
+            {t("oathRecorder_startRecording")}
           </Button>
         ) : null}
         {status === "recording" ? (
           <Button type="button" variant="destructive-solid" onClick={finish}>
             <SquareIcon data-icon="inline-start" aria-hidden />
-            Stop recording
+            {t("oathRecorder_stopRecording")}
           </Button>
         ) : null}
         <Button type="button" variant="outline" onClick={cancel}>
-          Cancel
+          {t("common_cancel")}
         </Button>
       </div>
     </div>

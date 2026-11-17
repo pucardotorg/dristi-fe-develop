@@ -89,7 +89,8 @@ export function parseArgs(argv) {
       if (!value || value.startsWith("--")) return { error: `${arg} needs a value.` };
       options[arg.slice(2)] = value;
     } else if (arg.startsWith("--")) return { error: `Unknown option ${arg}.` };
-    else if (options.feature) return { error: `One feature at a time: got "${options.feature}" and "${arg}".` };
+    else if (options.feature)
+      return { error: `One feature at a time: got "${options.feature}" and "${arg}".` };
     else options.feature = arg;
   }
   const problem = invalidFeatureName(options.feature);
@@ -208,11 +209,15 @@ interface Schema extends DBSchema {
   "${names.store}": { key: string; value: ${record} };
 }
 
-${OPEN_DATABASE(feature, "IDBPDatabase<Schema>", `    upgrade(database) {
+${OPEN_DATABASE(
+  feature,
+  "IDBPDatabase<Schema>",
+  `    upgrade(database) {
       if (!database.objectStoreNames.contains("${names.store}")) {
         database.createObjectStore("${names.store}", { keyPath: "id" });
       }
-    },`)}
+    },`,
+)}
 export class IndexedDb${contract} implements ${contract} {
   async list${names.plural}(): Promise<${record}[]> {
     return (await db()).getAll("${names.store}");
@@ -238,11 +243,15 @@ import { deleteDB, openDB, type IDBPDatabase } from "idb";
 
 import type { ${contract} } from "./repository";
 
-${OPEN_DATABASE(feature, "IDBPDatabase", `    upgrade() {
+${OPEN_DATABASE(
+  feature,
+  "IDBPDatabase",
+  `    upgrade() {
       // Create stores here, e.g. if (!database.objectStoreNames.contains("items"))
       // database.createObjectStore("items", { keyPath: "id" }). Add a DBSchema type
       // with the first store (npm run new:data -- <feature> --record <Type> shows one).
-    },`)}
+    },`,
+)}
 export class IndexedDb${contract} implements ${contract} {
   async clear(): Promise<void> {
     const database = await db();
@@ -324,7 +333,7 @@ export function writeDataFiles(root, feature, { record } = {}) {
   const taken = Object.keys(files).filter((file) => existsSync(join(dir, file)));
   if (taken.length) {
     throw new Error(
-      `${relative(root, dir)} already has ${taken.join(", ")}. Extend those files instead.`
+      `${relative(root, dir)} already has ${taken.join(", ")}. Extend those files instead.`,
     );
   }
   mkdirSync(dir, { recursive: true });
@@ -392,7 +401,10 @@ function gitOk(args) {
 }
 
 function startMove({ feature, record, base }) {
-  if (base.startsWith("origin/") && !gitOk(["fetch", "--no-tags", "--quiet", "origin", base.slice("origin/".length)])) {
+  if (
+    base.startsWith("origin/") &&
+    !gitOk(["fetch", "--no-tags", "--quiet", "origin", base.slice("origin/".length)])
+  ) {
     console.log(`Couldn't fetch ${base}; using the copy this checkout already has.`);
   }
   if (!gitOk(["rev-parse", "--verify", "--quiet", `${base}^{commit}`])) {
@@ -401,7 +413,9 @@ function startMove({ feature, record, base }) {
   const problem = moveProblem(feature, (path) => gitOk(["cat-file", "-e", `${base}:${path}`]));
   if (problem) throw new Error(problem);
   if (git(["status", "--porcelain", "--untracked-files=no"]).trim()) {
-    throw new Error("This checkout has uncommitted changes. Commit or stash them first: the move starts a branch of its own.");
+    throw new Error(
+      "This checkout has uncommitted changes. Commit or stash them first: the move starts a branch of its own.",
+    );
   }
   const branch = `chore/move-${feature}-data`;
   if (gitOk(["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`])) {

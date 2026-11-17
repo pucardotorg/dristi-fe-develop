@@ -2,6 +2,7 @@ import type * as React from "react";
 
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * A dated chain of steps, grouped by phase — the court side's one timeline treatment.
@@ -26,18 +27,10 @@ import { cn } from "@/lib/utils";
  */
 
 /** One column of dated steps, under the phase it belongs to. */
-export function StepGroup({
-  heading,
-  children,
-}: {
-  heading: string;
-  children: React.ReactNode;
-}) {
+export function StepGroup({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <h3 className="text-body-compact font-semibold text-muted-foreground">
-        {heading}
-      </h3>
+      <h3 className="text-body-compact font-semibold text-muted-foreground">{heading}</h3>
       <Timeline className="text-body-compact">{children}</Timeline>
     </div>
   );
@@ -75,6 +68,7 @@ export function Step({
    *  so the screen the bench is on stays where it was. */
   href?: string;
 }) {
+  const t = useTranslations();
   return (
     <TimelineItem status={status} className="pb-0">
       {/* Three columns once the panel is wide: the step, what it means, and the day it
@@ -94,7 +88,7 @@ export function Step({
                 className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
               >
                 {label}
-                <span className="sr-only"> (opens in a new tab)</span>
+                <span className="sr-only"> {t("stepTimeline_opensInANewTab")}</span>
               </a>
             ) : (
               label
@@ -107,19 +101,12 @@ export function Step({
             <span
               className={cn(
                 "col-span-2 col-start-1 row-start-2 min-w-0 @xl:col-span-1 @xl:col-start-2 @xl:row-start-1",
-                tone === "warning"
-                  ? "text-warning-ink"
-                  : "text-muted-foreground",
+                tone === "warning" ? "text-warning-ink" : "text-muted-foreground",
               )}
             >
               {note}
               {aside ? (
-                <span
-                  className={cn(
-                    "block",
-                    tone === "warning" && "text-muted-foreground",
-                  )}
-                >
+                <span className={cn("block", tone === "warning" && "text-muted-foreground")}>
                   {aside}
                 </span>
               ) : null}

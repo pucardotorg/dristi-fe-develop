@@ -37,13 +37,9 @@
  * dates in front of it rather than a screen of expired listings.
  */
 
-import {
-  CAUSE_LIST,
-  isoDay,
-  parseIsoDay,
-  type CourtCaseStage,
-} from "./hearings";
+import { CAUSE_LIST, isoDay, parseIsoDay, type CourtCaseStage } from "./hearings";
 import { caseSearchKey } from "@/lib/court/localize";
+import type { MessageKey } from "@/i18n/messages";
 
 /**
  * A priority a case carries as a fact about the matter, not as a stage it has reached.
@@ -100,19 +96,14 @@ export type CourtPriority = {
 };
 
 export type CourtPriorityId =
-  | "pending-cognizance"
-  | "utp"
-  | "stayed"
-  | "time-bound"
-  | "appellate-pending"
-  | "process-pending";
+  "pending-cognizance" | "utp" | "stayed" | "time-bound" | "appellate-pending" | "process-pending";
 
 /** Flag order and wording, for the register's own Priority column. */
-export const COURT_CASE_FLAG_LABEL: Record<CourtCaseFlag, string> = {
-  utp: "In custody",
-  stayed: "Stayed",
-  "time-bound": "Time-bound",
-  "appellate-pending": "Appeal or revision",
+export const COURT_CASE_FLAG_LABEL: Record<CourtCaseFlag, MessageKey> = {
+  utp: "cases_inCustody",
+  stayed: "cases_stayed",
+  "time-bound": "cases_timeBound",
+  "appellate-pending": "cases_appealOrRevision",
 };
 
 function carries(flag: CourtCaseFlag) {
@@ -127,54 +118,48 @@ export const COURT_PRIORITIES: CourtPriority[] = [
   {
     id: "pending-cognizance",
     tile: "Pending cognizance",
-    title: "Newly filed, pending cognizance",
-    meaning:
-      "Cleared registry scrutiny and waiting for the order that issues summons.",
+    title: "cases_newlyFiledPendingCognizance",
+    meaning: "cases_clearedRegistryScrutinyAndWaitingFor",
     matches: (record) => record.stage === "cognizance",
   },
   {
     id: "utp",
     tile: "Accused in custody",
-    title: "Under-trial prisoner matters",
-    meaning:
-      "The accused is in custody, so the matter takes statutory hearing priority.",
+    title: "cases_underTrialPrisonerMatters",
+    meaning: "cases_theAccusedIsInCustodySo",
     matches: carries("utp"),
   },
   {
     id: "stayed",
     tile: "Stayed",
-    title: "Stayed by a higher court",
-    meaning:
-      "Proceedings are stayed by the High Court or the Supreme Court.",
+    title: "cases_stayedByAHigherCourt",
+    meaning: "cases_proceedingsAreStayedByTheHigh",
     matches: carries("stayed"),
   },
   {
     id: "time-bound",
     tile: "Time-bound",
-    title: "Time-bound by a higher court's direction",
-    meaning: "A higher court has fixed a date by which this case must be disposed.",
+    title: "cases_timeBoundByAHigherCourts",
+    meaning: "cases_aHigherCourtHasFixedA",
     matches: carries("time-bound"),
   },
   {
     id: "appellate-pending",
     tile: "Appeal or revision",
-    title: "Revision or appeal pending above",
-    meaning: "A revision or appeal out of this case is live in an appellate court.",
+    title: "cases_revisionOrAppealPendingAbove",
+    meaning: "cases_aRevisionOrAppealOutOf",
     matches: carries("appellate-pending"),
   },
   {
     id: "process-pending",
     tile: "Process awaited",
-    title: "Process issued, report awaited",
-    meaning:
-      "Summons or warrant has gone out and the serving report has not come back.",
+    title: "cases_processIssuedReportAwaited",
+    meaning: "cases_summonsOrWarrantHasGoneOut",
     matches: (record) => record.stage === "process",
   },
 ];
 
-export function courtPriorityById(
-  id: CourtPriorityId,
-): CourtPriority | undefined {
+export function courtPriorityById(id: CourtPriorityId): CourtPriority | undefined {
   return COURT_PRIORITIES.find((priority) => priority.id === id);
 }
 
@@ -182,10 +167,7 @@ export function courtPriorityById(
    the dashboard and the day's list cannot drift about the same case. Everything the
    register knows and a listing does not — the next date, the age, the flags — is
    attached here by case number. A case listed today is listed today: `0`. */
-const TODAYS_EXTRAS: Record<
-  string,
-  { registeredDaysAgo: number; flags: CourtCaseFlag[] }
-> = {
+const TODAYS_EXTRAS: Record<string, { registeredDaysAgo: number; flags: CourtCaseFlag[] }> = {
   "ST/241/2026": { registeredDaysAgo: 168, flags: [] },
   "ST/243/2026": { registeredDaysAgo: 142, flags: [] },
   "ST/244/2026": { registeredDaysAgo: 138, flags: [] },
@@ -426,10 +408,10 @@ const PRIORITY_DETAIL: Record<
   "ST/57/2025": { higherCourt: "High Court" },
 };
 
-export const COURT_CASES: CourtCase[] = [
-  ...LISTED_TODAY,
-  ...NOT_LISTED_TODAY,
-].map((record) => ({ ...record, ...PRIORITY_DETAIL[record.caseNumber] }));
+export const COURT_CASES: CourtCase[] = [...LISTED_TODAY, ...NOT_LISTED_TODAY].map((record) => ({
+  ...record,
+  ...PRIORITY_DETAIL[record.caseNumber],
+}));
 
 /** What the rail's row says. Derived, so the row and the screen agree. */
 export const COURT_CASE_COUNT = COURT_CASES.length;
@@ -449,13 +431,8 @@ function shiftDay(day: string, days: number): string {
 }
 
 /** The next listing as a day, or `null` when no date is fixed. */
-export function nextHearingDay(
-  record: CourtCase,
-  today: string,
-): string | null {
-  return record.nextHearingInDays === null
-    ? null
-    : shiftDay(today, record.nextHearingInDays);
+export function nextHearingDay(record: CourtCase, today: string): string | null {
+  return record.nextHearingInDays === null ? null : shiftDay(today, record.nextHearingInDays);
 }
 
 /** The day the case came on this court's file. */
@@ -483,11 +460,7 @@ export const EMPTY_COURT_CASE_FILTERS: CourtCaseFilters = {
 };
 
 export function hasCourtCaseFilters(filters: CourtCaseFilters): boolean {
-  return (
-    filters.query.trim() !== "" ||
-    filters.stage !== null ||
-    filters.priority !== null
-  );
+  return filters.query.trim() !== "" || filters.stage !== null || filters.priority !== null;
 }
 
 /**
@@ -503,8 +476,7 @@ export function filterCourtCases(
   register: CourtCase[] = COURT_CASES,
 ): CourtCase[] {
   const query = caseSearchKey(filters.query);
-  const priority =
-    filters.priority === null ? null : courtPriorityById(filters.priority);
+  const priority = filters.priority === null ? null : courtPriorityById(filters.priority);
 
   return register.filter((record) => {
     if (filters.stage !== null && record.stage !== filters.stage) return false;
@@ -575,8 +547,7 @@ export function actNowCases(
   return register
     .map((record) => ({ record, attention: caseAttention(record) }))
     .filter(
-      (row): row is { record: CourtCase; attention: CaseAttention } =>
-        row.attention !== undefined,
+      (row): row is { record: CourtCase; attention: CaseAttention } => row.attention !== undefined,
     )
     .sort((a, b) => {
       if (a.attention.kind !== b.attention.kind) {
@@ -588,9 +559,7 @@ export function actNowCases(
         case "deadline":
           return (a.record.deadlineInDays ?? 0) - (b.record.deadlineInDays ?? 0);
         case "service":
-          return (
-            (b.record.serviceOverdueDays ?? 0) - (a.record.serviceOverdueDays ?? 0)
-          );
+          return (b.record.serviceOverdueDays ?? 0) - (a.record.serviceOverdueDays ?? 0);
       }
     });
 }
@@ -605,9 +574,7 @@ export function underHigherCourtCases(
 ): { record: CourtCase; reason: string }[] {
   return register
     .filter(
-      (record) =>
-        record.flags.includes("stayed") ||
-        record.flags.includes("appellate-pending"),
+      (record) => record.flags.includes("stayed") || record.flags.includes("appellate-pending"),
     )
     .map((record) => {
       const court = record.higherCourt ?? "a higher court";

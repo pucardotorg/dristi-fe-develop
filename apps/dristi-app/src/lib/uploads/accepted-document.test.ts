@@ -28,7 +28,12 @@ describe("isAcceptedDocument", () => {
 
   it("refuses other formats", () => {
     assert.equal(isAcceptedDocument(file("photo.heic", "image/heic")), false);
-    assert.equal(isAcceptedDocument(file("id.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")), false);
+    assert.equal(
+      isAcceptedDocument(
+        file("id.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+      ),
+      false,
+    );
     assert.equal(isAcceptedDocument(file("id.gif", "image/gif")), false);
   });
 

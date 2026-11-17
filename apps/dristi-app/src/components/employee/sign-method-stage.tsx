@@ -1,11 +1,9 @@
 "use client";
 
-import {
-  SignatureFields,
-  type SignatureChoice,
-} from "@/components/employee/sign-signature-fields";
+import { SignatureFields, type SignatureChoice } from "@/components/employee/sign-signature-fields";
 import { Button } from "@/components/ui/button";
 import { IrreversibleNote } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * **Add signature — a stage of the window that was reading the paper, not a second
@@ -92,12 +90,7 @@ export function SignatureStage({
 }) {
   return (
     <div className="mx-auto my-auto flex w-full max-w-xl flex-col gap-4">
-      <SignatureFields
-        choice={choice}
-        noun={noun}
-        subject={subject}
-        download={download}
-      />
+      <SignatureFields choice={choice} noun={noun} subject={subject} download={download} />
 
       {warning ? (
         /* The irreversible line, with its lock, so it is read (skill `feedback-states`). */
@@ -124,15 +117,16 @@ export function SignatureActions({
   onBack?: () => void;
   onSubmit: () => void;
 }) {
+  const t = useTranslations();
   return (
     <>
       {onBack ? (
         <Button type="button" variant="outline" onClick={onBack}>
-          Back
+          {t("common_back")}
         </Button>
       ) : null}
       <Button type="button" disabled={!choice.canSubmit} onClick={onSubmit}>
-        Submit
+        {t("common_submit")}
       </Button>
     </>
   );

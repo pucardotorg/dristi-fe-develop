@@ -1,26 +1,23 @@
 "use client";
 
 import * as React from "react";
-import {
-  AlignLeftIcon,
-  BoldIcon,
-  ItalicIcon,
-  ListIcon,
-  ListOrderedIcon,
-} from "lucide-react";
+import { AlignLeftIcon, BoldIcon, ItalicIcon, ListIcon, ListOrderedIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 type Command = "bold" | "italic" | "insertOrderedList" | "insertUnorderedList" | "justifyLeft";
 
-const TOOLS: { cmd: Command; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { cmd: "bold", label: "Bold", icon: BoldIcon },
-  { cmd: "italic", label: "Italic", icon: ItalicIcon },
-  { cmd: "insertOrderedList", label: "Numbered list", icon: ListOrderedIcon },
-  { cmd: "insertUnorderedList", label: "Bulleted list", icon: ListIcon },
-  { cmd: "justifyLeft", label: "Align left", icon: AlignLeftIcon },
-];
+const TOOLS: { cmd: Command; label: string; icon: React.ComponentType<{ className?: string }> }[] =
+  [
+    { cmd: "bold", label: "richTextEditor_bold", icon: BoldIcon },
+    { cmd: "italic", label: "richTextEditor_italic", icon: ItalicIcon },
+    { cmd: "insertOrderedList", label: "richTextEditor_numberedList", icon: ListOrderedIcon },
+    { cmd: "insertUnorderedList", label: "richTextEditor_bulletedList", icon: ListIcon },
+    { cmd: "justifyLeft", label: "richTextEditor_alignLeft", icon: AlignLeftIcon },
+  ];
 
 /** What a caller can do to the text from outside it — a picker that is not in the box. */
 export type RichTextEditorHandle = {
@@ -35,7 +32,7 @@ export type RichTextEditorHandle = {
 export function RichTextEditor({
   value,
   onChange,
-  placeholder = "Write here",
+  placeholder = "richTextEditor_writeHere",
   ariaLabel,
   minHeightClassName = "min-h-40",
   className,
@@ -54,6 +51,7 @@ export function RichTextEditor({
   toolbarEnd?: React.ReactNode;
   handleRef?: React.Ref<RichTextEditorHandle>;
 }) {
+  const tr = useTranslations();
   const ref = React.useRef<HTMLDivElement>(null);
   const lastValue = React.useRef<string>("");
   // The caret, kept while focus is away in a picker so an insert lands where it was.
@@ -123,7 +121,7 @@ export function RichTextEditor({
     <div
       className={cn(
         "flex flex-col overflow-hidden rounded-lg border border-input bg-background focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
-        className
+        className,
       )}
     >
       {/* Five packed controls: the buttons stay 36px so the strip reads as chrome, and
@@ -131,7 +129,7 @@ export function RichTextEditor({
           meet rather than overlap. */}
       <div
         role="toolbar"
-        aria-label="Text formatting"
+        aria-label={tr("richTextEditor_textFormatting")}
         className="flex flex-wrap items-center gap-2 border-b border-hairline bg-surface-sunken px-2 py-1"
       >
         {TOOLS.map((t) => (
@@ -140,7 +138,7 @@ export function RichTextEditor({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label={t.label}
+            aria-label={translateText(tr, t.label)}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => run(t.cmd)}
             className="relative after:absolute after:-inset-1"
@@ -149,7 +147,9 @@ export function RichTextEditor({
           </Button>
         ))}
         {toolbarEnd ? (
-          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">{toolbarEnd}</div>
+          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
+            {toolbarEnd}
+          </div>
         ) : null}
       </div>
       <div className="relative">
@@ -158,7 +158,7 @@ export function RichTextEditor({
             aria-hidden
             className="pointer-events-none absolute left-4 top-3 text-body-compact text-muted-foreground"
           >
-            {placeholder}
+            {translateText(tr, placeholder)}
           </span>
         ) : null}
         <div
@@ -173,7 +173,7 @@ export function RichTextEditor({
           onBlur={emit}
           className={cn(
             "prose-p:my-2 px-4 py-3 text-body-compact leading-relaxed text-foreground outline-none [&_li]:ml-4 [&_ol]:list-decimal [&_p]:mb-3 [&_p:last-child]:mb-0 [&_ul]:list-disc",
-            minHeightClassName
+            minHeightClassName,
           )}
         />
       </div>

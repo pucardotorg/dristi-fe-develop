@@ -36,7 +36,7 @@ describe("withOrigin", () => {
   it("records the door on a plain path", () => {
     assert.equal(
       withOrigin("/tasks/t-1/fix", "/filings?tab=returned"),
-      "/tasks/t-1/fix?from=%2Ffilings%3Ftab%3Dreturned"
+      "/tasks/t-1/fix?from=%2Ffilings%3Ftab%3Dreturned",
     );
   });
 

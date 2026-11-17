@@ -4,13 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
 
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemTitle,
-  ItemGroup,
-} from "@/components/ui/item";
+import { Item, ItemActions, ItemContent, ItemTitle, ItemGroup } from "@/components/ui/item";
 import { formatCourtDay, isoDay } from "@/lib/employee/hearings";
 import {
   courtNavClubbed,
@@ -19,6 +13,7 @@ import {
 } from "@/lib/employee/navigation";
 import { useCourt } from "@/components/court/court-provider";
 import { useCourtRole } from "@/components/employee/use-court-role";
+import { useTranslations } from "next-intl";
 
 const NEVER_CHANGES = () => () => {};
 const readToday = () => isoDay(new Date());
@@ -35,6 +30,7 @@ const readToday = () => isoDay(new Date());
  * is an index over `COURT_NAV_GROUPS`, not a second copy of what any of them holds.
  */
 export function TodaysActionsScreen() {
+  const t = useTranslations();
   const today = React.useSyncExternalStore(NEVER_CHANGES, readToday, readToday);
   const { court } = useCourt();
   const seat = useCourtRole();
@@ -45,17 +41,16 @@ export function TodaysActionsScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Today’s actions
+          {t("todaysActionsScreen_todaysActions")}
         </h1>
         <p className="text-body text-muted-foreground tabular-nums">
-          Today, {formatCourtDay(today)} ·{" "}
-          {total === 1 ? "1 waiting" : `${total} waiting`} across{" "}
+          Today, {formatCourtDay(today)} · {total === 1 ? "1 waiting" : `${total} waiting`} across{" "}
           {items.length} queues
         </p>
       </header>
 
       <section
-        aria-label="Today's actions"
+        aria-label={t("todaysActionsScreen_todaysActionsArialabel")}
         className="flex min-w-0 flex-col gap-4 rounded-xl border border-hairline bg-card shadow-raised p-6"
       >
         <ItemGroup className="gap-3">
@@ -75,28 +70,25 @@ export function TodaysActionsScreen() {
  * `TodaysScheduleScreen`, whose flat list below the hearings block is this same row.
  */
 export function CourtActionRow({ item }: { item: CourtNavItem }) {
+  const t = useTranslations();
   const count = item.count ?? 0;
   return (
     <Item asChild variant="muted" className="px-4 py-3">
       <Link href={item.href!}>
         <ItemContent>
-          <ItemTitle className="text-body font-medium">
-            {item.label}
-          </ItemTitle>
+          <ItemTitle className="text-body font-medium">{item.label}</ItemTitle>
         </ItemContent>
         <ItemActions className="gap-3">
           {count > 0 ? (
             <span className="flex items-baseline gap-1.5">
-              <span className="text-title-s font-semibold tabular-nums">
-                {count}
-              </span>
+              <span className="text-title-s font-semibold tabular-nums">{count}</span>
               <span className="text-caption text-muted-foreground">
-                waiting
+                {t("todaysActionsScreen_waiting")}
               </span>
             </span>
           ) : (
             <span className="text-caption text-muted-foreground">
-              Nothing waiting
+              {t("todaysActionsScreen_nothingWaiting")}
             </span>
           )}
           <ChevronRightIcon aria-hidden className="size-4 text-muted-foreground" />

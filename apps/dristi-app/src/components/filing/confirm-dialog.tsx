@@ -14,6 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * "Are you sure?" before a risky act. It is a question, not an outcome
@@ -29,7 +31,7 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Yes, remove",
+  confirmLabel = "filingConfirmDialog_yesRemove",
   cancelLabel = "Cancel",
   destructive = true,
   icon,
@@ -48,6 +50,7 @@ export function ConfirmDialog({
   note?: React.ReactNode;
   onConfirm: () => void;
 }) {
+  const t = useTranslations();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <ChromeAlertDialogContent>
@@ -64,7 +67,7 @@ export function ConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm} variant={destructive ? "destructive" : "default"}>
-            {confirmLabel}
+            {translateText(t, confirmLabel)}
           </AlertDialogAction>
         </AlertDialogFooter>
       </ChromeAlertDialogContent>

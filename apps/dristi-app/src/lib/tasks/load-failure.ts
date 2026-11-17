@@ -10,9 +10,9 @@ export type LoadFailure = {
   notConnected: boolean;
 };
 
-export function loadFailure(error: unknown): LoadFailure {
+export function loadFailure(error: unknown, fallback: string): LoadFailure {
   return {
-    message: error instanceof Error ? error.message : "Could not load tasks",
+    message: error instanceof Error ? error.message : fallback,
     notConnected: isNotIntegratedError(error),
   };
 }

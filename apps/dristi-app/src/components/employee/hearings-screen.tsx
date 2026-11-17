@@ -2,17 +2,9 @@
 
 import { useCourt } from "@/components/court/court-provider";
 import * as React from "react";
-import {
-  CalendarX2Icon,
-  SearchXIcon,
-  VideoIcon,
-} from "lucide-react";
+import { CalendarX2Icon, SearchXIcon, VideoIcon } from "lucide-react";
 
-import {
-  PILL_COUNT,
-  PILL_ITEM,
-  PILL_ROW,
-} from "@/components/chrome/pill-plate";
+import { PILL_COUNT, PILL_ITEM, PILL_ROW } from "@/components/chrome/pill-plate";
 import { CounselCell } from "@/components/employee/counsel-cell";
 import {
   CauseListBulkBar,
@@ -49,12 +41,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { CourtRole } from "@/lib/employee/content";
 import {
   seatDraftsOrders,
@@ -97,12 +84,8 @@ import {
 import { Identifier } from "@/components/chrome/identifier";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
 import { CourtFilters, CourtSortSelect } from "@/components/employee/court-filters";
-import {
-  caseSorts,
-  sortOptions,
-  sortRows,
-  type CourtSortSpec,
-} from "@/lib/employee/court-sort";
+import { caseSorts, sortOptions, sortRows, type CourtSortSpec } from "@/lib/employee/court-sort";
+import { useTranslations } from "next-intl";
 
 type HearingSort = "item" | "name" | "newest";
 
@@ -139,6 +122,7 @@ const HEARING_PILLS: { id: TodaysCauseStatus; label: string }[] = (
  * below them would be the box-in-box the layering model rules out (ui-craft §4).
  */
 export function HearingsScreen() {
+  const t = useTranslations();
   const { court } = useCourt();
   const today = useCourtToday();
   /* Which seat the court side is being worked from. It decides what the rows offer, not
@@ -201,18 +185,13 @@ export function HearingsScreen() {
   const postsNextHearing = useReaderPostsNextHearing();
   /* The Next hearing filter goes with its column: where the column is not offered, a
      choice made in another seat narrows nothing. */
-  const nextHearingColumn =
-    postsNextHearing && seatPostsNextHearing(seat, court) && !otherDay;
+  const nextHearingColumn = postsNextHearing && seatPostsNextHearing(seat, court) && !otherDay;
   /* Grouped by status, and within each group in the chosen order — the cause list's
      own sequence by default (`CLS-02`). Array sort is stable, so grouping the sorted
      rows keeps that order inside each group. */
   const rows = groupByStatus(
     sortRows(
-      filterHearings(
-        listed,
-        nextHearingColumn ? filters : { ...filters, nextHearing: [] },
-        facts,
-      ),
+      filterHearings(listed, nextHearingColumn ? filters : { ...filters, nextHearing: [] }, facts),
       HEARING_SORTS,
       sort,
     ),
@@ -225,9 +204,7 @@ export function HearingsScreen() {
   const tableColumns = shownColumns(columnState.columns).filter(
     (column) =>
       !otherDay ||
-      (column.id !== "action" &&
-        column.id !== "orders" &&
-        column.id !== "nextHearing"),
+      (column.id !== "action" && column.id !== "orders" && column.id !== "nextHearing"),
   );
   /* Bulk selection follows the roles this seat stands for (`CLS-06`, `CLS-09`): a
      hearing controller ends or passes over many listings; a next hearing setter, where
@@ -244,9 +221,7 @@ export function HearingsScreen() {
     text: seatDraftsOrders(seat, court),
   };
   const bulk = hasBulkActs(bulkRoles) && !otherDay;
-  const [bulkIds, setBulkIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [bulkIds, setBulkIds] = React.useState<ReadonlySet<string>>(() => new Set());
   const [bulkNotice, setBulkNotice] = React.useState("");
   const pendingOrders = usePendingOrders();
   const signing = useOrderSigning();
@@ -291,7 +266,9 @@ export function HearingsScreen() {
    */
   function startHearing(hearing: CourtHearing) {
     markHearingOngoing(hearing.id);
-    setLiveMessage(`Hearing started for ${causeTitle(hearing)}`);
+    setLiveMessage(
+      t("hearingsScreen_hearingStartedForCauseTitle", { causeTitle: causeTitle(hearing) }),
+    );
   }
 
   /*
@@ -320,12 +297,16 @@ export function HearingsScreen() {
 
   function endHearing(hearing: CourtHearing) {
     markHearingEnded(hearing.id);
-    setLiveMessage(`Hearing ended for ${causeTitle(hearing)}`);
+    setLiveMessage(
+      t("hearingsScreen_hearingEndedForCauseTitle", { causeTitle: causeTitle(hearing) }),
+    );
   }
 
   function passOverHearing(hearing: CourtHearing) {
     markHearingPassedOver(hearing.id);
-    setLiveMessage(`Hearing passed over for ${causeTitle(hearing)}`);
+    setLiveMessage(
+      t("hearingsScreen_hearingPassedOverForCauseTitle", { causeTitle: causeTitle(hearing) }),
+    );
   }
 
   /* What a bulk act takes: the ticked listings still in the filtered list. A tick hidden
@@ -370,8 +351,7 @@ export function HearingsScreen() {
   /* Read from `listed`, not from `rows`: a filter set to Scheduled drops the matter
      the bench has just called out of the filtered list, and the overlay reading it
      should not close because of that. */
-  const openHearing =
-    listed.find((hearing) => hearing.id === openHearingId) ?? null;
+  const openHearing = listed.find((hearing) => hearing.id === openHearingId) ?? null;
 
   /**
    * Change some of the filters. A patch, merged into the latest state: the Filters sheet
@@ -434,7 +414,11 @@ export function HearingsScreen() {
             <span aria-hidden className="mx-8 hidden h-18 w-px bg-hairline lg:block" />
             <div className="flex min-w-0 flex-col gap-2">
               <h1 className="text-title text-balance font-semibold">
-                {otherDay ? "Hearings" : <>Today&rsquo;s hearings</>}
+                {otherDay ? (
+                  t("hearingsScreen_hearings")
+                ) : (
+                  <>{t("hearingsScreen_todaysHearings")}</>
+                )}
               </h1>
               {/* On a desktop the big date already says the day, month and year; the
                   line repeats it only where the week strip stands in for it. */}
@@ -452,9 +436,7 @@ export function HearingsScreen() {
           day={activeDay}
           today={today}
           countFor={(cell) =>
-            cell === activeDay
-              ? listed.length
-              : causeListForDay(cell, today, session).length
+            cell === activeDay ? listed.length : causeListForDay(cell, today, session).length
           }
           onSelectDay={chooseDay}
         />
@@ -468,30 +450,28 @@ export function HearingsScreen() {
           searchRef={searchRef}
           leading={
             <StatusPills
-                label="Hearing status"
-                /* The pills are the quick form of the Status filter: one status, or All.
+              label={t("hearingsScreen_hearingStatus")}
+              /* The pills are the quick form of the Status filter: one status, or All.
                    Several statuses picked in the Filters panel light no pill. */
-                value={
-                  filters.statuses.length === 0
-                    ? "all"
-                    : filters.statuses.length === 1
-                      ? filters.statuses[0]
-                      : ""
-                }
-                onChange={(status) =>
-                  changeFilters({
-                    statuses:
-                      status === "all" ? [] : [status as TodaysCauseStatus],
-                  })
-                }
-                total={listed.length}
-                options={HEARING_PILLS.map((pill) => ({
-                  value: pill.id,
-                  label: pill.label,
-                  count: listed.filter((hearing) => hearing.status === pill.id)
-                    .length,
-                }))}
-              />
+              value={
+                filters.statuses.length === 0
+                  ? "all"
+                  : filters.statuses.length === 1
+                    ? filters.statuses[0]
+                    : ""
+              }
+              onChange={(status) =>
+                changeFilters({
+                  statuses: status === "all" ? [] : [status as TodaysCauseStatus],
+                })
+              }
+              total={listed.length}
+              options={HEARING_PILLS.map((pill) => ({
+                value: pill.id,
+                label: pill.label,
+                count: listed.filter((hearing) => hearing.status === pill.id).length,
+              }))}
+            />
           }
           filters={filters}
           advocates={advocatesOnList(listed)}
@@ -522,18 +502,10 @@ export function HearingsScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
-          <HearingsEmpty
-            day={activeDay}
-            isFiltered={isFiltered}
-            onClear={clearFilters}
-          />
+          <HearingsEmpty day={activeDay} isFiltered={isFiltered} onClear={clearFilters} />
         ) : (
           <div className="flex min-w-0 flex-col gap-4">
             {/* min-w-0 lets this flex item shrink below the table's content width, so a
@@ -575,9 +547,7 @@ export function HearingsScreen() {
                   onPassOver={passOverHearing}
                   postsNextHearing={postsNextHearing}
                   readOnly={otherDay}
-                  selection={
-                    bulk ? { selected: bulkIds, onToggle: toggleBulk } : undefined
-                  }
+                  selection={bulk ? { selected: bulkIds, onToggle: toggleBulk } : undefined}
                 />
               </div>
             </div>
@@ -677,6 +647,7 @@ function HearingsFilters({
   /** The sort and columns icons, at the row's far right. */
   end?: React.ReactNode;
 }) {
+  const t = useTranslations();
   /* The pills take a row of their own above the filters: sharing one, the last pill
      was clipped off the end at desktop width once there were five of them. */
   return (
@@ -685,77 +656,73 @@ function HearingsFilters({
       <CourtFilters
         searchRef={searchRef}
         search={{
-          label: "Search cases",
+          label: t("hearingsScreen_searchCases"),
           value: filters.query,
           onChange: (query) => onChange({ query }),
-          placeholder: "Case name or number",
+          placeholder: t("hearingsScreen_caseNameOrNumber"),
         }}
         fields={[]}
         /* Every one takes several values, as a multi-select dropdown (owner, 2026-10-15). */
         multi={[
           {
             id: "hearings-status",
-            label: "Status",
+            label: t("hearingsScreen_status"),
             values: filters.statuses,
-            placeholder: "All statuses",
+            placeholder: t("hearingsScreen_allStatuses"),
             options: CAUSE_LIST_STATUS_ORDER.map((status) => ({
               value: status,
               label: statusWord(status),
             })),
-            onApply: (values) =>
-              onChange({ statuses: values as HearingFilters["statuses"] }),
+            onApply: (values) => onChange({ statuses: values as HearingFilters["statuses"] }),
           },
           {
             id: "hearings-advocate",
-            label: "Advocate",
+            label: t("hearingsScreen_advocate"),
             values: filters.advocates,
             options: advocates.map((name) => ({ value: name, label: name })),
-            placeholder: "All advocates",
+            placeholder: t("hearingsScreen_allAdvocates"),
             onApply: (values) => onChange({ advocates: values }),
           },
           {
             id: "hearings-stage",
-            label: "Case stage",
+            label: t("hearingsScreen_caseStage"),
             values: filters.stages,
-            placeholder: "All stages",
+            placeholder: t("hearingsScreen_allStages"),
             options: COURT_CASE_STAGES.map((stage) => ({
               value: stage.id,
               label: stage.label,
             })),
-            onApply: (values) =>
-              onChange({ stages: values as HearingFilters["stages"] }),
+            onApply: (values) => onChange({ stages: values as HearingFilters["stages"] }),
           },
           {
             id: "hearings-purpose",
-            label: "Purpose",
+            label: t("hearingsScreen_purpose"),
             values: filters.purposes,
-            placeholder: "All purposes",
+            placeholder: t("hearingsScreen_allPurposes"),
             options: COURT_HEARING_PURPOSES.map((purpose) => ({
               value: purpose.id,
               label: purpose.label,
             })),
-            onApply: (values) =>
-              onChange({ purposes: values as HearingFilters["purposes"] }),
+            onApply: (values) => onChange({ purposes: values as HearingFilters["purposes"] }),
           },
           {
             id: "hearings-orders",
-            label: "Orders",
+            label: t("hearingsScreen_orders"),
             values: filters.orders,
-            placeholder: "All orders",
+            placeholder: t("hearingsScreen_allOrders"),
             options: LISTING_ORDER_MARKS.map((mark) => ({
               value: mark.id,
               label: mark.label,
             })),
-            onApply: (values) =>
-              onChange({ orders: values as HearingFilters["orders"] }),
+            onApply: (values) => onChange({ orders: values as HearingFilters["orders"] }),
           },
           ...(nextHearingColumn
             ? [
                 {
                   id: "hearings-next-hearing",
-                  label: "Next hearing",
+                  label: t("hearingsScreen_nextHearing"),
                   values: filters.nextHearing,
-                  placeholder: "Set or not",
+                  placeholder: t("hearingsScreen_setOrNot"),
                   options: NEXT_HEARING_MARKS.map((mark) => ({
                     value: mark.id,
                     label: mark.label,
@@ -789,16 +756,17 @@ function HearingsFilters({
  * court-level act; the disabled state keeps the promise honest.
  */
 function JoinVideoCourt() {
+  const t = useTranslations();
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button aria-disabled className="w-full shrink-0 sm:w-fit">
             <VideoIcon data-icon="inline-start" aria-hidden />
-            Join VC
+            {t("hearingsScreen_joinVc")}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Not available yet</TooltipContent>
+        <TooltipContent>{t("hearingsScreen_notAvailableYet")}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -820,29 +788,30 @@ function HearingsEmpty({
   isFiltered: boolean;
   onClear: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <CalendarX2Icon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <CalendarX2Icon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match these filters" : "Nothing listed"}
+          {isFiltered
+            ? t("hearingsScreen_noMattersMatchTheseFilters")
+            : t("hearingsScreen_nothingListed")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No matter on this day's list matches the filters or search you chose."
-            : `This court has no hearings listed for ${formatCourtDay(day)}.`}
+            ? t("hearingsScreen_noMatterOnThisDaysList")
+            : t("hearingsScreen_thisCourtHasNoHearingsListed", {
+                formatCourtDay: formatCourtDay(day),
+              })}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
+            {t("hearingsScreen_clearFilters")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -883,6 +852,7 @@ function HearingsItemList({
   /** Optional, and unsupplied: see the note where `openOrder` used to be. */
   onOpenOrder?: (hearing: CourtHearing) => void;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((hearing) => {
@@ -904,26 +874,20 @@ function HearingsItemList({
                   className="mr-2 self-center"
                   checked={selection.selected.has(hearing.id)}
                   onCheckedChange={() => selection.onToggle(hearing.id)}
-                  aria-label={`Select item ${hearing.item}, ${causeTitle(hearing)}`}
+                  aria-label={t("hearingsScreen_selectItemItemCauseTitle", {
+                    item: String(hearing.item),
+                    causeTitle: causeTitle(hearing),
+                  })}
                 />
               ) : null}
-              <span className="shrink-0 text-muted-foreground tabular-nums">
-                {hearing.item}.
-              </span>
-              <HearingCaseButton
-                hearing={hearing}
-                onOpen={onOpenCase}
-                className="min-h-0 w-fit"
-              />
+              <span className="shrink-0 text-muted-foreground tabular-nums">{hearing.item}.</span>
+              <HearingCaseButton hearing={hearing} onOpen={onOpenCase} className="min-h-0 w-fit" />
             </p>
-            <Badge
-              variant={courtHearingStatusVariant(hearing.status)}
-              className="w-fit"
-            >
+            <Badge variant={courtHearingStatusVariant(hearing.status)} className="w-fit">
               {courtHearingStatusLabel(hearing.status)}
             </Badge>
             <p className="text-caption text-muted-foreground">
-              <Identifier value={hearing.caseNumber} label="case number" /> ·{" "}
+              <Identifier value={hearing.caseNumber} label={t("hearingsScreen_caseNumber")} /> ·{" "}
               {courtHearingPurposeLabel(hearing.purpose)}
             </p>
             {/* Comfortable, not dense: on a phone the +N chip gets the full 40×40
@@ -969,6 +933,7 @@ function StatusPills({
   total: number;
   options: { value: string; label: string; count: number; hint?: string }[];
 }) {
+  const t = useTranslations();
   return (
     <TooltipProvider delayDuration={300}>
       <ToggleGroup
@@ -982,7 +947,7 @@ function StatusPills({
         aria-label={label}
         className={PILL_ROW}
       >
-        <Pill value="all" label="All" count={total} />
+        <Pill value="all" label={t("hearingsScreen_all")} count={total} />
         {options.map((option) => (
           <Pill
             key={option.value}

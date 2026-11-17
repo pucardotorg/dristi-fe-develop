@@ -14,11 +14,7 @@ import { EmployeeArea } from "@/components/employee/employee-area";
  * it. What the sign-in decides is *who the area runs as* — the name and the seat the rail
  * reports — and that is all it decides today.
  */
-export default function CourtLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function CourtLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <EmployeeArea>{children}</EmployeeArea>

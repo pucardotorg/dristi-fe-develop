@@ -57,6 +57,7 @@ import { zoneFor } from "@/lib/employee/document-zones";
 import { causeTitle } from "@/lib/employee/hearings";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * One registered complaint, as the magistrate reads it before deciding whether the case
@@ -86,12 +87,7 @@ export function CognizanceCaseScreen({ caseId }: { caseId: string }) {
        artifact the owner saw (owner, 2026-09-16). The case screen only ever arrives
        "next" — a vertical slide — so there is no sideways entrance to clip; the "back"
        slide plays on the queue it returns to, not here. */
-    <div
-      className={cn(
-        "flex min-h-0 min-w-0 flex-1 flex-col",
-        arrival && ARRIVAL[arrival],
-      )}
-    >
+    <div className={cn("flex min-h-0 min-w-0 flex-1 flex-col", arrival && ARRIVAL[arrival])}>
       <CaseBody key={matter.id} matter={matter} />
     </div>
   );
@@ -144,8 +140,7 @@ const DOC_PANEL_MIN = 320;
 const DOC_PANEL_DEFAULT = 384;
 const DOC_PANEL_STORE_KEY = "cognizance:doc-panel-width";
 
-const clampWidth = (value: number, min: number, max: number) =>
-  Math.max(min, Math.min(value, max));
+const clampWidth = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
 
 /** The widest the panel may grow — never so wide the reading cannot live beside it. */
 function docPanelMax(): number {
@@ -168,6 +163,7 @@ function PanelResizeHandle({
   onResize: (width: number) => void;
   onCommit: () => void;
 }) {
+  const t = useTranslations();
   const drag = React.useRef<{ x: number; w: number } | null>(null);
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -179,11 +175,7 @@ function PanelResizeHandle({
   const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current) return;
     onResize(
-      clampWidth(
-        drag.current.w + (drag.current.x - event.clientX),
-        DOC_PANEL_MIN,
-        docPanelMax(),
-      ),
+      clampWidth(drag.current.w + (drag.current.x - event.clientX), DOC_PANEL_MIN, docPanelMax()),
     );
   };
   const end = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -211,7 +203,7 @@ function PanelResizeHandle({
     <div
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize the documents panel"
+      aria-label={t("cognizanceCaseScreen_resizeTheDocumentsPanel")}
       aria-valuenow={Math.round(width)}
       aria-valuemin={DOC_PANEL_MIN}
       tabIndex={0}
@@ -233,15 +225,13 @@ function PanelResizeHandle({
 }
 
 function CaseBody({ matter }: { matter: CognizanceCase }) {
+  const t = useTranslations();
   /* The day is the reader's, not the server's — the whole chain is worked backwards from
      how long this complaint has waited, so the clock that matters is the one in the room
      (`use-court-today.ts`). */
   const today = useCourtToday();
   const chain = React.useMemo(() => chainFor(matter, today), [matter, today]);
-  const chunks = React.useMemo(
-    () => summaryChunksFor(matter, chain),
-    [matter, chain],
-  );
+  const chunks = React.useMemo(() => summaryChunksFor(matter, chain), [matter, chain]);
   const findings = React.useMemo(() => findingsFor(matter), [matter]);
   /* A cheque and a memo per cheque, then the notice (cheat sheet §5). */
   const { court: documentsCourt } = useCourt();
@@ -269,9 +259,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
   } | null>(null);
 
   const openField = (field: CognizanceField) => {
-    const doc = field.source
-      ? documents.find((entry) => entry.key === field.source)
-      : undefined;
+    const doc = field.source ? documents.find((entry) => entry.key === field.source) : undefined;
     if (!doc) return;
     /* A second click on the field that is already lit puts it out again — the mark is a
        toggle, not a one-way latch (owner, 2026-09-15). Clicking a different field moves the
@@ -297,10 +285,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
   }, []);
   const commitDocWidth = React.useCallback(() => {
     try {
-      window.localStorage.setItem(
-        DOC_PANEL_STORE_KEY,
-        String(Math.round(docWidthRef.current)),
-      );
+      window.localStorage.setItem(DOC_PANEL_STORE_KEY, String(Math.round(docWidthRef.current)));
     } catch {
       /* private mode, blocked storage — the width just does not persist. */
     }
@@ -327,9 +312,9 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
 
   const documentsHeader = (
     <div className="flex shrink-0 items-baseline justify-between gap-3 border-b border-hairline px-8 py-4">
-      <h2 className="text-body font-semibold">Documents</h2>
+      <h2 className="text-body font-semibold">{t("cognizanceCaseScreen_documents")}</h2>
       <span className="text-body-compact tabular-nums text-muted-foreground">
-        {documents.length} filed
+        {t("cognizanceCaseScreen_lengthFiled", { length: String(documents.length) })}
       </span>
     </div>
   );
@@ -359,9 +344,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
               caseTypeSplit ? "py-4" : "h-14",
             )}
           >
-            <h1 className="min-w-0 truncate font-semibold text-title-s">
-              {causeTitle(matter)}
-            </h1>
+            <h1 className="min-w-0 truncate font-semibold text-title-s">{causeTitle(matter)}</h1>
             {/* Each act opens the order it would draw up, with its items already
                 loaded — the PRD's own shape (§6): an act is never performed from here,
                 it is composed, read and sent. They were confirmation dialogs naming the
@@ -377,8 +360,9 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
               {caseTypeSplit ? null : (
                 <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
                   <a href={`/employee/cases/${matter.id}`} target="_blank" rel="noopener">
-                    View case
-                    <span className="sr-only"> (opens in a new tab)</span>
+                    {t.rich("cognizanceCaseScreen_viewCaseOpensInANew", {
+                      span: (chunks) => <span className="sr-only">{chunks}</span>,
+                    })}
                     <ExternalLinkIcon data-icon="inline-end" aria-hidden />
                   </a>
                 </Button>
@@ -436,7 +420,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
             {/* Touch, and every screen below `xl`: the documents flow at the foot of the one
                 page scroll rather than a docked pane — never a box within a box. */}
             <section
-              aria-label="Documents"
+              aria-label={t("cognizanceCaseScreen_documents")}
               className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-hairline bg-card shadow-raised xl:pointer-fine:hidden"
             >
               {documentsHeader}
@@ -450,7 +434,7 @@ function CaseBody({ matter }: { matter: CognizanceCase }) {
               (inline, so it can be dragged live), and only on `desktopPanel` so a touch
               tablet never reserves a track for a pane it does not show. */}
           <aside
-            aria-label="Documents"
+            aria-label={t("cognizanceCaseScreen_documents")}
             className="relative hidden min-h-0 shrink-0 flex-col border-l border-hairline bg-card xl:pointer-fine:flex"
             style={desktopPanel ? { width: docWidth } : undefined}
           >
@@ -489,10 +473,19 @@ function CaseSummaryPanel({
   /** Carry View case on the summary's own heading, off the decision bar. */
   viewCase?: boolean;
 }) {
+  const t = useTranslations();
   /* All three are registry identifiers, so all three take the identifier treatment. */
   const cells = [
-    { label: "Case number", value: matter.caseNumber, idLabel: "case number" },
-    { label: "Filing number", value: matter.filingNumber, idLabel: "filing number" },
+    {
+      label: t("cognizanceCaseScreen_caseNumber"),
+      value: matter.caseNumber,
+      idLabel: t("cognizanceCaseScreen_caseNumberIdLabel"),
+    },
+    {
+      label: t("cognizanceCaseScreen_filingNumber"),
+      value: matter.filingNumber,
+      idLabel: t("cognizanceCaseScreen_filingNumberIdLabel"),
+    },
     { label: "CNR", value: cnrFor(matter), idLabel: "CNR" },
   ];
   return (
@@ -505,7 +498,7 @@ function CaseSummaryPanel({
           id="case-summary"
           className={viewCase ? "text-body font-semibold text-foreground" : EYEBROW}
         >
-          Case summary
+          {t("cognizanceCaseScreen_caseSummary")}
         </h2>
         {/* The case's identity is what View case opens in full, so it rides here rather
             than among the acts on the bar — a plain tertiary button, still opening the
@@ -513,8 +506,9 @@ function CaseSummaryPanel({
         {viewCase ? (
           <Button asChild variant="ghost" className="-my-2.5">
             <a href={`/employee/cases/${matter.id}`} target="_blank" rel="noopener">
-              View case
-              <span className="sr-only"> (opens in a new tab)</span>
+              {t.rich("cognizanceCaseScreen_viewCaseOpensInANew", {
+                span: (chunks) => <span className="sr-only">{chunks}</span>,
+              })}
               <ExternalLinkIcon data-icon="inline-end" aria-hidden />
             </a>
           </Button>
@@ -627,6 +621,7 @@ function FieldRow({
   active: boolean;
   onOpen: (field: CognizanceField) => void;
 }) {
+  const t = useTranslations();
   const open = field.source ? () => onOpen(field) : undefined;
   return (
     // Register cases' synopsis `Fact`: the label above the value, no rule under it. It sits
@@ -634,10 +629,7 @@ function FieldRow({
     // alert wants the full width beneath it, and a sentence read at half-width wraps to a
     // ragged stack (owner, 2026-09-15).
     <DescriptionRow
-      className={cn(
-        "flex flex-col items-stretch gap-0 border-0 py-0",
-        wide && "@md:col-span-2",
-      )}
+      className={cn("flex flex-col items-stretch gap-0 border-0 py-0", wide && "@md:col-span-2")}
     >
       <div
         className={cn(
@@ -661,16 +653,14 @@ function FieldRow({
         </DescriptionTerm>
         <DescriptionDetails className="min-w-0 text-body-compact text-pretty">
           <span className="font-medium">{field.value}</span>
-          {field.note ? (
-            <span className="text-muted-foreground"> · {field.note}</span>
-          ) : null}
+          {field.note ? <span className="text-muted-foreground"> · {field.note}</span> : null}
         </DescriptionDetails>
         {open ? (
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label={`Show ${field.term} in the documents`}
+            aria-label={t("cognizanceCaseScreen_showTermInTheDocuments", { term: field.term })}
             className={cn(
               "absolute top-1 right-1 text-muted-foreground opacity-0 transition-opacity focus-visible:opacity-100 group-hover/field:opacity-100 [@media(hover:none)]:opacity-100",
               active && "opacity-100",
@@ -699,9 +689,7 @@ function FindingAlert({ finding }: { finding: CognizanceFinding }) {
   return (
     <Alert variant={look.variant}>
       <look.Icon aria-hidden />
-      <AlertTitle className="text-body-compact text-pretty">
-        {finding.statement}
-      </AlertTitle>
+      <AlertTitle className="text-body-compact text-pretty">{finding.statement}</AlertTitle>
       <AlertDescription className="text-body-compact text-pretty">
         {finding.consequence}
       </AlertDescription>
@@ -713,6 +701,7 @@ function FindingAlert({ finding }: { finding: CognizanceFinding }) {
 
 /** An id this queue does not hold — a stale link, a typed URL, a complaint decided. */
 function CaseMissing() {
+  const t = useTranslations();
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col p-6 md:p-8">
       <Empty className="border-0 p-0">
@@ -721,16 +710,15 @@ function CaseMissing() {
             <FileQuestionIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="font-semibold text-title-s">
-            This complaint is not waiting for cognizance
+            {t("cognizanceCaseScreen_thisComplaintIsNotWaitingFor")}
           </EmptyTitle>
           <EmptyDescription className="text-body">
-            A complaint opens from the list of those on the register waiting for
-            cognizance. This one is not on it.
+            {t("cognizanceCaseScreen_aComplaintOpensFromTheList")}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button asChild>
-            <Link href={COGNIZANCE_PATH}>Back to take cognizance</Link>
+            <Link href={COGNIZANCE_PATH}>{t("cognizanceCaseScreen_backToTakeCognizance")}</Link>
           </Button>
         </EmptyContent>
       </Empty>

@@ -3,18 +3,11 @@
 import * as React from "react";
 import { ChevronDownIcon, ExternalLinkIcon, HistoryIcon } from "lucide-react";
 
-import {
-  HistoryTypeFilter,
-  type TypeOption,
-} from "@/components/employee/order-case-history";
+import { HistoryTypeFilter, type TypeOption } from "@/components/employee/order-case-history";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Empty,
   EmptyDescription,
@@ -38,6 +31,8 @@ import type { CourtHearing } from "@/lib/employee/hearings";
 import { HISTORY_TYPES } from "@/lib/employee/order-case-history";
 import { FEATURE_NAME as NOTICE_PROCESS_STATUS } from "@/lib/cases/service";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 type OrderRow = Extract<HistoryRow, { kind: "order" }>;
 type ThreadRow = Extract<HistoryRow, { kind: "thread" }>;
@@ -94,16 +89,17 @@ export function CaseHistoryList({
   /** The type filter above the list. */
   filter?: boolean;
 }) {
+  const t = useTranslations();
 
   const typeOptions = React.useMemo<TypeOption[]>(() => {
     const present = new Set(rows.map((row) => row.type));
     return [
       ...HISTORY_TYPES.filter((type) => present.has(type.value)),
       ...(present.has("other")
-        ? [{ value: "other", label: "Other events" }]
+        ? [{ value: "other", label: t("employeeGroupedCaseHistory_otherEvents") }]
         : []),
     ];
-  }, [rows]);
+  }, [rows, t]);
   const [types, setTypes] = React.useState<string[]>([]);
   const [expanded, setExpanded] = React.useState<Set<string>>(() => new Set());
   const jumpTo = React.useRef<string | null>(null);
@@ -113,16 +109,12 @@ export function CaseHistoryList({
   /* Bring a line into view in the tab's own scroll — not `scrollIntoView`, which would
      move the sheet too. A third of the way down, so what came after it shows above. */
   const reveal = React.useCallback((id: string, focus: boolean) => {
-    const target = listRef.current?.querySelector<HTMLElement>(
-      `[data-row="${CSS.escape(id)}"]`,
-    );
+    const target = listRef.current?.querySelector<HTMLElement>(`[data-row="${CSS.escape(id)}"]`);
     const scroller = target?.closest<HTMLElement>('[data-slot="tabs-content"]');
     if (!target || !scroller) return;
-    const offset =
-      target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+    const offset = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
     scroller.scrollTop += offset - scroller.clientHeight / 3;
-    if (focus)
-      target.querySelector<HTMLElement>("[data-focus-target]")?.focus();
+    if (focus) target.querySelector<HTMLElement>("[data-focus-target]")?.focus();
   }, []);
 
   /* A press on a link to another line: after the list has re-rendered with it shown
@@ -138,8 +130,7 @@ export function CaseHistoryList({
     if (!row) return;
     /* The target may be filtered out; showing everything is the way to it. */
     if (types.length && !types.includes(row.type)) setTypes([]);
-    if (row.kind === "thread")
-      setExpanded((current) => new Set(current).add(id));
+    if (row.kind === "thread") setExpanded((current) => new Set(current).add(id));
     jumpTo.current = id;
     /* A re-render to run the jump even when nothing else changed. */
     setTick((tick) => tick + 1);
@@ -162,18 +153,17 @@ export function CaseHistoryList({
             <HistoryIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body-compact font-semibold tracking-normal">
-            No case history yet
+            {t("employeeGroupedCaseHistory_noCaseHistoryYet")}
           </EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            Events and orders on this case will appear here.
+            {t("employeeGroupedCaseHistory_eventsAndOrdersOnThisCase")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
   }
 
-  const shown =
-    types.length === 0 ? rows : rows.filter((row) => types.includes(row.type));
+  const shown = types.length === 0 ? rows : rows.filter((row) => types.includes(row.type));
 
   return (
     <section
@@ -182,24 +172,20 @@ export function CaseHistoryList({
       className="flex min-w-0 flex-col gap-4"
     >
       <h2 id="grouped-case-history" className="sr-only">
-        Case history
+        {t("employeeGroupedCaseHistory_caseHistory")}
       </h2>
       {filter ? (
-        <HistoryTypeFilter
-          options={typeOptions}
-          value={types}
-          onValueChange={setTypes}
-        />
+        <HistoryTypeFilter options={typeOptions} value={types} onValueChange={setTypes} />
       ) : null}
 
       {shown.length === 0 ? (
         <p className="text-body-compact text-muted-foreground">
-          Nothing of these types on this case.
+          {t("employeeGroupedCaseHistory_nothingOfTheseTypesOnThis")}
         </p>
       ) : (
         <Timeline
           className="text-body-compact"
-          aria-label="Case history, newest first"
+          aria-label={t("employeeGroupedCaseHistory_caseHistoryNewestFirst")}
         >
           {shown.map((row) => (
             <TimelineItem
@@ -213,9 +199,7 @@ export function CaseHistoryList({
                     : "past"
               }
               className="pb-0"
-              aria-current={
-                row.kind === "order" && row.last ? "true" : undefined
-              }
+              aria-current={row.kind === "order" && row.last ? "true" : undefined}
             >
               {/* Spacing inside the item, so the rail runs on to the next dot. */}
               <div className="pb-4 group-last/timeline-item:pb-0">
@@ -245,10 +229,7 @@ function Head({ on, children }: { on: string; children: React.ReactNode }) {
   return (
     <div className="flex min-w-0 items-baseline justify-between gap-4">
       <div className="min-w-0">{children}</div>
-      <time
-        dateTime={on}
-        className="shrink-0 tabular-nums text-muted-foreground"
-      >
+      <time dateTime={on} className="shrink-0 tabular-nums text-muted-foreground">
         {formatTimelineDate(on)}
       </time>
     </div>
@@ -256,6 +237,7 @@ function Head({ on, children }: { on: string; children: React.ReactNode }) {
 }
 
 function EventLine({ row }: { row: Extract<HistoryRow, { kind: "event" }> }) {
+  const t = useTranslations();
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <Head on={row.on}>
@@ -267,7 +249,7 @@ function EventLine({ row }: { row: Extract<HistoryRow, { kind: "event" }> }) {
             className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
             {row.label}
-            <span className="sr-only"> (opens in a new tab)</span>
+            <span className="sr-only"> {t("employeeGroupedCaseHistory_opensInANewTab")}</span>
           </a>
         ) : (
           <span>{row.label}</span>
@@ -283,20 +265,14 @@ function EventLine({ row }: { row: Extract<HistoryRow, { kind: "event" }> }) {
  * browser tab — and the process or application it started or decided. The last order sits
  * on a sunken well with its badge, as before.
  */
-function OrderLine({
-  row,
-  onGo,
-}: {
-  row: OrderRow;
-  onGo: (id: string) => void;
-}) {
+function OrderLine({ row, onGo }: { row: OrderRow; onGo: (id: string) => void }) {
+  const t = useTranslations();
   const summaryId = `${row.id}-summary`;
   return (
     <div
       className={cn(
         "flex min-w-0 flex-col gap-1",
-        row.last &&
-          "-my-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2",
+        row.last && "-my-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2",
       )}
     >
       <Head on={row.on}>
@@ -304,13 +280,13 @@ function OrderLine({
       </Head>
       {row.last ? (
         <Badge variant="info" className="mb-1">
-          Last order
+          {t("employeeGroupedCaseHistory_lastOrder")}
         </Badge>
       ) : null}
       <p id={summaryId}>{row.summary}</p>
       <div className="flex min-w-0 flex-wrap items-center gap-x-4">
         <NewTabLink href={row.href} focusTarget describedBy={summaryId}>
-          Open the order
+          {t("employeeGroupedCaseHistory_openTheOrder")}
         </NewTabLink>
         {row.affects.map((thread) => (
           <Button
@@ -321,7 +297,7 @@ function OrderLine({
             className="h-10 w-fit px-0 text-muted-foreground"
             onClick={() => onGo(thread.id)}
           >
-            Go to {thread.label}
+            {t("employeeGroupedCaseHistory_goToLabel", { label: thread.label })}
           </Button>
         ))}
       </div>
@@ -341,6 +317,7 @@ function NewTabLink({
   describedBy?: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <Button asChild variant="link" size="sm" className="h-10 w-fit px-0">
       <a
@@ -351,7 +328,7 @@ function NewTabLink({
         aria-describedby={describedBy}
       >
         {children}
-        <span className="sr-only"> (opens in a new tab)</span>
+        <span className="sr-only"> {t("employeeGroupedCaseHistory_opensInANewTab")}</span>
         <ExternalLinkIcon data-icon="inline-end" aria-hidden />
       </a>
     </Button>
@@ -377,6 +354,7 @@ function ThreadLine({
   onOpenChange: (open: boolean) => void;
   onGo: (id: string) => void;
 }) {
+  const t = useTranslations();
   const updatedOn = threadUpdatedOn(row);
   const count = row.steps.length;
   return (
@@ -406,40 +384,39 @@ function ThreadLine({
             {/* With one step, the day it began is the day on the right. */}
             {count > 1 ? (
               <>
-                started{" "}
-                <time dateTime={row.on} className="tabular-nums">
-                  {formatTimelineDate(row.on)}
-                </time>
-                {" · "}
+                {t.rich("employeeGroupedCaseHistory_startedFormatTimelineDate", {
+                  formatTimelineDate: formatTimelineDate(row.on),
+                  time: (chunks) => (
+                    <time dateTime={row.on} className="tabular-nums">
+                      {chunks}
+                    </time>
+                  ),
+                })}
               </>
             ) : null}
             <span className="tabular-nums">{count}</span>{" "}
-            {STEPS_PLURAL.select(count) === "one" ? "update" : "updates"}
+            {STEPS_PLURAL.select(count) === "one"
+              ? t("employeeGroupedCaseHistory_update")
+              : t("employeeGroupedCaseHistory_updates")}
           </span>
           <NewTabLink href={row.href}>
             {row.entity === "Process"
-              ? `Open in ${NOTICE_PROCESS_STATUS}`
-              : "Open the application"}
+              ? t("employeeGroupedCaseHistory_openInNoticeProcessStatus", { NOTICE_PROCESS_STATUS })
+              : t("employeeGroupedCaseHistory_openTheApplication")}
           </NewTabLink>
         </div>
         <CollapsibleContent>
           <ol
-            aria-label={`${row.label}, newest first`}
+            aria-label={t("employeeGroupedCaseHistory_labelNewestFirst", { label: row.label })}
             className="mt-2 flex flex-col gap-2 rounded-lg border border-hairline bg-surface-sunken px-3 py-2"
           >
             {row.steps.toReversed().map((step, index) => (
-              <li
-                key={index}
-                className="grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] gap-x-3"
-              >
-                <time
-                  dateTime={step.on}
-                  className="tabular-nums text-muted-foreground"
-                >
+              <li key={index} className="grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] gap-x-3">
+                <time dateTime={step.on} className="tabular-nums text-muted-foreground">
                   {formatTimelineDate(step.on)}
                 </time>
                 <span className="min-w-0">
-                  {step.label}
+                  {translateText(t, step.label)}
                   {step.orderId ? (
                     <>
                       {" · "}
@@ -448,7 +425,7 @@ function ThreadLine({
                         className="rounded-sm text-primary underline underline-offset-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                         onClick={() => onGo(step.orderId!)}
                       >
-                        See the order
+                        {t("employeeGroupedCaseHistory_seeTheOrder")}
                       </button>
                     </>
                   ) : null}

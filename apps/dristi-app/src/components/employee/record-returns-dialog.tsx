@@ -3,10 +3,7 @@
 import * as React from "react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  StagedOverlay,
-  useStagedFlow,
-} from "@/components/chrome/staged-overlay";
+import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
 import { Identifier } from "@/components/chrome/identifier";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,6 +34,8 @@ import {
 } from "@/lib/employee/sign-process";
 import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { OutcomeHeader } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** The covers being marked, then what was recorded — one scene, settling in place. */
 type Stage = "record" | "done";
@@ -145,6 +144,7 @@ function RecordReturnsBody({
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   const flow = useStagedFlow({ order: ORDER, scene: SCENE });
   const done = flow.stage === "done";
   const [tally, setTally] = React.useState({ served: 0, total: 0 });
@@ -153,9 +153,7 @@ function RecordReturnsBody({
   /* Captured on the first render: recording moves these rows off the list while the
      window is closing. */
   const [rows] = React.useState(given);
-  const [returnedOn, setReturnedOn] = React.useState<Date | undefined>(
-    () => new Date(),
-  );
+  const [returnedOn, setReturnedOn] = React.useState<Date | undefined>(() => new Date());
   const [marks, setMarks] = React.useState<Record<string, ReturnMark>>({});
   const guard = useDiscardGuard(!done && Object.keys(marks).length > 0, onClose);
 
@@ -166,8 +164,7 @@ function RecordReturnsBody({
   const left = rows.length - answered;
   const ready = left === 0 && returnedOn !== undefined;
   const cases = new Set(rows.map((process) => process.caseNumber)).size;
-  const subject =
-    rows.length === 1 ? "1 return" : `${rows.length} returns`;
+  const subject = rows.length === 1 ? t("recordReturnsDialog_1Return") : `${rows.length} returns`;
 
   function mark(id: string, next: ReturnMark) {
     setMarks((current) => ({ ...current, [id]: { ...current[id], ...next } }));
@@ -201,9 +198,7 @@ function RecordReturnsBody({
   }
 
   /* "Mark all delivered", in the covers' own word where they share one. */
-  const executed = rows.map(
-    (process) => processOutcomeWord(process, true) === "Executed",
-  );
+  const executed = rows.map((process) => processOutcomeWord(process, true) === "Executed");
   const allWord = executed.every(Boolean)
     ? "executed"
     : executed.some(Boolean)
@@ -235,7 +230,7 @@ function RecordReturnsBody({
       footer={
         done ? (
           <Button type="button" onClick={onClose}>
-            Done
+            {t("recordReturnsDialog_done")}
           </Button>
         ) : (
           <>
@@ -245,13 +240,13 @@ function RecordReturnsBody({
               className="mr-auto self-center text-body-compact text-muted-foreground tabular-nums"
               aria-live="polite"
             >
-              {left > 0 ? `${left} still to mark` : ""}
+              {left > 0 ? t("recordReturnsDialog_leftStillToMark", { left: String(left) }) : ""}
             </p>
             <Button type="button" variant="outline" onClick={guard.close}>
-              Back
+              {t("common_back")}
             </Button>
             <Button type="button" disabled={!ready} onClick={record}>
-              {ACT.confirm}
+              {translateText(t, ACT.confirm)}
             </Button>
           </>
         )
@@ -279,13 +274,13 @@ function RecordReturnsBody({
       ) : (
         <div className="flex w-full flex-col gap-6">
           <DialogDescription className="text-body text-muted-foreground">
-            Mark what each cover came back as. The date applies to all of them.
+            {t("recordReturnsDialog_markWhatEachCoverCameBack")}
           </DialogDescription>
 
           <div className="flex flex-wrap items-end justify-between gap-4">
             <ReturnedOnField value={returnedOn} onChange={setReturnedOn} />
             <Button type="button" variant="ghost" onClick={markAllServed}>
-              Mark all {allWord}
+              {t("recordReturnsDialog_markAllAllWord", { allWord })}
             </Button>
           </div>
 
@@ -319,16 +314,13 @@ export function ReturnedOnField({
   value: Date | undefined;
   onChange: (value: Date | undefined) => void;
 }) {
+  const t = useTranslations();
   const labelId = React.useId();
   return (
     <Field className="w-full sm:w-fit">
-      <FieldLabel id={labelId}>Returned on</FieldLabel>
+      <FieldLabel id={labelId}>{t("recordReturnsDialog_returnedOn")}</FieldLabel>
       <div role="group" aria-labelledby={labelId}>
-        <DatePicker
-          value={value}
-          onValueChange={onChange}
-          className="w-full sm:w-60"
-        />
+        <DatePicker value={value} onValueChange={onChange} className="w-full sm:w-60" />
       </div>
     </Field>
   );
@@ -351,14 +343,14 @@ export function ReturnRow({
   mark: ReturnMark | undefined;
   onMark: (next: ReturnMark) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const { court } = useCourt();
   const inline = courtProcessTypeInline(process.type);
   const reasonId = React.useId();
   const commentId = React.useId();
   const radioId = React.useId();
-  const value =
-    mark?.served === true ? "served" : mark?.served === false ? "unserved" : "";
+  const value = mark?.served === true ? "served" : mark?.served === false ? "unserved" : "";
 
   return (
     <li className="flex flex-col gap-3 border-b border-hairline py-4 last:border-b-0">
@@ -371,13 +363,11 @@ export function ReturnRow({
             </span>
             <Identifier
               value={process.caseNumber}
-              label="case number"
+              label={t("recordReturnsDialog_caseNumber")}
               copyable={false}
             />
           </p>
-          <p className="text-body-compact text-muted-foreground">
-            {causeTitle(process)}
-          </p>
+          <p className="text-body-compact text-muted-foreground">{causeTitle(process)}</p>
         </div>
         {/* Two answers, both visible, on the DS radio — the app's own yes/no
             (`YesNoField`, the bail dialog's), laid side by side. */}
@@ -387,7 +377,10 @@ export function ReturnRow({
             if (next === "served") onMark({ served: true, reason: undefined });
             if (next === "unserved") onMark({ served: false });
           }}
-          aria-label={`What the ${inline} in ${courtText(process.caseNumber)} came back as`}
+          aria-label={t("recordReturnsDialog_whatTheInlineInCourtText", {
+            inline,
+            courtText: courtText(process.caseNumber),
+          })}
           className="flex flex-wrap gap-x-6 gap-y-1"
         >
           {(["served", "unserved"] as const).map((option) => (
@@ -403,15 +396,13 @@ export function ReturnRow({
 
       {mark?.served === false ? (
         <Field>
-          <FieldLabel htmlFor={reasonId}>Reason</FieldLabel>
+          <FieldLabel htmlFor={reasonId}>{t("recordReturnsDialog_reason")}</FieldLabel>
           <Select
             value={mark.reason ?? ""}
-            onValueChange={(reason) =>
-              onMark({ reason: reason as NonServiceReason })
-            }
+            onValueChange={(reason) => onMark({ reason: reason as NonServiceReason })}
           >
             <SelectTrigger id={reasonId} className="w-full sm:w-72">
-              <SelectValue placeholder="Choose a reason" />
+              <SelectValue placeholder={t("recordReturnsDialog_chooseAReason")} />
             </SelectTrigger>
             <SelectContent>
               {nonServiceReasonsFor(court).map((reason) => (
@@ -428,8 +419,11 @@ export function ReturnRow({
         <>
           <Field>
             <FieldLabel htmlFor={commentId}>
-              Comment
-              <span className="font-normal text-muted-foreground"> (optional)</span>
+              {t.rich("recordReturnsDialog_commentOptional", {
+                span: (chunks) => (
+                  <span className="font-normal text-muted-foreground">{chunks}</span>
+                ),
+              })}
             </FieldLabel>
             <Textarea
               id={commentId}
@@ -439,7 +433,7 @@ export function ReturnRow({
             />
           </Field>
           <UploadedDocField
-            label="Supporting file"
+            label={t("recordReturnsDialog_supportingFile")}
             file={mark.file ?? null}
             onFileChange={(file) => onMark({ file })}
           />

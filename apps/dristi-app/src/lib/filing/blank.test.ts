@@ -82,8 +82,18 @@ describe("migrateDraft — drafts written by another branch", () => {
 
   it("survives a draft missing whole blocks", () => {
     const gutted = createBlankDraft("draft-gutted");
-    for (const key of ["intake", "complainants", "accused", "cheques", "notices",
-      "jurisdiction", "witnesses", "documents", "sign", "dismissed"]) {
+    for (const key of [
+      "intake",
+      "complainants",
+      "accused",
+      "cheques",
+      "notices",
+      "jurisdiction",
+      "witnesses",
+      "documents",
+      "sign",
+      "dismissed",
+    ]) {
       delete (gutted as unknown as Record<string, unknown>)[key];
     }
     const draft = migrateDraft(gutted);
@@ -241,7 +251,13 @@ describe("draftProgress — only what the person has done", () => {
  * older draft's notice uploads move to notice groups without losing a file.
  */
 describe("migrateDraft — notice documents counted apart from cheques", () => {
-  const file = (id: string) => ({ id, name: `${id}.pdf`, size: 1, type: "application/pdf", ext: "PDF" });
+  const file = (id: string) => ({
+    id,
+    name: `${id}.pdf`,
+    size: 1,
+    type: "application/pdf",
+    ext: "PDF",
+  });
 
   /** Two cheques, each group holding the six old slots, the second keyed after a re-add. */
   function perChequeShaped(): FilingDraft {
@@ -261,7 +277,13 @@ describe("migrateDraft — notice documents counted apart from cheques", () => {
     draft.intake.cheques[0].slots[2].file = file("notice-1");
     draft.intake.cheques[1].slots[4].file = file("ad-2");
     draft.documents = [
-      { id: "case", title: "Case details", docs: [{ id: "d1", name: "Demand notice 1", required: true, intakeKey: "c1dn", file: null }] },
+      {
+        id: "case",
+        title: "Case details",
+        docs: [
+          { id: "d1", name: "Demand notice 1", required: true, intakeKey: "c1dn", file: null },
+        ],
+      },
     ] as FilingDraft["documents"];
     delete (draft.intake as { notices?: unknown }).notices;
     return draft;
@@ -274,7 +296,7 @@ describe("migrateDraft — notice documents counted apart from cheques", () => {
       [
         ["c1f", "c1m"],
         ["c2f-2", "c2m-2"],
-      ]
+      ],
     );
   });
 
@@ -285,7 +307,7 @@ describe("migrateDraft — notice documents counted apart from cheques", () => {
       [
         ["n1dn", "n1dp", "n1ad", "n1rp"],
         ["n2dn-2", "n2dp-2", "n2ad-2", "n2rp-2"],
-      ]
+      ],
     );
     assert.equal(draft.intake.notices[0].slots[0].file?.id, "notice-1");
     assert.equal(draft.intake.notices[1].slots[2].file?.id, "ad-2");
@@ -337,7 +359,10 @@ describe("syncIntakeCounts — form and documents stay in step", () => {
     syncIntakeCounts(draft);
     removeCaseRecord(draft, "cheque", 0);
     assert.equal(draft.cheques.length, 2);
-    assert.deepEqual(draft.intake.cheques.map((g) => g.n), [1, 2]);
+    assert.deepEqual(
+      draft.intake.cheques.map((g) => g.n),
+      [1, 2],
+    );
   });
 
   it("names the upload group a removal takes, so its files can be discarded first", () => {
@@ -392,9 +417,12 @@ describe("syncIntakeCounts — every party is a complainant", () => {
     removeCaseRecord(draft, "party", 0);
     assert.deepEqual(
       draft.complainants.map((c) => c.id),
-      [second.id, third.id]
+      [second.id, third.id],
     );
-    assert.deepEqual(draft.intake.parties.map((g) => g.n), [1, 2]);
+    assert.deepEqual(
+      draft.intake.parties.map((g) => g.n),
+      [1, 2],
+    );
     assert.deepEqual(draft.advocates[0].forComplainants, [1]);
   });
 

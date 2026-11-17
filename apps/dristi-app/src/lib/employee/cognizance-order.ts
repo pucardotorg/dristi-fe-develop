@@ -18,17 +18,8 @@
  * the order opens with.
  */
 
-import {
-  delayDays,
-  hasDelay,
-  type CognizanceAct,
-  type CognizanceCase,
-} from "./cognizance";
-import {
-  createItemBlock,
-  type ComposerContext,
-  type ItemBlock,
-} from "./order-composer";
+import { delayDays, hasDelay, type CognizanceAct, type CognizanceCase } from "./cognizance";
+import { createItemBlock, type ComposerContext, type ItemBlock } from "./order-composer";
 
 /**
  * How the condonation application is named in the order that accepts it — the head
@@ -117,10 +108,7 @@ export function cognizanceComposition(
 /**
  * The line under the title that says what this act does to the complaint.
  */
-export function cognizanceOrderOutcome(
-  matter: CognizanceCase,
-  act: CognizanceAct,
-): string {
+export function cognizanceOrderOutcome(matter: CognizanceCase, act: CognizanceAct): string {
   if (act === "dismiss") return "This complaint ends here.";
   if (act === "notice") {
     return hasDelay(matter)

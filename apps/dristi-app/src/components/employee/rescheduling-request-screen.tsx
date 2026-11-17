@@ -45,11 +45,7 @@ import {
   sortRows,
   type CourtSortSpec,
 } from "@/lib/employee/court-sort";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import {
   applyColumnFilters,
   columnFilterFields,
@@ -57,6 +53,7 @@ import {
   hasColumnFilters,
   type ColumnFilter,
 } from "@/lib/employee/court-column-filters";
+import { useTranslations } from "next-intl";
 
 const RESCHEDULING_COLUMN_FILTERS: ColumnFilter<ReschedulingRequest>[] = [
   {
@@ -130,32 +127,31 @@ const RESCHEDULING_SORTS: CourtSortSpec<ReschedulingRequest, ReschedulingSort>[]
  * do not write an order or move the listing.
  */
 export function ReschedulingRequestScreen() {
+  const t = useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used, so there is never a moment where what the bench has asked for and what
      the table is showing disagree. Every change resets to page one — the old Search
      button did that, and a keystroke that narrows the list to four rows must not leave
      the reader on page three of nothing. */
-  const [filters, setFilters] = React.useState<ReschedulingFilters>(
-    EMPTY_RESCHEDULING_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<ReschedulingFilters>(EMPTY_RESCHEDULING_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [decidedIds, setDecidedIds] = React.useState<ReadonlySet<string>>(() => new Set());
   const [open, setOpen] = React.useState<ReschedulingRequest | null>(null);
   const searchRef = React.useRef<HTMLInputElement>(null);
 
-  const remaining = RESCHEDULING_QUEUE.filter(
-    (request) => !decidedIds.has(request.id),
-  );
+  const remaining = RESCHEDULING_QUEUE.filter((request) => !decidedIds.has(request.id));
   const [columns, setColumns] = React.useState(() =>
     emptyColumnFilters(RESCHEDULING_COLUMN_FILTERS),
   );
   const [sort, setSort] = React.useState<ReschedulingSort>("hearing");
 
   const rows = sortRows(
-    applyColumnFilters(filterReschedulingRequests(remaining, filters), RESCHEDULING_COLUMN_FILTERS, columns),
+    applyColumnFilters(
+      filterReschedulingRequests(remaining, filters),
+      RESCHEDULING_COLUMN_FILTERS,
+      columns,
+    ),
     RESCHEDULING_SORTS,
     sort,
   );
@@ -189,12 +185,14 @@ export function ReschedulingRequestScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Rescheduling request
+          {t("reschedulingRequestScreen_reschedulingRequest")}
         </h1>
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 application is waiting for review."
-            : `${remaining.length} applications are waiting for review.`}
+            ? t("reschedulingRequestScreen_1ApplicationIsWaitingForReview")
+            : t("reschedulingRequestScreen_lengthApplicationsAreWaitingForReview", {
+                length: String(remaining.length),
+              })}
         </p>
       </header>
 
@@ -222,11 +220,7 @@ export function ReschedulingRequestScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <ReschedulingEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -237,10 +231,7 @@ export function ReschedulingRequestScreen() {
                 <ReschedulingRequestTable rows={pageRows} onOpen={setOpen} />
               </div>
               <div className="md:hidden">
-                <ReschedulingRequestItemList
-                  rows={pageRows}
-                  onOpen={setOpen}
-                />
+                <ReschedulingRequestItemList rows={pageRows} onOpen={setOpen} />
               </div>
             </div>
 
@@ -294,13 +285,14 @@ function ReschedulingFiltersRow({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("reschedulingRequestScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: t("reschedulingRequestScreen_caseNameNumberOrAdvocate"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -310,36 +302,29 @@ function ReschedulingFiltersRow({
   );
 }
 
-function ReschedulingEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function ReschedulingEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FolderCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FolderCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match this search" : "Nothing waiting"}
+          {isFiltered
+            ? t("reschedulingRequestScreen_noMattersMatchThisSearch")
+            : t("reschedulingRequestScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No rescheduling request matches the search you asked for."
-            : "Every rescheduling request before this court has been reviewed."}
+            ? t("reschedulingRequestScreen_noReschedulingRequestMatchesTheSearch")
+            : t("reschedulingRequestScreen_everyReschedulingRequestBeforeThisCourt")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
+            {t("reschedulingRequestScreen_clearSearch")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -362,6 +347,7 @@ function ReschedulingRequestItemList({
   rows: ReschedulingRequest[];
   onOpen: (request: ReschedulingRequest) => void;
 }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((request) => (
@@ -380,19 +366,20 @@ function ReschedulingRequestItemList({
             {...rowOpener}
             className={rowOpenerClass}
           >
-            <span className="sr-only">Review </span>
+            <span className="sr-only">{t("reschedulingRequestScreen_review")} </span>
             {causeTitle(request)}
           </button>
           <p className="text-caption text-muted-foreground">
-            <Identifier value={request.caseNumber} label="case number" />
-            {" · Applied "}
-            <span className="tabular-nums">
-              {formatRequestLongDate(request.appliedOn)}
-            </span>
-            {" · Listed "}
-            <span className="tabular-nums">
-              {formatListingDate(request.listedOn)}
-            </span>
+            <Identifier
+              value={request.caseNumber}
+              label={t("reschedulingRequestScreen_caseNumber")}
+            />
+            {t.rich("reschedulingRequestScreen_appliedFormatRequestLongDateListed", {
+              formatRequestLongDate: formatRequestLongDate(request.appliedOn),
+              formatListingDate: formatListingDate(request.listedOn),
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+              span2: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
         </li>
       ))}

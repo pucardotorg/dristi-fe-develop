@@ -10,10 +10,7 @@ import {
   type NextHearingEntry,
 } from "@/lib/employee/next-hearing-entry";
 
-export function useNextHearingEntry(): [
-  NextHearingEntry,
-  (entry: NextHearingEntry) => void,
-] {
+export function useNextHearingEntry(): [NextHearingEntry, (entry: NextHearingEntry) => void] {
   const entry = React.useSyncExternalStore(
     subscribeToNextHearingEntry,
     readNextHearingEntry,

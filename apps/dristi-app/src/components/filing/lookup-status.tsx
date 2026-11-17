@@ -43,7 +43,7 @@ export function LookupStatus({
       className={cn(
         "text-caption",
         empty ? "sr-only" : cn("flex items-start gap-1", ink),
-        className
+        className,
       )}
     >
       {empty ? null : (

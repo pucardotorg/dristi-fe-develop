@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * The quiet controls every case register shares: filters, search and the row
@@ -37,6 +38,7 @@ export function RegisterFilter({
   onChange: (values: string[]) => void;
   options: { value: string; label: string }[];
 }) {
+  const t = useTranslations();
   const summary =
     values.length === 0
       ? "All"
@@ -59,11 +61,7 @@ export function RegisterFilter({
             <span className="text-muted-foreground">{label}</span>
             <span className="truncate font-medium">{summary}</span>
           </span>
-          <ChevronDownIcon
-            aria-hidden
-            className="text-muted-foreground"
-            data-icon="inline-end"
-          />
+          <ChevronDownIcon aria-hidden className="text-muted-foreground" data-icon="inline-end" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -77,9 +75,7 @@ export function RegisterFilter({
             onSelect={(event) => event.preventDefault()}
             onCheckedChange={(checked) =>
               onChange(
-                checked
-                  ? [...values, item.value]
-                  : values.filter((value) => value !== item.value)
+                checked ? [...values, item.value] : values.filter((value) => value !== item.value),
               )
             }
           >
@@ -90,7 +86,7 @@ export function RegisterFilter({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => onChange([])}>
-              Clear {label.toLowerCase()}
+              {t("registerControls_clearToLowerCase", { toLowerCase: label.toLowerCase() })}
             </DropdownMenuItem>
           </>
         ) : null}
@@ -116,12 +112,7 @@ export function RegisterSearch({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "relative w-full md:pointer-fine:w-64 md:landscape:w-64",
-        className
-      )}
-    >
+    <div className={cn("relative w-full md:pointer-fine:w-64 md:landscape:w-64", className)}>
       <SearchIcon
         className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
         aria-hidden
@@ -148,6 +139,7 @@ export function RowViewButton({
   label: string;
   onClick: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Button
       type="button"
@@ -159,7 +151,10 @@ export function RowViewButton({
         onClick();
       }}
     >
-      View<span className="sr-only">: {label}</span>
+      {t.rich("registerControls_viewLabel", {
+        label,
+        span: (chunks) => <span className="sr-only">{chunks}</span>,
+      })}
     </Button>
   );
 }
@@ -198,5 +193,4 @@ export function useRecentRow() {
 }
 
 /** On the `tr`: an outline draws around the whole row without moving it. */
-export const RECENT_ROW =
-  "rounded-lg outline -outline-offset-1 outline-primary";
+export const RECENT_ROW = "rounded-lg outline -outline-offset-1 outline-primary";

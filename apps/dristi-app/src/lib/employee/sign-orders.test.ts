@@ -15,9 +15,7 @@ import {
   signSelectedOrders,
 } from "./sign-orders";
 
-const PENDING = SIGN_ORDER_QUEUE.filter(
-  (order) => order.status === "pending-signature",
-);
+const PENDING = SIGN_ORDER_QUEUE.filter((order) => order.status === "pending-signature");
 
 describe("SIGN_ORDER_QUEUE", () => {
   it("is long enough to page, and the rail's count is the pending rows only", () => {
@@ -45,9 +43,7 @@ describe("SIGN_ORDER_QUEUE", () => {
   });
 
   it("holds a row in both states the status filter offers", () => {
-    const statusesInQueue = new Set(
-      SIGN_ORDER_QUEUE.map((order) => order.status),
-    );
+    const statusesInQueue = new Set(SIGN_ORDER_QUEUE.map((order) => order.status));
     for (const status of SIGN_ORDER_STATUSES) {
       assert.ok(
         statusesInQueue.has(status.id),
@@ -57,9 +53,7 @@ describe("SIGN_ORDER_QUEUE", () => {
   });
 
   it("carries four separate orders in one case — the reason the title is the row's emphasis", () => {
-    const inOneCase = SIGN_ORDER_QUEUE.filter(
-      (order) => order.caseNumber === "ST/606/2026",
-    );
+    const inOneCase = SIGN_ORDER_QUEUE.filter((order) => order.caseNumber === "ST/606/2026");
     assert.equal(inOneCase.length, 4);
     assert.equal(new Set(inOneCase.map((order) => order.type)).size, 4);
   });
@@ -89,10 +83,7 @@ describe("SIGN_ORDER_QUEUE", () => {
 
 describe("filterSignOrders", () => {
   it("opens on the pending orders, as the reference's own filter does", () => {
-    const rows = filterSignOrders(
-      SIGN_ORDER_QUEUE,
-      DEFAULT_SIGN_ORDER_FILTERS,
-    );
+    const rows = filterSignOrders(SIGN_ORDER_QUEUE, DEFAULT_SIGN_ORDER_FILTERS);
     assert.equal(rows.length, PENDING.length);
     assert.ok(rows.every((row) => row.status === "pending-signature"));
   });
@@ -188,11 +179,7 @@ describe("filterSignOrders", () => {
 
 describe("signSelectedOrders", () => {
   it("signs the chosen pending orders and stamps the day", () => {
-    const next = signSelectedOrders(
-      SIGN_ORDER_QUEUE,
-      new Set(["so-611", "so-618"]),
-      "2026-09-03",
-    );
+    const next = signSelectedOrders(SIGN_ORDER_QUEUE, new Set(["so-611", "so-618"]), "2026-09-03");
     const signed = next.filter((order) => order.status === "signed");
     assert.equal(signed.length, 8);
     for (const id of ["so-611", "so-618"]) {
@@ -203,11 +190,7 @@ describe("signSelectedOrders", () => {
   });
 
   it("leaves everything it was not given alone", () => {
-    const next = signSelectedOrders(
-      SIGN_ORDER_QUEUE,
-      new Set(["so-611"]),
-      "2026-09-03",
-    );
+    const next = signSelectedOrders(SIGN_ORDER_QUEUE, new Set(["so-611"]), "2026-09-03");
     assert.equal(
       next.filter((order) => order.status === "pending-signature").length,
       PENDING.length - 1,
@@ -223,10 +206,7 @@ describe("signSelectedOrders", () => {
     );
     /* so-642 keeps the date it was actually signed on rather than today's. */
     assert.equal(next.find((order) => order.id === "so-642")?.signedOn, "2026-04-29");
-    assert.equal(
-      next.filter((order) => order.status === "signed").length,
-      6,
-    );
+    assert.equal(next.filter((order) => order.status === "signed").length, 6);
   });
 });
 
@@ -274,13 +254,8 @@ describe("buildSignOrderDocument", () => {
     );
     assert.equal(pending.signature, "Pending the signature of the magistrate.");
 
-    const signed = buildSignOrderDocument(
-      SIGN_ORDER_QUEUE.find((entry) => entry.id === "so-642")!,
-    );
-    assert.equal(
-      signed.signature,
-      "Signed by the magistrate, JMFC Court 1, on 29 April 2026.",
-    );
+    const signed = buildSignOrderDocument(SIGN_ORDER_QUEUE.find((entry) => entry.id === "so-642")!);
+    assert.equal(signed.signature, "Signed by the magistrate, JMFC Court 1, on 29 April 2026.");
   });
 
   it("opens every title with a sentence, and recites no sum it does not have", () => {

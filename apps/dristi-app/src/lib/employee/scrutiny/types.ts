@@ -120,16 +120,7 @@ export interface SectionDef {
 }
 
 export type GroupIcon =
-  | "user"
-  | "userSearch"
-  | "scale"
-  | "cheque"
-  | "memo"
-  | "mail"
-  | "pin"
-  | "doc"
-  | "pen"
-  | "wallet";
+  "user" | "userSearch" | "scale" | "cheque" | "memo" | "mail" | "pin" | "doc" | "pen" | "wallet";
 
 /* ── what the officer raises ─────────────────────────────────────────────── */
 
@@ -316,4 +307,3 @@ export interface ScrutinyLookups {
   fieldById: Record<string, FlatField>;
   docRow: Record<string, string>;
 }
-

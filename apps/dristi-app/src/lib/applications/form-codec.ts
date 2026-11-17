@@ -24,24 +24,18 @@ function encode(value: unknown): unknown {
   }
   if (Array.isArray(value)) return value.map(encode);
   if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, inner]) => [key, encode(inner)]),
-    );
+    return Object.fromEntries(Object.entries(value).map(([key, inner]) => [key, encode(inner)]));
   }
   return value;
 }
 
 function decode(value: unknown): unknown {
   if (Array.isArray(value)) {
-    return value
-      .filter((item) => !(item && typeof item === "object" && FILE in item))
-      .map(decode);
+    return value.filter((item) => !(item && typeof item === "object" && FILE in item)).map(decode);
   }
   if (value && typeof value === "object") {
     if (DATE in value) return new Date(String((value as Stored)[DATE]));
-    return Object.fromEntries(
-      Object.entries(value).map(([key, inner]) => [key, decode(inner)]),
-    );
+    return Object.fromEntries(Object.entries(value).map(([key, inner]) => [key, decode(inner)]));
   }
   return value;
 }

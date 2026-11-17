@@ -6,6 +6,7 @@ import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/tasks/selectors";
 import type { TaskCategory } from "@/lib/tasks/types";
 import { PILL_COUNT, PILL_ITEM, PILL_ROW } from "@/components/chrome/pill-plate";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useTranslations } from "next-intl";
 
 /**
  * The category filter: one row of pills, "Everything" first, then the PRD categories.
@@ -37,6 +38,7 @@ export function KindPills({
   loading?: boolean;
   onSelect: (kinds: TaskCategory[]) => void;
 }) {
+  const t = useTranslations();
   const total = counts ? CATEGORY_ORDER.reduce((sum, k) => sum + counts[k], 0) : null;
   return (
     <ToggleGroup
@@ -54,12 +56,12 @@ export function KindPills({
         // Pressing the chosen pill again leaves nothing chosen, which is Everything.
         onSelect(!value || value === "all" ? [] : [value as TaskCategory]);
       }}
-      aria-label="Categories"
+      aria-label={t("kindPills_categories")}
       /* The row scrolls sideways on a phone; the padding keeps a focus ring off the
          clipping edge and gives the widened touch target room. */
       className={PILL_ROW}
     >
-      <Pill value="all" label="Everything" count={total} loading={loading} />
+      <Pill value="all" label={t("kindPills_everything")} count={total} loading={loading} />
       {CATEGORY_ORDER.map((kind) => (
         <Pill
           key={kind}

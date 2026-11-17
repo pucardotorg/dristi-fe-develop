@@ -21,7 +21,12 @@ export function todayKey(date: Date): string {
  * bump, which is easy to forget or to land a moment after the data and leave a
  * browser stamped current on incomplete data.
  */
-export function seedStamp(seed: { version: number; day: string; people: number; cases: number }): string {
+export function seedStamp(seed: {
+  version: number;
+  day: string;
+  people: number;
+  cases: number;
+}): string {
   return `${seed.version}@${seed.day}@${seed.people}x${seed.cases}`;
 }
 

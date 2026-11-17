@@ -21,6 +21,7 @@ import { canView, canViewTask, categoryOf, isBinding, TERMINAL, viewOf } from ".
 import { compareUrgency, consequenceAt, daysUntil, isOverdue } from "./urgency";
 import type { Case, TaskCategory, Person, PersonId, Task, TaskView } from "./types";
 import { caseSearchKey } from "@/lib/court/localize";
+import type { MessageKey } from "@/i18n/messages";
 
 /** Past its date *and* still binding — the one rule the cell, the filter and the band share. */
 export function readsAsOverdue(task: Task, now: Date | string): boolean {
@@ -60,7 +61,12 @@ export const DEFAULT_FILTERS: Filters = {
  * handover, attribute 6; the Coda catalogue's Category column). `categoryOf` decides
  * which one a task counts under.
  */
-export const CATEGORY_ORDER = ["pay", "sign", "file", "others"] as const satisfies readonly TaskCategory[];
+export const CATEGORY_ORDER = [
+  "pay",
+  "sign",
+  "file",
+  "others",
+] as const satisfies readonly TaskCategory[];
 
 export const CATEGORY_LABELS: Record<TaskCategory, string> = {
   pay: "Pay",
@@ -69,11 +75,11 @@ export const CATEGORY_LABELS: Record<TaskCategory, string> = {
   others: "Others",
 };
 
-export const VIEW_LABELS: Record<TaskView, string> = {
-  "needs-action": "Needs action",
-  waiting: "Waiting on others",
-  completed: "Completed",
-  archived: "Archived",
+export const VIEW_LABELS: Record<TaskView, MessageKey> = {
+  "needs-action": "tasksSelectors_needsAction",
+  waiting: "tasksSelectors_waitingOnOthers",
+  completed: "tasksSelectors_completed",
+  archived: "tasksSelectors_archived",
 };
 
 export const DUE_LABELS: Record<DueFilter, string> = {
@@ -119,7 +125,9 @@ export function tasksInView(world: World, view: TaskView): Task[] {
 function matchesSearch(task: Task, kase: Case, q: string): boolean {
   const needle = caseSearchKey(q);
   if (!needle) return true;
-  const hay = [task.title, kase.parties, kase.stNumber, kase.cnr, kase.court].join(" ").toLowerCase();
+  const hay = [task.title, kase.parties, kase.stNumber, kase.cnr, kase.court]
+    .join(" ")
+    .toLowerCase();
   return needle.split(/\s+/).every((word) => hay.includes(word));
 }
 
@@ -295,7 +303,12 @@ export function summaryOf(world: World): { action: number; waiting: number; over
  * shows where the matches live even on the tabs not being looked at.
  */
 export function viewCounts(world: World, query = ""): Record<TaskView, number> {
-  const views: Record<TaskView, number> = { "needs-action": 0, waiting: 0, completed: 0, archived: 0 };
+  const views: Record<TaskView, number> = {
+    "needs-action": 0,
+    waiting: 0,
+    completed: 0,
+    archived: 0,
+  };
   for (const t of world.tasks) {
     const kase = caseOf(world, t);
     if (!kase || !canViewTask(world.user, t, kase)) continue;

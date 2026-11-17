@@ -44,12 +44,7 @@ export function applicationStatusLabel(status: ApplicationStatus): string {
 }
 
 export type StatusVariant =
-  | "warning"
-  | "info"
-  | "success"
-  | "destructive"
-  | "secondary"
-  | "outline";
+  "warning" | "info" | "success" | "destructive" | "secondary" | "outline";
 
 /**
  * Amber where the filer still owes a step, blue while it is with the court, green for
@@ -78,11 +73,7 @@ export function applicationStatusVariant(status: ApplicationStatus): StatusVaria
 }
 
 export function isFilerStep(status: ApplicationStatus): boolean {
-  return (
-    status === "draft" ||
-    status === "pending-signature" ||
-    status === "pending-payment"
-  );
+  return status === "draft" || status === "pending-signature" || status === "pending-payment";
 }
 
 export function isFiled(status: ApplicationStatus): boolean {
@@ -318,18 +309,13 @@ export class LifecycleError extends Error {}
 
 function expect(app: LifecycleApplication, ...statuses: ApplicationStatus[]) {
   if (!statuses.includes(app.status)) {
-    throw new LifecycleError(
-      `${applicationStatusLabel(app.status)} cannot take this step.`,
-    );
+    throw new LifecycleError(`${applicationStatusLabel(app.status)} cannot take this step.`);
   }
 }
 
 /* Filer side ------------------------------------------------------------------------- */
 
-export function proceedToSign(
-  app: LifecycleApplication,
-  on: string,
-): LifecycleApplication {
+export function proceedToSign(app: LifecycleApplication, on: string): LifecycleApplication {
   expect(app, "draft");
   return stamp(app, on, "Sent for signature", { status: "pending-signature" });
 }
@@ -414,8 +400,7 @@ export function setReviewDate(
 }
 
 export type OnboardChoice =
-  | { mode: "now" }
-  | { mode: "date"; decideOn: string; inviteObjections: boolean };
+  { mode: "now" } | { mode: "date"; decideOn: string; inviteObjections: boolean };
 
 /**
  * `ALC-04`, `ALC-07`–`ALC-12`, `ALC-21`: onboarding allots the application number at
@@ -457,9 +442,7 @@ export function onboard(
       decide,
       objectionsInvited: invited,
       objectionDueBy:
-        invited && choice.mode === "date"
-          ? objectionDeadline(choice.decideOn)
-          : undefined,
+        invited && choice.mode === "date" ? objectionDeadline(choice.decideOn) : undefined,
     },
   );
 }
@@ -513,9 +496,7 @@ export function moveDecisionDate(
   return stamp(app, on, `Decision moved to ${decideOn}`, {
     decide: { dueOn: decideOn, mode: "date" },
     objectionDueBy:
-      app.objectionDueBy && !app.objectionId
-        ? objectionDeadline(decideOn)
-        : app.objectionDueBy,
+      app.objectionDueBy && !app.objectionId ? objectionDeadline(decideOn) : app.objectionDueBy,
   });
 }
 
@@ -561,11 +542,7 @@ export function draftOrder(
   if (!canDraftOrder(seat)) throw new LifecycleError("This seat cannot draft orders.");
   if (order.kind === "dismiss") expect(app, "pending-review");
   else expect(app, "pending-decision");
-  if (
-    order.kind === "accept" &&
-    acceptanceNeedsHearingDate(app.type) &&
-    !order.newHearingOn
-  ) {
+  if (order.kind === "accept" && acceptanceNeedsHearingDate(app.type) && !order.newHearingOn) {
     throw new LifecycleError("Choose the new hearing date.");
   }
   return stamp(app, on, `Order drafted (${order.kind})`, {
@@ -573,10 +550,7 @@ export function draftOrder(
   });
 }
 
-export function discardOrder(
-  app: LifecycleApplication,
-  on: string,
-): LifecycleApplication {
+export function discardOrder(app: LifecycleApplication, on: string): LifecycleApplication {
   if (!app.pendingOrder) return app;
   return stamp(app, on, "Order draft discarded", { pendingOrder: undefined });
 }
@@ -628,11 +602,7 @@ export function signOrder(
 
 /** The other side holds an open File objection task (`ALC-12`). */
 export function objectionTaskOpen(app: LifecycleApplication): boolean {
-  return (
-    app.status === "pending-decision" &&
-    Boolean(app.objectionDueBy) &&
-    !app.objectionId
-  );
+  return app.status === "pending-decision" && Boolean(app.objectionDueBy) && !app.objectionId;
 }
 
 /* Visibility ------------------------------------------------------------------------- */

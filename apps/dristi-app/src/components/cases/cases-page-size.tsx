@@ -11,12 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  MAX_PAGE_SIZE,
-  PAGE_SIZES,
-  isCasesPageSize,
-  type CasesPageSize,
-} from "@/lib/cases/query";
+import { MAX_PAGE_SIZE, PAGE_SIZES, isCasesPageSize, type CasesPageSize } from "@/lib/cases/query";
+import { useTranslations } from "next-intl";
 
 const ALL = "all";
 const CUSTOM = "custom";
@@ -38,17 +34,12 @@ export function CasesPageSizeSelect({
   onChange: (pageSize: CasesPageSize) => void;
   id?: string;
 }) {
-  const isPreset =
-    typeof value === "number" && (PAGE_SIZES as readonly number[]).includes(value);
-  const [customOpen, setCustomOpen] = React.useState(
-    typeof value === "number" && !isPreset
-  );
-  const [draft, setDraft] = React.useState(
-    typeof value === "number" ? String(value) : ""
-  );
+  const t = useTranslations();
+  const isPreset = typeof value === "number" && (PAGE_SIZES as readonly number[]).includes(value);
+  const [customOpen, setCustomOpen] = React.useState(typeof value === "number" && !isPreset);
+  const [draft, setDraft] = React.useState(typeof value === "number" ? String(value) : "");
 
-  const selected =
-    value === ALL ? ALL : isPreset && !customOpen ? String(value) : CUSTOM;
+  const selected = value === ALL ? ALL : isPreset && !customOpen ? String(value) : CUSTOM;
 
   function commit() {
     const size = Number.parseInt(draft, 10);
@@ -58,11 +49,8 @@ export function CasesPageSizeSelect({
 
   return (
     <div className="flex items-center gap-2">
-      <Label
-        htmlFor={id}
-        className="text-body-compact font-normal text-muted-foreground"
-      >
-        Per page
+      <Label htmlFor={id} className="text-body-compact font-normal text-muted-foreground">
+        {t("casesPageSize_perPage")}
       </Label>
       <Select
         value={selected}
@@ -84,9 +72,7 @@ export function CasesPageSizeSelect({
       >
         <SelectTrigger id={id} className="text-body">
           <SelectValue>
-            {selected === CUSTOM && typeof value === "number" && !isPreset
-              ? value
-              : undefined}
+            {selected === CUSTOM && typeof value === "number" && !isPreset ? value : undefined}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
@@ -95,8 +81,8 @@ export function CasesPageSizeSelect({
               {size}
             </SelectItem>
           ))}
-          <SelectItem value={ALL}>All</SelectItem>
-          <SelectItem value={CUSTOM}>Custom…</SelectItem>
+          <SelectItem value={ALL}>{t("casesPageSize_all")}</SelectItem>
+          <SelectItem value={CUSTOM}>{t("casesPageSize_custom")}</SelectItem>
         </SelectContent>
       </Select>
       {customOpen ? (
@@ -106,7 +92,7 @@ export function CasesPageSizeSelect({
           min={1}
           max={MAX_PAGE_SIZE}
           value={draft}
-          aria-label="Rows per page"
+          aria-label={t("casesPageSize_rowsPerPage")}
           className="w-20 text-body tabular-nums"
           autoFocus
           onChange={(event) => setDraft(event.target.value)}

@@ -105,7 +105,13 @@ describe("chequeEvidenceInfo", () => {
   it("uses the inherited bank for a 'same as previous' cheque", () => {
     const cheques = [
       filledCheque(),
-      filledCheque({ sameAsPrev: "yes", chequeNumber: "456790", ifsc: "", bankName: "", bankBranch: "" }),
+      filledCheque({
+        sameAsPrev: "yes",
+        chequeNumber: "456790",
+        ifsc: "",
+        bankName: "",
+        bankBranch: "",
+      }),
     ];
     const info = chequeEvidenceInfo(cheques, 1);
     assert.equal(info.cheque_number, "456790");
@@ -216,12 +222,16 @@ describe("demandNoticeEvidenceInfo", () => {
   });
 
   it("maps the 'address incomplete' reason to the backend enum value (B3)", () => {
-    const info = demandNoticeEvidenceInfo(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "incomplete" }));
+    const info = demandNoticeEvidenceInfo(
+      filledNotice({ ...UNDELIVERED, nonDeliveryReason: "incomplete" }),
+    );
     assert.equal(info.non_delivery_reason, "ADDRESS_INCOMPLETE_OR_INCORRECT");
   });
 
   it("sends part_payment_amount as a number for a part payment", () => {
-    const info = demandNoticeEvidenceInfo(filledNotice({ paymentStatus: "part", partAmount: "2,500" }));
+    const info = demandNoticeEvidenceInfo(
+      filledNotice({ paymentStatus: "part", partAmount: "2,500" }),
+    );
     assert.equal(info.payment_status, "PART_PAYMENT");
     assert.equal(info.part_payment_amount, 2500);
   });
@@ -252,11 +262,17 @@ describe("demandNoticeReady", () => {
     assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, returnDate: "" })), false);
     assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "" })), false);
     // "address incomplete" now has a backend enum value (B3), so it no longer holds the notice back.
-    assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "incomplete" })), true);
+    assert.equal(
+      demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "incomplete" })),
+      true,
+    );
   });
 
   it("requires a valid amount for a part payment", () => {
     assert.equal(demandNoticeReady(filledNotice({ paymentStatus: "part", partAmount: "" })), false);
-    assert.equal(demandNoticeReady(filledNotice({ paymentStatus: "part", partAmount: "500" })), true);
+    assert.equal(
+      demandNoticeReady(filledNotice({ paymentStatus: "part", partAmount: "500" })),
+      true,
+    );
   });
 });

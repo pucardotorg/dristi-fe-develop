@@ -67,12 +67,7 @@ export type CaseMatter = {
 
 const LOCAL_DISTRICT = { city: "Sample District", district: "Sample District", state: "Kerala" };
 
-function address(
-  door: string,
-  building: string,
-  locality: string,
-  pin: string,
-): StructuredAddress {
+function address(door: string, building: string, locality: string, pin: string): StructuredAddress {
   return { door, building, locality, pin, ...LOCAL_DISTRICT };
 }
 
@@ -96,7 +91,10 @@ function demoMobile(name: string): string {
 }
 
 function demoEmail(name: string): string {
-  const handle = name.toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.|\.$/g, "");
+  const handle = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ".")
+    .replace(/^\.|\.$/g, "");
   return `${handle}@example.in`;
 }
 

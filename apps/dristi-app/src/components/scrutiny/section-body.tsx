@@ -38,6 +38,7 @@ import { DocumentsSection } from "@/components/filing/sections/documents-section
 import { JurisdictionSection } from "@/components/filing/sections/jurisdiction-section";
 import { UploadSection } from "@/components/filing/sections/upload-section";
 import { WitnessesSection } from "@/components/filing/sections/witnesses-section";
+import { useTranslations } from "next-intl";
 
 export const CORRECTABLE_SECTIONS: Partial<Record<StepId, React.ComponentType>> = {
   upload: UploadSection,
@@ -54,6 +55,7 @@ export const CORRECTABLE_SECTIONS: Partial<Record<StepId, React.ComponentType>> 
 };
 
 export function SectionBody({ step }: { step: StepId }) {
+  const t = useTranslations();
   const Section = CORRECTABLE_SECTIONS[step];
 
   if (!Section) {
@@ -64,11 +66,10 @@ export function SectionBody({ step }: { step: StepId }) {
             <FileTextIcon aria-hidden />
           </EmptyMedia>
           <EmptyTitle className="text-body font-semibold">
-            Nothing to correct here
+            {t("sectionBody_nothingToCorrectHere")}
           </EmptyTitle>
           <EmptyDescription className="text-body-compact">
-            Signing and fees are not part of a correction round. Pick a section from the
-            list, or open a defect from the queue.
+            {t("sectionBody_signingAndFeesAreNotPart")}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>

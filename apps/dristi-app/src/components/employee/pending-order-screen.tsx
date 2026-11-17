@@ -28,10 +28,7 @@ import {
   paperStatus,
 } from "@/components/employee/order-editor";
 import { useCourtRole } from "@/components/employee/use-court-role";
-import {
-  OrderMissing,
-  useHearingOrderDoor,
-} from "@/components/employee/order-screen";
+import { OrderMissing, useHearingOrderDoor } from "@/components/employee/order-screen";
 import { CausePostingContext } from "@/components/employee/cause-posting";
 import { useReaderPostsNextHearing } from "@/components/employee/use-next-hearing-entry";
 import { useOrderDraft } from "@/components/employee/use-order-draft";
@@ -49,10 +46,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { type LifecycleApplication } from "@/lib/applications/lifecycle";
-import {
-  useApplicationsReady,
-  useLifecycleApplications,
-} from "@/lib/applications/store";
+import { useApplicationsReady, useLifecycleApplications } from "@/lib/applications/store";
 import type { CaseRecord } from "@/lib/cases/types";
 import { localizeDeep } from "@/lib/court/localize";
 import { caseOf } from "@/lib/employee/application-tasks";
@@ -76,10 +70,7 @@ import {
   type Appearance,
   type OrderDraft,
 } from "@/lib/employee/order-draft";
-import {
-  markOrdersSigned,
-  returnOrderToDraft,
-} from "@/lib/employee/order-signing";
+import { markOrdersSigned, returnOrderToDraft } from "@/lib/employee/order-signing";
 import { missingMandatory } from "@/lib/employee/order-composer";
 import { orderTemplate } from "@/lib/employee/order-templates";
 import {
@@ -90,6 +81,7 @@ import {
 } from "@/lib/employee/pending-orders";
 import { ConfirmMark, IrreversibleNote, notify } from "@/components/feedback";
 import { PenLineIcon, PencilLineIcon, Undo2Icon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * One pending order, for the magistrate and the steno alike (owner, 2026-10-14): the
@@ -128,13 +120,7 @@ function HearingWorkflow({ hearing }: { hearing: CourtHearing }) {
   return <WorkflowDoorScreen door={useHearingOrderDoor(hearing)} />;
 }
 
-function CognizanceWorkflow({
-  matter,
-  act,
-}: {
-  matter: CognizanceCase;
-  act: CognizanceAct;
-}) {
+function CognizanceWorkflow({ matter, act }: { matter: CognizanceCase; act: CognizanceAct }) {
   return <WorkflowDoorScreen door={useCognizanceOrderDoor(matter, act)} />;
 }
 
@@ -151,13 +137,7 @@ function ApplicationWorkflow({
   const record = application ? caseOf(application) : undefined;
   if (!ready) return null;
   if (!application || !record) return <OrderMissing />;
-  return (
-    <ApplicationWorkflowDoor
-      application={application}
-      record={record}
-      orderKey={orderKey}
-    />
-  );
+  return <ApplicationWorkflowDoor application={application} record={record} orderKey={orderKey} />;
 }
 
 function ApplicationWorkflowDoor({
@@ -169,11 +149,7 @@ function ApplicationWorkflowDoor({
   record: CaseRecord;
   orderKey: string;
 }) {
-  return (
-    <WorkflowDoorScreen
-      door={useApplicationOrderDoor(application, record, { orderKey })}
-    />
-  );
+  return <WorkflowDoorScreen door={useApplicationOrderDoor(application, record, { orderKey })} />;
 }
 
 function WorkflowDoorScreen({ door }: { door: OrderDoor }) {
@@ -187,6 +163,7 @@ function WorkflowDoorScreen({ door }: { door: OrderDoor }) {
 }
 
 function WorkflowDoorBody({ door }: { door: OrderDoor }) {
+  const t = useTranslations();
   const router = useRouter();
   const courtText = useCourtText();
   const seat = useCourtRole();
@@ -196,14 +173,10 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
   const entry = pending[door.draftKey];
   const stage = entry ? pendingOrderStage(entry, signing) : "drafting";
   const appearances = door.hearing?.appearances;
-  const initial = React.useMemo(
-    () => orderInitialDraft(door.initial),
-    [door.initial],
-  );
+  const initial = React.useMemo(() => orderInitialDraft(door.initial), [door.initial]);
   const [stored, setDraft] = useOrderDraft(orderDraftKey(door.draftKey), initial);
   const draft = useCausePosting(door, stored);
-  const [openApplication, setOpenApplication] =
-    React.useState<ListingApplication | null>(null);
+  const [openApplication, setOpenApplication] = React.useState<ListingApplication | null>(null);
   const [ask, setAsk] = React.useState<"sign" | "complete" | null>(null);
   const listing = door.hearing?.applications ?? [];
   const complete = Boolean(entry?.workflowComplete);
@@ -213,13 +186,11 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
      filler's (`ROL-02`); moving the order back to draft the order drafter's (`SND-05`).
      Everyone else reads. */
   const filler = seatHolds(seat, court, "order-data-filler");
-  const canSign =
-    seatHolds(seat, court, "order-signer") && stage === "awaiting-signature";
+  const canSign = seatHolds(seat, court, "order-signer") && stage === "awaiting-signature";
   const canFill = filler && Boolean(entry) && !complete && stage !== "triggered";
   const canComplete = canFill;
   const canReopen = filler && complete && !signed;
-  const canMoveBack =
-    seatHolds(seat, court, "order-drafter") && stage === "awaiting-signature";
+  const canMoveBack = seatHolds(seat, court, "order-drafter") && stage === "awaiting-signature";
   const summary = triggerSummary(draft, appearances, listing);
 
   function askComplete() {
@@ -237,18 +208,21 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
       ).length > 0
     ) {
       notify.neutral(
-        `Application · ${door.applicationItem.label} has questions still to answer. Use its pencil to answer them.`,
+        t("pendingOrderScreen_applicationLabelHasQuestionsStillTo", {
+          label: door.applicationItem.label,
+        }),
         { icon: PencilLineIcon },
       );
       return;
     }
     const unfilled = draft.blocks.find(
-      (block) =>
-        block.kind === "item" && missingMandatory(block, door.context).length > 0,
+      (block) => block.kind === "item" && missingMandatory(block, door.context).length > 0,
     );
     if (unfilled && unfilled.kind === "item") {
       notify.neutral(
-        `${orderTemplate(unfilled.type).label} has mandatory details still to fill. Use its pencil to fill them.`,
+        t("pendingOrderScreen_labelHasMandatoryDetailsStillTo", {
+          label: orderTemplate(unfilled.type).label,
+        }),
         { icon: PencilLineIcon },
       );
       return;
@@ -267,7 +241,7 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
             frame={{
               courtLine: door.courtLine,
               subLine: door.subLine,
-              signatory: courtText("Judicial Magistrate of the First Class"),
+              signatory: courtText(t("pendingOrderScreen_judicialMagistrateOfTheFirstClass")),
             }}
             value={draft.body ?? { html: "", text: "" }}
             status={paperStatus(stage)}
@@ -286,9 +260,7 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
                 decision: draft.applications[application.id],
               }))}
               onOpenApplication={(id) =>
-                setOpenApplication(
-                  listing.find((entry) => entry.id === id) ?? null,
-                )
+                setOpenApplication(listing.find((entry) => entry.id === id) ?? null)
               }
               context={door.context}
               applicationItem={door.applicationItem}
@@ -316,14 +288,11 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
                 onClick={() => {
                   moveOrderBackToDraft(door.draftKey, signing);
                   returnOrderToDraft(door.draftKey);
-                  notify.neutral(
-                    "Back to draft. Send it for signing again when it is ready.",
-                    { icon: Undo2Icon },
-                  );
+                  notify.neutral(t("pendingOrderScreen_backToDraftSendItFor"), { icon: Undo2Icon });
                   if (entry) router.push(entry.orderHref);
                 }}
               >
-                Move back to draft
+                {t("pendingOrderScreen_moveBackToDraft")}
               </Button>
             ) : null}
             {canReopen ? (
@@ -331,28 +300,18 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
                 type="button"
                 variant="outline"
                 className="w-full sm:w-fit"
-                onClick={() =>
-                  setOrderWorkflowComplete(door.draftKey, false, signing)
-                }
+                onClick={() => setOrderWorkflowComplete(door.draftKey, false, signing)}
               >
-                Reopen order data
+                {t("pendingOrderScreen_reopenOrderData")}
               </Button>
             ) : null}
             {canSign ? (
-              <Button
-                type="button"
-                className="w-full sm:w-fit"
-                onClick={() => setAsk("sign")}
-              >
-                Sign order
+              <Button type="button" className="w-full sm:w-fit" onClick={() => setAsk("sign")}>
+                {t("pendingOrderScreen_signOrder")}
               </Button>
             ) : canComplete ? (
-              <Button
-                type="button"
-                className="w-full sm:w-fit"
-                onClick={askComplete}
-              >
-                Mark order data complete
+              <Button type="button" className="w-full sm:w-fit" onClick={askComplete}>
+                {t("pendingOrderScreen_markOrderDataComplete")}
               </Button>
             ) : null}
           </div>
@@ -370,29 +329,31 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
             <>
               <AlertDialogHeader>
                 <ConfirmMark icon={PenLineIcon} />
-                <AlertDialogTitle>Sign this order?</AlertDialogTitle>
+                <AlertDialogTitle>{t("pendingOrderScreen_signThisOrder")}</AlertDialogTitle>
                 <AlertDialogDescription>
                   <span className="block">
                     {complete
-                      ? "Your signature issues the order, and its order data is triggered at once: it has been completed."
-                      : "Your signature issues the order. Its order data is triggered once it has been completed."}
+                      ? t("pendingOrderScreen_yourSignatureIssuesTheOrderAnd")
+                      : t("pendingOrderScreen_yourSignatureIssuesTheOrderIts")}
                   </span>
-                  <IrreversibleNote>This cannot be reversed.</IrreversibleNote>
+                  <IrreversibleNote>
+                    {t("pendingOrderScreen_thisCannotBeReversed")}
+                  </IrreversibleNote>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Back</AlertDialogCancel>
+                <AlertDialogCancel>{t("common_back")}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
                     markOrdersSigned([door.draftKey]);
                     notify.success(
                       complete
-                        ? "Signed and issued. Its order data has been triggered."
-                        : "Signed and issued. Its order data is still to be completed.",
+                        ? t("pendingOrderScreen_signedAndIssuedItsOrderData")
+                        : t("pendingOrderScreen_signedAndIssuedItsOrderDataIs"),
                     );
                   }}
                 >
-                  Sign
+                  {t("pendingOrderScreen_sign")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </>
@@ -401,13 +362,13 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
               <AlertDialogHeader>
                 <AlertDialogTitle>
                   {signed
-                    ? "Complete and trigger this order data?"
-                    : "Mark this order data complete?"}
+                    ? t("pendingOrderScreen_completeAndTriggerThisOrderData")
+                    : t("pendingOrderScreen_markThisOrderDataComplete")}
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   {signed
-                    ? "The order is signed, so this is what goes out now. It can no longer change after."
-                    : "This is what goes out when the magistrate signs. It can be reopened until then."}
+                    ? t("pendingOrderScreen_theOrderIsSignedSoThis")
+                    : t("pendingOrderScreen_thisIsWhatGoesOutWhen")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <ul className="flex flex-col gap-2 text-body-compact">
@@ -419,19 +380,21 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
                 ))}
               </ul>
               <AlertDialogFooter>
-                <AlertDialogCancel>Back</AlertDialogCancel>
+                <AlertDialogCancel>{t("common_back")}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
                     setOrderWorkflowComplete(door.draftKey, true, signing);
                     notify.success(
                       signed
-                        ? "Order data complete, and triggered."
-                        : "Order data complete. It is triggered when the order is signed.",
+                        ? t("pendingOrderScreen_orderDataCompleteAndTriggered")
+                        : t("pendingOrderScreen_orderDataCompleteItIsTriggered"),
                     );
                     router.push("/employee/pending-orders");
                   }}
                 >
-                  {signed ? "Complete and trigger" : "Mark complete"}
+                  {signed
+                    ? t("pendingOrderScreen_completeAndTrigger")
+                    : t("pendingOrderScreen_markComplete")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </>
@@ -444,12 +407,8 @@ function WorkflowDoorBody({ door }: { door: OrderDoor }) {
           hearing={door.hearing.hearing}
           application={openApplication}
           onOpenChange={setOpenApplication}
-          onAllow={(application) =>
-            decideOnly(setDraft, application.id, "allowed")
-          }
-          onDismiss={(application) =>
-            decideOnly(setDraft, application.id, "dismissed")
-          }
+          onAllow={(application) => decideOnly(setDraft, application.id, "allowed")}
+          onDismiss={(application) => decideOnly(setDraft, application.id, "dismissed")}
           onReturnFocus={() =>
             window.document
               .getElementById(`order-application-${openApplication?.id ?? ""}`)
@@ -485,29 +444,25 @@ function triggerSummary(
   const lines: { label: string; value: string }[] = [];
   if (appearances) {
     const recital = attendanceRecital(appearances, draft.marks);
-    const unmarked = appearances.filter(
-      (appearance) => !draft.marks[appearance.id],
-    ).length;
+    const unmarked = appearances.filter((appearance) => !draft.marks[appearance.id]).length;
     lines.push({
       label: "Attendance",
       value:
         recital.map(recitalText).join(". ") +
-          (unmarked
-            ? `${recital.length ? ". " : ""}${unmarked} not marked`
-            : "") || "Nobody marked",
+          (unmarked ? `${recital.length ? ". " : ""}${unmarked} not marked` : "") ||
+        "Nobody marked",
     });
   }
   /* Only a hearing's order sets a next hearing (owner, 2026-10-22). */
-  if (appearances) lines.push({
-    label: "Next hearing",
-    /* "28 Oct 2026. Purpose: Evidence" — the line's own label is this one's. */
-    value:
-      nextListingRecital(draft)
-        .map((line) =>
-          line.label === "Next hearing" ? line.value : recitalText(line),
-        )
-        .join(". ") || "Not set",
-  });
+  if (appearances)
+    lines.push({
+      label: "Next hearing",
+      /* "28 Oct 2026. Purpose: Evidence" — the line's own label is this one's. */
+      value:
+        nextListingRecital(draft)
+          .map((line) => (line.label === "Next hearing" ? line.value : recitalText(line)))
+          .join(". ") || "Not set",
+    });
   /* The catalogue's items, each with what it sets moving. */
   for (const block of draft.blocks) {
     if (block.kind !== "item") continue;
@@ -521,11 +476,7 @@ function triggerSummary(
     const decision = draft.applications[application.id];
     lines.push({
       label: listingApplicationLabel(application),
-      value: decision
-        ? decision === "allowed"
-          ? "Allowed"
-          : "Dismissed"
-        : "Not decided",
+      value: decision ? (decision === "allowed" ? "Allowed" : "Dismissed") : "Not decided",
     });
   }
   return lines;

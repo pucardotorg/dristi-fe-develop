@@ -18,6 +18,7 @@ import { advShellHome } from "@/lib/advocate/content";
 import { JOIN_DEMO_CASE_ID } from "@/lib/cases/party-cases";
 import { fill } from "@/lib/join/content";
 import { pick, type Locale } from "@/lib/onboarding/content";
+import { useTranslations } from "next-intl";
 
 /**
  * The home of an advocate who has just registered (owner, 2026-10-14): nothing listed,
@@ -28,6 +29,7 @@ import { pick, type Locale } from "@/lib/onboarding/content";
  * A case joined here appears under Your cases at once, and opens.
  */
 export function AdvocateShellHome({ locale }: { locale: Locale }) {
+  const t = useTranslations();
   const router = useRouter();
   const { displayName, switchProfile } = useProfile();
   const name = displayName.replace(/^Adv\.\s*/, "");
@@ -41,7 +43,10 @@ export function AdvocateShellHome({ locale }: { locale: Locale }) {
           {fill(advShellHome.welcome, locale, { name })}
         </h1>
 
-        <section className="flex flex-col gap-5" aria-label={pick(advShellHome.casesHeading, locale)}>
+        <section
+          className="flex flex-col gap-5"
+          aria-label={pick(advShellHome.casesHeading, locale)}
+        >
           <h2 className="text-title-s font-semibold">{pick(advShellHome.casesHeading, locale)}</h2>
           {joined.length ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -50,7 +55,10 @@ export function AdvocateShellHome({ locale }: { locale: Locale }) {
                   <CardContent className="flex h-full flex-col gap-5">
                     <div className="flex flex-col items-start gap-3">
                       <Badge variant={entry.joined ? "success" : "warning"}>
-                        {pick(entry.joined ? advShellHome.statusJoined : advShellHome.statusUnpaid, locale)}
+                        {pick(
+                          entry.joined ? advShellHome.statusJoined : advShellHome.statusUnpaid,
+                          locale,
+                        )}
                       </Badge>
                       <p className="text-body font-semibold text-pretty">{entry.joinCase.title}</p>
                     </div>
@@ -60,7 +68,10 @@ export function AdvocateShellHome({ locale }: { locale: Locale }) {
                           {pick(advShellHome.caseNumberLabel, locale)}
                         </span>
                         <br />
-                        <Identifier value={entry.joinCase.caseNumber} label="case number" />
+                        <Identifier
+                          value={entry.joinCase.caseNumber}
+                          label={t("advocateShellHome_caseNumber")}
+                        />
                       </p>
                       <p>
                         <span className="font-medium text-foreground">
@@ -98,8 +109,12 @@ export function AdvocateShellHome({ locale }: { locale: Locale }) {
                   <ScaleIcon className="size-5" aria-hidden />
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
-                  <p className="text-body-compact font-semibold">{pick(advShellHome.joinTitle, locale)}</p>
-                  <p className="text-caption text-muted-foreground">{pick(advShellHome.joinBody, locale)}</p>
+                  <p className="text-body-compact font-semibold">
+                    {pick(advShellHome.joinTitle, locale)}
+                  </p>
+                  <p className="text-caption text-muted-foreground">
+                    {pick(advShellHome.joinBody, locale)}
+                  </p>
                 </div>
                 <Button className="shrink-0" onClick={() => setJoinOpen(true)}>
                   {pick(advShellHome.joinAction, locale)}
@@ -113,10 +128,18 @@ export function AdvocateShellHome({ locale }: { locale: Locale }) {
                   <FilePlus2Icon className="size-5" aria-hidden />
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
-                  <p className="text-body-compact font-semibold">{pick(advShellHome.fileTitle, locale)}</p>
-                  <p className="text-caption text-muted-foreground">{pick(advShellHome.fileBody, locale)}</p>
+                  <p className="text-body-compact font-semibold">
+                    {pick(advShellHome.fileTitle, locale)}
+                  </p>
+                  <p className="text-caption text-muted-foreground">
+                    {pick(advShellHome.fileBody, locale)}
+                  </p>
                 </div>
-                <Button variant="outline" className="shrink-0" onClick={() => router.push("/filings")}>
+                <Button
+                  variant="outline"
+                  className="shrink-0"
+                  onClick={() => router.push("/filings")}
+                >
                   {pick(advShellHome.fileAction, locale)}
                   <ArrowRightIcon data-icon="inline-end" aria-hidden />
                 </Button>

@@ -137,7 +137,7 @@ describe("each tab has its own order, and the default is the useful one", () => 
 
   it("a hearing that has passed is not called the next hearing", () => {
     const past = registeredRows(TODAY).filter(
-      (r) => r.urgencyAt === "9999-12-31" && r.info.lead !== "Awaiting listing"
+      (r) => r.urgencyAt === "9999-12-31" && r.info.lead !== "Awaiting listing",
     );
     assert.ok(past.length > 0, "fixtures should hold at least one past listing");
     for (const row of past) assert.equal(row.info.sub, "Last listed. No new date yet");
@@ -157,7 +157,7 @@ describe("each tab has its own order, and the default is the useful one", () => 
     assert.deepEqual(
       sorted.map((r) => r.id),
       ["b", "a", "c"],
-      "tightest deadline first; a draft with no clock sorts last"
+      "tightest deadline first; a draft with no clock sorts last",
     );
   });
 
@@ -225,7 +225,10 @@ describe("pendingSignatureRows and pendingPaymentRows — where a draft goes onc
 
   it("names who it is waiting on, from the filer's own point of view", () => {
     const draft = sentForSignature("d1");
-    const everyone = [...signatories(draft, null).complainants, ...signatories(draft, null).advocates];
+    const everyone = [
+      ...signatories(draft, null).complainants,
+      ...signatories(draft, null).advocates,
+    ];
     const you = everyone.find((s) => s.you);
     assert.ok(you, "a blank draft always resolves a 'you'");
 
@@ -278,7 +281,10 @@ describe("pendingSignatureRows and pendingPaymentRows — where a draft goes onc
 
   it("moves to Pending payment once everyone has signed, and drops off it once paid", () => {
     const draft = sentForSignature("d1");
-    const everyone = [...signatories(draft, null).complainants, ...signatories(draft, null).advocates];
+    const everyone = [
+      ...signatories(draft, null).complainants,
+      ...signatories(draft, null).advocates,
+    ];
     for (const s of everyone) {
       draft.sign.signed[s.id] = { at: "2026-08-20T10:05:00.000Z", with: "aadhaar" };
       draft.sign.oaths[s.id] = { at: "2026-08-20T10:06:00.000Z", video: null };
@@ -305,10 +311,13 @@ describe("columns carry information", () => {
       if (layout.columns.includes("court")) {
         assert.ok(
           rows.every((r) => r.court),
-          `${tab} shows a court column, so every row must have one`
+          `${tab} shows a court column, so every row must have one`,
         );
       } else {
-        assert.ok(rows.every((r) => !r.court), `${tab} hides court, so none should be set`);
+        assert.ok(
+          rows.every((r) => !r.court),
+          `${tab} hides court, so none should be set`,
+        );
       }
     }
   });
@@ -353,11 +362,11 @@ describe("filters and paging", () => {
   it("sorts both ways on the key it is given", () => {
     assert.deepEqual(
       applyQueueFilters(rows, { q: "", court: "", sort: asc }).map((r) => r.id),
-      ["a", "c", "b"]
+      ["a", "c", "b"],
     );
     assert.deepEqual(
       applyQueueFilters(rows, { q: "", court: "", sort: desc }).map((r) => r.id),
-      ["b", "c", "a"]
+      ["b", "c", "a"],
     );
   });
 
@@ -365,7 +374,7 @@ describe("filters and paging", () => {
     const out = applyQueueFilters(rows, { q: "menon", court: "JMFC-II", sort: asc });
     assert.deepEqual(
       out.map((r) => r.id),
-      ["b"]
+      ["b"],
     );
   });
 

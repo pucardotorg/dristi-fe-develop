@@ -98,10 +98,8 @@ export type CaseDocumentPatch = {
 export function documentPatch(meta: CaseDocumentMeta): CaseDocumentPatch {
   const patch: CaseDocumentPatch = {};
   if ("isDigital" in meta) patch.is_digital = meta.isDigital ?? null;
-  if ("displayName" in meta)
-    patch.display_name = meta.displayName?.trim() || null;
-  if ("caseParticipantId" in meta)
-    patch.case_participant_id = meta.caseParticipantId ?? null;
+  if ("displayName" in meta) patch.display_name = meta.displayName?.trim() || null;
+  if ("caseParticipantId" in meta) patch.case_participant_id = meta.caseParticipantId ?? null;
   if ("caseEvidenceId" in meta) patch.case_evidence_id = meta.caseEvidenceId ?? null;
   return patch;
 }
@@ -397,4 +395,15 @@ export function caseFilingErrorMessage(error: unknown): string {
   if (error.status === 404) return copy.draftGone;
   if (error.status === 413) return copy.fileTooLarge;
   return partyFieldMessage(error) ?? error.fieldError("file") ?? error.message;
+}
+
+/**
+ * True when reading a case failed only because the case has not been saved yet.
+ *
+ * Nothing is stored on the server until a step's first save, so the first read of a new
+ * filing answers 404. A step that reads the case treats this as "nothing on the case yet"
+ * rather than a failure (see `loadFromCase` in use-case-parties / use-case-advocates).
+ */
+export function isCaseNotYetSaved(error: unknown): boolean {
+  return isApiError(error) && error.status === 404;
 }

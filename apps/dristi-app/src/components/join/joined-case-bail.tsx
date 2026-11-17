@@ -5,6 +5,7 @@ import { useProfile } from "@/components/shell/profile";
 import type { ApplicationViewer } from "@/lib/cases/application-access";
 import type { CaseRecord } from "@/lib/cases/types";
 import type { JoinCase } from "@/lib/join/content";
+import { useTranslations } from "next-intl";
 
 /**
  * The joined case as the application form needs it. Nothing about a case
@@ -12,11 +13,7 @@ import type { JoinCase } from "@/lib/join/content";
  * what the join looked up: the cause title, the court, and the person who
  * just joined on the accused side.
  */
-function joinedCaseRecord(
-  joinCase: JoinCase,
-  accused: string,
-  advocate?: string
-): CaseRecord {
+function joinedCaseRecord(joinCase: JoinCase, accused: string, advocate?: string): CaseRecord {
   const filed = /^(\d{2})-(\d{2})-(\d{4})$/.exec(joinCase.filingDate);
   const filedOn = filed ? `${filed[3]}-${filed[2]}-${filed[1]}` : "";
   const complainantAdvocate =
@@ -64,6 +61,7 @@ export function JoinedCaseBail({
   /** Where the filing ends: the case just joined, when it has a page. */
   onViewCase?: () => void;
 }) {
+  const t = useTranslations();
   const { accountName } = useProfile();
   const advocate =
     as === "advocate"
@@ -90,7 +88,7 @@ export function JoinedCaseBail({
       filer={filer}
       inPlace={{
         onClose,
-        done: onViewCase ? { label: "View case", onClick: onViewCase } : undefined,
+        done: onViewCase ? { label: t("joinedCaseBail_viewCase"), onClick: onViewCase } : undefined,
       }}
     />
   );

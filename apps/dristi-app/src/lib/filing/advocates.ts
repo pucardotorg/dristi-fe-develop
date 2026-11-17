@@ -36,7 +36,7 @@ export async function saveAdvocate(
   caseId: string,
   advocateId: string,
   clientIds: string[],
-  saved: SavedAdvocate
+  saved: SavedAdvocate,
 ): Promise<AdvocateSaveResult> {
   const representations = { ...(saved.representations ?? {}) };
   try {
@@ -74,7 +74,7 @@ export async function saveAdvocate(
 export function advocateChanged(
   advocateId: string,
   clientIds: string[],
-  saved: SavedAdvocate
+  saved: SavedAdvocate,
 ): boolean {
   const held = Object.keys(saved.representations ?? {});
   return (
@@ -91,7 +91,7 @@ export function advocateChanged(
 export function advocateClientIds(
   advocate: Advocate,
   complainants: Complainant[],
-  participantIdOf: (c: Complainant) => string | undefined
+  participantIdOf: (c: Complainant) => string | undefined,
 ): Array<string | undefined> {
   const represented = representedIndices(complainants);
   return advocate.forComplainants

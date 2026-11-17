@@ -1,21 +1,13 @@
 "use client";
 
 import * as React from "react";
-import {
-  PencilIcon,
-  PlusIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { FRAMED_BODY, FRAMED_HEAD } from "@/components/employee/order-sections";
 import { OrderItemFields } from "@/components/employee/order-item-fields";
 import { QueueSearchField } from "@/components/employee/queue-search-field";
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -43,6 +35,7 @@ import {
   type OrderTemplateId,
 } from "@/lib/employee/order-templates";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * **Items** — what is in this order, then the catalogue to add from: the screen's own
@@ -75,12 +68,13 @@ export function ItemsCard({
   onEdit: (block: ItemBlock) => void;
   onRemove: (block: ItemBlock) => void;
 }) {
+  const t = useTranslations();
   return (
     <Card variant="raised" className="min-w-0 gap-0 p-0">
       <div className={FRAMED_HEAD}>
-        <h2 className="text-body-compact font-semibold">Items</h2>
+        <h2 className="text-body-compact font-semibold">{t("orderItems_items")}</h2>
         <span className="text-body-compact tabular-nums text-muted-foreground">
-          {items.length + (pinned ? 1 : 0)} in this order
+          {t("orderItems_valueInThisOrder", { value: String(items.length + (pinned ? 1 : 0)) })}
         </span>
       </div>
       <div className={cn(FRAMED_BODY, "flex min-w-0 flex-col gap-4")}>
@@ -88,14 +82,12 @@ export function ItemsCard({
           <ol className="flex min-w-0 flex-col divide-y divide-hairline rounded-xl border border-hairline">
             {pinned ? (
               <li className="flex min-h-12 min-w-0 items-center gap-2 py-1 pr-1 pl-3">
-                <span className="text-body-compact tabular-nums text-muted-foreground">
-                  1.
-                </span>
+                <span className="text-body-compact tabular-nums text-muted-foreground">1.</span>
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="text-body-compact">{pinned.label}</span>
                   {pinned.gaps > 0 ? (
                     <span className="text-caption text-warning-ink">
-                      {pinned.gaps} mandatory to fill
+                      {t("orderItems_gapsMandatoryToFill", { gaps: String(pinned.gaps) })}
                     </span>
                   ) : null}
                 </span>
@@ -104,7 +96,7 @@ export function ItemsCard({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    aria-label={`Edit ${pinned.label}`}
+                    aria-label={t("orderItems_editLabel", { label: pinned.label })}
                     onClick={pinned.onEdit}
                   >
                     <PencilIcon aria-hidden />
@@ -128,7 +120,7 @@ export function ItemsCard({
                     <span className="text-body-compact">{template.label}</span>
                     {gaps.length > 0 ? (
                       <span className="text-caption text-warning-ink">
-                        {gaps.length} mandatory to fill
+                        {t("orderItems_lengthMandatoryToFill", { length: String(gaps.length) })}
                       </span>
                     ) : null}
                   </span>
@@ -139,7 +131,7 @@ export function ItemsCard({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          aria-label={`Edit ${template.label}`}
+                          aria-label={t("orderItems_editLabel", { label: template.label })}
                           onClick={() => onEdit(block)}
                         >
                           <PencilIcon aria-hidden />
@@ -150,7 +142,7 @@ export function ItemsCard({
                           type="button"
                           variant="destructive-ghost"
                           size="icon"
-                          aria-label={`Remove ${template.label}`}
+                          aria-label={t("orderItems_removeLabel", { label: template.label })}
                           onClick={() => onRemove(block)}
                         >
                           <Trash2Icon aria-hidden />
@@ -165,11 +157,7 @@ export function ItemsCard({
         ) : null}
 
         {disabled ? null : (
-          <ItemSearch
-            purpose={purpose}
-            reasonFor={reasonFor}
-            onChoose={onChoose}
-          />
+          <ItemSearch purpose={purpose} reasonFor={reasonFor} onChoose={onChoose} />
         )}
       </div>
     </Card>
@@ -200,6 +188,7 @@ function ItemSearch({
   reasonFor: (template: OrderTemplate) => string | null;
   onChoose: (type: OrderTemplateId) => void;
 }) {
+  const t = useTranslations();
   const [query, setQuery] = React.useState("");
   /* Open the moment the field is entered, not only once something is typed (owner,
      2026-10-12): a drafter looks at what is available before knowing what to search. */
@@ -217,7 +206,7 @@ function ItemSearch({
   const groups = [
     {
       id: "likely",
-      label: "Likely at this hearing",
+      label: t("orderItems_likelyAtThisHearing"),
       rows: likely.filter(matches),
     },
     ...ORDER_GROUPS.map((group) => ({
@@ -238,8 +227,7 @@ function ItemSearch({
   React.useEffect(() => {
     const node = scrollerRef.current;
     if (!open || !node) return;
-    const measure = () =>
-      setMore(node.scrollHeight - node.scrollTop - node.clientHeight > 1);
+    const measure = () => setMore(node.scrollHeight - node.scrollTop - node.clientHeight > 1);
     const observer = new ResizeObserver(measure);
     observer.observe(node);
     measure();
@@ -254,8 +242,7 @@ function ItemSearch({
     if (!field) return;
     const below = window.innerHeight - field.getBoundingClientRect().bottom;
     const footer =
-      window.document.querySelector("footer.sticky")?.getBoundingClientRect()
-        .height ?? 0;
+      window.document.querySelector("footer.sticky")?.getBoundingClientRect().height ?? 0;
     if (below - footer >= 360) return;
     const headers = [...window.document.querySelectorAll("header")]
       .filter((node) => getComputedStyle(node).position === "sticky")
@@ -263,9 +250,7 @@ function ItemSearch({
     const top = Math.max(0, ...headers) + 16;
     window.scrollBy({
       top: field.getBoundingClientRect().top - top,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
     });
   }, [open]);
 
@@ -295,9 +280,7 @@ function ItemSearch({
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
     const stops = [
       inputRef.current,
-      ...(listRef.current?.querySelectorAll<HTMLButtonElement>(
-        "button:not([disabled])",
-      ) ?? []),
+      ...(listRef.current?.querySelectorAll<HTMLButtonElement>("button:not([disabled])") ?? []),
     ].filter((node): node is HTMLInputElement | HTMLButtonElement => !!node);
     const at = stops.indexOf(window.document.activeElement as never);
     if (at < 0) return;
@@ -308,10 +291,7 @@ function ItemSearch({
   }
 
   function inside(node: Node | null) {
-    return (
-      !!node &&
-      (!!anchorRef.current?.contains(node) || !!listRef.current?.contains(node))
-    );
+    return !!node && (!!anchorRef.current?.contains(node) || !!listRef.current?.contains(node));
   }
 
   return (
@@ -336,19 +316,18 @@ function ItemSearch({
             onBlur={(event) => {
               /* Tabbing out of the field and the panel closes it; moving between them
                  does not. A press outside is handled by the panel itself. */
-              if (event.relatedTarget && !inside(event.relatedTarget as Node))
-                close();
+              if (event.relatedTarget && !inside(event.relatedTarget as Node)) close();
             }}
           >
             <QueueSearchField
               ref={inputRef}
-              label="Add an item"
+              label={t("orderItems_addAnItem")}
               value={query}
               onChange={(value) => {
                 setQuery(value);
                 setOpen(true);
               }}
-              placeholder="Search the catalogue"
+              placeholder={t("orderItems_searchTheCatalogue")}
               className="w-full"
             />
           </div>
@@ -371,29 +350,26 @@ function ItemSearch({
             close();
           }}
           onBlur={(event) => {
-            if (event.relatedTarget && !inside(event.relatedTarget as Node))
-              close();
+            if (event.relatedTarget && !inside(event.relatedTarget as Node)) close();
           }}
           className="relative max-h-[min(24rem,var(--radix-popover-content-available-height))] w-(--radix-popover-trigger-width) min-w-72 gap-0 overflow-hidden p-0"
         >
           {/* What the panel holds, so it reads as the catalogue and not as more card. */}
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-hairline px-3 py-2 text-body-compact text-muted-foreground">
-            <span>{needle ? "Matching items" : "Order items"}</span>
+            <span>{needle ? t("orderItems_matchingItems") : t("orderItems_orderItems")}</span>
             <span className="tabular-nums">{count}</span>
           </div>
           <div
             ref={scrollerRef}
             onScroll={(event) => {
               const node = event.currentTarget;
-              setMore(
-                node.scrollHeight - node.scrollTop - node.clientHeight > 1,
-              );
+              setMore(node.scrollHeight - node.scrollTop - node.clientHeight > 1);
             }}
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1"
           >
             {groups.length === 0 ? (
               <p className="px-2 py-3 text-body-compact text-muted-foreground">
-                No item matches “{query.trim()}”.
+                {t("orderItems_noItemMatchesTrim", { trim: query.trim() })}
               </p>
             ) : (
               groups.map((group) => (
@@ -432,15 +408,9 @@ function ItemSearch({
       </Popover>
 
       {likely.length > 0 ? (
-        <section
-          aria-labelledby="catalogue-suggested"
-          className="flex min-w-0 flex-col gap-1"
-        >
-          <h3
-            id="catalogue-suggested"
-            className="text-body-compact text-muted-foreground"
-          >
-            Likely at this hearing
+        <section aria-labelledby="catalogue-suggested" className="flex min-w-0 flex-col gap-1">
+          <h3 id="catalogue-suggested" className="text-body-compact text-muted-foreground">
+            {t("orderItems_likelyAtThisHearing")}
           </h3>
           <ul className="-mx-2 flex min-w-0 flex-col">
             {likely.map((template) => (
@@ -478,18 +448,11 @@ function CatalogueRow({
       >
         <PlusIcon
           aria-hidden
-          className={cn(
-            "mt-0.5 size-4 shrink-0 text-muted-foreground",
-            reason && "invisible",
-          )}
+          className={cn("mt-0.5 size-4 shrink-0 text-muted-foreground", reason && "invisible")}
         />
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className={cn(reason && "text-muted-foreground")}>
-            {template.label}
-          </span>
-          {reason ? (
-            <span className="text-muted-foreground">{reason}</span>
-          ) : null}
+          <span className={cn(reason && "text-muted-foreground")}>{template.label}</span>
+          {reason ? <span className="text-muted-foreground">{reason}</span> : null}
         </span>
       </button>
     </li>
@@ -519,6 +482,7 @@ export function ItemDialog({
   /** What the dialog says about where the item goes. */
   description?: string;
 }) {
+  const t = useTranslations();
   /* What was last open, kept while the dialog animates out — otherwise its title and
      fields vanish a beat before it does. */
   const [shown, setShown] = React.useState(editing);
@@ -561,12 +525,9 @@ export function ItemDialog({
         {...guard.outsideProps}
       >
         <DialogHeader>
-          <DialogTitle className="text-title-s font-semibold">
-            {label}
-          </DialogTitle>
+          <DialogTitle className="text-title-s font-semibold">{label}</DialogTitle>
           <DialogDescription>
-            {description ??
-              "Recorded in this order's data. Nothing is written into the order's text."}
+            {description ?? t("orderItems_recordedInThisOrdersDataNothing")}
           </DialogDescription>
         </DialogHeader>
         {block ? (
@@ -577,12 +538,8 @@ export function ItemDialog({
               context={context}
               today={today}
               disabled={false}
-              onValue={(key, value) =>
-                onChange(setItemValue(block, key, value, context))
-              }
-              onRecipients={(recipients) =>
-                onChange(setItemRecipients(block, recipients, context))
-              }
+              onValue={(key, value) => onChange(setItemValue(block, key, value, context))}
+              onRecipients={(recipients) => onChange(setItemRecipients(block, recipients, context))}
             />
           </div>
         ) : null}
@@ -595,21 +552,17 @@ export function ItemDialog({
             className="w-full sm:w-auto"
             onClick={guard.close}
           >
-            Cancel
+            {t("common_cancel")}
           </Button>
-          <Button
-            type="button"
-            className="w-full sm:w-auto"
-            onClick={onConfirm}
-          >
-            {shown?.mode === "edit" ? "Save" : "Add to order"}
+          <Button type="button" className="w-full sm:w-auto" onClick={onConfirm}>
+            {shown?.mode === "edit" ? t("common_save") : t("orderItems_addToOrder")}
           </Button>
           {gaps.length > 0 ? (
             <Badge
               variant="warning"
               className="self-start tabular-nums sm:order-first sm:mr-auto sm:self-auto"
             >
-              {gaps.length} mandatory to fill
+              {t("orderItems_lengthMandatoryToFill", { length: String(gaps.length) })}
             </Badge>
           ) : null}
         </DialogFooter>
@@ -618,4 +571,3 @@ export function ItemDialog({
     </Dialog>
   );
 }
-

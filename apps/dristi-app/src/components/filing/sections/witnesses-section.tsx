@@ -29,8 +29,10 @@ import { TextField } from "@/components/filing/inputs";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { AddressBlockList, ContactList } from "@/components/filing/repeat-lists";
 import { SectionTabs } from "@/components/filing/section-tabs";
+import { useTranslations } from "next-intl";
 
 export function WitnessesSection() {
+  const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const { prev, next } = neighbours("witnesses");
   const { unsaved, retryUnsaved } = useCaseParties("witness");
@@ -83,14 +85,14 @@ export function WitnessesSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="Witnesses"
-          description="List the witnesses the complainant intends to rely on, and how the court can reach them."
+          title={t("witnessesSection_witnesses")}
+          description={t("witnessesSection_listTheWitnessesTheComplainantIntends")}
         />
 
         {unsaved.length > 0 ? (
           <UnsavedNotice
             labels={unsaved.map(
-              (x) => x.fullName.trim() || `Witness ${draft.witnesses.indexOf(x) + 1}`
+              (x) => x.fullName.trim() || `Witness ${draft.witnesses.indexOf(x) + 1}`,
             )}
             error={unsaved[0].syncError ?? ""}
             noun="details"
@@ -108,100 +110,102 @@ export function WitnessesSection() {
           activeId={w.id}
           onSelect={setActiveId}
           onRemove={askRemove}
-          addLabel="Add witness"
+          addLabel={t("witnessesSection_addWitness")}
           onAdd={addWitness}
         />
 
         {/* Which witness the fields below belong to, so a check can point at its field. */}
         <CorrectionInstance value={index}>
-        {/* Identity */}
-        <FormCard
-          title={`Witness ${index + 1}`}
-          description="Enough for the court to identify this witness."
-        >
-          {/*
+          {/* Identity */}
+          <FormCard
+            title={t("witnessesSection_witnessValue", { value: String(index + 1) })}
+            description={t("witnessesSection_enoughForTheCourtToIdentify")}
+          >
+            {/*
             Name and designation are one question with two ways of answering it, so the
             requirement sits on the group and neither field is marked required on its own
             — a `*` on both said "fill in both", which is the opposite of what the OR
             means. Age is a separate question and lives outside the group, where the rule
             between the two alternatives cannot be read as reaching it.
           */}
-          <FormField
-            asGroup
-            label="How is this witness identified?"
-            required
-            help="Either one is enough. Use the designation if you only know the office they hold."
-            helpPlacement="above"
-          >
-            <div className="flex flex-col gap-4">
-              <FormField label="Full name" name="fullName">
+            <FormField
+              asGroup
+              label={t("witnessesSection_howIsThisWitnessIdentified")}
+              required
+              help={t("witnessesSection_eitherOneIsEnoughUseThe")}
+              helpPlacement="above"
+            >
+              <div className="flex flex-col gap-4">
+                <FormField label={t("witnessesSection_fullName")} name="fullName">
+                  <TextField
+                    value={w.fullName}
+                    onChange={(v) => setField("fullName", v)}
+                    placeholder={t("witnessesSection_eGRameshNair")}
+                    autoComplete="off"
+                  />
+                </FormField>
+
+                <FieldSeparator>{t("witnessesSection_or")}</FieldSeparator>
+
+                <FormField label={t("witnessesSection_designation")} name="designation">
+                  <TextField
+                    value={w.designation}
+                    onChange={(v) => setField("designation", v)}
+                    placeholder={t("witnessesSection_eGBankManagerSbiSector")}
+                    autoComplete="off"
+                  />
+                </FormField>
+              </div>
+            </FormField>
+
+            <HalfWidth>
+              <FormField label={t("witnessesSection_age")} optional>
                 <TextField
-                  value={w.fullName}
-                  onChange={(v) => setField("fullName", v)}
-                  placeholder="e.g. Ramesh Nair"
-                  autoComplete="off"
+                  value={w.age}
+                  onChange={(v) => setField("age", v)}
+                  placeholder={t("witnessesSection_eG42")}
+                  inputMode="numeric"
                 />
               </FormField>
+            </HalfWidth>
 
-              <FieldSeparator>OR</FieldSeparator>
-
-              <FormField label="Designation" name="designation">
-                <TextField
-                  value={w.designation}
-                  onChange={(v) => setField("designation", v)}
-                  placeholder="e.g. Bank Manager, SBI Sector 17"
-                  autoComplete="off"
-                />
-              </FormField>
-            </div>
-          </FormField>
-
-          <HalfWidth>
-            <FormField label="Age" optional>
-              <TextField
-                value={w.age}
-                onChange={(v) => setField("age", v)}
-                placeholder="e.g. 42"
-                inputMode="numeric"
+            <FormField label={t("witnessesSection_whatWillThisWitnessProve")} optional>
+              <Textarea
+                value={w.prove}
+                onChange={(e) => setField("prove", e.target.value)}
+                placeholder={t("witnessesSection_eGConfirmsTheChequeWas")}
               />
             </FormField>
-          </HalfWidth>
+          </FormCard>
 
-          <FormField label="What will this witness prove?" optional>
-            <Textarea
-              value={w.prove}
-              onChange={(e) => setField("prove", e.target.value)}
-              placeholder="e.g. Confirms the cheque was handed over on 4 March"
+          {/* Contact */}
+          <FormCard
+            title={t("witnessesSection_witnessValueContactDetails", { value: String(index + 1) })}
+            description={t("witnessesSection_whereTheCourtCanReachThis")}
+          >
+            <ContactList
+              contacts={w.contacts}
+              onChange={(contacts) => setField("contacts", contacts)}
+              addLabel={t("witnessesSection_addMore")}
+              emailLabel={t("witnessesSection_emailId")}
+              mobilePlaceholder={t("witnessesSection_enterMobileNumber")}
+              emailPlaceholder={t("witnessesSection_exXyzGmailCom")}
             />
-          </FormField>
-        </FormCard>
+          </FormCard>
 
-        {/* Contact */}
-        <FormCard
-          title={`Witness ${index + 1} contact details`}
-          description="Where the court can reach this witness."
-        >
-          <ContactList
-            contacts={w.contacts}
-            onChange={(contacts) => setField("contacts", contacts)}
-            addLabel="Add more"
-            emailLabel="Email ID"
-            mobilePlaceholder="Enter mobile number"
-            emailPlaceholder="ex: xyz@gmail.com"
-          />
-        </FormCard>
-
-        {/* Service addresses */}
-        <FormCard title={`Witness ${index + 1} address details`}>
-          <SectionNotice variant="info">
-            The court tries every address listed here.
-          </SectionNotice>
-          <AddressBlockList
-            blocks={w.addresses}
-            onChange={(addresses) => setField("addresses", addresses)}
-            addLabel="Add address"
-          />
-        </FormCard>
+          {/* Service addresses */}
+          <FormCard
+            title={t("witnessesSection_witnessValueAddressDetails", { value: String(index + 1) })}
+          >
+            <SectionNotice variant="info">
+              {t("witnessesSection_theCourtTriesEveryAddressListed")}
+            </SectionNotice>
+            <AddressBlockList
+              blocks={w.addresses}
+              onChange={(addresses) => setField("addresses", addresses)}
+              addLabel={t("witnessesSection_addAddress")}
+            />
+          </FormCard>
         </CorrectionInstance>
       </FilingMain>
 
@@ -211,14 +215,16 @@ export function WitnessesSection() {
       />
 
       <ConfirmDialog
-        note="This cannot be undone."
+        note={t("witnessesSection_thisCannotBeUndone")}
         open={removeId !== null}
         onOpenChange={(open) => {
           if (!open) setRemoveId(null);
         }}
-        title={`Remove witness ${removeNumber}`}
-        description="Are you sure you want to delete this witness and all their details?"
-        confirmLabel="Yes, remove"
+        title={t("witnessesSection_removeWitnessRemoveNumber", {
+          removeNumber: String(removeNumber),
+        })}
+        description={t("witnessesSection_areYouSureYouWantTo")}
+        confirmLabel={t("witnessesSection_yesRemove")}
         onConfirm={confirmRemove}
       />
     </>

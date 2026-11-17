@@ -52,12 +52,12 @@ is connected. See [AGENTS.md](AGENTS.md) ("Data").
 
 4. **Open the app:**
 
-   | Area | URL | Who it is for |
-   |---|---|---|
-   | Home | http://localhost:3000/ | Entry point for both areas |
-   | Citizen sign-in | http://localhost:3000/citizen | Advocates, advocates' clerks, litigants, parties in person |
-   | Court sign-in | http://localhost:3000/employee/login | Magistrate, bench clerk, scrutiny officer, typist |
-   | Today's hearings | http://localhost:3000/employee/hearings | Where court staff land after signing in |
+   | Area             | URL                                     | Who it is for                                              |
+   | ---------------- | --------------------------------------- | ---------------------------------------------------------- |
+   | Home             | http://localhost:3000/                  | Entry point for both areas                                 |
+   | Citizen sign-in  | http://localhost:3000/citizen           | Advocates, advocates' clerks, litigants, parties in person |
+   | Court sign-in    | http://localhost:3000/employee/login    | Magistrate, bench clerk, scrutiny officer, typist          |
+   | Today's hearings | http://localhost:3000/employee/hearings | Where court staff land after signing in                    |
 
 ## Demo accounts
 
@@ -69,19 +69,19 @@ sign-in is always a demo; citizen demo numbers work only when sign-in uses the s
 not case-sensitive. The sign-in screen also has a button to fill in each one. Source:
 [apps/dristi-app/src/lib/employee/sign-in.ts](apps/dristi-app/src/lib/employee/sign-in.ts).
 
-| Role | Username | Court rooms |
-|---|---|---|
-| Magistrate | `michaelGeorgeJudge` | Court 1 |
-| Bench clerk | `uddipanBenchClerk` | Court 1 |
-| Scrutiny officer | `bijuScrutinyOfficer` | Courts 1–5 |
-| Typist | `sreelathaTypist` | Court 1 |
+| Role             | Username              | Court rooms |
+| ---------------- | --------------------- | ----------- |
+| Magistrate       | `michaelGeorgeJudge`  | Court 1     |
+| Bench clerk      | `uddipanBenchClerk`   | Court 1     |
+| Scrutiny officer | `bijuScrutinyOfficer` | Courts 1–5  |
+| Typist           | `sreelathaTypist`     | Court 1     |
 
 **Citizens:** sign in with a mobile number at `/citizen`. Any 6-digit OTP is accepted. Source:
 [apps/dristi-app/src/lib/sign-in/demo-accounts.ts](apps/dristi-app/src/lib/sign-in/demo-accounts.ts).
 
-| Mobile | Account |
-|---|---|
-| `8009460966` | Adv. Anjali Nair: an advocate who also holds a litigant profile |
+| Mobile       | Account                                                                 |
+| ------------ | ----------------------------------------------------------------------- |
+| `8009460966` | Adv. Anjali Nair: an advocate who also holds a litigant profile         |
 | `7007663437` | Rajan K. Nair: a litigant who can add an advocate profile from Settings |
 
 Any other number shows the unregistered-account state.
@@ -95,7 +95,24 @@ npm run dev               # Start the dev server on http://localhost:3000
 npm run build             # Production build of the Dristi App
 npm run start             # Serve the production build
 npm run lint              # ESLint
+npm run typecheck         # TypeScript, with Next's generated route types
+npm run format            # Format every file with Prettier
+npm run format:check      # Check formatting without changing files (CI runs this)
 npm run test:app          # Unit tests (node --test via tsx)
+```
+
+### Formatting on commit
+
+A pre-commit hook formats the files you stage with Prettier
+([simple-git-hooks](https://github.com/toplenkov/simple-git-hooks) runs
+[lint-staged](https://github.com/lint-staged/lint-staged)). `npm install` sets it up, so
+there is nothing extra to run after cloning.
+
+If you change the `simple-git-hooks` block in `package.json`, or the hook stops running,
+reinstall it:
+
+```bash
+npx simple-git-hooks
 ```
 
 ## Documentation
@@ -150,15 +167,15 @@ npm run test:app          # Unit tests (node --test via tsx)
 Copy [apps/dristi-app/.env.example](apps/dristi-app/.env.example) to
 `apps/dristi-app/.env.local` (git-ignored) for local development. All variables are optional.
 
-| Variable | Description | Example |
-|---|---|---|
-| `NEXT_PUBLIC_DATA_SOURCE` | Where screens get their data: `sandbox` (the browser: fixtures, IndexedDB, demo seeding) or `api` (the backend). Unset means `api`. `.env.development` sets `sandbox` for `npm run dev`. | `sandbox` |
-| `NEXT_PUBLIC_AUTH_SOURCE` | Who answers sign-in and registration: `sandbox` (any 6-digit code) or `api`. Unset, it follows `NEXT_PUBLIC_DATA_SOURCE`. | `api` |
-| `NEXT_PUBLIC_FASTERFIXES_PROJECT_ID` | Public project ID for the FasterFixes feedback widget. It's inlined into the client bundle at build time, so it isn't a secret. Leave it unset to disable the widget completely. | `proj_...` |
-| `NEXT_PUBLIC_FASTERFIXES_CAPTURE_DIAGNOSTICS` | Set to `false` to stop attaching console logs and network requests to feedback items | `false` |
-| `NEXT_PUBLIC_FASTERFIXES_API_ORIGIN` | Self-hosted FasterFixes origin. Unset uses the FasterFixes cloud. | `https://feedback.internal.example` |
-| `NEXT_OUTPUT` | Set to `standalone` to emit a self-contained server. The Dockerfile sets this. | `standalone` |
-| `STATIC_EXPORT` | Set to `true` for a static export (`next export`) | `true` |
+| Variable                                      | Description                                                                                                                                                                              | Example                             |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `NEXT_PUBLIC_DATA_SOURCE`                     | Where screens get their data: `sandbox` (the browser: fixtures, IndexedDB, demo seeding) or `api` (the backend). Unset means `api`. `.env.development` sets `sandbox` for `npm run dev`. | `sandbox`                           |
+| `NEXT_PUBLIC_AUTH_SOURCE`                     | Who answers sign-in and registration: `sandbox` (any 6-digit code) or `api`. Unset, it follows `NEXT_PUBLIC_DATA_SOURCE`.                                                                | `api`                               |
+| `NEXT_PUBLIC_FASTERFIXES_PROJECT_ID`          | Public project ID for the FasterFixes feedback widget. It's inlined into the client bundle at build time, so it isn't a secret. Leave it unset to disable the widget completely.         | `proj_...`                          |
+| `NEXT_PUBLIC_FASTERFIXES_CAPTURE_DIAGNOSTICS` | Set to `false` to stop attaching console logs and network requests to feedback items                                                                                                     | `false`                             |
+| `NEXT_PUBLIC_FASTERFIXES_API_ORIGIN`          | Self-hosted FasterFixes origin. Unset uses the FasterFixes cloud.                                                                                                                        | `https://feedback.internal.example` |
+| `NEXT_OUTPUT`                                 | Set to `standalone` to emit a self-contained server. The Dockerfile sets this.                                                                                                           | `standalone`                        |
+| `STATIC_EXPORT`                               | Set to `true` for a static export (`next export`)                                                                                                                                        | `true`                              |
 
 ## Docker
 
@@ -175,13 +192,13 @@ docker run -p 3000:3000 dristi-fe-develop:latest
 
 Build arguments:
 
-| Arg | Default | Purpose |
-|---|---|---|
-| `NODE_VERSION` | `22` | Node base image version |
-| `NEXT_PUBLIC_FASTERFIXES_PROJECT_ID` | project default | Feedback widget ID; pass an empty value to build without it |
-| `NEXT_PUBLIC_DATA_SOURCE` | empty (`api`) | `sandbox` or `api`: where screens get their data |
-| `NEXT_PUBLIC_AUTH_SOURCE` | empty (follows data) | `sandbox` or `api`: who answers sign-in |
-| `GIT_COMMIT_SHA` | `unknown` | Recorded in the image for traceability |
+| Arg                                  | Default              | Purpose                                                     |
+| ------------------------------------ | -------------------- | ----------------------------------------------------------- |
+| `NODE_VERSION`                       | `22`                 | Node base image version                                     |
+| `NEXT_PUBLIC_FASTERFIXES_PROJECT_ID` | project default      | Feedback widget ID; pass an empty value to build without it |
+| `NEXT_PUBLIC_DATA_SOURCE`            | empty (`api`)        | `sandbox` or `api`: where screens get their data            |
+| `NEXT_PUBLIC_AUTH_SOURCE`            | empty (follows data) | `sandbox` or `api`: who answers sign-in                     |
+| `GIT_COMMIT_SHA`                     | `unknown`            | Recorded in the image for traceability                      |
 
 There's no Compose file. The app has no back-end services to run alongside it yet.
 
@@ -200,10 +217,10 @@ There's no Compose file. The app has no back-end services to run alongside it ye
 ## CI/CD
 
 - [.github/workflows/ci.yml](.github/workflows/ci.yml) runs on every pull request and on
-  `main`: lint, type check, unit tests, agent rails and a production build.
+  `main`: format check, lint, type check, unit tests, agent rails and a production build.
+- [.github/workflows/data-rules.yml](.github/workflows/data-rules.yml) runs on every pull
+  request: the lint exception lists only shrink, and an older feature moves its data
+  before it gains any.
 - [.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml) builds
   `docker/Dockerfile` and pushes it to GitHub Container Registry on every push to `main`.
   Tags are `main-<sha>` and `latest`.
-
-CI doesn't yet run `npm run lint` or `npm run test:app`. Run them locally before opening
-a PR (see [CONTRIBUTING.MD](CONTRIBUTING.MD)).

@@ -32,7 +32,7 @@ describe("sandbox seed — grounded in the 1.0 inventory", () => {
       assert.ok(t.history.length >= 1, `${t.id} opens with a history line`);
       assert.ok(
         PEOPLE.some((p) => canView(p, kase)),
-        `${t.id} is visible to someone`
+        `${t.id} is visible to someone`,
       );
     }
   });
@@ -49,7 +49,9 @@ describe("sandbox seed — grounded in the 1.0 inventory", () => {
   });
 
   it("open payment tasks declare their closure rule, auto-closure included", () => {
-    const openPays = tasks.filter((t) => t.kind === "pay" && ["open", "payment-confirming"].includes(t.status));
+    const openPays = tasks.filter(
+      (t) => t.kind === "pay" && ["open", "payment-confirming"].includes(t.status),
+    );
     for (const t of openPays) {
       assert.ok(t.closesWhen, `${t.id} declares closesWhen`);
       if (t.hearingAt) assert.equal(t.closesWhen, "Closes on payment, or when the hearing passes");
@@ -79,7 +81,10 @@ describe("sandbox seed — grounded in the 1.0 inventory", () => {
     assert.equal(t.kind, "hearing");
     assert.equal(categoryOf(t), "others");
     assert.equal(t.dueKind, "court-set");
-    assert.equal(t.closesWhen, "Closes when you choose dates, or when the court decides the rescheduling request");
+    assert.equal(
+      t.closesWhen,
+      "Closes when you choose dates, or when the court decides the rescheduling request",
+    );
     // Anyone on the case can act on a hearing task — Needs action from every chair.
     const kase = CASES.find((c) => c.id === t.caseId)!;
     for (const id of kase.advocates) assert.equal(viewOf(t, person(id), kase), "needs-action");

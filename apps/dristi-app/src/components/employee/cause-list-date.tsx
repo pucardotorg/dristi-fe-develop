@@ -16,15 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Kbd } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { stepSittingDay } from "@/lib/employee/cause-list-days";
 import { formatCourtDay, isoDay, isSittingDay, parseIsoDay } from "@/lib/employee/hearings";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 const MONTH_YEAR = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" });
 const WEEKDAY = new Intl.DateTimeFormat("en-IN", { weekday: "long" });
@@ -65,6 +61,7 @@ function JumpToToday({
   onJump: () => void;
   className?: string;
 }) {
+  const t = useTranslations();
   /* `invisible` keeps the slot and takes the button out of the tab order and the
      accessibility tree. Only the back slot is kept: the day arrows stand after it and
      would slide out from under the pointer. Nothing the reader is aiming at stands
@@ -72,7 +69,7 @@ function JumpToToday({
   if (!shown) {
     if (direction === "forward") return null;
     return <span aria-hidden className={cn("invisible size-6 shrink-0", className)} />;
-  };
+  }
   const Icon = direction === "back" ? ChevronsLeftIcon : ChevronsRightIcon;
   return (
     <TooltipProvider delayDuration={300}>
@@ -83,7 +80,9 @@ function JumpToToday({
             type="button"
             variant="ghost"
             size="icon"
-            aria-label={`Back to today, ${formatCourtDay(today)}`}
+            aria-label={t("causeListDate_backToTodayFormatCourtDay", {
+              formatCourtDay: formatCourtDay(today),
+            })}
             aria-keyshortcuts="T"
             className={cn(
               "relative size-6 shrink-0 text-brand-muted-foreground after:absolute after:-inset-2 hover:text-brand-muted-foreground",
@@ -95,7 +94,7 @@ function JumpToToday({
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" align={direction === "back" ? "start" : "end"}>
-          Back to today <Kbd>T</Kbd>
+          {t.rich("causeListDate_backToTodayT", { kbd: (chunks) => <Kbd>{chunks}</Kbd> })}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -113,6 +112,7 @@ export function CauseListDate({
   onSelectDay: (day: string) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [scrubbing, setScrubbing] = React.useState({ open: false, instant: false });
   const onScrubReveal = React.useCallback((open: boolean, instant: boolean) => {
@@ -163,7 +163,7 @@ export function CauseListDate({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Previous sitting day"
+        aria-label={t("causeListDate_previousSittingDay")}
         className={cn(arrow, "col-start-2 row-start-2")}
         onClick={() => onSelectDay(stepSittingDay(day, -1, today))}
       >
@@ -178,7 +178,11 @@ export function CauseListDate({
           onRevealChange={onScrubReveal}
         >
           {/* ds-typography-allow: owner asked for the advocate home's date (2026-10-22), larger than the DS display role as the header's lead. */}
-          <CourtRollingNumber value={String(date.getDate()).padStart(2, "0")} up={rollUp} className="text-[3.5rem] leading-none font-semibold tracking-tight" />
+          <CourtRollingNumber
+            value={String(date.getDate()).padStart(2, "0")}
+            up={rollUp}
+            className="text-[3.5rem] leading-none font-semibold tracking-tight"
+          />
           <span className="sr-only">{formatCourtDay(day)}</span>
         </CourtDateScrubber>
       </div>
@@ -186,7 +190,7 @@ export function CauseListDate({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Next sitting day"
+        aria-label={t("causeListDate_nextSittingDay")}
         className={cn(arrow, "col-start-4 row-start-2")}
         onClick={() => onSelectDay(stepSittingDay(day, 1, today))}
       >
@@ -199,7 +203,7 @@ export function CauseListDate({
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="Open calendar"
+            aria-label={t("causeListDate_openCalendar")}
             className="relative col-start-5 row-start-2 ml-2 size-8 border border-hairline text-muted-foreground after:absolute after:-inset-1"
           >
             <CalendarDaysIcon aria-hidden className="size-4" />

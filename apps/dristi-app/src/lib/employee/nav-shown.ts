@@ -18,16 +18,16 @@ const KEY = "dristi.court-nav-shown";
 
 /** The rows that can be hidden, in rail order, with the label the dropdown shows. */
 export const OPTIONAL_COURT_NAV_ROWS: readonly { id: string; label: string }[] = [
-  { id: "sign-forms", label: "Sign forms" },
-  { id: "sign-orders", label: "Sign orders" },
-  { id: "sign-process", label: "Sign process" },
-  { id: "sign-bail-bonds", label: "Sign bail bonds" },
-  { id: "sign-deposition", label: "Sign witness deposition" },
-  { id: "sign-evidence", label: "Sign evidence" },
-  { id: "sign-a-diary", label: "Sign A-Diary" },
-  { id: "schedule-hearing", label: "Schedule hearing" },
-  { id: "bulk-reschedule", label: "Bulk reschedule hearings" },
-  { id: "configurations", label: "Configurations" },
+  { id: "sign-forms", label: "navShown_signForms" },
+  { id: "sign-orders", label: "navShown_signOrders" },
+  { id: "sign-process", label: "navShown_signProcess" },
+  { id: "sign-bail-bonds", label: "navShown_signBailBonds" },
+  { id: "sign-deposition", label: "navShown_signWitnessDeposition" },
+  { id: "sign-evidence", label: "navShown_signEvidence" },
+  { id: "sign-a-diary", label: "navShown_signADiary" },
+  { id: "schedule-hearing", label: "navShown_scheduleHearing" },
+  { id: "bulk-reschedule", label: "navShown_bulkRescheduleHearings" },
+  { id: "configurations", label: "navShown_configurations" },
 ];
 
 const OPTIONAL_IDS = new Set(OPTIONAL_COURT_NAV_ROWS.map((row) => row.id));
@@ -50,9 +50,7 @@ function restore(): void {
     if (stored === null) return;
     const parsed: unknown = JSON.parse(stored);
     if (Array.isArray(parsed)) {
-      shown = parsed.filter(
-        (id): id is string => typeof id === "string" && OPTIONAL_IDS.has(id),
-      );
+      shown = parsed.filter((id): id is string => typeof id === "string" && OPTIONAL_IDS.has(id));
     }
   } catch {
     // Private mode, a cleared quota or a malformed value. The default stands.

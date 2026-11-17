@@ -12,11 +12,7 @@ import {
   type CounselSide,
 } from "./types";
 
-export type ApplicationStatus =
-  | "sent-back"
-  | "accepted"
-  | "allowed"
-  | "allowed-for-the-day";
+export type ApplicationStatus = "sent-back" | "accepted" | "allowed" | "allowed-for-the-day";
 
 export type CaseApplication = {
   id: string;
@@ -188,7 +184,7 @@ export function formatDueStatus(iso: string, now: number): DueStatus {
     return { relative, on, label: relative, overdue: true };
   }
   if (days === 0) {
-    return { relative: "Due today", on, label: "Due today", overdue: false };
+    return { relative: "Due today", on, label: "peek_dueToday", overdue: false };
   }
   const relative = days === 1 ? "Due tomorrow" : `Due in ${days} days`;
   return { relative, on, label: `${relative} · ${on}`, overdue: false };
@@ -236,7 +232,7 @@ export type DueStatusView = {
 export function dueStatusView(
   dueOn: string,
   nextHearingOn: string | null | undefined,
-  now: number
+  now: number,
 ): DueStatusView {
   const due = formatDueStatus(dueOn, now);
   return {
@@ -246,16 +242,10 @@ export function dueStatusView(
   };
 }
 
-function dueRamp(
-  due: DueStatus,
-  dueOn: string,
-  nextHearingOn: string | null | undefined
-): DueRamp {
+function dueRamp(due: DueStatus, dueOn: string, nextHearingOn: string | null | undefined): DueRamp {
   if (due.overdue) return "past";
   if (!nextHearingOn) return "later";
-  return dayStamp(dueOn) <= dayStamp(nextHearingOn)
-    ? "before-hearing"
-    : "later";
+  return dayStamp(dueOn) <= dayStamp(nextHearingOn) ? "before-hearing" : "later";
 }
 
 export function applicationStatusLabel(status: ApplicationStatus): string {
@@ -271,9 +261,7 @@ export function applicationStatusLabel(status: ApplicationStatus): string {
   }
 }
 
-export function applicationStatusVariant(
-  status: ApplicationStatus
-): "destructive" | "success" {
+export function applicationStatusVariant(status: ApplicationStatus): "destructive" | "success" {
   return status === "sent-back" ? "destructive" : "success";
 }
 
@@ -395,8 +383,7 @@ const PEEK_EXTRAS: Partial<Record<string, CasePeekExtras>> = {
         status: "allowed",
         filedOn: "2026-07-24",
         filedBy: "complainant",
-        summary:
-          "Process fee must be paid before summons can be issued to PW-2.",
+        summary: "Process fee must be paid before summons can be issued to PW-2.",
       },
       {
         id: "a-1001-2",
@@ -415,8 +402,7 @@ const PEEK_EXTRAS: Partial<Record<string, CasePeekExtras>> = {
         dueOn: "2026-08-17",
         assignedTo: "Sunil Varghese",
         markedOn: "2026-08-14",
-        consequence:
-          "If this is not completed, the witness summons cannot be processed.",
+        consequence: "If this is not completed, the witness summons cannot be processed.",
         action: { label: "Make payment", section: "applications" },
       },
       {

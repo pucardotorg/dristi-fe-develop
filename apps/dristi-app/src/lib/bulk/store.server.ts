@@ -32,7 +32,12 @@ async function writeAll(batches: Batch[]): Promise<void> {
   await fs.rename(tmp, BATCHES);
 }
 
-async function saveFileAs(id: string, bytes: Uint8Array, name: string, type: string): Promise<StoredFileRef> {
+async function saveFileAs(
+  id: string,
+  bytes: Uint8Array,
+  name: string,
+  type: string,
+): Promise<StoredFileRef> {
   if (!FILE_ID.test(id)) throw new Error("Not a file id.");
   await fs.mkdir(FILES, { recursive: true });
   const meta = metaFor(name, bytes.byteLength, type);
@@ -82,5 +87,6 @@ export async function serverCanWrite(): Promise<boolean> {
 }
 
 // The names the routes and the v1 API have always used.
-export const { listBatches, getBatch, insertBatch, updateBatch, applyBatches, saveFile, readFile } = serverStore;
+export const { listBatches, getBatch, insertBatch, updateBatch, applyBatches, saveFile, readFile } =
+  serverStore;
 export { saveFileAs };

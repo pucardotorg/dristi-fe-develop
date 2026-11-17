@@ -38,6 +38,7 @@ import { PayBody } from "@/components/tasks/act/pay-page";
 import { SignBody } from "@/components/tasks/act/sign-page";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 export type ActPageAction = "sign" | "continue";
 
@@ -48,10 +49,11 @@ const CRUMB: Record<ActPageAction, string> = {
 
 /** The one quiet notice per page: what is interim. Signing needs none. */
 function Notice({ action, task }: { action: ActPageAction; task: Task }) {
+  const tr = useTranslations();
   if (action === "sign" || (action === "continue" && task.kind === "sign")) return null;
   return (
-    <SectionNotice variant="neutral" title="Interim screen">
-      The e-filing flow is not built yet. This stands in for it.
+    <SectionNotice variant="neutral" title={tr("actPage_interimScreen")}>
+      {tr("actPage_theEFilingFlowIsNot")}
     </SectionNotice>
   );
 }
@@ -65,6 +67,7 @@ function Body({ ctx, action }: { ctx: ActContext; action: ActPageAction }) {
 }
 
 export function TaskActPage({ action }: { action: ActPageAction }) {
+  const tr = useTranslations();
   const courtText = useCourtText();
   const params = useParams<{ taskId: string }>();
   const router = useRouter();
@@ -81,7 +84,7 @@ export function TaskActPage({ action }: { action: ActPageAction }) {
       if (message) notify.success(message);
       router.push(`/tasks?task=${encodeURIComponent(target)}`);
     },
-    [id, requestHighlight, router]
+    [id, requestHighlight, router],
   );
 
   const missing = state === "ready" && (!task || !kase);
@@ -105,16 +108,18 @@ export function TaskActPage({ action }: { action: ActPageAction }) {
                   <EmptyMedia variant="icon">
                     <FileTextIcon aria-hidden />
                   </EmptyMedia>
-                  <EmptyTitle>{forbidden ? "Not on your access" : "This task is not here"}</EmptyTitle>
+                  <EmptyTitle>
+                    {forbidden ? tr("actPage_notOnYourAccess") : tr("actPage_thisTaskIsNotHere")}
+                  </EmptyTitle>
                   <EmptyDescription>
                     {forbidden
-                      ? "You are not on this case's vakalatnama or its access list."
-                      : "The link may be wrong."}
+                      ? tr("actPage_youAreNotOnThisCases")
+                      : tr("actPage_theLinkMayBeWrong")}
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
                   <Button asChild variant="outline">
-                    <Link href="/tasks">Back to tasks</Link>
+                    <Link href="/tasks">{tr("actPage_backToTasks")}</Link>
                   </Button>
                 </EmptyContent>
               </Empty>
@@ -152,7 +157,7 @@ export function TaskActPage({ action }: { action: ActPageAction }) {
           <Button asChild variant="ghost" size="xs" className="self-start text-muted-foreground">
             <Link href={back}>
               <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-              Back to tasks
+              {tr("actPage_backToTasks")}
             </Link>
           </Button>
           <header className="flex flex-col gap-1">
@@ -162,10 +167,10 @@ export function TaskActPage({ action }: { action: ActPageAction }) {
               {kase.stNumber ? (
                 <>
                   {" · "}
-                  <Identifier value={kase.stNumber} label="case number" />
+                  <Identifier value={kase.stNumber} label={tr("actPage_caseNumber")} />
                 </>
               ) : (
-                " · Not yet numbered"
+                tr("actPage_notYetNumbered")
               )}
               {" · "}
               {courtText(kase.court)}

@@ -54,10 +54,13 @@ export type CaseExtraction = {
 
 const XML_ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
 const unxml = (s: string) =>
-  s.replace(/&(amp|lt|gt|quot|apos);/g, (_, e: string) => XML_ENTITIES[e]).replace(/&#(\d+);/g, (_, n: string) => String.fromCharCode(Number(n)));
+  s
+    .replace(/&(amp|lt|gt|quot|apos);/g, (_, e: string) => XML_ENTITIES[e])
+    .replace(/&#(\d+);/g, (_, n: string) => String.fromCharCode(Number(n)));
 
 /** The text runs of a piece of Word XML, joined. */
-const runs = (xml: string) => [...xml.matchAll(/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g)].map((m) => unxml(m[1])).join("");
+const runs = (xml: string) =>
+  [...xml.matchAll(/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g)].map((m) => unxml(m[1])).join("");
 
 /**
  * The text of a .docx, one line per paragraph. A table row of two cells reads as
@@ -77,10 +80,16 @@ async function docxText(bytes: Uint8Array): Promise<string | null> {
 }
 
 /** The text of a case document, or `null` when none can be read (a scan, an image). */
-export async function caseDocText(bytes: Uint8Array, name: string, type: string): Promise<string | null> {
-  if (/\.docx$/i.test(name) || /officedocument\.wordprocessingml/.test(type)) return docxText(bytes);
+export async function caseDocText(
+  bytes: Uint8Array,
+  name: string,
+  type: string,
+): Promise<string | null> {
+  if (/\.docx$/i.test(name) || /officedocument\.wordprocessingml/.test(type))
+    return docxText(bytes);
   if (/\.pdf$/i.test(name) || /pdf/.test(type)) return documentText(bytes, "application/pdf");
-  if (/\.txt$/i.test(name) || type.startsWith("text/")) return new TextDecoder().decode(bytes).trim() || null;
+  if (/\.txt$/i.test(name) || type.startsWith("text/"))
+    return new TextDecoder().decode(bytes).trim() || null;
   return null;
 }
 
@@ -102,11 +111,17 @@ const SECTION_WORDS: [GroupId, string[]][] = [
 /** "Cheque 2", "ACCUSED NO. 1", "Demand notice details:" → the section and its number. */
 function heading(line: string): { group: GroupId; n: number | null } | null {
   if (/:\s*\S/.test(line)) return null;
-  const t = line.toLowerCase().replace(/[:.\-–]+$/, "").replace(/\bdetails?\b/g, "").replace(/\s+/g, " ").trim();
+  const t = line
+    .toLowerCase()
+    .replace(/[:.\-–]+$/, "")
+    .replace(/\bdetails?\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
   const m = /^(.*?)(?:\s*(?:no\.?|number|#)?\s*(\d+))?$/.exec(t);
   if (!m) return null;
   const words = m[1].trim();
-  for (const [group, list] of SECTION_WORDS) if (list.includes(words)) return { group, n: m[2] ? Number(m[2]) : null };
+  for (const [group, list] of SECTION_WORDS)
+    if (list.includes(words)) return { group, n: m[2] ? Number(m[2]) : null };
   return null;
 }
 
@@ -129,7 +144,11 @@ function columnFor(label: string, context: GroupId | null): Column | null {
   const n = normHeader(label);
   if (!n) return null;
   const inContext = (g: GroupId | null) =>
-    g ? COLUMNS.filter((c) => c.group === g || (g === "accused" && groupOf(c.group).parent === "accused")) : [];
+    g
+      ? COLUMNS.filter(
+          (c) => c.group === g || (g === "accused" && groupOf(c.group).parent === "accused"),
+        )
+      : [];
   // Within a section, its own short names first ("Name", "Date"), then full names.
   for (const c of inContext(context)) if (normHeader(shortLabel(c)) === n) return c;
   for (const c of inContext(context)) if (fullLabels(c).includes(n)) return c;
@@ -144,26 +163,68 @@ function tidy(c: Column, raw: string): { value: string; confidence: Confidence; 
   if (c.kind === "phone") value = value.replace(/[^\d+]/g, "");
   if (c.list) {
     const hit = listValue(c.list, value);
-    if (hit) return { value: LISTS[c.list].find((o) => o.value === hit)!.label, confidence: "found" };
+    if (hit)
+      return { value: LISTS[c.list].find((o) => o.value === hit)!.label, confidence: "found" };
     // Close enough: an option whose words all appear in the value.
-    const near = LISTS[c.list].find((o) => o.label.toLowerCase().split(/\W+/).filter((w) => w.length > 2).every((w) => value.toLowerCase().includes(w)));
-    if (near) return { value: near.label, confidence: "check", note: `Read as "${near.label}" from "${value}"` };
+    const near = LISTS[c.list].find((o) =>
+      o.label
+        .toLowerCase()
+        .split(/\W+/)
+        .filter((w) => w.length > 2)
+        .every((w) => value.toLowerCase().includes(w)),
+    );
+    if (near)
+      return {
+        value: near.label,
+        confidence: "check",
+        note: `Read as "${near.label}" from "${value}"`,
+      };
     return { value, confidence: "check", note: "Not one of the court's options" };
   }
   const fit = columnFit(c, [value]);
-  return fit.ok ? { value, confidence: "found" } : { value, confidence: "check", note: fit.note.replace(/^1 of 1 values are/, "This is") };
+  return fit.ok
+    ? { value, confidence: "found" }
+    : { value, confidence: "check", note: fit.note.replace(/^1 of 1 values are/, "This is") };
 }
 
 /** Patterns for required values a document states without a label we know. */
 const PATTERNS: { key: string; re: RegExp; note: string }[] = [
-  { key: "reference", re: /\b(?:loan|account|lan|ref(?:erence)?)\b[^:\n]*?\b([A-Z]{2,}[-/][A-Z0-9][A-Z0-9-/]{3,})\b/i, note: "Read from the text, not a labelled field" },
-  { key: "chequeNumber", re: /cheque\s*(?:no\.?|number|#)?\s*[:.-]?\s*(\d{6})\b/i, note: "Read from the text, not a labelled field" },
-  { key: "chequeAmount", re: /(?:rs\.?|₹|inr)\s*([\d,]+(?:\.\d+)?)/i, note: "The first amount in the document" },
+  {
+    key: "reference",
+    re: /\b(?:loan|account|lan|ref(?:erence)?)\b[^:\n]*?\b([A-Z]{2,}[-/][A-Z0-9][A-Z0-9-/]{3,})\b/i,
+    note: "Read from the text, not a labelled field",
+  },
+  {
+    key: "chequeNumber",
+    re: /cheque\s*(?:no\.?|number|#)?\s*[:.-]?\s*(\d{6})\b/i,
+    note: "Read from the text, not a labelled field",
+  },
+  {
+    key: "chequeAmount",
+    re: /(?:rs\.?|₹|inr)\s*([\d,]+(?:\.\d+)?)/i,
+    note: "The first amount in the document",
+  },
   { key: "chequeIfsc", re: /\b([A-Z]{4}0[A-Z0-9]{6})\b/, note: "The first IFSC in the document" },
-  { key: "chequeDate", re: /cheque\b.{0,60}?\bdated\s+(\d{1,2}[-/.]\d{1,2}[-/.]\d{4})/i, note: "Read from the text, not a labelled field" },
-  { key: "chequeAccount", re: /\b(?:drawn on|from)\s+(?:a\/c|account)(?:\s+no\.?)?\s+(\d{6,18})\b/i, note: "Read from the text, not a labelled field" },
-  { key: "presentDate", re: /\bpresented\s+on\s+(\d{1,2}[-/.]\d{1,2}[-/.]\d{4})/i, note: "Read from the text, not a labelled field" },
-  { key: "returnDate", re: /\breturned(?:\s+unpaid)?\s+on\s+(\d{1,2}[-/.]\d{1,2}[-/.]\d{4})/i, note: "Read from the text, not a labelled field" },
+  {
+    key: "chequeDate",
+    re: /cheque\b.{0,60}?\bdated\s+(\d{1,2}[-/.]\d{1,2}[-/.]\d{4})/i,
+    note: "Read from the text, not a labelled field",
+  },
+  {
+    key: "chequeAccount",
+    re: /\b(?:drawn on|from)\s+(?:a\/c|account)(?:\s+no\.?)?\s+(\d{6,18})\b/i,
+    note: "Read from the text, not a labelled field",
+  },
+  {
+    key: "presentDate",
+    re: /\bpresented\s+on\s+(\d{1,2}[-/.]\d{1,2}[-/.]\d{4})/i,
+    note: "Read from the text, not a labelled field",
+  },
+  {
+    key: "returnDate",
+    re: /\breturned(?:\s+unpaid)?\s+on\s+(\d{1,2}[-/.]\d{1,2}[-/.]\d{4})/i,
+    note: "Read from the text, not a labelled field",
+  },
 ];
 
 /**
@@ -238,5 +299,11 @@ export function extractCase(fileName: string, text: string | null): CaseExtracti
 
 /** Sections that have any field read, with the instances they reached. */
 export function sectionsIn(extraction: CaseExtraction): GroupId[] {
-  return GROUPS.filter((g) => COLUMNS.some((c) => c.group === g.id && Object.keys(extraction.fields).some((k) => k === c.header || k.startsWith(`${c.header}_`)))).map((g) => g.id);
+  return GROUPS.filter((g) =>
+    COLUMNS.some(
+      (c) =>
+        c.group === g.id &&
+        Object.keys(extraction.fields).some((k) => k === c.header || k.startsWith(`${c.header}_`)),
+    ),
+  ).map((g) => g.id);
 }

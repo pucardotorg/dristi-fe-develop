@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /** What the panel needs of a shortcut, from either store. */
 export type PanelShortcut = { id: string; name: string; text: string };
@@ -53,6 +54,7 @@ export function ShortcutsPanel<T extends PanelShortcut>({
   /** Told whether the form holds an unsaved change, for a window that asks before closing. */
   onEntered?: (entered: boolean) => void;
 }) {
+  const t = useTranslations();
   const [editing, setEditing] = React.useState<string | null>(null);
   const [name, setName] = React.useState("");
   const [text, setText] = React.useState<RichTextValue>(EMPTY_RICH_TEXT);
@@ -90,11 +92,11 @@ export function ShortcutsPanel<T extends PanelShortcut>({
 
   const taken = nameTaken(name, editing ?? undefined);
   const nameError = !name.trim()
-    ? "Give the shortcut a name."
+    ? t("shortcutsPanel_giveTheShortcutAName")
     : taken
-      ? "Another shortcut has this name."
+      ? t("shortcutsPanel_anotherShortcutHasThisName")
       : null;
-  const textError = !text.text.trim() ? "Give the text it types." : null;
+  const textError = !text.text.trim() ? t("shortcutsPanel_giveTheTextItTypes") : null;
 
   function reset() {
     setEditing(null);
@@ -117,7 +119,7 @@ export function ShortcutsPanel<T extends PanelShortcut>({
       <section aria-labelledby={listId} className="flex min-h-0 flex-col gap-3">
         <div className="flex items-baseline justify-between gap-2">
           <h3 id={listId} className="text-body-compact font-semibold">
-            All shortcuts
+            {t("shortcutsPanel_allShortcuts")}
           </h3>
           <span className="text-body-compact text-muted-foreground tabular-nums">
             {shortcuts.length}
@@ -149,16 +151,16 @@ export function ShortcutsPanel<T extends PanelShortcut>({
                   <Button
                     type="button"
                     variant="outline"
-                    aria-label={`Insert ${entry.name}`}
+                    aria-label={t("shortcutsPanel_insertName", { name: entry.name })}
                     onClick={() => onInsert(entry)}
                   >
-                    Insert
+                    {t("shortcutsPanel_insert")}
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    aria-label={`Edit ${entry.name}`}
+                    aria-label={t("shortcutsPanel_editName", { name: entry.name })}
                     onClick={() => {
                       setEditing(entry.id);
                       setName(entry.name);
@@ -175,7 +177,7 @@ export function ShortcutsPanel<T extends PanelShortcut>({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    aria-label={`Remove ${entry.name}`}
+                    aria-label={t("shortcutsPanel_removeName", { name: entry.name })}
                     onClick={() => {
                       onRemove(entry.id);
                       if (editing === entry.id) reset();
@@ -188,7 +190,7 @@ export function ShortcutsPanel<T extends PanelShortcut>({
             ))}
             {shortcuts.length === 0 ? (
               <li className="p-3 text-body-compact text-muted-foreground">
-                No shortcuts yet. Add one with the form.
+                {t("shortcutsPanel_noShortcutsYetAddOneWith")}
               </li>
             ) : null}
           </ul>
@@ -214,10 +216,12 @@ export function ShortcutsPanel<T extends PanelShortcut>({
         }}
       >
         <h3 id={formId} className="text-body-compact font-semibold">
-          {editingEntry ? `Edit “${editingEntry.name}”` : "New shortcut"}
+          {editingEntry
+            ? t("shortcutsPanel_editName2", { name: editingEntry.name })
+            : t("shortcutsPanel_newShortcut")}
         </h3>
         <Field data-invalid={tried && nameError ? true : undefined}>
-          <FieldLabel htmlFor={nameId}>Name</FieldLabel>
+          <FieldLabel htmlFor={nameId}>{t("shortcutsPanel_name")}</FieldLabel>
           <Input
             ref={nameRef}
             id={nameId}
@@ -228,7 +232,7 @@ export function ShortcutsPanel<T extends PanelShortcut>({
           {tried && nameError ? <FieldError>{nameError}</FieldError> : null}
         </Field>
         <Field data-invalid={tried && textError ? true : undefined}>
-          <FieldLabel id={textId}>Text</FieldLabel>
+          <FieldLabel id={textId}>{t("shortcutsPanel_text")}</FieldLabel>
           <RichTextField
             key={formKey}
             labelId={textId}
@@ -243,10 +247,12 @@ export function ShortcutsPanel<T extends PanelShortcut>({
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           {editing ? (
             <Button type="button" variant="outline" onClick={reset}>
-              Cancel
+              {t("common_cancel")}
             </Button>
           ) : null}
-          <Button type="submit">{editing ? "Save shortcut" : "Add shortcut"}</Button>
+          <Button type="submit">
+            {editing ? t("shortcutsPanel_saveShortcut") : t("shortcutsPanel_addShortcut")}
+          </Button>
         </div>
       </form>
     </div>

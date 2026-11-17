@@ -29,18 +29,13 @@ describe("stripGhostHtml", () => {
 
   it("takes out what the preview wrapped, not just its text", () => {
     assert.equal(
-      stripGhostHtml(
-        `<p>x${`<span ${GHOST_ATTRIBUTE}>Bail on <b>bond</b>.</span>`}</p>`,
-      ),
+      stripGhostHtml(`<p>x${`<span ${GHOST_ATTRIBUTE}>Bail on <b>bond</b>.</span>`}</p>`),
       "<p>x</p>",
     );
   });
 
   it("takes out more than one, because a stale node is the case that matters", () => {
-    assert.equal(
-      stripGhostHtml(`<p>${ghost("a")}</p><p>b${ghost("c")}</p>`),
-      "<p></p><p>b</p>",
-    );
+    assert.equal(stripGhostHtml(`<p>${ghost("a")}</p><p>b${ghost("c")}</p>`), "<p></p><p>b</p>");
   });
 
   it("leaves an order that never had one exactly as it was", () => {
@@ -211,10 +206,7 @@ describe("readProsePrefix", () => {
   });
 
   it("starts again after the last sentence that ended", () => {
-    assert.equal(
-      readProsePrefix("The application is allowed. None appe"),
-      "None appe",
-    );
+    assert.equal(readProsePrefix("The application is allowed. None appe"), "None appe");
     assert.equal(readProsePrefix("Is that so? At the requ"), "At the requ");
   });
 

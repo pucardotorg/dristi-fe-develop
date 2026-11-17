@@ -21,6 +21,8 @@ import {
   type ProcessAct,
 } from "@/lib/employee/sign-process";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Confirming an act on the process line — the product's plain confirmation, as the copy
@@ -98,6 +100,7 @@ function MoveConfirmBody({
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   onReturnFocus: () => void;
 }) {
+  const t = useTranslations();
   /* Captured on opening: the act empties the selection, and the question must not
      change under the clerk. */
   const [count] = React.useState(givenCount);
@@ -162,12 +165,12 @@ function MoveConfirmBody({
               </Button>
             ) : null}
             <Button ref={doneRef} type="button" onClick={onClose}>
-              Done
+              {t("processMoveDialog_done")}
             </Button>
           </>
         ) : (
           <>
-            <AlertDialogCancel>Back</AlertDialogCancel>
+            <AlertDialogCancel>{t("common_back")}</AlertDialogCancel>
             {/* A plain button, not the primitive's Action, which would close the window
                 before the outcome could show. */}
             <Button
@@ -177,7 +180,7 @@ function MoveConfirmBody({
                 setDone(true);
               }}
             >
-              {act.confirm}
+              {translateText(t, act.confirm)}
             </Button>
           </>
         )}

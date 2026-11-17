@@ -22,8 +22,9 @@ import {
   type CaseSection,
 } from "@/lib/cases/sections";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
-const STRIP_LABEL = "Case file sections";
+const STRIP_LABEL = "caseSectionTabs_caseFileSections";
 
 /** The scrolling gutter the row sits in, and the rule under it. Exported so
  *  a tab row inside a section (Notice/Process Status's people) is this row. */
@@ -48,7 +49,7 @@ export const STRIP_TRIGGER = STRIP_ITEM;
  */
 const STRIP_LINK = cn(
   STRIP_ITEM,
-  "relative inline-flex items-center justify-center gap-1.5 rounded-md border border-transparent py-0.5 font-medium whitespace-nowrap text-muted-foreground transition-all hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring"
+  "relative inline-flex items-center justify-center gap-1.5 rounded-md border border-transparent py-0.5 font-medium whitespace-nowrap text-muted-foreground transition-all hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring",
 );
 
 /**
@@ -92,6 +93,7 @@ export function CaseSectionTabs({
   section: CaseSection;
   children: ReactNode;
 }) {
+  const t = useTranslations();
   const router = useCaseRouter();
 
   if (!isNavSection(section)) {
@@ -101,7 +103,7 @@ export function CaseSectionTabs({
           {/* `gap-1` and the transparent fill are the line TabsList's own
               metrics, so both rows land on the same grid. */}
           <nav
-            aria-label={STRIP_LABEL}
+            aria-label={t(STRIP_LABEL)}
             className="inline-flex h-10 w-max min-w-full items-center justify-start gap-1"
           >
             {CASE_NAV_SECTIONS.map((item) => (
@@ -133,7 +135,7 @@ export function CaseSectionTabs({
         {/* The sections that fit stay in the row; the rest fold under More
             (owner, Sept 21), so nine destinations never scroll sideways. */}
         <OverflowTabsList
-          aria-label={STRIP_LABEL}
+          aria-label={t(STRIP_LABEL)}
           value={section}
           onSelect={(value) => {
             if (!isCaseSection(value)) return;
@@ -151,11 +153,7 @@ export function CaseSectionTabs({
       {/* Panels for the strip's own members only. An unlisted section never
           reaches here — it took the branch above. */}
       {CASE_NAV_SECTIONS.map((item) => (
-        <TabsContent
-          key={item.value}
-          value={item.value}
-          className="outline-none"
-        >
+        <TabsContent key={item.value} value={item.value} className="outline-none">
           {item.value === section ? children : null}
         </TabsContent>
       ))}
@@ -164,6 +162,7 @@ export function CaseSectionTabs({
 }
 
 export function SectionPending({ label }: { label: string }) {
+  const t = useTranslations();
   return (
     <Empty className="border border-dashed border-border">
       <EmptyHeader>
@@ -171,12 +170,9 @@ export function SectionPending({ label }: { label: string }) {
           <HourglassIcon aria-hidden />
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {label} is not designed yet
+          {t("caseSectionTabs_labelIsNotDesignedYet", { label })}
         </EmptyTitle>
-        <EmptyDescription>
-          The case header is in place. This section of the file still needs to
-          be built.
-        </EmptyDescription>
+        <EmptyDescription>{t("caseSectionTabs_theCaseHeaderIsInPlace")}</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

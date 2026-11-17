@@ -54,8 +54,10 @@ import { LabelTip, RequiredMark } from "@/components/filing/form-field";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { FilePreviewDialog } from "@/components/filing/upload/file-preview-dialog";
 import { pickErrorMessage, useFilePicker } from "@/components/filing/use-file-picker";
+import { useTranslations } from "next-intl";
 
 export function DocumentsSection() {
+  const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const router = useRouter();
   const showGroup = useFieldPolicy()?.documentGroups;
@@ -177,7 +179,7 @@ export function DocumentsSection() {
 
   const allDone = remaining === 0;
   const statusText = allDone
-    ? "All required documents added"
+    ? t("documentsSection_allRequiredDocumentsAdded")
     : `${remaining} required document${remaining > 1 ? "s" : ""} still needed`;
 
   const onContinue = () => {
@@ -196,134 +198,135 @@ export function DocumentsSection() {
   const docCells = (doc: CaseDocument, index: number, group: DocumentGroup) => ({
     name: (
       <>
-      {doc.custom ? (
-        <Input
-          value={doc.name}
-          onChange={(e) =>
-            patchDoc(doc.id, (d) => {
-              d.name = e.target.value;
-            })
-          }
-          // The name is kept with the saved document, so a change is sent to the case too.
-          onFocus={() => {
-            nameOnFocus.current = doc.name;
-          }}
-          onBlur={() => {
-            if (doc.file && doc.name.trim() !== nameOnFocus.current.trim()) {
-              void updateDetails({ kind: "row", id: doc.id }, { displayName: doc.name });
+        {doc.custom ? (
+          <Input
+            value={doc.name}
+            onChange={(e) =>
+              patchDoc(doc.id, (d) => {
+                d.name = e.target.value;
+              })
             }
-          }}
-          placeholder="Document name"
-          aria-label={`Document name, row ${index + 1} of ${group.title}`}
-        />
-      ) : (
-        <div className="flex min-h-10 flex-col justify-center gap-0.5">
-          <span className="text-body-compact font-medium">
-            {doc.name}
-            {doc.required ? (
-              <>
-                {" "}
-                <RequiredMark />
-              </>
-            ) : null}
-          </span>
-          {doc.intakeKey && doc.file ? (
-            <span className="text-caption text-muted-foreground">
-              Provided at case intake
+            // The name is kept with the saved document, so a change is sent to the case too.
+            onFocus={() => {
+              nameOnFocus.current = doc.name;
+            }}
+            onBlur={() => {
+              if (doc.file && doc.name.trim() !== nameOnFocus.current.trim()) {
+                void updateDetails({ kind: "row", id: doc.id }, { displayName: doc.name });
+              }
+            }}
+            placeholder={t("documentsSection_documentName")}
+            aria-label={t("documentsSection_documentNameRowValueOfTitle", {
+              value: String(index + 1),
+              title: group.title,
+            })}
+          />
+        ) : (
+          <div className="flex min-h-10 flex-col justify-center gap-0.5">
+            <span className="text-body-compact font-medium">
+              {doc.name}
+              {doc.required ? (
+                <>
+                  {" "}
+                  <RequiredMark />
+                </>
+              ) : null}
             </span>
-          ) : null}
-        </div>
-      )}
+            {doc.intakeKey && doc.file ? (
+              <span className="text-caption text-muted-foreground">
+                {t("documentsSection_providedAtCaseIntake")}
+              </span>
+            ) : null}
+          </div>
+        )}
       </>
     ),
     file: (
       <>
-      {doc.file ? (
-        <Button
-          type="button"
-          variant="link"
-          className="h-auto min-h-10 max-w-full justify-start px-0 py-1"
-          onClick={() => setPreviewId(doc.id)}
-          aria-label={`Preview ${doc.file.name}`}
-        >
-          <FileTextIcon data-icon="inline-start" aria-hidden />
-          <span className="flex min-w-0 flex-col items-start">
-            <span className="max-w-full truncate">{doc.file.name}</span>
-            <span className="text-caption font-normal text-muted-foreground tabular-nums">
-              {formatBytes(doc.file.size)}
-            </span>
-          </span>
-        </Button>
-      ) : (
-        <div className="flex items-center gap-3">
+        {doc.file ? (
           <Button
             type="button"
-            variant="outline"
-            onClick={() => uploadDoc(doc.id)}
-            aria-label={`Upload ${doc.name || `row ${index + 1}`}`}
+            variant="link"
+            className="h-auto min-h-10 max-w-full justify-start px-0 py-1"
+            onClick={() => setPreviewId(doc.id)}
+            aria-label={t("documentsSection_previewName", { name: doc.file.name })}
           >
-            <UploadIcon data-icon="inline-start" aria-hidden />
-            Upload
+            <FileTextIcon data-icon="inline-start" aria-hidden />
+            <span className="flex min-w-0 flex-col items-start">
+              <span className="max-w-full truncate">{doc.file.name}</span>
+              <span className="text-caption font-normal text-muted-foreground tabular-nums">
+                {formatBytes(doc.file.size)}
+              </span>
+            </span>
           </Button>
-          <span className="text-caption text-muted-foreground">
-            No file chosen
-          </span>
-        </div>
-      )}
+        ) : (
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => uploadDoc(doc.id)}
+              aria-label={`Upload ${doc.name || `row ${index + 1}`}`}
+            >
+              <UploadIcon data-icon="inline-start" aria-hidden />
+              {t("documentsSection_upload")}
+            </Button>
+            <span className="text-caption text-muted-foreground">
+              {t("documentsSection_noFileChosen")}
+            </span>
+          </div>
+        )}
       </>
     ),
     digital: (
       <>
-      <span className="inline-flex h-10 items-center">
-        <Checkbox
-          checked={doc.digital}
-          onCheckedChange={(checked) => setDigital(doc, checked === true)}
-          aria-label={`Natively digital: ${
-            doc.name || `row ${index + 1}`
-          }`}
-        />
-      </span>
+        <span className="inline-flex h-10 items-center">
+          <Checkbox
+            checked={doc.digital}
+            onCheckedChange={(checked) => setDigital(doc, checked === true)}
+            aria-label={`Natively digital: ${doc.name || `row ${index + 1}`}`}
+          />
+        </span>
       </>
     ),
     actions: (
       <>
-      <div className="flex h-10 items-center justify-end gap-1">
-        {doc.file ? (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => uploadDoc(doc.id)}
-              aria-label={`Re-upload ${doc.name || `row ${index + 1}`}`}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <RefreshCwIcon aria-hidden />
-            </Button>
+        <div className="flex h-10 items-center justify-end gap-1">
+          {doc.file ? (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => uploadDoc(doc.id)}
+                aria-label={`Re-upload ${doc.name || `row ${index + 1}`}`}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCwIcon aria-hidden />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => askRemoveDoc(doc.id)}
+                aria-label={`Delete ${doc.name || `row ${index + 1}`}`}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <Trash2Icon aria-hidden />
+              </Button>
+            </>
+          ) : doc.custom ? (
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={() => askRemoveDoc(doc.id)}
-              aria-label={`Delete ${doc.name || `row ${index + 1}`}`}
-              className="text-muted-foreground hover:text-destructive"
+              aria-label={t("documentsSection_removeRowValue", { value: String(index + 1) })}
+              className="text-muted-foreground hover:text-foreground"
             >
-              <Trash2Icon aria-hidden />
+              <XIcon aria-hidden />
             </Button>
-          </>
-        ) : doc.custom ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => askRemoveDoc(doc.id)}
-            aria-label={`Remove row ${index + 1}`}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <XIcon aria-hidden />
-          </Button>
-        ) : null}
-      </div>
+          ) : null}
+        </div>
       </>
     ),
   });
@@ -336,13 +339,14 @@ export function DocumentsSection() {
       {input}
       <FilingMain width="wide">
         <FilingPageHeader
-          title="List of documents"
-          description="Check each one is the right way up and readable. The affidavit and delay-condonation application are not needed here."
+          title={t("documentsSection_listOfDocuments")}
+          description={t("documentsSection_checkEachOneIsTheRight")}
         />
 
         <SectionNotice variant="neutral">
-          Tick <strong className="font-semibold">Natively digital</strong> for an
-          original digital file, such as an e-signed PDF, not a scan of a paper copy.
+          {t.rich("documentsSection_tickNativelyDigitalForAnOriginal", {
+            strong: (chunks) => <strong className="font-semibold">{chunks}</strong>,
+          })}
         </SectionNotice>
 
         {unsaved.length > 0 ? (
@@ -401,13 +405,13 @@ export function DocumentsSection() {
                           aria-label={`Upload ${doc.name || `row ${index + 1}`}`}
                         >
                           <UploadIcon data-icon="inline-start" aria-hidden />
-                          Upload
+                          {t("documentsSection_upload")}
                         </Button>
                       )}
 
                       <label className="flex shrink-0 items-center gap-2 text-body-compact text-muted-foreground">
                         {cells.digital}
-                        Natively digital
+                        {t("documentsSection_nativelyDigital")}
                       </label>
                     </li>
                   );
@@ -426,19 +430,19 @@ export function DocumentsSection() {
                   </colgroup>
                   <TableHeader>
                     <TableRow className="border-hairline">
-                      <TableHead className="px-4">Sl. no</TableHead>
-                      <TableHead>Document name</TableHead>
-                      <TableHead>File</TableHead>
+                      <TableHead className="px-4">{t("documentsSection_slNo")}</TableHead>
+                      <TableHead>{t("documentsSection_documentName")}</TableHead>
+                      <TableHead>{t("documentsSection_file")}</TableHead>
                       <TableHead className="text-center">
                         <span className="inline-flex items-center gap-1">
-                          Natively digital
-                          <LabelTip>
-                            Tick only for original digital files, not scans of physical
-                            documents.
-                          </LabelTip>
+                          {t.rich("documentsSection_nativelyDigitalTickOnlyForOriginal", {
+                            labeltip: (chunks) => <LabelTip>{chunks}</LabelTip>,
+                          })}
                         </span>
                       </TableHead>
-                      <TableHead className="px-4 text-right">Actions</TableHead>
+                      <TableHead className="px-4 text-right">
+                        {t("documentsSection_actions")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -446,27 +450,25 @@ export function DocumentsSection() {
                     {group.docs.map((doc, index) => {
                       const cells = docCells(doc, index, group);
                       return (
-                      <TableRow key={doc.id} className="border-hairline">
-                        <TableCell className="px-4 py-2 align-middle text-muted-foreground tabular-nums">
-                          {index + 1}
-                        </TableCell>
+                        <TableRow key={doc.id} className="border-hairline">
+                          <TableCell className="px-4 py-2 align-middle text-muted-foreground tabular-nums">
+                            {index + 1}
+                          </TableCell>
 
-                        <TableCell className="py-2 align-middle whitespace-normal">
-                          {cells.name}
-                        </TableCell>
+                          <TableCell className="py-2 align-middle whitespace-normal">
+                            {cells.name}
+                          </TableCell>
 
-                        <TableCell className="py-2 align-middle whitespace-normal">
-                          {cells.file}
-                        </TableCell>
+                          <TableCell className="py-2 align-middle whitespace-normal">
+                            {cells.file}
+                          </TableCell>
 
-                        <TableCell className="py-2 text-center align-middle">
-                          {cells.digital}
-                        </TableCell>
+                          <TableCell className="py-2 text-center align-middle">
+                            {cells.digital}
+                          </TableCell>
 
-                        <TableCell className="px-4 py-2 align-middle">
-                          {cells.actions}
-                        </TableCell>
-                      </TableRow>
+                          <TableCell className="px-4 py-2 align-middle">{cells.actions}</TableCell>
+                        </TableRow>
                       );
                     })}
                   </TableBody>
@@ -474,13 +476,9 @@ export function DocumentsSection() {
               </div>
 
               <div className="border-t border-hairline p-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => addOtherDoc(group.id)}
-                >
+                <Button type="button" variant="ghost" onClick={() => addOtherDoc(group.id)}>
                   <PlusIcon data-icon="inline-start" aria-hidden />
-                  Add other document
+                  {t("documentsSection_addOtherDocument")}
                 </Button>
               </div>
             </div>
@@ -511,7 +509,7 @@ export function DocumentsSection() {
 
       <FilePreviewDialog
         file={previewFile}
-        label={previewDoc?.name || "this document"}
+        label={previewDoc?.name || t("documentsSection_thisDocument")}
         onClose={() => setPreviewId(null)}
         onReplace={() => {
           if (previewId) uploadDoc(previewId);
@@ -524,30 +522,31 @@ export function DocumentsSection() {
           <Alert variant="warning">
             <TriangleAlertIcon aria-hidden />
             <AlertDescription>
-              This scan looks blurry or cropped. Please re-upload a clearer copy so the
-              court can read it.
+              {t("documentsSection_thisScanLooksBlurryOrCropped")}
             </AlertDescription>
           </Alert>
         ) : null}
         {previewDoc?.quality === "good" ? (
           <Alert variant="success">
             <CheckIcon aria-hidden />
-            <AlertDescription>This document is clear and readable.</AlertDescription>
+            <AlertDescription>
+              {t("documentsSection_thisDocumentIsClearAndReadable")}
+            </AlertDescription>
           </Alert>
         ) : null}
       </FilePreviewDialog>
 
       <ConfirmDialog
-        note="This cannot be undone."
+        note={t("documentsSection_thisCannotBeUndone")}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title={`Remove ${deleteTarget?.name || "this document"}`}
         description={
           deleteTarget?.hasFile
-            ? "Are you sure you want to remove this document and the file attached to it?"
-            : "Are you sure you want to remove this row and the details typed in it?"
+            ? t("documentsSection_areYouSureYouWantTo")
+            : t("documentsSection_areYouSureYouWantToRemove")
         }
-        confirmLabel="Yes, remove"
+        confirmLabel={t("documentsSection_yesRemove")}
         onConfirm={() => {
           setDeleteOpen(false);
           if (deleteTarget) removeDoc(deleteTarget.id);

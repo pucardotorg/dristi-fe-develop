@@ -60,13 +60,10 @@ const FEATURED_CASE_ID = "c-1001";
  * Hearings, not in this history. Other fixture cases only use facts already
  * present on their CaseRecord.
  */
-export function caseTimelineModel(
-  record: CaseRecord,
-  now: number
-): CaseTimelineModel {
+export function caseTimelineModel(record: CaseRecord, now: number): CaseTimelineModel {
   const events = withBusinessOfTheDay(
     record,
-    record.id === FEATURED_CASE_ID ? featuredEvents(record) : recordEvents(record)
+    record.id === FEATURED_CASE_ID ? featuredEvents(record) : recordEvents(record),
   ).filter((event) => hasOccurred(event.on, now));
   const grouped = groupByDate(events);
   const currentDate = latestOccurredDate(grouped, now);
@@ -84,8 +81,8 @@ export function caseTimelineModel(
 
   return {
     days,
-    firstDateLabel: oldest ? formatCaseDate(oldest) : "Not available",
-    latestDateLabel: latest ? formatCaseDate(latest) : "Not available",
+    firstDateLabel: oldest ? formatCaseDate(oldest) : "casesTimeline_notAvailable",
+    latestDateLabel: latest ? formatCaseDate(latest) : "casesTimeline_notAvailable",
   };
 }
 
@@ -97,77 +94,77 @@ function featuredEvents(record: CaseRecord): DatedEvent[] {
       type: "order.hearing-scheduled",
       label: record.nextHearing
         ? `Next evidence hearing scheduled for ${formatCaseDate(record.nextHearing.on)}`
-        : "Next evidence hearing scheduled",
+        : "casesTimeline_nextEvidenceHearingScheduled",
       ref: "orders-and-notifications",
     },
     {
       id: "pw1-part-heard",
       on: record.previousHearingOn ?? "2026-07-29",
       type: "hearing.part-heard",
-      label: "Evidence of complainant part-heard",
+      label: "casesTimeline_evidenceOfComplainantPartHeard",
       ref: "hearings",
     },
     {
       id: "pw2-account-records",
       on: "2026-07-24",
       type: "document.filed",
-      label: "PW-2 account records filed",
+      label: "casesTimeline_pw2AccountRecordsFiled",
       ref: "documents",
     },
     {
       id: "proof-of-liability",
       on: "2026-07-22",
       type: "document.filed",
-      label: "Proof of debt or liability filed",
+      label: "casesTimeline_proofOfDebtOrLiabilityFiled",
       ref: "documents",
     },
     {
       id: "pw1-chief-affidavit",
       on: "2026-07-20",
       type: "document.filed",
-      label: "PW-1 chief affidavit filed",
+      label: "casesTimeline_pw1ChiefAffidavitFiled",
       ref: "documents",
     },
     {
       id: "complainant-exhibit-index",
       on: "2026-07-20",
       type: "document.filed",
-      label: "Complainant exhibit index P1–P6 filed",
+      label: "casesTimeline_complainantExhibitIndexP1P6Filed",
       ref: "documents",
     },
     {
       id: "production-application",
       on: "2026-07-16",
       type: "application.submitted",
-      label: "Application for production of documents submitted",
+      label: "casesTimeline_applicationForProductionOfDocumentsSubmitted",
       ref: "applications",
     },
     {
       id: "plea-recorded",
       on: "2026-07-01",
       type: "hearing.plea-recorded",
-      label: "Plea recorded",
+      label: "casesTimeline_pleaRecorded",
       ref: "hearings",
     },
     {
       id: "accused-appearance",
       on: "2026-06-25",
       type: "hearing.appearance",
-      label: "Accused entered appearance",
+      label: "casesTimeline_accusedEnteredAppearance",
       ref: "hearings",
     },
     {
       id: "summons-issued",
       on: "2026-06-23",
       type: "summons.issued",
-      label: "Summons issued to the accused",
+      label: "casesTimeline_summonsIssuedToTheAccused",
       ref: "orders-and-notifications",
     },
     {
       id: "cognizance-order",
       on: "2026-06-23",
       type: "order.cognizance",
-      label: "Cognizance taken",
+      label: "casesTimeline_cognizanceTaken",
       ref: "orders-and-notifications",
     },
     {
@@ -180,28 +177,28 @@ function featuredEvents(record: CaseRecord): DatedEvent[] {
       id: "proof-of-service",
       on: "2026-05-28",
       type: "notice.dispatch-proof",
-      label: "Proof of dispatch of legal demand notice recorded",
+      label: "casesTimeline_proofOfDispatchOfLegalDemand",
       ref: "documents",
     },
     {
       id: "demand-notice",
       on: "2026-05-25",
       type: "notice.issued",
-      label: "Legal demand notice issued",
+      label: "casesTimeline_legalDemandNoticeIssued",
       ref: "documents",
     },
     {
       id: "return-memo",
       on: "2026-05-20",
       type: "memo.received",
-      label: "Cheque return memo received",
+      label: "casesTimeline_chequeReturnMemoReceived",
       ref: "documents",
     },
     {
       id: "cheque-dishonoured",
       on: "2026-05-18",
       type: "cheque.dishonoured",
-      label: "Cheque dishonoured",
+      label: "casesTimeline_chequeDishonoured",
     },
   ];
 }
@@ -258,14 +255,11 @@ function recordEvents(record: CaseRecord): DatedEvent[] {
  * hearing event of that day, read off the same hearing record the case peek
  * reads, so the two never tell different stories.
  */
-function withBusinessOfTheDay(
-  record: CaseRecord,
-  events: DatedEvent[]
-): DatedEvent[] {
+function withBusinessOfTheDay(record: CaseRecord, events: DatedEvent[]): DatedEvent[] {
   const botdByDay = new Map(
     hearingRecords(record)
       .filter((hearing) => hearing.summary)
-      .map((hearing) => [hearing.on, hearing.summary!])
+      .map((hearing) => [hearing.on, hearing.summary!]),
   );
   const given = new Set<string>();
   return events.map((event) => {
@@ -297,9 +291,6 @@ function hasOccurred(on: string, now: number): boolean {
   return new Date(`${on}T00:00:00`).getTime() <= now;
 }
 
-function latestOccurredDate(
-  days: Omit<CaseTimelineDay, "status">[],
-  now: number
-): string | null {
+function latestOccurredDate(days: Omit<CaseTimelineDay, "status">[], now: number): string | null {
   return days.find((day) => hasOccurred(day.on, now))?.on ?? null;
 }

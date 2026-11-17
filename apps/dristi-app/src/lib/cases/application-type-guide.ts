@@ -67,8 +67,7 @@ const GUIDES: ApplicationTypeGuide[] = [
   {
     id: "absent-application",
     label: "Absent application",
-    description:
-      "Ask to be excused from attending a hearing, with the reason you cannot appear.",
+    description: "Ask to be excused from attending a hearing, with the reason you cannot appear.",
     icon: UserXIcon,
     keywords: [
       "absent",
@@ -80,7 +79,21 @@ const GUIDES: ApplicationTypeGuide[] = [
       "unable to attend",
       "not present",
       "personal appearance",
-      "leave of absence", "sick", "ill", "unwell", "hospital", "medical", "travel", "travelling", "abroad", "out of station", "attend", "cant", "cannot come", "not come", "unavailable",
+      "leave of absence",
+      "sick",
+      "ill",
+      "unwell",
+      "hospital",
+      "medical",
+      "travel",
+      "travelling",
+      "abroad",
+      "out of station",
+      "attend",
+      "cant",
+      "cannot come",
+      "not come",
+      "unavailable",
     ],
   },
   /* The PRD splits what was one Advancement/reschedule card into two asks.
@@ -99,7 +112,10 @@ const GUIDES: ApplicationTypeGuide[] = [
       "hearing",
       "earlier date",
       "sooner",
-      "change the date", "earlier", "urgent", "bring forward",
+      "change the date",
+      "earlier",
+      "urgent",
+      "bring forward",
     ],
   },
   {
@@ -117,7 +133,11 @@ const GUIDES: ApplicationTypeGuide[] = [
       "hearing",
       "later date",
       "another date",
-      "next date", "later", "push", "delay the hearing", "not ready",
+      "next date",
+      "later",
+      "push",
+      "delay the hearing",
+      "not ready",
     ],
   },
   {
@@ -139,7 +159,11 @@ const GUIDES: ApplicationTypeGuide[] = [
       "change name",
       "address",
       "details",
-      "litigant", "wrong", "mistake", "spelling", "phone number",
+      "litigant",
+      "wrong",
+      "mistake",
+      "spelling",
+      "phone number",
     ],
   },
   {
@@ -155,8 +179,7 @@ const GUIDES: ApplicationTypeGuide[] = [
     // The petitioner here is the accused, not the complainant — the one place
     // in the chooser where naming the wrong party would send someone into the
     // wrong form entirely.
-    description:
-      "Ask for the accused to be released on bail, with grounds and any surety.",
+    description: "Ask for the accused to be released on bail, with grounds and any surety.",
     icon: LockOpenIcon,
     keywords: [
       "bail",
@@ -167,7 +190,11 @@ const GUIDES: ApplicationTypeGuide[] = [
       "custody",
       "arrest",
       "warrant",
-      "bail bond", "jail", "prison", "remand", "get out",
+      "bail bond",
+      "jail",
+      "prison",
+      "remand",
+      "get out",
     ],
   },
   {
@@ -175,8 +202,7 @@ const GUIDES: ApplicationTypeGuide[] = [
     label: "Delay condonation",
     // "Sufficient cause" is the standard the court actually applies to a delay
     // beyond the limitation period, and the form asks for exactly that reason.
-    description:
-      "Ask the court to accept a filing made late, showing sufficient cause.",
+    description: "Ask the court to accept a filing made late, showing sufficient cause.",
     icon: HourglassIcon,
     keywords: [
       "condone",
@@ -197,8 +223,7 @@ const GUIDES: ApplicationTypeGuide[] = [
     label: "Production of documents",
     // The form takes a reason and an optional list of documents — it has no
     // field for who holds a record, so the line cannot promise one.
-    description:
-      "Ask for documents to be brought on record, with the reason you need them.",
+    description: "Ask for documents to be brought on record, with the reason you need them.",
     icon: FileSearchIcon,
     keywords: [
       "produce",
@@ -210,14 +235,16 @@ const GUIDES: ApplicationTypeGuide[] = [
       "bank records",
       "account records",
       "documents from",
-      "bring the documents", "bank", "statements", "bring",
+      "bring the documents",
+      "bank",
+      "statements",
+      "bring",
     ],
   },
   {
     id: "reopen-evidence",
     label: "Reopen evidence",
-    description:
-      "Ask the court to reopen evidence already closed, with your grounds.",
+    description: "Ask the court to reopen evidence already closed, with your grounds.",
     icon: FolderOpenIcon,
     keywords: [
       "reopen",
@@ -257,8 +284,7 @@ const GUIDES: ApplicationTypeGuide[] = [
   {
     id: "transfer",
     label: "Case transfer",
-    description:
-      "Ask for the case to be moved to a different court, with your grounds.",
+    description: "Ask for the case to be moved to a different court, with your grounds.",
     icon: LandmarkIcon,
     keywords: [
       "transfer",
@@ -266,14 +292,15 @@ const GUIDES: ApplicationTypeGuide[] = [
       "another court",
       "different court",
       "move the case",
-      "jurisdiction", "move", "different judge",
+      "jurisdiction",
+      "move",
+      "different judge",
     ],
   },
   {
     id: "warrant-by-hand",
     label: "Warrant by hand",
-    description:
-      "Take a warrant by hand to serve it yourself, instead of the usual court process.",
+    description: "Take a warrant by hand to serve it yourself, instead of the usual court process.",
     icon: SendIcon,
     keywords: [
       "warrant by hand",
@@ -299,7 +326,10 @@ const GUIDES: ApplicationTypeGuide[] = [
       "take back",
       "drop",
       "do not pursue",
-      "cancel the filing", "drop the case", "stop the case", "end the case",
+      "cancel the filing",
+      "drop the case",
+      "stop the case",
+      "end the case",
     ],
   },
   {
@@ -307,8 +337,7 @@ const GUIDES: ApplicationTypeGuide[] = [
     label: "Generic",
     // Never "the types above": this same line is read on the second step, where
     // there is no grid, and aloud from the card's aria-label.
-    description:
-      "A request the other types do not cover. Say what you need in your own words.",
+    description: "A request the other types do not cover. Say what you need in your own words.",
     icon: PenLineIcon,
     keywords: ["other", "others", "something else", "not listed", "general"],
   },
@@ -319,26 +348,19 @@ const GUIDES: ApplicationTypeGuide[] = [
  * Others last. Sorted here rather than kept sorted by hand, so a type added
  * to the list above lands in its place.
  */
-export const APPLICATION_TYPE_GUIDES: ApplicationTypeGuide[] = [...GUIDES].sort(
-  (a, b) => {
-    if (a.id === "application-others") return 1;
-    if (b.id === "application-others") return -1;
-    return a.label.localeCompare(b.label);
-  }
-);
+export const APPLICATION_TYPE_GUIDES: ApplicationTypeGuide[] = [...GUIDES].sort((a, b) => {
+  if (a.id === "application-others") return 1;
+  if (b.id === "application-others") return -1;
+  return a.label.localeCompare(b.label);
+});
 
-const GUIDES_BY_ID = new Map(
-  APPLICATION_TYPE_GUIDES.map((guide) => [guide.id, guide])
-);
+const GUIDES_BY_ID = new Map(APPLICATION_TYPE_GUIDES.map((guide) => [guide.id, guide]));
 
-export function applicationTypeGuide(
-  id: ApplicationTypeId
-): ApplicationTypeGuide {
+export function applicationTypeGuide(id: ApplicationTypeId): ApplicationTypeGuide {
   const guide = GUIDES_BY_ID.get(id);
   if (guide) return guide;
   // The catalogue is the source of the ids, so a label always exists.
-  const label =
-    APPLICATION_TYPES.find((type) => type.id === id)?.label ?? id;
+  const label = APPLICATION_TYPES.find((type) => type.id === id)?.label ?? id;
   return { id, label, description: "", icon: PenLineIcon, keywords: [] };
 }
 
@@ -368,7 +390,7 @@ const SUGGESTED_BY_STAGE: Record<ActiveStage, ApplicationTypeId[]> = {
 /** Empty for a disposed case: nothing about a closed case predicts the ask. */
 export function suggestedApplicationTypes(
   stage: ActiveStage,
-  disposed: boolean
+  disposed: boolean,
 ): ApplicationTypeId[] {
   return disposed ? [] : SUGGESTED_BY_STAGE[stage];
 }
@@ -427,9 +449,7 @@ function normalize(value: string): string {
 }
 
 function meaningfulWords(normalized: string): string[] {
-  return normalized
-    .split(" ")
-    .filter((word) => word.length > 2 && !STOPWORDS.has(word));
+  return normalized.split(" ").filter((word) => word.length > 2 && !STOPWORDS.has(word));
 }
 
 /**
@@ -467,11 +487,7 @@ export function searchApplicationTypes(query: string): ApplicationTypeMatch[] {
  * a word the filer shares with the keyword list is a far stronger signal than
  * one it shares with a sentence written to read well.
  */
-function scoreGuide(
-  guide: ApplicationTypeGuide,
-  normalized: string,
-  words: string[]
-): number {
+function scoreGuide(guide: ApplicationTypeGuide, normalized: string, words: string[]): number {
   let score = 0;
   /* The sentence with its filler gone, so "cancel the warrant" meets the
      phrase "cancel warrant". */
@@ -512,10 +528,7 @@ function scoreGuide(
     if (label.includes(word)) score += 2;
     else if (
       word.length >= 3 &&
-      label.some(
-        (part) =>
-          (word === typing && part.startsWith(word)) || withinOneEdit(word, part)
-      )
+      label.some((part) => (word === typing && part.startsWith(word)) || withinOneEdit(word, part))
     ) {
       score += 2;
     } else if (word.length > 4 && description.includes(word)) score += 1;
@@ -529,11 +542,12 @@ const INFLECTIONS = ["s", "es", "ed", "d", "ing", "ment", "ments", "ion", "al"];
 
 function sameWordInflected(word: string, keyword: string): boolean {
   if (keyword.length < 4) return false;
-  const [longer, shorter] =
-    word.length >= keyword.length ? [word, keyword] : [keyword, word];
+  const [longer, shorter] = word.length >= keyword.length ? [word, keyword] : [keyword, word];
   if (!longer.startsWith(shorter.replace(/e$/, ""))) return false;
   const rest = longer.slice(shorter.replace(/e$/, "").length);
-  return rest === "" || rest === "e" || INFLECTIONS.some((end) => rest === end || rest === `e${end}`);
+  return (
+    rest === "" || rest === "e" || INFLECTIONS.some((end) => rest === end || rest === `e${end}`)
+  );
 }
 
 /** Whether two words are one insertion, deletion or swap of letters apart. */
@@ -549,7 +563,5 @@ function withinOneEdit(a: string, b: string): boolean {
     // Two neighbouring letters swapped.
     return a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2);
   }
-  return a.length > b.length
-    ? a.slice(i + 1) === b.slice(i)
-    : a.slice(i) === b.slice(i + 1);
+  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
 }

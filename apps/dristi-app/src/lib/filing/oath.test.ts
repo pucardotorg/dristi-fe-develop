@@ -146,10 +146,23 @@ describe("every advocate signs (Gujarat)", () => {
   it("lists each advocate on record as a signatory of their own, with no oath", () => {
     const d = createBlankDraft("draft-two-advocates");
     d.complainants[0].name = "Priya Varghese";
-    d.advocates[0] = { ...d.advocates[0], name: "Anjali Nair", barNumber: "K/1/2010", forComplainants: [0] };
-    d.advocates.push({ id: "adv-2", name: "Thomas Kurian", barNumber: "K/2/2015", forComplainants: [0] });
+    d.advocates[0] = {
+      ...d.advocates[0],
+      name: "Anjali Nair",
+      barNumber: "K/1/2010",
+      forComplainants: [0],
+    };
+    d.advocates.push({
+      id: "adv-2",
+      name: "Thomas Kurian",
+      barNumber: "K/2/2015",
+      forComplainants: [0],
+    });
     const { advocates } = signatories(d, null, true, true);
-    assert.deepEqual(advocates.map((a) => a.name), ["Anjali Nair", "Thomas Kurian"]);
+    assert.deepEqual(
+      advocates.map((a) => a.name),
+      ["Anjali Nair", "Thomas Kurian"],
+    );
     assert.equal(advocates[1].id, "sig-a-adv-2");
     assert.equal(advocates[1].role, "Advocate for Priya Varghese");
     assert.equal(advocates[1].oathTaken, undefined);
@@ -160,8 +173,18 @@ describe("outside Gujarat", () => {
   it("keeps one advocate slot per complainant, with no oath", () => {
     const d = createBlankDraft("draft-slot");
     d.complainants[0].name = "Priya Varghese";
-    d.advocates[0] = { ...d.advocates[0], name: "Anjali Nair", barNumber: "K/1/2010", forComplainants: [0] };
-    d.advocates.push({ id: "adv-2", name: "Thomas Kurian", barNumber: "K/2/2015", forComplainants: [0] });
+    d.advocates[0] = {
+      ...d.advocates[0],
+      name: "Anjali Nair",
+      barNumber: "K/1/2010",
+      forComplainants: [0],
+    };
+    d.advocates.push({
+      id: "adv-2",
+      name: "Thomas Kurian",
+      barNumber: "K/2/2015",
+      forComplainants: [0],
+    });
     const { advocates } = signatories(d, null, false, false);
     assert.equal(advocates.length, 1);
     assert.equal(advocates[0].role, "Any one of 2 advocates on record");

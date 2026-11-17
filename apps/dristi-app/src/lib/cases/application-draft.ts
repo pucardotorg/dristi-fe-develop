@@ -293,16 +293,10 @@ export function emptyWitness(): WitnessDraft {
 }
 
 /** The sureties list resized to the number typed, keeping what was entered. */
-export function resizeSureties(
-  sureties: SuretyDraft[],
-  count: string
-): SuretyDraft[] {
+export function resizeSureties(sureties: SuretyDraft[], count: string): SuretyDraft[] {
   const wanted = /^\d+$/.test(count) ? Math.min(Number(count), 10) : 0;
   if (wanted <= sureties.length) return sureties.slice(0, wanted);
-  return [
-    ...sureties,
-    ...Array.from({ length: wanted - sureties.length }, emptySurety),
-  ];
+  return [...sureties, ...Array.from({ length: wanted - sureties.length }, emptySurety)];
 }
 
 /**
@@ -340,8 +334,7 @@ export function applicationDetailsFromPlain(value: string): RichTextValue {
     .map((line) => line.trim())
     .filter(Boolean)
     .map(
-      (line) =>
-        `<p>${line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`
+      (line) => `<p>${line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`,
     )
     .join("");
   return { html, text };
@@ -359,10 +352,7 @@ export function applicationDetailsFromPlain(value: string): RichTextValue {
 export function applicationDraftFrom(submission: Submission): ApplicationDraft {
   // A document submission has no application form to resume into, and the
   // caller routes it elsewhere; returning the empty draft keeps this total.
-  if (
-    submission.kind !== "application" ||
-    !isApplicationTypeId(submission.type)
-  ) {
+  if (submission.kind !== "application" || !isApplicationTypeId(submission.type)) {
     return EMPTY_APPLICATION_DRAFT;
   }
 
@@ -381,11 +371,7 @@ export function applicationDraftFrom(submission: Submission): ApplicationDraft {
     // titled carries the type label, which is not a title; a title that
     // could only fail validation is left blank rather than seeded pre-broken.
     const title = submission.title.trim();
-    if (
-      title &&
-      title !== submissionTypeLabel(type) &&
-      TITLE_PATTERN.test(title)
-    ) {
+    if (title && title !== submissionTypeLabel(type) && TITLE_PATTERN.test(title)) {
       draft.title = title;
     }
   }
@@ -463,12 +449,7 @@ function required(errors: Errors, key: string, value: string, message: string) {
   if (!value.trim()) errors[key] = message;
 }
 
-function phone(
-  errors: Errors,
-  key: string,
-  value: string,
-  optional = false
-) {
+function phone(errors: Errors, key: string, value: string, optional = false) {
   const trimmed = value.trim();
   if (!trimmed) {
     if (!optional) errors[key] = "Enter the phone number.";
@@ -490,7 +471,7 @@ function wholeNumber(
   errors: Errors,
   key: string,
   value: string,
-  { optional = false, min = 1 }: { optional?: boolean; min?: number } = {}
+  { optional = false, min = 1 }: { optional?: boolean; min?: number } = {},
 ) {
   const trimmed = value.trim();
   if (!trimmed) {
@@ -528,12 +509,27 @@ export function validateSureties(sureties: readonly SuretyDraft[]): Errors {
   const errors: Errors = {};
   for (const surety of sureties) {
     required(errors, `${surety.id}.fullName`, surety.fullName, "Enter the surety's name.");
-    required(errors, `${surety.id}.parentName`, surety.parentName, "Enter the father's or mother's name.");
+    required(
+      errors,
+      `${surety.id}.parentName`,
+      surety.parentName,
+      "Enter the father's or mother's name.",
+    );
     phone(errors, `${surety.id}.phone`, surety.phone);
     email(errors, `${surety.id}.email`, surety.email);
     address(errors, `${surety.id}.address`, surety.address);
-    files(errors, `${surety.id}.identityProof`, surety.identityProof, "Attach the surety's ID proof.");
-    files(errors, `${surety.id}.solvencyProof`, surety.solvencyProof, "Attach the proof of solvency.");
+    files(
+      errors,
+      `${surety.id}.identityProof`,
+      surety.identityProof,
+      "Attach the surety's ID proof.",
+    );
+    files(
+      errors,
+      `${surety.id}.solvencyProof`,
+      surety.solvencyProof,
+      "Attach the proof of solvency.",
+    );
   }
   return errors;
 }
@@ -558,7 +554,11 @@ function validateSupportingDocuments(draft: ApplicationDraft, errors: Errors) {
   }
 }
 
-function validateLitigant(draft: ApplicationDraft, side: "complainant" | "accused", errors: Errors) {
+function validateLitigant(
+  draft: ApplicationDraft,
+  side: "complainant" | "accused",
+  errors: Errors,
+) {
   const l = draft.litigant;
   const key = (field: string) => `litigant.${field}`;
   const institution = draft.litigantType === "institution";
@@ -617,7 +617,7 @@ export function validateApplication(
    * What the form knows that the draft does not: the side of the litigant
    * picked in Edit Litigant Details.
    */
-  context: { editSide?: "complainant" | "accused" } = {}
+  context: { editSide?: "complainant" | "accused" } = {},
 ): ApplicationErrors {
   const errors: Errors = {};
 
@@ -634,7 +634,7 @@ export function validateApplication(
     errors,
     "applicationDetails",
     draft.applicationDetails.text,
-    "Enter the application details."
+    "Enter the application details.",
   );
 
   switch (draft.type) {
@@ -653,7 +653,12 @@ export function validateApplication(
     }
 
     case "edit-litigant-details": {
-      required(errors, "editLitigantId", draft.editLitigantId, "Choose the litigant whose details change.");
+      required(
+        errors,
+        "editLitigantId",
+        draft.editLitigantId,
+        "Choose the litigant whose details change.",
+      );
       if (draft.editLitigantId) {
         if (!draft.litigantType) errors.litigantType = "Choose the litigant type.";
         else validateLitigant(draft, context.editSide ?? "complainant", errors);
@@ -665,7 +670,12 @@ export function validateApplication(
       break;
 
     case "transfer":
-      required(errors, "requestedCourt", draft.requestedCourt, "Enter the court you are asking for.");
+      required(
+        errors,
+        "requestedCourt",
+        draft.requestedCourt,
+        "Enter the court you are asking for.",
+      );
       break;
 
     case "withdrawal":
@@ -685,7 +695,12 @@ export function validateApplication(
 
     case "advancement-reschedule":
     case "postpone":
-      required(errors, "rescheduleReason", draft.rescheduleReason, "Choose the reason for rescheduling.");
+      required(
+        errors,
+        "rescheduleReason",
+        draft.rescheduleReason,
+        "Choose the reason for rescheduling.",
+      );
       if (!draft.proposedHearingDate) {
         errors.proposedHearingDate = "Choose the proposed hearing date.";
       }
@@ -700,7 +715,7 @@ export function validateApplication(
           errors,
           `poa.${id}`,
           draft.poaAuthorizations[id] ?? [],
-          "Attach the authorization document."
+          "Attach the authorization document.",
         );
       }
       break;
@@ -760,7 +775,7 @@ export function validateApplication(
  */
 export function applicationAttachments(
   draft: ApplicationDraft,
-  personName: (id: string) => string
+  personName: (id: string) => string,
 ): { label: string; files: File[] }[] {
   const found: { label: string; files: File[] }[] = [];
   const add = (label: string, files: File[]) => {
@@ -777,9 +792,10 @@ export function applicationAttachments(
   if (draft.type === "production-of-documents") {
     for (const row of draft.productionDocuments) add(row.type, row.files);
   }
-  if (draft.type === "poa-change") for (const id of draft.poaLitigantIds) {
-    add(`Authorization document of ${personName(id)}`, draft.poaAuthorizations[id] ?? []);
-  }
+  if (draft.type === "poa-change")
+    for (const id of draft.poaLitigantIds) {
+      add(`Authorization document of ${personName(id)}`, draft.poaAuthorizations[id] ?? []);
+    }
   for (const row of draft.supportingDocuments) add(row.name, row.files);
 
   const totals = new Map<string, number>();

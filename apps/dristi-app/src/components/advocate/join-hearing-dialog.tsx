@@ -72,7 +72,9 @@ export function JoinHearingDialog({
                     className="flex flex-col items-stretch gap-3 rounded-lg border border-hairline bg-card p-3 sm:flex-row sm:items-center sm:gap-8"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-body font-semibold text-foreground sm:truncate">{hearing.kase.parties}</p>
+                      <p className="text-body font-semibold text-foreground sm:truncate">
+                        {hearing.kase.parties}
+                      </p>
                       <p className="text-body-compact text-muted-foreground sm:truncate sm:text-caption">
                         {showCourt ? `${name}${number ? ` · ${number}` : ""} · ` : ""}
                         {hearing.kase.stage}

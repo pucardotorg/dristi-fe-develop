@@ -44,6 +44,7 @@ import { ADVOCATE_PROFILE_NAME } from "@/lib/advocate/content";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * Wireframes of the two screens that HOST access management but are not this
@@ -94,6 +95,7 @@ export function CasesWireframe({
   onApplicationSubmitted?: (result: BailApplicationResult) => void;
   onBondSubmitted?: (result: BailBondResult) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const [selected, setSelected] = React.useState<string[]>([]);
   const [shareOpen, setShareOpen] = React.useState(false);
@@ -156,7 +158,7 @@ export function CasesWireframe({
             <div className="flex min-w-0 flex-col gap-1">
               <h1 className="text-title text-balance font-semibold">{openCase.title}</h1>
               <p className="text-caption text-muted-foreground">
-                <Identifier value={openCase.caseNumber} label="case number" />
+                <Identifier value={openCase.caseNumber} label={t("casesWireframe_caseNumber")} />
                 <span aria-hidden> · </span>
                 {courtText(openCase.court)}
               </p>
@@ -261,7 +263,7 @@ export function CasesWireframe({
                     </p>
                     <Identifier
                       value={BOND_ID}
-                      label="bond number"
+                      label={t("casesWireframe_bondNumber")}
                       className="self-start text-caption text-muted-foreground"
                     />
                   </div>
@@ -304,7 +306,12 @@ export function CasesWireframe({
           </WireCard>
         </div>
 
-        <ShareDialog open={shareOpen} onOpenChange={setShareOpen} cases={shareCases} locale={locale} />
+        <ShareDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          cases={shareCases}
+          locale={locale}
+        />
         <BailApplicationDialog
           open={bailOpen}
           onOpenChange={setBailOpen}
@@ -394,40 +401,40 @@ export function CasesWireframe({
             <div key={entry.id} data-preserve-case-selection>
               <WireCard className={cn(checked && "border-solid border-ring")}>
                 <div className="flex items-start gap-3">
-                <Checkbox
-                  id={`select-${entry.id}`}
-                  checked={checked}
-                  onCheckedChange={(value) => toggle(entry.id, value === true)}
-                  aria-label={fillCopy(casesCopy.selectAria, locale, {
-                    caseNumber: entry.caseNumber,
-                  })}
-                  className="mt-1"
-                />
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <Label
-                    htmlFor={`select-${entry.id}`}
-                    className="text-body-compact font-semibold text-pretty"
+                  <Checkbox
+                    id={`select-${entry.id}`}
+                    checked={checked}
+                    onCheckedChange={(value) => toggle(entry.id, value === true)}
+                    aria-label={fillCopy(casesCopy.selectAria, locale, {
+                      caseNumber: entry.caseNumber,
+                    })}
+                    className="mt-1"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <Label
+                      htmlFor={`select-${entry.id}`}
+                      className="text-body-compact font-semibold text-pretty"
+                    >
+                      {entry.title}
+                    </Label>
+                    <p className="text-caption text-muted-foreground">
+                      <Identifier value={entry.caseNumber} label={t("casesWireframe_caseNumber")} />
+                      <span aria-hidden> · </span>
+                      {courtText(entry.court)}
+                    </p>
+                    <Badge variant="outline" className="mt-1 w-fit">
+                      {fillCopy(casesCopy.nextHearing, locale, { date: entry.nextHearing })}
+                    </Badge>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => onOpenCase(entry.id)}
                   >
-                    {entry.title}
-                  </Label>
-                  <p className="text-caption text-muted-foreground">
-                    <Identifier value={entry.caseNumber} label="case number" />
-                    <span aria-hidden> · </span>
-                    {courtText(entry.court)}
-                  </p>
-                  <Badge variant="outline" className="mt-1 w-fit">
-                    {fillCopy(casesCopy.nextHearing, locale, { date: entry.nextHearing })}
-                  </Badge>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="shrink-0"
-                  onClick={() => onOpenCase(entry.id)}
-                >
-                  {pick(casesCopy.open, locale)}
-                </Button>
+                    {pick(casesCopy.open, locale)}
+                  </Button>
                 </div>
               </WireCard>
             </div>

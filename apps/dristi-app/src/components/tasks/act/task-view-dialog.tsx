@@ -30,6 +30,7 @@ import { confirmPayment } from "@/lib/tasks/transitions";
 import type { Case, Task } from "@/lib/tasks/types";
 import { IS_SANDBOX } from "@/lib/data/source";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * **A task to look at, not to act on — in a window over the list** (owner, 2026-10-14).
@@ -66,9 +67,11 @@ export function TaskViewDialog({
 }
 
 function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: () => void }) {
+  const tr = useTranslations();
   const { people, user, online } = useTasks();
   const { act, busy, error } = useTaskActions({ inDialog: true });
-  const closed = ["done", "expired", "obsolete", "archived"].includes(task.status) || Boolean(task.archived);
+  const closed =
+    ["done", "expired", "obsolete", "archived"].includes(task.status) || Boolean(task.archived);
   const standing = closed ? outcomeOf(task) : waitingOnOf(task, kase, people);
   const by = people.find((p) => p.id === task.completion?.by);
   const fileFor = (slot: string) => task.files?.filter((f) => f.slot === slot) ?? [];
@@ -78,12 +81,21 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
 
   return (
     /* Header and footer hold still; only the record scrolls, so Close is always in reach. */
-    <FlowDialogContent outsideCloses className="flex max-h-[85svh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
+    <FlowDialogContent
+      outsideCloses
+      className="flex max-h-[85svh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-xl"
+    >
       <DialogHeader className="shrink-0 border-b border-hairline px-6 pt-6 pr-16 pb-4 text-left">
         <div className="flex flex-wrap items-center gap-2">
-          <DialogTitle className="text-title-s font-semibold text-balance">{task.title}</DialogTitle>
+          <DialogTitle className="text-title-s font-semibold text-balance">
+            {task.title}
+          </DialogTitle>
           <Badge variant={task.status === "done" ? "success" : closed ? "secondary" : "info"}>
-            {task.status === "done" ? <CheckIcon aria-hidden /> : closed ? null : <ClockIcon aria-hidden />}
+            {task.status === "done" ? (
+              <CheckIcon aria-hidden />
+            ) : closed ? null : (
+              <ClockIcon aria-hidden />
+            )}
             {standing}
           </Badge>
         </div>
@@ -93,95 +105,107 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
       </DialogHeader>
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
-      <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
-        {task.dueAt ? (
-          <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Due</DescriptionTerm>
-            <DescriptionDetails className="tabular-nums">
-              {longDate(task.dueAt)}
-              {task.deadlineNote ? (
-                <span className="block text-body-compact text-muted-foreground">{task.deadlineNote}</span>
-              ) : null}
-            </DescriptionDetails>
-          </DescriptionRow>
-        ) : null}
-        {task.feeHead ? (
-          <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Fee</DescriptionTerm>
-            <DescriptionDetails>{task.feeHead}</DescriptionDetails>
-          </DescriptionRow>
-        ) : null}
-        {task.amountPaise !== undefined ? (
-          <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Amount</DescriptionTerm>
-            <DescriptionDetails className="font-semibold tabular-nums">{rupees(task.amountPaise)}</DescriptionDetails>
-          </DescriptionRow>
-        ) : null}
-        {task.documentsNeeded?.length ? (
-          <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Documents</DescriptionTerm>
-            <DescriptionDetails>
-              <ul className="flex flex-col gap-1">
-                {task.documentsNeeded.map((name) => {
-                  const files = fileFor(name);
-                  return (
-                    <li key={name} className="flex flex-col">
-                      <span>{name}</span>
-                      {/* Attaching is a filing's part; a signature is on the document itself. */}
-                      {uploads || files.length ? (
-                        <span className="text-body-compact text-muted-foreground">
-                          {files.length ? files.map((f) => f.name).join(", ") : "Not attached"}
-                        </span>
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ul>
-            </DescriptionDetails>
-          </DescriptionRow>
-        ) : null}
-        {loose.length ? (
-          <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Files</DescriptionTerm>
-            <DescriptionDetails>{loose.map((f) => f.name).join(", ")}</DescriptionDetails>
-          </DescriptionRow>
-        ) : null}
-        {reference ? (
-          <DescriptionRow className="border-hairline">
-            <DescriptionTerm>{task.completion?.receipt ? "Receipt" : "Gateway reference"}</DescriptionTerm>
-            <DescriptionDetails>
-              <Identifier value={reference} label="reference" />
-            </DescriptionDetails>
-          </DescriptionRow>
-        ) : null}
-        {task.completion ? (
-          <DescriptionRow className="border-hairline">
-            <DescriptionTerm>Completed</DescriptionTerm>
-            <DescriptionDetails className="tabular-nums">
-              {dateTime(task.completion.at)}
-              {by ? ` · ${by.name}` : ""}
-            </DescriptionDetails>
-          </DescriptionRow>
-        ) : null}
-      </DescriptionList>
+        <DescriptionList className="rounded-xl bg-surface-sunken px-4 py-1">
+          {task.dueAt ? (
+            <DescriptionRow className="border-hairline">
+              <DescriptionTerm>{tr("taskViewDialog_due")}</DescriptionTerm>
+              <DescriptionDetails className="tabular-nums">
+                {longDate(task.dueAt)}
+                {task.deadlineNote ? (
+                  <span className="block text-body-compact text-muted-foreground">
+                    {task.deadlineNote}
+                  </span>
+                ) : null}
+              </DescriptionDetails>
+            </DescriptionRow>
+          ) : null}
+          {task.feeHead ? (
+            <DescriptionRow className="border-hairline">
+              <DescriptionTerm>{tr("taskViewDialog_fee")}</DescriptionTerm>
+              <DescriptionDetails>{task.feeHead}</DescriptionDetails>
+            </DescriptionRow>
+          ) : null}
+          {task.amountPaise !== undefined ? (
+            <DescriptionRow className="border-hairline">
+              <DescriptionTerm>{tr("taskViewDialog_amount")}</DescriptionTerm>
+              <DescriptionDetails className="font-semibold tabular-nums">
+                {rupees(task.amountPaise)}
+              </DescriptionDetails>
+            </DescriptionRow>
+          ) : null}
+          {task.documentsNeeded?.length ? (
+            <DescriptionRow className="border-hairline">
+              <DescriptionTerm>{tr("taskViewDialog_documents")}</DescriptionTerm>
+              <DescriptionDetails>
+                <ul className="flex flex-col gap-1">
+                  {task.documentsNeeded.map((name) => {
+                    const files = fileFor(name);
+                    return (
+                      <li key={name} className="flex flex-col">
+                        <span>{name}</span>
+                        {/* Attaching is a filing's part; a signature is on the document itself. */}
+                        {uploads || files.length ? (
+                          <span className="text-body-compact text-muted-foreground">
+                            {files.length
+                              ? files.map((f) => f.name).join(", ")
+                              : tr("taskViewDialog_notAttached")}
+                          </span>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </DescriptionDetails>
+            </DescriptionRow>
+          ) : null}
+          {loose.length ? (
+            <DescriptionRow className="border-hairline">
+              <DescriptionTerm>{tr("taskViewDialog_files")}</DescriptionTerm>
+              <DescriptionDetails>{loose.map((f) => f.name).join(", ")}</DescriptionDetails>
+            </DescriptionRow>
+          ) : null}
+          {reference ? (
+            <DescriptionRow className="border-hairline">
+              <DescriptionTerm>
+                {task.completion?.receipt
+                  ? tr("taskViewDialog_receipt")
+                  : tr("taskViewDialog_gatewayReference")}
+              </DescriptionTerm>
+              <DescriptionDetails>
+                <Identifier value={reference} label={tr("taskViewDialog_reference")} />
+              </DescriptionDetails>
+            </DescriptionRow>
+          ) : null}
+          {task.completion ? (
+            <DescriptionRow className="border-hairline">
+              <DescriptionTerm>{tr("taskViewDialog_completed")}</DescriptionTerm>
+              <DescriptionDetails className="tabular-nums">
+                {dateTime(task.completion.at)}
+                {by ? ` · ${by.name}` : ""}
+              </DescriptionDetails>
+            </DescriptionRow>
+          ) : null}
+        </DescriptionList>
 
-      {task.history.length ? (
-        <section aria-labelledby={`history-${task.id}`} className="flex flex-col gap-2">
-          <h3 id={`history-${task.id}`} className="text-body-compact font-semibold">
-            History
-          </h3>
-          <ol className="flex flex-col border-l border-hairline pl-4">
-            {[...task.history].reverse().map((entry, index) => (
-              <li key={index} className="flex flex-col gap-0.5 py-1.5">
-                <span className="text-body-compact">{entry.text}</span>
-                <span className="text-caption text-muted-foreground tabular-nums">{dateTime(entry.at)}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
-      ) : null}
+        {task.history.length ? (
+          <section aria-labelledby={`history-${task.id}`} className="flex flex-col gap-2">
+            <h3 id={`history-${task.id}`} className="text-body-compact font-semibold">
+              {tr("taskViewDialog_history")}
+            </h3>
+            <ol className="flex flex-col border-l border-hairline pl-4">
+              {[...task.history].reverse().map((entry, index) => (
+                <li key={index} className="flex flex-col gap-0.5 py-1.5">
+                  <span className="text-body-compact">{entry.text}</span>
+                  <span className="text-caption text-muted-foreground tabular-nums">
+                    {dateTime(entry.at)}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
 
-      {error ? <StatusLine tone="error">{error}</StatusLine> : null}
+        {error ? <StatusLine tone="error">{error}</StatusLine> : null}
       </div>
 
       <DialogFooter className="mx-0 mb-0 shrink-0 border-hairline bg-surface-sunken px-6 py-4">
@@ -196,11 +220,11 @@ function ViewBody({ task, kase, onClose }: { task: Task; kase: Case; onClose: ()
               })
             }
           >
-            Sandbox: the gateway confirms
+            {tr("taskViewDialog_sandboxTheGatewayConfirms")}
           </Button>
         ) : null}
         <DialogClose asChild>
-          <Button type="button">Close</Button>
+          <Button type="button">{tr("common_close")}</Button>
         </DialogClose>
       </DialogFooter>
     </FlowDialogContent>

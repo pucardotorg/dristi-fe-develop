@@ -14,5 +14,6 @@ export type { CasesRepository } from "./repository";
 
 export const getCasesRepository = repositoryFor<CasesRepository>("cases", {
   sandbox: () => new SandboxCasesRepository(),
-  http: () => new HttpCasesRepository() satisfies OnlyContract<HttpCasesRepository, CasesRepository>,
+  http: () =>
+    new HttpCasesRepository() satisfies OnlyContract<HttpCasesRepository, CasesRepository>,
 });

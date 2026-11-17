@@ -6,34 +6,18 @@ import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 
 import { REGISTER_CARDS_QUERY } from "@/components/cases/register-layout";
-import {
-  SIDE_PANEL_INSET,
-  SidePanel,
-  SidePanelRegion,
-} from "@/components/ui/side-panel";
+import { SIDE_PANEL_INSET, SidePanel, SidePanelRegion } from "@/components/ui/side-panel";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DescriptionDetails,
   DescriptionList,
   DescriptionRow,
   DescriptionTerm,
 } from "@/components/ui/description-list";
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemTitle,
-} from "@/components/ui/item";
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from "@/components/ui/item";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import {
@@ -65,6 +49,8 @@ import { CaseFlags } from "./case-identity";
 import { CASE_PEEK_ID, useCasePeek } from "./use-case-peek";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Card that owns peek state in the tree, for surfaces where nothing makes room for the
@@ -148,7 +134,7 @@ export function CasePeek() {
     (open: boolean) => {
       if (!open) close();
     },
-    [close]
+    [close],
   );
 
   if (!shown) return null;
@@ -184,11 +170,12 @@ function CasePeekPanel({
   hideLongPendingFlag: boolean;
   mobileDrawer: boolean;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   const extras = peekExtras(record.id);
   const stage = record.disposal
     ? outcomeLabel(record.disposal.outcome)
-    : record.substage ?? stageLabel(record.stage);
+    : (record.substage ?? stageLabel(record.stage));
 
   return (
     <SidePanel
@@ -210,16 +197,13 @@ function CasePeekPanel({
               move. The court has its own line, so nothing that can wrap
               ever carries the offset. */}
           <p className="flex flex-wrap items-baseline text-body-compact text-muted-foreground">
-            <Identifier value={record.caseNumber} label="case number" />
+            <Identifier value={record.caseNumber} label={t("casePeek_caseNumber")} />
             {extras.altCaseNumber ? (
               <>
                 <span aria-hidden className="whitespace-pre">
                   {" · "}
                 </span>
-                <Identifier
-                  value={extras.altCaseNumber}
-                  label="other case number"
-                />
+                <Identifier value={extras.altCaseNumber} label={t("casePeek_otherCaseNumber")} />
               </>
             ) : null}
           </p>
@@ -236,13 +220,10 @@ function CasePeekPanel({
             {hideLongPendingFlag ? null : <CaseFlags record={record} />}
             <Button variant="secondary" className="w-fit" asChild>
               <Link
-                href={caseDetailHref(
-                  record.id,
-                  hideLongPendingFlag ? "long-pending" : undefined
-                )}
+                href={caseDetailHref(record.id, hideLongPendingFlag ? "long-pending" : undefined)}
               >
                 <ExternalLinkIcon data-icon="inline-start" aria-hidden />
-                Open case file
+                {t("casePeek_openCaseFile")}
               </Link>
             </Button>
           </div>
@@ -252,20 +233,14 @@ function CasePeekPanel({
           <div className={cn("border-b border-hairline", SIDE_PANEL_INSET)}>
             <TabsList
               variant="line"
-              aria-label="Case peek sections"
+              aria-label={t("casePeek_casePeekSections")}
               className="h-10 w-full justify-start rounded-none"
             >
-              <TabsTrigger
-                value="overview"
-                className="h-full flex-none px-3 text-body-compact"
-              >
-                Overview
+              <TabsTrigger value="overview" className="h-full flex-none px-3 text-body-compact">
+                {t("casePeek_overview")}
               </TabsTrigger>
-              <TabsTrigger
-                value="history"
-                className="h-full flex-none px-3 text-body-compact"
-              >
-                Case History
+              <TabsTrigger value="history" className="h-full flex-none px-3 text-body-compact">
+                {t("casePeek_caseHistory")}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -293,11 +268,12 @@ function CasePeekOverview({
   stage: string;
   extras: ReturnType<typeof peekExtras>;
 }) {
+  const t = useTranslations();
   const tasks = extras.tasks ?? [];
   // The latest sitting that has a business of the day recorded.
   const latest = useMemo(
     () => hearingRecords(record).find((h) => h.summary && h.on <= dayStamp(now)),
-    [record, now]
+    [record, now],
   );
   const complainantCounsel = counselFor(record, "complainant");
   const accusedCounsel = counselFor(record, "accused");
@@ -305,42 +281,42 @@ function CasePeekOverview({
   return (
     <div className="flex flex-col gap-6 pt-6">
       <DescriptionList>
-        <PeekRow term="Stage">{stage}</PeekRow>
+        <PeekRow term={t("casePeek_stage")}>{stage}</PeekRow>
         {record.nextHearing ? (
-          <PeekRow term="Next posting">
+          <PeekRow term={t("casePeek_nextPosting")}>
             {isSameDay(record.nextHearing.on, now)
-              ? "Today"
+              ? t("casePeek_today")
               : formatCaseDate(record.nextHearing.on)}
-            {record.nextHearing.purpose ? (
-              <> — {record.nextHearing.purpose}</>
-            ) : null}
+            {record.nextHearing.purpose ? <> — {record.nextHearing.purpose}</> : null}
           </PeekRow>
         ) : null}
         <PartyRow
-          term="Complainant"
+          term={t("casePeek_complainant")}
           name={record.parties.complainant}
           counsel={complainantCounsel}
           appearing={extras.appearingFor === "complainant"}
         />
         <PartyRow
-          term="Accused"
+          term={t("casePeek_accused")}
           name={record.parties.accused}
           counsel={accusedCounsel}
           appearing={extras.appearingFor === "accused"}
         />
         {extras.chequeAmount ? (
-          <PeekRow term="Cheque amount">
+          <PeekRow term={t("casePeek_chequeAmount")}>
             {formatChequeAmount(extras.chequeAmount)}
           </PeekRow>
         ) : null}
-        <PeekRow term="Filed">{formatCaseDate(record.filedOn)}</PeekRow>
+        <PeekRow term={t("casePeek_filed")}>{formatCaseDate(record.filedOn)}</PeekRow>
       </DescriptionList>
 
       {/* Pending work comes before the last hearing: what still has to be done
           before the next posting outranks the record of the one that passed. */}
       {tasks.length > 0 ? (
         <section className="flex flex-col gap-4">
-          <SectionHeading count={tasks.length}>Pending before the hearing</SectionHeading>
+          <SectionHeading count={tasks.length}>
+            {t("casePeek_pendingBeforeTheHearing")}
+          </SectionHeading>
           <ItemGroup className="gap-3">
             {tasks.map((task) => (
               <TaskRow key={task.id} caseId={record.id} task={task} now={now} />
@@ -354,14 +330,14 @@ function CasePeekOverview({
           on={latest.on}
           purpose={latest.purpose}
           order={latest.summary as string}
-          label="Business of the day"
+          label={t("casePeek_businessOfTheDay")}
         />
       ) : record.previousHearingOn ? (
         <LastHearingCard
           on={record.previousHearingOn}
           purpose={record.substage ?? stageLabel(record.stage)}
           order={extras.orderOfTheDay ?? record.latestUpdate}
-          label={extras.orderOfTheDay ? "Order of the day" : "Latest update"}
+          label={extras.orderOfTheDay ? t("casePeek_orderOfTheDay") : t("casePeek_latestUpdate")}
         />
       ) : null}
     </div>
@@ -375,19 +351,11 @@ function CasePeekOverview({
  * quiet and the value carries the line. The primitive's per-row full border softens to a
  * hairline so the list reads as a spec, not a grid.
  */
-function PeekRow({
-  term,
-  children,
-}: {
-  term: string;
-  children: ReactNode;
-}) {
+function PeekRow({ term, children }: { term: string; children: ReactNode }) {
   return (
     <DescriptionRow className="border-hairline py-2.5">
       <DescriptionTerm>{term}</DescriptionTerm>
-      <DescriptionDetails className="font-medium">
-        {children}
-      </DescriptionDetails>
+      <DescriptionDetails className="font-medium">{children}</DescriptionDetails>
     </DescriptionRow>
   );
 }
@@ -405,6 +373,7 @@ function PartyRow({
   /** The signed-in advocate appears for this side. */
   appearing: boolean;
 }) {
+  const t = useTranslations();
   return (
     <DescriptionRow className="border-hairline py-2.5">
       <DescriptionTerm>{term}</DescriptionTerm>
@@ -413,13 +382,17 @@ function PartyRow({
           {name}
           {appearing ? (
             <>
-              <span aria-hidden> · </span>you appear
+              {t.rich("casePeek_youAppear", {
+                span: (chunks) => <span aria-hidden>{chunks}</span>,
+              })}
             </>
           ) : null}
         </span>
         {counsel.length > 0 ? (
           <span className="text-caption text-muted-foreground">
-            Counsel: {formatCounselList(counsel)}
+            {t("casePeek_counselFormatCounselList", {
+              formatCounselList: formatCounselList(counsel),
+            })}
           </span>
         ) : null}
       </DescriptionDetails>
@@ -428,13 +401,7 @@ function PartyRow({
 }
 
 /** Group label, not a page heading — the design keeps these quiet. */
-function SectionHeading({
-  count,
-  children,
-}: {
-  count?: number;
-  children: string;
-}) {
+function SectionHeading({ count, children }: { count?: number; children: string }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <h3 className="text-caption text-muted-foreground">{children}</h3>
@@ -461,6 +428,7 @@ function LastHearingCard({
   /** What the text is: the business of the day, or a fallback note. */
   label: string;
 }) {
+  const t = useTranslations();
   const day = new Date(`${on}T00:00:00`).toLocaleDateString("en-IN", {
     day: "numeric",
   });
@@ -470,9 +438,7 @@ function LastHearingCard({
 
   return (
     <section className="flex flex-col gap-4">
-      <SectionHeading>
-        Last hearing
-      </SectionHeading>
+      <SectionHeading>{t("casePeek_lastHearing")}</SectionHeading>
       <Card size="sm">
         <CardHeader>
           <div className="flex items-start gap-4">
@@ -480,28 +446,18 @@ function LastHearingCard({
               className="flex size-12 shrink-0 flex-col items-center justify-center rounded-lg bg-brand-muted"
               aria-hidden
             >
-              <span className="text-body font-semibold text-brand-muted-foreground">
-                {day}
-              </span>
-              <span className="text-caption text-brand-muted-foreground">
-                {month}
-              </span>
+              <span className="text-body font-semibold text-brand-muted-foreground">{day}</span>
+              <span className="text-caption text-brand-muted-foreground">{month}</span>
             </div>
             <div className="flex min-w-0 flex-col gap-1">
-              <CardTitle className="text-body font-medium">
-                {formatWeekdayDate(on)}
-              </CardTitle>
-              <CardDescription className="text-body-compact">
-                {purpose}
-              </CardDescription>
+              <CardTitle className="text-body font-medium">{formatWeekdayDate(on)}</CardTitle>
+              <CardDescription className="text-body-compact">{purpose}</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2 rounded-md bg-surface-sunken p-4">
-            <p className="text-body-compact font-medium text-foreground">
-              {label}
-            </p>
+            <p className="text-body-compact font-medium text-foreground">{label}</p>
             <p className="text-body-compact text-muted-foreground">{order}</p>
           </div>
         </CardContent>
@@ -510,15 +466,8 @@ function LastHearingCard({
   );
 }
 
-function TaskRow({
-  caseId,
-  task,
-  now,
-}: {
-  caseId: string;
-  task: CaseTask;
-  now: number;
-}) {
+function TaskRow({ caseId, task, now }: { caseId: string; task: CaseTask; now: number }) {
+  const t = useTranslations();
   const due = formatDueStatus(task.dueOn, now);
   /* Who holds it beats when it is due — the due status is already on the
      right, and it now carries the formatted date, so the fallback takes
@@ -528,17 +477,20 @@ function TaskRow({
   const detail = task.note
     ? task.note
     : task.assignedTo && task.markedOn
-      ? `Assigned to ${task.assignedTo} · marked ${formatCaseDate(task.markedOn)}`
+      ? t("casePeek_assignedToAssignedToMarkedFormat", {
+          assignedTo: task.assignedTo,
+          formatCaseDate: formatCaseDate(task.markedOn),
+        })
       : due.on;
 
   const dueLabel = (
     <p
       className={cn(
         "shrink-0 text-caption",
-        due.overdue ? "text-destructive-ink" : "text-muted-foreground"
+        due.overdue ? "text-destructive-ink" : "text-muted-foreground",
       )}
     >
-      {due.label}
+      {translateText(t, due.label)}
     </p>
   );
 
@@ -555,15 +507,11 @@ function TaskRow({
           <ItemTitle className="line-clamp-none text-body-compact font-medium text-foreground">
             {task.title}
           </ItemTitle>
-          <ItemDescription className="line-clamp-none text-caption">
-            {detail}
-          </ItemDescription>
+          <ItemDescription className="line-clamp-none text-caption">{detail}</ItemDescription>
           <div className="mt-1.5 flex items-center justify-between gap-3">
             {dueLabel}
             <Button variant="outline" size="xs" asChild>
-              <Link href={caseSectionHref(caseId, task.action.section)}>
-                {task.action.label}
-              </Link>
+              <Link href={caseSectionHref(caseId, task.action.section)}>{task.action.label}</Link>
             </Button>
           </div>
         </ItemContent>
@@ -581,9 +529,7 @@ function TaskRow({
           <ItemTitle className="line-clamp-none text-body-compact font-medium text-foreground">
             {task.title}
           </ItemTitle>
-          <ItemDescription className="line-clamp-none text-caption">
-            {detail}
-          </ItemDescription>
+          <ItemDescription className="line-clamp-none text-caption">{detail}</ItemDescription>
         </ItemContent>
         {dueLabel}
       </Link>
@@ -612,15 +558,21 @@ function CasePeekHistory({ record, now }: { record: CaseRecord; now: number }) {
         title: h.purpose,
         botd: h.summary,
         status: (h.on > today ? "future" : h.on === today ? "current" : "past") as
-          | "past"
-          | "current"
-          | "future",
+          "past" | "current" | "future",
       }));
     return [
       { key: "filed", on: filed.on, title: filed.title, botd: undefined, status: filed.status },
       ...hearings,
       ...(disposal
-        ? [{ key: "disposal", on: disposal.on, title: disposal.title, botd: undefined, status: disposal.status }]
+        ? [
+            {
+              key: "disposal",
+              on: disposal.on,
+              title: disposal.title,
+              botd: undefined,
+              status: disposal.status,
+            },
+          ]
         : []),
     ];
   }, [record, now]);
@@ -642,4 +594,3 @@ function CasePeekHistory({ record, now }: { record: CaseRecord; now: number }) {
     </div>
   );
 }
-

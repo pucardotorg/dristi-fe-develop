@@ -1,17 +1,11 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { CheckIcon } from "lucide-react"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { CheckIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Stepper({ className, ...props }: React.ComponentProps<"ol">) {
-  return (
-    <ol
-      data-slot="stepper"
-      className={cn("flex w-full items-start", className)}
-      {...props}
-    />
-  )
+  return <ol data-slot="stepper" className={cn("flex w-full items-start", className)} {...props} />;
 }
 
 const stepperItemVariants = cva(
@@ -27,8 +21,8 @@ const stepperItemVariants = cva(
     defaultVariants: {
       status: "upcoming",
     },
-  }
-)
+  },
+);
 
 const stepperIndicatorVariants = cva(
   "relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-medium",
@@ -44,8 +38,8 @@ const stepperIndicatorVariants = cva(
     defaultVariants: {
       status: "upcoming",
     },
-  }
-)
+  },
+);
 
 function StepperItem({
   className,
@@ -58,20 +52,19 @@ function StepperItem({
   ...props
 }: React.ComponentProps<"li"> &
   VariantProps<typeof stepperItemVariants> & {
-    step?: number | string
-    title?: React.ReactNode
+    step?: number | string;
+    title?: React.ReactNode;
     /**
      * Makes the step navigable — the indicator and title become a button that jumps
      * back to it. Leave unset for a static progress marker. Set it only on steps the
      * user may actually return to; a flow that cannot go back should not offer it.
      */
-    onActivate?: () => void
+    onActivate?: () => void;
     /** Accessible name for the navigable control; falls back to the title text. */
-    activateLabel?: string
+    activateLabel?: string;
   }) {
-  const indicator =
-    status === "complete" ? <CheckIcon className="size-4" aria-hidden /> : step
-  const label = activateLabel ?? (typeof title === "string" ? title : undefined)
+  const indicator = status === "complete" ? <CheckIcon className="size-4" aria-hidden /> : step;
+  const label = activateLabel ?? (typeof title === "string" ? title : undefined);
   return (
     <li
       data-slot="stepper-item"
@@ -88,16 +81,13 @@ function StepperItem({
             aria-label={label}
             className={cn(
               stepperIndicatorVariants({ status }),
-              "cursor-pointer outline-none transition-[box-shadow,background-color] hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/50 dark:hover:brightness-110"
+              "cursor-pointer outline-none transition-[box-shadow,background-color] hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/50 dark:hover:brightness-110",
             )}
           >
             {indicator}
           </button>
         ) : (
-          <div
-            data-slot="stepper-indicator"
-            className={cn(stepperIndicatorVariants({ status }))}
-          >
+          <div data-slot="stepper-indicator" className={cn(stepperIndicatorVariants({ status }))}>
             {indicator}
           </div>
         )}
@@ -109,7 +99,7 @@ function StepperItem({
                circle is 2rem, so the line starts 1rem right of centre and spans the
                gap). Owner, 2026-09-01: no visible gap at either end. */
             "absolute top-4 left-[calc(50%+1rem)] h-px w-[calc(100%-2rem)] group-last/stepper-item:hidden",
-            status === "complete" ? "bg-primary" : "bg-border"
+            status === "complete" ? "bg-primary" : "bg-border",
           )}
         />
       </div>
@@ -123,9 +113,7 @@ function StepperItem({
                 onClick={onActivate}
                 className={cn(
                   "cursor-pointer text-sm font-medium outline-none",
-                  status === "upcoming"
-                    ? "text-muted-foreground"
-                    : "text-foreground"
+                  status === "upcoming" ? "text-muted-foreground" : "text-foreground",
                 )}
               >
                 {title}
@@ -134,9 +122,7 @@ function StepperItem({
               <p
                 className={cn(
                   "text-sm font-medium",
-                  status === "upcoming"
-                    ? "text-muted-foreground"
-                    : "text-foreground"
+                  status === "upcoming" ? "text-muted-foreground" : "text-foreground",
                 )}
               >
                 {title}
@@ -147,7 +133,7 @@ function StepperItem({
         </div>
       ) : null}
     </li>
-  )
+  );
 }
 
-export { Stepper, StepperItem }
+export { Stepper, StepperItem };

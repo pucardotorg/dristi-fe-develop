@@ -5,9 +5,12 @@ import { FileSpreadsheetIcon, UploadIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 function sizeOf(bytes: number): string {
-  return bytes >= 1_000_000 ? `${(bytes / 1_000_000).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1000))} KB`;
+  return bytes >= 1_000_000
+    ? `${(bytes / 1_000_000).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1000))} KB`;
 }
 
 /**
@@ -36,6 +39,7 @@ export function FileDrop({
   hint: string;
   disabled?: boolean;
 }) {
+  const t = useTranslations();
   const input = React.useRef<HTMLInputElement>(null);
   const [over, setOver] = React.useState(false);
   const chosen = files.length > 0;
@@ -46,7 +50,7 @@ export function FileDrop({
       className={cn(
         "flex flex-col items-center gap-3 rounded-xl border border-dashed px-6 py-8 text-center transition-colors",
         over ? "border-ring bg-accent" : chosen ? "border-input bg-surface-sunken" : "border-input",
-        disabled && "opacity-50"
+        disabled && "opacity-50",
       )}
       onDragOver={(e) => {
         if (disabled) return;
@@ -68,15 +72,20 @@ export function FileDrop({
           <div className="flex flex-col gap-0.5">
             {files.slice(0, 3).map((f) => (
               <span key={f.name} className="text-body-compact font-medium">
-                {f.name} <span className="font-normal text-muted-foreground tabular-nums">· {sizeOf(f.size)}</span>
+                {f.name}{" "}
+                <span className="font-normal text-muted-foreground tabular-nums">
+                  · {sizeOf(f.size)}
+                </span>
               </span>
             ))}
             {files.length > 3 ? (
-              <span className="text-caption text-muted-foreground tabular-nums">and {files.length - 3} more</span>
+              <span className="text-caption text-muted-foreground tabular-nums">
+                {t("fileDrop_andValueMore", { value: String(files.length - 3) })}
+              </span>
             ) : null}
           </div>
           <Button type="button" variant="outline" size="sm" onClick={choose} disabled={disabled}>
-            Change
+            {t("fileDrop_change")}
           </Button>
         </>
       ) : (
@@ -84,7 +93,9 @@ export function FileDrop({
           <UploadIcon className="size-8 text-muted-foreground" aria-hidden />
           <div className="flex flex-col gap-0.5">
             <span className="text-body-compact font-medium">{prompt}</span>
-            <span className="text-caption text-muted-foreground">or choose {multiple ? "them" : "it"} from your computer · {hint}</span>
+            <span className="text-caption text-muted-foreground">
+              or choose {multiple ? "them" : "it"} from your computer · {hint}
+            </span>
           </div>
           <Button type="button" variant="outline" onClick={choose} disabled={disabled}>
             Choose {multiple ? "files" : "file"}

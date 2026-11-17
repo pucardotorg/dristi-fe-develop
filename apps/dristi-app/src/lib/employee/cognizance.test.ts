@@ -82,9 +82,7 @@ describe("COGNIZANCE_QUEUE", () => {
   it("exercises every state the screens have to survive", () => {
     assert.ok(COGNIZANCE_QUEUE.some((row) => hasDelay(row)));
     assert.ok(COGNIZANCE_QUEUE.some((row) => !hasDelay(row)));
-    assert.ok(
-      COGNIZANCE_QUEUE.some((row) => row.noticeAfterDays > NOTICE_WINDOW_DAYS),
-    );
+    assert.ok(COGNIZANCE_QUEUE.some((row) => row.noticeAfterDays > NOTICE_WINDOW_DAYS));
     assert.ok(COGNIZANCE_QUEUE.some((row) => row.branch.place !== COURT_PLACE));
     assert.ok(COGNIZANCE_QUEUE.some((row) => !row.noticeDelivered));
     assert.ok(COGNIZANCE_QUEUE.some((row) => row.counsel.length === 0));
@@ -115,14 +113,8 @@ describe("COURT_PLACE", () => {
 describe("delayDays", () => {
   it("is null inside the month §142(b) allows, and the excess past it", () => {
     assert.equal(delayDays({ filedAfterCauseDays: 1 } as CognizanceCase), null);
-    assert.equal(
-      delayDays({ filedAfterCauseDays: LIMITATION_DAYS } as CognizanceCase),
-      null,
-    );
-    assert.equal(
-      delayDays({ filedAfterCauseDays: LIMITATION_DAYS + 1 } as CognizanceCase),
-      1,
-    );
+    assert.equal(delayDays({ filedAfterCauseDays: LIMITATION_DAYS } as CognizanceCase), null);
+    assert.equal(delayDays({ filedAfterCauseDays: LIMITATION_DAYS + 1 } as CognizanceCase), 1);
     assert.equal(delayDays({ filedAfterCauseDays: 50 } as CognizanceCase), 20);
   });
 });
@@ -131,10 +123,7 @@ describe("chainFor", () => {
   it("runs backwards from the day the complaint was registered", () => {
     const matter = find("c-2041");
     const chain = chainFor(matter, TODAY);
-    assert.equal(
-      daysBetween(chain.registeredOn, TODAY),
-      matter.daysSinceRegistered,
-    );
+    assert.equal(daysBetween(chain.registeredOn, TODAY), matter.daysSinceRegistered);
     assert.ok(chain.filedOn < chain.registeredOn);
   });
 
@@ -218,10 +207,7 @@ describe("findingsFor", () => {
        condonation application on record is ordinary work, not a defect. */
     const limitation = findings.find((entry) => entry.id === "limitation")!;
     assert.equal(limitation.weight, "note");
-    assert.equal(
-      limitation.statement,
-      "The complaint is outside the limitation period.",
-    );
+    assert.equal(limitation.statement, "The complaint is outside the limitation period.");
     assert.match(limitation.consequence, /20 days beyond the month/);
     assert.equal(limitation.term, "Date of complaint filing");
   });
@@ -278,18 +264,14 @@ describe("findingsFor", () => {
           KNOWN_TERMS.has(finding.term),
           `${matter.id}: finding term "${finding.term}" is not one the file states`,
         );
-        assert.equal(
-          findingForTerm(findingsFor(matter), finding.term)?.id,
-          finding.id,
-        );
+        assert.equal(findingForTerm(findingsFor(matter), finding.term)?.id, finding.id);
       }
     }
   });
 });
 
 describe("summaryChunksFor", () => {
-  const chunksOf = (id: string) =>
-    summaryChunksFor(find(id), chainFor(find(id), TODAY));
+  const chunksOf = (id: string) => summaryChunksFor(find(id), chainFor(find(id), TODAY));
   const fieldsOf = (id: string) => chunksOf(id).flatMap((chunk) => chunk.fields);
 
   it("chunks a late complaint, leading with the Complaint group", () => {
@@ -443,7 +425,7 @@ describe("cnrFor", () => {
 });
 
 describe("the shape of the findings block", () => {
-  it("never has more than two criticals, so \"either one\" always holds", () => {
+  it('never has more than two criticals, so "either one" always holds', () => {
     for (const matter of COGNIZANCE_QUEUE) {
       const critical = findingsFor(matter).filter(
         (finding) => finding.weight === "critical",
@@ -469,10 +451,7 @@ describe("filterCognizanceCases", () => {
   });
 
   it("matches a cause, either number, or an advocate", () => {
-    assert.equal(
-      filterCognizanceCases(COGNIZANCE_QUEUE, { query: "sainaba" })[0]?.id,
-      "c-2041",
-    );
+    assert.equal(filterCognizanceCases(COGNIZANCE_QUEUE, { query: "sainaba" })[0]?.id, "c-2041");
     assert.equal(
       filterCognizanceCases(COGNIZANCE_QUEUE, { query: "CMP/2015/2025" })[0]?.id,
       "c-2015",
@@ -481,9 +460,7 @@ describe("filterCognizanceCases", () => {
       filterCognizanceCases(COGNIZANCE_QUEUE, { query: "KL-001629-2025" })[0]?.id,
       "c-2041",
     );
-    assert.ok(
-      filterCognizanceCases(COGNIZANCE_QUEUE, { query: "nisha" }).length > 0,
-    );
+    assert.ok(filterCognizanceCases(COGNIZANCE_QUEUE, { query: "nisha" }).length > 0);
   });
 
   it("narrows one tab's rows without reaching into the other", () => {
@@ -494,10 +471,7 @@ describe("filterCognizanceCases", () => {
   });
 
   it("can match nothing, which is the screen's filtered empty state", () => {
-    assert.equal(
-      filterCognizanceCases(COGNIZANCE_QUEUE, { query: "no such party" }).length,
-      0,
-    );
+    assert.equal(filterCognizanceCases(COGNIZANCE_QUEUE, { query: "no such party" }).length, 0);
   });
 });
 
@@ -523,10 +497,7 @@ describe("the tabs", () => {
 
   it("counts each tab over the whole queue, so a search cannot move it", () => {
     for (const tab of COGNIZANCE_TABS) {
-      assert.equal(
-        cognizanceTabCount(tab.id),
-        casesOnTab(COGNIZANCE_QUEUE, tab.id).length,
-      );
+      assert.equal(cognizanceTabCount(tab.id), casesOnTab(COGNIZANCE_QUEUE, tab.id).length);
     }
   });
 
@@ -586,10 +557,7 @@ describe("primaryActFor", () => {
 
 describe("COGNIZANCE_ACTS", () => {
   it("names the order items the register's own catalogue carries", () => {
-    assert.deepEqual(COGNIZANCE_ACTS.cognizance.items, [
-      "Order for taking cognizance",
-      "Summons",
-    ]);
+    assert.deepEqual(COGNIZANCE_ACTS.cognizance.items, ["Order for taking cognizance", "Summons"]);
     assert.deepEqual(COGNIZANCE_ACTS.dismiss.items, ["Order to dismiss case"]);
     assert.deepEqual(COGNIZANCE_ACTS.notice.items, ["Notice"]);
   });
@@ -641,7 +609,11 @@ describe("Gujarat's case-type split (owner, 2026-10-13)", () => {
   });
 
   it("shows each complaint's number with the type of the tab it sits on", () => {
-    const prefix = { "criminal-case": "eCC", "criminal-inquiry": "eCR EN", "criminal-misc": "eCR MA" };
+    const prefix = {
+      "criminal-case": "eCC",
+      "criminal-inquiry": "eCR EN",
+      "criminal-misc": "eCR MA",
+    };
     for (const matter of COGNIZANCE_QUEUE) {
       const tab = tabFor(matter, "gujarat") as keyof typeof prefix;
       assert.equal(gujaratCaseTypeOf(matter.caseNumber), prefix[tab], matter.id);

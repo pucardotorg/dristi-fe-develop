@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PersonAvatar } from "@/components/tasks/person-avatar";
+import { useTranslations } from "next-intl";
 
 /**
  * A stack of advocates: the main advocate (first on the vakalatnama) first, then the
@@ -37,21 +38,30 @@ export function AdvocateStack({
   max?: number;
   className?: string;
 }) {
+  const t = useTranslations();
   const all = advocates ?? advocatesOf(kase, people);
   const shown = all.slice(0, max);
   const rest = all.length - shown.length;
   const onVakalatnama = (p: Person) => kase.signatories.includes(p.id);
-  const names = all.map((p) => (onVakalatnama(p) ? `${p.name} (on the vakalatnama)` : p.name)).join(", ");
+  const names = all
+    .map((p) => (onVakalatnama(p) ? `${p.name} (on the vakalatnama)` : p.name))
+    .join(", ");
   if (!all.length) return null;
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <AvatarGroup role="group" aria-label={`${label}: ${names}`} className={cn("w-fit -space-x-1", className)}>
+        <AvatarGroup
+          role="group"
+          aria-label={`${label}: ${names}`}
+          className={cn("w-fit -space-x-1", className)}
+        >
           {shown.map((p) => (
             <PersonAvatar key={p.id} person={p} you={p.id === user.id} size="default" />
           ))}
           {rest > 0 ? (
-            <AvatarGroupCount className="bg-surface-sunken text-caption font-medium tabular-nums text-foreground">+{rest}</AvatarGroupCount>
+            <AvatarGroupCount className="bg-surface-sunken text-caption font-medium tabular-nums text-foreground">
+              +{rest}
+            </AvatarGroupCount>
           ) : null}
         </AvatarGroup>
       </TooltipTrigger>
@@ -60,7 +70,7 @@ export function AdvocateStack({
           {all.map((p) => (
             <li key={p.id}>
               {p.name}
-              {onVakalatnama(p) ? " · on the vakalatnama" : null}
+              {onVakalatnama(p) ? t("advocateStack_onTheVakalatnama") : null}
             </li>
           ))}
         </ul>

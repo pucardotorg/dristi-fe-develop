@@ -29,7 +29,10 @@ export function FilingBreadcrumbs() {
   const pathname = usePathname();
   const { draftLabel } = useFilingChrome();
 
-  const first = pathname.replace(/^\/filings\/?/, "").split("/").filter(Boolean)[0];
+  const first = pathname
+    .replace(/^\/filings\/?/, "")
+    .split("/")
+    .filter(Boolean)[0];
   const stepId = stepFromPathname(pathname);
 
   // The signing request publishes its own trail, named for the case it holds.
@@ -44,8 +47,7 @@ export function FilingBreadcrumbs() {
     crumbs.push({ label: "Additional details formats" });
   } else if (stepId) {
     crumbs.push({
-      label:
-        draftLabel && draftLabel !== "Untitled filing" ? draftLabel : CASE_FILING_LABEL,
+      label: draftLabel && draftLabel !== "Untitled filing" ? draftLabel : CASE_FILING_LABEL,
     });
     crumbs.push({ label: courtText(getStep(stepId).title) });
   } else if (first) {

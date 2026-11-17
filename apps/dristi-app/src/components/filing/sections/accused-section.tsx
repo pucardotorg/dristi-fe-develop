@@ -54,8 +54,10 @@ import {
 } from "@/components/filing/repeat-lists";
 import { SectionTabs } from "@/components/filing/section-tabs";
 import { YesNoSegmented } from "@/components/filing/segmented";
+import { useTranslations } from "next-intl";
 
 export function AccusedSection() {
+  const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
   const router = useRouter();
   const { prev, next } = neighbours("accused");
@@ -122,9 +124,7 @@ export function AccusedSection() {
    */
   const missingContact = draft.accused.filter((acc) => !accusedHasContact(acc));
   const missingNames = nameList(
-    draft.accused.flatMap((acc, i) =>
-      accusedHasContact(acc) ? [] : [accusedLabel(acc, i)]
-    )
+    draft.accused.flatMap((acc, i) => (accusedHasContact(acc) ? [] : [accusedLabel(acc, i)])),
   );
 
   const handleContinue = () => {
@@ -164,8 +164,8 @@ export function AccusedSection() {
     <>
       <FilingMain>
         <FilingPageHeader
-          title="Accused details"
-          description="Add the person or entity this complaint is filed against."
+          title={t("accusedSection_accusedDetails")}
+          description={t("accusedSection_addThePersonOrEntityThis")}
         />
 
         {unsaved.length > 0 ? (
@@ -188,13 +188,13 @@ export function AccusedSection() {
           activeId={a.id}
           onSelect={setActiveId}
           onRemove={askRemove}
-          addLabel="Add accused"
+          addLabel={t("accusedSection_addAccused")}
           onAdd={addAccused}
         />
 
         {/* Which accused the fields below belong to, so a check can point at its field. */}
         <CorrectionInstance value={index}>
-        {/*
+          {/*
           Identity. "Is the accused a person or an institution?" and "what kind of
           institution?" are two questions: the old single list made you answer the second
           to get past the first, and left "Proprietorship" sitting next to "Individual" as
@@ -203,111 +203,119 @@ export function AccusedSection() {
           Age is gone. It was optional, nothing downstream read it, and nobody knows the
           age of the person they are suing (owner, 2026-08-19).
         */}
-        <FormCard title={isIndividual ? `Accused ${index + 1} details` : "Entity details"}>
-          <FormRow>
-            <FormField label="Accused type" required>
-              <OptionSelect
-                value={a.type}
-                onValueChange={(v) => setField("type", v as AccusedType)}
-                options={ACCUSED_TYPES}
-              />
-            </FormField>
-            {isIndividual ? null : (
-              <FormField label="Type of entity" name="entType" required>
+          <FormCard
+            title={
+              isIndividual
+                ? t("accusedSection_accusedValueDetails", { value: String(index + 1) })
+                : t("accusedSection_entityDetails")
+            }
+          >
+            <FormRow>
+              <FormField label={t("accusedSection_accusedType")} required>
                 <OptionSelect
-                  value={a.entType}
-                  onValueChange={(v) => setField("entType", v)}
-                  options={ACCUSED_ENTITY_TYPES}
-                  placeholder="Select type"
+                  value={a.type}
+                  onValueChange={(v) => setField("type", v as AccusedType)}
+                  options={ACCUSED_TYPES}
                 />
               </FormField>
-            )}
-          </FormRow>
-          <HalfWidth>
-            <FormField label={isIndividual ? "Full name" : "Entity name"} name="name" required>
-              <TextField
-                value={a.name}
-                onChange={(v) => setField("name", v)}
-                placeholder="As it should appear on the summons"
-                autoComplete="off"
-              />
-            </FormField>
-          </HalfWidth>
-        </FormCard>
+              {isIndividual ? null : (
+                <FormField label={t("accusedSection_typeOfEntity")} name="entType" required>
+                  <OptionSelect
+                    value={a.entType}
+                    onValueChange={(v) => setField("entType", v)}
+                    options={ACCUSED_ENTITY_TYPES}
+                    placeholder={t("accusedSection_selectType")}
+                  />
+                </FormField>
+              )}
+            </FormRow>
+            <HalfWidth>
+              <FormField
+                label={isIndividual ? t("accusedSection_fullName") : t("accusedSection_entityName")}
+                name="name"
+                required
+              >
+                <TextField
+                  value={a.name}
+                  onChange={(v) => setField("name", v)}
+                  placeholder={t("accusedSection_asItShouldAppearOnThe")}
+                  autoComplete="off"
+                />
+              </FormField>
+            </HalfWidth>
+          </FormCard>
 
-        {/*
+          {/*
           Who answers for the entity. Under S-141 the company is not summoned alone —
           every person who was in charge of its business when the cheque bounced is
           proceeded against with it, so this is a list, not a field.
         */}
-        {isIndividual ? null : (
+          {isIndividual ? null : (
+            <FormCard
+              title={t("accusedSection_whoIsSummonedForTheEntity")}
+              description={t("accusedSection_directorsPartnersOrOfficersInCharge")}
+            >
+              <RepresentativeList reps={a.reps} onChange={(reps) => setField("reps", reps)} />
+            </FormCard>
+          )}
+
+          {/* Contact */}
           <FormCard
-            title="Who is summoned for the entity"
-            description="Directors, partners or officers in charge of the business when the cheque was dishonoured. Each is summoned with the entity."
+            title={t("accusedSection_contactDetails")}
+            description={t("accusedSection_whereTheCourtCanReachThe")}
           >
-            <RepresentativeList
-              reps={a.reps}
-              onChange={(reps) => setField("reps", reps)}
+            <ContactList
+              contacts={a.contacts}
+              onChange={(contacts) => setField("contacts", contacts)}
             />
           </FormCard>
-        )}
 
-        {/* Contact */}
-        <FormCard
-          title="Contact details"
-          description="Where the court can reach the accused."
-        >
-          <ContactList
-            contacts={a.contacts}
-            onChange={(contacts) => setField("contacts", contacts)}
-          />
-        </FormCard>
-
-        {/* Service addresses */}
-        <FormCard title="Address details">
-          {!draft.dismissed.accusedAddress ? (
-            <SectionNotice
-              variant="info"
-              onDismiss={() =>
-                update((d) => {
-                  d.dismissed.accusedAddress = true;
-                })
-              }
-            >
-              The summons goes to every address listed here.
-            </SectionNotice>
-          ) : null}
-          <AddressBlockList
-            blocks={a.addresses}
-            onChange={(addresses) => setField("addresses", addresses)}
-          />
-        </FormCard>
-
-        {/* Jurisdiction */}
-        <FormCard title="Jurisdiction">
-          <FormField
-            asGroup
-            label="Does the accused reside within the jurisdiction of this court?"
-            help="The court decides jurisdiction on the facts."
-          >
-            <YesNoSegmented
-              value={a.jurisdiction}
-              onValueChange={(v) => setField("jurisdiction", v)}
-              ariaLabel="Does the accused reside within the jurisdiction of this court?"
+          {/* Service addresses */}
+          <FormCard title={t("accusedSection_addressDetails")}>
+            {!draft.dismissed.accusedAddress ? (
+              <SectionNotice
+                variant="info"
+                onDismiss={() =>
+                  update((d) => {
+                    d.dismissed.accusedAddress = true;
+                  })
+                }
+              >
+                {t("accusedSection_theSummonsGoesToEveryAddress")}
+              </SectionNotice>
+            ) : null}
+            <AddressBlockList
+              blocks={a.addresses}
+              onChange={(addresses) => setField("addresses", addresses)}
             />
-          </FormField>
-        </FormCard>
+          </FormCard>
+
+          {/* Jurisdiction */}
+          <FormCard title={t("accusedSection_jurisdiction")}>
+            <FormField
+              asGroup
+              label={t("accusedSection_doesTheAccusedResideWithinThe")}
+              help={t("accusedSection_theCourtDecidesJurisdictionOnThe")}
+            >
+              <YesNoSegmented
+                value={a.jurisdiction}
+                onValueChange={(v) => setField("jurisdiction", v)}
+                ariaLabel={t("accusedSection_doesTheAccusedResideWithinThe")}
+              />
+            </FormField>
+          </FormCard>
         </CorrectionInstance>
       </FilingMain>
 
-      <FilingFooter
-        backHref={prev ? hrefFor(prev) : undefined}
-        onContinue={handleContinue}
-      />
+      <FilingFooter backHref={prev ? hrefFor(prev) : undefined} onContinue={handleContinue} />
 
       {/* Continue while some accused — named here — has no phone or email. */}
       <Dialog open={noContactOpen} onOpenChange={setNoContactOpen}>
-        <ChromeDialogContent mobileSheet className="sm:max-w-lg" onInteractOutside={(event) => event.preventDefault()}>
+        <ChromeDialogContent
+          mobileSheet
+          className="sm:max-w-lg"
+          onInteractOutside={(event) => event.preventDefault()}
+        >
           <DialogHeader>
             <div className="flex items-center gap-3">
               <span
@@ -316,19 +324,18 @@ export function AccusedSection() {
               >
                 <InfoIcon className="size-5" />
               </span>
-              <DialogTitle>No contact details added</DialogTitle>
+              <DialogTitle>{t("accusedSection_noContactDetailsAdded")}</DialogTitle>
             </div>
             <DialogDescription>
-              No phone number or email has been added for {missingNames}. Adding one
-              increases the chances of the summons being delivered.
+              {t("accusedSection_noPhoneNumberOrEmailHas", { missingNames })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={proceedWithoutDetails}>
-              Proceed without details
+              {t("accusedSection_proceedWithoutDetails")}
             </Button>
             <Button type="button" onClick={goToMissing}>
-              Add details
+              {t("accusedSection_addDetails")}
             </Button>
           </DialogFooter>
         </ChromeDialogContent>
@@ -336,9 +343,14 @@ export function AccusedSection() {
 
       {/* The confirmation itself — the court is told this was a considered choice. */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <ChromeDialogContent mobileSheet aria-describedby={confirmStatementId} className="sm:max-w-lg" onInteractOutside={(event) => event.preventDefault()}>
+        <ChromeDialogContent
+          mobileSheet
+          aria-describedby={confirmStatementId}
+          className="sm:max-w-lg"
+          onInteractOutside={(event) => event.preventDefault()}
+        >
           <DialogHeader>
-            <DialogTitle>Confirm: proceed without details</DialogTitle>
+            <DialogTitle>{t("accusedSection_confirmProceedWithoutDetails")}</DialogTitle>
           </DialogHeader>
           <Label
             htmlFor={confirmCheckboxId}
@@ -353,13 +365,12 @@ export function AccusedSection() {
             />
             {/* Wraps to several lines — the Label's own leading-none would collide. */}
             <span className="leading-normal">
-              I confirm that I have no knowledge of the electronic contact details of{" "}
-              {missingNames}, and cannot locate them with reasonable effort.
+              {t("accusedSection_iConfirmThatIHaveNo", { missingNames })}
             </span>
           </Label>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={goToMissing}>
-              Add details
+              {t("accusedSection_addDetails")}
             </Button>
             <Button
               type="button"
@@ -367,21 +378,21 @@ export function AccusedSection() {
               disabled={!confirmChecked}
               aria-disabled={!confirmChecked || undefined}
             >
-              Confirm
+              {t("accusedSection_confirm")}
             </Button>
           </DialogFooter>
         </ChromeDialogContent>
       </Dialog>
 
       <ConfirmDialog
-        note="This cannot be undone."
+        note={t("accusedSection_thisCannotBeUndone")}
         open={pendingRemove !== null}
         onOpenChange={(open) => {
           if (!open) setPendingRemove(null);
         }}
         title={`Remove ${pendingRemoveLabel || "accused"}`}
-        description="Are you sure you want to delete this accused and all their contact and address details?"
-        confirmLabel="Yes, remove"
+        description={t("accusedSection_areYouSureYouWantTo")}
+        confirmLabel={t("accusedSection_yesRemove")}
         onConfirm={() => {
           if (pendingRemove) removeAccused(pendingRemove);
           setPendingRemove(null);

@@ -4,10 +4,7 @@ import * as React from "react";
 import { CalendarDaysIcon } from "lucide-react";
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
-import {
-  DayBreakdown,
-  LoadCalendar,
-} from "@/components/employee/next-hearing-fields";
+import { DayBreakdown, LoadCalendar } from "@/components/employee/next-hearing-fields";
 import { PurposeField } from "@/components/employee/purpose-field";
 import { useCourtToday } from "@/components/employee/use-court-today";
 import { useHearingSession } from "@/components/employee/use-hearing-session";
@@ -45,16 +42,14 @@ import { listingLoad } from "@/lib/employee/listing-load";
 import { NO_CAUSE_POSTING } from "@/lib/employee/order-draft";
 import { initialOrderDraft } from "@/lib/employee/order-demo";
 import { orderInitialDraft } from "@/lib/employee/order-door";
-import {
-  editorDraftKey,
-  updateOrderDraft,
-} from "@/lib/employee/order-drafts";
+import { editorDraftKey, updateOrderDraft } from "@/lib/employee/order-drafts";
 import type { OrderSigning } from "@/lib/employee/order-signing";
 import {
   noteOrderDraft,
   noteOrderTextEdited,
   type PendingOrders,
 } from "@/lib/employee/pending-orders";
+import { useTranslations } from "next-intl";
 
 /**
  * Bulk work on the cause list (order-generation `CLS-09`, `CLS-10`, `CLS-12`).
@@ -96,7 +91,6 @@ function plural(count: number, one: string, many: string): string {
 
 /* ─────────────────────────────── the bulk bar ─────────────────────────────── */
 
-
 /**
  * What is selected, and the acts — sticky at the foot of the page, as the Orders view's
  * Sign bar is. The line beside the button is live, so the selection and each outcome are
@@ -121,6 +115,7 @@ export function CauseListBulkBar({
   pending: PendingOrders;
   signing: OrderSigning;
 }) {
+  const t = useTranslations();
   const [open, setOpenState] = React.useState<"actions" | "text" | null>(null);
   /* A count of openings, so the pop-up opens fresh each time. */
   const [opening, setOpening] = React.useState(0);
@@ -133,7 +128,7 @@ export function CauseListBulkBar({
   const summary =
     notice ||
     (count === 0
-      ? "Select the hearings to act on."
+      ? t("causeListBulk_selectTheHearingsToActOn")
       : `${count} ${plural(count, "hearing", "hearings")} selected.`);
 
   function finish(message: string) {
@@ -161,7 +156,7 @@ export function CauseListBulkBar({
           >
             {count > 0
               ? `Add text to ${count} ${plural(count, "order", "orders")}`
-              : "Add text to orders"}
+              : t("causeListBulk_addTextToOrders")}
           </Button>
         ) : null}
         {actions ? (
@@ -171,7 +166,7 @@ export function CauseListBulkBar({
             className="w-full sm:w-fit"
             onClick={() => setOpen("actions")}
           >
-            Bulk actions
+            {t("causeListBulk_bulkActions")}
           </Button>
         ) : null}
       </div>
@@ -241,6 +236,7 @@ function BulkActionsDialog({
   onOpenChange: (open: boolean) => void;
   onConfirm: (message: string) => void;
 }) {
+  const t = useTranslations();
   const [outcome, setOutcome] = React.useState<Outcome>("keep");
   const [date, setDate] = React.useState<string | null>(null);
   const [notListed, setNotListed] = React.useState(false);
@@ -294,19 +290,18 @@ function BulkActionsDialog({
       <DialogContent className="sm:max-w-lg" {...guard.contentProps} {...guard.outsideProps}>
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            Bulk actions
+            {t("causeListBulk_bulkActions")}
           </DialogTitle>
           <DialogDescription className="text-body-compact">
-            For {selected.length} selected{" "}
-            {plural(selected.length, "hearing", "hearings")}. What you leave as it is
-            stays as each hearing has it.
+            For {selected.length} selected {plural(selected.length, "hearing", "hearings")}. What
+            you leave as it is stays as each hearing has it.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-6">
           {roles.hearing ? (
             <div className="flex flex-col gap-3">
               <span id="bulk-outcome-label" className="text-body-compact font-medium">
-                Hearing
+                {t("causeListBulk_hearing")}
               </span>
               <RadioGroup
                 aria-labelledby="bulk-outcome-label"
@@ -331,30 +326,28 @@ function BulkActionsDialog({
                 ))}
               </RadioGroup>
               {outcome === "complete" &&
-                marking.some((hearing) => hearing.status === "scheduled") ? (
+              marking.some((hearing) => hearing.status === "scheduled") ? (
                 <p className="text-caption text-muted-foreground">
-                  A Scheduled hearing is started and ended with this press.
+                  {t("causeListBulk_aScheduledHearingIsStartedAnd")}
                 </p>
               ) : null}
               {outcome !== "keep" && leaving.length > 0 ? (
                 <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-4">
                   <p className="text-body-compact font-medium">
-                    {leaving.length} selected{" "}
-                    {plural(leaving.length, "hearing is", "hearings are")} left as{" "}
-                    {plural(leaving.length, "it is", "they are")} — only a Scheduled or
+                    {leaving.length} selected {plural(leaving.length, "hearing is", "hearings are")}{" "}
+                    left as {plural(leaving.length, "it is", "they are")} — only a Scheduled or
                     Ongoing hearing can be {outcomeWord}
                   </p>
                   <ul className="flex flex-col gap-1 text-body-compact text-muted-foreground">
                     {leaving.map((hearing) => (
                       <li key={hearing.id}>
-                        <span className="tabular-nums">{hearing.item}.</span>{" "}
-                        {causeTitle(hearing)}
+                        <span className="tabular-nums">{hearing.item}.</span> {causeTitle(hearing)}
                       </li>
                     ))}
                   </ul>
                   {roles.next ? (
                     <p className="text-caption text-muted-foreground">
-                      The next date and purpose still apply to them.
+                      {t("causeListBulk_theNextDateAndPurposeStill")}
                     </p>
                   ) : null}
                 </div>
@@ -371,12 +364,14 @@ function BulkActionsDialog({
                 count={selected.length}
               />
               <div className="flex flex-col gap-2">
-                <Label id="bulk-set-purpose-label">Next hearing purpose</Label>
+                <Label id="bulk-set-purpose-label">{t("causeListBulk_nextHearingPurpose")}</Label>
                 <PurposeField
                   value={notListed ? null : purpose}
                   disabled={notListed}
                   onChange={setPurpose}
-                  placeholder={notListed ? "Not listed" : "Leave as it is"}
+                  placeholder={
+                    notListed ? t("causeListBulk_notListed") : t("causeListBulk_leaveAsItIs")
+                  }
                   labelledBy="bulk-set-purpose-label"
                 />
                 {purpose && !notListed ? (
@@ -386,7 +381,7 @@ function BulkActionsDialog({
                     className="h-auto w-fit p-0"
                     onClick={() => setPurpose(null)}
                   >
-                    Leave each purpose as it is
+                    {t("causeListBulk_leaveEachPurposeAsItIs")}
                   </Button>
                 ) : null}
               </div>
@@ -396,12 +391,11 @@ function BulkActionsDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
+              {t("common_cancel")}
             </Button>
           </DialogClose>
           <Button type="button" disabled={!changes} onClick={confirm}>
-            Apply to {selected.length}{" "}
-            {plural(selected.length, "hearing", "hearings")}
+            Apply to {selected.length} {plural(selected.length, "hearing", "hearings")}
           </Button>
         </DialogFooter>
         <DiscardQuestion guard={guard} />
@@ -427,6 +421,7 @@ function BulkDateField({
   onNotListed: (notListed: boolean) => void;
   count: number;
 }) {
+  const t = useTranslations();
   const today = useCourtToday();
   const session = useHearingSession();
   const [open, setOpen] = React.useState(false);
@@ -435,14 +430,14 @@ function BulkDateField({
     [open, today, session.postings],
   );
   const shown = notListed
-    ? "Not listed again"
+    ? t("causeListBulk_notListedAgain")
     : date
       ? formatListingDate(date)
-      : "Leave as it is";
+      : t("causeListBulk_leaveAsItIs");
 
   return (
     <div className="flex flex-col gap-2">
-      <Label id="bulk-set-date-label">Next hearing date</Label>
+      <Label id="bulk-set-date-label">{t("causeListBulk_nextHearingDate")}</Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -490,14 +485,10 @@ function BulkDateField({
                   htmlFor="bulk-set-not-listed"
                   className="cursor-pointer text-body-compact font-normal"
                 >
-                  Not listed again
+                  {t("causeListBulk_notListedAgain")}
                 </Label>
-                <Button
-                  type="button"
-                  className="ml-auto"
-                  onClick={() => setOpen(false)}
-                >
-                  Done
+                <Button type="button" className="ml-auto" onClick={() => setOpen(false)}>
+                  {t("causeListBulk_done")}
                 </Button>
               </div>
             </div>
@@ -562,15 +553,12 @@ function OrderTextDialog({
   onOpenChange: (open: boolean) => void;
   onConfirm: (message: string) => void;
 }) {
+  const t = useTranslations();
   const today = useCourtToday();
   const [text, setText] = React.useState("");
 
-  const taking = selected.filter((hearing) =>
-    stillDrafting(hearing, pending, signing),
-  );
-  const leaving = selected.filter(
-    (hearing) => !stillDrafting(hearing, pending, signing),
-  );
+  const taking = selected.filter((hearing) => stillDrafting(hearing, pending, signing));
+  const leaving = selected.filter((hearing) => !stillDrafting(hearing, pending, signing));
   const empty = text.trim().length === 0;
   const guard = useDiscardGuard(!empty, () => onOpenChange(false));
 
@@ -613,38 +601,34 @@ function OrderTextDialog({
       <DialogContent className="sm:max-w-xl" {...guard.contentProps} {...guard.outsideProps}>
         <DialogHeader>
           <DialogTitle className="text-title-s font-semibold">
-            Add the same text to {taking.length}{" "}
-            {plural(taking.length, "order", "orders")}
+            Add the same text to {taking.length} {plural(taking.length, "order", "orders")}
           </DialogTitle>
           <DialogDescription className="text-body-compact">
-            It goes at the end of each order&rsquo;s text. Each order can still be
-            edited on its own.
+            {t("causeListBulk_itGoesAtTheEndOf")}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="bulk-order-text">Text</Label>
+          <Label htmlFor="bulk-order-text">{t("causeListBulk_text")}</Label>
           <Textarea
             id="bulk-order-text"
             value={text}
             onChange={(event) => setText(event.target.value)}
             rows={6}
-            placeholder="For example: Accused absent. Issue bailable warrant."
+            placeholder={t("causeListBulk_forExampleAccusedAbsentIssueBailable")}
           />
         </div>
         {leaving.length > 0 ? (
           <div className="flex flex-col gap-2 rounded-lg bg-surface-sunken p-4">
             <p className="text-body-compact font-medium">
-              {leaving.length} selected{" "}
-              {plural(leaving.length, "order is", "orders are")} left out
+              {leaving.length} selected {plural(leaving.length, "order is", "orders are")} left out
             </p>
             <ul className="flex flex-col gap-1 text-body-compact text-muted-foreground">
               {leaving.map((hearing) => (
                 <li key={hearing.id}>
-                  <span className="tabular-nums">{hearing.item}.</span>{" "}
-                  {causeTitle(hearing)} —{" "}
+                  <span className="tabular-nums">{hearing.item}.</span> {causeTitle(hearing)} —{" "}
                   {signing[hearing.id] === "signed"
-                    ? "already signed"
-                    : "sent for signing"}
+                    ? t("causeListBulk_alreadySigned")
+                    : t("causeListBulk_sentForSigning")}
                 </li>
               ))}
             </ul>
@@ -653,14 +637,10 @@ function OrderTextDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="outline">
-              Cancel
+              {t("common_cancel")}
             </Button>
           </DialogClose>
-          <Button
-            type="button"
-            disabled={empty || taking.length === 0}
-            onClick={confirm}
-          >
+          <Button type="button" disabled={empty || taking.length === 0} onClick={confirm}>
             Add to {taking.length} {plural(taking.length, "order", "orders")}
           </Button>
         </DialogFooter>

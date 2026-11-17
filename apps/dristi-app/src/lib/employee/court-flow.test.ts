@@ -46,13 +46,11 @@ import {
   trendOpening,
   trendPresets,
 } from "./court-flow";
-import {
-  baselineWindows,
-  closedCases,
-  filedCases,
-  pendingSets,
-  trendDetail,
-} from "./court-flow";
+import { baselineWindows, closedCases, filedCases, pendingSets, trendDetail } from "./court-flow";
+import { translateMessage } from "@/i18n/messages";
+
+/** A message key read back as its English, so expectations read the way the screen does. */
+const inEnglish = (text: string) => translateMessage("en", text);
 
 const DAY = "2026-10-19";
 const docket = courtDocket(DAY);
@@ -62,20 +60,32 @@ describe("periods", () => {
   it("names the presets and compares each with the same stretch one step back", () => {
     const thisMonth = presetPeriod("this-month", docket);
     assert.equal(formatPeriod(thisMonth), "1–19 Oct 2026");
-    assert.deepEqual(previousPeriod(thisMonth, docket), { from: d("2026-09-01"), to: d("2026-09-30") });
+    assert.deepEqual(previousPeriod(thisMonth, docket), {
+      from: d("2026-09-01"),
+      to: d("2026-09-30"),
+    });
 
     const lastMonth = presetPeriod("last-month", docket);
     assert.equal(formatPeriod(lastMonth), "Sep 2026");
-    assert.deepEqual(previousPeriod(lastMonth, docket), { from: d("2026-08-01"), to: d("2026-08-31") });
+    assert.deepEqual(previousPeriod(lastMonth, docket), {
+      from: d("2026-08-01"),
+      to: d("2026-08-31"),
+    });
 
     const quarter = presetPeriod("last-3-months", docket);
     assert.equal(formatPeriod(quarter), "Jul–Sep 2026");
-    assert.deepEqual(previousPeriod(quarter, docket), { from: d("2026-04-01"), to: d("2026-06-30") });
+    assert.deepEqual(previousPeriod(quarter, docket), {
+      from: d("2026-04-01"),
+      to: d("2026-06-30"),
+    });
   });
 
   it("compares a whole month with the whole month before, whatever their lengths", () => {
     const september = { from: d("2026-09-01"), to: d("2026-09-30") };
-    assert.deepEqual(previousPeriod(september, docket), { from: d("2026-08-01"), to: d("2026-08-31") });
+    assert.deepEqual(previousPeriod(september, docket), {
+      from: d("2026-08-01"),
+      to: d("2026-08-31"),
+    });
     const march = { from: d("2026-03-01"), to: d("2026-03-31") };
     assert.deepEqual(previousPeriod(march, docket), { from: d("2026-02-01"), to: d("2026-02-28") });
   });
@@ -84,7 +94,10 @@ describe("periods", () => {
     const range = { from: d("2026-09-10"), to: d("2026-09-19") };
     assert.deepEqual(previousPeriod(range, docket), { from: d("2026-08-31"), to: d("2026-09-09") });
     assert.equal(formatPeriod(range), "10–19 Sep 2026");
-    assert.equal(formatPeriod({ from: d("2026-08-12"), to: d("2026-09-03") }), "12 Aug – 3 Sep 2026");
+    assert.equal(
+      formatPeriod({ from: d("2026-08-12"), to: d("2026-09-03") }),
+      "12 Aug – 3 Sep 2026",
+    );
   });
 
   it("offers no comparison that would begin before the records do", () => {
@@ -114,7 +127,8 @@ describe("the court on a past day", () => {
         stage.key,
       );
     }
-    const ids = (list: { case: { id: number } }[]) => [...new Set(list.map((x) => x.case.id))].sort();
+    const ids = (list: { case: { id: number } }[]) =>
+      [...new Set(list.map((x) => x.case.id))].sort();
     assert.deepEqual(
       ids(STAGES.flatMap((s) => today.paymentPending[s.key])),
       ids(m.paymentPending),
@@ -130,7 +144,10 @@ describe("the court on a past day", () => {
     const opening = positionOn(docket, period.from - 86_400_000).pending;
     const moved = movementIn(docket, period);
     const closing = positionOn(docket, period.to).pending;
-    assert.equal(opening + moved.cameIn.length - moved.disposed.length - moved.toLongPending.length, closing);
+    assert.equal(
+      opening + moved.cameIn.length - moved.disposed.length - moved.toLongPending.length,
+      closing,
+    );
     const september = courtStatements(docket).monthly.find((row) => row.label === "Sep 2026");
     assert.equal(september?.closing, closing, "the statement of pendency says the same");
   });
@@ -169,7 +186,12 @@ describe("what to do first", () => {
 
   it("gives the magistrate's own work to the magistrate and process to the office", () => {
     const who = Object.fromEntries(todoLists(docket).map((list) => [list.id, list.who]));
-    assert.deepEqual(who, { process: "Office", undated: "You", applications: "You", judgement: "You" });
+    assert.deepEqual(who, {
+      process: "Office",
+      undated: "You",
+      applications: "You",
+      judgement: "You",
+    });
   });
 });
 
@@ -194,7 +216,10 @@ describe("reading a chosen date", () => {
 
   it("keeps every quick pick inside the records, and All records has nothing before it", () => {
     for (const preset of pickerPresets(docket)) {
-      assert.ok(preset.period.from >= docket.start && preset.period.to <= docket.today, preset.label);
+      assert.ok(
+        preset.period.from >= docket.start && preset.period.to <= docket.today,
+        preset.label,
+      );
     }
     const all = pickerPresets(docket).find((p) => p.label === "All records")!;
     assert.equal(readingFor(all.period, docket).prior, null);
@@ -243,11 +268,17 @@ describe("the period under review", () => {
 
   it("compares a whole month with whole months, and any range with the same length before it", () => {
     const sep = { from: d("2026-09-01"), to: d("2026-09-30") };
-    assert.deepEqual(periodReading(sep, docket).baseline, [{ from: d("2026-08-01"), to: d("2026-08-31") }]);
-    assert.deepEqual(periodReading(sep, docket, "year").baseline, [{ from: d("2025-09-01"), to: d("2025-09-30") }]);
+    assert.deepEqual(periodReading(sep, docket).baseline, [
+      { from: d("2026-08-01"), to: d("2026-08-31") },
+    ]);
+    assert.deepEqual(periodReading(sep, docket, "year").baseline, [
+      { from: d("2025-09-01"), to: d("2025-09-30") },
+    ]);
     assert.equal(previousName(sep), "Previous month");
     const span = { from: d("2026-09-10"), to: d("2026-09-19") };
-    assert.deepEqual(periodReading(span, docket).baseline, [{ from: d("2026-08-31"), to: d("2026-09-09") }]);
+    assert.deepEqual(periodReading(span, docket).baseline, [
+      { from: d("2026-08-31"), to: d("2026-09-09") },
+    ]);
     assert.equal(previousName(span), "Previous 10 days");
     assert.equal(compareShort("prev", span), "vs previous period");
   });
@@ -269,7 +300,10 @@ describe("the period under review", () => {
     const period = presetPeriod("last-month", docket);
     const out = outcomesIn(docket, period);
     const moved = movementIn(docket, period);
-    assert.equal(out.Convicted + out.Acquitted + out.Settled + out.early + out.toLongPending, filedAndClosed(docket, period).closed);
+    assert.equal(
+      out.Convicted + out.Acquitted + out.Settled + out.early + out.toLongPending,
+      filedAndClosed(docket, period).closed,
+    );
     assert.equal(out.early, out.Withdrawn + out.Dismissed + out.Returned);
     assert.equal(filedAndClosed(docket, period).filed, moved.cameIn.length);
     const ages = pendingAges(docket, period);
@@ -280,14 +314,21 @@ describe("the period under review", () => {
 describe("trends", () => {
   it("reads five measures over the chosen months, the last to the day", () => {
     const trends = monthlyTrends(docket, docket.today);
-    assert.deepEqual(trends.map((t) => t.id), ["pending", "clearance", "overdue", "disposal", "serve"]);
+    assert.deepEqual(
+      trends.map((t) => t.id),
+      ["pending", "clearance", "overdue", "disposal", "serve"],
+    );
     for (const trend of trends) {
       assert.equal(trend.points.length, 12, trend.id);
       assert.equal(trend.points.at(-1)!.partial, true);
       if (trend.last && trend.base) {
         const change = (trend.last.value! - trend.base) / Math.abs(trend.base);
         const expected =
-          Math.abs(change) < 0.05 ? "steady" : change > 0 === (trend.better === "up") ? "better" : "worse";
+          Math.abs(change) < 0.05
+            ? "steady"
+            : change > 0 === (trend.better === "up")
+              ? "better"
+              : "worse";
         assert.equal(trend.verdict, expected, trend.id);
       }
     }
@@ -316,7 +357,10 @@ describe("the trends date picker", () => {
       assert.ok(period.from >= docket.start && period.to <= docket.today);
     }
     const opening = trendOpening(docket);
-    assert.deepEqual(trendMonths(opening), { from: monthKey(dayToMs("2025-11-01")), to: monthKey(dayToMs("2026-10-19")) });
+    assert.deepEqual(trendMonths(opening), {
+      from: monthKey(dayToMs("2025-11-01")),
+      to: monthKey(dayToMs("2026-10-19")),
+    });
     assert.deepEqual(trendMonths({ from: dayToMs("2026-08-12"), to: dayToMs("2026-09-03") }), {
       from: monthKey(dayToMs("2026-08-01")),
       to: monthKey(dayToMs("2026-09-01")),
@@ -346,7 +390,10 @@ describe("the cases behind each figure", () => {
     assert.equal(sets.cmp.length, position.cmp);
     assert.equal(sets.st.length, position.st);
     assert.equal(sets.awaitingRegistration.length, position.awaitingRegistration);
-    assert.deepEqual(sets.ages.map((a) => a.length), pendingAges(docket, period));
+    assert.deepEqual(
+      sets.ages.map((a) => a.length),
+      pendingAges(docket, period),
+    );
   });
 
   it("spells out the baseline windows the average is taken over", () => {
@@ -381,10 +428,18 @@ describe("the v4 dashboard", () => {
       const p = path[stage.key];
       assert.equal(p.rows.length, position.byStage[stage.key].length, stage.key);
       assert.equal(p.bins.length, p.reviewAfter * 2 + 1, stage.key);
-      assert.equal(p.bins.reduce((sum, b) => sum + b.rows.length, 0), p.rows.length, stage.key);
+      assert.equal(
+        p.bins.reduce((sum, b) => sum + b.rows.length, 0),
+        p.rows.length,
+        stage.key,
+      );
       const late = p.bins.filter((b) => b.late).reduce((sum, b) => sum + b.rows.length, 0);
       assert.equal(late, position.overdue[stage.key].length, `${stage.key} past its review point`);
-      assert.equal(p.bins[p.reviewAfter - 1].to, COURT_LIMITS.stages[stage.key], `${stage.key} review point`);
+      assert.equal(
+        p.bins[p.reviewAfter - 1].to,
+        COURT_LIMITS.stages[stage.key],
+        `${stage.key} review point`,
+      );
     }
     const filed = filedAndClosed(docket, month).filed;
     assert.equal(path.registration.cameIn, filed, "every filing enters registration");
@@ -394,7 +449,11 @@ describe("the v4 dashboard", () => {
     const opening = positionOn(docket, month.from - 86_400_000).pending;
     const cameIn = STAGES.reduce((s, x) => s + path[x.key].cameIn, 0);
     const left = STAGES.reduce((s, x) => s + path[x.key].left, 0);
-    assert.equal(opening + cameIn - left, positionOn(docket, month.to).pending, "stage moves reconcile");
+    assert.equal(
+      opening + cameIn - left,
+      positionOn(docket, month.to).pending,
+      "stage moves reconcile",
+    );
   });
 
   it("counts attention on the day, bins every case once, and compares a range with its first day", () => {
@@ -402,12 +461,19 @@ describe("the v4 dashboard", () => {
     const checks = today.groups.flatMap((g) => g.checks);
     for (const ch of checks) {
       assert.ok(ch.available, ch.id);
-      assert.equal(ch.bins.reduce((sum, b) => sum + b.rows.length, 0), ch.rows.length, ch.id);
+      assert.equal(
+        ch.bins.reduce((sum, b) => sum + b.rows.length, 0),
+        ch.rows.length,
+        ch.id,
+      );
     }
     const ids = new Set(checks.flatMap((c) => c.rows.map((r) => r.case.id)));
     assert.equal(today.distinct, ids.size);
     const pay = checks.find((c) => c.id === "pay")!;
-    assert.equal(pay.rows.length, STAGES.reduce((s, x) => s + positionOn(docket, docket.today).paymentPending[x.key].length, 0));
+    assert.equal(
+      pay.rows.length,
+      STAGES.reduce((s, x) => s + positionOn(docket, docket.today).paymentPending[x.key].length, 0),
+    );
 
     const range = attentionFor(docket, { from: d("2026-10-01"), to: d("2026-10-15") });
     const rc = range.groups.flatMap((g) => g.checks);
@@ -426,18 +492,27 @@ describe("the v4 dashboard", () => {
     const summary = closureSummary(docket, month);
     const rows = closedCases(docket, month);
     assert.equal(summary.total, rows.length);
-    assert.equal(summary.judgements, rows.filter((r) => r.outcome === "Convicted" || r.outcome === "Acquitted").length);
+    assert.equal(
+      summary.judgements,
+      rows.filter((r) => r.outcome === "Convicted" || r.outcome === "Acquitted").length,
+    );
     const reading = periodReading(month, docket, "avg");
     const base = closureBaseline(docket, reading.baseline)!;
     const each = reading.baseline.map((p) => closureSummary(docket, p).total);
     assert.equal(base.total, each.reduce((a, b) => a + b, 0) / each.length);
     const detail = outcomeDetail(rows.filter((r) => r.outcome === "Convicted"));
-    assert.equal(detail.ages.reduce((s, a) => s + a.rows.length, 0), rows.filter((r) => r.outcome === "Convicted").length);
+    assert.equal(
+      detail.ages.reduce((s, a) => s + a.rows.length, 0),
+      rows.filter((r) => r.outcome === "Convicted").length,
+    );
     assert.equal(detail.beforeCognizance, 0, "a conviction follows cognizance");
     const timeline = closureTimeline(docket, month)!;
     assert.equal(timeline.unit, "day");
     assert.equal(timeline.columns.length, 19);
-    assert.equal(timeline.columns.reduce((s, c) => s + c.total, 0), rows.length);
+    assert.equal(
+      timeline.columns.reduce((s, c) => s + c.total, 0),
+      rows.length,
+    );
     assert.equal(closureTimeline(docket, presetPeriod("last-3-months", docket))!.unit, "week");
     assert.equal(closureTimeline(docket, { from: docket.today, to: docket.today }), null);
   });
@@ -446,7 +521,10 @@ describe("the v4 dashboard", () => {
     const [pending, clearance] = monthlyTrends(docket, docket.today);
     const point = pending.points[0];
     const rows = trendBreakdown(docket, "pending", point);
-    assert.deepEqual(rows.map((r) => r.label), ["Filed in the month", "Disposed in the month", "Moved to long pending"]);
+    assert.deepEqual(
+      rows.map((r) => inEnglish(r.label)),
+      ["Filed in the month", "Disposed in the month", "Moved to long pending"],
+    );
     const c = trendBreakdown(docket, "clearance", clearance.points[0]);
     const disposed = Number(c[0].value.replace(/,/g, ""));
     const filed = Number(c[1].value.replace(/,/g, ""));

@@ -46,15 +46,7 @@ export type WitnessDetailsErrors = {
 };
 
 export type WitnessAddressErrors = Partial<
-  Record<
-    | "addressType"
-    | "pincode"
-    | "state"
-    | "district"
-    | "cityOrTown"
-    | "address",
-    string
-  >
+  Record<"addressType" | "pincode" | "state" | "district" | "cityOrTown" | "address", string>
 >;
 
 export type WitnessContactErrors = {
@@ -78,9 +70,7 @@ export function createEmptyWitnessDraft(): WitnessDraft {
   };
 }
 
-export function createEmptyWitnessAddress(
-  clientId: string
-): WitnessAddressDraft {
+export function createEmptyWitnessAddress(clientId: string): WitnessAddressDraft {
   return {
     clientId,
     addressType: "",
@@ -107,38 +97,36 @@ export function isValidEmail(value: string): boolean {
 export function addressHasAnyValue(address: WitnessAddressDraft): boolean {
   return Boolean(
     address.addressType ||
-      address.pincode.trim() ||
-      address.state.trim() ||
-      address.district.trim() ||
-      address.cityOrTown.trim() ||
-      address.address.trim()
+    address.pincode.trim() ||
+    address.state.trim() ||
+    address.district.trim() ||
+    address.cityOrTown.trim() ||
+    address.address.trim(),
   );
 }
 
 export function witnessDraftIsDirty(
   draft: WitnessDraft,
   mobileInput: string,
-  emailInput: string
+  emailInput: string,
 ): boolean {
   return Boolean(
     draft.firstName.trim() ||
-      draft.middleName.trim() ||
-      draft.lastName.trim() ||
-      draft.designation.trim() ||
-      draft.age.trim() ||
-      draft.purposeOfExamination.trim() ||
-      draft.documentsToBeProduced.length ||
-      draft.mobileNumbers.length ||
-      draft.emailIds.length ||
-      draft.addresses.length ||
-      mobileInput.trim() ||
-      emailInput.trim()
+    draft.middleName.trim() ||
+    draft.lastName.trim() ||
+    draft.designation.trim() ||
+    draft.age.trim() ||
+    draft.purposeOfExamination.trim() ||
+    draft.documentsToBeProduced.length ||
+    draft.mobileNumbers.length ||
+    draft.emailIds.length ||
+    draft.addresses.length ||
+    mobileInput.trim() ||
+    emailInput.trim(),
   );
 }
 
-export function validateWitnessDetails(
-  draft: WitnessDraft
-): WitnessDetailsErrors {
+export function validateWitnessDetails(draft: WitnessDraft): WitnessDetailsErrors {
   const errors: WitnessDetailsErrors = { documents: {} };
   const firstName = draft.firstName.trim();
   const designation = draft.designation.trim();
@@ -161,41 +149,36 @@ export function validateWitnessDetails(
 
   if (draft.purposeOfExamination.length > PURPOSE_MAX_LENGTH) {
     errors.purposeOfExamination = `Use ${PURPOSE_MAX_LENGTH.toLocaleString(
-      "en-IN"
+      "en-IN",
     )} characters or fewer.`;
   }
 
   for (const document of draft.documentsToBeProduced) {
     const description = document.description.trim();
     if (!description) {
-      errors.documents[document.clientId] =
-        "Enter a document description or remove this item.";
+      errors.documents[document.clientId] = "Enter a document description or remove this item.";
     } else if (description.length > DOCUMENT_MAX_LENGTH) {
-      errors.documents[
-        document.clientId
-      ] = `Use ${DOCUMENT_MAX_LENGTH} characters or fewer.`;
+      errors.documents[document.clientId] = `Use ${DOCUMENT_MAX_LENGTH} characters or fewer.`;
     }
   }
 
   return errors;
 }
 
-export function witnessDetailsHaveErrors(
-  errors: WitnessDetailsErrors
-): boolean {
+export function witnessDetailsHaveErrors(errors: WitnessDetailsErrors): boolean {
   return Boolean(
     errors.firstName ||
-      errors.designation ||
-      errors.age ||
-      errors.purposeOfExamination ||
-      Object.keys(errors.documents).length
+    errors.designation ||
+    errors.age ||
+    errors.purposeOfExamination ||
+    Object.keys(errors.documents).length,
   );
 }
 
 export function validateWitnessContact(
   draft: WitnessDraft,
   mobileInput: string,
-  emailInput: string
+  emailInput: string,
 ): WitnessContactErrors {
   const errors: WitnessContactErrors = { addresses: {} };
   const mobile = toNationalMobile(mobileInput);
@@ -207,8 +190,7 @@ export function validateWitnessContact(
     } else if (draft.mobileNumbers.includes(mobile)) {
       errors.mobileInput = "This mobile number has already been added.";
     } else {
-      errors.mobileInput =
-        "Select Add number to include this mobile number.";
+      errors.mobileInput = "Select Add number to include this mobile number.";
     }
   }
 
@@ -253,12 +235,6 @@ export function validateWitnessContact(
   return errors;
 }
 
-export function witnessContactHasErrors(
-  errors: WitnessContactErrors
-): boolean {
-  return Boolean(
-    errors.mobileInput ||
-      errors.emailInput ||
-      Object.keys(errors.addresses).length
-  );
+export function witnessContactHasErrors(errors: WitnessContactErrors): boolean {
+  return Boolean(errors.mobileInput || errors.emailInput || Object.keys(errors.addresses).length);
 }

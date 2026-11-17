@@ -3,10 +3,7 @@
 import { REGISTER_TABLE_ONLY } from "@/components/cases/register-layout";
 import { cn } from "@/lib/utils";
 import { Fragment, useRef, useState, type ReactNode } from "react";
-import {
-  CaseLink as Link,
-  useCaseReader,
-} from "@/components/cases/case-reader";
+import { CaseLink as Link, useCaseReader } from "@/components/cases/case-reader";
 import { ArchiveIcon } from "lucide-react";
 import { notify } from "@/components/feedback";
 
@@ -17,10 +14,7 @@ import {
   RestingCard,
   TaskNote,
 } from "@/components/cases/case-overview-card";
-import {
-  BondTaskRow,
-  useBondTaskVisible,
-} from "@/components/cases/case-bail-flow";
+import { BondTaskRow, useBondTaskVisible } from "@/components/cases/case-bail-flow";
 import { useRemovalConsentTask } from "@/components/cases/removal-consent-task";
 import { GroupedCaseHistory } from "@/components/employee/grouped-case-history";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +34,8 @@ import {
 import { caseSectionHref } from "@/lib/cases/sections";
 import { type CaseRecord } from "@/lib/cases/types";
 import { CAUSE_LIST } from "@/lib/employee/hearings";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 const BOND_TASK_ID = "bond";
 /** The cause list's listing this demo case stands in for (`HEARING_DEMO_CASE`). */
@@ -57,13 +53,8 @@ const CONSENT_TASK_ID = "removal-consent";
  * is the grouped case history from the newest line down to the last order issued, and
  * Take action holds the court's own work on the case, never the advocate's.
  */
-export function CaseOverview({
-  record,
-  now,
-}: {
-  record: CaseRecord;
-  now: number;
-}) {
+export function CaseOverview({ record, now }: { record: CaseRecord; now: number }) {
+  const t = useTranslations();
   const court = useCaseReader() === "court";
   const model = caseOverviewModel(record, now);
   const [archived, setArchived] = useState<string[]>([]);
@@ -72,13 +63,12 @@ export function CaseOverview({
      prototype keeps it in memory, so Undo is the way back. */
   function archive(id: string, title: string) {
     setArchived((current) => [...current, id]);
-    notify.neutral("Task archived", {
+    notify.neutral(t("caseOverview_taskArchived"), {
       icon: ArchiveIcon,
       description: `${title}. You can find it under Take action, Archive.`,
       action: {
-        label: "Undo",
-        onClick: () =>
-          setArchived((current) => current.filter((item) => item !== id)),
+        label: t("caseOverview_undo"),
+        onClick: () => setArchived((current) => current.filter((item) => item !== id)),
       },
     });
   }
@@ -87,25 +77,22 @@ export function CaseOverview({
   const bondTask =
     /* A disposed case takes no fresh bail filings, so it owes no bond. The bond is the
        advocate's to file; the court does not see it as its own task. */
-    !court &&
-    bondVisible &&
-    !record.disposal &&
-    !archived.includes(BOND_TASK_ID) ? (
+    !court && bondVisible && !record.disposal && !archived.includes(BOND_TASK_ID) ? (
       <BondTaskRow
         nextHearingOn={record.nextHearing?.on ?? null}
         now={now}
-        onArchive={() => archive(BOND_TASK_ID, "Bail bond")}
+        onArchive={() => archive(BOND_TASK_ID, t("caseOverview_bailBond"))}
       />
     ) : null;
   const removalConsent = useRemovalConsentTask(record.id, () =>
-    archive(CONSENT_TASK_ID, "Respond to a removal request")
+    archive(CONSENT_TASK_ID, t("caseOverview_respondToARemovalRequest")),
   );
   const consentTask =
     !court && removalConsent.visible && !archived.includes(CONSENT_TASK_ID)
       ? removalConsent.row
       : null;
   const tasks = (court ? courtTasks(record) : model.tasks).filter(
-    (task) => !archived.includes(task.id)
+    (task) => !archived.includes(task.id),
   );
 
   return (
@@ -113,21 +100,13 @@ export function CaseOverview({
       <div className="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-2">
         <RestingCard className="gap-4">
           <CardContent>
-            <NextHearingBlock
-              record={record}
-              next={model.nextHearing}
-              court={court}
-            />
+            <NextHearingBlock record={record} next={model.nextHearing} court={court} />
           </CardContent>
           {model.updates.length > 0 ? (
             <>
               <Separator className="bg-hairline" />
               <CardContent>
-                <CaseUpdatesBlock
-                  record={record}
-                  updates={model.updates}
-                  court={court}
-                />
+                <CaseUpdatesBlock record={record} updates={model.updates} court={court} />
               </CardContent>
             </>
           ) : null}
@@ -206,6 +185,7 @@ function NextHearingBlock({
   next: OverviewNextHearing;
   court: boolean;
 }) {
+  const t = useTranslations();
   const [hearingsOpen, setHearingsOpen] = useState(false);
   const hearingsTriggerRef = useRef<HTMLAnchorElement | null>(null);
   const tile = next.tile;
@@ -217,7 +197,7 @@ function NextHearingBlock({
     >
       <BlockHeader
         id={NEXT_HEARING_HEADING}
-        title="Next hearing"
+        title={t("caseOverview_nextHearing")}
         action={
           /* Not for the court: its Hearings tab is one press away. */
           court ? undefined : (
@@ -242,7 +222,7 @@ function NextHearingBlock({
                   setHearingsOpen(true);
                 }}
               >
-                View All Hearings
+                {t("caseOverview_viewAllHearings")}
               </Link>
             </Button>
           )
@@ -256,15 +236,9 @@ function NextHearingBlock({
         <div className="flex min-w-0 flex-col gap-3 rounded-lg bg-surface-sunken p-4 @sm:flex-row @sm:items-center @sm:gap-4">
           {/* One date, so one `<time>`: the face is split for the eye and the
               accessible name carries it whole. */}
-          <time
-            dateTime={tile.iso}
-            className="flex shrink-0 items-center gap-3 @sm:w-36"
-          >
+          <time dateTime={tile.iso} className="flex shrink-0 items-center gap-3 @sm:w-36">
             <span className="sr-only">{tile.full}</span>
-            <span
-              aria-hidden
-              className="text-title font-semibold tabular-nums text-foreground"
-            >
+            <span aria-hidden className="text-title font-semibold tabular-nums text-foreground">
               {tile.day}
             </span>
             <span aria-hidden className="flex flex-col">
@@ -273,22 +247,17 @@ function NextHearingBlock({
               <span className="text-body-compact font-medium text-foreground">
                 {tile.monthYear}
               </span>
-              <span className="text-caption font-medium text-muted-foreground">
-                {tile.weekday}
-              </span>
+              <span className="text-caption font-medium text-muted-foreground">{tile.weekday}</span>
             </span>
           </time>
 
-          <Separator
-            orientation="vertical"
-            className="bg-hairline @max-sm:hidden"
-          />
+          <Separator orientation="vertical" className="bg-hairline @max-sm:hidden" />
 
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
             <div className="flex flex-wrap items-center gap-1.5 empty:hidden">
               {tile.today ? (
                 <Badge variant="warning" className={WELL_CHIP_STROKE.warning}>
-                  Today
+                  {t("caseOverview_today")}
                 </Badge>
               ) : null}
               {next.status ? (
@@ -303,21 +272,21 @@ function NextHearingBlock({
             {/* Never clamped: this is the clause the day exists for, and it
                 runs longer in Indic scripts (ACCESSIBILITY 13). */}
             {next.purpose ? (
-              <p className="text-body-compact font-medium text-foreground">
-                {next.purpose}
-              </p>
+              <p className="text-body-compact font-medium text-foreground">{next.purpose}</p>
             ) : null}
           </div>
         </div>
       ) : (
         <div className="flex min-w-0 flex-col gap-1 rounded-lg bg-surface-sunken p-4">
           <p className="text-body-compact font-medium text-foreground">
-            {next.on}
+            {translateText(t, next.on)}
           </p>
           {next.last ? (
             <p className="text-caption font-medium text-muted-foreground">
-              Last heard on {next.last.on}
-              {next.last.purpose ? ` · ${next.last.purpose}` : null}
+              {t("caseOverview_lastHeardOnOnValue", {
+                on: next.last.on,
+                value: (next.last.purpose ? ` · ${next.last.purpose}` : null) ?? "",
+              })}
             </p>
           ) : null}
         </div>
@@ -342,6 +311,7 @@ function CaseUpdatesBlock({
   updates: OverviewUpdate[];
   court: boolean;
 }) {
+  const t = useTranslations();
   return (
     <section
       id="case-timeline"
@@ -350,11 +320,11 @@ function CaseUpdatesBlock({
     >
       <BlockHeader
         id={CASE_UPDATES_HEADING}
-        title="Case updates"
+        title={t("caseOverview_caseUpdates")}
         action={
           <Button variant="link" asChild className={BLOCK_LINK}>
             <Link href={caseSectionHref(record.id, "case-history")}>
-              View all updates
+              {t("caseOverview_viewAllUpdates")}
             </Link>
           </Button>
         }
@@ -365,7 +335,7 @@ function CaseUpdatesBlock({
            case stands in for on the cause list. */
         <GroupedCaseHistory hearing={DEMO_LISTING} throughLastOrder />
       ) : (
-        <Timeline aria-label="Case updates, newest first">
+        <Timeline aria-label={t("caseOverview_caseUpdatesNewestFirst")}>
           {updates.map((update) => (
             <TimelineItem key={update.id} status={update.status}>
               {/* The whole row is the link, bled out so the hover fill clears
@@ -374,9 +344,7 @@ function CaseUpdatesBlock({
                 href={update.href}
                 className="-mx-2 -my-1.5 flex min-h-10 min-w-0 flex-col gap-1 rounded-lg px-2 py-1.5 outline-none hover:bg-surface-sunken focus-visible:ring-3 focus-visible:ring-ring/50"
               >
-                <p className="text-body-compact font-medium text-foreground">
-                  {update.title}
-                </p>
+                <p className="text-body-compact font-medium text-foreground">{update.title}</p>
                 <span className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary">{update.category}</Badge>
                   <span className="text-caption font-medium tabular-nums text-muted-foreground">
@@ -405,37 +373,27 @@ function PendingTasksBlock({
   consentTask?: ReactNode;
   onArchive: (id: string, title: string) => void;
 }) {
+  const t = useTranslations();
   const count = tasks.length + (bondTask ? 1 : 0) + (consentTask ? 1 : 0);
   return (
-    <section
-      aria-labelledby={PENDING_TASKS_HEADING}
-      className="flex min-w-0 flex-col gap-1"
-    >
-      <BlockHeader
-        id={PENDING_TASKS_HEADING}
-        title="Take action"
-        count={count}
-      />
+    <section aria-labelledby={PENDING_TASKS_HEADING} className="flex min-w-0 flex-col gap-1">
+      <BlockHeader id={PENDING_TASKS_HEADING} title={t("caseOverview_takeAction")} count={count} />
       {count === 0 ? (
         <p className="pt-2 text-body-compact text-muted-foreground">
-          Nothing is pending on this case.
+          {t("caseOverview_nothingIsPendingOnThisCase")}
         </p>
       ) : (
         <>
           {caption ? (
-            <p className="text-caption font-medium text-muted-foreground">
-              {caption}
-            </p>
+            <p className="text-caption font-medium text-muted-foreground">{caption}</p>
           ) : null}
           {/* One divided list, not N stacked panels. */}
-          <ItemGroup aria-label="Take action">
+          <ItemGroup aria-label={t("caseOverview_takeAction")}>
             {consentTask}
             {tasks.map((task, index) => (
               <Fragment key={task.id}>
                 {index > 0 || consentTask ? (
-                  <ItemSeparator
-                    className={cn("my-0 bg-hairline", REGISTER_TABLE_ONLY)}
-                  />
+                  <ItemSeparator className={cn("my-0 bg-hairline", REGISTER_TABLE_ONLY)} />
                 ) : null}
                 <PendingTaskRow
                   title={task.title}
@@ -452,9 +410,7 @@ function PendingTasksBlock({
             {bondTask ? (
               <>
                 {tasks.length > 0 || consentTask ? (
-                  <ItemSeparator
-                    className={cn("my-0 bg-hairline", REGISTER_TABLE_ONLY)}
-                  />
+                  <ItemSeparator className={cn("my-0 bg-hairline", REGISTER_TABLE_ONLY)} />
                 ) : null}
                 {bondTask}
               </>

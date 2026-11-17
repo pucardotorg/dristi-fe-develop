@@ -66,8 +66,10 @@ export type ListingApplicationDecision = "allowed" | "dismissed";
  * fact could have had. Derived from one list rather than spelled out at the call site, so
  * a third answer could never be added here and missed there.
  */
-export const LISTING_APPLICATION_DECISIONS: readonly ListingApplicationDecision[] =
-  ["allowed", "dismissed"];
+export const LISTING_APPLICATION_DECISIONS: readonly ListingApplicationDecision[] = [
+  "allowed",
+  "dismissed",
+];
 
 export type ListingApplication = {
   id: string;
@@ -88,9 +90,7 @@ export type ListingApplication = {
 };
 
 /** What is pending on this listing. Most listings have nothing. */
-export function applicationsForListing(
-  hearingId: string,
-): ListingApplication[] {
+export function applicationsForListing(hearingId: string): ListingApplication[] {
   return LISTING_APPLICATIONS[hearingId] ?? [];
 }
 
@@ -129,18 +129,14 @@ export function buildListingApplicationDocument(
     { term: "Complainant", value: hearing.parties.complainant },
     { term: "Accused", value: hearing.parties.accused },
   ];
-  const complainantCounsel = counselFor(hearing, "complainant").map(
-    (counsel) => counsel.name,
-  );
+  const complainantCounsel = counselFor(hearing, "complainant").map((counsel) => counsel.name);
   if (complainantCounsel.length) {
     facts.push({
       term: "Complainant counsel",
       value: complainantCounsel.join(", "),
     });
   }
-  const accusedCounsel = counselFor(hearing, "accused").map(
-    (counsel) => counsel.name,
-  );
+  const accusedCounsel = counselFor(hearing, "accused").map((counsel) => counsel.name);
   if (accusedCounsel.length) {
     facts.push({ term: "Accused counsel", value: accusedCounsel.join(", ") });
   }

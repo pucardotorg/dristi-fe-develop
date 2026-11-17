@@ -4,10 +4,7 @@ import { CaseLink as Link } from "@/components/cases/case-reader";
 import * as React from "react";
 import { ChevronRightIcon, HistoryIcon } from "lucide-react";
 
-import {
-  HistoryTypeFilter,
-  type TypeOption,
-} from "@/components/employee/order-case-history";
+import { HistoryTypeFilter, type TypeOption } from "@/components/employee/order-case-history";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -17,13 +14,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemGroup,
-  ItemTitle,
-} from "@/components/ui/item";
+import { Item, ItemActions, ItemContent, ItemGroup, ItemTitle } from "@/components/ui/item";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import {
   caseTimelineModel,
@@ -31,14 +22,12 @@ import {
   type CaseTimelineEventType,
 } from "@/lib/cases/timeline";
 import { HISTORY_TYPES } from "@/lib/employee/order-case-history";
-import {
-  CASE_SECTIONS,
-  caseSectionHref,
-  type CaseSection,
-} from "@/lib/cases/sections";
+import { CASE_SECTIONS, caseSectionHref, type CaseSection } from "@/lib/cases/sections";
 import { FIXTURE_TODAY } from "@/lib/cases/fixtures";
 import { type CaseRecord } from "@/lib/cases/types";
 import { BotdText } from "@/components/cases/botd-text";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * What each event is, for the filter: the event catalogue's categories, as the case
@@ -68,16 +57,12 @@ const TYPE_OPTIONS: TypeOption[] = [
 ];
 
 export function CaseTimeline({ record }: { record: CaseRecord }) {
-  const model = caseTimelineModel(
-    record,
-    new Date(`${FIXTURE_TODAY}T23:59:59`).getTime()
-  );
+  const t = useTranslations();
+  const model = caseTimelineModel(record, new Date(`${FIXTURE_TODAY}T23:59:59`).getTime());
   const [types, setTypes] = React.useState<string[]>([]);
   /* Only the types this case has, in the filter's own order. */
   const present = new Set(
-    model.days.flatMap((day) =>
-      day.events.map((event) => EVENT_CATEGORY[event.type])
-    )
+    model.days.flatMap((day) => day.events.map((event) => EVENT_CATEGORY[event.type])),
   );
   const options = TYPE_OPTIONS.filter((option) => present.has(option.value));
   /* A day keeps the events that match; a day left with none drops out. */
@@ -87,18 +72,14 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
       : model.days
           .map((day) => ({
             ...day,
-            events: day.events.filter((event) =>
-              types.includes(EVENT_CATEGORY[event.type])
-            ),
+            events: day.events.filter((event) => types.includes(EVENT_CATEGORY[event.type])),
           }))
           .filter((day) => day.events.length > 0);
 
   return (
     <section
       aria-labelledby={
-        model.days.length === 0
-          ? "case-history-empty-heading"
-          : "all-case-events-heading"
+        model.days.length === 0 ? "case-history-empty-heading" : "all-case-events-heading"
       }
       className="flex min-w-0 flex-col gap-6"
     >
@@ -108,30 +89,24 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
             <EmptyMedia variant="icon">
               <HistoryIcon aria-hidden />
             </EmptyMedia>
-            <EmptyTitle
-              id="case-history-empty-heading"
-              className="text-body font-semibold"
-            >
-              No case history yet
+            <EmptyTitle id="case-history-empty-heading" className="text-body font-semibold">
+              {t("caseTimeline_noCaseHistoryYet")}
             </EmptyTitle>
-            <EmptyDescription>
-              Events that have already taken place on this case will appear
-              here.
-            </EmptyDescription>
+            <EmptyDescription>{t("caseTimeline_eventsThatHaveAlreadyTakenPlace")}</EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
         <Card variant="raised" className="gap-4 hover:bg-card">
           <CardHeader>
             <div className="flex min-w-0 flex-col gap-1">
-              <h3
-                id="all-case-events-heading"
-                className="text-body font-semibold"
-              >
-                All case events
+              <h3 id="all-case-events-heading" className="text-body font-semibold">
+                {t("caseTimeline_allCaseEvents")}
               </h3>
               <p className="text-caption font-medium tabular-nums text-muted-foreground">
-                {model.firstDateLabel} to {model.latestDateLabel}
+                {t("caseTimeline_firstDateLabelToLatestDate", {
+                  firstDateLabel: translateText(t, model.firstDateLabel),
+                  latestDateLabel: translateText(t, model.latestDateLabel),
+                })}
               </p>
             </div>
           </CardHeader>
@@ -144,10 +119,10 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
             />
             {days.length === 0 ? (
               <p className="text-body-compact text-muted-foreground">
-                Nothing of these types on this case.
+                {t("caseTimeline_nothingOfTheseTypesOnThis")}
               </p>
             ) : (
-              <Timeline aria-label="Case History, newest first">
+              <Timeline aria-label={t("caseTimeline_caseHistoryNewestFirst")}>
                 {days.map((day) => (
                   <TimelineItem
                     key={day.on}
@@ -164,11 +139,7 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
 
                       <ItemGroup>
                         {day.events.map((event) => (
-                          <TimelineEvent
-                            key={event.id}
-                            caseId={record.id}
-                            event={event}
-                          />
+                          <TimelineEvent key={event.id} caseId={record.id} event={event} />
                         ))}
                       </ItemGroup>
                     </div>
@@ -183,20 +154,13 @@ export function CaseTimeline({ record }: { record: CaseRecord }) {
   );
 }
 
-function TimelineEvent({
-  caseId,
-  event,
-}: {
-  caseId: string;
-  event: CaseTimelineEvent;
-}) {
+function TimelineEvent({ caseId, event }: { caseId: string; event: CaseTimelineEvent }) {
+  const t = useTranslations();
   /* line-clamp-none: the label is the whole event, and a Malayalam or Gujarati
      translation of it will wrap rather than fit the DS one-line default. */
   const title = (
     <ItemContent className="min-w-0">
-      <ItemTitle className="line-clamp-none font-normal">
-        {event.label}
-      </ItemTitle>
+      <ItemTitle className="line-clamp-none font-normal">{translateText(t, event.label)}</ItemTitle>
     </ItemContent>
   );
   /* A hearing's business of the day sits under it, as in the case peek
@@ -210,11 +174,7 @@ function TimelineEvent({
   if (!event.ref) {
     return (
       <>
-        <Item
-          size="sm"
-          role="listitem"
-          className="-mx-2 w-auto px-2 py-1.5 hover:bg-transparent"
-        >
+        <Item size="sm" role="listitem" className="-mx-2 w-auto px-2 py-1.5 hover:bg-transparent">
           {title}
         </Item>
         {botd}
@@ -224,15 +184,14 @@ function TimelineEvent({
 
   return (
     <>
-      <Item
-        asChild
-        size="sm"
-        className="-mx-2 w-auto px-2 py-1.5 hover:bg-surface-sunken"
-      >
+      <Item asChild size="sm" className="-mx-2 w-auto px-2 py-1.5 hover:bg-surface-sunken">
         <Link
           href={caseSectionHref(caseId, event.ref)}
           role="listitem"
-          aria-label={`${event.label}, open ${sectionLabel(event.ref)}`}
+          aria-label={t("caseTimeline_labelOpenSectionLabel", {
+            label: translateText(t, event.label),
+            sectionLabel: sectionLabel(event.ref),
+          })}
         >
           {title}
           <ItemActions aria-hidden>
@@ -246,7 +205,5 @@ function TimelineEvent({
 }
 
 function sectionLabel(section: CaseSection): string {
-  return (
-    CASE_SECTIONS.find((entry) => entry.value === section)?.label ?? section
-  );
+  return CASE_SECTIONS.find((entry) => entry.value === section)?.label ?? section;
 }

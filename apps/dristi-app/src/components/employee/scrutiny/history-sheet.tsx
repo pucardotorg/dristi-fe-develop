@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/sheet";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { useScrutinyCase } from "@/components/employee/scrutiny/scrutiny-case-context";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Case history — the advocate ↔ registry round trips.
@@ -34,6 +36,7 @@ export function HistorySheet({
   aiOn: boolean;
   onGoToItem: (fieldId: string) => void;
 }) {
+  const t = useTranslations();
   const { history, historySummary } = useScrutinyCase();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -43,7 +46,7 @@ export function HistorySheet({
        */}
       <SheetContent side="right" className="data-[side=right]:sm:max-w-100">
         <SheetHeader>
-          <SheetTitle>Case history</SheetTitle>
+          <SheetTitle>{t("historySheet_caseHistory")}</SheetTitle>
           <SheetDescription>{historySummary}</SheetDescription>
         </SheetHeader>
 
@@ -61,8 +64,8 @@ export function HistorySheet({
                 title={event.title}
                 description={
                   aiOn && event.aiNote
-                    ? `${event.meta} · ${event.aiNote}`
-                    : event.meta
+                    ? `${translateText(t, event.meta)} · ${event.aiNote}`
+                    : translateText(t, event.meta)
                 }
               >
                 {event.items ? (
@@ -83,7 +86,7 @@ export function HistorySheet({
                         <span className="flex min-w-0 flex-1 flex-col gap-0.5 text-caption">
                           {item.what}
                           <span className="font-normal text-muted-foreground">
-                            {item.was}
+                            {translateText(t, item.was)}
                           </span>
                         </span>
                         <span
@@ -94,7 +97,7 @@ export function HistorySheet({
                               : "text-muted-foreground",
                           )}
                         >
-                          {item.open ? "open" : item.status}
+                          {item.open ? t("historySheet_open") : item.status}
                         </span>
                       </button>
                     ))}

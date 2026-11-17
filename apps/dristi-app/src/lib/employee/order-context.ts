@@ -14,11 +14,7 @@ import {
   type ListingApplication,
   type ListingApplicationDecision,
 } from "./listing-applications";
-import {
-  createItemBlock,
-  type ComposerContext,
-  type ItemBlock,
-} from "./order-composer";
+import { createItemBlock, type ComposerContext, type ItemBlock } from "./order-composer";
 import type { OrderTemplateId } from "./order-templates";
 
 /**
@@ -36,13 +32,8 @@ export function composerContextFor(matter: CaseMatter): ComposerContext {
  * CMP/318/2026 for reschedule/adjournment is accepted", not "for Application to
  * reschedule/adjournment".
  */
-export function applicationTypeWording(
-  application: Pick<ListingApplication, "type">,
-): string {
-  const label = listingApplicationLabel(application).replace(
-    /^Application (for|to) /,
-    "",
-  );
+export function applicationTypeWording(application: Pick<ListingApplication, "type">): string {
+  const label = listingApplicationLabel(application).replace(/^Application (for|to) /, "");
   return label.charAt(0).toLowerCase() + label.slice(1);
 }
 

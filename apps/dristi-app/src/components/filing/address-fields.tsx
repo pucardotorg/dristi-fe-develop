@@ -9,6 +9,7 @@ import { FormRow } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
 import { OptionSelect, TextField } from "@/components/filing/inputs";
 import { LookupStatus } from "@/components/filing/lookup-status";
+import { useTranslations } from "next-intl";
 
 /** Wait after the sixth digit before asking the PIN service, so typing isn't chased. */
 const PIN_DEBOUNCE_MS = 400;
@@ -47,6 +48,7 @@ export function AddressFields({
    */
   stateFirst?: boolean;
 }) {
+  const t = useTranslations();
   const key = (k: keyof Address) => (name ? `${name}.${k}` : undefined);
   const set = (k: keyof Address) => (v: string) => onChange({ ...value, [k]: v });
 
@@ -70,9 +72,7 @@ export function AddressFields({
           if (cancelled || !hit) return;
           const { value: addr, onChange: commit, pinFill: filled } = latest.current;
           // Only the state spellings the select actually offers can be filled into it.
-          const stateHit = STATES.find(
-            (s) => s.toLowerCase() === hit.state.trim().toLowerCase()
-          );
+          const stateHit = STATES.find((s) => s.toLowerCase() === hit.state.trim().toLowerCase());
           const fillDistrict = !addr.district.trim() || !!filled?.district;
           const fillState = (!addr.state.trim() || !!filled?.state) && !!stateHit;
           if (!fillDistrict && !fillState) return;
@@ -106,7 +106,7 @@ export function AddressFields({
   const shownFill = pinFill?.pin === pin6 ? pinFill : null;
   const filledLabel =
     shownFill?.district && shownFill.state
-      ? "District and state"
+      ? t("addressFields_districtAndState")
       : shownFill?.district
         ? "District"
         : shownFill?.state
@@ -114,7 +114,7 @@ export function AddressFields({
           : null;
 
   const pinField = (
-    <FormField label="Pincode" name={key("pin")} required={required}>
+    <FormField label={t("addressFields_pincode")} name={key("pin")} required={required}>
       <TextField
         value={value.pin}
         onChange={set("pin")}
@@ -126,47 +126,53 @@ export function AddressFields({
     </FormField>
   );
   const cityField = (
-    <FormField label="City / town" name={key("city")} required={required}>
+    <FormField label={t("addressFields_cityTown")} name={key("city")} required={required}>
       <TextField
         value={value.city}
         onChange={set("city")}
-        placeholder="City or town"
+        placeholder={t("addressFields_cityOrTown")}
         autoComplete="address-level2"
       />
     </FormField>
   );
   const districtField = (
-    <FormField label="District" name={key("district")} required={required}>
-      <TextField value={value.district} onChange={setDistrict} placeholder="District" />
+    <FormField label={t("addressFields_district")} name={key("district")} required={required}>
+      <TextField
+        value={value.district}
+        onChange={setDistrict}
+        placeholder={t("addressFields_district")}
+      />
     </FormField>
   );
   const stateField = (
-    <FormField label="State / UT" name={key("state")} required={required}>
+    <FormField label={t("addressFields_stateUt")} name={key("state")} required={required}>
       <OptionSelect
         value={value.state}
         onValueChange={setState}
         options={STATES}
-        placeholder="Select state"
+        placeholder={t("addressFields_selectState")}
         /* The field's label does not reach a select's button; name it here. */
-        ariaLabel="State / UT"
+        ariaLabel={t("addressFields_stateUt")}
       />
     </FormField>
   );
   /* Mounted whether or not it has anything to say, so the fill is announced. */
   const lookupStatus = (
     <LookupStatus>
-      {filledLabel && shownFill ? `${filledLabel} filled from PIN ${shownFill.pin}` : null}
+      {filledLabel && shownFill
+        ? t("addressFields_filledLabelFilledFromPinPin", { filledLabel, pin: shownFill.pin })
+        : null}
     </LookupStatus>
   );
 
   return (
     <div className="flex flex-col gap-4">
-      <FormField label="Address line" name={key("line1")} required={required}>
+      <FormField label={t("addressFields_addressLine")} name={key("line1")} required={required}>
         <TextField
           id={idPrefix ? `${idPrefix}-line1` : undefined}
           value={value.line1}
           onChange={set("line1")}
-          placeholder="House / building, street, area"
+          placeholder={t("addressFields_houseBuildingStreetArea")}
           autoComplete="address-line1"
         />
       </FormField>

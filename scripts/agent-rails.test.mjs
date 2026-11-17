@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,32 +28,60 @@ function fixture(t) {
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   // Only the managed part of .codex: a local tool installed elsewhere under .codex is not
   // part of the rails and must not leak into fixtures.
-  for (const path of [".agents", ".codex/agents", ".claude", ".cursor", "scripts", "package.json"]) {
+  for (const path of [
+    ".agents",
+    ".codex/agents",
+    ".claude",
+    ".cursor",
+    "scripts",
+    "package.json",
+  ]) {
     cpSync(join(root, path), join(directory, path), { recursive: true });
   }
   // Only existence is relevant to local-reference checks: fixtures need no app code,
   // dependencies, running server, or historical document contents.
   for (const path of [
-    "docs/README.md", "docs/product/README.md", "docs/product/open-questions.md",
-    "docs/design/ds-requests.md", "docs/design/features/README.md", "docs/design/proposals/README.md",
-    "apps/dristi-app/scripts/resolve-ds.mjs", "apps/dristi-app/src/components/chrome/table-plate.ts",
-    "apps/dristi-app/src/components/chrome/motion.ts", "apps/dristi-app/src/components/filing/form-card.tsx",
+    "docs/README.md",
+    "docs/product/README.md",
+    "docs/product/open-questions.md",
+    "docs/design/ds-requests.md",
+    "docs/design/features/README.md",
+    "docs/design/proposals/README.md",
+    "apps/dristi-app/scripts/resolve-ds.mjs",
+    "apps/dristi-app/src/components/chrome/table-plate.ts",
+    "apps/dristi-app/src/components/chrome/motion.ts",
+    "apps/dristi-app/src/components/filing/form-card.tsx",
     "apps/dristi-app/src/app/globals.css",
     // Cited by the data rules (data-seam.md, ui-designer.md).
-    "apps/dristi-app/eslint.config.mjs", "apps/dristi-app/src/hooks/use-local-storage-value.ts",
-    "apps/dristi-app/src/app/api/bulk/route.ts", "apps/dristi-app/src/app/api/v1/route.ts",
-    "apps/dristi-app/src/lib/api/index.ts", "apps/dristi-app/src/lib/server/env.ts",
-    "apps/dristi-app/src/lib/data/source.ts", "apps/dristi-app/src/lib/auth/http.ts",
-    "apps/dristi-app/src/lib/tasks/data/index.ts", "apps/dristi-app/src/lib/filing/data/index.ts",
+    "apps/dristi-app/eslint.config.mjs",
+    "apps/dristi-app/src/hooks/use-local-storage-value.ts",
+    "apps/dristi-app/src/app/api/bulk/route.ts",
+    "apps/dristi-app/src/app/api/v1/route.ts",
+    "apps/dristi-app/src/lib/api/index.ts",
+    "apps/dristi-app/src/lib/server/env.ts",
+    "apps/dristi-app/src/lib/data/source.ts",
+    "apps/dristi-app/src/lib/auth/http.ts",
+    "apps/dristi-app/src/lib/tasks/data/index.ts",
+    "apps/dristi-app/src/lib/filing/data/index.ts",
     "apps/dristi-app/src/lib/cases/data/index.ts",
-  ]) write(directory, path, "fixture\n");
-  assert.deepEqual(inspectRails(directory).problems, [], "Every mutation starts from a valid fixture");
+    // Cited by the copy rules (ui-designer.md, design-review).
+    "apps/dristi-app/messages/en.json",
+    "docs/localization.md",
+  ])
+    write(directory, path, "fixture\n");
+  assert.deepEqual(
+    inspectRails(directory).problems,
+    [],
+    "Every mutation starts from a valid fixture",
+  );
   return directory;
 }
 
 function cli(directory, script, args = [], env = {}) {
   return spawnSync(process.execPath, [join(directory, "scripts", script), ...args], {
-    cwd: directory, encoding: "utf8", env: { ...process.env, ...env },
+    cwd: directory,
+    encoding: "utf8",
+    env: { ...process.env, ...env },
   });
 }
 
@@ -61,7 +98,10 @@ for (const path of [
 ]) {
   test(`detects drift in ${path}`, (t) => {
     const directory = fixture(t);
-    writeFileSync(join(directory, path), readFileSync(join(directory, path), "utf8") + "\nChanged fixture instructions.\n");
+    writeFileSync(
+      join(directory, path),
+      readFileSync(join(directory, path), "utf8") + "\nChanged fixture instructions.\n",
+    );
     assert.ok(inspectRails(directory).problems.some((problem) => /differs/.test(problem)));
   });
 }
@@ -83,16 +123,26 @@ test("a git-ignored local tool under a legacy Codex path is not a problem; a tra
   write(directory, ".gitignore", ".codex/skills/local-tool/\n");
   assert.deepEqual(inspectRails(directory).problems, []);
   write(directory, ".gitignore", "\n");
-  assert.ok(inspectRails(directory).problems.includes("Unexpected legacy Codex path: .codex/skills"));
+  assert.ok(
+    inspectRails(directory).problems.includes("Unexpected legacy Codex path: .codex/skills"),
+  );
 });
 
 test("detects a missing Codex role", (t) => {
   const directory = fixture(t);
   rmSync(join(directory, ".codex/agents/ui-reviewer.toml"));
-  assert.ok(inspectRails(directory).problems.some((problem) => problem.includes("Missing generated file: .codex/agents/ui-reviewer.toml")));
+  assert.ok(
+    inspectRails(directory).problems.some((problem) =>
+      problem.includes("Missing generated file: .codex/agents/ui-reviewer.toml"),
+    ),
+  );
 });
 
-for (const path of [".cursor/skills/extra/SKILL.md", ".cursor/rules/extra.mdc", ".codex/agents/extra.toml"]) {
+for (const path of [
+  ".cursor/skills/extra/SKILL.md",
+  ".cursor/rules/extra.mdc",
+  ".codex/agents/extra.toml",
+]) {
   test(`detects unmatched ${path} and sync refuses to delete it`, (t) => {
     const directory = fixture(t);
     write(directory, path, "owner's extra configuration\n");
@@ -114,20 +164,32 @@ test("broken skill-relative links fail even when all mirrors match", (t) => {
 
 test("broken repo-relative policy links fail", (t) => {
   const directory = fixture(t);
-  writeFileSync(join(directory, ".agents/policies/project.md"), "Read `.agents/policies/missing.md`.\n");
+  writeFileSync(
+    join(directory, ".agents/policies/project.md"),
+    "Read `.agents/policies/missing.md`.\n",
+  );
   assert.throws(() => expectedRails(directory), /Broken local reference/);
 });
 
 test("documents cannot require nonexistent root scripts", (t) => {
   const directory = fixture(t);
-  writeFileSync(join(directory, ".agents/policies/verification.md"), "Run `npm run check:missing`.\n");
+  writeFileSync(
+    join(directory, ".agents/policies/verification.md"),
+    "Run `npm run check:missing`.\n",
+  );
   assert.throws(() => expectedRails(directory), /Unknown root command/);
 });
 
 for (const mutation of [
-  (role) => { delete role.codexSandbox; },
-  (role) => { role.claudeTools.push("Bash"); },
-  (role) => { role.claudeTools.push("Write"); },
+  (role) => {
+    delete role.codexSandbox;
+  },
+  (role) => {
+    role.claudeTools.push("Bash");
+  },
+  (role) => {
+    role.claudeTools.push("Write");
+  },
 ]) {
   test("cannot regenerate weakened reviewer restrictions into matching files", (t) => {
     const directory = fixture(t);
@@ -150,19 +212,30 @@ test("generation restores missing mirrors and is idempotent", (t) => {
   rmSync(join(directory, ".codex/agents/ui-designer.toml"));
   assert.equal(cli(directory, "sync-rails.mjs").status, 0);
   assert.deepEqual(inspectRails(directory).problems, []);
-  const first = [...expectedRails(directory).output].map(([path]) => [path, readFileSync(join(directory, path))]);
+  const first = [...expectedRails(directory).output].map(([path]) => [
+    path,
+    readFileSync(join(directory, path)),
+  ]);
   assert.equal(cli(directory, "sync-rails.mjs").status, 0);
-  for (const [path, content] of first) assert.deepEqual(readFileSync(join(directory, path)), content);
+  for (const [path, content] of first)
+    assert.deepEqual(readFileSync(join(directory, path)), content);
 });
 
 test("new canonical skills carry nested resources into every mirror", (t) => {
   const directory = fixture(t);
-  write(directory, ".agents/skills/extra/SKILL.md", '---\nname: extra\ndescription: "Fixture skill"\n---\n\n[Resource](references/nested/example.md)\n');
+  write(
+    directory,
+    ".agents/skills/extra/SKILL.md",
+    '---\nname: extra\ndescription: "Fixture skill"\n---\n\n[Resource](references/nested/example.md)\n',
+  );
   write(directory, ".agents/skills/extra/references/nested/example.md", "nested fixture\n");
   const result = cli(directory, "sync-rails.mjs");
   assert.equal(result.status, 0, result.stderr);
   for (const tool of [".claude", ".cursor"]) {
-    assert.equal(readFileSync(join(directory, tool, "skills/extra/references/nested/example.md"), "utf8"), "nested fixture\n");
+    assert.equal(
+      readFileSync(join(directory, tool, "skills/extra/references/nested/example.md"), "utf8"),
+      "nested fixture\n",
+    );
   }
   assert.deepEqual(inspectRails(directory).problems, []);
 });
@@ -180,7 +253,10 @@ test("sync refuses to write through a generated-file symlink", (t) => {
 
 test("skill metadata rejects malformed and duplicate fields", () => {
   assert.throws(() => skillMetadata("no metadata", "fixture"), /frontmatter/);
-  assert.throws(() => skillMetadata('---\nname: example\nname: again\ndescription: "test"\n---\n', "fixture"), /duplicate/);
+  assert.throws(
+    () => skillMetadata('---\nname: example\nname: again\ndescription: "test"\n---\n', "fixture"),
+    /duplicate/,
+  );
 });
 
 test("Codex string encoding preserves quotes, newlines, and Unicode from the role", (t) => {
@@ -195,11 +271,20 @@ test("Codex string encoding preserves quotes, newlines, and Unicode from the rol
 test("verification stops on failure, uses argument arrays, and never starts later commands", (t) => {
   const directory = fixture(t);
   const fakeNpm = join(directory, "fake-npm.cjs");
-  writeFileSync(fakeNpm, 'require("node:fs").appendFileSync("commands.log", JSON.stringify(process.argv.slice(2))+"\\n"); process.exit(process.argv[3] === "lint" ? 7 : 0);');
+  writeFileSync(
+    fakeNpm,
+    'require("node:fs").appendFileSync("commands.log", JSON.stringify(process.argv.slice(2))+"\\n"); process.exit(process.argv[3] === "lint" ? 7 : 0);',
+  );
   const result = cli(directory, "verify-agent-work.mjs", ["ui"], { npm_execpath: fakeNpm });
   assert.equal(result.status, 7);
-  const log = readFileSync(join(directory, "commands.log"), "utf8").trim().split("\n").map(JSON.parse);
-  assert.deepEqual(log, [["run", "check:ds-fresh"], ["run", "lint"]]);
+  const log = readFileSync(join(directory, "commands.log"), "utf8")
+    .trim()
+    .split("\n")
+    .map(JSON.parse);
+  assert.deepEqual(log, [
+    ["run", "check:ds-fresh"],
+    ["run", "lint"],
+  ]);
 });
 
 test("verification rejects unknown or recursive profiles before execution", (t) => {

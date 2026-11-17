@@ -15,18 +15,14 @@ import { APP_ROOT } from "./resolve-ds.mjs";
 const SRC = join(APP_ROOT, "src");
 const UI_PRIMITIVES = join(SRC, "components", "ui") + sep;
 const ALLOW = "ds-typography-allow";
-const RAW_TYPE_SIZE =
-  /\btext-(?:xs|sm|base|lg|xl|[2-9]xl|\[[^\]]+\])(?![\w-])/g;
-const HEADING_TYPE =
-  /\btext-(?:display(?:-s)?|title(?:-l|-s)?)\b/;
+const RAW_TYPE_SIZE = /\btext-(?:xs|sm|base|lg|xl|[2-9]xl|\[[^\]]+\])(?![\w-])/g;
+const HEADING_TYPE = /\btext-(?:display(?:-s)?|title(?:-l|-s)?)\b/;
 
 function sourceFiles(dir) {
   return readdirSync(dir).flatMap((entry) => {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) return isNotDristi(full) ? [] : sourceFiles(full);
-    return entry.endsWith(".tsx") && !full.startsWith(UI_PRIMITIVES)
-      ? [full]
-      : [];
+    return entry.endsWith(".tsx") && !full.startsWith(UI_PRIMITIVES) ? [full] : [];
   });
 }
 
@@ -58,10 +54,7 @@ for (const file of sourceFiles(SRC)) {
     }
   });
 
-  if (
-    source.includes("Noto_Sans_Malayalam") &&
-    !/[\"']600[\"']/.test(source)
-  ) {
+  if (source.includes("Noto_Sans_Malayalam") && !/[\"']600[\"']/.test(source)) {
     findings.push({
       file: relative(APP_ROOT, file),
       line: lines.findIndex((line) => line.includes("weight:")) + 1,
@@ -74,17 +67,13 @@ for (const file of sourceFiles(SRC)) {
 if (findings.length) {
   console.error("Typography check failed:\n");
   for (const finding of findings) {
-    console.error(
-      `${finding.file}:${finding.line}  ${finding.rule}: ${finding.match}`
-    );
+    console.error(`${finding.file}:${finding.line}  ${finding.rule}: ${finding.match}`);
   }
   console.error(
     "\nUse text-body for citizen copy, text-title-* + font-semibold for headings. " +
-      `Keep ${ALLOW} for reviewed exceptions only.`
+      `Keep ${ALLOW} for reviewed exceptions only.`,
   );
   process.exit(1);
 }
 
-console.log(
-  "Typography check passed (named DS roles used outside synced primitives)."
-);
+console.log("Typography check passed (named DS roles used outside synced primitives).");

@@ -203,10 +203,7 @@ export function flattenLeaves(nodes: ComplaintNode[]): ComplaintNode[] {
   return leaves;
 }
 
-export function findNode(
-  nodes: ComplaintNode[],
-  id: string
-): ComplaintNode | undefined {
+export function findNode(nodes: ComplaintNode[], id: string): ComplaintNode | undefined {
   for (const node of nodes) {
     if (node.id === id) return node;
     if (node.children) {
@@ -220,7 +217,7 @@ export function findNode(
 export function findPath(
   nodes: ComplaintNode[],
   id: string,
-  trail: ComplaintNode[] = []
+  trail: ComplaintNode[] = [],
 ): ComplaintNode[] | undefined {
   for (const node of nodes) {
     const next = [...trail, node];
@@ -245,7 +242,7 @@ export function firstLeaf(nodes: ComplaintNode[]): ComplaintNode | undefined {
 
 export function parseComplaintPart(
   value: string | string[] | undefined,
-  tree: ComplaintNode[]
+  tree: ComplaintNode[],
 ): string {
   const raw = Array.isArray(value) ? value[0] : value;
   const leaves = flattenLeaves(tree);
@@ -259,19 +256,12 @@ export function complaintPartHref(caseId: string, partId: string): string {
   return `${base}${join}part=${partId}`;
 }
 
-export function complaintDocumentHref(
-  caseId: string,
-  doc: ComplaintDocument
-): string | undefined {
-  return doc.caseFileDocId
-    ? caseFileDocHref(caseId, doc.caseFileDocId)
-    : undefined;
+export function complaintDocumentHref(caseId: string, doc: ComplaintDocument): string | undefined {
+  return doc.caseFileDocId ? caseFileDocHref(caseId, doc.caseFileDocId) : undefined;
 }
 
 /** Same PDF the Case file viewer opens, including the child-document page. */
-export function complaintDocumentSrc(
-  doc: ComplaintDocument
-): string | undefined {
+export function complaintDocumentSrc(doc: ComplaintDocument): string | undefined {
   if (!doc.caseFileDocId) return undefined;
   const node = findCaseFileNode(CASE_FILE_TREE, doc.caseFileDocId);
   return node ? caseFilePdfSrc(node) : undefined;
@@ -288,7 +278,7 @@ function idField(term: string, value: string): ComplaintField {
 
 function empty(
   term: string,
-  value: "Not provided" | "Not uploaded" | "Not applicable" | "Not filed"
+  value: "Not provided" | "Not uploaded" | "Not applicable" | "Not filed",
 ): ComplaintField {
   return { term, value, empty: true };
 }
@@ -314,9 +304,7 @@ function packDocs(docs: PackDoc[] | undefined): ComplaintDocument[] {
     id: doc.documentId,
     label: doc.name,
     caseFileDocId:
-      doc.file && CASE_FILE_BY_DOC[doc.documentId]
-        ? CASE_FILE_BY_DOC[doc.documentId]
-        : undefined,
+      doc.file && CASE_FILE_BY_DOC[doc.documentId] ? CASE_FILE_BY_DOC[doc.documentId] : undefined,
   }));
 }
 
@@ -328,8 +316,8 @@ function partyPane(party: PackParty): ComplaintPane {
     fields.push(
       field(
         "Represented by",
-        `${party.representedBy.name}, ${party.representedBy.capacity.toLowerCase()}`
-      )
+        `${party.representedBy.name}, ${party.representedBy.capacity.toLowerCase()}`,
+      ),
     );
     if (party.representedBy.age !== undefined) {
       fields.push(field("Age", String(party.representedBy.age)));
@@ -339,38 +327,27 @@ function partyPane(party: PackParty): ComplaintPane {
     fields.push(field("Appearance", party.appearanceMode));
   }
   fields.push(
-    party.mobileNumber
-      ? field("Mobile", party.mobileNumber)
-      : empty("Mobile", "Not provided")
+    party.mobileNumber ? field("Mobile", party.mobileNumber) : empty("Mobile", "Not provided"),
   );
-  fields.push(
-    party.emailId
-      ? field("Email", party.emailId)
-      : empty("Email", "Not provided")
-  );
+  fields.push(party.emailId ? field("Email", party.emailId) : empty("Email", "Not provided"));
   if (!party.representedBy) {
     fields.push(
-      party.age !== undefined
-        ? field("Age", String(party.age))
-        : empty("Age", "Not provided")
+      party.age !== undefined ? field("Age", String(party.age)) : empty("Age", "Not provided"),
     );
   }
   if (party.idProof) {
     fields.push(
       field(
         "ID proof",
-        `${party.idProof.type} · ${party.idProof.maskedNumber} · ${party.idProof.status}`
-      )
+        `${party.idProof.type} · ${party.idProof.maskedNumber} · ${party.idProof.status}`,
+      ),
     );
   }
   if (company) {
     fields.push(
       company.applicable
-        ? field(
-            "Company documents",
-            company.documents.map((doc) => doc.name).join("; ")
-          )
-        : empty("Company documents", "Not applicable")
+        ? field("Company documents", company.documents.map((doc) => doc.name).join("; "))
+        : empty("Company documents", "Not applicable"),
     );
   }
   fields.push(field("Address", address(party.address)));
@@ -378,18 +355,14 @@ function partyPane(party: PackParty): ComplaintPane {
     fields.push(
       field(
         "Residence",
-        party.currentResidentialAddress.sameAsAddress
-          ? "Same as address"
-          : "Not provided"
-      )
+        party.currentResidentialAddress.sameAsAddress ? "Same as address" : "Not provided",
+      ),
     );
   }
   if (party.policeStation) {
     fields.push(field("Police station", party.policeStation));
   }
-  fields.push(
-    field("Power of attorney", yesNo(party.powerOfAttorneyTransferred))
-  );
+  fields.push(field("Power of attorney", yesNo(party.powerOfAttorneyTransferred)));
 
   return {
     title: party.name,
@@ -417,19 +390,14 @@ function chequePane(cheque: PackCheque): ComplaintPane {
       field("Payer branch", cheque.payerBankBranchName),
       idField("Payer IFSC", cheque.payerIfscCode),
       field("Amount", money(cheque.chequeAmount)),
-      field(
-        "Jurisdiction",
-        cheque.policeStationWithJurisdictionOverChequeDepositBank
-      ),
+      field("Jurisdiction", cheque.policeStationWithJurisdictionOverChequeDepositBank),
       field("Date of deposit", on(cheque.dateOfDeposit)),
       field("Date of return", on(cheque.dateOfReturnAsPerChequeReturnMemo)),
       field("Reason for return", cheque.reasonForReturn),
       cheque.additionalDetails
         ? field("Additional details", cheque.additionalDetails)
         : empty("Additional details", "Not provided"),
-      ...cheque.confirmations.map((item) =>
-        field(item.statement, yesNo(item.confirmed))
-      ),
+      ...cheque.confirmations.map((item) => field(item.statement, yesNo(item.confirmed))),
     ],
     documents: packDocs(cheque.documents),
   };
@@ -617,10 +585,7 @@ function buildPanes(): Record<string, ComplaintPane> {
         field("Date of dispatch", on(notice.dateOfDispatch)),
         field("Date of service", on(notice.dateOfServiceOrDeemedService)),
         field("Date of reply", on(notice.dateOfReply)),
-        field(
-          "Fifteen days from service",
-          on(notice.dateWhenFifteenDaysFromServiceWasComplete)
-        ),
+        field("Fifteen days from service", on(notice.dateWhenFifteenDaysFromServiceWasComplete)),
         field("Reply", notice.replySummary),
       ],
       documents: packDocs(notice.documents),
@@ -632,18 +597,18 @@ function buildPanes(): Record<string, ComplaintPane> {
     fields: [
       field(
         "Filed within one month",
-        yesNo(delayGroup.filedWithinOneMonthOfAccrualOfCauseOfAction)
+        yesNo(delayGroup.filedWithinOneMonthOfAccrualOfCauseOfAction),
       ),
       delayGroup.application == null
         ? empty("Application", "Not filed")
         : field("Application", "Filed"),
     ],
-    blocks: [{ title: "As filed", body: delayGroup.displayState }],
+    blocks: [{ title: "complaint_asFiled", body: delayGroup.displayState }],
   };
 
   panes.additionalInformation = {
     title: "Additional information",
-    blocks: [{ title: "As filed", body: extraGroup.value }],
+    blocks: [{ title: "complaint_asFiled", body: extraGroup.value }],
   };
 
   panes.witnessDetails = {
@@ -659,15 +624,12 @@ function buildPanes(): Record<string, ComplaintPane> {
   panes.complaintNarrative = {
     title: "Complaint",
     blocks: [
-      { title: "Synopsis", body: complaintGroup.synopsis },
-      { title: "Complaint", body: complaintGroup.complaint },
-      { title: "Prayer", body: complaintGroup.prayer },
-      { title: "Additional details", body: complaintGroup.additionalDetails },
+      { title: "complaint_synopsis", body: complaintGroup.synopsis },
+      { title: "complaint_complaint", body: complaintGroup.complaint },
+      { title: "complaint_prayer", body: complaintGroup.prayer },
+      { title: "complaint_additionalDetails", body: complaintGroup.additionalDetails },
     ],
-    documents: packDocs([
-      ...complaintGroup.documents,
-      complaintGroup.affidavitUnderSection223Bnss,
-    ]),
+    documents: packDocs([...complaintGroup.documents, complaintGroup.affidavitUnderSection223Bnss]),
   };
 
   panes.advocateDetails = {
@@ -682,9 +644,7 @@ function buildPanes(): Record<string, ComplaintPane> {
         advocate.barRegistration,
         advocate.isLeadAdvocate ? "Lead advocate" : "Additional advocate",
         advocate.emailId,
-        advocate.idProofStatus
-          ? `ID proof ${advocate.idProofStatus.toLowerCase()}`
-          : undefined,
+        advocate.idProofStatus ? `ID proof ${advocate.idProofStatus.toLowerCase()}` : undefined,
       ]
         .filter(Boolean)
         .join(" · "),
@@ -720,10 +680,7 @@ export function complaintTree(caseId: string): ComplaintNode[] {
   return caseId === "c-1001" ? COMPLAINT_TREE : [];
 }
 
-export function complaintPane(
-  caseId: string,
-  partId: string
-): ComplaintPane | undefined {
+export function complaintPane(caseId: string, partId: string): ComplaintPane | undefined {
   if (caseId !== "c-1001") return undefined;
   return COMPLAINT_PANES[partId];
 }
@@ -733,9 +690,7 @@ export function complaintPane(
  * from the case file (Warrant by Hand's address for delivery). Only the
  * review case carries a complaint; every other case returns nothing.
  */
-export function accusedAddressesOnFile(
-  caseId: string
-): { name: string; address: Address }[] {
+export function accusedAddressesOnFile(caseId: string): { name: string; address: Address }[] {
   if (caseId !== "c-1001") return [];
   return accusedGroup.parties.map((party) => ({
     name: party.name,

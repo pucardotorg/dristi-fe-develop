@@ -6,6 +6,7 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 import { useCaseNumber } from "@/components/court/court-provider";
 import { cn } from "@/lib/utils";
 import { notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * A unique identifier, in the one treatment the product gives them: monospaced, with
@@ -78,7 +79,7 @@ function useClipboard(): boolean {
   return React.useSyncExternalStore(
     noSubscribe,
     () => !!navigator.clipboard,
-    () => false
+    () => false,
   );
 }
 
@@ -96,6 +97,7 @@ export function Identifier({
   /** Off where the identifier is decorative or already inside a control. */
   copyable?: boolean;
 }) {
+  const t = useTranslations();
   const [copied, setCopied] = React.useState(false);
   const timer = React.useRef<number | null>(null);
   /* Case numbers, CNRs and filing numbers are stored in Kerala's terms and shown in the
@@ -107,7 +109,7 @@ export function Identifier({
     () => () => {
       if (timer.current) window.clearTimeout(timer.current);
     },
-    []
+    [],
   );
 
   const supported = useClipboard();
@@ -126,7 +128,10 @@ export function Identifier({
         timer.current = window.setTimeout(() => setCopied(false), 1600);
         notify.neutral(
           <span>
-            Copied <span className="font-mono tabular-nums">{value}</span>
+            {t.rich("identifier_copiedValue", {
+              value,
+              span: (chunks) => <span className="font-mono tabular-nums">{chunks}</span>,
+            })}
           </span>,
           { icon: CopyIcon },
         );
@@ -139,21 +144,25 @@ export function Identifier({
   return (
     <button
       type="button"
-      title={copied ? "Copied" : `Copy ${label}`}
+      title={copied ? t("identifier_copied") : t("identifier_copyLabel", { label })}
       onClick={(event) => {
         /* These sit inside rows that open their record on click. Copying an identifier
            is not asking for the record. */
         event.stopPropagation();
         copy();
       }}
-      aria-label={copied ? `${label} copied` : `Copy the ${label}, ${value}`}
+      aria-label={
+        copied
+          ? t("identifier_labelCopied", { label })
+          : t("identifier_copyTheLabelValue", { label, value })
+      }
       className={cn(
         face,
         /* Negative inline margin against the pill's padding, so the resting text sits
            exactly where plain text would and the fill grows outside it. */
         "group/id -mx-1 inline-flex cursor-pointer items-center rounded-sm px-1 text-left align-baseline",
         "outline-none transition-colors hover:bg-surface-sunken focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-        className
+        className,
       )}
     >
       {/* The glyph is anchored to the value, not to the button: measured from the
@@ -185,7 +194,7 @@ export function Identifier({
             "in-[td]:absolute in-[td]:top-1/2 in-[td]:left-full in-[td]:-translate-y-1/2",
             copied
               ? "w-3.5 opacity-100"
-              : "w-0 opacity-0 group-hover/id:w-3.5 group-hover/id:opacity-100 group-focus-visible/id:w-3.5 group-focus-visible/id:opacity-100"
+              : "w-0 opacity-0 group-hover/id:w-3.5 group-hover/id:opacity-100 group-focus-visible/id:w-3.5 group-focus-visible/id:opacity-100",
           )}
         >
           {copied ? (

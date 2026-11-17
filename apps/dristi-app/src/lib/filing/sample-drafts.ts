@@ -73,7 +73,15 @@ type Sample = {
    * filer signed and the count on Pending signature is entirely someone else's; and
    * `pay-pending` — everyone signed, the court fee is what is left.
    */
-  reach: "start" | "parties" | "cheque" | "notice" | "most" | "sign-you-pending" | "sign-them-pending" | "pay-pending";
+  reach:
+    | "start"
+    | "parties"
+    | "cheque"
+    | "notice"
+    | "most"
+    | "sign-you-pending"
+    | "sign-them-pending"
+    | "pay-pending";
   savedDaysAgo: number;
   /**
    * A second complainant with their own advocate. Neither is at this keyboard, so their
@@ -89,19 +97,82 @@ type Sample = {
 };
 
 const SAMPLES: Sample[] = [
-  { id: "sample-draft-1", complainant: "Sainaba K.", accused: "Riyas M.", daysLeft: 12, reach: "most", savedDaysAgo: 1 },
-  { id: "sample-draft-2", complainant: "Meera Nair", accused: "Anwar S.", daysLeft: 2, reach: "notice", savedDaysAgo: 0 },
-  { id: "sample-draft-3", complainant: "Latha R.", accused: "Riya Jacob", daysLeft: 0, reach: "notice", savedDaysAgo: 3 },
-  { id: "sample-draft-4", complainant: "Suresh Menon", accused: "K. Menon", daysLeft: -6, reach: "cheque", savedDaysAgo: 20 },
-  { id: "sample-draft-5", complainant: "Joseph Mathew", accused: "", daysLeft: null, reach: "parties", savedDaysAgo: 5 },
-  { id: "sample-draft-6", complainant: "", accused: "", daysLeft: null, reach: "start", savedDaysAgo: 8 },
+  {
+    id: "sample-draft-1",
+    complainant: "Sainaba K.",
+    accused: "Riyas M.",
+    daysLeft: 12,
+    reach: "most",
+    savedDaysAgo: 1,
+  },
+  {
+    id: "sample-draft-2",
+    complainant: "Meera Nair",
+    accused: "Anwar S.",
+    daysLeft: 2,
+    reach: "notice",
+    savedDaysAgo: 0,
+  },
+  {
+    id: "sample-draft-3",
+    complainant: "Latha R.",
+    accused: "Riya Jacob",
+    daysLeft: 0,
+    reach: "notice",
+    savedDaysAgo: 3,
+  },
+  {
+    id: "sample-draft-4",
+    complainant: "Suresh Menon",
+    accused: "K. Menon",
+    daysLeft: -6,
+    reach: "cheque",
+    savedDaysAgo: 20,
+  },
+  {
+    id: "sample-draft-5",
+    complainant: "Joseph Mathew",
+    accused: "",
+    daysLeft: null,
+    reach: "parties",
+    savedDaysAgo: 5,
+  },
+  {
+    id: "sample-draft-6",
+    complainant: "",
+    accused: "",
+    daysLeft: null,
+    reach: "start",
+    savedDaysAgo: 8,
+  },
 ];
 
 /** Pending signature and Pending payment, one draft per state those tabs can be in. */
 const SIGN_SAMPLES: Sample[] = [
-  { id: "sample-draft-7", complainant: "Ragini Menon", accused: "Pavithran Nair", daysLeft: 14, reach: "sign-you-pending", savedDaysAgo: 0 },
-  { id: "sample-draft-8", complainant: "Thankachan Varghese", accused: "Sunil Kumar T.", daysLeft: 9, reach: "sign-them-pending", savedDaysAgo: 1 },
-  { id: "sample-draft-9", complainant: "Zeenath Beevi", accused: "Manoj Pillai", daysLeft: 11, reach: "pay-pending", savedDaysAgo: 2 },
+  {
+    id: "sample-draft-7",
+    complainant: "Ragini Menon",
+    accused: "Pavithran Nair",
+    daysLeft: 14,
+    reach: "sign-you-pending",
+    savedDaysAgo: 0,
+  },
+  {
+    id: "sample-draft-8",
+    complainant: "Thankachan Varghese",
+    accused: "Sunil Kumar T.",
+    daysLeft: 9,
+    reach: "sign-them-pending",
+    savedDaysAgo: 1,
+  },
+  {
+    id: "sample-draft-9",
+    complainant: "Zeenath Beevi",
+    accused: "Manoj Pillai",
+    daysLeft: 11,
+    reach: "pay-pending",
+    savedDaysAgo: 2,
+  },
 ];
 
 /**
@@ -116,7 +187,12 @@ export const ADVOCATE_LINK_SAMPLES: Sample[] = [
     daysLeft: 10,
     reach: "sign-them-pending",
     savedDaysAgo: 0,
-    second: { complainant: "Fathima Rasheed", mobile: "9847055610", advocate: "Thomas Kurian", barNumber: "K/2204/2015" },
+    second: {
+      complainant: "Fathima Rasheed",
+      mobile: "9847055610",
+      advocate: "Thomas Kurian",
+      barNumber: "K/2204/2015",
+    },
   },
 ];
 
@@ -135,7 +211,12 @@ export const OATH_DEMO_SAMPLES: Sample[] = [
     daysLeft: 12,
     reach: "sign-them-pending",
     savedDaysAgo: 0,
-    second: { complainant: "Rajan K. Nair", mobile: "9000000001", advocate: "Thomas Kurian", barNumber: "K/2204/2015" },
+    second: {
+      complainant: "Rajan K. Nair",
+      mobile: "9000000001",
+      advocate: "Thomas Kurian",
+      barNumber: "K/2204/2015",
+    },
     fixedIds: true,
   },
 ];
@@ -148,13 +229,34 @@ export const OATH_DEMO_LINK = "/sign?draft=sample-draft-14&as=sig-c-sample-draft
  * yet, so these only fill a Drafts row and open the placeholder page.
  */
 const PSS_SAMPLES: Sample[] = [
-  { id: "sample-draft-11", complainant: "Kerala Gramin Bank", accused: "Biju Antony", daysLeft: null, reach: "parties", savedDaysAgo: 2 },
-  { id: "sample-draft-12", complainant: "Muthoot Finance Ltd", accused: "Shabna N.", daysLeft: null, reach: "parties", savedDaysAgo: 6 },
+  {
+    id: "sample-draft-11",
+    complainant: "Kerala Gramin Bank",
+    accused: "Biju Antony",
+    daysLeft: null,
+    reach: "parties",
+    savedDaysAgo: 2,
+  },
+  {
+    id: "sample-draft-12",
+    complainant: "Muthoot Finance Ltd",
+    accused: "Shabna N.",
+    daysLeft: null,
+    reach: "parties",
+    savedDaysAgo: 6,
+  },
 ];
 
 /** Pending payment: the stale sample above, rebuilt, and one more. */
 const PAY_SAMPLES: Sample[] = [
-  { id: "sample-draft-13", complainant: "Abdul Rasheed P.", accused: "Vinod Kumar K.", daysLeft: 6, reach: "pay-pending", savedDaysAgo: 1 },
+  {
+    id: "sample-draft-13",
+    complainant: "Abdul Rasheed P.",
+    accused: "Vinod Kumar K.",
+    daysLeft: 6,
+    reach: "pay-pending",
+    savedDaysAgo: 1,
+  },
 ];
 
 /** One sample as a draft. Exported so tests can check a fixture without IndexedDB. */
@@ -178,23 +280,57 @@ export function buildSampleDraft(sample: Sample, today: string): FilingDraft {
   c.mobile = "9847012233";
   c.verified = true;
   c.age = "44";
-  c.res = { line1: "Puthenveedu, Market Road", city: "Kodungallur", pin: "680664", district: "Thrissur", state: "Kerala" };
+  c.res = {
+    line1: "Puthenveedu, Market Road",
+    city: "Kodungallur",
+    pin: "680664",
+    district: "Thrissur",
+    state: "Kerala",
+  };
   c.perm = { ...c.res };
   d.advocates[0].name = "Anjali Nair";
   d.advocates[0].barNumber = "K/1188/2011";
   if (sample.second) {
-    const c2 = { ...blankComplainant(), name: sample.second.complainant, mobile: sample.second.mobile, verified: true, age: "39" };
-    c2.res = { line1: "Kallingal House, Temple Road", city: "Kodungallur", pin: "680664", district: "Thrissur", state: "Kerala" };
+    const c2 = {
+      ...blankComplainant(),
+      name: sample.second.complainant,
+      mobile: sample.second.mobile,
+      verified: true,
+      age: "39",
+    };
+    c2.res = {
+      line1: "Kallingal House, Temple Road",
+      city: "Kodungallur",
+      pin: "680664",
+      district: "Thrissur",
+      state: "Kerala",
+    };
     c2.perm = { ...c2.res };
     if (sample.fixedIds) c2.id = `${sample.id}-c-2`;
     d.complainants.push(c2);
-    d.advocates.push({ id: `${sample.id}-adv-2`, forComplainants: [1], name: sample.second.advocate, barNumber: sample.second.barNumber });
+    d.advocates.push({
+      id: `${sample.id}-adv-2`,
+      forComplainants: [1],
+      name: sample.second.advocate,
+      barNumber: sample.second.barNumber,
+    });
   }
   if (sample.accused) {
     const a = d.accused[0];
     a.name = sample.accused;
     a.contacts = [{ mobile: "9846778811", email: "" }];
-    a.addresses = [{ addr: { line1: "Ashiyana, Beach Road", city: "Kodungallur", pin: "680664", district: "Thrissur", state: "Kerala" }, police: "Kodungallur" }];
+    a.addresses = [
+      {
+        addr: {
+          line1: "Ashiyana, Beach Road",
+          city: "Kodungallur",
+          pin: "680664",
+          district: "Thrissur",
+          state: "Kerala",
+        },
+        police: "Kodungallur",
+      },
+    ];
   }
   d.lastStep = "accused";
   if (sample.reach === "parties") return d;
@@ -226,7 +362,13 @@ export function buildSampleDraft(sample: Sample, today: string): FilingDraft {
   if (sample.reach === "cheque" || sample.reach === "notice") return d;
 
   const secondCheque = blankCheque();
-  d.cheques.push({ ...cheque, id: secondCheque.id, chequeNumber: "447163", amount: "85000", sameAsPrev: "yes" });
+  d.cheques.push({
+    ...cheque,
+    id: secondCheque.id,
+    chequeNumber: "447163",
+    amount: "85000",
+    sameAsPrev: "yes",
+  });
   d.jurisdiction.deposited = "yes";
   d.jurisdiction.ifsc = "SBIN0070123";
   d.jurisdiction.payeeBankName = "State Bank of India";
@@ -270,7 +412,7 @@ async function seedOnce(
   key: string,
   samples: Sample[],
   today: string,
-  caseType: FilingDraft["caseType"] = "s138"
+  caseType: FilingDraft["caseType"] = "s138",
 ): Promise<void> {
   if (window.localStorage.getItem(key)) return;
   const repo = getRepository();
@@ -312,7 +454,8 @@ export async function resetSampleDrafts(): Promise<void> {
     [OATH_DEMO_SAMPLES, "s138"],
   ];
   for (const [samples, caseType] of batches) {
-    for (const sample of samples) await repo.putDraft({ ...buildSampleDraft(sample, today), caseType });
+    for (const sample of samples)
+      await repo.putDraft({ ...buildSampleDraft(sample, today), caseType });
   }
 }
 

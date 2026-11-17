@@ -113,7 +113,10 @@ describe("every dashboard number is the length of what it opens", () => {
     assert.equal(m.stDisposed.length, total("disposed", { view: "st" }));
     assert.equal(m.cmpDisposed.length, total("disposed", { view: "cmp" }));
     assert.equal(m.longPending.length, total("calendar", { longPendingOnly: true }));
-    assert.equal(registerView(docket, "calendar", { longPendingOnly: true })!.rows.length, m.longPending.length);
+    assert.equal(
+      registerView(docket, "calendar", { longPendingOnly: true })!.rows.length,
+      m.longPending.length,
+    );
   });
 
   it("pending by year sums to the pending total", () => {
@@ -132,7 +135,8 @@ describe("every dashboard number is the length of what it opens", () => {
   it("overdue counts are past their limit, longest first", () => {
     for (const stage of STAGES) {
       const list = m.overdue[stage.key];
-      for (const c of list) assert.ok(daysInStage(c, docket.today) > COURT_LIMITS.stages[stage.key]);
+      for (const c of list)
+        assert.ok(daysInStage(c, docket.today) > COURT_LIMITS.stages[stage.key]);
       for (let i = 1; i < list.length; i++) {
         assert.ok(daysInStage(list[i - 1], docket.today) >= daysInStage(list[i], docket.today));
       }
@@ -178,7 +182,10 @@ describe("the registers", () => {
 
   it("lists all 18, the last 8 with no rows and their source to confirm", () => {
     assert.equal(REGISTERS.length, 18);
-    assert.deepEqual(REGISTERS.map((r) => r.no), Array.from({ length: 18 }, (_, i) => i + 1));
+    assert.deepEqual(
+      REGISTERS.map((r) => r.no),
+      Array.from({ length: 18 }, (_, i) => i + 1),
+    );
     for (const register of REGISTERS) {
       const result = registerView(docket, register.id)!;
       if (register.no > 10) {

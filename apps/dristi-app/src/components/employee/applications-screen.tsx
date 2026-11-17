@@ -38,21 +38,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  sideLabel,
-  type LifecycleApplication,
-} from "@/lib/applications/lifecycle";
-import {
-  today,
-  useApplicationsReady,
-  useLifecycleApplications,
-} from "@/lib/applications/store";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { sideLabel, type LifecycleApplication } from "@/lib/applications/lifecycle";
+import { today, useApplicationsReady, useLifecycleApplications } from "@/lib/applications/store";
 import {
   APPLICATION_VIEWS,
   applicationsIn,
@@ -67,42 +55,37 @@ import {
 } from "@/lib/employee/application-queue";
 import { caseOf, causeTitleOf } from "@/lib/employee/application-tasks";
 import { nextApplicationOrderKey } from "@/lib/employee/application-order-draft";
-import {
-  pendingOrderStage,
-  pendingOrderStageLabel,
-} from "@/lib/employee/pending-orders";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { pendingOrderStage, pendingOrderStageLabel } from "@/lib/employee/pending-orders";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
 import { notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 const EMPTY: Record<ApplicationView | "archive", { title: string; description: string }> = {
   all: {
-    title: "No open applications",
-    description: "Applications filed on a case arrive here the working day after filing.",
+    title: "applicationsScreen_noOpenApplications",
+    description: "applicationsScreen_applicationsFiledOnACaseArrive",
   },
   onboard: {
-    title: "Nothing to onboard today",
-    description: "New applications arrive here the working day after they are filed.",
+    title: "applicationsScreen_nothingToOnboardToday",
+    description: "applicationsScreen_newApplicationsArriveHereTheWorking",
   },
   decide: {
-    title: "Nothing listed for today",
-    description: "Applications return here on the date they are listed for.",
+    title: "applicationsScreen_nothingListedForToday",
+    description: "applicationsScreen_applicationsReturnHereOnTheDate",
   },
   later: {
-    title: "Nothing upcoming",
-    description: "Reviews deferred and applications listed for a later date appear here.",
+    title: "applicationsScreen_nothingUpcoming",
+    description: "applicationsScreen_reviewsDeferredAndApplicationsListedFor",
   },
   closed: {
-    title: "Nothing closed in the last 30 days",
-    description: "Older decisions are in the archive.",
+    title: "applicationsScreen_nothingClosedInTheLast30",
+    description: "applicationsScreen_olderDecisionsAreInTheArchive",
   },
   archive: {
-    title: "The archive is empty",
-    description: "Applications closed more than 30 days ago move here.",
+    title: "applicationsScreen_theArchiveIsEmpty",
+    description: "applicationsScreen_applicationsClosedMoreThan30Days",
   },
 };
 
@@ -129,6 +112,7 @@ export function ApplicationsScreen({
   /** An application to open on arrival — the way back from its order. */
   initialOpen?: string;
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const ready = useApplicationsReady();
   const apps = useLifecycleApplications();
@@ -168,7 +152,6 @@ export function ApplicationsScreen({
     router.replace(`/employee/applications?view=${view}`, { scroll: false });
   }
 
-
   /* An order already started on an application, and where it stands — so a row the bench
      has acted on does not read as untouched until the order is signed. */
   const orders = usePendingOrders();
@@ -183,10 +166,14 @@ export function ApplicationsScreen({
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <h1 className="text-title text-balance font-semibold">Applications</h1>
+        <h1 className="text-title text-balance font-semibold">
+          {t("applicationsScreen_applications")}
+        </h1>
         {/* The day the bench is working, as a cause list heads itself: To onboard and To
             decide are *today's* work (Anshumanth, 2026-10-08). */}
-        <p className="text-body text-muted-foreground">Today · {todayLabel(on)}</p>
+        <p className="text-body text-muted-foreground">
+          {t("applicationsScreen_todayTodayLabel", { todayLabel: todayLabel(on) })}
+        </p>
       </header>
 
       <section className="flex min-w-0 flex-col gap-6 rounded-xl border border-hairline bg-card p-6 shadow-raised">
@@ -200,10 +187,10 @@ export function ApplicationsScreen({
             />
           }
           search={{
-            label: "Search applications",
+            label: t("applicationsScreen_searchApplications"),
             value: query,
             onChange: setQuery,
-            placeholder: "Case, party or number",
+            placeholder: t("applicationsScreen_casePartyOrNumber"),
           }}
           searchRef={searchRef}
           fields={[]}
@@ -226,12 +213,14 @@ export function ApplicationsScreen({
                   {query ? <SearchXIcon aria-hidden /> : <InboxIcon aria-hidden />}
                 </EmptyMedia>
                 <EmptyTitle className="text-title-s font-semibold">
-                  {query ? "No application matches this search" : EMPTY[view].title}
+                  {query
+                    ? t("applicationsScreen_noApplicationMatchesThisSearch")
+                    : translateText(t, EMPTY[view].title)}
                 </EmptyTitle>
                 <EmptyDescription className="text-body">
                   {query
-                    ? "Search looks at the case, the parties, the application type and its number."
-                    : EMPTY[view].description}
+                    ? t("applicationsScreen_searchLooksAtTheCaseThe")
+                    : translateText(t, EMPTY[view].description)}
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -250,7 +239,11 @@ export function ApplicationsScreen({
               {/* Phones get the same bands as the table, each headed the same way. */}
               <div className="flex flex-col gap-6 md:hidden">
                 {(banded ? bandsOf(rows, on) : [{ id: "rows", label: "", rows }]).map((band) => (
-                  <section key={band.id} className="flex flex-col gap-3" aria-label={band.label || undefined}>
+                  <section
+                    key={band.id}
+                    className="flex flex-col gap-3"
+                    aria-label={band.label || undefined}
+                  >
                     {band.label ? (
                       <h2 className="flex items-baseline gap-2 text-body-compact font-semibold">
                         {band.label}
@@ -295,13 +288,12 @@ export function ApplicationsScreen({
                 onClick={() => changeView(view === "archive" ? "closed" : "archive")}
               >
                 {view === "archive"
-                  ? "Back to the last 30 days"
+                  ? t("applicationsScreen_backToTheLast30Days")
                   : `View archive · ${countIn(apps, "archive", on)} closed more than 30 days ago`}
               </Button>
             </div>
           ) : null}
         </div>
-
       </section>
 
       <ApplicationDialog
@@ -326,11 +318,9 @@ export function ApplicationsScreen({
             ?.focus()
         }
       />
-
     </div>
   );
 }
-
 
 /**
  * The views as a single-select pill row — the pending-tasks row (`chrome/pill-plate.ts`).
@@ -347,6 +337,7 @@ function ViewPills({
   on: string;
   onChange: (view: ApplicationView) => void;
 }) {
+  const t = useTranslations();
   return (
     <TooltipProvider delayDuration={300}>
       <ToggleGroup
@@ -357,7 +348,7 @@ function ViewPills({
         onValueChange={(next) => {
           if (next) onChange(next as ApplicationView);
         }}
-        aria-label="Show"
+        aria-label={t("applicationsScreen_show")}
         className={PILL_ROW}
       >
         {/* No Upcoming pill (owner, 2026-10-22): what is listed ahead stays in All open. */}
@@ -369,10 +360,14 @@ function ViewPills({
                 <span className="inline-flex">
                   <ToggleGroupItem
                     value={entry.id}
-                    aria-label={count === null ? entry.label : `${entry.label}, ${count}`}
+                    aria-label={
+                      count === null
+                        ? translateText(t, entry.label)
+                        : `${translateText(t, entry.label)}, ${count}`
+                    }
                     className={PILL_ITEM}
                   >
-                    <span>{entry.label}</span>
+                    <span>{translateText(t, entry.label)}</span>
                     {count ? (
                       <span aria-hidden className={PILL_COUNT}>
                         {count}
@@ -381,7 +376,7 @@ function ViewPills({
                   </ToggleGroupItem>
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="bottom">{entry.hint}</TooltipContent>
+              <TooltipContent side="bottom">{translateText(t, entry.hint)}</TooltipContent>
             </Tooltip>
           );
         })}
@@ -401,6 +396,7 @@ function StatusCell({
   /** An order under way on it, as "Order · Drafting". */
   order?: string;
 }) {
+  const t = useTranslations();
   const line = statusLine(app, on);
   const closed = queueOf(app, on) === "closed" || queueOf(app, on) === "archive";
   return (
@@ -422,14 +418,16 @@ function StatusCell({
            reads the same whatever the line under it says. */
         <span className="flex flex-wrap items-center gap-2">
           <span className="font-medium text-foreground">{line.word}</span>
-          {line.due === "overdue" ? <Badge variant="destructive">Overdue</Badge> : null}
-          {line.due === "today" ? <Badge variant="warning">Due today</Badge> : null}
+          {line.due === "overdue" ? (
+            <Badge variant="destructive">{t("applicationsScreen_overdue")}</Badge>
+          ) : null}
+          {line.due === "today" ? (
+            <Badge variant="warning">{t("applicationsScreen_dueToday")}</Badge>
+          ) : null}
         </span>
       )}
       {line.detail ? (
-        <span
-          className={app.objectionId ? "font-medium text-foreground" : "text-muted-foreground"}
-        >
+        <span className={app.objectionId ? "font-medium text-foreground" : "text-muted-foreground"}>
           {line.detail}
         </span>
       ) : null}
@@ -453,6 +451,7 @@ function ApplicationsTable({
   onOpen: (app: LifecycleApplication) => void;
   orderOf: (app: LifecycleApplication) => string | undefined;
 }) {
+  const t = useTranslations();
   const columns = 5;
   const bands = banded ? bandsOf(rows, on) : [{ id: "rows", label: "", rows }];
 
@@ -460,14 +459,22 @@ function ApplicationsTable({
     <Table className="w-full border-separate border-spacing-0 text-body-compact">
       <TableHeader>
         <TableRow className={TABLE_HEAD_ROW}>
-          <TableHead className={cn(TABLE_HEAD, "min-w-36 whitespace-normal")}>Application</TableHead>
-          <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>Case</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "min-w-36 whitespace-normal")}>
+            {t("applicationsScreen_application")}
+          </TableHead>
+          <TableHead className={cn(TABLE_HEAD, "min-w-40 whitespace-normal")}>
+            {t("applicationsScreen_case")}
+          </TableHead>
           {/* The two short columns take their content's width; what is left goes to the
               columns that carry words, so Status never wraps a badge onto its own line. */}
-          <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>Number</TableHead>
-          <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>Filed</TableHead>
+          <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>
+            {t("applicationsScreen_number")}
+          </TableHead>
+          <TableHead className={cn(TABLE_HEAD, "w-px whitespace-nowrap")}>
+            {t("applicationsScreen_filed")}
+          </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
-            {closed ? "Outcome" : "Status"}
+            {closed ? t("applicationsScreen_outcome") : t("applicationsScreen_status")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -496,10 +503,7 @@ function ApplicationsTable({
           {band.rows.map((app) => {
             const record = caseOf(app);
             return (
-              <TableRow
-                key={app.id}
-                {...rowActivation(tableRowClass({ selectable: false }))}
-              >
+              <TableRow key={app.id} {...rowActivation(tableRowClass({ selectable: false }))}>
                 <TableCell className={cn(TABLE_CELL, "align-top", "min-w-36 whitespace-normal")}>
                   {/* The side rides inside the opener: on its own line under it, the
                       opener's 40px floor left a gap between the two. */}
@@ -512,9 +516,7 @@ function ApplicationsTable({
                   >
                     {app.typeLabel}
                     {/* Under the application's name, the side alone says who filed it. */}
-                    <span className="font-normal text-muted-foreground">
-                      {sideLabel(app.side)}
-                    </span>
+                    <span className="font-normal text-muted-foreground">{sideLabel(app.side)}</span>
                   </button>
                 </TableCell>
                 <TableCell className={cn(TABLE_CELL, "align-top", "min-w-40 whitespace-normal")}>
@@ -523,7 +525,10 @@ function ApplicationsTable({
                     {record ? (
                       /* A number is read whole: it never breaks at its hyphens. */
                       <span className="whitespace-nowrap text-muted-foreground">
-                        <Identifier value={record.caseNumber} label="case number" />
+                        <Identifier
+                          value={record.caseNumber}
+                          label={t("applicationsScreen_caseNumber")}
+                        />
                       </span>
                     ) : null}
                   </span>
@@ -532,14 +537,22 @@ function ApplicationsTable({
                   <span className="flex flex-col gap-1">
                     <Identifier
                       value={app.applicationNumber ?? app.temporaryId ?? "—"}
-                      label={app.applicationNumber ? "application number" : "temporary number"}
+                      label={
+                        app.applicationNumber
+                          ? t("applicationsScreen_applicationNumber")
+                          : t("applicationsScreen_temporaryNumber")
+                      }
                     />
                     {app.applicationNumber ? null : (
-                      <span className="text-muted-foreground">Temporary</span>
+                      <span className="text-muted-foreground">
+                        {t("applicationsScreen_temporary")}
+                      </span>
                     )}
                   </span>
                 </TableCell>
-                <TableCell className={cn(TABLE_CELL, "align-top", "whitespace-nowrap tabular-nums")}>
+                <TableCell
+                  className={cn(TABLE_CELL, "align-top", "whitespace-nowrap tabular-nums")}
+                >
                   {shortDate(app.submittedOn ?? app.createdOn)}
                 </TableCell>
                 <TableCell className={cn(TABLE_CELL, "align-top", "min-w-56 whitespace-normal")}>

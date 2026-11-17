@@ -7,7 +7,7 @@ describe("NON_DELIVERY_REASON_CODES", () => {
   it("gives every reason the form offers a backend code", () => {
     assert.deepEqual(
       Object.keys(NON_DELIVERY_REASON_CODES).sort(),
-      NON_DELIVERY_REASONS.map((o) => o.value).sort()
+      NON_DELIVERY_REASONS.map((o) => o.value).sort(),
     );
   });
 

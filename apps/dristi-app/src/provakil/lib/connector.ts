@@ -11,11 +11,25 @@
  * it. The authoritative record is docs/design/features/bulk-filing.md.
  */
 
-import { BANK, OFFICERS, type Address, type Constitution, type Matter, type DocTag } from "./matters";
+import {
+  BANK,
+  OFFICERS,
+  type Address,
+  type Constitution,
+  type Matter,
+  type DocTag,
+} from "./matters";
 
 /* The request shape — the court's `lib/bulk/contract.ts`, restated for this app. */
 type ApiAddress = { line1: string; city: string; pin: string; policeStation?: string };
-type ApiRep = { name: string; designation?: string; age?: string; mobile?: string; email?: string; address?: ApiAddress };
+type ApiRep = {
+  name: string;
+  designation?: string;
+  age?: string;
+  mobile?: string;
+  email?: string;
+  address?: ApiAddress;
+};
 export type ApiBatchRequest = {
   source: { system: string; reference?: string; sentBy?: string };
   complainant: {
@@ -66,7 +80,13 @@ export type ApiBatchRequest = {
     }[];
     jurisdiction: { depositedInOwnAccount: boolean; complainantBranchIfsc: string };
     condonationReason?: string;
-    witnesses?: { name: string; designation: string; prove: string; mobile: string; address: ApiAddress }[];
+    witnesses?: {
+      name: string;
+      designation: string;
+      prove: string;
+      mobile: string;
+      address: ApiAddress;
+    }[];
     documents: { code: string; index?: number; name: string; url: string; contentType: string }[];
   }[];
 };
@@ -143,7 +163,12 @@ export function phone(raw: string | undefined): string {
   return d;
 }
 
-const addr = (a: { line: string; city: string; pincode: string; policeStation?: string }): ApiAddress => ({
+const addr = (a: {
+  line: string;
+  city: string;
+  pincode: string;
+  policeStation?: string;
+}): ApiAddress => ({
   line1: a.line,
   city: a.city,
   pin: a.pincode,
@@ -175,11 +200,13 @@ export function mapMatter(m: Matter, docBase: string): ApiBatchRequest["cases"][
       {
         type: individual ? "individual" : "institution",
         name: individual ? proprietor(b.name) : b.name,
-        ...(individual ? { age: ageOn(b.dob) } : { institutionType: ENTITY_TYPE[b.constitution] ?? b.constitution }),
+        ...(individual
+          ? { age: ageOn(b.dob) }
+          : { institutionType: ENTITY_TYPE[b.constitution] ?? b.constitution }),
         mobile: phone(b.mobile),
         email: (b.email ?? "").toLowerCase(),
         addresses: ["Residence", "Office", "Permanent"].flatMap((t) =>
-          b.addresses.filter((a: Address) => a.type === t).map(addr)
+          b.addresses.filter((a: Address) => a.type === t).map(addr),
         ),
         ...(individual
           ? {}
@@ -212,7 +239,10 @@ export function mapMatter(m: Matter, docBase: string): ApiBatchRequest["cases"][
         delivered,
         ...(delivered === true ? { deliveredOn: m.notice.statusDate } : {}),
         ...(delivered === false
-          ? { returnedOn: m.notice.statusDate, nonDeliveryReason: NON_DELIVERY[m.notice.status] ?? m.notice.status }
+          ? {
+              returnedOn: m.notice.statusDate,
+              nonDeliveryReason: NON_DELIVERY[m.notice.status] ?? m.notice.status,
+            }
           : {}),
         replied: m.notice.replyReceived,
         payment:
@@ -242,7 +272,8 @@ export function mapMatter(m: Matter, docBase: string): ApiBatchRequest["cases"][
     // The court keeps the notice papers per cheque; one notice covering several cheques
     // is sent against each of them.
     documents: m.documents.flatMap((doc) => {
-      const perCheque = NOTICE_TAGS.includes(doc.tag) && multi ? m.instruments.map((_, i) => i + 1) : [doc.index];
+      const perCheque =
+        NOTICE_TAGS.includes(doc.tag) && multi ? m.instruments.map((_, i) => i + 1) : [doc.index];
       return perCheque.map((index) => ({
         code: DOC_CODE[doc.tag],
         ...(multi && index ? { index } : {}),
@@ -262,13 +293,15 @@ export function mapMatter(m: Matter, docBase: string): ApiBatchRequest["cases"][
  */
 export function buildRequest(
   matters: Matter[],
-  opts: { docBase: string; pushId: string; sentBy: string; adr: "yes" | "no" }
+  opts: { docBase: string; pushId: string; sentBy: string; adr: "yes" | "no" },
 ): ApiBatchRequest {
   const counts = new Map<Matter["region"], number>();
   for (const m of matters) counts.set(m.region, (counts.get(m.region) ?? 0) + 1);
   const region = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Ahmedabad West";
   const officer = OFFICERS[region];
-  const bars = [...new Set(matters.map((m) => m.advocate?.enrolment).filter((b): b is string => !!b))];
+  const bars = [
+    ...new Set(matters.map((m) => m.advocate?.enrolment).filter((b): b is string => !!b)),
+  ];
 
   return {
     source: { system: "Provakil", reference: opts.pushId, sentBy: opts.sentBy },
@@ -304,80 +337,250 @@ export const MAPPING: { group: string; rows: MappingRow[] }[] = [
     group: "Complainant (set once, from the company profile)",
     rows: [
       { id: "LIT-2", dristi: "Complainant type", provakil: "—", rule: "Always Institution" },
-      { id: "LIT-17", dristi: "Type of institution", provakil: "Company profile › Constitution", rule: "Public Ltd → Public limited company" },
-      { id: "LIT-18", dristi: "Institution name", provakil: "Company profile › Legal name", rule: "As is" },
-      { id: "LIT-18a", dristi: "CIN or PAN", provakil: "Company profile › CIN", rule: "Upper case" },
-      { id: "LIT-21", dristi: "Institution address", provakil: "Company profile › Registered office", rule: "Line, city, pincode" },
-      { id: "LIT-22…26", dristi: "Authorised representative", provakil: "Authorised officer for the region", rule: "Region with most selected cases; age from date of birth" },
+      {
+        id: "LIT-17",
+        dristi: "Type of institution",
+        provakil: "Company profile › Constitution",
+        rule: "Public Ltd → Public limited company",
+      },
+      {
+        id: "LIT-18",
+        dristi: "Institution name",
+        provakil: "Company profile › Legal name",
+        rule: "As is",
+      },
+      {
+        id: "LIT-18a",
+        dristi: "CIN or PAN",
+        provakil: "Company profile › CIN",
+        rule: "Upper case",
+      },
+      {
+        id: "LIT-21",
+        dristi: "Institution address",
+        provakil: "Company profile › Registered office",
+        rule: "Line, city, pincode",
+      },
+      {
+        id: "LIT-22…26",
+        dristi: "Authorised representative",
+        provakil: "Authorised officer for the region",
+        rule: "Region with most selected cases; age from date of birth",
+      },
     ],
   },
   {
     group: "Advocate",
     rows: [
-      { id: "ADV-3", dristi: "Bar registration number", provakil: "Matter › Empanelled advocate › Enrolment no.", rule: "As is. SARAS 2.0 looks up the name" },
+      {
+        id: "ADV-3",
+        dristi: "Bar registration number",
+        provakil: "Matter › Empanelled advocate › Enrolment no.",
+        rule: "As is. SARAS 2.0 looks up the name",
+      },
       { id: "ADV-2", dristi: "Advocate for", provakil: "—", rule: "The bank" },
     ],
   },
   {
     group: "Accused",
     rows: [
-      { id: "ACC-1", dristi: "Accused type", provakil: "Borrower › Constitution", rule: "Individual, Sole proprietorship → Individual. Firm, company, LLP → Institution" },
-      { id: "ACC-2 / 5", dristi: "Name", provakil: "Borrower › Name", rule: "Proprietorship: the proprietor's name" },
-      { id: "ACC-3", dristi: "Age", provakil: "Borrower › Date of birth (KYC)", rule: "Whole years today" },
-      { id: "ACC-4", dristi: "Type of institution", provakil: "Borrower › Constitution", rule: "Partnership firm, Private limited, Public limited, LLP" },
-      { id: "ACC-6", dristi: "Mobile", provakil: "Borrower › Mobile", rule: "Digits only, +91 and leading 0 dropped" },
+      {
+        id: "ACC-1",
+        dristi: "Accused type",
+        provakil: "Borrower › Constitution",
+        rule: "Individual, Sole proprietorship → Individual. Firm, company, LLP → Institution",
+      },
+      {
+        id: "ACC-2 / 5",
+        dristi: "Name",
+        provakil: "Borrower › Name",
+        rule: "Proprietorship: the proprietor's name",
+      },
+      {
+        id: "ACC-3",
+        dristi: "Age",
+        provakil: "Borrower › Date of birth (KYC)",
+        rule: "Whole years today",
+      },
+      {
+        id: "ACC-4",
+        dristi: "Type of institution",
+        provakil: "Borrower › Constitution",
+        rule: "Partnership firm, Private limited, Public limited, LLP",
+      },
+      {
+        id: "ACC-6",
+        dristi: "Mobile",
+        provakil: "Borrower › Mobile",
+        rule: "Digits only, +91 and leading 0 dropped",
+      },
       { id: "ACC-7", dristi: "Email", provakil: "Borrower › Email", rule: "Lower case" },
-      { id: "ACC-8…13", dristi: "Addresses", provakil: "Borrower › Addresses", rule: "Residence, office, permanent, in that order" },
-      { id: "ACC-14…17", dristi: "Persons responsible (S-141)", provakil: "Borrower › Directors / partners", rule: "One per person" },
+      {
+        id: "ACC-8…13",
+        dristi: "Addresses",
+        provakil: "Borrower › Addresses",
+        rule: "Residence, office, permanent, in that order",
+      },
+      {
+        id: "ACC-14…17",
+        dristi: "Persons responsible (S-141)",
+        provakil: "Borrower › Directors / partners",
+        rule: "One per person",
+      },
     ],
   },
   {
     group: "Cheque",
     rows: [
-      { id: "CHQ-1", dristi: "Date on cheque", provakil: "Instrument › Cheque date", rule: "As is" },
+      {
+        id: "CHQ-1",
+        dristi: "Date on cheque",
+        provakil: "Instrument › Cheque date",
+        rule: "As is",
+      },
       { id: "CHQ-2", dristi: "Amount", provakil: "Instrument › Amount", rule: "Whole rupees" },
-      { id: "CHQ-3", dristi: "Cheque number", provakil: "Instrument › Cheque no.", rule: "Zero-padded to 6 digits" },
-      { id: "CHQ-5", dristi: "IFSC", provakil: "Instrument › Drawee IFSC", rule: "Upper case. SARAS 2.0 looks up bank and branch" },
-      { id: "CHQ-7a", dristi: "Account number", provakil: "Instrument › Drawer account", rule: "As is" },
-      { id: "CHQ-8", dristi: "Presentation date", provakil: "Instrument › Deposit date", rule: "As is" },
+      {
+        id: "CHQ-3",
+        dristi: "Cheque number",
+        provakil: "Instrument › Cheque no.",
+        rule: "Zero-padded to 6 digits",
+      },
+      {
+        id: "CHQ-5",
+        dristi: "IFSC",
+        provakil: "Instrument › Drawee IFSC",
+        rule: "Upper case. SARAS 2.0 looks up bank and branch",
+      },
+      {
+        id: "CHQ-7a",
+        dristi: "Account number",
+        provakil: "Instrument › Drawer account",
+        rule: "As is",
+      },
+      {
+        id: "CHQ-8",
+        dristi: "Presentation date",
+        provakil: "Instrument › Deposit date",
+        rule: "As is",
+      },
       { id: "CHQ-9", dristi: "Return date", provakil: "Return memo › Date", rule: "As is" },
-      { id: "CHQ-10", dristi: "Return reason", provakil: "Return memo › Reason code", rule: "01 Funds insufficient, 02 Exceeds arrangement, 04 Payment stopped, 12 Account closed, 22 Signature differs, 30 Amount mismatch, 88 Refer to drawer" },
+      {
+        id: "CHQ-10",
+        dristi: "Return reason",
+        provakil: "Return memo › Reason code",
+        rule: "01 Funds insufficient, 02 Exceeds arrangement, 04 Payment stopped, 12 Account closed, 22 Signature differs, 30 Amount mismatch, 88 Refer to drawer",
+      },
     ],
   },
   {
     group: "Demand notice",
     rows: [
-      { id: "LDN-1", dristi: "Nature of debt", provakil: "Matter › Product", rule: "Any loan → Loan / advance repayment" },
+      {
+        id: "LDN-1",
+        dristi: "Nature of debt",
+        provakil: "Matter › Product",
+        rule: "Any loan → Loan / advance repayment",
+      },
       { id: "LDN-2", dristi: "Dispatch date", provakil: "Notice › Dispatch date", rule: "As is" },
-      { id: "LDN-3", dristi: "Mode of service", provakil: "Notice › Mode", rule: "RPAD, Speed post, Courier, Email" },
-      { id: "LDN-4", dristi: "Tracking number", provakil: "Notice › Consignment no.", rule: "As is" },
-      { id: "LDN-5", dristi: "Delivered", provakil: "Notice › Status", rule: "Delivered → Yes. Returned → No. In transit → unknown, held" },
-      { id: "LDN-6 / 7", dristi: "Delivery or return date", provakil: "Notice › Status date", rule: "As is" },
-      { id: "LDN-8", dristi: "Reason for non-delivery", provakil: "Notice › Status", rule: "Unclaimed, Refused, Left, Insufficient address" },
-      { id: "LDN-9", dristi: "Accused replied", provakil: "Notice › Reply received", rule: "Yes / No" },
-      { id: "LDN-10 / 11", dristi: "Payment after notice", provakil: "Loan account › Receipts after dispatch", rule: "Over ₹0 → Part payment with that amount" },
+      {
+        id: "LDN-3",
+        dristi: "Mode of service",
+        provakil: "Notice › Mode",
+        rule: "RPAD, Speed post, Courier, Email",
+      },
+      {
+        id: "LDN-4",
+        dristi: "Tracking number",
+        provakil: "Notice › Consignment no.",
+        rule: "As is",
+      },
+      {
+        id: "LDN-5",
+        dristi: "Delivered",
+        provakil: "Notice › Status",
+        rule: "Delivered → Yes. Returned → No. In transit → unknown, held",
+      },
+      {
+        id: "LDN-6 / 7",
+        dristi: "Delivery or return date",
+        provakil: "Notice › Status date",
+        rule: "As is",
+      },
+      {
+        id: "LDN-8",
+        dristi: "Reason for non-delivery",
+        provakil: "Notice › Status",
+        rule: "Unclaimed, Refused, Left, Insufficient address",
+      },
+      {
+        id: "LDN-9",
+        dristi: "Accused replied",
+        provakil: "Notice › Reply received",
+        rule: "Yes / No",
+      },
+      {
+        id: "LDN-10 / 11",
+        dristi: "Payment after notice",
+        provakil: "Loan account › Receipts after dispatch",
+        rule: "Over ₹0 → Part payment with that amount",
+      },
     ],
   },
   {
     group: "Jurisdiction",
     rows: [
       { id: "JUR-1", dristi: "Deposited in own account", provakil: "—", rule: "Always Yes" },
-      { id: "JUR-2", dristi: "Complainant branch IFSC", provakil: "Instrument › Collecting branch IFSC", rule: "Upper case" },
-      { id: "JUR-12", dristi: "Reason for condonation", provakil: "Matter › Note tagged condonation", rule: "Sent only when present" },
-      { id: "JUR-9…11", dristi: "Cause of action, filing date, delay", provakil: "—", rule: "Not sent. SARAS 2.0 computes them" },
+      {
+        id: "JUR-2",
+        dristi: "Complainant branch IFSC",
+        provakil: "Instrument › Collecting branch IFSC",
+        rule: "Upper case",
+      },
+      {
+        id: "JUR-12",
+        dristi: "Reason for condonation",
+        provakil: "Matter › Note tagged condonation",
+        rule: "Sent only when present",
+      },
+      {
+        id: "JUR-9…11",
+        dristi: "Cause of action, filing date, delay",
+        provakil: "—",
+        rule: "Not sent. SARAS 2.0 computes them",
+      },
     ],
   },
   {
     group: "Documents",
     rows: [
       { id: "DCM-1", dristi: "Cheque", provakil: "Document tag › Cheque", rule: "Per cheque" },
-      { id: "DCM-2", dristi: "Return memo", provakil: "Document tag › Return memo", rule: "Per cheque" },
+      {
+        id: "DCM-2",
+        dristi: "Return memo",
+        provakil: "Document tag › Return memo",
+        rule: "Per cheque",
+      },
       { id: "DCM-3", dristi: "Demand notice", provakil: "Document tag › Legal notice", rule: "" },
-      { id: "DCM-4", dristi: "Proof of dispatch", provakil: "Document tag › Postal receipt", rule: "" },
-      { id: "DCM-5", dristi: "Proof of delivery", provakil: "Document tag › Tracking report", rule: "" },
+      {
+        id: "DCM-4",
+        dristi: "Proof of dispatch",
+        provakil: "Document tag › Postal receipt",
+        rule: "",
+      },
+      {
+        id: "DCM-5",
+        dristi: "Proof of delivery",
+        provakil: "Document tag › Tracking report",
+        rule: "",
+      },
       { id: "DCM-6", dristi: "Reply to notice", provakil: "Document tag › Reply", rule: "" },
       { id: "DCM-7", dristi: "Proof of debt", provakil: "Document tag › Loan agreement", rule: "" },
-      { id: "DCM-9", dristi: "ID card", provakil: "Document tag › Authorised officer ID", rule: "" },
+      {
+        id: "DCM-9",
+        dristi: "ID card",
+        provakil: "Document tag › Authorised officer ID",
+        rule: "",
+      },
       { id: "DCM-12", dristi: "Vakalatnama", provakil: "Document tag › Vakalatnama", rule: "" },
     ],
   },

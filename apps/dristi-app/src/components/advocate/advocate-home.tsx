@@ -48,15 +48,17 @@ import { CasePeekSurface } from "@/components/cases/case-peek";
 import { CasePeekProvider, useCasePeek } from "@/components/cases/use-case-peek";
 import { HomeGreeting } from "@/components/advocate/home-greeting";
 import { useCourt } from "@/components/court/court-provider";
+import { CompanionRail, useRailSection } from "@/components/advocate/companion-rail";
 import {
-  CompanionRail,
-  useRailSection,
-} from "@/components/advocate/companion-rail";
-import { DayActions, HearingTimeline, type FilterVariant } from "@/components/advocate/hearing-timeline";
+  DayActions,
+  HearingTimeline,
+  type FilterVariant,
+} from "@/components/advocate/hearing-timeline";
 import { HOME_FRAME } from "@/components/advocate/home-layout";
 import { CauseListDialog } from "@/components/advocate/cause-list-dialog";
 import { JoinHearingDialog } from "@/components/advocate/join-hearing-dialog";
 import { notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /** The shell top bar is `h-14`; the sticky rail hangs below it. */
 const TOP_BAR = "3.5rem";
@@ -118,7 +120,9 @@ function useStoredFilters(todayKey: string): [SlotFilter, (next: SlotFilter) => 
   const raw = React.useSyncExternalStore(subscribeFilters, filtersSnapshot, () => "");
   const filter = React.useMemo((): SlotFilter => {
     try {
-      const parsed = raw ? (JSON.parse(raw) as { day?: string; filter?: Record<string, unknown> }) : null;
+      const parsed = raw
+        ? (JSON.parse(raw) as { day?: string; filter?: Record<string, unknown> })
+        : null;
       if (parsed && parsed.day === todayKey && parsed.filter && typeof parsed.filter === "object") {
         const v = parsed.filter;
         return {
@@ -145,7 +149,7 @@ function useStoredFilters(todayKey: string): [SlotFilter, (next: SlotFilter) => 
         /* No store, no persistence — the selection simply will not survive a refresh. */
       }
     },
-    [todayKey]
+    [todayKey],
   );
 
   return [filter, setFilter];
@@ -192,6 +196,7 @@ function HomeBody({
   config?: AdvocateHomeConfig;
   filterVariant?: FilterVariant;
 }) {
+  const t = useTranslations();
   const isMobile = useIsMobile();
   const store = useTasks();
   const { state, people, cases, tasks, user, reload } = store;
@@ -203,13 +208,9 @@ function HomeBody({
   // the Archived tab on the tasks page (restorable there).
   const onArchiveTask = React.useCallback(
     (task: Task) => {
-      void runTaskAction(
-        task.id,
-        archive,
-        "Archived — find it under the Archived tab"
-      );
+      void runTaskAction(task.id, archive, t("advocateHome_archivedFindItUnderTheArchived"));
     },
-    [runTaskAction]
+    [runTaskAction, t],
   );
   const peek = useCasePeek();
 
@@ -243,7 +244,7 @@ function HomeBody({
       if (!isMobile) setRailSection("tasks");
       setTaskHighlight({ caseId, taskIds, nonce: Date.now() });
     },
-    [isMobile, setRailSection]
+    [isMobile, setRailSection],
   );
 
   // One filter for the whole day: every sitting shows it and reads it, so a
@@ -254,22 +255,26 @@ function HomeBody({
   // With one court there is no court filter, so a court picked under another
   // deployment must not go on hiding hearings no control can bring back.
   const dayFilter = React.useMemo(
-    () => (singleCourt && storedFilter.courts.length ? { ...storedFilter, courts: [] } : storedFilter),
-    [singleCourt, storedFilter]
+    () =>
+      singleCourt && storedFilter.courts.length ? { ...storedFilter, courts: [] } : storedFilter,
+    [singleCourt, storedFilter],
   );
   const filters = React.useMemo(
     () =>
       Object.fromEntries(
-        (config.sittings.length ? config.sittings : [null]).map((_, i) => [`sitting-${i}`, dayFilter])
+        (config.sittings.length ? config.sittings : [null]).map((_, i) => [
+          `sitting-${i}`,
+          dayFilter,
+        ]),
       ) as Record<string, SlotFilter>,
-    [config.sittings, dayFilter]
+    [config.sittings, dayFilter],
   );
-  const changeFilter = React.useCallback((_slotKey: string, next: SlotFilter) => setDayFilter(next), [setDayFilter]);
+  const changeFilter = React.useCallback(
+    (_slotKey: string, next: SlotFilter) => setDayFilter(next),
+    [setDayFilter],
+  );
 
-  const week = React.useMemo(
-    () => weekOf(world, now, weekAnchor),
-    [world, now, weekAnchor]
-  );
+  const week = React.useMemo(() => weekOf(world, now, weekAnchor), [world, now, weekAnchor]);
 
   // The full day cause list opens in a near-fullscreen modal over the board.
   const [causeListOpen, setCauseListOpen] = React.useState(false);
@@ -292,16 +297,19 @@ function HomeBody({
   const onJoinCourt = React.useCallback(() => setJoinOpen(true), []);
   const announceJoin = React.useCallback(
     (parties: string, courtLabel: string, courtNumber: string | null) => {
-      notify.neutral(pick({ en: "Hearing link unavailable", ml: "വിചാരണ ലിങ്ക് ലഭ്യമല്ല" }, locale), {
-        icon: VideoOffIcon,
-        description: `${parties} · ${courtLabel}${courtNumber ? ` · ${courtNumber}` : ""}`,
-      });
+      notify.neutral(
+        pick({ en: "advocateHome_hearingLinkUnavailable", ml: "വിചാരണ ലിങ്ക് ലഭ്യമല്ല" }, locale),
+        {
+          icon: VideoOffIcon,
+          description: `${parties} · ${courtLabel}${courtNumber ? ` · ${courtNumber}` : ""}`,
+        },
+      );
     },
-    [locale]
+    [locale],
   );
   const onJoinHearing = React.useCallback(
     (row: CauseListRow) => announceJoin(row.parties, row.courtLabel, row.courtNumber),
-    [announceJoin]
+    [announceJoin],
   );
   const onJoinFromModal = React.useCallback(
     (hearing: TimelineHearing) => {
@@ -309,10 +317,10 @@ function HomeBody({
       announceJoin(
         hearing.kase.parties,
         courtIdentity(hearing.courtLabel).name,
-        courtNumberFor(hearing.court, hearing.kase.courtNumber)
+        courtNumberFor(hearing.court, hearing.kase.courtNumber),
       );
     },
-    [announceJoin]
+    [announceJoin],
   );
 
   // The board pages between days like a carousel. Before the day changes, a
@@ -327,7 +335,12 @@ function HomeBody({
   const liveGhost = React.useRef<HTMLElement | null>(null);
   function snapshotBoard(nextKey: string) {
     const el = boardRef.current;
-    if (!el || nextKey === selectedDay || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (
+      !el ||
+      nextKey === selectedDay ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
     const from = getComputedStyle(el).transform;
     ghost.current = {
       node: el.cloneNode(true) as HTMLElement,
@@ -344,19 +357,27 @@ function HomeBody({
     const copy = shot.node;
     copy.setAttribute("aria-hidden", "true");
     copy.inert = true;
-    Object.assign(copy.style, { position: "absolute", top: "0", left: "0", right: "0", pointerEvents: "none" });
+    Object.assign(copy.style, {
+      position: "absolute",
+      top: "0",
+      left: "0",
+      right: "0",
+      pointerEvents: "none",
+    });
     el.parentElement.append(copy);
     liveGhost.current = copy;
     const timing = { duration: 720, easing: "cubic-bezier(0.45, 0, 0.15, 1)" };
-    copy.animate([{ transform: shot.from }, { transform: `translateX(${-shot.dir * 100}%)` }], { ...timing, fill: "forwards" })
-      .onfinish = () => {
-        copy.remove();
-        if (liveGhost.current === copy) liveGhost.current = null;
-      };
+    copy.animate([{ transform: shot.from }, { transform: `translateX(${-shot.dir * 100}%)` }], {
+      ...timing,
+      fill: "forwards",
+    }).onfinish = () => {
+      copy.remove();
+      if (liveGhost.current === copy) liveGhost.current = null;
+    };
     boardAnimation.current?.cancel();
     boardAnimation.current = el.animate(
       [{ transform: `translateX(${shot.dir * 100}%)` }, { transform: "translateX(0)" }],
-      timing
+      timing,
     );
   }, [selectedDay]);
   React.useEffect(() => () => boardAnimation.current?.cancel(), []);
@@ -366,12 +387,12 @@ function HomeBody({
   // filter.
   const daySlots = React.useMemo(
     () => daySlotsOn(world, boardDay, now, config, filters),
-    [world, boardDay, now, config, filters]
+    [world, boardDay, now, config, filters],
   );
   const peopleOf = React.useCallback(
     (hearings: Parameters<typeof peopleOptionsOf>[1], scope: PeopleScope) =>
       peopleOptionsOf(world, hearings, scope, filterVariant === "menu"),
-    [world, filterVariant]
+    [world, filterVariant],
   );
   const accessFor = React.useCallback((kase: Case) => accessOf(world, kase), [world]);
   // Today's scheduled matters carry how many are still before them in court.
@@ -380,14 +401,14 @@ function HomeBody({
       boardDay === todayKey && hearing.status === "upcoming"
         ? queueOf(world, hearing.court, boardDay, hearing.item, now)
         : null,
-    [world, boardDay, todayKey, now]
+    [world, boardDay, todayKey, now],
   );
 
   // The advocate's hearings being called now, across every sitting — what the
   // Join picker lists.
   const nowHearings = React.useMemo(
     () => daySlots.flatMap((slot) => slot.board.now.flatMap((s) => s.hearings)),
-    [daySlots]
+    [daySlots],
   );
 
   // Where the selected day sits relative to today. `dayKeyOf` is a zero-padded
@@ -424,7 +445,7 @@ function HomeBody({
       const record = caseRecordFor(kase, kase.nextHearingAt);
       if (record) peek.open(record);
     },
-    [world.cases, peek]
+    [world.cases, peek],
   );
 
   /** The viewer's verb for a task — what the rail's hover overlay names. */
@@ -433,7 +454,7 @@ function HomeBody({
       const kase = caseOf({ cases }, task);
       return kase ? verbFor(user, task, kase) : "Open";
     },
-    [cases, user]
+    [cases, user],
   );
 
   const selectedCaseId = React.useMemo(() => {
@@ -452,9 +473,7 @@ function HomeBody({
               <CloudAlert aria-hidden="true" />
             </EmptyMedia>
             <EmptyTitle>{pick(advHome.loadErrorTitle, locale)}</EmptyTitle>
-            <EmptyDescription>
-              {pick(advHome.loadErrorBody, locale)}
-            </EmptyDescription>
+            <EmptyDescription>{pick(advHome.loadErrorBody, locale)}</EmptyDescription>
           </EmptyHeader>
           <Button variant="outline" size="sm" onClick={() => void reload()}>
             <RotateCw aria-hidden="true" />
@@ -507,72 +526,70 @@ function HomeBody({
 
         {/* Clipped sideways so the slide between days never adds a page scrollbar. */}
         <div className="relative overflow-x-clip">
-        <div ref={boardRef}>
-        {hasDay ? (
-          <div className={cn("px-4 pt-0", HOME_FRAME)}>
-            <HearingTimeline
-              daySlots={daySlots}
-              showTimes={config.showHearingTimes}
-              showConflicts={config.showConflicts}
-              singleCourt={singleCourt !== null}
-              dayPhase={dayPhase}
-              filters={filters}
-              onFilterChange={changeFilter}
-              peopleOptionsOf={peopleOf}
-              filterVariant={filterVariant}
-              accessOf={accessFor}
-              queueOf={queueFor}
-              onViewCauseList={onViewCauseList}
-              onJoinCourt={onJoinCourt}
-              onRefresh={() => void reload()}
-              selectedCaseId={selectedCaseId}
-              onOpenCase={openCase}
-              onOpenTasks={openTasksForCase}
-              onViewInCauseList={onViewInCauseList}
-              tabActions={
-                hasDay ? (
-                  <div className="hidden lg:block">
-                    <DayActions
-                      onViewCauseList={onViewCauseList}
-                      onJoinCourt={onJoinCourt}
-                      onRefresh={() => void reload()}
-                      fit="roomy"
-                      locale={locale}
-                    />
-                  </div>
-                ) : null
-              }
-              locale={locale}
-            />
+          <div ref={boardRef}>
+            {hasDay ? (
+              <div className={cn("px-4 pt-0", HOME_FRAME)}>
+                <HearingTimeline
+                  daySlots={daySlots}
+                  showTimes={config.showHearingTimes}
+                  showConflicts={config.showConflicts}
+                  singleCourt={singleCourt !== null}
+                  dayPhase={dayPhase}
+                  filters={filters}
+                  onFilterChange={changeFilter}
+                  peopleOptionsOf={peopleOf}
+                  filterVariant={filterVariant}
+                  accessOf={accessFor}
+                  queueOf={queueFor}
+                  onViewCauseList={onViewCauseList}
+                  onJoinCourt={onJoinCourt}
+                  onRefresh={() => void reload()}
+                  selectedCaseId={selectedCaseId}
+                  onOpenCase={openCase}
+                  onOpenTasks={openTasksForCase}
+                  onViewInCauseList={onViewInCauseList}
+                  tabActions={
+                    hasDay ? (
+                      <div className="hidden lg:block">
+                        <DayActions
+                          onViewCauseList={onViewCauseList}
+                          onJoinCourt={onJoinCourt}
+                          onRefresh={() => void reload()}
+                          fit="roomy"
+                          locale={locale}
+                        />
+                      </div>
+                    ) : null
+                  }
+                  locale={locale}
+                />
+              </div>
+            ) : (
+              <div className={cn("px-4 pt-4 pb-8", HOME_FRAME)}>
+                <Empty className="bg-surface-sunken">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <CloudAlert aria-hidden="true" />
+                    </EmptyMedia>
+                    <EmptyTitle>{pick(advHome.emptyDayTitle, locale)}</EmptyTitle>
+                    <EmptyDescription>{pick(advHome.emptyDayBody, locale)}</EmptyDescription>
+                  </EmptyHeader>
+                  {jump ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(event) => selectDay(jump.key, event.detail > 0)}
+                    >
+                      {fillCopy(advHome.jumpNext, locale, {
+                        day: jump.label,
+                        n: String(jump.count),
+                      })}
+                    </Button>
+                  ) : null}
+                </Empty>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className={cn("px-4 pt-4 pb-8", HOME_FRAME)}>
-            <Empty className="bg-surface-sunken">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <CloudAlert aria-hidden="true" />
-                </EmptyMedia>
-                <EmptyTitle>{pick(advHome.emptyDayTitle, locale)}</EmptyTitle>
-                <EmptyDescription>
-                  {pick(advHome.emptyDayBody, locale)}
-                </EmptyDescription>
-              </EmptyHeader>
-              {jump ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(event) => selectDay(jump.key, event.detail > 0)}
-                >
-                  {fillCopy(advHome.jumpNext, locale, {
-                    day: jump.label,
-                    n: String(jump.count),
-                  })}
-                </Button>
-              ) : null}
-            </Empty>
-          </div>
-        )}
-        </div>
         </div>
       </main>
 

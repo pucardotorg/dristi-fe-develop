@@ -9,9 +9,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { addDays } from "@/lib/employee/bulk-reschedule";
 import { isoDay, isSittingDay, parseIsoDay } from "@/lib/employee/hearings";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 const WEEKDAY = new Intl.DateTimeFormat("en-IN", { weekday: "short" });
-const SPOKEN_DAY = new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long" });
+const SPOKEN_DAY = new Intl.DateTimeFormat("en-IN", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
 
 /** The Monday of the week `day` falls in. */
 function mondayOf(day: string): string {
@@ -53,6 +58,7 @@ export function CauseListWeek({
   onSelectDay: (day: string) => void;
   className?: string;
 }) {
+  const t = useTranslations();
   /* The week shown follows the chosen day, but the arrows page it without choosing a
      day — the same split the advocate strip makes. */
   const [weekStart, setWeekStart] = React.useState(() => mondayOf(day));
@@ -71,11 +77,12 @@ export function CauseListWeek({
     onSelectDay(next);
   }
 
-
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       <ul
-        aria-label={`Week of ${SPOKEN_DAY.format(parseIsoDay(weekStart))}`}
+        aria-label={t("causeListWeek_weekOfFormat", {
+          format: SPOKEN_DAY.format(parseIsoDay(weekStart)),
+        })}
         className="order-first grid basis-full grid-cols-7 gap-1"
       >
         {week.map((cell) => {
@@ -116,7 +123,10 @@ export function CauseListWeek({
                   {sits ? (
                     <>
                       {count}
-                      <span className="hidden sm:inline"> {count === 1 ? "case" : "cases"}</span>
+                      <span className="hidden sm:inline">
+                        {" "}
+                        {count === 1 ? t("causeListWeek_case") : t("causeListWeek_cases")}
+                      </span>
                     </>
                   ) : (
                     "–"
@@ -131,7 +141,7 @@ export function CauseListWeek({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Previous week"
+        aria-label={t("causeListWeek_previousWeek")}
         className="text-muted-foreground"
         onClick={() => setWeekStart(addDays(weekStart, -7))}
       >
@@ -141,7 +151,7 @@ export function CauseListWeek({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Next week"
+        aria-label={t("causeListWeek_nextWeek")}
         className="text-muted-foreground"
         onClick={() => setWeekStart(addDays(weekStart, 7))}
       >
@@ -153,7 +163,7 @@ export function CauseListWeek({
             type="button"
             variant="outline"
             size="icon"
-            aria-label="Pick a date"
+            aria-label={t("causeListWeek_pickADate")}
             className="text-muted-foreground"
           >
             <CalendarDaysIcon aria-hidden />
@@ -176,7 +186,7 @@ export function CauseListWeek({
       </Popover>
       {awayFromToday ? (
         <Button type="button" variant="outline" onClick={() => choose(today)}>
-          Today
+          {t("causeListWeek_today")}
         </Button>
       ) : null}
     </div>

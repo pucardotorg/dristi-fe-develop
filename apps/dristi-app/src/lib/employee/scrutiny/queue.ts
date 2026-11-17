@@ -31,14 +31,8 @@ export function filterQueue(
   const needle = caseSearchKey(text);
   return queue
     .filter((r) => r.ball === ball)
-    .filter((r) =>
-      owner === "anyone" ? true : owner === "me" ? !!r.self : r.who === "—",
-    )
-    .filter(
-      (r) =>
-        !needle ||
-        `${r.no} ${r.parties} ${r.advocate}`.toLowerCase().includes(needle),
-    )
+    .filter((r) => (owner === "anyone" ? true : owner === "me" ? !!r.self : r.who === "—"))
+    .filter((r) => !needle || `${r.no} ${r.parties} ${r.advocate}`.toLowerCase().includes(needle))
     .sort((a, b) => b.days - a.days || a.no.localeCompare(b.no));
 }
 

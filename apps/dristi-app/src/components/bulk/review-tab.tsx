@@ -13,6 +13,7 @@ import type { BatchCtx } from "./batch-screen";
 import { CaseList } from "./case-list";
 import { detailFlags } from "./scrutiny-tab";
 import { StatusLine } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /**
  * Review: each open case read as the single filing shows it before signing, its synopsis
@@ -20,13 +21,9 @@ import { StatusLine } from "@/components/feedback";
  * that needs changing goes back to Case details.
  */
 export function ReviewTab({ batch, go }: BatchCtx) {
-  const open = batch.cases.filter(
-    (c) => c.stage === "held" || c.stage === "ready",
-  );
-  const [drafts, setDrafts] = React.useState<Record<
-    string,
-    FilingDraft
-  > | null>(null);
+  const t = useTranslations();
+  const open = batch.cases.filter((c) => c.stage === "held" || c.stage === "ready");
+  const [drafts, setDrafts] = React.useState<Record<string, FilingDraft> | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
@@ -35,8 +32,7 @@ export function ReviewTab({ batch, go }: BatchCtx) {
     bulkFetch(`/api/bulk/batches/${batch.id}/drafts`, { cache: "no-store" })
       .then(async (r) => {
         const json = await r.json();
-        if (!r.ok)
-          throw new Error(json.error ?? "The cases could not be loaded.");
+        if (!r.ok) throw new Error(json.error ?? "The cases could not be loaded.");
         if (live) setDrafts(json.drafts);
       })
       .catch((e) => live && setError((e as Error).message));
@@ -48,15 +44,15 @@ export function ReviewTab({ batch, go }: BatchCtx) {
 
   if (!open.length)
     return (
-      <StatusLine tone="neutral" still>Nothing to review.</StatusLine>
+      <StatusLine tone="neutral" still>
+        {t("reviewTab_nothingToReview")}
+      </StatusLine>
     );
 
   const c = open.find((x) => x.id === selectedId) ?? open[0];
   const at = open.indexOf(c);
   // Complete cases can be signed now, without waiting for the rest.
-  const ready = batch.cases.filter(
-    (x) => x.stage === "ready" && x.flags.length === 0,
-  ).length;
+  const ready = batch.cases.filter((x) => x.stage === "ready" && x.flags.length === 0).length;
   const stateOf = (x: CaseView) => {
     const f = detailFlags(x);
     const holds = f.filter((y) => y.level === "hold").length;
@@ -70,26 +66,19 @@ export function ReviewTab({ batch, go }: BatchCtx) {
   return (
     <div className="flex flex-col gap-4">
       {error ? (
-        <StatusLine tone="error" still>{error}</StatusLine>
+        <StatusLine tone="error" still>
+          {error}
+        </StatusLine>
       ) : null}
       <div className="lg:grid lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start lg:gap-6">
-        <CaseList
-          cases={open}
-          selectedId={c.id}
-          onSelect={setSelectedId}
-          stateOf={stateOf}
-        />
+        <CaseList cases={open} selectedId={c.id} onSelect={setSelectedId} stateOf={stateOf} />
         <div className="flex min-w-0 flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-body-compact text-muted-foreground tabular-nums">
-              {at + 1} of {open.length}
+              {t("reviewTab_valueOfLength", { value: String(at + 1), length: String(open.length) })}
             </span>
-            <Button
-              variant="ghost"
-              className="ml-auto"
-              onClick={() => go("scrutiny", c.id)}
-            >
-              Open the case
+            <Button variant="ghost" className="ml-auto" onClick={() => go("scrutiny", c.id)}>
+              {t("reviewTab_openTheCase")}
             </Button>
           </div>
           {drafts?.[c.id] ? (
@@ -102,23 +91,21 @@ export function ReviewTab({ batch, go }: BatchCtx) {
       <FilingFooter
         showSaveState={false}
         onBack={at > 0 ? () => move(at - 1) : undefined}
-        backLabel="Previous case"
+        backLabel={t("reviewTab_previousCase")}
         // Two ways on from any case: the next case, or signing the cases already complete
         // (only those; the rest stay). With none complete, Sign says why instead.
         extra={
           at < open.length - 1 ? (
             <Button variant="outline" size="lg" onClick={() => move(at + 1)}>
-              Next case
+              {t("reviewTab_nextCase")}
             </Button>
           ) : null
         }
         continueLabel={
-          ready
-            ? `Sign ${ready} complete case${ready === 1 ? "" : "s"}`
-            : "Sign"
+          ready ? `Sign ${ready} complete case${ready === 1 ? "" : "s"}` : t("reviewTab_sign")
         }
         continueBlocked={!ready}
-        continueHint="No case is complete yet"
+        continueHint={t("reviewTab_noCaseIsCompleteYet")}
         onContinue={() => {
           if (ready) go("sign");
         }}

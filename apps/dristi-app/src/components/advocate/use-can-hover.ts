@@ -17,6 +17,6 @@ export function useCanHover(): boolean {
   return useSyncExternalStore(
     subscribe,
     () => window.matchMedia(HOVER_QUERY).matches,
-    () => false
+    () => false,
   );
 }

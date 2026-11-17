@@ -23,10 +23,7 @@ export function VideoSlot({ step, locale }: { step: StepId; locale: Locale }) {
     <figure className="flex w-full min-w-0 flex-col gap-3">
       <Card className="gap-0 py-0">
         <CardContent className="p-0">
-          <AspectRatio
-            ratio={16 / 9}
-            className="overflow-hidden bg-surface-sunken"
-          >
+          <AspectRatio ratio={16 / 9} className="overflow-hidden bg-surface-sunken">
             {video.youtubeId ? (
               <iframe
                 className="size-full"

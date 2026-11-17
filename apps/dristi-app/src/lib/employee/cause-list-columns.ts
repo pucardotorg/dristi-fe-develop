@@ -47,18 +47,18 @@ export type CauseListColumn = {
 
 /** The superset, in the board's own order. */
 export const CAUSE_LIST_COLUMNS: readonly CauseListColumn[] = [
-  { id: "item", label: "S. no.", locked: true },
-  { id: "caseName", label: "Case name", locked: true },
-  { id: "caseNumber", label: "Case number", locked: false },
-  { id: "advocates", label: "Advocates", locked: false },
-  { id: "purpose", label: "Purpose", locked: false },
+  { id: "item", label: "causeListColumns_sNo", locked: true },
+  { id: "caseName", label: "causeListColumns_caseName", locked: true },
+  { id: "caseNumber", label: "causeListColumns_caseNumber", locked: false },
+  { id: "advocates", label: "causeListColumns_advocates", locked: false },
+  { id: "purpose", label: "causeListColumns_purpose", locked: false },
   /* The case's stage — on the listing, never shown on the board before. Off by default
      everywhere; offered because it is a fact every row carries. */
-  { id: "stage", label: "Stage", locked: false },
-  { id: "status", label: "Status", locked: false },
-  { id: "orders", label: "Orders", locked: false },
-  { id: "action", label: "Action", locked: false },
-  { id: "nextHearing", label: "Next hearing", locked: false },
+  { id: "stage", label: "causeListColumns_stage", locked: false },
+  { id: "status", label: "causeListColumns_status", locked: false },
+  { id: "orders", label: "causeListColumns_orders", locked: false },
+  { id: "action", label: "causeListColumns_action", locked: false },
+  { id: "nextHearing", label: "causeListColumns_nextHearing", locked: false },
 ];
 
 export type CauseListColumns = {
@@ -153,25 +153,18 @@ export function normaliseColumns(
   }
   for (const id of available) if (!order.includes(id)) order.push(id);
   const visible = order.filter(
-    (id) =>
-      causeListColumn(id).locked ||
-      (stored.visible as unknown[]).includes(id),
+    (id) => causeListColumn(id).locked || (stored.visible as unknown[]).includes(id),
   );
   return { order, visible };
 }
 
 /** The columns on screen, in order. */
 export function shownColumns(columns: CauseListColumns): CauseListColumn[] {
-  return columns.order
-    .filter((id) => columns.visible.includes(id))
-    .map(causeListColumn);
+  return columns.order.filter((id) => columns.visible.includes(id)).map(causeListColumn);
 }
 
 /** Show or hide one column. A locked column stays on. */
-export function toggleColumn(
-  columns: CauseListColumns,
-  id: CauseListColumnId,
-): CauseListColumns {
+export function toggleColumn(columns: CauseListColumns, id: CauseListColumnId): CauseListColumns {
   if (causeListColumn(id).locked) return columns;
   const visible = columns.visible.includes(id)
     ? columns.visible.filter((entry) => entry !== id)
@@ -201,9 +194,7 @@ export function moveColumn(
   let index = 0;
   return {
     ...columns,
-    order: columns.order.map((id) =>
-      columns.visible.includes(id) ? next[index++] : id,
-    ),
+    order: columns.order.map((id) => (columns.visible.includes(id) ? next[index++] : id)),
   };
 }
 
@@ -219,7 +210,5 @@ export function shiftColumn(
 }
 
 export function sameColumns(a: CauseListColumns, b: CauseListColumns): boolean {
-  return (
-    a.order.join() === b.order.join() && a.visible.join() === b.visible.join()
-  );
+  return a.order.join() === b.order.join() && a.visible.join() === b.visible.join();
 }

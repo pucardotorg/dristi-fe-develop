@@ -34,7 +34,9 @@ export function idFileError({
   if (serverError) return serverError;
   if (fileProblem) {
     return pick(
-      fileProblem === "tooLarge" ? verificationUi.fileTooLargeForServer : verificationUi.fileRejected,
+      fileProblem === "tooLarge"
+        ? verificationUi.fileTooLargeForServer
+        : verificationUi.fileRejected,
       locale,
     );
   }

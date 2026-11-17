@@ -29,7 +29,8 @@ export type { CaseFilingRepository, FilingRepository, StoredFile } from "./repos
 
 const chosen = repositoryFor<FilingRepository>("filing", {
   sandbox: browserOnly("filing", () => new IndexedDbFilingRepository()),
-  http: () => new HttpFilingRepository() satisfies OnlyContract<HttpFilingRepository, FilingRepository>,
+  http: () =>
+    new HttpFilingRepository() satisfies OnlyContract<HttpFilingRepository, FilingRepository>,
 });
 let active: FilingRepository | null = null;
 
@@ -55,7 +56,7 @@ export function getCaseFilingRepository(): CaseFilingRepository {
     {
       sandbox: browserOnly("caseFiling", () => new IndexedDbCaseFilingRepository()),
       http: () => createCaseFilingApi(),
-    }
+    },
   );
   return caseFiling;
 }

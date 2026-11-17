@@ -34,10 +34,9 @@ import type { PersonId } from "@/lib/tasks/types";
 type Kind = "mine" | "office";
 type Draft = { kinds: Kind[]; hidden: PersonId[] };
 
-const kindsOf = (scope: PeopleScope): Kind[] =>
-  scope === "all" ? ["mine", "office"] : [scope];
+const kindsOf = (scope: PeopleScope): Kind[] => (scope === "all" ? ["mine", "office"] : [scope]);
 const scopeOf = (kinds: readonly Kind[]): PeopleScope =>
-  kinds.length === 2 ? "all" : kinds[0] ?? "all";
+  kinds.length === 2 ? "all" : (kinds[0] ?? "all");
 
 /**
  * Advanced filters for one sitting, in the same right-hand sheet the Cases list
@@ -85,113 +84,120 @@ export function HearingFiltersSheet({
   const custom = draft.kinds.length < 2 || draft.hidden.length > 0;
 
   const body = (
-        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
-            <CheckGroup<Kind>
-              id="hearing-filter-access"
-              legend={pick(advHome.filtersAccess, locale)}
-              options={[
-                { value: "mine", label: pick(advHome.accessMine, locale) },
-                { value: "office", label: pick(advHome.accessOfficeOnly, locale) },
-              ]}
-              value={draft.kinds}
-              // At least one kind stays ticked: nothing ticked would show nothing.
-              onChange={(kinds) => kinds.length && setDraft((d) => ({ ...d, kinds }))}
-            />
-  
-            {/* One list: the viewer first, ticked and locked (their hearings always
+    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
+      <CheckGroup<Kind>
+        id="hearing-filter-access"
+        legend={pick(advHome.filtersAccess, locale)}
+        options={[
+          { value: "mine", label: pick(advHome.accessMine, locale) },
+          { value: "office", label: pick(advHome.accessOfficeOnly, locale) },
+        ]}
+        value={draft.kinds}
+        // At least one kind stays ticked: nothing ticked would show nothing.
+        onChange={(kinds) => kinds.length && setDraft((d) => ({ ...d, kinds }))}
+      />
+
+      {/* One list: the viewer first, ticked and locked (their hearings always
                 show), then every colleague, ticked unless left out. */}
-            <div role="group" aria-labelledby="hearing-filter-people" className="flex flex-col gap-1">
-              <div className="mb-1 flex items-center justify-between gap-3">
-                <p id="hearing-filter-people" className="text-body-compact text-muted-foreground">
-                  {pick(advHome.filtersPeopleHeading, locale)}
-                </p>
-                {others.length > 6 ? (
-                  <InputGroup className="h-9 w-40">
-                    <InputGroupAddon>
-                      <SearchIcon aria-hidden />
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      type="search"
-                      value={needle}
-                      onChange={(event) => setNeedle(event.target.value)}
-                      placeholder={pick(advHome.findName, locale)}
-                      aria-label={pick(advHome.findName, locale)}
-                      autoComplete="off"
-                      className="h-full text-body-compact"
-                    />
-                  </InputGroup>
-                ) : null}
-              </div>
-              {me && !needle.trim() ? (
-                <Label className="flex min-h-10 cursor-default items-center gap-3 rounded-md px-2 text-body-compact font-normal">
-                  <Checkbox checked disabled />
-                  <span className="min-w-0 flex-1">
-                    {pick(advHome.peopleMe, locale)}
-                    <span className="text-muted-foreground"> · {pick(advHome.peopleMeAlwaysShort, locale)}</span>
-                  </span>
-                  <span className="text-body-compact text-muted-foreground tabular-nums">{me.count}</span>
-                </Label>
-              ) : null}
-              {listed.map((o) => (
-                <Label
-                  key={o.person.id}
-                  htmlFor={`hearing-filter-${o.person.id}`}
-                  className="flex min-h-10 cursor-pointer items-center gap-3 rounded-md px-2 text-body-compact font-normal hover:bg-accent"
-                >
-                  <Checkbox
-                    id={`hearing-filter-${o.person.id}`}
-                    checked={!draft.hidden.includes(o.person.id)}
-                    onCheckedChange={(checked) =>
-                      setDraft((d) => ({
-                        ...d,
-                        hidden: checked === true ? d.hidden.filter((id) => id !== o.person.id) : [...d.hidden, o.person.id],
-                      }))
-                    }
-                  />
-                  <span className="min-w-0 flex-1">{o.person.name}</span>
-                  <span className="text-body-compact text-muted-foreground tabular-nums">{o.count}</span>
-                </Label>
-              ))}
-              {needle.trim() && listed.length === 0 ? (
-                <p className="px-2 py-2 text-body-compact text-muted-foreground">{pick(advHome.noNames, locale)}</p>
-              ) : null}
-              {others.length > 1 ? (
-                <Button
-                  type="button"
-                  variant="link"
-                  size="sm"
-                  className="h-auto w-fit px-2 py-1"
-                  onClick={() =>
-                    setDraft((d) => ({
-                      ...d,
-                      hidden: d.hidden.length ? [] : others.map((o) => o.person.id),
-                    }))
-                  }
-                >
-                  {pick(draft.hidden.length ? advHome.peopleSelectAll : advHome.peopleClearAll, locale)}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-  
+      <div role="group" aria-labelledby="hearing-filter-people" className="flex flex-col gap-1">
+        <div className="mb-1 flex items-center justify-between gap-3">
+          <p id="hearing-filter-people" className="text-body-compact text-muted-foreground">
+            {pick(advHome.filtersPeopleHeading, locale)}
+          </p>
+          {others.length > 6 ? (
+            <InputGroup className="h-9 w-40">
+              <InputGroupAddon>
+                <SearchIcon aria-hidden />
+              </InputGroupAddon>
+              <InputGroupInput
+                type="search"
+                value={needle}
+                onChange={(event) => setNeedle(event.target.value)}
+                placeholder={pick(advHome.findName, locale)}
+                aria-label={pick(advHome.findName, locale)}
+                autoComplete="off"
+                className="h-full text-body-compact"
+              />
+            </InputGroup>
+          ) : null}
+        </div>
+        {me && !needle.trim() ? (
+          <Label className="flex min-h-10 cursor-default items-center gap-3 rounded-md px-2 text-body-compact font-normal">
+            <Checkbox checked disabled />
+            <span className="min-w-0 flex-1">
+              {pick(advHome.peopleMe, locale)}
+              <span className="text-muted-foreground">
+                {" "}
+                · {pick(advHome.peopleMeAlwaysShort, locale)}
+              </span>
+            </span>
+            <span className="text-body-compact text-muted-foreground tabular-nums">{me.count}</span>
+          </Label>
+        ) : null}
+        {listed.map((o) => (
+          <Label
+            key={o.person.id}
+            htmlFor={`hearing-filter-${o.person.id}`}
+            className="flex min-h-10 cursor-pointer items-center gap-3 rounded-md px-2 text-body-compact font-normal hover:bg-accent"
+          >
+            <Checkbox
+              id={`hearing-filter-${o.person.id}`}
+              checked={!draft.hidden.includes(o.person.id)}
+              onCheckedChange={(checked) =>
+                setDraft((d) => ({
+                  ...d,
+                  hidden:
+                    checked === true
+                      ? d.hidden.filter((id) => id !== o.person.id)
+                      : [...d.hidden, o.person.id],
+                }))
+              }
+            />
+            <span className="min-w-0 flex-1">{o.person.name}</span>
+            <span className="text-body-compact text-muted-foreground tabular-nums">{o.count}</span>
+          </Label>
+        ))}
+        {needle.trim() && listed.length === 0 ? (
+          <p className="px-2 py-2 text-body-compact text-muted-foreground">
+            {pick(advHome.noNames, locale)}
+          </p>
+        ) : null}
+        {others.length > 1 ? (
+          <Button
+            type="button"
+            variant="link"
+            size="sm"
+            className="h-auto w-fit px-2 py-1"
+            onClick={() =>
+              setDraft((d) => ({
+                ...d,
+                hidden: d.hidden.length ? [] : others.map((o) => o.person.id),
+              }))
+            }
+          >
+            {pick(draft.hidden.length ? advHome.peopleSelectAll : advHome.peopleClearAll, locale)}
+          </Button>
+        ) : null}
+      </div>
+    </div>
   );
   const actions = (
     <>
-          {custom ? (
-            <Button variant="ghost" onClick={() => setDraft({ kinds: ["mine", "office"], hidden: [] })}>
-              {pick(advHome.filtersReset, locale)}
-            </Button>
-          ) : (
-            <span />
-          )}
-          <Button
-            onClick={() => {
-              onApply({ scope: scopeOf(draft.kinds), hidden: draft.hidden });
-              onOpenChange(false);
-            }}
-          >
-            {pick(advHome.filtersApply, locale)}
-          </Button>
+      {custom ? (
+        <Button variant="ghost" onClick={() => setDraft({ kinds: ["mine", "office"], hidden: [] })}>
+          {pick(advHome.filtersReset, locale)}
+        </Button>
+      ) : (
+        <span />
+      )}
+      <Button
+        onClick={() => {
+          onApply({ scope: scopeOf(draft.kinds), hidden: draft.hidden });
+          onOpenChange(false);
+        }}
+      >
+        {pick(advHome.filtersApply, locale)}
+      </Button>
     </>
   );
   const title = pick(advHome.filtersTitle, locale);
@@ -207,7 +213,9 @@ export function HearingFiltersSheet({
             <DrawerDescription>{subtitle}</DrawerDescription>
           </DrawerHeader>
           {body}
-          <DrawerFooter className="flex-row items-center justify-between border-t border-hairline">{actions}</DrawerFooter>
+          <DrawerFooter className="flex-row items-center justify-between border-t border-hairline">
+            {actions}
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
     );
@@ -215,16 +223,15 @@ export function HearingFiltersSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-sm"
-      >
+      <SheetContent side="right" className="w-full sm:max-w-sm">
         <SheetHeader>
           <SheetTitle className="text-title-s font-semibold">{title}</SheetTitle>
           <SheetDescription>{subtitle}</SheetDescription>
         </SheetHeader>
         {body}
-        <SheetFooter className="flex-row items-center justify-between border-t border-hairline">{actions}</SheetFooter>
+        <SheetFooter className="flex-row items-center justify-between border-t border-hairline">
+          {actions}
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

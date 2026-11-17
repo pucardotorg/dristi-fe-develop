@@ -2,10 +2,8 @@
 
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogTitle } from "@/components/ui/dialog";
+import { useTranslations } from "next-intl";
 
 /** A box over the document image, in percentages of the image box. */
 export type SourceRegion = { left: string; top: string; width: string; height: string };
@@ -34,10 +32,13 @@ export function Lightbox({
   region?: SourceRegion;
   caption?: string;
 }) {
+  const t = useTranslations();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <ChromeDialogContent className={cn("max-w-[calc(100%-2rem)] p-0 sm:max-w-4xl", region && "gap-0")}>
-        <DialogTitle className="sr-only">{alt || "Document"}</DialogTitle>
+      <ChromeDialogContent
+        className={cn("max-w-[calc(100%-2rem)] p-0 sm:max-w-4xl", region && "gap-0")}
+      >
+        <DialogTitle className="sr-only">{alt || t("lightbox_document")}</DialogTitle>
         {src ? (
           <div className="relative overflow-hidden rounded-xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -55,9 +56,7 @@ export function Lightbox({
             ) : null}
           </div>
         ) : null}
-        {caption ? (
-          <p className="px-4 pb-4 text-caption text-muted-foreground">{caption}</p>
-        ) : null}
+        {caption ? <p className="px-4 pb-4 text-caption text-muted-foreground">{caption}</p> : null}
       </ChromeDialogContent>
     </Dialog>
   );

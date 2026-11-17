@@ -26,10 +26,12 @@ import { ArrowRightIcon } from "lucide-react";
 import { localizeCourtText } from "@/lib/court/localize";
 import type { CourtId } from "@/lib/court/profiles";
 import { SUMMONS_COURT, SUMMONS_FACTS } from "@/lib/summons/content";
+import { useTranslations } from "next-intl";
 
 type Props = { court: CourtId };
 
 export function SummonsDocument({ court }: Props) {
+  const tr = useTranslations();
   const t = (text: string) => localizeCourtText(text, court);
   const f = SUMMONS_FACTS;
   const local = SUMMONS_COURT[court];
@@ -62,20 +64,18 @@ export function SummonsDocument({ court }: Props) {
   return (
     <div className="summons" data-court-raw="">
       {/* ============================ FRONT :: PAGE 1 ============================ */}
-      <section className="sheet" aria-label="Summons, page 1">
+      <section className="sheet" aria-label={tr("summonsDocument_summonsPage1")}>
         {/* Centred masthead (owner, 2026-10-12), the way court forms set it: the court,
             then the document, then its form reference, all on the page's centre line. */}
         <div className="masthead">
           <div className="courtname">
             <div className="emblem" aria-hidden>
-              EMBLEM
+              {tr("summonsDocument_emblem")}
             </div>
-            <div className="t5">In the {t(f.court)}</div>
+            <div className="t5">{tr("summonsDocument_inTheT", { t: t(f.court) })}</div>
           </div>
-          <div className="title">Summons to an Accused Person</div>
-          <div className="t2 muted">
-            Form No. 1 &nbsp;·&nbsp; See Section 63, Bharatiya Nagarik Suraksha Sanhita, 2023
-          </div>
+          <div className="title">{tr("summonsDocument_summonsToAnAccusedPerson")}</div>
+          <div className="t2 muted">{tr("summonsDocument_formNo1SeeSection63")}</div>
         </div>
 
         <div className="rule-heavy" />
@@ -84,19 +84,19 @@ export function SummonsDocument({ court }: Props) {
           <tbody>
             <tr>
               <td style={{ width: "98mm", verticalAlign: "middle" }}>
-                <div className="label">Case number</div>
+                <div className="label">{tr("summonsDocument_caseNumber")}</div>
                 <div className="pt1 big">{caseNumber}</div>
                 <div className="s4" />
-                <div className="label">In the matter of</div>
+                <div className="label">{tr("summonsDocument_inTheMatterOf")}</div>
                 <div className="pt1 big" style={{ lineHeight: 1.3 }}>
                   {t(f.complainant)}
                   <br />
-                  versus {t(f.accused)}
+                  {tr("summonsDocument_versusT", { t: t(f.accused) })}
                 </div>
               </td>
               <td style={{ paddingBottom: "2mm" }}>
                 <div className="hearingbox">
-                  <div className="label">You must appear on</div>
+                  <div className="label">{tr("summonsDocument_youMustAppearOn")}</div>
                   <div className="t5 pt1">{f.hearingDate}</div>
                   <div className="t2 pt1">
                     {f.hearingDay} &nbsp;·&nbsp; {t(f.bench)}
@@ -114,7 +114,7 @@ export function SummonsDocument({ court }: Props) {
           <tbody>
             <tr>
               <td>
-                <div className="label">To</div>
+                <div className="label">{tr("summonsDocument_to")}</div>
                 <p className="last pt1">
                   {t(f.accused)}
                   {f.accusedAddress.map((line) => (
@@ -126,7 +126,9 @@ export function SummonsDocument({ court }: Props) {
                 </p>
               </td>
               <td style={{ width: "62mm" }} className="right">
-                <div className="t2 muted">Dated, this {f.dated}</div>
+                <div className="t2 muted">
+                  {tr("summonsDocument_datedThisDated", { dated: f.dated })}
+                </div>
               </td>
             </tr>
           </tbody>
@@ -135,11 +137,13 @@ export function SummonsDocument({ court }: Props) {
         <div className="s2" />
 
         <p className="last">
-          {t(f.complainant)} has filed a complaint against you under Section 138 of the
-          Negotiable Instruments Act, 1881 (dishonour of a cheque, commonly called
-          “cheque bounce”), in respect of Cheque No. {f.chequeNumber} for {f.amount}.
-          You are required to appear before this Court, in person or by pleader, on{" "}
-          <b>{f.hearingDate}</b>.
+          {tr.rich("summonsDocument_tHasFiledAComplaintAgainst", {
+            t: t(f.complainant),
+            chequeNumber: f.chequeNumber,
+            amount: f.amount,
+            hearingDate: f.hearingDate,
+            b: (chunks) => <b>{chunks}</b>,
+          })}
         </p>
 
         <div className="s2" />
@@ -151,7 +155,9 @@ export function SummonsDocument({ court }: Props) {
               <td />
               <td style={{ width: "62mm" }}>
                 <div style={{ height: "7mm" }} />
-                <div className="sigline">Digitally signed by the Magistrate</div>
+                <div className="sigline">
+                  {tr("summonsDocument_digitallySignedByTheMagistrate")}
+                </div>
               </td>
             </tr>
           </tbody>
@@ -160,12 +166,9 @@ export function SummonsDocument({ court }: Props) {
         <div className="s2" />
 
         <p className="t2 last">
-          This process is system generated and transmitted in a secured manner by an
-          authorised user; as such, a physical copy is not required.{" "}
-          <b>
-            The court will never ask you to make payment through a link sent in a
-            message, or into any personal account.
-          </b>
+          {tr.rich("summonsDocument_thisProcessIsSystemGeneratedAnd", {
+            b: (chunks) => <b>{chunks}</b>,
+          })}
         </p>
 
         <div className="rule-mid" style={{ marginBottom: "3mm" }} />
@@ -174,38 +177,49 @@ export function SummonsDocument({ court }: Props) {
           <tbody>
             <tr>
               <td className="ragged" style={{ paddingRight: "8mm" }}>
-                <div className="t4">Join your case online</div>
+                <div className="t4">{tr("summonsDocument_joinYourCaseOnline")}</div>
                 <div className="s2" />
-                <p>
-                  Joining your case lets you see the complaint filed against you, file
-                  applications, and receive the court&apos;s orders.
-                </p>
+                <p>{tr("summonsDocument_joiningYourCaseLetsYouSee")}</p>
                 <p className="last">
-                  Go to {portal()} and register. Search using Case No. {caseNumber}, then
-                  enter your access code. Your papers are under the Complaint,
-                  Documents and Submissions tabs. Share the code only with your
-                  lawyer.
+                  {tr("summonsDocument_goTo")} {portal()}{" "}
+                  {tr("summonsDocument_andRegisterSearchUsingCaseNo", { caseNumber })}
                 </p>
               </td>
               <td className="joincol">
-                <div className="vern" lang={local.language.lang} style={{ fontFamily: local.language.font }}>
+                <div
+                  className="vern"
+                  lang={local.language.lang}
+                  style={{ fontFamily: local.language.font }}
+                >
                   {local.language.line}
                 </div>
                 <div className="s4" />
                 {local.portalIsReal ? (
                   <a href={`https://${local.portal}`} target="_blank" rel="noreferrer">
                     {/* eslint-disable-next-line @next/next/no-img-element -- print facsimile */}
-                    <img className="qr" src="/summons/qr_portal.png" alt="QR code: join your case" style={{ width: "30mm", height: "30mm" }} />
+                    <img
+                      className="qr"
+                      src="/summons/qr_portal.png"
+                      alt={tr("summonsDocument_qrCodeJoinYourCase")}
+                      style={{ width: "30mm", height: "30mm" }}
+                    />
                   </a>
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element -- print facsimile
-                  <img className="qr" src="/summons/qr_portal.png" alt="QR code: join your case" style={{ width: "30mm", height: "30mm" }} />
+                  <img
+                    className="qr"
+                    src="/summons/qr_portal.png"
+                    alt={tr("summonsDocument_qrCodeJoinYourCase")}
+                    style={{ width: "30mm", height: "30mm" }}
+                  />
                 )}
                 <div className="s2" />
                 <div className="qrcap">
-                  Scan to join your case.
+                  {tr("summonsDocument_scanToJoinYourCase")}
                   <br />
-                  <span className="muted">Help is available in your language.</span>
+                  <span className="muted">
+                    {tr("summonsDocument_helpIsAvailableInYourLanguage")}
+                  </span>
                 </div>
               </td>
             </tr>
@@ -216,7 +230,7 @@ export function SummonsDocument({ court }: Props) {
             the left speak of the code, so it cannot sit only on the right. */}
         <div className="s2" />
         <div className="codebox">
-          <div className="codelabel">Your access code</div>
+          <div className="codelabel">{tr("summonsDocument_yourAccessCode")}</div>
           <div className="code">{f.accessCode}</div>
         </div>
 
@@ -226,11 +240,11 @@ export function SummonsDocument({ court }: Props) {
             <tbody>
               <tr>
                 <td style={{ width: "56mm" }}>
-                  <div className="turncap">Please turn over</div>
+                  <div className="turncap">{tr("summonsDocument_pleaseTurnOver")}</div>
                 </td>
                 <td className="right">
                   <div>
-                    The steps open to you are set out overleaf
+                    {tr("summonsDocument_theStepsOpenToYouAre")}
                     <ArrowRightIcon className="turnarrow" aria-hidden />
                   </div>
                 </td>
@@ -239,25 +253,31 @@ export function SummonsDocument({ court }: Props) {
           </table>
         </div>
 
-        <div className="folio">Page 1 of 2</div>
+        <div className="folio">{tr("summonsDocument_page1Of2")}</div>
       </section>
 
       {/* ============================ BACK :: PAGE 2 ============================ */}
-      <section className="sheet back" aria-label="Summons, page 2">
-        <div className="label">Case No. {caseNumber}</div>
+      <section className="sheet back" aria-label={tr("summonsDocument_summonsPage2")}>
+        <div className="label">{tr("summonsDocument_caseNoCaseNumber", { caseNumber })}</div>
         <div className="rule-heavy" style={{ marginTop: "2mm" }} />
 
-        <div className="t5">What you can do now</div>
+        <div className="t5">{tr("summonsDocument_whatYouCanDoNow")}</div>
         <div className="s2" />
         <p>
-          <b>Before {f.hearingDate}, choose one of the three options below.</b> Options 1
-          and 2 end this case without a trial.
+          {tr.rich("summonsDocument_beforeHearingDateChooseOneOf", {
+            hearingDate: f.hearingDate,
+            b: (chunks) => <b>{chunks}</b>,
+          })}
         </p>
 
         <div className="bar">
           <p className="last keep12">
-            <b>If today is already on or after {f.hearingDate},</b> do not ignore this.
-            Check {portal()} for your new date, or call {phone(local.helpline)} first.
+            {tr.rich("summonsDocument_ifTodayIsAlreadyOnOr", {
+              hearingDate: f.hearingDate,
+              b: (chunks) => <b>{chunks}</b>,
+            })}{" "}
+            {portal()} {tr("summonsDocument_forYourNewDateOrCall")} {phone(local.helpline)}{" "}
+            {tr("summonsDocument_first")}
           </p>
         </div>
 
@@ -270,21 +290,26 @@ export function SummonsDocument({ court }: Props) {
                 <div className="railnum">1</div>
               </td>
               <td style={{ paddingRight: "4mm" }}>
-                <div className="label">This ends the case</div>
-                <div className="t4 pt1">Pay the cheque amount</div>
+                <div className="label">{tr("summonsDocument_thisEndsTheCase")}</div>
+                <div className="t4 pt1">{tr("summonsDocument_payTheChequeAmount")}</div>
                 <div className="s1" />
                 <p className="last">
-                  Pay <b>{f.amount}</b> and the case against you is closed. Pay the court
-                  directly using the code alongside, or pay the complainant (account
-                  details are in your case file), then upload the receipt on the portal
-                  under “Upload Document”.
+                  {tr.rich("summonsDocument_payAmountAndTheCaseAgainst", {
+                    amount: f.amount,
+                    b: (chunks) => <b>{chunks}</b>,
+                  })}
                 </p>
               </td>
               <td style={{ width: "30mm", verticalAlign: "middle" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- print facsimile */}
-                <img className="qr" src="/summons/qr_pay.png" alt="QR code: pay the court" style={{ width: "26mm", height: "26mm" }} />
+                <img
+                  className="qr"
+                  src="/summons/qr_pay.png"
+                  alt={tr("summonsDocument_qrCodePayTheCourt")}
+                  style={{ width: "26mm", height: "26mm" }}
+                />
                 <div className="s2" />
-                <div className="qrcap">Pay the court</div>
+                <div className="qrcap">{tr("summonsDocument_payTheCourt")}</div>
               </td>
             </tr>
           </tbody>
@@ -299,19 +324,20 @@ export function SummonsDocument({ court }: Props) {
                 <div className="railnum">2</div>
               </td>
               <td>
-                <div className="label">This ends the case</div>
-                <div className="t4 pt1">Settle with the complainant</div>
+                <div className="label">{tr("summonsDocument_thisEndsTheCase")}</div>
+                <div className="t4 pt1">{tr("summonsDocument_settleWithTheComplainant")}</div>
                 <div className="s1" />
                 <p>
-                  You can agree a payment plan, or a smaller amount, if the complainant
-                  accepts. Call {t(f.complainantAdvocate)}, for {t(f.complainant)}, on{" "}
+                  {tr("summonsDocument_youCanAgreeAPaymentPlan", {
+                    t: t(f.complainantAdvocate),
+                    t2: t(f.complainant),
+                  })}
                   {phone(local.complainantAdvocate)}.
                 </p>
                 <p className="last">
-                  You can also ask the court to send your case to a Lok Adalat or to
-                  mediation. Both are free and overseen by the court. Read what these are at{" "}
-                  {portal("/lokadalat")}. Apply on the portal, where you can also ask for more
-                  time.
+                  {tr("summonsDocument_youCanAlsoAskTheCourt")}
+                  {portal("/lokadalat")}
+                  {tr("summonsDocument_applyOnThePortalWhereYou")}
                 </p>
               </td>
             </tr>
@@ -327,27 +353,24 @@ export function SummonsDocument({ court }: Props) {
                 <div className="railnum">3</div>
               </td>
               <td>
-                <div className="label">If you dispute the claim</div>
-                <div className="t4 pt1">Contest the case</div>
+                <div className="label">{tr("summonsDocument_ifYouDisputeTheClaim")}</div>
+                <div className="t4 pt1">{tr("summonsDocument_contestTheCase")}</div>
                 <div className="s1" />
-                <p>
-                  Defend the case with a lawyer, or represent yourself, which is called
-                  “appearing as a party in person”.
-                </p>
+                <p>{tr("summonsDocument_defendTheCaseWithALawyer")}</p>
                 {/* Bail sits with contesting, the choice that needs it (owner, 2026-10-14). */}
                 <p>
-                  If you contest the case, your next step is to apply for bail. File the bail
-                  application with <b>two sureties for {f.suretyAmount}</b>, and bring the
-                  sureties&apos; documents and the bail bond to the court. Once you have
-                  joined your case, you can file the bail application on {portal()}.
+                  {tr.rich("summonsDocument_ifYouContestTheCaseYour", {
+                    suretyAmount: f.suretyAmount,
+                    b: (chunks) => <b>{chunks}</b>,
+                  })}{" "}
+                  {portal()}.
                 </p>
                 <p className="last aid">
-                  <span className="aidlabel">Free legal aid</span>
+                  <span className="aidlabel">{tr("summonsDocument_freeLegalAid")}</span>
                   {t(f.legalAid)} &nbsp;·&nbsp; {phone(local.legalAid)}
                   <br />
-                  <span className="aidlabel">Find a lawyer</span>
-                  {t(f.barCouncil)} &nbsp;·&nbsp;{" "}
-                  {site(local.barCouncilSite)}
+                  <span className="aidlabel">{tr("summonsDocument_findALawyer")}</span>
+                  {t(f.barCouncil)} &nbsp;·&nbsp; {site(local.barCouncilSite)}
                 </p>
               </td>
             </tr>
@@ -357,37 +380,32 @@ export function SummonsDocument({ court }: Props) {
         <div className="rule-mid" />
 
         <p>
-          At the hearing you can respond to the complaint and question the complainant.
-          Appear in person at the court, at the address on page 1, or online by video. To
-          join by video, sign in at {portal()} and open your case. The video link is there.
+          {tr("summonsDocument_atTheHearingYouCanRespond")} {portal()}{" "}
+          {tr("summonsDocument_andOpenYourCaseTheVideo")}
         </p>
-        <p>
-          Cannot attend that day? Apply on the portal for a new date before{" "}
-          {f.hearingDate}, and give your reasons.
-        </p>
+        <p>{tr("summonsDocument_cannotAttendThatDayApplyOn", { hearingDate: f.hearingDate })}</p>
         <p className="last">
-          <b>If you do not appear and do not apply,</b> the court can issue a warrant for
-          your arrest.
+          {tr.rich("summonsDocument_ifYouDoNotAppearAnd", { b: (chunks) => <b>{chunks}</b> })}
         </p>
 
         <div className="rule-mid" />
 
-        <div className="keep12 strong">Need help?</div>
+        <div className="keep12 strong">{tr("summonsDocument_needHelp")}</div>
         <div className="s1" />
         <table className="t2 helptable">
           <tbody>
             <tr>
-              <td style={{ width: "56mm" }}>Your rights and obligations</td>
+              <td style={{ width: "56mm" }}>{tr("summonsDocument_yourRightsAndObligations")}</td>
               <td>{portal("/s138")}</td>
             </tr>
             <tr>
-              <td>Guidance in other languages</td>
+              <td>{tr("summonsDocument_guidanceInOtherLanguages")}</td>
               <td>{portal("/help")}</td>
             </tr>
             <tr>
-              <td>Help in person</td>
+              <td>{tr("summonsDocument_helpInPerson")}</td>
               <td>
-                {t(f.helpInPerson)} &nbsp;·&nbsp; helpline {phone(local.helpline)}
+                {tr("summonsDocument_tHelpline", { t: t(f.helpInPerson) })} {phone(local.helpline)}
               </td>
             </tr>
           </tbody>
@@ -395,12 +413,10 @@ export function SummonsDocument({ court }: Props) {
 
         <div className="s2" />
         <p className="t1 last muted">
-          Privacy notice. The court is notified when you open this summons or use the
-          links above. This is accessible only to the Judiciary, and confirms only that you
-          received and viewed it. Privacy policy: {portal("/privacy")}
+          {tr("summonsDocument_privacyNoticeTheCourtIsNotified")} {portal("/privacy")}
         </p>
 
-        <div className="folio">Page 2 of 2</div>
+        <div className="folio">{tr("summonsDocument_page2Of2")}</div>
       </section>
     </div>
   );

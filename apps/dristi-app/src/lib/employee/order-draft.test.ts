@@ -16,8 +16,8 @@ const hearing = CAUSE_LIST[0];
 
 describe("appearancesFor", () => {
   it("names the parties, then each counsel on that side — not a ghost advocate", () => {
-    const noAccusedCounsel = CAUSE_LIST.find(
-      (row) => row.counsel.every((c) => c.side !== "accused"),
+    const noAccusedCounsel = CAUSE_LIST.find((row) =>
+      row.counsel.every((c) => c.side !== "accused"),
     );
     assert.ok(noAccusedCounsel);
     const rows = appearancesFor(noAccusedCounsel);
@@ -35,19 +35,16 @@ describe("appearancesFor", () => {
       ...hearing,
       counsel: [...hearing.counsel, { ...counsel, name: "Adv. Second Advocate" }],
     });
-    const sideRows = rows.filter(
-      (row) => row.kind === "counsel" && row.side === "complainant",
-    );
+    const sideRows = rows.filter((row) => row.kind === "counsel" && row.side === "complainant");
     assert.equal(sideRows.length, 1);
     assert.equal(sideRows[0].name, `Advocate for ${hearing.parties.complainant}`);
     assert.deepEqual(sideRows[0].advocates, [counsel.name, "Adv. Second Advocate"]);
   });
 
   it("recites a side's counsel by office alone, capitalised when it leads the line", () => {
-    assert.deepEqual(
-      attendanceRecital(appearancesFor(hearing), { "accused-counsel": "absent" }),
-      [{ label: "Absent", value: `Advocate for ${hearing.parties.accused}.` }],
-    );
+    assert.deepEqual(attendanceRecital(appearancesFor(hearing), { "accused-counsel": "absent" }), [
+      { label: "Absent", value: `Advocate for ${hearing.parties.accused}.` },
+    ]);
   });
 });
 
@@ -116,10 +113,9 @@ describe("nextListingRecital", () => {
   });
 
   it("says a matter is not being listed again, which is an answer", () => {
-    assert.deepEqual(
-      nextListingRecital({ next: "none", nextPurpose: "", nextDate: null }),
-      [{ label: "Next hearing", value: "Not listed again." }],
-    );
+    assert.deepEqual(nextListingRecital({ next: "none", nextPurpose: "", nextDate: null }), [
+      { label: "Next hearing", value: "Not listed again." },
+    ]);
   });
 
   it("recites nothing while the posting is half given, either way round", () => {

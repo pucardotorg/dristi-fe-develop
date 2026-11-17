@@ -40,7 +40,11 @@ async function authError(promise: Promise<unknown>): Promise<AuthError> {
   assert.fail("expected the call to fail");
 }
 
-const accepted = () => Response.json({ detail: "If the number is valid, a code has been sent.", meta: META }, { status: 202 });
+const accepted = () =>
+  Response.json(
+    { detail: "If the number is valid, a code has been sent.", meta: META },
+    { status: 202 },
+  );
 
 describe("mobile numbers", () => {
   it("accepts 10 digits starting 6–9 and adds the country code", () => {
@@ -86,8 +90,13 @@ describe("HttpAuthService.requestOtp", () => {
     });
     assert.equal((await authError(auth.requestOtp("9876543210", "login"))).code, "unavailable");
 
-    const down = setup(() => Response.json({ detail: "x", code: "upstream_unreachable" }, { status: 502 }));
-    assert.equal((await authError(down.auth.requestOtp("9876543210", "login"))).code, "unavailable");
+    const down = setup(() =>
+      Response.json({ detail: "x", code: "upstream_unreachable" }, { status: 502 }),
+    );
+    assert.equal(
+      (await authError(down.auth.requestOtp("9876543210", "login"))).code,
+      "unavailable",
+    );
   });
 });
 
@@ -113,11 +122,19 @@ describe("HttpAuthService.verifyRegistrationOtp", () => {
   });
 
   it("maps a wrong code and a taken number", async () => {
-    const wrong = setup(() => Response.json({ detail: "Invalid or expired code." }, { status: 401 }));
-    assert.equal((await authError(wrong.auth.verifyRegistrationOtp("9876543210", "000000"))).code, "invalid-code");
+    const wrong = setup(() =>
+      Response.json({ detail: "Invalid or expired code." }, { status: 401 }),
+    );
+    assert.equal(
+      (await authError(wrong.auth.verifyRegistrationOtp("9876543210", "000000"))).code,
+      "invalid-code",
+    );
 
     const taken = setup(() =>
-      Response.json({ detail: "Account already registered with this mobile number." }, { status: 409 }),
+      Response.json(
+        { detail: "Account already registered with this mobile number." },
+        { status: 409 },
+      ),
     );
     assert.equal(
       (await authError(taken.auth.verifyRegistrationOtp("9876543210", "123456"))).code,
@@ -141,7 +158,9 @@ describe("HttpAuthService.signIn", () => {
   });
 
   it("never says which part was wrong", async () => {
-    const { auth } = setup(() => Response.json({ detail: "Invalid credentials." }, { status: 401 }));
+    const { auth } = setup(() =>
+      Response.json({ detail: "Invalid credentials." }, { status: 401 }),
+    );
     assert.equal(
       (await authError(auth.signIn({ mobile: "9876543210", otp: "123456" }))).code,
       "invalid-credentials",
@@ -177,7 +196,9 @@ describe("HttpAuthService.completeRegistration", () => {
         { status: 400 },
       ),
     );
-    const error = await authError(auth.completeRegistration("litigant", { name: "Asha", password: "12345678" }));
+    const error = await authError(
+      auth.completeRegistration("litigant", { name: "Asha", password: "12345678" }),
+    );
     assert.equal(error.code, "invalid-details");
     assert.deepEqual(error.fieldErrors.password, [
       "This password is too common.",
@@ -214,21 +235,39 @@ describe("HttpAuthService.completeRegistration", () => {
 
   it("leaves a blank email out", async () => {
     const { auth, calls } = setup(created);
-    await auth.completeRegistration("litigant", { name: "Asha", email: "  ", password: "a long secret" });
+    await auth.completeRegistration("litigant", {
+      name: "Asha",
+      email: "  ",
+      password: "a long secret",
+    });
     assert.equal("email" in (calls[0].body as object), false);
   });
 
   it("registers a power of attorney holder as JSON on its own endpoint", async () => {
     const { auth, calls } = setup(() =>
       Response.json(
-        { user_id: "u3", role: "POWER_OF_ATTORNEY", registration_status: "COMPLETE", next: null, meta: META },
+        {
+          user_id: "u3",
+          role: "POWER_OF_ATTORNEY",
+          registration_status: "COMPLETE",
+          next: null,
+          meta: META,
+        },
         { status: 201 },
       ),
     );
-    const outcome = await auth.completeRegistration("poa", { name: " Meera ", email: "", password: "a long secret" });
+    const outcome = await auth.completeRegistration("poa", {
+      name: " Meera ",
+      email: "",
+      password: "a long secret",
+    });
     assert.equal(calls[0].url, "/api/v1/power-of-attorneys");
     assert.equal(calls[0].method, "POST");
-    assert.deepEqual(calls[0].body, { name: "Meera", password: "a long secret", terms_accepted: true });
+    assert.deepEqual(calls[0].body, {
+      name: "Meera",
+      password: "a long secret",
+      terms_accepted: true,
+    });
     assert.equal(outcome.role, "POWER_OF_ATTORNEY");
     // No court approval: the session is kept and the account is ready.
     assert.equal(outcome.awaitingApproval, false);
@@ -238,11 +277,16 @@ describe("HttpAuthService.completeRegistration", () => {
   it("passes the backend's field messages through", async () => {
     const { auth } = setup(() =>
       Response.json(
-        { password: ["This password is too common."], email: ["An account with this email already exists."] },
+        {
+          password: ["This password is too common."],
+          email: ["An account with this email already exists."],
+        },
         { status: 400 },
       ),
     );
-    const error = await authError(auth.completeRegistration("litigant", { name: "A", password: "password1" }));
+    const error = await authError(
+      auth.completeRegistration("litigant", { name: "A", password: "password1" }),
+    );
     assert.equal(error.code, "invalid-details");
     assert.deepEqual(error.fieldErrors.password, ["This password is too common."]);
     assert.deepEqual(error.fieldErrors.email, ["An account with this email already exists."]);
@@ -253,24 +297,44 @@ describe("HttpAuthService.completeRegistration", () => {
       Response.json({ detail: "Authentication credentials were not provided." }, { status: 403 }),
     );
     assert.equal(
-      (await authError(expired.auth.completeRegistration("litigant", { name: "A", password: "a long secret" }))).code,
+      (
+        await authError(
+          expired.auth.completeRegistration("litigant", { name: "A", password: "a long secret" }),
+        )
+      ).code,
       "session-expired",
     );
 
     t.mock.method(console, "error", () => {});
     const csrf = setup(() =>
-      Response.json({ detail: "CSRF Failed: Origin checking failed - http://localhost:3000 does not match any trusted origins." }, { status: 403 }),
+      Response.json(
+        {
+          detail:
+            "CSRF Failed: Origin checking failed - http://localhost:3000 does not match any trusted origins.",
+        },
+        { status: 403 },
+      ),
     );
     assert.equal(
-      (await authError(csrf.auth.completeRegistration("litigant", { name: "A", password: "a long secret" }))).code,
+      (
+        await authError(
+          csrf.auth.completeRegistration("litigant", { name: "A", password: "a long secret" }),
+        )
+      ).code,
       "unavailable",
     );
   });
 
   it("reports an already finished registration", async () => {
-    const { auth } = setup(() => Response.json({ detail: "Registration is already complete." }, { status: 409 }));
+    const { auth } = setup(() =>
+      Response.json({ detail: "Registration is already complete." }, { status: 409 }),
+    );
     assert.equal(
-      (await authError(auth.completeRegistration("litigant", { name: "A", password: "a long secret" }))).code,
+      (
+        await authError(
+          auth.completeRegistration("litigant", { name: "A", password: "a long secret" }),
+        )
+      ).code,
       "already-registered",
     );
   });
@@ -280,7 +344,14 @@ describe("HttpAuthService: advocates and clerks", () => {
   const pdf = () => new File(["%PDF-1.7"], "bar-id.pdf", { type: "application/pdf" });
   const pending = (role: string) => () =>
     Response.json(
-      { user_id: "u2", role, registration_status: "COMPLETE", next: null, application_id: "3f2a…", meta: META },
+      {
+        user_id: "u2",
+        role,
+        registration_status: "COMPLETE",
+        next: null,
+        application_id: "3f2a…",
+        meta: META,
+      },
       { status: 201 },
     );
 
@@ -335,12 +406,18 @@ describe("HttpAuthService: advocates and clerks", () => {
     // POST /clerks parses multipart only; the backend names the missing file.
     const { auth, calls } = setup(() =>
       Response.json(
-        { errors: [{ code: "E00002", message: "No file was submitted.", field: "bar_id_document" }] },
+        {
+          errors: [{ code: "E00002", message: "No file was submitted.", field: "bar_id_document" }],
+        },
         { status: 400 },
       ),
     );
     const error = await authError(
-      auth.completeRegistration("advocateClerk", { name: "Ravi", password: "a long secret", registrationNumber: "CL-77" }),
+      auth.completeRegistration("advocateClerk", {
+        name: "Ravi",
+        password: "a long secret",
+        registrationNumber: "CL-77",
+      }),
     );
     assert.ok(calls[0].raw instanceof FormData);
     assert.equal(error.code, "invalid-details");
@@ -350,12 +427,21 @@ describe("HttpAuthService: advocates and clerks", () => {
   it("reads a readable application number when the backend sends one", async () => {
     const { auth } = setup(() =>
       Response.json(
-        { user_id: "u2", role: "ADVOCATE", registration_status: "COMPLETE", next: null, application_number: "ADV-2026-000123" },
+        {
+          user_id: "u2",
+          role: "ADVOCATE",
+          registration_status: "COMPLETE",
+          next: null,
+          application_number: "ADV-2026-000123",
+        },
         { status: 201 },
       ),
     );
     const outcome = await auth.completeRegistration("advocate", {
-      name: "A", password: "a long secret", registrationNumber: "K/1", document: pdf(),
+      name: "A",
+      password: "a long secret",
+      registrationNumber: "K/1",
+      document: pdf(),
     });
     assert.equal(outcome.applicationNumber, "ADV-2026-000123");
   });
@@ -365,8 +451,16 @@ describe("HttpAuthService: advocates and clerks", () => {
       Response.json(
         {
           errors: [
-            { code: "E00002", message: "This field is required.", field: "profile.bar_registration_id" },
-            { code: "E00001", message: "The file content does not match its type.", field: "bar_id_document" },
+            {
+              code: "E00002",
+              message: "This field is required.",
+              field: "profile.bar_registration_id",
+            },
+            {
+              code: "E00001",
+              message: "The file content does not match its type.",
+              field: "bar_id_document",
+            },
           ],
           meta: META,
         },
@@ -374,11 +468,18 @@ describe("HttpAuthService: advocates and clerks", () => {
       ),
     );
     const error = await authError(
-      auth.completeRegistration("advocate", { name: "A", password: "a long secret", registrationNumber: "", document: pdf() }),
+      auth.completeRegistration("advocate", {
+        name: "A",
+        password: "a long secret",
+        registrationNumber: "",
+        document: pdf(),
+      }),
     );
     assert.equal(error.code, "invalid-details");
     assert.deepEqual(error.fieldErrors["profile.bar_registration_id"], ["This field is required."]);
-    assert.deepEqual(error.fieldErrors.bar_id_document, ["The file content does not match its type."]);
+    assert.deepEqual(error.fieldErrors.bar_id_document, [
+      "The file content does not match its type.",
+    ]);
   });
 
   it("reports a request too large for the server on the document field", async () => {
@@ -390,7 +491,12 @@ describe("HttpAuthService: advocates and clerks", () => {
         }),
     );
     const error = await authError(
-      auth.completeRegistration("advocate", { name: "A", password: "a long secret", registrationNumber: "K/1", document: pdf() }),
+      auth.completeRegistration("advocate", {
+        name: "A",
+        password: "a long secret",
+        registrationNumber: "K/1",
+        document: pdf(),
+      }),
     );
     assert.equal(error.code, "document-too-large");
   });
@@ -400,14 +506,26 @@ describe("HttpAuthService.signIn for advocates and clerks", () => {
   it("reports approval pending — old shape and standard shape", async () => {
     const old = setup(() =>
       Response.json(
-        { detail: "Account approval is pending", user_id: "u2", registration_status: "COMPLETE", approval_status: "PENDING", next: null },
+        {
+          detail: "Account approval is pending",
+          user_id: "u2",
+          registration_status: "COMPLETE",
+          approval_status: "PENDING",
+          next: null,
+        },
         { status: 403 },
       ),
     );
-    assert.equal((await authError(old.auth.signIn({ mobile: "9876543210", otp: "123456" }))).code, "approval-pending");
+    assert.equal(
+      (await authError(old.auth.signIn({ mobile: "9876543210", otp: "123456" }))).code,
+      "approval-pending",
+    );
 
     const standard = setup(() =>
-      Response.json({ errors: [{ code: "E01013", message: "Account approval is pending." }], meta: META }, { status: 403 }),
+      Response.json(
+        { errors: [{ code: "E01013", message: "Account approval is pending." }], meta: META },
+        { status: 403 },
+      ),
     );
     assert.equal(
       (await authError(standard.auth.signIn({ mobile: "9876543210", otp: "123456" }))).code,
@@ -417,7 +535,13 @@ describe("HttpAuthService.signIn for advocates and clerks", () => {
 
   it("passes a rejected account's next step and approval status through", async () => {
     const { auth } = setup(() =>
-      Response.json({ user_id: "u2", registration_status: "COMPLETE", approval_status: "REJECTED", next: "resubmit", meta: META }),
+      Response.json({
+        user_id: "u2",
+        registration_status: "COMPLETE",
+        approval_status: "REJECTED",
+        next: "resubmit",
+        meta: META,
+      }),
     );
     const state = await auth.signIn({ mobile: "9876543210", password: "a long secret" });
     assert.equal(state.next, "resubmit");
@@ -426,7 +550,10 @@ describe("HttpAuthService.signIn for advocates and clerks", () => {
 
   it("reads invalid credentials in the standard shape too", async () => {
     const { auth } = setup(() =>
-      Response.json({ errors: [{ code: "E01003", message: "Invalid credentials." }], meta: META }, { status: 401 }),
+      Response.json(
+        { errors: [{ code: "E01003", message: "Invalid credentials." }], meta: META },
+        { status: 401 },
+      ),
     );
     assert.equal(
       (await authError(auth.signIn({ mobile: "9876543210", password: "nope-nope-nope" }))).code,
@@ -471,13 +598,18 @@ describe("HttpAuthService: correcting a rejected registration", () => {
 
   it("reports nothing to resubmit (409 / E01012)", async () => {
     const { auth } = setup(() =>
-      Response.json({ errors: [{ code: "E01012", message: "There is no rejected registration to resubmit." }] }, { status: 409 }),
+      Response.json(
+        { errors: [{ code: "E01012", message: "There is no rejected registration to resubmit." }] },
+        { status: 409 },
+      ),
     );
     assert.equal((await authError(auth.getRejectedRegistration())).code, "nothing-to-resubmit");
   });
 
   it("resubmits as multipart with the new document", async () => {
-    const { auth, calls } = setup(() => Response.json({ application_id: "3f2a-uuid", approval_status: "PENDING", meta: META }));
+    const { auth, calls } = setup(() =>
+      Response.json({ application_id: "3f2a-uuid", approval_status: "PENDING", meta: META }),
+    );
     const result = await auth.resubmitRegistration({
       name: " Ravi ",
       email: "",
@@ -497,15 +629,29 @@ describe("HttpAuthService: correcting a rejected registration", () => {
   it("maps a taken registration number to its field", async () => {
     const { auth } = setup(() =>
       Response.json(
-        { errors: [{ code: "E00010", message: "This registration number is already registered.", field: "registration_number" }] },
+        {
+          errors: [
+            {
+              code: "E00010",
+              message: "This registration number is already registered.",
+              field: "registration_number",
+            },
+          ],
+        },
         { status: 400 },
       ),
     );
     const error = await authError(
-      auth.resubmitRegistration({ name: "Ravi", registrationNumber: "CL-1", document: new File(["%PDF"], "id.pdf") }),
+      auth.resubmitRegistration({
+        name: "Ravi",
+        registrationNumber: "CL-1",
+        document: new File(["%PDF"], "id.pdf"),
+      }),
     );
     assert.equal(error.code, "invalid-details");
-    assert.deepEqual(error.fieldErrors.registration_number, ["This registration number is already registered."]);
+    assert.deepEqual(error.fieldErrors.registration_number, [
+      "This registration number is already registered.",
+    ]);
   });
 });
 
@@ -537,7 +683,9 @@ describe("HttpAuthService.getCurrentAccount", () => {
 
   it("refuses a missing or unknown role instead of defaulting a home", async () => {
     for (const role of [undefined, null, "", "BENCH_CLERK", "advocate"]) {
-      const { auth } = setup(() => Response.json({ id: "u2", name: "Anjali Nair", role, meta: META }));
+      const { auth } = setup(() =>
+        Response.json({ id: "u2", name: "Anjali Nair", role, meta: META }),
+      );
       assert.equal((await authError(auth.getCurrentAccount())).code, "unavailable", String(role));
     }
   });
@@ -576,7 +724,11 @@ describe("SandboxAuthService", () => {
       "already-registered",
     );
     assert.equal(
-      (await authError(new SandboxAuthService().completeRegistration("litigant", { name: "A", password: "x" }))).code,
+      (
+        await authError(
+          new SandboxAuthService().completeRegistration("litigant", { name: "A", password: "x" }),
+        )
+      ).code,
       "session-expired",
     );
 
@@ -586,25 +738,46 @@ describe("SandboxAuthService", () => {
       "approval-pending",
     );
     const rejectedDemo = new SandboxAuthService();
-    assert.equal((await rejectedDemo.signIn({ mobile: "9999999999", otp: "123456" })).next, "resubmit");
+    assert.equal(
+      (await rejectedDemo.signIn({ mobile: "9999999999", otp: "123456" })).next,
+      "resubmit",
+    );
     assert.equal((await rejectedDemo.getRejectedRegistration()).role, "advocate");
-    await rejectedDemo.resubmitRegistration({ name: "A", registrationNumber: "K/1", document: new File(["%PDF"], "id.pdf") });
+    await rejectedDemo.resubmitRegistration({
+      name: "A",
+      registrationNumber: "K/1",
+      document: new File(["%PDF"], "id.pdf"),
+    });
     assert.equal((await authError(rejectedDemo.getRejectedRegistration())).code, "session-expired");
 
     const fresh = new SandboxAuthService();
     await fresh.verifyRegistrationOtp("9876543210", "123456");
     assert.deepEqual(
-      (await authError(fresh.completeRegistration("litigant", { name: "Asha", password: "" }))).fieldErrors.password,
+      (await authError(fresh.completeRegistration("litigant", { name: "Asha", password: "" })))
+        .fieldErrors.password,
       ["This field is required."],
     );
-    const done = await fresh.completeRegistration("litigant", { name: " Asha ", password: "a long secret" });
-    assert.deepEqual([done.registrationStatus, done.role, done.name], ["COMPLETE", "LITIGANT", "Asha"]);
+    const done = await fresh.completeRegistration("litigant", {
+      name: " Asha ",
+      password: "a long secret",
+    });
+    assert.deepEqual(
+      [done.registrationStatus, done.role, done.name],
+      ["COMPLETE", "LITIGANT", "Asha"],
+    );
 
     const clerk = new SandboxAuthService();
     await clerk.verifyRegistrationOtp("9876543211", "123456");
     assert.deepEqual(
-      (await authError(clerk.completeRegistration("advocateClerk", { name: "R", password: "a long secret", registrationNumber: "CL-1" })))
-        .fieldErrors.bar_id_document,
+      (
+        await authError(
+          clerk.completeRegistration("advocateClerk", {
+            name: "R",
+            password: "a long secret",
+            registrationNumber: "CL-1",
+          }),
+        )
+      ).fieldErrors.bar_id_document,
       ["No file was submitted."],
     );
   });

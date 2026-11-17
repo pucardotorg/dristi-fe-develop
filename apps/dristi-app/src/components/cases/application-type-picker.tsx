@@ -12,12 +12,7 @@ import {
 
 import { PANEL_CLASS } from "@/components/shell/panel";
 import { Badge } from "@/components/ui/badge";
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "@/components/ui/item";
+import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
 import {
   APPLICATION_TYPE_MATCH_FLOOR,
   searchApplicationTypes,
@@ -26,6 +21,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { type ApplicationTypeId } from "@/lib/cases/applications";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * Step one of Raise application: pick what you are asking the court for.
@@ -66,19 +62,14 @@ export function ApplicationTypePicker({
   stageName: string;
   onChoose: (type: ApplicationTypeId) => void;
 }) {
+  const t = useTranslations();
   const results = useMemo(
     () =>
-      searchApplicationTypes(query).filter(
-        (result) => !available || available(result.guide.id)
-      ),
-    [query, available]
+      searchApplicationTypes(query).filter((result) => !available || available(result.guide.id)),
+    [query, available],
   );
-  const matched = results.filter(
-    (result) => result.score >= APPLICATION_TYPE_MATCH_FLOOR
-  );
-  const others = results.filter(
-    (result) => result.score < APPLICATION_TYPE_MATCH_FLOOR
-  );
+  const matched = results.filter((result) => result.score >= APPLICATION_TYPE_MATCH_FLOOR);
+  const others = results.filter((result) => result.score < APPLICATION_TYPE_MATCH_FLOOR);
   const typed = query.trim().length > 0;
   const ranked = typed && matched.length > 0;
 
@@ -96,15 +87,23 @@ export function ApplicationTypePicker({
       <p aria-live="polite" className="sr-only">
         {typed
           ? ranked
-            ? `${matched.length} of ${results.length} application types match what you typed. ${matched[0].guide.label} is the closest.`
-            : "No application type matches what you typed. All types are listed."
+            ? t("applicationTypePicker_lengthOfLength2ApplicationTypesMatch", {
+                length: String(matched.length),
+                length2: String(results.length),
+                label: matched[0].guide.label,
+              })
+            : t("applicationTypePicker_noApplicationTypeMatchesWhatYou")
           : ""}
       </p>
 
       {ranked ? (
         <>
           <TypeSection
-            title={matched.length === 1 ? "Closest match" : "Closest matches"}
+            title={
+              matched.length === 1
+                ? t("applicationTypePicker_closestMatch")
+                : t("applicationTypePicker_closestMatches")
+            }
             guides={matched.map((result) => result.guide)}
             value={value}
             leadId={matched[0].guide.id}
@@ -112,7 +111,7 @@ export function ApplicationTypePicker({
           />
           {others.length > 0 ? (
             <TypeSection
-              title="More application types"
+              title={t("applicationTypePicker_moreApplicationTypes")}
               guides={others.map((result) => result.guide)}
               value={value}
               onChoose={onChoose}
@@ -123,21 +122,20 @@ export function ApplicationTypePicker({
         <>
           {typed ? (
             <p className="text-body-compact text-muted-foreground">
-              Nothing matched that. Pick a type below. Generic takes anything the
-              rest do not cover.
+              {t("applicationTypePicker_nothingMatchedThatPickAType")}
             </p>
           ) : null}
           {leading.length > 0 ? (
             <>
               <TypeSection
-                title={`Suggested at the ${stageName} stage`}
+                title={t("applicationTypePicker_suggestedAtTheStageNameStage", { stageName })}
                 guides={leading}
                 value={value}
                 onChoose={onChoose}
               />
               <Separator className="bg-hairline" />
               <TypeSection
-                title="More application types"
+                title={t("applicationTypePicker_moreApplicationTypes")}
                 guides={rest}
                 value={value}
                 onChoose={onChoose}
@@ -166,6 +164,7 @@ export function ApplicationTypeSearch({
   query: string;
   onQueryChange: (query: string) => void;
 }) {
+  const t = useTranslations();
   /* Centred, wide and a step taller than a register's search (owner, Oct 8,
      as it was before Sept 21): with eighteen types, searching is how most
      filers will start, so it leads the page like a search engine's box. */
@@ -179,8 +178,8 @@ export function ApplicationTypeSearch({
         type="text"
         role="searchbox"
         enterKeyHint="search"
-        aria-label="Search application types in your own words"
-        placeholder="Search in your own words, like “my client can’t attend”"
+        aria-label={t("applicationTypePicker_searchApplicationTypesInYourOwn")}
+        placeholder={t("applicationTypePicker_searchInYourOwnWordsLike")}
         autoComplete="off"
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
@@ -190,7 +189,7 @@ export function ApplicationTypeSearch({
         <InputGroupAddon align="inline-end">
           <InputGroupButton
             size="icon-sm"
-            aria-label="Clear the search"
+            aria-label={t("applicationTypePicker_clearTheSearch")}
             onClick={() => onQueryChange("")}
           >
             <XIcon aria-hidden />
@@ -221,18 +220,10 @@ function TypeSection({
     <section aria-labelledby={headingId} className="flex flex-col gap-3">
       {/* The card titles' size in the muted ink (owner, Sept 21): a label over
           a group, quieter than the cards it names. */}
-      <h2
-        id={headingId}
-        className="text-body-compact font-semibold text-muted-foreground"
-      >
+      <h2 id={headingId} className="text-body-compact font-semibold text-muted-foreground">
         {title}
       </h2>
-      <TypeGrid
-        guides={guides}
-        value={value}
-        leadId={leadId}
-        onChoose={onChoose}
-      />
+      <TypeGrid guides={guides} value={value} leadId={leadId} onChoose={onChoose} />
     </section>
   );
 }
@@ -298,6 +289,7 @@ function TypeCard({
   lead: boolean;
   onChoose: (type: ApplicationTypeId) => void;
 }) {
+  const t = useTranslations();
   const Icon = guide.icon;
 
   return (
@@ -312,7 +304,7 @@ function TypeCard({
            fill, a step darker than the muted ground; the edge going from
            hairline to full border; and the lift. Any one of them surviving is
            enough to read as "this is under the pointer". */
-        "hover:border-border hover:bg-accent hover:shadow-overlay active:shadow-raised"
+        "hover:border-border hover:bg-accent hover:shadow-overlay active:shadow-raised",
       )}
     >
       <button
@@ -323,14 +315,11 @@ function TypeCard({
         <div className="flex w-full items-center gap-2">
           <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           {chosen ? (
-            <Badge variant="outline">Chosen</Badge>
+            <Badge variant="outline">{t("applicationTypePicker_chosen")}</Badge>
           ) : lead ? (
-            <Badge variant="secondary">Closest match</Badge>
+            <Badge variant="secondary">{t("applicationTypePicker_closestMatch")}</Badge>
           ) : null}
-          <ArrowRightIcon
-            className="ml-auto size-4 shrink-0 text-muted-foreground"
-            aria-hidden
-          />
+          <ArrowRightIcon className="ml-auto size-4 shrink-0 text-muted-foreground" aria-hidden />
         </div>
 
         <ItemContent className="w-full min-w-0 gap-1 text-left">

@@ -49,26 +49,31 @@ import {
   signatoryLine,
 } from "@/components/tasks/act/shared";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <DescriptionRow className="border-hairline">
       <DescriptionTerm className="text-body-compact">{label}</DescriptionTerm>
-      <DescriptionDetails className="text-body-compact">
-        {children}
-      </DescriptionDetails>
+      <DescriptionDetails className="text-body-compact">{children}</DescriptionDetails>
     </DescriptionRow>
   );
 }
 
 const OUTCOMES: { value: PaymentResult; label: string; hint: string }[] = [
-  { value: "success", label: "Success", hint: "Receipt issued, task closes" },
-  { value: "pending", label: "Confirming", hint: "Gateway still confirming — task waits" },
-  { value: "failed", label: "Failed", hint: "Nothing paid — task stays where it is" },
+  { value: "success", label: "actPayPage_success", hint: "actPayPage_receiptIssuedTaskCloses" },
+  {
+    value: "pending",
+    label: "actPayPage_confirming",
+    hint: "actPayPage_gatewayStillConfirmingTaskWaits",
+  },
+  { value: "failed", label: "actPayPage_failed", hint: "actPayPage_nothingPaidTaskStaysWhereIt" },
 ];
 
 /** The signatory's pay rail: pick the sandbox outcome, confirm, pay. */
 function PayCard({ ctx }: { ctx: ActContext }) {
+  const tr = useTranslations();
   const { task, kase, online, finish } = ctx;
   const { act, busy, error } = useTaskActions({ inDialog: true });
   const [outcome, setOutcome] = React.useState<PaymentResult>("success");
@@ -89,8 +94,8 @@ function PayCard({ ctx }: { ctx: ActContext }) {
     }
     finish(
       outcome === "success"
-        ? `Paid ${amount} — receipt ${t.completion?.receipt ?? ""}`
-        : "Payment made — the gateway is confirming"
+        ? tr("actPayPage_paidAmountReceiptValue", { amount, value: t.completion?.receipt ?? "" })
+        : tr("actPayPage_paymentMadeTheGatewayIsConfirming"),
     );
   };
 
@@ -101,32 +106,40 @@ function PayCard({ ctx }: { ctx: ActContext }) {
   }, [justFailed, task.lastPayment?.at]);
 
   return (
-    <RailCard title="Pay" description={signatoryLine(ctx, "Paying")}>
+    <RailCard title={tr("actPayPage_pay")} description={signatoryLine(ctx, "Paying")}>
       {error ? <StatusLine tone="error">{error}</StatusLine> : null}
       <PreparedNote ctx={ctx} />
       {task.lastPayment?.result === "failed" ? (
-        <div ref={failedRef} tabIndex={-1} className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <div
+          ref={failedRef}
+          tabIndex={-1}
+          className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
           <SectionNotice
             variant="destructive"
             announce={justFailed ? "assertive" : "none"}
-            title="Last attempt failed"
+            title={tr("actPayPage_lastAttemptFailed")}
           >
             {/* The notice announces itself on failure, so the reference takes the
                 face without a control whose name would be read into the alert. */}
-            Ref{" "}
+            {tr("actPayPage_ref")}
             <Identifier
               value={task.lastPayment.ref}
-              label="payment reference"
+              label={tr("actPayPage_paymentReference")}
               copyable={false}
-            />{" "}
-            on {dateTime(task.lastPayment.at)}. Nothing was paid; try again.
+            />
+            {tr("actPayPage_onDateTimeNothingWasPaid", { dateTime: dateTime(task.lastPayment.at) })}
           </SectionNotice>
         </div>
       ) : null}
       {IS_SANDBOX ? (
         <Field>
-          <FieldLabel>Sandbox gateway result</FieldLabel>
-          <RadioGroup value={outcome} onValueChange={(v) => setOutcome(v as PaymentResult)} className="gap-1">
+          <FieldLabel>{tr("actPayPage_sandboxGatewayResult")}</FieldLabel>
+          <RadioGroup
+            value={outcome}
+            onValueChange={(v) => setOutcome(v as PaymentResult)}
+            className="gap-1"
+          >
             {OUTCOMES.map((o) => (
               <label
                 key={o.value}
@@ -134,8 +147,12 @@ function PayCard({ ctx }: { ctx: ActContext }) {
               >
                 <RadioGroupItem value={o.value} id={`outcome-${o.value}`} className="mt-0.5" />
                 <span className="flex flex-col">
-                  <span className="text-body-compact font-medium">{o.label}</span>
-                  <span className="text-caption text-muted-foreground">{o.hint}</span>
+                  <span className="text-body-compact font-medium">
+                    {translateText(tr, o.label)}
+                  </span>
+                  <span className="text-caption text-muted-foreground">
+                    {translateText(tr, o.hint)}
+                  </span>
                 </span>
               </label>
             ))}
@@ -148,32 +165,42 @@ function PayCard({ ctx }: { ctx: ActContext }) {
           disabled={!online || !!busy || task.amountPaise === undefined}
           onClick={() => setConfirm(true)}
         >
-          Pay{task.amountPaise !== undefined ? ` ${rupees(task.amountPaise)}` : ""}
+          {tr("actPayPage_payValue", {
+            value: task.amountPaise !== undefined ? ` ${rupees(task.amountPaise)}` : "",
+          })}
         </Button>
         {task.amountPaise === undefined ? (
-          <p className="text-caption text-muted-foreground">Amount to be fetched. The fee is not on the task yet.</p>
+          <p className="text-caption text-muted-foreground">
+            {tr("actPayPage_amountToBeFetchedTheFee")}
+          </p>
         ) : null}
       </div>
 
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Pay {amount}?</AlertDialogTitle>
+            <AlertDialogTitle>{tr("actPayPage_payAmount", { amount })}</AlertDialogTitle>
             <AlertDialogDescription>
-              {task.feeHead ?? "Court fee"} · {kase.parties}
+              {task.feeHead ?? tr("actPayPage_courtFee")} · {kase.parties}
               {kase.stNumber ? (
                 <>
                   <span aria-hidden> · </span>
                   {/* No copy control inside the prompt's accessible description. */}
-                  <Identifier value={kase.stNumber} label="case number" copyable={false} />
+                  <Identifier
+                    value={kase.stNumber}
+                    label={tr("actPayPage_caseNumber")}
+                    copyable={false}
+                  />
                 </>
               ) : null}
-              . This goes to the payment gateway now and cannot be recalled.
+              {tr("actPayPage_thisGoesToThePaymentGateway")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void pay()}>Pay {amount}</AlertDialogAction>
+            <AlertDialogCancel>{tr("common_cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void pay()}>
+              {tr("actPayPage_payAmount2", { amount })}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
       </AlertDialog>
@@ -182,11 +209,12 @@ function PayCard({ ctx }: { ctx: ActContext }) {
 }
 
 function ConfirmingCard({ ctx }: { ctx: ActContext }) {
+  const tr = useTranslations();
   const { task, online, finish } = ctx;
   const { act, busy, error } = useTaskActions({ inDialog: true });
   return (
     <RailCard
-      title="Payment confirming"
+      title={tr("actPayPage_paymentConfirming")}
       description={`Paid ${task.lastPayment ? `on ${dateTime(task.lastPayment.at)}` : ""} — the gateway has not confirmed yet. Ref ${task.lastPayment?.ref ?? "—"}.`}
     >
       {error ? <StatusLine tone="error">{error}</StatusLine> : null}
@@ -195,10 +223,13 @@ function ConfirmingCard({ ctx }: { ctx: ActContext }) {
         disabled={!online || !!busy}
         onClick={async () => {
           const t = await act(task.id, confirmPayment);
-          if (t) finish(`Payment confirmed — receipt ${t.completion?.receipt ?? ""}`);
+          if (t)
+            finish(
+              tr("actPayPage_paymentConfirmedReceiptValue", { value: t.completion?.receipt ?? "" }),
+            );
         }}
       >
-        Gateway: confirm
+        {tr("actPayPage_gatewayConfirm")}
       </Button>
     </RailCard>
   );
@@ -206,6 +237,7 @@ function ConfirmingCard({ ctx }: { ctx: ActContext }) {
 
 /** The pay flow inside the act modal: the fee summary, then the one action region. */
 export function PayBody({ ctx }: { ctx: ActContext }) {
+  const tr = useTranslations();
   const { task, kase, people, signatory } = ctx;
   const payers = signatoriesOf(kase, people);
   const due = dueCueOf(task);
@@ -219,45 +251,53 @@ export function PayBody({ ctx }: { ctx: ActContext }) {
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <section className="flex flex-col gap-2">
-        <h3 className="text-body font-semibold">What is owed</h3>
+        <h3 className="text-body font-semibold">{tr("actPayPage_whatIsOwed")}</h3>
         <DescriptionList>
-          <Row label="Amount">
+          <Row label={tr("actPayPage_amount")}>
             <span className="text-title-s font-semibold tabular-nums">
-              {task.amountPaise !== undefined ? rupees(task.amountPaise) : "To be fetched"}
+              {task.amountPaise !== undefined
+                ? rupees(task.amountPaise)
+                : tr("actPayPage_toBeFetched")}
             </span>
           </Row>
-          <Row label="Fee head">{task.feeHead ?? "—"}</Row>
-          <Row label="For">{task.whatToDo}</Row>
-          <Row label="Why">
+          <Row label={tr("actPayPage_feeHead")}>{task.feeHead ?? "—"}</Row>
+          <Row label={tr("actPayPage_for")}>{task.whatToDo}</Row>
+          <Row label={tr("actPayPage_why")}>
             {task.why.event}
             {/dated|on \d/.test(task.why.event) ? null : (
               <span className="text-muted-foreground"> · {longDate(task.why.at)}</span>
             )}
           </Row>
-          <Row label="Due">
+          <Row label={tr("actPayPage_due")}>
             {due.primary === "No date" ? (
-              <span className="text-muted-foreground">No date set</span>
+              <span className="text-muted-foreground">{tr("actPayPage_noDateSet")}</span>
             ) : (
               <>
-                <span className={cn("tabular-nums", due.overdue && "font-medium text-destructive-ink")}>
+                <span
+                  className={cn("tabular-nums", due.overdue && "font-medium text-destructive-ink")}
+                >
                   {due.primary}
                 </span>
-                {due.date ? <span className="tabular-nums text-muted-foreground"> · {due.date}</span> : null}
+                {due.date ? (
+                  <span className="tabular-nums text-muted-foreground"> · {due.date}</span>
+                ) : null}
               </>
             )}
             {task.deadlineNote ? (
               <span className="block text-caption text-muted-foreground">{task.deadlineNote}</span>
             ) : null}
           </Row>
-          <Row label="Payer">
-            {payers.map((p) => p.name).join(" or ") || "A signatory"}
-            {signatory ? <span className="text-muted-foreground"> · you</span> : null}
+          <Row label={tr("actPayPage_payer")}>
+            {payers.map((p) => p.name).join(" or ") || tr("actPayPage_aSignatory")}
+            {signatory ? (
+              <span className="text-muted-foreground"> {tr("actPayPage_you")}</span>
+            ) : null}
           </Row>
           {task.completion?.receipt ? (
-            <Row label="Receipt">
+            <Row label={tr("actPayPage_receipt")}>
               <span className="inline-flex items-center gap-1.5">
                 <StatusMark size={16} still />
-                <Identifier value={task.completion.receipt} label="receipt" />
+                <Identifier value={task.completion.receipt} label={tr("actPayPage_receiptLabel")} />
               </span>
             </Row>
           ) : null}

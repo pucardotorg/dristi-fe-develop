@@ -6,10 +6,10 @@ The citizen sign-in (`components/sign-in-block.tsx`) and registration
 `AUTH_SOURCE` in `lib/data/source.ts`: `NEXT_PUBLIC_AUTH_SOURCE` when it is set, otherwise
 the app's data source (`NEXT_PUBLIC_DATA_SOURCE`, default `api`).
 
-| Sign-in source | Implementation | Use |
-| --- | --- | --- |
-| `api` | `http.ts` — the DRISTI backend through the `/api/v1` proxy | `npm run dev` (`.env.development`), the published image, production |
-| `sandbox` | `sandbox.ts` — in the browser, nothing persists | `npm run dev:sandbox` and the design-review site (`netlify.toml`) |
+| Sign-in source | Implementation                                             | Use                                                                 |
+| -------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| `api`          | `http.ts` — the DRISTI backend through the `/api/v1` proxy | `npm run dev` (`.env.development`), the published image, production |
+| `sandbox`      | `sandbox.ts` — in the browser, nothing persists            | `npm run dev:sandbox` and the design-review site (`netlify.toml`)   |
 
 Both answer the same way — the sandbox refuses unknown numbers at sign-in and taken
 numbers at registration — so the screens behave identically in either mode.
@@ -61,11 +61,11 @@ is reported as `unavailable` with a console hint, not as an expired session.
 
 ## Not integrated yet
 
-| Gap | Today | Needs |
-| --- | --- | --- |
-| Re-accepting updated terms (`next: "terms"`) | Signs in as normal | A re-accept screen (`POST /users/me/terms/` is on backend `main`) |
-| Forgot password | The link does nothing | Screens for `auth/password-reset/verify/` and `auth/password-reset/` (on backend `main`) |
-| Readable application number | Not shown | Backend: `application_number` in `/advocates`, `/clerks`, `/registrations/current` and resubmit responses |
-| Restoring a session after reload | The shell trusts what sign-in stored in `localStorage` | Call `getCurrentAccount()` (`GET /users/me`) on load; then route guards |
-| Sign-out | `signOut()` exists; no screen offers it yet | A sign-out control in the shell |
-| Court-staff approval | Not integrated (owner, Oct 19: later) | Court-staff sign-in; `/dristi-requests/approvals/` |
+| Gap                                          | Today                                                  | Needs                                                                                                     |
+| -------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Re-accepting updated terms (`next: "terms"`) | Signs in as normal                                     | A re-accept screen (`POST /users/me/terms/` is on backend `main`)                                         |
+| Forgot password                              | The link does nothing                                  | Screens for `auth/password-reset/verify/` and `auth/password-reset/` (on backend `main`)                  |
+| Readable application number                  | Not shown                                              | Backend: `application_number` in `/advocates`, `/clerks`, `/registrations/current` and resubmit responses |
+| Restoring a session after reload             | The shell trusts what sign-in stored in `localStorage` | Call `getCurrentAccount()` (`GET /users/me`) on load; then route guards                                   |
+| Sign-out                                     | `signOut()` exists; no screen offers it yet            | A sign-out control in the shell                                                                           |
+| Court-staff approval                         | Not integrated (owner, Oct 19: later)                  | Court-staff sign-in; `/dristi-requests/approvals/`                                                        |

@@ -27,13 +27,7 @@ type CasePeekContextValue = {
 
 const CasePeekContext = React.createContext<CasePeekContextValue | null>(null);
 
-export function CasePeekProvider({
-  now,
-  children,
-}: {
-  now: number;
-  children: React.ReactNode;
-}) {
+export function CasePeekProvider({ now, children }: { now: number; children: React.ReactNode }) {
   const [record, setRecord] = React.useState<CaseRecord | null>(null);
   const [hideLongPendingFlag, setHideLongPendingFlag] = React.useState(false);
   // `closing` is set the moment a close is asked for; the record is cleared one exit
@@ -49,7 +43,7 @@ export function CasePeekProvider({
       setRecord(next);
       setHideLongPendingFlag(options?.hideLongPendingFlag ?? false);
     },
-    []
+    [],
   );
   const close = React.useCallback(() => {
     setClosing((already) => {
@@ -67,12 +61,10 @@ export function CasePeekProvider({
 
   const value = React.useMemo(
     () => ({ record, now, hideLongPendingFlag, closing, open, close }),
-    [record, now, hideLongPendingFlag, closing, open, close]
+    [record, now, hideLongPendingFlag, closing, open, close],
   );
 
-  return (
-    <CasePeekContext.Provider value={value}>{children}</CasePeekContext.Provider>
-  );
+  return <CasePeekContext.Provider value={value}>{children}</CasePeekContext.Provider>;
 }
 
 export function useCasePeek() {

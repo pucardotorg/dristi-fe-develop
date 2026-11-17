@@ -26,6 +26,7 @@ import { type ReschedulableHearing } from "@/lib/employee/bulk-reschedule";
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * The matters in range, and which of them the bench has picked.
@@ -90,10 +91,9 @@ export function BulkRescheduleTable({
    */
   caption?: string;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
-  const selectedHere = selection
-    ? rows.filter((row) => selection.selected.has(row.id)).length
-    : 0;
+  const selectedHere = selection ? rows.filter((row) => selection.selected.has(row.id)).length : 0;
   const allChecked = selectedHere === rows.length;
 
   /* Four facts, one date, and then whatever the variant adds: a checkbox column on the
@@ -119,32 +119,32 @@ export function BulkRescheduleTable({
           {selection ? (
             <TableHead className={cn(TABLE_HEAD, "w-12")}>
               <Checkbox
-                checked={
-                  allChecked ? true : selectedHere > 0 ? "indeterminate" : false
-                }
+                checked={allChecked ? true : selectedHere > 0 ? "indeterminate" : false}
                 onCheckedChange={(next) => selection.onToggleAll(next === true)}
                 aria-label={
                   allChecked
-                    ? "Clear the selection"
-                    : "Select every matter in this range"
+                    ? t("bulkRescheduleTable_clearTheSelection")
+                    : t("bulkRescheduleTable_selectEveryMatterInThisRange")
                 }
               />
             </TableHead>
           ) : null}
           <TableHead className={cn(TABLE_HEAD, title, "whitespace-normal")}>
-            Case title
+            {t("bulkRescheduleTable_caseTitle")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("bulkRescheduleTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Stage
+            {t("bulkRescheduleTable_stage")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, purpose, "whitespace-normal")}>
-            Hearing type
+            {t("bulkRescheduleTable_hearingType")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            {selection ? "Hearing date" : "Previous hearing date"}
+            {selection
+              ? t("bulkRescheduleTable_hearingDate")
+              : t("bulkRescheduleTable_previousHearingDate")}
           </TableHead>
           {newDate ? (
             /* **`py-1`, and the arithmetic is the whole of it.** `TABLE_HEAD` is a 40px
@@ -165,9 +165,7 @@ export function BulkRescheduleTable({
           ) : null}
         </TableRow>
       </TableHeader>
-      <TableBody
-        className={tableBodyClass({ hover: false, selectable: Boolean(selection) })}
-      >
+      <TableBody className={tableBodyClass({ hover: false, selectable: Boolean(selection) })}>
         {/* The header is a well, not a band welded to the rows — it needs the panel's
             fill under it or its rounded bottom corners read as cut off (ui-craft §4).
             `border-separate` has no per-edge row gap, so the gap is one inert row held
@@ -190,7 +188,7 @@ export function BulkRescheduleTable({
                  exists for, and it should not need aim. */
               className={cn(
                 tableRowClass({ selectable: Boolean(selection) }),
-                selection && "cursor-pointer"
+                selection && "cursor-pointer",
               )}
               onClick={
                 selection
@@ -206,22 +204,24 @@ export function BulkRescheduleTable({
                 <TableCell className={cn(TABLE_CELL, "w-12")}>
                   <Checkbox
                     checked={isSelected}
-                    onCheckedChange={(next) =>
-                      selection.onToggle(row.id, next === true)
-                    }
-                    aria-label={`Select ${row.title}, ${courtText(row.caseNumber)}`}
+                    onCheckedChange={(next) => selection.onToggle(row.id, next === true)}
+                    aria-label={t("bulkRescheduleTable_selectTitleCourtText", {
+                      title: row.title,
+                      courtText: courtText(row.caseNumber),
+                    })}
                   />
                 </TableCell>
               ) : null}
               {/* The row's one emphasised cell. Not a link: there is no court-side case
                   file yet, and the citizen side's is not the bench's to point at. */}
-              <TableCell
-                className={cn(TABLE_CELL, title, "font-medium whitespace-normal")}
-              >
+              <TableCell className={cn(TABLE_CELL, title, "font-medium whitespace-normal")}>
                 {row.title}
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                <Identifier value={row.caseNumber} label="case number" />
+                <Identifier
+                  value={row.caseNumber}
+                  label={t("bulkRescheduleTable_caseNumberLabel")}
+                />
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
                 {courtCaseStageLabel(row.stage)}
@@ -233,10 +233,7 @@ export function BulkRescheduleTable({
                   the record the day it went to is that heading. Muted either way: it is
                   the settled fact in the row, not the one being decided. */}
               <TableCell
-                className={cn(
-                  TABLE_CELL,
-                  "tabular-nums whitespace-nowrap text-muted-foreground",
-                )}
+                className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap text-muted-foreground")}
               >
                 {formatListingDate(row.date)}
               </TableCell>
@@ -244,12 +241,7 @@ export function BulkRescheduleTable({
                   emphasised date in the row. Every moved row has one; the dash is a floor
                   under the data rather than a case this table is shown in. */}
               {newDate ? (
-                <TableCell
-                  className={cn(
-                    TABLE_CELL,
-                    "font-medium tabular-nums whitespace-nowrap",
-                  )}
-                >
+                <TableCell className={cn(TABLE_CELL, "font-medium tabular-nums whitespace-nowrap")}>
                   {row.newDate ? formatListingDate(row.newDate) : "—"}
                 </TableCell>
               ) : null}

@@ -21,19 +21,12 @@ import {
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError } from "@/components/ui/field";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
-import {
-  signFormProcessLabel,
-  type SignForm,
-} from "@/lib/employee/sign-forms";
+import { signFormProcessLabel, type SignForm } from "@/lib/employee/sign-forms";
+import { useTranslations } from "next-intl";
 
-const ACCEPTED_FILE_TYPES =
-  ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
+const ACCEPTED_FILE_TYPES = ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
 
 /** Aadhaar e-Sign sends six digits. The same length the rest of the app asks for. */
 const OTP_LENGTH = 6;
@@ -67,11 +60,10 @@ type SignatureMethod = "e-sign" | "upload";
 export type SignatureChoice = ReturnType<typeof useSignatureChoice>;
 
 export function useSignatureChoice(noun = "form") {
+  const t = useTranslations();
   const [method, setMethod] = React.useState<SignatureMethod | "">("");
   const [file, setFile] = React.useState<File | null>(null);
-  const [fileError, setFileError] = React.useState<string | undefined>(
-    undefined,
-  );
+  const [fileError, setFileError] = React.useState<string | undefined>(undefined);
   const [otp, setOtp] = React.useState("");
 
   function choose(next: SignatureMethod) {
@@ -90,7 +82,7 @@ export function useSignatureChoice(noun = "form") {
   function chooseFile(files: File[]) {
     if (files.length === 0) return;
     if (files.length > 1) {
-      setFileError(`Choose one signed ${noun}.`);
+      setFileError(t("signSignatureFields_chooseOneSignedNoun", { noun }));
       return;
     }
     const validationError = validateSelectedFiles(files);
@@ -113,8 +105,7 @@ export function useSignatureChoice(noun = "form") {
      picking the method is choosing a route, not completing it. An enabled Submit that
      then does nothing is worse than a disabled one whose reason is on screen above it. */
   const canSubmit =
-    (method === "e-sign" && otp.length === OTP_LENGTH) ||
-    (method === "upload" && file !== null);
+    (method === "e-sign" && otp.length === OTP_LENGTH) || (method === "upload" && file !== null);
 
   /* Something a close would throw away: digits of the code, or the signed copy. Choosing
      the method alone is the route, not yet an entry. */
@@ -188,6 +179,7 @@ export function SignatureFields({
    */
   noun?: string;
 }) {
+  const t = useTranslations();
   const otpId = React.useId();
   const [resent, setResent] = React.useState(false);
 
@@ -196,7 +188,7 @@ export function SignatureFields({
       <Banner variant="info">{subject}</Banner>
 
       <ChoicePillGroup
-        legend="Your signature"
+        legend={t("signSignatureFields_yourSignature")}
         options={signatureMethods(noun)}
         value={choice.method}
         orientation="column"
@@ -216,7 +208,7 @@ export function SignatureFields({
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor={otpId} className="text-body-compact">
-              Enter OTP
+              {t("signSignatureFields_enterOtp")}
             </Label>
             <InputOTP
               id={otpId}
@@ -237,14 +229,13 @@ export function SignatureFields({
             </InputOTP>
             {/* Where the code goes and whose signature it applies. */}
             <p className="text-caption text-muted-foreground">
-              A {OTP_LENGTH}-digit code goes to your Aadhaar-linked mobile and the
-              signature applied is yours.
+              {t("signSignatureFields_aOtpLengthDigitCodeGoes", { OTP_LENGTH: String(OTP_LENGTH) })}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-body-compact text-muted-foreground">
-              Didn&rsquo;t get it?
+              {t("signSignatureFields_didntGetIt")}
             </span>
             <Button
               type="button"
@@ -252,15 +243,13 @@ export function SignatureFields({
               className="h-auto p-0 underline"
               onClick={() => setResent(true)}
             >
-              {resent ? "Sent again" : "Resend OTP"}
+              {resent ? t("signSignatureFields_sentAgain") : t("signSignatureFields_resendOtp")}
             </Button>
           </div>
         </div>
       ) : null}
 
-      {choice.method === "upload" ? (
-        <SignedCopyUpload choice={choice} noun={noun} />
-      ) : null}
+      {choice.method === "upload" ? <SignedCopyUpload choice={choice} noun={noun} /> : null}
 
       {/* The document is off screen on this step, so the reference offers it here. A
           link rather than a button: reading is not a third act competing with Back and
@@ -270,7 +259,7 @@ export function SignatureFields({
         <p className="text-body text-muted-foreground">
           {download.prompt}{" "}
           <Button type="button" variant="link" onClick={download.onDownload}>
-            Download it
+            {t("signSignatureFields_downloadIt")}
           </Button>
         </p>
       ) : null}
@@ -290,6 +279,7 @@ export function SignedCopyUpload({
   choice: SignatureChoice;
   noun?: string;
 }) {
+  const t = useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   return (
     <Field data-invalid={Boolean(choice.fileError)}>
@@ -303,14 +293,10 @@ export function SignedCopyUpload({
       >
         <UploadIcon className="size-8 text-muted-foreground" aria-hidden />
         <p className="text-body text-muted-foreground">
-          Drag and drop the signed {noun}, or
+          {t("signSignatureFields_dragAndDropTheSignedNoun", { noun })}
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => inputRef.current?.click()}
-        >
-          Browse files
+        <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
+          {t("signSignatureFields_browseFiles")}
         </Button>
         <input
           ref={inputRef}
@@ -318,7 +304,7 @@ export function SignedCopyUpload({
           accept={ACCEPTED_FILE_TYPES}
           tabIndex={-1}
           className="sr-only"
-          aria-label={`Choose the signed ${noun}`}
+          aria-label={t("signSignatureFields_chooseTheSignedNoun", { noun })}
           onChange={(event) => {
             choice.chooseFile(Array.from(event.target.files ?? []));
             event.currentTarget.value = "";
@@ -326,11 +312,9 @@ export function SignedCopyUpload({
         />
       </div>
       <FieldDescription className="text-body-compact">
-        PDF, JPG, JPEG or PNG; maximum 10 MB.
+        {t("signSignatureFields_pdfJpgJpegOrPngMaximum")}
       </FieldDescription>
-      <FieldError className="text-body-compact">
-        {choice.fileError}
-      </FieldError>
+      <FieldError className="text-body-compact">{choice.fileError}</FieldError>
 
       {choice.file ? (
         <AttachmentGroup className="flex-col overflow-visible py-0 *:data-[slot=attachment]:w-full">
@@ -341,7 +325,9 @@ export function SignedCopyUpload({
             <AttachmentContent>
               <AttachmentTitle>{choice.file.name}</AttachmentTitle>
               <AttachmentDescription>
-                {formatFileSize(choice.file.size)} · selected locally
+                {t("signSignatureFields_formatFileSizeSelectedLocally", {
+                  formatFileSize: formatFileSize(choice.file.size),
+                })}
               </AttachmentDescription>
             </AttachmentContent>
             <AttachmentActions>
@@ -349,7 +335,7 @@ export function SignedCopyUpload({
                 type="button"
                 variant="destructive-ghost"
                 size="icon"
-                aria-label={`Remove ${choice.file.name}`}
+                aria-label={t("signSignatureFields_removeName", { name: choice.file.name })}
                 onClick={choice.clearFile}
               >
                 <Trash2Icon aria-hidden />

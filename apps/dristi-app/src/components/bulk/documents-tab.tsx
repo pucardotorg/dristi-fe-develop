@@ -1,11 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  CircleAlertIcon,
-  WandSparklesIcon,
-  UploadIcon,
-} from "lucide-react";
+import { CircleAlertIcon, WandSparklesIcon, UploadIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +16,7 @@ import { bulkApi, useBulkFileUrl, type CaseView } from "./api";
 import type { BatchCtx } from "./batch-screen";
 import { OriginalDoc } from "./original-doc";
 import { StatusLine, StatusMark } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 type Doc = CaseView["documents"][number];
 type Flag = CaseView["flags"][number];
@@ -55,6 +52,7 @@ export function Slot({
   /** Keep the file as it is: skips the warning. */
   onKeep?: () => void;
 }) {
+  const t = useTranslations();
   const input = React.useRef<HTMLInputElement>(null);
   const [over, setOver] = React.useState(false);
   const filled = !!doc.file;
@@ -80,9 +78,7 @@ export function Slot({
 
   // Small text buttons, as the product's own "Replace file"; 32px tall with a 40px hit area.
   const SMALL_BTN = "relative after:absolute after:-inset-y-1 after:inset-x-0";
-  const fileLine = doc.file
-    ? `${doc.file.name} · ${sizeOf(doc.file.size)}`
-    : "";
+  const fileLine = doc.file ? `${doc.file.name} · ${sizeOf(doc.file.size)}` : "";
 
   const name = (
     <span className="flex min-w-0 flex-1 items-baseline gap-2">
@@ -100,9 +96,14 @@ export function Slot({
           {busy ? (
             <Spinner className="shrink-0" />
           ) : poor ? (
-            <StatusMark tone="warning" size={16} still label="Uploaded, hard to read" />
+            <StatusMark
+              tone="warning"
+              size={16}
+              still
+              label={t("documentsTab_uploadedHardToRead")}
+            />
           ) : (
-            <StatusMark size={16} still label="Uploaded" />
+            <StatusMark size={16} still label={t("documentsTab_uploaded")} />
           )}
           {name}
           <Button
@@ -110,11 +111,11 @@ export function Slot({
             variant="ghost"
             size="xs"
             className={SMALL_BTN}
-            aria-label={`View ${doc.name}: ${fileLine}`}
+            aria-label={t("documentsTab_viewNameFileLine", { name: doc.name, fileLine })}
             title={fileLine}
           >
             <a href={href ?? undefined} target="_blank" rel="noreferrer">
-              View
+              {t("documentsTab_view")}
             </a>
           </Button>
           {canUpload ? (
@@ -124,9 +125,9 @@ export function Slot({
               className={SMALL_BTN}
               disabled={busy}
               onClick={choose}
-              aria-label={`Replace ${doc.name}`}
+              aria-label={t("documentsTab_replaceName", { name: doc.name })}
             >
-              Replace
+              {t("documentsTab_replace")}
             </Button>
           ) : null}
         </div>
@@ -135,7 +136,7 @@ export function Slot({
           type="button"
           onClick={choose}
           disabled={!canUpload || busy}
-          title={canUpload ? "Drop a file here, or click to choose" : undefined}
+          title={canUpload ? t("documentsTab_dropAFileHereOrClick") : undefined}
           aria-label={`Upload ${doc.name}${doc.required ? ", required" : ", optional"}`}
           className={cn(
             "flex h-10 w-full items-center gap-2 rounded-lg border border-dashed px-3 text-left transition-colors focus-visible:ring-3 focus-visible:ring-focus-ring focus-visible:outline-none",
@@ -147,10 +148,7 @@ export function Slot({
           {busy ? (
             <Spinner className="shrink-0" />
           ) : (
-            <UploadIcon
-              className="size-4 shrink-0 text-muted-foreground"
-              aria-hidden
-            />
+            <UploadIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           )}
           {name}
           <span
@@ -159,7 +157,7 @@ export function Slot({
               doc.required ? "text-destructive-ink" : "text-muted-foreground",
             )}
           >
-            {doc.required ? "Required" : "Optional"}
+            {doc.required ? t("documentsTab_required") : t("documentsTab_optional")}
           </span>
         </button>
       )}
@@ -173,7 +171,7 @@ export function Slot({
               disabled={busy}
               onClick={onKeep}
             >
-              Keep this file
+              {t("documentsTab_keepThisFile")}
             </button>
           ) : null}
         </p>
@@ -201,6 +199,7 @@ export function Slot({
  * and filed cases are locked, so they are not listed here.
  */
 export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
+  const t = useTranslations();
   const [busy, setBusy] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const closed = !!batch.clubbedInto;
@@ -208,12 +207,9 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
   // Cases missing something first, in the order they had when the tab opened, so a case
   // does not jump away the moment its last document goes in.
   const poorOf = (c: CaseView) => c.flags.filter((f) => f.rule === "dcm-poor");
-  const needsWork = (c: CaseView) =>
-    c.docs.have < c.docs.need || poorOf(c).length > 0;
+  const needsWork = (c: CaseView) => c.docs.have < c.docs.need || poorOf(c).length > 0;
   const [order] = React.useState(() =>
-    [...batch.cases]
-      .sort((a, b) => Number(!needsWork(a)) - Number(!needsWork(b)))
-      .map((c) => c.id),
+    [...batch.cases].sort((a, b) => Number(!needsWork(a)) - Number(!needsWork(b))).map((c) => c.id),
   );
   const rank = (id: string) => {
     const i = order.indexOf(id);
@@ -224,10 +220,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
     .sort((a, b) => rank(a.id) - rank(b.id));
   const locked = batch.cases.length - open.length;
   const incomplete = open.filter((c) => c.docs.have < c.docs.need);
-  const missing = incomplete.reduce(
-    (n, c) => n + (c.docs.need - c.docs.have),
-    0,
-  );
+  const missing = incomplete.reduce((n, c) => n + (c.docs.need - c.docs.have), 0);
   const scans = open.reduce((n, c) => n + poorOf(c).length, 0);
 
   const upload = async (c: CaseView, d: Doc, file: File) => {
@@ -267,9 +260,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
         try {
           const blurry = c.id === blurryAt && i === 0;
           const file = blurry ? await demoBlurryScan(d.name) : demoPdf(d.name);
-          setBatch(
-            await bulkApi.attach(batch.id, c.id, d.slotKey!, file, blurry),
-          );
+          setBatch(await bulkApi.attach(batch.id, c.id, d.slotKey!, file, blurry));
         } catch (e) {
           setError((e as Error).message);
           setBusy(null);
@@ -290,22 +281,22 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
             onClick={() => void fillDemo(incomplete)}
           >
             <WandSparklesIcon data-icon="inline-start" aria-hidden />
-            Fill all with demo files
+            {t("documentsTab_fillAllWithDemoFiles")}
           </Button>
         ) : null}
         {missing ? (
           <span className="flex items-center gap-2">
             <CircleAlertIcon className="size-4 text-warning-ink" aria-hidden />
             <span className="tabular-nums">
-              {missing} required document{missing === 1 ? "" : "s"} missing
-              across {incomplete.length} case
+              {missing} required document{missing === 1 ? "" : "s"} missing across{" "}
+              {incomplete.length} case
               {incomplete.length === 1 ? "" : "s"}
             </span>
           </span>
         ) : open.length ? (
           <span className="flex items-center gap-2">
             <StatusMark size={16} still />
-            Every required document is in
+            {t("documentsTab_everyRequiredDocumentIsIn")}
           </span>
         ) : null}
         {scans ? (
@@ -325,20 +316,18 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
               className="underline"
               onClick={() => go(batch.counts.filed ? "filed" : "pay")}
             >
-              {batch.counts.filed ? "See filed cases" : "Go to payment"}
+              {batch.counts.filed ? t("documentsTab_seeFiledCases") : t("documentsTab_goToPayment")}
             </button>
           </span>
         ) : null}
       </div>
 
-      {error ? (
-        <StatusLine tone="error">{error}</StatusLine>
-      ) : null}
+      {error ? <StatusLine tone="error">{error}</StatusLine> : null}
 
       {open.length === 0 ? (
         <Card variant="raised">
           <CardContent className="text-body-compact text-muted-foreground">
-            All documents are in.
+            {t("documentsTab_allDocumentsAreIn")}
           </CardContent>
         </Card>
       ) : (
@@ -363,9 +352,7 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
                         {c.facts.map((f, k) => (
                           <React.Fragment key={k}>
                             <dt className="text-muted-foreground">{f.label}</dt>
-                            <dd className="min-w-0 break-words tabular-nums">
-                              {f.value}
-                            </dd>
+                            <dd className="min-w-0 break-words tabular-nums">{f.value}</dd>
                           </React.Fragment>
                         ))}
                       </dl>
@@ -382,18 +369,18 @@ export function DocumentsTab({ batch, setBatch, go }: BatchCtx) {
                           disabled={!!busy}
                           onClick={() => void fillDemo([c])}
                         >
-                          <WandSparklesIcon
-                            data-icon="inline-start"
-                            aria-hidden
-                          />
-                          Fill with demo files
+                          <WandSparklesIcon data-icon="inline-start" aria-hidden />
+                          {t("documentsTab_fillWithDemoFiles")}
                         </Button>
                       ) : null}
                       <Badge
                         variant={complete ? "success" : "warning"}
                         className="w-fit tabular-nums"
                       >
-                        {c.docs.have} of {c.docs.need} required
+                        {t("documentsTab_haveOfNeedRequired", {
+                          have: String(c.docs.have),
+                          need: String(c.docs.need),
+                        })}
                       </Badge>
                     </div>
                     <ul className="grid grid-cols-1 content-start gap-2 lg:grid-cols-2">

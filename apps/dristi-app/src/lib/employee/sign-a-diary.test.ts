@@ -87,10 +87,7 @@ describe("aDiaryEntries", () => {
     /* "For reports (to be received from forensics, ADR, etc)" is a label that already
        opens with "for". The register must not read "for For reports". */
     for (const entry of ENTRIES) {
-      assert.ok(
-        !entry.business.includes("for For "),
-        `${entry.id} doubles the preposition`,
-      );
+      assert.ok(!entry.business.includes("for For "), `${entry.id} doubles the preposition`);
     }
     const reports = ENTRIES.find((entry) => entry.nextPurpose === "for-reports");
     assert.ok(reports, "no entry exercises a purpose whose label opens with 'For'");
@@ -121,9 +118,7 @@ describe("aDiaryEntries", () => {
   });
 
   it("gives the clamped column a distinct opening sentence on every row", () => {
-    const openings = ENTRIES.map(
-      (entry) => entry.business.split(". ")[0],
-    );
+    const openings = ENTRIES.map((entry) => entry.business.split(". ")[0]);
     assert.equal(new Set(openings).size, openings.length);
   });
 
@@ -155,9 +150,7 @@ describe("filterADiary", () => {
 
   it("reads one day at a time — never a mix the table could not tell apart", () => {
     const days = new Set(
-      filterADiary(ENTRIES, DEFAULT_A_DIARY_FILTERS, TODAY).map(
-        (entry) => entry.dated,
-      ),
+      filterADiary(ENTRIES, DEFAULT_A_DIARY_FILTERS, TODAY).map((entry) => entry.dated),
     );
     assert.equal(days.size, 1);
   });
@@ -177,11 +170,7 @@ describe("filterADiary", () => {
 describe("saveBusinessOfTheDay", () => {
   it("replaces the day's business, trimmed, and leaves every other entry alone", () => {
     const target = ENTRIES[0];
-    const rows = saveBusinessOfTheDay(
-      ENTRIES,
-      target.id,
-      "  Heard both sides and adjourned.  ",
-    );
+    const rows = saveBusinessOfTheDay(ENTRIES, target.id, "  Heard both sides and adjourned.  ");
     assert.equal(
       rows.find((entry) => entry.id === target.id)?.business,
       "Heard both sides and adjourned.",
@@ -192,10 +181,7 @@ describe("saveBusinessOfTheDay", () => {
 
   it("ignores a blank record and an id that names no entry", () => {
     assert.deepEqual(saveBusinessOfTheDay(ENTRIES, ENTRIES[0].id, "   "), ENTRIES);
-    assert.deepEqual(
-      saveBusinessOfTheDay(ENTRIES, "ad-nothing", "Recorded."),
-      ENTRIES,
-    );
+    assert.deepEqual(saveBusinessOfTheDay(ENTRIES, "ad-nothing", "Recorded."), ENTRIES);
   });
 });
 
@@ -255,11 +241,7 @@ describe("buildADiaryDocument", () => {
     assert.ok(paragraphs.length > 1, "the order reads as a single block");
     assert.equal(paragraphs.join("\n\n"), entry.business);
     /* The last paragraph is where an order sheet fixes the next date. */
-    assert.ok(
-      paragraphs[paragraphs.length - 1].includes(
-        formatListingDate(entry.nextHearing),
-      ),
-    );
+    assert.ok(paragraphs[paragraphs.length - 1].includes(formatListingDate(entry.nextHearing)));
   });
 
   it("keeps the order text when the entry is corrected (ADY-09)", () => {
@@ -308,10 +290,7 @@ describe("buildADiaryDocument", () => {
 
   it("names the download for the order and the day it was passed", () => {
     const entry = ENTRIES[0];
-    assert.equal(
-      aDiaryDocumentFilename(entry),
-      `ST-655-2026-order-${entry.dated}.txt`,
-    );
+    assert.equal(aDiaryDocumentFilename(entry), `ST-655-2026-order-${entry.dated}.txt`);
   });
 });
 
@@ -327,17 +306,17 @@ describe("signing a day", () => {
   it("lists the signable days once each, newest first", () => {
     const days = signableADiaryDays(ENTRIES, TODAY);
     assert.equal(new Set(days).size, days.length);
-    assert.deepEqual(days, [...days].sort((a, b) => b.localeCompare(a)));
+    assert.deepEqual(
+      days,
+      [...days].sort((a, b) => b.localeCompare(a)),
+    );
   });
 
   it("takes every entry of the day out together, and nothing else (ADY-12)", () => {
     const day = signableADiaryDays(ENTRIES, TODAY)[0];
     const rows = signADiaryDay(ENTRIES, day);
     assert.ok(rows.every((entry) => entry.dated !== day));
-    assert.equal(
-      rows.length,
-      ENTRIES.filter((entry) => entry.dated !== day).length,
-    );
+    assert.equal(rows.length, ENTRIES.filter((entry) => entry.dated !== day).length);
   });
 
   it("builds the day's document from the entries as they stand (ADY-12a)", () => {
@@ -346,13 +325,8 @@ describe("signing a day", () => {
     assert.ok(target);
     const rows = saveBusinessOfTheDay(ENTRIES, target.id, "Corrected just now.");
     const document = buildADiaryDayDocument(day, rows);
-    assert.equal(
-      document.entries.length,
-      ENTRIES.filter((entry) => entry.dated === day).length,
-    );
-    assert.ok(
-      document.entries.some((entry) => entry.paragraphs.join() === "Corrected just now."),
-    );
+    assert.equal(document.entries.length, ENTRIES.filter((entry) => entry.dated === day).length);
+    assert.ok(document.entries.some((entry) => entry.paragraphs.join() === "Corrected just now."));
     const text = aDiaryDayDocumentText(document);
     assert.ok(text.includes("Corrected just now."));
     assert.ok(text.includes(target.caseNumber));

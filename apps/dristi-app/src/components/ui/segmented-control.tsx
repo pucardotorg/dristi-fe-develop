@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { ToggleGroup as ToggleGroupPrimitive } from "radix-ui"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { ToggleGroup as ToggleGroupPrimitive } from "radix-ui";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 /**
  * Single-choice segmented control — a small, fixed set of mutually exclusive options
@@ -31,8 +31,8 @@ import { cn } from "@/lib/utils"
  */
 
 const SegmentedControlContext = React.createContext<{
-  size: "default" | "compact"
-}>({ size: "default" })
+  size: "default" | "compact";
+}>({ size: "default" });
 
 /**
  * The pill sits the same distance from the well on every side and from its neighbours
@@ -55,7 +55,7 @@ const segmentedControlVariants = cva(
     },
     defaultVariants: { size: "default" },
   },
-)
+);
 
 const segmentedControlItemVariants = cva(
   "group/segment relative z-10 inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap text-body-compact text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:z-20 disabled:pointer-events-none disabled:opacity-50",
@@ -69,7 +69,7 @@ const segmentedControlItemVariants = cva(
     },
     defaultVariants: { size: "default" },
   },
-)
+);
 
 const segmentedControlPillVariants = cva(
   cn(
@@ -89,7 +89,7 @@ const segmentedControlPillVariants = cva(
     },
     defaultVariants: { size: "default" },
   },
-)
+);
 
 function SegmentedControl({
   className,
@@ -106,7 +106,7 @@ function SegmentedControl({
         {...props}
       />
     </SegmentedControlContext.Provider>
-  )
+  );
 }
 
 function SegmentedControlItem({
@@ -114,7 +114,7 @@ function SegmentedControlItem({
   children,
   ...props
 }: React.ComponentProps<typeof ToggleGroupPrimitive.Item>) {
-  const { size } = React.useContext(SegmentedControlContext)
+  const { size } = React.useContext(SegmentedControlContext);
 
   return (
     <ToggleGroupPrimitive.Item
@@ -128,7 +128,7 @@ function SegmentedControlItem({
           instead of converging. */}
       <span className={cn(segmentedControlPillVariants({ size }))}>{children}</span>
     </ToggleGroupPrimitive.Item>
-  )
+  );
 }
 
 export {
@@ -137,4 +137,4 @@ export {
   segmentedControlVariants,
   segmentedControlItemVariants,
   segmentedControlPillVariants,
-}
+};

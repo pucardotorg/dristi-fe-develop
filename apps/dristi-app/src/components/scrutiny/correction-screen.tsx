@@ -38,7 +38,6 @@ import {
   SendIcon,
 } from "lucide-react";
 
-
 import { dueCueOf, longDate } from "@/lib/tasks/format";
 import {
   allResolved,
@@ -79,11 +78,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
@@ -116,6 +111,7 @@ import { useOrigin } from "@/components/shell/origin";
 import { useCourt, useCourtText } from "@/components/court/court-provider";
 import { localizeCourtText } from "@/lib/court/localize";
 import { notify } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 /** Where the correction round starts when nothing is flagged on a step yet. */
 const FALLBACK_STEP: StepId = "cheque";
@@ -185,13 +181,14 @@ function focusTheAction(scope: HTMLElement): void {
   const control =
     scope.querySelector<HTMLElement>("[data-defect-focus]:not([disabled])") ??
     scope.querySelector<HTMLElement>(
-      "input:not([disabled]):not([type=hidden]), textarea:not([disabled]), select:not([disabled])"
+      "input:not([disabled]):not([type=hidden]), textarea:not([disabled]), select:not([disabled])",
     ) ??
     scope.querySelector<HTMLElement>("button:not([disabled])");
   control?.focus({ preventScroll: true });
 }
 
 export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
+  const tr = useTranslations();
   const courtText = useCourtText();
   const { court } = useCourt();
   const router = useRouter();
@@ -213,15 +210,12 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
         .map((d) =>
           d.target.kind === "field" && d.valueAtReturn
             ? { ...d, valueAtReturn: localizeCourtText(d.valueAtReturn, court) }
-            : d
+            : d,
         )
         .sort(formOrder),
-    [task.returned, court]
+    [task.returned, court],
   );
-  const valueOf = React.useCallback(
-    (defect: Defect) => readTarget(draft, defect.target),
-    [draft]
-  );
+  const valueOf = React.useCallback((defect: Defect) => readTarget(draft, defect.target), [draft]);
 
   /**
    * "Keep as filed", by defect number — set by the advocate's click, cleared the moment
@@ -249,24 +243,24 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
           readTarget(draft, d.target),
           keep,
           d.resolution?.at ?? "",
-          reasons[d.n] ?? d.resolution?.reason
+          reasons[d.n] ?? d.resolution?.reason,
         );
         return sameResolution(d.resolution, next) ? d : { ...d, resolution: next };
       }),
-    [recorded, keeps, reasons, draft]
+    [recorded, keeps, reasons, draft],
   );
 
   /* ── Where we are ────────────────────────────────────────────────── */
 
   const [step, setStep] = React.useState<StepId>(
-    () => firstUnresolved(recorded, (d) => readTarget(draft, d.target))?.target.step ?? FALLBACK_STEP
+    () =>
+      firstUnresolved(recorded, (d) => readTarget(draft, d.target))?.target.step ?? FALLBACK_STEP,
   );
   const [activeDefect, setActiveDefect] = React.useState<number | null>(
-    () => firstUnresolved(recorded, (d) => readTarget(draft, d.target))?.n ?? null
+    () => firstUnresolved(recorded, (d) => readTarget(draft, d.target))?.n ?? null,
   );
-  const [instanceRequest, setInstanceRequest] = React.useState<
-    CorrectionValue["instanceRequest"]
-  >(null);
+  const [instanceRequest, setInstanceRequest] =
+    React.useState<CorrectionValue["instanceRequest"]>(null);
   const [railOpen, setRailOpen] = React.useState(false);
   /**
    * The D11 ladder, measured in the page's own text rather than in viewport pixels: three
@@ -287,8 +281,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   const nonce = React.useRef(0);
 
   /** Has the advocate chosen to keep the filed value — now, or on the record? */
-  const keepOf = (defect: Defect) =>
-    keeps[defect.n] ?? defect.resolution?.how === "kept";
+  const keepOf = (defect: Defect) => keeps[defect.n] ?? defect.resolution?.how === "kept";
 
   /* ── Recording what was done ─────────────────────────────────────── */
 
@@ -329,7 +322,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   const commit = React.useCallback(() => {
     if (pending.length === 0) return;
     void act(task.id, (t, c: Ctx) =>
-      pending.reduce((acc, ch) => resolveDefect(acc, c, ch.n, ch.resolution), t)
+      pending.reduce((acc, ch) => resolveDefect(acc, c, ch.n, ch.resolution), t),
     );
   }, [act, pending, task.id]);
 
@@ -408,8 +401,11 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
         if (group) {
           const pane = group.closest("main");
           if (queueColumn && pane) {
-            const top = pane.scrollTop + group.getBoundingClientRect().top -
-              pane.getBoundingClientRect().top - 24;
+            const top =
+              pane.scrollTop +
+              group.getBoundingClientRect().top -
+              pane.getBoundingClientRect().top -
+              24;
             pane.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
           } else if (!queueColumn) {
             group.scrollIntoView({ block: "start", behavior: "smooth" });
@@ -419,15 +415,18 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
         if (card) {
           const viewport = card.closest<HTMLElement>("[data-slot=scroll-area-viewport]");
           if (viewport) {
-            const top = viewport.scrollTop + card.getBoundingClientRect().top -
-              viewport.getBoundingClientRect().top - 12;
+            const top =
+              viewport.scrollTop +
+              card.getBoundingClientRect().top -
+              viewport.getBoundingClientRect().top -
+              12;
             viewport.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
           }
           focusTheAction(card);
         }
       }, 120);
     },
-    [defects, queueColumn]
+    [defects, queueColumn],
   );
 
   /* ── Progress and the gate ───────────────────────────────────────── */
@@ -437,7 +436,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   const items: QueueDefect[] = defects.map((defect) => ({ defect, value: valueOf(defect) }));
   const countFor = React.useCallback(
     (id: StepId) => defects.filter((d) => d.target.step === id).length,
-    [defects]
+    [defects],
   );
 
   /* ── What the panel's card can do ────────────────────────────────── */
@@ -489,10 +488,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
       if (replacers.current.get(slotKey) === choose) replacers.current.delete(slotKey);
     };
   }, []);
-  const replaceFor = React.useCallback(
-    (slotKey: string) => replacers.current.get(slotKey),
-    []
-  );
+  const replaceFor = React.useCallback((slotKey: string) => replacers.current.get(slotKey), []);
 
   /* ── Where the handle was left ───────────────────────────────────── */
 
@@ -585,11 +581,11 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
           d.target.kind === "field" &&
           d.target.step === s &&
           (d.target.instance ?? 0) === instance &&
-          d.target.field === field
+          d.target.field === field,
       ) ?? null,
     defectForSlot: (s, slotKey) =>
       defects.find(
-        (d) => d.target.kind === "doc" && d.target.step === s && d.target.slotKey === slotKey
+        (d) => d.target.kind === "doc" && d.target.step === s && d.target.slotKey === slotKey,
       ) ?? null,
     valueOf,
     activeDefect,
@@ -627,8 +623,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
     const { complainants, advocates } = signatories(draft, profile);
     return [...complainants, ...advocates];
   }, [draft, profile]);
-  const signaturesComplete =
-    everyoneSigning.length > 0 && !everyoneSigning.some(isOutstanding);
+  const signaturesComplete = everyoneSigning.length > 0 && !everyoneSigning.some(isOutstanding);
   const [confirmSignOpen, setConfirmSignOpen] = React.useState(false);
   const [signOpen, setSignOpen] = React.useState(false);
   /** The old signatures are already off: this round is being signed. */
@@ -645,7 +640,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   const prepareSigning = async () => {
     if (pending.length > 0) {
       const done = await act(task.id, (t, c: Ctx) =>
-        pending.reduce((acc, ch) => resolveDefect(acc, c, ch.n, ch.resolution), t)
+        pending.reduce((acc, ch) => resolveDefect(acc, c, ch.n, ch.resolution), t),
       );
       if (!done) return false;
     }
@@ -673,13 +668,14 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
    */
   const yous = everyoneSigning.filter((s) => s.you);
   const othersWaiting = everyoneSigning.filter((s) => !s.you && isOutstanding(s));
-  const signStart: SignFlowStart = !signing || !draft.sign.requestedAt
-    ? "choose"
-    : yous.some((s) => s.status === "pending")
-      ? "sign"
-      : yous.some((s) => s.oathTaken === false)
-        ? "oath"
-        : "status";
+  const signStart: SignFlowStart =
+    !signing || !draft.sign.requestedAt
+      ? "choose"
+      : yous.some((s) => s.status === "pending")
+        ? "sign"
+        : yous.some((s) => s.oathTaken === false)
+          ? "oath"
+          : "status";
 
   /* Fixed when the window opens. Recomputed live, it changed the moment an oath was
      saved, and the window restarted on the roster mid-oath (owner, 2026-10-13). */
@@ -707,8 +703,10 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
     setReminded(true);
     notify.success(
       othersWaiting.length === 1
-        ? `Reminder sent to ${othersWaiting[0].name}`
-        : `Reminder sent to ${othersWaiting.length} people`,
+        ? tr("correctionScreen_reminderSentToName", { name: othersWaiting[0].name })
+        : tr("correctionScreen_reminderSentToLengthPeople", {
+            length: String(othersWaiting.length),
+          }),
     );
   };
 
@@ -736,7 +734,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   }, [signOpen, signaturesComplete, sent]);
 
   const sendBack = async () => {
-    const done = await act(task.id, refile, "Corrections sent to scrutiny");
+    const done = await act(task.id, refile, tr("correctionScreen_correctionsSentToScrutiny"));
     if (!done) return;
     update((d) => {
       d.scrutinyReturn = { resubmittedAt: new Date().toISOString() };
@@ -751,16 +749,26 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   /* The window's own close stays for staying here; the one act is the way out. */
   const statusActions = sent ? (
     <Button type="button" onClick={() => router.push(back)}>
-      Back to dashboard
+      {tr("correctionScreen_backToDashboard")}
     </Button>
   ) : signaturesComplete ? (
     <>
-      <Button type="button" variant="ghost" className="sm:mr-auto" onClick={() => setSignOpen(false)}>
-        Not yet
+      <Button
+        type="button"
+        variant="ghost"
+        className="sm:mr-auto"
+        onClick={() => setSignOpen(false)}
+      >
+        {tr("correctionScreen_notYet")}
       </Button>
-      <Button ref={sendRef} type="button" disabled={!online || !!busy} onClick={() => void sendBack()}>
+      <Button
+        ref={sendRef}
+        type="button"
+        disabled={!online || !!busy}
+        onClick={() => void sendBack()}
+      >
         <SendIcon data-icon="inline-start" aria-hidden />
-        Send to scrutiny
+        {tr("correctionScreen_sendToScrutiny")}
       </Button>
     </>
   ) : (
@@ -777,19 +785,23 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    aria-label="Sandbox: mark the other signatures"
+                    aria-label={tr("correctionScreen_sandboxMarkTheOtherSignatures")}
                     className="text-muted-foreground"
                   >
                     <FlaskConicalIcon aria-hidden />
                   </Button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
-              <TooltipContent>Sandbox: mark the other signatures</TooltipContent>
+              <TooltipContent>
+                {tr("correctionScreen_sandboxMarkTheOtherSignatures")}
+              </TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="start" className="w-64">
-              <DropdownMenuLabel>No link is sent in the sandbox</DropdownMenuLabel>
+              <DropdownMenuLabel>{tr("correctionScreen_noLinkIsSentInThe")}</DropdownMenuLabel>
               <DropdownMenuItem onSelect={sandboxEveryoneDone}>
-                {signingRules().oath ? "Mark everyone as signed and sworn" : "Mark everyone as signed"}
+                {signingRules().oath
+                  ? tr("correctionScreen_markEveryoneAsSignedAndSworn")
+                  : tr("correctionScreen_markEveryoneAsSigned")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -797,16 +809,15 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
         {othersWaiting.length ? (
           <Button type="button" variant="outline" disabled={reminded} onClick={remindOthers}>
             <BellIcon data-icon="inline-start" aria-hidden />
-            {reminded ? "Reminder sent" : "Send a reminder"}
+            {reminded ? tr("correctionScreen_reminderSent") : tr("correctionScreen_sendAReminder")}
           </Button>
         ) : null}
       </div>
       <Button type="button" onClick={() => setSignOpen(false)}>
-        Done
+        {tr("correctionScreen_done")}
       </Button>
     </>
   );
-
 
   const reason = submitReason(resolved, total, online);
   /* Closing the window after the send leaves the advocate here; the screen says it went. */
@@ -814,12 +825,12 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   const submitLabel = isSent ? (
     <>
       <CircleCheckIcon data-icon="inline-start" aria-hidden />
-      Sent to scrutiny
+      {tr("correctionScreen_sentToScrutiny")}
     </>
   ) : (
     <>
       <SendIcon data-icon="inline-start" aria-hidden />
-      Send corrections back
+      {tr("correctionScreen_sendCorrectionsBack")}
     </>
   );
 
@@ -837,7 +848,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
       draftLabel: null,
       setDraftLabel: () => undefined,
     }),
-    [railOpen]
+    [railOpen],
   );
 
   /* ── The panes ───────────────────────────────────────────────────── */
@@ -853,7 +864,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
       {complete ? (
         <p className="flex items-center gap-2 rounded-lg bg-success-muted px-4 py-3 text-body-compact font-medium text-success-muted-foreground">
           <CircleCheckIcon className="size-4 shrink-0" aria-hidden />
-          {`All ${total} corrected.`}
+          {tr("correctionScreen_allTotalCorrected", { total: String(total) })}
         </p>
       ) : null}
     </div>
@@ -877,7 +888,7 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
           actions={defectActions(item.defect)}
           file={
             item.defect.target.kind === "doc"
-              ? intakeSlot(draft, item.defect.target.slotKey)?.file ?? undefined
+              ? (intakeSlot(draft, item.defect.target.slotKey)?.file ?? undefined)
               : undefined
           }
           index={index}
@@ -926,147 +937,152 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
   const due = task.dueAt ? dueCueOf(task) : null;
 
   const pageHeader = (
-  <header className="z-30 flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-hairline bg-card px-4 py-3 sm:px-6">
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <h1 className="text-title-s font-semibold tracking-tight text-foreground">
-        Scrutiny return
-      </h1>
-      <p className="text-caption text-muted-foreground">
-        {kase.parties}
-        {kase.stNumber ? (
-          <>
-            {" · "}
-            <Identifier value={kase.stNumber} label="case number" />
-          </>
-        ) : (
-          " · Not yet numbered"
-        )}
-        {" · "}
-        {courtText(kase.court)}
-        {" · "}
-        <span className="tabular-nums">
-          Returned {task.returned ? longDate(task.returned.at) : "—"}
-        </span>
-      </p>
-    </div>
-    <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-2">
-      {due ? (
-        <p className="flex items-center gap-1.5 text-caption font-medium tabular-nums">
-          <ClockIcon
-            aria-hidden
-            className={cn(
-              "size-4 shrink-0",
-              due.overdue ? "text-destructive-ink" : "text-warning-ink"
-            )}
-          />
-          <span className={due.overdue ? "text-destructive-ink" : "text-warning-ink"}>
-            {due.primary}
+    <header className="z-30 flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-hairline bg-card px-4 py-3 sm:px-6">
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <h1 className="text-title-s font-semibold tracking-tight text-foreground">
+          {tr("correctionScreen_scrutinyReturn")}
+        </h1>
+        <p className="text-caption text-muted-foreground">
+          {kase.parties}
+          {kase.stNumber ? (
+            <>
+              {" · "}
+              <Identifier value={kase.stNumber} label={tr("correctionScreen_caseNumber")} />
+            </>
+          ) : (
+            tr("correctionScreen_notYetNumbered")
+          )}
+          {" · "}
+          {courtText(kase.court)}
+          {" · "}
+          <span className="tabular-nums">
+            {tr("correctionScreen_returnedValue", {
+              value: task.returned ? longDate(task.returned.at) : "—",
+            })}
           </span>
-          <span aria-hidden className="font-normal text-muted-foreground">
-            ·
-          </span>
-          <time dateTime={task.dueAt} className="font-normal text-muted-foreground">
-            {due.date}
-          </time>
         </p>
-      ) : null}
-      {/* The record shows only what was flagged; this brings the rest back for context.
-          A switch rather than a button: it is a reading mode, not an action. */}
-      <div className="flex items-center gap-2">
-        <Switch id="show-full-filing" checked={showAll} onCheckedChange={setShowAll} />
-        <Label
-          htmlFor="show-full-filing"
-          className="text-caption font-medium text-muted-foreground"
-        >
-          Show full filing
-        </Label>
       </div>
-      {railColumn ? null : (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setRailOpen(true)}
-          aria-haspopup="dialog"
-          className="shrink-0"
-        >
-          <PanelLeftIcon data-icon="inline-start" aria-hidden />
-          Sections
-        </Button>
-      )}
-    </div>
-  </header>
+      <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-2">
+        {due ? (
+          <p className="flex items-center gap-1.5 text-caption font-medium tabular-nums">
+            <ClockIcon
+              aria-hidden
+              className={cn(
+                "size-4 shrink-0",
+                due.overdue ? "text-destructive-ink" : "text-warning-ink",
+              )}
+            />
+            <span className={due.overdue ? "text-destructive-ink" : "text-warning-ink"}>
+              {due.primary}
+            </span>
+            <span aria-hidden className="font-normal text-muted-foreground">
+              ·
+            </span>
+            <time dateTime={task.dueAt} className="font-normal text-muted-foreground">
+              {due.date}
+            </time>
+          </p>
+        ) : null}
+        {/* The record shows only what was flagged; this brings the rest back for context.
+          A switch rather than a button: it is a reading mode, not an action. */}
+        <div className="flex items-center gap-2">
+          <Switch id="show-full-filing" checked={showAll} onCheckedChange={setShowAll} />
+          <Label
+            htmlFor="show-full-filing"
+            className="text-caption font-medium text-muted-foreground"
+          >
+            {tr("correctionScreen_showFullFiling")}
+          </Label>
+        </div>
+        {railColumn ? null : (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setRailOpen(true)}
+            aria-haspopup="dialog"
+            className="shrink-0"
+          >
+            <PanelLeftIcon data-icon="inline-start" aria-hidden />
+            {tr("correctionScreen_sections")}
+          </Button>
+        )}
+      </div>
+    </header>
   );
 
   return (
     <FilingChromeContext.Provider value={chrome}>
-    <CorrectionProvider value={correction}>
-      {/*
-       * The way back lives in the top bar. Reached from the task list it reads
-       * Tasks › the task › here; reached through a door in another area it reads that
-       * area › here, and the task crumb goes — it is a place this person never stood,
-       * and offering it as the step back would move them rather than return them.
-       */}
-      <Breadcrumbs
-        root={origin}
-        crumbs={
-          origin
-            ? [{ label: "Scrutiny return" }]
-            : [{ label: task.title, href: back }, { label: "Scrutiny return" }]
-        }
-      />
-      {/*
-       * With room for the queue, the screen holds the viewport and each pane scrolls
-       * inside it: panes that scrolled away with the page would leave the queue — the
-       * critical action — off screen exactly when the form is long.
-       *
-       * Once the queue has folded into its drawer there is nothing to hold in place, and
-       * holding the viewport becomes the bug: at 1280 × 200% text zoom the page header
-       * alone is more than half the window, so a pinned header would leave a hand's width
-       * of form to work in. Below the fold the page scrolls as a page and only the bar
-       * with the submit action stays (`ACCESSIBILITY.md` §10, `RESPONSIVE.md` rule 9).
-       */}
-      <div
-        style={queueColumn ? { height: `calc(100svh - ${TOP_BAR_HEIGHT})` } : undefined}
-        className="flex min-h-0 min-w-0 flex-1 flex-col"
-      >
-        {queueColumn ? pageHeader : null}
+      <CorrectionProvider value={correction}>
+        {/*
+         * The way back lives in the top bar. Reached from the task list it reads
+         * Tasks › the task › here; reached through a door in another area it reads that
+         * area › here, and the task crumb goes — it is a place this person never stood,
+         * and offering it as the step back would move them rather than return them.
+         */}
+        <Breadcrumbs
+          root={origin}
+          crumbs={
+            origin
+              ? [{ label: tr("correctionScreen_scrutinyReturn") }]
+              : [
+                  { label: task.title, href: back },
+                  { label: tr("correctionScreen_scrutinyReturn") },
+                ]
+          }
+        />
+        {/*
+         * With room for the queue, the screen holds the viewport and each pane scrolls
+         * inside it: panes that scrolled away with the page would leave the queue — the
+         * critical action — off screen exactly when the form is long.
+         *
+         * Once the queue has folded into its drawer there is nothing to hold in place, and
+         * holding the viewport becomes the bug: at 1280 × 200% text zoom the page header
+         * alone is more than half the window, so a pinned header would leave a hand's width
+         * of form to work in. Below the fold the page scrolls as a page and only the bar
+         * with the submit action stays (`ACCESSIBILITY.md` §10, `RESPONSIVE.md` rule 9).
+         */}
+        <div
+          style={queueColumn ? { height: `calc(100svh - ${TOP_BAR_HEIGHT})` } : undefined}
+          className="flex min-h-0 min-w-0 flex-1 flex-col"
+        >
+          {queueColumn ? pageHeader : null}
 
-        <div className="flex min-h-0 min-w-0 flex-1">
-          {/* Left — every section, with the defect counts. A column where there is room
+          <div className="flex min-h-0 min-w-0 flex-1">
+            {/* Left — every section, with the defect counts. A column where there is room
               for one; the same list in a sheet where there is not. */}
-          {railColumn ? (
-            <aside
-              aria-label="Sections"
-              style={{ width: RAIL_W }}
-              className="flex shrink-0 flex-col overflow-y-auto border-r border-hairline bg-sidebar py-4"
-            >
-              <SectionRail
-                step={step}
-                countFor={countFor}
-                onSelect={setStep}
-                onlyFlagged={!showAll}
-              />
-            </aside>
-          ) : null}
+            {railColumn ? (
+              <aside
+                aria-label={tr("correctionScreen_sections")}
+                style={{ width: RAIL_W }}
+                className="flex shrink-0 flex-col overflow-y-auto border-r border-hairline bg-sidebar py-4"
+              >
+                <SectionRail
+                  step={step}
+                  countFor={countFor}
+                  onSelect={setStep}
+                  onlyFlagged={!showAll}
+                />
+              </aside>
+            ) : null}
 
-          {/*
-           * Record and workbench, with a handle between them (owner, 2026-08-21).
-           *
-           * How much room the evidence needs is not ours to decide once and for all: a
-           * cropped cheque line wants width, a long section of the record wants width, and
-           * which one matters changes defect by defect. So the split is the DS `Resizable`
-           * with the proportions v3.1 settled as the default (roughly 632/560 at 1440),
-           * the last drag remembered on this device, and minimums that keep either side
-           * from being dragged into uselessness. The handle is keyboard-operable — it is
-           * the primitive's separator, not a bare div.
-           */}
-          <ResizablePanelGroup
-            orientation="horizontal"
-            defaultLayout={savedLayout}
-            onLayoutChanged={rememberLayout}
-            className="min-h-0 min-w-0 flex-1"
-          >
-            {/* Centre — the section, as the record.
+            {/*
+             * Record and workbench, with a handle between them (owner, 2026-08-21).
+             *
+             * How much room the evidence needs is not ours to decide once and for all: a
+             * cropped cheque line wants width, a long section of the record wants width, and
+             * which one matters changes defect by defect. So the split is the DS `Resizable`
+             * with the proportions v3.1 settled as the default (roughly 632/560 at 1440),
+             * the last drag remembered on this device, and minimums that keep either side
+             * from being dragged into uselessness. The handle is keyboard-operable — it is
+             * the primitive's separator, not a bare div.
+             */}
+            <ResizablePanelGroup
+              orientation="horizontal"
+              defaultLayout={savedLayout}
+              onLayoutChanged={rememberLayout}
+              className="min-h-0 min-w-0 flex-1"
+            >
+              {/* Centre — the section, as the record.
 
                 The `[&_…]` utilities neutralise the DS's own `disabled:opacity-50`
                 ghosting so that receding is decided in *one* place instead of compounding:
@@ -1076,213 +1092,220 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
                 checkbox still shows its chosen state — the choice *is* the value there.
                 The `!`s are owed to the primitives' `disabled:` rules tying at equal
                 specificity; noted as upstream DS feedback. */}
-            {/* `h-full overflow-hidden` on both panels is what makes each pane its own
+              {/* `h-full overflow-hidden` on both panels is what makes each pane its own
                 scroller: the primitive puts this className on a *nested* div that is
                 otherwise content-sized, so without it the record grew to its content and
                 the page itself scrolled — the "random scrolls" bug's root. */}
-            <ResizablePanel
-              id="record"
-              defaultSize="53"
-              minSize="30"
-              className="flex h-full min-w-0 flex-col overflow-hidden"
-            >
-              <main
-                className={cn(
-                  "flex min-w-0 flex-1 flex-col overflow-y-auto pb-8",
-                  "[&_:disabled]:opacity-100! [&_:disabled]:text-muted-foreground",
-                  "[&_:has(:disabled):not([data-slot=field])]:opacity-100! [&_[data-slot=input-group-addon]]:opacity-100!",
-                  "[&_input:disabled]:bg-surface-sunken! [&_textarea:disabled]:bg-surface-sunken!",
-                  "[&_:has(>input:disabled)]:bg-surface-sunken! [&_[data-slot=select-trigger]:disabled]:bg-surface-sunken!",
-                  /* An input inside a group (+91, ₹, a date's calendar button) stays clear:
+              <ResizablePanel
+                id="record"
+                defaultSize="53"
+                minSize="30"
+                className="flex h-full min-w-0 flex-col overflow-hidden"
+              >
+                <main
+                  className={cn(
+                    "flex min-w-0 flex-1 flex-col overflow-y-auto pb-8",
+                    "[&_:disabled]:opacity-100! [&_:disabled]:text-muted-foreground",
+                    "[&_:has(:disabled):not([data-slot=field])]:opacity-100! [&_[data-slot=input-group-addon]]:opacity-100!",
+                    "[&_input:disabled]:bg-surface-sunken! [&_textarea:disabled]:bg-surface-sunken!",
+                    "[&_:has(>input:disabled)]:bg-surface-sunken! [&_[data-slot=select-trigger]:disabled]:bg-surface-sunken!",
+                    /* An input inside a group (+91, ₹, a date's calendar button) stays clear:
                      the group carries the fill. Painted itself, its square box ran over the
                      group's rounded right edge (owner, 2026-10-13). */
-                  "[&_[data-slot=input-group]_input:disabled]:bg-transparent!",
-                  /* Full filing: every field scrutiny did not flag steps back, so the
+                    "[&_[data-slot=input-group]_input:disabled]:bg-transparent!",
+                    /* Full filing: every field scrutiny did not flag steps back, so the
                      flagged ones are what the eye finds. One rule here rather than in each
                      section, because only some sections build their fields with
                      `FormField` — the rest stayed at full strength (owner, 2026-10-13). */
-                  showAll && "[&_[data-slot=field]]:opacity-45!",
-                  // A field inside another field is already receded with it: no second step.
-                  showAll && "[&_[data-slot=field]_[data-slot=field]]:opacity-100!",
-                  // A flagged field, or a field holding one, stays at full strength.
-                  showAll && "[&_[data-defect]_[data-slot=field]]:opacity-100!",
-                  showAll && "[&_[data-slot=field]:has([data-defect])]:opacity-100!",
-                  /* Flagged-only mode: the fields hide themselves (`FormField` returns
+                    showAll && "[&_[data-slot=field]]:opacity-45!",
+                    // A field inside another field is already receded with it: no second step.
+                    showAll && "[&_[data-slot=field]_[data-slot=field]]:opacity-100!",
+                    // A flagged field, or a field holding one, stays at full strength.
+                    showAll && "[&_[data-defect]_[data-slot=field]]:opacity-100!",
+                    showAll && "[&_[data-slot=field]:has([data-defect])]:opacity-100!",
+                    /* Flagged-only mode: the fields hide themselves (`FormField` returns
                      null), and these rules retire what they leave behind — section cards
                      none of them are in, and group headings ("The parties") whose every
                      card just went. An empty white panel is not a shorter form. */
-                  !showAll && "[&_[data-slot=card]:not(:has([data-defect]))]:hidden",
-                  !showAll && "[&_section:not(:has([data-defect]))]:hidden",
-                  queueColumn && "px-4 pt-6 sm:px-6"
-                )}
-              >
-                {queueColumn ? null : pageHeader}
-                <div
-                  className={cn(
-                    "flex w-full min-w-0 max-w-4xl flex-col gap-4",
-                    queueColumn ? null : "px-4 pt-4 sm:px-6"
+                    !showAll && "[&_[data-slot=card]:not(:has([data-defect]))]:hidden",
+                    !showAll && "[&_section:not(:has([data-defect]))]:hidden",
+                    queueColumn && "px-4 pt-6 sm:px-6",
                   )}
                 >
-                  {/* What this pane *is*, in one caption — not a rule about what may not
+                  {queueColumn ? null : pageHeader}
+                  <div
+                    className={cn(
+                      "flex w-full min-w-0 max-w-4xl flex-col gap-4",
+                      queueColumn ? null : "px-4 pt-4 sm:px-6",
+                    )}
+                  >
+                    {/* What this pane *is*, in one caption — not a rule about what may not
                       be done. The corrections happen in the panel, and saying so once
                       here is cheaper than a banner over an unchanged e-filing form. */}
-                  <p className="flex items-start gap-2 text-caption text-muted-foreground">
-                    <LockIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-                    {showAll
-                      ? "The filing as scrutiny received it."
-                      : "The flagged parts of the filing, as scrutiny received them."}
-                  </p>
-                  {/* With only the flagged fields shown, the groups whose fields are all
+                    <p className="flex items-start gap-2 text-caption text-muted-foreground">
+                      <LockIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+                      {showAll
+                        ? tr("correctionScreen_theFilingAsScrutinyReceivedIt")
+                        : tr("correctionScreen_theFlaggedPartsOfTheFiling")}
+                    </p>
+                    {/* With only the flagged fields shown, the groups whose fields are all
                       hidden are left empty, and each still took the form's gap — the
                       blank band above "Drawer's bank details" (owner, 2026-10-12). */}
-                  <div className="[&_div.grid:empty]:hidden [&_div.w-full:empty]:hidden">
-                    <SectionBody step={step} />
-                  </div>
-                </div>
-              </main>
-            </ResizablePanel>
-
-            {/* Right — the workbench. A column where it fits; a drawer and a sticky bar
-                below. */}
-            {queueColumn ? (
-              <>
-                <ResizableHandle
-                  withHandle
-                  aria-label="Resize the record and the corrections panel"
-                  className="bg-hairline"
-                />
-                <ResizablePanel
-                  id="corrections"
-                  defaultSize="47"
-                  minSize="26"
-                  className="flex h-full min-w-0 flex-col overflow-hidden bg-sidebar"
-                >
-                  <section aria-label="Corrections" className="flex min-h-0 flex-1 flex-col">
-                    {/* The head is pinned; only the run scrolls. One scroller per pane is
-                        the whole scroll model of this screen — see the layout comment. */}
-                    <div className="flex shrink-0 flex-col gap-3 p-5 pb-4">
-                      <h2 className="text-title-s font-semibold text-foreground">Corrections</h2>
-                      {queueHead}
+                    <div className="[&_div.grid:empty]:hidden [&_div.w-full:empty]:hidden">
+                      <SectionBody step={step} />
                     </div>
-                    <ScrollArea className="min-h-0 flex-1">
-                      <div className="px-3 pb-4">{queueList}</div>
-                    </ScrollArea>
-                    <div className="shrink-0 border-t border-hairline p-4">{submitBlock}</div>
-                  </section>
-                </ResizablePanel>
-              </>
-            ) : null}
-          </ResizablePanelGroup>
-        </div>
+                  </div>
+                </main>
+              </ResizablePanel>
 
-        {/* With the queue folded away it is still the critical action, so it keeps a
+              {/* Right — the workbench. A column where it fits; a drawer and a sticky bar
+                below. */}
+              {queueColumn ? (
+                <>
+                  <ResizableHandle
+                    withHandle
+                    aria-label={tr("correctionScreen_resizeTheRecordAndTheCorrections")}
+                    className="bg-hairline"
+                  />
+                  <ResizablePanel
+                    id="corrections"
+                    defaultSize="47"
+                    minSize="26"
+                    className="flex h-full min-w-0 flex-col overflow-hidden bg-sidebar"
+                  >
+                    <section
+                      aria-label={tr("correctionScreen_corrections")}
+                      className="flex min-h-0 flex-1 flex-col"
+                    >
+                      {/* The head is pinned; only the run scrolls. One scroller per pane is
+                        the whole scroll model of this screen — see the layout comment. */}
+                      <div className="flex shrink-0 flex-col gap-3 p-5 pb-4">
+                        <h2 className="text-title-s font-semibold text-foreground">
+                          {tr("correctionScreen_corrections")}
+                        </h2>
+                        {queueHead}
+                      </div>
+                      <ScrollArea className="min-h-0 flex-1">
+                        <div className="px-3 pb-4">{queueList}</div>
+                      </ScrollArea>
+                      <div className="shrink-0 border-t border-hairline p-4">{submitBlock}</div>
+                    </section>
+                  </ResizablePanel>
+                </>
+              ) : null}
+            </ResizablePanelGroup>
+          </div>
+
+          {/* With the queue folded away it is still the critical action, so it keeps a
             persistent bar — RESPONSIVE.md rule 7: never hide a critical action. */}
-        <div
-          className={cn(
-            "z-30 shrink-0 flex-col gap-3 border-t border-hairline bg-card p-4",
-            queueColumn ? "hidden" : "sticky bottom-0 flex"
-          )}
-        >
-          <div className="flex items-center gap-3">
-            <QueueProgress resolved={resolved} total={total} className="min-w-0 flex-1" />
-            <Button type="button" variant="outline" onClick={() => setQueueOpen(true)}>
-              <ListChecksIcon data-icon="inline-start" aria-hidden />
-              Corrections
-            </Button>
-          </div>
-          <Button
-            type="button"
-            size="lg"
-            className={SUBMIT_CLASS}
-            disabled={!complete || !online || !!busy || isSent}
-            onClick={() => void submit()}
+          <div
+            className={cn(
+              "z-30 shrink-0 flex-col gap-3 border-t border-hairline bg-card p-4",
+              queueColumn ? "hidden" : "sticky bottom-0 flex",
+            )}
           >
-            {submitLabel}
-          </Button>
-          <p className="text-caption text-muted-foreground">{reason}</p>
-        </div>
-      </div>
-
-      <Sheet open={railOpen} onOpenChange={setRailOpen}>
-        <SheetContent side="left" className="w-full overflow-y-auto sm:max-w-sm">
-          <SheetHeader>
-            <SheetTitle className="text-title-s font-semibold">Sections</SheetTitle>
-            <SheetDescription className="text-body-compact">
-              {showAll
-                ? "Every part of this filing. The count shows what scrutiny flagged there."
-                : "The parts of the filing scrutiny flagged, and how many corrections each carries."}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="pb-6">
-            <SectionRail
-              step={step}
-              countFor={countFor}
-              onlyFlagged={!showAll}
-              onSelect={(id) => {
-                setStep(id);
-                setRailOpen(false);
-              }}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      <Drawer open={queueOpen} onOpenChange={setQueueOpen}>
-        <DrawerContent className="max-h-[85svh]">
-          <DrawerHeader>
-            <DrawerTitle className="text-title-s font-semibold">Corrections</DrawerTitle>
-            {/* The progress line below is the count; §6 cut the second counter that can
-                disagree with the first, so this says what to do, not how many. */}
-            <DrawerDescription className="text-body-compact">
-              Open one to see what scrutiny asked for.
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
-            <div className="flex flex-col gap-4">
-              {queueHead}
-              {queueList}
+            <div className="flex items-center gap-3">
+              <QueueProgress resolved={resolved} total={total} className="min-w-0 flex-1" />
+              <Button type="button" variant="outline" onClick={() => setQueueOpen(true)}>
+                <ListChecksIcon data-icon="inline-start" aria-hidden />
+                {tr("correctionScreen_corrections")}
+              </Button>
             </div>
+            <Button
+              type="button"
+              size="lg"
+              className={SUBMIT_CLASS}
+              disabled={!complete || !online || !!busy || isSent}
+              onClick={() => void submit()}
+            >
+              {submitLabel}
+            </Button>
+            <p className="text-caption text-muted-foreground">{reason}</p>
           </div>
-        </DrawerContent>
-      </Drawer>
+        </div>
 
-      {/* ── Sending back: confirm, sign over this screen, then send ── */}
-      <ConfirmDialog
-        open={confirmSignOpen}
-        onOpenChange={setConfirmSignOpen}
-        title="Sign the corrected complaint?"
-        description="Corrections change the complaint, so its signatures are taken off. It is signed again here before it goes back to scrutiny."
-        confirmLabel="Continue to sign"
-        cancelLabel="Not yet"
-        destructive={false}
-        onConfirm={() => {
-          setConfirmSignOpen(false);
-          void prepareSigning().then((ok) => {
-            if (ok) openSigning("choose");
-          });
-        }}
-      />
-      <SignFlowDialog
-        open={signOpen}
-        start={openedAt}
-        statusActions={statusActions}
-        completeNote="The corrected complaint can go back to scrutiny."
-        unlocks="It can go back to scrutiny"
-        outcome={
-          sent
-            ? {
-                title: "Sent to scrutiny",
-                headline: "Corrections sent",
-                footnote: "The scrutiny officer reviews the corrected complaint next.",
-              }
-            : undefined
-        }
-        onOpenChange={setSignOpen}
-        onPrint={() => window.print()}
-      />
+        <Sheet open={railOpen} onOpenChange={setRailOpen}>
+          <SheetContent side="left" className="w-full overflow-y-auto sm:max-w-sm">
+            <SheetHeader>
+              <SheetTitle className="text-title-s font-semibold">
+                {tr("correctionScreen_sections")}
+              </SheetTitle>
+              <SheetDescription className="text-body-compact">
+                {showAll
+                  ? tr("correctionScreen_everyPartOfThisFilingThe")
+                  : tr("correctionScreen_thePartsOfTheFilingScrutiny")}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="pb-6">
+              <SectionRail
+                step={step}
+                countFor={countFor}
+                onlyFlagged={!showAll}
+                onSelect={(id) => {
+                  setStep(id);
+                  setRailOpen(false);
+                }}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
 
+        <Drawer open={queueOpen} onOpenChange={setQueueOpen}>
+          <DrawerContent className="max-h-[85svh]">
+            <DrawerHeader>
+              <DrawerTitle className="text-title-s font-semibold">
+                {tr("correctionScreen_corrections")}
+              </DrawerTitle>
+              {/* The progress line below is the count; §6 cut the second counter that can
+                disagree with the first, so this says what to do, not how many. */}
+              <DrawerDescription className="text-body-compact">
+                {tr("correctionScreen_openOneToSeeWhatScrutiny")}
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
+              <div className="flex flex-col gap-4">
+                {queueHead}
+                {queueList}
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
 
-    </CorrectionProvider>
+        {/* ── Sending back: confirm, sign over this screen, then send ── */}
+        <ConfirmDialog
+          open={confirmSignOpen}
+          onOpenChange={setConfirmSignOpen}
+          title={tr("correctionScreen_signTheCorrectedComplaint")}
+          description={tr("correctionScreen_correctionsChangeTheComplaintSoIts")}
+          confirmLabel={tr("correctionScreen_continueToSign")}
+          cancelLabel={tr("correctionScreen_notYet")}
+          destructive={false}
+          onConfirm={() => {
+            setConfirmSignOpen(false);
+            void prepareSigning().then((ok) => {
+              if (ok) openSigning("choose");
+            });
+          }}
+        />
+        <SignFlowDialog
+          open={signOpen}
+          start={openedAt}
+          statusActions={statusActions}
+          completeNote="The corrected complaint can go back to scrutiny."
+          unlocks="It can go back to scrutiny"
+          outcome={
+            sent
+              ? {
+                  title: tr("correctionScreen_sentToScrutiny"),
+                  headline: tr("correctionScreen_correctionsSent"),
+                  footnote: tr("correctionScreen_theScrutinyOfficerReviewsTheCorrected"),
+                }
+              : undefined
+          }
+          onOpenChange={setSignOpen}
+          onPrint={() => window.print()}
+        />
+      </CorrectionProvider>
     </FilingChromeContext.Provider>
   );
 }

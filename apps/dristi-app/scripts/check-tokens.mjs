@@ -19,7 +19,7 @@ const COLOR_UTILITIES =
   "bg|text|border|ring|outline|fill|stroke|shadow|from|via|to|decoration|accent|caret|divide|placeholder";
 const LITERAL_COLOR = new RegExp(
   `\\b(?:${COLOR_UTILITIES})-\\[[^\\]]*(?:#[0-9a-fA-F]{3,8}|oklch\\(|rgba?\\(|hsla?\\()`,
-  "g"
+  "g",
 );
 const RAW_GREY = /\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline)-neutral-\d/g;
 const NAMED_PALETTE =
@@ -59,7 +59,7 @@ function scan(file, findings) {
 
 function ruleBody(css, selector) {
   const at = css.search(
-    new RegExp(`^${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\{`, "m")
+    new RegExp(`^${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\{`, "m"),
   );
   if (at === -1) throw new Error(`No \`${selector}\` rule in globals.css`);
   const open = css.indexOf("{", at);
@@ -74,9 +74,7 @@ function ruleBody(css, selector) {
 function declarations(body) {
   const decls = new Map();
   const withoutComments = body.replace(/\/\*[\s\S]*?\*\//g, "");
-  for (const [, name, value] of withoutComments.matchAll(
-    /(--[\w-]+)\s*:\s*([^;]+);/g
-  )) {
+  for (const [, name, value] of withoutComments.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
     decls.set(name, value.trim());
   }
   return decls;
@@ -91,10 +89,7 @@ function findModeGaps(css) {
     if (!name.startsWith("--color-")) continue;
     const alias = value.match(/^var\((--[\w-]+)\)$/)?.[1];
     if (!alias) continue;
-    const missing = [
-      !light.has(alias) && ":root",
-      !dark.has(alias) && ".dark",
-    ].filter(Boolean);
+    const missing = [!light.has(alias) && ":root", !dark.has(alias) && ".dark"].filter(Boolean);
     if (missing.length) gaps.push({ token: name, alias, missing });
   }
   return gaps;
@@ -111,7 +106,7 @@ let failed = findings.length > 0;
 const css = readFileSync(TOKEN_SOURCE, "utf8");
 for (const { token, alias, missing } of findModeGaps(css)) {
   console.error(
-    `src/app/globals.css  ${token} → ${alias} is missing from ${missing.join(" and ")}`
+    `src/app/globals.css  ${token} → ${alias} is missing from ${missing.join(" and ")}`,
   );
   failed = true;
 }

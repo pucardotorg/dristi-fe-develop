@@ -157,7 +157,13 @@ describe("repositoryFor", () => {
       return new Sandbox();
     };
     // Tests run with nothing set, so the build's source is `api` and the http factory runs.
-    const getRepository = repositoryFor<Contract>("tasks", { sandbox: factory, http: () => { built += 1; return new Http(); } });
+    const getRepository = repositoryFor<Contract>("tasks", {
+      sandbox: factory,
+      http: () => {
+        built += 1;
+        return new Http();
+      },
+    });
     assert.equal(built, 0);
     const first = getRepository();
     assert.equal(getRepository(), first);
@@ -197,9 +203,12 @@ describe("NotIntegratedError", () => {
 
   it("isNotIntegratedError tells it apart from a failure", () => {
     assert.equal(isNotIntegratedError(new NotIntegratedError("tasks.listTasks")), true);
-    const passedOn = Object.assign(new Error("tasks.listTasks is not connected to the backend yet"), {
-      name: "NotIntegratedError",
-    });
+    const passedOn = Object.assign(
+      new Error("tasks.listTasks is not connected to the backend yet"),
+      {
+        name: "NotIntegratedError",
+      },
+    );
     assert.equal(isNotIntegratedError(passedOn), true);
     assert.equal(isNotIntegratedError(new Error("Network error")), false);
     assert.equal(isNotIntegratedError("NotIntegratedError"), false);

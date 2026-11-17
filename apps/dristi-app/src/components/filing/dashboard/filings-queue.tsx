@@ -65,10 +65,18 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { rowActivation, rowOpener } from "@/lib/employee/row-activation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** The tone words, so a colour is never the only thing saying "this one is late". */
 const TONE_CLASS: Record<QueueRow["info"]["tone"], string> = {
@@ -173,6 +181,7 @@ export function FilingsQueue({
       the row (or the selection) only names what it acts on. */
   onBulk: (kind: "sign" | "pay", rows: QueueRow[]) => void;
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -217,7 +226,7 @@ export function FilingsQueue({
     (next: Partial<View>) => {
       router.replace(`${pathname}${writeView({ ...view, ...next })}`, { scroll: false });
     },
-    [router, pathname, view]
+    [router, pathname, view],
   );
 
   /*
@@ -240,7 +249,7 @@ export function FilingsQueue({
 
   const filtered = React.useMemo(
     () => applyQueueFilters(rows, { q: view.q, court, sort }),
-    [rows, view.q, court, sort]
+    [rows, view.q, court, sort],
   );
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / view.size));
@@ -258,11 +267,7 @@ export function FilingsQueue({
   const pageIds = slice.filter((row) => rowBulkable(view.tab, row)).map((row) => row.id);
   const selectedOnPage = pageIds.filter((id) => selected.has(id)).length;
   const pageState: boolean | "indeterminate" =
-    selectedOnPage === 0
-      ? false
-      : selectedOnPage === pageIds.length
-        ? true
-        : "indeterminate";
+    selectedOnPage === 0 ? false : selectedOnPage === pageIds.length ? true : "indeterminate";
 
   const body = (
     <>
@@ -284,7 +289,9 @@ export function FilingsQueue({
         ) : bulkKind === "pay" && selectedRows.length > 0 && !cards ? (
           <Button onClick={() => onBulk("pay", selectedRows)} className="shrink-0 tabular-nums">
             <WalletIcon data-icon="inline-start" aria-hidden />
-            Pay {money(selectedRows.reduce((sum, row) => sum + (row.amount ?? 0), 0))}
+            {t("filingsQueue_payMoney", {
+              money: money(selectedRows.reduce((sum, row) => sum + (row.amount ?? 0), 0)),
+            })}
           </Button>
         ) : null}
         <div className={cn("relative col-span-2", DESK_SEARCH)}>
@@ -295,8 +302,8 @@ export function FilingsQueue({
           <Input
             value={view.q}
             onChange={(event) => go({ q: event.target.value, page: 1 })}
-            placeholder="Search by party name or number"
-            aria-label="Filter this list by party name or number"
+            placeholder={t("filingsQueue_searchByPartyNameOrNumber")}
+            aria-label={t("filingsQueue_filterThisListByPartyName")}
             className="pl-9"
           />
         </div>
@@ -304,10 +311,10 @@ export function FilingsQueue({
           <NativeSelect
             value={court}
             onChange={(event) => go({ court: event.target.value, page: 1 })}
-            aria-label="Filter by court"
+            aria-label={t("filingsQueue_filterByCourt")}
             className={cn("w-full", DESK_AUTO)}
           >
-            <NativeSelectOption value="">All courts</NativeSelectOption>
+            <NativeSelectOption value="">{t("filingsQueue_allCourts")}</NativeSelectOption>
             {courts.map((name) => (
               <NativeSelectOption key={name} value={name}>
                 {name}
@@ -318,12 +325,12 @@ export function FilingsQueue({
         <NativeSelect
           value={sort.value}
           onChange={(event) => go({ sort: event.target.value, page: 1 })}
-          aria-label="Order this list"
+          aria-label={t("filingsQueue_orderThisList")}
           className={cn("w-full", courts.length > 1 ? null : "col-span-2", DESK_AUTO)}
         >
           {TAB_SORTS[view.tab].map((option) => (
             <NativeSelectOption key={option.value} value={option.value}>
-              {option.label}
+              {translateText(t, option.label)}
             </NativeSelectOption>
           ))}
         </NativeSelect>
@@ -342,12 +349,14 @@ export function FilingsQueue({
               {rows.length === 0 ? <InboxIcon aria-hidden /> : <SearchIcon aria-hidden />}
             </EmptyMedia>
             <EmptyTitle className="text-body font-semibold">
-              {rows.length === 0 ? emptyTitle(view.tab) : "No filings match your search"}
+              {rows.length === 0
+                ? emptyTitle(view.tab)
+                : t("filingsQueue_noFilingsMatchYourSearch")}
             </EmptyTitle>
             <EmptyDescription className="text-body-compact">
               {rows.length === 0
                 ? emptyHint(view.tab)
-                : "Try a different name or number, or clear the filters."}
+                : t("filingsQueue_tryADifferentNameOrNumber")}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
@@ -355,14 +364,14 @@ export function FilingsQueue({
               view.tab === "drafts" ? (
                 <Button asChild>
                   <Link href={NEW_FILING}>
-                    Start a cheque-bounce filing
+                    {t("filingsQueue_startAChequeBounceFiling")}
                     <ArrowRightIcon data-icon="inline-end" aria-hidden />
                   </Link>
                 </Button>
               ) : null
             ) : (
               <Button variant="outline" onClick={() => go({ q: "", court: "", page: 1 })}>
-                Clear filters
+                {t("filingsQueue_clearFilters")}
               </Button>
             )}
           </EmptyContent>
@@ -382,14 +391,14 @@ export function FilingsQueue({
                   // needs one; settle it before copying either to another screen.
                   className={cn(
                     "relative",
-                    selected.has(row.id) && "border-primary/40 bg-brand-muted/50"
+                    selected.has(row.id) && "border-primary/40 bg-brand-muted/50",
                   )}
                   leading={
                     selectable && rowBulkable(view.tab, row) ? (
                       <Checkbox
                         checked={selected.has(row.id)}
                         onCheckedChange={() => toggleSelected(row.id)}
-                        aria-label={`Select ${row.parties}`}
+                        aria-label={t("filingsQueue_selectParties", { parties: row.parties })}
                         className="size-5"
                       />
                     ) : undefined
@@ -398,14 +407,14 @@ export function FilingsQueue({
                     <>
                       <Button asChild>
                         <Link href={withOrigin(row.action.href, here)}>
-                          {row.action.label}
+                          {translateText(t, row.action.label)}
                           <ArrowRightIcon data-icon="inline-end" aria-hidden />
                         </Link>
                       </Button>
                       {row.discardable ? (
                         <Button variant="outline" onClick={() => onDiscard([row.id])}>
                           <Trash2Icon data-icon="inline-start" aria-hidden />
-                          Discard
+                          {t("filingsQueue_discard")}
                         </Button>
                       ) : null}
                     </>
@@ -417,7 +426,7 @@ export function FilingsQueue({
                   <p
                     className={cn(
                       "-mt-2 text-body-compact text-muted-foreground",
-                      selectable && "pl-8"
+                      selectable && "pl-8",
                     )}
                   >
                     {layout.info}{" "}
@@ -433,7 +442,7 @@ export function FilingsQueue({
                             ? "font-normal text-muted-foreground"
                             : row.info.tone === "default"
                               ? "text-foreground"
-                              : TONE_CLASS[row.info.tone]
+                              : TONE_CLASS[row.info.tone],
                         )}
                       >
                         {row.info.lead}
@@ -451,7 +460,7 @@ export function FilingsQueue({
                       <>
                         <span className="text-body-compact">{row.caseType}</span>
                         <span className="text-caption text-muted-foreground tabular-nums">
-                          Last saved {row.progress.savedOn}
+                          {t("filingsQueue_lastSavedSavedOn", { savedOn: row.progress.savedOn })}
                         </span>
                       </>
                     ) : (
@@ -460,7 +469,7 @@ export function FilingsQueue({
                         <span className="text-caption text-muted-foreground">
                           {row.ref ? <Identifier value={row.ref} copyable={false} /> : null}
                           {row.ref && row.court ? <span aria-hidden> · </span> : null}
-                          {row.court || (row.ref ? null : "Court not assigned")}
+                          {row.court || (row.ref ? null : t("filingsQueue_courtNotAssigned"))}
                         </span>
                       </>
                     )}
@@ -489,7 +498,7 @@ export function FilingsQueue({
                 className="w-full"
                 onClick={() => setVisible((count) => count + SHOW_MORE_STEP)}
               >
-                Show more
+                {t("filingsQueue_showMore")}
                 <ChevronDownIcon data-icon="inline-end" aria-hidden />
               </Button>
             </div>
@@ -504,32 +513,44 @@ export function FilingsQueue({
             <div className="pointer-events-none sticky bottom-0 z-30 h-0">
               <div
                 role="region"
-                aria-label="Selected filings"
+                aria-label={t("filingsQueue_selectedFilings")}
                 inert={selectedIds.length === 0 || undefined}
                 className={cn(
                   "border-hairline shadow-modal pointer-events-auto absolute inset-x-4 bottom-[calc(--spacing(4)+env(safe-area-inset-bottom))] flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-opacity",
                   selectedIds.length === 0 &&
-                    "translate-y-[calc(100%+--spacing(8))] opacity-0 duration-200 motion-reduce:translate-y-0"
+                    "translate-y-[calc(100%+--spacing(8))] opacity-0 duration-200 motion-reduce:translate-y-0",
                 )}
               >
-                <p className="flex flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground" aria-live="polite">
-                  <span className="tabular-nums">{selectedIds.length} selected</span>
+                <p
+                  className="flex flex-wrap items-center gap-x-3 text-body-compact text-muted-foreground"
+                  aria-live="polite"
+                >
+                  <span className="tabular-nums">
+                    {t("filingsQueue_lengthSelected", { length: String(selectedIds.length) })}
+                  </span>
                   <Button
                     variant="link"
                     className="h-auto p-0 font-normal underline"
                     onClick={() => setSelected(new Set())}
                   >
-                    Clear
+                    {t("filingsQueue_clear")}
                   </Button>
                 </p>
                 {bulkKind === "discard" ? (
                   <Button variant="destructive" onClick={() => onDiscard(selectedIds)}>
-                    <Trash2Icon data-icon="inline-start" aria-hidden />Discard
+                    <Trash2Icon data-icon="inline-start" aria-hidden />
+                    {t("filingsQueue_discard")}
                   </Button>
                 ) : (
-                  <Button onClick={() => onBulk(bulkKind === "sign" ? "sign" : "pay", selectedRows)}>
-                    {bulkKind === "sign" ? <PenToolIcon data-icon="inline-start" aria-hidden /> : <WalletIcon data-icon="inline-start" aria-hidden />}
-                    {bulkKind === "sign" ? "Sign" : "Pay"}
+                  <Button
+                    onClick={() => onBulk(bulkKind === "sign" ? "sign" : "pay", selectedRows)}
+                  >
+                    {bulkKind === "sign" ? (
+                      <PenToolIcon data-icon="inline-start" aria-hidden />
+                    ) : (
+                      <WalletIcon data-icon="inline-start" aria-hidden />
+                    )}
+                    {bulkKind === "sign" ? t("filingsQueue_sign") : t("filingsQueue_pay")}
                   </Button>
                 )}
               </div>
@@ -537,7 +558,7 @@ export function FilingsQueue({
           ) : null}
 
           <div className={cn("overflow-x-auto", REGISTER_TABLE_ONLY)}>
-            <Table aria-label={layout.label}>
+            <Table aria-label={translateText(t, layout.label)}>
               <TableHeader>
                 <TableRow className="border-hairline">
                   {selectable ? (
@@ -547,8 +568,8 @@ export function FilingsQueue({
                         onCheckedChange={(checked) => setManySelected(pageIds, checked === true)}
                         aria-label={
                           pageState === true
-                            ? "Clear the selection on this page"
-                            : "Select every row on this page that can be acted on"
+                            ? t("filingsQueue_clearTheSelectionOnThisPage")
+                            : t("filingsQueue_selectEveryRowOnThisPage")
                         }
                       />
                     </TableHead>
@@ -558,7 +579,7 @@ export function FilingsQueue({
                       key={column}
                       className={cn(
                         column === layout.columns[0] && !selectable && "pl-6",
-                        column === "action" && "pr-6 text-right"
+                        column === "action" && "pr-6 text-right",
                       )}
                     >
                       {headingFor(column, layout)}
@@ -594,7 +615,7 @@ export function FilingsQueue({
                             <Checkbox
                               checked={selected.has(row.id)}
                               onCheckedChange={() => toggleSelected(row.id)}
-                              aria-label={`Select ${row.parties}`}
+                              aria-label={t("filingsQueue_selectParties", { parties: row.parties })}
                             />
                           </div>
                         ) : null}
@@ -607,7 +628,7 @@ export function FilingsQueue({
                           column === layout.columns[0] && !selectable && "pl-6",
                           column === "action" && "pr-6",
                           column === "parties" && "font-medium",
-                          column === "court" && "text-muted-foreground"
+                          column === "court" && "text-muted-foreground",
                         )}
                       >
                         {renderCell(column, row, onDiscard, here)}
@@ -620,36 +641,43 @@ export function FilingsQueue({
           </div>
 
           <p className={cn("px-4 pb-4 text-caption text-muted-foreground", REGISTER_CARDS_ONLY)}>
-            Showing <span className="tabular-nums">{slice.length}</span> of{" "}
-            <span className="tabular-nums">{filtered.length}</span>
+            {t.rich("filingsQueue_showingLengthOfLength2", {
+              length: String(slice.length),
+              length2: String(filtered.length),
+              span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+              span2: (chunks) => <span className="tabular-nums">{chunks}</span>,
+            })}
           </p>
 
           <div
             className={cn(
               "flex-wrap items-center justify-between gap-4 border-t border-hairline px-6 py-4",
-              DESK_PAGER
+              DESK_PAGER,
             )}
           >
             {/* `items-center` on one line, and the select at the DS `sm` height with
                 caption type, so the count and the size read as one sentence. */}
             <div className="flex items-center gap-3">
               <p className="text-caption leading-none text-muted-foreground">
-                Showing <span className="tabular-nums">{start + 1}</span>–
-                <span className="tabular-nums">
-                  {Math.min(start + view.size, filtered.length)}
-                </span>{" "}
-                of <span className="tabular-nums">{filtered.length}</span>
+                {t.rich("filingsQueue_showingValueMinOfLength", {
+                  value: String(start + 1),
+                  min: String(Math.min(start + view.size, filtered.length)),
+                  length: String(filtered.length),
+                  span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                  span2: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                  span3: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                })}
               </p>
               <NativeSelect
                 value={String(view.size)}
                 onChange={(event) => go({ size: Number(event.target.value), page: 1 })}
-                aria-label="Rows per page"
+                aria-label={t("filingsQueue_rowsPerPage")}
                 size="sm"
                 className="w-auto [&_select]:text-caption"
               >
                 {PAGE_SIZES.map((size) => (
                   <NativeSelectOption key={size} value={String(size)}>
-                    {size} per page
+                    {t("filingsQueue_sizePerPage", { size: String(size) })}
                   </NativeSelectOption>
                 ))}
               </NativeSelect>
@@ -671,7 +699,7 @@ export function FilingsQueue({
                           href="#"
                           onClick={goto(go, entry)}
                           isActive={entry === page}
-                          aria-label={`Go to page ${entry}`}
+                          aria-label={t("filingsQueue_goToPageEntry", { entry: String(entry) })}
                         >
                           {entry}
                         </PaginationLink>
@@ -698,9 +726,11 @@ export function FilingsQueue({
   return (
     <Card variant="raised" className="gap-0 overflow-visible py-0">
       <div className={cn("flex flex-col gap-1 px-4 pt-4 pb-4", DESK_HEAD)}>
-        <h2 className="text-title-s font-semibold text-foreground">Your filings</h2>
+        <h2 className="text-title-s font-semibold text-foreground">
+          {t("filingsQueue_yourFilings")}
+        </h2>
         <p className="text-body-compact text-muted-foreground">
-          All your filings, finished and in progress. Each tab is a stage.
+          {t("filingsQueue_allYourFilingsFinishedAndIn")}
         </p>
       </div>
 
@@ -716,10 +746,12 @@ export function FilingsQueue({
       >
         {/* Only the strip pins: the heading above it is read once, and keeping it on
             screen cost 90px of every scroll. */}
-        <div className={cn("sticky top-14 z-10 border-b border-hairline bg-card px-4", DESK_GUTTER)}>
+        <div
+          className={cn("sticky top-14 z-10 border-b border-hairline bg-card px-4", DESK_GUTTER)}
+        >
           {/* Never a sideways scroll: what does not fit folds into More (owner, Sept 21). */}
           <OverflowTabsList
-            aria-label="Filing states"
+            aria-label={t("filingsQueue_filingStates")}
             value={view.tab}
             onSelect={(value) => {
               if (!isQueueTab(value)) return;
@@ -734,7 +766,7 @@ export function FilingsQueue({
                 measure: count,
                 label: (
                   <>
-                    {entry.label}
+                    {translateText(t, entry.label)}
                     <span className="tabular-nums text-muted-foreground">{count}</span>
                   </>
                 ),
@@ -778,7 +810,7 @@ function renderCell(
   column: ColumnId,
   row: QueueRow,
   onDiscard: (ids: string[]) => void,
-  here: string
+  here: string,
 ): React.ReactNode {
   switch (column) {
     case "ref":
@@ -821,7 +853,7 @@ function renderCell(
             className={cn(
               "block tabular-nums",
               row.info.lead === "NA" && "text-muted-foreground",
-              row.info.tone !== "default" && TONE_CLASS[row.info.tone]
+              row.info.tone !== "default" && TONE_CLASS[row.info.tone],
             )}
           >
             {row.info.lead}
@@ -834,11 +866,7 @@ function renderCell(
         </>
       );
     case "progress":
-      return row.progress ? (
-        <span className="tabular-nums">{row.progress.savedOn}</span>
-      ) : (
-        "—"
-      );
+      return row.progress ? <span className="tabular-nums">{row.progress.savedOn}</span> : "—";
     case "action":
       return (
         <div className="flex items-center justify-end gap-1">

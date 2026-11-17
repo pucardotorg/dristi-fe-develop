@@ -3,16 +3,9 @@
 import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  DueStatusLine,
-  PendingTaskRow,
-  TaskNote,
-} from "@/components/cases/case-overview-card";
+import { DueStatusLine, PendingTaskRow, TaskNote } from "@/components/cases/case-overview-card";
 import { BailApplicationDialog } from "@/components/filing/bail-application-dialog";
-import {
-  BailBondDialog,
-  type BondMode,
-} from "@/components/filing/bail-bond-dialog";
+import { BailBondDialog, type BondMode } from "@/components/filing/bail-bond-dialog";
 import {
   BailBondStatusDialog,
   buildBondSigners,
@@ -31,6 +24,7 @@ import {
 import { dueStatusView } from "@/lib/cases/peek";
 import { pick } from "@/lib/onboarding/content";
 import { Identifier } from "@/components/chrome/identifier";
+import { useTranslations } from "next-intl";
 
 /**
  * The whole bail lifecycle on a case, held in one place so the header's "Make filings"
@@ -184,6 +178,7 @@ export function BondTaskRow({
   now: number;
   onArchive?: () => void;
 }) {
+  const t = useTranslations();
   const { locale } = useLocale();
   const value = React.useContext(CaseBailContext);
   if (!value || value.bondPhase === "none") return null;
@@ -196,9 +191,7 @@ export function BondTaskRow({
         respond={{ onClick: openBondTask }}
         onArchive={onArchive}
       >
-        <DueStatusLine
-          {...dueStatusView(BOND_TASK_DUE_ON, nextHearingOn, now)}
-        />
+        <DueStatusLine {...dueStatusView(BOND_TASK_DUE_ON, nextHearingOn, now)} />
         <TaskNote>{pick(bondCopy.taskNote, locale)}</TaskNote>
       </PendingTaskRow>
     );
@@ -213,15 +206,13 @@ export function BondTaskRow({
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="warning">
           {pick(
-            bondPhase === "signing"
-              ? bondCopy.statusPendingSign
-              : bondCopy.statusPendingReview,
+            bondPhase === "signing" ? bondCopy.statusPendingSign : bondCopy.statusPendingReview,
             locale,
           )}
         </Badge>
         <Identifier
           value={BOND_ID}
-          label="bond number"
+          label={t("caseBailFlow_bondNumber")}
           className="text-caption text-muted-foreground"
         />
       </div>

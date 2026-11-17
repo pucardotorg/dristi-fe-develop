@@ -11,15 +11,8 @@ import {
   useFoldFocusHandoff,
   useRailCollapsed,
 } from "@/components/chrome/app-chrome";
-import {
-  useApplicationsReady,
-  useLifecycleApplications,
-} from "@/lib/applications/store";
-import {
-  courtTrail,
-  type CourtCrumb,
-  type CourtRecordResolver,
-} from "@/lib/employee/navigation";
+import { useApplicationsReady, useLifecycleApplications } from "@/lib/applications/store";
+import { courtTrail, type CourtCrumb, type CourtRecordResolver } from "@/lib/employee/navigation";
 import { cn } from "@/lib/utils";
 import {
   Breadcrumb,
@@ -32,6 +25,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { usePendingOrders } from "@/components/employee/use-pending-orders";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * The court's bar: where you are, and the way back into the rail.
@@ -73,9 +68,7 @@ function CourtTopBar({ query }: { query: string }) {
   // Derived here rather than inside the trail because the divider beside the trigger has
   // to know whether anything follows it. On the court home nothing does.
   return (
-    <ChromeTopBar
-      leading={<CourtNavTrigger hasTrail={crumbs.length > 0} />}
-    >
+    <ChromeTopBar leading={<CourtNavTrigger hasTrail={crumbs.length > 0} />}>
       {crumbs.length > 0 ? <CourtTrail crumbs={crumbs} /> : null}
     </ChromeTopBar>
   );
@@ -142,10 +135,8 @@ const CRUMB_LINK = [
  * right at first paint. Keeping the folded clause on the same mechanism is the point: two
  * gates in two languages is how a state ends up with two controls, or none.
  */
-const TRIGGER_VISIBILITY =
-  "md:hidden md:group-data-[rail-folded=true]/chrome-page:inline-flex";
-const DIVIDER_VISIBILITY =
-  "md:hidden md:group-data-[rail-folded=true]/chrome-page:block";
+const TRIGGER_VISIBILITY = "md:hidden md:group-data-[rail-folded=true]/chrome-page:inline-flex";
+const DIVIDER_VISIBILITY = "md:hidden md:group-data-[rail-folded=true]/chrome-page:block";
 
 /**
  * The way back into the rail, whenever the rail cannot offer one itself.
@@ -178,6 +169,7 @@ const DIVIDER_VISIBILITY =
  * is on screen stays entirely in CSS.
  */
 function CourtNavTrigger({ hasTrail }: { hasTrail: boolean }) {
+  const t = useTranslations();
   const collapsed = useRailCollapsed();
   /* Activating this on a desktop hides it, because unfolding hands the control back to the
      rail's header — so the keyboard has to go with it. */
@@ -188,7 +180,9 @@ function CourtNavTrigger({ hasTrail }: { hasTrail: boolean }) {
         {...CHROME_FOLD_TRIGGER}
         {...handoff}
         aria-label={
-          collapsed ? "Expand court navigation" : "Open court navigation"
+          collapsed
+            ? t("employeeTopBar_expandCourtNavigation")
+            : t("employeeTopBar_openCourtNavigation")
         }
         /* The guarded selector, not the plain `[&_svg]:size-5`: `Button` declares its own
            `[&_svg:not([class*='size-'])]:size-4`, which tailwind-merge treats as a
@@ -253,10 +247,10 @@ function CourtNavTrigger({ hasTrail }: { hasTrail: boolean }) {
  * The identifier face, for a step that names a record by its number. No copy affordance:
  * the crumb is already a link, and a control cannot hold another one.
  */
-const crumbFace = (crumb: CourtCrumb) =>
-  crumb.mono ? "font-mono tabular-nums" : undefined;
+const crumbFace = (crumb: CourtCrumb) => (crumb.mono ? "font-mono tabular-nums" : undefined);
 
 function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
+  const t = useTranslations();
   const last = crumbs.length - 1;
 
   return (
@@ -274,9 +268,7 @@ function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
             <React.Fragment key={crumb.label}>
               {index > 0 ? (
                 <BreadcrumbSeparator
-                  className={
-                    dropped ? "hidden shrink-0 md:inline-flex" : "shrink-0"
-                  }
+                  className={dropped ? "hidden shrink-0 md:inline-flex" : "shrink-0"}
                 />
               ) : null}
               <BreadcrumbItem
@@ -293,7 +285,7 @@ function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
                 {crumb.href ? (
                   <BreadcrumbLink asChild className={CRUMB_LINK}>
                     <Link href={crumb.href} className={crumbFace(crumb)}>
-                      {crumb.label}
+                      {translateText(t, crumb.label)}
                     </Link>
                   </BreadcrumbLink>
                 ) : isLast ? (
@@ -301,10 +293,8 @@ function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
                      complaint's file, a listing or a scrutiny workbench it is the
                      record's number, which is the one thing the page's own heading does
                      not already say. */
-                  <BreadcrumbPage
-                    className={cn("truncate", crumbFace(crumb))}
-                  >
-                    {crumb.label}
+                  <BreadcrumbPage className={cn("truncate", crumbFace(crumb))}>
+                    {translateText(t, crumb.label)}
                   </BreadcrumbPage>
                 ) : (
                   /* A section with no href is still a disclosure in the rail, not a
@@ -312,7 +302,7 @@ function CourtTrail({ crumbs }: { crumbs: CourtCrumb[] }) {
                      section the queue's href in `courtTrail`, so the same label is a
                      link there. It is not dressed as a link it cannot be. */
                   <span className={cn("truncate", crumbFace(crumb))}>
-                    {crumb.label}
+                    {translateText(t, crumb.label)}
                   </span>
                 )}
               </BreadcrumbItem>

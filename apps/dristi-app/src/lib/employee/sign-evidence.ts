@@ -321,9 +321,7 @@ const EVIDENCE_CASES: EvidenceCase[] = [
       complainant: "Saurabh Nandakumar",
       accused: "Paravur Rice Mills and General Trading Pvt Ltd",
     },
-    witnesses: [
-      { id: "pw1", number: "PW-1", series: "PW", name: "Saurabh Nandakumar" },
-    ],
+    witnesses: [{ id: "pw1", number: "PW-1", series: "PW", name: "Saurabh Nandakumar" }],
     markings: [
       {
         ref: "a",
@@ -421,9 +419,7 @@ const EVIDENCE_CASES: EvidenceCase[] = [
   {
     caseNumber: "CMP/974/2026",
     parties: { complainant: "Shiny Varghese", accused: "Thevally Boat Yard" },
-    witnesses: [
-      { id: "pw1", number: "PW-1", series: "PW", name: "Shiny Varghese" },
-    ],
+    witnesses: [{ id: "pw1", number: "PW-1", series: "PW", name: "Shiny Varghese" }],
     /* No vakalat on record: the complainant appears in person, so the document was
        filed under their own name rather than an advocate's. */
     markings: [
@@ -463,9 +459,7 @@ const EVIDENCE_CASES: EvidenceCase[] = [
   {
     caseNumber: "ST/726/2026",
     parties: { complainant: "Fathima Beevi", accused: "Kadappakada Motors" },
-    witnesses: [
-      { id: "pw1", number: "PW-1", series: "PW", name: "Fathima Beevi" },
-    ],
+    witnesses: [{ id: "pw1", number: "PW-1", series: "PW", name: "Fathima Beevi" }],
     markings: [
       {
         ref: "a",
@@ -479,9 +473,7 @@ const EVIDENCE_CASES: EvidenceCase[] = [
   {
     caseNumber: "CMP/981/2026",
     parties: { complainant: "Geetha Nair", accused: "Chavara Minerals" },
-    witnesses: [
-      { id: "pw1", number: "PW-1", series: "PW", name: "Geetha Nair" },
-    ],
+    witnesses: [{ id: "pw1", number: "PW-1", series: "PW", name: "Geetha Nair" }],
     markings: [
       {
         ref: "a",
@@ -498,9 +490,7 @@ const EVIDENCE_CASES: EvidenceCase[] = [
       complainant: "Soumya Rajan",
       accused: "Harbour Line Logistics Pvt Ltd",
     },
-    witnesses: [
-      { id: "pw1", number: "PW-1", series: "PW", name: "Soumya Rajan" },
-    ],
+    witnesses: [{ id: "pw1", number: "PW-1", series: "PW", name: "Soumya Rajan" }],
     /* Twelfth exhibit in the series — the number the field has to hold at two digits. */
     markings: [
       {
@@ -515,18 +505,17 @@ const EVIDENCE_CASES: EvidenceCase[] = [
 ];
 
 /** The queue the screen opens on: every marking, in case order. */
-export const SIGN_EVIDENCE_QUEUE: SignEvidence[] = EVIDENCE_CASES.flatMap(
-  (record) =>
-    record.markings.map((marking) => ({
-      id: `se-${record.caseNumber.replace(/\//g, "-")}-${marking.ref}`,
-      caseNumber: record.caseNumber,
-      parties: record.parties,
-      witnesses: record.witnesses,
-      document: marking.document,
-      uploadedBy: marking.uploadedBy,
-      markedThrough: marking.markedThrough,
-      serial: marking.serial,
-    })),
+export const SIGN_EVIDENCE_QUEUE: SignEvidence[] = EVIDENCE_CASES.flatMap((record) =>
+  record.markings.map((marking) => ({
+    id: `se-${record.caseNumber.replace(/\//g, "-")}-${marking.ref}`,
+    caseNumber: record.caseNumber,
+    parties: record.parties,
+    witnesses: record.witnesses,
+    document: marking.document,
+    uploadedBy: marking.uploadedBy,
+    markedThrough: marking.markedThrough,
+    serial: marking.serial,
+  })),
 );
 
 /**
@@ -541,10 +530,7 @@ export const SIGN_EVIDENCE_QUEUE_COUNT = SIGN_EVIDENCE_QUEUE.length;
 
 /** The witness this document was marked through. */
 export function markedThroughWitness(row: SignEvidence): EvidenceWitness {
-  return (
-    row.witnesses.find((witness) => witness.id === row.markedThrough) ??
-    row.witnesses[0]
-  );
+  return row.witnesses.find((witness) => witness.id === row.markedThrough) ?? row.witnesses[0];
 }
 
 /** "P1" — the exhibit number, series letter and serial together. */
@@ -588,9 +574,7 @@ export function applyEvidenceMarking(
   id: string,
   marking: EvidenceMarking,
 ): SignEvidence[] {
-  return rows.map((row) =>
-    row.id === id ? { ...row, ...marking } : row,
-  );
+  return rows.map((row) => (row.id === id ? { ...row, ...marking } : row));
 }
 
 /**
@@ -610,8 +594,7 @@ export function applyBusinessOfTheDay(
     row.id === id
       ? {
           ...row,
-          botd:
-            botd.trim() === draftBusinessOfTheDay(row) ? undefined : botd,
+          botd: botd.trim() === draftBusinessOfTheDay(row) ? undefined : botd,
         }
       : row,
   );
@@ -623,10 +606,7 @@ export function applyBusinessOfTheDay(
  * No signature is applied, no exhibit is endorsed, nothing is written to the A-Diary and
  * no provider is called. See the module header.
  */
-export function signEvidence(
-  rows: SignEvidence[],
-  ids: ReadonlySet<string>,
-): SignEvidence[] {
+export function signEvidence(rows: SignEvidence[], ids: ReadonlySet<string>): SignEvidence[] {
   return rows.filter((row) => !ids.has(row.id));
 }
 

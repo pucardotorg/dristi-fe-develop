@@ -98,7 +98,7 @@ describe("withoutComplainant", () => {
     withoutComplainant(advocates, 1);
     assert.deepEqual(
       advocates.map((a) => a.forComplainants),
-      [[0, 1], [1], []]
+      [[0, 1], [1], []],
     );
   });
 });

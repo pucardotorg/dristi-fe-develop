@@ -27,17 +27,10 @@ export const VENDOR_DS_PATH = resolve(REPO_ROOT, "vendor/pucar-design-system");
 /** Legacy sibling path (still accepted if already present and authoritative). */
 export const SIBLING_DS_PATH = resolve(REPO_ROOT, "../pucar-design-system");
 
-const CANDIDATES = [
-  process.env.PUCAR_DS_ROOT,
-  VENDOR_DS_PATH,
-  SIBLING_DS_PATH,
-].filter(Boolean);
+const CANDIDATES = [process.env.PUCAR_DS_ROOT, VENDOR_DS_PATH, SIBLING_DS_PATH].filter(Boolean);
 
 export function looksLikeDsTree(root) {
-  return (
-    existsSync(join(root, "AGENTS.md")) &&
-    existsSync(join(root, "src/components/ui"))
-  );
+  return existsSync(join(root, "AGENTS.md")) && existsSync(join(root, "src/components/ui"));
 }
 
 /**
@@ -56,13 +49,11 @@ export function isAuthoritativeDs(root) {
       stdio: ["ignore", "pipe", "ignore"],
     }).trim();
     if (url.includes(EXPECTED_DS_REMOTE)) return true;
-    console.error(
-      `Rejected DS at ${root}: origin is "${url}" — expected ${EXPECTED_DS_REMOTE}`
-    );
+    console.error(`Rejected DS at ${root}: origin is "${url}" — expected ${EXPECTED_DS_REMOTE}`);
     return false;
   } catch {
     console.error(
-      `Rejected DS at ${root}: no matching git origin and no ${MARKER_FILE} for ${EXPECTED_DS_REMOTE}`
+      `Rejected DS at ${root}: no matching git origin and no ${MARKER_FILE} for ${EXPECTED_DS_REMOTE}`,
     );
     return false;
   }
@@ -95,7 +86,7 @@ export function readDsLock() {
   }
   if (!String(lock.remote ?? "").includes(EXPECTED_DS_REMOTE)) {
     console.error(
-      `ds.lock.json points at "${lock.remote}" — expected ${EXPECTED_DS_REMOTE}. Refusing it.`
+      `ds.lock.json points at "${lock.remote}" — expected ${EXPECTED_DS_REMOTE}. Refusing it.`,
     );
     return null;
   }

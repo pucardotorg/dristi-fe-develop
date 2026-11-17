@@ -37,7 +37,7 @@ export function useSessionValue(key: string): string | null {
         set.delete(callback);
       };
     },
-    [key]
+    [key],
   );
   const getSnapshot = useCallback(() => readSessionValue(key), [key]);
   return useSyncExternalStore(subscribe, getSnapshot, () => null);

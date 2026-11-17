@@ -28,6 +28,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useTranslations } from "next-intl";
 
 const DUES: DueFilter[] = ["overdue", "today", "week", "before-hearing"];
 
@@ -50,6 +51,7 @@ const KIND_IN_SHEET_ONLY = "md:pointer-fine:hidden";
  * history or jump the page; `/` still focuses it.
  */
 function SearchBox({ query, onChange }: { query: string; onChange: (q: string) => void }) {
+  const tr = useTranslations();
   const ref = React.useRef<HTMLInputElement>(null);
   const [text, setText] = React.useState(query);
   // When the URL changes underneath (Clear, back/forward), follow it.
@@ -86,10 +88,10 @@ function SearchBox({ query, onChange }: { query: string; onChange: (q: string) =
       <InputGroupInput
         ref={ref}
         type="search"
-        aria-label="Search these tasks"
+        aria-label={tr("filterRow_searchTheseTasks")}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Search case or task"
+        placeholder={tr("filterRow_searchCaseOrTask")}
         autoComplete="off"
         enterKeyHint="search"
       />
@@ -135,6 +137,7 @@ export function FilterRow({
   onChange: (patch: Partial<Filters>) => void;
   onClear: () => void;
 }) {
+  const tr = useTranslations();
   /* What the sheet holds. The search lives outside it and shows its own box.
      Kinds count only where the sheet is what holds them; with a mouse the
      pressed pills already say so, one row up. */
@@ -153,81 +156,86 @@ export function FilterRow({
           pills are gone (any touch screen, either way up) the pair owns the
           row, so the search takes everything the button leaves. Chips wrap onto the lines below. */}
       <div className="flex w-full min-w-0 items-center gap-2 md:pointer-fine:w-auto">
-      <SearchBox query={filters.query} onChange={(q) => onChange({ query: q })} />
+        <SearchBox query={filters.query} onChange={(q) => onChange({ query: q })} />
 
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" aria-label={`Filters${applied ? `, ${applied} applied` : ""}`}>
-            <SlidersHorizontalIcon data-icon="inline-start" aria-hidden />
-            Filters
-            {applied ? (
-              <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-caption font-medium tabular-nums text-primary-foreground">
-                {applied}
-              </span>
-            ) : null}
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="w-full sm:max-w-sm">
-          <SheetHeader>
-            <SheetTitle className="text-title-s font-semibold">Filters</SheetTitle>
-            <SheetDescription className="text-body-compact">
-              Narrow the list. Anything you set stays visible on the row behind this.
-            </SheetDescription>
-          </SheetHeader>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              aria-label={`Filters${applied ? `, ${applied} applied` : ""}`}
+            >
+              <SlidersHorizontalIcon data-icon="inline-start" aria-hidden />
+              {tr("filterRow_filters")}
+              {applied ? (
+                <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-caption font-medium tabular-nums text-primary-foreground">
+                  {applied}
+                </span>
+              ) : null}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-sm">
+            <SheetHeader>
+              <SheetTitle className="text-title-s font-semibold">
+                {tr("filterRow_filters")}
+              </SheetTitle>
+              <SheetDescription className="text-body-compact">
+                {tr("filterRow_narrowTheListAnythingYouSet")}
+              </SheetDescription>
+            </SheetHeader>
 
-          {/* Checkboxes, as on the Cases filters: any combination can be asked
+            {/* Checkboxes, as on the Cases filters: any combination can be asked
               for, and what is on is visible without opening a menu. */}
-          <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
-            <div className={KIND_IN_SHEET_ONLY}>
+            <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pb-4">
+              <div className={KIND_IN_SHEET_ONLY}>
+                <CheckGroup
+                  id="tasks-filter-kind"
+                  legend={tr("filterRow_category")}
+                  options={CATEGORY_ORDER.map((kind) => ({
+                    value: kind,
+                    label: CATEGORY_LABELS[kind],
+                    count: categoryCounts?.[kind],
+                  }))}
+                  value={filters.kinds}
+                  onChange={(kinds) => onChange({ kinds })}
+                />
+              </div>
               <CheckGroup
-                id="tasks-filter-kind"
-                legend="Category"
-                options={CATEGORY_ORDER.map((kind) => ({
-                  value: kind,
-                  label: CATEGORY_LABELS[kind],
-                  count: categoryCounts?.[kind],
-                }))}
-                value={filters.kinds}
-                onChange={(kinds) => onChange({ kinds })}
+                id="tasks-filter-due"
+                legend={tr("filterRow_due")}
+                options={DUES.map((due) => ({ value: due, label: DUE_LABELS[due] }))}
+                value={filters.dues}
+                onChange={(dues) => onChange({ dues })}
+              />
+              <CheckGroup
+                id="tasks-filter-court"
+                legend={tr("filterRow_court")}
+                options={courts.map((court) => ({ value: court, label: court }))}
+                value={filters.courts}
+                onChange={(next) => onChange({ courts: next })}
+              />
+              <CheckGroup
+                id="tasks-filter-advocate"
+                legend={tr("filterRow_advocateOnTheCase")}
+                options={people.map((person) => ({ value: person.id, label: person.name }))}
+                value={filters.advocates}
+                onChange={(advocates) => onChange({ advocates })}
+                searchable={people.length > 8}
+                collapseAfter={8}
               />
             </div>
-            <CheckGroup
-              id="tasks-filter-due"
-              legend="Due"
-              options={DUES.map((due) => ({ value: due, label: DUE_LABELS[due] }))}
-              value={filters.dues}
-              onChange={(dues) => onChange({ dues })}
-            />
-            <CheckGroup
-              id="tasks-filter-court"
-              legend="Court"
-              options={courts.map((court) => ({ value: court, label: court }))}
-              value={filters.courts}
-              onChange={(next) => onChange({ courts: next })}
-            />
-            <CheckGroup
-              id="tasks-filter-advocate"
-              legend="Advocate on the case"
-              options={people.map((person) => ({ value: person.id, label: person.name }))}
-              value={filters.advocates}
-              onChange={(advocates) => onChange({ advocates })}
-              searchable={people.length > 8}
-              collapseAfter={8}
-            />
-          </div>
 
-          <SheetFooter>
-            {narrowed ? (
-              <Button variant="outline" onClick={onClear}>
-                Clear all filters
-              </Button>
-            ) : null}
-            <SheetClose asChild>
-              <Button>Show the tasks</Button>
-            </SheetClose>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+            <SheetFooter>
+              {narrowed ? (
+                <Button variant="outline" onClick={onClear}>
+                  {tr("filterRow_clearAllFilters")}
+                </Button>
+              ) : null}
+              <SheetClose asChild>
+                <Button>{tr("filterRow_showTheTasks")}</Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Applied state, always out here — the peek hides controls, never what is on.
@@ -260,7 +268,7 @@ export function FilterRow({
       {filters.advocates.map((id) => (
         <AppliedChip
           key={id}
-          label={people.find((p) => p.id === id)?.name ?? "Advocate"}
+          label={people.find((p) => p.id === id)?.name ?? tr("filterRow_advocate")}
           onClear={() => onChange({ advocates: without(filters.advocates, id) })}
         />
       ))}
@@ -268,7 +276,7 @@ export function FilterRow({
       {narrowed ? (
         <Button variant="ghost" onClick={onClear} className={cn("text-muted-foreground")}>
           <XIcon data-icon="inline-start" aria-hidden />
-          Clear
+          {tr("filterRow_clear")}
         </Button>
       ) : null}
     </div>

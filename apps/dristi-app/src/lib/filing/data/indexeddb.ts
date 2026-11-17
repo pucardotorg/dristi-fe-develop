@@ -55,12 +55,7 @@ import {
   type UploadedCaseDocument,
   type WitnessInput,
 } from "./cases-api";
-import type {
-  CaseFilingRepository,
-  FilingRepository,
-  NewEvidence,
-  StoredFile,
-} from "./repository";
+import type { CaseFilingRepository, FilingRepository, NewEvidence, StoredFile } from "./repository";
 
 const DB_NAME = "dristi-efiling";
 const DB_VERSION = 1;
@@ -267,7 +262,7 @@ function listsRead(lists: ContactLists) {
 function institutionRead(
   i: Omit<InstitutionInput, keyof ContactLists>,
   lists: ContactLists,
-  complainant: boolean
+  complainant: boolean,
 ): InstitutionRead {
   return {
     entity_name: i.entity_name,
@@ -304,7 +299,7 @@ function participantRead(
   role: ParticipantRole,
   ordinal: number,
   account: SandboxAccount,
-  sharedInstitution: Pick<ParticipantRead, "institution_id" | "institution"> | null
+  sharedInstitution: Pick<ParticipantRead, "institution_id" | "institution"> | null,
 ): ParticipantRead {
   // As `self`, the backend takes its own record of the filer: their name and mobile.
   const person: PersonInput | undefined =
@@ -353,7 +348,12 @@ function participantRead(
 
 /** Visible text in the rich-text editor's output. */
 function hasVisibleText(html: string): boolean {
-  return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim().length > 0;
+  return (
+    html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .trim().length > 0
+  );
 }
 
 function renumber(c: SandboxCase, role: ParticipantRole) {
@@ -393,7 +393,7 @@ export class SandboxCaseFiling implements CaseFilingRepository {
 
   constructor(
     private readonly store: CaseStore,
-    private readonly account: () => Promise<SandboxAccount> = async () => null
+    private readonly account: () => Promise<SandboxAccount> = async () => null,
   ) {}
 
   /** Run calls one at a time: each reads, changes and writes a whole case. */
@@ -429,7 +429,7 @@ export class SandboxCaseFiling implements CaseFilingRepository {
     c: SandboxCase,
     type: CaseDocumentType,
     participantId: string | null | undefined,
-    evidenceId: string | null | undefined
+    evidenceId: string | null | undefined,
   ) {
     if (participantId && !c.participants.some((p) => p.case_participant_id === participantId)) {
       throw refused(400, "That participant is not on this case.");
@@ -458,7 +458,7 @@ export class SandboxCaseFiling implements CaseFilingRepository {
     file: Blob,
     _fileName: string,
     documentType: CaseDocumentType,
-    meta: CaseDocumentMeta = {}
+    meta: CaseDocumentMeta = {},
   ): Promise<UploadedCaseDocument> {
     return this.serial(async () => {
       if (file.size > MAX_UPLOAD_BYTES) throw refused(413, "The file is larger than 10 MB.");
@@ -489,7 +489,7 @@ export class SandboxCaseFiling implements CaseFilingRepository {
         c,
         doc.document_type,
         patch.case_participant_id,
-        patch.case_evidence_id
+        patch.case_evidence_id,
       );
       if (patch.case_participant_id !== undefined) {
         doc.case_participant_id = patch.case_participant_id;
@@ -517,7 +517,7 @@ export class SandboxCaseFiling implements CaseFilingRepository {
   async addParty(
     caseId: string,
     role: PartyRole,
-    party: PartyInput | WitnessInput
+    party: PartyInput | WitnessInput,
   ): Promise<AddedParty> {
     const account = await this.account().catch(() => null);
     return this.serial(async () => {
@@ -536,7 +536,7 @@ export class SandboxCaseFiling implements CaseFilingRepository {
       let shared: Pick<ParticipantRead, "institution_id" | "institution"> | null = null;
       if (input.institution_id) {
         const sibling = c.participants.find(
-          (p) => p.role === "ACCUSED" && p.institution_id === input.institution_id
+          (p) => p.role === "ACCUSED" && p.institution_id === input.institution_id,
         );
         if (!sibling) throw refused(400, "No accused institution with that id on this case.");
         shared = { institution_id: sibling.institution_id, institution: sibling.institution };
@@ -549,7 +549,7 @@ export class SandboxCaseFiling implements CaseFilingRepository {
             p.role === "WITNESS" &&
             p.witness?.side === input.side &&
             (p.name_at_filing ?? "").trim().toLowerCase() === name &&
-            (p.mobile_numbers[0] ?? null) === mobile
+            (p.mobile_numbers[0] ?? null) === mobile,
         );
         if (twice) throw refused(400, "This person is already a witness for this side.", "E07032");
       }
@@ -646,14 +646,14 @@ export class SandboxCaseFiling implements CaseFilingRepository {
     c.participants = c.participants.filter((p) => p.case_participant_id !== id);
     c.representations = c.representations.filter((r) => r.client_participant_id !== id);
     c.poaMandates = c.poaMandates.filter(
-      (m) => m.represented_participant_id !== id && m.poa_participant_id !== id
+      (m) => m.represented_participant_id !== id && m.poa_participant_id !== id,
     );
     for (const d of c.documents) if (d.case_participant_id === id) d.case_participant_id = null;
     // A holder left with no mandate is no longer on the case.
     const holders = c.participants.filter(
       (p) =>
         p.role === "POA_HOLDER" &&
-        !c.poaMandates.some((m) => m.poa_participant_id === p.case_participant_id)
+        !c.poaMandates.some((m) => m.poa_participant_id === p.case_participant_id),
     );
     for (const h of holders) this.dropParticipant(c, h);
     renumber(c, gone.role);
@@ -666,21 +666,21 @@ export class SandboxCaseFiling implements CaseFilingRepository {
       throw new ApiError({ kind: "aborted", message: "The search was cancelled." });
     }
     return SANDBOX_ADVOCATES.filter(
-      (a) => a.name.toLowerCase().includes(q) || a.barNumber.toLowerCase().includes(q)
+      (a) => a.name.toLowerCase().includes(q) || a.barNumber.toLowerCase().includes(q),
     ).map((a) => ({ ...a }));
   }
 
   async addAdvocate(
     caseId: string,
     advocateId: string,
-    clientParticipantIds: string[]
+    clientParticipantIds: string[],
   ): Promise<string[]> {
     return this.serial(async () => {
       const c = await this.forSave(caseId);
       const advocate = SANDBOX_ADVOCATES.find((a) => a.id === advocateId);
       if (!advocate) throw refused(400, "That is not an approved advocate.");
       const clients = clientParticipantIds.map((id) =>
-        c.participants.find((p) => p.case_participant_id === id && p.role === "COMPLAINANT")
+        c.participants.find((p) => p.case_participant_id === id && p.role === "COMPLAINANT"),
       );
       if (clients.length === 0 || clients.some((p) => !p)) {
         throw refused(400, "An advocate acts only for complainants on this case.");
@@ -780,7 +780,7 @@ export class SandboxCaseFiling implements CaseFilingRepository {
 
   async updateEvidence(
     caseEvidenceId: string,
-    patch: { evidenceInfo?: EvidenceInfo; caseDocumentId?: string | null }
+    patch: { evidenceInfo?: EvidenceInfo; caseDocumentId?: string | null },
   ): Promise<SavedEvidence> {
     return this.serial(async () => {
       const c = await this.owner("evidence", holdsEvidence(caseEvidenceId));
@@ -835,7 +835,7 @@ export class SandboxCaseFiling implements CaseFilingRepository {
       }
       for (const p of of("COMPLAINANT")) {
         const represented = c.representations.some(
-          (r) => r.client_participant_id === p.case_participant_id
+          (r) => r.client_participant_id === p.case_participant_id,
         );
         if (!represented && !p.is_party_in_person) {
           errors.push({

@@ -2,11 +2,7 @@ import type { ReactNode } from "react";
 
 import { PAGE_BACK_ROW } from "@/components/shell/page-back-button";
 import { derivedAccessPeople } from "@/lib/access/derived";
-import {
-  caseNumberHistory,
-  secondaryStageLabel,
-  secondaryStages,
-} from "@/lib/cases/header";
+import { caseNumberHistory, secondaryStageLabel, secondaryStages } from "@/lib/cases/header";
 import { viewerAccess } from "@/lib/cases/viewer";
 import {
   counselFor,
@@ -19,11 +15,8 @@ import {
 import { CaseAdvocates } from "./case-advocates";
 import { CaseHeaderActions } from "./case-header-actions";
 import { CaseFlags, CaseStage } from "./case-identity";
-import {
-  CaseBackButton,
-  CaseNumberLine,
-  CaseStageBadges,
-} from "./case-header-parts";
+import { CaseBackButton, CaseNumberLine, CaseStageBadges } from "./case-header-parts";
+import { useTranslations } from "next-intl";
 
 const COUNSEL_LABEL: Record<CounselSide, string> = {
   complainant: "Complainant advocates",
@@ -67,9 +60,9 @@ export function CaseHeader({
    *  header doesn't need to repeat it. */
   hideLongPendingFlag?: boolean;
 }) {
+  const t = useTranslations();
   const numberHistory = caseNumberHistory(record);
-  const hasParties =
-    record.parties.complainant.length > 0 && record.parties.accused.length > 0;
+  const hasParties = record.parties.complainant.length > 0 && record.parties.accused.length > 0;
   const title = hasParties ? partiesLabel(record) : record.caseNumber;
   const complainantCounsel = counselFor(record, "complainant");
   const accusedCounsel = counselFor(record, "accused");
@@ -95,14 +88,11 @@ export function CaseHeader({
                 number shows (DET-01); the older ones sit behind the icon. */}
             {hasParties ? (
               <div className="flex min-h-6 items-center">
-                <CaseNumberLine
-                  caseNumber={record.caseNumber}
-                  history={numberHistory}
-                />
+                <CaseNumberLine caseNumber={record.caseNumber} history={numberHistory} />
               </div>
             ) : (
               <p className="text-body-compact text-muted-foreground">
-                Parties not yet recorded
+                {t("caseHeader_partiesNotYetRecorded")}
               </p>
             )}
           </div>
@@ -132,7 +122,7 @@ export function CaseHeader({
           the owner's middle ground (Sept 18). */}
       <dl className="flex min-w-0 flex-col divide-y divide-hairline border-y border-hairline md:pointer-fine:divide-y-0 md:landscape:divide-y-0 md:pointer-fine:border-y-0 md:landscape:border-y-0 md:pointer-fine:gap-x-8 md:landscape:gap-x-8 md:pointer-fine:grid md:landscape:grid md:pointer-fine:auto-cols-[minmax(0,16rem)] md:landscape:auto-cols-[minmax(0,16rem)] md:pointer-fine:grid-flow-col md:landscape:grid-flow-col md:pointer-fine:justify-start md:landscape:justify-start">
         {hasParties ? null : (
-          <HeaderFact label="Case number">
+          <HeaderFact label={t("caseHeader_caseNumber")}>
             <CaseNumberLine
               caseNumber={record.caseNumber}
               history={numberHistory}
@@ -140,7 +130,7 @@ export function CaseHeader({
             />
           </HeaderFact>
         )}
-        <HeaderFact label="Stage">
+        <HeaderFact label={t("caseHeader_stage")}>
           <CaseStageBadges
             stage={<CaseStage record={record} detail={false} />}
             subStages={secondaryStages(record).map(secondaryStageLabel)}
@@ -149,10 +139,8 @@ export function CaseHeader({
         {/* A live case has its date on Overview; a disposed one has no
             date left, and the day it ended is identity. */}
         {record.disposal ? (
-          <HeaderFact label="Disposed">
-            <span className="tabular-nums">
-              {formatCaseDate(record.disposal.on)}
-            </span>
+          <HeaderFact label={t("caseHeader_disposed")}>
+            <span className="tabular-nums">{formatCaseDate(record.disposal.on)}</span>
           </HeaderFact>
         ) : null}
         {/* A side with no advocate still gets its row (owner, Sept 24): with the
@@ -163,26 +151,16 @@ export function CaseHeader({
             says only that none is on record. */}
         <HeaderFact label={COUNSEL_LABEL.complainant}>
           {complainantCounsel.length > 0 ? (
-            <CaseAdvocates
-              record={record}
-              side="complainant"
-              more="text"
-              className="font-medium"
-            />
+            <CaseAdvocates record={record} side="complainant" more="text" className="font-medium" />
           ) : (
-            <span className="text-muted-foreground">Party in person</span>
+            <span className="text-muted-foreground">{t("caseHeader_partyInPerson")}</span>
           )}
         </HeaderFact>
         <HeaderFact label={COUNSEL_LABEL.accused}>
           {accusedCounsel.length > 0 ? (
-            <CaseAdvocates
-              record={record}
-              side="accused"
-              more="text"
-              className="font-medium"
-            />
+            <CaseAdvocates record={record} side="accused" more="text" className="font-medium" />
           ) : (
-            <span className="text-muted-foreground">None on record</span>
+            <span className="text-muted-foreground">{t("caseHeader_noneOnRecord")}</span>
           )}
         </HeaderFact>
       </dl>
@@ -191,21 +169,13 @@ export function CaseHeader({
 }
 
 /** Caption label over a compact value, the app's dense key-value pair. */
-function HeaderFact({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function HeaderFact({ label, children }: { label: string; children: ReactNode }) {
   return (
     /* Below `md`: a row, label left and value right, ruled off from its
        neighbours. Wrapped as loose label-over-value pairs, two landed on one
        line and the third alone, and the block read as jumbled (owner, Sept 21). */
     <div className="flex min-w-0 items-center justify-between gap-4 py-2 md:pointer-fine:flex-col md:landscape:flex-col md:pointer-fine:items-stretch md:landscape:items-stretch md:pointer-fine:justify-start md:landscape:justify-start md:pointer-fine:gap-1 md:landscape:gap-1 md:pointer-fine:py-0 md:landscape:py-0">
-      <dt className="shrink-0 text-caption font-medium text-muted-foreground">
-        {label}
-      </dt>
+      <dt className="shrink-0 text-caption font-medium text-muted-foreground">{label}</dt>
       {/* min-h-6 keeps every value on one baseline; the counsel +N chip
           reaches its 40px target through its own `after:` inset. */}
       <dd className="flex min-h-6 min-w-0 items-center gap-1 text-body-compact font-medium text-foreground justify-end md:pointer-fine:justify-start md:landscape:justify-start">

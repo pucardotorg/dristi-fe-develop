@@ -86,16 +86,14 @@ export function appearancesFor(hearing: CourtHearing): Appearance[] {
     const counsel = counselFor(hearing, side);
     const poa = (hearing.poaHolders ?? [])
       .filter((holder) => holder.side === side)
-      .map(
-        (holder, index): Appearance => ({
-          id: `${side}-poa-${index + 1}`,
-          name: holder.name,
-          role: `PoA holder for ${holder.for}`,
-          side,
-          kind: "poa",
-          party: holder.for,
-        }),
-      );
+      .map((holder, index): Appearance => ({
+        id: `${side}-poa-${index + 1}`,
+        name: holder.name,
+        role: `PoA holder for ${holder.for}`,
+        side,
+        kind: "poa",
+        party: holder.for,
+      }));
     const rows = parties.flatMap((name, index): Appearance[] => {
       const id = index === 0 ? side : `${side}-${index + 1}`;
       const party: Appearance = { id, name, role, side, kind: "party", party: name };
@@ -138,9 +136,7 @@ export type OrderDraft = {
    * The decision itself is an order item block in `blocks`; this is the record the
    * Applications region and the signing list read, kept in step with it.
    */
-  applications: Readonly<
-    Record<string, ListingApplicationDecision | undefined>
-  >;
+  applications: Readonly<Record<string, ListingApplicationDecision | undefined>>;
   next: NextListingChoice;
   nextPurpose: CourtHearingPurposeId | "";
   nextDate: string | null;
@@ -202,7 +198,8 @@ function attendanceOffice(appearance: Appearance): string {
   if (appearance.kind === "party") {
     return `the ${appearance.role.toLowerCase()}`;
   }
-  if (appearance.kind === "poa") return `PoA holder for ${appearance.role.replace(/^PoA holder for /, "")}`;
+  if (appearance.kind === "poa")
+    return `PoA holder for ${appearance.role.replace(/^PoA holder for /, "")}`;
   return appearance.role.replace(/^Advocate/, "advocate");
 }
 
@@ -256,9 +253,7 @@ export function attendanceRecital(
        the office they appear in, so it cannot also separate one person from the next.
        A side's counsel is its office alone — "advocate for the accused". */
     const value = roll
-      .map((entry) =>
-        entry.kind === "counsel" ? entry.office : `${entry.name}, ${entry.office}`,
-      )
+      .map((entry) => (entry.kind === "counsel" ? entry.office : `${entry.name}, ${entry.office}`))
       .join("; ");
     return [
       {
@@ -319,10 +314,7 @@ export const NO_CAUSE_POSTING: CausePosting = {
  * place the posting is set, so whatever the order's own draft holds is ignored — and a
  * posting not set yet reads as not set, never as a date the order guessed.
  */
-export function withCausePosting(
-  draft: OrderDraft,
-  posting: CausePosting | undefined,
-): OrderDraft {
+export function withCausePosting(draft: OrderDraft, posting: CausePosting | undefined): OrderDraft {
   const given = posting ?? NO_CAUSE_POSTING;
   if (
     draft.next === given.next &&

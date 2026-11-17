@@ -65,18 +65,9 @@ export type OrderTemplateId =
  * `hearing-scheduled` is *Rescheduling of hearing date*: offered only outside a hearing,
  * and only while the case already has a hearing listed to move (owner, 2026-10-22).
  */
-export type OrderDropdownRule =
-  | "always"
-  | "context"
-  | "hearing-not-ongoing"
-  | "hearing-scheduled";
+export type OrderDropdownRule = "always" | "context" | "hearing-not-ongoing" | "hearing-scheduled";
 
-export type OrderGroupId =
-  | "filings"
-  | "disposal"
-  | "case-management"
-  | "process"
-  | "misc";
+export type OrderGroupId = "filings" | "disposal" | "case-management" | "process" | "misc";
 
 /** The catalogue's locked/optional variable lists, by token name. */
 export type OrderVariable = {
@@ -203,13 +194,13 @@ export const DUMMY_MASTERS = {
 } satisfies Record<string, readonly OrderFieldOption[]>;
 
 const SIDES: readonly OrderFieldOption[] = [
-  { value: "complainant", label: "Complainant" },
-  { value: "accused", label: "Accused" },
+  { value: "complainant", label: "orderTemplates_complainant" },
+  { value: "accused", label: "orderTemplates_accused" },
 ];
 
 const SIDES_AND_COURT: readonly OrderFieldOption[] = [
   ...SIDES,
-  { value: "court", label: "Court" },
+  { value: "court", label: "orderTemplates_court" },
 ];
 
 /**
@@ -530,10 +521,7 @@ export const ORDER_TEMPLATES: OrderTemplate[] = [
     group: "process",
     dropdown: "always",
     botd: "Issue [Notice Type] notice to the [Party Type] [Party Name]. The [Party Type] is directed to make the appropriate payments and take steps.",
-    locked: [
-      { name: "Notice Type", role: "type of notice" },
-      ...PROCESS_VARIABLES.locked,
-    ],
+    locked: [{ name: "Notice Type", role: "type of notice" }, ...PROCESS_VARIABLES.locked],
     optional: [],
     fields: [
       {
@@ -618,8 +606,8 @@ export const ORDER_TEMPLATES: OrderTemplate[] = [
         locked: false,
         required: false,
         options: [
-          { value: "guilty", label: "Guilty" },
-          { value: "not guilty", label: "Not guilty" },
+          { value: "guilty", label: "orderTemplates_guilty" },
+          { value: "not guilty", label: "orderTemplates_notGuilty" },
         ],
       },
     ],
@@ -900,9 +888,7 @@ export function unavailableReason(
     case "context":
       return "Comes from an application";
     case "hearing-not-ongoing":
-      return context.hearingOngoing
-        ? "Set the next date under Next hearing"
-        : null;
+      return context.hearingOngoing ? "Set the next date under Next hearing" : null;
     case "hearing-scheduled":
       if (context.hearingOngoing) return "Set the next date under Next hearing";
       return context.hearingScheduled ? null : "No hearing is scheduled";
@@ -948,12 +934,7 @@ export const LIKELY_BY_PURPOSE: Record<string, OrderTemplateId[]> = {
   "delay-condonation": ["dismiss-case"],
   admission: ["cognizance", "dismiss-case", "issue-of-summons"],
   cognizance: ["cognizance", "dismiss-case", "issue-of-summons"],
-  appearance: [
-    "issue-of-summons",
-    "issue-of-warrants",
-    "bail",
-    "issue-of-notice",
-  ],
+  appearance: ["issue-of-summons", "issue-of-warrants", "bail", "issue-of-notice"],
   bail: ["bail", "issue-of-warrants"],
   plea: ["bail", "referral-to-adr", "issue-of-notice"],
   "evidence-of-complainant": ["witness-batta", "issue-of-summons"],
@@ -1017,10 +998,7 @@ export function combinationConflict(
   }
 
   /* Rule 3: one hearing-date order item per order. */
-  const HEARING_DATE: OrderTemplateId[] = [
-    "scheduling-of-hearing",
-    "rescheduling-of-hearing",
-  ];
+  const HEARING_DATE: OrderTemplateId[] = ["scheduling-of-hearing", "rescheduling-of-hearing"];
   if (HEARING_DATE.includes(adding)) {
     const clash = existing.find((item) => HEARING_DATE.includes(item.type));
     if (clash) return `You cannot add two ${label(clash.type)} items`;

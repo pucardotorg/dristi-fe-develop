@@ -10,10 +10,7 @@ import { ARRIVAL } from "@/components/chrome/motion";
 import { useArrival } from "@/components/employee/use-arrival";
 import { rowActivation } from "@/lib/employee/row-activation";
 import { cn } from "@/lib/utils";
-import {
-  RegisterCaseLink,
-  RegisterCasesTable,
-} from "@/components/employee/register-cases-table";
+import { RegisterCaseLink, RegisterCasesTable } from "@/components/employee/register-cases-table";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -23,11 +20,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  counselFor,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { counselFor, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import {
   EMPTY_REGISTER_FILTERS,
   REGISTER_QUEUE,
@@ -54,6 +47,7 @@ import {
   hasColumnFilters,
   type ColumnFilter,
 } from "@/lib/employee/court-column-filters";
+import { useTranslations } from "next-intl";
 
 /** The wait in the scrutiny registry's own bands (7 and 14 days), so the queues agree. */
 const REGISTER_COLUMN_FILTERS: ColumnFilter<RegisterCase>[] = [
@@ -116,6 +110,7 @@ const REGISTER_SORTS: CourtSortSpec<RegisterCase, RegisterSort>[] = [
  * the number, because that is the question the reference labelled.
  */
 export function RegisterCasesScreen() {
+  const t = useTranslations();
   /* Returning from a complaint, the queue slides in from the left — the direction it was
      left in, so coming back reads as coming back (owner, 2026-09-12). */
   const arrival = useArrival();
@@ -124,19 +119,19 @@ export function RegisterCasesScreen() {
      showing disagree. Every change resets to page one — the old Search button did that,
      and a keystroke that narrows the list to four rows must not leave the reader on
      page three of nothing. */
-  const [filters, setFilters] = React.useState<RegisterFilters>(
-    EMPTY_REGISTER_FILTERS,
-  );
+  const [filters, setFilters] = React.useState<RegisterFilters>(EMPTY_REGISTER_FILTERS);
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
 
-  const [columns, setColumns] = React.useState(() =>
-    emptyColumnFilters(REGISTER_COLUMN_FILTERS),
-  );
+  const [columns, setColumns] = React.useState(() => emptyColumnFilters(REGISTER_COLUMN_FILTERS));
   const [sort, setSort] = React.useState<RegisterSort>("longest");
 
   const rows = sortRows(
-    applyColumnFilters(filterRegisterCases(REGISTER_QUEUE, filters), REGISTER_COLUMN_FILTERS, columns),
+    applyColumnFilters(
+      filterRegisterCases(REGISTER_QUEUE, filters),
+      REGISTER_COLUMN_FILTERS,
+      columns,
+    ),
     REGISTER_SORTS,
     sort,
   );
@@ -159,22 +154,21 @@ export function RegisterCasesScreen() {
 
   return (
     <div
-      className={cn(
-        "flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8",
-        arrival && ARRIVAL[arrival],
-      )}
+      className={cn("flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8", arrival && ARRIVAL[arrival])}
     >
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Register cases
+          {t("registerCasesScreen_registerCases")}
         </h1>
         {/* The count is the whole point of the queue, so the supporting line carries
             it rather than restating the title. Singular is spelled out because
             "1 complaints" is the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {REGISTER_QUEUE.length === 1
-            ? "1 complaint is waiting to be registered."
-            : `${REGISTER_QUEUE.length} complaints are waiting to be registered.`}
+            ? t("registerCasesScreen_1ComplaintIsWaitingToBe")
+            : t("registerCasesScreen_lengthComplaintsAreWaitingToBe", {
+                length: String(REGISTER_QUEUE.length),
+              })}
         </p>
       </header>
 
@@ -204,11 +198,7 @@ export function RegisterCasesScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <RegisterCasesEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -267,13 +257,14 @@ function RegisterCasesFilters({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("registerCasesScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or advocate",
+        placeholder: t("registerCasesScreen_caseNameNumberOrAdvocate"),
       }}
       fields={fields}
       trailing={trailing}
@@ -290,36 +281,29 @@ function RegisterCasesFilters({
  * up to date — the same good-empty Schedule hearing already uses. Borderless and
  * unpadded; the panel is already the frame.
  */
-function RegisterCasesEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function RegisterCasesEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <FolderCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <FolderCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
-          {isFiltered ? "No matters match this search" : "Nothing waiting"}
+          {isFiltered
+            ? t("registerCasesScreen_noMattersMatchThisSearch")
+            : t("registerCasesScreen_nothingWaiting")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No complaint waiting to be registered matches the search you asked for."
-            : "Every complaint before this court is already on the register."}
+            ? t("registerCasesScreen_noComplaintWaitingToBeRegistered")
+            : t("registerCasesScreen_everyComplaintBeforeThisCourtIs")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
+            {t("registerCasesScreen_clearSearch")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -337,6 +321,7 @@ function RegisterCasesEmpty({
  * where a clerk is most likely to be reading a queue they cannot act on otherwise.
  */
 function RegisterCasesItemList({ rows }: { rows: RegisterCase[] }) {
+  const t = useTranslations();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((matter) => (
@@ -349,27 +334,18 @@ function RegisterCasesItemList({ rows }: { rows: RegisterCase[] }) {
           {/* The same opener as the table's first cell, in the box a stacked row
               wants: `min-h-10` for the touch target, and the item's own line rather
               than a cell to fill. */}
-          <RegisterCaseLink
-            matter={matter}
-            className="flex min-h-10 min-w-0 items-center"
-          />
+          <RegisterCaseLink matter={matter} className="flex min-h-10 min-w-0 items-center" />
           <p className="text-caption text-muted-foreground">
-            <Identifier value={matter.filingNumber} label="filing number" />
+            <Identifier value={matter.filingNumber} label={t("registerCasesScreen_filingNumber")} />
             {" · "}
-            <span className="tabular-nums text-warning-ink">
-              {matter.daysSinceSubmitted}
-            </span>{" "}
+            <span className="tabular-nums text-warning-ink">{matter.daysSinceSubmitted}</span>{" "}
             {matter.daysSinceSubmitted === 1
-              ? "day since submitted"
-              : "days since submitted"}
+              ? t("registerCasesScreen_daySinceSubmitted")
+              : t("registerCasesScreen_daysSinceSubmitted")}
           </p>
           <CounselCell
-            complainant={counselFor(matter, "complainant").map(
-              (counsel) => counsel.name,
-            )}
-            accused={counselFor(matter, "accused").map(
-              (counsel) => counsel.name,
-            )}
+            complainant={counselFor(matter, "complainant").map((counsel) => counsel.name)}
+            accused={counselFor(matter, "accused").map((counsel) => counsel.name)}
           />
         </li>
       ))}

@@ -19,5 +19,4 @@ export const TABLE_FRAME =
   "md:landscape:rounded-xl md:landscape:border md:landscape:border-hairline md:landscape:bg-card md:landscape:p-6 md:landscape:shadow-raised";
 
 /** The same rule for JavaScript: true exactly where `TABLE_ONLY` shows. */
-export const TABLE_QUERY =
-  "(min-width: 768px) and ((pointer: fine) or (orientation: landscape))";
+export const TABLE_QUERY = "(min-width: 768px) and ((pointer: fine) or (orientation: landscape))";

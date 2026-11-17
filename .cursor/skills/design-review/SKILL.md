@@ -41,10 +41,12 @@ The report is owner intent, not literal CSS. Apply only changes the user authori
   row, or name is a request against whatever owns it — the shared component,
   the content file, or the seed data — so the change lands once at the source
   and every instance updates. Never fork a single instance to match the
-  report; find the owner (component prop/class, `content.ts` copy, fixture
-  data) and change it there.
-- **`[text]` edits**: new copy, verbatim — but bilingual: update both `en` and
-  `ml` in the content file, flagging drafted Malayalam for review.
+  report; find the owner (component prop/class, the `messages/en.json` key or a
+  `content.ts` `Copy` object, fixture data) and change it there.
+- **`[text]` edits**: new copy, verbatim. Change the English key in
+  `apps/dristi-app/messages/en.json` (see `docs/localization.md`); where the text still
+  lives in a `content.ts` `Copy` object, update both `en` and `ml` there, flagging
+  drafted Malayalam for review.
 - **`[delete]`**: the element did not earn its place — remove it from the
   composition (not `display:none`), and take dependent logic/copy with it.
 - **`[duplicate]`**: the owner wants another of these in the stack — usually a

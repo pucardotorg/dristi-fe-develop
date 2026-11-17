@@ -35,12 +35,7 @@ import { caseSearchKey } from "@/lib/court/localize";
  * returns nothing.
  */
 export type CaseStage =
-  | "cognizance"
-  | "appearance"
-  | "plea"
-  | "evidence"
-  | "arguments"
-  | "judgement";
+  "cognizance" | "appearance" | "plea" | "evidence" | "arguments" | "judgement";
 
 export const CASE_STAGES: { id: CaseStage; label: string }[] = [
   { id: "cognizance", label: "Cognizance" },

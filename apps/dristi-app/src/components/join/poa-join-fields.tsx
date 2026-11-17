@@ -19,18 +19,14 @@ import {
 } from "@/components/ui/combobox";
 import { Badge } from "@/components/ui/badge";
 import { DocumentSlot } from "@/components/ui/document-slot";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { pick, type Locale } from "@/lib/onboarding/content";
 import { fill, joinDialog, type CaseParty, type JoinCase } from "@/lib/join/content";
+import { useTranslations } from "next-intl";
 
 /**
  * The PoA holder's part of the join dialog (handover §9b):
@@ -45,7 +41,11 @@ import { fill, joinDialog, type CaseParty, type JoinCase } from "@/lib/join/cont
 export type PoaSide = "complainant" | "accused" | "";
 
 export function poaPartiesFor(joinCase: JoinCase, side: PoaSide): CaseParty[] {
-  return side === "complainant" ? joinCase.complainants : side === "accused" ? joinCase.accused : [];
+  return side === "complainant"
+    ? joinCase.complainants
+    : side === "accused"
+      ? joinCase.accused
+      : [];
 }
 
 /** A number on record, shown with only its last three digits. */
@@ -77,6 +77,7 @@ function PartyDocument({
   invalid: boolean;
   locale: Locale;
 }) {
+  const t = useTranslations();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [sampleNotice, setSampleNotice] = React.useState(false);
   return (
@@ -131,8 +132,8 @@ function PartyDocument({
         onChooseFile={() => inputRef.current?.click()}
         copy={{
           optional: locale === "ml" ? "നിർബന്ധമല്ല" : "Optional",
-          noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : "No file chosen yet",
-          chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : "Choose file",
+          noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : t("poaJoinFields_noFileChosenYet"),
+          chooseFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുക്കുക" : t("poaJoinFields_chooseFile"),
         }}
       />
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
@@ -210,9 +211,7 @@ export function PoaJoinFields({
           </div>
           <div className="flex min-h-10 items-center gap-2">
             <RadioGroupItem value="accused" id="join-poa-side-accused" />
-            <Label htmlFor="join-poa-side-accused">
-              {pick(joinDialog.poaSideAccused, locale)}
-            </Label>
+            <Label htmlFor="join-poa-side-accused">{pick(joinDialog.poaSideAccused, locale)}</Label>
           </div>
         </RadioGroup>
         <FieldError>{touched && !side ? pick(joinDialog.poaSideError, locale) : null}</FieldError>
@@ -241,7 +240,9 @@ export function PoaJoinFields({
                       <ComboboxChip key={name}>{name}</ComboboxChip>
                     ))}
                     <ComboboxChipsInput
-                      placeholder={value.length ? undefined : pick(joinDialog.whichPoaPlaceholder, locale)}
+                      placeholder={
+                        value.length ? undefined : pick(joinDialog.whichPoaPlaceholder, locale)
+                      }
                     />
                   </>
                 )}
@@ -272,7 +273,6 @@ export function PoaJoinFields({
           {fill(joinDialog.poaAlreadyTaken, locale, { name: party.name })}
         </Banner>
       ))}
-
 
       {/* One well per party: its own authorization document (JOIN-32) and, if the
           party is not on the case yet, its own mobile number (JOIN-34). */}

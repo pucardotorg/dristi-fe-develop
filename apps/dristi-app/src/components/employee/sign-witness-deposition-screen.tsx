@@ -10,10 +10,7 @@ import { SignBulkConfirmDialog } from "@/components/employee/sign-bulk-confirm-d
 import { SignWitnessDepositionDialog } from "@/components/employee/sign-witness-deposition-dialog";
 import { SignWitnessDepositionTable } from "@/components/employee/sign-witness-deposition-table";
 import { QueueItemRow } from "@/components/employee/queue-item-row";
-import {
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -24,12 +21,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  causeTitle,
-  counselFor,
-  PAGE_SIZE,
-  type HearingsPageSize,
-} from "@/lib/employee/hearings";
+import { causeTitle, counselFor, PAGE_SIZE, type HearingsPageSize } from "@/lib/employee/hearings";
 import {
   EMPTY_WITNESS_DEPOSITION_FILTERS,
   WITNESS_DEPOSITION_QUEUE,
@@ -61,6 +53,7 @@ import {
   type ColumnFilter,
 } from "@/lib/employee/court-column-filters";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 const DEPOSITION_COLUMN_FILTERS: ColumnFilter<WitnessDeposition>[] = [
   {
@@ -118,6 +111,7 @@ function plural(count: number, one: string, many: string): string {
  * from the demo queue and nothing else — see `lib/employee/sign-witness-deposition.ts`.
  */
 export function SignWitnessDepositionScreen() {
+  const t = useTranslations();
   /* One state, not a draft and an applied one: the list answers the controls as they
      are used, so there is never a moment where what the bench has asked for and what
      the table is showing disagree. Every change resets to page one — the old Search
@@ -128,12 +122,8 @@ export function SignWitnessDepositionScreen() {
   );
   const [pageSize, setPageSize] = React.useState<HearingsPageSize>(PAGE_SIZE);
   const [page, setPage] = React.useState(1);
-  const [signedIds, setSignedIds] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
-  const [picked, setPicked] = React.useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [signedIds, setSignedIds] = React.useState<ReadonlySet<string>>(() => new Set());
+  const [picked, setPicked] = React.useState<ReadonlySet<string>>(() => new Set());
   const [open, setOpen] = React.useState<WitnessDeposition | null>(null);
   const [bulkOpen, setBulkOpen] = React.useState(false);
   const [notice, setNotice] = React.useState("");
@@ -141,16 +131,16 @@ export function SignWitnessDepositionScreen() {
   /* The bulk confirmation hands focus back here on the way out — see its `triggerRef`. */
   const signRef = React.useRef<HTMLButtonElement>(null);
 
-  const remaining = WITNESS_DEPOSITION_QUEUE.filter(
-    (deposition) => !signedIds.has(deposition.id),
-  );
-  const [columns, setColumns] = React.useState(() =>
-    emptyColumnFilters(DEPOSITION_COLUMN_FILTERS),
-  );
+  const remaining = WITNESS_DEPOSITION_QUEUE.filter((deposition) => !signedIds.has(deposition.id));
+  const [columns, setColumns] = React.useState(() => emptyColumnFilters(DEPOSITION_COLUMN_FILTERS));
   const [sort, setSort] = React.useState<DepositionSort>("oldest");
 
   const rows = sortRows(
-    applyColumnFilters(filterWitnessDepositions(remaining, filters), DEPOSITION_COLUMN_FILTERS, columns),
+    applyColumnFilters(
+      filterWitnessDepositions(remaining, filters),
+      DEPOSITION_COLUMN_FILTERS,
+      columns,
+    ),
     DEPOSITION_SORTS,
     sort,
   );
@@ -173,9 +163,7 @@ export function SignWitnessDepositionScreen() {
   const visibleIds = new Set(rows.map((deposition) => deposition.id));
   const selectedIds = new Set([...picked].filter((id) => visibleIds.has(id)));
   /* In list order, so the confirmation's summary reads the way the table does. */
-  const selectedDepositions = rows.filter((deposition) =>
-    selectedIds.has(deposition.id),
-  );
+  const selectedDepositions = rows.filter((deposition) => selectedIds.has(deposition.id));
 
   function changeFilters(next: WitnessDepositionFilters) {
     setFilters(next);
@@ -240,15 +228,17 @@ export function SignWitnessDepositionScreen() {
     <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-title text-balance font-semibold">
-          Sign witness deposition
+          {t("signWitnessDepositionScreen_signWitnessDeposition")}
         </h1>
         {/* The count is the whole point of the queue, so the supporting line carries it
             rather than restating the title. Singular is spelled out because
             "1 depositions" is the kind of thing a court notices. */}
         <p className="text-body text-muted-foreground">
           {remaining.length === 1
-            ? "1 deposition is waiting for your signature."
-            : `${remaining.length} depositions are waiting for your signature.`}
+            ? t("signWitnessDepositionScreen_1DepositionIsWaitingForYour")
+            : t("signWitnessDepositionScreen_lengthDepositionsAreWaitingForYour", {
+                length: String(remaining.length),
+              })}
         </p>
       </header>
 
@@ -279,11 +269,7 @@ export function SignWitnessDepositionScreen() {
         />
 
         {/* Mounted whatever the list is doing, including empty — see `QueueAnnouncer`. */}
-        <QueueAnnouncer
-          from={start + 1}
-          to={start + pageRows.length}
-          total={rows.length}
-        />
+        <QueueAnnouncer from={start + 1} to={start + pageRows.length} total={rows.length} />
 
         {pageRows.length === 0 ? (
           <DepositionsEmpty isFiltered={isFiltered} onClear={clearFilters} />
@@ -391,13 +377,14 @@ function DepositionFiltersForm({
   /** The list's sort control (`CourtSortSelect`). */
   trailing: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <CourtFilters
       search={{
-        label: "Search cases",
+        label: t("signWitnessDepositionScreen_searchCases"),
         value: filters.query,
         onChange: (query) => onChange({ ...filters, query }),
-        placeholder: "Case name, number or witness",
+        placeholder: t("signWitnessDepositionScreen_caseNameNumberOrWitness"),
       }}
       searchRef={searchRef}
       fields={fields}
@@ -436,10 +423,11 @@ function SignBar({
   /** Handed down so the confirmation can give the keyboard back to this button. */
   signRef: React.Ref<HTMLButtonElement>;
 }) {
+  const t = useTranslations();
   const summary =
     notice ||
     (count === 0
-      ? "Select the depositions to sign."
+      ? t("signWitnessDepositionScreen_selectTheDepositionsToSign")
       : `${count} ${plural(count, "deposition", "depositions")} selected.`);
 
   return (
@@ -454,7 +442,7 @@ function SignBar({
 
         {count > 0 ? (
           <Button type="button" variant="ghost" onClick={onClearSelection}>
-            Clear selection
+            {t("signWitnessDepositionScreen_clearSelection")}
           </Button>
         ) : null}
 
@@ -467,7 +455,7 @@ function SignBar({
         >
           {count > 0
             ? `Sign ${count} ${plural(count, "deposition", "depositions")}`
-            : "Sign selected depositions"}
+            : t("signWitnessDepositionScreen_signSelectedDepositions")}
         </Button>
       </div>
     </div>
@@ -482,38 +470,29 @@ function SignBar({
  * date — the same good-empty the sibling queues use. Borderless and unpadded; the panel
  * is already the frame.
  */
-function DepositionsEmpty({
-  isFiltered,
-  onClear,
-}: {
-  isFiltered: boolean;
-  onClear: () => void;
-}) {
+function DepositionsEmpty({ isFiltered, onClear }: { isFiltered: boolean; onClear: () => void }) {
+  const t = useTranslations();
   return (
     <Empty className="border-0 p-0">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {isFiltered ? (
-            <SearchXIcon aria-hidden />
-          ) : (
-            <UserCheckIcon aria-hidden />
-          )}
+          {isFiltered ? <SearchXIcon aria-hidden /> : <UserCheckIcon aria-hidden />}
         </EmptyMedia>
         <EmptyTitle className="text-title-s font-semibold">
           {isFiltered
-            ? "No depositions match this search"
-            : "Nothing left to sign"}
+            ? t("signWitnessDepositionScreen_noDepositionsMatchThisSearch")
+            : t("signWitnessDepositionScreen_nothingLeftToSign")}
         </EmptyTitle>
         <EmptyDescription className="text-body">
           {isFiltered
-            ? "No deposition waiting for signature matches the case, number or witness you asked for."
-            : "Every deposition recorded by this court has been signed."}
+            ? t("signWitnessDepositionScreen_noDepositionWaitingForSignatureMatches")
+            : t("signWitnessDepositionScreen_everyDepositionRecordedByThisCourt")}
         </EmptyDescription>
       </EmptyHeader>
       {isFiltered ? (
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear search
+            {t("signWitnessDepositionScreen_clearSearch")}
           </Button>
         </EmptyContent>
       ) : null}
@@ -540,16 +519,14 @@ function DepositionItemList({
   onToggle: (deposition: WitnessDeposition) => void;
   onOpen: (deposition: WitnessDeposition) => void;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((deposition) => {
         const tag = witnessTag(deposition);
         return (
-          <QueueItemRow
-            key={deposition.id}
-            className="flex gap-3"
-          >
+          <QueueItemRow key={deposition.id} className="flex gap-3">
             {/* The DS box expands its own hit area to 40×40; the name it carries is the
                 sheet and its case, not the column, because a row read aloud has no
                 column header. */}
@@ -557,7 +534,11 @@ function DepositionItemList({
               <Checkbox
                 checked={selectedIds.has(deposition.id)}
                 onCheckedChange={() => onToggle(deposition)}
-                aria-label={`Select the deposition of ${deposition.witness.name}, ${tag}, in ${courtText(deposition.caseNumber)}`}
+                aria-label={t("signWitnessDepositionScreen_selectTheDepositionOfNameTag", {
+                  name: deposition.witness.name,
+                  tag,
+                  courtText: courtText(deposition.caseNumber),
+                })}
               />
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -567,7 +548,7 @@ function DepositionItemList({
                 {...rowOpener}
                 className={rowOpenerClass}
               >
-                <span className="sr-only">Read and sign </span>
+                <span className="sr-only">{t("signWitnessDepositionScreen_readAndSign")} </span>
                 {causeTitle(deposition)}
               </button>
               <p className="min-w-0 text-body-compact">
@@ -579,19 +560,18 @@ function DepositionItemList({
                 <span className="sr-only">{`, ${tag}, ${witnessRoleLabel(deposition)}`}</span>
               </p>
               <p className="text-caption text-muted-foreground">
-                <Identifier value={deposition.caseNumber} label="case number" />
-                {" · Recorded "}
-                <span className="tabular-nums">
-                  {formatDepositionDate(deposition.depositionOn)}
-                </span>
+                <Identifier
+                  value={deposition.caseNumber}
+                  label={t("signWitnessDepositionScreen_caseNumber")}
+                />
+                {t.rich("signWitnessDepositionScreen_recordedFormatDepositionDate", {
+                  formatDepositionDate: formatDepositionDate(deposition.depositionOn),
+                  span: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                })}
               </p>
               <CounselCell
-                complainant={counselFor(deposition, "complainant").map(
-                  (counsel) => counsel.name,
-                )}
-                accused={counselFor(deposition, "accused").map(
-                  (counsel) => counsel.name,
-                )}
+                complainant={counselFor(deposition, "complainant").map((counsel) => counsel.name)}
+                accused={counselFor(deposition, "accused").map((counsel) => counsel.name)}
               />
             </div>
           </QueueItemRow>

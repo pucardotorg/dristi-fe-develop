@@ -17,11 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { causeTitle } from "@/lib/employee/hearings";
-import {
-  rowActivation,
-  rowOpener,
-  rowOpenerClass,
-} from "@/lib/employee/row-activation";
+import { rowActivation, rowOpener, rowOpenerClass } from "@/lib/employee/row-activation";
 import {
   formatSignOrderDate,
   signOrderTypeLabel,
@@ -30,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 import { useCourtText } from "@/components/court/court-provider";
+import { useTranslations } from "next-intl";
 
 /**
  * The signing queue for orders as a table: which orders are picked for signature, the
@@ -87,14 +84,13 @@ export function SignOrdersTable({
    */
   signed?: boolean;
 }) {
+  const t = useTranslations();
   const courtText = useCourtText();
   /* Only a pending order can be signed, so only a pending order can be selected — the
      header box speaks for those rows alone, and a page of already-signed orders has
      nothing for it to do. */
   const signable = rows.filter((order) => order.status === "pending-signature");
-  const selectedOnPage = signable.filter((order) =>
-    selectedIds.has(order.id),
-  ).length;
+  const selectedOnPage = signable.filter((order) => selectedIds.has(order.id)).length;
   const allSelected = signable.length > 0 && selectedOnPage === signable.length;
   const someSelected = selectedOnPage > 0 && !allSelected;
 
@@ -105,9 +101,7 @@ export function SignOrdersTable({
           {signed ? null : (
             <TableHead className={cn(TABLE_HEAD, "w-12")}>
               <Checkbox
-                checked={
-                  allSelected ? true : someSelected ? "indeterminate" : false
-                }
+                checked={allSelected ? true : someSelected ? "indeterminate" : false}
                 disabled={signable.length === 0}
                 onCheckedChange={(next) => onToggleAll(next === true)}
                 /* Names what the control does to what is on screen, not to the whole
@@ -116,23 +110,23 @@ export function SignOrdersTable({
                  the list is paged. */
                 aria-label={
                   allSelected
-                    ? "Clear the orders on this page"
-                    : "Select the orders on this page"
+                    ? t("signOrdersTable_clearTheOrdersOnThisPage")
+                    : t("signOrdersTable_selectTheOrdersOnThisPage")
                 }
               />
             </TableHead>
           )}
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
-            Case name
+            {t("signOrdersTable_caseName")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            Case number
+            {t("signOrdersTable_caseNumber")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "min-w-56 whitespace-normal")}>
-            Title
+            {t("signOrdersTable_title")}
           </TableHead>
           <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-            {signed ? "Date signed" : "Date added"}
+            {signed ? t("signOrdersTable_dateSigned") : t("signOrdersTable_dateAdded")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -162,7 +156,10 @@ export function SignOrdersTable({
                     <Checkbox
                       checked={selected}
                       onCheckedChange={() => onToggle(order)}
-                      aria-label={`Select ${title} in ${courtText(order.caseNumber)}`}
+                      aria-label={t("signOrdersTable_selectTitleInCourtText", {
+                        title,
+                        courtText: courtText(order.caseNumber),
+                      })}
                     />
                   ) : null}
                 </TableCell>
@@ -173,12 +170,7 @@ export function SignOrdersTable({
                   colour ui-craft §4 spends it on instead. The underline now arrives on
                   the *row's* hover, wherever the pointer sits, and on this control's
                   own focus — see `rowOpenerClass`. */}
-              <TableCell
-                className={cn(
-                  TABLE_CELL,
-                  "min-w-56 font-medium whitespace-normal",
-                )}
-              >
+              <TableCell className={cn(TABLE_CELL, "min-w-56 font-medium whitespace-normal")}>
                 <button
                   type="button"
                   onClick={() => onOpen(order)}
@@ -193,22 +185,16 @@ export function SignOrdersTable({
                 </button>
               </TableCell>
               <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
-                <Identifier value={order.caseNumber} label="case number" />
+                <Identifier value={order.caseNumber} label={t("signOrdersTable_caseNumberLabel")} />
               </TableCell>
               {/* Which decision this is — the fact that tells four rows of one case
                   apart. Plain text, like process type on Sign forms: the opener already
                   carries the row's weight. */}
-              <TableCell
-                className={cn(TABLE_CELL, "min-w-56 whitespace-normal")}
-              >
+              <TableCell className={cn(TABLE_CELL, "min-w-56 whitespace-normal")}>
                 {title}
               </TableCell>
-              <TableCell
-                className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}
-              >
-                {formatSignOrderDate(
-                  signed ? (order.signedOn ?? order.addedOn) : order.addedOn,
-                )}
+              <TableCell className={cn(TABLE_CELL, "tabular-nums whitespace-nowrap")}>
+                {formatSignOrderDate(signed ? (order.signedOn ?? order.addedOn) : order.addedOn)}
               </TableCell>
             </TableRow>
           );

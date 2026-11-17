@@ -22,14 +22,25 @@ describe("new-data", () => {
   it("names the classes after the feature", () => {
     assert.equal(pascalCase("hearing-reminders"), "HearingReminders");
     const files = renderDataFiles("hearing-reminders");
-    assert.deepEqual(Object.keys(files).sort(), ["http.ts", "index.ts", "indexeddb.ts", "repository.ts"]);
+    assert.deepEqual(Object.keys(files).sort(), [
+      "http.ts",
+      "index.ts",
+      "indexeddb.ts",
+      "repository.ts",
+    ]);
     assert.match(files["repository.ts"], /export interface HearingRemindersRepository \{/);
-    assert.match(files["http.ts"], /class HttpHearingRemindersRepository implements Partial<HearingRemindersRepository> \{\}/);
+    assert.match(
+      files["http.ts"],
+      /class HttpHearingRemindersRepository implements Partial<HearingRemindersRepository> \{\}/,
+    );
     assert.match(files["indexeddb.ts"], /const DB_NAME = "dristi-hearing-reminders";/);
     // A newer version left by another branch resets the demo database instead of failing.
     assert.match(files["indexeddb.ts"], /error\.name === "VersionError"/);
     assert.match(files["indexeddb.ts"], /await deleteDB\(DB_NAME\)/);
-    assert.match(files["index.ts"], /repositoryFor<HearingRemindersRepository>\("hearing-reminders"/);
+    assert.match(
+      files["index.ts"],
+      /repositoryFor<HearingRemindersRepository>\("hearing-reminders"/,
+    );
     assert.match(files["index.ts"], /satisfies OnlyContract</);
   });
 
@@ -72,8 +83,14 @@ describe("new-data", () => {
       const feature = join(root, LIB_DIR, "vakalatnama");
       mkdirSync(feature, { recursive: true });
       writeFileSync(join(feature, "data.ts"), "export const REGISTRIES = [];");
-      assert.equal(collidingDataModule(root, "vakalatnama"), join(LIB_DIR, "vakalatnama", "data.ts"));
-      assert.throws(() => writeDataFiles(root, "vakalatnama"), /data\.ts would hide the new data\/ folder/);
+      assert.equal(
+        collidingDataModule(root, "vakalatnama"),
+        join(LIB_DIR, "vakalatnama", "data.ts"),
+      );
+      assert.throws(
+        () => writeDataFiles(root, "vakalatnama"),
+        /data\.ts would hide the new data\/ folder/,
+      );
       assert.equal(existsSync(join(feature, "data")), false);
       assert.equal(collidingDataModule(root, "tasks"), undefined);
     } finally {
@@ -85,7 +102,10 @@ describe("new-data", () => {
     const files = renderDataFiles("vakalatnama", { record: "Vakalatnama" });
     assert.match(files["repository.ts"], /import type \{ Vakalatnama \} from "\.\.\/types";/);
     assert.match(files["repository.ts"], /listVakalatnamas\(\): Promise<Vakalatnama\[\]>;/);
-    assert.match(files["repository.ts"], /putVakalatnama\(record: Vakalatnama\): Promise<Vakalatnama>;/);
+    assert.match(
+      files["repository.ts"],
+      /putVakalatnama\(record: Vakalatnama\): Promise<Vakalatnama>;/,
+    );
     assert.match(files["repository.ts"], /deleteVakalatnama\(id: string\): Promise<void>;/);
     assert.match(files["indexeddb.ts"], /"vakalatnamas": \{ key: string; value: Vakalatnama \};/);
     assert.match(files["indexeddb.ts"], /openDB<Schema>\(DB_NAME/);
@@ -122,11 +142,20 @@ describe("new-data", () => {
   });
 
   it("--move refuses a feature that isn't on the base, already moved, or has an old data.ts", () => {
-    const on = (...paths) => (path) => paths.includes(path);
+    const on =
+      (...paths) =>
+      (path) =>
+        paths.includes(path);
     const vak = `${LIB_DIR}/vakalatnama`;
     assert.match(moveProblem("vakalatnama", on()), /nothing to move/);
-    assert.match(moveProblem("vakalatnama", on(vak, `${vak}/data/repository.ts`)), /already has a data layer/);
-    assert.match(moveProblem("vakalatnama", on(vak, `${vak}/data.ts`)), /would hide the new data\/ folder/);
+    assert.match(
+      moveProblem("vakalatnama", on(vak, `${vak}/data/repository.ts`)),
+      /already has a data layer/,
+    );
+    assert.match(
+      moveProblem("vakalatnama", on(vak, `${vak}/data.ts`)),
+      /would hide the new data\/ folder/,
+    );
     assert.equal(moveProblem("vakalatnama", on(vak)), null);
   });
 
@@ -150,12 +179,16 @@ describe("new-data", () => {
 
   it("links the move's PR with the data-move template", () => {
     assert.equal(
-      compareUrl("https://github.com/pucardotorg/dristi-fe-develop.git\n", "origin/main", "chore/move-vak-data"),
-      "https://github.com/pucardotorg/dristi-fe-develop/compare/main...chore/move-vak-data?expand=1&template=data-move.md"
+      compareUrl(
+        "https://github.com/pucardotorg/dristi-fe-develop.git\n",
+        "origin/main",
+        "chore/move-vak-data",
+      ),
+      "https://github.com/pucardotorg/dristi-fe-develop/compare/main...chore/move-vak-data?expand=1&template=data-move.md",
     );
     assert.equal(
       compareUrl("git@github.com:pucardotorg/dristi-fe-develop.git", "origin/main", "b"),
-      "https://github.com/pucardotorg/dristi-fe-develop/compare/main...b?expand=1&template=data-move.md"
+      "https://github.com/pucardotorg/dristi-fe-develop/compare/main...b?expand=1&template=data-move.md",
     );
     assert.equal(compareUrl("https://gitlab.com/x/y.git", "origin/main", "b"), null);
   });

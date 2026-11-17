@@ -8,12 +8,7 @@
  */
 
 import * as React from "react";
-import {
-  CheckIcon,
-  ChevronRightIcon,
-  ShieldCheckIcon,
-  SignatureIcon,
-} from "lucide-react";
+import { CheckIcon, ChevronRightIcon, ShieldCheckIcon, SignatureIcon } from "lucide-react";
 
 import type { Signatory } from "@/lib/filing/types";
 import { OutcomeHeader, OutcomeSummary } from "@/components/feedback";
@@ -23,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Spinner } from "@/components/ui/spinner";
 import { Stepper, StepperItem } from "@/components/ui/stepper";
+import { useTranslations } from "next-intl";
 
 /**
  * A stage's column: reading width, at the top of the canvas.
@@ -35,9 +31,7 @@ import { Stepper, StepperItem } from "@/components/ui/stepper";
  * (2026-09-24). Each stage takes its own height now, with the same 24px around it.
  */
 export function StageColumn({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-4">{children}</div>
-  );
+  return <div className="mx-auto flex w-full max-w-xl flex-col gap-4">{children}</div>;
 }
 
 /**
@@ -70,6 +64,7 @@ export function SettledCard({
   /** The flow opened on this outcome (a settled filing reopened): nothing plays. */
   still?: boolean;
 }) {
+  const t = useTranslations();
   /* A label that only repeats the title says nothing ("Signed copy accepted" twice). */
   const label = headline === title ? undefined : headline;
   return (
@@ -101,21 +96,23 @@ export function SettledCard({
                   <p className="text-body-compact font-semibold text-foreground">
                     {s.name}
                     {s.you ? (
-                      <span className="ps-2 font-medium text-muted-foreground">You</span>
+                      <span className="ps-2 font-medium text-muted-foreground">
+                        {t("signStages_you")}
+                      </span>
                     ) : null}
                   </p>
                   <p className="text-body-compact text-muted-foreground">{s.role}</p>
                 </div>
                 {s.status === "signed" && s.oathTaken === false ? (
-                  <Badge variant="secondary">Oath pending</Badge>
+                  <Badge variant="secondary">{t("signStages_oathPending")}</Badge>
                 ) : s.status === "signed" ? (
                   <Badge variant="success">
                     <CheckIcon aria-hidden />
-                    {s.oathTaken ? "Signed and sworn" : "Signed"}
+                    {s.oathTaken ? t("signStages_signedAndSworn") : t("signStages_signed")}
                   </Badge>
                 ) : (
                   /* Says what is waiting, not just that something is (owner, 2026-10-13). */
-                  <Badge variant="secondary">Signature pending</Badge>
+                  <Badge variant="secondary">{t("signStages_signaturePending")}</Badge>
                 )}
               </li>
             ))}
@@ -157,10 +154,7 @@ export function ChoiceCard({
     >
       <span
         aria-hidden
-        className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded-lg",
-          tone
-        )}
+        className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", tone)}
       >
         {icon}
       </span>
@@ -189,27 +183,28 @@ export function InstrumentChoice({
   onAadhaar: () => void;
   onDsc: () => void;
 }) {
+  const t = useTranslations();
   const questionId = React.useId();
   return (
     <div role="group" aria-labelledby={questionId} className="flex flex-col gap-3">
       <h3 id={questionId} className="text-body font-semibold">
-        How will you e-sign?
+        {t("signStages_howWillYouESign")}
       </h3>
       <ChoiceCard
-        title="Aadhaar OTP"
+        title={t("signStages_aadhaarOtp")}
         tone="bg-info-muted text-info-muted-foreground"
         icon={<SignatureIcon className="size-5" />}
         onClick={onAadhaar}
       >
-        A six-digit code goes to the mobile number registered with your Aadhaar.
+        {t("signStages_aSixDigitCodeGoesTo")}
       </ChoiceCard>
       <ChoiceCard
-        title="My DSC"
+        title={t("signStages_myDsc")}
         tone="bg-brand-muted text-brand-muted-foreground"
         icon={<ShieldCheckIcon className="size-5" />}
         onClick={onDsc}
       >
-        The Digital Signature Certificate already set up on this computer.
+        {t("signStages_theDigitalSignatureCertificateAlreadySet")}
       </ChoiceCard>
     </div>
   );
@@ -229,6 +224,7 @@ export function OtpEntry({
   resent: boolean;
   onResend: () => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col items-center gap-3">
       <InputOTP
@@ -236,7 +232,7 @@ export function OtpEntry({
         maxLength={6}
         value={value}
         onChange={onChange}
-        aria-label="One-time password"
+        aria-label={t("signStages_oneTimePassword")}
         containerClassName="gap-2"
         autoFocus
       >
@@ -256,7 +252,7 @@ export function OtpEntry({
         className="h-auto p-0 text-body-compact"
         onClick={onResend}
       >
-        {resent ? "Sent again" : "Send it again"}
+        {resent ? t("signStages_sentAgain") : t("signStages_sendItAgain")}
       </Button>
     </div>
   );
@@ -267,6 +263,7 @@ export function OtpEntry({
  * this says it is looking rather than presenting a certificate it never went to find.
  */
 export function DscLookup({ found, holder }: { found: boolean; holder: string }) {
+  const t = useTranslations();
   return (
     /* The height is held across both states so the footer does not jump. */
     <div aria-live="polite" className="flex min-h-20 flex-col justify-center">
@@ -275,19 +272,19 @@ export function DscLookup({ found, holder }: { found: boolean; holder: string })
           <ShieldCheckIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-success-ink" />
           <div className="flex min-w-0 flex-col gap-0.5">
             <p className="truncate text-body-compact font-medium">
-              {holder || "Certificate found on this computer"}
+              {holder || t("signStages_certificateFoundOnThisComputer")}
             </p>
             <p className="text-body-compact text-muted-foreground">
               {holder
-                ? "Class 3 individual certificate, found on this computer"
-                : "Class 3 individual certificate"}
+                ? t("signStages_class3IndividualCertificateFoundOn")
+                : t("signStages_class3IndividualCertificate")}
             </p>
           </div>
         </div>
       ) : (
         <p className="flex items-center gap-3 text-body-compact text-muted-foreground">
           <Spinner className="size-4 shrink-0" aria-hidden />
-          Looking for a certificate on this computer&hellip;
+          {t("signStages_lookingForACertificateOnThis")}
         </p>
       )}
     </div>
@@ -326,8 +323,9 @@ const SPOKEN_STATE = {
  * `aria-current="step"`.
  */
 export function StepTrail({ steps }: { steps: TrailStep[] }) {
+  const t = useTranslations();
   return (
-    <Stepper aria-label="Your steps" className="pb-2">
+    <Stepper aria-label={t("signStages_yourSteps")} className="pb-2">
       {steps.map((step, i) => (
         <StepperItem
           key={step.label}

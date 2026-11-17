@@ -23,11 +23,7 @@
  * record does not hold sends nothing to them, which the screen says beside it (`PRC-05`).
  */
 
-import {
-  policeStationFor,
-  policeStationsFor,
-  type CasePerson,
-} from "./case-people";
+import { policeStationFor, policeStationsFor, type CasePerson } from "./case-people";
 import type { OrderTemplateId } from "./order-templates";
 
 /* The stations a court's dropdowns offer — Panchkula for Punjab and Haryana only. */
@@ -35,14 +31,7 @@ export { policeStationsFor };
 export type { CasePerson };
 
 export type ProcessChannel =
-  | "sms"
-  | "email"
-  | "rpad"
-  | "epost"
-  | "police-rpad"
-  | "police-nstep"
-  | "police-icops"
-  | "by-hand";
+  "sms" | "email" | "rpad" | "epost" | "police-rpad" | "police-nstep" | "police-icops" | "by-hand";
 
 /* By hand has no destination: the CMO hands the signed document over in person, so it is
    one process per person, whatever is ticked (§6.2, `PRC-05`). */
@@ -149,16 +138,11 @@ export type ProcessRecipients = {
  * otherwise nobody, and the choice is left open. Where the case has more than one accused,
  * each is a separate order item, so the first is pre-selected here.
  */
-export function defaultPerson(
-  people: readonly CasePerson[],
-  accusedJoined: boolean,
-): string {
+export function defaultPerson(people: readonly CasePerson[], accusedJoined: boolean): string {
   if (!accusedJoined) {
     return people.find((person) => person.kind === "accused")?.id ?? "";
   }
-  const pending = people.filter(
-    (person) => person.kind === "witness" && person.examined === false,
-  );
+  const pending = people.filter((person) => person.kind === "witness" && person.examined === false);
   return pending.length === 1 ? pending[0].id : "";
 }
 
@@ -170,10 +154,7 @@ export function needsDestination(channels: readonly ProcessChannel[]): boolean {
 }
 
 /** `AUT-07` — every destination on the person's record: addresses, mobiles, emails. */
-export function destinationsOf(
-  people: readonly CasePerson[],
-  person: string,
-): string[] {
+export function destinationsOf(people: readonly CasePerson[], person: string): string[] {
   const record = people.find((entry) => entry.id === person);
   if (!record) return [];
   return [
@@ -231,8 +212,7 @@ export function processCount(
   recipients: ProcessRecipients,
 ): number {
   if (!person) return 0;
-  const picked = (ids: string[]) =>
-    ids.filter((id) => recipients.destinations.includes(id)).length;
+  const picked = (ids: string[]) => ids.filter((id) => recipients.destinations.includes(id)).length;
   const counts: Record<Destination, number> = {
     none: 1,
     address: picked(person.addresses.map((entry) => entry.id)),
@@ -311,10 +291,7 @@ export function recipientGaps(
 ): string[] {
   const gaps: string[] = [];
   if (!recipients.person) gaps.push("Addressed to");
-  else if (
-    recipients.destinations.length === 0 &&
-    needsDestination(recipients.channels)
-  ) {
+  else if (recipients.destinations.length === 0 && needsDestination(recipients.channels)) {
     gaps.push("Addresses");
   }
   if (recipients.channels.length === 0) gaps.push("Channels");
@@ -336,8 +313,8 @@ export function joinNames(names: readonly string[]): string {
 
 /** The channels chosen, in the catalogue's order, as one line. */
 export function channelSummary(channels: readonly ProcessChannel[]): string {
-  const chosen = PROCESS_CHANNELS.filter((channel) =>
-    channels.includes(channel.id),
-  ).map((channel) => channel.label);
+  const chosen = PROCESS_CHANNELS.filter((channel) => channels.includes(channel.id)).map(
+    (channel) => channel.label,
+  );
   return chosen.length > 0 ? chosen.join(", ") : "No channel selected";
 }

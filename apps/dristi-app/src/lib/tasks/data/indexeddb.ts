@@ -62,7 +62,7 @@ function db(): Promise<Db> {
 async function putAll<S extends "people" | "cases" | "tasks">(
   d: Db,
   store: S,
-  rows: TasksDB[S]["value"][]
+  rows: TasksDB[S]["value"][],
 ): Promise<void> {
   const tx = d.transaction(store, "readwrite");
   await Promise.all([...rows.map((row) => tx.store.put(row)), tx.done]);
@@ -77,7 +77,12 @@ async function wipeAll(d: Db): Promise<void> {
 }
 
 function currentStamp(): string {
-  return seedStamp({ version: SEED_VERSION, day: todayKey(new Date()), people: PEOPLE.length, cases: CASES.length });
+  return seedStamp({
+    version: SEED_VERSION,
+    day: todayKey(new Date()),
+    people: PEOPLE.length,
+    cases: CASES.length,
+  });
 }
 
 function stampIsCurrent(): boolean {
@@ -116,7 +121,11 @@ function prepareRead(): Promise<void> {
     });
     if (action === "wipe-and-seed") await wipeAll(d);
     if (action !== "keep") {
-      await Promise.all([putAll(d, "people", PEOPLE), putAll(d, "cases", CASES), putAll(d, "tasks", buildTasks())]);
+      await Promise.all([
+        putAll(d, "people", PEOPLE),
+        putAll(d, "cases", CASES),
+        putAll(d, "tasks", buildTasks()),
+      ]);
       rememberSeed();
     }
     firstPassDone = true;

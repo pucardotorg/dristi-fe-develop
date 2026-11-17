@@ -2,27 +2,14 @@
 
 import * as React from "react";
 import NextImage from "next/image";
-import {
-  FileTextIcon,
-  Maximize2Icon,
-} from "lucide-react";
+import { FileTextIcon, Maximize2Icon } from "lucide-react";
 
 import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DocumentSlot } from "@/components/ui/document-slot";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -33,6 +20,7 @@ import {
 import { pick, type Locale } from "@/lib/onboarding/content";
 import { idUpload } from "@/lib/join/content";
 import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
+import { useTranslations } from "next-intl";
 
 /**
  * Add-your-ID is a profile task, not part of registration. The local clarity check
@@ -44,7 +32,6 @@ type IdType = keyof typeof idUpload.idTypes;
 export type SubmittedId = { idType: IdType; file: File };
 type UploadStatus = "empty" | "processing" | "filled";
 type ScanQuality = "good" | "poor" | null;
-
 
 function fileSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -60,6 +47,7 @@ export function AddIdForm({
   onSubmitted: (submission: SubmittedId) => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations();
   const [idType, setIdType] = React.useState<IdType | "">("");
   const [file, setFile] = React.useState<File | null>(null);
   const [status, setStatus] = React.useState<UploadStatus>("empty");
@@ -127,137 +115,134 @@ export function AddIdForm({
 
   return (
     <>
-      <form
-        lang={locale}
-        noValidate
-        className="flex flex-col gap-4"
-        onSubmit={submit}
-      >
-              <Field data-invalid={touched && !idType}>
-                <FieldLabel className="text-foreground">
-                  {pick(idUpload.typeLabel, locale)}
-                </FieldLabel>
-                <Select
-                  value={idType}
-                  onValueChange={(value) => {
-                    setIdType(value as IdType);
-                    setTouched(false);
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={pick(idUpload.typePlaceholder, locale)} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(idUpload.idTypes) as IdType[]).map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {pick(idUpload.idTypes[value], locale)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
+      <form lang={locale} noValidate className="flex flex-col gap-4" onSubmit={submit}>
+        <Field data-invalid={touched && !idType}>
+          <FieldLabel className="text-foreground">{pick(idUpload.typeLabel, locale)}</FieldLabel>
+          <Select
+            value={idType}
+            onValueChange={(value) => {
+              setIdType(value as IdType);
+              setTouched(false);
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={pick(idUpload.typePlaceholder, locale)} />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(idUpload.idTypes) as IdType[]).map((value) => (
+                <SelectItem key={value} value={value}>
+                  {pick(idUpload.idTypes[value], locale)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
 
-              <Field
-                data-invalid={
-                  fileError || (touched && (!file || quality !== "good"))
-                }
-              >
-                <FieldLabel className="text-foreground">
-                  {pick(idUpload.uploadLabel, locale)}
-                </FieldLabel>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  tabIndex={-1}
-                  aria-hidden="true"
-                  disabled={!idType}
-                  accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                  onChange={(event) => chooseFile(event.target.files?.[0])}
-                />
-                <DocumentSlot
-                  disabled={!idType}
-                  status={
-                    status === "processing"
-                      ? "processing"
-                      : status === "filled" && quality === "poor"
-                        ? "filled-poor"
-                        : status === "filled"
-                          ? "filled"
-                          : "empty"
+        <Field data-invalid={fileError || (touched && (!file || quality !== "good"))}>
+          <FieldLabel className="text-foreground">{pick(idUpload.uploadLabel, locale)}</FieldLabel>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            tabIndex={-1}
+            aria-hidden="true"
+            disabled={!idType}
+            accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+            onChange={(event) => chooseFile(event.target.files?.[0])}
+          />
+          <DocumentSlot
+            disabled={!idType}
+            status={
+              status === "processing"
+                ? "processing"
+                : status === "filled" && quality === "poor"
+                  ? "filled-poor"
+                  : status === "filled"
+                    ? "filled"
+                    : "empty"
+            }
+            media={previewUrl ? "thumbnail" : "icon"}
+            label={pick(idUpload.uploadLabel, locale)}
+            required
+            filename={file?.name}
+            meta={
+              status === "processing"
+                ? pick(idUpload.processing, locale)
+                : file
+                  ? fileSize(file.size)
+                  : undefined
+            }
+            quality={status === "filled" ? (quality ?? undefined) : undefined}
+            thumbnail={
+              previewUrl ? (
+                <button
+                  type="button"
+                  className="group relative flex size-full items-center justify-center bg-cover bg-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  style={
+                    file?.type.startsWith("image/")
+                      ? { backgroundImage: `url(${JSON.stringify(previewUrl)})` }
+                      : undefined
                   }
-                  media={previewUrl ? "thumbnail" : "icon"}
-                  label={pick(idUpload.uploadLabel, locale)}
-                  required
-                  filename={file?.name}
-                  meta={
-                    status === "processing"
-                      ? pick(idUpload.processing, locale)
-                      : file
-                        ? fileSize(file.size)
-                        : undefined
-                  }
-                  quality={status === "filled" ? (quality ?? undefined) : undefined}
-                  thumbnail={
-                    previewUrl ? (
-                      <button
-                        type="button"
-                        className="group relative flex size-full items-center justify-center bg-cover bg-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        style={file?.type.startsWith("image/") ? { backgroundImage: `url(${JSON.stringify(previewUrl)})` } : undefined}
-                        aria-label={pick(idUpload.expandPreview, locale)}
-                        onClick={() => setPreviewOpen(true)}
-                      >
-                        {file?.type === "application/pdf" ? <FileTextIcon className="size-5 text-muted-foreground" aria-hidden /> : null}
-                        <span className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/15" />
-                        <Maximize2Icon className="absolute inset-0 m-auto size-4 text-background opacity-0 drop-shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden />
-                      </button>
-                    ) : (
-                      <FileTextIcon className="size-5" aria-hidden />
-                    )
-                  }
-                  onChooseFile={idType ? () => fileInputRef.current?.click() : undefined}
-                  copy={{
-                    optional: locale === "ml" ? "നിർബന്ധമല്ല" : "Optional",
-                    noFile:
-                      locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : "No file chosen yet",
-                    goodScan: pick(idUpload.goodScan, locale),
-                    poorScan: pick(idUpload.poorScan, locale),
-                    chooseFile: pick(idUpload.choose, locale),
-                  }}
-                />
-                <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-                  {touched && (!idType || !file) ? null : (
-                    <FieldDescription className="min-w-0 flex-1">
-                      {!idType
-                        ? pick(idUpload.chooseTypeFirst, locale)
-                        : quality === "poor"
-                          ? pick(idUpload.poorScanHelp, locale)
-                          : pick(idUpload.fileHelp, locale)}
-                    </FieldDescription>
-                  )}
-                  {file ? (
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="h-auto shrink-0 p-0"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {pick(idUpload.change, locale)}
-                    </Button>
+                  aria-label={pick(idUpload.expandPreview, locale)}
+                  onClick={() => setPreviewOpen(true)}
+                >
+                  {file?.type === "application/pdf" ? (
+                    <FileTextIcon className="size-5 text-muted-foreground" aria-hidden />
                   ) : null}
-                </div>
-                <FieldError>
-                  {fileError
-                    ? pick(idUpload.badFile, locale)
-                    : touched && (!idType || !file)
-                      ? pick(idUpload.missing, locale)
-                      : touched && quality === "poor"
-                        ? pick(idUpload.poorScanHelp, locale)
-                        : null}
-                </FieldError>
-              </Field>
+                  <span className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/15" />
+                  <Maximize2Icon
+                    className="absolute inset-0 m-auto size-4 text-background opacity-0 drop-shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                    aria-hidden
+                  />
+                </button>
+              ) : (
+                <FileTextIcon className="size-5" aria-hidden />
+              )
+            }
+            onChooseFile={idType ? () => fileInputRef.current?.click() : undefined}
+            copy={{
+              optional: locale === "ml" ? "നിർബന്ധമല്ല" : "Optional",
+              noFile: locale === "ml" ? "ഫയൽ തിരഞ്ഞെടുത്തിട്ടില്ല" : t("addIdDialog_noFileChosenYet"),
+              goodScan: pick(idUpload.goodScan, locale),
+              poorScan: pick(idUpload.poorScan, locale),
+              chooseFile: pick(idUpload.choose, locale),
+            }}
+          />
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+            {touched && (!idType || !file) ? null : (
+              <FieldDescription className="min-w-0 flex-1">
+                {!idType
+                  ? pick(idUpload.chooseTypeFirst, locale)
+                  : quality === "poor"
+                    ? pick(idUpload.poorScanHelp, locale)
+                    : pick(idUpload.fileHelp, locale)}
+              </FieldDescription>
+            )}
+            {file ? (
+              <Button
+                type="button"
+                variant="link"
+                className="h-auto shrink-0 p-0"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {pick(idUpload.change, locale)}
+              </Button>
+            ) : null}
+          </div>
+          <FieldError>
+            {fileError
+              ? pick(idUpload.badFile, locale)
+              : touched && (!idType || !file)
+                ? pick(idUpload.missing, locale)
+                : touched && quality === "poor"
+                  ? pick(idUpload.poorScanHelp, locale)
+                  : null}
+          </FieldError>
+        </Field>
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            {t("common_cancel")}
+          </Button>
           <Button type="submit">{pick(idUpload.submit, locale)}</Button>
         </div>
       </form>
@@ -268,13 +253,15 @@ export function AddIdForm({
         >
           <DialogHeader className="pr-10 text-left">
             <DialogTitle>{pick(idUpload.previewTitle, locale)}</DialogTitle>
-            <DialogDescription>
-              {pick(idUpload.previewDescription, locale)}
-            </DialogDescription>
+            <DialogDescription>{pick(idUpload.previewDescription, locale)}</DialogDescription>
           </DialogHeader>
           <div className="min-h-0 flex-1 overflow-auto rounded-lg bg-surface-sunken p-4">
             {previewUrl && file?.type === "application/pdf" ? (
-              <iframe src={previewUrl} title={pick(idUpload.previewAlt, locale)} className="h-full w-full rounded-md bg-surface" />
+              <iframe
+                src={previewUrl}
+                title={pick(idUpload.previewAlt, locale)}
+                className="h-full w-full rounded-md bg-surface"
+              />
             ) : previewUrl ? (
               <NextImage
                 src={previewUrl}
@@ -292,7 +279,14 @@ export function AddIdForm({
   );
 }
 
-export function SubmittedIdSummary({ submission, locale }: { submission: SubmittedId; locale: Locale }) {
+export function SubmittedIdSummary({
+  submission,
+  locale,
+}: {
+  submission: SubmittedId;
+  locale: Locale;
+}) {
+  const t = useTranslations();
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewUrl] = React.useState(() => URL.createObjectURL(submission.file));
 
@@ -304,31 +298,63 @@ export function SubmittedIdSummary({ submission, locale }: { submission: Submitt
         <button
           type="button"
           className="group relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface bg-cover bg-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          style={submission.file.type.startsWith("image/") ? { backgroundImage: `url(${JSON.stringify(previewUrl)})` } : undefined}
+          style={
+            submission.file.type.startsWith("image/")
+              ? { backgroundImage: `url(${JSON.stringify(previewUrl)})` }
+              : undefined
+          }
           aria-label={pick(idUpload.expandPreview, locale)}
           onClick={() => setPreviewOpen(true)}
         >
-          {submission.file.type === "application/pdf" ? <FileTextIcon className="size-6 text-muted-foreground" aria-hidden /> : null}
+          {submission.file.type === "application/pdf" ? (
+            <FileTextIcon className="size-6 text-muted-foreground" aria-hidden />
+          ) : null}
           <span className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/15" />
-          <Maximize2Icon className="absolute inset-0 m-auto size-4 text-background opacity-0 drop-shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden />
+          <Maximize2Icon
+            className="absolute inset-0 m-auto size-4 text-background opacity-0 drop-shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            aria-hidden
+          />
         </button>
         <div className="min-w-0">
           <p className="truncate font-medium">{submission.file.name}</p>
-          <p className="text-muted-foreground">{pick(idUpload.idTypes[submission.idType], locale)} · {fileSize(submission.file.size)}</p>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => setPreviewOpen(true)}>View ID</Button>
+          <p className="text-muted-foreground">
+            {pick(idUpload.idTypes[submission.idType], locale)} · {fileSize(submission.file.size)}
+          </p>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto p-0"
+            onClick={() => setPreviewOpen(true)}
+          >
+            {t("addIdDialog_viewId")}
+          </Button>
         </div>
       </div>
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <ChromeDialogContent lang={locale} className="flex h-dvh w-screen max-w-none flex-col overflow-hidden rounded-none sm:max-w-none">
+        <ChromeDialogContent
+          lang={locale}
+          className="flex h-dvh w-screen max-w-none flex-col overflow-hidden rounded-none sm:max-w-none"
+        >
           <DialogHeader className="pr-10 text-left">
             <DialogTitle>{pick(idUpload.previewTitle, locale)}</DialogTitle>
             <DialogDescription>{pick(idUpload.previewDescription, locale)}</DialogDescription>
           </DialogHeader>
           <div className="min-h-0 flex-1 overflow-auto rounded-lg bg-surface-sunken p-4">
             {submission.file.type === "application/pdf" ? (
-              <iframe src={previewUrl} title={pick(idUpload.previewAlt, locale)} className="h-full w-full rounded-md bg-surface" />
+              <iframe
+                src={previewUrl}
+                title={pick(idUpload.previewAlt, locale)}
+                className="h-full w-full rounded-md bg-surface"
+              />
             ) : (
-              <NextImage src={previewUrl} alt={pick(idUpload.previewAlt, locale)} width={1200} height={1600} unoptimized className="mx-auto h-full w-auto max-w-full rounded-md object-contain" />
+              <NextImage
+                src={previewUrl}
+                alt={pick(idUpload.previewAlt, locale)}
+                width={1200}
+                height={1600}
+                unoptimized
+                className="mx-auto h-full w-auto max-w-full rounded-md object-contain"
+              />
             )}
           </div>
         </ChromeDialogContent>

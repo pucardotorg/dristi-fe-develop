@@ -542,9 +542,7 @@ export type ComparisonBlock = {
  * Every comparison this request carries — today only what the holder changed at first
  * login (`REG-18`).
  */
-export function comparisonBlocks(
-  request: RegistrationRequest,
-): ComparisonBlock[] {
+export function comparisonBlocks(request: RegistrationRequest): ComparisonBlock[] {
   const blocks: ComparisonBlock[] = [];
   const current = identityRows(request);
 
@@ -898,19 +896,15 @@ const PENDING: RegistrationRequest[] = [
  * number tie-break keeps the order stable between renders when two requests share a day
  * count, and it is the older serial that wins, because it is the older request.
  */
-export function sortByLongestWait(
-  rows: RegistrationRequest[],
-): RegistrationRequest[] {
+export function sortByLongestWait(rows: RegistrationRequest[]): RegistrationRequest[] {
   return [...rows].sort(
     (a, b) =>
-      b.daysWaiting - a.daysWaiting ||
-      a.applicationNumber.localeCompare(b.applicationNumber),
+      b.daysWaiting - a.daysWaiting || a.applicationNumber.localeCompare(b.applicationNumber),
   );
 }
 
 /** The registrations this court has not yet decided, longest wait first. */
-export const REGISTRATIONS_QUEUE: RegistrationRequest[] =
-  sortByLongestWait(PENDING);
+export const REGISTRATIONS_QUEUE: RegistrationRequest[] = sortByLongestWait(PENDING);
 
 /**
  * The request to look at after this one — so an officer clearing the queue can stay in
@@ -939,8 +933,7 @@ export function nextInQueue(
 function comesAfter(a: RegistrationRequest, b: RegistrationRequest): boolean {
   return (
     a.daysWaiting < b.daysWaiting ||
-    (a.daysWaiting === b.daysWaiting &&
-      a.applicationNumber.localeCompare(b.applicationNumber) > 0)
+    (a.daysWaiting === b.daysWaiting && a.applicationNumber.localeCompare(b.applicationNumber) > 0)
   );
 }
 
@@ -1010,12 +1003,9 @@ export function filterRegistrations(
   return rows.filter(
     (request) =>
       matchesQuery(filters.query, request.fullName, request.registrationNumber) &&
-      (filters.accountType === "all" ||
-        request.registrantKind === filters.accountType) &&
-      (filters.requestType === "all" ||
-        request.requestKind === filters.requestType) &&
-      (filters.wait === "all" ||
-        registrationWaitTone(request.daysWaiting) === filters.wait),
+      (filters.accountType === "all" || request.registrantKind === filters.accountType) &&
+      (filters.requestType === "all" || request.requestKind === filters.requestType) &&
+      (filters.wait === "all" || registrationWaitTone(request.daysWaiting) === filters.wait),
   );
 }
 
@@ -1033,10 +1023,7 @@ const byName = (a: { fullName: string }, b: { fullName: string }) =>
   a.fullName.localeCompare(b.fullName, "en-IN");
 
 /** The queue in the order asked for; the queue's own order breaks every tie. */
-export function sortPending(
-  rows: RegistrationRequest[],
-  sort: PendingSort,
-): RegistrationRequest[] {
+export function sortPending(rows: RegistrationRequest[], sort: PendingSort): RegistrationRequest[] {
   const queue = sortByLongestWait(rows);
   if (sort === "longest") return queue;
   if (sort === "shortest") {
@@ -1085,18 +1072,12 @@ export function filterDecided(
   return rows.filter(
     ({ request }) =>
       matchesQuery(filters.query, request.fullName, request.registrationNumber) &&
-      (filters.accountType === "all" ||
-        request.registrantKind === filters.accountType),
+      (filters.accountType === "all" || request.registrantKind === filters.accountType),
   );
 }
 
-export function sortDecided(
-  rows: DecidedRegistration[],
-  sort: DecidedSort,
-): DecidedRegistration[] {
-  const recent = [...rows].sort(
-    (a, b) => a.daysAgo - b.daysAgo || byName(a.request, b.request),
-  );
+export function sortDecided(rows: DecidedRegistration[], sort: DecidedSort): DecidedRegistration[] {
+  const recent = [...rows].sort((a, b) => a.daysAgo - b.daysAgo || byName(a.request, b.request));
   if (sort === "recent") return recent;
   if (sort === "oldest") return recent.reverse();
   return [...rows].sort((a, b) => byName(a.request, b.request));
@@ -1114,7 +1095,10 @@ function decidedAdvocate(
     fullName,
     registrationNumber,
     mobile: `98470${String(serial).padStart(5, "0")}`,
-    photo: { src: CARD, filename: `bar-id-${registrationNumber.toLowerCase().replace(/\//g, "-")}.jpg` },
+    photo: {
+      src: CARD,
+      filename: `bar-id-${registrationNumber.toLowerCase().replace(/\//g, "-")}.jpg`,
+    },
     daysWaiting: 0,
     registrantKind: "advocate",
     requestKind: "first",
@@ -1141,13 +1125,41 @@ function decidedClerk(
  * `PENDING`, with the rejection as a round.
  */
 export const DECIDED_REGISTRATIONS: DecidedRegistration[] = [
-  { outcome: "approved", daysAgo: 1, request: decidedAdvocate(101, "Arun Thomas Varghese", "KL/2871/2019") },
-  { outcome: "approved", daysAgo: 1, request: decidedClerk(171, "Bindu Raveendran", "CLK/1307/2015") },
-  { outcome: "approved", daysAgo: 3, request: decidedAdvocate(97, "Deepa Krishnan", "KL/1964/2012") },
-  { outcome: "approved", daysAgo: 6, request: decidedAdvocate(92, "ജോസഫ് മാത്യു", "KL/0542/2001", { fullNameLang: "ml" }) },
-  { outcome: "approved", daysAgo: 9, request: decidedAdvocate(88, "Nikhil Prakash", "KL/3907/2023") },
-  { outcome: "approved", daysAgo: 15, request: decidedClerk(160, "Manoj Kumar S.", "CLK/0954/2019") },
-  { outcome: "approved", daysAgo: 22, request: decidedAdvocate(79, "Shahana Basheer", "KL/2210/2016") },
+  {
+    outcome: "approved",
+    daysAgo: 1,
+    request: decidedAdvocate(101, "Arun Thomas Varghese", "KL/2871/2019"),
+  },
+  {
+    outcome: "approved",
+    daysAgo: 1,
+    request: decidedClerk(171, "Bindu Raveendran", "CLK/1307/2015"),
+  },
+  {
+    outcome: "approved",
+    daysAgo: 3,
+    request: decidedAdvocate(97, "Deepa Krishnan", "KL/1964/2012"),
+  },
+  {
+    outcome: "approved",
+    daysAgo: 6,
+    request: decidedAdvocate(92, "ജോസഫ് മാത്യു", "KL/0542/2001", { fullNameLang: "ml" }),
+  },
+  {
+    outcome: "approved",
+    daysAgo: 9,
+    request: decidedAdvocate(88, "Nikhil Prakash", "KL/3907/2023"),
+  },
+  {
+    outcome: "approved",
+    daysAgo: 15,
+    request: decidedClerk(160, "Manoj Kumar S.", "CLK/0954/2019"),
+  },
+  {
+    outcome: "approved",
+    daysAgo: 22,
+    request: decidedAdvocate(79, "Shahana Basheer", "KL/2210/2016"),
+  },
   {
     outcome: "rejected",
     daysAgo: 2,

@@ -7,6 +7,7 @@ import { PageSheet, SHEET_BOX } from "@/components/employee/page-facsimile";
 import type { CaseDocumentKind } from "@/lib/employee/case-review";
 import type { ZoneRect } from "@/lib/employee/document-zones";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 /**
  * A court file's documents, read the way a bench reads them — one long scroll of pages,
@@ -64,6 +65,7 @@ export function DocumentScroller({
   active: ScrollerActive | null;
   className?: string;
 }) {
+  const t = useTranslations();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   /* When a fact selects a document, bring it to the top of the column — moving *this*
@@ -107,7 +109,7 @@ export function DocumentScroller({
       {docs.map((doc) => {
         const on = active?.doc === doc.key;
         /* A scan has no facsimile grid for a region to sit in: the whole page is ringed. */
-        const zone = on && !doc.src ? active?.zone ?? null : null;
+        const zone = on && !doc.src ? (active?.zone ?? null) : null;
         /* The frame is the kind's own box, not a shared 3:4 page, so a cheque is a wide slip
            and a memo a short one instead of a drawing marooned in white (owner, 2026-09-15). */
         const box = SHEET_BOX[doc.kind];
@@ -191,8 +193,10 @@ export function DocumentScroller({
       })}
 
       {absent.length > 0 ? (
-        <section className="flex flex-col gap-2" aria-label="Not filed">
-          <h3 className="text-caption font-semibold text-muted-foreground">Not filed</h3>
+        <section className="flex flex-col gap-2" aria-label={t("documentScroller_notFiled")}>
+          <h3 className="text-caption font-semibold text-muted-foreground">
+            {t("documentScroller_notFiled")}
+          </h3>
           {absent.map((doc) => (
             <p
               key={doc.key}

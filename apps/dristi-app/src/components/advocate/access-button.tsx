@@ -55,7 +55,14 @@ export function VakalatnamaIcon(props: SVGProps<SVGSVGElement>) {
       {/* A solid round seal with a thin tick cut out of it: large enough that the
           tick reads at 16px. */}
       {/* System blue, the access chip's colour (owner, Oct 8; was green). */}
-      <circle cx="17" cy="17" r="6.8" fill="var(--color-info-ink)" stroke="none" mask={`url(#${id}-seal)`} />
+      <circle
+        cx="17"
+        cy="17"
+        r="6.8"
+        fill="var(--color-info-ink)"
+        stroke="none"
+        mask={`url(#${id}-seal)`}
+      />
     </svg>
   );
 }
@@ -115,7 +122,7 @@ export function AccessButton({
                 "relative z-10 gap-2",
                 className,
                 // Last, so the tone wins over a call site's outline colours.
-                access.office ? OFFICE_CHIP : VAKALAT_CHIP
+                access.office ? OFFICE_CHIP : VAKALAT_CHIP,
               )}
             >
               <Icon aria-hidden="true" className={cn("size-4", iconClassName)} />

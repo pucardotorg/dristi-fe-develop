@@ -23,8 +23,8 @@ practice directions, unwritten local habits, filer profile/volume, court languag
 ## Point-in-time law
 
 Most visibly, **1 July 2024**, when the old CrPC/IPC/Indian Evidence Act gave way to the
-new Sanhitas (BNSS/BNS/BSA). Which set of law applies to a case depends on *when the
-cheque bounced* (the **cause-of-action date**), not when the case is filed or processed.
+new Sanhitas (BNSS/BNS/BSA). Which set of law applies to a case depends on _when the
+cheque bounced_ (the **cause-of-action date**), not when the case is filed or processed.
 The model is point-in-time aware throughout, not just “current law.”
 
 See [sources.md](sources.md) for the pre/post pairing and [terminology.md](terminology.md)

@@ -76,6 +76,9 @@ import {
 import { formatCourtDay } from "@/lib/employee/hearings";
 import { formatCount } from "@/lib/employee/register-rows";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
+import type { MessageKey } from "@/i18n/messages";
 
 /**
  * `/employee` — the magistrate dashboard, built to the owner's Case Flow design, version
@@ -116,11 +119,24 @@ const pct = (v: number) => `${Math.round(v * 100)}%`;
 const countText = (n: number) => formatCount(Math.round(n));
 const parts = (t: number) => {
   const d = new Date(t);
-  return { day: d.getUTCDate(), month: d.getUTCMonth(), year: d.getUTCFullYear(), weekday: d.getUTCDay() };
+  return {
+    day: d.getUTCDate(),
+    month: d.getUTCMonth(),
+    year: d.getUTCFullYear(),
+    weekday: d.getUTCDay(),
+  };
 };
 const monthLong = (key: number) => `${MONTHS_LONG[key % 12]} ${Math.floor(key / 12)}`;
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const WEEKDAYS_LONG = ["Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays"];
+const WEEKDAYS_LONG = [
+  "Sundays",
+  "Mondays",
+  "Tuesdays",
+  "Wednesdays",
+  "Thursdays",
+  "Fridays",
+  "Saturdays",
+];
 
 /** "Mon 12 Oct", with the year when it is not the latest records' year. */
 function weekdayDay(t: number, latest: number, withYear = false): string {
@@ -156,7 +172,8 @@ function baselineName(reading: PeriodReading, latest: number, closures = false):
   if (reading.compare === "avg") {
     const n = windows.length;
     if (closures) return `Average of last ${n}`;
-    if (reading.kind === "day") return `the average of the last ${n} ${WEEKDAYS_LONG[parts(reading.end).weekday]}`;
+    if (reading.kind === "day")
+      return `the average of the last ${n} ${WEEKDAYS_LONG[parts(reading.end).weekday]}`;
     if (reading.kind === "span") return `the average of the last ${n} periods`;
     return `the ${n}-month average`;
   }
@@ -178,6 +195,7 @@ type ListSpec = {
 /* ------------------------------------------------------------------ page */
 
 export function CourtDashboardScreen() {
+  const tr = useTranslations();
   const docket = useCourtDocket();
   const today = useCourtToday();
   const courtText = useCourtText();
@@ -192,7 +210,9 @@ export function CourtDashboardScreen() {
     <TooltipProvider>
       <div className="flex min-w-0 flex-1 flex-col gap-8 p-6 md:p-8">
         <header className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-title text-balance font-semibold">Dashboard</h1>
+          <h1 className="text-title text-balance font-semibold">
+            {tr("courtDashboardScreen_dashboard")}
+          </h1>
           <p className="text-body-compact text-muted-foreground">
             {courtText(court)} · {formatCourtDay(today)}
           </p>
@@ -262,13 +282,13 @@ function ClosuresPanel({ docket }: { docket: CourtDocket }) {
 
 /* ------------------------------------------------------------- overview */
 
-const STAGE_DESCRIPTION: Record<StageKey, string> = {
-  registration: "Filed, waiting to be registered",
-  cognizance: "Registered, waiting for the magistrate to take cognizance",
-  appearance: "Summons out, waiting for the accused to appear",
-  bail: "Accused appeared, bail not yet complete",
-  trial: "Plea, evidence and arguments",
-  judgement: "Reserved for judgement",
+const STAGE_DESCRIPTION: Record<StageKey, MessageKey> = {
+  registration: "courtDashboardScreen_filedWaitingToBeRegistered",
+  cognizance: "courtDashboardScreen_registeredWaitingForTheMagistrateTo",
+  appearance: "courtDashboardScreen_summonsOutWaitingForTheAccused",
+  bail: "courtDashboardScreen_accusedAppearedBailNotYetComplete",
+  trial: "courtDashboardScreen_pleaEvidenceAndArguments",
+  judgement: "courtDashboardScreen_reservedForJudgement",
 };
 
 /**
@@ -303,6 +323,7 @@ function Overview({
   reading: PeriodReading;
   picker: React.ReactNode;
 }) {
+  const tr = useTranslations();
   const latest = docket.today;
   const { from, to } = reading.selection;
   const now = filedAndClosed(docket, reading.selection);
@@ -329,16 +350,26 @@ function Overview({
   const period = periodName(reading);
   const list = useCaseList<OverviewList>();
   const listId = "dash-overview-cases";
-  const pendingName = reading.live ? "Pending today" : `Pending on ${formatDayShort(to)}`;
+  const pendingName = reading.live
+    ? tr("courtDashboardScreen_pendingToday")
+    : tr("courtDashboardScreen_pendingOnFormatDayShort", { formatDayShort: formatDayShort(to) });
   const pastNote = reading.live
     ? undefined
-    : [`Days are counted to ${formatDay(to)}. Stage and next hearing are as they stand on ${formatDay(latest)}.`];
+    : [
+        `Days are counted to ${formatDay(to)}. Stage and next hearing are as they stand on ${formatDay(latest)}.`,
+      ];
 
   const resolve = (key: OverviewList): ListSpec | null => {
-    const inCourt = "Days in court";
+    const inCourt = tr("courtDashboardScreen_daysInCourt");
     if (key === "filed") {
       const rows = filedCases(docket, reading.selection);
-      return { title: `Cases filed · ${period}`, summary: plural(rows.length, "case", "cases"), rows, daysHeader: "Days since filing", details: pastNote };
+      return {
+        title: `Cases filed · ${period}`,
+        summary: plural(rows.length, "case", "cases"),
+        rows,
+        daysHeader: tr("courtDashboardScreen_daysSinceFiling"),
+        details: pastNote,
+      };
     }
     if (key === "closed") {
       const rows = closedCases(docket, reading.selection);
@@ -346,13 +377,33 @@ function Overview({
         title: `Cases closed · ${period}`,
         summary: `${plural(rows.length, "case", "cases")} · ${formatCount(disposed)} disposed, ${formatCount(out.toLongPending)} to long pending`,
         rows,
-        daysHeader: "Days from filing to closing",
+        daysHeader: tr("courtDashboardScreen_daysFromFilingToClosing"),
       };
     }
     if (key === "pending" || key === "cmp" || key === "st" || key === "awaiting") {
-      const rows = key === "pending" ? sets.all : key === "cmp" ? sets.cmp : key === "st" ? sets.st : sets.awaitingRegistration;
-      const what = key === "pending" ? "" : key === "cmp" ? " · CMP" : key === "st" ? " · ST" : " · awaiting registration";
-      return { title: `${pendingName}${what}`, summary: `${plural(rows.length, "case", "cases")} · longest in court first`, rows, daysHeader: inCourt, details: pastNote };
+      const rows =
+        key === "pending"
+          ? sets.all
+          : key === "cmp"
+            ? sets.cmp
+            : key === "st"
+              ? sets.st
+              : sets.awaitingRegistration;
+      const what =
+        key === "pending"
+          ? ""
+          : key === "cmp"
+            ? " · CMP"
+            : key === "st"
+              ? " · ST"
+              : " · awaiting registration";
+      return {
+        title: `${pendingName}${what}`,
+        summary: `${plural(rows.length, "case", "cases")} · longest in court first`,
+        rows,
+        daysHeader: inCourt,
+        details: pastNote,
+      };
     }
     if (key.startsWith("age-")) {
       const i = Number(key.slice(4)) as 0 | 1 | 2;
@@ -370,14 +421,37 @@ function Overview({
     const path = stagePathFor(docket, reading.selection)[stage.key];
     const on = reading.live ? "" : ` · on ${formatDayShort(to)}`;
     if (kind === "stage") {
-      return { title: `${stage.label}: all pending${on}`, summary: `${plural(path.rows.length, "case", "cases")} · longest in the stage first`, rows: path.rows, daysHeader: "Days in stage", details: pastNote };
+      return {
+        title: `${stage.label}: all pending${on}`,
+        summary: `${plural(path.rows.length, "case", "cases")} · longest in the stage first`,
+        rows: path.rows,
+        daysHeader: tr("courtDashboardScreen_daysInStage"),
+        details: pastNote,
+      };
     }
     if (kind === "bin") {
       const b = path.bins[Number(bin)];
-      const span = b.to === null ? `${formatCount(b.from)}+ days` : b.from === b.to ? `${formatCount(b.from)} days` : `${formatCount(b.from)}–${formatCount(b.to)} days`;
-      return { title: `${stage.label}: ${span} in the stage${on}`, summary: plural(b.rows.length, "case", "cases"), rows: b.rows, daysHeader: "Days in stage", details: pastNote };
+      const span =
+        b.to === null
+          ? `${formatCount(b.from)}+ days`
+          : b.from === b.to
+            ? `${formatCount(b.from)} days`
+            : `${formatCount(b.from)}–${formatCount(b.to)} days`;
+      return {
+        title: `${stage.label}: ${span} in the stage${on}`,
+        summary: plural(b.rows.length, "case", "cases"),
+        rows: b.rows,
+        daysHeader: tr("courtDashboardScreen_daysInStage"),
+        details: pastNote,
+      };
     }
-    return { title: `${stage.label} over ${limit} days${on}`, summary: `${plural(end.overdue[stage.key].length, "case", "cases")} · longest first`, rows: end.overdue[stage.key], daysHeader: "Days in stage", details: pastNote };
+    return {
+      title: `${stage.label} over ${limit} days${on}`,
+      summary: `${plural(end.overdue[stage.key].length, "case", "cases")} · longest first`,
+      rows: end.overdue[stage.key],
+      daysHeader: tr("courtDashboardScreen_daysInStage"),
+      details: pastNote,
+    };
   };
   const spec = list.open ? resolve(list.open) : null;
   const opener = (key: OverviewList) => ({
@@ -389,14 +463,18 @@ function Overview({
   const versus = (current: number, baseline: number | undefined, goodUp: boolean | null) => {
     if (reading.compare === "none") return null;
     if (baseline === undefined || name === null) {
-      return <p className="text-body-compact text-muted-foreground">No earlier data to compare</p>;
+      return (
+        <p className="text-body-compact text-muted-foreground">
+          {tr("courtDashboardScreen_noEarlierDataToCompare")}
+        </p>
+      );
     }
     const b = Math.round(baseline);
     const diff = current - b;
     if (!diff) {
       return (
         <p className="text-body-compact text-muted-foreground tabular-nums">
-          Same as {name} ({formatCount(b)})
+          {tr("courtDashboardScreen_sameAsNameFormatCount", { name, formatCount: formatCount(b) })}
         </p>
       );
     }
@@ -406,7 +484,11 @@ function Overview({
       <p
         className={cn(
           "text-body-compact tabular-nums",
-          tone === "good" ? "text-success-ink" : tone === "bad" ? "text-destructive-ink" : "text-muted-foreground",
+          tone === "good"
+            ? "text-success-ink"
+            : tone === "bad"
+              ? "text-destructive-ink"
+              : "text-muted-foreground",
         )}
       >
         <span aria-hidden>{diff > 0 ? "▲ " : "▼ "}</span>
@@ -419,22 +501,34 @@ function Overview({
 
   return (
     <section aria-labelledby="dash-overview" className={PANEL}>
-      <PanelHeader id="dash-overview" title="Overview">
+      <PanelHeader id="dash-overview" title={tr("courtDashboardScreen_overview")}>
         {picker}
       </PanelHeader>
 
       <div className="flex min-w-0 flex-col gap-3">
         <div className="grid min-w-0 gap-px overflow-hidden rounded-xl border border-hairline bg-hairline sm:grid-cols-2 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.4fr)]">
           <div className="flex min-w-0 flex-col items-start gap-1 bg-surface-sunken p-4 sm:px-6">
-            <p className="text-body-compact font-semibold">Cases filed</p>
-            <CountButton name="cases filed" className="text-title-l font-semibold" {...opener("filed")}>
+            <p className="text-body-compact font-semibold">
+              {tr("courtDashboardScreen_casesFiled")}
+            </p>
+            <CountButton
+              name="cases filed"
+              className="text-title-l font-semibold"
+              {...opener("filed")}
+            >
               <CountUp value={now.filed} format={countText} />
             </CountButton>
             {versus(now.filed, base?.filed, null)}
           </div>
           <div className="flex min-w-0 flex-col items-start gap-1 bg-surface-sunken p-4 sm:px-6">
-            <p className="text-body-compact font-semibold">Cases closed</p>
-            <CountButton name="cases closed" className="text-title-l font-semibold" {...opener("closed")}>
+            <p className="text-body-compact font-semibold">
+              {tr("courtDashboardScreen_casesClosed")}
+            </p>
+            <CountButton
+              name="cases closed"
+              className="text-title-l font-semibold"
+              {...opener("closed")}
+            >
               <CountUp value={now.closed} format={countText} />
             </CountButton>
             <p className="text-caption text-muted-foreground tabular-nums">
@@ -445,7 +539,11 @@ function Overview({
           </div>
           <div className="flex min-w-0 flex-col items-start gap-1 bg-surface-sunken p-4 max-xl:sm:col-span-2 sm:px-6">
             <p className="text-body-compact font-semibold">{pendingName}</p>
-            <CountButton name="pending" className="text-title-l font-semibold" {...opener("pending")}>
+            <CountButton
+              name="pending"
+              className="text-title-l font-semibold"
+              {...opener("pending")}
+            >
               <CountUp value={end.pending} format={countText} />
             </CountButton>
             <Badge
@@ -454,10 +552,16 @@ function Overview({
             >
               <span aria-hidden>{net < 0 ? "▼" : net > 0 ? "▲" : "■"}</span>
               {net < 0
-                ? `${formatCount(-net)} fewer than ${startWord}`
+                ? tr("courtDashboardScreen_formatCountFewerThanStartWord", {
+                    formatCount: formatCount(-net),
+                    startWord,
+                  })
                 : net > 0
-                  ? `${formatCount(net)} more than ${startWord}`
-                  : `Same as ${startWord}`}
+                  ? tr("courtDashboardScreen_formatCountMoreThanStartWord", {
+                      formatCount: formatCount(net),
+                      startWord,
+                    })
+                  : tr("courtDashboardScreen_sameAsStartWord", { startWord })}
             </Badge>
             <p className="flex flex-wrap gap-x-3 text-body-compact text-muted-foreground tabular-nums">
               {(
@@ -469,7 +573,11 @@ function Overview({
               ).map(([key, label, n]) => (
                 <span key={key} className="inline-flex items-center gap-1">
                   {label}
-                  <CountButton name={`pending, ${label}`} className="font-semibold" {...opener(key)}>
+                  <CountButton
+                    name={`pending, ${label}`}
+                    className="font-semibold"
+                    {...opener(key)}
+                  >
                     {formatCount(n)}
                   </CountButton>
                 </span>
@@ -478,10 +586,12 @@ function Overview({
           </div>
           <div className="flex min-w-0 flex-col justify-center gap-3 bg-surface-sunken p-4 sm:col-span-2 sm:px-6 xl:col-span-1">
             <p className="text-body-compact font-semibold">
-              How long the {formatCount(end.pending)} pending cases have been in court
+              {tr("courtDashboardScreen_howLongTheFormatCountPending", {
+                formatCount: formatCount(end.pending),
+              })}
             </p>
             <SegmentBar
-              label="Pending cases by when they were filed"
+              label={tr("courtDashboardScreen_pendingCasesByWhenTheyWere")}
               controls={listId}
               className="h-3.5 [&>*:first-child]:rounded-l-sm [&>*:last-child]:rounded-r-sm"
               segments={ages.map((value, i) => ({
@@ -496,7 +606,11 @@ function Overview({
               {ageLabels.map((label, i) => (
                 <li key={label} className="flex items-center gap-2">
                   <span aria-hidden className={cn("size-3 shrink-0 rounded-xs", AGE_SHADE[i])} />
-                  <CountButton name={label.toLowerCase()} className="-my-1.5 font-semibold" {...opener(`age-${i as 0 | 1 | 2}`)}>
+                  <CountButton
+                    name={label.toLowerCase()}
+                    className="-my-1.5 font-semibold"
+                    {...opener(`age-${i as 0 | 1 | 2}`)}
+                  >
                     {formatCount(ages[i])}
                   </CountButton>
                   {label.toLowerCase()}
@@ -530,31 +644,48 @@ function Overview({
 
 /** What the comparison is made of: each baseline window, with its filed and closed counts. */
 function BaselineBreakdown({ docket, reading }: { docket: CourtDocket; reading: PeriodReading }) {
+  const tr = useTranslations();
   if (reading.compare === "none" || !reading.baseline.length) return null;
   const latest = docket.today;
   const windows = baselineWindows(docket, reading);
   const averaged = windows.length > 1;
-  const avg = (key: "filed" | "closed") => windows.reduce((sum, w) => sum + w[key], 0) / windows.length;
+  const avg = (key: "filed" | "closed") =>
+    windows.reduce((sum, w) => sum + w[key], 0) / windows.length;
   const one = (v: number) => (Number.isInteger(v) ? formatCount(v) : v.toFixed(1));
   return (
     <Collapsible className="flex min-w-0 flex-col gap-2">
       <CollapsibleTrigger asChild>
         <Button variant="link" className="group/base h-10 w-fit gap-1 px-0 text-body-compact">
-          <ChevronRightIcon aria-hidden className="transition-transform group-data-[state=open]/base:rotate-90 motion-reduce:transition-none" />
-          {averaged ? `What the ${windows.length}-period average is made of` : "What the comparison is made of"}
+          <ChevronRightIcon
+            aria-hidden
+            className="transition-transform group-data-[state=open]/base:rotate-90 motion-reduce:transition-none"
+          />
+          {averaged
+            ? tr("courtDashboardScreen_whatTheLengthPeriodAverageIs", {
+                length: String(windows.length),
+              })
+            : tr("courtDashboardScreen_whatTheComparisonIsMadeOf")}
         </Button>
       </CollapsibleTrigger>
       <CollapsibleContent className="min-w-0">
         <div className="relative min-w-0 overflow-x-auto">
           <Table className="w-full border-separate border-spacing-0 text-body-compact">
-            <caption className="sr-only">Comparison baseline, filed and closed in each window</caption>
+            <caption className="sr-only">
+              {tr("courtDashboardScreen_comparisonBaselineFiledAndClosedIn")}
+            </caption>
             <TableHeader>
               <TableRow className={TABLE_HEAD_ROW}>
                 <TableHead className={cn(TABLE_HEAD, "whitespace-nowrap")}>
-                  {averaged ? "Window" : "Compared with"}
+                  {averaged
+                    ? tr("courtDashboardScreen_window")
+                    : tr("courtDashboardScreen_comparedWith")}
                 </TableHead>
-                <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>Cases filed</TableHead>
-                <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>Cases closed</TableHead>
+                <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>
+                  {tr("courtDashboardScreen_casesFiled")}
+                </TableHead>
+                <TableHead className={cn(TABLE_HEAD, "text-right whitespace-nowrap")}>
+                  {tr("courtDashboardScreen_casesClosed")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className={tableBodyClass({ hover: false })}>
@@ -563,21 +694,35 @@ function BaselineBreakdown({ docket, reading }: { docket: CourtDocket; reading: 
               </tr>
               {windows.map((w) => (
                 <TableRow key={w.period.from} className={tableRowClass({ hover: false })}>
-                  <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>{windowName(reading, w.period, latest)}</TableCell>
-                  <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>{formatCount(w.filed)}</TableCell>
-                  <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>{formatCount(w.closed)}</TableCell>
+                  <TableCell className={cn(TABLE_CELL, "whitespace-nowrap")}>
+                    {windowName(reading, w.period, latest)}
+                  </TableCell>
+                  <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+                    {formatCount(w.filed)}
+                  </TableCell>
+                  <TableCell className={cn(TABLE_CELL, "text-right tabular-nums")}>
+                    {formatCount(w.closed)}
+                  </TableCell>
                 </TableRow>
               ))}
               {averaged ? (
                 <TableRow className={tableRowClass({ hover: false })}>
-                  <TableCell className={cn(TABLE_CELL, "font-semibold")}>Average</TableCell>
+                  <TableCell className={cn(TABLE_CELL, "font-semibold")}>
+                    {tr("courtDashboardScreen_average")}
+                  </TableCell>
                   <TableCell className={cn(TABLE_CELL, "text-right font-semibold tabular-nums")}>
                     {one(avg("filed"))}
-                    <span className="font-normal text-muted-foreground"> · shown as {formatCount(Math.round(avg("filed")))}</span>
+                    <span className="font-normal text-muted-foreground">
+                      {" "}
+                      · shown as {formatCount(Math.round(avg("filed")))}
+                    </span>
                   </TableCell>
                   <TableCell className={cn(TABLE_CELL, "text-right font-semibold tabular-nums")}>
                     {one(avg("closed"))}
-                    <span className="font-normal text-muted-foreground"> · shown as {formatCount(Math.round(avg("closed")))}</span>
+                    <span className="font-normal text-muted-foreground">
+                      {" "}
+                      · shown as {formatCount(Math.round(avg("closed")))}
+                    </span>
                   </TableCell>
                 </TableRow>
               ) : null}
@@ -646,12 +791,14 @@ function StagePath({
   reading: PeriodReading;
   opener: Opener;
 }) {
+  const tr = useTranslations();
   const end = positionOn(docket, reading.end);
   const before = reading.overdueSince === null ? null : positionOn(docket, reading.overdueSince);
   const path = stagePathFor(docket, reading.selection);
   const [selected, setSelected] = React.useState<StageKey | null>(null);
   const most = Math.max(1, ...STAGES.map((s) => path[s.key].rows.length));
-  const since = reading.kind === "day" ? "in 30 days" : `since ${formatDayShort(reading.selection.from)}`;
+  const since =
+    reading.kind === "day" ? "in 30 days" : `since ${formatDayShort(reading.selection.from)}`;
   const during = reading.kind === "day" ? "that day" : "in this period";
   const detailId = "dash-stage-detail";
   const trigger = `${reading.selection.from}:${reading.selection.to}`;
@@ -673,13 +820,23 @@ function StagePath({
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <h3 className="text-body font-semibold">
-        Where the pending cases are{" "}
-        <span className="text-body-compact font-normal text-muted-foreground">· select a stage for details</span>
+        {tr.rich("courtDashboardScreen_whereThePendingCasesAreSelect", {
+          span: (chunks) => (
+            <span className="text-body-compact font-normal text-muted-foreground">{chunks}</span>
+          ),
+        })}
       </h3>
       <div ref={box} className={cn(BOX, "flex flex-col pt-3")}>
-        <div aria-hidden className="hidden grid-cols-6 px-2 pb-2 text-caption text-muted-foreground xl:grid">
-          <span className="col-span-2 mx-1 border-b border-hairline px-3 pb-1.5">CMP · before cognizance</span>
-          <span className="col-span-4 mx-1 border-b border-hairline px-3 pb-1.5">ST · after cognizance</span>
+        <div
+          aria-hidden
+          className="hidden grid-cols-6 px-2 pb-2 text-caption text-muted-foreground xl:grid"
+        >
+          <span className="col-span-2 mx-1 border-b border-hairline px-3 pb-1.5">
+            {tr("courtDashboardScreen_cmpBeforeCognizance")}
+          </span>
+          <span className="col-span-4 mx-1 border-b border-hairline px-3 pb-1.5">
+            {tr("courtDashboardScreen_stAfterCognizance")}
+          </span>
         </div>
         <ol className="grid min-w-0 xl:grid-cols-6 xl:px-2 xl:pt-4">
           {STAGES.map((stage, i) => {
@@ -695,7 +852,10 @@ function StagePath({
             return (
               <li
                 key={stage.key}
-                className={cn("relative flex min-w-0 flex-col gap-1.5 px-3 py-2", i > 0 && "border-hairline max-xl:border-t xl:border-l")}
+                className={cn(
+                  "relative flex min-w-0 flex-col gap-1.5 px-3 py-2",
+                  i > 0 && "border-hairline max-xl:border-t xl:border-l",
+                )}
               >
                 {prev ? (
                   <Tooltip>
@@ -707,11 +867,14 @@ function StagePath({
                         className="z-10 flex w-fit items-center gap-1 rounded-full border border-hairline bg-card px-1.5 py-0.5 outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring xl:absolute xl:-top-3.5 xl:left-0 xl:-translate-x-1/2"
                       >
                         <TrickleDots count={moved} trigger={trigger} />
-                        <span className="text-caption font-semibold tabular-nums">{formatCount(moved)}</span>
+                        <span className="text-caption font-semibold tabular-nums">
+                          {formatCount(moved)}
+                        </span>
                       </span>
                     </TooltipTrigger>
                     <TooltipContent className="tabular-nums">
-                      {plural(moved, "case", "cases")} moved from {prev.label} to {stage.label} {during}
+                      {plural(moved, "case", "cases")} moved from {prev.label} to {stage.label}{" "}
+                      {during}
                     </TooltipContent>
                   </Tooltip>
                 ) : null}
@@ -723,20 +886,35 @@ function StagePath({
                   onClick={() => setSelected(on ? null : stage.key)}
                   className={cn(
                     "-mx-1 flex flex-col gap-1.5 rounded-lg border border-transparent px-2 pt-2 pb-2.5 text-left outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-focus-ring motion-reduce:transition-none",
-                    on && "border-primary bg-brand-muted ring-1 ring-primary ring-inset hover:bg-brand-muted",
+                    on &&
+                      "border-primary bg-brand-muted ring-1 ring-primary ring-inset hover:bg-brand-muted",
                   )}
                 >
                   <span className="text-body font-semibold">{stage.label}</span>
-                  <CountUp value={n} format={countText} className="text-title font-semibold tabular-nums" />
+                  <CountUp
+                    value={n}
+                    format={countText}
+                    className="text-title font-semibold tabular-nums"
+                  />
                   <span aria-hidden className="h-1 overflow-hidden rounded-full bg-track">
-                    <span data-grow="x" className="block h-full origin-left rounded-full bg-muted-foreground" style={{ width: `${(n / most) * 100}%` }} />
+                    <span
+                      data-grow="x"
+                      className="block h-full origin-left rounded-full bg-muted-foreground"
+                      style={{ width: `${(n / most) * 100}%` }}
+                    />
                   </span>
-                  <span aria-hidden className="relative mt-1 flex h-11 items-end gap-0.5 border-b border-border">
+                  <span
+                    aria-hidden
+                    className="relative mt-1 flex h-11 items-end gap-0.5 border-b border-border"
+                  >
                     {p.bins.map((b, j) => (
                       <span
                         key={j}
                         data-grow="y"
-                        className={cn("block min-h-px flex-1 origin-bottom rounded-t-xs", b.late ? LATE_BAR : "bg-brand-accent")}
+                        className={cn(
+                          "block min-h-px flex-1 origin-bottom rounded-t-xs",
+                          b.late ? LATE_BAR : "bg-brand-accent",
+                        )}
                         style={{ height: `${(b.rows.length / binMost) * 100}%` }}
                       />
                     ))}
@@ -746,39 +924,70 @@ function StagePath({
                     />
                   </span>
                   <span className="flex gap-2.5 text-caption text-muted-foreground tabular-nums">
-                    <span>+{formatCount(p.cameIn)} in</span>
-                    <span>−{formatCount(p.left)} out</span>
+                    <span>
+                      {tr("courtDashboardScreen_formatCountIn", {
+                        formatCount: formatCount(p.cameIn),
+                      })}
+                    </span>
+                    <span>
+                      {tr("courtDashboardScreen_formatCountOut", {
+                        formatCount: formatCount(p.left),
+                      })}
+                    </span>
                   </span>
                   <span className="text-caption text-muted-foreground tabular-nums">
-                    {p.median === null ? "No cases" : `Typically here ${plural(p.median, "day", "days")}`}
+                    {p.median === null
+                      ? tr("courtDashboardScreen_noCases")
+                      : `Typically here ${plural(p.median, "day", "days")}`}
                   </span>
                 </button>
                 <span>
                   {late ? (
-                    <CountButton name={`at ${stage.label}`} className="-my-2 text-body-compact text-warning-ink" {...opener(`late-${stage.key}`)}>
+                    <CountButton
+                      name={`at ${stage.label}`}
+                      className="-my-2 text-body-compact text-warning-ink"
+                      {...opener(`late-${stage.key}`)}
+                    >
                       <span>
-                        <strong className="font-semibold">{formatCount(late)}</strong> over {p.limit} days
+                        {tr.rich("courtDashboardScreen_formatCountOverLimitDays", {
+                          formatCount: formatCount(late),
+                          limit: String(p.limit),
+                          strong: (chunks) => <strong className="font-semibold">{chunks}</strong>,
+                        })}
                       </span>
                     </CountButton>
                   ) : (
-                    <span className="text-body-compact text-success-ink">None over {p.limit} days</span>
+                    <span className="text-body-compact text-success-ink">
+                      {tr("courtDashboardScreen_noneOverLimitDays", { limit: String(p.limit) })}
+                    </span>
                   )}
                 </span>
                 {diff !== null ? (
                   <span
                     className={cn(
                       "text-caption tabular-nums",
-                      diff > 0 ? "text-destructive-ink" : diff < 0 ? "text-success-ink" : "text-muted-foreground",
+                      diff > 0
+                        ? "text-destructive-ink"
+                        : diff < 0
+                          ? "text-success-ink"
+                          : "text-muted-foreground",
                     )}
                   >
                     {diff ? (
                       <>
                         <span aria-hidden>{diff > 0 ? "▲ " : "▼ "}</span>
-                        <span className="sr-only">{diff > 0 ? "Up " : "Down "}</span>
-                        {formatCount(Math.abs(diff))} over the limit {since}
+                        <span className="sr-only">
+                          {diff > 0
+                            ? tr("courtDashboardScreen_up")
+                            : tr("courtDashboardScreen_down")}
+                        </span>
+                        {tr("courtDashboardScreen_formatCountOverTheLimitSince", {
+                          formatCount: formatCount(Math.abs(diff)),
+                          since,
+                        })}
                       </>
                     ) : (
-                      `No change ${since}`
+                      tr("courtDashboardScreen_noChangeSince", { since })
                     )}
                   </span>
                 ) : null}
@@ -795,14 +1004,15 @@ function StagePath({
         <p className="mt-2 flex flex-wrap gap-x-6 gap-y-1 border-t border-hairline px-4 py-3 text-caption text-muted-foreground sm:px-6">
           <span className="inline-flex items-center gap-2">
             <span aria-hidden className="h-2.5 w-3.5 rounded-xs bg-brand-accent" />
-            Days in the stage, within the review point
+            {tr("courtDashboardScreen_daysInTheStageWithinThe")}
           </span>
           <span className="inline-flex items-center gap-2">
             <span aria-hidden className={cn("h-2.5 w-3.5 rounded-xs", LATE_SWATCH)} />
-            Past the review point
+            {tr("courtDashboardScreen_pastTheReviewPoint")}
           </span>
           <span className="tabular-nums">
-            Not counted above: {plural(end.longPending, "case", "cases")} on the long pending register.
+            Not counted above: {plural(end.longPending, "case", "cases")} on the long pending
+            register.
           </span>
         </p>
       </div>
@@ -825,6 +1035,7 @@ function StageDetailView({
   onClose: () => void;
   className?: string;
 }) {
+  const tr = useTranslations();
   const stage = STAGES.find((s) => s.key === key)!;
   const p = stagePathFor(docket, reading.selection)[key];
   const end = positionOn(docket, reading.end);
@@ -846,7 +1057,12 @@ function StageDetailView({
     <section
       ref={box}
       aria-labelledby="dash-stage-detail-title"
-      className={cn(BOX, RESOLVE_IN_PLACE, "mx-2 mt-3 flex flex-col gap-4 bg-card p-4 sm:p-6", className)}
+      className={cn(
+        BOX,
+        RESOLVE_IN_PLACE,
+        "mx-2 mt-3 flex flex-col gap-4 bg-card p-4 sm:p-6",
+        className,
+      )}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-0.5">
@@ -854,17 +1070,26 @@ function StageDetailView({
             {stage.label}
           </h4>
           <p className="text-body-compact text-muted-foreground">
-            {STAGE_DESCRIPTION[key]}. Review point: {p.limit} days in the stage.
+            {tr("courtDashboardScreen_stageDescriptionReviewPointLimitDays", {
+              STAGE_DESCRIPTION: translateText(tr, STAGE_DESCRIPTION[key]),
+              limit: String(p.limit),
+            })}
           </p>
         </div>
         <Button type="button" variant="outline" onClick={onClose}>
-          Close
+          {tr("common_close")}
         </Button>
       </div>
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1.1fr)]">
         <div className="flex min-w-0 flex-col gap-2">
-          <span className="text-caption text-muted-foreground">Days in the stage, {plural(n, "case", "cases")}</span>
-          <div role="group" aria-label={`${stage.label}: days in the stage`} className="relative mt-6 flex h-36 items-end gap-1 border-b border-border">
+          <span className="text-caption text-muted-foreground">
+            Days in the stage, {plural(n, "case", "cases")}
+          </span>
+          <div
+            role="group"
+            aria-label={tr("courtDashboardScreen_labelDaysInTheStage", { label: stage.label })}
+            className="relative mt-6 flex h-36 items-end gap-1 border-b border-border"
+          >
             {p.bins.map((b, i) => {
               const c = b.rows.length;
               const tip = `${plural(c, "case", "cases")} · ${binSpan(b.from, b.to)} in ${stage.label.toLowerCase()}`;
@@ -886,12 +1111,20 @@ function StageDetailView({
                         )}
                         style={{ height: `${(c / most) * 100}%` }}
                       >
-                        <span aria-hidden className="absolute bottom-full left-1/2 -translate-x-1/2 pb-0.5 text-caption text-muted-foreground tabular-nums">
+                        <span
+                          aria-hidden
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 pb-0.5 text-caption text-muted-foreground tabular-nums"
+                        >
                           {formatCount(c)}
                         </span>
                       </button>
                     ) : (
-                      <span role="img" tabIndex={0} aria-label={tip} className="h-px flex-1 outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring" />
+                      <span
+                        role="img"
+                        tabIndex={0}
+                        aria-label={tip}
+                        className="h-px flex-1 outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring"
+                      />
                     )}
                   </TooltipTrigger>
                   <TooltipContent className="tabular-nums">{tip}</TooltipContent>
@@ -903,21 +1136,30 @@ function StageDetailView({
               className="absolute -top-5 bottom-0 w-0 border-l border-dashed border-foreground"
               style={{ left: `${(p.reviewAfter / p.bins.length) * 100}%` }}
             >
-              <span className="absolute top-0 left-1 text-caption whitespace-nowrap">Review point · {p.limit} days</span>
+              <span className="absolute top-0 left-1 text-caption whitespace-nowrap">
+                {tr("courtDashboardScreen_reviewPointLimitDays", { limit: String(p.limit) })}
+              </span>
             </span>
           </div>
-          <div aria-hidden className="flex justify-between text-caption text-muted-foreground tabular-nums">
-            <span>0 days</span>
-            <span>{formatCount(p.limit * 2)}+ days</span>
+          <div
+            aria-hidden
+            className="flex justify-between text-caption text-muted-foreground tabular-nums"
+          >
+            <span>{tr("courtDashboardScreen_0Days")}</span>
+            <span>
+              {tr("courtDashboardScreen_formatCountDays", {
+                formatCount: formatCount(p.limit * 2),
+              })}
+            </span>
           </div>
           <p className="flex flex-wrap gap-x-4 text-caption text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <span aria-hidden className="h-2.5 w-3.5 rounded-xs bg-brand-accent" />
-              Within {p.limit} days
+              {tr("courtDashboardScreen_withinLimitDays", { limit: String(p.limit) })}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span aria-hidden className={cn("h-2.5 w-3.5 rounded-xs", LATE_SWATCH)} />
-              Past the review point
+              {tr("courtDashboardScreen_pastTheReviewPoint")}
             </span>
           </p>
         </div>
@@ -925,7 +1167,11 @@ function StageDetailView({
           {fact(
             "Pending",
             n ? (
-              <CountButton name={`pending at ${stage.label}`} className="-my-2" {...opener(`stage-${key}`)}>
+              <CountButton
+                name={`pending at ${stage.label}`}
+                className="-my-2"
+                {...opener(`stage-${key}`)}
+              >
                 {formatCount(n)}
               </CountButton>
             ) : (
@@ -934,9 +1180,13 @@ function StageDetailView({
             `${Math.round((n / Math.max(1, end.pending)) * 100)}% of all pending`,
           )}
           {fact(
-            "Past the review point",
+            tr("courtDashboardScreen_pastTheReviewPoint"),
             late ? (
-              <CountButton name={`over ${p.limit} days at ${stage.label}`} className="-my-2" {...opener(`late-${key}`)}>
+              <CountButton
+                name={`over ${p.limit} days at ${stage.label}`}
+                className="-my-2"
+                {...opener(`late-${key}`)}
+              >
                 {formatCount(late)}
               </CountButton>
             ) : (
@@ -944,29 +1194,46 @@ function StageDetailView({
             ),
             n ? `${Math.round((late / n) * 100)}% of this stage` : "–",
           )}
-          {fact("Typical time here", p.median === null ? "–" : plural(p.median, "day", "days"), "median, cases there now")}
           {fact(
-            reading.kind === "day" ? "That day" : "This period",
+            tr("courtDashboardScreen_typicalTimeHere"),
+            p.median === null ? "–" : plural(p.median, "day", "days"),
+            "median, cases there now",
+          )}
+          {fact(
+            reading.kind === "day"
+              ? tr("courtDashboardScreen_thatDay")
+              : tr("courtDashboardScreen_thisPeriod"),
             `+${formatCount(p.cameIn)} / −${formatCount(p.left)}`,
             "came in / left the stage",
           )}
           {usual !== null
             ? fact(
-                "Usual gap between hearings",
+                tr("courtDashboardScreen_usualGapBetweenHearings"),
                 plural(usual, "day", "days"),
                 reading.live ? undefined : `on ${formatDayShort(docket.today)} only`,
               )
             : null}
         </dl>
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="text-caption text-muted-foreground">Waiting longest</span>
+          <span className="text-caption text-muted-foreground">
+            {tr("courtDashboardScreen_waitingLongest")}
+          </span>
           <ol className="flex flex-col">
             {p.rows.slice(0, 5).map((r) => (
-              <li key={r.case.id} className="flex justify-between gap-3 border-t border-hairline py-1.5 text-body-compact">
+              <li
+                key={r.case.id}
+                className="flex justify-between gap-3 border-t border-hairline py-1.5 text-body-compact"
+              >
                 <span className="min-w-0 truncate">
-                  <span className="font-semibold tabular-nums">{r.case.caseNumber}</span> {r.case.title}
+                  <span className="font-semibold tabular-nums">{r.case.caseNumber}</span>{" "}
+                  {r.case.title}
                 </span>
-                <span className={cn("shrink-0 tabular-nums", r.days > p.limit ? "font-semibold text-warning-ink" : "")}>
+                <span
+                  className={cn(
+                    "shrink-0 tabular-nums",
+                    r.days > p.limit ? "font-semibold text-warning-ink" : "",
+                  )}
+                >
                   {plural(r.days, "day", "days")}
                 </span>
               </li>
@@ -981,7 +1248,9 @@ function StageDetailView({
               aria-controls={opener(`late-${key}`).controls}
               onClick={(event) => opener(`late-${key}`).onOpen(event.currentTarget)}
             >
-              Show all {formatCount(late)} past the review point
+              {tr("courtDashboardScreen_showAllFormatCountPastThe", {
+                formatCount: formatCount(late),
+              })}
             </Button>
           ) : null}
         </div>

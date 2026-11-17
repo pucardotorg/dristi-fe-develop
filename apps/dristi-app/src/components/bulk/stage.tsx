@@ -6,14 +6,11 @@ import { CircleCheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CaseStage } from "@/lib/bulk/types";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import type { CaseView } from "./api";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /** What each stage is called, and the status pair it wears. Never colour alone: the word is always there. */
 export const STAGE: Record<
@@ -24,14 +21,14 @@ export const STAGE: Record<
     fill: string;
   }
 > = {
-  held: { label: "Needs fixing", variant: "warning", fill: "bg-warning" },
-  ready: { label: "Ready to sign", variant: "info", fill: "bg-info" },
+  held: { label: "stage_needsFixing", variant: "warning", fill: "bg-warning" },
+  ready: { label: "stage_readyToSign", variant: "info", fill: "bg-info" },
   signed: {
-    label: "Signed, ready to pay",
+    label: "stage_signedReadyToPay",
     variant: "secondary",
     fill: "bg-primary",
   },
-  filed: { label: "Filed", variant: "success", fill: "bg-success" },
+  filed: { label: "stage_filed", variant: "success", fill: "bg-success" },
 };
 
 export const STAGE_ORDER: CaseStage[] = ["held", "ready", "signed", "filed"];
@@ -48,15 +45,12 @@ export function CaseBadge({
   /** Fields filled on screen but not yet saved, so the count moves as they are filled. */
   done?: number;
 }) {
-  if (c.stage === "signed" || c.stage === "filed")
-    return <StageBadge stage={c.stage} />;
+  const t = useTranslations();
+  if (c.stage === "signed" || c.stage === "filed") return <StageBadge stage={c.stage} />;
   const holds = c.flags.filter((f) => f.level === "hold");
   const fields =
     holds.filter(
-      (f) =>
-        f.section !== "documents" &&
-        f.fix?.kind !== "upload" &&
-        f.fix?.kind !== "documents",
+      (f) => f.section !== "documents" && f.fix?.kind !== "upload" && f.fix?.kind !== "documents",
     ).length - done;
   const docs = c.docs.need - c.docs.have;
   if (fields)
@@ -81,18 +75,17 @@ export function CaseBadge({
   return (
     <Badge variant="success">
       <CircleCheckIcon data-icon="inline-start" aria-hidden />
-      Complete
+      {t("stage_complete")}
     </Badge>
   );
 }
 
 export function StageBadge({ stage }: { stage: CaseStage }) {
+  const t = useTranslations();
   return (
     <Badge variant={STAGE[stage].variant}>
-      {stage === "filed" ? (
-        <CircleCheckIcon data-icon="inline-start" aria-hidden />
-      ) : null}
-      {STAGE[stage].label}
+      {stage === "filed" ? <CircleCheckIcon data-icon="inline-start" aria-hidden /> : null}
+      {translateText(t, STAGE[stage].label)}
     </Badge>
   );
 }
@@ -106,6 +99,7 @@ export function StageTip({
   counts: Record<CaseStage, number>;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <TooltipProvider>
       <Tooltip>
@@ -121,11 +115,8 @@ export function StageTip({
           <ul className="flex flex-col gap-0.5">
             {STAGE_ORDER.filter((k) => counts[k]).map((k) => (
               <li key={k} className="flex items-center gap-2 tabular-nums">
-                <span
-                  aria-hidden
-                  className={cn("size-2 rounded-full", STAGE[k].fill)}
-                />
-                {STAGE[k].label}: {counts[k]}
+                <span aria-hidden className={cn("size-2 rounded-full", STAGE[k].fill)} />
+                {translateText(t, STAGE[k].label)}: {counts[k]}
               </li>
             ))}
           </ul>
@@ -142,6 +133,7 @@ export function StageBar({
   counts: Record<CaseStage, number>;
   className?: string;
 }) {
+  const t = useTranslations();
   const total = STAGE_ORDER.reduce((s, k) => s + counts[k], 0);
   if (total === 0) return null;
   return (
@@ -165,18 +157,10 @@ export function StageBar({
       </StageTip>
       <ul className="flex flex-wrap gap-x-3 gap-y-1">
         {STAGE_ORDER.filter((k) => counts[k]).map((k) => (
-          <li
-            key={k}
-            className="flex items-center gap-1.5 text-caption text-muted-foreground"
-          >
-            <span
-              aria-hidden
-              className={cn("size-2 shrink-0 rounded-full", STAGE[k].fill)}
-            />
-            {STAGE[k].label}
-            <span className="font-medium tabular-nums text-foreground">
-              {counts[k]}
-            </span>
+          <li key={k} className="flex items-center gap-1.5 text-caption text-muted-foreground">
+            <span aria-hidden className={cn("size-2 shrink-0 rounded-full", STAGE[k].fill)} />
+            {translateText(t, STAGE[k].label)}
+            <span className="font-medium tabular-nums text-foreground">{counts[k]}</span>
           </li>
         ))}
       </ul>

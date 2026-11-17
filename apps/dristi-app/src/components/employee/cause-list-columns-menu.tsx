@@ -13,15 +13,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { causeListColumn } from "@/lib/employee/cause-list-columns";
 
 import type { useCauseListColumns } from "./use-cause-list-columns";
+import { useTranslations } from "next-intl";
+import { translateText } from "@/i18n/translate-text";
 
 /**
  * Which cause-list columns show — the advocate Cases list's Edit columns, on the court
@@ -29,11 +26,8 @@ import type { useCauseListColumns } from "./use-cause-list-columns";
  * Reset to default; order is the grip on each heading, not this menu. S. no. and Case
  * name are locked on.
  */
-export function CauseListColumnsMenu({
-  state,
-}: {
-  state: ReturnType<typeof useCauseListColumns>;
-}) {
+export function CauseListColumnsMenu({ state }: { state: ReturnType<typeof useCauseListColumns> }) {
+  const t = useTranslations();
   const { columns, toggle, showAll, reset, isDefault, isAllVisible } = state;
   return (
     <Popover>
@@ -48,20 +42,20 @@ export function CauseListColumnsMenu({
                 type="button"
                 variant="outline"
                 size="icon"
-                aria-label="Edit columns"
+                aria-label={t("causeListColumnsMenu_editColumns")}
                 className="shrink-0"
               >
                 <Columns3Icon aria-hidden />
               </Button>
             </PopoverTrigger>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Edit columns</TooltipContent>
+          <TooltipContent side="bottom">{t("causeListColumnsMenu_editColumns")}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <PopoverContent align="end" className="w-64">
         <PopoverHeader className="px-2 pt-1">
           <PopoverTitle className="text-body-compact font-medium">
-            Show or hide columns
+            {t("causeListColumnsMenu_showOrHideColumns")}
           </PopoverTitle>
         </PopoverHeader>
         <ul className="flex flex-col">
@@ -80,7 +74,7 @@ export function CauseListColumnsMenu({
                     disabled={column.locked}
                     onCheckedChange={() => toggle(id)}
                   />
-                  {column.label}
+                  {translateText(t, column.label)}
                 </Label>
               </li>
             );
@@ -96,7 +90,7 @@ export function CauseListColumnsMenu({
             disabled={isAllVisible}
             onClick={showAll}
           >
-            Show all
+            {t("causeListColumnsMenu_showAll")}
           </Button>
           <Button
             type="button"
@@ -106,7 +100,7 @@ export function CauseListColumnsMenu({
             disabled={isDefault}
             onClick={reset}
           >
-            Reset to default
+            {t("causeListColumnsMenu_resetToDefault")}
           </Button>
         </div>
       </PopoverContent>

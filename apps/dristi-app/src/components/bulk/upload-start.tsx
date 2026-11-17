@@ -20,8 +20,10 @@ import { useProfile } from "@/lib/filing/profile";
 import { Spinner } from "@/components/ui/spinner";
 
 import { setupHref, uploadHref } from "./setup-flow";
+import { useTranslations } from "next-intl";
 
 export function UploadStart() {
+  const t = useTranslations();
   const router = useRouter();
   const params = useSearchParams();
   const { profile, ready } = useProfile();
@@ -57,7 +59,7 @@ export function UploadStart() {
       className="flex flex-1 items-center justify-center py-16 text-body-compact text-muted-foreground"
     >
       <Spinner className="mr-2 size-4" />
-      Starting an upload…
+      {t("uploadStart_startingAnUpload")}
     </div>
   );
 }

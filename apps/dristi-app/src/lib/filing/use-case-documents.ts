@@ -121,7 +121,7 @@ async function linkDocument(latest: () => FilingDraft, update: DraftUpdate, link
   try {
     await getCaseFilingRepository().updateDocument(
       link.caseDocumentId,
-      fullPatch(latest(), link.target, meta)
+      fullPatch(latest(), link.target, meta),
     );
     patchSynced(update, link.target, (r) => {
       if (!sameCopy(r)) return;
@@ -146,10 +146,10 @@ async function linkDocument(latest: () => FilingDraft, update: DraftUpdate, link
 export async function linkSavedDocuments(
   latest: () => FilingDraft,
   update: DraftUpdate,
-  saved?: SavedIds
+  saved?: SavedIds,
 ): Promise<void> {
   await Promise.all(
-    pendingLinks(latest(), saved).map((link) => linkDocument(latest, update, link))
+    pendingLinks(latest(), saved).map((link) => linkDocument(latest, update, link)),
   );
 }
 
@@ -157,9 +157,11 @@ export async function linkSavedDocuments(
 function removeFromCase(records: Array<Pick<SyncedFile, "caseDocumentId">>) {
   for (const { caseDocumentId } of records) {
     if (!caseDocumentId) continue;
-    getCaseFilingRepository().deleteDocument(caseDocumentId).catch((error) => {
-      console.warn("[filing] couldn't remove a document from the case", caseDocumentId, error);
-    });
+    getCaseFilingRepository()
+      .deleteDocument(caseDocumentId)
+      .catch((error) => {
+        console.warn("[filing] couldn't remove a document from the case", caseDocumentId, error);
+      });
   }
 }
 
@@ -193,9 +195,11 @@ function clearCaseDocument(record: SyncedFile) {
  * sends the scan again.
  */
 function linkScan(evidenceId: string, caseDocumentId: string) {
-  getCaseFilingRepository().updateEvidence(evidenceId, { caseDocumentId }).catch((error) => {
-    console.warn("[filing] couldn't link a scan to its evidence", evidenceId, error);
-  });
+  getCaseFilingRepository()
+    .updateEvidence(evidenceId, { caseDocumentId })
+    .catch((error) => {
+      console.warn("[filing] couldn't link a scan to its evidence", evidenceId, error);
+    });
 }
 
 export function useCaseDocuments(): CaseDocuments {
@@ -205,7 +209,7 @@ export function useCaseDocuments(): CaseDocuments {
   const patch = React.useCallback(
     (target: DocumentTarget, recipe: (record: SyncedFile) => void) =>
       patchSynced(update, target, recipe),
-    [update]
+    [update],
   );
 
   /** Save a stored file to the case; a copy saved after the target moved on is taken off. */
@@ -227,7 +231,7 @@ export function useCaseDocuments(): CaseDocuments {
           blob,
           ref.name,
           plan.documentType,
-          sent
+          sent,
         );
         if (!stillHere()) {
           removeFromCase([saved]);
@@ -261,12 +265,12 @@ export function useCaseDocuments(): CaseDocuments {
         });
       }
     },
-    [caseId, latest, patch, update]
+    [caseId, latest, patch, update],
   );
 
   const discard = React.useCallback(
     (targets: DocumentTarget[]) => discardDocuments(latest(), targets),
-    [latest]
+    [latest],
   );
 
   const attachFile = React.useCallback(
@@ -300,7 +304,7 @@ export function useCaseDocuments(): CaseDocuments {
       void upload(target, ref, file);
       return null;
     },
-    [latest, discard, update, upload]
+    [latest, discard, update, upload],
   );
 
   const clearFile = React.useCallback(
@@ -317,7 +321,7 @@ export function useCaseDocuments(): CaseDocuments {
         }
       });
     },
-    [discard, update]
+    [discard, update],
   );
 
   /**
@@ -336,7 +340,7 @@ export function useCaseDocuments(): CaseDocuments {
       patch(target, clearCaseDocument);
       void upload(target, ref, blob, meta);
     },
-    [caseId, latest, patch, upload]
+    [caseId, latest, patch, upload],
   );
 
   /**
@@ -370,14 +374,14 @@ export function useCaseDocuments(): CaseDocuments {
         });
       }
     },
-    [caseId, latest, patch, resave]
+    [caseId, latest, patch, resave],
   );
 
   const retry = React.useCallback(
     (documents: UnsavedDocument[]) => {
       for (const { target } of documents) void resave(target);
     },
-    [resave]
+    [resave],
   );
 
   return { attachFile, clearFile, discard, updateDetails, retry };

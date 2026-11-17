@@ -33,9 +33,15 @@ function evidence(
   id: string,
   type: string,
   ordinal: number,
-  info: Record<string, unknown>
+  info: Record<string, unknown>,
 ): EvidenceRead {
-  return { case_evidence_id: id, case_document_id: null, evidence_type: type, ordinal, evidence_info: info };
+  return {
+    case_evidence_id: id,
+    case_document_id: null,
+    evidence_type: type,
+    ordinal,
+    evidence_info: info,
+  };
 }
 
 function cheque(): ChequeDetails {
@@ -80,7 +86,7 @@ describe("chequesFromCase", () => {
     const [c] = chequesFromCase(read, [blankCheque()]);
     assert.deepEqual(
       { ...c, id: "" },
-      { ...typed, id: "", chequeEvidenceId: "e-chq", returnMemoEvidenceId: "e-memo" }
+      { ...typed, id: "", chequeEvidenceId: "e-chq", returnMemoEvidenceId: "e-memo" },
     );
   });
 
@@ -109,7 +115,7 @@ describe("chequesFromCase", () => {
       [
         ["123456", "c1", undefined],
         ["654321", "c2", "m2"],
-      ]
+      ],
     );
   });
 
@@ -124,7 +130,9 @@ describe("chequesFromCase", () => {
 
   it("keeps a decimal amount readable as the form types it", () => {
     const read = caseOf({
-      evidence: [evidence("c1", "CHEQUE", 1, { ...chequeEvidenceInfo([cheque()], 0), amount: "50000.00" })],
+      evidence: [
+        evidence("c1", "CHEQUE", 1, { ...chequeEvidenceInfo([cheque()], 0), amount: "50000.00" }),
+      ],
     });
     assert.equal(chequesFromCase(read, [])[0].amount, "50000");
   });
@@ -184,7 +192,7 @@ describe("jurisdictionFromCase", () => {
           },
         },
       }),
-      draft
+      draft,
     );
     const j = draft.jurisdiction;
     assert.equal(j.deposited, "yes");
@@ -211,7 +219,7 @@ describe("jurisdictionFromCase", () => {
           },
         },
       }),
-      draft
+      draft,
     );
     assert.equal(draft.jurisdiction.deposited, "no");
     assert.equal(draft.jurisdiction.drawerPolice, "Kollam East");
@@ -229,7 +237,7 @@ describe("adrFromCase", () => {
           [ADR_SECTION]: { adr_preference: "MAYBE", final_relief: "<p>Convict the accused.</p>" },
         },
       }),
-      draft
+      draft,
     );
     assert.equal(draft.adr.adr, "maybe");
     assert.equal(draft.adr.finalRelief, "<p>Convict the accused.</p>");

@@ -27,7 +27,11 @@ const STATUS_ORDER: Record<CauseStatusKey, number> = {
  * "court" groups by the court itself — one cause list per court, so SARAS Court 1
  * and SARAS Court 2 are two groups though they share a name; "status" by the
  * four-way cause-list status. */
-export function groupCauseList(rows: readonly CauseListRow[], by: CauseListGroupBy, locale = "en-IN") {
+export function groupCauseList(
+  rows: readonly CauseListRow[],
+  by: CauseListGroupBy,
+  locale = "en-IN",
+) {
   const grouped = new Map<string, CauseListRow[]>();
   const keyOf = (row: CauseListRow) =>
     by === "court" ? row.court : by === "status" ? causeStatusKey(row) : String(row[by]);
@@ -37,12 +41,15 @@ export function groupCauseList(rows: readonly CauseListRow[], by: CauseListGroup
   const compareStatus = (a: CauseListRow, b: CauseListRow) =>
     (STATUS_ORDER[causeStatusKey(a)] ?? 9) - (STATUS_ORDER[causeStatusKey(b)] ?? 9);
   const primary = (a: CauseListRow, b: CauseListRow) =>
-    by === "item" ? a.item - b.item :
-    by === "court" ? compareCourt(a, b) :
-    by === "status" ? compareStatus(a, b) :
-    a.hearingType.localeCompare(b.hearingType, locale);
-  const sorted = [...rows].sort((a, b) =>
-    primary(a, b) || a.item - b.item || compareCourt(a, b) || a.id.localeCompare(b.id)
+    by === "item"
+      ? a.item - b.item
+      : by === "court"
+        ? compareCourt(a, b)
+        : by === "status"
+          ? compareStatus(a, b)
+          : a.hearingType.localeCompare(b.hearingType, locale);
+  const sorted = [...rows].sort(
+    (a, b) => primary(a, b) || a.item - b.item || compareCourt(a, b) || a.id.localeCompare(b.id),
   );
   for (const row of sorted) {
     const key = keyOf(row);
@@ -56,8 +63,15 @@ export function groupCauseList(rows: readonly CauseListRow[], by: CauseListGroup
 export function searchCauseList(rows: readonly CauseListRow[], query: string) {
   const q = query.trim().toLocaleLowerCase();
   if (!q) return [...rows];
-  return rows.filter((row) =>
-    [row.parties, row.caseNumber, row.advocates, row.courtLabel, String(row.courtNumber ?? ""), row.hearingType]
-      .some((value) => value.toLocaleLowerCase().includes(q)) || String(row.item) === q
+  return rows.filter(
+    (row) =>
+      [
+        row.parties,
+        row.caseNumber,
+        row.advocates,
+        row.courtLabel,
+        String(row.courtNumber ?? ""),
+        row.hearingType,
+      ].some((value) => value.toLocaleLowerCase().includes(q)) || String(row.item) === q,
   );
 }

@@ -14,10 +14,7 @@ export const metadata: Metadata = { title: "Raise application" };
 export default function RaiseApplicationEntryPage() {
   return (
     <main className="flex flex-1 flex-col">
-      <RaiseApplicationCaseChooser
-        cases={CASES}
-        now={new Date(FIXTURE_TODAY).getTime()}
-      />
+      <RaiseApplicationCaseChooser cases={CASES} now={new Date(FIXTURE_TODAY).getTime()} />
     </main>
   );
 }

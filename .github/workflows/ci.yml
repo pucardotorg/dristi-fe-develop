@@ -1,16 +1,18 @@
 name: CI
 
-# Required checks for every pull request into main (set them as required in branch
-# protection): lint, types, tests, agent rails and a production build. The checks
+# Required checks for every pull request (set them as required in branch protection for
+# main): formatting, lint, types, tests, agent rails and a production build. The checks
 # against the base branch's data rules run in data-rules.yml.
 on:
-  pull_request:
   push:
     branches: [main]
+  pull_request:
+    branches: ["**"]
 
 permissions:
   contents: read
 
+# A newer push to the same branch or PR supersedes the run in progress.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -25,11 +27,15 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v5
         with:
+          # Same as docker/Dockerfile (NODE_VERSION).
           node-version: 22
           cache: npm
 
       - name: Install
         run: npm ci
+
+      - name: Format check
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint

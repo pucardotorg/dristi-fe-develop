@@ -59,9 +59,7 @@ export function PapersStep({ locale, caseSummary }: StepProps) {
     <div className="flex flex-col gap-6">
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <div className="flex flex-col gap-3">
-          <p className="text-body text-pretty text-foreground">
-            {pick(papers.body, locale)}
-          </p>
+          <p className="text-body text-pretty text-foreground">{pick(papers.body, locale)}</p>
           <p className="text-body text-pretty text-muted-foreground">
             {pick(papers.reassurance, locale)}
           </p>
@@ -81,9 +79,7 @@ export function PapersStep({ locale, caseSummary }: StepProps) {
           <Alert variant="info">
             <InfoIcon aria-hidden />
             <AlertTitle>{pick(ui.missingCase, locale)}</AlertTitle>
-            <AlertDescription>
-              {pick(ui.missingCaseBody, locale)}
-            </AlertDescription>
+            <AlertDescription>{pick(ui.missingCaseBody, locale)}</AlertDescription>
           </Alert>
         )}
 
@@ -99,9 +95,7 @@ export function PapersStep({ locale, caseSummary }: StepProps) {
                     </DescriptionTerm>
                     <DescriptionDetails
                       className={
-                        value
-                          ? "text-body font-medium"
-                          : "text-body text-muted-foreground"
+                        value ? "text-body font-medium" : "text-body text-muted-foreground"
                       }
                     >
                       {value ?? pick(field.fallback, locale)}
@@ -112,7 +106,6 @@ export function PapersStep({ locale, caseSummary }: StepProps) {
             </DescriptionList>
           </CardContent>
         </Card>
-
       </div>
 
       <div className="flex flex-col gap-2">
@@ -124,9 +117,7 @@ export function PapersStep({ locale, caseSummary }: StepProps) {
         >
           {pick(ui.notMe, locale)}
         </Button>
-        {notMeOpen && (
-          <StatusLine tone="warning">{pick(ui.notMeBody, locale)}</StatusLine>
-        )}
+        {notMeOpen && <StatusLine tone="warning">{pick(ui.notMeBody, locale)}</StatusLine>}
       </div>
     </div>
   );
@@ -148,16 +139,9 @@ export function ChoicesStep({ locale }: StepProps) {
           <CardContent>
             <Accordion type="single" collapsible defaultValue="pay">
               {choices.cards.map((card, index) => (
-                <AccordionItem
-                  key={card.id}
-                  value={card.id}
-                  className="border-border"
-                >
+                <AccordionItem key={card.id} value={card.id} className="border-border">
                   <AccordionTrigger className="min-h-10 items-start gap-3 px-2 hover:no-underline">
-                    <Badge
-                      variant="outline"
-                      className="size-6 p-0 tabular-nums"
-                    >
+                    <Badge variant="outline" className="size-6 p-0 tabular-nums">
                       {index + 1}
                     </Badge>
                     <span className="flex min-w-0 flex-1 flex-col gap-1.5 pr-4 text-left">
@@ -182,9 +166,7 @@ export function ChoicesStep({ locale }: StepProps) {
                           ) : (
                             <InfoIcon aria-hidden />
                           )}
-                          <AlertDescription>
-                            {pick(card.note, locale)}
-                          </AlertDescription>
+                          <AlertDescription>{pick(card.note, locale)}</AlertDescription>
                         </Alert>
                       )}
                     </div>
@@ -210,9 +192,7 @@ export function DateStep({ locale, caseSummary }: StepProps) {
         <Card variant="raised">
           <CardContent>
             <div className="flex flex-col gap-2">
-              <p className="text-body text-muted-foreground">
-                {pick(dateStep.dateLabel, locale)}
-              </p>
+              <p className="text-body text-muted-foreground">{pick(dateStep.dateLabel, locale)}</p>
               <p className="text-title-l font-semibold text-pretty text-foreground">
                 {hearingDate ?? pick(dateStep.noDate, locale)}
               </p>
@@ -232,7 +212,6 @@ export function DateStep({ locale, caseSummary }: StepProps) {
           <li>{pick(dateStep.cantCome, locale)}</li>
         </ul>
       </div>
-
     </div>
   );
 }
@@ -243,9 +222,7 @@ export function HelpStep({ locale }: StepProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex max-w-prose flex-col gap-3">
-        <p className="text-body text-pretty text-foreground">
-          {pick(help.body, locale)}
-        </p>
+        <p className="text-body text-pretty text-foreground">{pick(help.body, locale)}</p>
         <p className="text-body text-pretty text-muted-foreground">
           {pick(help.proofNote, locale)}
         </p>
@@ -276,26 +253,15 @@ export function HelpStep({ locale }: StepProps) {
 
 /* --------------------------------------------------------------- 5 · join */
 
-export function JoinStep({
-  locale,
-  onFinish,
-}: StepProps & { onFinish: () => void }) {
+export function JoinStep({ locale, onFinish }: StepProps & { onFinish: () => void }) {
   return (
     <div className="flex max-w-prose flex-col gap-6">
       <div className="flex flex-col gap-3">
-        <p className="text-body text-pretty text-foreground">
-          {pick(join.body, locale)}
-        </p>
-        <p className="text-body text-pretty text-muted-foreground">
-          {pick(join.safety, locale)}
-        </p>
+        <p className="text-body text-pretty text-foreground">{pick(join.body, locale)}</p>
+        <p className="text-body text-pretty text-muted-foreground">{pick(join.safety, locale)}</p>
       </div>
 
-      <Button
-        size="lg"
-        className="hidden self-start sm:inline-flex"
-        onClick={onFinish}
-      >
+      <Button size="lg" className="hidden self-start sm:inline-flex" onClick={onFinish}>
         {pick(join.cta, locale)}
       </Button>
     </div>

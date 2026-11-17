@@ -18,7 +18,9 @@ export function Chip({
     plum: "bg-(--pv-plum-50) text-(--pv-plum)",
   };
   return (
-    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${tones[tone]}`}>
+    <span
+      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${tones[tone]}`}
+    >
       {children}
     </span>
   );
@@ -37,7 +39,8 @@ export function Button({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "outline" | "ghost" }) {
   const v = {
-    primary: "bg-(--pv-blue) text-white hover:bg-(--pv-blue-dark) shadow-sm disabled:bg-(--pv-blue)/50",
+    primary:
+      "bg-(--pv-blue) text-white hover:bg-(--pv-blue-dark) shadow-sm disabled:bg-(--pv-blue)/50",
     outline: "border border-(--pv-line) bg-white text-(--pv-slate) hover:bg-(--pv-ground)",
     ghost: "text-(--pv-slate) hover:bg-(--pv-ground)",
   }[variant];

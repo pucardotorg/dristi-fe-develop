@@ -16,15 +16,11 @@ import * as React from "react";
  */
 type Interceptor = (href: string) => boolean;
 
-const LeaveGuardContext = React.createContext<React.RefObject<Interceptor | null> | null>(
-  null
-);
+const LeaveGuardContext = React.createContext<React.RefObject<Interceptor | null> | null>(null);
 
 export function LeaveGuardProvider({ children }: { children: React.ReactNode }) {
   const ref = React.useRef<Interceptor | null>(null);
-  return (
-    <LeaveGuardContext.Provider value={ref}>{children}</LeaveGuardContext.Provider>
-  );
+  return <LeaveGuardContext.Provider value={ref}>{children}</LeaveGuardContext.Provider>;
 }
 
 /** Register this screen's question. Pass `null` to stop guarding. */

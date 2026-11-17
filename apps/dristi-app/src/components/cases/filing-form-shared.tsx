@@ -7,7 +7,9 @@ import {
   FileTextIcon,
   PlusIcon,
   Trash2Icon,
-  UserRoundIcon, FileXIcon } from "lucide-react";
+  UserRoundIcon,
+  FileXIcon,
+} from "lucide-react";
 
 import { ChromeAlertDialogContent } from "@/components/chrome/app-chrome";
 
@@ -53,10 +55,10 @@ import { cn } from "@/lib/utils";
 import { isAcceptedType, MAX_FILE_SIZE } from "@/lib/uploads/accepted-document";
 import { Identifier } from "@/components/chrome/identifier";
 import { ConfirmMark } from "@/components/feedback";
+import { useTranslations } from "next-intl";
 
 const PREVIEWABLE_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png"];
-const ACCEPTED_FILE_TYPES =
-  ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
+const ACCEPTED_FILE_TYPES = ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
 
 function fileExtension(file: File): string {
   return file.name.split(".").pop()?.toLowerCase() ?? "";
@@ -91,9 +93,7 @@ export function validateSelectedFiles(files: File[]): string | null {
 
 export function focusFirstInvalid(container: HTMLElement | null) {
   requestAnimationFrame(() => {
-    container
-      ?.querySelector<HTMLElement>("[aria-invalid='true']")
-      ?.focus();
+    container?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus();
   });
 }
 
@@ -166,25 +166,24 @@ export function FilingFrame({
   contentWidth?: "default" | "wide";
   children: ReactNode;
 }) {
+  const t = useTranslations();
   return (
     <div
       className={cn(
         "mx-auto flex w-full flex-col gap-8",
-        contentWidth === "wide" ? "max-w-6xl" : "max-w-4xl"
+        contentWidth === "wide" ? "max-w-6xl" : "max-w-4xl",
       )}
     >
       <div>
         <Button type="button" variant="ghost" onClick={onExit}>
           <ArrowLeftIcon data-icon="inline-start" aria-hidden />
-          Back to case
+          {t("filingFormShared_backToCase")}
         </Button>
       </div>
 
       <header>
         <h1 className="text-title-l font-semibold">{title}</h1>
-        <p className="mt-2 max-w-2xl text-body text-muted-foreground">
-          {description}
-        </p>
+        <p className="mt-2 max-w-2xl text-body text-muted-foreground">{description}</p>
       </header>
 
       {showCaseContext && caseNumber ? (
@@ -193,10 +192,13 @@ export function FilingFrame({
             <UserRoundIcon className="mt-0.5 size-5 shrink-0" aria-hidden />
             <div>
               <p className="text-body-compact text-muted-foreground">
-                Case <Identifier value={caseNumber} label="case number" />
+                {t("filingFormShared_case")}{" "}
+                <Identifier value={caseNumber} label={t("filingFormShared_caseNumber")} />
               </p>
               <p className="text-body font-medium">
-                Filing for Complainant · {complainantName}
+                {t("filingFormShared_filingForComplainantComplainantName", {
+                  complainantName: complainantName ?? "",
+                })}
               </p>
             </div>
           </CardContent>
@@ -237,12 +239,12 @@ export function FileField({
   onFilesChange: (files: File[]) => void;
   onErrorChange: (error: string | undefined) => void;
 }) {
+  const t = useTranslations();
   const inputRef = useRef<HTMLInputElement>(null);
   const attached = files.length > 0;
   const hint = (
     <FieldDescription className="text-body-compact">
-      {description ? `${description} ` : ""}PDF, JPG, JPEG or PNG; maximum 10
-      MB per file.
+      {t("filingFormShared_valuePdfJpgJpegOrPng", { value: description ? `${description} ` : "" })}
     </FieldDescription>
   );
 
@@ -256,7 +258,7 @@ export function FileField({
     const existing = new Set(files.map(fileKey));
     const unique = selected.filter((file) => !existing.has(fileKey(file)));
     if (unique.length !== selected.length) {
-      onErrorChange("A selected file has already been added.");
+      onErrorChange(t("filingFormShared_aSelectedFileHasAlreadyBeen"));
       return;
     }
 
@@ -292,7 +294,9 @@ export function FileField({
                   <AttachmentContent>
                     <AttachmentTitle>{file.name}</AttachmentTitle>
                     <AttachmentDescription>
-                      {formatFileSize(file.size)} · selected locally
+                      {t("filingFormShared_formatFileSizeSelectedLocally", {
+                        formatFileSize: formatFileSize(file.size),
+                      })}
                     </AttachmentDescription>
                   </AttachmentContent>
                   <AttachmentActions>
@@ -300,11 +304,9 @@ export function FileField({
                       type="button"
                       variant="destructive-ghost"
                       size="icon"
-                      aria-label={`Remove ${file.name}`}
+                      aria-label={t("filingFormShared_removeName", { name: file.name })}
                       onClick={() =>
-                        onFilesChange(
-                          files.filter((item) => fileKey(item) !== fileKey(file))
-                        )
+                        onFilesChange(files.filter((item) => fileKey(item) !== fileKey(file)))
                       }
                     >
                       <Trash2Icon aria-hidden />
@@ -322,7 +324,7 @@ export function FileField({
                 onClick={() => inputRef.current?.click()}
               >
                 <PlusIcon data-icon="inline-start" aria-hidden />
-                Add more
+                {t("filingFormShared_addMore")}
               </Button>
             </div>
           </div>
@@ -334,7 +336,7 @@ export function FileField({
           label={label}
           required={required}
           optional={!required}
-          copy={{ optional: "optional", noFile: "No documents added yet" }}
+          copy={{ optional: "optional", noFile: t("filingFormShared_noDocumentsAddedYet") }}
           onChooseFile={() => inputRef.current?.click()}
         />
       )}
@@ -370,13 +372,7 @@ export function FileField({
  * alt is empty on purpose: every caller shows the filename as visible text
  * beside or beneath the image, so alt would only repeat it.
  */
-export function FilePreviewImage({
-  file,
-  className,
-}: {
-  file: File;
-  className?: string;
-}) {
+export function FilePreviewImage({ file, className }: { file: File; className?: string }) {
   const imageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
@@ -479,10 +475,7 @@ function ChoicePills<Value extends string>({
           if (match) onChange(match.id);
         }}
         aria-labelledby={legendId}
-        className={cn(
-          "flex gap-2",
-          orientation === "column" ? "flex-col" : "flex-row flex-wrap"
-        )}
+        className={cn("flex gap-2", orientation === "column" ? "flex-col" : "flex-row flex-wrap")}
       >
         {options.map((option) => {
           const id = `${fieldProps.id}-${option.id}`;
@@ -493,7 +486,7 @@ function ChoicePills<Value extends string>({
               className={cn(
                 "min-h-10 w-full max-w-full items-center gap-3 rounded-lg border border-input bg-card px-4 py-2 text-body has-[:focus-visible]:border-ring has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50",
                 // A column fills its rail; a row lets short heads sit together.
-                orientation === "row" && "sm:w-auto"
+                orientation === "row" && "sm:w-auto",
               )}
             >
               <RadioGroupItem id={id} value={option.id} />
@@ -518,16 +511,9 @@ export function ReviewRow({
   children: ReactNode;
 }) {
   return (
-    <DescriptionRow
-      className={cn(
-        "grid-cols-1 sm:grid-cols-[minmax(8rem,11rem)_1fr]",
-        className
-      )}
-    >
+    <DescriptionRow className={cn("grid-cols-1 sm:grid-cols-[minmax(8rem,11rem)_1fr]", className)}>
       <DescriptionTerm className="text-body-compact">{term}</DescriptionTerm>
-      <DescriptionDetails className="min-w-0 text-body-compact">
-        {children}
-      </DescriptionDetails>
+      <DescriptionDetails className="min-w-0 text-body-compact">{children}</DescriptionDetails>
     </DescriptionRow>
   );
 }
@@ -551,25 +537,16 @@ export function PrototypeActions({
   onBack?: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={onCancel}
-        >
-          Cancel
+        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCancel}>
+          {t("common_cancel")}
         </Button>
         {review ? (
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full sm:w-auto"
-            onClick={onBack}
-          >
-            Back
+          <Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={onBack}>
+            {t("common_back")}
           </Button>
         ) : null}
       </div>
@@ -588,18 +565,13 @@ export function PrototypeActions({
             id="filing-submit-unavailable"
             className="text-body-compact text-muted-foreground sm:text-right"
           >
-            Saving, signing and payment are not connected yet.
+            {t("filingFormShared_savingSigningAndPaymentAreNot")}
           </p>
         </div>
       ) : (
         <div className="flex flex-col-reverse gap-3 sm:flex-row">
-          <Button
-            type="button"
-            variant="outline"
-            disabled
-            className="w-full sm:w-auto"
-          >
-            Save draft
+          <Button type="button" variant="outline" disabled className="w-full sm:w-auto">
+            {t("filingFormShared_saveDraft")}
           </Button>
           <Button type="submit" className="w-full sm:w-auto">
             {reviewLabel}
@@ -634,22 +606,25 @@ export function DiscardFilingDialog({
   /** The case tab the draft waits on. */
   finishIn?: string;
 }) {
+  const t = useTranslations();
   if (onSaveDraft) {
     return (
       <AlertDialog open={open} onOpenChange={onOpenChange}>
         <ChromeAlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Save this {noun} as a draft?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("filingFormShared_saveThisNounAsADraft", { noun })}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Finish it later from {finishIn}.
+              {t("filingFormShared_finishItLaterFromFinishIn", { finishIn })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button type="button" variant="outline" onClick={onDiscard}>
-              Discard
+              {t("filingFormShared_discard")}
             </Button>
             <Button type="button" onClick={onSaveDraft}>
-              Save as draft
+              {t("filingFormShared_saveAsDraft")}
             </Button>
           </AlertDialogFooter>
         </ChromeAlertDialogContent>
@@ -662,15 +637,15 @@ export function DiscardFilingDialog({
       <ChromeAlertDialogContent>
         <AlertDialogHeader>
           <ConfirmMark danger icon={FileXIcon} />
-          <AlertDialogTitle>Discard this {noun}?</AlertDialogTitle>
+          <AlertDialogTitle>{t("filingFormShared_discardThisNoun", { noun })}</AlertDialogTitle>
           <AlertDialogDescription>
-            Anything you entered will be lost.
+            {t("filingFormShared_anythingYouEnteredWillBeLost")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep editing</AlertDialogCancel>
+          <AlertDialogCancel>{t("filingFormShared_keepEditing")}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onDiscard}>
-            Discard
+            {t("filingFormShared_discard")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </ChromeAlertDialogContent>

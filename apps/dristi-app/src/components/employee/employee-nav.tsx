@@ -43,6 +43,7 @@ import { usePendingOrders } from "@/components/employee/use-pending-orders";
 import { pendingOrderCountFor } from "@/lib/employee/pending-orders";
 import { resetBulk } from "@/components/bulk/api";
 import { loadDemoSeed, resetSandboxData } from "@/lib/employee/sandbox-reset";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { DEMO_SEED_OPTIONS, type DemoSeed } from "@/lib/employee/demo-seed";
 import { useDemoSeed } from "@/components/employee/use-demo-seed";
 import {
@@ -929,7 +930,7 @@ function CourtSettingsControl() {
   /* Everything but the seat and the court (owner, 2026-10-15: a pop-up "so we can keep
      adding items", with those two prominent and the rest small and folded away). A new
      setting is one more entry here. Internal demo controls; kept plain on purpose. */
-  const more: MoreSetting[] = [
+  const settings: MoreSetting[] = [
     /* Which demo day the hearings and orders open on (owner, 2026-10-15). Switching
        reloads them in this browser. */
     {
@@ -984,6 +985,8 @@ function CourtSettingsControl() {
       onChange: (next) => setNextHearingEntry(next as NextHearingEntry),
     },
   ];
+  // The demo day picker is sandbox-only (AGENTS.md, Data).
+  const more = settings.filter((setting) => IS_SANDBOX || setting.id !== "demo-seed");
 
   return (
     <>
@@ -1138,16 +1141,19 @@ function CourtSettingsControl() {
                 </DropdownMenu>
               </div>
               {/* A demo control, last and apart: everything filed and drafted in this
-                  browser goes, so it asks first (owner, 2026-10-14). */}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="w-fit px-2 text-destructive"
-                onClick={() => setConfirmReset(true)}
-              >
-                {t("employeeNav_resetSandboxData")}
-              </Button>
+                  browser goes, so it asks first (owner, 2026-10-14). Sandbox only: it also
+                  clears the server's bulk batches for everyone. */}
+              {IS_SANDBOX ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-fit px-2 text-destructive"
+                  onClick={() => setConfirmReset(true)}
+                >
+                  {t("employeeNav_resetSandboxData")}
+                </Button>
+              ) : null}
             </CollapsibleContent>
           </Collapsible>
         </DialogContent>

@@ -11,7 +11,7 @@
 import * as React from "react";
 
 import { blankWitness } from "@/lib/filing/blank";
-import { witnessComplete } from "@/lib/filing/selectors";
+import { witnessComplete, witnessEntered } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
@@ -61,21 +61,25 @@ export function WitnessesSection() {
 
   const askRemove = (id: string) => {
     const i = draft.witnesses.findIndex((x) => x.id === id);
-    if (i < 0 || draft.witnesses.length <= 1) return;
+    if (i < 0) return;
     setRemoveNumber(i + 1);
     setRemoveId(id);
   };
 
+  // Removing the only witness leaves a blank row in its place: a witness with nothing
+  // entered is no witness, so the page always has a form and the case has none.
   const confirmRemove = () => {
     const i = removeId ? draft.witnesses.findIndex((x) => x.id === removeId) : -1;
-    if (i < 0 || draft.witnesses.length <= 1) {
+    if (i < 0) {
       setRemoveId(null);
       return;
     }
-    const fallback = draft.witnesses[i + 1] ?? draft.witnesses[i - 1];
+    const replacement = draft.witnesses.length === 1 ? blankWitness() : undefined;
+    const fallback = replacement ?? draft.witnesses[i + 1] ?? draft.witnesses[i - 1];
     removePartyFromCase(draft.witnesses[i]);
     update((d) => {
-      d.witnesses.splice(i, 1);
+      if (replacement) d.witnesses.splice(i, 1, replacement);
+      else d.witnesses.splice(i, 1);
     });
     if (removeId === activeId && fallback) setActiveId(fallback.id);
     setRemoveId(null);
@@ -105,7 +109,8 @@ export function WitnessesSection() {
             id: wit.id,
             label: `Witness ${i + 1}`,
             status: witnessComplete(wit) ? "complete" : "attention",
-            removable: draft.witnesses.length > 1,
+            // A lone blank row is already "no witness"; there is nothing to remove.
+            removable: draft.witnesses.length > 1 || witnessEntered(wit),
           }))}
           activeId={w.id}
           onSelect={setActiveId}

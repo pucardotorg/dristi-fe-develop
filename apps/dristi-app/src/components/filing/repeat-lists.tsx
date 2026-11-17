@@ -50,6 +50,7 @@ export function ContactList({
   emailPlaceholder = "name@example.com",
   optional = false,
   allowAdd = true,
+  mobileConflicts,
 }: {
   contacts: Contact[];
   onChange: (next: Contact[]) => void;
@@ -62,6 +63,8 @@ export function ContactList({
   optional?: boolean;
   /** False hides the add-row control; a single contact row is enough. */
   allowAdd?: boolean;
+  /** Per row, why its number cannot be used: another party already has it. */
+  mobileConflicts?: (string | undefined)[];
 }) {
   const t = useTranslations();
   const setAt = (i: number, patch: Partial<Contact>) =>
@@ -78,6 +81,7 @@ export function ContactList({
               value={c.mobile}
               onChange={(v) => setAt(i, { mobile: v })}
               placeholder={mobilePlaceholder}
+              conflict={mobileConflicts?.[i]}
             />
             <FormField
               label={translateText(t, emailLabel)}

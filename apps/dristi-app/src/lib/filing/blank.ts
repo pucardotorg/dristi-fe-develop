@@ -704,7 +704,9 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
   draft.cheques ??= [blankCheque()];
   draft.notices ??= [blankNotice()];
   draft.jurisdiction ??= blankJurisdiction();
-  draft.witnesses ??= [blankWitness()];
+  // The witnesses step always shows one form; a blank row there is "no witness". A draft
+  // saved with an empty list (the step briefly allowed it) gets that row back.
+  if (!draft.witnesses?.length) draft.witnesses = [blankWitness()];
   draft.documents ??= [];
   settleInterruptedUploads(draft);
   // Cheques, notices and complainants added on one side never reached the other before

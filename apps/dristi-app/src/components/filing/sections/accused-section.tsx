@@ -24,6 +24,7 @@ import {
   accusedLabel,
 } from "@/lib/filing/selectors";
 import { nameList } from "@/lib/filing/format";
+import { firstAccusedClash, mobileConflicts } from "@/lib/filing/mobile-conflicts";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
@@ -44,6 +45,7 @@ import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard, FormRow, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
+import { useMobileConflictMessage } from "@/components/filing/mobile-field";
 import { CorrectionInstance } from "@/components/filing/posture";
 import { OptionSelect, TextField } from "@/components/filing/inputs";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
@@ -76,6 +78,10 @@ export function AccusedSection() {
   const index = found >= 0 ? found : draft.accused.length - 1;
   const a = draft.accused[index];
   const isIndividual = a.type === "individual";
+
+  const conflicts = mobileConflicts(draft);
+  const clashAt = firstAccusedClash(conflicts);
+  const conflictMessage = useMobileConflictMessage();
 
   const confirmCheckboxId = React.useId();
   const confirmStatementId = React.useId();
@@ -128,6 +134,11 @@ export function AccusedSection() {
   );
 
   const handleContinue = () => {
+    // A number another party already has stops the step; the filer is taken to it.
+    if (clashAt !== undefined) {
+      setActiveId(draft.accused[clashAt].id);
+      return;
+    }
     // Already declared for every one missing a contact: the filer is not asked twice.
     if (missingContact.every(accusedContactUnknownDeclared)) {
       goToNext();
@@ -267,6 +278,7 @@ export function AccusedSection() {
             <ContactList
               contacts={a.contacts}
               onChange={(contacts) => setField("contacts", contacts)}
+              mobileConflicts={conflicts.accused[index]?.map((other) => conflictMessage(other))}
             />
           </FormCard>
 
@@ -307,7 +319,12 @@ export function AccusedSection() {
         </CorrectionInstance>
       </FilingMain>
 
-      <FilingFooter backHref={prev ? hrefFor(prev) : undefined} onContinue={handleContinue} />
+      <FilingFooter
+        backHref={prev ? hrefFor(prev) : undefined}
+        onContinue={handleContinue}
+        continueBlocked={clashAt !== undefined}
+        continueHint={t("mobileConflict_continueHint")}
+      />
 
       {/* Continue while some accused — named here — has no phone or email. */}
       <Dialog open={noContactOpen} onOpenChange={setNoContactOpen}>

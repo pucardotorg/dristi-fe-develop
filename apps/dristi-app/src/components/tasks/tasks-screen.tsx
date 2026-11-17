@@ -426,7 +426,7 @@ export function TasksScreen() {
             again gets the same answer (AGENTS.md, Data). */}
         {state === "error" && notConnected ? (
           <StatusLine tone="neutral" icon={UnplugIcon} still={!online}>
-            {error}.
+            {tr("tasksScreen_tasksArentConnectedYet")}
           </StatusLine>
         ) : state === "error" ? (
           <StatusLine

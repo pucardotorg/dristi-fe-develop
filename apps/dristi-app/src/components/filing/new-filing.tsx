@@ -5,9 +5,10 @@ import * as React from "react";
 import { PageOutcome } from "@/components/feedback";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, UnplugIcon } from "lucide-react";
 
 import { createBlankDraft } from "@/lib/filing/blank";
+import { isNotIntegratedError } from "@/lib/data/source";
 import { getCaseFilingRepository, getRepository } from "@/lib/filing/data";
 import { caseFilingErrorMessage } from "@/lib/filing/data/cases-api";
 import { useProfile } from "@/lib/filing/profile";
@@ -26,6 +27,7 @@ export function NewFiling() {
   const router = useRouter();
   const { profile, ready } = useProfile();
   const [error, setError] = React.useState<string | null>(null);
+  const [notConnected, setNotConnected] = React.useState(false);
   const started = React.useRef(false);
 
   React.useEffect(() => {
@@ -43,8 +45,16 @@ export function NewFiling() {
       draft.caseId = caseId;
       try {
         await getRepository().putDraft(draft);
-      } catch {
-        setError(t("newFiling_weCouldntCreateADraftIn"));
+      } catch (err) {
+        // Not connected is a known state, not a failure (AGENTS.md, Data).
+        const unplugged = isNotIntegratedError(err);
+        if (unplugged) console.warn(String(err));
+        setNotConnected(unplugged);
+        setError(
+          unplugged
+            ? t("newFiling_draftsArentConnectedYet")
+            : t("newFiling_weCouldntCreateADraftIn"),
+        );
         return;
       }
       router.replace(stepHref(draft.id, "upload"));
@@ -55,7 +65,8 @@ export function NewFiling() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-16">
         <PageOutcome
-          tone="error"
+          tone={notConnected ? "neutral" : "error"}
+          icon={notConnected ? UnplugIcon : undefined}
           as="p"
           title={error}
           action={

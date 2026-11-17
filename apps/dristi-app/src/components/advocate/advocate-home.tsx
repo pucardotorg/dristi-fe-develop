@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import type { CauseListRow, TimelineHearing } from "@/lib/advocate/home";
 import { courtIdentity, courtNumberFor } from "@/lib/advocate/courts";
-import { CloudAlert, RotateCw, VideoOffIcon } from "lucide-react";
+import { CloudAlert, RotateCw, UnplugIcon, VideoOffIcon } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -199,7 +199,7 @@ function HomeBody({
   const t = useTranslations();
   const isMobile = useIsMobile();
   const store = useTasks();
-  const { state, people, cases, tasks, user, reload } = store;
+  const { state, notConnected, people, cases, tasks, user, reload } = store;
   const router = useRouter();
   const { run: actOn, layer: actLayer } = useTaskAct();
   const { act: runTaskAction } = useTaskActions();
@@ -461,6 +461,24 @@ function HomeBody({
     const id = peek.record?.id;
     return id?.startsWith("tw-") ? id.slice(3) : null;
   }, [peek.record]);
+
+  // Not connected is a known state, not a failure: no retry, since asking again gets the
+  // same answer (AGENTS.md, Data).
+  if (state === "error" && notConnected) {
+    return (
+      <main className="flex min-w-0 flex-1 items-center justify-center px-4">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <UnplugIcon aria-hidden="true" />
+            </EmptyMedia>
+            <EmptyTitle>{t("advocateHome_yourDayIsntConnectedYet")}</EmptyTitle>
+            <EmptyDescription>{t("advocateHome_thisPartOfDristiIsntConnected")}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </main>
+    );
+  }
 
   // A failure and a slow load are not the same screen. One spinner stood for
   // both, so a failed load spun forever with no way out of it.

@@ -118,6 +118,9 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       setState("ready");
     } catch (e) {
       const failure = loadFailure(e, tr("tasksStore_couldNotLoadTasks"));
+      // The screen shows a translated notice; the missing method goes to the console for
+      // whoever connects it ("tasks.listPeople is not connected to the backend yet").
+      if (failure.notConnected) console.warn(failure.message);
       setError(failure.message);
       setNotConnected(failure.notConnected);
       setState("error");

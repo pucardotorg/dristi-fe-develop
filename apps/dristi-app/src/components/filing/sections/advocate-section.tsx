@@ -18,6 +18,7 @@ import * as React from "react";
 import Link from "next/link";
 import { CheckIcon, ChevronDownIcon, PlusIcon, UserRoundIcon } from "lucide-react";
 
+import { repeatedAdvocates } from "@/lib/filing/advocates";
 import { blankAdvocate } from "@/lib/filing/blank";
 import {
   ADVOCATE_SEARCH_MIN_LENGTH,
@@ -82,6 +83,10 @@ export function AdvocateSection() {
     isPartyInPerson(c) ? [`Complainant ${i + 1}`] : [],
   );
   const allInPerson = draft.complainants.length > 0 && represented.length === 0;
+
+  /** The same advocate in two rows maps a complainant to them twice; Continue waits. */
+  const repeats = repeatedAdvocates(advocates);
+  const hasRepeat = !allInPerson && repeats.some((first) => first !== undefined);
 
   /**
    * The source rail is a column beside the form from `xl` up, so it starts expanded
@@ -289,6 +294,11 @@ export function AdvocateSection() {
                   : allSelected && represented.length === choices.length
                     ? t("advocateSection_allComplainants")
                     : selected.map((k) => choices[k]).join(", ");
+              const repeatOf = repeats[i];
+              const repeatError =
+                repeatOf === undefined
+                  ? undefined
+                  : t("advocateSection_alreadyAddedAsAdvocate", { number: String(repeatOf + 1) });
 
               return (
                 <FormCard
@@ -369,7 +379,12 @@ export function AdvocateSection() {
                 register is the whole path — there is nothing to type by hand.
               */}
                   {found ? (
-                    <FormField asGroup label={t("advocateSection_advocate")} required>
+                    <FormField
+                      asGroup
+                      label={t("advocateSection_advocate")}
+                      required
+                      error={repeatError}
+                    >
                       <div className="flex items-start gap-3 rounded-lg bg-surface-sunken p-4">
                         <span
                           aria-hidden
@@ -409,7 +424,7 @@ export function AdvocateSection() {
                       </div>
                     </FormField>
                   ) : (
-                    <FormField label={t("advocateSection_advocate")} required>
+                    <FormField label={t("advocateSection_advocate")} required error={repeatError}>
                       <ComboField
                         value={queries[a.id] ?? ""}
                         onChange={(v: string) => {
@@ -491,6 +506,8 @@ export function AdvocateSection() {
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
         continueHref={next ? hrefFor(next) : undefined}
+        continueBlocked={hasRepeat}
+        continueHint={t("advocateSection_removeTheRepeatedAdvocate")}
       />
 
       <SourcePanel

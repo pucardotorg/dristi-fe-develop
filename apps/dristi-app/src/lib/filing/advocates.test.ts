@@ -3,7 +3,15 @@ import { describe, it } from "node:test";
 
 import { ApiError } from "@/lib/api";
 
-import { advocateChanged, endAdvocate, saveAdvocate, withoutComplainant } from "./advocates";
+import {
+  advocateChanged,
+  endAdvocate,
+  repeatedAdvocates,
+  saveAdvocate,
+  withoutComplainant,
+} from "./advocates";
+import { blankAdvocate } from "./blank";
+import type { Advocate } from "./types";
 
 type Call = { op: "add"; advocateId: string; clients: string[] } | { op: "end"; id: string };
 
@@ -100,5 +108,29 @@ describe("withoutComplainant", () => {
       advocates.map((a) => a.forComplainants),
       [[0, 1], [1], []],
     );
+  });
+});
+
+describe("repeatedAdvocates", () => {
+  const row = (barNumber: string, advocateId?: string, forComplainants = [0]): Advocate => ({
+    ...blankAdvocate(),
+    barNumber,
+    advocateId,
+    forComplainants,
+  });
+
+  it("flags a later row that holds the same advocate, whoever it is for", () => {
+    const rows = [row("K/1234/5678", "adv-1", [0]), row("K/1234/5678", "adv-1", [0, 1])];
+    assert.deepEqual(repeatedAdvocates(rows), [undefined, 0]);
+  });
+
+  it("matches by bar number, ignoring case and spaces, when a row is not found yet", () => {
+    const rows = [row("K/1234/5678", "adv-1"), row("x/1/2"), row(" k/1234/5678 ")];
+    assert.deepEqual(repeatedAdvocates(rows), [undefined, undefined, 0]);
+  });
+
+  it("leaves different advocates and empty rows alone", () => {
+    const rows = [row("K/1234/5678", "adv-1"), row("K/9999/0000", "adv-2"), row(""), row("")];
+    assert.deepEqual(repeatedAdvocates(rows), [undefined, undefined, undefined, undefined]);
   });
 });

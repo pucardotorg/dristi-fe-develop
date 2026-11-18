@@ -119,3 +119,22 @@ export function withoutComplainant(advocates: Advocate[], index: number): void {
       .map((k) => (k > index ? k - 1 : k));
   }
 }
+
+/** The same advocate: the register's id when both have one, else the bar number. */
+function sameAdvocate(a: Advocate, b: Advocate): boolean {
+  if (a.advocateId && b.advocateId) return a.advocateId === b.advocateId;
+  const bar = a.barNumber.trim().toUpperCase();
+  return !!bar && bar === b.barNumber.trim().toUpperCase();
+}
+
+/**
+ * For each row, the earlier row that already holds the same advocate. One row covers every
+ * complainant an advocate acts for, so a second row for them only maps a complainant to
+ * them twice; the first row stands and the repeats are flagged.
+ */
+export function repeatedAdvocates(advocates: Advocate[]): (number | undefined)[] {
+  return advocates.map((row, i) => {
+    const first = advocates.findIndex((other) => sameAdvocate(other, row));
+    return first >= 0 && first < i ? first : undefined;
+  });
+}

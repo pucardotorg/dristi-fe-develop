@@ -11,6 +11,7 @@
 import * as React from "react";
 
 import { blankWitness } from "@/lib/filing/blank";
+import { firstWitnessClash, mobileConflicts } from "@/lib/filing/mobile-conflicts";
 import { witnessComplete, witnessEntered } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
@@ -24,6 +25,7 @@ import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
+import { useMobileConflictMessage } from "@/components/filing/mobile-field";
 import { CorrectionInstance } from "@/components/filing/posture";
 import { TextField } from "@/components/filing/inputs";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
@@ -45,6 +47,14 @@ export function WitnessesSection() {
   const found = draft.witnesses.findIndex((x) => x.id === activeId);
   const index = found >= 0 ? found : draft.witnesses.length - 1;
   const w = draft.witnesses[index];
+
+  const conflicts = mobileConflicts(draft);
+  const clashAt = firstWitnessClash(conflicts);
+  const conflictMessage = useMobileConflictMessage();
+  /** A number a complainant or accused already has stops the step; the filer is taken to it. */
+  const showClash = () => {
+    if (clashAt !== undefined) setActiveId(draft.witnesses[clashAt].id);
+  };
 
   const setField = <K extends keyof Witness>(key: K, value: Witness[K]) =>
     update((d) => {
@@ -195,6 +205,7 @@ export function WitnessesSection() {
               emailLabel={t("witnessesSection_emailId")}
               mobilePlaceholder={t("witnessesSection_enterMobileNumber")}
               emailPlaceholder={t("witnessesSection_exXyzGmailCom")}
+              mobileConflicts={conflicts.witness[index]?.map((other) => conflictMessage(other))}
             />
           </FormCard>
 
@@ -217,6 +228,9 @@ export function WitnessesSection() {
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
         continueHref={next ? hrefFor(next) : undefined}
+        onContinue={showClash}
+        continueBlocked={clashAt !== undefined}
+        continueHint={t("mobileConflict_continueHint")}
       />
 
       <ConfirmDialog

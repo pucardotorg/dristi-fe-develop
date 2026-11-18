@@ -39,15 +39,18 @@ export function MobileField({
   );
 }
 
-/** Words for the party a number clashes with, from the side of a PoA holder's field or not. */
+/**
+ * Words for the party a number clashes with, from the side of a PoA holder's field or not.
+ * A clash shows only on the later party's field, so the number is always an earlier
+ * complainant's or an accused's.
+ */
 export function useMobileConflictMessage() {
   const t = useTranslations();
   return (other: MobileOwner | undefined, onPoaHolderField = false): string | undefined => {
-    if (!other) return undefined;
-    if (other.role === "poa-holder") return t("mobileConflict_ownPoaHolder");
-    if (other.role === "accused") {
+    if (other?.role === "accused") {
       return t("mobileConflict_accused", { number: String(other.accused + 1) });
     }
+    if (other?.role !== "complainant") return undefined;
     return onPoaHolderField
       ? t("mobileConflict_ownComplainant")
       : t("mobileConflict_complainant", { number: String(other.complainant + 1) });

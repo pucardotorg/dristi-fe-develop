@@ -13,12 +13,10 @@ import type { ParticipantPatch, PartyInput, PartyRole, WitnessInput } from "./da
 import {
   accusedBodies,
   complainantBodies,
-  missingFields,
-  missingFieldsMessage,
+  partyBodyHasContent,
   partyChanged,
   patchFor,
   poaHolderBody,
-  poaHolderMissing,
   saveParty,
   savePoaHolder,
   selfComplainantId,
@@ -70,6 +68,13 @@ describe("complainantBodies", () => {
     ]);
     assert.equal(body.is_party_in_person, false);
     assert.equal(body.institution, undefined);
+  });
+
+  it("leaves out a blank residence address instead of sending an empty one", () => {
+    const c = complainant();
+    c.res = { line1: "", city: "", pin: "", district: "", state: "" };
+    const [body] = complainantBodies(c);
+    assert.equal("addresses" in body, false);
   });
 
   it("sends a different permanent address as its own field, not in additional details", () => {
@@ -191,23 +196,20 @@ describe("complainantBodies", () => {
     const body = institution("ABCDE1234F", "2026-11-02T10:00:00.000Z");
     assert.equal(body.institution?.pan_cin_skip_declared, true);
     assert.equal(body.institution?.pan, undefined);
-    assert.deepEqual(missingFields(body, "complainants"), []);
   });
 
-  it("holds back an institution with no whole CIN or PAN and no declaration", () => {
+  it("sends no CIN or PAN when none is whole and none is declared", () => {
     for (const typed of ["", "ABCDE12"]) {
       const body = institution(typed);
       assert.equal(body.institution?.pan, undefined, typed);
       assert.equal(body.institution?.cin, undefined, typed);
       assert.equal(body.institution?.pan_cin_skip_declared, undefined, typed);
-      assert.deepEqual(missingFields(body, "complainants"), ["CIN or PAN"], typed);
     }
   });
 
   it("sends a 21-character CIN as a CIN", () => {
     const body = institution("U12345KL2020PTC123456");
     assert.equal(body.institution?.cin, "U12345KL2020PTC123456");
-    assert.deepEqual(missingFields(body, "complainants"), []);
   });
 });
 
@@ -349,7 +351,7 @@ describe("accusedBodies", () => {
     assert.deepEqual(body.additional_details, {});
   });
 
-  it("holds back a person summoned whose address has no police station", () => {
+  it("sends a summoned person's address without a police station when none is given", () => {
     const a = accused();
     a.type = "institution";
     a.entType = "llp";
@@ -358,7 +360,8 @@ describe("accusedBodies", () => {
       { ...blankRepresentative(), name: "Ravi Kumar", designation: "Partner", addr: { ...addr } },
     ];
     const [body] = accusedBodies(a);
-    assert.deepEqual(missingFields(body, "accused"), ["representative's police station"]);
+    assert.equal(body.addresses?.[0].line1, "12 MG Road");
+    assert.ok(!("police_station" in (body.addresses?.[0] ?? {})));
   });
 
   it("sends no contacts outside an institution with nobody summoned for it", () => {
@@ -433,34 +436,23 @@ describe("witnessBodies", () => {
     w.fullName = "";
     const [body] = witnessBodies(w);
     assert.equal(body.person.name, "Branch manager");
-    assert.deepEqual(missingFields(body, "witnesses"), []);
   });
 
-  it("asks a witness with neither a name nor a designation for one", () => {
-    const w = witness();
-    w.fullName = "";
-    w.designation = "";
-    const [body] = witnessBodies(w);
-    assert.deepEqual(missingFields(body, "witnesses"), ["name or designation"]);
-  });
-
-  it("asks for a witness's address, which the backend now requires", () => {
+  it("omits a blank witness address rather than sending an empty one", () => {
     const w = witness();
     w.addresses = [blankAddressBlock()];
     const [body] = witnessBodies(w);
     assert.equal("addresses" in body, false);
-    assert.deepEqual(missingFields(body, "witnesses"), ["address"]);
   });
 
-  it("holds back a party whose mobile number cannot be an Indian mobile", () => {
+  it("leaves out a mobile number that cannot be an Indian mobile", () => {
     const a = accused();
     a.contacts = [{ mobile: "5123456789", email: "" }];
-    const [body] = accusedBodies(a);
-    assert.deepEqual(missingFields(body, "accused"), ["10-digit mobile number"]);
+    assert.equal("mobile_numbers" in accusedBodies(a)[0], false);
 
     const w = witness();
     w.contacts = [{ mobile: "98765", email: "" }];
-    assert.deepEqual(missingFields(witnessBodies(w)[0], "witnesses"), ["10-digit mobile number"]);
+    assert.equal("mobile_numbers" in witnessBodies(w)[0], false);
   });
 
   it("saves a witness with no mobile number", () => {
@@ -468,7 +460,6 @@ describe("witnessBodies", () => {
     w.contacts = [blankContact()];
     const [body] = witnessBodies(w);
     assert.equal("mobile_numbers" in body, false);
-    assert.deepEqual(missingFields(body, "witnesses"), []);
     assert.deepEqual(patchFor(body).mobile_numbers, []);
   });
 
@@ -478,7 +469,6 @@ describe("witnessBodies", () => {
     const [body] = witnessBodies(w);
     assert.equal(body.side, "COMPLAINANT");
     assert.equal("what_will_witness_prove" in body, false);
-    assert.deepEqual(missingFields(body, "witnesses"), []);
   });
 
   it("patches a witness with its own fields, not a party in person's", () => {
@@ -505,55 +495,43 @@ describe("witnessBodies", () => {
   });
 });
 
-describe("missingFields", () => {
-  it("asks an accused for the whole address and its police station", () => {
-    const a = accused();
-    a.addresses = [{ addr: { ...addr, city: "", pin: "" }, police: "" }];
-    const missing = missingFields(accusedBodies(a)[0], "accused");
-    assert.deepEqual(missing, ["city", "pincode", "police station"]);
+describe("partyBodyHasContent", () => {
+  it("is false for a party the filer has not begun, true once a name is typed", () => {
+    assert.equal(partyBodyHasContent(complainantBodies(blankComplainant())[0]), false);
+    assert.equal(partyBodyHasContent(accusedBodies(blankAccused())[0]), false);
+    assert.equal(partyBodyHasContent(witnessBodies(blankWitness())[0]), false);
+    assert.equal(partyBodyHasContent(complainantBodies(complainant())[0]), true);
     assert.equal(
-      missingFieldsMessage(missing),
-      "Add the city, pincode and police station to save this to your case.",
+      partyBodyHasContent(witnessBodies({ ...blankWitness(), designation: "Manager" })[0]),
+      true,
     );
   });
 
-  it("does not ask a complainant for a police station", () => {
-    assert.deepEqual(missingFields(complainantBodies(complainant())[0], "complainants"), []);
+  it("is true once a party has only an address or a contact, no name yet", () => {
+    const c = blankComplainant();
+    c.res = { ...addr };
+    assert.equal(partyBodyHasContent(complainantBodies(c)[0]), true);
   });
 
-  it("asks for the type of entity and each summoned person's designation", () => {
-    const a = accused();
-    a.type = "institution";
-    a.entType = "";
-    a.reps = [{ ...blankRepresentative(), name: "Ravi" }];
-    assert.deepEqual(missingFields(accusedBodies(a)[0], "accused"), [
-      "type of entity",
-      "designation",
-    ]);
-  });
-
-  it("never asks an institution accused for a CIN or PAN", () => {
-    const a = accused();
-    a.type = "institution";
-    a.entType = "llp";
-    assert.equal(missingFields(accusedBodies(a)[0], "accused").includes("CIN or PAN"), false);
-  });
-
-  it("asks a witness with an address for its police station", () => {
-    const w = blankWitness();
-    w.fullName = "Suresh";
-    w.prove = "x";
-    w.contacts = [{ mobile: "9000000002", email: "" }];
-    w.addresses = [{ addr: { ...addr }, police: "" }];
-    assert.deepEqual(missingFields(witnessBodies(w)[0], "witnesses"), ["police station"]);
+  it("is true for an institution with only a type chosen", () => {
+    const c = blankComplainant();
+    c.type = "institution";
+    c.entType = "private-limited";
+    assert.equal(partyBodyHasContent(complainantBodies(c)[0]), true);
   });
 });
 
 describe("phone numbers", () => {
-  it("sends a mobile typed with its country code and spaces in E.164", () => {
+  it("sends a person's mobile typed with its country code and spaces in E.164", () => {
     const c = complainant();
     c.mobile = "+91 98765 43210";
     assert.deepEqual(complainantBodies(c)[0].mobile_numbers, ["+919876543210"]);
+  });
+
+  it("leaves a person's number that cannot be an Indian mobile out of the save", () => {
+    const c = complainant();
+    c.mobile = "5123456789";
+    assert.equal("mobile_numbers" in complainantBodies(c)[0], false);
   });
 
   it("sends an institution's landline as typed, for the backend to judge", () => {
@@ -630,6 +608,11 @@ describe("patchFor", () => {
     const patch = patchFor(complainantBodies(c)[0], before);
     assert.equal(patch.disability_status, false);
     assert.equal("permanent_address" in patch, false);
+  });
+
+  it("sends name_at_filing as null when the party has no name yet, to clear it", () => {
+    const [body] = complainantBodies(blankComplainant());
+    assert.equal(patchFor(body).name_at_filing, null);
   });
 });
 
@@ -924,12 +907,13 @@ describe("PoA holder", () => {
     assert.deepEqual(body?.additional_details, {});
   });
 
-  it("needs a full address before it is sent", () => {
+  it("is sent with a part-filled address, leaving the empty fields out", () => {
     const c = withHolder();
     c.poaHolder.res = { ...addr, city: "" };
     const body = poaHolderBody(c);
     assert.ok(body);
-    assert.deepEqual(poaHolderMissing(body), ["city"]);
+    assert.equal(body.addresses?.[0].line1, "12 MG Road");
+    assert.ok(!("city" in (body.addresses?.[0] ?? {})));
   });
 
   it("is added for the complainant's participant, after the complainant", async () => {

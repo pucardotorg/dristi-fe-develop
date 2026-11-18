@@ -18,7 +18,7 @@ import * as React from "react";
 import Link from "next/link";
 import { CheckIcon, ChevronDownIcon, PlusIcon, UserRoundIcon } from "lucide-react";
 
-import { repeatedAdvocates } from "@/lib/filing/advocates";
+import { advocateAddedElsewhere } from "@/lib/filing/advocates";
 import { blankAdvocate } from "@/lib/filing/blank";
 import {
   ADVOCATE_SEARCH_MIN_LENGTH,
@@ -84,9 +84,9 @@ export function AdvocateSection() {
   );
   const allInPerson = draft.complainants.length > 0 && represented.length === 0;
 
-  /** The same advocate in two rows maps a complainant to them twice; Continue waits. */
-  const repeats = repeatedAdvocates(advocates);
-  const hasRepeat = !allInPerson && repeats.some((first) => first !== undefined);
+  /** One row covers all of an advocate's complainants, so a second row for them is not offered. */
+  const addedElsewhere = (rowId: string, adv: FoundAdvocate) =>
+    advocateAddedElsewhere(advocates, rowId, { advocateId: adv.id, barNumber: adv.barNumber });
 
   /**
    * The source rail is a column beside the form from `xl` up, so it starts expanded
@@ -155,14 +155,23 @@ export function AdvocateSection() {
   /**
    * Put the search's exact bar-number match in a row, since only the search gives the id
    * that puts an advocate on the case; without one, the results are left open to pick from.
+   * A match already on another row is not taken: the open results show it as added.
    */
   const takeBarNumberMatch = React.useCallback(
     (rowId: string, barNumber: string, rows: FoundAdvocate[]) => {
       const match = rows.find((r) => r.barNumber.toUpperCase() === barNumber.toUpperCase());
-      setQuery(rowId, match ? "" : barNumber);
-      if (match) choose(rowId, match);
+      const usable =
+        match &&
+        !advocateAddedElsewhere(advocates, rowId, {
+          advocateId: match.id,
+          barNumber: match.barNumber,
+        })
+          ? match
+          : undefined;
+      setQuery(rowId, usable ? "" : barNumber);
+      if (usable) choose(rowId, usable);
     },
-    [choose],
+    [advocates, choose],
   );
 
   /** The signed-in advocate filling in their own row. */
@@ -294,11 +303,6 @@ export function AdvocateSection() {
                   : allSelected && represented.length === choices.length
                     ? t("advocateSection_allComplainants")
                     : selected.map((k) => choices[k]).join(", ");
-              const repeatOf = repeats[i];
-              const repeatError =
-                repeatOf === undefined
-                  ? undefined
-                  : t("advocateSection_alreadyAddedAsAdvocate", { number: String(repeatOf + 1) });
 
               return (
                 <FormCard
@@ -379,12 +383,7 @@ export function AdvocateSection() {
                 register is the whole path — there is nothing to type by hand.
               */}
                   {found ? (
-                    <FormField
-                      asGroup
-                      label={t("advocateSection_advocate")}
-                      required
-                      error={repeatError}
-                    >
+                    <FormField asGroup label={t("advocateSection_advocate")} required>
                       <div className="flex items-start gap-3 rounded-lg bg-surface-sunken p-4">
                         <span
                           aria-hidden
@@ -424,7 +423,7 @@ export function AdvocateSection() {
                       </div>
                     </FormField>
                   ) : (
-                    <FormField label={t("advocateSection_advocate")} required error={repeatError}>
+                    <FormField label={t("advocateSection_advocate")} required>
                       <ComboField
                         value={queries[a.id] ?? ""}
                         onChange={(v: string) => {
@@ -439,19 +438,27 @@ export function AdvocateSection() {
                         }}
                         itemKey={(item) => (item as FoundAdvocate).id}
                         itemLabel={(item) => (item as FoundAdvocate).name}
+                        itemDisabled={(item) => addedElsewhere(a.id, item as FoundAdvocate)}
                         renderItem={(item) => {
                           const adv = item as FoundAdvocate;
                           return (
-                            <span className="flex min-w-0 flex-col">
-                              <span className="truncate font-medium">{adv.name}</span>
-                              <span className="truncate text-caption text-muted-foreground">
-                                {/* A combobox row is an option — no control nested inside it. */}
-                                <Identifier
-                                  value={adv.barNumber}
-                                  label={t("advocateSection_barRegistration")}
-                                  copyable={false}
-                                />
+                            <span className="flex w-full min-w-0 items-center gap-3">
+                              <span className="flex min-w-0 flex-col">
+                                <span className="truncate font-medium">{adv.name}</span>
+                                <span className="truncate text-caption text-muted-foreground">
+                                  {/* A combobox row is an option — no control nested inside it. */}
+                                  <Identifier
+                                    value={adv.barNumber}
+                                    label={t("advocateSection_barRegistration")}
+                                    copyable={false}
+                                  />
+                                </span>
                               </span>
+                              {addedElsewhere(a.id, adv) ? (
+                                <span className="ml-auto shrink-0 text-caption text-muted-foreground">
+                                  {t("advocateSection_alreadyAdded")}
+                                </span>
+                              ) : null}
                             </span>
                           );
                         }}
@@ -506,8 +513,6 @@ export function AdvocateSection() {
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
         continueHref={next ? hrefFor(next) : undefined}
-        continueBlocked={hasRepeat}
-        continueHint={t("advocateSection_removeTheRepeatedAdvocate")}
       />
 
       <SourcePanel

@@ -4,9 +4,9 @@ import { describe, it } from "node:test";
 import { ApiError } from "@/lib/api";
 
 import {
+  advocateAddedElsewhere,
   advocateChanged,
   endAdvocate,
-  repeatedAdvocates,
   saveAdvocate,
   withoutComplainant,
 } from "./advocates";
@@ -111,26 +111,38 @@ describe("withoutComplainant", () => {
   });
 });
 
-describe("repeatedAdvocates", () => {
-  const row = (barNumber: string, advocateId?: string, forComplainants = [0]): Advocate => ({
+describe("advocateAddedElsewhere", () => {
+  const row = (id: string, barNumber: string, advocateId?: string): Advocate => ({
     ...blankAdvocate(),
+    id,
     barNumber,
     advocateId,
-    forComplainants,
+  });
+  const rows = [row("r1", "K/1234/5678", "adv-1"), row("r2", " g/0421/2004 "), row("r3", "")];
+
+  it("offers an advocate on another row as already added", () => {
+    assert.equal(
+      advocateAddedElsewhere(rows, "r3", { advocateId: "adv-1", barNumber: "K/1234/5678" }),
+      true,
+    );
   });
 
-  it("flags a later row that holds the same advocate, whoever it is for", () => {
-    const rows = [row("K/1234/5678", "adv-1", [0]), row("K/1234/5678", "adv-1", [0, 1])];
-    assert.deepEqual(repeatedAdvocates(rows), [undefined, 0]);
+  it("matches a row not found through the search yet by bar number, ignoring case and spaces", () => {
+    assert.equal(
+      advocateAddedElsewhere(rows, "r3", { advocateId: "adv-9", barNumber: "G/0421/2004" }),
+      true,
+    );
   });
 
-  it("matches by bar number, ignoring case and spaces, when a row is not found yet", () => {
-    const rows = [row("K/1234/5678", "adv-1"), row("x/1/2"), row(" k/1234/5678 ")];
-    assert.deepEqual(repeatedAdvocates(rows), [undefined, undefined, 0]);
-  });
-
-  it("leaves different advocates and empty rows alone", () => {
-    const rows = [row("K/1234/5678", "adv-1"), row("K/9999/0000", "adv-2"), row(""), row("")];
-    assert.deepEqual(repeatedAdvocates(rows), [undefined, undefined, undefined, undefined]);
+  it("does not count the row being filled in, a different advocate, or an empty row", () => {
+    assert.equal(
+      advocateAddedElsewhere(rows, "r1", { advocateId: "adv-1", barNumber: "K/1234/5678" }),
+      false,
+    );
+    assert.equal(
+      advocateAddedElsewhere(rows, "r3", { advocateId: "adv-2", barNumber: "K/9999/0000" }),
+      false,
+    );
+    assert.equal(advocateAddedElsewhere(rows, "r1", { barNumber: "" }), false);
   });
 });

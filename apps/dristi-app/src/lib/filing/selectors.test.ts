@@ -1,16 +1,47 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { blankCheque, blankComplainant, blankWitness, createBlankDraft } from "./blank";
 import {
+  blankAccused,
+  blankCheque,
+  blankComplainant,
+  blankNotice,
+  blankWitness,
+  createBlankDraft,
+} from "./blank";
+import {
+  accusedComplete,
+  chequeFullyComplete,
   chequeNumberIssue,
   complainantComplete,
+  jurisdictionComplete,
   mobileIssue,
+  noticeComplete,
+  poaHolderComplete,
   sectionComplete,
   witnessComplete,
   witnessEntered,
 } from "./selectors";
-import type { Complainant, Witness } from "./types";
+import type {
+  Accused,
+  Address,
+  ChequeDetails,
+  Complainant,
+  DemandNotice,
+  FilingDraft,
+  Witness,
+} from "./types";
+
+/** A complete postal address (every field the backend's `missing_fields` checks). */
+const FULL_ADDR: Address = {
+  line1: "12 MG Road",
+  city: "Kollam",
+  pin: "691001",
+  district: "Kollam",
+  state: "Kerala",
+};
+
+const MOBILE = "9876543210";
 
 function fullWitness(): Witness {
   const w = blankWitness();

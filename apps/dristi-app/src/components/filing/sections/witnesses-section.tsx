@@ -204,6 +204,7 @@ export function WitnessesSection() {
               blocks={w.addresses}
               onChange={(addresses) => setField("addresses", addresses)}
               addLabel={t("witnessesSection_addAddress")}
+              policeOptional
             />
           </FormCard>
         </CorrectionInstance>

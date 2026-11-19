@@ -128,6 +128,7 @@ export function AddressBlockList({
   onChange,
   addLabel = "repeatLists_addAnotherAddress",
   optional = false,
+  policeOptional = false,
 }: {
   blocks: AddressBlock[];
   onChange: (next: AddressBlock[]) => void;
@@ -135,6 +136,9 @@ export function AddressBlockList({
   /** No address is needed: the last one can be removed too, and no field is marked
       required (a started address still has to be complete; the host says so). */
   optional?: boolean;
+  /** The police station is not required (a witness's address, which the backend no longer
+      asks a police station of); the address itself still is, unless `optional`. */
+  policeOptional?: boolean;
 }) {
   const t = useTranslations();
   const { court } = useCourt();
@@ -167,7 +171,8 @@ export function AddressBlockList({
             <FormField
               label={t("repeatLists_policeStation")}
               name={`addresses.${i}.police`}
-              required={!optional}
+              required={!optional && !policeOptional}
+              optional={policeOptional && !optional}
               help={t("repeatLists_theStationThisAddressFallsUnder")}
             >
               <ComboField

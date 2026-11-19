@@ -16,7 +16,7 @@ import { PlusIcon } from "lucide-react";
 
 import { jurisdictionCopy } from "@/lib/filing/content";
 import { jurisdictionDetails } from "@/lib/filing/details";
-import { toLongDate } from "@/lib/filing/format";
+import { toDisplayDate, toLongDate } from "@/lib/filing/format";
 import { useCourt } from "@/components/court/court-provider";
 import { policeStationsFor } from "@/lib/filing/options";
 import { limitationView, noticeServiceDate } from "@/lib/filing/selectors";
@@ -25,14 +25,13 @@ import { useFiling } from "@/lib/filing/store";
 import { useDetailsSection } from "@/lib/filing/use-details-section";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { DateField } from "@/components/filing/date-field";
 import { FilingFooter } from "@/components/filing/filing-footer";
 import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard, FormRow, FormSubhead, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
 import { IfscField } from "@/components/filing/ifsc-field";
-import { ComboField, TextField } from "@/components/filing/inputs";
+import { ComboField, ReadOnlyValue, TextField } from "@/components/filing/inputs";
 import { SectionNotice } from "@/components/filing/notices";
 import { RemoveButton } from "@/components/filing/repeat-lists";
 import { YesNoSegmented } from "@/components/filing/segmented";
@@ -285,8 +284,8 @@ export function JurisdictionSection() {
             Neither of these is really a question. The cause of action is fifteen days
             after the demand notice was served, and the filing date is today — both follow
             from what the form already knows, so they are filled in and the working is
-            shown. They stay editable because the derivation cannot cover every case, and
-            an edit sticks: once typed, the date is the filer's and stops following.
+            shown. They are not the filer's to change, so they read as values, with no
+            picker: what is calculated stays.
           */}
           <FormRow>
             <FormField
@@ -319,7 +318,10 @@ export function JurisdictionSection() {
                 ) : undefined
               }
             >
-              <DateField value={limitation.causeDate} onChange={(v) => set("causeDate", v)} />
+              <ReadOnlyValue
+                value={toDisplayDate(limitation.causeDate)}
+                ariaLabel={t("jurisdictionSection_dateOfCauseOfAction")}
+              />
             </FormField>
             <FormField
               label={t("jurisdictionSection_dateOfComplaintFiling")}
@@ -327,7 +329,10 @@ export function JurisdictionSection() {
               error={limitation.filingIssue}
               help={j.filingDate ? undefined : t("jurisdictionSection_today")}
             >
-              <DateField value={limitation.filingDate} onChange={(v) => set("filingDate", v)} />
+              <ReadOnlyValue
+                value={toDisplayDate(limitation.filingDate)}
+                ariaLabel={t("jurisdictionSection_dateOfComplaintFiling")}
+              />
             </FormField>
           </FormRow>
 

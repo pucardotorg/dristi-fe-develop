@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { blankCheque, blankComplainant, blankWitness } from "./blank";
-import { chequeNumberIssue, complainantComplete, mobileIssue, witnessComplete } from "./selectors";
+import { blankCheque, blankComplainant, blankWitness, createBlankDraft } from "./blank";
+import {
+  chequeNumberIssue,
+  complainantComplete,
+  mobileIssue,
+  sectionComplete,
+  witnessComplete,
+  witnessEntered,
+} from "./selectors";
 import type { Complainant, Witness } from "./types";
 
 function fullWitness(): Witness {
@@ -63,6 +70,37 @@ describe("witnessComplete", () => {
     assert.equal(witnessComplete(noPolice), false);
 
     assert.equal(witnessComplete(blankWitness()), false);
+  });
+});
+
+describe("witnessEntered", () => {
+  it("counts a witness once any detail is entered", () => {
+    assert.equal(witnessEntered(blankWitness()), false);
+    assert.equal(witnessEntered({ ...blankWitness(), fullName: "  " }), false);
+    assert.equal(witnessEntered({ ...blankWitness(), designation: "Bank Manager" }), true);
+    assert.equal(
+      witnessEntered({ ...blankWitness(), contacts: [{ mobile: "", email: "a@b.in" }] }),
+      true,
+    );
+    const pinOnly = blankWitness();
+    pinOnly.addresses[0].addr.pin = "691001";
+    assert.equal(witnessEntered(pinOnly), true);
+  });
+});
+
+describe("witnesses step", () => {
+  it("starts a new draft with one blank witness, which counts as no witness", () => {
+    const d = createBlankDraft("draft-witnesses");
+    assert.equal(d.witnesses.length, 1);
+    assert.equal(sectionComplete(d, "witnesses"), true);
+  });
+
+  it("holds the step back once a witness is started but not finished", () => {
+    const d = createBlankDraft("draft-witnesses");
+    d.witnesses[0].fullName = "Suresh Pillai";
+    assert.equal(sectionComplete(d, "witnesses"), false);
+    d.witnesses = [fullWitness(), blankWitness()];
+    assert.equal(sectionComplete(d, "witnesses"), true, "a blank row beside it is ignored");
   });
 });
 

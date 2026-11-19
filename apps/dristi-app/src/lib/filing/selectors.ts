@@ -296,6 +296,18 @@ export function witnessComplete(w: Witness): boolean {
   return named && hasAddress;
 }
 
+/** Any detail entered for this witness. Until then the row is not a witness at all. */
+export function witnessEntered(w: Witness): boolean {
+  return [
+    w.fullName,
+    w.designation,
+    w.age,
+    w.prove,
+    ...w.contacts.flatMap((c) => [c.mobile, c.email]),
+    ...w.addresses.flatMap((b) => [...Object.values(b.addr), b.police]),
+  ].some((value) => !!value.trim());
+}
+
 /** Sum of cheque amounts typed so far (digits only), or 0. */
 export function totalChequeAmount(cheques: ChequeDetails[]): number {
   return cheques.reduce((sum, c) => sum + (parseInt(c.amount.replace(/[^\d]/g, ""), 10) || 0), 0);
@@ -645,8 +657,9 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
     case "adr-prayer":
       return !!draft.adr.finalRelief.trim();
     case "witnesses":
-      // Optional — zero witnesses is fine — but any witness added must be complete.
-      return draft.witnesses.every(witnessComplete);
+      // Optional — a witness with nothing entered is no witness — but any witness the
+      // filer has started must be complete.
+      return draft.witnesses.filter(witnessEntered).every(witnessComplete);
     case "documents":
       return documentsProgress(draft.documents).remaining === 0;
     case "affidavit":

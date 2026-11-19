@@ -3,7 +3,15 @@ import { describe, it } from "node:test";
 
 import { ApiError } from "@/lib/api";
 
-import { advocateChanged, endAdvocate, saveAdvocate, withoutComplainant } from "./advocates";
+import {
+  advocateAddedElsewhere,
+  advocateChanged,
+  endAdvocate,
+  saveAdvocate,
+  withoutComplainant,
+} from "./advocates";
+import { blankAdvocate } from "./blank";
+import type { Advocate } from "./types";
 
 type Call = { op: "add"; advocateId: string; clients: string[] } | { op: "end"; id: string };
 
@@ -100,5 +108,41 @@ describe("withoutComplainant", () => {
       advocates.map((a) => a.forComplainants),
       [[0, 1], [1], []],
     );
+  });
+});
+
+describe("advocateAddedElsewhere", () => {
+  const row = (id: string, barNumber: string, advocateId?: string): Advocate => ({
+    ...blankAdvocate(),
+    id,
+    barNumber,
+    advocateId,
+  });
+  const rows = [row("r1", "K/1234/5678", "adv-1"), row("r2", " g/0421/2004 "), row("r3", "")];
+
+  it("offers an advocate on another row as already added", () => {
+    assert.equal(
+      advocateAddedElsewhere(rows, "r3", { advocateId: "adv-1", barNumber: "K/1234/5678" }),
+      true,
+    );
+  });
+
+  it("matches a row not found through the search yet by bar number, ignoring case and spaces", () => {
+    assert.equal(
+      advocateAddedElsewhere(rows, "r3", { advocateId: "adv-9", barNumber: "G/0421/2004" }),
+      true,
+    );
+  });
+
+  it("does not count the row being filled in, a different advocate, or an empty row", () => {
+    assert.equal(
+      advocateAddedElsewhere(rows, "r1", { advocateId: "adv-1", barNumber: "K/1234/5678" }),
+      false,
+    );
+    assert.equal(
+      advocateAddedElsewhere(rows, "r3", { advocateId: "adv-2", barNumber: "K/9999/0000" }),
+      false,
+    );
+    assert.equal(advocateAddedElsewhere(rows, "r1", { barNumber: "" }), false);
   });
 });

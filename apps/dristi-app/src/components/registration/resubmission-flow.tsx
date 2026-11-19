@@ -4,12 +4,12 @@
  * The rejected registration's correction round (PM, Sept 3).
  *
  * A rejected registrant is told by SMS to sign in again; sign-in sees `next: "resubmit"`,
- * loads the registration (`GET /registrations/current`) and lands them here — the
+ * loads the registration (`GET /users/me/registration/resubmission`) and lands them here — the
  * registration steps minus the role question (that answer stands), everything pre-filled
  * with what they submitted, and the officer's ONE general message pinned on every step.
  * The message is the whole feedback: fields carry no marks of their own (owner, Sept 18);
  * the stepper tints the steps to correct when marks exist (the backend sends none yet —
- * only the sandbox demo has them). Resubmitting (`POST /registrations/current/resubmit`)
+ * only the sandbox demo has them). Resubmitting (`POST /users/me/registration/resubmission`)
  * sends the same application back for approval and ends the session, so the flow ends on
  * the same awaiting-approval screen the first submission used.
  *

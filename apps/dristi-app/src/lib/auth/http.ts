@@ -9,8 +9,8 @@
  *                           POST /power-of-attorneys JSON, same body as litigants
  *                           POST /advocates          multipart (bar ID document required)
  *                           POST /clerks             multipart (bar ID document required)
- *   getRejectedRegistration GET  /registrations/current
- *   resubmitRegistration    POST /registrations/current/resubmit  multipart (document required)
+ *   getRejectedRegistration GET  /users/me/registration/resubmission
+ *   resubmitRegistration    POST /users/me/registration/resubmission  multipart (document required)
  *   signOut                 DELETE /sessions
  *
  * The session is a cookie the browser keeps; the API client sends it, and the CSRF token
@@ -46,6 +46,7 @@ import type {
 /** Registered backend error codes this file branches on (dristi-be `apps/users/errors.py`). */
 const E_APPROVAL_PENDING = "E01013";
 const E_NOTHING_TO_RESUBMIT = "E01012";
+const E_NO_REJECTED_REGISTRATION = "E01015";
 
 /**
  * Uploads of scanned ID documents can take a while on a slow connection — longer than
@@ -135,7 +136,8 @@ function translate(error: unknown, byStatus: Partial<Record<number, AuthErrorCod
   if (error.hasCode(E_APPROVAL_PENDING)) {
     return new AuthError("approval-pending", { cause: error });
   }
-  if (error.hasCode(E_NOTHING_TO_RESUBMIT)) {
+  // The read answers E01015 and the write E01012; to the screens both mean the same.
+  if (error.hasCode(E_NOTHING_TO_RESUBMIT) || error.hasCode(E_NO_REJECTED_REGISTRATION)) {
     return new AuthError("nothing-to-resubmit", { cause: error });
   }
   if (error.status === 400 && error.fieldErrors.mobile_number) {
@@ -312,11 +314,13 @@ export class HttpAuthService implements AuthService {
   async getRejectedRegistration(): Promise<RejectedRegistration> {
     let body: RejectedRegistrationBody;
     try {
-      body = await this.client.get<RejectedRegistrationBody>("registrations/current");
+      body = await this.client.get<RejectedRegistrationBody>("users/me/registration/resubmission");
     } catch (error) {
+      // Nothing to correct is a 404 now; older deployments answer 409, so it stays.
       throw translate(error, {
         401: "session-expired",
         403: "session-expired",
+        404: "nothing-to-resubmit",
         409: "nothing-to-resubmit",
       });
     }
@@ -354,7 +358,7 @@ export class HttpAuthService implements AuthService {
 
     try {
       const response = await this.client.post<{ application_number?: unknown }>(
-        "registrations/current/resubmit",
+        "users/me/registration/resubmission",
         body,
         { timeoutMs: UPLOAD_TIMEOUT_MS },
       );

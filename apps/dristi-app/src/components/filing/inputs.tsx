@@ -245,6 +245,7 @@ export function ComboField({
    * find rows by registration number too, or the reverse).
    */
   filter,
+  itemDisabled,
   disabled,
   ariaLabel,
   id,
@@ -260,6 +261,8 @@ export function ComboField({
   itemKey?: (item: unknown) => string;
   itemLabel?: (item: unknown) => string;
   filter?: null;
+  /** A row that is listed but cannot be picked (say, one already chosen elsewhere). */
+  itemDisabled?: (item: unknown) => boolean;
   disabled?: boolean;
   ariaLabel?: string;
   id?: string;
@@ -300,7 +303,7 @@ export function ComboField({
         <ComboboxEmpty>{translateText(t, emptyLabel)}</ComboboxEmpty>
         <ComboboxList>
           {(item: unknown) => (
-            <ComboboxItem key={itemKey(item)} value={item}>
+            <ComboboxItem key={itemKey(item)} value={item} disabled={itemDisabled?.(item)}>
               {renderItem ? renderItem(item) : itemLabel(item)}
             </ComboboxItem>
           )}

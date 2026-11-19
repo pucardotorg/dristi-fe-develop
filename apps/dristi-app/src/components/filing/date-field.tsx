@@ -44,7 +44,9 @@ export function DateField({
   }
   return (
     <DatePicker
-      value={isoToDate(value)}
+      // Always controlled: an empty date must stay empty, not show the last date this
+      // picker held when the form switches to another cheque or party.
+      value={isoToDate(value) ?? null}
       onValueChange={(d) => onChange(dateToIso(d))}
       disabled={disabled}
       placeholder={translateText(t, placeholder)}

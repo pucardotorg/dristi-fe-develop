@@ -11,7 +11,8 @@
 import * as React from "react";
 
 import { blankWitness } from "@/lib/filing/blank";
-import { witnessComplete } from "@/lib/filing/selectors";
+import { firstWitnessClash, mobileConflicts } from "@/lib/filing/mobile-conflicts";
+import { witnessComplete, witnessEntered } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
@@ -24,6 +25,7 @@ import { FilingPageHeader } from "@/components/filing/filing-page-header";
 import { FilingMain } from "@/components/filing/filing-shell";
 import { FormCard, HalfWidth } from "@/components/filing/form-card";
 import { FormField } from "@/components/filing/form-field";
+import { useMobileConflictMessage } from "@/components/filing/mobile-field";
 import { CorrectionInstance } from "@/components/filing/posture";
 import { TextField } from "@/components/filing/inputs";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
@@ -46,6 +48,14 @@ export function WitnessesSection() {
   const index = found >= 0 ? found : draft.witnesses.length - 1;
   const w = draft.witnesses[index];
 
+  const conflicts = mobileConflicts(draft);
+  const clashAt = firstWitnessClash(conflicts);
+  const conflictMessage = useMobileConflictMessage();
+  /** A number a complainant or accused already has stops the step; the filer is taken to it. */
+  const showClash = () => {
+    if (clashAt !== undefined) setActiveId(draft.witnesses[clashAt].id);
+  };
+
   const setField = <K extends keyof Witness>(key: K, value: Witness[K]) =>
     update((d) => {
       d.witnesses[index][key] = value;
@@ -61,21 +71,25 @@ export function WitnessesSection() {
 
   const askRemove = (id: string) => {
     const i = draft.witnesses.findIndex((x) => x.id === id);
-    if (i < 0 || draft.witnesses.length <= 1) return;
+    if (i < 0) return;
     setRemoveNumber(i + 1);
     setRemoveId(id);
   };
 
+  // Removing the only witness leaves a blank row in its place: a witness with nothing
+  // entered is no witness, so the page always has a form and the case has none.
   const confirmRemove = () => {
     const i = removeId ? draft.witnesses.findIndex((x) => x.id === removeId) : -1;
-    if (i < 0 || draft.witnesses.length <= 1) {
+    if (i < 0) {
       setRemoveId(null);
       return;
     }
-    const fallback = draft.witnesses[i + 1] ?? draft.witnesses[i - 1];
+    const replacement = draft.witnesses.length === 1 ? blankWitness() : undefined;
+    const fallback = replacement ?? draft.witnesses[i + 1] ?? draft.witnesses[i - 1];
     removePartyFromCase(draft.witnesses[i]);
     update((d) => {
-      d.witnesses.splice(i, 1);
+      if (replacement) d.witnesses.splice(i, 1, replacement);
+      else d.witnesses.splice(i, 1);
     });
     if (removeId === activeId && fallback) setActiveId(fallback.id);
     setRemoveId(null);
@@ -105,7 +119,8 @@ export function WitnessesSection() {
             id: wit.id,
             label: `Witness ${i + 1}`,
             status: witnessComplete(wit) ? "complete" : "attention",
-            removable: draft.witnesses.length > 1,
+            // A lone blank row is already "no witness"; there is nothing to remove.
+            removable: draft.witnesses.length > 1 || witnessEntered(wit),
           }))}
           activeId={w.id}
           onSelect={setActiveId}
@@ -190,6 +205,7 @@ export function WitnessesSection() {
               emailLabel={t("witnessesSection_emailId")}
               mobilePlaceholder={t("witnessesSection_enterMobileNumber")}
               emailPlaceholder={t("witnessesSection_exXyzGmailCom")}
+              mobileConflicts={conflicts.witness[index]?.map((other) => conflictMessage(other))}
             />
           </FormCard>
 
@@ -213,6 +229,9 @@ export function WitnessesSection() {
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
         continueHref={next ? hrefFor(next) : undefined}
+        onContinue={showClash}
+        continueBlocked={clashAt !== undefined}
+        continueHint={t("mobileConflict_continueHint")}
       />
 
       <ConfirmDialog

@@ -76,8 +76,10 @@ describe("stepForValidationField", () => {
   });
 
   it("maps evidence fields: cheque and return memo to cheque, notice to demand notice", () => {
-    assert.equal(stepForValidationField("evidence.cheque"), "cheque");
-    assert.equal(stepForValidationField("evidence.return_memo"), "cheque");
+    // The backend names the evidence type in upper case; match must be case-insensitive.
+    assert.equal(stepForValidationField("evidence.CHEQUE"), "cheque");
+    assert.equal(stepForValidationField("evidence.RETURN_MEMO"), "cheque");
+    assert.equal(stepForValidationField("evidence.LEGAL_DEMAND_NOTICE"), "demand-notice");
     assert.equal(stepForValidationField("evidence.legal_demand_notice"), "demand-notice");
   });
 

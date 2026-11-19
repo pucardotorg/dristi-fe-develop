@@ -69,9 +69,13 @@ export function stepForValidationField(
     }
     case "representations":
       return "advocate";
-    case "evidence":
-      // The return memo is entered with the cheque; only the demand notice is its own step.
-      return rest.includes("demand_notice") || rest.includes("legal") ? "demand-notice" : "cheque";
+    case "evidence": {
+      // The backend names the evidence type in upper case (`evidence.LEGAL_DEMAND_NOTICE`),
+      // so match case-insensitively. The return memo is entered with the cheque; only the
+      // demand notice is its own step.
+      const kind = rest.toLowerCase();
+      return kind.includes("demand_notice") || kind.includes("legal") ? "demand-notice" : "cheque";
+    }
     case "documents":
       return "documents";
     case "details":

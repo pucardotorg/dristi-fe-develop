@@ -12,12 +12,14 @@ import {
   toLongDate,
   todayIso,
 } from "./format";
-import { CHEQUE_NUMBER_PATTERN } from "./lookups";
+import { CHEQUE_NUMBER_PATTERN, IFSC_PATTERN } from "./lookups";
 import { KERALA_FEES, type FeeSchedule } from "@/lib/court/fees";
 import { CHANNEL_FEE, defaultProcessRounds, DELIVERY_MIN_ROUNDS, PROCESS_OPTIONS } from "./options";
 import { WALK_ORDER } from "./steps";
 import type {
   Accused,
+  Address,
+  AddressBlock,
   Advocate,
   CaseDocument,
   ChequeDetails,
@@ -185,8 +187,70 @@ export function accusedLabel(a: Accused, index: number): string {
   return a.name.trim() || `Accused ${index + 1}`;
 }
 
+/**
+ * Every postal field is filled — what the backend needs to accept an address (its
+ * `missing_fields` over `POSTAL_FIELDS`: line1, city, pincode, district, state; dristi-be
+ * spec 0020 §4.2). The tick uses this so a section only goes green when `validate` would
+ * accept it, rather than on a single line of an address.
+ */
+export function addressFilled(addr: Address): boolean {
+  return !!(
+    addr.line1.trim() &&
+    addr.city.trim() &&
+    addr.pin.trim() &&
+    addr.district.trim() &&
+    addr.state.trim()
+  );
+}
+
+/** An address block complete enough to file; `needsPolice` adds a police station (accused only). */
+export function addressBlockComplete(block: AddressBlock, needsPolice: boolean): boolean {
+  return addressFilled(block.addr) && (!needsPolice || !!(block.police ?? "").trim());
+}
+
+/** A mobile number the backend would accept (a valid Indian mobile), so it is actually saved. */
+export function hasValidMobile(value: string): boolean {
+  return isIndianMobile(toNationalMobile(value));
+}
+
+/** An age the backend would store — a positive integer (`age_at_filing` not null). */
+export function hasAge(value: string): boolean {
+  return /^\d+$/.test(value.trim());
+}
+
+/**
+ * Whether the accused would pass the backend completeness check (`validate`, dristi-be
+ * `filing.py`). An accused needs a name and at least one complete address with a police
+ * station, and must be **reachable** — a mobile or email, or the "contacts unknown"
+ * declaration (PRD ACC-6/7). An institution also needs its entity type and at least one
+ * named person responsible (s.141), each with their own complete address and police station;
+ * their designation is optional (ACC-15). Mobile/email are not required when the contacts are
+ * declared unknown, and an accused's age is not required.
+ */
 export function accusedComplete(a: Accused): boolean {
-  return !!a.name.trim() && a.addresses.some((b) => b.addr.line1.trim());
+  const declared = accusedContactUnknownDeclared(a);
+  const reachable = accusedHasContact(a) || declared;
+  if (a.type === "institution") {
+    const named = a.reps.some((r) => r.name.trim());
+    // Each person responsible needs their own complete address with a police station, and
+    // their own mobile or email, or the contacts-unknown declaration (PRD ACC-16/17).
+    const repsOk = a.reps
+      .filter((r) => r.name.trim())
+      .every(
+        (r) =>
+          addressBlockComplete({ addr: r.addr, police: r.police ?? "" }, true) &&
+          (!!(r.mobile.trim() || r.email.trim()) || declared),
+      );
+    return (
+      !!a.name.trim() &&
+      !!a.entType.trim() &&
+      a.addresses.some((b) => addressBlockComplete(b, true)) &&
+      named &&
+      repsOk &&
+      reachable
+    );
+  }
+  return !!a.name.trim() && a.addresses.some((b) => addressBlockComplete(b, true)) && reachable;
 }
 
 export function accusedHasContact(a: Accused): boolean {
@@ -198,13 +262,54 @@ export function accusedContactUnknownDeclared(a: Accused): boolean {
   return !!a.contactUnknownDeclaredAt && !accusedHasContact(a);
 }
 
+/**
+ * Whether a complainant's Power-of-Attorney holder is complete enough for `validate`. Only an
+ * individual not appearing in person can give one; when they do (`poa === "yes"`), the holder
+ * needs a name, a valid mobile, an age and a complete address (a complete permanent one too
+ * when it differs) — PoA holders are in the backend's mobile/age and permanent-address roles.
+ */
+export function poaHolderComplete(c: Complainant): boolean {
+  if (c.type !== "individual" || c.pip === "yes" || c.poa !== "yes") return true;
+  const h = c.poaHolder;
+  return (
+    !!h.name.trim() &&
+    hasValidMobile(h.mobile) &&
+    hasAge(h.age) &&
+    addressFilled(h.res) &&
+    (h.permSame !== "no" || addressFilled(h.perm))
+  );
+}
+
+/**
+ * Whether the complainant would pass the backend completeness check (`validate`, dristi-be
+ * `filing.py`). An **individual** needs a name, a valid mobile, an age and a complete current
+ * address (a complete permanent one too when it differs). An **institution** needs its entity
+ * type, name and CIN/PAN (or the skip declaration), its own complete address, and an
+ * authorised representative with their own name, valid mobile, age, designation and complete
+ * address. A complainant who gave Power of Attorney also needs a complete holder.
+ * (Email, gender and disability are optional.)
+ */
 export function complainantComplete(c: Complainant): boolean {
-  const institution = c.type === "institution";
-  const named = institution ? !!c.entName.trim() : !!c.name.trim();
-  // An institution is reached through its representative; the form asks for no `mobile`.
-  const mobile = institution ? c.rep.mobile : c.mobile;
-  const addr = institution ? c.entAddr : c.res;
-  return named && !!mobile.trim() && !!addr.line1.trim() && cinPanAnswered(c);
+  if (c.type === "institution") {
+    const r = c.rep;
+    const institutionOk =
+      !!c.entName.trim() && !!c.entType.trim() && cinPanAnswered(c) && addressFilled(c.entAddr);
+    const representativeOk =
+      !!r.name.trim() &&
+      hasValidMobile(r.mobile) &&
+      hasAge(r.age) &&
+      !!r.designation.trim() &&
+      addressFilled(r.addr);
+    return institutionOk && representativeOk;
+  }
+  return (
+    !!c.name.trim() &&
+    hasValidMobile(c.mobile) &&
+    hasAge(c.age) &&
+    addressFilled(c.res) &&
+    (c.permSame !== "no" || addressFilled(c.perm)) &&
+    poaHolderComplete(c)
+  );
 }
 
 /* ───────────────────────────── Case details ────────────────────────── */
@@ -213,11 +318,31 @@ export function chequeComplete(c: ChequeDetails): boolean {
   return !!(c.dateOnCheque && c.amount && c.chequeNumber);
 }
 
+/** A cheque amount the backend would accept — a positive number (`exclusiveMinimum: 0`). */
+function chequeAmountFilled(amount: string): boolean {
+  const value = Number(amount.replace(/[^\d.]/g, ""));
+  return Number.isFinite(value) && value > 0;
+}
+
+/**
+ * Whether a cheque and its return memo would pass `validate`. The cheque leaf needs its date,
+ * a positive amount, a six-digit number and the drawer's bank (IFSC, name, branch) — inherited
+ * whole from the previous cheque when "same as previous". The return memo (stored with the
+ * cheque) needs its presentation date, return date and reason, in order. The backend matches
+ * one return memo to each cheque by ordinal, which this row-per-cheque shape already satisfies.
+ */
 export function chequeFullyComplete(c: ChequeDetails, index: number): boolean {
-  const bank = index > 0 && c.sameAsPrev === "yes" ? true : !!(c.ifsc && c.bankName);
+  const inheritsBank = index > 0 && c.sameAsPrev === "yes";
+  const bankOk =
+    inheritsBank ||
+    (IFSC_PATTERN.test(c.ifsc.trim().toUpperCase()) &&
+      !!c.bankName.trim() &&
+      !!c.bankBranch.trim());
   return (
-    chequeComplete(c) &&
-    bank &&
+    !!c.dateOnCheque &&
+    chequeAmountFilled(c.amount) &&
+    CHEQUE_NUMBER_PATTERN.test(c.chequeNumber.trim()) &&
+    bankOk &&
     !!(c.presentDate && c.returnDate && c.returnReason) &&
     !chequePresentIssue(c) &&
     !chequeReturnIssue(c)
@@ -284,16 +409,73 @@ export function mobileIssue(value: string): string | undefined {
   return isIndianMobile(national) ? undefined : mobileFieldCopy.invalid;
 }
 
+/**
+ * Whether a demand notice would pass `validate`. Needs the nature of debt, dispatch date, mode
+ * of service and payment status; a delivered notice its delivery date, an undelivered one its
+ * return date and non-delivery reason; a part payment a positive amount. (`is_delivered` and
+ * `accused_replied` are yes/no answers the form always carries.) The date-order rules are
+ * checked by `noticeDispatchIssue` / `noticeServiceIssue` in `sectionComplete`.
+ */
 export function noticeComplete(n: DemandNotice): boolean {
-  return !!(n.natureDebt && n.dispatchDate && n.modeService);
+  if (!(n.natureDebt && n.dispatchDate && n.modeService && n.paymentStatus)) return false;
+  if (n.delivered === "yes") {
+    if (!n.deliveryDate) return false;
+  } else if (!n.returnDate || !n.nonDeliveryReason) {
+    return false;
+  }
+  if (n.paymentStatus === "part" && !chequeAmountFilled(n.partAmount)) return false;
+  return true;
+}
+
+/** Whether rich-text (HTML editor) output has any visible text, not just empty markup. */
+function richTextFilled(html: string): boolean {
+  return (
+    html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&(nbsp|#160|#xa0);/gi, " ")
+      .trim().length > 0
+  );
+}
+
+/**
+ * Whether the jurisdiction & limitation section would pass `validate`. Needs the effective
+ * cause-of-action and complaint-filing dates (filing not before cause), a condonation reason
+ * when filed late, and the branch that grounds jurisdiction — the payee's bank (IFSC, name,
+ * branch) and its police station when the payee deposited the cheque, otherwise the drawer's
+ * police station. When another complaint is pending, at least one with a court and case number.
+ */
+export function jurisdictionComplete(draft: FilingDraft): boolean {
+  const j = draft.jurisdiction;
+  const lim = limitationView(draft);
+  if (!lim.causeDate || !lim.filingDate || lim.causeIssue || lim.filingIssue) return false;
+  if (!lim.withinLimit && !j.condonationReason.trim()) return false;
+  if (j.deposited === "yes") {
+    if (
+      !IFSC_PATTERN.test(j.ifsc.trim().toUpperCase()) ||
+      !j.payeeBankName.trim() ||
+      !j.payeeBankBranch.trim() ||
+      !j.payeePolice.trim()
+    ) {
+      return false;
+    }
+  } else if (!j.drawerPolice.trim()) {
+    return false;
+  }
+  if (
+    j.otherPending === "yes" &&
+    !j.otherCases.some((c) => c.court.trim() && c.caseNumber.trim())
+  ) {
+    return false;
+  }
+  return true;
 }
 
 export function witnessComplete(w: Witness): boolean {
   const named = !!(w.fullName.trim() || w.designation.trim());
-  // A witness now needs an address for service, with a police station (dristi-be spec 0020 §4.2).
-  // Their mobile number is optional.
-  const hasAddress = w.addresses.some((b) => b.addr.line1.trim() && b.police.trim());
-  return named && hasAddress;
+  // A witness needs a name (or designation) and a complete address. The backend no longer
+  // asks for a police station on a witness's address (POLICE_STATION_ROLES is accused-only
+  // now); their mobile and age are optional too.
+  return named && w.addresses.some((b) => addressFilled(b.addr));
 }
 
 /** Sum of cheque amounts typed so far (digits only), or 0. */
@@ -632,18 +814,12 @@ export function sectionComplete(draft: FilingDraft, step: StepId): boolean {
           (n, i) => noticeComplete(n) && !noticeDispatchIssue(draft, i) && !noticeServiceIssue(n),
         )
       );
-    case "jurisdiction": {
-      const lim = limitationView(draft);
-      return (
-        !!lim.causeDate &&
-        !lim.causeIssue &&
-        !lim.filingIssue &&
-        (lim.withinLimit || !!draft.jurisdiction.condonationReason.trim()) &&
-        (draft.jurisdiction.deposited === "no" || !!draft.jurisdiction.payeeBankName.trim())
-      );
-    }
+    case "jurisdiction":
+      return jurisdictionComplete(draft);
     case "adr-prayer":
-      return !!draft.adr.finalRelief.trim();
+      // The backend requires both the final relief and the interim relief, each with real
+      // text (an empty editor's `<p><br></p>` does not count).
+      return richTextFilled(draft.adr.finalRelief) && richTextFilled(draft.adr.interimRelief);
     case "witnesses":
       // Optional — zero witnesses is fine — but any witness added must be complete.
       return draft.witnesses.every(witnessComplete);

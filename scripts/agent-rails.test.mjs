@@ -6,6 +6,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -14,7 +15,12 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
-import { expectedRails, inspectRails, skillMetadata } from "./lib/agent-rails.mjs";
+import {
+  expectedRails,
+  inspectRails,
+  managedDirectories,
+  skillMetadata,
+} from "./lib/agent-rails.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -26,16 +32,11 @@ function write(root, path, body) {
 function fixture(t) {
   const directory = mkdtempSync(join(tmpdir(), "dristi-agent-rails-"));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
-  // Only the managed part of .codex: a local tool installed elsewhere under .codex is not
-  // part of the rails and must not leak into fixtures.
-  for (const path of [
-    ".agents",
-    ".codex/agents",
-    ".claude",
-    ".cursor",
-    "scripts",
-    "package.json",
-  ]) {
+  // Only the managed folders of .codex, .claude and .cursor. Anything else there is local
+  // and not part of the rails: a tool installed under .codex, or a Claude Code session
+  // worktree under .claude/worktrees, which can hold a whole checkout and made every
+  // fixture copy gigabytes.
+  for (const path of [".agents", ...managedDirectories, "scripts", "package.json"]) {
     cpSync(join(root, path), join(directory, path), { recursive: true });
   }
   // Only existence is relevant to local-reference checks: fixtures need no app code,
@@ -105,6 +106,13 @@ for (const path of [
     assert.ok(inspectRails(directory).problems.some((problem) => /differs/.test(problem)));
   });
 }
+
+test("fixtures copy only the managed agent folders, not local files beside them", (t) => {
+  const directory = fixture(t);
+  // The repository's .claude also holds launch.json, and locally maybe session worktrees.
+  assert.deepEqual(readdirSync(join(directory, ".claude")).sort(), ["agents", "rules", "skills"]);
+  assert.deepEqual(readdirSync(join(directory, ".codex")), ["agents"]);
+});
 
 test("root AGENTS.md and CLAUDE.md are shared, hand-written files, never generated", (t) => {
   const directory = fixture(t);

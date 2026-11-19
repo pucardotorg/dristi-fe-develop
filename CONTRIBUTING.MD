@@ -79,7 +79,9 @@ Before you start:
    npm run dev           # sandbox data with sign-in against a local backend
    ```
 
-   Where screens get their data is explained in [AGENTS.md](AGENTS.md) ("Data").
+   Where screens get their data, and what that means day to day, is explained in
+   [docs/working-in-one-repo.md](docs/working-in-one-repo.md). The rules are in
+   [AGENTS.md](AGENTS.md) ("Data").
 
 4. Check that everything works:
    - App: http://localhost:3000/

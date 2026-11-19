@@ -18,7 +18,8 @@ Design and engineering both work in this repository. One setting,
 `NEXT_PUBLIC_DATA_SOURCE`, decides where screens get their data: the in-browser
 **sandbox** (fixtures, IndexedDB, demo accounts) or the DRISTI **backend**. Sign-in
 already talks to the backend; most other screens run on the sandbox until their backend
-is connected. See [AGENTS.md](AGENTS.md) ("Data").
+is connected. See [docs/working-in-one-repo.md](docs/working-in-one-repo.md) for how this
+works day to day, and [AGENTS.md](AGENTS.md) ("Data") for the rules.
 
 ## Quick start
 
@@ -120,6 +121,9 @@ npx simple-git-hooks
 - [docs/README.md](docs/README.md): map of the product docs. Start here.
 - [docs/product/](docs/product/README.md): what DRISTI is: domain, journey, standards, open questions.
 - [docs/feedback-widget.md](docs/feedback-widget.md): how reviewers comment on a running deployment.
+- [docs/working-in-one-repo.md](docs/working-in-one-repo.md): how design and engineering
+  work in one repository: the data modes, adding data, the checks and what changes for
+  each team.
 - [AGENTS.md](AGENTS.md): coding standards and the data rules, shared by both teams and
   read by coding agents ([CLAUDE.md](CLAUDE.md) includes it for Claude Code).
 - [.agents/](.agents/policies/project.md): the design team's agent roles, policies and skills.

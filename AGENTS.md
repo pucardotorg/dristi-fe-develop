@@ -114,7 +114,8 @@ A contract method that `http.ts` does not implement yet rejects with `NotIntegra
   needs both teams in one PR, listed under "Contract changes".
 - Demo-only controls (reset, "Viewing as", a "Sandbox: …" gateway or signing shortcut)
   render only when `IS_SANDBOX` (from `@/lib/data/source`) is true.
-- Full rules: `.agents/policies/data-seam.md`. Reviewers: `.github/CODEOWNERS`.
+- Full rules: `.agents/policies/data-seam.md`. Reviewers: `.github/CODEOWNERS`. A
+  plain-language guide for people: `docs/working-in-one-repo.md`.
 
 ## Layout
 

@@ -186,8 +186,10 @@ reuse or extend what's there; if the same logic appears in 2+ places, extract it
 ## Styling and UI
 
 - Compose screens from `components/ui/` and `components/chrome/` before writing new UI.
-  If a primitive can't do what's needed, extend it with a variant rather than forking a
-  copy.
+  `components/ui/` holds the primitives synced from the Pucar design system: never edit
+  them locally or copy them into a new component. If one can't do what's needed, use its
+  supported variants or compose it; a genuine gap is a design-system request (see
+  `.agents/policies/pucar-design-system.md`).
 - Use the theme tokens in `src/app/globals.css` (`bg-background`, `text-muted-foreground`,
   `text-title`, `text-body` …), not raw colours or arbitrary pixel values.
 - Merge class names with `cn()` from `@/lib/utils`.

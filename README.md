@@ -110,6 +110,8 @@ npx simple-git-hooks
 - [docs/README.md](docs/README.md): map of the product docs. Start here.
 - [docs/product/](docs/product/README.md): what DRISTI is: domain, journey, standards, open questions.
 - [docs/feedback-widget.md](docs/feedback-widget.md): how reviewers comment on a running deployment.
+- [docs/self-hosted-assets.md](docs/self-hosted-assets.md): every script, style, font, image and
+  video is served by the app, never a CDN; the checks and the Content-Security-Policy.
 - [CLAUDE.md](CLAUDE.md): coding standards for Next.js, React and TypeScript in this repo
   (also read by Claude Code).
 - [CONTRIBUTING.MD](CONTRIBUTING.MD): how to propose and land changes.

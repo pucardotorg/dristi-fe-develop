@@ -1,8 +1,39 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
+/* Next 16 resolves a relative import here from the working directory, not this file's
+   folder, so run Next from apps/dristi-app, as every npm script does. `next start
+   apps/dristi-app` from the repo root fails to find this module. */
+import { connectOriginsFromEnv, contentSecurityPolicy } from "./src/lib/security/csp";
+
 /** Points next-intl at `src/i18n/request.ts`, its default location. */
 const withNextIntl = createNextIntlPlugin();
+
+const isStaticExport = process.env.STATIC_EXPORT === "true";
+
+/**
+ * Every response carries the Content-Security-Policy, so the browser loads nothing from
+ * another origin (issue #44, `src/lib/security/csp.ts`). Read at build time, like the
+ * `NEXT_PUBLIC_*` values it depends on. A static export has no server to send headers
+ * (Next ignores them there and warns), so the web server in front must set the policy;
+ * see docs/self-hosted-assets.md.
+ */
+const securityHeaders: Pick<NextConfig, "headers"> = isStaticExport
+  ? {}
+  : {
+      async headers() {
+        const policy = contentSecurityPolicy({
+          dev: process.env.NODE_ENV === "development",
+          connectOrigins: connectOriginsFromEnv({
+            NEXT_PUBLIC_FASTERFIXES_PROJECT_ID: process.env.NEXT_PUBLIC_FASTERFIXES_PROJECT_ID,
+            NEXT_PUBLIC_FASTERFIXES_API_ORIGIN: process.env.NEXT_PUBLIC_FASTERFIXES_API_ORIGIN,
+          }),
+        });
+        return [
+          { source: "/:path*", headers: [{ key: "Content-Security-Policy", value: policy }] },
+        ];
+      },
+    };
 
 const nextConfig: NextConfig = {
   /**
@@ -21,12 +52,12 @@ const nextConfig: NextConfig = {
    * server (`server.js` plus the traced node_modules) so the runtime image does not need
    * the full install. Netlify and local builds leave it unset and keep the default output.
    */
-  output:
-    process.env.STATIC_EXPORT === "true"
-      ? "export"
-      : process.env.NEXT_OUTPUT === "standalone"
-        ? "standalone"
-        : undefined,
+  output: isStaticExport
+    ? "export"
+    : process.env.NEXT_OUTPUT === "standalone"
+      ? "standalone"
+      : undefined,
+  ...securityHeaders,
 };
 
 export default withNextIntl(nextConfig);

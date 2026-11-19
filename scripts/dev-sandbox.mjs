@@ -17,6 +17,12 @@ const env = {
   NEXT_PUBLIC_AUTH_SOURCE: "sandbox",
 };
 const args = ["run", "dev", "-w", "@pucar/dristi-app", "--", ...process.argv.slice(2)];
+
+// Next.js still lists ".env.development" among the files it loaded, and that file asks for
+// real sign-in. Say up front that both settings here win over it.
+console.log(
+  "dev:sandbox: data and sign-in both run in the sandbox (these settings override .env.development). No backend calls.\n",
+);
 // npm_execpath (set when run through npm) avoids shell interpolation and npm.cmd issues.
 const npmPath = process.env.npm_execpath;
 const child = npmPath

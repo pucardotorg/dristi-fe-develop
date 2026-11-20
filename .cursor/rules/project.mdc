@@ -7,6 +7,10 @@ alwaysApply: true
 
 # Pucar Dristi 2.0
 
+This file is for UI work: planning, building or reviewing screens with the Pucar
+design system. For any other work (data, tooling, backend wiring), follow AGENTS.md
+and skip this file.
+
 DRISTI is PUCAR's platform for running cheque-dishonour (NI Act §138) cases through
 Indian courts. One shared core is deployed per state with local rules and languages.
 

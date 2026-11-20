@@ -161,7 +161,7 @@ npx simple-git-hooks
 ├── netlify.toml                # Netlify build configuration (review site, sandbox mode)
 ├── package.json                # Workspace root and scripts
 ├── AGENTS.md                   # Coding standards and data rules (shared by both teams)
-├── CLAUDE.md                   # Includes AGENTS.md for Claude Code
+├── CLAUDE.md                   # Includes AGENTS.md and the design policy for Claude Code
 ├── CONTRIBUTING.MD
 └── README.md
 ```

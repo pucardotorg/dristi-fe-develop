@@ -115,7 +115,7 @@ export function AdrPrayerSection() {
           <FormField
             asGroup
             label={t("adrPrayerSection_interimRelief")}
-            optional
+            required
             helpPlacement="above"
             help={t(RELIEF_HELP)}
           >
@@ -128,6 +128,7 @@ export function AdrPrayerSection() {
           <FormField
             asGroup
             label={t("adrPrayerSection_finalRelief")}
+            required
             helpPlacement="above"
             help={t(RELIEF_HELP)}
           >

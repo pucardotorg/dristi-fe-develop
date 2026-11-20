@@ -76,19 +76,15 @@ export function JurisdictionSection() {
   // Shown in the derivation line, so the date it counts from is checkable.
   const serviceDate = draft.notices.map(noticeServiceDate).filter(Boolean).sort()[0] ?? "";
 
-  // A late filing cannot be saved without a reason (the backend refuses it), so Continue
-  // stops here and says so under the field rather than moving on with nothing saved.
+  // A late filing needs a condonation reason, but the backend now accepts the section
+  // without it and `validate` flags it before signing — so Continue no longer stops here.
+  // The warning above and the hint under the field keep the missing reason visible.
   const needsReason = delay !== null && !withinLimit && !j.condonationReason.trim();
-  const [reasonAsked, setReasonAsked] = React.useState(false);
 
-  /* Save the section to the case, then move on. A save failure keeps the filer here with
-     the reason, so the data loss is visible. */
+  /* Save whatever is filled to the case, then move on. A save failure keeps the filer here
+     so the data loss is visible. */
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = async () => {
-    if (needsReason) {
-      setReasonAsked(true);
-      return;
-    }
     const result = await save();
     if (result.ok && continueHref) router.push(continueHref);
   };
@@ -379,7 +375,7 @@ export function JurisdictionSection() {
               label={t("jurisdictionSection_reasonForCondonationOfDelay")}
               name="condonationReason"
               required
-              error={reasonAsked && needsReason ? jurisdictionCopy.condonationMissing : undefined}
+              help={needsReason ? jurisdictionCopy.condonationMissing : undefined}
             >
               <Textarea
                 value={j.condonationReason}

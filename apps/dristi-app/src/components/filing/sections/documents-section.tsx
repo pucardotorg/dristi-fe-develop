@@ -183,12 +183,10 @@ export function DocumentsSection() {
     : `${remaining} required document${remaining > 1 ? "s" : ""} still needed`;
 
   const onContinue = () => {
-    if (!allDone) {
-      say(statusText);
-      return;
-    }
-    // The affidavit is the next step; it was once composed on the preview screen, so this
-    // used to skip straight there.
+    // Required documents can be added later: Continue is never blocked here (the footer
+    // warns what is still needed, and validate before signing is the final check). The
+    // affidavit is the next step; it was once composed on the preview screen, so this used
+    // to skip straight there.
     router.push(hrefFor("affidavit"));
   };
 
@@ -489,7 +487,6 @@ export function DocumentsSection() {
       <FilingFooter
         backHref={hrefFor("witnesses")}
         onContinue={onContinue}
-        continueBlocked={!allDone}
         // One footer statement, worded and styled as every other section's — completeness
         // is the tab dots' and the preview's job, not a second tinted badge here.
         leading={

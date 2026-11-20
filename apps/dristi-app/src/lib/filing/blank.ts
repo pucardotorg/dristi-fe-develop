@@ -252,7 +252,8 @@ export function intakeNoticeGroup(n: number): IntakeGroup {
         docType: "delivery-proof",
         label: "Proof of delivery of demand notice (AD card)",
         desc: "Acknowledgement-due card or tracking proof of delivery.",
-        required: true,
+        // Optional: the backend's completeness check does not require it (PRD DCM-5).
+        required: false,
         file: null,
       },
       {
@@ -515,8 +516,9 @@ export function buildDocumentGroups(draft: FilingDraft): DocumentGroup[] {
           intakeKey: keyIn(g, "dispatch-proof"),
         },
         {
+          // Optional: the backend's completeness check does not require it (PRD DCM-5).
           name: `Proof of delivery of demand notice (AD card)${sfx}`,
-          required: true,
+          required: false,
           intakeKey: keyIn(g, "delivery-proof"),
         },
         {

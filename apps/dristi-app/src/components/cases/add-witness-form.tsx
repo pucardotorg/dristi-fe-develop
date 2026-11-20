@@ -10,8 +10,8 @@
  *   and "what will this witness prove" beside it;
  * - contact rows are mobile + email with Add more, both optional, the marker
  *   on each field rather than the section head;
- * - ADDRESSES ARE MANDATORY (at least one complete, police station
- *   included) — "the court tries every address listed here";
+ * - ADDRESSES ARE MANDATORY (at least one complete; the police station is
+ *   optional for a witness, PRD WIT-8) — "the court tries every address listed here";
  * - documents are a standard optional upload, not description boxes;
  * - multiple witnesses ride adjacent tabs, the filing section's own
  *   SectionTabs (a single scrolling row, so a long list never overruns).
@@ -57,17 +57,11 @@ function newWitness(): DialogWitness {
   return { ...blankWitness(), docs: [] };
 }
 
-/** The PM's rule: at least one address, complete to the police station. */
+/** At least one complete address. A witness's address no longer needs a police station
+    (the backend dropped it; PRD WIT-8 makes it optional), unlike an accused's. */
 function addressComplete(block: AddressBlock): boolean {
   const { line1, city, pin, district, state } = block.addr;
-  return Boolean(
-    line1.trim() &&
-    city.trim() &&
-    pin.trim() &&
-    district.trim() &&
-    state.trim() &&
-    block.police.trim(),
-  );
+  return Boolean(line1.trim() && city.trim() && pin.trim() && district.trim() && state.trim());
 }
 
 /** Anything typed into a block: the blank witness starts with one empty address and one
@@ -351,6 +345,7 @@ export function AddWitnessDialog({
                     blocks={w.addresses}
                     onChange={(addresses) => setField("addresses", addresses)}
                     addLabel={t("addWitnessForm_addAddress")}
+                    policeOptional
                   />
                 </section>
 

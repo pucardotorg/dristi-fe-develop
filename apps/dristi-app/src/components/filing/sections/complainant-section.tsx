@@ -654,6 +654,19 @@ export function ComplainantSection() {
                   </FormField>
                 </FormRow>
                 <HalfWidth>
+                  <FormField
+                    label={t("complainantSection_designation")}
+                    name="rep.designation"
+                    required
+                  >
+                    <TextField
+                      value={c.rep.designation}
+                      onChange={(v) => setRep("designation", v)}
+                      placeholder={t("complainantSection_eGManagingDirector")}
+                    />
+                  </FormField>
+                </HalfWidth>
+                <HalfWidth>
                   <FormField label={t("complainantSection_emailAddress")} name="rep.email" optional>
                     <TextField
                       type="email"

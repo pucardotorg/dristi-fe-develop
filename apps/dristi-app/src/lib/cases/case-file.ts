@@ -37,8 +37,12 @@ const CASE_FILE_PDF = {
   orders: "/case-file/09-orders.pdf",
 } as const;
 
+/**
+ * A section or sub-section. A document with documents linked under it (case-file.md
+ * CFL-03) has children too, but it is still a document: it has its own PDF.
+ */
 export function isCaseFileFolder(node: CaseFileNode): boolean {
-  return node.children !== undefined;
+  return node.children !== undefined && node.href === undefined;
 }
 
 export function fileNumberLabel(number: string): string {
@@ -48,11 +52,8 @@ export function fileNumberLabel(number: string): string {
 export function flattenLeaves(nodes: CaseFileNode[]): CaseFileNode[] {
   const leaves: CaseFileNode[] = [];
   for (const node of nodes) {
-    if (isCaseFileFolder(node)) {
-      leaves.push(...flattenLeaves(node.children ?? []));
-    } else {
-      leaves.push(node);
-    }
+    if (!isCaseFileFolder(node)) leaves.push(node);
+    if (node.children) leaves.push(...flattenLeaves(node.children));
   }
   return leaves;
 }
@@ -95,14 +96,13 @@ export function firstLeaf(nodes: CaseFileNode[]): CaseFileNode | undefined {
   return flattenLeaves(nodes)[0];
 }
 
-export function parseCaseFileDoc(
-  value: string | string[] | undefined,
-  tree: CaseFileNode[] = CASE_FILE_TREE,
-): string {
-  const raw = Array.isArray(value) ? value[0] : value;
-  const leaves = flattenLeaves(tree);
-  if (raw && leaves.some((node) => node.id === raw)) return raw;
-  return firstLeaf(tree)?.id ?? "";
+/**
+ * The `doc` query value as given. The case's own case file is read from the cases
+ * repository in the browser, so the screen checks it against that and falls back to the
+ * first document.
+ */
+export function caseFileDocParam(value: string | string[] | undefined): string {
+  return (Array.isArray(value) ? value[0] : value) ?? "";
 }
 
 export type CaseFileView = "pdf" | "digital";

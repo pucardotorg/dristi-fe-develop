@@ -16,7 +16,7 @@ import { CaseProcessStatus } from "@/components/cases/case-process-status";
 import { CaseTimeline } from "@/components/cases/case-timeline";
 import { CaseSectionTabs, SectionPending } from "@/components/cases/case-section-tabs";
 import { hearingRecords } from "@/lib/cases/hearing-record";
-import { parseCaseFileDoc, parseCaseFileView } from "@/lib/cases/case-file";
+import { caseFileDocParam, parseCaseFileView } from "@/lib/cases/case-file";
 import { complaintTree, parseComplaintPart } from "@/lib/cases/complaint";
 import { FIXTURE_TODAY } from "@/lib/cases/fixtures";
 import { partiesLabel, type CaseRecord } from "@/lib/cases/types";
@@ -60,7 +60,7 @@ export function CaseDetail({
   const caseId = record.id;
 
   const section = parseCaseSection(searchParams.section);
-  const docId = parseCaseFileDoc(searchParams.doc);
+  const docId = caseFileDocParam(searchParams.doc);
   const view = parseCaseFileView(searchParams.view);
   const partId = parseComplaintPart(searchParams.part, complaintTree(record.id));
   const origin = parseCaseOrigin(searchParams.from);

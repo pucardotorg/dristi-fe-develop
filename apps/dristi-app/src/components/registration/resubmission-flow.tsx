@@ -63,7 +63,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Identifier } from "@/components/chrome/identifier";
 
-import { AwaitingApproval } from "./awaiting-approval";
 import { SubmitErrorAlert } from "./submit-error-alert";
 import { PageOutcome } from "@/components/feedback";
 import { useTranslations } from "next-intl";

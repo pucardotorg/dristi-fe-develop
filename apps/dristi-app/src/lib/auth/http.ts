@@ -316,13 +316,9 @@ export class HttpAuthService implements AuthService {
     try {
       body = await this.client.get<RejectedRegistrationBody>("users/me/registration/resubmission");
     } catch (error) {
-      // Nothing to correct is a 404 now; older deployments answer 409, so it stays.
-      throw translate(error, {
-        401: "session-expired",
-        403: "session-expired",
-        404: "nothing-to-resubmit",
-        409: "nothing-to-resubmit",
-      });
+      // Nothing to correct is matched by its code (E01015), not by 404: a bare 404 is a
+      // missing route, a deployment fault that must not pass for "nothing to correct".
+      throw translate(error, { 401: "session-expired", 403: "session-expired" });
     }
 
     const role: ApprovedRole | null =

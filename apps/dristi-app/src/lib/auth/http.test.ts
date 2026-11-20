@@ -606,12 +606,12 @@ describe("HttpAuthService: correcting a rejected registration", () => {
     assert.equal((await authError(auth.getRejectedRegistration())).code, "nothing-to-resubmit");
   });
 
-  it("reports nothing to correct on a bare 404 or an older deployment's 409", async () => {
+  it("treats a 404 or 409 without a registered code as unavailable when loading", async () => {
     for (const status of [404, 409]) {
       const { auth } = setup(() => Response.json({ detail: "Not found." }, { status }));
       assert.equal(
         (await authError(auth.getRejectedRegistration())).code,
-        "nothing-to-resubmit",
+        "unavailable",
         `status ${status}`,
       );
     }

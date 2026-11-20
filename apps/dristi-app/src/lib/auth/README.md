@@ -38,7 +38,8 @@ Sign-in
                                            correction round →
                                            POST /users/me/registration/resubmission →
                                            session ends → awaiting approval
-                                           (404 / 409: nothing to correct — signs in as normal)
+                                           (GET 404 / E01015, POST 409 / E01012: nothing to
+                                           correct — signs in as normal)
   next = "terms" ......................... re-accept screen, to be built; until then signs
                                            in as normal
   next = null ............................ GET /users/me → role and name → that role's home

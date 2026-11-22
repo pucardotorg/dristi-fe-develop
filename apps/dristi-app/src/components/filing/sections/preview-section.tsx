@@ -669,6 +669,7 @@ export function PreviewSection() {
                     { term: t("previewSection_amount"), value: c.amount },
                     { term: t("previewSection_chequeNoDate"), value: c.numberAndDate },
                     { term: t("previewSection_drawersBank"), value: c.drawerBank },
+                    { term: t("previewSection_drawersAccountNumber"), value: c.accountNumber },
                     { term: t("previewSection_returned"), value: c.returned },
                   ]}
                 />

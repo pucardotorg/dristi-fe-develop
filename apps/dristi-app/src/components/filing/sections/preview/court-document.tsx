@@ -368,8 +368,9 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
               </tr>
               <tr>
                 <DocCell label={t("previewCourtDocument_bankName")}>{c.bankName}</DocCell>
-                <DocCell label={t("previewCourtDocument_bankBranch")} span={2}>
-                  {c.bankBranch}
+                <DocCell label={t("previewCourtDocument_bankBranch")}>{c.bankBranch}</DocCell>
+                <DocCell label={t("previewCourtDocument_bankAccountNumber")}>
+                  {c.accountNumber}
                 </DocCell>
               </tr>
               <tr>

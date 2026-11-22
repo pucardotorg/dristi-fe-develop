@@ -22,7 +22,9 @@ import {
   accusedContactUnknownDeclared,
   accusedHasContact,
   accusedLabel,
+  filingAdvocateMobile,
 } from "@/lib/filing/selectors";
+import { useProfile } from "@/lib/filing/profile";
 import { nameList } from "@/lib/filing/format";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
@@ -59,6 +61,7 @@ import { useTranslations } from "next-intl";
 export function AccusedSection() {
   const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
+  const advocateMobile = filingAdvocateMobile(useProfile().profile);
   const router = useRouter();
   const { prev, next } = neighbours("accused");
   const { unsaved, retryUnsaved } = useCaseParties("accused");
@@ -255,7 +258,11 @@ export function AccusedSection() {
               title={t("accusedSection_whoIsSummonedForTheEntity")}
               description={t("accusedSection_directorsPartnersOrOfficersInCharge")}
             >
-              <RepresentativeList reps={a.reps} onChange={(reps) => setField("reps", reps)} />
+              <RepresentativeList
+                reps={a.reps}
+                onChange={(reps) => setField("reps", reps)}
+                advocateMobile={advocateMobile}
+              />
             </FormCard>
           )}
 
@@ -267,6 +274,7 @@ export function AccusedSection() {
             <ContactList
               contacts={a.contacts}
               onChange={(contacts) => setField("contacts", contacts)}
+              advocateMobile={advocateMobile}
             />
           </FormCard>
 

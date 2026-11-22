@@ -25,6 +25,7 @@ function filledCheque(over: Partial<ChequeDetails> = {}): ChequeDetails {
     ifsc: "sbin0001234",
     bankName: "State Bank of India",
     bankBranch: "MG Road",
+    accountNumber: "3210 4567 890",
     presentDate: "2024-01-18",
     returnDate: "2024-01-22",
     returnReason: "funds-insufficient",
@@ -65,26 +66,46 @@ describe("chequeBank", () => {
       ifsc: "SBIN0001234",
       bankName: "State Bank of India",
       bankBranch: "MG Road",
+      accountNumber: "32104567890",
     });
   });
 
   it("inherits the previous cheque's bank when 'same as previous' is yes", () => {
     const cheques = [
       filledCheque(),
-      filledCheque({ sameAsPrev: "yes", ifsc: "", bankName: "", bankBranch: "" }),
+      filledCheque({
+        sameAsPrev: "yes",
+        ifsc: "",
+        bankName: "",
+        bankBranch: "",
+        accountNumber: "",
+      }),
     ];
     assert.deepEqual(chequeBank(cheques, 1), {
       ifsc: "SBIN0001234",
       bankName: "State Bank of India",
       bankBranch: "MG Road",
+      accountNumber: "32104567890",
     });
   });
 
   it("follows the chain back through several inheriting cheques", () => {
     const cheques = [
       filledCheque(),
-      filledCheque({ sameAsPrev: "yes", ifsc: "", bankName: "", bankBranch: "" }),
-      filledCheque({ sameAsPrev: "yes", ifsc: "", bankName: "", bankBranch: "" }),
+      filledCheque({
+        sameAsPrev: "yes",
+        ifsc: "",
+        bankName: "",
+        bankBranch: "",
+        accountNumber: "",
+      }),
+      filledCheque({
+        sameAsPrev: "yes",
+        ifsc: "",
+        bankName: "",
+        bankBranch: "",
+        accountNumber: "",
+      }),
     ];
     assert.equal(chequeBank(cheques, 2).bankName, "State Bank of India");
   });
@@ -99,6 +120,7 @@ describe("chequeEvidenceInfo", () => {
       ifsc_code: "SBIN0001234",
       bank_name: "State Bank of India",
       bank_branch: "MG Road",
+      bank_account_number: "32104567890",
     });
   });
 
@@ -111,12 +133,14 @@ describe("chequeEvidenceInfo", () => {
         ifsc: "",
         bankName: "",
         bankBranch: "",
+        accountNumber: "",
       }),
     ];
     const info = chequeEvidenceInfo(cheques, 1);
     assert.equal(info.cheque_number, "456790");
     assert.equal(info.ifsc_code, "SBIN0001234");
     assert.equal(info.bank_name, "State Bank of India");
+    assert.equal(info.bank_account_number, "32104567890");
   });
 });
 
@@ -146,6 +170,13 @@ describe("chequeReady", () => {
     assert.equal(chequeReady([filledCheque({ chequeNumber: "1234567" })], 0), false);
   });
 
+  it("is false without a 9 to 18 digit account number (CHQ-7a)", () => {
+    for (const bad of ["", "12345678", "1234567890123456789", "12345678AB"]) {
+      assert.equal(chequeReady([filledCheque({ accountNumber: bad })], 0), false, bad);
+    }
+    assert.equal(chequeReady([filledCheque({ accountNumber: "123456789" })], 0), true);
+  });
+
   it("is false when the IFSC is malformed", () => {
     assert.equal(chequeReady([filledCheque({ ifsc: "SBIN123" })], 0), false);
   });
@@ -153,7 +184,13 @@ describe("chequeReady", () => {
   it("holds the inherited bank to the same rule", () => {
     const cheques = [
       filledCheque({ ifsc: "BADCODE" }),
-      filledCheque({ sameAsPrev: "yes", ifsc: "", bankName: "", bankBranch: "" }),
+      filledCheque({
+        sameAsPrev: "yes",
+        ifsc: "",
+        bankName: "",
+        bankBranch: "",
+        accountNumber: "",
+      }),
     ];
     assert.equal(chequeReady(cheques, 1), false);
   });

@@ -148,6 +148,23 @@ describe("noticesFromCase", () => {
     assert.deepEqual({ ...n, id: "" }, { ...typed, id: "", noticeEvidenceId: "n1" });
   });
 
+  it("keeps the 'other' debt's description, which the backend does not hold yet (LDN-1a)", () => {
+    const typed: DemandNotice = {
+      ...notice(),
+      natureDebt: "other",
+      natureDebtOther: "Unpaid rent",
+      noticeEvidenceId: "n1",
+    };
+    const info = demandNoticeEvidenceInfo(typed);
+    assert.equal("natureDebtOther" in info || "nature_of_debt_other" in info, false);
+    const [n] = noticesFromCase(
+      caseOf({ evidence: [evidence("n1", "LEGAL_DEMAND_NOTICE", 1, info)] }),
+      [typed],
+    );
+    assert.equal(n.natureDebt, "other");
+    assert.equal(n.natureDebtOther, "Unpaid rent");
+  });
+
   it("reads an undelivered notice's return date and reason", () => {
     const typed: DemandNotice = {
       ...notice(),

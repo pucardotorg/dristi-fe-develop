@@ -76,6 +76,8 @@ const DOCUMENT_TYPE: Record<IntakeDocType, CaseDocumentType> = {
   "notice-reply": "REPLY_TO_DEMAND_NOTICE",
   "id-proof": "IDENTITY_PROOF",
   poa: "POA_DOCUMENT",
+  // Who it identifies is the participant it is linked to: the PoA holder, not the complainant.
+  "poa-holder-id-proof": "IDENTITY_PROOF",
   vakalatnama: "VAKALATNAMA",
   other: "OTHER_SUPPORTING_DOCUMENT",
   supporting: "PROOF_OF_TRANSACTION",

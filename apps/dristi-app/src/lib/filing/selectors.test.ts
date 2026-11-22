@@ -1,9 +1,45 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { blankCheque, blankComplainant, blankWitness } from "./blank";
-import { chequeNumberIssue, complainantComplete, mobileIssue, witnessComplete } from "./selectors";
-import type { Complainant, Witness } from "./types";
+import { blankCheque, blankComplainant, blankNotice, blankWitness } from "./blank";
+import {
+  advocateMobileIssue,
+  chequeNumberIssue,
+  complainantComplete,
+  filingAdvocateMobile,
+  mobileIssue,
+  natureDebtOtherNeeded,
+  natureOfDebtText,
+  noticeComplete,
+  witnessComplete,
+} from "./selectors";
+import type { Complainant, DemandNotice, UserProfile, Witness } from "./types";
+
+function profileAs(role: UserProfile["role"]): UserProfile {
+  return { role, name: "A. Menon", mobile: "9876543210", email: "", barNumber: "K/123/2010" };
+}
+
+describe("filingAdvocateMobile", () => {
+  it("is the filer's number only when they file as the advocate", () => {
+    assert.equal(filingAdvocateMobile(profileAs("ADVOCATE")), "9876543210");
+    assert.equal(filingAdvocateMobile(profileAs("LITIGANT")), undefined);
+    assert.equal(filingAdvocateMobile(profileAs("CLERK")), undefined);
+    assert.equal(filingAdvocateMobile(null), undefined);
+  });
+});
+
+describe("advocateMobileIssue", () => {
+  it("flags a party's number that is the advocate's, however it is written", () => {
+    assert.ok(advocateMobileIssue("9876543210", "9876543210"));
+    assert.ok(advocateMobileIssue("+91 98765 43210", "9876543210"));
+  });
+
+  it("says nothing of another number, an empty field, or an unknown advocate number", () => {
+    assert.equal(advocateMobileIssue("9000000002", "9876543210"), undefined);
+    assert.equal(advocateMobileIssue("", "9876543210"), undefined);
+    assert.equal(advocateMobileIssue("9876543210", undefined), undefined);
+  });
+});
 
 function fullWitness(): Witness {
   const w = blankWitness();
@@ -98,5 +134,46 @@ describe("complainantComplete", () => {
     assert.equal(complainantComplete(c), false);
     c.mobile = "9876543210";
     assert.equal(complainantComplete(c), true);
+  });
+});
+
+describe("the 'other' nature of debt (LDN-1a)", () => {
+  function notice(over: Partial<DemandNotice> = {}): DemandNotice {
+    return {
+      ...blankNotice(),
+      natureDebt: "loan",
+      dispatchDate: "2026-06-01",
+      modeService: "rpad",
+      ...over,
+    };
+  }
+
+  it("asks for a description only when the nature of debt is other", () => {
+    assert.equal(natureDebtOtherNeeded(notice()), false);
+    assert.equal(natureDebtOtherNeeded(notice({ natureDebt: "other" })), true);
+  });
+
+  it("leaves an 'other' notice incomplete until it is described", () => {
+    assert.equal(noticeComplete(notice()), true);
+    assert.equal(noticeComplete(notice({ natureDebt: "other" })), false);
+    assert.equal(noticeComplete(notice({ natureDebt: "other", natureDebtOther: "  " })), false);
+    assert.equal(
+      noticeComplete(notice({ natureDebt: "other", natureDebtOther: "Unpaid rent" })),
+      true,
+    );
+  });
+
+  it("reads the description after the option, and only for other", () => {
+    assert.equal(
+      natureOfDebtText(notice({ natureDebt: "other", natureDebtOther: " Unpaid rent " })),
+      "Other liability: Unpaid rent",
+    );
+    assert.equal(natureOfDebtText(notice({ natureDebt: "other" })), "Other liability");
+    // A description left behind after switching away is not shown.
+    assert.equal(
+      natureOfDebtText(notice({ natureDebt: "loan", natureDebtOther: "Unpaid rent" })),
+      "Loan / advance repayment",
+    );
+    assert.equal(natureOfDebtText(undefined), "");
   });
 });

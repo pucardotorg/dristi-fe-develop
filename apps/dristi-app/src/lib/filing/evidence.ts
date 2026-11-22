@@ -12,7 +12,12 @@
  * a half-filled cheque stays the browser's working copy until it is finished.
  */
 
-import { CHEQUE_NUMBER_PATTERN, IFSC_PATTERN } from "./lookups";
+import {
+  ACCOUNT_NUMBER_PATTERN,
+  CHEQUE_NUMBER_PATTERN,
+  IFSC_PATTERN,
+  normaliseAccountNumber,
+} from "./lookups";
 import { NON_DELIVERY_REASON_CODES } from "./options";
 import type { ChequeDetails, DemandNotice } from "./types";
 
@@ -30,6 +35,8 @@ export type ChequeEvidenceInfo = {
   ifsc_code: string;
   bank_name: string;
   bank_branch: string;
+  /** `CHQ-7a`. Optional in the backend's schema; the form requires it. */
+  bank_account_number: string;
 };
 
 /** A `RETURN_MEMO` evidence_info body. */
@@ -39,13 +46,13 @@ export type ReturnMemoEvidenceInfo = {
   return_reason: string;
 };
 
-/** The drawer's bank written on a cheque. */
-type Bank = { ifsc: string; bankName: string; bankBranch: string };
+/** The drawer's bank and account written on a cheque. */
+type Bank = { ifsc: string; bankName: string; bankBranch: string; accountNumber: string };
 
 /**
  * The bank details that apply to the cheque at `index`. A cheque that answered "same bank
- * as the previous cheque" inherits the previous cheque's bank, following the chain back to
- * the first cheque that set its own.
+ * as the previous cheque" inherits the previous cheque's bank and account, following the
+ * chain back to the first cheque that set its own.
  */
 export function chequeBank(cheques: ChequeDetails[], index: number): Bank {
   let i = index;
@@ -55,6 +62,7 @@ export function chequeBank(cheques: ChequeDetails[], index: number): Bank {
     ifsc: c.ifsc.trim().toUpperCase(),
     bankName: c.bankName.trim(),
     bankBranch: c.bankBranch.trim(),
+    accountNumber: normaliseAccountNumber(c.accountNumber),
   };
 }
 
@@ -98,6 +106,7 @@ export function chequeEvidenceInfo(cheques: ChequeDetails[], index: number): Che
     ifsc_code: bank.ifsc,
     bank_name: bank.bankName,
     bank_branch: bank.bankBranch,
+    bank_account_number: bank.accountNumber,
   };
 }
 
@@ -124,7 +133,8 @@ export function chequeReady(cheques: ChequeDetails[], index: number): boolean {
     CHEQUE_NUMBER_PATTERN.test(cheque.chequeNumber.trim()) &&
     IFSC_PATTERN.test(bank.ifsc) &&
     !!bank.bankName &&
-    !!bank.bankBranch
+    !!bank.bankBranch &&
+    ACCOUNT_NUMBER_PATTERN.test(bank.accountNumber)
   );
 }
 
@@ -185,6 +195,8 @@ export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody
     // Readiness guarantees these map; "" is a safe fallback. cheque_issue_reason is no
     // longer sent — the backend dropped it (the design never had a separate field for it).
     nature_of_debt: NATURE_OF_DEBT_VALUE[notice.natureDebt] ?? "",
+    // `natureDebtOther` (LDN-1a) is not sent: the schema rejects unknown keys, and has no
+    // field for it yet. It joins this body once the backend adds one.
     dispatch_date: notice.dispatchDate,
     mode_of_service: MODE_OF_SERVICE_VALUE[notice.modeService] ?? "",
     is_delivered: delivered,
@@ -250,7 +262,7 @@ export function chequeFromEvidence(
   info: Record<string, unknown>,
 ): Pick<
   ChequeDetails,
-  "dateOnCheque" | "amount" | "chequeNumber" | "ifsc" | "bankName" | "bankBranch"
+  "dateOnCheque" | "amount" | "chequeNumber" | "ifsc" | "bankName" | "bankBranch" | "accountNumber"
 > {
   return {
     dateOnCheque: text(info.cheque_date),
@@ -259,6 +271,7 @@ export function chequeFromEvidence(
     ifsc: text(info.ifsc_code),
     bankName: text(info.bank_name),
     bankBranch: text(info.bank_branch),
+    accountNumber: text(info.bank_account_number),
   };
 }
 
@@ -276,7 +289,8 @@ export function returnMemoFromEvidence(
 /** The demand-notice fields a `LEGAL_DEMAND_NOTICE` evidence_info holds. */
 export function noticeFromEvidence(
   info: Record<string, unknown>,
-): Omit<DemandNotice, "id" | "noticeEvidenceId"> {
+  // The backend does not hold the "other" description yet; the draft keeps its own copy.
+): Omit<DemandNotice, "id" | "noticeEvidenceId" | "natureDebtOther"> {
   const paymentStatus = codeFor(PAYMENT_STATUS_VALUE, info.payment_status);
   return {
     natureDebt: codeFor(NATURE_OF_DEBT_VALUE, info.nature_of_debt),

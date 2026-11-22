@@ -38,6 +38,7 @@ import {
   sectionComplete,
 } from "@/lib/filing/selectors";
 import { toLongDate } from "@/lib/filing/format";
+import { ACCOUNT_NUMBER_PATTERN, normaliseAccountNumber } from "@/lib/filing/lookups";
 import type { Address, FilingDraft, StepId } from "@/lib/filing/types";
 
 import { OFFICE_ADVOCATES } from "./clients";
@@ -631,6 +632,24 @@ export function caseFlags(bc: BatchCase): Flag[] {
           path: `${p}.ifsc`,
           label: "scrutiny_drawerBankIfsc",
           value: q.ifsc,
+        },
+      });
+    if (!ACCOUNT_NUMBER_PATTERN.test(normaliseAccountNumber(q.accountNumber)))
+      push({
+        ...chq,
+        rule: "chq-7a",
+        field: "CHQ-7a",
+        level: "hold",
+        at: `${p}.accountNumber`,
+        message: q.accountNumber
+          ? `Account number "${q.accountNumber}" must be 9 to 18 digits.`
+          : "Drawer's account number is missing.",
+        fix: {
+          kind: "text",
+          path: `${p}.accountNumber`,
+          label: "scrutiny_drawerAccountNumber",
+          value: q.accountNumber,
+          inputMode: "numeric",
         },
       });
     const presented = dateFlag(

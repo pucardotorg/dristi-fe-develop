@@ -5,7 +5,6 @@ import {
   ENTITY_TYPES,
   GENDER_OPTIONS,
   MODE_OF_SERVICE,
-  NATURE_OF_DEBT,
   NON_DELIVERY_REASONS,
   PAPER_FALLBACK_REASONS,
   PAYMENT_STATUS,
@@ -19,6 +18,7 @@ import {
   noticeSourceSlot,
   complainantLabel,
   limitationView,
+  natureOfDebtText,
   oathCarriedOver,
   oathTakerName,
   oathTakerRole,
@@ -142,6 +142,7 @@ const SHEET_FOR: Record<IntakeDocType, CaseDocumentKind> = {
   "notice-reply": "letter",
   "id-proof": "id",
   poa: "form",
+  "poa-holder-id-proof": "id",
   vakalatnama: "form",
   other: "letter",
   supporting: "receipt",
@@ -598,7 +599,7 @@ function noticeGroups(draft: FilingDraft): FieldGroupDef[] {
       {
         id: `${p}-nature`,
         label: "Nature of debt or other liability",
-        value: shown(nt.natureDebt && optionLabel(NATURE_OF_DEBT, nt.natureDebt)),
+        value: shown(natureOfDebtText(nt)),
       },
       {
         id: `${p}-date`,

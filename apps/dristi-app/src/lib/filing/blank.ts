@@ -29,6 +29,7 @@ import type {
   DemandNotice,
   DocumentGroup,
   FilingDraft,
+  Intake,
   IntakeDocType,
   IntakeGroup,
   IntakeSlot,
@@ -153,6 +154,7 @@ export const blankCheque = (): ChequeDetails => ({
   ifsc: "",
   bankName: "",
   bankBranch: "",
+  accountNumber: "",
   presentDate: "",
   returnDate: "",
   returnReason: "",
@@ -162,6 +164,7 @@ export const blankCheque = (): ChequeDetails => ({
 export const blankNotice = (): DemandNotice => ({
   id: uid("dn"),
   natureDebt: "",
+  natureDebtOther: "",
   dispatchDate: "",
   modeService: "",
   tracking: "",
@@ -405,6 +408,7 @@ export function intakePartyGroup(n: number): IntakeGroup {
         required: false,
         file: null,
       },
+      poaHolderIdSlot(n),
       {
         key: `p${n}vak`,
         docType: "vakalatnama",
@@ -415,6 +419,35 @@ export function intakePartyGroup(n: number): IntakeGroup {
       },
     ],
   };
+}
+
+/** The PoA holder's own identity proof (`DCM-10`); the upload step cannot yet know if there is one. */
+function poaHolderIdSlot(n: number): IntakeSlot {
+  return {
+    key: `p${n}phid`,
+    docType: "poa-holder-id-proof",
+    label: "Identity proof (PoA holder)",
+    desc: "If the complaint is filed through a PoA holder: their PAN, Aadhaar, Passport, Driving licence, Voter ID, Ration card or Bank passbook.",
+    required: false,
+    file: null,
+  };
+}
+
+/**
+ * Give an older draft's party groups the PoA holder's identity proof slot, after the PoA
+ * document. Groups that already have it are left alone. True when any slot was added.
+ */
+export function addPoaHolderIdSlots(intake: Intake): boolean {
+  const taken = new Set(intakeSlots(intake).map((s) => s.key));
+  let added = false;
+  for (const group of intake.parties) {
+    if (group.slots.some((s) => s.docType === "poa-holder-id-proof")) continue;
+    const [slot] = uniqueSlotKeys([poaHolderIdSlot(group.n)], taken);
+    const after = group.slots.findIndex((s) => s.docType === "poa");
+    group.slots.splice(after === -1 ? group.slots.length : after + 1, 0, slot);
+    added = true;
+  }
+  return added;
 }
 
 export function intakeOtherPartyDoc(partyN: number, index: number): IntakeSlot {
@@ -466,6 +499,24 @@ function docRow(
     intakeKey: spec.intakeKey,
     custom: false,
   };
+}
+
+const POA_HOLDER_ID_NAME = "Identity proof: PoA holder";
+
+/**
+ * The PoA holder's identity proof is listed, and required, only for a complainant who
+ * acts through one (`DCM-10`). A file already uploaded keeps its row after the answer
+ * changes, so it is never hidden while still saved on the case. A group without the slot
+ * (a draft not yet migrated) lists nothing: the row would keep a file the case never gets.
+ */
+export function poaHolderIdListed(c: Complainant, party: IntakeGroup | undefined): boolean {
+  const slot = party?.slots.find((s) => s.docType === "poa-holder-id-proof");
+  return !!slot && (c.poa === "yes" || !!slot.file);
+}
+
+function poaHolderIdSpec(c: Complainant, party: IntakeGroup | undefined): DocSpec {
+  const key = party?.slots.find((s) => s.docType === "poa-holder-id-proof")?.key;
+  return { name: POA_HOLDER_ID_NAME, required: c.poa === "yes", intakeKey: key };
 }
 
 /**
@@ -551,6 +602,7 @@ export function buildDocumentGroups(draft: FilingDraft): DocumentGroup[] {
     const specs: DocSpec[] = [
       { name: "Identity proof: complainant", required: true, intakeKey: keyIn(party, "id-proof") },
       { name: "Power of attorney", required: c.poa === "yes", intakeKey: keyIn(party, "poa") },
+      ...(poaHolderIdListed(c, party) ? [poaHolderIdSpec(c, party)] : []),
       { name: "Vakalatnama", required: c.pip !== "yes", intakeKey: keyIn(party, "vakalatnama") },
     ];
     groups.push({
@@ -698,6 +750,8 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
     supporting: intakeSupporting(),
   };
   migrateNoticeIntake(draft);
+  // The PoA holder's identity proof is newer than these drafts (`DCM-10`).
+  const addedPoaHolderIds = addPoaHolderIdSlots(draft.intake);
   draft.complainants ??= [blankComplainant()];
   draft.advocates ??= [blankAdvocate()];
   draft.accused ??= [blankAccused()];
@@ -714,7 +768,11 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
   const groupsBefore = groupCount();
   const complainantsBefore = draft.complainants.length;
   syncIntakeCounts(draft);
-  if (groupCount() !== groupsBefore || draft.complainants.length !== complainantsBefore)
+  if (
+    addedPoaHolderIds ||
+    groupCount() !== groupsBefore ||
+    draft.complainants.length !== complainantsBefore
+  )
     draft.documents = buildDocumentGroups(draft);
   draft.sign ??= {
     mode: "digital",
@@ -767,7 +825,11 @@ export function migrateDraft(draft: FilingDraft): FilingDraft {
   // debt already answers (LDN-1); it was retired.
   for (const n of draft.notices) {
     delete (n as DemandNotice & { whyIssued?: unknown }).whyIssued;
+    // The "other" nature of debt's description (`LDN-1a`) is newer than these drafts.
+    n.natureDebtOther ??= "";
   }
+  // The cheque's bank account number (`CHQ-7a`) is newer than these drafts.
+  for (const c of draft.cheques) c.accountNumber ??= "";
   // The upfront choice used to be one set of rounds for the whole case; it is now made
   // per accused (§19.3). Nothing is carried across: an old draft's single choice cannot
   // say which accused it was for, and the defaults it falls back to are the court's.

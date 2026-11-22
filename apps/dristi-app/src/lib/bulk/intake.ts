@@ -212,6 +212,7 @@ async function buildDraft(
         // otherwise the names sent, which the filer would have typed.
         bankName: bank?.bank ?? trim(q.bankName),
         bankBranch: bank?.branch ?? trim(q.bankBranch),
+        accountNumber: trim(q.accountNumber),
         presentDate: trim(q.presentedOn),
         returnDate: trim(q.returnedOn),
         returnReason: trim(q.returnReason),
@@ -231,6 +232,8 @@ async function buildDraft(
     return {
       id: uid("dn"),
       natureDebt: trim(n.natureOfDebt),
+      // The bulk format has no column for it yet; an "other" debt is described on screen.
+      natureDebtOther: "",
       dispatchDate: trim(n.dispatchedOn),
       modeService: trim(n.mode),
       tracking: trim(n.trackingNumber),

@@ -478,3 +478,71 @@ describe("migrateDraft — an upload cut short by a reload", () => {
     assert.equal(migrated.syncError, undefined);
   });
 });
+
+describe("the PoA holder's identity proof (DCM-10)", () => {
+  const FILE = { id: "f-hid", name: "aadhaar.jpg", size: 1, type: "image/jpeg", ext: "JPG" };
+
+  function rowNames(draft: FilingDraft): string[] {
+    return (draft.documents.find((g) => g.id === "complainant-1")?.docs ?? []).map((d) => d.name);
+  }
+
+  function holderRow(draft: FilingDraft) {
+    return draft.documents
+      .flatMap((g) => g.docs)
+      .find((d) => d.name === "Identity proof: PoA holder");
+  }
+
+  it("gives every party upload group a slot for it, after the power of attorney", () => {
+    assert.deepEqual(
+      intakePartyGroup(2).slots.map((s) => s.docType),
+      ["id-proof", "poa", "poa-holder-id-proof", "vakalatnama"],
+    );
+    assert.equal(intakePartyGroup(2).slots[2].required, false);
+  });
+
+  it("is listed, and required, only when the complainant acts through a PoA holder", () => {
+    const draft = createBlankDraft("draft-poa-id");
+    draft.complainants[0].poa = "no";
+    draft.documents = buildDocumentGroups(draft);
+    assert.equal(holderRow(draft), undefined);
+
+    draft.complainants[0].poa = "yes";
+    draft.documents = buildDocumentGroups(draft);
+    assert.deepEqual(rowNames(draft), [
+      "Identity proof: complainant",
+      "Power of attorney",
+      "Identity proof: PoA holder",
+      "Vakalatnama",
+    ]);
+    assert.equal(holderRow(draft)?.required, true);
+    assert.equal(holderRow(draft)?.intakeKey, "p1phid");
+  });
+
+  it("keeps an uploaded file's row, no longer required, after the answer turns to no", () => {
+    const draft = createBlankDraft("draft-poa-id-kept");
+    const slot = draft.intake.parties[0].slots.find((s) => s.docType === "poa-holder-id-proof");
+    assert.ok(slot);
+    slot.file = FILE;
+    draft.complainants[0].poa = "no";
+    draft.documents = buildDocumentGroups(draft);
+    assert.equal(holderRow(draft)?.required, false);
+    assert.deepEqual(holderRow(draft)?.file, FILE);
+  });
+
+  it("is added to an older draft's party groups, once, and listed when needed", () => {
+    const draft = createBlankDraft("draft-poa-id-old");
+    draft.intake.parties[0].slots = draft.intake.parties[0].slots.filter(
+      (s) => s.docType !== "poa-holder-id-proof",
+    );
+    draft.complainants[0].poa = "yes";
+    draft.documents = buildDocumentGroups(draft);
+    assert.equal(holderRow(draft), undefined);
+
+    const migrated = migrateDraft(migrateDraft(draft));
+    assert.deepEqual(
+      migrated.intake.parties[0].slots.map((s) => s.key),
+      ["p1id", "p1poa", "p1phid", "p1vak"],
+    );
+    assert.ok(holderRow(migrated));
+  });
+});

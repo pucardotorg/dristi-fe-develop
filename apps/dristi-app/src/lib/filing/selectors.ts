@@ -12,9 +12,15 @@ import {
   toLongDate,
   todayIso,
 } from "./format";
-import { CHEQUE_NUMBER_PATTERN } from "./lookups";
+import { ACCOUNT_NUMBER_PATTERN, CHEQUE_NUMBER_PATTERN, normaliseAccountNumber } from "./lookups";
 import { KERALA_FEES, type FeeSchedule } from "@/lib/court/fees";
-import { CHANNEL_FEE, defaultProcessRounds, DELIVERY_MIN_ROUNDS, PROCESS_OPTIONS } from "./options";
+import {
+  CHANNEL_FEE,
+  defaultProcessRounds,
+  DELIVERY_MIN_ROUNDS,
+  NATURE_OF_DEBT,
+  PROCESS_OPTIONS,
+} from "./options";
 import { WALK_ORDER } from "./steps";
 import type {
   Accused,
@@ -214,7 +220,12 @@ export function chequeComplete(c: ChequeDetails): boolean {
 }
 
 export function chequeFullyComplete(c: ChequeDetails, index: number): boolean {
-  const bank = index > 0 && c.sameAsPrev === "yes" ? true : !!(c.ifsc && c.bankName);
+  // A cheque on the previous one's bank takes its account too (`chequeBank`).
+  const bank =
+    index > 0 && c.sameAsPrev === "yes"
+      ? true
+      : !!(c.ifsc && c.bankName) &&
+        ACCOUNT_NUMBER_PATTERN.test(normaliseAccountNumber(c.accountNumber));
   return (
     chequeComplete(c) &&
     bank &&
@@ -284,8 +295,45 @@ export function mobileIssue(value: string): string | undefined {
   return isIndianMobile(national) ? undefined : mobileFieldCopy.invalid;
 }
 
+/**
+ * The advocate's mobile, when the filing knows it: only when the filer is the advocate.
+ * The advocate search returns no numbers, so another advocate on record has none here.
+ */
+export function filingAdvocateMobile(profile: UserProfile | null): string | undefined {
+  return profile?.role === "ADVOCATE" && profile.mobile ? profile.mobile : undefined;
+}
+
+/**
+ * A party's mobile must be their own, not the advocate's: notices, OTPs and the account
+ * link all follow the number. Checked for complainants, PoA holders, representatives,
+ * accused and witnesses.
+ */
+export function advocateMobileIssue(
+  value: string,
+  advocateMobile: string | undefined,
+): string | undefined {
+  if (!advocateMobile || !sameMobile(value, advocateMobile)) return undefined;
+  return mobileFieldCopy.advocates;
+}
+
+/** An "other" nature of debt needs the filer to say what the liability is (`LDN-1a`). */
+export function natureDebtOtherNeeded(n: DemandNotice): boolean {
+  return n.natureDebt === "other";
+}
+
 export function noticeComplete(n: DemandNotice): boolean {
-  return !!(n.natureDebt && n.dispatchDate && n.modeService);
+  const described = !natureDebtOtherNeeded(n) || !!n.natureDebtOther.trim();
+  return !!(n.natureDebt && described && n.dispatchDate && n.modeService);
+}
+
+/**
+ * The nature of debt as the complaint reads it: the option, and for "other" what the
+ * filer wrote — "Other liability: unpaid rent". Empty when nothing is chosen.
+ */
+export function natureOfDebtText(n: DemandNotice | undefined): string {
+  const label = NATURE_OF_DEBT.find((o) => o.value === n?.natureDebt)?.label ?? "";
+  const other = n && natureDebtOtherNeeded(n) ? n.natureDebtOther.trim() : "";
+  return label && other ? `${label}: ${other}` : label;
 }
 
 export function witnessComplete(w: Witness): boolean {

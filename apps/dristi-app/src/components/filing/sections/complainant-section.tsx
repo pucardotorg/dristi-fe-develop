@@ -20,11 +20,13 @@ import {
   complainantComplete,
   complainantLabel,
   complainantsMissingCinPan,
+  filingAdvocateMobile,
   isCinOrPan,
   normaliseCinPan,
   partySourceSlot,
 } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
+import { useProfile } from "@/lib/filing/profile";
 import { useFiling } from "@/lib/filing/store";
 import { useCaseParties } from "@/lib/filing/use-case-parties";
 import { useRemoveCaseRecord } from "@/lib/filing/use-remove-case-record";
@@ -98,6 +100,7 @@ const COMPLAINANT_TYPES: { value: ComplainantType; label: string }[] = [
 export function ComplainantSection() {
   const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
+  const advocateMobile = filingAdvocateMobile(useProfile().profile);
   const { prev, next } = neighbours("complainant");
   const { unsaved, retryUnsaved } = useCaseParties("complainant");
   const removeRecord = useRemoveCaseRecord();
@@ -359,6 +362,7 @@ export function ComplainantSection() {
                     required
                     value={c.mobile}
                     onChange={setMobile}
+                    advocateMobile={advocateMobile}
                   />
                   <FormField label={t("complainantSection_emailAddress")} name="email" optional>
                     <TextField
@@ -468,6 +472,7 @@ export function ComplainantSection() {
                         required
                         value={c.poaHolder.mobile}
                         onChange={(v) => setPoa("mobile", v)}
+                        advocateMobile={advocateMobile}
                       />
                     </HalfWidth>
                     <FormRow>
@@ -622,6 +627,7 @@ export function ComplainantSection() {
                     required
                     value={c.rep.mobile}
                     onChange={(v) => setRep("mobile", v)}
+                    advocateMobile={advocateMobile}
                   />
                 </HalfWidth>
                 <FormRow>

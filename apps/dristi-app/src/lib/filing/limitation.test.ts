@@ -120,6 +120,7 @@ describe("the cheque's own validity — the first link of the chain", () => {
       amount: "50000",
       ifsc: "SBIN0000001",
       bankName: "State Bank of India",
+      accountNumber: "32104567890",
       dateOnCheque: "2026-05-15",
       presentDate: "2026-08-20",
       returnDate: "2026-08-22",

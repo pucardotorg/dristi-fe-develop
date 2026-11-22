@@ -11,7 +11,8 @@
 import * as React from "react";
 
 import { blankWitness } from "@/lib/filing/blank";
-import { witnessComplete } from "@/lib/filing/selectors";
+import { useProfile } from "@/lib/filing/profile";
+import { filingAdvocateMobile, witnessComplete } from "@/lib/filing/selectors";
 import { neighbours } from "@/lib/filing/steps";
 import { useFiling } from "@/lib/filing/store";
 import { removePartyFromCase, useCaseParties } from "@/lib/filing/use-case-parties";
@@ -34,6 +35,7 @@ import { useTranslations } from "next-intl";
 export function WitnessesSection() {
   const t = useTranslations();
   const { draft, update, hrefFor } = useFiling();
+  const advocateMobile = filingAdvocateMobile(useProfile().profile);
   const { prev, next } = neighbours("witnesses");
   const { unsaved, retryUnsaved } = useCaseParties("witness");
 
@@ -190,6 +192,7 @@ export function WitnessesSection() {
               emailLabel={t("witnessesSection_emailId")}
               mobilePlaceholder={t("witnessesSection_enterMobileNumber")}
               emailPlaceholder={t("witnessesSection_exXyzGmailCom")}
+              advocateMobile={advocateMobile}
             />
           </FormCard>
 

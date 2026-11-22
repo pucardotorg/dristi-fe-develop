@@ -41,6 +41,7 @@ export const TARGETABLE_FIELDS = {
     "ifsc",
     "bankName",
     "bankBranch",
+    "accountNumber",
     "presentDate",
     "returnDate",
     "returnReason",

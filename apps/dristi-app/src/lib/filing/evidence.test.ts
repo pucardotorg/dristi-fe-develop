@@ -6,11 +6,9 @@ import {
   chequeAmount,
   chequeBank,
   chequeEvidenceInfo,
-  chequeReady,
   demandNoticeEvidenceInfo,
-  demandNoticeReady,
+  demandNoticeHasContent,
   returnMemoEvidenceInfo,
-  returnMemoReady,
   returnReasonValue,
 } from "./evidence";
 import type { ChequeDetails, DemandNotice } from "./types";
@@ -154,57 +152,59 @@ describe("returnMemoEvidenceInfo", () => {
   });
 });
 
-describe("chequeReady", () => {
-  it("is true for a complete, well-formed cheque", () => {
-    assert.equal(chequeReady([filledCheque()], 0), true);
+describe("chequeEvidenceInfo partial save", () => {
+  it("sends only the filled, well-formed fields, never an empty or zero value", () => {
+    // Half-filled: a date and bank name, no amount yet, a not-yet-complete cheque number.
+    const info = chequeEvidenceInfo(
+      [
+        filledCheque({
+          amount: "",
+          chequeNumber: "12345",
+          ifsc: "SBIN123",
+          bankBranch: "",
+          accountNumber: "",
+        }),
+      ],
+      0,
+    );
+    assert.deepEqual(info, {
+      cheque_date: "2024-01-15",
+      bank_name: "State Bank of India",
+    });
   });
 
-  it("is false when a required field is missing", () => {
-    assert.equal(chequeReady([filledCheque({ dateOnCheque: "" })], 0), false);
-    assert.equal(chequeReady([filledCheque({ amount: "" })], 0), false);
-    assert.equal(chequeReady([filledCheque({ bankName: "" })], 0), false);
+  it("is empty for a blank cheque, so no row is created for one", () => {
+    assert.deepEqual(chequeEvidenceInfo([blankCheque()], 0), {});
   });
 
-  it("is false when the cheque number is not six digits", () => {
-    assert.equal(chequeReady([filledCheque({ chequeNumber: "12345" })], 0), false);
-    assert.equal(chequeReady([filledCheque({ chequeNumber: "1234567" })], 0), false);
+  it("omits a malformed cheque number or IFSC rather than sending it", () => {
+    const info = chequeEvidenceInfo(
+      [filledCheque({ chequeNumber: "1234567", ifsc: "BADCODE" })],
+      0,
+    );
+    assert.ok(!("cheque_number" in info));
+    assert.ok(!("ifsc_code" in info));
   });
 
-  it("is false without a 9 to 18 digit account number (CHQ-7a)", () => {
+  it("sends the account number only once it is 9 to 18 digits (CHQ-7a)", () => {
     for (const bad of ["", "12345678", "1234567890123456789", "12345678AB"]) {
-      assert.equal(chequeReady([filledCheque({ accountNumber: bad })], 0), false, bad);
+      const info = chequeEvidenceInfo([filledCheque({ accountNumber: bad })], 0);
+      assert.ok(!("bank_account_number" in info), bad);
     }
-    assert.equal(chequeReady([filledCheque({ accountNumber: "123456789" })], 0), true);
-  });
-
-  it("is false when the IFSC is malformed", () => {
-    assert.equal(chequeReady([filledCheque({ ifsc: "SBIN123" })], 0), false);
-  });
-
-  it("holds the inherited bank to the same rule", () => {
-    const cheques = [
-      filledCheque({ ifsc: "BADCODE" }),
-      filledCheque({
-        sameAsPrev: "yes",
-        ifsc: "",
-        bankName: "",
-        bankBranch: "",
-        accountNumber: "",
-      }),
-    ];
-    assert.equal(chequeReady(cheques, 1), false);
+    const info = chequeEvidenceInfo([filledCheque({ accountNumber: "1234-5678 9" })], 0);
+    assert.equal(info.bank_account_number, "123456789");
   });
 });
 
-describe("returnMemoReady", () => {
-  it("is true only when presentation date, return date and a backend-known reason are present", () => {
-    assert.equal(returnMemoReady(filledCheque()), true);
-    assert.equal(returnMemoReady(filledCheque({ returnReason: "" })), false);
-    assert.equal(returnMemoReady(filledCheque({ presentDate: "" })), false);
-    // Both signature-differs and amount-mismatch now have backend values (B1), so a memo
-    // using them is ready to save.
-    assert.equal(returnMemoReady(filledCheque({ returnReason: "signature-differs" })), true);
-    assert.equal(returnMemoReady(filledCheque({ returnReason: "amount-mismatch" })), true);
+describe("returnMemoEvidenceInfo partial save", () => {
+  it("sends only what is filled, leaving out an unmapped reason", () => {
+    assert.deepEqual(returnMemoEvidenceInfo(filledCheque({ returnReason: "", returnDate: "" })), {
+      presentation_date: "2024-01-18",
+    });
+  });
+
+  it("is empty for a blank cheque's return memo", () => {
+    assert.deepEqual(returnMemoEvidenceInfo(blankCheque()), {});
   });
 });
 
@@ -278,38 +278,36 @@ describe("demandNoticeEvidenceInfo", () => {
   });
 });
 
-describe("demandNoticeReady", () => {
-  it("is true for a complete delivered or undelivered notice", () => {
-    assert.equal(demandNoticeReady(filledNotice()), true);
-    assert.equal(demandNoticeReady(filledNotice(UNDELIVERED)), true);
+describe("demandNoticeEvidenceInfo partial save", () => {
+  it("sends the two yes/no answers plus only the other fields that are filled", () => {
+    // Nothing filled beyond the defaults (delivered yes, replied no, no payment status).
+    assert.deepEqual(demandNoticeEvidenceInfo(blankNotice()), {
+      is_delivered: true,
+      accused_replied: false,
+    });
   });
 
-  it("is false when a required field is missing", () => {
-    assert.equal(demandNoticeReady(filledNotice({ natureDebt: "" })), false);
-    assert.equal(demandNoticeReady(filledNotice({ dispatchDate: "" })), false);
-    assert.equal(demandNoticeReady(filledNotice({ modeService: "" })), false);
-    assert.equal(demandNoticeReady(filledNotice({ paymentStatus: "" })), false);
-  });
-
-  it("requires a delivery date when delivered", () => {
-    assert.equal(demandNoticeReady(filledNotice({ delivered: "yes", deliveryDate: "" })), false);
-  });
-
-  it("requires a return date and a backend-known reason when undelivered", () => {
-    assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, returnDate: "" })), false);
-    assert.equal(demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "" })), false);
-    // "address incomplete" now has a backend enum value (B3), so it no longer holds the notice back.
-    assert.equal(
-      demandNoticeReady(filledNotice({ ...UNDELIVERED, nonDeliveryReason: "incomplete" })),
-      true,
+  it("leaves out an unmapped nature-of-debt or mode-of-service code rather than sending it", () => {
+    const info = demandNoticeEvidenceInfo(
+      filledNotice({ natureDebt: "", modeService: "", dispatchDate: "" }),
     );
+    assert.ok(!("nature_of_debt" in info));
+    assert.ok(!("mode_of_service" in info));
+    assert.ok(!("dispatch_date" in info));
   });
 
-  it("requires a valid amount for a part payment", () => {
-    assert.equal(demandNoticeReady(filledNotice({ paymentStatus: "part", partAmount: "" })), false);
-    assert.equal(
-      demandNoticeReady(filledNotice({ paymentStatus: "part", partAmount: "500" })),
-      true,
-    );
+  it("omits a part payment amount that is not a positive number", () => {
+    const info = demandNoticeEvidenceInfo(filledNotice({ paymentStatus: "part", partAmount: "0" }));
+    assert.equal(info.payment_status, "PART_PAYMENT");
+    assert.ok(!("part_payment_amount" in info));
+  });
+});
+
+describe("demandNoticeHasContent", () => {
+  it("is false for a blank notice (only its default yes/no answers), true once anything is filled", () => {
+    assert.equal(demandNoticeHasContent(blankNotice()), false);
+    assert.equal(demandNoticeHasContent({ ...blankNotice(), natureDebt: "loan" }), true);
+    assert.equal(demandNoticeHasContent({ ...blankNotice(), tracking: "RR123" }), true);
+    assert.equal(demandNoticeHasContent(filledNotice()), true);
   });
 });

@@ -51,6 +51,7 @@ export function ContactList({
   optional = false,
   allowAdd = true,
   advocateMobile,
+  mobileConflicts,
 }: {
   contacts: Contact[];
   onChange: (next: Contact[]) => void;
@@ -65,6 +66,8 @@ export function ContactList({
   allowAdd?: boolean;
   /** The filing advocate's own number, which no contact may be. */
   advocateMobile?: string;
+  /** Per row, why its number cannot be used: another party already has it. */
+  mobileConflicts?: (string | undefined)[];
 }) {
   const t = useTranslations();
   const setAt = (i: number, patch: Partial<Contact>) =>
@@ -82,6 +85,7 @@ export function ContactList({
               onChange={(v) => setAt(i, { mobile: v })}
               placeholder={mobilePlaceholder}
               advocateMobile={advocateMobile}
+              conflict={mobileConflicts?.[i]}
             />
             <FormField
               label={translateText(t, emailLabel)}
@@ -132,6 +136,7 @@ export function AddressBlockList({
   onChange,
   addLabel = "repeatLists_addAnotherAddress",
   optional = false,
+  policeOptional = false,
 }: {
   blocks: AddressBlock[];
   onChange: (next: AddressBlock[]) => void;
@@ -139,6 +144,9 @@ export function AddressBlockList({
   /** No address is needed: the last one can be removed too, and no field is marked
       required (a started address still has to be complete; the host says so). */
   optional?: boolean;
+  /** The police station is not required (a witness's address, which the backend no longer
+      asks a police station of); the address itself still is, unless `optional`. */
+  policeOptional?: boolean;
 }) {
   const t = useTranslations();
   const { court } = useCourt();
@@ -171,7 +179,8 @@ export function AddressBlockList({
             <FormField
               label={t("repeatLists_policeStation")}
               name={`addresses.${i}.police`}
-              required={!optional}
+              required={!optional && !policeOptional}
+              optional={policeOptional && !optional}
               help={t("repeatLists_theStationThisAddressFallsUnder")}
             >
               <ComboField

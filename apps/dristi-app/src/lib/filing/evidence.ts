@@ -7,9 +7,11 @@
  * ordinal. These are pure functions so they can be unit-tested without the store; the
  * backend calls live in `data/cases-api.ts`.
  *
- * The backend rejects an incomplete section (every required key is checked on write), so a
- * caller saves a row only once `chequeReady` / `returnMemoReady` says it will be accepted;
- * a half-filled cheque stays the browser's working copy until it is finished.
+ * The backend accepts a partly filled row: on save it drops the required-field rules and
+ * strips empty values, but it still refuses a malformed one (a `0` amount, a bad cheque
+ * number or IFSC, an option code outside its enum). So each builder sends only the fields
+ * that are filled and well-formed and leaves the rest out; completeness is enforced by
+ * `POST /cases/{id}/validate` before signing, not here.
  */
 
 import {
@@ -26,25 +28,6 @@ export type EvidenceType = "CHEQUE" | "RETURN_MEMO" | "LEGAL_DEMAND_NOTICE";
 
 /** An `evidence_info` body, as the backend's per-type schema expects it. */
 export type EvidenceInfoBody = Record<string, string | number | boolean>;
-
-/** A `CHEQUE` evidence_info body, as the backend's schema expects it. */
-export type ChequeEvidenceInfo = {
-  cheque_date: string;
-  amount: number;
-  cheque_number: string;
-  ifsc_code: string;
-  bank_name: string;
-  bank_branch: string;
-  /** `CHQ-7a`. Optional in the backend's schema; the form requires it. */
-  bank_account_number: string;
-};
-
-/** A `RETURN_MEMO` evidence_info body. */
-export type ReturnMemoEvidenceInfo = {
-  presentation_date: string;
-  return_date: string;
-  return_reason: string;
-};
 
 /** The drawer's bank and account written on a cheque. */
 type Bank = { ifsc: string; bankName: string; bankBranch: string; accountNumber: string };
@@ -95,56 +78,41 @@ export function returnReasonValue(code: string): string | null {
   return RETURN_REASON_VALUE[code] ?? null;
 }
 
-/** Build the `CHEQUE` evidence_info for the cheque at `index`, resolving its bank. */
-export function chequeEvidenceInfo(cheques: ChequeDetails[], index: number): ChequeEvidenceInfo {
+/**
+ * Build the `CHEQUE` evidence_info for the cheque at `index`, resolving its bank. Only the
+ * filled, well-formed fields are sent: a blank one is left out, as are a non-positive
+ * amount and a cheque number or IFSC that is not yet in the shape the backend accepts.
+ */
+export function chequeEvidenceInfo(cheques: ChequeDetails[], index: number): EvidenceInfoBody {
   const cheque = cheques[index];
   const bank = chequeBank(cheques, index);
-  return {
-    cheque_date: cheque.dateOnCheque,
-    amount: chequeAmount(cheque.amount) ?? 0,
-    cheque_number: cheque.chequeNumber.trim(),
-    ifsc_code: bank.ifsc,
-    bank_name: bank.bankName,
-    bank_branch: bank.bankBranch,
-    bank_account_number: bank.accountNumber,
-  };
-}
-
-/** Build the `RETURN_MEMO` evidence_info for a cheque. */
-export function returnMemoEvidenceInfo(cheque: ChequeDetails): ReturnMemoEvidenceInfo {
-  return {
-    presentation_date: cheque.presentDate,
-    return_date: cheque.returnDate,
-    // Readiness guarantees the reason maps to a backend value; "" is a safe fallback.
-    return_reason: returnReasonValue(cheque.returnReason) ?? "",
-  };
+  const info: EvidenceInfoBody = {};
+  if (cheque.dateOnCheque) info.cheque_date = cheque.dateOnCheque;
+  const amount = chequeAmount(cheque.amount);
+  if (amount !== null) info.amount = amount;
+  const chequeNumber = cheque.chequeNumber.trim();
+  if (CHEQUE_NUMBER_PATTERN.test(chequeNumber)) info.cheque_number = chequeNumber;
+  if (IFSC_PATTERN.test(bank.ifsc)) info.ifsc_code = bank.ifsc;
+  if (bank.bankName) info.bank_name = bank.bankName;
+  if (bank.bankBranch) info.bank_branch = bank.bankBranch;
+  // `CHQ-7a`: optional in the backend's schema, required by the form (`chequeFullyComplete`).
+  if (ACCOUNT_NUMBER_PATTERN.test(bank.accountNumber)) {
+    info.bank_account_number = bank.accountNumber;
+  }
+  return info;
 }
 
 /**
- * Whether the cheque at `index` has every `CHEQUE` field the backend requires, each in a
- * shape it will accept — so saving it will not be rejected as incomplete or malformed.
+ * Build the `RETURN_MEMO` evidence_info for a cheque, leaving out any field not yet filled.
+ * A return reason with no backend enum value is left out rather than sent blank.
  */
-export function chequeReady(cheques: ChequeDetails[], index: number): boolean {
-  const cheque = cheques[index];
-  const bank = chequeBank(cheques, index);
-  return (
-    !!cheque.dateOnCheque &&
-    chequeAmount(cheque.amount) !== null &&
-    CHEQUE_NUMBER_PATTERN.test(cheque.chequeNumber.trim()) &&
-    IFSC_PATTERN.test(bank.ifsc) &&
-    !!bank.bankName &&
-    !!bank.bankBranch &&
-    ACCOUNT_NUMBER_PATTERN.test(bank.accountNumber)
-  );
-}
-
-/** Whether a cheque's return memo has every `RETURN_MEMO` field the backend requires. */
-export function returnMemoReady(cheque: ChequeDetails): boolean {
-  // The return reason must be one the backend's enum accepts; two design options have no
-  // backend value yet (tracker B1), so a memo using them is held back until the enum grows.
-  return (
-    !!cheque.presentDate && !!cheque.returnDate && returnReasonValue(cheque.returnReason) !== null
-  );
+export function returnMemoEvidenceInfo(cheque: ChequeDetails): EvidenceInfoBody {
+  const info: EvidenceInfoBody = {};
+  if (cheque.presentDate) info.presentation_date = cheque.presentDate;
+  if (cheque.returnDate) info.return_date = cheque.returnDate;
+  const reason = returnReasonValue(cheque.returnReason);
+  if (reason) info.return_reason = reason;
+  return info;
 }
 
 /** Local payment-status code → the backend's `PaymentStatus` enum value. */
@@ -183,25 +151,28 @@ export function nonDeliveryReasonValue(code: string): string | null {
 }
 
 /**
- * Build the `LEGAL_DEMAND_NOTICE` evidence_info for a demand notice.
+ * Build the `LEGAL_DEMAND_NOTICE` evidence_info for a demand notice, sending only what is
+ * filled and well-formed.
  *
- * `payment_status` is sent as the backend's enum value. A delivered notice carries its
- * delivery date; an undelivered one carries when it came back and why (both required then);
- * a part payment carries its amount. `tracking_number` is left out when empty.
+ * `is_delivered` and `accused_replied` carry the form's yes/no answer, which always has a
+ * value. Everything else — `nature_of_debt`, the dates, `mode_of_service`, `payment_status`,
+ * the non-delivery reason and a part payment's amount — is left out until it is filled, and
+ * an option code with no backend enum value is left out rather than sent blank. A delivered
+ * notice carries its delivery date; an undelivered one carries when it came back and why.
  */
 export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody {
   const delivered = notice.delivered === "yes";
   const info: EvidenceInfoBody = {
-    // Readiness guarantees these map; "" is a safe fallback. cheque_issue_reason is no
-    // longer sent — the backend dropped it (the design never had a separate field for it).
-    nature_of_debt: NATURE_OF_DEBT_VALUE[notice.natureDebt] ?? "",
-    // `natureDebtOther` (LDN-1a) is not sent: the schema rejects unknown keys, and has no
-    // field for it yet. It joins this body once the backend adds one.
-    dispatch_date: notice.dispatchDate,
-    mode_of_service: MODE_OF_SERVICE_VALUE[notice.modeService] ?? "",
     is_delivered: delivered,
     accused_replied: notice.replied === "yes",
   };
+  // cheque_issue_reason is not sent — the backend dropped it. `natureDebtOther` (LDN-1a)
+  // is not sent either: the schema rejects unknown keys and has no field for it yet.
+  const natureOfDebt = NATURE_OF_DEBT_VALUE[notice.natureDebt];
+  if (natureOfDebt) info.nature_of_debt = natureOfDebt;
+  if (notice.dispatchDate) info.dispatch_date = notice.dispatchDate;
+  const modeOfService = MODE_OF_SERVICE_VALUE[notice.modeService];
+  if (modeOfService) info.mode_of_service = modeOfService;
   if (notice.paymentStatus) info.payment_status = PAYMENT_STATUS_VALUE[notice.paymentStatus];
   const tracking = notice.tracking.trim();
   if (tracking) info.tracking_number = tracking;
@@ -220,23 +191,14 @@ export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody
   return info;
 }
 
-/** Whether a demand notice has every `LEGAL_DEMAND_NOTICE` field the backend requires. */
-export function demandNoticeReady(notice: DemandNotice): boolean {
-  const base =
-    !!notice.natureDebt && !!notice.dispatchDate && !!notice.modeService && !!notice.paymentStatus;
-  if (!base) return false;
-  if (notice.delivered === "yes") {
-    // A delivered notice needs its delivery date.
-    if (!notice.deliveryDate) return false;
-  } else {
-    // An undelivered one needs its return date and a backend-known non-delivery reason
-    // ("address incomplete" has no backend value yet — tracker B3 — so it holds the row back).
-    if (!notice.returnDate || nonDeliveryReasonValue(notice.nonDeliveryReason) === null)
-      return false;
-  }
-  // A part payment needs a valid amount.
-  if (notice.paymentStatus === "part" && chequeAmount(notice.partAmount) === null) return false;
-  return true;
+/**
+ * Whether a demand notice has anything worth saving: a brand-new one carries only the
+ * default `is_delivered` / `accused_replied` answers, and should not create an empty row.
+ */
+export function demandNoticeHasContent(notice: DemandNotice): boolean {
+  return Object.keys(demandNoticeEvidenceInfo(notice)).some(
+    (key) => key !== "is_delivered" && key !== "accused_replied",
+  );
 }
 
 /* ─────────────────────────────── Reading back from the case ─────────────────────── */

@@ -15,6 +15,7 @@ import { ChromeDialogContent } from "@/components/chrome/app-chrome";
 
 import { blankComplainant } from "@/lib/filing/blank";
 import { ENTITY_TYPES, GENDER_OPTIONS } from "@/lib/filing/options";
+import { firstComplainantClash, mobileConflicts } from "@/lib/filing/mobile-conflicts";
 import { fetchOnCourtRecord } from "@/lib/filing/registry";
 import {
   complainantComplete,
@@ -68,7 +69,7 @@ import {
   useInCorrection,
 } from "@/components/filing/posture";
 import { MobileInput, OptionSelect, TextField } from "@/components/filing/inputs";
-import { MobileField } from "@/components/filing/mobile-field";
+import { MobileField, useMobileConflictMessage } from "@/components/filing/mobile-field";
 import { SectionNotice, UnsavedNotice } from "@/components/filing/notices";
 import { RichTextEditor } from "@/components/filing/rich-text-editor";
 import { SectionTabs } from "@/components/filing/section-tabs";
@@ -109,6 +110,10 @@ export function ComplainantSection() {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const active = Math.min(activeIndex, complainants.length - 1);
   const c = complainants[active];
+
+  const conflicts = mobileConflicts(draft);
+  const clashAt = firstComplainantClash(conflicts);
+  const conflictMessage = useMobileConflictMessage();
 
   /* A scrutiny defect on "Complainant 1 › Age" selects that tab before it takes focus. */
   useCorrectionInstanceRequest("complainant", setActiveIndex);
@@ -166,6 +171,11 @@ export function ComplainantSection() {
 
   const continueHref = next ? hrefFor(next) : undefined;
   const handleContinue = () => {
+    // A number another party already has stops the step; the filer is taken to it.
+    if (clashAt !== undefined) {
+      setActiveIndex(clashAt);
+      return;
+    }
     if (continueHref && !askBeforeLeaving(continueHref)) router.push(continueHref);
   };
 
@@ -363,6 +373,7 @@ export function ComplainantSection() {
                     value={c.mobile}
                     onChange={setMobile}
                     advocateMobile={advocateMobile}
+                    conflict={conflictMessage(conflicts.complainant[active])}
                   />
                   <FormField label={t("complainantSection_emailAddress")} name="email" optional>
                     <TextField
@@ -473,6 +484,7 @@ export function ComplainantSection() {
                         value={c.poaHolder.mobile}
                         onChange={(v) => setPoa("mobile", v)}
                         advocateMobile={advocateMobile}
+                        conflict={conflictMessage(conflicts.poaHolder[active], true)}
                       />
                     </HalfWidth>
                     <FormRow>
@@ -648,6 +660,19 @@ export function ComplainantSection() {
                   </FormField>
                 </FormRow>
                 <HalfWidth>
+                  <FormField
+                    label={t("complainantSection_designation")}
+                    name="rep.designation"
+                    required
+                  >
+                    <TextField
+                      value={c.rep.designation}
+                      onChange={(v) => setRep("designation", v)}
+                      placeholder={t("complainantSection_eGManagingDirector")}
+                    />
+                  </FormField>
+                </HalfWidth>
+                <HalfWidth>
                   <FormField label={t("complainantSection_emailAddress")} name="rep.email" optional>
                     <TextField
                       type="email"
@@ -707,6 +732,8 @@ export function ComplainantSection() {
       <FilingFooter
         backHref={prev ? hrefFor(prev) : undefined}
         onContinue={continueHref ? handleContinue : undefined}
+        continueBlocked={clashAt !== undefined}
+        continueHint={t("mobileConflict_continueHint")}
       />
 
       <SourcePanel

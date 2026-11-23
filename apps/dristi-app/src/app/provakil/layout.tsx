@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import localFont from "next/font/local";
 
 import "@/provakil/provakil.css";
 
@@ -10,9 +10,16 @@ import "@/provakil/provakil.css";
  * through the court's Bulk Filing API (`provakil/lib/saras-link.ts`).
  */
 
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
+/* From the app's own file, not Google Fonts: nothing is fetched from a public CDN, at
+   build time or in the browser (issue #44). It is the same latin variable Roboto Google
+   served, declared at the three weights Provakil asked Google for, so nothing renders
+   differently. next/font takes literals only, hence the repeated path. */
+const roboto = localFont({
+  src: [
+    { path: "../../provakil/fonts/roboto-latin-variable.woff2", weight: "400", style: "normal" },
+    { path: "../../provakil/fonts/roboto-latin-variable.woff2", weight: "500", style: "normal" },
+    { path: "../../provakil/fonts/roboto-latin-variable.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-roboto",
 });
 

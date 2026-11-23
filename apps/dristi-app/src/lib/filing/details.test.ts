@@ -1,13 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { blankJurisdiction } from "./blank";
-import {
-  adrPrayerReady,
-  adrPrayerSectionBody,
-  jurisdictionReady,
-  jurisdictionSectionBody,
-} from "./details";
+import { blankAdr, blankJurisdiction } from "./blank";
+import { adrPrayerSectionBody, jurisdictionSectionBody } from "./details";
 import type { AdrPrayer, Jurisdiction } from "./types";
 
 /** A complete "payee deposited" jurisdiction, so tests can vary one field at a time. */
@@ -27,86 +22,6 @@ function filledJurisdiction(over: Partial<Jurisdiction> = {}): Jurisdiction {
 const CAUSE = "2024-02-21";
 const FILING = "2024-03-01";
 
-describe("jurisdictionReady", () => {
-  it("needs both the cause-of-action and complaint filing dates", () => {
-    assert.equal(jurisdictionReady(filledJurisdiction(), "", FILING), false);
-    assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE, ""), false);
-    assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE, FILING), true);
-    // A late filing needs its reason, which the backend refuses the section without.
-    assert.equal(jurisdictionReady(filledJurisdiction(), CAUSE, FILING, true), false);
-    assert.equal(
-      jurisdictionReady(filledJurisdiction({ condonationReason: "Abroad." }), CAUSE, FILING, true),
-      true,
-    );
-  });
-
-  it("needs the payee bank block and police station when the payee deposited", () => {
-    assert.equal(jurisdictionReady(filledJurisdiction({ ifsc: "" }), CAUSE, FILING), false);
-    assert.equal(jurisdictionReady(filledJurisdiction({ ifsc: "BADCODE" }), CAUSE, FILING), false);
-    assert.equal(
-      jurisdictionReady(filledJurisdiction({ payeeBankName: "" }), CAUSE, FILING),
-      false,
-    );
-    assert.equal(jurisdictionReady(filledJurisdiction({ payeePolice: "" }), CAUSE, FILING), false);
-  });
-
-  it("needs only the drawer's police station when the payee did not deposit", () => {
-    const notDeposited = {
-      deposited: "no" as const,
-      ifsc: "",
-      payeeBankName: "",
-      payeeBankBranch: "",
-      payeePolice: "",
-    };
-    assert.equal(
-      jurisdictionReady(
-        filledJurisdiction({ ...notDeposited, drawerPolice: "Fort" }),
-        CAUSE,
-        FILING,
-      ),
-      true,
-    );
-    assert.equal(
-      jurisdictionReady(filledJurisdiction({ ...notDeposited, drawerPolice: "" }), CAUSE, FILING),
-      false,
-    );
-  });
-
-  it("needs every listed other complaint filled when another complaint is pending", () => {
-    const base = { otherPending: "yes" as const };
-    // A pending complaint with no complete entry is not ready (backend requires at least one).
-    assert.equal(
-      jurisdictionReady(
-        filledJurisdiction({ ...base, otherCases: [{ court: "", caseNumber: "" }] }),
-        CAUSE,
-        FILING,
-      ),
-      false,
-    );
-    // A half-filled entry holds the section back.
-    assert.equal(
-      jurisdictionReady(
-        filledJurisdiction({ ...base, otherCases: [{ court: "Munsiff", caseNumber: "" }] }),
-        CAUSE,
-        FILING,
-      ),
-      false,
-    );
-    // One complete entry is ready.
-    assert.equal(
-      jurisdictionReady(
-        filledJurisdiction({
-          ...base,
-          otherCases: [{ court: "Munsiff", caseNumber: "CC/12/2024" }],
-        }),
-        CAUSE,
-        FILING,
-      ),
-      true,
-    );
-  });
-});
-
 describe("jurisdictionSectionBody", () => {
   it("builds the full section with the payee's police station when the payee deposited", () => {
     const body = jurisdictionSectionBody(
@@ -116,7 +31,6 @@ describe("jurisdictionSectionBody", () => {
       }),
       CAUSE,
       FILING,
-      false,
     );
     assert.deepEqual(body, {
       cheque_deposited_by_payee: true,
@@ -131,15 +45,27 @@ describe("jurisdictionSectionBody", () => {
     });
   });
 
-  it("omits other_complaints when no other complaint is pending", () => {
-    const body = jurisdictionSectionBody(
+  it("omits other_complaints when none is pending, or when a pending one has no complete row", () => {
+    const notPending = jurisdictionSectionBody(
       filledJurisdiction({ otherPending: "no" }),
       CAUSE,
       FILING,
-      false,
     );
-    assert.ok(body);
-    assert.ok(!("other_complaints" in body));
+    assert.ok(notPending);
+    assert.ok(!("other_complaints" in notPending));
+
+    // Pending but every row half-filled: send the flag, but not an empty array (minItems 1).
+    const pendingButBlank = jurisdictionSectionBody(
+      filledJurisdiction({
+        otherPending: "yes",
+        otherCases: [{ court: "Munsiff", caseNumber: "" }],
+      }),
+      CAUSE,
+      FILING,
+    );
+    assert.ok(pendingButBlank);
+    assert.equal(pendingButBlank.other_complaints_pending, true);
+    assert.ok(!("other_complaints" in pendingButBlank));
   });
 
   it("sends the drawer's police station (no payee bank block) when not deposited", () => {
@@ -154,7 +80,6 @@ describe("jurisdictionSectionBody", () => {
       }),
       CAUSE,
       FILING,
-      false,
     );
     assert.deepEqual(body, {
       cheque_deposited_by_payee: false,
@@ -165,24 +90,18 @@ describe("jurisdictionSectionBody", () => {
     });
   });
 
-  it("sends the condonation reason only when the complaint is filed late", () => {
-    const onTime = jurisdictionSectionBody(
-      filledJurisdiction({ condonationReason: "late" }),
-      CAUSE,
-      FILING,
-      false,
-    );
-    assert.ok(onTime);
-    assert.ok(!("condonation_reason" in onTime));
-
-    const late = jurisdictionSectionBody(
+  it("sends the condonation reason whenever it is written", () => {
+    const body = jurisdictionSectionBody(
       filledJurisdiction({ condonationReason: "Hospitalised" }),
       CAUSE,
       FILING,
-      true,
     );
-    assert.ok(late);
-    assert.equal(late.condonation_reason, "Hospitalised");
+    assert.ok(body);
+    assert.equal(body.condonation_reason, "Hospitalised");
+
+    const none = jurisdictionSectionBody(filledJurisdiction(), CAUSE, FILING);
+    assert.ok(none);
+    assert.ok(!("condonation_reason" in none));
   });
 
   it("does not send the old single police-station key or other cases", () => {
@@ -190,7 +109,6 @@ describe("jurisdictionSectionBody", () => {
       filledJurisdiction({ otherCases: [{ court: "X", caseNumber: "Y" }] }),
       CAUSE,
       FILING,
-      false,
     );
     assert.ok(body);
     for (const key of ["bank_police_station", "other_cases"]) {
@@ -198,18 +116,49 @@ describe("jurisdictionSectionBody", () => {
     }
   });
 
-  it("returns null when the section is not complete", () => {
-    assert.equal(jurisdictionSectionBody(filledJurisdiction(), "", FILING, false), null);
-    assert.equal(jurisdictionSectionBody(filledJurisdiction(), CAUSE, "", false), null);
-    assert.equal(
-      jurisdictionSectionBody(filledJurisdiction({ payeePolice: "" }), CAUSE, FILING, false),
-      null,
-    );
+  describe("partial save", () => {
+    it("returns null when only the default toggles are set, so an untouched section is not PUT", () => {
+      assert.equal(jurisdictionSectionBody(blankJurisdiction(), "", ""), null);
+    });
+
+    it("saves what is filled, leaving out missing dates and a part-filled bank block", () => {
+      // The payee's bank is half-entered (name only) and the dates are not in yet.
+      const body = jurisdictionSectionBody(
+        filledJurisdiction({ ifsc: "", payeeBankBranch: "", payeePolice: "" }),
+        "",
+        "",
+      );
+      assert.deepEqual(body, {
+        cheque_deposited_by_payee: true,
+        other_complaints_pending: false,
+        payee_bank_name: "HDFC Bank",
+      });
+    });
+
+    it("leaves out a malformed IFSC rather than sending it", () => {
+      const body = jurisdictionSectionBody(filledJurisdiction({ ifsc: "BADCODE" }), CAUSE, FILING);
+      assert.ok(body);
+      assert.ok(!("payee_ifsc_code" in body));
+    });
+
+    it("never produces an empty value", () => {
+      const body = jurisdictionSectionBody(
+        filledJurisdiction({ payeeBankBranch: "   " }),
+        CAUSE,
+        "",
+      );
+      assert.ok(body);
+      for (const value of Object.values(body)) {
+        assert.notEqual(value, "");
+        assert.notEqual(value, 0);
+      }
+    });
   });
 });
 
 function adrPrayer(over: Partial<AdrPrayer> = {}): AdrPrayer {
   return {
+    ...blankAdr(),
     adr: "maybe",
     otherDetails: "",
     interimRelief: "<p>Pay interim compensation.</p>",
@@ -217,15 +166,6 @@ function adrPrayer(over: Partial<AdrPrayer> = {}): AdrPrayer {
     ...over,
   };
 }
-
-describe("adrPrayerReady", () => {
-  it("needs a final relief with real content", () => {
-    assert.equal(adrPrayerReady(adrPrayer()), true);
-    assert.equal(adrPrayerReady(adrPrayer({ finalRelief: "" })), false);
-    assert.equal(adrPrayerReady(adrPrayer({ finalRelief: "<p></p>" })), false);
-    assert.equal(adrPrayerReady(adrPrayer({ finalRelief: "<p>&nbsp;</p>" })), false);
-  });
-});
 
 describe("adrPrayerSectionBody", () => {
   it("uppercases the ADR choice and sends the relief fields that have content", () => {
@@ -254,7 +194,20 @@ describe("adrPrayerSectionBody", () => {
     assert.equal(body.adr_preference, "YES");
   });
 
-  it("returns null when the final relief is empty", () => {
-    assert.equal(adrPrayerSectionBody(adrPrayer({ finalRelief: "<p></p>" })), null);
+  describe("partial save", () => {
+    it("saves a non-default preference even before any relief is written", () => {
+      const body = adrPrayerSectionBody(adrPrayer({ adr: "no", finalRelief: "<p></p>" }));
+      assert.deepEqual(body, {
+        adr_preference: "NO",
+        interim_relief: "<p>Pay interim compensation.</p>",
+      });
+    });
+
+    it("returns null when nothing is written and the preference is the default", () => {
+      assert.equal(
+        adrPrayerSectionBody(adrPrayer({ adr: "yes", finalRelief: "<p></p>", interimRelief: "" })),
+        null,
+      );
+    });
   });
 });

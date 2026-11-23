@@ -22,7 +22,7 @@ export const caseFilingCopy = {
 
 /** The jurisdiction & limitation step. */
 export const jurisdictionCopy = {
-  /** Under the reason field, when Continue is pressed on a late filing without one. */
+  /** A hint under the reason field on a late filing with no reason yet; Continue is allowed. */
   condonationMissing:
     "Give a reason for the delay. The complaint is filed after the one-month limit, so the court needs it.",
 } as const;

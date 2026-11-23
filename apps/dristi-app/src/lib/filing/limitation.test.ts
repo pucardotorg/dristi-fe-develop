@@ -25,6 +25,12 @@ function dated(): FilingDraft {
   d.notices[0].delivered = "yes";
   d.notices[0].deliveryDate = "2026-08-14";
   d.jurisdiction.filingDate = "2026-09-10";
+  // The jurisdiction branch that grounds the case, complete for either deposited answer.
+  d.jurisdiction.ifsc = "SBIN0000001";
+  d.jurisdiction.payeeBankName = "State Bank of India";
+  d.jurisdiction.payeeBankBranch = "MG Road";
+  d.jurisdiction.payeePolice = "Kollam East";
+  d.jurisdiction.drawerPolice = "Fort";
   return d;
 }
 
@@ -120,6 +126,7 @@ describe("the cheque's own validity — the first link of the chain", () => {
       amount: "50000",
       ifsc: "SBIN0000001",
       bankName: "State Bank of India",
+      bankBranch: "MG Road",
       dateOnCheque: "2026-05-15",
       presentDate: "2026-08-20",
       returnDate: "2026-08-22",

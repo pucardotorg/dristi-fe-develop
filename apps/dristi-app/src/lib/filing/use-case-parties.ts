@@ -3,10 +3,11 @@
 /**
  * Keeps the complainants, accused and witnesses on the backend case, one party at a time.
  *
- * Each step saves its parties as it opens and closes (`useStepSync`). A party is sent
- * once the form counts it complete, and only when it changed since the last save; one
- * the backend would still refuse is held back with a note naming what to add. A party
- * removed from the form is taken off the case at once.
+ * Each step saves its parties as it opens and closes (`useStepSync`). A party is sent once
+ * it has any content, with whatever is filled in (the builders in `parties.ts` send only
+ * well-formed values), and only when it changed since the last save; the `validate` check
+ * before signing asks for anything still missing. A party removed from the form is taken off
+ * the case at once.
  *
  * Opening the complainant, accused or witness step first reads its parties from the case, so the
  * screen shows the case's record rather than this browser's (see `case-read.ts`).
@@ -21,11 +22,9 @@ import {
   accusedBodies,
   complainantBodies,
   isAccountMobile,
-  missingFields,
-  missingFieldsMessage,
+  partyBodyHasContent,
   partyChanged,
   poaHolderBody,
-  poaHolderMissing,
   saveParty,
   savePoaHolder,
   selfComplainantId,
@@ -33,7 +32,6 @@ import {
   type AnyPartyInput,
 } from "./parties";
 import { useProfile } from "./profile";
-import { accusedComplete, complainantComplete, witnessComplete } from "./selectors";
 import { useFiling } from "./store";
 import type {
   Accused,
@@ -47,7 +45,6 @@ import type {
 import { syncAdvocates } from "./use-case-advocates";
 import { linkSavedDocuments } from "./use-case-documents";
 import { runStepSave, useStepSync } from "./use-step-sync";
-import { useTranslations } from "next-intl";
 
 export type PartyKind = "complainant" | "accused" | "witness";
 
@@ -74,13 +71,6 @@ function bodiesOf(party: Party, kind: PartyKind, selfId?: string): AnyPartyInput
   if (kind === "complainant") return complainantBodies(party as Complainant, party.id === selfId);
   if (kind === "accused") return accusedBodies(party as Accused);
   return witnessBodies(party as Witness);
-}
-
-/** Complete as the form counts it. */
-function complete(party: Party, kind: PartyKind): boolean {
-  if (kind === "complainant") return complainantComplete(party as Complainant);
-  if (kind === "accused") return accusedComplete(party as Accused);
-  return witnessComplete(party as Witness);
 }
 
 type Saved = Required<Pick<SavedParty, "caseParticipantIds" | "savedBodies">> &
@@ -179,7 +169,6 @@ async function loadFromCase(
 }
 
 export function useCaseParties<K extends PartyKind>(kind: K) {
-  const t = useTranslations();
   const { draft, update } = useFiling();
   const { profile, ready } = useProfile();
   // Read from the case once per visit to the step, before its first save.
@@ -237,16 +226,10 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
         });
       }
 
-      // Not finished in the form yet: nothing to send, and nothing to report.
-      if (!complete(party, kind)) {
-        if (party.syncError) record(party.id, (p) => (p.syncError = undefined));
-        continue;
-      }
       const bodies = bodiesOf(party, kind, selfId);
-      const missing = [...new Set(bodies.flatMap((b) => missingFields(b, ROLE[kind])))];
-      if (missing.length) {
-        const message = missingFieldsMessage(missing);
-        if (party.syncError !== message) record(party.id, (p) => (p.syncError = message));
+      // Nothing filled in yet: no participant to create, and nothing to report.
+      if (!bodies.some(partyBodyHasContent)) {
+        if (party.syncError) record(party.id, (p) => (p.syncError = undefined));
         continue;
       }
       if (!party.syncError && !partyChanged(bodies, saved)) continue;
@@ -286,19 +269,13 @@ export function useCaseParties<K extends PartyKind>(kind: K) {
     for (const c of latest().complainants) {
       if (fromCase.has(c.id)) continue;
       const holderIsSelf = c.id !== selfId && isAccountMobile(c.poaHolder.mobile, profile);
+      // A holder is sent once the complainant named one (`poaHolderBody` returns null until
+      // then); whatever address is filled goes with it, and `validate` asks for the rest.
       const body = poaHolderBody(c, holderIsSelf);
       const saved = lastPoa.has(c.id) ? lastPoa.get(c.id) : c.savedPoaHolder;
-      const setError = (message: string | undefined) => {
-        if (c.poaSyncError !== message) recordComplainant(c.id, (p) => (p.poaSyncError = message));
-      };
 
-      const missing = body ? poaHolderMissing(body) : [];
-      if (missing.length) {
-        setError(missingFieldsMessage(missing, t("useCaseParties_poAHolders")));
-        continue;
-      }
       const forId = savedParticipantIds(c)[0];
-      // Waits for its complainant, whose own note says what is holding it back.
+      // Waits for its complainant to be saved first: the mandate names its participant.
       if (body && !forId) continue;
       const json = body ? JSON.stringify(body) : undefined;
       if (!c.poaSyncError && saved?.body === json && saved?.forParticipantId === forId) continue;

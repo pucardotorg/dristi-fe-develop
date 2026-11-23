@@ -4,9 +4,10 @@
  * Saves the demand-notice section to the backend case when the filer clicks Continue.
  *
  * Each demand notice becomes one `LEGAL_DEMAND_NOTICE` evidence row, matched to its cheque
- * by the order rows are created (spec 0021 §5.1). A row is sent only once it is complete
- * (`evidence.ts`), since the backend rejects a half-filled one; the id it is given is kept
- * on the notice, so Continue again updates it instead of adding a second. The notice's scan
+ * by the order rows are created (spec 0021 §5.1). Whatever is filled is saved: the builder
+ * in `evidence.ts` sends only the well-formed fields. A row is created once the notice
+ * carries something — a field or a linked scan — and updated in place after that, by the id
+ * kept on the notice, so Continue again never adds a second. The notice's scan
  * is linked from the row (`case_document_id`); its proof of dispatch, proof of delivery and
  * reply are linked to the row (`case_evidence_id`) once it is saved. Opening the step reads
  * the case's notices back (`noticesFromCase`).
@@ -19,7 +20,7 @@ import * as React from "react";
 import { noticesFromCase } from "./case-details-read";
 import { getCaseFilingRepository } from "./data";
 import { caseFilingErrorMessage } from "./data/cases-api";
-import { demandNoticeEvidenceInfo, demandNoticeReady } from "./evidence";
+import { demandNoticeEvidenceInfo, demandNoticeHasContent } from "./evidence";
 import { noticeSourceSlot } from "./selectors";
 import { useFiling } from "./store";
 import { linkSavedDocuments } from "./use-case-documents";
@@ -41,8 +42,6 @@ async function saveOneNotice(
   update: Update,
 ): Promise<string | undefined> {
   const notice = draft.notices[index];
-  if (!demandNoticeReady(notice)) return notice.noticeEvidenceId;
-
   const evidenceInfo = demandNoticeEvidenceInfo(notice);
   // `null` unlinks a scan that was removed; a new one is linked as it finishes uploading.
   const caseDocumentId = noticeSourceSlot(draft, index, "demand-notice")?.caseDocumentId ?? null;
@@ -54,6 +53,8 @@ async function saveOneNotice(
     });
     return notice.noticeEvidenceId;
   }
+  // An untouched notice carries only its default yes/no answers: add no empty row for it.
+  if (!demandNoticeHasContent(notice) && caseDocumentId == null) return undefined;
   const saved = await getCaseFilingRepository().addEvidence(caseId, {
     evidenceType: "LEGAL_DEMAND_NOTICE",
     evidenceInfo,
@@ -88,7 +89,7 @@ export function useDemandNoticeEvidence() {
   });
   const [error, setError] = React.useState<string | null>(null);
 
-  /** Push every complete demand notice to the case. `ok` is false on a failure. */
+  /** Push every demand notice to the case, as filled in. `ok` is false on a failure. */
   const save = React.useCallback(async (): Promise<SaveResult> => {
     const caseId = draft.caseId;
     if (!caseId) return { ok: true };

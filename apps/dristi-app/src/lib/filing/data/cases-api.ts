@@ -230,7 +230,8 @@ export type PartyRole = "complainants" | "accused" | "witnesses";
  * contact lists are sent whole, since each one sent replaces the list.
  */
 export type ParticipantPatch = ContactLists & {
-  name_at_filing: string;
+  /** `null` clears the name on the case: the backend takes it as not given. */
+  name_at_filing: string | null;
   gender_at_filing: PersonInput["gender"] | null;
   age_at_filing: number | null;
   designation_at_filing?: string | null;
@@ -289,7 +290,8 @@ export type ContactListsRead = {
  * declaration are `null` but for a complainant.
  */
 export type InstitutionRead = ContactListsRead & {
-  entity_name: string;
+  // Optional on a partly filled case; read back as "" for the form.
+  entity_name: string | null;
   entity_type: string;
   pan: string | null;
   cin: string | null;

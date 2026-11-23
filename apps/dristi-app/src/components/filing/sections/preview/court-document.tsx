@@ -20,6 +20,7 @@ import {
   adrLabel,
   advocateSummaries,
   chequeSummaries,
+  complainantSummaries,
   complainantSummary,
   documentSummary,
   finalReliefSummary,
@@ -103,6 +104,7 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
   const t = useTranslations();
   const courtText = useCourtText();
   const complainant = complainantSummary(draft.complainants[0]);
+  const complainants = complainantSummaries(draft);
   const advocates = advocateSummaries(draft);
   const accused = accusedSummaries(draft);
   const cheques = chequeSummaries(draft);
@@ -276,26 +278,37 @@ export function CourtDocument({ draft }: { draft: FilingDraft }) {
       <DocSub>{t("previewCourtDocument_11Complainant")}</DocSub>
       <DocTable>
         <tbody>
-          <DocGroupRow>{t("previewCourtDocument_complainant1")}</DocGroupRow>
-          <tr>
-            <DocCell label={t("previewCourtDocument_complainantType")}>{complainant.type}</DocCell>
-            <DocCell label={t("previewCourtDocument_fullName")}>{complainant.name}</DocCell>
-            <DocCell label={t("previewCourtDocument_mobileNumber")}>{complainant.mobile}</DocCell>
-          </tr>
-          <tr>
-            <DocCell label={t("previewCourtDocument_emailAddress")}>{complainant.email}</DocCell>
-            <DocCell label={t("previewCourtDocument_permanentAddress")}>
-              {complainant.permanentAddress}
-            </DocCell>
-            <DocCell label={t("previewCourtDocument_presentAddress")}>
-              {complainant.presentAddress}
-            </DocCell>
-          </tr>
-          <tr>
-            <DocCell label={t("previewCourtDocument_poAForComplainant1")} span={3}>
-              {complainant.poa}
-            </DocCell>
-          </tr>
+          {complainants.map((c, i) => (
+            <React.Fragment key={c.key}>
+              <DocGroupRow>
+                {t("previewCourtDocument_complainantValue", { value: String(i + 1) })}
+              </DocGroupRow>
+              <tr>
+                <DocCell label={t("previewCourtDocument_complainantType")}>{c.type}</DocCell>
+                <DocCell label={t("previewCourtDocument_fullName")}>{c.name}</DocCell>
+                <DocCell label={t("previewCourtDocument_mobileNumber")}>{c.mobile}</DocCell>
+              </tr>
+              <tr>
+                <DocCell label={t("previewCourtDocument_emailAddress")}>{c.email}</DocCell>
+                <DocCell label={t("previewCourtDocument_permanentAddress")}>
+                  {c.permanentAddress}
+                </DocCell>
+                <DocCell label={t("previewCourtDocument_presentAddress")}>
+                  {c.presentAddress}
+                </DocCell>
+              </tr>
+              <tr>
+                <DocCell
+                  label={t("previewCourtDocument_poAForComplainantValue", {
+                    value: String(i + 1),
+                  })}
+                  span={3}
+                >
+                  {c.poa}
+                </DocCell>
+              </tr>
+            </React.Fragment>
+          ))}
         </tbody>
       </DocTable>
 

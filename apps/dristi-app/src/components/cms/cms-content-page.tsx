@@ -8,7 +8,7 @@ import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import { StatusLine } from "@/components/ui/status-line";
 import { cmsLoadFailure } from "@/lib/cms/cms-page";
-import { getCmsPage } from "@/lib/cms/data/http";
+import { getCmsRepository } from "@/lib/cms/data";
 import type { CmsPage, CmsSlug } from "@/lib/cms/types";
 
 import { CmsContentBody } from "./cms-content-body";
@@ -31,15 +31,17 @@ export function CmsContentPage({ slug }: CmsContentPageProps) {
 
   useEffect(() => {
     const controller = new AbortController();
-    getCmsPage(slug, controller.signal).then(
-      (page) => {
-        if (!controller.signal.aborted) setState({ status: "ready", page });
-      },
-      (error: unknown) => {
-        const failure = cmsLoadFailure(error);
-        if (failure && !controller.signal.aborted) setState({ status: failure });
-      },
-    );
+    getCmsRepository()
+      .getPage(slug, controller.signal)
+      .then(
+        (page) => {
+          if (!controller.signal.aborted) setState({ status: "ready", page });
+        },
+        (error: unknown) => {
+          const failure = cmsLoadFailure(error);
+          if (failure && !controller.signal.aborted) setState({ status: failure });
+        },
+      );
     return () => controller.abort();
   }, [slug, attempt]);
 

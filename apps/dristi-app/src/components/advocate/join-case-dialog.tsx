@@ -105,6 +105,7 @@ import { JOIN_DEMO_CASE_ID } from "@/lib/cases/party-cases";
 import { useCourt } from "@/components/court/court-provider";
 import { cn } from "@/lib/utils";
 import { isAcceptedDocument } from "@/lib/uploads/accepted-document";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { useTranslations } from "next-intl";
 
 /**
@@ -1642,42 +1643,44 @@ export function AdvocateJoinCaseDialog({
                       {/* Sandbox, under the flask as on Pay: whether another advocate already
                       named this one on a paid vakalatnama. Not modal — a modal menu inside
                       the dialog leaves the page pointer-locked once an item is chosen. */}
-                      <DropdownMenu modal={false}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label={pick(advDialog.lookupSandboxTip, locale)}
-                                className="text-muted-foreground"
-                              >
-                                <FlaskConicalIcon aria-hidden />
-                              </Button>
-                            </DropdownMenuTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {pick(advDialog.lookupSandboxTip, locale)}
-                          </TooltipContent>
-                        </Tooltip>
-                        <DropdownMenuContent align="end" className="w-72">
-                          <DropdownMenuLabel>
-                            {pick(advDialog.lookupSandboxLabel, locale)}
-                          </DropdownMenuLabel>
-                          <DropdownMenuRadioGroup
-                            value={alreadyAdded ? "added" : "new"}
-                            onValueChange={(value) => setAlreadyAdded(value === "added")}
-                          >
-                            <DropdownMenuRadioItem value="new">
-                              {pick(advDialog.lookupSandboxNew, locale)}
-                            </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="added">
-                              {pick(advDialog.lookupSandboxAdded, locale)}
-                            </DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {IS_SANDBOX ? (
+                        <DropdownMenu modal={false}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label={pick(advDialog.lookupSandboxTip, locale)}
+                                  className="text-muted-foreground"
+                                >
+                                  <FlaskConicalIcon aria-hidden />
+                                </Button>
+                              </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {pick(advDialog.lookupSandboxTip, locale)}
+                            </TooltipContent>
+                          </Tooltip>
+                          <DropdownMenuContent align="end" className="w-72">
+                            <DropdownMenuLabel>
+                              {pick(advDialog.lookupSandboxLabel, locale)}
+                            </DropdownMenuLabel>
+                            <DropdownMenuRadioGroup
+                              value={alreadyAdded ? "added" : "new"}
+                              onValueChange={(value) => setAlreadyAdded(value === "added")}
+                            >
+                              <DropdownMenuRadioItem value="new">
+                                {pick(advDialog.lookupSandboxNew, locale)}
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="added">
+                                {pick(advDialog.lookupSandboxAdded, locale)}
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : null}
                       <Button
                         type="submit"
                         form="adv-lookup"
@@ -1880,40 +1883,44 @@ export function AdvocateJoinCaseDialog({
                     <div className="flex items-center gap-2">
                       {/* Sandbox, tucked under the flask as on Sign (owner, 2026-10-12): the
                       gateway's answer is a demo control, not part of the payment. */}
-                      <DropdownMenu>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label={pick(advDialog.paySandboxTip, locale)}
-                                className="text-muted-foreground"
-                              >
-                                <FlaskConicalIcon aria-hidden />
-                              </Button>
-                            </DropdownMenuTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent>{pick(advDialog.paySandboxTip, locale)}</TooltipContent>
-                        </Tooltip>
-                        <DropdownMenuContent align="end" className="w-56">
-                          <DropdownMenuLabel>
-                            {pick(advDialog.payOutcomeLabel, locale)}
-                          </DropdownMenuLabel>
-                          <DropdownMenuRadioGroup
-                            value={payOutcome}
-                            onValueChange={(value) => setPayOutcome(value as "success" | "failed")}
-                          >
-                            <DropdownMenuRadioItem value="success">
-                              {pick(advDialog.payOutcomeSuccess, locale)}
-                            </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="failed">
-                              {pick(advDialog.payOutcomeFailed, locale)}
-                            </DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {IS_SANDBOX ? (
+                        <DropdownMenu>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label={pick(advDialog.paySandboxTip, locale)}
+                                  className="text-muted-foreground"
+                                >
+                                  <FlaskConicalIcon aria-hidden />
+                                </Button>
+                              </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>{pick(advDialog.paySandboxTip, locale)}</TooltipContent>
+                          </Tooltip>
+                          <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuLabel>
+                              {pick(advDialog.payOutcomeLabel, locale)}
+                            </DropdownMenuLabel>
+                            <DropdownMenuRadioGroup
+                              value={payOutcome}
+                              onValueChange={(value) =>
+                                setPayOutcome(value as "success" | "failed")
+                              }
+                            >
+                              <DropdownMenuRadioItem value="success">
+                                {pick(advDialog.payOutcomeSuccess, locale)}
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="failed">
+                                {pick(advDialog.payOutcomeFailed, locale)}
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : null}
                       <Button type="submit" form="adv-pay" className="flex-1 sm:flex-none">
                         {fill(advDialog.payNow, locale, { amount: fee })}
                       </Button>

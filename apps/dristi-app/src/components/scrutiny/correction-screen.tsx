@@ -69,6 +69,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Case, Defect, Resolution, Task } from "@/lib/tasks/types";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -775,32 +776,36 @@ export function CorrectionScreen({ task, kase }: { task: Task; kase: Case }) {
       <div className="flex items-center gap-2 sm:mr-auto">
         {/* Not modal: a modal menu inside the dialog left the page pointer-locked after
             its item was chosen, so the next click went nowhere. */}
-        <DropdownMenu modal={false}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={tr("correctionScreen_sandboxMarkTheOtherSignatures")}
-                  className="text-muted-foreground"
-                >
-                  <FlaskConicalIcon aria-hidden />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>{tr("correctionScreen_sandboxMarkTheOtherSignatures")}</TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent align="start" className="w-64">
-            <DropdownMenuLabel>{tr("correctionScreen_noLinkIsSentInThe")}</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={sandboxEveryoneDone}>
-              {signingRules().oath
-                ? tr("correctionScreen_markEveryoneAsSignedAndSworn")
-                : tr("correctionScreen_markEveryoneAsSigned")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {IS_SANDBOX ? (
+          <DropdownMenu modal={false}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={tr("correctionScreen_sandboxMarkTheOtherSignatures")}
+                    className="text-muted-foreground"
+                  >
+                    <FlaskConicalIcon aria-hidden />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                {tr("correctionScreen_sandboxMarkTheOtherSignatures")}
+              </TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuLabel>{tr("correctionScreen_noLinkIsSentInThe")}</DropdownMenuLabel>
+              <DropdownMenuItem onSelect={sandboxEveryoneDone}>
+                {signingRules().oath
+                  ? tr("correctionScreen_markEveryoneAsSignedAndSworn")
+                  : tr("correctionScreen_markEveryoneAsSigned")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
         {othersWaiting.length ? (
           <Button type="button" variant="outline" disabled={reminded} onClick={remindOthers}>
             <BellIcon data-icon="inline-start" aria-hidden />

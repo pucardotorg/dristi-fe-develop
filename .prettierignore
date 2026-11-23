@@ -3,3 +3,14 @@ node_modules
 apps/dristi-app/public/vendor
 package-lock.json
 apps/dristi-app/scripts/extraction-report.md
+
+# The agent rails: .agents/ is the source, and sync:rails writes the copies below from it
+# byte for byte. Formatting either side on commit would make check:rails fail, so neither
+# is formatted (data-seam.md and the rails checks govern them instead).
+.agents
+.codex/agents
+.claude/agents
+.claude/rules
+.claude/skills
+.cursor/rules
+.cursor/skills

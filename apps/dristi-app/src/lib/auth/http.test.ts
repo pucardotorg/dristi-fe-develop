@@ -580,7 +580,7 @@ describe("HttpAuthService: correcting a rejected registration", () => {
   it("loads the rejected registration in screen terms", async () => {
     const { auth, calls } = setup(() => Response.json(current));
     const rejected = await auth.getRejectedRegistration();
-    assert.equal(calls[0].url, "/api/v1/registrations/current");
+    assert.equal(calls[0].url, "/api/v1/users/me/registration/resubmission");
     assert.equal(calls[0].method, "GET");
     assert.deepEqual(rejected, {
       role: "advocateClerk",
@@ -596,14 +596,42 @@ describe("HttpAuthService: correcting a rejected registration", () => {
     });
   });
 
-  it("reports nothing to resubmit (409 / E01012)", async () => {
+  it("reports nothing to correct when loading (404 / E01015)", async () => {
+    const { auth } = setup(() =>
+      Response.json(
+        { errors: [{ code: "E01015", message: "There is no rejected registration to correct." }] },
+        { status: 404 },
+      ),
+    );
+    assert.equal((await authError(auth.getRejectedRegistration())).code, "nothing-to-resubmit");
+  });
+
+  it("treats a 404 or 409 without a registered code as unavailable when loading", async () => {
+    for (const status of [404, 409]) {
+      const { auth } = setup(() => Response.json({ detail: "Not found." }, { status }));
+      assert.equal(
+        (await authError(auth.getRejectedRegistration())).code,
+        "unavailable",
+        `status ${status}`,
+      );
+    }
+  });
+
+  it("reports nothing to resubmit when resubmitting (409 / E01012)", async () => {
     const { auth } = setup(() =>
       Response.json(
         { errors: [{ code: "E01012", message: "There is no rejected registration to resubmit." }] },
         { status: 409 },
       ),
     );
-    assert.equal((await authError(auth.getRejectedRegistration())).code, "nothing-to-resubmit");
+    const error = await authError(
+      auth.resubmitRegistration({
+        name: "Ravi",
+        registrationNumber: "CL-1",
+        document: new File(["%PDF"], "id.pdf"),
+      }),
+    );
+    assert.equal(error.code, "nothing-to-resubmit");
   });
 
   it("resubmits as multipart with the new document", async () => {
@@ -616,7 +644,8 @@ describe("HttpAuthService: correcting a rejected registration", () => {
       registrationNumber: " CL-78 ",
       document: new File(["\x89PNG"], "clerk-id.png", { type: "image/png" }),
     });
-    assert.equal(calls[0].url, "/api/v1/registrations/current/resubmit");
+    assert.equal(calls[0].url, "/api/v1/users/me/registration/resubmission");
+    assert.equal(calls[0].method, "POST");
     const form = calls[0].raw as FormData;
     assert.equal(form.get("name"), "Ravi");
     assert.equal(form.has("email"), false, "a blank email is left out");

@@ -20,6 +20,11 @@ in orientation docs until PUCAR confirms them.
   who are recognised and let in without paying. If an advocate is added by mistake, how
   is their access undone? An accept-the-invite step and removal before acceptance were
   suggested and deferred (owner, 2026-10-13); today the only route is a support ticket.
+- Filing drafts: where should a draft's working copy live once the backend can hold it?
+  Today it stays in the filer's browser in every build, while each step saves to the
+  backend case. A draft does not follow the filer to another device, and clearing the
+  browser's data loses it while its backend case remains. Options and the questions for
+  the backend team are tracked in issue #52.
 
 ## Evidence still needed
 

@@ -1,5 +1,8 @@
-name: Dristi-fe CI
+name: CI
 
+# Required checks for every pull request (set them as required in branch protection for
+# main): formatting, lint, types, tests, agent rails and a production build. The checks
+# against the base branch's data rules run in data-rules.yml.
 on:
   push:
     branches: [main]
@@ -15,21 +18,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-test-build:
+  checks:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node
+        uses: actions/setup-node@v5
         with:
           # Same as docker/Dockerfile (NODE_VERSION).
           node-version: 22
-          cache: "npm"
+          cache: npm
 
-      - name: Install dependencies
+      - name: Install
         run: npm ci
 
       - name: Format check
@@ -38,8 +40,20 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Type check
+        run: npm run typecheck
+
       - name: Unit tests
         run: npm run test:app
 
+      # Run directly rather than through verify:agents, so the check list design keeps in
+      # .agents/verification.json can't change what CI runs.
+      - name: Agent rails
+        run: npm run check:rails
+
+      - name: Script tests (rails, new:data, data rules)
+        run: npm run test:rails
+
+      # Nothing set: data and sign-in default to the backend, as a production build does.
       - name: Build
         run: npm run build

@@ -1,0 +1,60 @@
+# Who reviews what. GitHub requests a review from the owners of every file a PR touches;
+# the last matching line wins. Both teams must exist in the pucardotorg organisation.
+# Ownership follows AGENTS.md ("Data") and .agents/policies/data-seam.md.
+
+# Shared by default: either team can approve. This covers the contracts
+# (lib/**/data/repository.ts, lib/**/types.ts), stores, data/index.ts choosers,
+# root AGENTS.md / CLAUDE.md, the lockfile and the messages catalogs (messages/*.json:
+# copy is design's, but engineering's localization scripts write them too).
+*                                                   @pucardotorg/frontend @pucardotorg/design
+
+# Design: screens, copy, the sandbox and its demo data, the demo-server routes and the
+# agent layer. When engineering adds a contract method, it answers it in the sandbox in
+# the same PR, so design reviews that part.
+/apps/dristi-app/src/components/                    @pucardotorg/design
+/apps/dristi-app/src/app/                           @pucardotorg/design
+/apps/dristi-app/src/provakil/                      @pucardotorg/design
+/apps/dristi-app/src/lib/**/content.ts              @pucardotorg/design
+/apps/dristi-app/src/lib/**/data/indexeddb.ts       @pucardotorg/design
+/apps/dristi-app/src/lib/**/sandbox.ts              @pucardotorg/design
+/apps/dristi-app/src/lib/**/fixtures.ts             @pucardotorg/design
+/apps/dristi-app/src/lib/**/*-dummy.json            @pucardotorg/design
+/apps/dristi-app/scripts/                           @pucardotorg/design
+/.agents/                                           @pucardotorg/design
+/.claude/                                           @pucardotorg/design
+/.claude/launch.json                                @pucardotorg/frontend @pucardotorg/design
+/.cursor/                                           @pucardotorg/design
+/.codex/                                            @pucardotorg/design
+/ds.lock.json                                       @pucardotorg/design
+/scripts/lib/agent-rails.mjs                        @pucardotorg/design
+/scripts/agent-rails.test.mjs                       @pucardotorg/design
+/scripts/sync-rails.mjs                             @pucardotorg/design
+/scripts/check-rails.mjs                            @pucardotorg/design
+/scripts/verify-agent-work.mjs                      @pucardotorg/design
+/scripts/ensure-ds.mjs                              @pucardotorg/design
+/scripts/bump-ds.mjs                                @pucardotorg/design
+/vendor/                                            @pucardotorg/design
+/netlify.toml                                       @pucardotorg/design
+
+# Engineering: the backend connection, the data-source switch, build, CI and Docker.
+/apps/dristi-app/src/app/api/v1/                    @pucardotorg/frontend
+/apps/dristi-app/src/lib/api/                       @pucardotorg/frontend
+/apps/dristi-app/src/lib/server/                    @pucardotorg/frontend
+/apps/dristi-app/src/lib/data/                      @pucardotorg/frontend
+/apps/dristi-app/src/lib/**/data/http*.ts           @pucardotorg/frontend
+/apps/dristi-app/src/lib/auth/http*.ts              @pucardotorg/frontend
+/apps/dristi-app/scripts/copy-runtime-assets.mjs    @pucardotorg/frontend
+/apps/dristi-app/scripts/extract-messages.mts       @pucardotorg/frontend
+/apps/dristi-app/scripts/not-dristi.mjs             @pucardotorg/frontend
+/apps/dristi-app/scripts/extraction-report.md       @pucardotorg/frontend
+# CI runs npm scripts and the type check, so what they do is engineering's to approve.
+/package.json                                       @pucardotorg/frontend
+/apps/dristi-app/package.json                       @pucardotorg/frontend
+/apps/dristi-app/tsconfig.json                      @pucardotorg/frontend
+/.prettierignore                                    @pucardotorg/frontend
+/apps/dristi-app/eslint.config.mjs                  @pucardotorg/frontend
+/scripts/check-lint-exceptions*.mjs                 @pucardotorg/frontend
+/scripts/check-data-moves*.mjs                      @pucardotorg/frontend
+/apps/dristi-app/next.config.ts                     @pucardotorg/frontend
+/docker/                                            @pucardotorg/frontend
+/.github/                                           @pucardotorg/frontend

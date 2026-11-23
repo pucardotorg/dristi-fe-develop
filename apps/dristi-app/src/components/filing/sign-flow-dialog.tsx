@@ -51,6 +51,7 @@ import { CheckIcon, FileTextIcon, SignatureIcon, UploadIcon } from "lucide-react
 
 import { DiscardQuestion, useDiscardGuard } from "@/components/chrome/discard-guard";
 import { StagedOverlay, useStagedFlow } from "@/components/chrome/staged-overlay";
+import { IS_SANDBOX } from "@/lib/data/source";
 import { signingRules } from "@/lib/filing/config";
 import { storeUpload } from "@/lib/filing/data";
 import { discardStoredFile, formatBytes } from "@/lib/filing/files";
@@ -1202,14 +1203,16 @@ function ConfirmRow({
           >
             {t("signFlowDialog_resendLink")}
           </Button>
-          <a
-            href={linkHref}
-            target="_blank"
-            rel="noreferrer"
-            className="text-body-compact font-medium text-primary underline underline-offset-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            {t("signFlowDialog_sandboxOpenTheirLink")}
-          </a>
+          {IS_SANDBOX ? (
+            <a
+              href={linkHref}
+              target="_blank"
+              rel="noreferrer"
+              className="text-body-compact font-medium text-primary underline underline-offset-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {t("signFlowDialog_sandboxOpenTheirLink")}
+            </a>
+          ) : null}
         </div>
       ) : null}
 

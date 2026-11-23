@@ -17,7 +17,8 @@ import * as React from "react";
 
 import { advocateChanged, advocateClientIds, endAdvocate, saveAdvocate } from "./advocates";
 import { advocatesFromCase } from "./case-read";
-import { caseFilingApi, caseFilingErrorMessage, isCaseNotYetSaved } from "./data/cases-api";
+import { getCaseFilingRepository } from "./data";
+import { caseFilingErrorMessage, isCaseNotYetSaved } from "./data/cases-api";
 import { useFiling } from "./store";
 import type { Advocate, Complainant, FilingDraft, SavedAdvocate } from "./types";
 import { savedParticipantIds } from "./use-case-parties";
@@ -42,7 +43,7 @@ const participantIdOf = (c: Complainant) => savedParticipantIds(c)[0];
 export function removeAdvocateFromCase(advocate: Advocate) {
   const saved = savedOf(advocate);
   lastSaved.delete(advocate.id);
-  endAdvocate(caseFilingApi, saved).catch((error) => {
+  endAdvocate(getCaseFilingRepository(), saved).catch((error) => {
     console.warn("[filing] couldn't remove an advocate from the case", advocate.id, error);
   });
 }
@@ -87,7 +88,7 @@ export async function syncAdvocates(
     if (!advocate.advocateId) {
       if (held) {
         lastSaved.set(advocate.id, { savedAdvocateId: "", representations: {} });
-        await endAdvocate(caseFilingApi, saved).catch(() => undefined);
+        await endAdvocate(getCaseFilingRepository(), saved).catch(() => undefined);
       }
       if (held || advocate.syncError) {
         record(advocate.id, (a) => {
@@ -110,7 +111,13 @@ export async function syncAdvocates(
     const ids = clientIds as string[];
     if (!advocate.syncError && !advocateChanged(advocate.advocateId, ids, saved)) continue;
 
-    const result = await saveAdvocate(caseFilingApi, caseId, advocate.advocateId, ids, saved);
+    const result = await saveAdvocate(
+      getCaseFilingRepository(),
+      caseId,
+      advocate.advocateId,
+      ids,
+      saved,
+    );
     lastSaved.set(advocate.id, {
       savedAdvocateId: result.savedAdvocateId,
       representations: result.representations,
@@ -137,7 +144,7 @@ async function loadFromCase(
   latest: () => FilingDraft,
   update: Update,
 ): Promise<Set<string>> {
-  const read = await caseFilingApi.getCase(caseId);
+  const read = await getCaseFilingRepository().getCase(caseId);
   const apply = (d: FilingDraft) => {
     for (const a of d.advocates) {
       const saved = lastSaved.get(a.id);

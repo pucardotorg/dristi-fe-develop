@@ -892,4 +892,3 @@ export function ComplainantSection() {
     </>
   );
 }
-

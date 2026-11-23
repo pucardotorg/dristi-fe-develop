@@ -109,6 +109,8 @@ reuse or extend what's there; if the same logic appears in 2+ places, extract it
 - Accessibility: semantic elements, labels on every control, visible focus, keyboard
   operation, and sufficient contrast. Icon-only buttons need an `aria-label`.
 - Handle empty, loading, error, and long-content states.
+- Serve every script, style, font, image and video from this app, never from a CDN or
+  another site: no `next/font/google`, no YouTube embeds. See `docs/self-hosted-assets.md`.
 
 ## Code style
 

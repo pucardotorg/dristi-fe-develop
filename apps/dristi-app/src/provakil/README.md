@@ -16,6 +16,7 @@ and none of DRISTI's chrome, so one port and one deployment hold both sides of t
 | `lib/connector.ts`                | The field mapping, which the connector settings page also shows                                                                                                         |
 | `src/app/provakil/api/documents/` | Each matter's documents, which SARAS 2.0 fetches during a push                                                                                                          |
 | `src/app/provakil/api/export/`    | The Excel exports                                                                                                                                                       |
+| `fonts/`                          | Roboto (latin, variable), served by this app through `next/font/local` rather than Google Fonts; licence in `OFL.txt`                                                   |
 
 The design-system gates skip this folder (`scripts/not-dristi.mjs`). The decisions are in
 `docs/design/features/bulk-filing.md`.

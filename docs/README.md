@@ -8,12 +8,13 @@ Orientation for this repo. Docs describe the product; they are
 
 ## Sections
 
-| Section          | What it holds                                                                                                                   | Start here                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| **Product**      | What DRISTI is — domain, journey, standards, open questions                                                                     | [product/README.md](product/README.md)   |
-| **Principles**   | Cross-cutting PUCAR design principles — convictions that resolve conflicts between good outcomes. Org-wide, not DRISTI-specific | [principles/](principles/)               |
-| **Feedback**     | How reviewers comment on the running app; feedback → GitHub issues                                                              | [feedback-widget.md](feedback-widget.md) |
-| **Localization** | Rules for adding and translating UI text                                                                                        | [localization.md](localization.md)       |
+| Section          | What it holds                                                                                                                   | Start here                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **Product**      | What DRISTI is — domain, journey, standards, open questions                                                                     | [product/README.md](product/README.md)         |
+| **Principles**   | Cross-cutting PUCAR design principles — convictions that resolve conflicts between good outcomes. Org-wide, not DRISTI-specific | [principles/](principles/)                     |
+| **Feedback**     | How reviewers comment on the running app; feedback → GitHub issues                                                              | [feedback-widget.md](feedback-widget.md)       |
+| **Localization** | Rules for adding and translating UI text                                                                                        | [localization.md](localization.md)             |
+| **Assets**       | Everything is served by the app, never a public CDN; the lint and test checks and the Content-Security-Policy that enforce it   | [self-hosted-assets.md](self-hosted-assets.md) |
 
 ## Repo layers (outside `docs/`)
 

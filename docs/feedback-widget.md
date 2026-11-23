@@ -219,6 +219,11 @@ Our side is already ready for it — set the origin and nothing else changes:
 NEXT_PUBLIC_FASTERFIXES_API_ORIGIN=https://feedback.internal.example
 ```
 
+The app's Content-Security-Policy lets the browser call the FasterFixes API only when
+`NEXT_PUBLIC_FASTERFIXES_PROJECT_ID` is set at build time, and only at that origin (or the
+FasterFixes cloud when no origin is set). Changing either variable needs a rebuild, like
+every `NEXT_PUBLIC_*` value. See [self-hosted-assets.md](self-hosted-assets.md).
+
 **What self-hosting actually requires.** It is a Next.js app deployment, not a container
 you drop in. There is no Docker Compose in the repo. You need:
 

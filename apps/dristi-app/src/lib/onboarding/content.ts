@@ -467,10 +467,21 @@ export const helpPanel: Record<StepId, HelpEntry[]> = {
  * Context and reassurance — not a re-reading of the left column. Contents are
  * specified in "Onboarding — content allocation".
  *
- * `youtubeId` is empty until production videos exist, so the slot renders its
- * fallback. No decision-critical fact lives only here.
+ * `src` is empty until production videos exist, so the slot renders its fallback. No
+ * decision-critical fact lives only here.
+ *
+ * Both paths are this app's own (`public/videos/onboarding/<step>.mp4` and a `.vtt`
+ * beside it), never a video site: nothing is loaded from a public CDN (issue #44).
  */
-export const videos: Record<StepId, { title: Copy; youtubeId?: string }> = {
+export type OnboardingVideo = {
+  title: Copy;
+  /** Same-origin path to the video file, e.g. `/videos/onboarding/papers.mp4`. */
+  src?: string;
+  /** Same-origin path to its WebVTT captions, shown by default. */
+  captions?: string;
+};
+
+export const videos: Record<StepId, OnboardingVideo> = {
   papers: { title: t("onboarding_whatIsThisCase", "ഇത് എന്ത് കേസാണ്?") },
   choices: { title: t("onboarding_canISettleThis", "ഇത് ഒത്തുതീർപ്പാക്കാമോ?") },
   date: { title: t("onboarding_whatIfICannotCome", "വരാൻ കഴിഞ്ഞില്ലെങ്കിൽ?") },

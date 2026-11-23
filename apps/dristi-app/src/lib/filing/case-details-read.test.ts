@@ -148,21 +148,49 @@ describe("noticesFromCase", () => {
     assert.deepEqual({ ...n, id: "" }, { ...typed, id: "", noticeEvidenceId: "n1" });
   });
 
-  it("keeps the 'other' debt's description, which the backend does not hold yet (LDN-1a)", () => {
+  it("reads the 'other' debt's description back from the case (LDN-1a)", () => {
     const typed: DemandNotice = {
       ...notice(),
       natureDebt: "other",
-      natureDebtOther: "Unpaid rent",
+      natureDebtOther: "Rent arrears",
+    };
+    const read = caseOf({
+      evidence: [evidence("n1", "LEGAL_DEMAND_NOTICE", 1, demandNoticeEvidenceInfo(typed))],
+    });
+    const [n] = noticesFromCase(read, [blankNotice()]);
+    assert.equal(n.natureDebt, "other");
+    assert.equal(n.natureDebtOther, "Rent arrears");
+  });
+
+  it("takes the case's description over this browser's", () => {
+    const local: DemandNotice = {
+      ...notice(),
+      natureDebt: "other",
+      natureDebtOther: "Old words",
       noticeEvidenceId: "n1",
     };
-    const info = demandNoticeEvidenceInfo(typed);
-    assert.equal("natureDebtOther" in info || "nature_of_debt_other" in info, false);
+    const info = { ...demandNoticeEvidenceInfo(local), nature_of_debt_other: "Rent arrears" };
     const [n] = noticesFromCase(
       caseOf({ evidence: [evidence("n1", "LEGAL_DEMAND_NOTICE", 1, info)] }),
-      [typed],
+      [local],
     );
-    assert.equal(n.natureDebt, "other");
-    assert.equal(n.natureDebtOther, "Unpaid rent");
+    assert.equal(n.natureDebtOther, "Rent arrears");
+  });
+
+  it("keeps this browser's description for a notice saved before the case held one", () => {
+    const local: DemandNotice = {
+      ...notice(),
+      natureDebt: "other",
+      natureDebtOther: "Rent arrears",
+      noticeEvidenceId: "n1",
+    };
+    // What an older save sent: the nature, with no description.
+    const older = demandNoticeEvidenceInfo({ ...local, natureDebtOther: "" });
+    const [n] = noticesFromCase(
+      caseOf({ evidence: [evidence("n1", "LEGAL_DEMAND_NOTICE", 1, older)] }),
+      [local],
+    );
+    assert.equal(n.natureDebtOther, "Rent arrears");
   });
 
   it("reads an undelivered notice's return date and reason", () => {

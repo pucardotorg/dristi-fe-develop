@@ -278,6 +278,33 @@ describe("demandNoticeEvidenceInfo", () => {
   });
 });
 
+describe("demandNoticeEvidenceInfo: the 'other' nature of debt (LDN-1a)", () => {
+  it("sends the description, trimmed, with OTHER_LIABILITY", () => {
+    const info = demandNoticeEvidenceInfo(
+      filledNotice({ natureDebt: "other", natureDebtOther: "  Rent arrears " }),
+    );
+    assert.equal(info.nature_of_debt, "OTHER_LIABILITY");
+    assert.equal(info.nature_of_debt_other, "Rent arrears");
+  });
+
+  it("leaves out a blank description, which the backend refuses", () => {
+    for (const blank of ["", "   "]) {
+      const info = demandNoticeEvidenceInfo(
+        filledNotice({ natureDebt: "other", natureDebtOther: blank }),
+      );
+      assert.equal(info.nature_of_debt, "OTHER_LIABILITY");
+      assert.ok(!("nature_of_debt_other" in info), JSON.stringify(blank));
+    }
+  });
+
+  it("leaves out a description kept from before switching to another nature (E07023)", () => {
+    const info = demandNoticeEvidenceInfo(
+      filledNotice({ natureDebt: "loan", natureDebtOther: "Rent arrears" }),
+    );
+    assert.ok(!("nature_of_debt_other" in info));
+  });
+});
+
 describe("demandNoticeEvidenceInfo partial save", () => {
   it("sends the two yes/no answers plus only the other fields that are filled", () => {
     // Nothing filled beyond the defaults (delivered yes, replied no, no payment status).

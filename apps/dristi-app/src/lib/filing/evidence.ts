@@ -166,10 +166,16 @@ export function demandNoticeEvidenceInfo(notice: DemandNotice): EvidenceInfoBody
     is_delivered: delivered,
     accused_replied: notice.replied === "yes",
   };
-  // cheque_issue_reason is not sent — the backend dropped it. `natureDebtOther` (LDN-1a)
-  // is not sent either: the schema rejects unknown keys and has no field for it yet.
+  // cheque_issue_reason is not sent — the backend dropped it.
   const natureOfDebt = NATURE_OF_DEBT_VALUE[notice.natureDebt];
   if (natureOfDebt) info.nature_of_debt = natureOfDebt;
+  // LDN-1a: the filer's description of an "other" debt. The backend refuses it with any
+  // other nature (E07023) and refuses it blank, so it goes only with "other" and real text;
+  // switching away leaves it out, and the PATCH that replaces evidence_info drops it.
+  const natureDebtOther = notice.natureDebtOther.trim();
+  if (natureOfDebt === NATURE_OF_DEBT_VALUE.other && natureDebtOther) {
+    info.nature_of_debt_other = natureDebtOther;
+  }
   if (notice.dispatchDate) info.dispatch_date = notice.dispatchDate;
   const modeOfService = MODE_OF_SERVICE_VALUE[notice.modeService];
   if (modeOfService) info.mode_of_service = modeOfService;
@@ -251,11 +257,11 @@ export function returnMemoFromEvidence(
 /** The demand-notice fields a `LEGAL_DEMAND_NOTICE` evidence_info holds. */
 export function noticeFromEvidence(
   info: Record<string, unknown>,
-  // The backend does not hold the "other" description yet; the draft keeps its own copy.
-): Omit<DemandNotice, "id" | "noticeEvidenceId" | "natureDebtOther"> {
+): Omit<DemandNotice, "id" | "noticeEvidenceId"> {
   const paymentStatus = codeFor(PAYMENT_STATUS_VALUE, info.payment_status);
   return {
     natureDebt: codeFor(NATURE_OF_DEBT_VALUE, info.nature_of_debt),
+    natureDebtOther: text(info.nature_of_debt_other),
     dispatchDate: text(info.dispatch_date),
     modeService: codeFor(MODE_OF_SERVICE_VALUE, info.mode_of_service),
     tracking: text(info.tracking_number),

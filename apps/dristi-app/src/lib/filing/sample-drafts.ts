@@ -343,7 +343,6 @@ export function buildSampleDraft(sample: Sample, today: string): FilingDraft {
   cheque.ifsc = "KLGB0040213";
   cheque.bankName = "Kerala Gramin Bank";
   cheque.bankBranch = "Chalakudy";
-  cheque.accountNumber = "40213100004471";
   cheque.presentDate = addDays(served, -20);
   cheque.returnDate = addDays(served, -18);
   cheque.returnReason = "funds-insufficient";

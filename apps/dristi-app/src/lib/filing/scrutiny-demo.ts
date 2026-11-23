@@ -155,7 +155,6 @@ function buildDraft(): FilingDraft {
   one.ifsc = "KLGB0040231"; // Defect 1 — two digits transposed.
   one.bankName = "Kerala Gramin Bank";
   one.bankBranch = "Chalakudy";
-  one.accountNumber = "40231100004471";
   one.presentDate = "2026-05-28";
   one.returnDate = "2026-05-30";
   one.returnReason = "funds-insufficient";
@@ -168,7 +167,6 @@ function buildDraft(): FilingDraft {
   two.ifsc = "KLGB0040213";
   two.bankName = "Kerala Gramin Bank";
   two.bankBranch = "Main"; // Defect 3 — not the branch on the leaf.
-  two.accountNumber = "40213100004471";
   two.presentDate = "2026-06-09";
   two.returnDate = "2026-06-11";
   two.returnReason = "funds-insufficient";
@@ -262,7 +260,6 @@ function buildLakshmiDraft(): FilingDraft {
   one.ifsc = "SBIN0070451";
   one.bankName = "State Bank of India";
   one.bankBranch = "Kollam";
-  one.accountNumber = "37104512890";
   one.presentDate = "2026-06-01";
   one.returnDate = "2026-06-03";
   one.returnReason = "funds-insufficient";
@@ -340,7 +337,6 @@ function buildRafiDraft(): FilingDraft {
   one.ifsc = "FDRL0001234";
   one.bankName = "Federal Bank";
   one.bankBranch = "Main"; // Defect 1 — not the branch on the leaf.
-  one.accountNumber = "12340100055602";
   one.presentDate = "2026-05-22";
   one.returnDate = "2026-05-24";
   one.returnReason = "funds-insufficient";
